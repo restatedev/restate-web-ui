@@ -8,7 +8,6 @@ import {
 } from '@restate/ui/dropdown';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatPlurals } from '@restate/util/intl';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment } from './Deployment';
 import { panelHref } from '@restate/util/panel';
@@ -38,7 +37,6 @@ export function LatestRevisionDeployment({
       deploymentId={latest.id}
       revision={latest.revision}
       highlightSelection={false}
-      className="min-w-0 text-sm"
       showEndpointCopyButton
     />
   );
@@ -55,16 +53,12 @@ export function OlderRevisions({ serviceName }: { serviceName: string }) {
       <DropdownTrigger>
         <Button
           variant="icon"
-          className="relative z-10 gap-0.5 self-end rounded-lg px-1.5 py-0.5 text-0.5xs text-zinc-500 hover:bg-black/3 hover:text-zinc-700"
+          className="relative inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs whitespace-nowrap tabular-nums"
         >
-          {older.length} older{' '}
-          {formatPlurals(older.length, {
-            one: 'revision',
-            other: 'revisions',
-          })}
+          +{older.length} older
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-4 w-4 text-gray-400"
+            className="h-3.5 w-3.5 text-gray-400"
           />
         </Button>
       </DropdownTrigger>

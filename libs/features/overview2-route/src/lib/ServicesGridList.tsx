@@ -4,12 +4,10 @@ import {
   type Service,
 } from '@restate/data-access/admin-api-spec';
 import { GridList, GridListItem } from '@restate/ui/grid-list';
-import { waveAnimationProps } from '@restate/ui/wave-animation';
-import { HandlerList } from '@restate/features/service';
 import { panelHref } from '@restate/util/panel';
+import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
-import { OverviewCard, cellsContainerStyles } from './OverviewCard';
-import { useServiceColumns } from './columns';
+import { ServiceCard } from './ServiceCard';
 import { sortServices } from './sortServices';
 
 export function ServicesGridList() {
@@ -20,7 +18,6 @@ export function ServicesGridList() {
     summaryData,
     byServiceAndStatus,
     invocationCounts,
-    handlerInvocationCounts,
     serviceIssuesMap,
     isSummaryError,
     isSummaryLoading,
@@ -31,7 +28,7 @@ export function ServicesGridList() {
     setServiceSortDescriptor,
   } = useOverviewContext();
 
-  const { filteredHandlersMap, filteredServices } = getFilteredServices({
+  const filteredServices = getFilteredServices({
     servicesMap,
     deploymentsMap,
     serviceFilter: filter.trim().toLowerCase(),
@@ -44,32 +41,24 @@ export function ServicesGridList() {
     deploymentsMap,
   );
 
-  const serviceColumns = useServiceColumns({
-    summaryData,
-    byServiceAndStatus,
-    baseUrl,
-    serviceIssuesMap,
-    isSummaryError,
-    isSummaryLoading,
-    isDeploymentsFetching,
-    linkParams,
-  });
+  const navigate = useNavigate();
 
   return (
     <GridList
       aria-label="Services"
-      columns={serviceColumns}
+      columns={[]}
       items={services}
-      dependencies={[serviceIssuesMap, serviceColumns]}
+      dependencies={[serviceIssuesMap, summaryData, isSummaryLoading]}
       sortDescriptor={resolvedServiceSortDescriptor}
       onSortChange={setServiceSortDescriptor}
-      estimatedRowHeight={100}
-      className="[--grid-list-template-columns:1fr] md:[--grid-list-template-columns:4fr_4fr_18ch]"
+      onAction={(key) => navigate(panelHref({ service: String(key) }))}
+      estimatedRowHeight={120}
+      className="[--grid-list-template-columns:1fr]"
       headerClassName="hidden"
     >
       {(service) => (
         <GridListItem id={service.name} item={service} textValue={service.name}>
-          {({ cells, isFocusVisible }) => {
+          {({ isFocusVisible }) => {
             const issues = serviceIssuesMap.get(service.name) ?? [];
             const issueSeverity = issues.some(
               (issue) => issue.severity === 'high',
@@ -78,36 +67,20 @@ export function ServicesGridList() {
               : issues.length > 0
                 ? ('low' as const)
                 : ('none' as const);
-            const visibleHandlers =
-              filteredHandlersMap.get(service.name) ?? service.handlers;
 
             return (
-              <OverviewCard
-                {...waveAnimationProps('overview-card')}
-                cells={cells}
-                primaryHref={panelHref({ service: service.name })}
+              <ServiceCard
+                service={service}
+                summaryData={summaryData}
+                byServiceAndStatus={byServiceAndStatus}
+                baseUrl={baseUrl}
+                serviceIssues={issues}
+                isSummaryError={isSummaryError}
+                isSummaryLoading={isSummaryLoading}
+                isDeploymentsFetching={isDeploymentsFetching}
+                linkParams={linkParams}
+                isFocusVisible={isFocusVisible}
                 issueSeverity={issueSeverity}
-                className={cellsContainerStyles({
-                  isFocusVisible,
-                })}
-                detailsTitle={
-                  visibleHandlers.length > 0 ? 'Handlers' : undefined
-                }
-                detailsContent={
-                  visibleHandlers.length > 0 ? (
-                    <HandlerList
-                      serviceName={service.name}
-                      handlers={visibleHandlers}
-                      serviceType={service.ty}
-                      handlerCounts={handlerInvocationCounts.get(service.name)}
-                      isHandlerCountsLoading={isSummaryLoading}
-                      isHandlerCountsError={isSummaryError}
-                      linkParams={linkParams}
-                      summaryData={summaryData}
-                      className="flex flex-col gap-1 px-5 opacity-90 @3xl:grid @3xl:grid-cols-[4fr_4fr_18ch] @3xl:gap-x-6 @3xl:[&>*:nth-child(even)]:col-[2/-1] @3xl:[&>*:nth-child(odd)]:col-start-1"
-                    />
-                  ) : undefined
-                }
               />
             );
           }}
@@ -127,35 +100,23 @@ function getFilteredServices({
   serviceFilter: string;
 }) {
   const allServices = Array.from(servicesMap?.values() ?? []);
-  const filteredHandlersMap = new Map<string, Service['handlers']>();
 
   if (serviceFilter.length === 0) {
-    return {
-      filteredHandlersMap,
-      filteredServices: allServices,
-    };
+    return allServices;
   }
 
-  const filteredServices = allServices.filter((service) => {
-    const serviceMatches =
+  return allServices.filter((service) => {
+    if (
       service.name.toLowerCase().includes(serviceFilter) ||
       service.ty.toLowerCase().includes(serviceFilter) ||
       getEndpoint(deploymentsMap?.get(service.deployment_id))
         ?.toLowerCase()
-        .includes(serviceFilter);
-    if (serviceMatches) return true;
-    const matchedHandlers = service.handlers.filter((handler) =>
-      handler.name.toLowerCase().includes(serviceFilter),
-    );
-    if (matchedHandlers.length > 0) {
-      filteredHandlersMap.set(service.name, matchedHandlers);
+        .includes(serviceFilter)
+    ) {
       return true;
     }
-    return false;
+    return service.handlers.some((handler) =>
+      handler.name.toLowerCase().includes(serviceFilter),
+    );
   });
-
-  return {
-    filteredHandlersMap,
-    filteredServices,
-  };
 }

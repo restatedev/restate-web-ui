@@ -1,5 +1,6 @@
 export * from './lib/Handler';
 export * from './lib/HandlerBreakdownTooltip';
+export * from './lib/HandlerGridList';
 export * from './lib/HandlerList';
 export * from './lib/InvocationCountLink';
 export * from './lib/MiniService';

@@ -1,1 +1,1 @@
-export { tv } from 'tailwind-variants';
+export { tv, cx } from 'tailwind-variants';

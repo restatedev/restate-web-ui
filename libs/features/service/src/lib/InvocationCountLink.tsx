@@ -42,7 +42,7 @@ export function InvocationCountLink({
   breakdownTooltip?: ReactNode;
 }) {
   if (variant === 'minimal') {
-    if (isError || (!isLoading && count === 0)) {
+    if (isError) {
       return null;
     }
     if (isLoading) {

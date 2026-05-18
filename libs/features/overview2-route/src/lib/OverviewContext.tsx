@@ -49,8 +49,10 @@ type OverviewContextValue = ReturnType<typeof useOverviewData> & {
   linkParams: URLSearchParams;
   resolvedServiceSortDescriptor: SortDescriptor;
   resolvedDeploymentSortDescriptor: SortDescriptor;
+  resolvedHandlerSortDescriptor: SortDescriptor;
   setServiceSortDescriptor: Dispatch<SetStateAction<SortDescriptor | null>>;
   setDeploymentSortDescriptor: Dispatch<SetStateAction<SortDescriptor | null>>;
+  setHandlerSortDescriptor: Dispatch<SetStateAction<SortDescriptor | null>>;
   mode: OverviewMode;
   triggerManualRefresh: () => void;
 };
@@ -97,6 +99,8 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
     useState<SortDescriptor | null>(null);
   const [deploymentSortDescriptor, setDeploymentSortDescriptor] =
     useState<SortDescriptor | null>(null);
+  const [handlerSortDescriptor, setHandlerSortDescriptor] =
+    useState<SortDescriptor | null>(null);
   const [filter, setFilter] = useState('');
 
   const appliedFilters = overviewData.appliedFilters;
@@ -116,6 +120,10 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
     serviceSortDescriptor ?? initialSortRef.current ?? DEFAUTL_SORT;
   const resolvedDeploymentSortDescriptor =
     deploymentSortDescriptor ?? DEFAUTL_SORT;
+  const resolvedHandlerSortDescriptor = handlerSortDescriptor ?? {
+    column: 'name',
+    direction: 'ascending',
+  };
 
   const value = useMemo(
     () => ({
@@ -127,8 +135,10 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
       linkParams,
       resolvedServiceSortDescriptor,
       resolvedDeploymentSortDescriptor,
+      resolvedHandlerSortDescriptor,
       setServiceSortDescriptor,
       setDeploymentSortDescriptor,
+      setHandlerSortDescriptor,
       mode,
       triggerManualRefresh,
     }),
@@ -140,6 +150,7 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
       linkParams,
       resolvedServiceSortDescriptor,
       resolvedDeploymentSortDescriptor,
+      resolvedHandlerSortDescriptor,
       mode,
       triggerManualRefresh,
     ],
