@@ -497,7 +497,10 @@ function OverviewContent() {
               id: 'handlers',
               label: (
                 <>
-                  <Icon name={IconName.Function} className="h-4 w-4" />
+                  <Icon
+                    name={IconName.Function}
+                    className="-mx-1.5 h-5.5 w-5.5"
+                  />
                   Handlers
                 </>
               ),
