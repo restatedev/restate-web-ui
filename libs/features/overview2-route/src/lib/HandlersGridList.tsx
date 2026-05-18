@@ -61,7 +61,7 @@ export function HandlersGridList() {
           }),
         );
       }}
-      estimatedRowHeight={100}
+      estimatedRowHeight={50}
       virtualized
       className="[--grid-list-template-columns:1fr]"
       headerClassName="hidden"

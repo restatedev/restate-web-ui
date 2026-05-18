@@ -39,7 +39,7 @@ const sortIconStyles = tv({
 });
 
 const listStyles = tv({
-  base: 'gap-2 px-2 pt-1 pb-2 outline-none',
+  base: 'px-2 outline-none',
   variants: {
     virtualized: {
       true: 'block',
@@ -129,13 +129,23 @@ export function GridList<T extends object>({
   dependencies,
   virtualized = false,
   estimatedRowHeight = 60,
+  gap = 8,
+  padding = 8,
   className,
   headerClassName,
   ...props
 }: GridListProps<T>) {
   const layoutOptions = useMemo(
-    () => ({ estimatedRowHeight, gap: 8, padding: 0 }),
-    [estimatedRowHeight],
+    () => ({ estimatedRowHeight, gap, padding }),
+    [estimatedRowHeight, gap, padding],
+  );
+  const listStyle = useMemo(
+    () => ({
+      rowGap: gap,
+      paddingTop: padding,
+      paddingBottom: padding,
+    }),
+    [gap, padding],
   );
 
   return (
@@ -159,6 +169,7 @@ export function GridList<T extends object>({
               onAction={onAction}
               renderEmptyState={renderEmptyState}
               className={listStyles({ virtualized: true })}
+              style={listStyle}
             >
               {children}
             </AriaGridList>
@@ -174,6 +185,7 @@ export function GridList<T extends object>({
             onAction={onAction}
             renderEmptyState={renderEmptyState}
             className={listStyles()}
+            style={listStyle}
           >
             {children}
           </AriaGridList>
