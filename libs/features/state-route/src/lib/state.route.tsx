@@ -77,7 +77,7 @@ function Component() {
 
   if (!isPending && !defaultService) {
     return (
-      <div className="-mb-24 flex w-full flex-auto flex-col items-center justify-center rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div className="mx-12 flex flex-auto flex-col items-center justify-center rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
         <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
           <Icon name={IconName.Database} className="h-8 w-8 text-gray-500" />
           <h3 className="text-sm font-semibold text-gray-600">
