@@ -504,33 +504,33 @@ function OverviewContent() {
             {
               id: 'services',
               label: (
-                <>
+                <div className="flex items-center gap-2">
                   <Icon name={IconName.Box} className="h-3.5 w-3.5" />
                   Services
                   <TabCount
                     count={servicesCount}
                     isLoading={isDeploymentsFetching}
                   />
-                </>
+                </div>
               ),
             },
             {
               id: 'deployments',
               label: (
-                <>
+                <div className="flex items-center gap-2">
                   <Icon name={IconName.Http} className="h-3.5 w-3.5" />
                   Deployments
                   <TabCount
                     count={deploymentsCount}
                     isLoading={isDeploymentsFetching}
                   />
-                </>
+                </div>
               ),
             },
             {
               id: 'handlers',
               label: (
-                <>
+                <div className="flex items-center gap-2">
                   <Icon
                     name={IconName.Function}
                     className="-mx-1.5 h-5.5 w-5.5"
@@ -540,7 +540,7 @@ function OverviewContent() {
                     count={handlersCount}
                     isLoading={isDeploymentsFetching}
                   />
-                </>
+                </div>
               ),
             },
           ],
