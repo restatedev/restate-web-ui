@@ -33,6 +33,7 @@ export interface ComboBoxProps<T extends object> {
   allowsCustomValue?: AriaComboBoxProps<T>['allowsCustomValue'];
   name?: AriaComboBoxProps<T>['name'];
   defaultValue?: AriaComboBoxProps<T>['defaultInputValue'];
+  defaultFilter?: AriaComboBoxProps<T>['defaultFilter'];
   pattern?: string;
 }
 
@@ -55,6 +56,7 @@ export function FormFieldCombobox<T extends object>({
   children,
   pattern,
   defaultValue,
+  value,
   onChange,
   ...props
 }: PropsWithChildren<ComboBoxProps<T>>) {
@@ -64,7 +66,7 @@ export function FormFieldCombobox<T extends object>({
       isDisabled={disabled}
       menuTrigger="focus"
       defaultInputValue={defaultValue}
-      defaultSelectedKey={defaultValue}
+      {...(value !== undefined && { inputValue: value })}
       onInputChange={onChange}
       {...props}
       className={containerStyles({ className })}

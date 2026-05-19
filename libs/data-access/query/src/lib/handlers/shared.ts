@@ -1,4 +1,6 @@
 import ky from 'ky';
+import semverGte from 'semver/functions/gte';
+import semverCoerce from 'semver/functions/coerce';
 
 export const DURATION_CALC =
   "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
@@ -80,6 +82,25 @@ export type QueryContext = {
   restateVersion: string;
   features: Set<string>;
 };
+
+export function shouldFilterScopeIsNull(context: {
+  restateVersion: string;
+  features: Set<string>;
+}): boolean {
+  if (context.features.has('vqueues')) return false;
+  const coerced = semverCoerce(context.restateVersion);
+  return coerced ? semverGte(coerced, '1.7.0') : false;
+}
+
+export function scopeClause(
+  context: { restateVersion: string; features: Set<string> },
+  explicitScope?: string,
+): string {
+  if (explicitScope !== undefined) {
+    return ` AND scope = '${explicitScope}'`;
+  }
+  return shouldFilterScopeIsNull(context) ? ' AND scope IS NULL' : '';
+}
 
 function queryFetcher(
   query: string,

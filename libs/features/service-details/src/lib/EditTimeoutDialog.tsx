@@ -6,6 +6,7 @@ import {
 } from '@restate/ui/dialog';
 import { SERVICE_TIMEOUT_EDIT } from './constants';
 import { FormEvent, useId } from 'react';
+import { useFilter } from 'react-aria';
 import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -28,6 +29,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 
 export function EditTimeoutDialog() {
   const formId = useId();
+  const { startsWith } = useFilter({ sensitivity: 'base' });
   const [searchParams] = useSearchParams();
   const service = searchParams.get(SERVICE_TIMEOUT_EDIT);
 
@@ -144,6 +146,7 @@ export function EditTimeoutDialog() {
             <FormFieldCombobox
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
+              defaultFilter={startsWith}
               defaultValue={data?.inactivity_timeout ?? ''}
               disabled={isPendingOrSubmitting}
               label={
@@ -188,6 +191,7 @@ export function EditTimeoutDialog() {
             <FormFieldCombobox
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
+              defaultFilter={startsWith}
               disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
               defaultValue={data?.abort_timeout ?? ''}
