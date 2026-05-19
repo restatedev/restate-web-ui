@@ -97,6 +97,7 @@ import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useStatusBarProps } from './useStatusBarProps';
 import { useServiceTabs } from './useServiceTabs';
 import { hasStatusFilter } from './statusFilter';
+import { tv } from '@restate/util/styles';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -122,6 +123,41 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 const SAMPLE_SIZE = 50000;
+
+function SampleModeToggle() {
+  const [mode, setMode] = useState<'estimate' | 'exact'>('estimate');
+  const label = mode === 'estimate' ? 'estimates' : 'exact counts';
+  return (
+    <div className="inline-flex items-baseline gap-1 text-2xs text-zinc-500">
+      <span>Showing</span>
+      <Dropdown>
+        <DropdownTrigger>
+          <Button
+            variant="secondary"
+            className="inline-flex shrink-0 items-baseline gap-0.5 px-1.5 py-0 text-2xs font-medium shadow-none bg-gray-50"
+          >
+            {label}
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="h-3 w-3 self-center text-zinc-400"
+            />
+          </Button>
+        </DropdownTrigger>
+        <DropdownPopover>
+          <DropdownMenu
+            selectable
+            selectedItems={[mode]}
+            onSelect={(key) => key && setMode(key as 'estimate' | 'exact')}
+            aria-label="Count mode"
+          >
+            <DropdownItem value="estimate">Estimates (sampled)</DropdownItem>
+            <DropdownItem value="exact">Exact counts</DropdownItem>
+          </DropdownMenu>
+        </DropdownPopover>
+      </Dropdown>
+    </div>
+  );
+}
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { OnboardingGuide, baseUrl } = useRestateContext();
@@ -326,19 +362,8 @@ function Component() {
               dimmed: hasStatusFilter(statusFilter),
             }}
             isSampled={isSampled}
+            leading={!isSummaryLoading ? <SampleModeToggle /> : undefined}
           />
-            <div className="mx-auto flex items-center gap-1 text-2xs text-zinc-500 h-4 -mb-4">
-          {isSampled && !isSummaryLoading &&  (
-            <>
-
-              <Icon
-                name={IconName.Info}
-                className="h-3 w-3 shrink-0 opacity-70"
-              />
-              <span>Counts are estimates based on a sample.</span>
-            </>
-          )}
-            </div>
         </div>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">

@@ -2,6 +2,7 @@ import {
   GridList as AriaGridList,
   GridListItem as AriaGridListItem,
 } from 'react-aria-components';
+import type { ReactNode } from 'react';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { formatNumber, formatApproxPercentage } from '@restate/util/intl';
@@ -87,6 +88,7 @@ export function StatusLegend({
   isDimmed,
   allItem,
   isSampled,
+  leading,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
@@ -109,6 +111,9 @@ export function StatusLegend({
   // of the in-scope total instead of raw numbers; the All chip is hidden
   // (it would always be 100%).
   isSampled?: boolean;
+  // Custom content rendered as the first legend cell — used by the
+  // invocations route to embed a count-mode toggle inline with the chips.
+  leading?: ReactNode;
 }) {
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
@@ -139,11 +144,15 @@ export function StatusLegend({
   const showAllItem = allItem && half !== 'second' && state === 'success';
 
   return (
-    <AriaGridList
-      aria-label="Invocation statuses"
-      className={legendStyles({ isLoading, orientation, class: className })}
-      layout="grid"
-    >
+    <div className={legendStyles({ isLoading, orientation, class: className })}>
+      {leading && (
+        <div className="flex items-center px-1.5 py-0.5">{leading}</div>
+      )}
+      <AriaGridList
+        aria-label="Invocation statuses"
+        className="contents"
+        layout="grid"
+      >
       {showAllItem && (
         <AriaGridListItem
           key="__all__"
@@ -263,6 +272,7 @@ export function StatusLegend({
           </AriaGridListItem>
         );
       })}
-    </AriaGridList>
+      </AriaGridList>
+    </div>
   );
 }
