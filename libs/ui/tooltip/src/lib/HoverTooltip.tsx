@@ -18,6 +18,7 @@ const styles = tv({
 });
 
 const SCROLL_SUPPRESS_MS = 700;
+const PRESS_SUPPRESS_MS = 700;
 let scrollSuppressUntil = 0;
 
 function markScrollSuppressed() {
@@ -52,6 +53,7 @@ export function HoverTooltip({
   const isPointerOverRef = useRef(false);
   const lastPointerPosRef = useRef<{ x: number; y: number } | null>(null);
   const reopenTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressSuppressUntilRef = useRef(0);
 
   const [isOpen, setIsOpen] = useState(false);
   const open = useCallback(() => {
@@ -115,6 +117,9 @@ export function HoverTooltip({
     if (disabled) {
       return false;
     }
+    if (Date.now() < pressSuppressUntilRef.current) {
+      return false;
+    }
     if (!suppressOnScroll) {
       return true;
     }
@@ -169,6 +174,12 @@ export function HoverTooltip({
     clearReopenTimeout();
   }, [clearReopenTimeout]);
 
+  const handlePointerDown = useCallback(() => {
+    pressSuppressUntilRef.current = Date.now() + PRESS_SUPPRESS_MS;
+    clearReopenTimeout();
+    close();
+  }, [clearReopenTimeout, close]);
+
   const tooltipTriggerRef = followCursor ? cursorAnchorRef : triggerRef;
 
   return (
@@ -181,6 +192,7 @@ export function HoverTooltip({
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onWheelCapture={handleWheelStart}
+          onPointerDown={handlePointerDown}
         >
           {children}
           {followCursor && (
