@@ -39,6 +39,22 @@ const ALL_TAB_ID = '__all__';
 const MULTI_TAB_ID = '__multi__';
 const MAX_VISIBLE_SERVICE_TABS = 5;
 
+function buildServiceTabSearchParams(
+  id: string,
+  current: URLSearchParams,
+): URLSearchParams {
+  const next = new URLSearchParams(current);
+  if (id === ALL_TAB_ID) {
+    next.delete('filter_target_service_name');
+  } else if (id !== MULTI_TAB_ID) {
+    next.set(
+      'filter_target_service_name',
+      JSON.stringify({ operation: 'IN', value: [id] }),
+    );
+  }
+  return next;
+}
+
 type SummaryData = NonNullable<
   ReturnType<typeof useSummaryInvocations>['data']
 >;
@@ -458,7 +474,7 @@ export function useServiceTabs(
   isLoading = false,
   isSampled = false,
 ): { tabs: ContentPanelTabs; byStatus: StatusEntry[] } {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
   const filterTargetServiceName = searchParams.get(
     'filter_target_service_name',
@@ -502,6 +518,21 @@ export function useServiceTabs(
     ],
   );
 
+  const itemsWithHref = useMemo(() => {
+    const pathname = `${baseUrl}/invocations`;
+    return items.map((item) => {
+      if (item.id === MULTI_TAB_ID) return item;
+      const queryString = buildServiceTabSearchParams(
+        item.id,
+        searchParams,
+      ).toString();
+      return {
+        ...item,
+        href: `${pathname}${queryString ? `?${queryString}` : ''}`,
+      };
+    });
+  }, [items, searchParams, baseUrl]);
+
   // Services represented by the active tab. The bar's status breakdown is
   // aggregated from this subset so the bar matches the table.
   const scopedServices =
@@ -524,30 +555,9 @@ export function useServiceTabs(
   return {
     byStatus,
     tabs: {
-      items,
+      items: itemsWithHref,
       maxVisible: MAX_VISIBLE_SERVICE_TABS,
       selectedId: activeTabId,
-      onSelect: (id) => {
-        // The synthetic multi tab represents the existing filter — clicking
-        // it shouldn't rewrite the URL. Any other id maps to a target_service
-        // filter; ALL_TAB_ID drops the key entirely.
-        if (id === MULTI_TAB_ID) return;
-        setSearchParams(
-          (p) => {
-            const next = new URLSearchParams(p);
-            if (id === ALL_TAB_ID) {
-              next.delete('filter_target_service_name');
-            } else {
-              next.set(
-                'filter_target_service_name',
-                JSON.stringify({ operation: 'IN', value: [id] }),
-              );
-            }
-            return next;
-          },
-          { preventScrollReset: true },
-        );
-      },
     },
   };
 }

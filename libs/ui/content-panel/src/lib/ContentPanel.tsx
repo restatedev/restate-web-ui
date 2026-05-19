@@ -19,7 +19,7 @@ import {
   Tabs as AriaTabs,
   composeRenderProps,
 } from 'react-aria-components';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { focusRing } from '@restate/ui/focus';
 import { tv } from '@restate/util/styles';
 import {
@@ -38,6 +38,7 @@ export interface ContentPanelTab {
   id: string;
   label: ReactNode;
   disabled?: boolean;
+  href?: string;
 }
 
 export interface ContentPanelTabs {
@@ -246,6 +247,7 @@ function Tabs({
   trailing,
 }: TabsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const disabledTabs = tabs.filter((tab) => tab.disabled).map((tab) => tab.id);
   const requestedTab = queryParam ? searchParams.get(queryParam) : null;
   const fallbackTab =
@@ -261,8 +263,35 @@ function Tabs({
       ? requestedTab
       : fallbackTab;
 
+  const hrefFor = useCallback(
+    (tabId: string): string | undefined => {
+      if (isControlled || !queryParam) return undefined;
+      const params = new URLSearchParams(searchParams);
+      if (tabId === fallbackTab) {
+        params.delete(queryParam);
+      } else {
+        params.set(queryParam, tabId);
+      }
+      const queryString = params.toString();
+      return (
+        location.pathname +
+        (queryString ? `?${queryString}` : '') +
+        location.hash
+      );
+    },
+    [
+      isControlled,
+      queryParam,
+      searchParams,
+      fallbackTab,
+      location.pathname,
+      location.hash,
+    ],
+  );
+
   const selectTab = useCallback(
     (next: string) => {
+      if (next === selectedTab) return;
       if (isControlled) {
         onSelect?.(next);
       } else if (queryParam) {
@@ -280,7 +309,14 @@ function Tabs({
         onSelect?.(next);
       }
     },
-    [isControlled, onSelect, queryParam, fallbackTab, setSearchParams],
+    [
+      selectedTab,
+      isControlled,
+      onSelect,
+      queryParam,
+      fallbackTab,
+      setSearchParams,
+    ],
   );
 
   // Split `tabs` into visible (rendered as actual tabs) and overflow (folded
@@ -407,11 +443,13 @@ function Tabs({
           <AriaTabList
             className={`${tabListClassName} h-full`}
             aria-label="Tabs"
+
           >
             {visibleTabs.map((tab) => (
               <AriaTab
                 key={tab.id}
                 id={tab.id}
+                href={tab.href ?? hrefFor(tab.id)}
                 isDisabled={tab.disabled}
                 className={composeRenderProps('', (className, renderProps) =>
                   tabStyles({ ...renderProps, className }),
@@ -467,15 +505,26 @@ function Tabs({
           </DropdownTrigger>
           <DropdownPopover>
             <DropdownMenu onSelect={(key) => selectTab(String(key))}>
-              {overflowTabs.map((tab) => (
-                <DropdownItem
-                  key={tab.id}
-                  value={tab.id}
-                  isDisabled={tab.disabled}
-                >
-                  {tab.label}
-                </DropdownItem>
-              ))}
+              {overflowTabs.map((tab) => {
+                const href = tab.href ?? hrefFor(tab.id);
+                return href ? (
+                  <DropdownItem
+                    key={tab.id}
+                    href={href}
+                    isDisabled={tab.disabled}
+                  >
+                    {tab.label}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    key={tab.id}
+                    value={tab.id}
+                    isDisabled={tab.disabled}
+                  >
+                    {tab.label}
+                  </DropdownItem>
+                );
+              })}
             </DropdownMenu>
           </DropdownPopover>
         </Dropdown>
