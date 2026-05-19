@@ -13,7 +13,7 @@ import {
 } from '@restate/ui/issue-banner';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatNumber } from '@restate/util/intl';
+import { formatNumber, formatApproxPercentage } from '@restate/util/intl';
 import {
   toServiceInvocationsHref,
   toServiceStatusInvocationsHref,
@@ -198,15 +198,21 @@ function aggregateBreakdown(services: ServiceRow[]) {
 
 // Renders a tab count badge. Shows "filtered/total" when a status filter is
 // active and shrinks the visible count; "total" otherwise. When total is 0,
-// always shows just "0" (per UX: no "0/0").
+// always shows just "0" (per UX: no "0/0"). When sampled, switches to a
+// percentage of the in-scope grand total (e.g., the service's share); the
+// grand-total badge collapses since it would always be 100%.
 function TabCountBadge({
   total,
   filtered,
   isLoading,
+  isSampled,
+  grandTotal,
 }: {
   total: number;
   filtered: number;
   isLoading?: boolean;
+  isSampled?: boolean;
+  grandTotal?: number;
 }) {
   if (isLoading) {
     return (
@@ -214,6 +220,17 @@ function TabCountBadge({
     );
   }
   const showFiltered = filtered !== total && total > 0;
+  if (isSampled) {
+    const denom = grandTotal ?? 0;
+    if (denom <= 0) return null;
+    const numerator = showFiltered ? filtered : total;
+    if (numerator === denom) return null;
+    return (
+      <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
+        {formatApproxPercentage(numerator / denom)}
+      </span>
+    );
+  }
   return (
     <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
       {formatNumber(showFiltered ? filtered : total, true)}
@@ -237,6 +254,8 @@ function buildSummaryTab(
   scopeParams: URLSearchParams,
   isStatusDimmed: (statusName: string) => boolean,
   isLoading: boolean,
+  isSampled: boolean,
+  grandTotal: number,
 ): { id: string; label: ReactNode } {
   const total = subset.reduce((sum, s) => sum + s.count, 0);
   const filtered = subset.reduce((sum, s) => sum + s.filteredCount, 0);
@@ -266,6 +285,7 @@ function buildSummaryTab(
             getStatusLink={getStatusLink}
             issuesByStatus={issuesByStatus}
             isStatusDimmed={isStatusDimmed}
+            isSampled={isSampled}
           />
         }
         size="lg"
@@ -276,6 +296,8 @@ function buildSummaryTab(
             total={total}
             filtered={filtered}
             isLoading={isLoading}
+            isSampled={isSampled}
+            grandTotal={grandTotal}
           />
         </span>
       </HoverTooltip>
@@ -290,7 +312,9 @@ function buildServiceTabItems(
   existingParams: URLSearchParams,
   isStatusDimmed: (statusName: string) => boolean,
   isLoading: boolean,
+  isSampled: boolean,
 ): { id: string; label: ReactNode }[] {
+  const grandTotal = services.reduce((sum, s) => sum + s.count, 0);
   // "All" scope drops target_service_name. Both totalLink and per-status
   // links inherit this, so clicking either navigates to the unfiltered view
   // (with the chosen status if a row was clicked).
@@ -304,6 +328,8 @@ function buildServiceTabItems(
     allParams,
     isStatusDimmed,
     isLoading,
+    isSampled,
+    grandTotal,
   );
 
   // Multi tab inherits the current filter shape (multi-IN or NOT_IN service
@@ -318,6 +344,8 @@ function buildServiceTabItems(
         existingParams,
         isStatusDimmed,
         isLoading,
+        isSampled,
+        grandTotal,
       )
     : undefined;
   const items = services.map((s) => {
@@ -366,6 +394,7 @@ function buildServiceTabItems(
               }
               issuesByStatus={issuesByStatus}
               isStatusDimmed={isStatusDimmed}
+              isSampled={isSampled}
             />
           }
           size="lg"
@@ -386,6 +415,8 @@ function buildServiceTabItems(
               total={s.count}
               filtered={s.filteredCount}
               isLoading={isLoading}
+              isSampled={isSampled}
+              grandTotal={grandTotal}
             />
             {topSeverity && (
               <span className="relative flex h-3 w-3 shrink-0">
@@ -425,6 +456,7 @@ export function useServiceTabs(
   deploymentsData: DeploymentsData | undefined,
   statusFilter: StatusFilter,
   isLoading = false,
+  isSampled = false,
 ): { tabs: ContentPanelTabs; byStatus: StatusEntry[] } {
   const [searchParams, setSearchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
@@ -454,11 +486,20 @@ export function useServiceTabs(
         searchParams,
         isStatusDimmed,
         isLoading,
+        isSampled,
       ),
     // isStatusDimmed depends only on statusFilter; including the function ref
     // itself would invalidate every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [services, multiTab, baseUrl, searchParams, statusFilter, isLoading],
+    [
+      services,
+      multiTab,
+      baseUrl,
+      searchParams,
+      statusFilter,
+      isLoading,
+      isSampled,
+    ],
   );
 
   // Services represented by the active tab. The bar's status breakdown is

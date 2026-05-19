@@ -3,6 +3,7 @@ import {
   formatNumber,
   formatPlurals,
   formatPercentageWithoutFraction,
+  formatApproxPercentage,
 } from '@restate/util/intl';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -46,6 +47,7 @@ export function InvocationsBreakdownTooltipContent({
   getStatusLink,
   issuesByStatus,
   isStatusDimmed,
+  isSampled,
 }: {
   title: ReactNode;
   // Total in the current scope (denominator for percentages). When a status
@@ -60,8 +62,15 @@ export function InvocationsBreakdownTooltipContent({
   // Fade rows whose status doesn't pass the current status filter — mirrors
   // the bar's dimming so the tooltip stays in sync.
   isStatusDimmed?: (statusName: string) => boolean;
+  // Counts come from a sampled summary — render percentages instead of raw
+  // numbers and label the totals row as a sample-based estimate.
+  isSampled?: boolean;
 }) {
   const showFiltered = filteredTotal !== undefined && filteredTotal !== total;
+  const filteredShare =
+    showFiltered && total > 0
+      ? formatApproxPercentage(filteredTotal / total)
+      : null;
   return (
     <div className="flex flex-col">
       <div className="mb-2">
@@ -71,31 +80,57 @@ export function InvocationsBreakdownTooltipContent({
           variant="secondary"
           className="-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none hover:bg-white/10"
         >
-          <span className="!text-xl !text-gray-50">
-            {formatNumber(showFiltered ? filteredTotal : total, true)}
-          </span>
-          {showFiltered && (
-            <span className="!text-sm !text-gray-500">
-              /{formatNumber(total, true)}
-            </span>
+          {isSampled ? (
+            total === 0 ? (
+              <>
+                <span className="!text-xl !text-gray-50">No</span>
+                <span className="!text-sm !text-gray-400">invocations</span>
+              </>
+            ) : (
+              <>
+                <span className="!text-xl !text-gray-50">
+                  {filteredShare ?? 'All'}
+                </span>
+                <span className="!text-sm !text-gray-400">
+                  {filteredShare ? 'of invocations' : 'invocations'}
+                </span>
+              </>
+            )
+          ) : (
+            <>
+              <span className="!text-xl !text-gray-50">
+                {formatNumber(showFiltered ? filteredTotal : total, true)}
+              </span>
+              {showFiltered && (
+                <span className="!text-sm !text-gray-500">
+                  /{formatNumber(total, true)}
+                </span>
+              )}
+              <span className="!text-sm !text-gray-400">
+                {formatPlurals(showFiltered ? filteredTotal : total, {
+                  one: 'invocation',
+                  other: 'invocations',
+                })}
+              </span>
+            </>
           )}
-          <span className="!text-sm !text-gray-400">
-            {formatPlurals(showFiltered ? filteredTotal : total, {
-              one: 'invocation',
-              other: 'invocations',
-            })}
-          </span>
           <Icon
             name={IconName.ChevronRight}
             className="ml-auto h-3.5 w-3.5 shrink-0 !text-zinc-500"
           />
         </Link>
       </div>
-      <div className="-mx-3 border-t border-white/10" />
-      <div className="mt-2 flex flex-col">
+      {statuses.length > 0 && (
+        <div className="-mx-3 border-t border-white/10" />
+      )}
+      <div className="mt-2 flex flex-col empty:mt-0">
         {statuses.map((s) => {
           const severity = issuesByStatus?.get(s.name);
           const dimmed = isStatusDimmed?.(s.name) ?? false;
+          const percentage =
+            total > 0
+              ? formatPercentageWithoutFraction(s.count / total)
+              : '0%';
           return (
             <Link
               key={s.name}
@@ -122,12 +157,20 @@ export function InvocationsBreakdownTooltipContent({
                   />
                 )}
               </span>
-              <span className="!text-0.5xs font-semibold !text-gray-100 tabular-nums">
-                {formatNumber(s.count, true)}
-              </span>
-              <span className="!text-0.5xs font-medium !text-gray-300">
-                ({formatPercentageWithoutFraction(s.count / total)})
-              </span>
+              {isSampled ? (
+                <span className="!text-0.5xs font-semibold !text-gray-100 tabular-nums">
+                  {formatApproxPercentage(s.count / total)}
+                </span>
+              ) : (
+                <>
+                  <span className="!text-0.5xs font-semibold !text-gray-100 tabular-nums">
+                    {formatNumber(s.count, true)}
+                  </span>
+                  <span className="!text-0.5xs font-medium !text-gray-300">
+                    ({percentage})
+                  </span>
+                </>
+              )}
               <Icon
                 name={IconName.ChevronRight}
                 className="h-3 w-3 shrink-0 !text-zinc-500"
@@ -136,6 +179,14 @@ export function InvocationsBreakdownTooltipContent({
           );
         })}
       </div>
+      {isSampled && statuses.length > 0 && (
+        <div className="-mx-3 mt-2 border-t border-white/10" />
+      )}
+      {isSampled && (
+        <div className="mt-2 !text-2xs !text-gray-400">
+          Estimated from a sample.
+        </div>
+      )}
     </div>
   );
 }

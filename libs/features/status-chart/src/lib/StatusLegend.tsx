@@ -4,7 +4,7 @@ import {
 } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatNumber } from '@restate/util/intl';
+import { formatNumber, formatApproxPercentage } from '@restate/util/intl';
 import { toInvocationsHref } from '@restate/util/invocation-links';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
@@ -86,6 +86,7 @@ export function StatusLegend({
   className,
   isDimmed,
   allItem,
+  isSampled,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
@@ -104,6 +105,10 @@ export function StatusLegend({
   // status filter (caller builds the href). Dimmed alongside non-matching
   // status rows whenever any status filter is active.
   allItem?: { count: number; href: string; dimmed: boolean };
+  // Counts are estimates from a sampled summary — chips render percentages
+  // of the in-scope total instead of raw numbers; the All chip is hidden
+  // (it would always be 100%).
+  isSampled?: boolean;
 }) {
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
@@ -111,9 +116,17 @@ export function StatusLegend({
   // height stay constant regardless of how many statuses are present in the
   // data. Counts are looked up from byStatus; missing entries render as 0.
   const countByStatus = new Map<string, number>();
+  let total = 0;
   for (const entry of byStatus) {
-    if (entry.count > 0) countByStatus.set(entry.name, entry.count);
+    if (entry.count > 0) {
+      countByStatus.set(entry.name, entry.count);
+      total += entry.count;
+    }
   }
+  const formatChip = (count: number) =>
+    isSampled && total > 0
+      ? formatApproxPercentage(count / total)
+      : formatNumber(count, true);
   const mid = Math.ceil(ALL_STATUSES.length / 2);
   const displayItems =
     half === 'first'
@@ -135,7 +148,9 @@ export function StatusLegend({
         <AriaGridListItem
           key="__all__"
           id="__all__"
-          textValue={`All ${allItem.count}`}
+          textValue={
+            isSampled ? 'All (sampled)' : `All ${allItem.count}`
+          }
           href={allItem.href}
           className={legendItemStyles({
             state: 'success',
@@ -148,9 +163,11 @@ export function StatusLegend({
           })}
         >
           <span className="text-xs text-gray-600">All</span>
-          <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-            {formatNumber(allItem.count, true)}
-          </span>
+          {!isSampled && (
+            <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+              {formatNumber(allItem.count, true)}
+            </span>
+          )}
           <Icon
             name={IconName.ChevronRight}
             className="h-3.5 w-3.5 shrink-0 text-gray-400"
@@ -181,7 +198,7 @@ export function StatusLegend({
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
               <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
-                {formatNumber(count, true)}
+                {formatChip(count)}
               </span>
               <Icon
                 name={IconName.ChevronRight}
@@ -201,7 +218,7 @@ export function StatusLegend({
             textValue={
               isError
                 ? (STATUS_LABELS[s.name] ?? s.name)
-                : `${STATUS_LABELS[s.name] ?? s.name} ${count}`
+                : `${STATUS_LABELS[s.name] ?? s.name} ${formatChip(count)}`
             }
             href={
               isError
@@ -234,7 +251,7 @@ export function StatusLegend({
             </span>
             {!isError && (
               <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-                {formatNumber(count, true)}
+                {formatChip(count)}
               </span>
             )}
             {!isError && (
