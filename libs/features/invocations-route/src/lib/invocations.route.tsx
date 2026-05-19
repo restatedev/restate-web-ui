@@ -129,7 +129,7 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 const PAGE_SIZE = 30;
-const SAMPLE_SIZE = 50000;
+const SAMPLE_SIZE = 200_000;
 
 function SampleModeToggle({
   mode,
