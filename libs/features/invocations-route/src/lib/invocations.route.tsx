@@ -146,7 +146,7 @@ function SampleModeToggle({
         <DropdownTrigger>
           <Button
             variant="secondary"
-            className="inline-flex shrink-0 items-baseline gap-0.5 px-1.5 py-0 text-2xs font-medium shadow-none bg-gray-50"
+            className="inline-flex shrink-0 items-baseline gap-0.5 bg-gray-50 px-1.5 py-0 text-2xs font-medium shadow-none"
           >
             {label}
             <Icon

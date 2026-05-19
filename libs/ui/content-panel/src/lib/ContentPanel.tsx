@@ -91,7 +91,7 @@ const styles = tv({
 
 const tabStyles = tv({
   extend: focusRing,
-  base: 'select-none group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:bg-gray-200/70 hover:text-zinc-700 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] [&_svg]:fill-zinc-100 [&_svg]:transition hover:[&_svg]:fill-zinc-200 selected:[&_svg]:fill-zinc-100',
+  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none select-none [-webkit-tap-highlight-color:transparent] hover:bg-gray-200/70 hover:text-zinc-700 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] [&_svg]:fill-zinc-100 [&_svg]:transition hover:[&_svg]:fill-zinc-200 selected:[&_svg]:fill-zinc-100',
   variants: {
     isDisabled: {
       true: 'text-zinc-400',
@@ -443,7 +443,6 @@ function Tabs({
           <AriaTabList
             className={`${tabListClassName} h-full`}
             aria-label="Tabs"
-
           >
             {visibleTabs.map((tab) => (
               <AriaTab

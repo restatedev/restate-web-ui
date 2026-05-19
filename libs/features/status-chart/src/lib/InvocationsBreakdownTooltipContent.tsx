@@ -128,9 +128,7 @@ export function InvocationsBreakdownTooltipContent({
           const severity = issuesByStatus?.get(s.name);
           const dimmed = isStatusDimmed?.(s.name) ?? false;
           const percentage =
-            total > 0
-              ? formatPercentageWithoutFraction(s.count / total)
-              : '0%';
+            total > 0 ? formatPercentageWithoutFraction(s.count / total) : '0%';
           return (
             <Link
               key={s.name}

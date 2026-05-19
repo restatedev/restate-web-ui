@@ -153,125 +153,124 @@ export function StatusLegend({
         className="contents"
         layout="grid"
       >
-      {showAllItem && (
-        <AriaGridListItem
-          key="__all__"
-          id="__all__"
-          textValue={
-            isSampled ? 'All (sampled)' : `All ${allItem.count}`
+        {showAllItem && (
+          <AriaGridListItem
+            key="__all__"
+            id="__all__"
+            textValue={isSampled ? 'All (sampled)' : `All ${allItem.count}`}
+            href={allItem.href}
+            className={legendItemStyles({
+              state: 'success',
+              appearance:
+                allItem.count === 0
+                  ? 'faded'
+                  : allItem.dimmed
+                    ? 'dimmed'
+                    : 'normal',
+            })}
+          >
+            <span className="text-xs text-gray-600">All</span>
+            {!isSampled && (
+              <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                {formatNumber(allItem.count, true)}
+              </span>
+            )}
+            <Icon
+              name={IconName.ChevronRight}
+              className="h-3.5 w-3.5 shrink-0 text-gray-400"
+            />
+          </AriaGridListItem>
+        )}
+        {displayItems.map((s) => {
+          const count = countByStatus.get(s.name) ?? 0;
+          const dimmed = isDimmed?.(s.name) ?? false;
+          const borderType = s.borderType ? 'dashed' : 'solid';
+          const appearance =
+            count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
+          if (state === 'loading') {
+            return (
+              <AriaGridListItem
+                key={s.name}
+                id={s.name}
+                textValue={STATUS_LABELS[s.name] ?? s.name}
+                className={legendItemStyles({ state: 'loading', appearance })}
+              >
+                <div
+                  className={bulletStyles({ state: 'loading', borderType })}
+                  style={{
+                    backgroundColor: s.fillLight,
+                    borderColor: s.stroke,
+                  }}
+                />
+                <span className="text-xs text-gray-400">
+                  {STATUS_LABELS[s.name] ?? s.name}
+                </span>
+                <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
+                  {formatChip(count)}
+                </span>
+                <Icon
+                  name={IconName.ChevronRight}
+                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                />
+              </AriaGridListItem>
+            );
           }
-          href={allItem.href}
-          className={legendItemStyles({
-            state: 'success',
-            appearance:
-              allItem.count === 0
-                ? 'faded'
-                : allItem.dimmed
-                  ? 'dimmed'
-                  : 'normal',
-          })}
-        >
-          <span className="text-xs text-gray-600">All</span>
-          {!isSampled && (
-            <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-              {formatNumber(allItem.count, true)}
-            </span>
-          )}
-          <Icon
-            name={IconName.ChevronRight}
-            className="h-3.5 w-3.5 shrink-0 text-gray-400"
-          />
-        </AriaGridListItem>
-      )}
-      {displayItems.map((s) => {
-        const count = countByStatus.get(s.name) ?? 0;
-        const dimmed = isDimmed?.(s.name) ?? false;
-        const borderType = s.borderType ? 'dashed' : 'solid';
-        const appearance = count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
-        if (state === 'loading') {
+          // success or error — render the same skeleton so layout stays
+          // constant. For error we drop the count chip (we don't have data),
+          // but keep the bullet + label so wrap behavior matches.
+          const isError = state === 'error';
           return (
             <AriaGridListItem
               key={s.name}
               id={s.name}
-              textValue={STATUS_LABELS[s.name] ?? s.name}
-              className={legendItemStyles({ state: 'loading', appearance })}
+              textValue={
+                isError
+                  ? (STATUS_LABELS[s.name] ?? s.name)
+                  : `${STATUS_LABELS[s.name] ?? s.name} ${formatChip(count)}`
+              }
+              href={
+                isError
+                  ? undefined
+                  : toInvocationsHref(baseUrl, s.name, {
+                      existingParams: linkParams,
+                    })
+              }
+              className={legendItemStyles({
+                state: isError ? 'error' : 'success',
+                appearance,
+              })}
             >
               <div
-                className={bulletStyles({ state: 'loading', borderType })}
+                className={bulletStyles({
+                  state: isError ? 'error' : 'success',
+                  borderType,
+                })}
                 style={{
                   backgroundColor: s.fillLight,
                   borderColor: s.stroke,
                 }}
               />
-              <span className="text-xs text-gray-400">
+              <span
+                className={
+                  isError ? 'text-xs text-gray-400' : 'text-xs text-gray-600'
+                }
+              >
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
-              <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
-                {formatChip(count)}
-              </span>
-              <Icon
-                name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-gray-400"
-              />
+              {!isError && (
+                <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                  {formatChip(count)}
+                </span>
+              )}
+              {!isError && (
+                <Icon
+                  name={IconName.ChevronRight}
+                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                />
+              )}
             </AriaGridListItem>
           );
-        }
-        // success or error — render the same skeleton so layout stays
-        // constant. For error we drop the count chip (we don't have data),
-        // but keep the bullet + label so wrap behavior matches.
-        const isError = state === 'error';
-        return (
-          <AriaGridListItem
-            key={s.name}
-            id={s.name}
-            textValue={
-              isError
-                ? (STATUS_LABELS[s.name] ?? s.name)
-                : `${STATUS_LABELS[s.name] ?? s.name} ${formatChip(count)}`
-            }
-            href={
-              isError
-                ? undefined
-                : toInvocationsHref(baseUrl, s.name, {
-                    existingParams: linkParams,
-                  })
-            }
-            className={legendItemStyles({
-              state: isError ? 'error' : 'success',
-              appearance,
-            })}
-          >
-            <div
-              className={bulletStyles({
-                state: isError ? 'error' : 'success',
-                borderType,
-              })}
-              style={{
-                backgroundColor: s.fillLight,
-                borderColor: s.stroke,
-              }}
-            />
-            <span
-              className={
-                isError ? 'text-xs text-gray-400' : 'text-xs text-gray-600'
-              }
-            >
-              {STATUS_LABELS[s.name] ?? s.name}
-            </span>
-            {!isError && (
-              <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-                {formatChip(count)}
-              </span>
-            )}
-            {!isError && (
-              <Icon
-                name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-gray-400"
-              />
-            )}
-          </AriaGridListItem>
-        );
-      })}
+        })}
       </AriaGridList>
     </div>
   );
