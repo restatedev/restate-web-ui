@@ -1,5 +1,5 @@
 import { hexToBase64 } from '@restate/util/binary';
-import type { QueryContext } from './shared';
+import { scopeClause, type QueryContext } from './shared';
 
 export interface ListStateItem {
   key: string;
@@ -31,7 +31,7 @@ async function listStateByKeys(
   const query = `SELECT service_key, key, value
     FROM state WHERE service_name = '${service}' AND service_key IN (${keys
       .map((key) => `'${key}'`)
-      .join(', ')})`;
+      .join(', ')})${scopeClause(this)}`;
 
   const objects = await this.query(query).then(({ rows }) => {
     const groups = new Map<

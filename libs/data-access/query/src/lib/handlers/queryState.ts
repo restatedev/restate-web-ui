@@ -1,6 +1,6 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { convertFilters } from '../convertFilters';
-import type { QueryContext } from './shared';
+import { shouldFilterScopeIsNull, type QueryContext } from './shared';
 
 export async function queryState(
   this: QueryContext,
@@ -9,6 +9,7 @@ export async function queryState(
 ) {
   const { systemFilters = [], stateFilter } = args;
 
+  const hasScopeFilter = systemFilters.some((f) => f.field === 'scope');
   const filtersWithService: FilterItem[] = [
     {
       field: 'service_name',
@@ -16,6 +17,9 @@ export async function queryState(
       value: service,
       type: 'STRING',
     },
+    ...(!hasScopeFilter && shouldFilterScopeIsNull(this)
+      ? ([{ field: 'scope', operation: 'IS', type: 'NULL' }] as FilterItem[])
+      : []),
     ...systemFilters,
     ...(stateFilter
       ? ([

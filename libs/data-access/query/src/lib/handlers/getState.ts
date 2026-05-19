@@ -1,6 +1,6 @@
 import { hexToBase64 } from '@restate/util/binary';
 import { stateVersion } from '../stateVersion';
-import type { QueryContext } from './shared';
+import { scopeClause, type QueryContext } from './shared';
 
 export async function getState(
   this: QueryContext,
@@ -8,9 +8,8 @@ export async function getState(
   key: string,
   scope?: string,
 ) {
-  const scopeClause = scope !== undefined ? ` AND scope = '${scope}'` : '';
   const state: { name: string; value: string }[] = await this.query(
-    `SELECT key, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'${scopeClause}`,
+    `SELECT key, value FROM state WHERE service_name = '${service}' AND service_key = '${key}'${scopeClause(this, scope)}`,
   ).then(({ rows }) =>
     rows.map((row) => ({
       name: row.key,
