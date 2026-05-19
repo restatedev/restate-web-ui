@@ -17,7 +17,13 @@ import {
   setDefaultColumns,
   useColumns,
 } from './columns';
-import { getUserAddedCols, getUserLastSort } from './userPreferences';
+import {
+  getUserAddedCols,
+  getUserCountMode,
+  getUserLastSort,
+  setUserCountMode,
+  type CountMode,
+} from './userPreferences';
 import {
   getInvocationsLastQuery,
   matchesAnyInvocationPreset,
@@ -60,6 +66,7 @@ import {
   redirect,
   ShouldRevalidateFunctionArgs,
   useHref,
+  useLoaderData,
   useNavigate,
   useSearchParams,
 } from 'react-router';
@@ -124,8 +131,13 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 const PAGE_SIZE = 30;
 const SAMPLE_SIZE = 50000;
 
-function SampleModeToggle() {
-  const [mode, setMode] = useState<'estimate' | 'exact'>('estimate');
+function SampleModeToggle({
+  mode,
+  onChange,
+}: {
+  mode: CountMode;
+  onChange: (mode: CountMode) => void;
+}) {
   const label = mode === 'estimate' ? 'estimates' : 'exact counts';
   return (
     <div className="inline-flex items-baseline gap-1 text-2xs text-zinc-500">
@@ -147,7 +159,7 @@ function SampleModeToggle() {
           <DropdownMenu
             selectable
             selectedItems={[mode]}
-            onSelect={(key) => key && setMode(key as 'estimate' | 'exact')}
+            onSelect={(key) => key && onChange(key as CountMode)}
             aria-label="Count mode"
           >
             <DropdownItem value="estimate">Estimates (sampled)</DropdownItem>
@@ -184,17 +196,27 @@ function Component() {
   );
   const resetPageIndex = useCallback(() => setPageIndex(0), [setPageIndex]);
 
+  const loaderData = useLoaderData<typeof clientLoader>();
+  const [countMode, setCountModeState] = useState<CountMode>(
+    loaderData?.countMode ?? 'estimate',
+  );
+  const setCountMode = useCallback((mode: CountMode) => {
+    setUserCountMode(mode);
+    setCountModeState(mode);
+  }, []);
+  const wantsSampled = countMode === 'estimate';
+
   const {
     data: summaryData,
     isPending: isSummaryPending,
     isPlaceholderData: isSummaryPlaceholder,
     isFetching: isSummaryFetching,
   } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
-    sampled: true,
-    sampleSize: SAMPLE_SIZE,
+    sampled: wantsSampled,
+    sampleSize: wantsSampled ? SAMPLE_SIZE : undefined,
   });
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
-  const isSampled = summaryData?.isEstimate ?? false;
+  const isSampled = wantsSampled;
   const { data: deploymentsData } = useListDeployments();
 
   const statusFilter = useMemo(() => {
@@ -362,7 +384,11 @@ function Component() {
               dimmed: hasStatusFilter(statusFilter),
             }}
             isSampled={isSampled}
-            leading={!isSummaryLoading ? <SampleModeToggle /> : undefined}
+            leading={
+              !isSummaryLoading ? (
+                <SampleModeToggle mode={countMode} onChange={setCountMode} />
+              ) : undefined
+            }
           />
         </div>
         <ContentPanel tabs={serviceTabs}>
@@ -931,7 +957,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
 
   params.sort();
   if (params.toString() === originalSearch) {
-    return;
+    return { countMode: getUserCountMode() };
   }
   return redirect(`?${params.toString()}`);
 };
