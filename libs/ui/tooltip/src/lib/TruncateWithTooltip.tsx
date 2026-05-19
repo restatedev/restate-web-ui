@@ -53,6 +53,7 @@ export function TruncateWithTooltip({
   hideCopy,
   size = 'sm',
   className,
+  alwaysShow,
 }: PropsWithChildren<{
   copyText?: string;
   triggerRef?: RefObject<HTMLElement | null>;
@@ -60,6 +61,10 @@ export function TruncateWithTooltip({
   hideCopy?: boolean;
   size?: ComponentProps<typeof TooltipContent>['size'];
   className?: string;
+  // Bypass the truncation check and always open on hover. Use when the
+  // visible text is already shortened by the caller (so the CSS clip never
+  // fires) but the tooltip should still appear.
+  alwaysShow?: boolean;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
@@ -73,6 +78,7 @@ export function TruncateWithTooltip({
   }, []);
 
   const shouldDisplayTooltip = useCallback(() => {
+    if (alwaysShow) return true;
     const triggers = containerRef.current?.querySelectorAll(
       '[data-truncate-tooltip=true]',
     );
@@ -85,7 +91,7 @@ export function TruncateWithTooltip({
       });
     }
     return false;
-  }, []);
+  }, [alwaysShow]);
 
   useTooltipWithHover({
     shouldDisplayTooltip,
