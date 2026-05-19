@@ -25,7 +25,7 @@ export const legendStyles = tv({
     },
     orientation: {
       horizontal:
-        'max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
+        'mx-auto max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
       vertical: 'flex-col gap-0.5',
     },
   },
