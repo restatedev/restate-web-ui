@@ -2,9 +2,10 @@ import {
   GridList as AriaGridList,
   GridListItem as AriaGridListItem,
 } from 'react-aria-components';
+import type { ReactNode } from 'react';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatNumber } from '@restate/util/intl';
+import { formatNumber, formatApproxPercentage } from '@restate/util/intl';
 import { toInvocationsHref } from '@restate/util/invocation-links';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
@@ -24,7 +25,7 @@ export const legendStyles = tv({
     },
     orientation: {
       horizontal:
-        'max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
+        'mx-auto max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
       vertical: 'flex-col gap-0.5',
     },
   },
@@ -86,6 +87,8 @@ export function StatusLegend({
   className,
   isDimmed,
   allItem,
+  isSampled,
+  leading,
 }: {
   byStatus: StatusEntry[];
   isLoading?: boolean;
@@ -104,6 +107,13 @@ export function StatusLegend({
   // status filter (caller builds the href). Dimmed alongside non-matching
   // status rows whenever any status filter is active.
   allItem?: { count: number; href: string; dimmed: boolean };
+  // Counts are estimates from a sampled summary — chips render percentages
+  // of the in-scope total instead of raw numbers; the All chip is hidden
+  // (it would always be 100%).
+  isSampled?: boolean;
+  // Custom content rendered as the first legend cell — used by the
+  // invocations route to embed a count-mode toggle inline with the chips.
+  leading?: ReactNode;
 }) {
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
@@ -111,9 +121,17 @@ export function StatusLegend({
   // height stay constant regardless of how many statuses are present in the
   // data. Counts are looked up from byStatus; missing entries render as 0.
   const countByStatus = new Map<string, number>();
+  let total = 0;
   for (const entry of byStatus) {
-    if (entry.count > 0) countByStatus.set(entry.name, entry.count);
+    if (entry.count > 0) {
+      countByStatus.set(entry.name, entry.count);
+      total += entry.count;
+    }
   }
+  const formatChip = (count: number) =>
+    isSampled && total > 0
+      ? formatApproxPercentage(count / total)
+      : formatNumber(count, true);
   const mid = Math.ceil(ALL_STATUSES.length / 2);
   const displayItems =
     half === 'first'
@@ -126,126 +144,134 @@ export function StatusLegend({
   const showAllItem = allItem && half !== 'second' && state === 'success';
 
   return (
-    <AriaGridList
-      aria-label="Invocation statuses"
-      className={legendStyles({ isLoading, orientation, class: className })}
-      layout="grid"
-    >
-      {showAllItem && (
-        <AriaGridListItem
-          key="__all__"
-          id="__all__"
-          textValue={`All ${allItem.count}`}
-          href={allItem.href}
-          className={legendItemStyles({
-            state: 'success',
-            appearance:
-              allItem.count === 0
-                ? 'faded'
-                : allItem.dimmed
-                  ? 'dimmed'
-                  : 'normal',
-          })}
-        >
-          <span className="text-xs text-gray-600">All</span>
-          <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-            {formatNumber(allItem.count, true)}
-          </span>
-          <Icon
-            name={IconName.ChevronRight}
-            className="h-3.5 w-3.5 shrink-0 text-gray-400"
-          />
-        </AriaGridListItem>
+    <div className={legendStyles({ isLoading, orientation, class: className })}>
+      {leading && (
+        <div className="flex items-center px-1.5 py-0.5">{leading}</div>
       )}
-      {displayItems.map((s) => {
-        const count = countByStatus.get(s.name) ?? 0;
-        const dimmed = isDimmed?.(s.name) ?? false;
-        const borderType = s.borderType ? 'dashed' : 'solid';
-        const appearance = count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
-        if (state === 'loading') {
+      <AriaGridList
+        aria-label="Invocation statuses"
+        className="contents"
+        layout="grid"
+      >
+        {showAllItem && (
+          <AriaGridListItem
+            key="__all__"
+            id="__all__"
+            textValue={isSampled ? 'All (sampled)' : `All ${allItem.count}`}
+            href={allItem.href}
+            className={legendItemStyles({
+              state: 'success',
+              appearance:
+                allItem.count === 0
+                  ? 'faded'
+                  : allItem.dimmed
+                    ? 'dimmed'
+                    : 'normal',
+            })}
+          >
+            <span className="text-xs text-gray-600">All</span>
+            {!isSampled && (
+              <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                {formatNumber(allItem.count, true)}
+              </span>
+            )}
+            <Icon
+              name={IconName.ChevronRight}
+              className="h-3.5 w-3.5 shrink-0 text-gray-400"
+            />
+          </AriaGridListItem>
+        )}
+        {displayItems.map((s) => {
+          const count = countByStatus.get(s.name) ?? 0;
+          const dimmed = isDimmed?.(s.name) ?? false;
+          const borderType = s.borderType ? 'dashed' : 'solid';
+          const appearance =
+            count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
+          if (state === 'loading') {
+            return (
+              <AriaGridListItem
+                key={s.name}
+                id={s.name}
+                textValue={STATUS_LABELS[s.name] ?? s.name}
+                className={legendItemStyles({ state: 'loading', appearance })}
+              >
+                <div
+                  className={bulletStyles({ state: 'loading', borderType })}
+                  style={{
+                    backgroundColor: s.fillLight,
+                    borderColor: s.stroke,
+                  }}
+                />
+                <span className="text-xs text-gray-400">
+                  {STATUS_LABELS[s.name] ?? s.name}
+                </span>
+                <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
+                  {formatChip(count)}
+                </span>
+                <Icon
+                  name={IconName.ChevronRight}
+                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                />
+              </AriaGridListItem>
+            );
+          }
+          // success or error — render the same skeleton so layout stays
+          // constant. For error we drop the count chip (we don't have data),
+          // but keep the bullet + label so wrap behavior matches.
+          const isError = state === 'error';
           return (
             <AriaGridListItem
               key={s.name}
               id={s.name}
-              textValue={STATUS_LABELS[s.name] ?? s.name}
-              className={legendItemStyles({ state: 'loading', appearance })}
+              textValue={
+                isError
+                  ? (STATUS_LABELS[s.name] ?? s.name)
+                  : `${STATUS_LABELS[s.name] ?? s.name} ${formatChip(count)}`
+              }
+              href={
+                isError
+                  ? undefined
+                  : toInvocationsHref(baseUrl, s.name, {
+                      existingParams: linkParams,
+                    })
+              }
+              className={legendItemStyles({
+                state: isError ? 'error' : 'success',
+                appearance,
+              })}
             >
               <div
-                className={bulletStyles({ state: 'loading', borderType })}
+                className={bulletStyles({
+                  state: isError ? 'error' : 'success',
+                  borderType,
+                })}
                 style={{
                   backgroundColor: s.fillLight,
                   borderColor: s.stroke,
                 }}
               />
-              <span className="text-xs text-gray-400">
+              <span
+                className={
+                  isError ? 'text-xs text-gray-400' : 'text-xs text-gray-600'
+                }
+              >
                 {STATUS_LABELS[s.name] ?? s.name}
               </span>
-              <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
-                {formatNumber(count, true)}
-              </span>
-              <Icon
-                name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-gray-400"
-              />
+              {!isError && (
+                <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                  {formatChip(count)}
+                </span>
+              )}
+              {!isError && (
+                <Icon
+                  name={IconName.ChevronRight}
+                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                />
+              )}
             </AriaGridListItem>
           );
-        }
-        // success or error — render the same skeleton so layout stays
-        // constant. For error we drop the count chip (we don't have data),
-        // but keep the bullet + label so wrap behavior matches.
-        const isError = state === 'error';
-        return (
-          <AriaGridListItem
-            key={s.name}
-            id={s.name}
-            textValue={
-              isError
-                ? (STATUS_LABELS[s.name] ?? s.name)
-                : `${STATUS_LABELS[s.name] ?? s.name} ${count}`
-            }
-            href={
-              isError
-                ? undefined
-                : toInvocationsHref(baseUrl, s.name, {
-                    existingParams: linkParams,
-                  })
-            }
-            className={legendItemStyles({
-              state: isError ? 'error' : 'success',
-              appearance,
-            })}
-          >
-            <div
-              className={bulletStyles({
-                state: isError ? 'error' : 'success',
-                borderType,
-              })}
-              style={{
-                backgroundColor: s.fillLight,
-                borderColor: s.stroke,
-              }}
-            />
-            <span
-              className={
-                isError ? 'text-xs text-gray-400' : 'text-xs text-gray-600'
-              }
-            >
-              {STATUS_LABELS[s.name] ?? s.name}
-            </span>
-            {!isError && (
-              <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-                {formatNumber(count, true)}
-              </span>
-            )}
-            {!isError && (
-              <Icon
-                name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-gray-400"
-              />
-            )}
-          </AriaGridListItem>
-        );
-      })}
-    </AriaGridList>
+        })}
+      </AriaGridList>
+    </div>
   );
 }

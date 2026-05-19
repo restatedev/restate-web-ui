@@ -17,7 +17,13 @@ import {
   setDefaultColumns,
   useColumns,
 } from './columns';
-import { getUserAddedCols, getUserLastSort } from './userPreferences';
+import {
+  getUserAddedCols,
+  getUserCountMode,
+  getUserLastSort,
+  setUserCountMode,
+  type CountMode,
+} from './userPreferences';
 import {
   getInvocationsLastQuery,
   matchesAnyInvocationPreset,
@@ -60,6 +66,7 @@ import {
   redirect,
   ShouldRevalidateFunctionArgs,
   useHref,
+  useLoaderData,
   useNavigate,
   useSearchParams,
 } from 'react-router';
@@ -97,6 +104,7 @@ import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { useStatusBarProps } from './useStatusBarProps';
 import { useServiceTabs } from './useServiceTabs';
 import { hasStatusFilter } from './statusFilter';
+import { tv } from '@restate/util/styles';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -121,6 +129,47 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 const PAGE_SIZE = 30;
+const SAMPLE_SIZE = 200_000;
+
+function SampleModeToggle({
+  mode,
+  onChange,
+}: {
+  mode: CountMode;
+  onChange: (mode: CountMode) => void;
+}) {
+  const label = mode === 'estimate' ? 'estimates' : 'exact counts';
+  return (
+    <div className="inline-flex items-baseline gap-1 text-2xs text-zinc-500">
+      <span>Showing</span>
+      <Dropdown>
+        <DropdownTrigger>
+          <Button
+            variant="secondary"
+            className="inline-flex shrink-0 items-baseline gap-0.5 bg-gray-50 px-1.5 py-0 text-2xs font-medium shadow-none"
+          >
+            {label}
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="h-3 w-3 self-center text-zinc-400"
+            />
+          </Button>
+        </DropdownTrigger>
+        <DropdownPopover>
+          <DropdownMenu
+            selectable
+            selectedItems={[mode]}
+            onSelect={(key) => key && onChange(key as CountMode)}
+            aria-label="Count mode"
+          >
+            <DropdownItem value="estimate">Estimates (sampled)</DropdownItem>
+            <DropdownItem value="exact">Exact counts</DropdownItem>
+          </DropdownMenu>
+        </DropdownPopover>
+      </Dropdown>
+    </div>
+  );
+}
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { OnboardingGuide, baseUrl } = useRestateContext();
@@ -147,13 +196,27 @@ function Component() {
   );
   const resetPageIndex = useCallback(() => setPageIndex(0), [setPageIndex]);
 
+  const loaderData = useLoaderData<typeof clientLoader>();
+  const [countMode, setCountModeState] = useState<CountMode>(
+    loaderData?.countMode ?? 'estimate',
+  );
+  const setCountMode = useCallback((mode: CountMode) => {
+    setUserCountMode(mode);
+    setCountModeState(mode);
+  }, []);
+  const wantsSampled = countMode === 'estimate';
+
   const {
     data: summaryData,
     isPending: isSummaryPending,
     isPlaceholderData: isSummaryPlaceholder,
     isFetching: isSummaryFetching,
-  } = useSummaryInvocations(listInvocationsParameters.filters ?? []);
+  } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
+    sampled: wantsSampled,
+    sampleSize: wantsSampled ? SAMPLE_SIZE : undefined,
+  });
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
+  const isSampled = wantsSampled;
   const { data: deploymentsData } = useListDeployments();
 
   const statusFilter = useMemo(() => {
@@ -169,6 +232,7 @@ function Component() {
     deploymentsData,
     statusFilter,
     isSummaryLoading,
+    isSampled,
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -201,6 +265,13 @@ function Component() {
   // badge / dropdown / footnote.
   const visibleCount = data?.rows?.length ?? 0;
   const totalCount = summaryData?.totalCount ?? 0;
+  // Sample-bounded total display: when sampled and the estimate hits the
+  // sample cap, format as "~50K+"; otherwise "~X". Used by the Actions
+  // badge / dropdown header to mirror the Footnote.
+  const sampledHitCap = isSampled && totalCount >= SAMPLE_SIZE;
+  const actionsTotalDisplay = isSampled
+    ? `~${formatNumber(sampledHitCap ? SAMPLE_SIZE : totalCount, true)}${sampledHitCap ? '+' : ''}`
+    : formatNumber(totalCount, true);
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
@@ -300,6 +371,7 @@ function Component() {
             isFetching={isSummaryFetching}
             isDimmed={statusDim}
             getHref={statusHref}
+            isSampled={isSampled}
           />
           <StatusLegend
             byStatus={byStatus}
@@ -311,6 +383,12 @@ function Component() {
               href: clearStatusFilterHref,
               dimmed: hasStatusFilter(statusFilter),
             }}
+            isSampled={isSampled}
+            leading={
+              !isSummaryLoading ? (
+                <SampleModeToggle mode={countMode} onChange={setCountMode} />
+              ) : undefined
+            }
           />
         </div>
         <ContentPanel tabs={serviceTabs}>
@@ -365,7 +443,7 @@ function Component() {
                     >
                       {selectedInvocationIds.size > 0
                         ? `${selectedInvocationIds.size}`
-                        : formatNumber(totalCount, true)}
+                        : actionsTotalDisplay}
                     </Badge>
                   )}
                   <Icon
@@ -389,7 +467,7 @@ function Component() {
                         <span>
                           Actions{' '}
                           <span className="font-normal opacity-90">
-                            on all {formatNumber(totalCount, true)}{' '}
+                            on all {actionsTotalDisplay}{' '}
                             {formatPlurals(totalCount, {
                               one: 'result',
                               other: 'results',
@@ -565,6 +643,8 @@ function Component() {
                 data={data}
                 totalCount={totalCount}
                 isFetching={isFetching}
+                isSampled={isSampled}
+                sampleSize={SAMPLE_SIZE}
                 key={dataUpdate}
               >
                 {!isPending && !error && totalSize > 1 && (
@@ -718,11 +798,15 @@ function Footnote({
   data,
   totalCount,
   isFetching,
+  isSampled,
+  sampleSize,
   children,
 }: PropsWithChildren<{
   isFetching: boolean;
   data?: ReturnType<typeof useListInvocations>['data'];
   totalCount: number;
+  isSampled?: boolean;
+  sampleSize?: number;
 }>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -746,15 +830,49 @@ function Footnote({
   const duration = formatDurations(parts);
 
   const visibleCount = data?.rows?.length ?? 0;
-  // When the visible batch is smaller than the filtered total (list endpoint
-  // capped us), show "X of Y". Otherwise just "Y".
+  const requestedLimit = data?.limit ?? 0;
+  // The list endpoint echoes back the limit it applied. If it returned fewer
+  // rows than that, the dataset is complete and visibleCount IS the exact
+  // total — even when the summary was sampled. Only when the list saturated
+  // (rows >= limit) do we need a sample-bounded denominator.
+  const listWasCapped = requestedLimit > 0 && visibleCount >= requestedLimit;
   const isTruncated = visibleCount > 0 && visibleCount < totalCount;
+  const sampledCap = sampleSize ?? 0;
+  const sampledHitCap = totalCount >= sampledCap && sampledCap > 0;
+  const sampledDisplayTotal = sampledHitCap ? sampledCap : totalCount;
 
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {totalCount > 0 ? (
+          {visibleCount === 0 && totalCount === 0 ? (
+            'No invocations found'
+          ) : isSampled && listWasCapped ? (
+            <>
+              <span className="font-medium text-gray-500">
+                {formatNumber(visibleCount)}
+              </span>
+              {' of '}
+              <span className="font-medium text-gray-500">
+                ~{formatNumber(sampledDisplayTotal, true)}
+                {sampledHitCap ? '+' : ''}
+              </span>{' '}
+              {formatPlurals(sampledDisplayTotal, {
+                one: 'invocation',
+                other: 'invocations',
+              })}
+            </>
+          ) : isSampled ? (
+            <>
+              <span className="font-medium text-gray-500">
+                {formatNumber(visibleCount)}
+              </span>{' '}
+              {formatPlurals(visibleCount, {
+                one: 'invocation',
+                other: 'invocations',
+              })}
+            </>
+          ) : (
             <>
               {isTruncated && (
                 <>
@@ -772,8 +890,6 @@ function Footnote({
                 other: 'invocations',
               })}
             </>
-          ) : (
-            'No invocations found'
           )}{' '}
           as of{' '}
           <span className="font-medium text-gray-500">{duration} ago</span>
@@ -841,7 +957,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
 
   params.sort();
   if (params.toString() === originalSearch) {
-    return;
+    return { countMode: getUserCountMode() };
   }
   return redirect(`?${params.toString()}`);
 };

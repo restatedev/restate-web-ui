@@ -19,7 +19,7 @@ import {
   Tabs as AriaTabs,
   composeRenderProps,
 } from 'react-aria-components';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { focusRing } from '@restate/ui/focus';
 import { tv } from '@restate/util/styles';
 import {
@@ -38,6 +38,7 @@ export interface ContentPanelTab {
   id: string;
   label: ReactNode;
   disabled?: boolean;
+  href?: string;
 }
 
 export interface ContentPanelTabs {
@@ -90,7 +91,7 @@ const styles = tv({
 
 const tabStyles = tv({
   extend: focusRing,
-  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:bg-gray-200/70 hover:text-zinc-700 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] [&_svg]:fill-zinc-100 [&_svg]:transition hover:[&_svg]:fill-zinc-200 selected:[&_svg]:fill-zinc-100',
+  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none select-none [-webkit-tap-highlight-color:transparent] hover:bg-gray-200/70 hover:text-zinc-700 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] [&_svg]:fill-zinc-100 [&_svg]:transition hover:[&_svg]:fill-zinc-200 selected:[&_svg]:fill-zinc-100',
   variants: {
     isDisabled: {
       true: 'text-zinc-400',
@@ -246,6 +247,7 @@ function Tabs({
   trailing,
 }: TabsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const disabledTabs = tabs.filter((tab) => tab.disabled).map((tab) => tab.id);
   const requestedTab = queryParam ? searchParams.get(queryParam) : null;
   const fallbackTab =
@@ -261,8 +263,35 @@ function Tabs({
       ? requestedTab
       : fallbackTab;
 
+  const hrefFor = useCallback(
+    (tabId: string): string | undefined => {
+      if (isControlled || !queryParam) return undefined;
+      const params = new URLSearchParams(searchParams);
+      if (tabId === fallbackTab) {
+        params.delete(queryParam);
+      } else {
+        params.set(queryParam, tabId);
+      }
+      const queryString = params.toString();
+      return (
+        location.pathname +
+        (queryString ? `?${queryString}` : '') +
+        location.hash
+      );
+    },
+    [
+      isControlled,
+      queryParam,
+      searchParams,
+      fallbackTab,
+      location.pathname,
+      location.hash,
+    ],
+  );
+
   const selectTab = useCallback(
     (next: string) => {
+      if (next === selectedTab) return;
       if (isControlled) {
         onSelect?.(next);
       } else if (queryParam) {
@@ -280,7 +309,14 @@ function Tabs({
         onSelect?.(next);
       }
     },
-    [isControlled, onSelect, queryParam, fallbackTab, setSearchParams],
+    [
+      selectedTab,
+      isControlled,
+      onSelect,
+      queryParam,
+      fallbackTab,
+      setSearchParams,
+    ],
   );
 
   // Split `tabs` into visible (rendered as actual tabs) and overflow (folded
@@ -412,6 +448,7 @@ function Tabs({
               <AriaTab
                 key={tab.id}
                 id={tab.id}
+                href={tab.href ?? hrefFor(tab.id)}
                 isDisabled={tab.disabled}
                 className={composeRenderProps('', (className, renderProps) =>
                   tabStyles({ ...renderProps, className }),
@@ -467,15 +504,26 @@ function Tabs({
           </DropdownTrigger>
           <DropdownPopover>
             <DropdownMenu onSelect={(key) => selectTab(String(key))}>
-              {overflowTabs.map((tab) => (
-                <DropdownItem
-                  key={tab.id}
-                  value={tab.id}
-                  isDisabled={tab.disabled}
-                >
-                  {tab.label}
-                </DropdownItem>
-              ))}
+              {overflowTabs.map((tab) => {
+                const href = tab.href ?? hrefFor(tab.id);
+                return href ? (
+                  <DropdownItem
+                    key={tab.id}
+                    href={href}
+                    isDisabled={tab.disabled}
+                  >
+                    {tab.label}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    key={tab.id}
+                    value={tab.id}
+                    isDisabled={tab.disabled}
+                  >
+                    {tab.label}
+                  </DropdownItem>
+                );
+              })}
             </DropdownMenu>
           </DropdownPopover>
         </Dropdown>

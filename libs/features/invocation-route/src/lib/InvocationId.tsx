@@ -170,7 +170,12 @@ export function InvocationId({
         </div>
 
         {!isIcon && (
-          <TruncateWithTooltip copyText={id} triggerRef={linkRef}>
+          <TruncateWithTooltip
+            copyText={id}
+            triggerRef={linkRef}
+            tooltipContent={id}
+            alwaysShow={truncateInMiddle}
+          >
             <span className={text()}>
               {truncateInMiddle ? (
                 <span>

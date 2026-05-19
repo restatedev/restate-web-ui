@@ -3,6 +3,7 @@ import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
+  formatApproxPercentage,
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { STATUS_LABELS } from './constants';
@@ -69,20 +70,31 @@ function Segment({
   dimmed,
   href,
   total,
+  isSampled,
 }: {
   entry: Entry;
   dimmed: boolean;
   href?: string;
   total: number;
+  isSampled?: boolean;
 }) {
+  const percentage = formatPercentageWithoutFraction(entry.count / total);
   const tooltipContent = (
     <div className="flex flex-col gap-0.5">
       <div className="text-xs font-medium">
         {STATUS_LABELS[entry.name] ?? entry.name}
       </div>
       <div className="text-2xs opacity-80">
-        {formatNumber(entry.count, true)} ·{' '}
-        {formatPercentageWithoutFraction(entry.count / total)}
+        {isSampled ? (
+          <>
+            {formatApproxPercentage(entry.count / total)}{' '}
+            <span className="opacity-70">· sampled</span>
+          </>
+        ) : (
+          <>
+            {formatNumber(entry.count, true)} · {percentage}
+          </>
+        )}
       </div>
     </div>
   );
@@ -126,6 +138,7 @@ export function StatusSummaryBar({
   className,
   isDimmed,
   getHref,
+  isSampled,
 }: {
   byStatus: StatusEntry[];
   // No data yet — render the full skeleton. Used for the first load.
@@ -141,6 +154,9 @@ export function StatusSummaryBar({
   // Per-status link target — caller decides what clicking a segment does.
   // When undefined for a status, the segment is non-interactive (no link).
   getHref?: (statusName: string) => string;
+  // Counts are estimates from a sampled summary — tooltip hides raw counts
+  // and shows percentages with a sampled marker.
+  isSampled?: boolean;
 }) {
   const items = getOrderedStatuses(byStatus) as Entry[];
   const total = items.reduce((sum, s) => sum + s.count, 0);
@@ -169,6 +185,7 @@ export function StatusSummaryBar({
           dimmed={isDimmed?.(s.name) ?? false}
           href={getHref?.(s.name)}
           total={total}
+          isSampled={isSampled}
         />
       ))}
     </div>

@@ -3,6 +3,9 @@ import { SORT_COLUMN_KEYS } from './useInvocationsQueryFilters';
 
 const USER_COLS_KEY = 'invocations-user-cols';
 const USER_SORT_KEY = 'invocations-user-sort';
+const USER_COUNT_MODE_KEY = 'invocations-count-mode';
+
+export type CountMode = 'estimate' | 'exact';
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -56,4 +59,15 @@ export function getUserLastSort(): UserSort | null {
 
 export function setUserLastSort(sort: UserSort) {
   localStorage.setItem(USER_SORT_KEY, JSON.stringify(sort));
+}
+
+export function getUserCountMode(): CountMode {
+  const parsed = safeParse<CountMode>(
+    localStorage.getItem(USER_COUNT_MODE_KEY),
+  );
+  return parsed === 'exact' ? 'exact' : 'estimate';
+}
+
+export function setUserCountMode(mode: CountMode) {
+  localStorage.setItem(USER_COUNT_MODE_KEY, JSON.stringify(mode));
 }
