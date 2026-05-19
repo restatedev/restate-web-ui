@@ -6,6 +6,7 @@ import {
 } from '@restate/ui/dialog';
 import { SERVICE_RETENTION_EDIT } from './constants';
 import { FormEvent, useId } from 'react';
+import { useFilter } from 'react-aria';
 import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -32,6 +33,7 @@ import {
 
 export function EditRetentionDialog() {
   const formId = useId();
+  const { startsWith } = useFilter({ sensitivity: 'base' });
   const [searchParams] = useSearchParams();
   const service = searchParams.get(SERVICE_RETENTION_EDIT);
 
@@ -154,6 +156,7 @@ export function EditRetentionDialog() {
               <FormFieldCombobox
                 pattern={HUMANTIME_PATTERN_INPUT}
                 allowsCustomValue
+                defaultFilter={startsWith}
                 disabled={isPendingOrSubmitting}
                 className="[&_label]:text-zinc-500"
                 defaultValue={data?.workflow_completion_retention ?? ''}
@@ -193,6 +196,7 @@ export function EditRetentionDialog() {
             <FormFieldCombobox
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
+              defaultFilter={startsWith}
               defaultValue={data?.idempotency_retention ?? ''}
               disabled={isPendingOrSubmitting}
               label={
@@ -234,6 +238,7 @@ export function EditRetentionDialog() {
               <FormFieldCombobox
                 pattern={HUMANTIME_PATTERN_INPUT}
                 allowsCustomValue
+                defaultFilter={startsWith}
                 defaultValue={data?.journal_retention ?? ''}
                 disabled={isPendingOrSubmitting}
                 label={

@@ -33,6 +33,7 @@ export interface ComboBoxProps<T extends object> {
   allowsCustomValue?: AriaComboBoxProps<T>['allowsCustomValue'];
   name?: AriaComboBoxProps<T>['name'];
   defaultValue?: AriaComboBoxProps<T>['defaultInputValue'];
+  defaultFilter?: AriaComboBoxProps<T>['defaultFilter'];
   pattern?: string;
 }
 
