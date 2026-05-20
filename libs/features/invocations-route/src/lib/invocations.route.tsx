@@ -377,6 +377,7 @@ function Component() {
             byStatus={byStatus}
             isLoading={isSummaryLoading}
             linkParams={searchParams}
+            getHref={statusHref}
             isDimmed={statusDim}
             allItem={{
               count: byStatus.reduce((sum, s) => sum + s.count, 0),

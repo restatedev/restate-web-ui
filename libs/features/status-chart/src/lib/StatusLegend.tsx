@@ -82,6 +82,7 @@ export function StatusLegend({
   isLoading,
   isError,
   linkParams,
+  getHref,
   orientation = 'horizontal',
   half,
   className,
@@ -94,6 +95,11 @@ export function StatusLegend({
   isLoading?: boolean;
   isError?: boolean;
   linkParams?: URLSearchParams;
+  // Caller-driven per-status href builder. When provided, takes precedence
+  // over the internal `toInvocationsHref(linkParams)` construction — used by
+  // the invocations route to preserve sibling filters (e.g.,
+  // filter_target_service_name) that `toInvocationsHref` would strip.
+  getHref?: (statusName: string) => string;
   orientation?: 'horizontal' | 'vertical';
   half?: 'first' | 'second';
   className?: string;
@@ -231,9 +237,10 @@ export function StatusLegend({
               href={
                 isError
                   ? undefined
-                  : toInvocationsHref(baseUrl, s.name, {
+                  : (getHref?.(s.name) ??
+                    toInvocationsHref(baseUrl, s.name, {
                       existingParams: linkParams,
-                    })
+                    }))
               }
               className={legendItemStyles({
                 state: isError ? 'error' : 'success',
