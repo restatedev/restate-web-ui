@@ -15,6 +15,7 @@ const JournalEntriesContext = createContext<{
   isCompact: boolean;
   disableExpand?: boolean;
   hideOutput?: boolean;
+  disableAwaitingHighlight?: boolean;
 }>({
   invocationIds: [],
   isCompact: true,

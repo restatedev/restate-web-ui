@@ -174,7 +174,7 @@ export const Entry = memo(function Entry({
     enabled: isPaused,
   });
   const pausedRelatedCommandIndex = pausedErrorData?.relatedCommandIndex;
-  const { isCompact } = useJournalEntriesContext();
+  const { isCompact, disableAwaitingHighlight } = useJournalEntriesContext();
   const EntrySpecificComponent = (
     entry?.type
       ? entry.category === 'command'
@@ -228,13 +228,14 @@ export const Entry = memo(function Entry({
             entry.commandIndex === (invocation.journal_commands_size || 0) - 1)
         }
         className={styles({
-          awaiting: entry.isAwaitingOn
-            ? invocation.status === 'suspended'
-              ? 'suspended'
-              : invocation.status === 'running'
-                ? 'running'
-                : 'none'
-            : 'none',
+          awaiting:
+            entry.isAwaitingOn && !disableAwaitingHighlight
+              ? invocation.status === 'suspended'
+                ? 'suspended'
+                : invocation.status === 'running'
+                  ? 'running'
+                  : 'none'
+              : 'none',
           hasError:
             Boolean(
               invocation.last_failure_related_command_index &&
