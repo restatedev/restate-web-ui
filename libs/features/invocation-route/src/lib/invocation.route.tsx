@@ -14,6 +14,7 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Section } from '@restate/ui/section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
+import { Target } from './Target';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
@@ -57,6 +58,50 @@ const lastFailureContent = tv({
     },
   },
 });
+
+// Floating page header: prominent banner card so target + status are the
+// first things you read on the page. A status-tinted gradient washes in
+// from the left and fades to white past mid-card, paired with a matching
+// border. Layered shadow + inset white highlight give the lifted glass feel.
+const headerCardStyles = tv({
+  base: 'sticky top-3 z-30 mx-5 mt-2 flex items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-3 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/6%),0_12px_28px_-10px_--theme(--color-zinc-800/12%),inset_0_2px_0_0_--theme(--color-white/95%)] backdrop-blur-xl backdrop-saturate-200 transition-colors sm:top-6',
+  variants: {
+    intent: {
+      success:
+        'border-green-300/60 from-green-100 from-0% via-white via-50% to-green-50',
+      danger:
+        'border-red-300/60 from-red-100 from-0% via-white via-50% to-red-50',
+      warning:
+        'border-orange-300/60 from-orange-100 from-0% via-white via-50% to-orange-50',
+      info: 'border-blue-300/60 from-blue-100 from-0% via-white via-50% to-blue-50',
+      default:
+        'border-gray-300/60 from-gray-200/50 from-0% via-white via-50% to-gray-100',
+    },
+  },
+  defaultVariants: { intent: 'default' },
+});
+
+function getHeaderIntent(
+  invocation?: Invocation,
+): 'success' | 'danger' | 'warning' | 'info' | 'default' {
+  if (!invocation) return 'default';
+  if (invocation.isRetrying) return 'warning';
+  switch (invocation.status) {
+    case 'succeeded':
+      return 'success';
+    case 'failed':
+      return 'danger';
+    case 'pending':
+    case 'paused':
+    case 'scheduled':
+    case 'backing-off':
+      return 'warning';
+    case 'running':
+      return 'info';
+    default:
+      return 'default';
+  }
+}
 
 function Component() {
   const { id } = useParams<{ id: string }>();
@@ -135,52 +180,66 @@ function Component() {
 
   return (
     <InvocationPageProvider isInInvocationPage>
-      <div className="flex min-h-0 flex-1 flex-col pt-4">
-        <div className="@container flex flex-col gap-1 px-5">
+      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
+        <div className="@container flex items-center gap-1.5 px-5 text-sm text-gray-500">
           <Link
-            className="flex items-center gap-1 self-start text-sm text-gray-500"
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
             variant="secondary"
             href={invocationsBackHref}
           >
-            <Icon name={IconName.ArrowLeft} className="mt-0.5 h-4 w-4" />{' '}
+            <Icon name={IconName.ArrowLeft} className="h-4 w-4" />
             Invocations
           </Link>
-          <div className="relative flex flex-col gap-x-2 gap-y-1.5 @2xl:flex-row @2xl:items-center">
-            <h1 className="flex items-center gap-1 truncate pb-1 font-mono text-lg font-semibold text-gray-900 sm:text-lg">
-              <div className="mr-1.5 shrink-0 rounded-xl border bg-white shadow-xs">
-                <Icon
-                  name={IconName.Invocation}
-                  className="h-8 w-8 fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
-                />
-              </div>
-
-              <HoverTooltip
-                size="sm"
-                content={
-                  <div className="flex h-4 items-center gap-4 leading-4">
-                    <div>{id}</div>
-                    <Copy
-                      copyText={String(id)}
-                      className="ml-auto h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
-                    />
-                  </div>
-                }
-              >
-                {id?.substring(0, 8)}…{id?.slice(-5)}
-              </HoverTooltip>
-            </h1>
-            {journalAndInvocationData && (
-              <div className="*:origin-[center_left] *:scale-[1.1]">
-                <Status invocation={journalAndInvocationData} className="" />
-              </div>
-            )}
-            <div className="absolute right-0">
-              <Actions
-                invocation={journalAndInvocationData}
-                mini={false}
-                className="text-sm"
+          <span className="text-gray-300">/</span>
+          <h1 className="flex min-w-0 items-center gap-1.5 truncate py-0.5 font-mono text-sm font-normal text-gray-600">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-xs">
+              <Icon
+                name={IconName.Invocation}
+                className="h-4 w-4 fill-blue-50 text-blue-500"
               />
+            </span>
+            <HoverTooltip
+              size="sm"
+              content={
+                <div className="flex h-4 items-center gap-4 leading-4">
+                  <div>{id}</div>
+                  <Copy
+                    copyText={String(id)}
+                    className="ml-auto h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
+                  />
+                </div>
+              }
+            >
+              {id}
+            </HoverTooltip>
+          </h1>
+        </div>
+        {/* Sticky floating header: target + status stay visible while the
+            page scrolls. Status-tinted gradient telegraphs invocation state
+            without coloring the whole card. */}
+        <div
+          className={headerCardStyles({
+            intent: getHeaderIntent(journalAndInvocationData),
+          })}
+        >
+          {journalAndInvocationData?.target && (
+            <Target
+              target={journalAndInvocationData.target}
+              className="max-w-fit min-w-0 shrink rounded-xl p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity"
+            />
+          )}
+          {journalAndInvocationData && (
+            <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
+              <Status invocation={journalAndInvocationData} className="" />
             </div>
+          )}
+          <div className="ml-auto shrink-0">
+            <Actions
+              invocation={journalAndInvocationData}
+              mini={false}
+              className="rounded-l-lg text-[0.9375rem]"
+              splitClassName="rounded-r-lg"
+            />
           </div>
         </div>
         <div className="flex flex-col gap-4 px-5">
@@ -266,7 +325,7 @@ function Component() {
         </div>
 
         <ContentPanel
-          className="mt-10"
+          className=""
           tabs={{
             items: [{ id: 'journal', label: 'Journal' }],
             defaultId: 'journal',
@@ -324,7 +383,8 @@ function Anchor({
   useEffect(() => {
     const element = ref.current;
     const bottomElement = () =>
-      document.querySelector('[data-last-failure=true]');
+      document.querySelector('[data-last-failure=true]') ??
+      document.querySelector('[data-last-failure-fallback]');
     const topElement = () => document.querySelector('#last-failure-section');
     const updateStyles = () => {
       const bottomRect = bottomElement()?.getBoundingClientRect();
@@ -369,7 +429,7 @@ function Anchor({
   return (
     <div className="relative z-40 w-4 -translate-x-full translate-y-4">
       <div ref={ref} className={line()}>
-        {hasLastFailure && <div className={anchor()} />}
+        <div className={anchor()} />
       </div>
     </div>
   );
