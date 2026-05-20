@@ -228,13 +228,18 @@ function Component() {
     data: serviceKeysData,
     isFetching,
     queryKey,
-  } = useQueryVirtualObjectState(serviceName, queryFilters, {
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-    staleTime: 0,
-    enabled: isValid,
-  });
+  } = useQueryVirtualObjectState(
+    serviceName,
+    queryFilters,
+    isWorkflow ? 'workflow' : 'virtual_object',
+    {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+      staleTime: 0,
+      enabled: isValid,
+    },
+  );
 
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
     if (error) return [];
@@ -256,12 +261,17 @@ function Component() {
         : { keys: currentPageItems.map((item) => item.key) },
     [currentPageItems],
   );
-  const listObjects = useListVirtualObjectState(serviceName, listStateArgs, {
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 0,
-    refetchOnWindowFocus: false,
-  });
+  const listObjects = useListVirtualObjectState(
+    serviceName,
+    listStateArgs,
+    isWorkflow ? 'workflow' : 'virtual_object',
+    {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const flattenedData = useMemo(() => {
     if (listObjects.error) return [];

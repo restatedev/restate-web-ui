@@ -1918,6 +1918,15 @@
             "in": "query",
             "description": "workflow scope filter",
             "schema": { "type": "string" }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
+            }
           }
         ],
         "responses": {
@@ -2008,6 +2017,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
             }
           }
         ],
@@ -2169,6 +2187,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
+            }
           }
         ],
         "responses": {
@@ -2273,6 +2300,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
             }
           }
         ],

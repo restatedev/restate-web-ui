@@ -38,6 +38,7 @@ import {
   listDrainedDeployments,
   type ListStateArgs,
   type ListStateItem,
+  type StateServiceType,
 } from './handlers';
 import { getVersion } from './getVersion';
 import { getFeatures } from './getFeatures';
@@ -76,17 +77,27 @@ type BoundHandlers = {
     invocationId: string | undefined,
     scope?: string,
   ) => Promise<Response>;
-  getState: (service: string, key: string) => Promise<Response>;
+  getState: (
+    service: string,
+    key: string,
+    serviceType?: StateServiceType,
+  ) => Promise<Response>;
   getStateInterface: (
     service: string,
     serviceKey?: string[],
     scope?: string,
+    serviceType?: StateServiceType,
   ) => Promise<Response>;
   queryState: (
     service: string,
     args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
+    serviceType?: StateServiceType,
   ) => Promise<Response>;
-  listState: (service: string, args: ListStateArgs) => Promise<Response>;
+  listState: (
+    service: string,
+    args: ListStateArgs,
+    serviceType?: StateServiceType,
+  ) => Promise<Response>;
   getScopedState: (
     service: string,
     scope: string,
@@ -126,10 +137,14 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
-    getState: getState.bind(context),
-    getStateInterface: getStateInterface.bind(context),
-    queryState: queryState.bind(context),
-    listState: listState.bind(context),
+    getState: (service, key, serviceType) =>
+      getState.call(context, service, key, undefined, serviceType),
+    getStateInterface: (service, serviceKey, scope, serviceType) =>
+      getStateInterface.call(context, service, serviceKey, scope, serviceType),
+    queryState: (service, args, serviceType) =>
+      queryState.call(context, service, args, serviceType),
+    listState: (service, args, serviceType) =>
+      listState.call(context, service, args, serviceType),
     getScopedState: (service, scope, key) =>
       getState.call(context, service, key, scope),
     batchCancelInvocations: batchCancelInvocations.bind(context),
@@ -144,6 +159,16 @@ function bindHandlers(context: QueryContext): BoundHandlers {
 }
 
 const handlersKey = createStorageKey<BoundHandlers>();
+
+function readServiceType(
+  searchParams: URLSearchParams,
+): StateServiceType | undefined {
+  const raw = searchParams.get('serviceType');
+  if (raw === 'virtual_object' || raw === 'workflow' || raw === 'service') {
+    return raw;
+  }
+  return undefined;
+}
 
 const decodeParamsMiddleware: Middleware = (ctx, next) => {
   const params = ctx.params as Record<string, string | undefined>;
@@ -381,7 +406,11 @@ router.map(routes, {
       state: {
         async get(ctx) {
           const { getState } = ctx.storage.get(handlersKey);
-          return getState(ctx.params.name, ctx.params.key);
+          return getState(
+            ctx.params.name,
+            ctx.params.key,
+            readServiceType(ctx.url.searchParams),
+          );
         },
         async keys(ctx) {
           const { getStateInterface } = ctx.storage.get(handlersKey);
@@ -389,6 +418,7 @@ router.map(routes, {
             ctx.params.name,
             ctx.url.searchParams.getAll('serviceKey'),
             ctx.url.searchParams.get('scope') ?? undefined,
+            readServiceType(ctx.url.searchParams),
           );
         },
         async query(ctx) {
@@ -397,7 +427,11 @@ router.map(routes, {
             systemFilters?: FilterItem[];
             stateFilter?: FilterItem;
           };
-          return queryState(ctx.params.name, args);
+          return queryState(
+            ctx.params.name,
+            args,
+            readServiceType(ctx.url.searchParams),
+          );
         },
         async list(ctx) {
           const { listState } = ctx.storage.get(handlersKey);
@@ -408,7 +442,11 @@ router.map(routes, {
           const args: ListStateArgs = body.items
             ? { items: body.items }
             : { keys: body.keys ?? [] };
-          return listState(ctx.params.name, args);
+          return listState(
+            ctx.params.name,
+            args,
+            readServiceType(ctx.url.searchParams),
+          );
         },
       },
       scopedState: {

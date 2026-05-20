@@ -31,6 +31,7 @@ export function WorkflowKeySection({
     String(invocation?.target_service_name),
     String(invocation?.target_service_key),
     invocation?.scope,
+    'workflow',
     {
       enabled: shouldFetchState,
       staleTime: 0,
@@ -42,6 +43,7 @@ export function WorkflowKeySection({
       String(invocation?.target_service_name),
       invocation?.target_service_key ? [invocation?.target_service_key] : [],
       invocation?.scope,
+      'workflow',
       {
         enabled: Boolean(
           typeof invocation?.target_service_key === 'string' &&

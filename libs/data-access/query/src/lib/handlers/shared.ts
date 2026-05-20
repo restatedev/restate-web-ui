@@ -100,23 +100,34 @@ export type QueryContext = {
   features: Set<string>;
 };
 
-export function shouldFilterScopeIsNull(context: {
-  restateVersion: string;
-  features: Set<string>;
-}): boolean {
-  if (context.features.has('vqueues')) return false;
+export type StateServiceType = 'virtual_object' | 'workflow' | 'service';
+
+export function shouldFilterScopeIsNull(
+  context: { restateVersion: string; features: Set<string> },
+  serviceType?: StateServiceType,
+): boolean {
   const coerced = semverCoerce(context.restateVersion);
-  return coerced ? semverGte(coerced, '1.7.0') : false;
+  const isAtLeast17 = coerced ? semverGte(coerced, '1.7.0') : false;
+  if (!isAtLeast17) return false;
+  // Virtual objects don't expose scope to users — force the NULL filter even
+  // when the `vqueues` feature is enabled (scope is only meaningful for vqueue
+  // services, not VOs).
+  if (serviceType === 'virtual_object') return true;
+  if (context.features.has('vqueues')) return false;
+  return true;
 }
 
 export function scopeClause(
   context: { restateVersion: string; features: Set<string> },
   explicitScope?: string,
+  serviceType?: StateServiceType,
 ): string {
   if (explicitScope !== undefined) {
     return ` AND scope = '${explicitScope}'`;
   }
-  return shouldFilterScopeIsNull(context) ? ' AND scope IS NULL' : '';
+  return shouldFilterScopeIsNull(context, serviceType)
+    ? ' AND scope IS NULL'
+    : '';
 }
 
 function queryFetcher(

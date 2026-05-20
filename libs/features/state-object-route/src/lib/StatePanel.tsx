@@ -90,11 +90,17 @@ function StatePanelContent() {
     dataUpdatedAt,
     errorUpdatedAt,
     refetch: refetchState,
-  } = useGetVirtualObjectState(String(virtualObject), String(key), scope, {
-    enabled: Boolean(virtualObject && key),
-    refetchOnMount: true,
-    staleTime: 0,
-  });
+  } = useGetVirtualObjectState(
+    String(virtualObject),
+    String(key),
+    scope,
+    undefined,
+    {
+      enabled: Boolean(virtualObject && key),
+      refetchOnMount: true,
+      staleTime: 0,
+    },
+  );
 
   const { queryKey: inboxQueryKey, data: queueData } = useGetVirtualObjectQueue(
     String(virtualObject),

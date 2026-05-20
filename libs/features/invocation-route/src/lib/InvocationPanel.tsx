@@ -105,6 +105,7 @@ function InvocationPanelContent() {
     String(data?.target_service_name),
     String(data?.target_service_key),
     data?.scope,
+    data?.target_service_ty,
     {
       enabled: false,
     },

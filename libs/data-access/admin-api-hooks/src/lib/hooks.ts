@@ -1300,6 +1300,7 @@ export function useGetVirtualObjectState(
   serviceName: string,
   key: string,
   scope?: string,
+  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>,
 ) {
   const enabled = useAPIStatus();
@@ -1317,7 +1318,10 @@ export function useGetVirtualObjectState(
         )
       : adminApi('query', '/query/services/{name}/keys/{key}/state', 'get', {
           baseUrl,
-          parameters: { path: { key, name: serviceName } },
+          parameters: {
+            path: { key, name: serviceName },
+            ...(serviceType ? { query: { serviceType } } : {}),
+          },
         });
 
   const results = useQuery({
@@ -1336,6 +1340,7 @@ export function useGetVirtualObjectStateInterface(
   serviceName: string,
   serviceKey: string[],
   scope?: string,
+  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>,
 ) {
   const enabled = useAPIStatus();
@@ -1348,7 +1353,11 @@ export function useGetVirtualObjectStateInterface(
       baseUrl,
       parameters: {
         path: { name: serviceName },
-        query: { serviceKey, ...(scope !== undefined ? { scope } : {}) },
+        query: {
+          serviceKey,
+          ...(scope !== undefined ? { scope } : {}),
+          ...(serviceType ? { serviceType } : {}),
+        },
       },
     },
   );
@@ -1368,6 +1377,7 @@ export function useGetVirtualObjectStateInterface(
 export function useQueryVirtualObjectState(
   serviceName: string,
   args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
+  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -1378,9 +1388,14 @@ export function useQueryVirtualObjectState(
     'post',
     {
       baseUrl,
-      parameters: { path: { name: serviceName } },
+      parameters: {
+        path: { name: serviceName },
+        ...(serviceType ? { query: { serviceType } } : {}),
+      },
       body: args,
-      resolvedPath: `/query/services/${serviceName}/state/query`,
+      resolvedPath: serviceType
+        ? `/query/services/${serviceName}/state/query?serviceType=${serviceType}`
+        : `/query/services/${serviceName}/state/query`,
     },
   );
   const results = useQuery({
@@ -1399,6 +1414,7 @@ export function useQueryVirtualObjectState(
 export function useListVirtualObjectState(
   serviceName: string,
   args: { keys: string[] } | { items: { key: string; scope?: string }[] },
+  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/state', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -1409,9 +1425,14 @@ export function useListVirtualObjectState(
     'post',
     {
       baseUrl,
-      parameters: { path: { name: serviceName } },
+      parameters: {
+        path: { name: serviceName },
+        ...(serviceType ? { query: { serviceType } } : {}),
+      },
       body: args,
-      resolvedPath: `/query/services/${serviceName}/state`,
+      resolvedPath: serviceType
+        ? `/query/services/${serviceName}/state?serviceType=${serviceType}`
+        : `/query/services/${serviceName}/state`,
     },
   );
 
