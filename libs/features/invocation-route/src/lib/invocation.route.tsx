@@ -225,7 +225,7 @@ function Component() {
           {journalAndInvocationData?.target && (
             <Target
               target={journalAndInvocationData.target}
-              className="max-w-fit min-w-0 shrink rounded-xl p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity"
+              className="max-w-fit min-w-0 shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity"
             />
           )}
           {journalAndInvocationData && (
