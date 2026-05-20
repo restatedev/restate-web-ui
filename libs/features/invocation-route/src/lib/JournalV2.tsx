@@ -460,7 +460,7 @@ export function JournalV2({
               )}
               {withTimeline && (
                 <ContentPanelHeader className="font-mono text-0.5xs">
-                  <div className="relative h-12 w-full">
+                  <div className="relative h-9 w-full">
                     <div className="pointer-events-none absolute inset-0 z-30 hidden md:block">
                       <div
                         ref={startDateOverlayRef}
@@ -492,7 +492,7 @@ export function JournalV2({
                       >
                         <div className="relative h-full overflow-hidden rounded-tr-2xl">
                           <LifeCycleProgress
-                            className="h-12 px-2"
+                            className="h-9 px-2"
                             invocation={journalAndInvocationData}
                             createdEvent={
                               lifecycleDataByInvocation.get(invocationId)
@@ -606,6 +606,7 @@ export function JournalV2({
                       </LazyPanelGroup>
                     </div>
                   )}
+                  <div data-last-failure-fallback aria-hidden className="h-0" />
                 </div>
               ) : (
                 <div className={className}>
@@ -655,6 +656,7 @@ export function JournalV2({
                       <Icon name={IconName.ChevronRight} className="h-3 w-3" />
                     </Link>
                   )}
+                  <div data-last-failure-fallback aria-hidden className="h-0" />
                 </div>
               )}
             </Suspense>
