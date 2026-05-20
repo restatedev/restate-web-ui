@@ -127,12 +127,18 @@ function digitCount(n: number) {
 const styles = tv({
   base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
   variants: {
+    awaiting: {
+      suspended: 'bg-gray-100',
+      running: 'bg-blue-50',
+      none: '',
+    },
     hasError: {
       true: 'bg-orange-50',
       false: '',
     },
   },
   defaultVariants: {
+    awaiting: 'none',
     hasError: false,
   },
 });
@@ -222,6 +228,13 @@ export const Entry = memo(function Entry({
             entry.commandIndex === (invocation.journal_commands_size || 0) - 1)
         }
         className={styles({
+          awaiting: entry.isAwaitingOn
+            ? invocation.status === 'suspended'
+              ? 'suspended'
+              : invocation.status === 'running'
+                ? 'running'
+                : 'none'
+            : 'none',
           hasError:
             Boolean(
               invocation.last_failure_related_command_index &&
