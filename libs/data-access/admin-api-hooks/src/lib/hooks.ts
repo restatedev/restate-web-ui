@@ -1688,9 +1688,9 @@ export function useRestartWorkflowAsNew(
       const scope = data?.scope;
       const sendUrl = isVersionGte?.('1.7.0')
         ? scope
-          ? `${ingressUrl}/restate/scope/${scope}/send/workflow/${workflowId}/${data?.target_handler_name}`
-          : `${ingressUrl}/restate/send/workflow/${workflowId}/${data?.target_handler_name}`
-        : `${ingressUrl}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`;
+          ? `${ingressUrl.replace(/\/$/, '')}/restate/scope/${scope}/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`
+          : `${ingressUrl.replace(/\/$/, '')}/restate/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`
+        : `${ingressUrl.replace(/\/$/, '')}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`;
 
       return fetch(sendUrl, {
         credentials: 'include',
