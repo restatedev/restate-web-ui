@@ -106,6 +106,7 @@ export function lifeCycles(
       category: 'event',
       end: undefined,
       isPending: true,
+      awaitingOn: invocation.suspended_waiting_future_json,
     });
   }
   const hadPauseEntry = eventRawEntries.some(
@@ -158,6 +159,7 @@ export function lifeCycles(
               ? datesMax(invocation.last_start_at, invocation.modified_at)
               : invocation.completed_at,
       isPending: invocation.status === 'running',
+      awaitingOn: invocation.last_awaiting_on_future_json,
     });
   }
   if (invocation.next_retry_at && invocation.status === 'backing-off') {
@@ -165,6 +167,7 @@ export function lifeCycles(
       type: 'Retrying',
       category: 'event',
       start: invocation.next_retry_at,
+      awaitingOn: invocation.last_awaiting_on_future_json,
     });
   }
 

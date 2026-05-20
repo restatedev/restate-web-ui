@@ -7967,6 +7967,9 @@
           "type": {
             "type": "string",
             "enum": ["Running"]
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },
@@ -7980,6 +7983,9 @@
           "type": {
             "type": "string",
             "enum": ["Retrying"]
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },

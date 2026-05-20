@@ -3067,12 +3067,14 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Running';
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     RetryingLifecycleJournalEntryV2: {
       /** @enum {string} */
       category?: 'event';
       /** @enum {string} */
       type?: 'Retrying';
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     ScheduledLifecycleJournalEntryV2: {
       /** @enum {string} */
