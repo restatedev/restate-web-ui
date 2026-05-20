@@ -12,7 +12,6 @@ import {
   useState,
 } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
-import { InvocationId } from './InvocationId';
 import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -36,13 +35,9 @@ import { StartDateTimeUnit } from './Units';
 import { ScrollableTimeline } from './ScrollableTimeline';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
-import { Retention } from './Retention';
 import {
-  RESTARTED_FROM_HEADER,
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
-  useGetJournalEntryPayloads,
-  useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
 import { Nav, NavButtonItem } from '@restate/ui/nav';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
@@ -198,7 +193,6 @@ export function JournalV2({
     refetchOnWindowFocus: false,
   });
   console.log(data);
-  const { data: subscriptions } = useListSubscriptions();
   const referencedInvocationIds = getReferencedInvocationIds(data);
   useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
     refetchOnMount: true,
@@ -247,10 +241,6 @@ export function JournalV2({
     relatedEntriesByInvocation,
     lifecycleDataByInvocation,
   } = useProcessedJournal(invocationId, data, isCompact);
-  const { data: inputData } = useGetJournalEntryPayloads(invocationId, 0, {
-    enabled: false,
-  });
-
   const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
     !withTimeline &&
@@ -365,16 +355,6 @@ export function JournalV2({
   const typedInputEntry = inputEntry as
     | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
     | undefined;
-  const restartedFromHeader = (
-    inputData?.headers || typedInputEntry?.headers
-  )?.find(({ key }: { key: string }) => key === RESTARTED_FROM_HEADER);
-
-  const isRestartedFrom = Boolean(
-    journalAndInvocationData.invoked_by === 'restart_as_new' ||
-    restartedFromHeader,
-  );
-  const restartedFromValue =
-    journalAndInvocationData?.restarted_from || restartedFromHeader?.value;
 
   return (
     <PortalProvider>
@@ -410,51 +390,6 @@ export function JournalV2({
             >
               {withTimeline && (
                 <ContentPanelToolbar className="relative items-end! pr-5 pl-3">
-                  <div className="relative flex flex-col">
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute top-5.5 bottom-0 left-3.5 w-px -translate-x-1/2 border-l border-dashed border-zinc-300"
-                    />
-                    <div className="relative flex h-full w-full items-center gap-1.5">
-                      <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300" />
-                      <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
-                        {isRestartedFrom ? 'Restarted from' : 'Invoked by'}
-                      </div>
-                      {journalAndInvocationData?.invoked_by === 'ingress' &&
-                      !isRestartedFrom ? (
-                        <div className="text-xs font-medium">Ingress</div>
-                      ) : journalAndInvocationData?.invoked_by_id ? (
-                        <InvocationId
-                          id={journalAndInvocationData?.invoked_by_id}
-                          className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
-                        />
-                      ) : restartedFromValue ? (
-                        <InvocationId
-                          id={restartedFromValue}
-                          className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
-                        />
-                      ) : journalAndInvocationData?.invoked_by ===
-                        'subscription' ? (
-                        <div className="text-xs font-medium">
-                          {subscriptions?.subscriptions?.find(
-                            (sub) =>
-                              sub.id ===
-                              journalAndInvocationData?.invoked_by_subscription_id,
-                          )?.source ||
-                            journalAndInvocationData?.invoked_by_subscription_id}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="pb-1 pl-6">
-                      <Retention
-                        invocation={journalAndInvocationData}
-                        type="journal"
-                        prefixForCompletion="retention "
-                        prefixForInProgress="retained "
-                        className="text-xs"
-                      />
-                    </div>
-                  </div>
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pb-1 pl-10">
                     <Nav
                       ariaCurrentValue="true"
