@@ -140,6 +140,9 @@ export function signal(
     >;
 
     context?.signalEntryByIndex.set(id, signalEntry);
+    if (context?.future?.signalIndexGroupIdsByIndex.has(id)) {
+      signalEntry.isAwaitingOn = true;
+    }
     assignGroupIds(
       signalEntry,
       context?.future?.signalIndexGroupIdsByIndex.get(id),

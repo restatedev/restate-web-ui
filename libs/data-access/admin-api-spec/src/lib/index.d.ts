@@ -2966,6 +2966,7 @@ export interface components {
       groupIds?: {
         [key: string]: true;
       };
+      isAwaitingOn?: boolean;
       /** @enum {string} */
       category?: 'notification' | 'command' | 'event' | 'group';
       type?: string;

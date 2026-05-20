@@ -57,6 +57,9 @@ export function convertJournalV2(
     if (newEntry.category === 'command') {
       context?.completionEntryById.set(newEntry.completionId, newEntry);
     }
+    if (context?.future?.completionGroupIdsById.has(newEntry.completionId)) {
+      newEntry.isAwaitingOn = true;
+    }
     assignGroupIds(
       newEntry,
       context?.future?.completionGroupIdsById.get(newEntry.completionId),

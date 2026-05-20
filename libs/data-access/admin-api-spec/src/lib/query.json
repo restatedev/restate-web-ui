@@ -4128,6 +4128,9 @@
               "enum": [true]
             }
           },
+          "isAwaitingOn": {
+            "type": "boolean"
+          },
           "category": {
             "type": "string",
             "enum": ["notification", "command", "event", "group"]

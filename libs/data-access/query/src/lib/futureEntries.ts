@@ -242,6 +242,7 @@ function createPendingSignalIndexEntry(
 ): CompleteAwakeableNotificationEntry {
   return {
     isPending: true,
+    isAwaitingOn: true,
     groupIds: signalIndexGroupIds,
     commandIndex: undefined,
     type: 'CompleteAwakeable',
@@ -266,6 +267,7 @@ function createPendingSignalNameEntry(
 ): SignalNotificationEntry {
   return {
     isPending: true,
+    isAwaitingOn: true,
     groupIds: signalNameGroupIds,
     commandIndex: undefined,
     type: 'Signal',
@@ -315,6 +317,7 @@ function createPendingSignalEntries(
       index
     ];
     if (signalEntry) {
+      signalEntry.isAwaitingOn = true;
       assignGroupIds(signalEntry, ref.groupIds);
       signalNameEntryByRef.set(ref, signalEntry);
     } else {
