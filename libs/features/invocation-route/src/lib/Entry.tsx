@@ -2,10 +2,7 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetPausedError,
 } from '@restate/data-access/admin-api-hooks';
-import type {
-  components,
-  JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { ComponentType, memo } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';
@@ -27,7 +24,6 @@ import { GetState } from './entries/GetState';
 import { GetLazyState } from './entries/GetLazyState';
 import { GetStateKeys } from './entries/GetStateKeys';
 import { GetLazyStateKeys } from './entries/GetLazyStateKeys';
-import { Group } from './entries/Group';
 import { OneWayCall } from './entries/OneWayCall';
 import { Output } from './entries/Output';
 import { PeekPromise } from './entries/PeekPromise';
@@ -38,7 +34,6 @@ import {
   CommandEntryType,
   EntryProps,
   EventEntryType,
-  GroupEntryType,
   NotificationEntryType,
 } from './entries/types';
 import { Cancel } from './entries/Cancel';
@@ -47,8 +42,6 @@ import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalEntriesContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
 import { EntryCodecProvider } from './entries/EntryCodecProvider';
-
-type JournalGroupEntry = components['schemas']['JournalGroupEntryV2'];
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -125,17 +118,6 @@ export const ENTRY_EVENTS_COMPONENTS: {
   Killed: LifeCycle,
 };
 
-export const ENTRY_GROUP_COMPONENTS: {
-  [K in GroupEntryType]: ComponentType<EntryProps<JournalGroupEntry>>;
-} = {
-  Attempt: Group,
-  FirstCompleted: Group,
-  AllCompleted: Group,
-  FirstSucceededOrAllFailed: Group,
-  AllSucceededOrFirstFailed: Group,
-  Unknown: Group,
-};
-
 function digitCount(n: number) {
   if (n === 0) return 1;
   return Math.floor(Math.log10(Math.abs(n))) + 1;
@@ -194,9 +176,7 @@ export const Entry = memo(function Entry({
           ? ENTRY_NOTIFICATIONS_COMPONENTS[entry.type as NotificationEntryType]
           : entry.category === 'event'
             ? ENTRY_EVENTS_COMPONENTS[entry.type as EventEntryType]
-            : entry.category === 'group'
-              ? ENTRY_GROUP_COMPONENTS[entry.type as GroupEntryType]
-              : undefined
+            : undefined
       : undefined
   ) as ComponentType<EntryProps<JournalEntryV2>> | undefined;
 

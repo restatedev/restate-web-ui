@@ -1,7 +1,4 @@
-import type {
-  components,
-  JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
 import { RestateError } from '@restate/util/errors';
 
@@ -27,5 +24,3 @@ export type NotificationEntryType = NonNullable<
 export type EventEntryType = NonNullable<
   Extract<JournalEntryV2, { category?: 'event' }>['type']
 >;
-export type GroupEntryType =
-  components['schemas']['JournalGroupEntryV2']['type'];
