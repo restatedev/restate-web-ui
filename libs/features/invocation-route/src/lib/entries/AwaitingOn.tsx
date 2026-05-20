@@ -152,38 +152,32 @@ function fallbackLabel(ref: SingleRef): string {
   return '';
 }
 
-const INDENT_EM = 1;
-
 function FutureNode({
   future,
   invocation,
-  depth,
   isPending,
 }: {
   future: InvocationFuture;
   invocation: Invocation;
-  depth: number;
   isPending: boolean;
 }) {
   const group = getFutureGroup(future);
   if (group) {
     return (
       <>
-        <div
-          style={{ paddingLeft: `${depth * INDENT_EM}em` }}
-          className="text-2xs font-medium text-zinc-500"
-        >
+        <div className="font-mono text-xs font-medium text-zinc-400">
           {GROUP_LABELS[group.type]}
         </div>
-        {group.children.map((child, i) => (
-          <FutureNode
-            key={i}
-            future={child}
-            invocation={invocation}
-            depth={depth + 1}
-            isPending={isPending}
-          />
-        ))}
+        <div className="ml-1.5 flex flex-col gap-0.5 border-l border-zinc-200 pl-3">
+          {group.children.map((child, i) => (
+            <FutureNode
+              key={i}
+              future={child}
+              invocation={invocation}
+              isPending={isPending}
+            />
+          ))}
+        </div>
       </>
     );
   }
@@ -197,20 +191,13 @@ function FutureNode({
 
   if (!entry) {
     return (
-      <div
-        style={{ paddingLeft: `${depth * INDENT_EM}em` }}
-        className="font-mono text-2xs text-zinc-500"
-      >
+      <div className="font-mono text-2xs text-zinc-500">
         {single && fallbackLabel(single)}
       </div>
     );
   }
 
-  return (
-    <div style={{ paddingLeft: `${depth * INDENT_EM}em` }}>
-      <Entry entry={entry} invocation={invocation} depth={0} />
-    </div>
-  );
+  return <Entry entry={entry} invocation={invocation} depth={0} />;
 }
 
 const triggerStyles = tv({
@@ -270,7 +257,6 @@ function AwaitingOnContent({
             key={i}
             future={root}
             invocation={data}
-            depth={0}
             isPending={isPending}
           />
         ))}

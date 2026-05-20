@@ -345,13 +345,16 @@ export function JournalV2({
   }
 
   if (isPending[invocationId]) {
-    return (
-      <ContentPanelSection>
-        <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
-          <Spinner className="h-4 w-4" />
-          Loading…
-        </div>
-      </ContentPanelSection>
+    const loading = (
+      <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
+        <Spinner className="h-4 w-4" />
+        Loading…
+      </div>
+    );
+    return withTimeline ? (
+      <ContentPanelSection>{loading}</ContentPanelSection>
+    ) : (
+      <div className={className}>{loading}</div>
     );
   }
 
