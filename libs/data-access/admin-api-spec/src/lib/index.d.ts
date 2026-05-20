@@ -3084,6 +3084,8 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Suspended';
+      afterJournalEntryIndex?: number;
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     PausedLifecycleJournalEntryV2: {
       /** @enum {string} */

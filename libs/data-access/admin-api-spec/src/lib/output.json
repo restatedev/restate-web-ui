@@ -8003,6 +8003,12 @@
           "type": {
             "type": "string",
             "enum": ["Suspended"]
+          },
+          "afterJournalEntryIndex": {
+            "type": "integer"
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },
