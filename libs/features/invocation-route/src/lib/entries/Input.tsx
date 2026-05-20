@@ -74,7 +74,15 @@ export function Input({ entry, invocation, className }: InputProps) {
           />
           <div data-fill />
         </div>
-      ) : null}
+      ) : (
+        <div className="flex font-medium italic">
+          <Icon
+            name={IconName.Function}
+            className="mr-0.5 h-5 w-5 shrink-0 text-zinc-400"
+          />
+          {invocation?.target_handler_name}
+        </div>
+      )}
     </div>
   );
 }
