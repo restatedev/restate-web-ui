@@ -1,6 +1,7 @@
 import { SidebarNavItem, type SidebarMatch } from '@restate/ui/layout';
 import { IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
+import { REGISTER_DEPLOYMENT_QUERY } from '@restate/features/register-deployment';
 
 interface OverviewSidebarItemProps {
   baseUrl?: string;
@@ -66,6 +67,12 @@ export function OverviewSidebarItem({
           label: 'Deployments',
           match: deploymentsMatch,
           preserveSearchParams,
+          action: {
+            href: `?${REGISTER_DEPLOYMENT_QUERY}=true`,
+            ariaLabel: 'Register deployment',
+            icon: IconName.Plus,
+            preserveSearchParams: true,
+          },
         },
         {
           href: handlersHref,
