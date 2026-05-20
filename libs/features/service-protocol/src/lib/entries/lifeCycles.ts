@@ -94,7 +94,12 @@ export function lifeCycles(
         category: 'event',
         end: undefined,
         isPending,
-        awaitingOn: suspendedEntry?.awaitingOn,
+        // Live suspension → use the invocation's current waiting future, which
+        // reflects the actual outstanding awaits. Historical events keep their
+        // own snapshot. `isPending` tells consumers which case we're in.
+        awaitingOn: isPending
+          ? invocation.suspended_waiting_future_json
+          : suspendedEntry?.awaitingOn,
         afterJournalEntryIndex: suspendedEntry?.afterJournalEntryIndex,
         index: allocateSyntheticIndex(),
       });
@@ -159,7 +164,10 @@ export function lifeCycles(
               ? datesMax(invocation.last_start_at, invocation.modified_at)
               : invocation.completed_at,
       isPending: invocation.status === 'running',
-      awaitingOn: invocation.last_awaiting_on_future_json,
+      awaitingOn:
+        invocation.status === 'running'
+          ? invocation.last_awaiting_on_future_json
+          : undefined,
     });
   }
   if (invocation.next_retry_at && invocation.status === 'backing-off') {
@@ -167,6 +175,7 @@ export function lifeCycles(
       type: 'Retrying',
       category: 'event',
       start: invocation.next_retry_at,
+      isPending: true,
       awaitingOn: invocation.last_awaiting_on_future_json,
     });
   }

@@ -14,6 +14,7 @@ const JournalEntriesContext = createContext<{
   error?: Record<string, Error | null | undefined>;
   isCompact: boolean;
   disableExpand?: boolean;
+  hideOutput?: boolean;
 }>({
   invocationIds: [],
   isCompact: true,

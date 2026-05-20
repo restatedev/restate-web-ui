@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { ENTRY_COMMANDS_COMPONENTS } from '../Entry';
 import { ComponentType } from 'react';
 import { EntryCodecProvider } from './EntryCodecProvider';
+import { AwaitingOn } from './AwaitingOn';
 
 export function LifeCycle({
   entry,
@@ -105,9 +106,26 @@ export function LifeCycle({
       </div>
     );
   }
+  const supportsAwaitingOn =
+    entry.type === 'Suspended' ||
+    entry.type === 'Running' ||
+    entry.type === 'Retrying';
+  const awaitingOn = supportsAwaitingOn ? entry.awaitingOn : undefined;
+  const awaitingState = entry.type === 'Suspended' ? 'suspended' : 'running';
+
   return (
-    <div className="mr-2 flex gap-1 font-sans text-zinc-500">
-      {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
+    <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+      <span className="shrink-0">
+        {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
+      </span>
+      {awaitingOn && (
+        <AwaitingOn
+          future={awaitingOn}
+          invocation={invocation}
+          state={awaitingState}
+          isPending={Boolean(entry.isPending)}
+        />
+      )}
     </div>
   );
 }
