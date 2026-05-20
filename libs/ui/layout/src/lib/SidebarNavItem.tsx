@@ -21,12 +21,16 @@ export interface SidebarLocation {
 
 export type SidebarMatch = (loc: SidebarLocation) => boolean;
 
-export interface SidebarSubItemAction {
-  href: string;
-  ariaLabel: string;
-  icon: IconName;
-  preserveSearchParams?: boolean | string[];
-}
+export type SidebarSubItemAction =
+  | {
+      href: string;
+      ariaLabel: string;
+      icon: IconName;
+      preserveSearchParams?: boolean | string[];
+    }
+  | {
+      render: (props: { className: string }) => ReactNode;
+    };
 
 export interface SidebarSubItem {
   href: string;
@@ -79,7 +83,7 @@ const navStyles = tv({
     subLink:
       'flex min-w-0 flex-auto items-center rounded-lg px-2.5 py-1 text-0.5xs no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2',
     subAction:
-      'ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-gray-400 no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/5 hover:text-gray-700 focus-visible:outline-2',
+      'ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-gray-500 no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/5 hover:text-gray-700 focus-visible:outline-2',
     subActionSpacer: 'ml-1 h-5 w-5 shrink-0',
     subActionIcon: 'h-3.5 w-3.5 shrink-0',
     overflowTrigger:
@@ -254,19 +258,23 @@ function SidebarSubLink({
         {item.label}
       </Link>
       {item.action ? (
-        <Link
-          href={item.action.href}
-          preserveQueryParams={item.action.preserveSearchParams ?? false}
-          disabled={disabled}
-          className={s.subAction()}
-          aria-label={item.action.ariaLabel}
-        >
-          <Icon
-            name={item.action.icon}
-            className={s.subActionIcon()}
-            aria-hidden
-          />
-        </Link>
+        'render' in item.action ? (
+          item.action.render({ className: s.subAction() })
+        ) : (
+          <Link
+            href={item.action.href}
+            preserveQueryParams={item.action.preserveSearchParams ?? false}
+            disabled={disabled}
+            className={s.subAction()}
+            aria-label={item.action.ariaLabel}
+          >
+            <Icon
+              name={item.action.icon}
+              className={s.subActionIcon()}
+              aria-hidden
+            />
+          </Link>
+        )
       ) : reserveActionSpace ? (
         <div className={s.subActionSpacer()} aria-hidden />
       ) : null}
