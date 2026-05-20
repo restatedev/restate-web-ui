@@ -56,6 +56,7 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
+import { Retention } from './Retention';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -282,6 +283,14 @@ export function JournalV2({
     : 0;
 
   const entriesWithoutInput = entriesWithoutInputUnfiltered;
+  // The server returns an empty `entries` array when the journal has been
+  // purged (or was never written). Detect this once everything has loaded so
+  // we can surface a "Journal was purged" message instead of an empty pane.
+  const isJournalEmpty =
+    !isPending[invocationId] &&
+    !invocationApiError &&
+    Boolean(journalAndInvocationData) &&
+    (journalAndInvocationData?.journal?.entries?.length ?? 0) === 0;
 
   const virtualizer = useWindowVirtualizer({
     count: entriesWithoutInput.length,
@@ -502,87 +511,101 @@ export function JournalV2({
                 </ContentPanelHeader>
               )}
               {withTimeline ? (
-                <div className="relative flex min-h-0 flex-1">
-                  <div
-                    ref={listRef}
-                    className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs"
-                  >
-                    <LazyPanelGroup
-                      direction="horizontal"
-                      onLayout={handlePanelLayout}
-                      style={{ overflow: 'visible' }}
-                      className="min-h-full flex-1"
+                <div className="relative flex min-h-0 flex-1 flex-col">
+                  {isJournalEmpty ? (
+                    <JournalPurgedMessage />
+                  ) : (
+                    <div
+                      ref={listRef}
+                      className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs"
                     >
-                      {/* Left panel */}
-                      <LazyPanel
-                        defaultSize={(1 - timelineWidth) * 100}
-                        minSize={20}
-                        className="z-[2] grid min-w-0"
-                        style={{
-                          overflow: 'visible',
-                          marginBottom: JOURNAL_BOTTOM_PADDING_PX,
-                          minHeight: totalSize,
-                          gridTemplateColumns: '1fr',
-                          gridTemplateRows: '1fr',
-                        }}
+                      <LazyPanelGroup
+                        direction="horizontal"
+                        onLayout={handlePanelLayout}
+                        style={{ overflow: 'visible' }}
+                        className="min-h-full flex-1"
                       >
-                        {/* Content */}
-                        <ContentPanelSection
-                          className="z-[2] col-start-1 row-start-1 min-w-0 border-r"
-                          style={{ minHeight: totalSize }}
+                        {/* Left panel */}
+                        <LazyPanel
+                          defaultSize={(1 - timelineWidth) * 100}
+                          minSize={20}
+                          className="z-[2] grid min-w-0"
+                          style={{
+                            overflow: 'visible',
+                            marginBottom: JOURNAL_BOTTOM_PADDING_PX,
+                            minHeight: totalSize,
+                            gridTemplateColumns: '1fr',
+                            gridTemplateRows: '1fr',
+                          }}
                         >
-                          <VirtualizedEntries
-                            virtualItems={virtualItems}
-                            totalSize={totalSize}
-                            entriesWithoutInput={entriesWithoutInput}
-                            data={data}
-                          />
-                        </ContentPanelSection>
-                      </LazyPanel>
-                      <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
-                        <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-blue-500" />
-                      </LazyPanelResizeHandle>
-                      {/* Right panel - grid container for overlapping Units */}
-                      <LazyPanel
-                        defaultSize={timelineWidth * 100}
-                        className="relative hidden overflow-x-clip bg-black/3 md:grid"
-                        minSize={20}
-                        style={{
-                          overflow: 'visible',
-                          minHeight: totalSize,
-                          gridTemplateColumns: '1fr',
-                          gridTemplateRows: '1fr',
-                        }}
-                      >
-                        {/* Sticky Units - limited to viewport height */}
-                        <UnitsPortalTarget className="pointer-events-none sticky top-[var(--cp-content-top,0px)] z-10 col-start-1 row-start-1 mt-[var(--cp-section-pt,0px)] h-[calc(100%-var(--cp-section-pt,0px))] max-h-[calc(100vh-var(--cp-content-top,0px))] overflow-hidden [--timeline-units-header-offset:0rem]" />
-
-                        {/* Scrollable timeline content with Units overlay */}
-                        <ContentPanelSection
-                          className="relative z-[2] col-start-1 row-start-1 h-full"
-                          style={{ minHeight: totalSize }}
-                          fadeClassName="from-gray-100"
-                        >
-                          <ScrollableTimeline
-                            cancelEvent={
-                              lifecycleDataByInvocation.get(invocationId)
-                                ?.cancelEvent
-                            }
+                          {/* Content */}
+                          <ContentPanelSection
+                            className="z-[2] col-start-1 row-start-1 min-w-0 border-r"
+                            style={{ minHeight: totalSize }}
                           >
-                            <VirtualizedTimeline
+                            <VirtualizedEntries
                               virtualItems={virtualItems}
                               totalSize={totalSize}
                               entriesWithoutInput={entriesWithoutInput}
                               data={data}
-                              relatedEntriesByInvocation={
-                                relatedEntriesByInvocation
-                              }
                             />
-                          </ScrollableTimeline>
-                        </ContentPanelSection>
-                      </LazyPanel>
-                    </LazyPanelGroup>
-                  </div>
+                            {journalAndInvocationData && (
+                              <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-gray-500">
+                                <Retention
+                                  invocation={journalAndInvocationData}
+                                  type="journal"
+                                  prefixForCompletion="retention "
+                                  prefixForInProgress="retained "
+                                />
+                              </div>
+                            )}
+                          </ContentPanelSection>
+                        </LazyPanel>
+                        <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
+                          <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-blue-500" />
+                        </LazyPanelResizeHandle>
+                        {/* Right panel - grid container for overlapping Units */}
+                        <LazyPanel
+                          defaultSize={timelineWidth * 100}
+                          className="relative hidden overflow-x-clip bg-black/3 md:grid"
+                          minSize={20}
+                          style={{
+                            overflow: 'visible',
+                            minHeight: totalSize,
+                            gridTemplateColumns: '1fr',
+                            gridTemplateRows: '1fr',
+                          }}
+                        >
+                          {/* Sticky Units - limited to viewport height */}
+                          <UnitsPortalTarget className="pointer-events-none sticky top-[var(--cp-content-top,0px)] z-10 col-start-1 row-start-1 mt-[var(--cp-section-pt,0px)] h-[calc(100%-var(--cp-section-pt,0px))] max-h-[calc(100vh-var(--cp-content-top,0px))] overflow-hidden [--timeline-units-header-offset:0rem]" />
+
+                          {/* Scrollable timeline content with Units overlay */}
+                          <ContentPanelSection
+                            className="relative z-[2] col-start-1 row-start-1 h-full"
+                            style={{ minHeight: totalSize }}
+                            fadeClassName="from-gray-100"
+                          >
+                            <ScrollableTimeline
+                              cancelEvent={
+                                lifecycleDataByInvocation.get(invocationId)
+                                  ?.cancelEvent
+                              }
+                            >
+                              <VirtualizedTimeline
+                                virtualItems={virtualItems}
+                                totalSize={totalSize}
+                                entriesWithoutInput={entriesWithoutInput}
+                                data={data}
+                                relatedEntriesByInvocation={
+                                  relatedEntriesByInvocation
+                                }
+                              />
+                            </ScrollableTimeline>
+                          </ContentPanelSection>
+                        </LazyPanel>
+                      </LazyPanelGroup>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className={className}>
@@ -883,3 +906,18 @@ const TimelineContainer = memo(function TimelineContainer({
     </div>
   );
 });
+
+function JournalPurgedMessage() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+      <Icon name={IconName.Trash} className="h-5 w-5 text-zinc-400" />
+      <div className="text-sm font-medium text-zinc-700">
+        Journal was purged
+      </div>
+      <div className="max-w-md text-xs text-zinc-500">
+        Entries for this invocation are no longer available — the journal
+        retention has elapsed or it was cleared.
+      </div>
+    </div>
+  );
+}
