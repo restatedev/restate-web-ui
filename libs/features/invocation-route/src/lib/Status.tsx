@@ -85,6 +85,10 @@ const styles = tv({
       true: 'py-0.5 pr-0.5',
       false: '',
     },
+    hasAwaitingOn: {
+      true: 'py-0.5 pr-0.5',
+      false: '',
+    },
   },
 });
 
@@ -138,6 +142,10 @@ export function Status({
           isRetrying: Boolean(invocation.isRetrying),
           hasPausedError,
           variant,
+          hasAwaitingOn: Boolean(
+            invocation?.last_awaiting_on_future_json ||
+            invocation?.suspended_waiting_future_json,
+          ),
         })}
       >
         <Ellipsis visible={status === 'running'}>
@@ -166,6 +174,7 @@ export function Status({
             invocationId={invocation.id}
             state="running"
             isPending
+            className=""
           />
         )}
         {status === 'suspended' && (
