@@ -267,7 +267,13 @@ function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
   if (entry?.resultType === 'failure') {
     return 'danger';
   }
-  if (entry?.type === 'Suspended' || entry?.type === 'Sleep') {
+  if (
+    entry?.type === 'Suspended' ||
+    entry?.type === 'Sleep' ||
+    entry?.type === 'GetPromise' ||
+    entry?.type === 'PeekPromise' ||
+    entry?.type === 'Awakeable'
+  ) {
     return 'idleNeutral';
   }
   if (entry?.type === 'Pending' || entry?.type === 'Paused') {
