@@ -251,6 +251,16 @@ function shouldIncludeEntry(
   ) {
     return false;
   }
+  // Compact mode shows only the currently-active Suspended/Paused row; past
+  // ones still appear in the lifecycle bar at the top.
+  if (
+    isCompact &&
+    entry.category === 'event' &&
+    (entry.type === 'Suspended' || entry.type === 'Paused') &&
+    entry.isPending !== true
+  ) {
+    return false;
+  }
   // Paused and Suspended raw events live in the lifecycle viewer (transformed
   // into Paused/Suspended lifecycle entries by lifeCycles.ts), not the main
   // list.

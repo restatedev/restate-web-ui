@@ -118,10 +118,10 @@ export function LifeCycle({
       <span className="shrink-0">
         {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
       </span>
-      {awaitingOn && (
+      {invocation?.id && (
         <AwaitingOn
           future={awaitingOn}
-          invocation={invocation}
+          invocationId={String(invocation.id)}
           state={awaitingState}
           isPending={Boolean(entry.isPending)}
         />
