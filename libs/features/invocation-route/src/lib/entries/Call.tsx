@@ -30,6 +30,7 @@ export function Call({
     isPending,
     invocationIds,
     error: invocationsError,
+    disableExpand,
   } = useJournalEntriesContext();
   const isCircularRef = useIsCircularRef(entry.invocationId, invocation?.id);
   const isExpanded =
@@ -108,36 +109,38 @@ export function Call({
           </>
         )}
       </div>
-      <div className="absolute top-0 right-1 bottom-0 flex items-center">
-        {isCircularRef ? (
-          <CircularRefWarning />
-        ) : invokedError ? (
-          <CallInvokedLoadingError error={invokedError} className="" />
-        ) : (
-          <Button
-            onClick={() => {
-              if (entry.invocationId) {
-                if (invocationIds.includes(entry.invocationId)) {
-                  removeInvocationId?.(entry.invocationId);
-                } else {
-                  addInvocationId?.(entry.invocationId);
+      {!disableExpand && (
+        <div className="absolute top-0 right-1 bottom-0 flex items-center">
+          {isCircularRef ? (
+            <CircularRefWarning />
+          ) : invokedError ? (
+            <CallInvokedLoadingError error={invokedError} className="" />
+          ) : (
+            <Button
+              onClick={() => {
+                if (entry.invocationId) {
+                  if (invocationIds.includes(entry.invocationId)) {
+                    removeInvocationId?.(entry.invocationId);
+                  } else {
+                    addInvocationId?.(entry.invocationId);
+                  }
                 }
-              }
-            }}
-            variant="icon"
-            className="z-10 bg-black/3"
-          >
-            {invokedIsPending ? (
-              <Spinner />
-            ) : (
-              <Icon
-                name={isExpanded ? IconName.X : IconName.Plus}
-                className="h-3.5 w-3.5"
-              />
-            )}
-          </Button>
-        )}
-      </div>
+              }}
+              variant="icon"
+              className="z-10 bg-black/3"
+            >
+              {invokedIsPending ? (
+                <Spinner />
+              ) : (
+                <Icon
+                  name={isExpanded ? IconName.X : IconName.Plus}
+                  className="h-3.5 w-3.5"
+                />
+              )}
+            </Button>
+          )}
+        </div>
+      )}
     </>
   );
 }
