@@ -507,7 +507,8 @@ export function JournalV2({
                               <div>
                                 <div>Detailed</div>
                                 <div className="text-0.5xs opacity-70">
-                                  Include transient errors and completions
+                                  Include transient errors, completions, and
+                                  lifecycle history
                                 </div>
                               </div>
                             </DropdownItem>
