@@ -386,9 +386,7 @@ function Component() {
             }}
             isSampled={isSampled}
             leading={
-              !isSummaryLoading ? (
-                <SampleModeToggle mode={countMode} onChange={setCountMode} />
-              ) : undefined
+              <SampleModeToggle mode={countMode} onChange={setCountMode} />
             }
           />
         </div>
