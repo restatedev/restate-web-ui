@@ -4232,6 +4232,7 @@
             "type": "string",
             "enum": ["Event: Paused"]
           },
+          "afterJournalEntryIndex": { "type": "integer" },
           "relatedCommandName": { "type": "string" },
           "message": { "type": "string" },
           "stack": { "type": "string" },
@@ -4377,6 +4378,7 @@
             "type": "string",
             "enum": ["Paused"]
           },
+          "afterJournalEntryIndex": { "type": "integer" },
           "message": { "type": "string" },
           "stack": { "type": "string" },
           "code": { "type": "integer" },

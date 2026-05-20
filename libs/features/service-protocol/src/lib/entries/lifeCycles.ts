@@ -73,7 +73,33 @@ export function lifeCycles(
       isPending: false,
     });
   }
-  if (invocation.status === 'suspended') {
+  const suspendedRawEntries = eventRawEntries.filter(
+    (entry) => entry.entry_type === 'Event: Suspended',
+  );
+  if (suspendedRawEntries.length > 0) {
+    suspendedRawEntries.forEach((suspendedRawEntry, index, arr) => {
+      const isLast = index === arr.length - 1;
+      const isPending = isLast && invocation.status === 'suspended';
+      const suspendedEntry = event(
+        suspendedRawEntry,
+        [],
+        invocation,
+      ) as Extract<
+        JournalEntryV2,
+        { type?: 'Event: Suspended'; category?: 'event' }
+      >;
+      events.push({
+        type: 'Suspended',
+        start: suspendedEntry?.start,
+        category: 'event',
+        end: undefined,
+        isPending,
+        awaitingOn: suspendedEntry?.awaitingOn,
+        afterJournalEntryIndex: suspendedEntry?.afterJournalEntryIndex,
+        index: allocateSyntheticIndex(),
+      });
+    });
+  } else if (invocation.status === 'suspended') {
     events.push({
       type: 'Suspended',
       start: invocation.modified_at,
@@ -110,6 +136,7 @@ export function lifeCycles(
           relatedCommandType: pausedErrorEntry?.relatedCommandType,
           relatedRestateErrorCode: pausedErrorEntry?.relatedRestateErrorCode,
           relatedCommandIndex: pausedErrorEntry?.relatedCommandIndex,
+          afterJournalEntryIndex: pausedErrorEntry?.afterJournalEntryIndex,
           index: allocateSyntheticIndex(),
         });
       });

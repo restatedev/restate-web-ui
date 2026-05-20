@@ -3017,6 +3017,7 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Event: Paused';
+      afterJournalEntryIndex?: number;
       relatedCommandName?: string;
       message?: string;
       stack?: string;
@@ -3092,6 +3093,7 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Paused';
+      afterJournalEntryIndex?: number;
       message?: string;
       stack?: string;
       code?: number;

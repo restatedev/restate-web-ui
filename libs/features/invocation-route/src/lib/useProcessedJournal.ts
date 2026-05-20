@@ -251,8 +251,13 @@ function shouldIncludeEntry(
   ) {
     return false;
   }
-  // Paused events live in the lifecycle viewer, not the main list.
-  if (entry.category === 'event' && entry.type === 'Event: Paused') {
+  // Paused and Suspended raw events live in the lifecycle viewer (transformed
+  // into Paused/Suspended lifecycle entries by lifeCycles.ts), not the main
+  // list.
+  if (
+    entry.category === 'event' &&
+    (entry.type === 'Event: Paused' || entry.type === 'Event: Suspended')
+  ) {
     return false;
   }
   return true;

@@ -64,6 +64,7 @@ export function event(
         completionId: undefined,
         end: undefined,
         index: entry.index,
+        afterJournalEntryIndex: entry.after_journal_entry_index,
         relatedIndexes: undefined,
         isRetrying: false,
         isLoaded: true,
