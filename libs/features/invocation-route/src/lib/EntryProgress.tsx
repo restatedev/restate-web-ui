@@ -355,9 +355,9 @@ function InnerEntryProgress({
 
   const isCopiedFromRestart = Boolean(
     invocation?.invoked_by === 'restart_as_new' &&
-      entry.start &&
-      start &&
-      new Date(entry.start).getTime() < start,
+    entry.start &&
+    start &&
+    new Date(entry.start).getTime() < start,
   );
 
   const isPoint = Boolean(!entryEnd && !entry?.isPending);

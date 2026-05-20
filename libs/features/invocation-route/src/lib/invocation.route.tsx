@@ -265,7 +265,13 @@ function Component() {
           )}
         </div>
 
-        <ContentPanel className="mt-10">
+        <ContentPanel
+          className="mt-10"
+          tabs={{
+            items: [{ id: 'journal', label: 'Journal' }],
+            defaultId: 'journal',
+          }}
+        >
           {OnboardingGuide && (
             <OnboardingGuide
               stage="view-invocation"

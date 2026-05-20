@@ -171,8 +171,7 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
     | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
     | undefined;
   const restartedFromHeader = (
-    inputPayload?.headers ||
-    inputEntry?.headers
+    inputPayload?.headers || inputEntry?.headers
   )?.find(({ key }) => key === RESTARTED_FROM_HEADER);
   const isRestartedFrom = Boolean(
     invocation.invoked_by === 'restart_as_new' || restartedFromHeader,
@@ -186,7 +185,10 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
         <>
           <span className="shrink-0">Restarted from</span>
           {restartedFromValue && (
-            <InvocationId id={restartedFromValue} className={invocationIdStyles} />
+            <InvocationId
+              id={restartedFromValue}
+              className={invocationIdStyles}
+            />
           )}
         </>
       ) : invocation.invoked_by === 'subscription' ? (
