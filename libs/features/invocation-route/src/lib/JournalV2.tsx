@@ -457,6 +457,7 @@ export function JournalV2({
                       ariaCurrentValue="true"
                       responsive={false}
                       aria-label="View mode"
+                      containerClassName="border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
                     >
                       <NavButtonItem
                         isActive={isCompact}
