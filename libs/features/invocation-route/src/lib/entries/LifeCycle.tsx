@@ -17,6 +17,7 @@ import {
   useGetJournalEntryPayloads,
   useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
+import { tv } from '@restate/util/styles';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
@@ -145,7 +146,9 @@ export function LifeCycle({
   );
 }
 
-const invocationIdStyles = 'max-w-[20ch] min-w-0 text-0.5xs font-semibold';
+const invocationIdStyles = tv({
+  base: 'max-w-[20ch] min-w-0 text-xs font-semibold',
+});
 
 function CreatedSource({ invocation }: { invocation?: Invocation }) {
   // Journal lite doesn't include the Input entry's full headers, so reach for
@@ -187,7 +190,7 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
           {restartedFromValue && (
             <InvocationId
               id={restartedFromValue}
-              className={invocationIdStyles}
+              className={invocationIdStyles()}
             />
           )}
         </>
@@ -198,7 +201,7 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
           <span className="shrink-0">Invoked by</span>
           <InvocationId
             id={invocation.invoked_by_id}
-            className={invocationIdStyles}
+            className={invocationIdStyles()}
           />
         </>
       ) : (

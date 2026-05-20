@@ -346,36 +346,44 @@ export function createFutureEntries(
     return [];
   }
 
-  for (const groupEntry of registry.groupEntries) {
-    groupEntry.index = allocateSyntheticIndex();
-  }
+  // Group entries are intentionally not emitted: the UI filters them out
+  // (`useProcessedJournal` drops `category === 'group'`), so allocating
+  // indexes / building `relatedIndexes` / returning them is wasted work.
+  // Kept the registry build itself because its side-effects on individual
+  // entries (`isAwaitingOn`, pending signal synthesis) are still needed.
+  //
+  // for (const groupEntry of registry.groupEntries) {
+  //   groupEntry.index = allocateSyntheticIndex();
+  // }
 
-  const { pendingEntries, signalIndexEntryByIndex, signalNameEntryByRef } =
-    createPendingSignalEntries(registry, context, allocateSyntheticIndex);
-  const groupEntryById = new Map(
-    registry.groupEntries.map((entry) => [entry.id, entry]),
+  const { pendingEntries } = createPendingSignalEntries(
+    registry,
+    context,
+    allocateSyntheticIndex,
   );
 
-  for (const groupEntry of registry.groupEntries) {
-    const relatedIndexes: number[] = [];
+  // const groupEntryById = new Map(
+  //   registry.groupEntries.map((entry) => [entry.id, entry]),
+  // );
+  //
+  // for (const groupEntry of registry.groupEntries) {
+  //   const relatedIndexes: number[] = [];
+  //   for (const ref of registry.childRefsByGroupId.get(groupEntry.id) ?? []) {
+  //     const relatedIndex = getFutureReferenceIndex(
+  //       ref,
+  //       context,
+  //       groupEntryById,
+  //       signalIndexEntryByIndex,
+  //       signalNameEntryByRef,
+  //     );
+  //     if (typeof relatedIndex === 'number') {
+  //       relatedIndexes.push(relatedIndex);
+  //     }
+  //   }
+  //   groupEntry.relatedIndexes = relatedIndexes;
+  // }
 
-    for (const ref of registry.childRefsByGroupId.get(groupEntry.id) ?? []) {
-      const relatedIndex = getFutureReferenceIndex(
-        ref,
-        context,
-        groupEntryById,
-        signalIndexEntryByIndex,
-        signalNameEntryByRef,
-      );
-      if (typeof relatedIndex === 'number') {
-        relatedIndexes.push(relatedIndex);
-      }
-    }
-
-    groupEntry.relatedIndexes = relatedIndexes;
-  }
-
-  return [...registry.groupEntries, ...pendingEntries];
+  return pendingEntries;
 }
 
 function getFutureReferenceIndex(
