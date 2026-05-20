@@ -30,6 +30,7 @@ export function Expression({
   prefix,
   chain,
   namePrefix,
+  isPending = false,
 }: {
   className?: string;
   name: string;
@@ -41,9 +42,13 @@ export function Expression({
   operationSymbol?: string;
   chain?: ReactNode;
   prefix?: ReactNode;
+  // When the entry is pending, its `output` is status text (Ellipsis, "Wakes
+  // up in…", etc.) rather than a result. `hideOutput` only suppresses real
+  // results, so pending entries always render their output.
+  isPending?: boolean;
 }) {
   const { hideOutput } = useJournalEntriesContext();
-  const showOutput = !hideOutput && output;
+  const showOutput = (isPending || !hideOutput) && output;
   return (
     <div className={styles({ className, isFunction })}>
       <div className="text-inherits min-w-0 text-zinc-600">

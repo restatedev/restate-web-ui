@@ -195,6 +195,7 @@ export function EntryExpression({
       })}
       className={styles({ className })}
       isFunction={entry.type !== 'Output'}
+      isPending={Boolean(entry?.isPending)}
       input={input}
       output={
         <>
