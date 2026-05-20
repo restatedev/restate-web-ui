@@ -134,6 +134,7 @@ export function signal(
       value,
       resultType,
       id: undefined,
+      signalIndex: id,
     } as Extract<
       JournalEntryV2,
       { type?: 'CompleteAwakeable'; category?: 'notification' }
