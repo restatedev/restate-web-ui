@@ -104,6 +104,20 @@ function withRetention({
 const withFieldStyles = tv({
   base: 'w-full border-none bg-transparent pl-0',
 });
+
+function formatFieldValue(value: Invocation[keyof Invocation] | null) {
+  if (value == null) {
+    return '';
+  }
+  if (typeof value === 'number') {
+    return formatNumber(value);
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  return JSON.stringify(value);
+}
+
 function withField({
   field,
   className,
@@ -112,12 +126,10 @@ function withField({
   className?: string;
 }) {
   return (props: { invocation: Invocation }) => {
-    const value = props.invocation[field] ?? '';
+    const value = formatFieldValue(props.invocation[field]);
     return (
       <Badge className={withFieldStyles({ className })}>
-        <TruncateWithTooltip>
-          {typeof value === 'number' ? formatNumber(value) : value}
-        </TruncateWithTooltip>
+        <TruncateWithTooltip>{value}</TruncateWithTooltip>
       </Badge>
     );
   };
@@ -305,7 +317,7 @@ function JournalCell({ invocation }: CellProps) {
         >
           <JournalV2
             invocationId={invocation.id}
-            className="*:rounded-2xl *:text-xs [&_.target]:rounded-r-2xl [&&&_.target>*:last-child>*]:rounded-r-2xl [&>*:first-child]:mb-2 [&>*:first-child]:h-9 [&>*:first-child_[data-target]>*]:h-9 [&>*:first-child>*:last-child]:h-9"
+            className="*:rounded-2xl *:text-xs"
             withTimeline={false}
           />
         </DropdownSection>

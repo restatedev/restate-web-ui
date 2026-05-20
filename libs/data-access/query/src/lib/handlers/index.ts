@@ -20,4 +20,8 @@ export { getInvocationsStatus } from './getInvocationsStatus';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { listDrainedDeployments } from './listDrainedDeployments';
-export { type QueryContext, createQueryContext } from './shared';
+export {
+  type QueryContext,
+  type StateServiceType,
+  createQueryContext,
+} from './shared';

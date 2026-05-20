@@ -14,6 +14,7 @@ import { tv } from '@restate/util/styles';
 import { formatOrdinals } from '@restate/util/intl';
 import { Ellipsis } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';
+import { AwaitingOn } from './entries/AwaitingOn';
 
 export function getRestateError(invocation?: Invocation) {
   if (!invocation) {
@@ -84,6 +85,10 @@ const styles = tv({
       true: 'py-0.5 pr-0.5',
       false: '',
     },
+    hasAwaitingOn: {
+      true: 'py-0.5 pr-0.5',
+      false: '',
+    },
   },
 });
 
@@ -137,6 +142,10 @@ export function Status({
           isRetrying: Boolean(invocation.isRetrying),
           hasPausedError,
           variant,
+          hasAwaitingOn: Boolean(
+            invocation?.last_awaiting_on_future_json ||
+            invocation?.suspended_waiting_future_json,
+          ),
         })}
       >
         <Ellipsis visible={status === 'running'}>
@@ -157,6 +166,23 @@ export function Status({
             error={pausedError}
             popoverTitle="Paused after"
             label="after…"
+          />
+        )}
+        {status === 'running' && (
+          <AwaitingOn
+            future={invocation.last_awaiting_on_future_json}
+            invocationId={invocation.id}
+            state="running"
+            isPending
+            className=""
+          />
+        )}
+        {status === 'suspended' && (
+          <AwaitingOn
+            future={invocation.suspended_waiting_future_json}
+            invocationId={invocation.id}
+            state="suspended"
+            isPending
           />
         )}
       </Badge>

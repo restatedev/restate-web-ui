@@ -21,7 +21,7 @@ import {
   output,
   signal,
   attachInvocation,
-  JournalRawEntryWithCommandIndex,
+  type JournalRawEntryWithCommandIndex,
   sendSignal,
   event,
   notificationRun,
@@ -36,19 +36,35 @@ import {
   notificationGetLazyState,
   getLazyStateKeys,
   notificationGetLazyStateKeys,
+  assignGroupIds,
+  type JournalEntryConversionContext,
 } from '@restate/features/service-protocol';
 
 export function convertJournalV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
   invocation?: Invocation,
+  context?: JournalEntryConversionContext,
 ): JournalEntryV2 {
   const newEntry =
     JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type]?.(
       entry,
       nextEntries,
       invocation,
+      context,
     ) ?? (entry as JournalEntryV2);
+  if (typeof newEntry?.completionId === 'number') {
+    if (newEntry.category === 'command') {
+      context?.completionEntryById.set(newEntry.completionId, newEntry);
+    }
+    if (context?.future?.completionGroupIdsById.has(newEntry.completionId)) {
+      newEntry.isAwaitingOn = true;
+    }
+    assignGroupIds(
+      newEntry,
+      context?.future?.completionGroupIdsById.get(newEntry.completionId),
+    );
+  }
   return newEntry;
 }
 
@@ -59,6 +75,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
       entry: JournalRawEntryWithCommandIndex,
       nextEntries: JournalEntryV2[],
       invocation?: Invocation,
+      context?: JournalEntryConversionContext,
     ) => JournalEntryV2 | undefined
   >
 > = {
@@ -84,6 +101,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
 
   'Event: Paused': event,
   'Event: TransientError': event,
+  'Event: Suspended': event,
 
   'Command: Input': input,
   'Command: Output': output,

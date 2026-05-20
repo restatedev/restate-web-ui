@@ -7,6 +7,7 @@ import { ReactNode } from 'react';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Portal } from '@restate/ui/portal';
+import { useJournalEntriesContext } from './JournalContext';
 
 const styles = tv({
   base: 'relative flex max-w-full flex-row items-center pr-2',
@@ -29,6 +30,7 @@ export function Expression({
   prefix,
   chain,
   namePrefix,
+  isPending = false,
 }: {
   className?: string;
   name: string;
@@ -40,7 +42,13 @@ export function Expression({
   operationSymbol?: string;
   chain?: ReactNode;
   prefix?: ReactNode;
+  // When the entry is pending, its `output` is status text (Ellipsis, "Wakes
+  // up in…", etc.) rather than a result. `hideOutput` only suppresses real
+  // results, so pending entries always render their output.
+  isPending?: boolean;
 }) {
+  const { hideOutput } = useJournalEntriesContext();
+  const showOutput = (isPending || !hideOutput) && output;
   return (
     <div className={styles({ className, isFunction })}>
       <div className="text-inherits min-w-0 text-zinc-600">
@@ -72,14 +80,16 @@ export function Expression({
               {typeof chain === 'string' ? '()' : null}
             </span>
           )}
-          <span className="shrink-0 text-zinc-400">
-            {output && (
-              <span className="mx-[0.5ch] font-sans text-zinc-500">
-                {operationSymbol}
+          {showOutput && (
+            <>
+              <span className="shrink-0 text-zinc-400">
+                <span className="mx-[0.5ch] font-sans text-zinc-500">
+                  {operationSymbol}
+                </span>
               </span>
-            )}
-          </span>
-          {output}
+              {output}
+            </>
+          )}
         </span>
       </div>
     </div>

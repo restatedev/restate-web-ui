@@ -6,7 +6,7 @@ import { convertInvocation } from '../convertInvocation';
 import { convertInvocationsFilters } from '../convertFilters';
 import {
   type QueryContext,
-  sysInvocationListColumns,
+  getSysInvocationListColumns,
   DURATION_EXPRESSION,
 } from './shared';
 
@@ -31,7 +31,7 @@ export async function listInvocations(
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
   if (idRows.length > 0) {
-    const detailColumns = `${sysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
+    const detailColumns = `${getSysInvocationListColumns(this.restateVersion, this.features).join(', ')}, ${DURATION_EXPRESSION}`;
     const { rows: invRows } = await this.query(
       `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters([
         {

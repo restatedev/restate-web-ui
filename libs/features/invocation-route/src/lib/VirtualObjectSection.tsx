@@ -58,6 +58,7 @@ export function VirtualObjectSection({
       String(invocation?.target_service_name),
       String(invocation?.target_service_key),
       invocation?.scope,
+      'virtual_object',
       {
         enabled: shouldFetchState,
         staleTime: 0,
@@ -69,6 +70,7 @@ export function VirtualObjectSection({
       String(invocation?.target_service_name),
       invocation?.target_service_key ? [invocation?.target_service_key] : [],
       invocation?.scope,
+      'virtual_object',
       {
         enabled: Boolean(
           typeof invocation?.target_service_key === 'string' &&

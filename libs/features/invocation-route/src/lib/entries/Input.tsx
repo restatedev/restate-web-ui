@@ -50,16 +50,11 @@ export function Input({ entry, invocation, className }: InputProps) {
 
   return (
     <div className={root({ className })}>
-      <Target
-        target={invocation?.target}
-        showHandler={!entry}
-        className={target()}
-      />
       {entry ? (
         <div className={expression()}>
           <Icon
             name={IconName.Function}
-            className="-mr-0.5 h-5 w-5 shrink-0 text-zinc-400"
+            className="mr-0.5 h-5 w-5 shrink-0 text-zinc-400"
           />
           <EntryExpression
             entry={entry}
@@ -79,7 +74,15 @@ export function Input({ entry, invocation, className }: InputProps) {
           />
           <div data-fill />
         </div>
-      ) : null}
+      ) : (
+        <div className="flex font-medium italic">
+          <Icon
+            name={IconName.Function}
+            className="mr-0.5 h-5 w-5 shrink-0 text-zinc-400"
+          />
+          {invocation?.target_handler_name}
+        </div>
+      )}
     </div>
   );
 }

@@ -13,10 +13,15 @@ const JournalEntriesContext = createContext<{
   isPending?: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
   isCompact: boolean;
+  disableExpand?: boolean;
+  hideOutput?: boolean;
+  disableAwaitingHighlight?: boolean;
 }>({
   invocationIds: [],
   isCompact: true,
 });
+
+export { JournalEntriesContext };
 
 const JournalTimelineContext = createContext<{
   start: number;

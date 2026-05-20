@@ -21,12 +21,24 @@ export interface SidebarLocation {
 
 export type SidebarMatch = (loc: SidebarLocation) => boolean;
 
+export type SidebarSubItemAction =
+  | {
+      href: string;
+      ariaLabel: string;
+      icon: IconName;
+      preserveSearchParams?: boolean | string[];
+    }
+  | {
+      render: (props: { className: string }) => ReactNode;
+    };
+
 export interface SidebarSubItem {
   href: string;
   label: ReactNode;
   match?: SidebarMatch;
   preserveSearchParams?: boolean | string[];
   disabled?: boolean;
+  action?: SidebarSubItemAction;
 }
 
 export interface SidebarNavItemProps {
@@ -67,9 +79,13 @@ const navStyles = tv({
       'max-w-full min-w-0 flex-auto truncate overflow-hidden pr-1 text-left opacity-100 transition-[max-width,opacity,padding] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:pr-1 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:pr-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-w-0 max-xl:pr-0 max-xl:opacity-0',
     subWrap:
       'relative ml-[1.0625rem] flex max-h-96 flex-col gap-0 overflow-hidden border-l border-zinc-800/10 pl-2 opacity-100 transition-[max-height,opacity] duration-300 group-data-[collapsed=false]/sidebar:max-h-96 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-h-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-h-0 max-xl:opacity-0',
-    subRow: 'flex items-center pt-1 pr-1',
+    subRow: 'flex items-center pr-1 first:pt-1 last:pb-1',
     subLink:
       'flex min-w-0 flex-auto items-center rounded-lg px-2.5 py-1 text-0.5xs no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2',
+    subAction:
+      'ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-gray-500 no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/5 hover:text-gray-700 focus-visible:outline-2',
+    subActionSpacer: 'ml-1 h-5 w-5 shrink-0',
+    subActionIcon: 'h-3.5 w-3.5 shrink-0',
     overflowTrigger:
       'flex w-full items-center gap-2 rounded-lg border-none bg-transparent px-2.5 py-1 text-left text-0.5xs shadow-none hover:bg-black/3',
   },
@@ -139,6 +155,10 @@ export function SidebarNavItem({
     ? ownActive
     : ownActive && !anyChildActive && !anyExtraActive;
 
+  const hasAnyAction =
+    (subItems ?? []).some((sub) => sub.action) ||
+    (extraSubItems ?? []).some((sub) => sub.action);
+
   // First `visibleSubCount` items stay fixed in the rail; the rest live in
   // the More overflow. Active overflow items are surfaced via the More
   // dropdown's active styling and indicator dot, not by promotion.
@@ -190,6 +210,7 @@ export function SidebarNavItem({
               item={item}
               location={location}
               parentDisabled={disabled}
+              reserveActionSpace={hasAnyAction}
             />
           ))}
           {extraSubItems?.map((item) => (
@@ -198,6 +219,7 @@ export function SidebarNavItem({
               item={item}
               location={location}
               parentDisabled={disabled}
+              reserveActionSpace={hasAnyAction}
             />
           ))}
           {partition.overflow.length > 0 && (
@@ -213,10 +235,12 @@ function SidebarSubLink({
   item,
   location,
   parentDisabled,
+  reserveActionSpace,
 }: {
   item: SidebarSubItem;
   location: SidebarLocation;
   parentDisabled?: boolean;
+  reserveActionSpace?: boolean;
 }) {
   const disabled = parentDisabled || item.disabled;
   const isActive =
@@ -233,6 +257,33 @@ function SidebarSubLink({
       >
         {item.label}
       </Link>
+      {item.action ? (
+        'render' in item.action ? (
+          item.action.render({ className: s.subAction() })
+        ) : (
+          <HoverTooltip
+            content={item.action.ariaLabel}
+            placement="top"
+            disabled={disabled}
+          >
+            <Link
+              href={item.action.href}
+              preserveQueryParams={item.action.preserveSearchParams ?? false}
+              disabled={disabled}
+              className={s.subAction()}
+              aria-label={item.action.ariaLabel}
+            >
+              <Icon
+                name={item.action.icon}
+                className={s.subActionIcon()}
+                aria-hidden
+              />
+            </Link>
+          </HoverTooltip>
+        )
+      ) : reserveActionSpace ? (
+        <div className={s.subActionSpacer()} aria-hidden />
+      ) : null}
     </div>
   );
 }

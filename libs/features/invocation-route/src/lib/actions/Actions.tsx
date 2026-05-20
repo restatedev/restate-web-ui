@@ -175,10 +175,12 @@ export function Actions({
   invocation,
   mini = true,
   className,
+  splitClassName,
 }: {
   invocation?: Invocation;
   mini?: boolean;
   className?: string;
+  splitClassName?: string;
 }) {
   const { isVersionGte } = useRestateContext();
   if (!invocation) {
@@ -219,6 +221,7 @@ export function Actions({
       mini={mini}
       className={className}
       menus={availableActions.map(renderDropdownItem)}
+      splitClassName={splitClassName}
     >
       {primaryAction && (
         <primaryAction.component.Trigger

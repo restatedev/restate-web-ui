@@ -15,6 +15,7 @@ import { Value } from '../Value';
 import { Headers } from '../Headers';
 import { Failure } from '../Failure';
 import { useRestateContext } from '@restate/features/restate-context';
+import { useJournalEntriesContext } from '../JournalContext';
 import {
   StaticCodecOptionsProvider,
   useCodec,
@@ -356,13 +357,19 @@ function LazyValue({
 }: LazyPayloadProps) {
   const { EncodingWaterMark } = useRestateContext();
   const outputCodecOptions = useTargetInvocationCodecOptions('Output');
+  const { hideOutput } = useJournalEntriesContext();
   const { data, failure, isPending, error, isLoaded, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'value',
   );
 
-  if (!entry || !invocationId || (hideWhenEntryIsPending && entry.isPending)) {
+  if (
+    !entry ||
+    !invocationId ||
+    hideOutput ||
+    (hideWhenEntryIsPending && entry.isPending)
+  ) {
     return null;
   }
 

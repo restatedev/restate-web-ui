@@ -6,5 +6,6 @@ export * from './lib/InvocationCountLink';
 export * from './lib/MiniService';
 export * from './lib/ServiceCard';
 export * from './lib/ServicePlayground';
+export * from './lib/ServicePlaygroundSidebarAction';
 export * from './lib/ServiceType';
 export * from './lib/constants';

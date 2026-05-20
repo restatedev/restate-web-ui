@@ -267,7 +267,13 @@ function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
   if (entry?.resultType === 'failure') {
     return 'danger';
   }
-  if (entry?.type === 'Suspended' || entry?.type === 'Sleep') {
+  if (
+    entry?.type === 'Suspended' ||
+    entry?.type === 'Sleep' ||
+    entry?.type === 'GetPromise' ||
+    entry?.type === 'PeekPromise' ||
+    entry?.type === 'Awakeable'
+  ) {
     return 'idleNeutral';
   }
   if (entry?.type === 'Pending' || entry?.type === 'Paused') {
@@ -349,9 +355,9 @@ function InnerEntryProgress({
 
   const isCopiedFromRestart = Boolean(
     invocation?.invoked_by === 'restart_as_new' &&
-      entry.start &&
-      start &&
-      new Date(entry.start).getTime() < start,
+    entry.start &&
+    start &&
+    new Date(entry.start).getTime() < start,
   );
 
   const isPoint = Boolean(!entryEnd && !entry?.isPending);

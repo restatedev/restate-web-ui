@@ -2811,6 +2811,7 @@ export interface components {
         | components['schemas']['NotificationCompletePromiseJournalEntryV2']
         | components['schemas']['TransientErrorJournalEntryV2']
         | components['schemas']['PausedErrorJournalEntryV2']
+        | components['schemas']['SuspendedEventJournalEntryV2']
         | components['schemas']['CreatedLifecycleJournalEntryV2']
         | components['schemas']['RunningLifecycleJournalEntryV2']
         | components['schemas']['RetryingLifecycleJournalEntryV2']
@@ -2820,6 +2821,7 @@ export interface components {
         | components['schemas']['PendingLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
         | components['schemas']['KilledLifecycleJournalEntryV2']
+        | components['schemas']['JournalGroupEntryV2']
         | {
             type?: string;
           }
@@ -2893,6 +2895,7 @@ export interface components {
         | 'Command: SendSignal'
         | 'Event: TransientError'
         | 'Event: Paused'
+        | 'Event: Suspended'
         | 'Event'
         | 'Notification: Signal'
         | 'Notification: Sleep'
@@ -2960,9 +2963,29 @@ export interface components {
       completionId?: number;
       completionIndex?: number;
       commandIndex?: number;
+      groupIds?: {
+        [key: string]: true;
+      };
+      isAwaitingOn?: boolean;
       /** @enum {string} */
-      category?: 'notification' | 'command' | 'event';
+      category?: 'notification' | 'command' | 'event' | 'group';
       type?: string;
+    };
+    JournalGroupEntryV2: {
+      /** @enum {string} */
+      category: 'group';
+      /** @enum {string} */
+      type:
+        | 'Attempt'
+        | 'FirstCompleted'
+        | 'AllCompleted'
+        | 'FirstSucceededOrAllFailed'
+        | 'AllSucceededOrFirstFailed'
+        | 'Unknown';
+      id: string;
+      groupIds?: {
+        [key: string]: true;
+      };
     };
     FailureEntry: {
       message?: string;
@@ -2995,6 +3018,7 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Event: Paused';
+      afterJournalEntryIndex?: number;
       relatedCommandName?: string;
       message?: string;
       stack?: string;
@@ -3002,6 +3026,14 @@ export interface components {
       relatedRestateErrorCode?: string;
       relatedCommandType?: string;
       relatedCommandIndex?: number;
+    };
+    SuspendedEventJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Event: Suspended';
+      afterJournalEntryIndex?: number;
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     /** @description Error details for a paused invocation */
     PausedErrorResponse: {
@@ -3036,12 +3068,14 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Running';
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     RetryingLifecycleJournalEntryV2: {
       /** @enum {string} */
       category?: 'event';
       /** @enum {string} */
       type?: 'Retrying';
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     ScheduledLifecycleJournalEntryV2: {
       /** @enum {string} */
@@ -3054,12 +3088,15 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Suspended';
+      afterJournalEntryIndex?: number;
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     PausedLifecycleJournalEntryV2: {
       /** @enum {string} */
       category?: 'event';
       /** @enum {string} */
       type?: 'Paused';
+      afterJournalEntryIndex?: number;
       message?: string;
       stack?: string;
       code?: number;
@@ -3445,6 +3482,7 @@ export interface components {
       category?: 'notification';
       value?: string;
       id?: string;
+      signalIndex?: number;
     };
     NotificationSignalJournalEntryV2: {
       /** @enum {string} */
@@ -3527,6 +3565,47 @@ export interface components {
     } & {
       [key: string]: number;
     };
+    InvocationFuture:
+      | components['schemas']['InvocationFutureSingle']
+      | components['schemas']['InvocationFutureAttempt']
+      | components['schemas']['InvocationFutureFirstCompleted']
+      | components['schemas']['InvocationFutureAllCompleted']
+      | components['schemas']['InvocationFutureFirstSucceededOrAllFailed']
+      | components['schemas']['InvocationFutureAllSucceededOrFirstFailed']
+      | components['schemas']['InvocationFutureUnknown'];
+    InvocationFutureAttempt: {
+      Attempt: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureSingle: {
+      Single:
+        | components['schemas']['InvocationFutureCompletionId']
+        | components['schemas']['InvocationFutureSignalIndex']
+        | components['schemas']['InvocationFutureSignalName'];
+    };
+    InvocationFutureCompletionId: {
+      CompletionId: number;
+    };
+    InvocationFutureSignalIndex: {
+      SignalIndex: number;
+    };
+    InvocationFutureSignalName: {
+      SignalName: string;
+    };
+    InvocationFutureFirstCompleted: {
+      FirstCompleted: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureAllCompleted: {
+      AllCompleted: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureFirstSucceededOrAllFailed: {
+      FirstSucceededOrAllFailed: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureAllSucceededOrFirstFailed: {
+      AllSucceededOrFirstFailed: components['schemas']['InvocationFuture'][];
+    };
+    InvocationFutureUnknown: {
+      Unknown: components['schemas']['InvocationFuture'][];
+    };
     Invocation: {
       /** Format: duration */
       completion_retention?: string;
@@ -3591,6 +3670,10 @@ export interface components {
       last_failure_related_command_type?: string;
       last_attempt_deployment_id?: string;
       last_attempt_server?: string;
+      last_awaiting_on_future_json?: components['schemas']['InvocationFuture'];
+      suspended_waiting_for_completions?: number[];
+      suspended_waiting_for_signals?: number[];
+      suspended_waiting_future_json?: components['schemas']['InvocationFuture'];
       last_failure?: string;
       last_failure_error_code?: string;
       isRetrying?: boolean;
@@ -3621,6 +3704,7 @@ export interface components {
       /** Format: date-time */
       next_retry_at?: string;
       id: string;
+      created_using_restate_version?: string;
       /** @enum {string} */
       invoked_by: 'ingress' | 'service' | 'restart_as_new' | 'subscription';
       restarted_from?: string;
@@ -3669,6 +3753,10 @@ export interface components {
       last_failure_related_entry_type?: string;
       last_attempt_deployment_id?: string;
       last_attempt_server?: string;
+      last_awaiting_on_future_json?: string;
+      suspended_waiting_for_completions?: number[];
+      suspended_waiting_for_signals?: number[];
+      suspended_waiting_future_json?: string;
       last_failure?: string;
       last_failure_error_code?: string;
       /** Format: duration */
@@ -6672,6 +6760,8 @@ export interface operations {
         serviceKey?: string[];
         /** @description workflow scope filter */
         scope?: string;
+        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
+        serviceType?: 'service' | 'virtual_object' | 'workflow';
       };
       header?: never;
       path: {
@@ -6742,7 +6832,10 @@ export interface operations {
   };
   list_virtual_object_state: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
+        serviceType?: 'service' | 'virtual_object' | 'workflow';
+      };
       header?: never;
       path: {
         /** @description service name */
@@ -6830,7 +6923,10 @@ export interface operations {
   };
   get_state: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
+        serviceType?: 'service' | 'virtual_object' | 'workflow';
+      };
       header?: never;
       path: {
         /** @description service name */
@@ -6907,7 +7003,10 @@ export interface operations {
   };
   query_virtual_object_state: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
+        serviceType?: 'service' | 'virtual_object' | 'workflow';
+      };
       header?: never;
       path: {
         /** @description service name */

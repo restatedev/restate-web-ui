@@ -3,8 +3,10 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import {
+  assignGroupIds,
   getEntryResultV2,
-  JournalRawEntryWithCommandIndex,
+  type JournalEntryConversionContext,
+  type JournalRawEntryWithCommandIndex,
   parseEntryJson,
 } from './util';
 
@@ -12,6 +14,7 @@ export function signal(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
   invocation?: Invocation,
+  context?: JournalEntryConversionContext,
 ):
   | Extract<
       JournalEntryV2,
@@ -72,7 +75,7 @@ export function signal(
       result,
     );
 
-    return {
+    const signalEntry = {
       start: entry.appended_at,
       isPending: false,
       commandIndex: undefined,
@@ -92,6 +95,15 @@ export function signal(
       JournalEntryV2,
       { type?: 'Signal'; category?: 'notification' }
     >;
+
+    const signalEntries = context?.signalEntriesByName.get(signalName);
+    if (signalEntries) {
+      signalEntries.unshift(signalEntry);
+    } else {
+      context?.signalEntriesByName.set(signalName, [signalEntry]);
+    }
+
+    return signalEntry;
   }
 
   if (id && id >= 17) {
@@ -106,7 +118,7 @@ export function signal(
       result,
     );
 
-    return {
+    const signalEntry = {
       start: entry.appended_at,
       isPending: false,
       commandIndex: undefined,
@@ -122,10 +134,22 @@ export function signal(
       value,
       resultType,
       id: undefined,
+      signalIndex: id,
     } as Extract<
       JournalEntryV2,
       { type?: 'CompleteAwakeable'; category?: 'notification' }
     >;
+
+    context?.signalEntryByIndex.set(id, signalEntry);
+    if (context?.future?.signalIndexGroupIdsByIndex.has(id)) {
+      signalEntry.isAwaitingOn = true;
+    }
+    assignGroupIds(
+      signalEntry,
+      context?.future?.signalIndexGroupIdsByIndex.get(id),
+    );
+
+    return signalEntry;
   }
 
   return entry as JournalEntryV2;

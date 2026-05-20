@@ -9,6 +9,19 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { ENTRY_COMMANDS_COMPONENTS } from '../Entry';
 import { ComponentType } from 'react';
 import { EntryCodecProvider } from './EntryCodecProvider';
+import { AwaitingOn } from './AwaitingOn';
+import { InvocationId } from '../InvocationId';
+import {
+  RESTARTED_FROM_HEADER,
+  useGetInvocationJournalWithInvocationV2,
+  useGetJournalEntryPayloads,
+  useListSubscriptions,
+} from '@restate/data-access/admin-api-hooks';
+import { tv } from '@restate/util/styles';
+
+type Invocation = ReturnType<
+  typeof useGetInvocationJournalWithInvocationV2
+>['data'];
 
 export function LifeCycle({
   entry,
@@ -24,6 +37,10 @@ export function LifeCycle({
   | Extract<JournalEntryV2, { type?: 'Running'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Retrying'; category?: 'event' }>
 >) {
+  if (entry.type === 'Created') {
+    return <CreatedSource invocation={invocation} />;
+  }
+
   const isPaused = entry.type === 'Paused';
 
   if (isPaused) {
@@ -105,9 +122,110 @@ export function LifeCycle({
       </div>
     );
   }
+  const supportsAwaitingOn =
+    entry.type === 'Suspended' ||
+    entry.type === 'Running' ||
+    entry.type === 'Retrying';
+  const awaitingOn = supportsAwaitingOn ? entry.awaitingOn : undefined;
+  const awaitingState = entry.type === 'Suspended' ? 'suspended' : 'running';
+
   return (
-    <div className="mr-2 flex gap-1 font-sans text-zinc-500">
-      {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
+    <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+      <span className="shrink-0">
+        {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
+      </span>
+      {invocation?.id && (
+        <AwaitingOn
+          future={awaitingOn}
+          invocationId={String(invocation.id)}
+          state={awaitingState}
+          isPending={Boolean(entry.isPending)}
+        />
+      )}
     </div>
+  );
+}
+
+const invocationIdStyles = tv({
+  base: 'max-w-[20ch] min-w-0 text-xs font-semibold',
+});
+
+function CreatedSource({ invocation }: { invocation?: Invocation }) {
+  // Journal lite doesn't include the Input entry's full headers, so reach for
+  // the payload endpoint to check for the restart marker header. Reuses cache
+  // across re-mounts; the same query is shared with the Input popover.
+  const { data: inputPayload } = useGetJournalEntryPayloads(
+    String(invocation?.id),
+    0,
+    { enabled: Boolean(invocation?.id), refetchOnMount: false },
+  );
+
+  if (!invocation) {
+    return (
+      <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+        <span className="shrink-0">{ENTRY_EVENTS_ENTRY_LABELS['Created']}</span>
+      </div>
+    );
+  }
+
+  const inputEntry = invocation.journal?.entries?.find(
+    (e) => e.category === 'command' && e.type === 'Input',
+  ) as
+    | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
+    | undefined;
+  const restartedFromHeader = (
+    inputPayload?.headers || inputEntry?.headers
+  )?.find(({ key }) => key === RESTARTED_FROM_HEADER);
+  const isRestartedFrom = Boolean(
+    invocation.invoked_by === 'restart_as_new' || restartedFromHeader,
+  );
+  const restartedFromValue =
+    invocation.restarted_from || restartedFromHeader?.value;
+
+  return (
+    <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+      {isRestartedFrom ? (
+        <>
+          <span className="shrink-0">Restarted from</span>
+          {restartedFromValue && (
+            <InvocationId
+              id={restartedFromValue}
+              className={invocationIdStyles()}
+            />
+          )}
+        </>
+      ) : invocation.invoked_by === 'subscription' ? (
+        <CreatedBySubscription invocation={invocation} />
+      ) : invocation.invoked_by_id ? (
+        <>
+          <span className="shrink-0">Invoked by</span>
+          <InvocationId
+            id={invocation.invoked_by_id}
+            className={invocationIdStyles()}
+          />
+        </>
+      ) : (
+        <span className="shrink-0">{ENTRY_EVENTS_ENTRY_LABELS['Created']}</span>
+      )}
+    </div>
+  );
+}
+
+function CreatedBySubscription({ invocation }: { invocation: Invocation }) {
+  // Created is the only lifecycle entry sourced from invocation state, and it
+  // exists once per invocation — but its row may re-mount across renders /
+  // virtualization. `refetchOnMount: false` lets repeated mounts reuse the
+  // shared TanStack cache instead of refetching.
+  const { data } = useListSubscriptions({ refetchOnMount: false });
+  const subscriptionId = invocation?.invoked_by_subscription_id;
+  const source =
+    data?.subscriptions?.find((s) => s.id === subscriptionId)?.source ??
+    subscriptionId;
+
+  return (
+    <>
+      <span className="shrink-0">Invoked by subscription</span>
+      {source && <span className="truncate font-medium">{source}</span>}
+    </>
   );
 }

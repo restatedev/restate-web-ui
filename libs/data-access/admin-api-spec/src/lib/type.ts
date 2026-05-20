@@ -60,6 +60,7 @@ export type CancelSignalJournalEntryType =
   components['schemas']['CancelSignalJournalEntryType'];
 export type EntryType = Exclude<JournalEntry['entry_type'], undefined>;
 export type Invocation = components['schemas']['Invocation'];
+export type InvocationFuture = components['schemas']['InvocationFuture'];
 export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
 export type ServiceType = Service['ty'];

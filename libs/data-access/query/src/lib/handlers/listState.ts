@@ -1,5 +1,9 @@
 import { hexToBase64 } from '@restate/util/binary';
-import { scopeClause, type QueryContext } from './shared';
+import {
+  scopeClause,
+  type QueryContext,
+  type StateServiceType,
+} from './shared';
 
 export interface ListStateItem {
   key: string;
@@ -12,9 +16,10 @@ export async function listState(
   this: QueryContext,
   service: string,
   args: ListStateArgs,
+  serviceType?: StateServiceType,
 ) {
   if ('keys' in args) {
-    return listStateByKeys.call(this, service, args.keys);
+    return listStateByKeys.call(this, service, args.keys, serviceType);
   }
   return listStateByItems.call(this, service, args.items);
 }
@@ -23,6 +28,7 @@ async function listStateByKeys(
   this: QueryContext,
   service: string,
   keys: string[],
+  serviceType?: StateServiceType,
 ) {
   if (keys.length === 0) {
     return emptyResponse();
@@ -31,7 +37,7 @@ async function listStateByKeys(
   const query = `SELECT service_key, key, value
     FROM state WHERE service_name = '${service}' AND service_key IN (${keys
       .map((key) => `'${key}'`)
-      .join(', ')})${scopeClause(this)}`;
+      .join(', ')})${scopeClause(this, undefined, serviceType)}`;
 
   const objects = await this.query(query).then(({ rows }) => {
     const groups = new Map<

@@ -19,7 +19,7 @@ type LifeCycleEvent =
 
 export function lifeCycles(
   eventRawEntries: JournalRawEntry[],
-  indexCount: number,
+  allocateSyntheticIndex: () => number,
   invocation?: Invocation,
 ): LifeCycleEvent[] {
   if (!invocation) {
@@ -73,13 +73,45 @@ export function lifeCycles(
       isPending: false,
     });
   }
-  if (invocation.status === 'suspended') {
+  const suspendedRawEntries = eventRawEntries.filter(
+    (entry) => entry.entry_type === 'Event: Suspended',
+  );
+  if (suspendedRawEntries.length > 0) {
+    suspendedRawEntries.forEach((suspendedRawEntry, index, arr) => {
+      const isLast = index === arr.length - 1;
+      const isPending = isLast && invocation.status === 'suspended';
+      const suspendedEntry = event(
+        suspendedRawEntry,
+        [],
+        invocation,
+      ) as Extract<
+        JournalEntryV2,
+        { type?: 'Event: Suspended'; category?: 'event' }
+      >;
+      events.push({
+        type: 'Suspended',
+        start: suspendedEntry?.start,
+        category: 'event',
+        end: undefined,
+        isPending,
+        // Live suspension → use the invocation's current waiting future, which
+        // reflects the actual outstanding awaits. Historical events keep their
+        // own snapshot. `isPending` tells consumers which case we're in.
+        awaitingOn: isPending
+          ? invocation.suspended_waiting_future_json
+          : suspendedEntry?.awaitingOn,
+        afterJournalEntryIndex: suspendedEntry?.afterJournalEntryIndex,
+        index: allocateSyntheticIndex(),
+      });
+    });
+  } else if (invocation.status === 'suspended') {
     events.push({
       type: 'Suspended',
       start: invocation.modified_at,
       category: 'event',
       end: undefined,
       isPending: true,
+      awaitingOn: invocation.suspended_waiting_future_json,
     });
   }
   const hadPauseEntry = eventRawEntries.some(
@@ -110,7 +142,8 @@ export function lifeCycles(
           relatedCommandType: pausedErrorEntry?.relatedCommandType,
           relatedRestateErrorCode: pausedErrorEntry?.relatedRestateErrorCode,
           relatedCommandIndex: pausedErrorEntry?.relatedCommandIndex,
-          index: Number(pausedErrorEntry?.index) + index + 1 + indexCount,
+          afterJournalEntryIndex: pausedErrorEntry?.afterJournalEntryIndex,
+          index: allocateSyntheticIndex(),
         });
       });
   }
@@ -131,6 +164,10 @@ export function lifeCycles(
               ? datesMax(invocation.last_start_at, invocation.modified_at)
               : invocation.completed_at,
       isPending: invocation.status === 'running',
+      awaitingOn:
+        invocation.status === 'running'
+          ? invocation.last_awaiting_on_future_json
+          : undefined,
     });
   }
   if (invocation.next_retry_at && invocation.status === 'backing-off') {
@@ -138,6 +175,8 @@ export function lifeCycles(
       type: 'Retrying',
       category: 'event',
       start: invocation.next_retry_at,
+      isPending: true,
+      awaitingOn: invocation.last_awaiting_on_future_json,
     });
   }
 

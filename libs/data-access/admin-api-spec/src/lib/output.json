@@ -4015,6 +4015,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
+            }
           }
         ],
         "responses": {
@@ -4105,6 +4114,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
             }
           }
         ],
@@ -4276,6 +4294,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
+            }
           }
         ],
         "responses": {
@@ -4380,6 +4407,15 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "serviceType",
+            "in": "query",
+            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "schema": {
+              "type": "string",
+              "enum": ["service", "virtual_object", "workflow"]
             }
           }
         ],
@@ -7412,6 +7448,9 @@
                 "$ref": "#/components/schemas/PausedErrorJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/SuspendedEventJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/CreatedLifecycleJournalEntryV2"
               },
               {
@@ -7437,6 +7476,9 @@
               },
               {
                 "$ref": "#/components/schemas/KilledLifecycleJournalEntryV2"
+              },
+              {
+                "$ref": "#/components/schemas/JournalGroupEntryV2"
               },
               {
                 "type": "object",
@@ -7553,6 +7595,7 @@
               "Command: SendSignal",
               "Event: TransientError",
               "Event: Paused",
+              "Event: Suspended",
               "Event",
               "Notification: Signal",
               "Notification: Sleep",
@@ -7715,12 +7758,53 @@
           "commandIndex": {
             "type": "integer"
           },
+          "groupIds": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean",
+              "enum": [true]
+            }
+          },
+          "isAwaitingOn": {
+            "type": "boolean"
+          },
           "category": {
             "type": "string",
-            "enum": ["notification", "command", "event"]
+            "enum": ["notification", "command", "event", "group"]
           },
           "type": {
             "type": "string"
+          }
+        }
+      },
+      "JournalGroupEntryV2": {
+        "type": "object",
+        "required": ["category", "type", "id"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["group"]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Attempt",
+              "FirstCompleted",
+              "AllCompleted",
+              "FirstSucceededOrAllFailed",
+              "AllSucceededOrFirstFailed",
+              "Unknown"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "groupIds": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean",
+              "enum": [true]
+            }
           }
         }
       },
@@ -7815,6 +7899,9 @@
             "type": "string",
             "enum": ["Event: Paused"]
           },
+          "afterJournalEntryIndex": {
+            "type": "integer"
+          },
           "relatedCommandName": {
             "type": "string"
           },
@@ -7835,6 +7922,25 @@
           },
           "relatedCommandIndex": {
             "type": "integer"
+          }
+        }
+      },
+      "SuspendedEventJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Event: Suspended"]
+          },
+          "afterJournalEntryIndex": {
+            "type": "integer"
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },
@@ -7900,6 +8006,9 @@
           "type": {
             "type": "string",
             "enum": ["Running"]
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },
@@ -7913,6 +8022,9 @@
           "type": {
             "type": "string",
             "enum": ["Retrying"]
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },
@@ -7939,6 +8051,12 @@
           "type": {
             "type": "string",
             "enum": ["Suspended"]
+          },
+          "afterJournalEntryIndex": {
+            "type": "integer"
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },
@@ -7952,6 +8070,9 @@
           "type": {
             "type": "string",
             "enum": ["Paused"]
+          },
+          "afterJournalEntryIndex": {
+            "type": "integer"
           },
           "message": {
             "type": "string"
@@ -9048,6 +9169,9 @@
           },
           "id": {
             "type": "string"
+          },
+          "signalIndex": {
+            "type": "integer"
           }
         }
       },
@@ -9292,6 +9416,149 @@
           "type": "integer"
         }
       },
+      "InvocationFuture": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/InvocationFutureSingle"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureAttempt"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureFirstCompleted"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureAllCompleted"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureFirstSucceededOrAllFailed"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureAllSucceededOrFirstFailed"
+          },
+          {
+            "$ref": "#/components/schemas/InvocationFutureUnknown"
+          }
+        ]
+      },
+      "InvocationFutureAttempt": {
+        "type": "object",
+        "required": ["Attempt"],
+        "properties": {
+          "Attempt": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureSingle": {
+        "type": "object",
+        "required": ["Single"],
+        "properties": {
+          "Single": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InvocationFutureCompletionId"
+              },
+              {
+                "$ref": "#/components/schemas/InvocationFutureSignalIndex"
+              },
+              {
+                "$ref": "#/components/schemas/InvocationFutureSignalName"
+              }
+            ]
+          }
+        }
+      },
+      "InvocationFutureCompletionId": {
+        "type": "object",
+        "required": ["CompletionId"],
+        "properties": {
+          "CompletionId": {
+            "type": "integer"
+          }
+        }
+      },
+      "InvocationFutureSignalIndex": {
+        "type": "object",
+        "required": ["SignalIndex"],
+        "properties": {
+          "SignalIndex": {
+            "type": "integer"
+          }
+        }
+      },
+      "InvocationFutureSignalName": {
+        "type": "object",
+        "required": ["SignalName"],
+        "properties": {
+          "SignalName": {
+            "type": "string"
+          }
+        }
+      },
+      "InvocationFutureFirstCompleted": {
+        "type": "object",
+        "required": ["FirstCompleted"],
+        "properties": {
+          "FirstCompleted": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureAllCompleted": {
+        "type": "object",
+        "required": ["AllCompleted"],
+        "properties": {
+          "AllCompleted": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureFirstSucceededOrAllFailed": {
+        "type": "object",
+        "required": ["FirstSucceededOrAllFailed"],
+        "properties": {
+          "FirstSucceededOrAllFailed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureAllSucceededOrFirstFailed": {
+        "type": "object",
+        "required": ["AllSucceededOrFirstFailed"],
+        "properties": {
+          "AllSucceededOrFirstFailed": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
+      "InvocationFutureUnknown": {
+        "type": "object",
+        "required": ["Unknown"],
+        "properties": {
+          "Unknown": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationFuture"
+            }
+          }
+        }
+      },
       "Invocation": {
         "type": "object",
         "required": [
@@ -9456,6 +9723,26 @@
           "last_attempt_server": {
             "type": "string"
           },
+          "last_awaiting_on_future_json": {
+            "$ref": "#/components/schemas/InvocationFuture"
+          },
+          "suspended_waiting_for_completions": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_for_signals": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_future_json": {
+            "$ref": "#/components/schemas/InvocationFuture"
+          },
           "last_failure": {
             "type": "string"
           },
@@ -9531,6 +9818,9 @@
             "format": "date-time"
           },
           "id": {
+            "type": "string"
+          },
+          "created_using_restate_version": {
             "type": "string"
           },
           "invoked_by": {
@@ -9640,6 +9930,26 @@
             "type": "string"
           },
           "last_attempt_server": {
+            "type": "string"
+          },
+          "last_awaiting_on_future_json": {
+            "type": "string"
+          },
+          "suspended_waiting_for_completions": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_for_signals": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint32"
+            }
+          },
+          "suspended_waiting_future_json": {
             "type": "string"
           },
           "last_failure": {

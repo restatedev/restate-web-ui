@@ -363,3 +363,30 @@ export function getTarget(object: any): {
 export type JournalRawEntryWithCommandIndex = JournalRawEntry & {
   command_index?: number;
 };
+
+export type GroupIds = Record<string, true>;
+
+export function assignGroupIds<T extends JournalEntryV2>(
+  entry: T,
+  groupIds?: GroupIds,
+): T {
+  if (!groupIds || Object.keys(groupIds).length === 0) {
+    return entry;
+  }
+
+  entry.groupIds = {
+    ...entry.groupIds,
+    ...groupIds,
+  };
+  return entry;
+}
+
+export type JournalEntryConversionContext = {
+  future?: {
+    completionGroupIdsById: Map<number, GroupIds>;
+    signalIndexGroupIdsByIndex: Map<number, GroupIds>;
+  };
+  completionEntryById: Map<number, JournalEntryV2>;
+  signalEntryByIndex: Map<number, JournalEntryV2>;
+  signalEntriesByName: Map<string, JournalEntryV2[]>;
+};

@@ -131,13 +131,11 @@ function aggregateServices(
   for (const name of deploymentsData?.sortedServiceNames ?? []) {
     if (!seen.has(name)) services.push(build(name, 0));
   }
-  // Sort by filteredCount first so the most-relevant services float up when
-  // a status filter is active. Falls back to total + name for stable order.
+  // Sort by total count (then name) so the tab order stays stable as the
+  // status filter changes. The filtered/total chip still communicates the
+  // filter's effect on each service without shifting their position.
   return services.sort(
-    (a, b) =>
-      b.filteredCount - a.filteredCount ||
-      b.count - a.count ||
-      a.name.localeCompare(b.name),
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name),
   );
 }
 

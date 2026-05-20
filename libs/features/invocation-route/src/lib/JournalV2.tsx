@@ -12,7 +12,6 @@ import {
   useState,
 } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
-import { InvocationId } from './InvocationId';
 import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -36,22 +35,11 @@ import { StartDateTimeUnit } from './Units';
 import { ScrollableTimeline } from './ScrollableTimeline';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
-import { Retention } from './Retention';
 import {
-  RESTARTED_FROM_HEADER,
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
-  useGetJournalEntryPayloads,
-  useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownPopover,
-  DropdownSection,
-  DropdownTrigger,
-} from '@restate/ui/dropdown';
+import { Nav, NavButtonItem } from '@restate/ui/nav';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { formatDurations } from '@restate/util/intl';
 import {
@@ -68,6 +56,7 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
+import { Retention } from './Retention';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -85,16 +74,6 @@ const liveStyles = tv({
   base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-gray-500 uppercase',
   variants: {
     isLive: {
-      true: '',
-      false: '',
-    },
-  },
-});
-
-const compactStyles = tv({
-  base: 'py-0.5 pl-1.5 text-xs font-medium',
-  variants: {
-    isCompact: {
       true: '',
       false: '',
     },
@@ -155,6 +134,18 @@ function hasNonCompletedReferencedInvocations(
   });
 }
 
+function getJournalEntryKey(entry: JournalEntryV2 | undefined, index: number) {
+  if (
+    entry?.category === 'group' &&
+    'id' in entry &&
+    typeof entry.id === 'string'
+  ) {
+    return entry.id;
+  }
+
+  return entry?.index ?? index;
+}
+
 export function JournalV2({
   invocationId,
   className,
@@ -202,7 +193,7 @@ export function JournalV2({
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
   });
-  const { data: subscriptions } = useListSubscriptions();
+  console.log(data);
   const referencedInvocationIds = getReferencedInvocationIds(data);
   useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
     refetchOnMount: true,
@@ -251,10 +242,6 @@ export function JournalV2({
     relatedEntriesByInvocation,
     lifecycleDataByInvocation,
   } = useProcessedJournal(invocationId, data, isCompact);
-  const { data: inputData } = useGetJournalEntryPayloads(invocationId, 0, {
-    enabled: false,
-  });
-
   const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
     !withTimeline &&
@@ -296,6 +283,14 @@ export function JournalV2({
     : 0;
 
   const entriesWithoutInput = entriesWithoutInputUnfiltered;
+  // The server returns an empty `entries` array when the journal has been
+  // purged (or was never written). Detect this once everything has loaded so
+  // we can surface a "Journal was purged" message instead of an empty pane.
+  const isJournalEmpty =
+    !isPending[invocationId] &&
+    !invocationApiError &&
+    Boolean(journalAndInvocationData) &&
+    (journalAndInvocationData?.journal?.entries?.length ?? 0) === 0;
 
   const virtualizer = useWindowVirtualizer({
     count: entriesWithoutInput.length,
@@ -305,7 +300,10 @@ export function JournalV2({
     getItemKey: (index) => {
       const entry = entriesWithoutInput[index];
       return entry
-        ? `${entry.invocationId}-${entry.entry?.index}-${entry.entry?.type}`
+        ? `${entry.invocationId}-${getJournalEntryKey(
+            entry.entry,
+            index,
+          )}-${entry.entry?.type}-${index}`
         : index;
     },
   });
@@ -346,13 +344,16 @@ export function JournalV2({
   }
 
   if (isPending[invocationId]) {
-    return (
-      <ContentPanelSection>
-        <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
-          <Spinner className="h-4 w-4" />
-          Loading…
-        </div>
-      </ContentPanelSection>
+    const loading = (
+      <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
+        <Spinner className="h-4 w-4" />
+        Loading…
+      </div>
+    );
+    return withTimeline ? (
+      <ContentPanelSection>{loading}</ContentPanelSection>
+    ) : (
+      <div className={className}>{loading}</div>
     );
   }
 
@@ -363,16 +364,6 @@ export function JournalV2({
   const typedInputEntry = inputEntry as
     | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
     | undefined;
-  const restartedFromHeader = (
-    inputData?.headers || typedInputEntry?.headers
-  )?.find(({ key }: { key: string }) => key === RESTARTED_FROM_HEADER);
-
-  const isRestartedFrom = Boolean(
-    journalAndInvocationData.invoked_by === 'restart_as_new' ||
-    restartedFromHeader,
-  );
-  const restartedFromValue =
-    journalAndInvocationData?.restarted_from || restartedFromHeader?.value;
 
   return (
     <PortalProvider>
@@ -408,97 +399,40 @@ export function JournalV2({
             >
               {withTimeline && (
                 <ContentPanelToolbar className="relative items-end! pr-5 pl-3">
-                  <div className="relative flex flex-col">
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute top-5.5 bottom-0 left-3.5 w-px -translate-x-1/2 border-l border-dashed border-zinc-300"
-                    />
-                    <div className="relative flex h-full w-full items-center gap-1.5">
-                      <div className="absolute left-2.5 h-2 w-2 rounded-full bg-zinc-300" />
-                      <div className="shrink-0 pl-6 text-xs font-semibold text-gray-400 uppercase">
-                        {isRestartedFrom ? 'Restarted from' : 'Invoked by'}
-                      </div>
-                      {journalAndInvocationData?.invoked_by === 'ingress' &&
-                      !isRestartedFrom ? (
-                        <div className="text-xs font-medium">Ingress</div>
-                      ) : journalAndInvocationData?.invoked_by_id ? (
-                        <InvocationId
-                          id={journalAndInvocationData?.invoked_by_id}
-                          className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
-                        />
-                      ) : restartedFromValue ? (
-                        <InvocationId
-                          id={restartedFromValue}
-                          className="max-w-[20ch] min-w-0 text-0.5xs font-semibold"
-                        />
-                      ) : journalAndInvocationData?.invoked_by ===
-                        'subscription' ? (
-                        <div className="text-xs font-medium">
-                          {subscriptions?.subscriptions?.find(
-                            (sub) =>
-                              sub.id ===
-                              journalAndInvocationData?.invoked_by_subscription_id,
-                          )?.source ||
-                            journalAndInvocationData?.invoked_by_subscription_id}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="pb-1 pl-6">
-                      <Retention
-                        invocation={journalAndInvocationData}
-                        type="journal"
-                        prefixForCompletion="retention "
-                        prefixForInProgress="retained "
-                        className="text-xs"
-                      />
-                    </div>
-                  </div>
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pb-1 pl-10">
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <Button
-                          variant="icon"
-                          onClick={() => setIsCompact?.((v) => !v)}
-                          className={compactStyles({ isCompact })}
+                    <Nav
+                      ariaCurrentValue="true"
+                      responsive={false}
+                      aria-label="View mode"
+                      containerClassName="border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+                    >
+                      <NavButtonItem
+                        isActive={isCompact}
+                        onClick={() => setIsCompact?.(true)}
+                        className="py-1"
+                      >
+                        <HoverTooltip
+                          content="Actions only"
+                          placement="top"
+                          className="block"
                         >
-                          {isCompact ? 'Compact' : 'Detailed'}
-                          <Icon
-                            name={IconName.ChevronsUpDown}
-                            className="ml-1 h-3.5 w-3.5"
-                          />
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownPopover>
-                        <DropdownSection title="View mode">
-                          <DropdownMenu
-                            selectable
-                            selectedItems={
-                              isCompact ? ['compact'] : ['expanded']
-                            }
-                            onSelect={(key) =>
-                              setIsCompact?.(key === 'compact')
-                            }
-                          >
-                            <DropdownItem value="compact">
-                              <div>
-                                <div>Compact</div>
-                                <div className="text-0.5xs opacity-70">
-                                  Actions only
-                                </div>
-                              </div>
-                            </DropdownItem>
-                            <DropdownItem value="expanded">
-                              <div>
-                                <div>Detailed</div>
-                                <div className="text-0.5xs opacity-70">
-                                  Include transient errors and completions
-                                </div>
-                              </div>
-                            </DropdownItem>
-                          </DropdownMenu>
-                        </DropdownSection>
-                      </DropdownPopover>
-                    </Dropdown>
+                          Compact
+                        </HoverTooltip>
+                      </NavButtonItem>
+                      <NavButtonItem
+                        isActive={!isCompact}
+                        onClick={() => setIsCompact?.(false)}
+                        className="py-1"
+                      >
+                        <HoverTooltip
+                          content="Include transient errors, completions, and lifecycle history"
+                          placement="top"
+                          className="block"
+                        >
+                          Detailed
+                        </HoverTooltip>
+                      </NavButtonItem>
+                    </Nav>
                     <ZoomControlsPortalTarget className="hidden md:flex" />
                     <ReturnToLiveButton
                       areAllCompleted={areAllInvocationsCompleted}
@@ -526,7 +460,7 @@ export function JournalV2({
               )}
               {withTimeline && (
                 <ContentPanelHeader className="font-mono text-0.5xs">
-                  <div className="relative h-12 w-full">
+                  <div className="relative h-9 w-full">
                     <div className="pointer-events-none absolute inset-0 z-30 hidden md:block">
                       <div
                         ref={startDateOverlayRef}
@@ -558,7 +492,7 @@ export function JournalV2({
                       >
                         <div className="relative h-full overflow-hidden rounded-tr-2xl">
                           <LifeCycleProgress
-                            className="h-12 px-2"
+                            className="h-9 px-2"
                             invocation={journalAndInvocationData}
                             createdEvent={
                               lifecycleDataByInvocation.get(invocationId)
@@ -577,87 +511,102 @@ export function JournalV2({
                 </ContentPanelHeader>
               )}
               {withTimeline ? (
-                <div className="relative flex min-h-0 flex-1">
-                  <div
-                    ref={listRef}
-                    className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs"
-                  >
-                    <LazyPanelGroup
-                      direction="horizontal"
-                      onLayout={handlePanelLayout}
-                      style={{ overflow: 'visible' }}
-                      className="min-h-full flex-1"
+                <div className="relative flex min-h-0 flex-1 flex-col">
+                  {isJournalEmpty ? (
+                    <JournalPurgedMessage />
+                  ) : (
+                    <div
+                      ref={listRef}
+                      className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs"
                     >
-                      {/* Left panel */}
-                      <LazyPanel
-                        defaultSize={(1 - timelineWidth) * 100}
-                        minSize={20}
-                        className="z-[2] grid min-w-0"
-                        style={{
-                          overflow: 'visible',
-                          marginBottom: JOURNAL_BOTTOM_PADDING_PX,
-                          minHeight: totalSize,
-                          gridTemplateColumns: '1fr',
-                          gridTemplateRows: '1fr',
-                        }}
+                      <LazyPanelGroup
+                        direction="horizontal"
+                        onLayout={handlePanelLayout}
+                        style={{ overflow: 'visible' }}
+                        className="min-h-full flex-1"
                       >
-                        {/* Content */}
-                        <ContentPanelSection
-                          className="z-[2] col-start-1 row-start-1 min-w-0 border-r"
-                          style={{ minHeight: totalSize }}
+                        {/* Left panel */}
+                        <LazyPanel
+                          defaultSize={(1 - timelineWidth) * 100}
+                          minSize={20}
+                          className="z-[2] grid min-w-0"
+                          style={{
+                            overflow: 'visible',
+                            marginBottom: JOURNAL_BOTTOM_PADDING_PX,
+                            minHeight: totalSize,
+                            gridTemplateColumns: '1fr',
+                            gridTemplateRows: '1fr',
+                          }}
                         >
-                          <VirtualizedEntries
-                            virtualItems={virtualItems}
-                            totalSize={totalSize}
-                            entriesWithoutInput={entriesWithoutInput}
-                            data={data}
-                          />
-                        </ContentPanelSection>
-                      </LazyPanel>
-                      <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
-                        <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-blue-500" />
-                      </LazyPanelResizeHandle>
-                      {/* Right panel - grid container for overlapping Units */}
-                      <LazyPanel
-                        defaultSize={timelineWidth * 100}
-                        className="relative hidden overflow-x-clip bg-black/3 md:grid"
-                        minSize={20}
-                        style={{
-                          overflow: 'visible',
-                          minHeight: totalSize,
-                          gridTemplateColumns: '1fr',
-                          gridTemplateRows: '1fr',
-                        }}
-                      >
-                        {/* Sticky Units - limited to viewport height */}
-                        <UnitsPortalTarget className="pointer-events-none sticky top-[var(--cp-content-top,0px)] z-10 col-start-1 row-start-1 mt-[var(--cp-section-pt,0px)] h-[calc(100%-var(--cp-section-pt,0px))] max-h-[calc(100vh-var(--cp-content-top,0px))] overflow-hidden [--timeline-units-header-offset:0rem]" />
-
-                        {/* Scrollable timeline content with Units overlay */}
-                        <ContentPanelSection
-                          className="relative z-[2] col-start-1 row-start-1 h-full"
-                          style={{ minHeight: totalSize }}
-                          fadeClassName="from-gray-100"
-                        >
-                          <ScrollableTimeline
-                            cancelEvent={
-                              lifecycleDataByInvocation.get(invocationId)
-                                ?.cancelEvent
-                            }
+                          {/* Content */}
+                          <ContentPanelSection
+                            className="z-[2] col-start-1 row-start-1 min-w-0 border-r"
+                            style={{ minHeight: totalSize }}
                           >
-                            <VirtualizedTimeline
+                            <VirtualizedEntries
                               virtualItems={virtualItems}
                               totalSize={totalSize}
                               entriesWithoutInput={entriesWithoutInput}
                               data={data}
-                              relatedEntriesByInvocation={
-                                relatedEntriesByInvocation
-                              }
                             />
-                          </ScrollableTimeline>
-                        </ContentPanelSection>
-                      </LazyPanel>
-                    </LazyPanelGroup>
-                  </div>
+                            {journalAndInvocationData && (
+                              <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-gray-500">
+                                <Retention
+                                  invocation={journalAndInvocationData}
+                                  type="journal"
+                                  prefixForCompletion="retention "
+                                  prefixForInProgress="retained "
+                                />
+                              </div>
+                            )}
+                          </ContentPanelSection>
+                        </LazyPanel>
+                        <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
+                          <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-blue-500" />
+                        </LazyPanelResizeHandle>
+                        {/* Right panel - grid container for overlapping Units */}
+                        <LazyPanel
+                          defaultSize={timelineWidth * 100}
+                          className="relative hidden overflow-x-clip bg-black/3 md:grid"
+                          minSize={20}
+                          style={{
+                            overflow: 'visible',
+                            minHeight: totalSize,
+                            gridTemplateColumns: '1fr',
+                            gridTemplateRows: '1fr',
+                          }}
+                        >
+                          {/* Sticky Units - limited to viewport height */}
+                          <UnitsPortalTarget className="pointer-events-none sticky top-[var(--cp-content-top,0px)] z-10 col-start-1 row-start-1 mt-[var(--cp-section-pt,0px)] h-[calc(100%-var(--cp-section-pt,0px))] max-h-[calc(100vh-var(--cp-content-top,0px))] overflow-hidden [--timeline-units-header-offset:0rem]" />
+
+                          {/* Scrollable timeline content with Units overlay */}
+                          <ContentPanelSection
+                            className="relative z-[2] col-start-1 row-start-1 h-full"
+                            style={{ minHeight: totalSize }}
+                            fadeClassName="from-gray-100"
+                          >
+                            <ScrollableTimeline
+                              cancelEvent={
+                                lifecycleDataByInvocation.get(invocationId)
+                                  ?.cancelEvent
+                              }
+                            >
+                              <VirtualizedTimeline
+                                virtualItems={virtualItems}
+                                totalSize={totalSize}
+                                entriesWithoutInput={entriesWithoutInput}
+                                data={data}
+                                relatedEntriesByInvocation={
+                                  relatedEntriesByInvocation
+                                }
+                              />
+                            </ScrollableTimeline>
+                          </ContentPanelSection>
+                        </LazyPanel>
+                      </LazyPanelGroup>
+                    </div>
+                  )}
+                  <div data-last-failure-fallback aria-hidden className="h-0" />
                 </div>
               ) : (
                 <div className={className}>
@@ -682,7 +631,10 @@ export function JournalV2({
                         <ErrorBoundary
                           entry={entry}
                           className="h-9"
-                          key={`${entryInvocationId}-${entry?.category}-${entry?.type}-${index}`}
+                          key={`${entryInvocationId}-${entry?.category}-${entry?.type}-${getJournalEntryKey(
+                            entry,
+                            index,
+                          )}-${index}`}
                         >
                           <Entry
                             invocation={invocation}
@@ -704,6 +656,7 @@ export function JournalV2({
                       <Icon name={IconName.ChevronRight} className="h-3 w-3" />
                     </Link>
                   )}
+                  <div data-last-failure-fallback aria-hidden className="h-0" />
                 </div>
               )}
             </Suspense>
@@ -955,3 +908,18 @@ const TimelineContainer = memo(function TimelineContainer({
     </div>
   );
 });
+
+function JournalPurgedMessage() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+      <Icon name={IconName.Trash} className="h-5 w-5 text-zinc-400" />
+      <div className="text-sm font-medium text-zinc-700">
+        Journal was purged
+      </div>
+      <div className="max-w-md text-xs text-zinc-500">
+        Entries for this invocation are no longer available — the journal
+        retention has elapsed or it was cleared.
+      </div>
+    </div>
+  );
+}
