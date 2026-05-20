@@ -5171,7 +5171,8 @@
           "type": { "type": "string", "enum": ["CompleteAwakeable"] },
           "category": { "type": "string", "enum": ["notification"] },
           "value": { "type": "string" },
-          "id": { "type": "string" }
+          "id": { "type": "string" },
+          "signalIndex": { "type": "integer" }
         }
       },
       "NotificationSignalJournalEntryV2": {

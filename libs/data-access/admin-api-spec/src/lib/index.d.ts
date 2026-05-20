@@ -3482,6 +3482,7 @@ export interface components {
       category?: 'notification';
       value?: string;
       id?: string;
+      signalIndex?: number;
     };
     NotificationSignalJournalEntryV2: {
       /** @enum {string} */

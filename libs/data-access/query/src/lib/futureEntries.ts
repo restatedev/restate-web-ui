@@ -238,6 +238,7 @@ export function createFutureEntriesRegistry(
 
 function createPendingSignalIndexEntry(
   index: number,
+  signalIndex: number,
   signalIndexGroupIds: GroupIds,
 ): CompleteAwakeableNotificationEntry {
   return {
@@ -257,6 +258,7 @@ function createPendingSignalIndexEntry(
     resultType: undefined,
     index,
     id: undefined,
+    signalIndex,
   } as CompleteAwakeableNotificationEntry;
 }
 
@@ -301,6 +303,7 @@ function createPendingSignalEntries(
     } else {
       const pendingEntry = createPendingSignalIndexEntry(
         allocateSyntheticIndex(),
+        signalIndex,
         groupIds,
       );
       pendingEntries.push(pendingEntry);

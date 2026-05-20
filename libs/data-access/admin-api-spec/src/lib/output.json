@@ -9133,6 +9133,9 @@
           },
           "id": {
             "type": "string"
+          },
+          "signalIndex": {
+            "type": "integer"
           }
         }
       },
