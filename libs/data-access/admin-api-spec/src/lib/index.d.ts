@@ -2811,6 +2811,7 @@ export interface components {
         | components['schemas']['NotificationCompletePromiseJournalEntryV2']
         | components['schemas']['TransientErrorJournalEntryV2']
         | components['schemas']['PausedErrorJournalEntryV2']
+        | components['schemas']['SuspendedEventJournalEntryV2']
         | components['schemas']['CreatedLifecycleJournalEntryV2']
         | components['schemas']['RunningLifecycleJournalEntryV2']
         | components['schemas']['RetryingLifecycleJournalEntryV2']
@@ -2894,6 +2895,7 @@ export interface components {
         | 'Command: SendSignal'
         | 'Event: TransientError'
         | 'Event: Paused'
+        | 'Event: Suspended'
         | 'Event'
         | 'Notification: Signal'
         | 'Notification: Sleep'
@@ -3022,6 +3024,14 @@ export interface components {
       relatedRestateErrorCode?: string;
       relatedCommandType?: string;
       relatedCommandIndex?: number;
+    };
+    SuspendedEventJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Event: Suspended';
+      afterJournalEntryIndex?: number;
+      awaitingOn?: components['schemas']['InvocationFuture'];
     };
     /** @description Error details for a paused invocation */
     PausedErrorResponse: {

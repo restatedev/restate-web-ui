@@ -1,5 +1,6 @@
 import {
   Invocation,
+  InvocationFuture,
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import { JournalRawEntryWithCommandIndex, parseEntryJson } from './util';
@@ -14,6 +15,7 @@ export function event(
       JournalEntryV2,
       | { type?: 'Event: TransientError'; category?: 'event' }
       | { type?: 'Event: Paused'; category?: 'event' }
+      | { type?: 'Event: Suspended'; category?: 'event' }
     >
   | JournalEntryV2
   | undefined {
@@ -85,6 +87,19 @@ export function event(
       } as Extract<
         JournalEntryV2,
         { type?: 'Event: Paused'; category?: 'event' }
+      >;
+    }
+    case 'Event: Suspended': {
+      return {
+        start: entry.appended_at,
+        type: 'Event: Suspended',
+        category: 'event',
+        index: entry.index,
+        afterJournalEntryIndex: entry.after_journal_entry_index,
+        awaitingOn: metadata?.awaiting_on as InvocationFuture | undefined,
+      } as Extract<
+        JournalEntryV2,
+        { type?: 'Event: Suspended'; category?: 'event' }
       >;
     }
 

@@ -7412,6 +7412,9 @@
                 "$ref": "#/components/schemas/PausedErrorJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/SuspendedEventJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/CreatedLifecycleJournalEntryV2"
               },
               {
@@ -7556,6 +7559,7 @@
               "Command: SendSignal",
               "Event: TransientError",
               "Event: Paused",
+              "Event: Suspended",
               "Event",
               "Notification: Signal",
               "Notification: Sleep",
@@ -7876,6 +7880,25 @@
           },
           "relatedCommandIndex": {
             "type": "integer"
+          }
+        }
+      },
+      "SuspendedEventJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Event: Suspended"]
+          },
+          "afterJournalEntryIndex": {
+            "type": "integer"
+          },
+          "awaitingOn": {
+            "$ref": "#/components/schemas/InvocationFuture"
           }
         }
       },

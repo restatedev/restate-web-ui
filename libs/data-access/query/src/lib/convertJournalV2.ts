@@ -98,6 +98,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
 
   'Event: Paused': event,
   'Event: TransientError': event,
+  'Event: Suspended': event,
 
   'Command: Input': input,
   'Command: Output': output,

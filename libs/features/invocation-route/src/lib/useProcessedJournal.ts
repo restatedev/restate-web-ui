@@ -52,8 +52,8 @@ function isExpandable(
     > {
   return Boolean(
     entry.type &&
-      ['Call', 'AttachInvocation'].includes(entry.type) &&
-      entry.category === 'command',
+    ['Call', 'AttachInvocation'].includes(entry.type) &&
+    entry.category === 'command',
   );
 }
 

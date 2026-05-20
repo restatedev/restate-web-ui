@@ -254,6 +254,7 @@ export const ENTRY_EVENTS_TITLES: {
   Pending: 'Pending',
   Completion: '',
   'Event: Paused': '',
+  'Event: Suspended': 'Suspended at',
   Killed: 'Killed at',
 };
 
@@ -270,5 +271,6 @@ export const ENTRY_EVENTS_ENTRY_LABELS: {
   Pending: 'Pending',
   Completion: '',
   'Event: Paused': '',
+  'Event: Suspended': 'Suspended at',
   Killed: 'Killed at',
 };
