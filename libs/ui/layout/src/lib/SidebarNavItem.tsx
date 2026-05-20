@@ -261,19 +261,25 @@ function SidebarSubLink({
         'render' in item.action ? (
           item.action.render({ className: s.subAction() })
         ) : (
-          <Link
-            href={item.action.href}
-            preserveQueryParams={item.action.preserveSearchParams ?? false}
+          <HoverTooltip
+            content={item.action.ariaLabel}
+            placement="top"
             disabled={disabled}
-            className={s.subAction()}
-            aria-label={item.action.ariaLabel}
           >
-            <Icon
-              name={item.action.icon}
-              className={s.subActionIcon()}
-              aria-hidden
-            />
-          </Link>
+            <Link
+              href={item.action.href}
+              preserveQueryParams={item.action.preserveSearchParams ?? false}
+              disabled={disabled}
+              className={s.subAction()}
+              aria-label={item.action.ariaLabel}
+            >
+              <Icon
+                name={item.action.icon}
+                className={s.subActionIcon()}
+                aria-hidden
+              />
+            </Link>
+          </HoverTooltip>
         )
       ) : reserveActionSpace ? (
         <div className={s.subActionSpacer()} aria-hidden />

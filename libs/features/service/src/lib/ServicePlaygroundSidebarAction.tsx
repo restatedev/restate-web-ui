@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -8,6 +9,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { panelHref } from '@restate/util/panel';
 
@@ -19,18 +21,25 @@ export function ServicePlaygroundSidebarAction({
   const { data } = useListDeployments();
   const serviceNames = data?.sortedServiceNames ?? [];
   const disabled = serviceNames.length === 0;
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Dropdown>
+    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger>
-        <Button
-          variant="icon"
-          className={className}
-          aria-label="Open service playground"
-          disabled={disabled}
+        <HoverTooltip
+          content="Open in Playground"
+          placement="top"
+          disabled={disabled || isOpen}
         >
-          <Icon name={IconName.Play} className="h-3.5 w-3.5" />
-        </Button>
+          <Button
+            variant="icon"
+            className={className}
+            aria-label="Open in Playground"
+            disabled={disabled}
+          >
+            <Icon name={IconName.Play} className="h-3.5 w-3.5" />
+          </Button>
+        </HoverTooltip>
       </DropdownTrigger>
       <DropdownPopover>
         <DropdownSection title="Open in Playground">

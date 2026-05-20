@@ -128,7 +128,7 @@ const styles = tv({
   base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
   variants: {
     awaiting: {
-      suspended: 'bg-gray-100',
+      suspended: 'bg-gray-200/40',
       running: 'bg-blue-50',
       none: '',
     },
