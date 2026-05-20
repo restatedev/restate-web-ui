@@ -338,6 +338,7 @@ function extractPayloads(
     // V2 Events (no payloads)
     case 'Event: TransientError':
     case 'Event: Paused':
+    case 'Event: Suspended':
     case 'Event':
       return undefined;
 
