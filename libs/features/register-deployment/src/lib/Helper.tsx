@@ -77,6 +77,14 @@ function getDescription(
   }
 }
 
+function getCloudRunScript(serviceAccount: string) {
+  return `gcloud run services add-iam-policy-binding <your-service-name> \\
+  --region=<your-region> \\
+  --member=serviceAccount:${serviceAccount} \\
+  --role=roles/run.invoker \\
+  --project=<your-project>`;
+}
+
 export function Helper({
   isLambda,
   isTunnel,
@@ -85,8 +93,9 @@ export function Helper({
   isTunnel: boolean;
 }) {
   const isOnboarding = useOnboarding();
-  const { identityKey, awsRolePolicy, OnboardingGuide } = useRestateContext();
-  const { targetType, endpoint } = useRegisterDeploymentContext();
+  const { identityKey, awsRolePolicy, gcpServiceAccount, OnboardingGuide } =
+    useRestateContext();
+  const { targetType, endpoint, isCloudRun } = useRegisterDeploymentContext();
   const templates = OnboardingGuide ? (
     <OnboardingGuide
       stage={
@@ -106,6 +115,48 @@ export function Helper({
 
   if (isTunnel) {
     return templates;
+  }
+
+  if (isCloudRun && gcpServiceAccount) {
+    const script = getCloudRunScript(gcpServiceAccount.value);
+    return (
+      <>
+        <Container
+          title={
+            <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
+              <Icon name={IconName.ShieldCheck} className="h-4 w-4" />
+              Secure your services.{' '}
+              {gcpServiceAccount.url && (
+                <Link
+                  target="_blank"
+                  href={gcpServiceAccount.url}
+                  variant="secondary"
+                  className="text-sky-600"
+                >
+                  Learn more…
+                </Link>
+              )}
+            </div>
+          }
+        >
+          <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+            Turn on{' '}
+            <span className="font-medium text-gray-600">
+              Authenticate with Google ID token
+            </span>{' '}
+            above, then grant <code>roles/run.invoker</code> to the service
+            account Restate impersonates, so it can invoke your private service.
+          </div>
+          <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
+            <Snippet language="bash">
+              {script}
+              <SnippetCopy copyText={script} />
+            </Snippet>
+          </Code>
+        </Container>
+        {templates}
+      </>
+    );
   }
 
   if (!isLambda && !isTunnel && identityKey) {
@@ -177,10 +228,13 @@ export function Helper({
             permission to invoke your Lambda, and includes the trust policy
             below.
           </div>
-          <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
+          <Code className="relative rounded-sm bg-black/4 py-2! text-xs">
             <Snippet language="json">
               {awsRolePolicy.value}
-              <SnippetCopy copyText={awsRolePolicy.value} />
+              <SnippetCopy
+                copyText={awsRolePolicy.value}
+                className="rounded-sm p-1"
+              />
             </Snippet>
           </Code>
         </Container>

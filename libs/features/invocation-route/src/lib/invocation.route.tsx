@@ -5,7 +5,6 @@ import {
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
-import { HoverTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
@@ -73,6 +72,8 @@ const headerCardStyles = tv({
         'border-red-300/60 from-red-100 from-0% via-white via-50% to-red-50',
       warning:
         'border-orange-300/60 from-orange-100 from-0% via-white via-50% to-orange-50',
+      pending:
+        'border-amber-300/60 from-amber-100 from-0% via-white via-50% to-amber-50',
       info: 'border-blue-300/60 from-blue-100 from-0% via-white via-50% to-blue-50',
       default:
         'border-gray-300/60 from-gray-200/50 from-0% via-white via-50% to-gray-100',
@@ -83,7 +84,7 @@ const headerCardStyles = tv({
 
 function getHeaderIntent(
   invocation?: Invocation,
-): 'success' | 'danger' | 'warning' | 'info' | 'default' {
+): 'success' | 'danger' | 'warning' | 'info' | 'default' | 'pending' {
   if (!invocation) return 'default';
   if (invocation.isRetrying) return 'warning';
   switch (invocation.status) {
@@ -92,6 +93,7 @@ function getHeaderIntent(
     case 'failed':
       return 'danger';
     case 'pending':
+      return 'pending';
     case 'paused':
     case 'scheduled':
     case 'backing-off':
@@ -198,20 +200,11 @@ function Component() {
                 className="h-4 w-4 fill-blue-50 text-blue-500"
               />
             </span>
-            <HoverTooltip
-              size="sm"
-              content={
-                <div className="flex h-4 items-center gap-4 leading-4">
-                  <div>{id}</div>
-                  <Copy
-                    copyText={String(id)}
-                    className="ml-auto h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
-                  />
-                </div>
-              }
-            >
-              {id}
-            </HoverTooltip>
+            <span className="min-w-0 truncate">{id}</span>
+            <Copy
+              copyText={String(id)}
+              className="ml-0 shrink-0 rounded-md p-1 [&_svg]:h-3 [&_svg]:w-3"
+            />
           </h1>
         </div>
         {/* Sticky floating header: target + status stay visible while the

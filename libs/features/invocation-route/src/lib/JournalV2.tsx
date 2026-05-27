@@ -193,7 +193,7 @@ export function JournalV2({
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
   });
-  console.log(data);
+
   const referencedInvocationIds = getReferencedInvocationIds(data);
   useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
     refetchOnMount: true,

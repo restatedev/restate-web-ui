@@ -17,6 +17,8 @@ export function KeysIdsSection({
   const idempotencyId = invocation?.idempotency_key;
   const traceId = invocation?.trace_id;
   const restateVersion = invocation?.created_using_restate_version;
+  const scope = invocation?.scope;
+  const limitKey = invocation?.limit_key;
 
   if (!invocation) {
     return null;
@@ -24,24 +26,8 @@ export function KeysIdsSection({
 
   return (
     <Section className={styles({ className })}>
-      <SectionTitle>Invocation Metadata</SectionTitle>
+      <SectionTitle>Details</SectionTitle>
       <SectionContent className="p-0">
-        <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-          <span className="flex-auto pl-1 text-0.5xs font-medium whitespace-nowrap text-gray-500">
-            Invocation Id
-          </span>
-          <Badge
-            size="sm"
-            className="ml-10 min-w-0 py-0 pr-0 align-middle font-mono"
-          >
-            <div className="truncate">{invocation.id}</div>
-            <Copy
-              copyText={invocation?.id}
-              className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-            />
-          </Badge>
-        </div>
-
         {restateVersion && !restateVersion.startsWith('0.0.0') && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
             <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
@@ -73,6 +59,42 @@ export function KeysIdsSection({
 
               <Copy
                 copyText={idempotencyId}
+                className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
+              />
+            </Badge>
+          </div>
+        )}
+
+        {scope && (
+          <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
+            <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+              Scope
+            </span>
+            <Badge
+              size="sm"
+              className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
+            >
+              <div className="truncate">{scope}</div>
+              <Copy
+                copyText={scope}
+                className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
+              />
+            </Badge>
+          </div>
+        )}
+
+        {limitKey && (
+          <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
+            <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+              Limit Key
+            </span>
+            <Badge
+              size="sm"
+              className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
+            >
+              <div className="truncate">{limitKey}</div>
+              <Copy
+                copyText={limitKey}
                 className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
               />
             </Badge>

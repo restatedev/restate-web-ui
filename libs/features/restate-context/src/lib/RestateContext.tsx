@@ -58,6 +58,7 @@ type RestateContext = {
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
+  gcpServiceAccount?: { value: string; url?: string };
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -79,6 +80,7 @@ function InternalRestateContextProvider({
   OnboardingGuide,
   awsRolePolicy,
   identityKey,
+  gcpServiceAccount,
   queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
   isPending?: boolean;
@@ -95,6 +97,7 @@ function InternalRestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
+  gcpServiceAccount?: { value: string; url?: string };
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
@@ -151,6 +154,7 @@ function InternalRestateContextProvider({
         isNew,
         awsRolePolicy,
         identityKey,
+        gcpServiceAccount,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -173,6 +177,7 @@ export function RestateContextProvider({
   isNew,
   awsRolePolicy,
   identityKey,
+  gcpServiceAccount,
   systemHealthMonitor,
   queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
@@ -191,6 +196,7 @@ export function RestateContextProvider({
   isNew?: boolean;
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
+  gcpServiceAccount?: { value: string; url?: string };
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
@@ -207,6 +213,7 @@ export function RestateContextProvider({
         isNew={isNew}
         awsRolePolicy={awsRolePolicy}
         identityKey={identityKey}
+        gcpServiceAccount={gcpServiceAccount}
         systemHealthMonitor={systemHealthMonitor}
         queryHealthCheckEnabled={queryHealthCheckEnabled}
       >

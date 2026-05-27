@@ -76,7 +76,9 @@ export function getSysInvocationListColumns(
   const base = supportsWaitingColumns(restateVersion)
     ? [...SYS_INVOCATION_LIST_COLUMNS, ...SYS_INVOCATION_WAITING_COLUMNS]
     : SYS_INVOCATION_LIST_COLUMNS;
-  return features.has('vqueues') ? [...base, 'scope'] : base;
+  return features.has('vqueues')
+    ? [...base, 'scope', 'vqueue_id', 'limit_key']
+    : base;
 }
 
 export function getSysInvocationColumns(

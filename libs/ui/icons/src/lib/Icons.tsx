@@ -113,6 +113,7 @@ import { Typescript } from './custom-icons/Typescript';
 import { Rust } from './custom-icons/Rust';
 import { Python } from './custom-icons/Python';
 import { Tunnel } from './custom-icons/Tunnel';
+import { CloudRun } from './custom-icons/CloudRun';
 import { RestateCloud } from './custom-icons/RestateCloud';
 
 export const enum IconName {
@@ -197,6 +198,7 @@ export const enum IconName {
   TrendingUp = 'TrendingUp',
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
+  CloudRun = 'CloudRun',
   AtSign = 'AtSign',
   Example = 'Example',
   AiExample = 'AiExample',
@@ -319,6 +321,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.TrendingUp]: TrendingUp,
   [IconName.TrendingDown]: TrendingDown,
   [IconName.Tunnel]: Tunnel,
+  [IconName.CloudRun]: CloudRun,
   [IconName.AtSign]: AtSign,
   [IconName.Example]: FileCode2,
   [IconName.AiExample]: Bot,

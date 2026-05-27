@@ -431,6 +431,59 @@ function DeploymentContent({
             </SectionContent>
           </>
         )}
+        {data && isHttpDeployment(data) && data.auth?.GoogleIdToken && (
+          <>
+            <SectionTitle className="mt-2">
+              <InlineTooltip
+                title="Authentication"
+                description="Restate mints a Google-signed OIDC ID token for each request and attaches it as X-Serverless-Authorization, for invoking private Google Cloud Run services."
+                variant="indicator-button"
+              >
+                Authentication
+              </InlineTooltip>
+            </SectionTitle>
+            <SectionContent className="p-0">
+              <div className="flex items-center px-1.5 py-1 not-last:border-b">
+                <span className="flex-auto pl-1 text-0.5xs font-medium text-gray-500">
+                  Type
+                </span>
+                <Badge size="sm" className="py-0 align-middle font-mono">
+                  Google ID token
+                </Badge>
+              </div>
+              {data.auth.GoogleIdToken.audience && (
+                <div className="flex items-center gap-2 px-1.5 py-1 not-last:border-b">
+                  <span className="shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+                    Audience
+                  </span>
+                  <div className="ml-auto min-w-0 text-0.5xs font-medium text-gray-500">
+                    <TruncateWithTooltip
+                      copyText={data.auth.GoogleIdToken.audience}
+                    >
+                      {data.auth.GoogleIdToken.audience}
+                    </TruncateWithTooltip>
+                  </div>
+                </div>
+              )}
+              {data.auth.GoogleIdToken.impersonate_service_account && (
+                <div className="flex items-center gap-2 px-1.5 py-1 not-last:border-b">
+                  <span className="shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+                    Impersonate
+                  </span>
+                  <div className="ml-auto min-w-0 text-0.5xs font-medium text-gray-500">
+                    <TruncateWithTooltip
+                      copyText={
+                        data.auth.GoogleIdToken.impersonate_service_account
+                      }
+                    >
+                      {data.auth.GoogleIdToken.impersonate_service_account}
+                    </TruncateWithTooltip>
+                  </div>
+                </div>
+              )}
+            </SectionContent>
+          </>
+        )}
       </Section>
     </>
   );

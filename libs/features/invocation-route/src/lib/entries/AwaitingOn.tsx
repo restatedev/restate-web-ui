@@ -165,10 +165,10 @@ function FutureNode({
   if (group) {
     return (
       <>
-        <div className="font-mono text-xs font-medium text-zinc-400">
+        <div className="pl-2 font-mono text-xs font-medium text-zinc-400">
           {GROUP_LABELS[group.type]}
         </div>
-        <div className="ml-1.5 flex flex-col gap-0.5 border-l border-zinc-200 pl-3">
+        <div className="ml-2 flex flex-col gap-0.5 border-l border-zinc-200 pl-1">
           {group.children.map((child, i) => (
             <FutureNode
               key={i}

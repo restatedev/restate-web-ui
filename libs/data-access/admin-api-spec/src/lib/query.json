@@ -5635,6 +5635,12 @@
           "scope": {
             "type": "string"
           },
+          "vqueue_id": {
+            "type": "string"
+          },
+          "limit_key": {
+            "type": "string"
+          },
           "completion_result": {
             "type": "string",
             "enum": ["success", "failure"]
@@ -5842,6 +5848,12 @@
             "enum": ["service", "virtual_object", "workflow"]
           },
           "scope": {
+            "type": "string"
+          },
+          "vqueue_id": {
+            "type": "string"
+          },
+          "limit_key": {
             "type": "string"
           },
           "completion_result": {

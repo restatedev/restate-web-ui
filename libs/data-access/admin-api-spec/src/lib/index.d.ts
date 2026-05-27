@@ -1303,6 +1303,7 @@ export interface components {
            *     Additional headers used to invoke this service deployment.
            */
           additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
+          auth?: null | components['schemas']['HttpAuth'];
           created_at: string;
           /**
            * @description # HTTP Version
@@ -1441,6 +1442,7 @@ export interface components {
            *     Additional headers used to invoke this service deployment.
            */
           additional_headers?: components['schemas']['SerdeableHeaderHashMap'];
+          auth?: null | components['schemas']['HttpAuth'];
           created_at: string;
           /**
            * @description # HTTP Version
@@ -1592,6 +1594,15 @@ export interface components {
        *     Restate error code describing this error
        */
       restate_code?: string | null;
+    };
+    GoogleIdTokenAuth: {
+      /** @description Explicit OIDC `aud` claim. Leave unset to automatically derive from the deployment URL. */
+      audience?: string | null;
+      /**
+       * @description Service account email to impersonate via `iamcredentials:generateIdToken`. Leave unset to
+       *     use the ambient ADC identity.
+       */
+      impersonate_service_account?: string | null;
     };
     /** @description Handler metadata */
     HandlerMetadata: {
@@ -1755,6 +1766,10 @@ export interface components {
        */
       max_interval?: string | null;
       on_max_attempts?: null | components['schemas']['OnMaxAttempts'];
+    };
+    /** @description HTTP authentication details. */
+    HttpAuth: {
+      GoogleIdToken: components['schemas']['GoogleIdTokenAuth'];
     };
     /**
      * Format: hostname
@@ -1961,6 +1976,7 @@ export interface components {
           additional_headers?:
             | null
             | components['schemas']['SerdeableHeaderHashMap'];
+          auth?: null | components['schemas']['HttpAuth'];
           /**
            * @description # Breaking
            *
@@ -3642,6 +3658,8 @@ export interface components {
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
       scope?: string;
+      vqueue_id?: string;
+      limit_key?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
@@ -3725,6 +3743,8 @@ export interface components {
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
       scope?: string;
+      vqueue_id?: string;
+      limit_key?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;

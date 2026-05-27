@@ -187,6 +187,45 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     completedText: 'Resumed',
     emptyMessage: 'Only paused invocations can be resumed.',
   },
+  'retry-now': {
+    title: 'Retry Invocations now',
+    submitText: 'Retry',
+    icon: IconName.RetryNow,
+    iconClassName: '',
+    submitVariant: 'primary',
+    formMethod: 'POST',
+    formAction: '/query/invocations/resume',
+    description: (count, isLowerBound, duration, params) => (
+      <p>
+        Are you sure you want to retry{' '}
+        <InlineTooltip
+          description={
+            isLowerBound
+              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
+              : `This count was calculated ${duration} and may have changed.`
+          }
+          variant="inline-help"
+          className="[&_button]:invisible"
+          visible={'filters' in params}
+        >
+          <span className="font-medium text-gray-700">
+            {formatNumber(count, true)}
+            {isLowerBound ? '+' : ''}{' '}
+            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
+          </span>
+        </InlineTooltip>
+        {'filters' in params && params.filters?.length > 0
+          ? 'matching the following criteria now?'
+          : ' now?'}
+      </p>
+    ),
+    alertType: 'info',
+    alertContent:
+      'These invocations are backing off after a failed attempt. Retrying triggers a new attempt immediately instead of waiting for the next scheduled retry, keeping their current deployment.',
+    progressTitle: 'Retrying invocations',
+    completedText: 'Retried',
+    emptyMessage: 'Only backing-off invocations can be retried.',
+  },
   kill: {
     title: 'Kill Invocations',
     submitText: 'Kill',

@@ -324,6 +324,7 @@ function Component() {
     batchKill,
     batchPause,
     batchRestartAsNew,
+    batchRetryNow,
   } = useBatchOperations();
 
   useEffect(() => {
@@ -507,6 +508,9 @@ function Component() {
                         case 'resume': {
                           return batchResume(args, schema);
                         }
+                        case 'retry-now': {
+                          return batchRetryNow(args, schema);
+                        }
                         case 'purge': {
                           return batchPurge(args, schema);
                         }
@@ -541,6 +545,13 @@ function Component() {
                         className="h-3.5 w-3.5 shrink-0 opacity-80"
                       />
                       Resume…
+                    </DropdownItem>
+                    <DropdownItem value="retry-now">
+                      <Icon
+                        name={IconName.RetryNow}
+                        className="h-3.5 w-3.5 shrink-0 opacity-80"
+                      />
+                      Retry now…
                     </DropdownItem>
                     <DropdownItem value="restart-as-new">
                       <Icon

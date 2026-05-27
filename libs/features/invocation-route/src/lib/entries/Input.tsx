@@ -4,7 +4,6 @@ import {
   type RestateCodecOptions,
 } from '@restate/features/codec';
 import { EntryProps } from './types';
-import { Target } from '../Target';
 import { tv } from '@restate/util/styles';
 import { EntryExpression } from './EntryExpression';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -15,7 +14,7 @@ const inputStyles = tv({
   slots: {
     root: 'ml-2 flex max-w-full flex-none items-center self-center [font-size:inherit] **:data-target:font-sans **:data-target:font-medium',
     target: 'flex-none',
-    expression: 'flex min-w-0 translate-y-px items-center pl-2',
+    expression: 'flex min-w-0 translate-y-px items-center',
   },
 });
 

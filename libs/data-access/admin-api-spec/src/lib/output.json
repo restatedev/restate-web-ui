@@ -5356,6 +5356,17 @@
                 "$ref": "#/components/schemas/SerdeableHeaderHashMap",
                 "description": "# Additional headers\n\nAdditional headers used to invoke this service deployment."
               },
+              "auth": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/HttpAuth",
+                    "description": "# Authentication\n\nPer-deployment authentication, if configured."
+                  }
+                ]
+              },
               "created_at": {
                 "type": "string"
               },
@@ -5521,6 +5532,17 @@
               "additional_headers": {
                 "$ref": "#/components/schemas/SerdeableHeaderHashMap",
                 "description": "# Additional headers\n\nAdditional headers used to invoke this service deployment."
+              },
+              "auth": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/HttpAuth",
+                    "description": "# Authentication\n\nPer-deployment authentication, if configured."
+                  }
+                ]
               },
               "created_at": {
                 "type": "string"
@@ -5700,6 +5722,19 @@
           }
         }
       },
+      "GoogleIdTokenAuth": {
+        "type": "object",
+        "properties": {
+          "audience": {
+            "type": ["string", "null"],
+            "description": "Explicit OIDC `aud` claim. Leave unset to automatically derive from the deployment URL."
+          },
+          "impersonate_service_account": {
+            "type": ["string", "null"],
+            "description": "Service account email to impersonate via `iamcredentials:generateIdToken`. Leave unset to\nuse the ambient ADC identity."
+          }
+        }
+      },
       "HandlerMetadata": {
         "type": "object",
         "description": "Handler metadata",
@@ -5823,6 +5858,20 @@
             ]
           }
         }
+      },
+      "HttpAuth": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["GoogleIdToken"],
+            "properties": {
+              "GoogleIdToken": {
+                "$ref": "#/components/schemas/GoogleIdTokenAuth"
+              }
+            }
+          }
+        ],
+        "description": "HTTP authentication details."
       },
       "KafkaClusterName": {
         "type": "string",
@@ -6085,6 +6134,17 @@
                   {
                     "$ref": "#/components/schemas/SerdeableHeaderHashMap",
                     "description": "# Additional headers\n\nAdditional headers added to every discover/invoke request to the deployment.\n\nYou typically want to include here API keys and other tokens required to send requests to deployments."
+                  }
+                ]
+              },
+              "auth": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/HttpAuth",
+                    "description": "# Authentication\n\nOptional per-deployment authentication configuration. When set to `GoogleIdToken`,\nRestate mints a Google-signed OIDC ID token for each request and attaches it as\n`X-Serverless-Authorization: Bearer <token>`. Cloud Run validates this header in\nprecedence over `Authorization` and strips it before forwarding to the container, so any\n`Authorization` placed in `additional_headers` passes through to the workload unchanged."
                   }
                 ]
               },
@@ -9653,6 +9713,12 @@
           "scope": {
             "type": "string"
           },
+          "vqueue_id": {
+            "type": "string"
+          },
+          "limit_key": {
+            "type": "string"
+          },
           "completion_result": {
             "type": "string",
             "enum": ["success", "failure"]
@@ -9860,6 +9926,12 @@
             "enum": ["service", "virtual_object", "workflow"]
           },
           "scope": {
+            "type": "string"
+          },
+          "vqueue_id": {
+            "type": "string"
+          },
+          "limit_key": {
             "type": "string"
           },
           "completion_result": {

@@ -65,7 +65,7 @@ const styles = tv({
     },
     status: {
       pending:
-        'border-dashed border-orange-300/90 bg-transparent text-orange-700',
+        'border-dashed border-amber-300/90 bg-transparent text-amber-700',
       scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
       ready: 'border-dashed border-zinc-300 bg-transparent text-zinc-500',
       running: 'border-dashed',

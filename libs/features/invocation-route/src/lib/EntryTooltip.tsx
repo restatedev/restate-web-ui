@@ -93,7 +93,7 @@ function EntryContent({
           : {};
   const title = categoryTitles[String(entry.type)];
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex max-w-6xl flex-col gap-3">
       <div className="text-base font-semibold">
         {title}{' '}
         {isCopiedFromRestart ? (
