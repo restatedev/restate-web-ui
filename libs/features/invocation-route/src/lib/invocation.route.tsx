@@ -5,7 +5,6 @@ import {
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import { getRestateError, Status } from './Status';
-import { HoverTooltip } from '@restate/ui/tooltip';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
@@ -198,20 +197,11 @@ function Component() {
                 className="h-4 w-4 fill-blue-50 text-blue-500"
               />
             </span>
-            <HoverTooltip
-              size="sm"
-              content={
-                <div className="flex h-4 items-center gap-4 leading-4">
-                  <div>{id}</div>
-                  <Copy
-                    copyText={String(id)}
-                    className="ml-auto h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
-                  />
-                </div>
-              }
-            >
-              {id}
-            </HoverTooltip>
+            <span className="min-w-0 truncate">{id}</span>
+            <Copy
+              copyText={String(id)}
+              className="ml-0 shrink-0 rounded-md p-1 [&_svg]:h-3 [&_svg]:w-3"
+            />
           </h1>
         </div>
         {/* Sticky floating header: target + status stay visible while the
