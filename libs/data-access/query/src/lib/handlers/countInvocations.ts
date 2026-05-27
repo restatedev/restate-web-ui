@@ -2,7 +2,7 @@ import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
 
-const COUNT_LIMIT = 50000;
+const COUNT_LIMIT = 200_000;
 const INVOCATIONS_LIMIT = 100;
 
 export async function countInvocations(
