@@ -72,6 +72,8 @@ const headerCardStyles = tv({
         'border-red-300/60 from-red-100 from-0% via-white via-50% to-red-50',
       warning:
         'border-orange-300/60 from-orange-100 from-0% via-white via-50% to-orange-50',
+      pending:
+        'border-amber-300/60 from-amber-100 from-0% via-white via-50% to-amber-50',
       info: 'border-blue-300/60 from-blue-100 from-0% via-white via-50% to-blue-50',
       default:
         'border-gray-300/60 from-gray-200/50 from-0% via-white via-50% to-gray-100',
@@ -82,7 +84,7 @@ const headerCardStyles = tv({
 
 function getHeaderIntent(
   invocation?: Invocation,
-): 'success' | 'danger' | 'warning' | 'info' | 'default' {
+): 'success' | 'danger' | 'warning' | 'info' | 'default' | 'pending' {
   if (!invocation) return 'default';
   if (invocation.isRetrying) return 'warning';
   switch (invocation.status) {
@@ -91,6 +93,7 @@ function getHeaderIntent(
     case 'failed':
       return 'danger';
     case 'pending':
+      return 'pending';
     case 'paused':
     case 'scheduled':
     case 'backing-off':
