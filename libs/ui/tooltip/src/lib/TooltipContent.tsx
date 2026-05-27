@@ -28,7 +28,7 @@ const styles = tv({
     },
     size: {
       sm: 'rounded-md bg-zinc-800 px-2 py-1 text-xs shadow-[inset_0_0.5px_0_0_var(--color-gray-500)] [&_.content]:max-w-full [&_.content]:break-all',
-      lg: 'max-w-2xl overflow-auto rounded-xl bg-zinc-800/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--color-gray-500)] backdrop-blur-xl',
+      lg: 'max-w-7xl overflow-auto rounded-xl bg-zinc-800/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--color-gray-500)] backdrop-blur-xl',
       default:
         'rounded-xl bg-zinc-800/90 p-4 text-sm shadow-[inset_0_1px_0_0_var(--color-gray-500)] backdrop-blur-xl',
     },

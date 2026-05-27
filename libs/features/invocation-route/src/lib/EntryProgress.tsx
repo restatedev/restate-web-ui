@@ -117,6 +117,9 @@ const lineStyles = tv({
       idleWarning: {
         line: 'h-3 border-dashed border-orange-600/60 from-orange-400/10 to-orange-400/10',
       },
+      idlePending: {
+        line: 'h-3 border-dashed border-amber-600/60 from-amber-400/10 to-amber-400/10',
+      },
       idleNeutral: {
         line: 'h-3 border-dashed border-zinc-600/40 from-zinc-400/20 to-zinc-400/20',
       },
@@ -179,6 +182,7 @@ function Line({
     | 'default'
     | 'idleNeutral'
     | 'idleWarning'
+    | 'idlePending'
     | 'backingOff';
 }>) {
   const { line } = lineStyles({ variant, isAmbiguous });
@@ -276,7 +280,10 @@ function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
   ) {
     return 'idleNeutral';
   }
-  if (entry?.type === 'Pending' || entry?.type === 'Paused') {
+  if (entry?.type === 'Pending') {
+    return 'idlePending';
+  }
+  if (entry?.type === 'Paused') {
     return 'idleWarning';
   }
   if (entry?.type === 'Retrying') {

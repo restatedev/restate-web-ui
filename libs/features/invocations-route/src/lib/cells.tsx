@@ -458,6 +458,10 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     withField({ field: 'scope', className: 'font-mono' }),
     'scope',
   ),
+  limit_key: withCell(
+    withField({ field: 'limit_key', className: 'font-mono' }),
+    'limit_key',
+  ),
 };
 
 export function InvocationCell({

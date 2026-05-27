@@ -6,6 +6,7 @@ export type OperationType =
   | 'cancel'
   | 'pause'
   | 'resume'
+  | 'retry-now'
   | 'kill'
   | 'purge'
   | 'restart-as-new';

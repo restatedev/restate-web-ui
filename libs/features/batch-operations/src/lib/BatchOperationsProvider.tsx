@@ -57,6 +57,10 @@ interface BatchOperationsContextValue {
     params: BatchInvocationsRequestBody,
     schema?: QueryClauseSchema<QueryClauseType>[],
   ) => void;
+  batchRetryNow: (
+    params: BatchInvocationsRequestBody,
+    schema?: QueryClauseSchema<QueryClauseType>[],
+  ) => void;
 }
 
 const BatchOperationsContext =
@@ -489,6 +493,49 @@ export function BatchOperationsProvider({
     [],
   );
 
+  const batchRetryNow = useCallback(
+    (
+      params: { invocationIds: string[] } | { filters: FilterItem[] },
+      schema?: QueryClauseSchema<QueryClauseType>[],
+    ) => {
+      const id = generateBatchId();
+      const progressStore = new ProgressStore({
+        failed: 0,
+        failedInvocationIds: [],
+        successful: 0,
+        isFinished: false,
+        total: 0,
+        isError: false,
+      });
+      setBatchOpes((old) => [
+        ...old,
+        {
+          id,
+          type: 'retry-now',
+          params:
+            'invocationIds' in params
+              ? { invocationIds: params.invocationIds }
+              : {
+                  filters: [
+                    ...params.filters,
+                    {
+                      field: 'status',
+                      type: 'STRING',
+                      operation: 'EQUALS',
+                      value: 'backing-off',
+                      isActionImplicitFilter: true,
+                    },
+                  ],
+                  schema,
+                },
+          progressStore,
+          isDialogOpen: true,
+        },
+      ]);
+    },
+    [],
+  );
+
   return (
     <BatchOperationsContext.Provider
       value={{
@@ -498,6 +545,7 @@ export function BatchOperationsProvider({
         batchPurge,
         batchResume,
         batchRestartAsNew,
+        batchRetryNow,
       }}
     >
       {children}

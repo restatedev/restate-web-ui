@@ -22,7 +22,12 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useOnboarding } from '@restate/util/feature-flag';
-import { addProtocol, FIX_HTTP_ACTION, getTargetType } from './utils';
+import {
+  addProtocol,
+  FIX_HTTP_ACTION,
+  getTargetType,
+  isCloudRunEndpoint,
+} from './utils';
 import { UPDATE_DEPLOYMENT_QUERY } from './constant';
 
 type NavigateToAdvancedAction = {
@@ -40,12 +45,21 @@ type UpdateEndpointAction = {
   type: 'UpdateEndpointAction';
   payload: Pick<
     DeploymentRegistrationContextInterface,
-    'endpoint' | 'isLambda' | 'isDuplicate' | 'isTunnel' | 'tunnelName'
+    | 'endpoint'
+    | 'isLambda'
+    | 'isDuplicate'
+    | 'isTunnel'
+    | 'isCloudRun'
+    | 'tunnelName'
   >;
 };
 type UpdateRoleArnAction = {
   type: 'UpdateRoleArnAction';
   payload: Pick<DeploymentRegistrationContextInterface, 'assumeRoleArn'>;
+};
+type UpdateAuthAction = {
+  type: 'UpdateAuthAction';
+  payload: Pick<DeploymentRegistrationContextInterface, 'googleAuth'>;
 };
 type UpdateUseHttp11Action = {
   type: 'UpdateUseHttp11Action';
@@ -76,19 +90,27 @@ type Action =
   | NavigateToEndpointAction
   | UpdateEndpointAction
   | UpdateRoleArnAction
+  | UpdateAuthAction
   | UpdateUseHttp11Action
   | UpdateServicesActions
   | UpdateShouldForce
   | UpdateShouldAllowBreaking;
+
+export interface GoogleAuth {
+  audience?: string;
+  impersonateServiceAccount?: string;
+}
 
 interface DeploymentRegistrationContextInterface {
   endpoint?: string;
   tunnelName: string;
   stage: 'endpoint' | 'advanced' | 'confirm';
   assumeRoleArn?: string;
+  googleAuth?: GoogleAuth;
   useHttp11?: boolean;
   isLambda: boolean;
   isTunnel: boolean;
+  isCloudRun: boolean;
   formId?: string;
   additionalHeaders?: ListData<{
     key: string;
@@ -114,6 +136,7 @@ interface DeploymentRegistrationContextInterface {
   updateEndpoint?: (value: UpdateEndpointAction['payload']) => void;
   register?: (isDryRun: boolean) => void;
   updateAssumeRoleArn?: (value: string) => void;
+  updateGoogleAuth?: (value?: GoogleAuth) => void;
   updateUseHttp11Arn?: (value: boolean) => void;
   updateShouldForce?: (value: boolean) => void;
   updateShouldAllowBreakingChange?: (value: boolean) => void;
@@ -127,9 +150,11 @@ type State = Pick<
   | 'isLambda'
   | 'tunnelName'
   | 'isTunnel'
+  | 'isCloudRun'
   | 'stage'
   | 'services'
   | 'assumeRoleArn'
+  | 'googleAuth'
   | 'useHttp11'
   | 'shouldForce'
   | 'isDuplicate'
@@ -149,6 +174,8 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         ...action.payload,
+        // `auth` only applies to Cloud Run; drop it when switching away.
+        ...(action.payload.isCloudRun ? {} : { googleAuth: undefined }),
         ...(state.mode === 'register' && {
           shouldForce: false,
           shouldAllowBreakingChange: false,
@@ -156,6 +183,8 @@ function reducer(state: State, action: Action): State {
       };
     case 'UpdateRoleArnAction':
       return { ...state, assumeRoleArn: action.payload.assumeRoleArn };
+    case 'UpdateAuthAction':
+      return { ...state, googleAuth: action.payload.googleAuth };
     case 'UpdateUseHttp11Action':
       return { ...state, useHttp11: action.payload.useHttp11 };
     case 'UpdateServicesActions':
@@ -195,6 +224,7 @@ const initialState: (args: {
     stage: 'endpoint',
     isLambda: false,
     isTunnel: false,
+    isCloudRun: false,
     error: null,
     endpoint: '',
     tunnelName: '',
@@ -209,6 +239,8 @@ const initialState: (args: {
             withoutTrailingSlash(resolvedEndpoint),
       ),
       isTunnel,
+      isCloudRun:
+        !isLambda && !isTunnel && isCloudRunEndpoint(resolvedEndpoint),
       tunnelName: isTunnel ? String(endpoint)?.replace('tunnel://', '') : '',
     }),
     assumeRoleArn: args?.assumeRoleArn,
@@ -221,6 +253,20 @@ const DeploymentRegistrationContext =
 
 function withoutTrailingSlash(url?: string) {
   return url?.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+function toAuthBody(googleAuth?: GoogleAuth) {
+  if (!googleAuth) {
+    return undefined;
+  }
+  return {
+    GoogleIdToken: {
+      ...(googleAuth.audience ? { audience: googleAuth.audience } : {}),
+      ...(googleAuth.impersonateServiceAccount
+        ? { impersonate_service_account: googleAuth.impersonateServiceAccount }
+        : {}),
+    },
+  };
 }
 
 export function DeploymentRegistrationState({
@@ -416,11 +462,20 @@ export function DeploymentRegistrationState({
           withoutTrailingSlash(resolvedEndpoint),
       );
 
+      // Cloud Run is an HTTP deployment; auto-upgrade when the URL is a
+      // `*.run.app` host, otherwise keep whatever the caller signalled (so a
+      // custom domain in front of Cloud Run stays Cloud Run).
+      const isCloudRun =
+        !value.isLambda &&
+        !value.isTunnel &&
+        (Boolean(value.isCloudRun) || isCloudRunEndpoint(resolvedEndpoint));
+
       dispatch({
         type: 'UpdateEndpointAction',
         payload: {
           isTunnel: value.isTunnel,
           isLambda: value.isLambda,
+          isCloudRun,
           endpoint: value.endpoint,
           isDuplicate,
           tunnelName: value.tunnelName,
@@ -442,6 +497,13 @@ export function DeploymentRegistrationState({
     },
     [reset],
   );
+  const updateGoogleAuth = useCallback(
+    (googleAuth?: GoogleAuth) => {
+      reset();
+      dispatch({ type: 'UpdateAuthAction', payload: { googleAuth } });
+    },
+    [reset],
+  );
   const updateUseHttp11Arn = useCallback(
     (useHttp11: boolean) => {
       reset();
@@ -459,12 +521,14 @@ export function DeploymentRegistrationState({
       endpoint = '',
       isLambda,
       assumeRoleArn,
+      googleAuth,
       useHttp11,
       shouldForce,
       isTunnel,
       tunnelName,
       shouldAllowBreakingChange,
     } = state;
+    const auth = toAuthBody(googleAuth);
 
     if (action === FIX_HTTP_ACTION) {
       updateUseHttp11Arn(true);
@@ -530,6 +594,7 @@ export function DeploymentRegistrationState({
               : {
                   uri: addProtocol(endpoint),
                   use_http_11: Boolean(useHttp11) || action === FIX_HTTP_ACTION,
+                  ...(auth ? { auth } : {}),
                 }),
           force: Boolean(shouldForce),
           dry_run: action === 'dryRun' || action === FIX_HTTP_ACTION,
@@ -552,6 +617,7 @@ export function DeploymentRegistrationState({
         formId: id,
         additionalHeaders,
         updateAssumeRoleArn,
+        updateGoogleAuth,
         updateUseHttp11Arn,
         updateShouldForce,
         updateShouldAllowBreakingChange,
@@ -590,6 +656,7 @@ export function useRegisterDeploymentContext() {
     additionalHeaders,
     services,
     updateAssumeRoleArn,
+    updateGoogleAuth,
     updateUseHttp11Arn,
     updateShouldForce,
     updateShouldAllowBreakingChange,
@@ -597,6 +664,7 @@ export function useRegisterDeploymentContext() {
     shouldForce,
     useHttp11,
     assumeRoleArn,
+    googleAuth,
     error,
     isPending,
     isDuplicate,
@@ -604,6 +672,7 @@ export function useRegisterDeploymentContext() {
     min_protocol_version,
     sdk_version,
     isTunnel,
+    isCloudRun,
     tunnelName,
     metadata,
     mode,
@@ -617,13 +686,13 @@ export function useRegisterDeploymentContext() {
 
   const hasAdditionalHeaders = Boolean(
     additionalHeaders &&
-      additionalHeaders.items &&
-      additionalHeaders.items.some(({ key, value }) => key && value),
+    additionalHeaders.items &&
+    additionalHeaders.items.some(({ key, value }) => key && value),
   );
   const hasMetadata = Boolean(
     metadata &&
-      metadata.items &&
-      metadata.items.some(({ key, value }) => key && value),
+    metadata.items &&
+    metadata.items.some(({ key, value }) => key && value),
   );
   const canSkipAdvanced =
     isOnboarding ||
@@ -636,6 +705,8 @@ export function useRegisterDeploymentContext() {
     error instanceof RestateError &&
     error.restateCode === 'META0006' &&
     isVersionGte?.('1.6.0');
+  // Cloud Run (and its Google ID token auth) is a 1.7+ feature.
+  const isCloudRunSupported = Boolean(isVersionGte?.('1.7.0'));
 
   return {
     isAdvanced,
@@ -657,19 +728,24 @@ export function useRegisterDeploymentContext() {
     min_protocol_version,
     sdk_version,
     updateAssumeRoleArn,
+    updateGoogleAuth,
     updateUseHttp11Arn,
     updateShouldForce,
     shouldForce,
     useHttp11,
     assumeRoleArn,
+    googleAuth,
     error,
     canSkipAdvanced,
     isTunnel,
+    // Mask Cloud Run behind the version gate so it doesn't exist below 1.7.
+    isCloudRun: isCloudRun && isCloudRunSupported,
     tunnelName,
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
     isBreakingChangeError,
+    isCloudRunSupported,
     updateShouldAllowBreakingChange,
     shouldAllowBreakingChange,
     isUpdate: mode === 'update',

@@ -63,7 +63,7 @@ const outputStyles = tv({
 });
 
 const terminalStyles = tv({
-  base: 'relative max-h-80 min-w-0 flex-auto [scrollbar-gutter:stable] overflow-auto rounded-xl border bg-gray-200/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'relative block max-h-80 min-w-0 flex-auto [scrollbar-gutter:stable] overflow-auto rounded-xl border bg-gray-200/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
   variants: {
     isTransient: {
       true: 'text-orange-700',
@@ -255,16 +255,17 @@ export function RestateServerError({
       </div>
       <div className="flex items-start gap-3">
         <div className={iconSlotStyles()} />
-        <div className={terminalStyles({ isTransient })}>
-          <div
+        <code className={terminalStyles({ isTransient })}>
+          <span
             className={terminalMessageStyles({
               preformatted: message.includes(' '),
+              className: 'block',
             })}
           >
             {message}
-          </div>
-          {stack && <div className="mt-1 whitespace-pre">{stack}</div>}
-        </div>
+          </span>
+          {stack && <span className="mt-1 block whitespace-pre">{stack}</span>}
+        </code>
       </div>
       {metadataEntries.length > 0 && (
         <>

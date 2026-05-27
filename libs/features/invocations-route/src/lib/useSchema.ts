@@ -230,6 +230,12 @@ export function useSchema() {
               operations: [{ value: 'EQUALS' as const, label: 'is' }],
               type: 'STRING' as const,
             },
+            {
+              id: 'limit_key',
+              label: 'Limit key',
+              operations: [{ value: 'EQUALS' as const, label: 'is' }],
+              type: 'STRING' as const,
+            },
           ]
         : []),
     ] satisfies QueryClauseSchema<QueryClauseType>[];

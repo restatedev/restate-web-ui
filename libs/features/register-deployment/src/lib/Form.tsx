@@ -16,6 +16,7 @@ import {
 import { AdditionalHeaders } from './AdditionalHeaders';
 import { UseHTTP11 } from './UseHTTP11';
 import { AssumeARNRole } from './AssumeARNRole';
+import { Authentication } from './Authentication';
 import { useRegisterDeploymentContext } from './Context';
 import {
   InlineTooltip,
@@ -271,10 +272,12 @@ const tunnelNameStyles = tv({
 });
 
 export const CLI_TUNNEL_REGEX = /:\d+$/;
+
 function EndpointForm() {
   const {
     tunnelName,
     isTunnel,
+    isCloudRun,
     isLambda,
     updateEndpoint,
     endpoint,
@@ -282,6 +285,7 @@ function EndpointForm() {
     isRegister,
     isOnboarding,
     isUpdate,
+    isCloudRunSupported,
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
 
@@ -328,6 +332,8 @@ function EndpointForm() {
             >
               Tunnel
             </InlineTooltip>
+          ) : isCloudRun ? (
+            'Google Cloud Run'
           ) : (
             'HTTP endpoint'
           )}
@@ -346,6 +352,7 @@ function EndpointForm() {
               onChange={(value) => {
                 updateEndpoint?.({
                   isLambda: false,
+                  isCloudRun: false,
                   tunnelName: value,
                   isTunnel: isTunnel,
                   endpoint,
@@ -388,13 +395,16 @@ function EndpointForm() {
                   ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
                   : isTunnel
                     ? 'Destination:  http://localhost:9080'
-                    : 'http://localhost:9080'
+                    : isCloudRun
+                      ? 'https://my-service-abc-uc.a.run.app'
+                      : 'http://localhost:9080'
               }
               onKeyDown={(e) => {
                 if (e.key === 'Tab' && !isLambda && !isTunnel && !endpoint) {
                   updateEndpoint?.({
                     isLambda: false,
                     isTunnel: false,
+                    isCloudRun: false,
                     endpoint: 'http://localhost:9080',
                     tunnelName: '',
                   });
@@ -406,6 +416,7 @@ function EndpointForm() {
                   updateEndpoint?.({
                     isLambda: false,
                     isTunnel: true,
+                    isCloudRun: false,
                     endpoint: undefined,
                     tunnelName: value,
                   });
@@ -418,6 +429,7 @@ function EndpointForm() {
                       ? false
                       : isLambda,
                   isTunnel: value.startsWith('arn') ? false : isTunnel,
+                  isCloudRun,
                   endpoint: value,
                   tunnelName,
                 });
@@ -431,7 +443,9 @@ function EndpointForm() {
                   ? 'lambda'
                   : isTunnel && tunnel?.isEnabled
                     ? 'tunnel'
-                    : 'http'
+                    : isCloudRun
+                      ? 'cloudrun'
+                      : 'http'
               }
               name="name"
               required
@@ -441,6 +455,7 @@ function EndpointForm() {
                 updateEndpoint?.({
                   isLambda: value === 'lambda',
                   isTunnel: value === 'tunnel',
+                  isCloudRun: value === 'cloudrun',
                   endpoint: '',
                   tunnelName: '',
                 })
@@ -464,6 +479,22 @@ function EndpointForm() {
                   HTTP endpoint
                 </TooltipContent>
               </Tooltip>
+              {isCloudRunSupported && (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <CustomRadio
+                      value="cloudrun"
+                      className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                      aria-label="Google Cloud Run"
+                    >
+                      <Icon name={IconName.CloudRun} className="h-4 w-4" />
+                    </CustomRadio>
+                  </TooltipTrigger>
+                  <TooltipContent size="sm" offset={20}>
+                    Google Cloud Run
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger>
                   <CustomRadio
@@ -499,6 +530,7 @@ function EndpointForm() {
         </div>
       </div>
       {isLambda && <AssumeARNRole className="" />}
+      {isCloudRun && <Authentication />}
 
       {isRegister && (
         <>

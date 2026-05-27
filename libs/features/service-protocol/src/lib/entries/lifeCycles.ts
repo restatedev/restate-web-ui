@@ -175,7 +175,7 @@ export function lifeCycles(
       type: 'Retrying',
       category: 'event',
       start: invocation.next_retry_at,
-      isPending: true,
+      isPending: false,
       awaitingOn: invocation.last_awaiting_on_future_json,
     });
   }
