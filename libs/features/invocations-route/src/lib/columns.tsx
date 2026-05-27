@@ -34,6 +34,7 @@ export const COLUMNS_KEYS = [
   'actions',
   'restarted_from',
   'scope',
+  'limit_key',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
@@ -64,10 +65,12 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   journal_retention: 'Journal retention',
   restarted_from: 'Restarted from',
   scope: 'Scope',
+  limit_key: 'Limit key',
 };
 
 const FEATURE_GATED_COLUMNS: Partial<Record<ColumnKey, string>> = {
   scope: 'vqueues',
+  limit_key: 'vqueues',
 };
 
 function isColumnAvailable(
