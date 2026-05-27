@@ -3642,6 +3642,8 @@ export interface components {
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
       scope?: string;
+      vqueue_id?: string;
+      limit_key?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
@@ -3725,6 +3727,8 @@ export interface components {
       /** @enum {string} */
       target_service_ty: 'service' | 'virtual_object' | 'workflow';
       scope?: string;
+      vqueue_id?: string;
+      limit_key?: string;
       /** @enum {string} */
       completion_result?: 'success' | 'failure';
       completion_failure?: string;
