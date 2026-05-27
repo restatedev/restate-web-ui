@@ -8,7 +8,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import type { BatchInvocationsResponse } from '@restate/data-access/admin-api-spec';
 import { showSuccessNotification } from '@restate/ui/notification';
-import { formatNumber } from '@restate/util/intl';
+import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { OperationType } from './types';
 
 export function useBatchMutation(
@@ -23,7 +23,7 @@ export function useBatchMutation(
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
         showSuccessNotification(
-          `Successfully cancelled ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+          `Successfully cancelled ${formatNumber(data.successful)} ${formatPlurals(data.successful, { one: 'invocation', other: 'invocations' })}`,
         );
         onOpenChange(false, true);
       }
@@ -38,7 +38,7 @@ export function useBatchMutation(
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
         showSuccessNotification(
-          `Successfully paused ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+          `Successfully paused ${formatNumber(data.successful)} ${formatPlurals(data.successful, { one: 'invocation', other: 'invocations' })}`,
         );
         onOpenChange(false, true);
       }
@@ -53,7 +53,22 @@ export function useBatchMutation(
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
         showSuccessNotification(
-          `Successfully resumed ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+          `Successfully resumed ${formatNumber(data.successful)} ${formatPlurals(data.successful, { one: 'invocation', other: 'invocations' })}`,
+        );
+        onOpenChange(false, true);
+      }
+    },
+    onError(error, variables, onMutateResult, context) {
+      onError?.();
+    },
+  });
+
+  const retryNowMutation = useBatchResumeInvocations(batchSize, {
+    onProgress,
+    onSuccess(data, variables, onMutateResult, context) {
+      if (data?.failed === 0) {
+        showSuccessNotification(
+          `Successfully retried ${formatNumber(data.successful)} ${formatPlurals(data.successful, { one: 'invocation', other: 'invocations' })}`,
         );
         onOpenChange(false, true);
       }
@@ -68,7 +83,7 @@ export function useBatchMutation(
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
         showSuccessNotification(
-          `Successfully killed ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+          `Successfully killed ${formatNumber(data.successful)} ${formatPlurals(data.successful, { one: 'invocation', other: 'invocations' })}`,
         );
         onOpenChange(false, true);
       }
@@ -82,7 +97,7 @@ export function useBatchMutation(
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
         showSuccessNotification(
-          `Successfully restarted ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+          `Successfully restarted ${formatNumber(data.successful)} ${formatPlurals(data.successful, { one: 'invocation', other: 'invocations' })}`,
         );
         onOpenChange(false, true);
       }
@@ -97,7 +112,7 @@ export function useBatchMutation(
     onSuccess(data, variables, onMutateResult, context) {
       if (data?.failed === 0) {
         showSuccessNotification(
-          `Successfully purged ${formatNumber(data.successful)} invocation${data.successful !== 1 ? 's' : ''}`,
+          `Successfully purged ${formatNumber(data.successful)} ${formatPlurals(data.successful, { one: 'invocation', other: 'invocations' })}`,
         );
         onOpenChange(false, true);
       }
@@ -110,6 +125,8 @@ export function useBatchMutation(
   switch (type) {
     case 'resume':
       return resumeMutation;
+    case 'retry-now':
+      return retryNowMutation;
     case 'cancel':
       return cancelMutation;
     case 'kill':
