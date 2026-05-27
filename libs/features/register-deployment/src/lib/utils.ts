@@ -44,4 +44,15 @@ export function getTargetType(url?: string, tunnelName?: string) {
   return undefined;
 }
 
+export function isCloudRunEndpoint(url?: string) {
+  if (!url) {
+    return false;
+  }
+  try {
+    return new URL(addProtocol(url)).hostname.endsWith('.run.app');
+  } catch {
+    return false;
+  }
+}
+
 export const FIX_HTTP_ACTION = 'fix-http-1';
