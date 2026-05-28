@@ -4,7 +4,6 @@ export {
   getRestateVersion,
   getFeatures,
   awaitMeta,
-  resetMetaReady,
   clearMeta,
 } from './lib/api-config';
 export {
