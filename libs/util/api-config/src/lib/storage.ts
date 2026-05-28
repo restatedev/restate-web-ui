@@ -1,5 +1,10 @@
 import { createCookie, type CookieOptions } from 'react-router';
-import { markMetaReady, setFeatures, setRestateVersion } from './api-config';
+import {
+  markMetaReady,
+  resetMetaReady,
+  setFeatures,
+  setRestateVersion,
+} from './api-config';
 
 export interface RestateMeta {
   version?: string;
@@ -7,18 +12,26 @@ export interface RestateMeta {
 }
 
 /**
- * A meta-storage instance is the single entry point for moving meta between
- * the persistent backing (cookie / localStorage) and the api-config
- * singletons. Use `hydrate` at boot (or on env switch) and `persist` after
- * `/version` returns.
+ * A meta-storage instance moves meta between a persistent backing
+ * (cookie / localStorage) and the api-config singletons.
  *
- * - **Client**: call with no args. Cookie storage uses `document.cookie`;
- *   localStorage storage ignores the args entirely.
- * - **Server**: `hydrate(request.headers.get('Cookie'))` parses the
- *   incoming `Cookie` header; `persist(meta, responseHeaders)` appends a
- *   `Set-Cookie` entry to the given `Headers`.
+ * - `read` parses the backing into a `RestateMeta`. Pure: it does not
+ *   touch any singletons, so it is safe to call from server contexts
+ *   (e.g. a Cloudflare Worker loader).
+ * - `hydrate` reads from the backing and mirrors the result into the
+ *   singletons authoritatively — including clearing them when the
+ *   backing is empty. Resets `metaReady` first; marks it ready only if
+ *   the stored meta contains a version.
+ * - `persist` writes meta to the backing and mirrors it into the
+ *   singletons. Marks `metaReady` only if the persisted meta contains a
+ *   version; callers that want to clear should use `clearMeta` instead.
+ *
+ * Cookie storage uses `document.cookie` on the client. On the server,
+ * pass the request `Cookie` header to `read` / `hydrate`, and a response
+ * `Headers` to `persist` to receive a `Set-Cookie` entry.
  */
 export interface MetaStorage {
+  read(cookieHeader?: string | null): Promise<RestateMeta | undefined>;
   hydrate(cookieHeader?: string | null): Promise<RestateMeta>;
   persist(meta: RestateMeta, responseHeaders?: Headers): Promise<void>;
 }
@@ -32,20 +45,24 @@ type WriteFn = (
 ) => void | Promise<void>;
 
 function buildStorage(read: ReadFn, write: WriteFn): MetaStorage {
+  async function safeRead(cookieHeader?: string | null) {
+    try {
+      return (await read(cookieHeader)) ?? undefined;
+    } catch {
+      // treat read errors as a cold load
+      return undefined;
+    }
+  }
+
   return {
+    read: safeRead,
     async hydrate(cookieHeader) {
-      let meta: RestateMeta = {};
-      try {
-        meta = (await read(cookieHeader)) ?? {};
-      } catch {
-        // treat read errors as a cold load; /version will fill in below
-      }
-      if (meta.version) {
-        setRestateVersion(meta.version);
-      }
-      if (meta.features) {
-        setFeatures(enabledFeatureNames(meta.features));
-      }
+      resetMetaReady();
+      const meta = (await safeRead(cookieHeader)) ?? {};
+      setRestateVersion(meta.version);
+      setFeatures(
+        meta.features ? enabledFeatureNames(meta.features) : undefined,
+      );
       if (meta.version) {
         markMetaReady();
       }
@@ -56,7 +73,9 @@ function buildStorage(read: ReadFn, write: WriteFn): MetaStorage {
       setFeatures(
         meta.features ? enabledFeatureNames(meta.features) : undefined,
       );
-      markMetaReady();
+      if (meta.version) {
+        markMetaReady();
+      }
       await write(meta, responseHeaders);
     },
   };
