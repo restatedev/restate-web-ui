@@ -5,6 +5,7 @@ export {
   getFeatures,
   awaitMeta,
   resetMetaReady,
+  clearMeta,
 } from './lib/api-config';
 export {
   createLocalStorageMetaStorage,

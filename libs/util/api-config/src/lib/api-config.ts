@@ -52,3 +52,15 @@ export function resetMetaReady(): void {
   ({ promise: metaReady, resolve: resolveReady } =
     Promise.withResolvers<void>());
 }
+
+/**
+ * Clear version and features, and replace `metaReady` with a fresh pending
+ * promise. Use when the active meta context has changed and no meta is
+ * available yet — subsequent `awaitMeta` callers block until the next
+ * `persist` (or authoritative `hydrate`) lands.
+ */
+export function clearMeta(): void {
+  setRestateVersion(undefined);
+  setFeatures(undefined);
+  resetMetaReady();
+}
