@@ -1,10 +1,9 @@
 export {
   setAuthToken,
   getAuthToken,
-  getRestateVersion,
-  getFeatures,
-  awaitMeta,
+  readMeta,
   clearMeta,
+  type ResolvedMeta,
 } from './lib/api-config';
 export {
   createLocalStorageMetaStorage,

@@ -56,11 +56,31 @@ export function resetMetaReady(): void {
 /**
  * Clear version and features, and replace `metaReady` with a fresh pending
  * promise. Use when the active meta context has changed and no meta is
- * available yet — subsequent `awaitMeta` callers block until the next
+ * available yet — subsequent `readMeta` callers block until the next
  * `persist` (or authoritative `hydrate`) lands.
  */
 export function clearMeta(): void {
   setRestateVersion(undefined);
   setFeatures(undefined);
   resetMetaReady();
+}
+
+export interface ResolvedMeta {
+  version: string | undefined;
+  features: Set<string> | undefined;
+}
+
+/**
+ * Await `metaReady`, then return the current version and features as a
+ * snapshot. The right entry point for non-React contexts (middleware,
+ * server loaders, etc.) that need to read meta after it's known to be
+ * available. React render paths should use `useFeatures` /
+ * `useRestateVersion` instead, which suspend the same promise.
+ */
+export async function readMeta(signal?: AbortSignal): Promise<ResolvedMeta> {
+  await awaitMeta(signal);
+  return {
+    version: restateVersion,
+    features,
+  };
 }
