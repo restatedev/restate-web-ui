@@ -6,7 +6,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 import { useMemo } from 'react';
-import { getFeatures } from '@restate/util/api-config';
+import { useFeatures } from '@restate/util/api-config';
 
 export function useSchema() {
   const { data: listDeploymentsData, isPending: deploymentsIsLoading } =
@@ -16,7 +16,7 @@ export function useSchema() {
   const { data: listServices, isPending: servicesIsLoading } = useListServices(
     listDeploymentsData?.sortedServiceNames,
   );
-  const hasVqueues = getFeatures()?.has('vqueues') ?? false;
+  const hasVqueues = useFeatures().has('vqueues');
 
   const schema = useMemo(() => {
     const serviceNames = [

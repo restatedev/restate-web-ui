@@ -14,3 +14,4 @@ export {
   type MetaStorage,
   type RestateMeta,
 } from './lib/storage';
+export { useFeatures, useRestateVersion } from './lib/hooks';
