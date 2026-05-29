@@ -89,10 +89,6 @@ const makeShortcuts: (
         operation: 'IN',
         value: ['pending', 'backing-off', 'suspended', 'paused', 'ready'],
       }),
-      toClause(schema, 'modified_at', {
-        operation: 'BEFORE',
-        value: new Date(Date.now() - 30 * 60 * 1000),
-      }),
     ],
   },
   {
