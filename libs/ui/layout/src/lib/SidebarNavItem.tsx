@@ -78,7 +78,7 @@ const navStyles = tv({
     label:
       'max-w-full min-w-0 flex-auto truncate overflow-hidden pr-1 text-left opacity-100 transition-[max-width,opacity,padding] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:pr-1 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:pr-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-w-0 max-xl:pr-0 max-xl:opacity-0',
     subWrap:
-      'relative ml-[1.0625rem] flex max-h-96 flex-col gap-0 overflow-hidden border-l border-zinc-800/10 pl-2 opacity-100 transition-[max-height,opacity] duration-300 group-data-[collapsed=false]/sidebar:max-h-96 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-h-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-h-0 max-xl:opacity-0',
+      'relative -mt-2 ml-[1.0625rem] flex max-h-96 flex-col gap-0 overflow-hidden border-l border-zinc-800/10 pl-2 opacity-100 transition-[max-height,opacity] duration-300 group-data-[collapsed=false]/sidebar:max-h-96 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-h-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-h-0 max-xl:opacity-0',
     subRow: 'flex items-center pr-1 pl-1 first:pt-1 last:pb-1',
     subLink:
       'flex min-w-0 flex-auto items-center rounded-lg px-2.5 py-1 text-0.5xs no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2',
