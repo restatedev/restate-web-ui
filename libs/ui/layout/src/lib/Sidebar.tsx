@@ -98,8 +98,11 @@ const sidebarStyles = tv({
     asideInner: 'relative flex h-full w-full flex-col gap-2 overflow-hidden',
     headerBar: 'flex min-h-16 flex-none items-stretch gap-1 px-4.5 pt-3',
     headerCard: 'flex min-w-0 flex-1 items-start gap-2 py-1',
+    // Mask fades the top and bottom edges of the scroll area so nav
+    // items dissolve behind the sticky header / footer as they scroll
+    // off-screen instead of butting up against them with a hard cut.
     navSlot:
-      'flex min-h-0 flex-1 [scrollbar-width:thin] flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2',
+      'flex min-h-0 flex-1 [scrollbar-width:thin] flex-col gap-2 overflow-x-hidden overflow-y-auto px-3 py-2 [mask-image:linear-gradient(to_bottom,transparent_0,black_0.75rem,black_calc(100%-0.75rem),transparent_100%)]',
     footerSlot: 'flex flex-none flex-col px-3 pt-1 pb-3',
     toggleButton:
       'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out peer-data-[collapsed=false]:left-[16rem] peer-data-[collapsed=false]:-translate-x-1/2 peer-data-[collapsed=false]:rotate-180 hover:bg-gray-50 hover:text-gray-700 md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[collapsed=true]:left-[4.25rem] xl:peer-data-[collapsed=true]:rotate-0',
