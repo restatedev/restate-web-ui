@@ -213,9 +213,12 @@ function HandlersDropdown({ service }: { service: Service }) {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="relative inline-flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-xs font-medium tabular-nums"
+          className="relative inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-xs font-medium tabular-nums"
         >
-          <Icon name={IconName.Function} className="h-5 w-5 text-zinc-500/80" />
+          <Icon
+            name={IconName.Function}
+            className="-mr-1 h-5 w-5 text-zinc-500/80"
+          />
           {handlers.length}{' '}
           <span className="opacity-80">
             {formatPlurals(handlers.length, {
