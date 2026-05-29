@@ -89,7 +89,7 @@ export function useQueryHealthCheck(options?: {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query', 'post', {
     baseUrl,
-    body: { query: 'SELECT 1 FROM sys_invocation LIMIT 1' },
+    body: { query: 'SELECT 1 FROM sys_invocation_status LIMIT 1' },
   });
 
   return useQuery({
