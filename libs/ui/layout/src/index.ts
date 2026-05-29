@@ -1,4 +1,5 @@
-export { LayoutOutlet, LayoutProvider } from './lib/Layout';
+export { LayoutOutlet } from './lib/LayoutOutlet';
+export { LayoutProvider } from './lib/Layout';
 export { LayoutZone } from './lib/LayoutZone';
 export {
   ComplementaryWithSearchParam,

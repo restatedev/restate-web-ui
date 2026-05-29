@@ -1,5 +1,4 @@
 import { PropsWithChildren } from 'react';
-import { createPortal } from 'react-dom';
 import { AppBar } from './AppBar';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { ComplementaryOutlet } from './ComplementaryOutlet';
@@ -44,29 +43,4 @@ function AppBarLayout({ children }: PropsWithChildren) {
       <Toolbar id={ZONE_IDS[LayoutZone.Toolbar]} />
     </div>
   );
-}
-
-export function LayoutOutlet({
-  zone,
-  children,
-  variant = 'primary',
-}: PropsWithChildren<{
-  zone: LayoutZone;
-  variant?: 'primary' | 'secondary' | 'hidden';
-}>) {
-  if (typeof document !== 'undefined') {
-    const target = document.getElementById(ZONE_IDS[zone]);
-    if (!target) {
-      return null;
-    }
-    return createPortal(
-      <>
-        {children}
-        {zone === LayoutZone.AppBar && <div data-variant={variant} />}
-      </>,
-      target,
-    );
-  } else {
-    return null;
-  }
 }
