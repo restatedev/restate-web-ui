@@ -13,8 +13,7 @@ export interface CachedAuth {
 
 /** Synchronous accessor for the current auth token. */
 export function getAuthToken(): string | undefined {
-  return getQueryClient().getQueryData<CachedAuth>(AUTH_QUERY_KEY)
-    ?.accessToken;
+  return getQueryClient().getQueryData<CachedAuth>(AUTH_QUERY_KEY)?.accessToken;
 }
 
 /** Write the current auth token; pass `undefined` to clear. */

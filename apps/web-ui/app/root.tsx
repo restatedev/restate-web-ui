@@ -76,7 +76,10 @@ import {
   UpdateDeploymentDialog,
 } from '@restate/features/register-deployment';
 import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
-import { setMetaFallback, setMetaPersister } from '@restate/data-access/admin-api';
+import {
+  setMetaFallback,
+  setMetaPersister,
+} from '@restate/data-access/admin-api';
 import { setQueryClient } from '@restate/util/react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
 import { PortalProvider } from '@restate/ui/portal';
