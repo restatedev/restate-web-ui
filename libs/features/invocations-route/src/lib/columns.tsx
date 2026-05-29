@@ -2,7 +2,7 @@ import { DropdownMenuSelection } from '@restate/ui/dropdown';
 import { useEffect, useMemo, useCallback, useState } from 'react';
 import type { Key } from 'react-aria';
 import { useLocation, useSearchParams } from 'react-router';
-import { useFeatures } from '@restate/util/api-config';
+import { useFeatures } from '@restate/data-access/admin-api';
 import { addUserCol, removeUserCol } from './userPreferences';
 
 export const COLUMN_QUERY_PREFIX = 'column';

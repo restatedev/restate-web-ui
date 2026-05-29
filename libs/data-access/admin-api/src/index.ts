@@ -1,4 +1,9 @@
+// Side-effect: registers auth + error middleware on the openapi-fetch client.
+import './lib/api/middleware';
+
 export * from './lib/api/client';
+export * from './lib/api/adminApi';
+export * from './lib/api/meta';
 export * from './lib/AdminBaseUrlProvider';
 export * from './lib/APIStatusProvider';
 export * from './lib/api/basicHooks';

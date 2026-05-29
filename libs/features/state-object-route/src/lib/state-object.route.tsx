@@ -81,7 +81,7 @@ import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Portal } from '@restate/ui/portal';
-import { useFeatures } from '@restate/util/api-config';
+import { useFeatures } from '@restate/data-access/admin-api';
 
 function urlKeyFor(schemaClause: QueryClauseSchema<QueryClauseType>) {
   if (schemaClause.metadata?.isSystem) {

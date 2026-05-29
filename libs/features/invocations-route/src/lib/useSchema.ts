@@ -6,7 +6,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 import { useMemo } from 'react';
-import { useFeatures } from '@restate/util/api-config';
+import { useFeatures } from '@restate/data-access/admin-api';
 
 export function useSchema() {
   const { data: listDeploymentsData, isPending: deploymentsIsLoading } =

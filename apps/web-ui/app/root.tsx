@@ -75,11 +75,10 @@ import {
   RegisterDeploymentDialog,
   UpdateDeploymentDialog,
 } from '@restate/features/register-deployment';
-import {
-  isVersionQuery,
-  queryCacheOnSuccess,
-} from '@restate/data-access/admin-api-hooks';
-import { createLocalStorageMetaStorage } from '@restate/util/api-config';
+import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
+import { setMetaFallback, setMetaPersister } from '@restate/data-access/admin-api';
+import { setQueryClient } from '@restate/util/react-query';
+import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
@@ -143,9 +142,6 @@ function useRefWithSupportForAbsolutePath(path: To) {
   return url;
 }
 
-const metaStorage = createLocalStorageMetaStorage();
-void metaStorage.hydrate();
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -159,16 +155,37 @@ const queryClient = new QueryClient({
   },
   queryCache: new QueryCache({
     onSuccess: (data, query) => {
-      if (isVersionQuery(data, query)) {
-        metaStorage.persist({
-          version: data.version,
-          features: data.features,
-        });
-      }
       queryCacheOnSuccess(queryClient, data, query);
     },
   }),
 });
+
+// Expose the queryClient cross-lib so the admin-api middleware (and
+// other non-React call sites like the codec fetcher) can read auth +
+// meta straight from the cache without any DI ceremony.
+setQueryClient(queryClient);
+
+// Initial fallback for the meta cache slot. Web-ui only ever talks to
+// the latest Restate, so we optimistically assume the freshest
+// response shape via `'9999999.0.0'`. Multi-tenant cloud hosts will
+// set their own (typically `'0.0.0'`). See `metaQueryOptions` —
+// `initialData` + `initialDataUpdatedAt: 0` means this is returned on
+// the very first read but `/version` still fetches once to replace it.
+setMetaFallback({ version: '9999999.0.0' });
+
+// Cross-session warm-up: persist the meta cache (`['meta', baseUrl]`)
+// to `localStorage` via TanStack's `experimental_createPersister`. On
+// subsequent loads, the cache entry is restored before the first read
+// so `useFeatures` / `useRestateVersion` / `/query/*` middleware get
+// last-session values immediately and the background `/version` fetch
+// just confirms/refreshes them.
+setMetaPersister(
+  experimental_createQueryPersister({
+    storage: typeof localStorage !== 'undefined' ? localStorage : undefined,
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    prefix: 'restate-meta',
+  }).persisterFn,
+);
 
 const monitor = createSystemHealthMonitor(queryClient);
 
