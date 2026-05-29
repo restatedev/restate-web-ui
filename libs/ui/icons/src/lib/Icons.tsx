@@ -91,6 +91,8 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  Layers,
+  Blocks,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -231,6 +233,8 @@ export const enum IconName {
   Menu = 'Menu',
   PanelLeftClose = 'PanelLeftClose',
   PanelLeftOpen = 'PanelLeftOpen',
+  Layers = 'Layers',
+  Blocks = 'Blocks',
 }
 export interface IconsProps {
   name: IconName;
@@ -354,6 +358,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Menu]: Menu,
   [IconName.PanelLeftClose]: PanelLeftClose,
   [IconName.PanelLeftOpen]: PanelLeftOpen,
+  [IconName.Layers]: Layers,
+  [IconName.Blocks]: Blocks,
 };
 
 const styles = tv({
