@@ -15,7 +15,7 @@ export interface MetaSnapshot {
 
 export const metaQueryKey = (baseUrl: string) => ['meta', baseUrl] as const;
 
-/** App-registered fallback. Persisted into the cache as `initialData`. */
+/** App-registered fallback. Surfaced as `placeholderData` and as a graceful-failure value. */
 let metaFallback: MetaSnapshot = {};
 export function setMetaFallback(meta: MetaSnapshot): void {
   metaFallback = meta;
@@ -35,16 +35,24 @@ export function setMetaPersister(p: MetaPersisterFn): void {
 }
 
 async function fetchMeta(baseUrl: string): Promise<MetaSnapshot> {
-  const data = await getQueryClient().ensureQueryData(
-    adminApi('query', '/version', 'get', { baseUrl }),
-  );
-  return { version: data?.version, features: data?.features };
+  try {
+    const data = await getQueryClient().ensureQueryData(
+      adminApi('query', '/version', 'get', { baseUrl }),
+    );
+    return { version: data?.version, features: data?.features };
+  } catch {
+    // Network/auth failure — degrade to fallback so callers always
+    // get a valid snapshot.
+    return metaFallback;
+  }
 }
 
 /**
- * `initialData` + `initialDataUpdatedAt: 0` → fallback returned
- * immediately but treated as stale, so `queryFn` still fires once.
- * `staleTime: Infinity` → no further refetches.
+ * `placeholderData` (not `initialData`) is the key choice here: it's
+ * returned by `useQuery` while pending but is NOT written to the cache,
+ * so `ensureQueryData` and the persister still see an empty slot and
+ * run the queryFn/restore-from-storage path. `staleTime: Infinity`
+ * keeps the resolved snapshot pinned for the rest of the session.
  */
 export function metaQueryOptions(
   baseUrl: string,
@@ -57,8 +65,7 @@ export function metaQueryOptions(
   return {
     queryKey: metaQueryKey(baseUrl),
     queryFn: () => fetchMeta(baseUrl),
-    initialData: metaFallback,
-    initialDataUpdatedAt: 0,
+    placeholderData: metaFallback,
     staleTime: Infinity,
     ...(metaPersister
       ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
