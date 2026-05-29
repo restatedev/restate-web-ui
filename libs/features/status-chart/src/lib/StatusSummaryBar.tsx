@@ -31,16 +31,13 @@ const skeletonStyles = tv({
   base: 'h-9 w-full animate-pulse rounded-md bg-slate-200',
 });
 
-// Empty placeholder — same dimensions as a populated bar, just a subtle slate
-// fill so the area reads as "no data here" without pulling attention.
-const emptyBarStyles = tv({
-  base: 'h-9 w-full rounded-md bg-slate-200/60',
-  variants: {
-    pulse: {
-      true: 'animate-pulse',
-      false: '',
-    },
-  },
+// Empty state — a single full-width "track" rendered inside the standard
+// container, so it shares the populated bar's exact footprint and the layout
+// doesn't shift when data arrives. A recessed, dashed outline reads as an
+// intentional "no invocations" placeholder rather than a stuck loading
+// skeleton; the raised gradient segments are reserved for real data.
+const emptyTrackStyles = tv({
+  base: 'h-full w-full rounded-md border-[1.5px] border-dashed border-gray-300/70 bg-gray-200/70 shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.04)]',
 });
 
 // Animate flex-grow so segment widths ease between refetches; min-width keeps
@@ -169,10 +166,9 @@ export function StatusSummaryBar({
 
   if (total === 0) {
     return (
-      <div
-        className={emptyBarStyles({ pulse, class: className })}
-        aria-hidden
-      />
+      <div className={containerStyles({ pulse, class: className })} aria-hidden>
+        <div className={emptyTrackStyles()} />
+      </div>
     );
   }
 
