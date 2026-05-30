@@ -12,7 +12,17 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { panelHref } from '@restate/util/panel';
+import { tv } from '@restate/util/styles';
 
+const styles = tv({
+  base: '',
+  variants: {
+    disabled: {
+      true: 'invisible',
+      false: '',
+    },
+  },
+});
 export function ServicePlaygroundSidebarAction({
   className,
 }: {
@@ -23,8 +33,6 @@ export function ServicePlaygroundSidebarAction({
   const disabled = serviceNames.length === 0;
   const [isOpen, setIsOpen] = useState(false);
 
-  if (disabled) return null;
-
   return (
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger>
@@ -32,6 +40,7 @@ export function ServicePlaygroundSidebarAction({
           content="Open in Playground"
           placement="top"
           disabled={disabled || isOpen}
+          className={styles({ disabled })}
         >
           <Button
             variant="icon"
