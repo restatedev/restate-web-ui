@@ -10,6 +10,7 @@ import {
   ComponentType,
   createContext,
   PropsWithChildren,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -34,6 +35,7 @@ type OnboardingComponent = ComponentType<{
     | 'view-template-tunnel';
   endpoint?: string;
   service?: string;
+  children?: ReactNode;
 }>;
 type RestateContext = {
   status: Status;
