@@ -23,6 +23,8 @@ export function ServicePlaygroundSidebarAction({
   const disabled = serviceNames.length === 0;
   const [isOpen, setIsOpen] = useState(false);
 
+  if (disabled) return null;
+
   return (
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
       <DropdownTrigger>
