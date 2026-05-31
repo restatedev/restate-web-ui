@@ -14,6 +14,7 @@ export {
   SidebarNav,
   SidebarFooter,
   useSidebar,
+  SidebarBackdrop,
 } from './lib/Sidebar';
 export { SidebarNavItem } from './lib/SidebarNavItem';
 export type {
