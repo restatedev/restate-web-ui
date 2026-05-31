@@ -280,7 +280,7 @@ function OverviewContent() {
   const noInvocations =
     !isSummaryLoading && !isSummaryError && totalCount === 0;
   const statusCount = byStatus.filter((s) => s.count > 0).length;
-  const showLegend = statusCount > 1;
+  const showLegend = statusCount > 0;
   const firstServiceName = servicesMap?.values().next().value?.name;
   const filterPlaceholder =
     mode === 'services'
@@ -378,7 +378,7 @@ function OverviewContent() {
               linkParams={linkParams}
               orientation="vertical"
               half="first"
-              className="flex-col-reverse items-end"
+              className="items-end"
             />
           )}
         </div>

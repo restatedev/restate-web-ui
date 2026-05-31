@@ -6,7 +6,7 @@ import type {
   OperationParameters,
   QueryOptions,
   SupportedMethods,
-} from './client';
+} from './adminApi';
 
 export type HookQueryOptions<
   Path extends keyof paths,

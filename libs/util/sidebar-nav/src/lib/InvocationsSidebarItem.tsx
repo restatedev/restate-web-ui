@@ -20,7 +20,12 @@ import {
 interface InvocationShortcut {
   id: string;
   label: string;
-  filters: { id: string; operation: string; value?: unknown }[];
+  filters: {
+    id: string;
+    operation: string;
+    value?: unknown;
+    relativeMs?: number;
+  }[];
   sort?: { field: string; order: 'ASC' | 'DESC' };
   columns?: string[];
 }
@@ -38,6 +43,8 @@ const DEFAULT_PRESET_COLUMNS = [
 
 // Operations that are meaningful on their own (no value required).
 const VALUELESS_OPERATIONS = new Set(['IS NULL', 'IS NOT NULL']);
+
+const STUCK_MODIFIED_BEFORE_MS = 30 * 60 * 1000;
 
 const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
@@ -59,6 +66,11 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
         id: 'status',
         operation: 'IN',
         value: ['pending', 'backing-off', 'suspended', 'paused', 'ready'],
+      },
+      {
+        id: 'modified_at',
+        operation: 'BEFORE',
+        relativeMs: STUCK_MODIFIED_BEFORE_MS,
       },
     ],
     sort: { field: 'modified_at', order: 'ASC' },
@@ -122,11 +134,15 @@ const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
 function shortcutHref(path: string, s: InvocationShortcut): string {
   const params = new URLSearchParams();
   for (const f of s.filters) {
+    const value =
+      f.relativeMs !== undefined
+        ? new Date(Date.now() - f.relativeMs).toISOString()
+        : f.value;
     params.set(
       `filter_${f.id}`,
       JSON.stringify(
-        f.value !== undefined
-          ? { operation: f.operation, value: f.value }
+        value !== undefined
+          ? { operation: f.operation, value }
           : { operation: f.operation },
       ),
     );
@@ -208,6 +224,7 @@ function urlMatchesShortcut(
         value?: unknown;
       };
       if (parsed.operation !== f.operation) return false;
+      if (f.relativeMs !== undefined) return true;
       if (f.value === undefined) return true;
       // JSON.stringify works as a deep-equality check for the flat shapes
       // we store (primitives + flat arrays). Don't extend without thinking.

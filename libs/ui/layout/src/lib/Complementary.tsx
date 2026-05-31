@@ -8,7 +8,7 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
-import { LayoutOutlet } from './Layout';
+import { LayoutOutlet } from './LayoutOutlet';
 import { LayoutZone } from './LayoutZone';
 import { useSearchParams } from 'react-router';
 import { Pressable, PressResponder } from '@react-aria/interactions';

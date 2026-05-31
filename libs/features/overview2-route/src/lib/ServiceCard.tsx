@@ -27,7 +27,11 @@ import {
   buildStatusEntries,
   ServiceStatusBar,
 } from '@restate/features/status-chart';
-import { getRangeLabel } from '@restate/features/restate-context';
+import {
+  getRangeLabel,
+  useRestateContext,
+} from '@restate/features/restate-context';
+import { useOnboarding } from '@restate/util/feature-flag';
 import type { ServiceIssue } from '@restate/features/system-health';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
 import {
@@ -65,6 +69,26 @@ const dropdownCellStyles = tv({
   base: 'flex items-center justify-end [grid-area:dropdown]',
 });
 
+const playButtonStyles = tv({
+  base: 'relative shrink-0 border-none bg-gray-50 px-1 py-1 align-middle shadow-none',
+  variants: {
+    isOnboarding: {
+      true: 'animate-pulseButton bg-blue-50',
+      false: '',
+    },
+  },
+});
+
+const playIconStyles = tv({
+  base: 'ml-px h-3 w-3 text-blue-700/0',
+  variants: {
+    isOnboarding: {
+      true: 'fill-blue-500',
+      false: 'fill-blue-300',
+    },
+  },
+});
+
 export function ServiceCard({
   service,
   summaryData,
@@ -94,6 +118,8 @@ export function ServiceCard({
   isPressed?: boolean;
   issueSeverity?: IssueSeverity;
 }) {
+  const { OnboardingGuide } = useRestateContext();
+  const isOnboarding = useOnboarding();
   const serviceStatuses = byServiceAndStatus.filter(
     (st) => st.service === service.name && st.count > 0,
   );
@@ -130,18 +156,16 @@ export function ServiceCard({
                   {service.name}
                 </span>
               )}
-              <HoverTooltip content="Playground">
-                <Link
-                  href={panelHref({ playground: service.name })}
-                  variant="secondary-button"
-                  className="relative shrink-0 border-none bg-gray-50 px-1 py-1 align-middle shadow-none"
-                >
-                  <Icon
-                    name={IconName.Play}
-                    className="ml-px h-3 w-3 fill-blue-300 text-blue-700/0"
-                  />
-                </Link>
-              </HoverTooltip>
+              <PlayButton
+                serviceName={service.name}
+                handler={
+                  service.handlers.length === 1
+                    ? service.handlers[0]?.name
+                    : undefined
+                }
+                isOnboarding={isOnboarding}
+                OnboardingGuide={OnboardingGuide}
+              />
               {serviceIssues.length > 0 && (
                 <IssueBadge
                   issues={serviceIssues}
@@ -202,6 +226,46 @@ export function ServiceCard({
   );
 }
 
+function PlayButton({
+  serviceName,
+  handler,
+  isOnboarding,
+  OnboardingGuide,
+}: {
+  serviceName: string;
+  handler?: string;
+  isOnboarding: boolean;
+  OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
+}) {
+  const button = (
+    <HoverTooltip content="Playground" disabled={isOnboarding}>
+      <Link
+        href={panelHref({ playground: serviceName, handler })}
+        variant="secondary-button"
+        className={playButtonStyles({ isOnboarding })}
+        autoFocus={isOnboarding}
+      >
+        <Icon
+          name={IconName.Play}
+          className={playIconStyles({ isOnboarding })}
+        />
+      </Link>
+    </HoverTooltip>
+  );
+
+  if (!OnboardingGuide) {
+    return button;
+  }
+
+  // The guide wraps the button and anchors a tooltip to it, so it tracks the
+  // button wherever it lands (no dependence on the service name or layout).
+  return (
+    <OnboardingGuide stage="open-playground" service={serviceName}>
+      {button}
+    </OnboardingGuide>
+  );
+}
+
 function HandlersDropdown({ service }: { service: Service }) {
   const handlers = service.handlers;
   if (handlers.length === 0) {
@@ -213,9 +277,12 @@ function HandlersDropdown({ service }: { service: Service }) {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="relative inline-flex items-center gap-0.5 rounded-lg px-1 py-0.5 text-xs font-medium tabular-nums"
+          className="relative inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-xs font-medium tabular-nums"
         >
-          <Icon name={IconName.Function} className="h-5 w-5 text-zinc-500/80" />
+          <Icon
+            name={IconName.Function}
+            className="-mr-1 h-5 w-5 text-zinc-500/80"
+          />
           {handlers.length}{' '}
           <span className="opacity-80">
             {formatPlurals(handlers.length, {
