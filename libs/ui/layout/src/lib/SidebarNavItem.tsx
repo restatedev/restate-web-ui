@@ -68,17 +68,22 @@ function useSidebarLocation(): SidebarLocation {
   };
 }
 
+// All collapsed/expanded styling below keys off the sidebar's OWN state
+// (`group-data-[collapsed]/sidebar`) — never the screen width. A sidebar the
+// user expands on a narrow viewport must still show its labels and sub-links,
+// so do NOT reintroduce viewport variants (`max-xl:`/`md:`/`xl:`) here: gate
+// visuals on the sidebar, not the window. See `data-collapsed` in Sidebar.tsx.
 const navStyles = tv({
   slots: {
-    row: 'group/nav-item relative isolate flex flex-col gap-0.5',
-    link: 'flex w-full min-w-0 items-center gap-2 rounded-xl border border-transparent p-0.5 text-sm no-underline outline-offset-2 outline-blue-600 transition-all duration-300 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 focus-visible:outline-2 max-xl:w-fit max-xl:translate-x-[5px] max-xl:gap-0',
+    row: 'group/nav-item relative isolate flex flex-col',
+    link: 'flex w-full min-w-0 items-center gap-2 rounded-xl border border-transparent p-0.5 text-sm no-underline outline-offset-2 outline-blue-600 transition-all duration-300 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 focus-visible:outline-2',
     iconWrap:
       'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-transparent',
     icon: 'h-4.5 w-4.5 shrink-0 text-current',
     label:
-      'max-w-full min-w-0 flex-auto truncate overflow-hidden pr-1 text-left opacity-100 transition-[max-width,opacity,padding] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:pr-1 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:pr-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-w-0 max-xl:pr-0 max-xl:opacity-0',
+      'max-w-full min-w-0 flex-auto truncate overflow-hidden pr-1 text-left opacity-100 transition-[max-width,opacity,padding] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:pr-1 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:pr-0 group-data-[collapsed=true]/sidebar:opacity-0',
     subWrap:
-      'relative -mt-2 ml-[1.0625rem] flex flex-col gap-0 overflow-hidden border-l border-zinc-800/10 pl-2 transition-[max-height,opacity] duration-300 group-data-[collapsed=true]/sidebar:max-h-0! group-data-[collapsed=true]/sidebar:opacity-0! max-xl:max-h-0! max-xl:opacity-0!',
+      'relative ml-[1.0625rem] flex flex-col gap-0 overflow-hidden border-l border-zinc-800/10 pl-2 transition-[max-height,opacity,margin-top] duration-300 group-data-[collapsed=true]/sidebar:mt-0! group-data-[collapsed=true]/sidebar:max-h-0! group-data-[collapsed=true]/sidebar:opacity-0!',
     subRow: 'flex items-center pr-1 pl-1 first:pt-1 last:pb-1',
     subLink:
       'flex min-w-0 flex-auto items-center rounded-lg px-2.5 py-1 text-0.5xs no-underline outline-offset-2 outline-blue-600 transition focus-visible:outline-2',
@@ -90,7 +95,7 @@ const navStyles = tv({
       'flex w-full items-center gap-2 rounded-lg border-none bg-transparent px-2.5 py-1 text-left text-0.5xs shadow-none hover:bg-black/3',
     rowLine: 'flex items-center',
     chevron:
-      'mr-0.5 h-6 w-6 shrink-0 rounded-md text-zinc-400 transition group-data-[collapsed=true]/sidebar:hidden hover:text-zinc-600 max-xl:hidden',
+      'mr-0.5 h-6 w-6 shrink-0 rounded-md text-zinc-400 transition group-data-[collapsed=true]/sidebar:hidden hover:text-zinc-600',
     chevronIcon: 'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
   },
   variants: {
@@ -124,7 +129,10 @@ const navStyles = tv({
       false: { overflowTrigger: 'text-gray-500 hover:text-gray-700' },
     },
     isExpanded: {
-      true: { subWrap: 'max-h-96 opacity-100', chevronIcon: 'rotate-90' },
+      true: {
+        subWrap: '-mt-1.5 max-h-96 opacity-100',
+        chevronIcon: 'rotate-90',
+      },
       false: { subWrap: 'max-h-0 opacity-0' },
     },
     isDisabled: {
