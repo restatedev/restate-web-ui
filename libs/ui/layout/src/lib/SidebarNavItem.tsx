@@ -90,7 +90,7 @@ const navStyles = tv({
       'flex w-full items-center gap-2 rounded-lg border-none bg-transparent px-2.5 py-1 text-left text-0.5xs shadow-none hover:bg-black/3',
     rowLine: 'flex items-center',
     chevron:
-      'mr-0.5 h-6 w-6 shrink-0 rounded-md text-zinc-400 transition hover:text-zinc-600 group-data-[collapsed=true]/sidebar:hidden max-xl:hidden',
+      'mr-0.5 h-6 w-6 shrink-0 rounded-md text-zinc-400 transition group-data-[collapsed=true]/sidebar:hidden hover:text-zinc-600 max-xl:hidden',
     chevronIcon: 'h-3.5 w-3.5 shrink-0 transition-transform duration-200',
   },
   variants: {
