@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PropsWithChildren,
@@ -234,10 +235,108 @@ export function SidebarBackdrop({ children }: PropsWithChildren) {
   );
 }
 
+interface NavExpansionContextValue {
+  isOpen: (id: string, hasActiveDescendant: boolean) => boolean;
+  toggle: (id: string, currentlyOpen: boolean) => void;
+}
+
+const NavExpansionContext = createContext<NavExpansionContextValue>({
+  isOpen: () => true,
+  toggle: noop,
+});
+
+export function useNavExpansion(): NavExpansionContextValue {
+  return useContext(NavExpansionContext);
+}
+
+function NavExpansionProvider({ children }: PropsWithChildren) {
+  const { isCollapsed } = useSidebar();
+  const listRef = useRef<HTMLUListElement>(null);
+  const [fitsAll, setFitsAll] = useState(true);
+  const [overrides, setOverrides] = useState<ReadonlyMap<string, boolean>>(
+    () => new Map(),
+  );
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    const nav = list.closest('nav');
+    const scrollArea = nav?.parentElement;
+    if (!nav || !scrollArea) {
+      return;
+    }
+    let frame = 0;
+    const recompute = () => {
+      frame = 0;
+      const cs = getComputedStyle(nav);
+      const available =
+        scrollArea.clientHeight -
+        (parseFloat(cs.paddingTop) || 0) -
+        (parseFloat(cs.paddingBottom) || 0);
+      if (available <= 0) {
+        return;
+      }
+      let projected = list.scrollHeight;
+      list.querySelectorAll('[data-nav-sublist]').forEach((el) => {
+        const sub = el as HTMLElement;
+        projected += Math.max(0, sub.scrollHeight - sub.offsetHeight);
+      });
+      setFitsAll((prev) => {
+        const next = projected <= available + 4;
+        return prev === next ? prev : next;
+      });
+    };
+    const schedule = () => {
+      if (!frame) {
+        frame = requestAnimationFrame(recompute);
+      }
+    };
+    recompute();
+    const ro = new ResizeObserver(schedule);
+    ro.observe(scrollArea);
+    ro.observe(list);
+    return () => {
+      if (frame) {
+        cancelAnimationFrame(frame);
+      }
+      ro.disconnect();
+    };
+  }, [isCollapsed]);
+
+  const value = useMemo<NavExpansionContextValue>(
+    () => ({
+      isOpen: (id, hasActiveDescendant) => {
+        const override = overrides.get(id);
+        if (override !== undefined) {
+          return override;
+        }
+        return hasActiveDescendant || fitsAll;
+      },
+      toggle: (id, currentlyOpen) =>
+        setOverrides((prev) => {
+          const next = new Map(prev);
+          next.set(id, !currentlyOpen);
+          return next;
+        }),
+    }),
+    [overrides, fitsAll],
+  );
+
+  return (
+    <NavExpansionContext.Provider value={value}>
+      <ul ref={listRef} className="flex flex-col gap-0.5">
+        {children}
+      </ul>
+    </NavExpansionContext.Provider>
+  );
+}
+
 export function SidebarNav({ children }: PropsWithChildren) {
   return (
     <LayoutOutlet zone={LayoutZone.SideBar}>
-      <ul className="flex flex-col gap-0.5">{children}</ul>
+      <NavExpansionProvider>{children}</NavExpansionProvider>
     </LayoutOutlet>
   );
 }
