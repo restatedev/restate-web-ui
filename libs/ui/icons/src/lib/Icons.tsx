@@ -8,6 +8,8 @@ import {
   Squircle,
   Trash,
   Circle,
+  ScanEye,
+  HatGlasses,
   CircleDashed,
   CircleDotDashed,
   TriangleAlert,
@@ -237,6 +239,8 @@ export const enum IconName {
   Layers = 'Layers',
   Blocks = 'Blocks',
   LifeBuoy = 'LifeBuoy',
+  ScanEye = 'ScanEye',
+  HatGlasses = 'HatGlasses',
 }
 export interface IconsProps {
   name: IconName;
@@ -363,6 +367,8 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Layers]: Layers,
   [IconName.Blocks]: Blocks,
   [IconName.LifeBuoy]: LifeBuoy,
+  [IconName.ScanEye]: ScanEye,
+  [IconName.HatGlasses]: HatGlasses,
 };
 
 const styles = tv({
