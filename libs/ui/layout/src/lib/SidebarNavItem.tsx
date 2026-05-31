@@ -97,7 +97,7 @@ const navStyles = tv({
         iconWrap: 'bg-transparent',
       },
       false: {
-        link: 'text-gray-600 hover:bg-black/3 pressed:bg-gray-200',
+        link: 'text-gray-700 hover:bg-black/3 pressed:bg-gray-200',
         icon: 'text-zinc-400 group-hover/nav-item:text-zinc-500',
         iconWrap: 'border-transparent bg-transparent shadow-none',
       },
