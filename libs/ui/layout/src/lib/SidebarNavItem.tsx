@@ -105,7 +105,7 @@ const navStyles = tv({
     isSubActive: {
       true: {
         subLink:
-          'bg-gray-50 font-medium text-gray-800 shadow-xs ring-1 ring-black/5 hover:bg-gray-100 pressed:bg-gray-200',
+          'bg-gray-50 font-medium text-blue-600 shadow-xs ring-1 ring-black/5 hover:bg-gray-100 pressed:bg-gray-200',
       },
       false: {
         subLink:
@@ -115,7 +115,7 @@ const navStyles = tv({
     isOverflowActive: {
       true: {
         overflowTrigger:
-          'bg-gray-50 font-medium text-gray-800 shadow-xs ring-1 ring-black/5',
+          'bg-gray-50 font-medium text-blue-600 shadow-xs ring-1 ring-black/5',
       },
       false: { overflowTrigger: 'text-gray-500 hover:text-gray-700' },
     },
