@@ -129,7 +129,10 @@ const navStyles = tv({
       false: { overflowTrigger: 'text-gray-500 hover:text-gray-700' },
     },
     isExpanded: {
-      true: { subWrap: '-mt-1.5 max-h-96 opacity-100', chevronIcon: 'rotate-90' },
+      true: {
+        subWrap: '-mt-1.5 max-h-96 opacity-100',
+        chevronIcon: 'rotate-90',
+      },
       false: { subWrap: 'max-h-0 opacity-0' },
     },
     isDisabled: {
