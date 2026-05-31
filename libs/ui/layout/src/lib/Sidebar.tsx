@@ -90,6 +90,13 @@ export function SidebarProvider({ children }: PropsWithChildren) {
   );
 }
 
+// `data-collapsed` (set on the aside below) is the single source of truth for
+// the rail-vs-expanded look, and `@container/sidebar` exposes the sidebar's own
+// width. Descendants (SidebarNavItem labels, sub-lists, chevrons) must drive
+// show/hide off THAT state — never off the viewport — otherwise an expanded
+// sidebar on a small screen renders as a rail. The `md:`/`xl:` breakpoints here
+// only pick the responsive default width + mobile drawer; they realize the
+// collapsed state, they are not a screen-width signal for content to read.
 const sidebarStyles = tv({
   slots: {
     aside:

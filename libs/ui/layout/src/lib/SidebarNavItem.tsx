@@ -68,6 +68,11 @@ function useSidebarLocation(): SidebarLocation {
   };
 }
 
+// All collapsed/expanded styling below keys off the sidebar's OWN state
+// (`group-data-[collapsed]/sidebar`) — never the screen width. A sidebar the
+// user expands on a narrow viewport must still show its labels and sub-links,
+// so do NOT reintroduce viewport variants (`max-xl:`/`md:`/`xl:`) here: gate
+// visuals on the sidebar, not the window. See `data-collapsed` in Sidebar.tsx.
 const navStyles = tv({
   slots: {
     row: 'group/nav-item relative isolate flex flex-col',
