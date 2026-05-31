@@ -56,6 +56,8 @@ const DEFAULT_PRESET_COLUMNS: ColumnKey[] = [
   'status',
 ];
 
+const STUCK_MODIFIED_BEFORE_MS = 30 * 60 * 1000;
+
 const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
 ) => FilterShortcut[] = (schema) => [
@@ -88,6 +90,10 @@ const makeShortcuts: (
       toClause(schema, 'status', {
         operation: 'IN',
         value: ['pending', 'backing-off', 'suspended', 'paused', 'ready'],
+      }),
+      toClause(schema, 'modified_at', {
+        operation: 'BEFORE',
+        value: new Date(Date.now() - STUCK_MODIFIED_BEFORE_MS),
       }),
     ],
   },
@@ -195,10 +201,18 @@ export function FilterShortcuts({
     Array.from(newSearchParams.keys())
       .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
       .forEach((key) => newSearchParams.delete(key));
+    const stuckModifiedBefore = new Date(Date.now() - STUCK_MODIFIED_BEFORE_MS);
     item.filters
       .filter((clause) => clause.isValid)
       .forEach((clause) => {
-        newSearchParams.set(getFilterParamKey(clause), String(clause));
+        const applied =
+          clause.id === 'modified_at'
+            ? toClause(schema, 'modified_at', {
+                operation: clause.value.operation!,
+                value: stuckModifiedBefore,
+              })
+            : clause;
+        newSearchParams.set(getFilterParamKey(applied), String(applied));
       });
 
     newSearchParams.delete(COLUMN_QUERY_PREFIX);
