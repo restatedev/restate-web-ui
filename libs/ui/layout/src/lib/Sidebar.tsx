@@ -109,7 +109,7 @@ const sidebarStyles = tv({
     // it to `-webkit-mask-composite`, whose legacy values differ (`add`/
     // `intersect` are invalid there), which drops the whole mask.
     scrollArea:
-      'relative flex h-full w-full [scrollbar-width:thin] flex-col overflow-x-hidden overflow-y-auto [mask-image:var(--sidebar-nav-mask,linear-gradient(to_bottom,transparent_0,transparent_var(--sidebar-header-h,0px),black_calc(var(--sidebar-header-h,0px)_+_0.5rem),black_calc(100%_-_var(--sidebar-footer-h,0px)_-_0.5rem),transparent_calc(100%_-_var(--sidebar-footer-h,0px)),transparent_100%))] [mask-size:var(--sidebar-nav-mask-size,100%_100%)] [mask-position:var(--sidebar-nav-mask-position,center)] [mask-repeat:no-repeat] [mask-mode:alpha]',
+      'relative flex h-full w-full [scrollbar-width:thin] flex-col overflow-x-hidden overflow-y-auto [mask-image:var(--sidebar-nav-mask,linear-gradient(to_bottom,transparent_0,transparent_var(--sidebar-header-h,0px),black_calc(var(--sidebar-header-h,0px)_+_0.5rem),black_calc(100%_-_var(--sidebar-footer-h,0px)_-_0.5rem),transparent_calc(100%_-_var(--sidebar-footer-h,0px)),transparent_100%))] [mask-mode:alpha] [mask-size:var(--sidebar-nav-mask-size,100%_100%)] [mask-position:var(--sidebar-nav-mask-position,center)] [mask-repeat:no-repeat]',
     // Overlay (like the footer) so the nav mask clips only the nav — the
     // selector deck sits on top, unclipped, transparent over the sky/cloud.
     headerBar:
