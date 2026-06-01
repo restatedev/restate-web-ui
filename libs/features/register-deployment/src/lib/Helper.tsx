@@ -159,7 +159,7 @@ export function Helper({
     );
   }
 
-  if (!isLambda && !isTunnel && identityKey) {
+  if (!isLambda && !isTunnel && !isCloudRun && identityKey) {
     const copyText = getHttpScript(targetType).replace(
       'IDENTITY_KEY',
       String(identityKey?.value),
