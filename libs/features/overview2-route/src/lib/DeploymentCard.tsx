@@ -38,7 +38,8 @@ function withoutCreatedAtFilter(params?: URLSearchParams) {
 const layoutStyles = tv({
   base: cx(
     'grid grid-cols-[1.75rem_minmax(0,1fr)_7rem] items-center gap-x-2 gap-y-1',
-    "[grid-template-areas:'primary_primary_services'_'._registered_services']",
+    "[grid-template-areas:'primary_primary_primary'_'._registered_registered'_'._services_services']",
+    "sm:[grid-template-areas:'primary_primary_services'_'._registered_services']",
   ),
 });
 
