@@ -126,7 +126,7 @@ export function DeploymentCard({
                     highlightSelection={false}
                     showEndpointCopyButton
                     showLink={false}
-                    className="min-h-auto [&_*]:text-[0.92675rem]"
+                    className="min-h-auto min-w-0 [&_*]:text-[0.92675rem]"
                   />
                   {isDeploymentStatusLoading ? (
                     <div className="h-6 w-20 shrink-0 animate-pulse rounded-full bg-gray-200" />
