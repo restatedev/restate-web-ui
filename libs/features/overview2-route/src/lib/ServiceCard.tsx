@@ -43,10 +43,18 @@ import {
 const layoutStyles = tv({
   base: cx(
     'grid grid-cols-[auto_minmax(0,1fr)_13rem] items-center gap-x-3 gap-y-3',
-    "[grid-template-areas:'icon_primary_dropdown'_'deployment_deployment_chart']",
+    "@min-md:[grid-template-areas:'icon_primary_dropdown'_'deployment_deployment_chart']",
     '@min-[85rem]:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_13rem_9rem]',
     "@min-[85rem]:[grid-template-areas:'icon_primary_deployment_chart_dropdown']",
   ),
+  variants: {
+    hasChart: {
+      true: "[grid-template-areas:'icon_primary_primary'_'deployment_deployment_deployment'_'chart_chart_chart']",
+      false:
+        "[grid-template-areas:'icon_primary_primary'_'deployment_deployment_deployment']",
+    },
+  },
+  defaultVariants: { hasChart: true },
 });
 
 const iconCellStyles = tv({
@@ -63,10 +71,17 @@ const deploymentCellStyles = tv({
 
 const chartCellStyles = tv({
   base: 'flex min-w-0 items-center gap-3 [grid-area:chart]',
+  variants: {
+    hasChart: {
+      true: '',
+      false: '@max-md:hidden',
+    },
+  },
+  defaultVariants: { hasChart: true },
 });
 
 const dropdownCellStyles = tv({
-  base: 'flex items-center justify-end [grid-area:dropdown]',
+  base: 'flex items-center justify-end [grid-area:dropdown] @max-md:hidden',
 });
 
 const playButtonStyles = tv({
@@ -124,6 +139,7 @@ export function ServiceCard({
     (st) => st.service === service.name && st.count > 0,
   );
   const serviceTotal = serviceStatuses.reduce((sum, st) => sum + st.count, 0);
+  const hasChart = serviceTotal > 0 || isSummaryLoading || isSummaryError;
   const breakdownStatuses = buildStatusEntries(serviceStatuses);
   const breakdownTotal = breakdownStatuses.reduce(
     (sum, st) => sum + st.count,
@@ -139,7 +155,7 @@ export function ServiceCard({
         <div
           className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}
         >
-          <div className={layoutStyles()}>
+          <div className={layoutStyles({ hasChart })}>
             <div className={iconCellStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
                 <Icon
@@ -180,8 +196,12 @@ export function ServiceCard({
               <AllRevisions serviceName={service.name} />
             </div>
 
-            <div className={chartCellStyles()}>
-              <div className="min-w-[6ch] text-right">
+            <div
+              className={chartCellStyles({
+                hasChart,
+              })}
+            >
+              <div className="min-w-[6ch] text-right @max-md:min-w-0 @max-md:text-left">
                 <InvocationCountLink
                   href={toServiceInvocationsHref(baseUrl, service.name, {
                     existingParams: linkParams,
