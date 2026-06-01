@@ -3,6 +3,7 @@ import {
   DAY_MS,
   FLOOR_COORDINATE_WINDOW,
   FLOOR_FOLLOW_LATEST_END,
+  FOLLOW_LATEST_MAX_ZOOM,
   FOLLOW_LATEST_MIN_PAST_CONTEXT_MS,
   FOLLOW_LATEST_PAST_CONTEXT_RATIO,
   FOLLOW_LATEST_STEPS,
@@ -53,8 +54,10 @@ export function selectCoordinateWindow(
  */
 function computeFollowLatestWindow(observedRangeDurationMs: number): number {
   const minWindowMs = FOLLOW_LATEST_STEPS[0] ?? FOLLOW_LATEST_THRESHOLD;
-  const maxWindowMs =
-    FOLLOW_LATEST_STEPS[FOLLOW_LATEST_STEPS.length - 1] ?? minWindowMs;
+  const maxWindowMs = Math.max(
+    FOLLOW_LATEST_STEPS[FOLLOW_LATEST_STEPS.length - 1] ?? minWindowMs,
+    observedRangeDurationMs / FOLLOW_LATEST_MAX_ZOOM,
+  );
   const targetWindowMs = observedRangeDurationMs * 0.5;
   return Math.max(minWindowMs, Math.min(maxWindowMs, targetWindowMs));
 }
