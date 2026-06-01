@@ -21,21 +21,20 @@ const containerStyles = tv({
   base: '',
 });
 
-interface InputProps
-  extends Pick<
-    AriaTextFieldProps,
-    | 'name'
-    | 'value'
-    | 'defaultValue'
-    | 'autoFocus'
-    | 'autoComplete'
-    | 'validate'
-    | 'pattern'
-    | 'maxLength'
-    | 'type'
-    | 'onChange'
-    | 'onKeyDown'
-  > {
+interface InputProps extends Pick<
+  AriaTextFieldProps,
+  | 'name'
+  | 'value'
+  | 'defaultValue'
+  | 'autoFocus'
+  | 'autoComplete'
+  | 'validate'
+  | 'pattern'
+  | 'maxLength'
+  | 'type'
+  | 'onChange'
+  | 'onKeyDown'
+> {
   className?: string;
   required?: boolean;
   disabled?: boolean;
@@ -84,6 +83,21 @@ export const FormFieldInput = forwardRef<
             ref={ref}
             spellCheck={false}
             form={form}
+            // `autoComplete="off"` (the default) stops the BROWSER's autofill,
+            // but password managers ignore it for generic field names (e.g.
+            // `name="name"`) and still show inline popups. There's no single
+            // universal opt-out, so set each manager's ignore attribute too.
+            // Fields that DO want autofill pass an explicit `autoComplete` (e.g.
+            // "email") and keep all of these off.
+            {...(autoComplete === 'off'
+              ? {
+                  'data-1p-ignore': true, // 1Password
+                  'data-lpignore': 'true', // LastPass
+                  'data-bwignore': true, // Bitwarden
+                  'data-protonpass-ignore': 'true', // Proton Pass
+                  'data-form-type': 'other', // Dashlane (treat as non-login)
+                }
+              : null)}
           />
           {children}
         </div>
