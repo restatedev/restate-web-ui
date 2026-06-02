@@ -64,7 +64,7 @@ const lastFailureContent = tv({
 // square whose top half tucks behind the banner (z below the Section), leaving
 // a bordered triangle pointing at the stem so the banner reads as a marker.
 const lastFailureNotch = tv({
-  base: 'absolute bottom-0 h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 rotate-45 border-r border-b',
+  base: 'pointer-events-none absolute bottom-0 h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 rotate-45 border-r border-b',
   variants: {
     isFailed: {
       true: 'border-red-200 bg-red-50',
@@ -511,7 +511,7 @@ function Anchor({
   }, [hasLastFailure]);
 
   return (
-    <div className="relative z-40 w-full translate-y-4">
+    <div className="pointer-events-none relative z-40 w-full translate-y-4">
       <div ref={ref} className={line()}>
         <div className={anchor()} />
       </div>
