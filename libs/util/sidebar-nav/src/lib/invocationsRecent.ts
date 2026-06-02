@@ -13,7 +13,10 @@ export function getInvocationsRecent(scope = ''): InvocationsRecent | null {
   return recentByScope.get(scope) ?? null;
 }
 
-export function setInvocationsRecent(item: InvocationsRecent, scope = ''): void {
+export function setInvocationsRecent(
+  item: InvocationsRecent,
+  scope = '',
+): void {
   recentByScope.set(scope, item);
   listeners.forEach((l) => l());
 }
