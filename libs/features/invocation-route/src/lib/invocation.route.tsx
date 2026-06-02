@@ -52,7 +52,7 @@ const lastFailureContent = tv({
   // Minimal: a light flat tint with a soft hairline border and just a whisper
   // of shadow — deliberately quieter and flatter than the glossy header so it
   // reads as a calm callout rather than a second hero card.
-  base: 'max-h-none flex-auto rounded-2xl border shadow-xs',
+  base: 'flex-auto rounded-2xl border shadow-xs',
   variants: {
     isFailed: {
       true: 'border-red-200 bg-red-50',
@@ -303,7 +303,7 @@ function Component() {
                   notch nears an edge, so a wide error shifts rather than
                   shrinks. */}
               <div
-                className="relative mx-auto w-fit"
+                className="relative mx-auto w-fit max-w-full"
                 style={{ left: 'var(--failure-banner-shift, 0px)' }}
               >
                 <Section
