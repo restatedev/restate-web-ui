@@ -1,14 +1,10 @@
 {
-  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "es2015",
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "importHelpers": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noPropertyAccessFromIndexSignature": true
+    "jsx": "react-jsx",
+    "allowJs": false,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true
   },
   "files": [],
   "include": [],
@@ -19,5 +15,6 @@
     {
       "path": "./tsconfig.spec.json"
     }
-  ]
+  ],
+  "extends": "../../../tsconfig.base.json"
 }

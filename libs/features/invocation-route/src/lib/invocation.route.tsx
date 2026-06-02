@@ -320,16 +320,22 @@ function Component() {
         <ContentPanel
           className=""
           tabs={{
-            items: [{ id: 'journal', label: 'Journal' }],
+            items: [
+              {
+                id: 'journal',
+                label: (
+                  <span className="inline-flex items-center">
+                    Journal
+                    {OnboardingGuide && (
+                      <OnboardingGuide stage="view-invocation" />
+                    )}
+                  </span>
+                ),
+              },
+            ],
             defaultId: 'journal',
           }}
         >
-          {OnboardingGuide && (
-            <OnboardingGuide
-              stage="view-invocation"
-              service={journalAndInvocationData?.target_service_name}
-            />
-          )}
           <ContentPanelBody>
             <JournalV2
               invocationId={String(id)}

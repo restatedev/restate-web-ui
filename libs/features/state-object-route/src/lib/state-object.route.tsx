@@ -81,7 +81,7 @@ import { toStateParam } from './toStateParam';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Portal } from '@restate/ui/portal';
-import { getFeatures } from '@restate/util/api-config';
+import { useFeatures } from '@restate/data-access/admin-api';
 
 function urlKeyFor(schemaClause: QueryClauseSchema<QueryClauseType>) {
   if (schemaClause.metadata?.isSystem) {
@@ -174,7 +174,7 @@ function Component() {
   const keys = Array.from(keysSet.values());
 
   const { isSuccess: versionReady } = useVersion();
-  const hasVqueues = getFeatures()?.has('vqueues') ?? false;
+  const hasVqueues = useFeatures().has('vqueues');
   const hasScopeInUrl = searchParams.has('sysFilter_scope');
   const schema = useMemo(() => {
     const stringOps = [

@@ -20,7 +20,12 @@ import {
 interface InvocationShortcut {
   id: string;
   label: string;
-  filters: { id: string; operation: string; value?: unknown }[];
+  filters: {
+    id: string;
+    operation: string;
+    value?: unknown;
+    relativeMs?: number;
+  }[];
   sort?: { field: string; order: 'ASC' | 'DESC' };
   columns?: string[];
 }
@@ -38,6 +43,8 @@ const DEFAULT_PRESET_COLUMNS = [
 
 // Operations that are meaningful on their own (no value required).
 const VALUELESS_OPERATIONS = new Set(['IS NULL', 'IS NOT NULL']);
+
+const STUCK_MODIFIED_BEFORE_MS = 30 * 60 * 1000;
 
 const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
@@ -59,6 +66,11 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
         id: 'status',
         operation: 'IN',
         value: ['pending', 'backing-off', 'suspended', 'paused', 'ready'],
+      },
+      {
+        id: 'modified_at',
+        operation: 'BEFORE',
+        relativeMs: STUCK_MODIFIED_BEFORE_MS,
       },
     ],
     sort: { field: 'modified_at', order: 'ASC' },
@@ -122,11 +134,15 @@ const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
 function shortcutHref(path: string, s: InvocationShortcut): string {
   const params = new URLSearchParams();
   for (const f of s.filters) {
+    const value =
+      f.relativeMs !== undefined
+        ? new Date(Date.now() - f.relativeMs).toISOString()
+        : f.value;
     params.set(
       `filter_${f.id}`,
       JSON.stringify(
-        f.value !== undefined
-          ? { operation: f.operation, value: f.value }
+        value !== undefined
+          ? { operation: f.operation, value }
           : { operation: f.operation },
       ),
     );
@@ -160,7 +176,7 @@ function shortcutHref(path: string, s: InvocationShortcut): string {
 //               `id` is the shortcut id, used to highlight that sub-item.
 //   - 'custom': on `/invocations` but the URL doesn't match 'all' or any
 //               preset — the user built their own filter combination. This
-//               drives the "Custom query" extra sub-item.
+//               drives the "Last query" extra sub-item.
 //   - null:     not in the invocations section at all.
 // ─────────────────────────────────────────────────────────────
 
@@ -208,6 +224,7 @@ function urlMatchesShortcut(
         value?: unknown;
       };
       if (parsed.operation !== f.operation) return false;
+      if (f.relativeMs !== undefined) return true;
       if (f.value === undefined) return true;
       // JSON.stringify works as a deep-equality check for the flat shapes
       // we store (primitives + flat arrays). Don't extend without thinking.
@@ -239,7 +256,7 @@ function classifyInvocationsUrl(
 /**
  * True when the URL is the All view or matches a named preset. The
  * /invocations route uses this to decide whether to remember the URL as
- * a "Custom query" entry in the sidebar.
+ * a "Last query" entry in the sidebar.
  */
 export function matchesAnyInvocationPreset(
   searchParams: URLSearchParams,
@@ -314,7 +331,7 @@ export function InvocationsSidebarItem({
   // The 5th slot (rendered between the fixed rail and the More dropdown)
   // shows at most one item. Current URL beats memory:
   // - on a detail page → that invocation id (active)
-  // - on a custom-filter /invocations URL → "Custom query" (active)
+  // - on a custom-filter /invocations URL → "Last query" (active)
   // - on an overflow preset (Idempotent, Most retried, …) → preset label (active)
   // - otherwise fall back to the last remembered detail/custom (not active)
   // Fixed rail presets (All, In-flight, Stuck) don't appear here — they
@@ -338,7 +355,7 @@ export function InvocationsSidebarItem({
     const value = location.search.replace(/^\?/, '');
     extraSubItems.push({
       href: `${path}?${value}`,
-      label: 'Custom query',
+      label: 'Last query',
       match: (loc) => classify(loc)?.kind === 'custom',
       preserveSearchParams: false,
     });
@@ -371,7 +388,7 @@ export function InvocationsSidebarItem({
   } else if (recent?.type === 'custom') {
     extraSubItems.push({
       href: `${path}?${recent.value}`,
-      label: 'Custom query',
+      label: 'Last query',
       match: (loc) => classify(loc)?.kind === 'custom',
       preserveSearchParams: false,
     });

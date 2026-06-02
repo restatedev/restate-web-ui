@@ -1,5 +1,5 @@
 import type { operations } from '@restate/data-access/admin-api-spec';
-import { adminApi } from './client';
+import { adminApi } from './adminApi';
 
 type ServiceSerdeName =
   operations['decode_service_serde']['parameters']['path']['serdeName'];

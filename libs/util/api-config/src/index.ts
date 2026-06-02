@@ -1,15 +1,6 @@
 export {
-  setAuthToken,
+  AUTH_QUERY_KEY,
   getAuthToken,
-  getRestateVersion,
-  getFeatures,
-  awaitMeta,
-  resetMetaReady,
-} from './lib/api-config';
-export {
-  createLocalStorageMetaStorage,
-  createCookieMetaStorage,
-  type CookieMetaStorageOptions,
-  type MetaStorage,
-  type RestateMeta,
-} from './lib/storage';
+  setAuthToken,
+  type CachedAuth,
+} from './lib/auth';

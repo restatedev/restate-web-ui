@@ -503,7 +503,7 @@ export function JournalV2({
                                 ?.lifeCycleEntries ?? []
                             }
                           />
-                          <ViewportSelectorPortalTarget className="absolute right-0 bottom-1/2 left-0 z-10 h-6 translate-y-1/2" />
+                          <ViewportSelectorPortalTarget className="absolute inset-x-0 inset-y-0 z-10 my-auto h-6" />
                         </div>
                       </div>
                     </div>

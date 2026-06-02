@@ -167,7 +167,7 @@ function ServiceContent({
   const { deployments, sortedRevisions = [] } =
     listDeploymentsData?.services.get(String(service)) ?? {};
 
-  const { OnboardingGuide, baseUrl } = useRestateContext();
+  const { baseUrl } = useRestateContext();
   const [maxDeployments, setMaxDeployments] = useState(10);
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedHandler = searchParams.get(HANDLER_QUERY_PARAM);
@@ -349,9 +349,6 @@ function ServiceContent({
           )}
         </div>
       </h2>
-      {OnboardingGuide && (
-        <OnboardingGuide stage="open-playground" service={service} />
-      )}
 
       {error && (
         <div className="mb-1">

@@ -38,7 +38,8 @@ function withoutCreatedAtFilter(params?: URLSearchParams) {
 const layoutStyles = tv({
   base: cx(
     'grid grid-cols-[1.75rem_minmax(0,1fr)_7rem] items-center gap-x-2 gap-y-1',
-    "[grid-template-areas:'primary_primary_services'_'._registered_services']",
+    "[grid-template-areas:'primary_primary_primary'_'._registered_registered'_'._services_services']",
+    "sm:[grid-template-areas:'primary_primary_services'_'._registered_services']",
   ),
 });
 
@@ -126,7 +127,7 @@ export function DeploymentCard({
                     highlightSelection={false}
                     showEndpointCopyButton
                     showLink={false}
-                    className="min-h-auto [&_*]:text-[0.92675rem]"
+                    className="min-h-auto min-w-0 [&_*]:text-[0.92675rem]"
                   />
                   {isDeploymentStatusLoading ? (
                     <div className="h-6 w-20 shrink-0 animate-pulse rounded-full bg-gray-200" />

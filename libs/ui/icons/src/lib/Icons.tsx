@@ -8,6 +8,8 @@ import {
   Squircle,
   Trash,
   Circle,
+  ScanEye,
+  HatGlasses,
   CircleDashed,
   CircleDotDashed,
   TriangleAlert,
@@ -91,6 +93,9 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  Layers,
+  Blocks,
+  LifeBuoy,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -231,6 +236,11 @@ export const enum IconName {
   Menu = 'Menu',
   PanelLeftClose = 'PanelLeftClose',
   PanelLeftOpen = 'PanelLeftOpen',
+  Layers = 'Layers',
+  Blocks = 'Blocks',
+  LifeBuoy = 'LifeBuoy',
+  ScanEye = 'ScanEye',
+  HatGlasses = 'HatGlasses',
 }
 export interface IconsProps {
   name: IconName;
@@ -354,6 +364,11 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Menu]: Menu,
   [IconName.PanelLeftClose]: PanelLeftClose,
   [IconName.PanelLeftOpen]: PanelLeftOpen,
+  [IconName.Layers]: Layers,
+  [IconName.Blocks]: Blocks,
+  [IconName.LifeBuoy]: LifeBuoy,
+  [IconName.ScanEye]: ScanEye,
+  [IconName.HatGlasses]: HatGlasses,
 };
 
 const styles = tv({
