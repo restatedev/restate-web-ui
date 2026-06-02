@@ -46,14 +46,17 @@ const metadataContainerStyles = tv({
   },
 });
 const lastFailureContainer = tv({
-  base: 'z-20 min-w-0 origin-bottom-right rounded-xl p-0',
+  base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
 });
 const lastFailureContent = tv({
-  base: 'max-h-none flex-auto rounded-xl border bg-linear-to-b shadow-xl shadow-zinc-800/3',
+  // Minimal: a light flat tint with a soft hairline border and just a whisper
+  // of shadow — deliberately quieter and flatter than the glossy header so it
+  // reads as a calm callout rather than a second hero card.
+  base: 'max-h-none flex-auto rounded-2xl border shadow-xs',
   variants: {
     isFailed: {
-      true: 'border-red-400/50 from-red-50 to-red-50',
-      false: 'border-orange-400/50 from-orange-50 to-orange-50',
+      true: 'border-red-200 bg-red-50',
+      false: 'border-orange-200 bg-orange-50',
     },
   },
 });
@@ -64,8 +67,8 @@ const lastFailureNotch = tv({
   base: 'absolute bottom-0 h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 rotate-45 border-r border-b',
   variants: {
     isFailed: {
-      true: 'border-red-400/50 bg-red-50',
-      false: 'border-orange-400/50 bg-orange-50',
+      true: 'border-red-200 bg-red-50',
+      false: 'border-orange-200 bg-orange-50',
     },
   },
 });
