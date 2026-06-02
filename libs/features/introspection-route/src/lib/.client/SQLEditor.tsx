@@ -35,6 +35,7 @@ import {
   WINDOWS_RANKING_FUNCTIONS,
 } from './constants';
 import { TokenClassConsts, postfixTokenClass } from 'monaco-sql-languages';
+import { getQueryHistory } from '../queryHistory';
 
 const SQL_EDITOR_THEME = 'restate-sql';
 
@@ -80,17 +81,23 @@ const completionService: CompletionService = function (
   entities, // tables, columns in the syntax context of the editor text
 ) {
   return new Promise((resolve, reject) => {
+    const historyCompletionItems = buildHistoryCompletions(model, position);
+    const keywordsCompletionItems: ICompletionItem[] =
+      model.getValue().trim() === ''
+        ? []
+        : [...KEYWORDS].map((kw) => ({
+            label: kw,
+            kind: languages.CompletionItemKind.Keyword,
+            detail: 'keyword',
+            sortText: '3' + kw,
+          }));
     if (!suggestions) {
-      return Promise.resolve([]);
+      resolve({
+        suggestions: [...historyCompletionItems, ...keywordsCompletionItems],
+        incomplete: true,
+      });
+      return;
     }
-    const keywordsCompletionItems: ICompletionItem[] = [...KEYWORDS].map(
-      (kw) => ({
-        label: kw,
-        kind: languages.CompletionItemKind.Keyword,
-        detail: 'keyword',
-        sortText: '3' + kw,
-      }),
-    );
     const { syntax } = suggestions;
 
     let syntaxCompletionItems: ICompletionItem[] = [];
@@ -146,9 +153,63 @@ const completionService: CompletionService = function (
       }
     });
 
-    resolve([...syntaxCompletionItems, ...keywordsCompletionItems]);
+    resolve({
+      suggestions: [
+        ...historyCompletionItems,
+        ...syntaxCompletionItems,
+        ...keywordsCompletionItems,
+      ],
+      incomplete: true,
+    });
   });
 };
+
+function toSingleLine(query: string) {
+  return query.replace(/\s+/g, ' ').trim();
+}
+
+function buildHistoryCompletions(
+  model: monaco.editor.IReadOnlyModel,
+  position: monaco.Position,
+): ICompletionItem[] {
+  const history = getQueryHistory();
+  if (history.length === 0 || position.lineNumber > 1) {
+    return [];
+  }
+
+  const textUntilPosition = model.getValueInRange({
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: position.lineNumber,
+    endColumn: position.column,
+  });
+  const prefix = textUntilPosition.replace(/^\s+/, '');
+  const lowerPrefix = prefix.toLowerCase();
+  const lastLine = model.getLineCount();
+  const range: monaco.IRange = {
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: lastLine,
+    endColumn: model.getLineMaxColumn(lastLine),
+  };
+
+  return history
+    .filter(
+      (query) =>
+        query.toLowerCase().startsWith(lowerPrefix) &&
+        toSingleLine(query) !== toSingleLine(prefix),
+    )
+    .map((query, index) => ({
+      label: { label: toSingleLine(query), description: 'History' },
+      kind: languages.CompletionItemKind.Snippet,
+      insertText: query,
+      filterText: query,
+      sortText: '0' + String(index).padStart(4, '0'),
+      range,
+      detail: 'Query history',
+      documentation: { value: '```sql\n' + query + '\n```' },
+    }));
+}
 
 export function SQLEditor({
   setQuery,
@@ -247,6 +308,7 @@ export function SQLEditor({
           showInlineDetails: true,
           snippetsPreventQuickSuggestions: false,
         },
+        quickSuggestions: { other: true, comments: false, strings: false },
         stickyScroll: {
           enabled: false,
         },
@@ -294,7 +356,7 @@ export function SQLEditor({
 
       updateStyles();
 
-      editorRef.current.onDidChangeModelContent((e) => {
+      editorRef.current.onDidChangeModelContent(() => {
         updateStyles();
       });
 
@@ -310,6 +372,17 @@ export function SQLEditor({
           setQuery(editorRef.current?.getValue() ?? '');
         },
       );
+
+      editorRef.current.onDidFocusEditorText(() => {
+        const value = editorRef.current?.getValue() ?? '';
+        if (value.trim() === '' && getQueryHistory().length > 0) {
+          editorRef.current?.trigger(
+            'history',
+            'editor.action.triggerSuggest',
+            {},
+          );
+        }
+      });
 
       window.addEventListener('resize', updateStyles);
 

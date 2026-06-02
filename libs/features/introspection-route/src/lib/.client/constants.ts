@@ -53,6 +53,8 @@ export const KEYWORDS = [
   'CAST',
   'TRY_CAST',
   'VALUES',
+  'SHOW TABLES',
+  'SHOW COLUMNS',
 ];
 
 export const AGG_GENERAL_FUNCTIONS = [
