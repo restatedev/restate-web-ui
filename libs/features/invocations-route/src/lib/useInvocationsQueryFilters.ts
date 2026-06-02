@@ -14,7 +14,7 @@ import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
-import { saveInvocationsLastQuery } from '@restate/util/sidebar-nav';
+import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
 export const FILTER_QUERY_PREFIX = 'filter_';
 export const SORT_QUERY_PREFIX = 'sort_';
@@ -138,6 +138,7 @@ export function useInvocationsForm({
   resetPageIndex: () => void;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { saveLastQuery } = useInvocationsLastQuery();
 
   const [sortParams, _setSortParams] = useState<SortInvocations>(() =>
     deriveSortFromUrl(searchParams),
@@ -195,7 +196,7 @@ export function useInvocationsForm({
     // invocations" navigation (?restore=1) restores what the user actually
     // just submitted. Saving here is a hot-path optimization — the route's
     // useEffect saves on URL change as well.
-    saveInvocationsLastQuery(newSearchParams);
+    saveLastQuery(newSearchParams);
     setSearchParams(newSearchParams, { preventScrollReset: true });
 
     return query.items

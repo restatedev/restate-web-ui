@@ -27,8 +27,8 @@ import {
 import {
   getInvocationsLastQuery,
   matchesAnyInvocationPreset,
-  saveInvocationsLastQuery,
-  setInvocationsRecent,
+  useInvocationsLastQuery,
+  useInvocationsRecent,
 } from '@restate/util/sidebar-nav';
 import { InvocationCell } from './cells';
 import {
@@ -173,6 +173,8 @@ function SampleModeToggle({
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { OnboardingGuide, baseUrl } = useRestateContext();
+  const { saveLastQuery } = useInvocationsLastQuery();
+  const { setRecent } = useInvocationsRecent();
   const {
     selectedColumns,
     setSelectedColumns,
@@ -356,11 +358,11 @@ function Component() {
   }, []);
 
   useEffect(() => {
-    saveInvocationsLastQuery(searchParams);
+    saveLastQuery(searchParams);
     if (!matchesAnyInvocationPreset(searchParams)) {
-      setInvocationsRecent({ type: 'custom', value: searchParams.toString() });
+      setRecent({ type: 'custom', value: searchParams.toString() });
     }
-  }, [searchParams]);
+  }, [searchParams, saveLastQuery, setRecent]);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -924,7 +926,9 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   // URL with the restored filter_* keys.
   if (params.get('restore') === '1') {
     params.delete('restore');
-    const lastQuery = getInvocationsLastQuery();
+    const lastQuery = getInvocationsLastQuery(
+      url.pathname.replace(/\/invocations$/, ''),
+    );
     if (lastQuery) {
       Array.from(lastQuery.keys())
         .filter((k) => k.startsWith(FILTER_QUERY_PREFIX))

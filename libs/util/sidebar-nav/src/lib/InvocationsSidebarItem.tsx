@@ -5,13 +5,8 @@ import {
   type SidebarSubItem,
 } from '@restate/ui/layout';
 import { IconName } from '@restate/ui/icons';
-import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
-import {
-  getInvocationsRecent,
-  subscribeInvocationsRecent,
-  type InvocationsRecent,
-} from './invocationsRecent';
+import { useInvocationsRecent } from './useInvocationsMemory';
 
 // ─────────────────────────────────────────────────────────────
 // Preset definitions
@@ -275,17 +270,6 @@ interface InvocationsSidebarItemProps {
   preserveSearchParams?: boolean | string[];
 }
 
-function useRecentItem(): InvocationsRecent | null {
-  const [item, setItem] = useState<InvocationsRecent | null>(() =>
-    getInvocationsRecent(),
-  );
-  useEffect(
-    () => subscribeInvocationsRecent(() => setItem(getInvocationsRecent())),
-    [],
-  );
-  return item;
-}
-
 function truncateId(id: string): string {
   if (id.length <= 16) return id;
   return `${id.slice(0, 8)}…${id.slice(-5)}`;
@@ -297,7 +281,7 @@ export function InvocationsSidebarItem({
   preserveSearchParams = false,
 }: InvocationsSidebarItemProps) {
   const path = `${baseUrl}/invocations`;
-  const recent = useRecentItem();
+  const { recent } = useInvocationsRecent();
   const location = useLocation();
   const current = classifyInvocationsUrl(
     path,

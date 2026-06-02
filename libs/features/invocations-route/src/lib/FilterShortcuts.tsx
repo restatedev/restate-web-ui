@@ -25,7 +25,7 @@ import {
   SORT_QUERY_PREFIX,
   getFilterParamKey,
 } from './useInvocationsQueryFilters';
-import { saveInvocationsLastQuery } from '@restate/util/sidebar-nav';
+import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
 interface FilterShortcut {
   columns: ColumnKey[];
@@ -193,6 +193,7 @@ export function FilterShortcuts({
   const [shortcuts] = useState(() => makeShortcuts(schema));
   const [first, second, third, ...rest] = shortcuts;
   const [searchParams, setSearchParams] = useSearchParams();
+  const { saveLastQuery } = useInvocationsLastQuery();
 
   const setFilter = (item: FilterShortcut) => {
     setPageIndex(0);
@@ -230,7 +231,7 @@ export function FilterShortcuts({
 
     // Keep lastQuery in sync with the committed state so the next ?restore=1
     // navigation restores what the user just selected.
-    saveInvocationsLastQuery(newSearchParams);
+    saveLastQuery(newSearchParams);
     setSearchParams(newSearchParams);
   };
 

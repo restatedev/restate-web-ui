@@ -26,7 +26,7 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
-import { setInvocationsRecent } from '@restate/util/sidebar-nav';
+import { useInvocationsRecent } from '@restate/util/sidebar-nav';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 mb-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl md:mb-0 [&:has(*)]:grid',
@@ -123,13 +123,13 @@ function getHeaderIntent(
 function Component() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const { setRecent } = useInvocationsRecent();
 
-  // Review do we still use session storage for this. I thought it's memory. if so can be in a module var
   useEffect(() => {
     if (id) {
-      setInvocationsRecent({ type: 'invocation', value: id });
+      setRecent({ type: 'invocation', value: id });
     }
-  }, [id]);
+  }, [id, setRecent]);
 
   const {
     data: journalAndInvocationData,
