@@ -16,11 +16,18 @@ export function KeysIdsSection({
 }) {
   const idempotencyId = invocation?.idempotency_key;
   const traceId = invocation?.trace_id;
-  const restateVersion = invocation?.created_using_restate_version;
+  const createdRestateVersion = invocation?.created_using_restate_version;
+  const restateVersion =
+    createdRestateVersion && !createdRestateVersion.startsWith('0.0.0')
+      ? createdRestateVersion
+      : undefined;
   const scope = invocation?.scope;
   const limitKey = invocation?.limit_key;
 
-  if (!invocation) {
+  if (
+    !invocation ||
+    !(restateVersion || idempotencyId || scope || limitKey || traceId)
+  ) {
     return null;
   }
 
@@ -28,7 +35,7 @@ export function KeysIdsSection({
     <Section className={styles({ className })}>
       <SectionTitle>Details</SectionTitle>
       <SectionContent className="p-0">
-        {restateVersion && !restateVersion.startsWith('0.0.0') && (
+        {restateVersion && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
             <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
               Create by Restate

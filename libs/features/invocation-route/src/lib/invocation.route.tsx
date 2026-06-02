@@ -26,10 +26,10 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
-import { setInvocationsRecent } from '@restate/util/sidebar-nav';
+import { useInvocationsRecent } from '@restate/util/sidebar-nav';
 
 const metadataContainerStyles = tv({
-  base: 'mt-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
+  base: 'mt-6 mb-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl md:mb-0 [&:has(*)]:grid',
   variants: {
     isVirtualObject: {
       true: '',
@@ -46,14 +46,29 @@ const metadataContainerStyles = tv({
   },
 });
 const lastFailureContainer = tv({
-  base: 'z-20 min-w-0 origin-bottom-left rounded-xl p-0',
+  base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
 });
 const lastFailureContent = tv({
-  base: '-ml-4 max-w-fit flex-auto rounded-xl rounded-bl-none border bg-linear-to-b shadow-xl shadow-zinc-800/3 lg:mr-12 [&_.error]:max-h-72',
+  // Minimal: a light flat tint with a soft hairline border and just a whisper
+  // of shadow — deliberately quieter and flatter than the glossy header so it
+  // reads as a calm callout rather than a second hero card.
+  base: 'flex-auto rounded-2xl border shadow-xs',
   variants: {
     isFailed: {
-      true: 'border-red-400/50 from-red-50 to-red-50',
-      false: 'border-orange-400/50 from-orange-50 to-orange-50',
+      true: 'border-red-200 bg-red-50',
+      false: 'border-orange-200 bg-orange-50',
+    },
+  },
+});
+// Downward "tail" where the stem meets the callout's bottom-center: a rotated
+// square whose top half tucks behind the banner (z below the Section), leaving
+// a bordered triangle pointing at the stem so the banner reads as a marker.
+const lastFailureNotch = tv({
+  base: 'pointer-events-none absolute bottom-0 h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 rotate-45 border-r border-b',
+  variants: {
+    isFailed: {
+      true: 'border-red-200 bg-red-50',
+      false: 'border-orange-200 bg-orange-50',
     },
   },
 });
@@ -63,7 +78,7 @@ const lastFailureContent = tv({
 // from the left and fades to white past mid-card, paired with a matching
 // border. Layered shadow + inset white highlight give the lifted glass feel.
 const headerCardStyles = tv({
-  base: 'sticky top-3 z-30 mx-5 mt-2 flex items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-3 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/6%),0_12px_28px_-10px_--theme(--color-zinc-800/12%),inset_0_2px_0_0_--theme(--color-white/95%)] backdrop-blur-xl backdrop-saturate-200 transition-colors sm:top-6',
+  base: 'sticky top-3 z-50 mx-5 mt-2 flex items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-3 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/6%),0_12px_28px_-10px_--theme(--color-zinc-800/12%),inset_0_2px_0_0_--theme(--color-white/95%)] backdrop-blur-xl backdrop-saturate-200 transition-colors sm:top-6',
   variants: {
     intent: {
       success:
@@ -108,13 +123,13 @@ function getHeaderIntent(
 function Component() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const { setRecent } = useInvocationsRecent();
 
-  // Review do we still use session storage for this. I thought it's memory. if so can be in a module var
   useEffect(() => {
     if (id) {
-      setInvocationsRecent({ type: 'invocation', value: id });
+      setRecent({ type: 'invocation', value: id });
     }
-  }, [id]);
+  }, [id, setRecent]);
 
   const {
     data: journalAndInvocationData,
@@ -183,7 +198,7 @@ function Component() {
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-        <div className="@container flex items-center gap-1.5 px-5 text-sm text-gray-500">
+        <div className="@container mt-8 flex items-center gap-1.5 px-5 text-sm text-gray-500 md:mt-0">
           <Link
             className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
             variant="secondary"
@@ -218,24 +233,31 @@ function Component() {
           {journalAndInvocationData?.target && (
             <Target
               target={journalAndInvocationData.target}
-              className="max-w-fit min-w-0 shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity"
+              className="max-w-fit shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity md:min-w-0"
             />
           )}
           {journalAndInvocationData && (
             <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
-              <Status invocation={journalAndInvocationData} className="" />
+              <Status
+                invocation={journalAndInvocationData}
+                className=""
+                mini="md"
+              />
             </div>
           )}
           <div className="ml-auto shrink-0">
             <Actions
               invocation={journalAndInvocationData}
-              mini={false}
+              mini="md"
               className="rounded-l-lg text-[0.9375rem]"
-              splitClassName="rounded-r-lg"
+              splitClassName="rounded-lg md:rounded-l-none"
             />
           </div>
         </div>
-        <div className="flex flex-col gap-4 px-5">
+        <div
+          className="relative z-10 flex flex-col gap-4 px-5"
+          data-failure-anchor-root
+        >
           <div
             className={metadataContainerStyles({
               isVirtualObject,
@@ -273,27 +295,53 @@ function Component() {
             />
           </div>
           {shouldShowFailure && !error && (
-            <>
+            // No timeline below `md` (the journal panel/divider are
+            // display:none there) → nothing to anchor to, so hide the whole
+            // block. A CSS media query, not :has(), because the divider stays
+            // in the DOM below `md` (just display:none) so :has() always
+            // matches. md:contents keeps the children as flex items at md+.
+            <div className="hidden md:contents">
               <Anchor
                 invocation={journalAndInvocationData}
                 hasLastFailure={Boolean(lastError)}
               />
 
-              <Section
-                id="last-failure-section"
-                className={lastFailureContainer({})}
+              {/* Page-centered (mx-auto, content-width). The notch/stem slide
+                  along the bottom edge to follow the journal divider; the
+                  banner only nudges over (--failure-banner-shift) once the
+                  notch nears an edge, so a wide error shifts rather than
+                  shrinks. */}
+              <div
+                className="relative mx-auto w-fit max-w-full"
+                style={{ left: 'var(--failure-banner-shift, 0px)' }}
               >
-                <ErrorBanner
-                  error={lastError}
-                  className={lastFailureContent({ isFailed })}
-                  isTransient={!isFailed}
+                <Section
+                  id="last-failure-section"
+                  className={lastFailureContainer({})}
+                >
+                  <ErrorBanner
+                    error={lastError}
+                    className={lastFailureContent({ isFailed })}
+                    isTransient={!isFailed}
+                  />
+                </Section>
+                <div
+                  aria-hidden
+                  className={lastFailureNotch({ isFailed })}
+                  style={{
+                    left: 'var(--failure-notch-x, 50%)',
+                    display: 'var(--failure-notch-display, none)',
+                  }}
                 />
-              </Section>
+              </div>
               {Boolean(
                 journalAndInvocationData?.last_failure_related_command_index ??
                 pausedErrorData?.relatedCommandIndex,
               ) && (
-                <div className="-translate-y-2 px-2">
+                <div
+                  className="-translate-y-2 px-2"
+                  style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
+                >
                   <Link
                     variant="icon"
                     className="inline-flex rounded-md px-2 text-xs"
@@ -310,7 +358,7 @@ function Component() {
                   </Link>
                 </div>
               )}
-            </>
+            </div>
           )}
           {error && journalAndInvocationData && (
             <ErrorBanner error={error} className="rounded-xl" />
@@ -318,7 +366,7 @@ function Component() {
         </div>
 
         <ContentPanel
-          className=""
+          className="-mt-20"
           tabs={{
             items: [
               {
@@ -354,7 +402,7 @@ export const invocation = { Component };
 const anchorStyles = tv({
   base: '',
   slots: {
-    line: 'invisible absolute top-3 right-0 left-0 z-10 min-h-9 border-l',
+    line: 'invisible absolute top-0 right-0 left-1/2 z-10 border-l',
     anchor:
       'absolute bottom-0 left-0 z-10 h-2 w-2 -translate-x-1/2 rounded-full border-2 border-white/60',
   },
@@ -381,20 +429,60 @@ function Anchor({
 
   useEffect(() => {
     const element = ref.current;
+    const root =
+      element?.closest<HTMLElement>('[data-failure-anchor-root]') ?? null;
+    // The notch protrudes ~half its rotated diagonal below the callout; start
+    // the stem there so it continues cleanly from the notch tip to the row.
+    const NOTCH_PX = 7;
     const bottomElement = () =>
       document.querySelector('[data-last-failure=true]') ??
       document.querySelector('[data-last-failure-fallback]');
     const topElement = () => document.querySelector('#last-failure-section');
+    const dividerElement = () =>
+      document.querySelector('[data-panel-resize-handle-id]');
     const updateStyles = () => {
       const bottomRect = bottomElement()?.getBoundingClientRect();
       const topRect = topElement()?.getBoundingClientRect();
-      const gap =
-        Number(bottomRect?.top) -
-        Number(topRect?.top) +
-        Number(bottomRect?.height);
-      if (element) {
+      const wrapperRect = element?.parentElement?.getBoundingClientRect();
+      const dividerRect = dividerElement()?.getBoundingClientRect();
+      // The block only mounts when the timeline is shown (shouldShowFailure
+      // gates on showTimeline), so here we just wait for the (lazy) divider to
+      // mount, then anchor to it. Until it's measurable the line stays
+      // `invisible` and the notch `display:none` (their defaults).
+      if (
+        element &&
+        bottomRect &&
+        topRect &&
+        wrapperRect &&
+        dividerRect &&
+        dividerRect.width > 0
+      ) {
+        // Vertical: the stem runs from just below the callout's notch down to
+        // the failing row.
+        const rowCenter = bottomRect.top + bottomRect.height / 2;
+        const top = topRect.bottom - wrapperRect.top + NOTCH_PX;
+        const height = rowCenter - topRect.bottom - NOTCH_PX;
         element.style.visibility = 'visible';
-        element.style.height = gap > 26 ? `${gap - 26}px` : '0px';
+        element.style.top = `${top}px`;
+        element.style.height = height > 0 ? `${height}px` : '0px';
+
+        // Horizontal: the stem sits on the divider. The banner stays
+        // page-centered and the notch/stem slide along its bottom edge; we
+        // only nudge the banner over (--failure-banner-shift) once the notch
+        // comes within `off` of an edge, so a wide error shifts rather than
+        // shrinks. We also publish the stem's x (--failure-anchor-x, for the
+        // "go to related line" link) and the notch's x (--failure-notch-x).
+        const x = dividerRect.left + dividerRect.width / 2 - wrapperRect.left;
+        element.style.left = `${x}px`;
+        root?.style.setProperty('--failure-anchor-x', `${x}px`);
+        const halfW = topRect.width / 2;
+        const off = Math.min(24, halfW);
+        const dx = x - wrapperRect.width / 2;
+        const slack = halfW - off;
+        const shift = dx > slack ? dx - slack : dx < -slack ? dx + slack : 0;
+        root?.style.setProperty('--failure-banner-shift', `${shift}px`);
+        root?.style.setProperty('--failure-notch-x', `${dx + halfW - shift}px`);
+        root?.style.setProperty('--failure-notch-display', 'block');
       }
     };
     const handleVisibilityChange = () => {
@@ -404,11 +492,21 @@ function Anchor({
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('resize', updateStyles);
     updateStyles();
+
+    const resizeObserver = new ResizeObserver(updateStyles);
+    const observePanels = () => {
+      document
+        .querySelectorAll('[data-panel]')
+        .forEach((panel) => resizeObserver.observe(panel));
+    };
+    observePanels();
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
+          observePanels();
           updateStyles();
         }
       }
@@ -421,12 +519,18 @@ function Anchor({
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('resize', updateStyles);
+      resizeObserver.disconnect();
       observer.disconnect();
+      root?.style.removeProperty('--failure-anchor-x');
+      root?.style.removeProperty('--failure-banner-shift');
+      root?.style.removeProperty('--failure-notch-x');
+      root?.style.removeProperty('--failure-notch-display');
     };
   }, [hasLastFailure]);
 
   return (
-    <div className="relative z-40 w-4 -translate-x-full translate-y-4">
+    <div className="pointer-events-none relative z-40 w-full translate-y-4">
       <div ref={ref} className={line()}>
         <div className={anchor()} />
       </div>

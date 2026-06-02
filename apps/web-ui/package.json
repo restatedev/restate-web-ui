@@ -6,11 +6,11 @@
   "scripts": {},
   "type": "module",
   "dependencies": {
-    "@react-router/node": "7.1.0",
+    "@react-router/node": "7.16.0",
     "isbot": "^4.4.0",
     "react": "19.0.0-rc-65903583-20240805",
     "react-dom": "19.0.0-rc-65903583-20240805",
-    "react-router": "7.0.0"
+    "react-router": "7.16.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

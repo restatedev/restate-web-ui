@@ -7,7 +7,6 @@ import {
 import { PropsWithChildren, useRef } from 'react';
 import { tv } from '@restate/util/styles';
 import { panelHref } from '@restate/util/panel';
-import { useSearchParams } from 'react-router';
 
 function TargetTooltipContent({
   service,

@@ -27,6 +27,7 @@ import {
 } from '@restate/ui/content-panel';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toolbar } from './Toolbar';
+import { addQueryToHistory } from './queryHistory';
 
 const QUERY_PARAM = 'query';
 const PAGE_SIZE = 30;
@@ -63,6 +64,12 @@ function Component() {
     },
     [queryCLient, setSearchParams],
   );
+
+  useEffect(() => {
+    if (query && data && !error) {
+      addQueryToHistory(query);
+    }
+  }, [query, data, error]);
 
   const [, startTransition] = useTransition();
   const [pageIndex, _setPageIndex] = useState(0);

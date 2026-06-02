@@ -27,8 +27,8 @@ import {
 import {
   getInvocationsLastQuery,
   matchesAnyInvocationPreset,
-  saveInvocationsLastQuery,
-  setInvocationsRecent,
+  useInvocationsLastQuery,
+  useInvocationsRecent,
 } from '@restate/util/sidebar-nav';
 import { InvocationCell } from './cells';
 import {
@@ -173,6 +173,8 @@ function SampleModeToggle({
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { OnboardingGuide, baseUrl } = useRestateContext();
+  const { saveLastQuery } = useInvocationsLastQuery();
+  const { setRecent } = useInvocationsRecent();
   const {
     selectedColumns,
     setSelectedColumns,
@@ -356,11 +358,11 @@ function Component() {
   }, []);
 
   useEffect(() => {
-    saveInvocationsLastQuery(searchParams);
+    saveLastQuery(searchParams);
     if (!matchesAnyInvocationPreset(searchParams)) {
-      setInvocationsRecent({ type: 'custom', value: searchParams.toString() });
+      setRecent({ type: 'custom', value: searchParams.toString() });
     }
-  }, [searchParams]);
+  }, [searchParams, saveLastQuery, setRecent]);
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -924,7 +926,19 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   // URL with the restored filter_* keys.
   if (params.get('restore') === '1') {
     params.delete('restore');
-    const lastQuery = getInvocationsLastQuery();
+    // `request.url` includes the router basename (e.g. web-ui's `/ui`), which
+    // the RestateContext `baseUrl` that the page scopes its saved query by does
+    // not. Strip the basename (Vite's per-app `BASE_URL`) so the loader reads
+    // the same scope bucket the page wrote to.
+    const basename = (
+      import.meta as ImportMeta & { env: { BASE_URL: string } }
+    ).env.BASE_URL.replace(/\/+$/, '');
+    const path = url.pathname.startsWith(basename)
+      ? url.pathname.slice(basename.length)
+      : url.pathname;
+    const lastQuery = getInvocationsLastQuery(
+      path.replace(/\/invocations$/, ''),
+    );
     if (lastQuery) {
       Array.from(lastQuery.keys())
         .filter((k) => k.startsWith(FILTER_QUERY_PREFIX))
