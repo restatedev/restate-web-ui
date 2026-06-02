@@ -326,7 +326,10 @@ function Component() {
                 journalAndInvocationData?.last_failure_related_command_index ??
                 pausedErrorData?.relatedCommandIndex,
               ) && (
-                <div className="-translate-y-2 px-2">
+                <div
+                  className="-translate-y-2 px-2"
+                  style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
+                >
                   <Link
                     variant="icon"
                     className="inline-flex rounded-md px-2 text-xs"
@@ -451,6 +454,9 @@ function Anchor({
         if (dividerRect && dividerRect.width > 0) {
           const x = dividerRect.left + dividerRect.width / 2 - wrapperRect.left;
           element.style.left = `${x}px`;
+          // Publish the stem's x so the "go to related line" link can sit
+          // beside it and follow the divider too.
+          root?.style.setProperty('--failure-anchor-x', `${x}px`);
           const halfW = topRect.width / 2;
           const off = Math.min(24, halfW);
           const dx = x - wrapperRect.width / 2;
@@ -463,6 +469,7 @@ function Anchor({
           );
         } else {
           element.style.left = '';
+          root?.style.removeProperty('--failure-anchor-x');
           root?.style.removeProperty('--failure-banner-shift');
           root?.style.removeProperty('--failure-notch-x');
         }
@@ -505,6 +512,7 @@ function Anchor({
       window.removeEventListener('resize', updateStyles);
       resizeObserver.disconnect();
       observer.disconnect();
+      root?.style.removeProperty('--failure-anchor-x');
       root?.style.removeProperty('--failure-banner-shift');
       root?.style.removeProperty('--failure-notch-x');
     };
