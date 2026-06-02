@@ -29,7 +29,7 @@ import { RestateError } from '@restate/util/errors';
 import { setInvocationsRecent } from '@restate/util/sidebar-nav';
 
 const metadataContainerStyles = tv({
-  base: 'mt-6 mb-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
+  base: 'mt-6 mb-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl md:mb-0 [&:has(*)]:grid',
   variants: {
     isVirtualObject: {
       true: '',
@@ -238,15 +238,19 @@ function Component() {
           )}
           {journalAndInvocationData && (
             <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
-              <Status invocation={journalAndInvocationData} className="" />
+              <Status
+                invocation={journalAndInvocationData}
+                className=""
+                mini="md"
+              />
             </div>
           )}
           <div className="ml-auto shrink-0">
             <Actions
               invocation={journalAndInvocationData}
-              mini={false}
+              mini="md"
               className="rounded-l-lg text-[0.9375rem]"
-              splitClassName="rounded-r-lg"
+              splitClassName="rounded-lg md:rounded-l-none"
             />
           </div>
         </div>

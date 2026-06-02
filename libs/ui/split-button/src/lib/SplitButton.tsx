@@ -16,6 +16,9 @@ const menuTriggerStyles = tv({
     mini: {
       false: 'rounded-l-none',
       true: '',
+      // Responsive: rounding is driven by splitClassName (full at md+,
+      // standalone chevron below md).
+      md: '',
     },
     variant: {
       primary: 'text-white/90',
@@ -38,6 +41,9 @@ const styles = tv({
         primary: 'primary contents',
       },
       false: { base: '', primary: 'contents' },
+      // Responsive: behaves like the full button; the primary is hidden below
+      // md by mainButtonStyles' own `md` variant, leaving just the chevron.
+      md: { base: '', primary: 'contents' },
     },
   },
 });
@@ -51,7 +57,7 @@ export function SplitButton({
   variant = 'secondary',
   splitClassName,
 }: PropsWithChildren<{
-  mini?: boolean;
+  mini?: boolean | 'md';
   className?: string;
   menus: ReactNode;
   onSelect?: (key: string) => void;

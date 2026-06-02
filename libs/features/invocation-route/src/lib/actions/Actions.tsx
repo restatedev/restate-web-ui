@@ -145,6 +145,9 @@ const mainButtonStyles = tv({
     mini: {
       true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
       false: '',
+      // Responsive: hide the primary button below md so only the chevron
+      // (dropdown) shows; full split button at md+.
+      md: 'max-md:hidden',
     },
     destructive: {
       true: 'text-red-500',
@@ -178,7 +181,7 @@ export function Actions({
   splitClassName,
 }: {
   invocation?: Invocation;
-  mini?: boolean;
+  mini?: boolean | 'md';
   className?: string;
   splitClassName?: string;
 }) {

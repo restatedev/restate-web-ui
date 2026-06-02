@@ -89,7 +89,27 @@ const styles = tv({
       true: 'py-0.5 pr-0.5',
       false: '',
     },
+    // The chip variants above tighten the right padding (pr-0.5) to seat the
+    // chip. When the chips are hidden (mini="md", below md) that leaves the
+    // pill lopsided, so restore symmetric right padding there.
+    mini: {
+      true: '',
+      false: '',
+      md: 'max-md:pr-2',
+    },
   },
+});
+
+// Secondary status detail (error chip, awaiting-on, duration). `mini="md"`
+// collapses it below `md` only — shown again at md+ — for tight layouts like
+// the invocation header; the default keeps it always visible so other Status
+// usages are unchanged.
+const secondaryStyles = tv({
+  base: '',
+  variants: {
+    mini: { true: 'hidden', false: 'contents', md: 'hidden md:contents' },
+  },
+  defaultVariants: { mini: false },
 });
 
 const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
@@ -109,9 +129,11 @@ const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
 export function Status({
   invocation,
   className,
+  mini = false,
 }: {
   invocation: Invocation;
   className?: string;
+  mini?: boolean | 'md';
 }) {
   const { status } = invocation;
   const isPaused = status === 'paused';
@@ -142,6 +164,7 @@ export function Status({
           isRetrying: Boolean(invocation.isRetrying),
           hasPausedError,
           variant,
+          mini,
           hasAwaitingOn: Boolean(
             invocation?.last_awaiting_on_future_json ||
             invocation?.suspended_waiting_future_json,
@@ -151,42 +174,50 @@ export function Status({
         <Ellipsis visible={status === 'running'}>
           {STATUS_LABEL[status]}
         </Ellipsis>
-        {(status === 'failed' || invocation.isRetrying) && (
-          <LastError
-            isRetrying={Boolean(invocation.isRetrying)}
-            isFailed={status === 'failed'}
-            error={error}
-            attemptCount={invocation.retry_count}
-          />
-        )}
-        {hasPausedError && (
-          <LastError
-            isRetrying
-            isFailed={false}
-            error={pausedError}
-            popoverTitle="Paused after"
-            label="after…"
-          />
-        )}
-        {status === 'running' && (
-          <AwaitingOn
-            future={invocation.last_awaiting_on_future_json}
-            invocationId={invocation.id}
-            state="running"
-            isPending
-            className=""
-          />
-        )}
-        {status === 'suspended' && (
-          <AwaitingOn
-            future={invocation.suspended_waiting_future_json}
-            invocationId={invocation.id}
-            state="suspended"
-            isPending
-          />
-        )}
+        {/* Secondary detail (error chip, awaiting-on, duration) — hidden
+            below `md` so the status stays a single compact pill where space
+            is tight (e.g. the invocation header). md:contents keeps these as
+            inline children of the badge at md+. */}
+        <span className={secondaryStyles({ mini })}>
+          {(status === 'failed' || invocation.isRetrying) && (
+            <LastError
+              isRetrying={Boolean(invocation.isRetrying)}
+              isFailed={status === 'failed'}
+              error={error}
+              attemptCount={invocation.retry_count}
+            />
+          )}
+          {hasPausedError && (
+            <LastError
+              isRetrying
+              isFailed={false}
+              error={pausedError}
+              popoverTitle="Paused after"
+              label="after…"
+            />
+          )}
+          {status === 'running' && (
+            <AwaitingOn
+              future={invocation.last_awaiting_on_future_json}
+              invocationId={invocation.id}
+              state="running"
+              isPending
+              className=""
+            />
+          )}
+          {status === 'suspended' && (
+            <AwaitingOn
+              future={invocation.suspended_waiting_future_json}
+              invocationId={invocation.id}
+              state="suspended"
+              isPending
+            />
+          )}
+        </span>
       </Badge>
-      <StatusTimeline invocation={invocation} />
+      <span className={secondaryStyles({ mini })}>
+        <StatusTimeline invocation={invocation} />
+      </span>
     </div>
   );
 }
