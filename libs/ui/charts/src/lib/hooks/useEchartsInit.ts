@@ -5,6 +5,7 @@ import { ensureEchartsRegistered } from '../echartsSetup';
 export function useEchartsInit(
   container: RefObject<HTMLDivElement | null>,
   theme?: 'light' | 'dark',
+  renderer: 'canvas' | 'svg' = 'svg',
 ) {
   const chartRef = useRef<EChartsType | null>(null);
 
@@ -16,7 +17,7 @@ export function useEchartsInit(
     const inst = init(
       container.current,
       theme === 'dark' ? 'dark' : undefined,
-      { renderer: 'canvas' },
+      { renderer },
     );
     chartRef.current = inst;
 
@@ -28,7 +29,7 @@ export function useEchartsInit(
       inst.dispose();
       chartRef.current = null;
     };
-  }, [container, theme]);
+  }, [container, theme, renderer]);
 
   return chartRef;
 }

@@ -20,6 +20,7 @@ export function Chart<T extends object>({
   className,
   theme = 'light',
   timeZone = 'system',
+  renderer,
   children,
   ref,
 }: ChartProps<T>) {
@@ -81,7 +82,7 @@ export function Chart<T extends object>({
     parsed.legend,
   ]);
 
-  const chartRef = useEchartsInit(containerRef, theme);
+  const chartRef = useEchartsInit(containerRef, theme, renderer);
   echartsInstanceRef.current = chartRef.current;
   useApplyOption(chartRef, option);
 

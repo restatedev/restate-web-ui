@@ -91,7 +91,13 @@ export function StatusArcEcharts({
 
   return (
     <div className={chartContainerStyles({ isLoading })}>
-      <Chart ref={chartRef} width="100%" height="100%" theme="light">
+      <Chart
+        ref={chartRef}
+        width="100%"
+        height="100%"
+        theme="light"
+        renderer="canvas"
+      >
         <Tooltip trigger="item" formatValue={(v) => formatNumber(v)} />
         <Pie
           radius={['81%', '92%']}

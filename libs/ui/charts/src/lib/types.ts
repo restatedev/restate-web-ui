@@ -134,6 +134,7 @@ export type ChartProps<T extends object> = {
   className?: string;
   theme?: 'light' | 'dark';
   timeZone?: 'system' | 'UTC';
+  renderer?: 'canvas' | 'svg';
   children: ReactNode;
   ref?: Ref<ChartHandle>;
 };
