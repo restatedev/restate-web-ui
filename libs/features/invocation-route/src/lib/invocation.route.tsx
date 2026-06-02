@@ -29,7 +29,7 @@ import { RestateError } from '@restate/util/errors';
 import { setInvocationsRecent } from '@restate/util/sidebar-nav';
 
 const metadataContainerStyles = tv({
-  base: 'mt-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
+  base: 'mt-6 mb-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl [&:has(*)]:grid',
   variants: {
     isVirtualObject: {
       true: '',
@@ -198,7 +198,7 @@ function Component() {
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-        <div className="@container flex items-center gap-1.5 px-5 text-sm text-gray-500">
+        <div className="@container mt-8 flex items-center gap-1.5 px-5 text-sm text-gray-500 md:mt-0">
           <Link
             className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
             variant="secondary"
@@ -233,7 +233,7 @@ function Component() {
           {journalAndInvocationData?.target && (
             <Target
               target={journalAndInvocationData.target}
-              className="max-w-fit min-w-0 shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity"
+              className="max-w-fit shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity md:min-w-0"
             />
           )}
           {journalAndInvocationData && (
@@ -291,7 +291,12 @@ function Component() {
             />
           </div>
           {shouldShowFailure && !error && (
-            <>
+            // No timeline below `md` (the journal panel/divider are
+            // display:none there) → nothing to anchor to, so hide the whole
+            // block. A CSS media query, not :has(), because the divider stays
+            // in the DOM below `md` (just display:none) so :has() always
+            // matches. md:contents keeps the children as flex items at md+.
+            <div className="hidden md:contents">
               <Anchor
                 invocation={journalAndInvocationData}
                 hasLastFailure={Boolean(lastError)}
@@ -319,7 +324,10 @@ function Component() {
                 <div
                   aria-hidden
                   className={lastFailureNotch({ isFailed })}
-                  style={{ left: 'var(--failure-notch-x, 50%)' }}
+                  style={{
+                    left: 'var(--failure-notch-x, 50%)',
+                    display: 'var(--failure-notch-display, none)',
+                  }}
                 />
               </div>
               {Boolean(
@@ -346,7 +354,7 @@ function Component() {
                   </Link>
                 </div>
               )}
-            </>
+            </div>
           )}
           {error && journalAndInvocationData && (
             <ErrorBanner error={error} className="rounded-xl" />
@@ -432,7 +440,19 @@ function Anchor({
       const bottomRect = bottomElement()?.getBoundingClientRect();
       const topRect = topElement()?.getBoundingClientRect();
       const wrapperRect = element?.parentElement?.getBoundingClientRect();
-      if (element && bottomRect && topRect && wrapperRect) {
+      const dividerRect = dividerElement()?.getBoundingClientRect();
+      // The block only mounts when the timeline is shown (shouldShowFailure
+      // gates on showTimeline), so here we just wait for the (lazy) divider to
+      // mount, then anchor to it. Until it's measurable the line stays
+      // `invisible` and the notch `display:none` (their defaults).
+      if (
+        element &&
+        bottomRect &&
+        topRect &&
+        wrapperRect &&
+        dividerRect &&
+        dividerRect.width > 0
+      ) {
         // Vertical: the stem runs from just below the callout's notch down to
         // the failing row.
         const rowCenter = bottomRect.top + bottomRect.height / 2;
@@ -442,37 +462,23 @@ function Anchor({
         element.style.top = `${top}px`;
         element.style.height = height > 0 ? `${height}px` : '0px';
 
-        // Horizontal: the stem sits on the journal divider (the resize
-        // handle). The banner stays page-centered and the notch/stem slide
-        // along its bottom edge; we only nudge the banner over
-        // (--failure-banner-shift) once the notch comes within `off` of an
-        // edge — so a wide error never shrinks, it just shifts when needed.
-        // The notch's x within the banner is published as --failure-notch-x.
-        // Below `md` the handle is hidden, so we fall back to page-center
-        // (the CSS left-1/2 + the var defaults).
-        const dividerRect = dividerElement()?.getBoundingClientRect();
-        if (dividerRect && dividerRect.width > 0) {
-          const x = dividerRect.left + dividerRect.width / 2 - wrapperRect.left;
-          element.style.left = `${x}px`;
-          // Publish the stem's x so the "go to related line" link can sit
-          // beside it and follow the divider too.
-          root?.style.setProperty('--failure-anchor-x', `${x}px`);
-          const halfW = topRect.width / 2;
-          const off = Math.min(24, halfW);
-          const dx = x - wrapperRect.width / 2;
-          const slack = halfW - off;
-          const shift = dx > slack ? dx - slack : dx < -slack ? dx + slack : 0;
-          root?.style.setProperty('--failure-banner-shift', `${shift}px`);
-          root?.style.setProperty(
-            '--failure-notch-x',
-            `${dx + halfW - shift}px`,
-          );
-        } else {
-          element.style.left = '';
-          root?.style.removeProperty('--failure-anchor-x');
-          root?.style.removeProperty('--failure-banner-shift');
-          root?.style.removeProperty('--failure-notch-x');
-        }
+        // Horizontal: the stem sits on the divider. The banner stays
+        // page-centered and the notch/stem slide along its bottom edge; we
+        // only nudge the banner over (--failure-banner-shift) once the notch
+        // comes within `off` of an edge, so a wide error shifts rather than
+        // shrinks. We also publish the stem's x (--failure-anchor-x, for the
+        // "go to related line" link) and the notch's x (--failure-notch-x).
+        const x = dividerRect.left + dividerRect.width / 2 - wrapperRect.left;
+        element.style.left = `${x}px`;
+        root?.style.setProperty('--failure-anchor-x', `${x}px`);
+        const halfW = topRect.width / 2;
+        const off = Math.min(24, halfW);
+        const dx = x - wrapperRect.width / 2;
+        const slack = halfW - off;
+        const shift = dx > slack ? dx - slack : dx < -slack ? dx + slack : 0;
+        root?.style.setProperty('--failure-banner-shift', `${shift}px`);
+        root?.style.setProperty('--failure-notch-x', `${dx + halfW - shift}px`);
+        root?.style.setProperty('--failure-notch-display', 'block');
       }
     };
     const handleVisibilityChange = () => {
@@ -515,6 +521,7 @@ function Anchor({
       root?.style.removeProperty('--failure-anchor-x');
       root?.style.removeProperty('--failure-banner-shift');
       root?.style.removeProperty('--failure-notch-x');
+      root?.style.removeProperty('--failure-notch-display');
     };
   }, [hasLastFailure]);
 
