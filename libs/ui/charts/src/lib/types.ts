@@ -31,8 +31,10 @@ export type AxisConfig<T extends object> = {
 export interface XAxisConfig<T extends object> extends AxisConfig<T> {
   position?: 'top' | 'bottom';
 }
-export interface YAxisConfig<T extends object>
-  extends Omit<AxisConfig<T>, 'dataKey'> {
+export interface YAxisConfig<T extends object> extends Omit<
+  AxisConfig<T>,
+  'dataKey'
+> {
   position?: 'left' | 'right';
   dataKey?: Exclude<keyof T, number | symbol>;
 }
