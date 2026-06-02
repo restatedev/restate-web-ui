@@ -926,8 +926,18 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   // URL with the restored filter_* keys.
   if (params.get('restore') === '1') {
     params.delete('restore');
+    // `request.url` includes the router basename (e.g. web-ui's `/ui`), which
+    // the RestateContext `baseUrl` that the page scopes its saved query by does
+    // not. Strip the basename (Vite's per-app `BASE_URL`) so the loader reads
+    // the same scope bucket the page wrote to.
+    const basename = (
+      import.meta as ImportMeta & { env: { BASE_URL: string } }
+    ).env.BASE_URL.replace(/\/+$/, '');
+    const path = url.pathname.startsWith(basename)
+      ? url.pathname.slice(basename.length)
+      : url.pathname;
     const lastQuery = getInvocationsLastQuery(
-      url.pathname.replace(/\/invocations$/, ''),
+      path.replace(/\/invocations$/, ''),
     );
     if (lastQuery) {
       Array.from(lastQuery.keys())
