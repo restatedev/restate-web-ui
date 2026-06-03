@@ -551,38 +551,6 @@ export const TABLES = [
     ],
   },
   {
-    name: 'sys_idempotency',
-    description: 'Table to inspect idempotency keys',
-    columns: [
-      {
-        name: 'partition_key',
-        description:
-          'Internal column that is used for partitioning the services invocations. Can be ignored.',
-      },
-      {
-        name: 'service_name',
-        description: 'The name of the invoked service.',
-      },
-      {
-        name: 'service_key',
-        description:
-          'The key of the virtual object or the workflow ID. Null for regular services.',
-      },
-      {
-        name: 'service_handler',
-        description: 'The invoked handler.',
-      },
-      {
-        name: 'idempotency_key',
-        description: 'The user provided idempotency key.',
-      },
-      {
-        name: 'invocation_id',
-        description: 'Invocation ID',
-      },
-    ],
-  },
-  {
     name: 'sys_promise',
     description: 'Table to inspect the status of a promises',
     columns: [

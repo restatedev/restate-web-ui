@@ -399,6 +399,13 @@ export function SQLEditor({
     setQuery,
   ]);
 
+  useEffect(() => {
+    return () => {
+      editorRef.current?.dispose();
+      editorRef.current = null;
+    };
+  }, [editorRef]);
+
   const focusEditor = useCallback(() => {
     editorRef.current?.focus();
     const model = editorRef.current?.getModel();
