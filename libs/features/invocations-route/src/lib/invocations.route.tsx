@@ -58,6 +58,8 @@ import {
   ContentPanelSection,
   ContentPanelToolbar,
 } from '@restate/ui/content-panel';
+import { EmptyState } from '@restate/ui/empty-state';
+import { ErrorBanner } from '@restate/ui/error';
 import { AddQueryTrigger, QueryBuilder } from '@restate/ui/query-builder';
 import { ClauseChip, FiltersTrigger } from './Filters';
 import {
@@ -244,6 +246,9 @@ function Component() {
     out.delete('filter_status');
     return `${baseUrl}/invocations?${out.toString()}`;
   }, [searchParams, baseUrl]);
+  const hasActiveFilters = Array.from(searchParams.keys()).some((key) =>
+    key.startsWith(FILTER_QUERY_PREFIX),
+  );
 
   const {
     dataUpdatedAt,
@@ -624,22 +629,32 @@ function Component() {
                   }
                 }}
                 bodyKey={hash}
-                bodyDependencies={[selectedColumns, pageIndex]}
+                bodyDependencies={[selectedColumns, pageIndex, error]}
                 isLoading={isFetching}
-                error={error}
                 numOfRows={currentPageItems.length || 5}
                 emptyPlaceholder={
-                  <div className="flex flex-col items-center gap-4 py-14">
-                    <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                      <Icon
-                        name={IconName.Invocation}
-                        className="h-full w-full p-1 text-zinc-400"
+                  error ? (
+                    <EmptyState
+                      icon={IconName.TriangleAlert}
+                      intent="danger"
+                      title="Couldn’t load invocations"
+                    >
+                      <ErrorBanner
+                        error={error}
+                        className="w-full rounded-xl text-left"
                       />
-                    </div>
-                    <h3 className="text-sm font-semibold text-zinc-400">
-                      No invocations found
-                    </h3>
-                  </div>
+                    </EmptyState>
+                  ) : (
+                    <EmptyState
+                      icon={IconName.Invocation}
+                      title="No invocations found"
+                      description={
+                        hasActiveFilters
+                          ? 'No invocations match the current filters. Try adjusting or clearing them.'
+                          : 'Invocations will appear here as your services handle requests.'
+                      }
+                    />
+                  )
                 }
                 rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
                 renderCell={(row, { id }) => (

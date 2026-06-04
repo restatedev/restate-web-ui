@@ -21,11 +21,16 @@ import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ContentPanel, ContentPanelBody } from '@restate/ui/content-panel';
+import { EmptyState } from '@restate/ui/empty-state';
 import {
   Invocation,
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
-import { RestateError } from '@restate/util/errors';
+import {
+  ERROR_CODES,
+  RestateError,
+  UI_ERROR_CODES,
+} from '@restate/util/errors';
 import { useInvocationsRecent } from '@restate/util/sidebar-nav';
 
 const metadataContainerStyles = tv({
@@ -195,33 +200,26 @@ function Component() {
     return `${baseUrl}/invocations?${out.toString()}`;
   }, [baseUrl, searchParams]);
 
+  const hasUnavailableError = Boolean(error) && !journalAndInvocationData;
+  if (hasUnavailableError) {
+    return (
+      <InvocationPageProvider isInInvocationPage>
+        <div className="flex min-h-0 flex-1 flex-col pt-4">
+          <InvocationBreadcrumb id={id} backHref={invocationsBackHref} />
+          <InvocationUnavailable
+            id={id}
+            error={error as Error}
+            backHref={invocationsBackHref}
+          />
+        </div>
+      </InvocationPageProvider>
+    );
+  }
+
   return (
     <InvocationPageProvider isInInvocationPage>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-        <div className="@container mt-8 flex items-center gap-1.5 px-5 text-sm text-gray-500 md:mt-0">
-          <Link
-            className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
-            variant="secondary"
-            href={invocationsBackHref}
-          >
-            <Icon name={IconName.ArrowLeft} className="h-4 w-4" />
-            Invocations
-          </Link>
-          <span className="text-gray-300">/</span>
-          <h1 className="flex min-w-0 items-center gap-1.5 truncate py-0.5 font-mono text-sm font-normal text-gray-600">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-xs">
-              <Icon
-                name={IconName.Invocation}
-                className="h-4 w-4 fill-blue-50 text-blue-500"
-              />
-            </span>
-            <span className="min-w-0 truncate">{id}</span>
-            <Copy
-              copyText={String(id)}
-              className="ml-0 shrink-0 rounded-md p-1 [&_svg]:h-3 [&_svg]:w-3"
-            />
-          </h1>
-        </div>
+        <InvocationBreadcrumb id={id} backHref={invocationsBackHref} />
         {/* Sticky floating header: target + status stay visible while the
             page scrolls. Status-tinted gradient telegraphs invocation state
             without coloring the whole card. */}
@@ -398,6 +396,91 @@ function Component() {
   );
 }
 export const invocation = { Component };
+
+function InvocationBreadcrumb({
+  id,
+  backHref,
+}: {
+  id?: string;
+  backHref: string;
+}) {
+  return (
+    <div className="@container mt-8 flex items-center gap-1.5 px-5 text-sm text-gray-500 md:mt-0">
+      <Link
+        className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
+        variant="secondary"
+        href={backHref}
+      >
+        <Icon name={IconName.ArrowLeft} className="h-4 w-4" />
+        Invocations
+      </Link>
+      <span className="text-gray-300">/</span>
+      <h1 className="flex min-w-0 items-center gap-1.5 truncate py-0.5 font-mono text-sm font-normal text-gray-600">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-xs">
+          <Icon
+            name={IconName.Invocation}
+            className="h-4 w-4 fill-blue-50 text-blue-500"
+          />
+        </span>
+        <span className="min-w-0 truncate">{id}</span>
+        <Copy
+          copyText={String(id)}
+          className="ml-0 shrink-0 rounded-md p-1 [&_svg]:h-3 [&_svg]:w-3"
+        />
+      </h1>
+    </div>
+  );
+}
+
+function InvocationUnavailable({
+  id,
+  error,
+  backHref,
+}: {
+  id?: string;
+  error: Error;
+  backHref: string;
+}) {
+  const code = error instanceof RestateError ? error.restate_code : undefined;
+  const isNotFound = code === UI_ERROR_CODES.invocationNotFound;
+  const entry = code ? ERROR_CODES[code] : undefined;
+  const heading = entry?.summary ?? 'This invocation could not be loaded';
+  const help = entry?.help;
+
+  return (
+    <EmptyState
+      icon={isNotFound ? IconName.ScanSearch : IconName.TriangleAlert}
+      intent={isNotFound ? 'neutral' : 'danger'}
+      title={heading}
+      description={help}
+    >
+      {id && (
+        <div className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-gray-200 bg-white py-1 pr-1 pl-2.5 font-mono text-xs text-gray-600 shadow-xs">
+          <Icon
+            name={IconName.Invocation}
+            className="h-3.5 w-3.5 shrink-0 fill-blue-50 text-blue-500"
+          />
+          <span className="min-w-0 truncate">{id}</span>
+          <Copy
+            copyText={String(id)}
+            className="shrink-0 rounded-md p-1 [&_svg]:h-3 [&_svg]:w-3"
+          />
+        </div>
+      )}
+      {!isNotFound && (
+        <ErrorBanner error={error} className="w-full rounded-xl text-left" />
+      )}
+      <Link
+        href={backHref}
+        variant="button"
+        className="inline-flex items-center gap-1.5"
+      >
+        <Icon name={IconName.ArrowLeft} className="h-4 w-4" />
+        Back to invocations
+      </Link>
+    </EmptyState>
+  );
+}
 
 const anchorStyles = tv({
   base: '',

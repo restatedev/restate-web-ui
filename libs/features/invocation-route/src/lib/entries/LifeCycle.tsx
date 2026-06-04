@@ -1,6 +1,10 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { EntryProps } from './types';
-import { ENTRY_EVENTS_ENTRY_LABELS } from '../EntryTooltip';
+import { EntryProps, EventEntryType } from './types';
+import {
+  ENTRY_EVENTS_ENTRY_LABELS,
+  ENTRY_EVENTS_TITLES,
+} from '../EntryTooltip';
+import { RelativeTime } from './RelativeTime';
 import { Badge } from '@restate/ui/badge';
 import { Failure } from '../Failure';
 import { Button } from '@restate/ui/button';
@@ -22,6 +26,24 @@ import { tv } from '@restate/util/styles';
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
 >['data'];
+
+// Per-row config for the subtle relative time. `connector` is the leading word
+// when the label doesn't already supply one (e.g. "Running" → "since"); Created
+// ("Created at"), Killed ("Killed at") and Retrying ("Next retry") read fine
+// without one. `useEnd` surfaces the entry's end instead of start — Scheduled
+// shows the run time so a pending schedule reads "in <duration>".
+const LIFECYCLE_TIME: Partial<
+  Record<EventEntryType, { connector?: string; useEnd?: boolean }>
+> = {
+  Created: {},
+  Running: { connector: 'since' },
+  Pending: { connector: 'since' },
+  Scheduled: { useEnd: true },
+  Suspended: { connector: 'at' },
+  Paused: { connector: 'at' },
+  Retrying: {},
+  Killed: {},
+};
 
 export function LifeCycle({
   entry,
@@ -119,6 +141,11 @@ export function LifeCycle({
             />
           </Badge>
         )}
+        <RelativeTime
+          date={entry.start}
+          tooltipTitle={ENTRY_EVENTS_TITLES['Paused']}
+          connector={hasError ? undefined : 'at'}
+        />
       </div>
     );
   }
@@ -129,11 +156,19 @@ export function LifeCycle({
   const awaitingOn = supportsAwaitingOn ? entry.awaitingOn : undefined;
   const awaitingState = entry.type === 'Suspended' ? 'suspended' : 'running';
 
+  const timeConfig = LIFECYCLE_TIME[entry.type as EventEntryType] ?? {};
+  const date = timeConfig.useEnd ? entry.end : entry.start;
+
   return (
     <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
       <span className="shrink-0">
         {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
       </span>
+      <RelativeTime
+        date={date}
+        tooltipTitle={ENTRY_EVENTS_TITLES[entry.type as EventEntryType]}
+        connector={timeConfig.connector}
+      />
       {invocation?.id && (
         <AwaitingOn
           future={awaitingOn}
@@ -207,6 +242,10 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
       ) : (
         <span className="shrink-0">{ENTRY_EVENTS_ENTRY_LABELS['Created']}</span>
       )}
+      <RelativeTime
+        date={invocation.created_at}
+        tooltipTitle={ENTRY_EVENTS_TITLES['Created']}
+      />
     </div>
   );
 }

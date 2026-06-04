@@ -2,7 +2,7 @@ import {
   useListDeployments,
   useListServices,
 } from '@restate/data-access/admin-api-hooks';
-import { Icon, IconName } from '@restate/ui/icons';
+import { IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { Cell, PanelTable, PanelTableColumn } from '@restate/ui/table';
 import {
@@ -10,6 +10,7 @@ import {
   ContentPanelBody,
   ContentPanelSection,
 } from '@restate/ui/content-panel';
+import { EmptyState } from '@restate/ui/empty-state';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -77,13 +78,11 @@ function Component() {
 
   if (!isPending && !defaultService) {
     return (
-      <div className="mx-6 my-6 flex flex-auto flex-col items-center justify-center rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ring-1 ring-white/80">
-        <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
-          <Icon name={IconName.Database} className="h-8 w-8 text-gray-500" />
-          <h3 className="text-sm font-semibold text-gray-600">
-            No Virtual Object or Workflow
-          </h3>
-          <p className="max-w-md px-4 text-sm text-gray-500">
+      <EmptyState
+        icon={IconName.Database}
+        title="No Virtual Object or Workflow"
+        description={
+          <>
             <Link
               href="https://docs.restate.dev/foundations/services#virtual-object"
               variant="secondary"
@@ -93,9 +92,9 @@ function Component() {
               Learn more
             </Link>{' '}
             how you can use State in Restate.
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
     );
   }
 

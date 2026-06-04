@@ -6,5 +6,6 @@ export function useProgress(progressStore: ProgressStore<ProgressState>) {
   return useSyncExternalStore(
     progressStore.subscribe,
     progressStore.getSnapshot,
+    progressStore.getServerSnapshot,
   );
 }

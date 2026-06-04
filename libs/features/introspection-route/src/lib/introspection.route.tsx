@@ -25,6 +25,8 @@ import {
   ContentPanelBody,
   ContentPanelSection,
 } from '@restate/ui/content-panel';
+import { EmptyState } from '@restate/ui/empty-state';
+import { ErrorBanner } from '@restate/ui/error';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toolbar } from './Toolbar';
 import { addQueryToHistory } from './queryHistory';
@@ -149,46 +151,47 @@ function Component() {
               aria-label="Introspection SQL"
               columns={panelColumns}
               items={panelItems}
-              bodyDependencies={[allColumns, pageIndex]}
+              bodyDependencies={[allColumns, pageIndex, error]}
               isLoading={isPending && !!query}
-              error={error}
               emptyPlaceholder={
-                query ? (
-                  <div className="flex flex-col items-center gap-4 py-14">
-                    <div className="mr-1.5 h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                      <Icon
-                        name={IconName.ScanSearch}
-                        className="h-full w-full p-1 text-zinc-400"
-                      />
-                    </div>
-                    <h3 className="text-sm font-semibold text-zinc-400">
-                      No results found
-                    </h3>
-                  </div>
-                ) : (
-                  <div className="relative my-12 flex w-full flex-col items-center gap-2 text-center">
-                    <Icon
-                      name={IconName.ScanSearch}
-                      className="h-8 w-8 text-gray-500"
+                error ? (
+                  <EmptyState
+                    icon={IconName.TriangleAlert}
+                    intent="danger"
+                    title="Couldn’t run query"
+                  >
+                    <ErrorBanner
+                      error={error}
+                      className="w-full rounded-xl text-left"
                     />
-                    <h3 className="text-sm font-semibold text-gray-600">
-                      Introspection SQL
-                    </h3>
-                    <p className="max-w-lg px-4 text-sm text-gray-500">
-                      Restate exposes information on invocations and application
-                      state via Introspection SQL. You can use this to gain
-                      insight into the status of invocations and the service
-                      state that is stored.{' '}
-                      <Link
-                        href="https://docs.restate.dev/references/sql-introspection"
-                        variant="secondary"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Learn more
-                      </Link>
-                    </p>
-                  </div>
+                  </EmptyState>
+                ) : query ? (
+                  <EmptyState
+                    icon={IconName.ScanSearch}
+                    title="No results found"
+                    description="Your query ran successfully but returned no rows."
+                  />
+                ) : (
+                  <EmptyState
+                    icon={IconName.ScanSearch}
+                    title="Introspection SQL"
+                    description={
+                      <>
+                        Restate exposes information on invocations and
+                        application state via Introspection SQL. You can use
+                        this to gain insight into the status of invocations and
+                        the service state that is stored.{' '}
+                        <Link
+                          href="https://docs.restate.dev/references/sql-introspection"
+                          variant="secondary"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Learn more
+                        </Link>
+                      </>
+                    }
+                  />
                 )
               }
               rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"

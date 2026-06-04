@@ -1,0 +1,9 @@
+{
+  "name": "empty-state",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/empty-state/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project empty-state --web",
+  "targets": {}
+}

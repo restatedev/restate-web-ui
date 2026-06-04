@@ -13,6 +13,8 @@ import {
   ContentPanelBody,
   ContentPanelSection,
 } from '@restate/ui/content-panel';
+import { EmptyState } from '@restate/ui/empty-state';
+import { ErrorBanner } from '@restate/ui/error';
 import { SortDescriptor } from 'react-stately';
 import {
   Dropdown,
@@ -455,6 +457,11 @@ function Component() {
     [flattenedData],
   );
 
+  const stateError = error || listObjects.error;
+  const hasActiveFilters = Array.from(searchParams.keys()).some(
+    (key) => key.startsWith('filter_') || key.startsWith('sysFilter_'),
+  );
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <ContentPanel>
@@ -486,25 +493,37 @@ function Component() {
                 );
               }}
               numOfRows={currentPageItems.length || 5}
-              bodyDependencies={[selectedColumnsArray, pageIndex]}
-              error={error || listObjects.error}
+              bodyDependencies={[selectedColumnsArray, pageIndex, stateError]}
               isLoading={
                 isFetching ||
                 isValidating ||
                 (listObjects.isFetching && currentPageItems.length !== 0)
               }
               emptyPlaceholder={
-                <div className="flex flex-col items-center gap-4 py-14">
-                  <div className="h-12 w-12 shrink-0 rounded-xl bg-gray-200/50 p-1">
-                    <Icon
-                      name={IconName.Database}
-                      className="h-full w-full p-1 text-zinc-400"
+                stateError ? (
+                  <EmptyState
+                    icon={IconName.TriangleAlert}
+                    intent="danger"
+                    title="Couldn’t load state"
+                  >
+                    <ErrorBanner
+                      error={stateError}
+                      className="w-full rounded-xl text-left"
                     />
-                  </div>
-                  <h3 className="text-sm font-semibold text-zinc-400">
-                    No instances found
-                  </h3>
-                </div>
+                  </EmptyState>
+                ) : (
+                  <EmptyState
+                    icon={IconName.Database}
+                    title="No state found"
+                    description={
+                      hasActiveFilters
+                        ? 'No state matches the current filters. Try adjusting or clearing them.'
+                        : isWorkflow
+                          ? 'State stored by this Workflow will appear here.'
+                          : 'State stored by this Virtual Object will appear here.'
+                    }
+                  />
+                )
               }
               rowClassName="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
               rowDependencies={[panelColumns]}
