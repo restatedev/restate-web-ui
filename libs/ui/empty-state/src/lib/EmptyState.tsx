@@ -32,7 +32,7 @@ const styles = tv({
     intent: {
       neutral: {
         badge: 'border-gray-200 bg-white',
-        icon: 'fill-zinc-100 text-zinc-400',
+        icon: 'text-zinc-400',
       },
       danger: {
         badge: 'border-red-200 bg-red-50/40',
