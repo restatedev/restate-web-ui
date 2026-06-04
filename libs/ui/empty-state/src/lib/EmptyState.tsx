@@ -22,8 +22,8 @@ const styles = tv({
     base: 'flex min-h-0 w-full flex-1 flex-col items-center justify-center px-5 py-12',
     content: 'flex w-full max-w-md flex-col items-center text-center',
     badge:
-      'flex h-14 w-14 items-center justify-center rounded-2xl border shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)]',
-    icon: 'h-7 w-7',
+      'flex h-14 w-14 items-center justify-center rounded-2xl border shadow-xs',
+    icon: 'h-7 w-7 drop-shadow-md',
     title: 'text-base font-semibold text-zinc-800',
     description: 'mt-2 text-sm leading-relaxed text-zinc-500',
     actions: 'mt-6 flex w-full flex-col items-center gap-4',
@@ -31,23 +31,23 @@ const styles = tv({
   variants: {
     intent: {
       neutral: {
-        badge: 'border-gray-200 bg-linear-to-b from-white to-gray-50',
-        icon: 'text-zinc-400',
+        badge: 'border-gray-200 bg-white',
+        icon: 'fill-zinc-100 text-zinc-400',
       },
       danger: {
-        badge: 'border-red-200 bg-linear-to-b from-red-50 to-white',
+        badge: 'border-red-200 bg-red-50/40',
         icon: 'fill-red-100 text-red-500',
       },
       warning: {
-        badge: 'border-orange-200 bg-linear-to-b from-orange-50 to-white',
+        badge: 'border-orange-200 bg-orange-50/40',
         icon: 'fill-orange-100 text-orange-500',
       },
       info: {
-        badge: 'border-blue-200 bg-linear-to-b from-blue-50 to-white',
+        badge: 'border-blue-200 bg-blue-50/40',
         icon: 'fill-blue-100 text-blue-500',
       },
       success: {
-        badge: 'border-green-200 bg-linear-to-b from-green-50 to-white',
+        badge: 'border-green-200 bg-green-50/40',
         icon: 'fill-green-100 text-green-500',
       },
     },
