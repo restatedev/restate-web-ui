@@ -1,5 +1,6 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { Spinner } from '@restate/ui/loading';
+import { useHydrated } from '@restate/util/remix';
 import {
   Component,
   ErrorInfo,
@@ -29,29 +30,37 @@ export function Editor({
   onInput?: (value: string) => void;
   applyTheme?: boolean;
 }) {
+  const hydrated = useHydrated();
   if (typeof value === 'undefined') {
     return null;
   }
 
+  // MonacoEditor is a client-only (`.client`) module — `undefined` on the server
+  // — so render it only once hydrated; the server and first paint show the same
+  // Loading fallback, then Monaco mounts.
+  const loading = (
+    <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-zinc-500">
+      <Spinner className="h-4 w-4" />
+      Loading…
+    </div>
+  );
+
   return (
     <ErrorBoundary>
       <div className={className}>
-        <Suspense
-          fallback={
-            <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-zinc-500">
-              <Spinner className="h-4 w-4" />
-              Loading…
-            </div>
-          }
-        >
-          <MonacoEditor
-            value={value}
-            editorRef={editorRef}
-            readonly={readonly}
-            onInput={onInput}
-            applyTheme={applyTheme}
-          />
-        </Suspense>
+        {hydrated ? (
+          <Suspense fallback={loading}>
+            <MonacoEditor
+              value={value}
+              editorRef={editorRef}
+              readonly={readonly}
+              onInput={onInput}
+              applyTheme={applyTheme}
+            />
+          </Suspense>
+        ) : (
+          loading
+        )}
       </div>
     </ErrorBoundary>
   );

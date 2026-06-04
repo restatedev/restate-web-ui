@@ -50,7 +50,14 @@ function onFlagChange(callback: VoidFunction) {
 }
 
 export function FeatureFlags({ children }: PropsWithChildren) {
-  const featureFlags = useSyncExternalStore(onFlagChange, getFeatureFlags);
+  const featureFlags = useSyncExternalStore(
+    onFlagChange,
+    getFeatureFlags,
+    // Flags are read from localStorage on the client only (via the storage
+    // listener), so the server has none: the SSR snapshot is the empty default
+    // `value`, which also matches the fresh-module client value at hydration.
+    getFeatureFlags,
+  );
 
   return (
     <FeatureFlagsContext.Provider value={{ featureFlags, setFeatureFlag }}>
