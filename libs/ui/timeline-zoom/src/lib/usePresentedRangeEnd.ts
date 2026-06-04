@@ -1,5 +1,7 @@
 import { startTransition, useEffect, useRef, useState } from 'react';
 
+const MAX_PRESENTATION_HEADROOM_MS = 2_000;
+
 export function usePresentedRangeEnd({
   actualEndMs,
   authoritativeNowMs,
@@ -58,7 +60,10 @@ export function usePresentedRangeEnd({
           if (anchorWallClockMs === null) {
             return currentHeadroomMs;
           }
-          const nextHeadroomMs = Math.max(0, Date.now() - anchorWallClockMs);
+          const nextHeadroomMs = Math.min(
+            MAX_PRESENTATION_HEADROOM_MS,
+            Math.max(0, Date.now() - anchorWallClockMs),
+          );
           return nextHeadroomMs === currentHeadroomMs
             ? currentHeadroomMs
             : nextHeadroomMs;
@@ -71,9 +76,8 @@ export function usePresentedRangeEnd({
     return () => window.cancelAnimationFrame(frame);
   }, [shouldAdvance, authoritativeNowMs]);
 
-  const nowMs = shouldAdvance ? authoritativeNowMs : actualEndMs;
   const baseRangeEndMs = shouldAdvance
-    ? Math.max(actualEndMs, nowMs)
+    ? Math.max(actualEndMs, authoritativeNowMs)
     : actualEndMs;
   const candidateRangeEndMs = shouldAdvance
     ? baseRangeEndMs + presentationHeadroomMs
@@ -82,6 +86,8 @@ export function usePresentedRangeEnd({
     ? Math.max(candidateRangeEndMs, presentedRangeEndMsRef.current)
     : candidateRangeEndMs;
   presentedRangeEndMsRef.current = rangeEndMs;
+
+  const nowMs = shouldAdvance ? authoritativeNowMs : actualEndMs;
 
   return {
     rangeEndMs,
