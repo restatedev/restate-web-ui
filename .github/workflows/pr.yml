@@ -78,7 +78,9 @@ jobs:
         with:
           fetch-depth: 0
       - run: pnpm install --frozen-lockfile
-      - run: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+      - run: |
+          git config --global --add safe.directory '*'
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - name: E2E
         run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
       - uses: actions/upload-artifact@v4
