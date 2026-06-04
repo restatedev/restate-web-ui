@@ -206,6 +206,7 @@
 
 ## Domain Notes
 
+- overview2 card skeletons must reserve the loaded row height or the card jumps on (re)fetch. `ServiceCard` pins its primary row via an always-rendered icon cell (`h-7 w-7` in its own grid column), so its short text skeleton (`h-6`) never shifts. `DeploymentCard`'s icon lives INSIDE the `Deployment` (primary), and the whole primary cell is swapped for the skeleton during `isDeploymentsFetching` — so the skeleton itself must reserve the loaded height (measured 34px = `h-7` icon + py + border; note `Deployment` primary's own `min-h-[2.625rem]` is overridden to `min-h-auto` here). Fix: skeleton = `flex min-h-[2.125rem] items-center gap-2` mirroring `[icon h-7 w-7][text bar]`. Always measure the loaded row height before sizing a card skeleton.
 - Entry layout in invocation-route: Entry row (flex) contains [number div (fixed)] [data-entry (max-w-fit flex-auto)] [dashed line (flex-auto, min-w-20)]
 - Call component renders a Fragment — its children become direct children of data-entry
 - The + button in Call is absolutely positioned relative to the Entry row

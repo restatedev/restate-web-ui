@@ -118,7 +118,10 @@ export function DeploymentCard({
           <div className={layoutStyles()}>
             <div className={primaryCellStyles()}>
               {isDeploymentsFetching ? (
-                <div className="h-6 w-64 max-w-full animate-pulse rounded-lg bg-gray-200/50" />
+                <div className="flex min-h-[2.125rem] items-center gap-2">
+                  <div className="h-7 w-7 shrink-0 animate-pulse rounded-lg bg-gray-200/50" />
+                  <div className="h-5 w-56 max-w-full animate-pulse rounded-lg bg-gray-200/50" />
+                </div>
               ) : (
                 <div className="flex min-w-0 items-center gap-3">
                   <Deployment
