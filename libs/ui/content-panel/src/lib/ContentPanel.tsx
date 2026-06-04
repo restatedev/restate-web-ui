@@ -107,6 +107,16 @@ const headerContentStyles = tv({
   base: 'relative flex w-full items-center',
 });
 
+const mobileTabStyles = tv({
+  base: 'relative z-10 flex w-full min-w-0 items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-gray-200 bg-linear-to-b from-white to-gray-50 px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-950 shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)]',
+  variants: {
+    interactive: {
+      true: 'hover:!bg-linear-to-b hover:from-white hover:to-gray-50',
+      false: 'cursor-default',
+    },
+  },
+});
+
 interface ContentPanelProps extends ComponentPropsWithoutRef<'div'> {
   tabs?: ContentPanelTabs;
 }
@@ -568,37 +578,43 @@ function MobileTabsDropdown({
   if (items.length === 0) {
     return null;
   }
+  const current = selectedItem ?? items[0];
+  const label = (
+    <span className="min-w-0 flex-1 truncate text-left">{current?.label}</span>
+  );
   return (
     <div className="relative -mb-px flex min-w-0 flex-1 self-end sm:hidden">
-      <Dropdown>
-        <DropdownTrigger>
-          <Button
-            variant="icon"
-            className="relative z-10 flex w-full min-w-0 items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-gray-200 bg-linear-to-b from-white to-gray-50 px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-950 shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] hover:!bg-linear-to-b hover:from-white hover:to-gray-50"
-          >
-            <span className="min-w-0 flex-1 truncate text-left">
-              {(selectedItem ?? items[0])?.label}
-            </span>
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="aspect-square h-3.5 w-3.5 shrink-0 opacity-60"
-            />
-          </Button>
-        </DropdownTrigger>
-        <DropdownPopover>
-          <DropdownMenu onSelect={(key) => onSelect(String(key))}>
-            {items.map((item) => (
-              <DropdownItem
-                key={item.id}
-                value={item.id}
-                isDisabled={item.disabled}
-              >
-                {item.label}
-              </DropdownItem>
-            ))}
-          </DropdownMenu>
-        </DropdownPopover>
-      </Dropdown>
+      {items.length === 1 ? (
+        <div className={mobileTabStyles({ interactive: false })}>{label}</div>
+      ) : (
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              variant="icon"
+              className={mobileTabStyles({ interactive: true })}
+            >
+              {label}
+              <Icon
+                name={IconName.ChevronsUpDown}
+                className="aspect-square h-3.5 w-3.5 shrink-0 opacity-60"
+              />
+            </Button>
+          </DropdownTrigger>
+          <DropdownPopover>
+            <DropdownMenu onSelect={(key) => onSelect(String(key))}>
+              {items.map((item) => (
+                <DropdownItem
+                  key={item.id}
+                  value={item.id}
+                  isDisabled={item.disabled}
+                >
+                  {item.label}
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
+      )}
     </div>
   );
 }
