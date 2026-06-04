@@ -1,6 +1,9 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { EntryProps, EventEntryType } from './types';
-import { ENTRY_EVENTS_ENTRY_LABELS, ENTRY_EVENTS_TITLES } from '../EntryTooltip';
+import {
+  ENTRY_EVENTS_ENTRY_LABELS,
+  ENTRY_EVENTS_TITLES,
+} from '../EntryTooltip';
 import { RelativeTime } from './RelativeTime';
 import { Badge } from '@restate/ui/badge';
 import { Failure } from '../Failure';
