@@ -295,7 +295,7 @@ function PayloadPopover({
               <span className={triggerLabelStyle()}>
                 {triggerLabel}
                 {!isVoid && typeof size === 'number' && (
-                  <span className="ml-1.5 font-normal text-3xs text-gray-400 tabular-nums">
+                  <span className="ml-1.5 text-3xs font-normal text-gray-400 tabular-nums">
                     (~{formatBytes(size)})
                   </span>
                 )}
