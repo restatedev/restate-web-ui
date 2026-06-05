@@ -9,7 +9,7 @@ import { Spinner } from '@restate/ui/loading';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Portal } from '@restate/ui/portal';
-import { tv } from '@restate/util/styles';
+import { tv, cx } from '@restate/util/styles';
 import { formatBytes } from '@restate/util/intl';
 import { ReactNode, useMemo, useState } from 'react';
 import { Value } from '../Value';
@@ -264,6 +264,24 @@ interface PayloadPopoverProps {
   contentClassName?: string;
 }
 
+function PayloadSizeBadge({
+  size,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
+  if (typeof size !== 'number') {
+    return null;
+  }
+
+  return (
+    <span className={cx('ml-1.5 tabular-nums', className)}>
+      (~{formatBytes(size)})
+    </span>
+  );
+}
+
 function PayloadPopover({
   title,
   triggerLabel,
@@ -294,10 +312,11 @@ function PayloadPopover({
               )}
               <span className={triggerLabelStyle()}>
                 {triggerLabel}
-                {!isVoid && typeof size === 'number' && (
-                  <span className="ml-1.5 text-3xs font-normal text-gray-400 tabular-nums">
-                    (~{formatBytes(size)})
-                  </span>
+                {!isVoid && (
+                  <PayloadSizeBadge
+                    size={size}
+                    className="text-3xs font-normal text-gray-400"
+                  />
                 )}
                 <span className="inline-block w-3" />
               </span>
@@ -323,6 +342,12 @@ function PayloadPopover({
                     </Nav>
                   ) : (
                     <span className="inline-block pl-2">{title}</span>
+                  )}
+                  {!isVoid && (
+                    <PayloadSizeBadge
+                      size={size}
+                      className="text-2xs font-medium text-gray-500"
+                    />
                   )}
                   <div className="ml-auto">{waterMark}</div>
                   <Portal className="ml-2" id="expression-value" />
