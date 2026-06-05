@@ -88,6 +88,14 @@ const liveStyles = tv({
 const LIVE_EDGE_THRESHOLD_MS = 500;
 const JOURNAL_BOTTOM_PADDING_PX = 50;
 
+// Trailing headroom appended to a completed trace's timeline so the final
+// entries (and their right-aligned duration labels) sit a little inside the
+// right edge instead of flush against it. Expressed as a fraction of the trace
+// duration, so at the default full-trace view it reads as a constant ~5% gap
+// and stays consistent between the overview selector and the main timeline. Not
+// applied while live — there the now-edge/follow window governs the right side.
+const TIMELINE_COMPLETED_END_HEADROOM_RATIO = 0.05;
+
 type ReferencedInvocationEntry = Extract<
   JournalEntryV2,
   {
@@ -281,9 +289,14 @@ export function JournalV2({
           : -1,
     ),
   );
+  const completedTimelineEnd =
+    maxEntryTimestamp > start
+      ? maxEntryTimestamp +
+        (maxEntryTimestamp - start) * TIMELINE_COMPLETED_END_HEADROOM_RATIO
+      : maxEntryTimestamp;
   const end = journalAndInvocationData
     ? Math.max(
-        maxEntryTimestamp,
+        areAllInvocationsCompleted ? completedTimelineEnd : maxEntryTimestamp,
         !areAllInvocationsCompleted ? latestDataUpdatedAt : -1,
       )
     : 0;
