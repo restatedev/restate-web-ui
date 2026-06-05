@@ -93,9 +93,15 @@ export function Helper({
   isTunnel: boolean;
 }) {
   const isOnboarding = useOnboarding();
-  const { identityKey, awsRolePolicy, gcpServiceAccount, OnboardingGuide } =
-    useRestateContext();
+  const {
+    identityKey,
+    awsRolePolicy,
+    gcpServiceAccount,
+    OnboardingGuide,
+    isGoogleIdTokenAuthAvailable,
+  } = useRestateContext();
   const { targetType, endpoint, isCloudRun } = useRegisterDeploymentContext();
+  const isCloudRunWithGoogleAuth = isCloudRun && isGoogleIdTokenAuthAvailable;
   const templates = OnboardingGuide ? (
     <OnboardingGuide
       stage={
@@ -117,7 +123,7 @@ export function Helper({
     return templates;
   }
 
-  if (isCloudRun && gcpServiceAccount) {
+  if (isCloudRunWithGoogleAuth && gcpServiceAccount) {
     const script = getCloudRunScript(gcpServiceAccount.value);
     return (
       <>
@@ -159,7 +165,7 @@ export function Helper({
     );
   }
 
-  if (!isLambda && !isTunnel && !isCloudRun && identityKey) {
+  if (!isLambda && !isTunnel && !isCloudRunWithGoogleAuth && identityKey) {
     const copyText = getHttpScript(targetType).replace(
       'IDENTITY_KEY',
       String(identityKey?.value),
