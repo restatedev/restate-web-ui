@@ -1,6 +1,9 @@
 import { DateTooltip } from '@restate/ui/tooltip';
 import { formatDurations } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
+import {
+  getDuration,
+  useDurationSinceLastSnapshot,
+} from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
@@ -45,6 +48,48 @@ export function RelativeTime({
         <span className="font-medium text-zinc-500/90">{duration}</span>
       </DateTooltip>
       {trailing ? ` ${trailing}` : ''}
+    </span>
+  );
+}
+
+// Subtle phase length ("for <duration>") for a lifecycle row whose phase has
+// already ended — e.g. a Running/Pending entry that is no longer the live
+// state, where RelativeTime's "since … ago" would wrongly imply it's still
+// ongoing. Shows how long the phase lasted (start → end); the DateTooltip
+// exposes when it began.
+export function PhaseDuration({
+  start,
+  end,
+  tooltipTitle,
+  className,
+}: {
+  start?: string;
+  end?: string;
+  tooltipTitle: string;
+  className?: string;
+}) {
+  if (!start || !end) {
+    return null;
+  }
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const elapsed = endDate.getTime() - startDate.getTime();
+  // Guard invalid start/end dates: an unparseable date → NaN here, which would
+  // otherwise produce a meaningless duration (and an empty DateTooltip).
+  if (isNaN(elapsed)) {
+    return null;
+  }
+  const duration = formatDurations(getDuration(elapsed));
+  if (!duration) {
+    return null;
+  }
+
+  return (
+    <span className={styles({ className })}>
+      {'for '}
+      <DateTooltip date={startDate} title={tooltipTitle}>
+        <span className="font-medium text-zinc-500/90">{duration}</span>
+      </DateTooltip>
     </span>
   );
 }

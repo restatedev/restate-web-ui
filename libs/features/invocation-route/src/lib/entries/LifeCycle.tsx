@@ -4,7 +4,7 @@ import {
   ENTRY_EVENTS_ENTRY_LABELS,
   ENTRY_EVENTS_TITLES,
 } from '../EntryTooltip';
-import { RelativeTime } from './RelativeTime';
+import { PhaseDuration, RelativeTime } from './RelativeTime';
 import { Badge } from '@restate/ui/badge';
 import { Failure } from '../Failure';
 import { Button } from '@restate/ui/button';
@@ -32,12 +32,18 @@ type Invocation = ReturnType<
 // ("Created at"), Killed ("Killed at") and Retrying ("Next retry") read fine
 // without one. `useEnd` surfaces the entry's end instead of start — Scheduled
 // shows the run time so a pending schedule reads "in <duration>".
+// `durationWhenEnded` flips Running/Pending to the phase's length ("for
+// <duration>") once it's no longer live, since "since … ago" would otherwise
+// read as if the phase were still ongoing.
 const LIFECYCLE_TIME: Partial<
-  Record<EventEntryType, { connector?: string; useEnd?: boolean }>
+  Record<
+    EventEntryType,
+    { connector?: string; useEnd?: boolean; durationWhenEnded?: boolean }
+  >
 > = {
   Created: {},
-  Running: { connector: 'since' },
-  Pending: { connector: 'since' },
+  Running: { connector: 'since', durationWhenEnded: true },
+  Pending: { connector: 'since', durationWhenEnded: true },
   Scheduled: { useEnd: true },
   Suspended: { connector: 'at' },
   Paused: { connector: 'at' },
@@ -158,17 +164,29 @@ export function LifeCycle({
 
   const timeConfig = LIFECYCLE_TIME[entry.type as EventEntryType] ?? {};
   const date = timeConfig.useEnd ? entry.end : entry.start;
+  const showDuration =
+    Boolean(timeConfig.durationWhenEnded) &&
+    !entry.isPending &&
+    Boolean(entry.end);
 
   return (
-    <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+    <div className="mr-2 flex items-baseline gap-[0.5ch] font-sans text-zinc-500">
       <span className="shrink-0">
         {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
       </span>
-      <RelativeTime
-        date={date}
-        tooltipTitle={ENTRY_EVENTS_TITLES[entry.type as EventEntryType]}
-        connector={timeConfig.connector}
-      />
+      {showDuration ? (
+        <PhaseDuration
+          start={entry.start}
+          end={entry.end}
+          tooltipTitle={ENTRY_EVENTS_TITLES[entry.type as EventEntryType]}
+        />
+      ) : (
+        <RelativeTime
+          date={date}
+          tooltipTitle={ENTRY_EVENTS_TITLES[entry.type as EventEntryType]}
+          connector={timeConfig.connector}
+        />
+      )}
       {invocation?.id && (
         <AwaitingOn
           future={awaitingOn}
