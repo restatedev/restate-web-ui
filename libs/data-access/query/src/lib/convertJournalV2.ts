@@ -53,6 +53,9 @@ export function convertJournalV2(
       invocation,
       context,
     ) ?? (entry as JournalEntryV2);
+  if (typeof entry.raw_length === 'number') {
+    newEntry.size = entry.raw_length;
+  }
   if (typeof newEntry?.completionId === 'number') {
     if (newEntry.category === 'command') {
       context?.completionEntryById.set(newEntry.completionId, newEntry);

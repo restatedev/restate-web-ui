@@ -39,7 +39,6 @@ import {
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
-import { Nav, NavButtonItem } from '@restate/ui/nav';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { formatDurations } from '@restate/util/intl';
 import {
@@ -57,6 +56,12 @@ import {
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
 import { Retention } from './Retention';
+import {
+  COMPACT_DETAIL,
+  useJournalDetail,
+  type JournalDetail,
+} from './useJournalDetail';
+import { JournalDetailToggle } from './JournalDetailToggle';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -82,6 +87,14 @@ const liveStyles = tv({
 
 const LIVE_EDGE_THRESHOLD_MS = 500;
 const JOURNAL_BOTTOM_PADDING_PX = 50;
+
+// Trailing headroom appended to a completed trace's timeline so the final
+// entries (and their right-aligned duration labels) sit a little inside the
+// right edge instead of flush against it. Expressed as a fraction of the trace
+// duration, so at the default full-trace view it reads as a constant ~5% gap
+// and stays consistent between the overview selector and the main timeline. Not
+// applied while live — there the now-edge/follow window governs the right side.
+const TIMELINE_COMPLETED_END_HEADROOM_RATIO = 0.05;
 
 type ReferencedInvocationEntry = Extract<
   JournalEntryV2,
@@ -152,18 +165,19 @@ export function JournalV2({
   timelineWidth = 0.5,
   showApiError = true,
   withTimeline = true,
-  isCompact = true,
-  setIsCompact,
 }: {
   invocationId: string;
   className?: string;
   timelineWidth?: number;
   showApiError?: boolean;
   withTimeline?: boolean;
-  isCompact?: boolean;
-  setIsCompact?: Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [isLive, setIsLive] = useState(true);
+  // The detailed-view selection lives in the URL (?detail=). The toggle is only
+  // shown on the full timeline view; embedded previews (withTimeline={false})
+  // stay compact and don't read or write the URL.
+  const journalDetail = useJournalDetail();
+  const detail = withTimeline ? journalDetail.detail : COMPACT_DETAIL;
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
   const {
     data,
@@ -241,7 +255,7 @@ export function JournalV2({
     inputEntry,
     relatedEntriesByInvocation,
     lifecycleDataByInvocation,
-  } = useProcessedJournal(invocationId, data, isCompact);
+  } = useProcessedJournal(invocationId, data, detail);
   const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
     !withTimeline &&
@@ -275,9 +289,14 @@ export function JournalV2({
           : -1,
     ),
   );
+  const completedTimelineEnd =
+    maxEntryTimestamp > start
+      ? maxEntryTimestamp +
+        (maxEntryTimestamp - start) * TIMELINE_COMPLETED_END_HEADROOM_RATIO
+      : maxEntryTimestamp;
   const end = journalAndInvocationData
     ? Math.max(
-        maxEntryTimestamp,
+        areAllInvocationsCompleted ? completedTimelineEnd : maxEntryTimestamp,
         !areAllInvocationsCompleted ? latestDataUpdatedAt : -1,
       )
     : 0;
@@ -384,7 +403,7 @@ export function JournalV2({
           error={apiError}
           areAllInvocationsCompleted={areAllInvocationsCompleted}
           isLive={isLive}
-          isCompact={isCompact}
+          detail={detail}
         >
           <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
             <Suspense
@@ -400,39 +419,13 @@ export function JournalV2({
               {withTimeline && (
                 <ContentPanelToolbar className="relative items-end! pr-5 pl-3">
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pb-1 pl-10">
-                    <Nav
-                      ariaCurrentValue="true"
-                      responsive={false}
-                      aria-label="View mode"
-                      containerClassName="border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
-                    >
-                      <NavButtonItem
-                        isActive={isCompact}
-                        onClick={() => setIsCompact?.(true)}
-                        className="py-1"
-                      >
-                        <HoverTooltip
-                          content="Actions only"
-                          placement="top"
-                          className="block"
-                        >
-                          Compact
-                        </HoverTooltip>
-                      </NavButtonItem>
-                      <NavButtonItem
-                        isActive={!isCompact}
-                        onClick={() => setIsCompact?.(false)}
-                        className="py-1"
-                      >
-                        <HoverTooltip
-                          content="Include transient errors, completions, and lifecycle history"
-                          placement="top"
-                          className="block"
-                        >
-                          Detailed
-                        </HoverTooltip>
-                      </NavButtonItem>
-                    </Nav>
+                    <JournalDetailToggle
+                      selectedCategories={journalDetail.selectedCategories}
+                      isCompact={journalDetail.isCompact}
+                      onCompact={journalDetail.setCompact}
+                      onDetailed={journalDetail.setDetailed}
+                      onChange={journalDetail.setSelection}
+                    />
                     <ZoomControlsPortalTarget className="hidden md:flex" />
                     <ReturnToLiveButton
                       areAllCompleted={areAllInvocationsCompleted}
@@ -676,7 +669,7 @@ function TimelineEngineJournalBridge({
   error,
   areAllInvocationsCompleted,
   isLive,
-  isCompact,
+  detail,
   children,
 }: {
   invocationIds: string[];
@@ -687,7 +680,7 @@ function TimelineEngineJournalBridge({
   error?: Record<string, Error | null | undefined>;
   areAllInvocationsCompleted: boolean;
   isLive: boolean;
-  isCompact: boolean;
+  detail: JournalDetail;
   children: React.ReactNode;
 }) {
   const engine = useTimelineEngineContext();
@@ -702,7 +695,7 @@ function TimelineEngineJournalBridge({
       isPending={isPending}
       error={error}
       isLive={!areAllInvocationsCompleted && isLive}
-      isCompact={isCompact}
+      detail={detail}
     >
       {children}
     </JournalContextProvider>

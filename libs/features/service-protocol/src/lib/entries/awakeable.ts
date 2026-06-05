@@ -100,6 +100,7 @@ function awakeableV2(
     type: 'Awakeable',
     category: 'command',
     completionId,
+    completionSize: completionEntry?.size,
     end: completionEntry?.start,
     index: entry.index,
     relatedIndexes,

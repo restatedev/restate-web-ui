@@ -3929,6 +3929,7 @@
         "properties": {
           "index": { "type": "integer" },
           "raw": { "type": "string", "format": "binary" },
+          "raw_length": { "type": "integer" },
           "sleep_wakeup_at": { "type": "string", "format": "date-time" },
           "completed": { "type": "boolean" },
           "promise_name": { "type": "string" },
@@ -4152,6 +4153,12 @@
             "type": "integer"
           },
           "completionIndex": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "completionSize": {
             "type": "integer"
           },
           "commandIndex": {

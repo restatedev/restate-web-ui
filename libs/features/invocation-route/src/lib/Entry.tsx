@@ -174,7 +174,7 @@ export const Entry = memo(function Entry({
     enabled: isPaused,
   });
   const pausedRelatedCommandIndex = pausedErrorData?.relatedCommandIndex;
-  const { isCompact, disableAwaitingHighlight } = useJournalEntriesContext();
+  const { detail, disableAwaitingHighlight } = useJournalEntriesContext();
   const EntrySpecificComponent = (
     entry?.type
       ? entry.category === 'command'
@@ -216,7 +216,7 @@ export const Entry = memo(function Entry({
               entry,
               invocation.journal?.entries?.findLast(
                 (entry) =>
-                  !isCompact ||
+                  detail.errors ||
                   !['Event: TransientError'].includes(String(entry?.type)),
               ),
             )) ||
@@ -254,7 +254,7 @@ export const Entry = memo(function Entry({
                 entry,
                 invocation.journal?.entries?.findLast(
                   (entry) =>
-                    !isCompact ||
+                    detail.errors ||
                     !['Event: TransientError'].includes(String(entry?.type)),
                 ),
               ),

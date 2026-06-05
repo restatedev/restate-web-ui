@@ -10,6 +10,7 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Portal } from '@restate/ui/portal';
 import { tv } from '@restate/util/styles';
+import { formatBytes } from '@restate/util/intl';
 import { ReactNode, useMemo, useState } from 'react';
 import { Value } from '../Value';
 import { Headers } from '../Headers';
@@ -87,22 +88,20 @@ type PayloadField = keyof Pick<
   'parameters' | 'value' | 'headers' | 'keys' | 'failure'
 >;
 
-function getPayloadEntryIndex(
-  entry?: JournalEntryV2,
+// For some entries the payload (and its size) lives on the completion entry
+// rather than the command itself — e.g. a `Call`/`Run` result is stored on the
+// matching notification row, not the command row.
+function payloadComesFromCompletion(
+  entry: JournalEntryV2,
   field?: PayloadField,
-): number | undefined {
-  if (!entry) {
-    return undefined;
-  }
-  const { type, category, index, completionIndex } = entry;
-
-  if (category === 'notification') {
-    return index;
+): boolean {
+  if (entry.category === 'notification') {
+    return false;
   }
 
-  switch (type) {
+  switch (entry.type) {
     case 'Call':
-      return field === 'value' || field === 'failure' ? completionIndex : index;
+      return field === 'value' || field === 'failure';
 
     case 'Run':
     case 'GetPromise':
@@ -111,25 +110,37 @@ function getPayloadEntryIndex(
     case 'GetLazyState':
     case 'GetLazyStateKeys':
     case 'Awakeable':
-      return field === 'value' || field === 'failure' || field === 'keys'
-        ? completionIndex
-        : index;
-
-    case 'Input':
-    case 'Output':
-    case 'OneWayCall':
-    case 'SetState':
-    case 'GetState':
-    case 'GetEagerState':
-    case 'GetStateKeys':
-    case 'GetEagerStateKeys':
-    case 'CompleteAwakeable':
-    case 'CompletePromise':
-      return index;
+      return field === 'value' || field === 'failure' || field === 'keys';
 
     default:
-      return index;
+      return false;
   }
+}
+
+function getPayloadEntryIndex(
+  entry?: JournalEntryV2,
+  field?: PayloadField,
+): number | undefined {
+  if (!entry) {
+    return undefined;
+  }
+  return payloadComesFromCompletion(entry, field)
+    ? entry.completionIndex
+    : entry.index;
+}
+
+// Estimated byte size of the payload, derived from the journal entry's
+// `raw_length`. Available even before the payload itself is fetched.
+function getPayloadEntrySize(
+  entry?: JournalEntryV2,
+  field?: PayloadField,
+): number | undefined {
+  if (!entry) {
+    return undefined;
+  }
+  return payloadComesFromCompletion(entry, field)
+    ? entry.completionSize
+    : entry.size;
 }
 
 function getInitialData<F extends PayloadField>(
@@ -195,6 +206,7 @@ function useLazyPayload<F extends PayloadField>(
   field: F,
 ) {
   const entryIndex = getPayloadEntryIndex(entry, field);
+  const size = getPayloadEntrySize(entry, field);
   const [shouldFetch, setShouldFetch] = useState(false);
 
   const shouldAutoFetch =
@@ -223,6 +235,7 @@ function useLazyPayload<F extends PayloadField>(
     isPending,
     error,
     isLoaded,
+    size,
     onOpen: () => {
       setShouldFetch(true);
       if (error) {
@@ -241,6 +254,8 @@ interface PayloadPopoverProps {
   children: ReactNode;
   onOpenChange?: (isOpen: boolean) => void;
   isVoid?: boolean;
+  /** Estimated payload size in bytes, shown on the trigger before loading. */
+  size?: number;
   tabs?: {
     items: PayloadTab[];
     active: PayloadTab;
@@ -256,6 +271,7 @@ function PayloadPopover({
   children,
   onOpenChange,
   isVoid = false,
+  size,
   tabs,
   contentClassName,
 }: PayloadPopoverProps) {
@@ -278,6 +294,11 @@ function PayloadPopover({
               )}
               <span className={triggerLabelStyle()}>
                 {triggerLabel}
+                {!isVoid && typeof size === 'number' && (
+                  <span className="ml-1.5 text-3xs font-normal text-gray-400 tabular-nums">
+                    (~{formatBytes(size)})
+                  </span>
+                )}
                 <span className="inline-block w-3" />
               </span>
             </Button>
@@ -358,11 +379,8 @@ function LazyValue({
   const { EncodingWaterMark } = useRestateContext();
   const outputCodecOptions = useTargetInvocationCodecOptions('Output');
   const { hideOutput } = useJournalEntriesContext();
-  const { data, failure, isPending, error, isLoaded, onOpen } = useLazyPayload(
-    invocationId,
-    entry,
-    'value',
-  );
+  const { data, failure, isPending, error, isLoaded, size, onOpen } =
+    useLazyPayload(invocationId, entry, 'value');
 
   if (
     !entry ||
@@ -396,6 +414,7 @@ function LazyValue({
       title={title}
       triggerLabel={isVoid ? 'void' : title}
       isVoid={isVoid}
+      size={size}
       waterMark={
         EncodingWaterMark && isBase64 && data ? (
           <EncodingWaterMark value={data} />
@@ -436,7 +455,7 @@ function LazyInput({
   const inputCodecOptions = useTargetInvocationCodecOptions('Input');
   const [activeTab, setActiveTab] = useState<PayloadTab>('parameters');
 
-  const { rawData, isPending, error, isLoaded, onOpen } = useLazyPayload(
+  const { rawData, isPending, error, isLoaded, size, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'parameters',
@@ -453,6 +472,7 @@ function LazyInput({
     <PayloadPopover
       title={title}
       triggerLabel={title}
+      size={size}
       waterMark={
         EncodingWaterMark &&
         isBase64 &&
@@ -513,7 +533,7 @@ function LazyKeys({
   entry,
   title = 'Keys',
 }: Omit<LazyPayloadProps, 'isBase64'>) {
-  const { data, isPending, error, isLoaded, onOpen } = useLazyPayload(
+  const { data, isPending, error, isLoaded, size, onOpen } = useLazyPayload(
     invocationId,
     entry,
     'keys',
@@ -527,6 +547,7 @@ function LazyKeys({
     <PayloadPopover
       title={title}
       triggerLabel={title}
+      size={size}
       onOpenChange={(isOpen) => isOpen && onOpen()}
     >
       <PayloadContent isPending={isPending} error={error}>

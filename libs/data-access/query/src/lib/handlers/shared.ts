@@ -65,8 +65,16 @@ const SYS_INVOCATION_DETAIL_COLUMNS = [
 ] as const;
 
 function supportsWaitingColumns(restateVersion: string): boolean {
-  const released = restateVersion.split('-').at(0);
-  return released ? semverGte(released, '1.6.3') : false;
+  const coerced = semverCoerce(restateVersion);
+  return coerced ? semverGte(coerced, '1.7.0') : false;
+}
+
+// `raw_length` was added to sys_journal in 1.7.0; older servers don't have the
+// column and DataFusion errors on an unknown column, so gate it to avoid
+// breaking the whole journal query.
+export function supportsJournalRawLength(restateVersion: string): boolean {
+  const coerced = semverCoerce(restateVersion);
+  return coerced ? semverGte(coerced, '1.7.0') : false;
 }
 
 export function getSysInvocationListColumns(

@@ -1,6 +1,7 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import { useMemo } from 'react';
+import type { JournalDetail } from './useJournalDetail';
 
 // Event types that the lifecycle viewer renders separately from the main
 // timeline.
@@ -218,7 +219,7 @@ function getCombinedJournal(
 function shouldIncludeEntry(
   entry: JournalEntryV2 | undefined,
   parentCommand: JournalEntryV2 | undefined,
-  isCompact: boolean,
+  detail: JournalDetail,
   depth: number,
 ): boolean {
   // Placeholder rows are kept only at the root so the loading state still
@@ -242,19 +243,24 @@ function shouldIncludeEntry(
   if (entry.category === 'notification' && entry.type === 'CallInvocationId') {
     return false;
   }
-  // Compact mode hides notifications already represented by their parent
-  // command, plus transient retry errors.
+  // The three detail categories below are independently toggleable; each is
+  // hidden unless its category is enabled (compact == all three off).
+  // Completions: notifications already represented by their parent command.
   if (
-    isCompact &&
-    ((parentCommand && entry.category === 'notification') ||
-      entry.type === 'Event: TransientError')
+    !detail.completions &&
+    parentCommand &&
+    entry.category === 'notification'
   ) {
     return false;
   }
-  // Compact mode shows only the currently-active Suspended/Paused row; past
-  // ones still appear in the lifecycle bar at the top.
+  // Transient retry errors.
+  if (!detail.errors && entry.type === 'Event: TransientError') {
+    return false;
+  }
+  // Lifecycle history: past Suspended/Paused rows. The currently-active one
+  // always shows; past ones also appear in the lifecycle bar at the top.
   if (
-    isCompact &&
+    !detail.lifecycle &&
     entry.category === 'event' &&
     (entry.type === 'Suspended' || entry.type === 'Paused') &&
     entry.isPending !== true
@@ -279,7 +285,7 @@ function shouldIncludeEntry(
 export function useProcessedJournal(
   invocationId: string,
   data: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
-  isCompact: boolean,
+  detail: JournalDetail,
 ) {
   return useMemo(() => {
     const preprocessedData = new Map<string, PreprocessedInvocationData>();
@@ -317,7 +323,7 @@ export function useProcessedJournal(
         !shouldIncludeEntry(
           combinedEntry.entry,
           combinedEntry.parentCommand,
-          isCompact,
+          detail,
           combinedEntry.depth,
         )
       ) {
@@ -339,5 +345,5 @@ export function useProcessedJournal(
       relatedEntriesByInvocation,
       lifecycleDataByInvocation,
     };
-  }, [invocationId, data, isCompact]);
+  }, [invocationId, data, detail]);
 }

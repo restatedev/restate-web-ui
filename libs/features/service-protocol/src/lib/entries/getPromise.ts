@@ -98,6 +98,7 @@ function getPromiseV2(
     category: 'command',
     completionId,
     completionIndex: completionEntry?.index,
+    completionSize: completionEntry?.size,
     end: completionEntry?.start,
     index: entry.index,
     relatedIndexes,
