@@ -36,15 +36,12 @@ export function checkSlaThresholds(
     if (NON_COMPLETED_STATUSES.includes(status)) nonCompleted += count;
   }
 
-  const total = completed + nonCompleted;
-  if (total < MIN_TRAFFIC_THRESHOLD) return issues;
-
   for (const [status, threshold] of Object.entries(SLA_THRESHOLDS)) {
     const count = statusCounts.get(status) ?? 0;
     if (count === 0) continue;
 
     const denominator = status === 'failed' ? completed : nonCompleted;
-    if (denominator === 0) continue;
+    if (denominator < MIN_TRAFFIC_THRESHOLD) continue;
 
     const ratio = count / denominator;
     if (ratio >= threshold.high) {
