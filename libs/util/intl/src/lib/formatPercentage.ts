@@ -9,6 +9,16 @@ const formatterWithoutFraction = new Intl.NumberFormat('en', {
   maximumFractionDigits: 0,
 });
 
+// Without fractional digits, a tiny positive ratio rounds to "0%" and a
+// near-complete one to "100%", both misreading as "none"/"all" when the real
+// value is neither. Surface those edges as "<1%"/">99%"; exact 0 and exact 1
+// round cleanly, so they (and everything in between) return null.
+function clampEdgePercentage(value: number) {
+  if (value > 0 && value < 0.005) return '<1%';
+  if (value < 1 && value >= 0.995) return '>99%';
+  return null;
+}
+
 export function formatPercentage(value: number) {
   if (isNaN(value.valueOf())) {
     return '';
@@ -20,14 +30,14 @@ export function formatPercentageWithoutFraction(value: number) {
   if (isNaN(value.valueOf())) {
     return '';
   }
-  return formatterWithoutFraction.format(value);
+  return clampEdgePercentage(value) ?? formatterWithoutFraction.format(value);
 }
 
-// Approximate variant for sampled / estimated values — prefixes with "~".
-// A tiny positive ratio rounds to "0%" with no fractional digits which would
-// read as "none" alongside a "~", so surface those as "<1%" instead.
+// Approximate variant for sampled / estimated values — prefixes with "~",
+// except on the clamped edges which already read as approximate.
 export function formatApproxPercentage(value: number) {
   if (isNaN(value.valueOf())) return '';
-  if (value > 0 && value < 0.005) return '<1%';
-  return `~${formatterWithoutFraction.format(value)}`;
+  return (
+    clampEdgePercentage(value) ?? `~${formatterWithoutFraction.format(value)}`
+  );
 }
