@@ -19,7 +19,7 @@ import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { ContentPanel, ContentPanelBody } from '@restate/ui/content-panel';
 import { EmptyState } from '@restate/ui/empty-state';
 import {
@@ -174,8 +174,6 @@ function Component() {
   const isVirtualObject =
     journalAndInvocationData?.target_service_ty === 'virtual_object';
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
-
-  const [isCompact, setIsCompact] = useState(true);
 
   const { OnboardingGuide } = useRestateContext();
   // `?restore=1` is the invocations route's opt-in marker for restoring the
@@ -383,12 +381,7 @@ function Component() {
           }}
         >
           <ContentPanelBody>
-            <JournalV2
-              invocationId={String(id)}
-              key={String(id)}
-              isCompact={isCompact}
-              setIsCompact={setIsCompact}
-            />
+            <JournalV2 invocationId={String(id)} key={String(id)} />
           </ContentPanelBody>
         </ContentPanel>
       </div>

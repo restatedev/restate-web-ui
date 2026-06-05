@@ -5,6 +5,7 @@ import {
   use,
   useMemo,
 } from 'react';
+import { COMPACT_DETAIL, type JournalDetail } from './useJournalDetail';
 
 const JournalEntriesContext = createContext<{
   invocationIds: string[];
@@ -12,13 +13,13 @@ const JournalEntriesContext = createContext<{
   removeInvocationId?: (id: string) => void;
   isPending?: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
-  isCompact: boolean;
+  detail: JournalDetail;
   disableExpand?: boolean;
   hideOutput?: boolean;
   disableAwaitingHighlight?: boolean;
 }>({
   invocationIds: [],
-  isCompact: true,
+  detail: COMPACT_DETAIL,
 });
 
 export { JournalEntriesContext };
@@ -50,7 +51,7 @@ export function JournalContextProvider({
   error,
   containerRef,
   isLive,
-  isCompact,
+  detail,
 }: PropsWithChildren<{
   invocationIds: string[];
   addInvocationId?: (id: string) => void;
@@ -63,7 +64,7 @@ export function JournalContextProvider({
   error?: Record<string, Error | null | undefined>;
   containerRef?: RefObject<HTMLDivElement | null>;
   isLive: boolean;
-  isCompact: boolean;
+  detail: JournalDetail;
 }>) {
   const entriesValue = useMemo(
     () => ({
@@ -72,7 +73,7 @@ export function JournalContextProvider({
       removeInvocationId,
       isPending,
       error,
-      isCompact,
+      detail,
     }),
     [
       invocationIds,
@@ -80,7 +81,7 @@ export function JournalContextProvider({
       removeInvocationId,
       isPending,
       error,
-      isCompact,
+      detail,
     ],
   );
 
