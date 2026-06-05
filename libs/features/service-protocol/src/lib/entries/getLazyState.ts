@@ -42,6 +42,7 @@ function getLazyStateV2(
     category: 'command',
     completionId: resultCompletionId,
     completionIndex: completionEntry?.index,
+    completionSize: completionEntry?.size,
     end: completionEntry?.start,
     index: entry.index,
     relatedIndexes,

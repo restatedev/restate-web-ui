@@ -7563,6 +7563,9 @@
             "type": "string",
             "format": "binary"
           },
+          "raw_length": {
+            "type": "integer"
+          },
           "sleep_wakeup_at": {
             "type": "string",
             "format": "date-time"
@@ -7813,6 +7816,12 @@
             "type": "integer"
           },
           "completionIndex": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "completionSize": {
             "type": "integer"
           },
           "commandIndex": {

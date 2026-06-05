@@ -2846,6 +2846,7 @@ export interface components {
       index: number;
       /** Format: binary */
       raw?: string;
+      raw_length?: number;
       /** Format: date-time */
       sleep_wakeup_at?: string;
       completed?: boolean;
@@ -2978,6 +2979,8 @@ export interface components {
       relatedIndexes?: number[];
       completionId?: number;
       completionIndex?: number;
+      size?: number;
+      completionSize?: number;
       commandIndex?: number;
       groupIds?: {
         [key: string]: true;

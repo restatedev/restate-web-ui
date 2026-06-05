@@ -78,7 +78,9 @@ export function useJournalDetail() {
   const writeCategories = useCallback(
     (categories: Iterable<DetailCategory>) => {
       const next = new Set(categories);
-      const ordered = DETAIL_CATEGORIES.filter((category) => next.has(category));
+      const ordered = DETAIL_CATEGORIES.filter((category) =>
+        next.has(category),
+      );
       if (ordered.length > 0) {
         lastSelectionRef.current = ordered;
       }
