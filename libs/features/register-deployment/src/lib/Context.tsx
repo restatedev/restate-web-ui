@@ -282,7 +282,7 @@ export function DeploymentRegistrationState({
   additionalHeaders?: Record<string, string>;
 }>) {
   const id = useId();
-  const { tunnel } = useRestateContext();
+  const { tunnel, isGoogleIdTokenAuthAvailable } = useRestateContext();
   const formRef = useRef<HTMLFormElement>(null);
   const { refetch, data: listDeployments } = useListDeployments();
   const [searchParams] = useSearchParams();
@@ -528,7 +528,9 @@ export function DeploymentRegistrationState({
       tunnelName,
       shouldAllowBreakingChange,
     } = state;
-    const auth = toAuthBody(googleAuth);
+    const auth = isGoogleIdTokenAuthAvailable
+      ? toAuthBody(googleAuth)
+      : undefined;
 
     if (action === FIX_HTTP_ACTION) {
       updateUseHttp11Arn(true);

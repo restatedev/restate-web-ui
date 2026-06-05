@@ -12,8 +12,13 @@ const styles = tv({
 export function Authentication({ className }: { className?: string }) {
   const { googleAuth, updateGoogleAuth, isPending } =
     useRegisterDeploymentContext();
-  const { gcpServiceAccount } = useRestateContext();
+  const { gcpServiceAccount, isGoogleIdTokenAuthAvailable } =
+    useRestateContext();
   const isEnabled = Boolean(googleAuth);
+
+  if (!isGoogleIdTokenAuthAvailable) {
+    return null;
+  }
 
   return (
     <div className={styles({ className })}>

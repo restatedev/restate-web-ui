@@ -61,12 +61,14 @@ type RestateContext = {
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
+  isGoogleIdTokenAuthAvailable?: boolean;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
   status: 'PENDING',
   ingressUrl: '',
   baseUrl: '',
+  isGoogleIdTokenAuthAvailable: true,
 });
 
 function InternalRestateContextProvider({
@@ -83,6 +85,7 @@ function InternalRestateContextProvider({
   awsRolePolicy,
   identityKey,
   gcpServiceAccount,
+  isGoogleIdTokenAuthAvailable = true,
   queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
   isPending?: boolean;
@@ -100,6 +103,7 @@ function InternalRestateContextProvider({
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
+  isGoogleIdTokenAuthAvailable?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
@@ -157,6 +161,7 @@ function InternalRestateContextProvider({
         awsRolePolicy,
         identityKey,
         gcpServiceAccount,
+        isGoogleIdTokenAuthAvailable,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -180,6 +185,7 @@ export function RestateContextProvider({
   awsRolePolicy,
   identityKey,
   gcpServiceAccount,
+  isGoogleIdTokenAuthAvailable = true,
   systemHealthMonitor,
   queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
@@ -199,6 +205,7 @@ export function RestateContextProvider({
   identityKey?: { value: string; url?: string };
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
+  isGoogleIdTokenAuthAvailable?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
@@ -216,6 +223,7 @@ export function RestateContextProvider({
         awsRolePolicy={awsRolePolicy}
         identityKey={identityKey}
         gcpServiceAccount={gcpServiceAccount}
+        isGoogleIdTokenAuthAvailable={isGoogleIdTokenAuthAvailable}
         systemHealthMonitor={systemHealthMonitor}
         queryHealthCheckEnabled={queryHealthCheckEnabled}
       >
