@@ -243,8 +243,9 @@ function shouldIncludeEntry(
   if (entry.category === 'notification' && entry.type === 'CallInvocationId') {
     return false;
   }
-  // The three detail categories below are independently toggleable; each is
-  // hidden unless its category is enabled (compact == all three off).
+  // These three detail categories add rows that compact mode hides; each is
+  // independently toggleable. (The `size` category toggles a payload badge in
+  // the entry UI, not rows, so it isn't handled here.)
   // Completions: notifications already represented by their parent command.
   if (
     !detail.completions &&

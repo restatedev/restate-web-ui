@@ -3,14 +3,17 @@ import { useSearchParams } from 'react-router';
 import type { DropdownMenuSelection } from '@restate/ui/dropdown';
 
 // The detailed journal view is no longer all-or-nothing: each of these
-// categories can be toggled independently. They map 1:1 onto the rows that
-// `shouldIncludeEntry` (useProcessedJournal) hides in compact mode.
+// categories can be toggled independently. Most map 1:1 onto the rows that
+// `shouldIncludeEntry` (useProcessedJournal) hides in compact mode; `size` is
+// the exception — it adds no rows, it toggles the approximate byte-size badge
+// shown on each payload button.
 export const DETAIL_QUERY_PARAM = 'detail';
 
 export const DETAIL_CATEGORIES = [
   'errors',
   'completions',
   'lifecycle',
+  'size',
 ] as const;
 export type DetailCategory = (typeof DETAIL_CATEGORIES)[number];
 
@@ -18,6 +21,7 @@ export const DETAIL_CATEGORY_LABELS: Record<DetailCategory, string> = {
   errors: 'Transient errors',
   completions: 'Completions',
   lifecycle: 'Lifecycle history',
+  size: 'Payload sizes',
 };
 
 export const DETAIL_CATEGORY_DESCRIPTIONS: Record<DetailCategory, string> = {
@@ -26,6 +30,7 @@ export const DETAIL_CATEGORY_DESCRIPTIONS: Record<DetailCategory, string> = {
   completions:
     'The notification sent when an action completes, whether it succeeded or failed',
   lifecycle: 'Past suspensions and pauses',
+  size: 'Approximate byte size shown next to each payload',
 };
 
 export type JournalDetail = Record<DetailCategory, boolean>;
@@ -36,6 +41,7 @@ export const COMPACT_DETAIL: JournalDetail = Object.freeze({
   errors: false,
   completions: false,
   lifecycle: false,
+  size: false,
 });
 
 // Reads/writes the detailed-view selection from repeated `?detail=` query
@@ -54,6 +60,7 @@ export function useJournalDetail() {
       errors: selected.has('errors'),
       completions: selected.has('completions'),
       lifecycle: selected.has('lifecycle'),
+      size: selected.has('size'),
     };
   }, [searchParams]);
 
