@@ -85,6 +85,33 @@ function getCloudRunScript(serviceAccount: string) {
   --project=<your-project>`;
 }
 
+function getImpersonateGrantScript(
+  impersonateServiceAccount: string,
+  envServiceAccount: string,
+) {
+  return `gcloud iam service-accounts add-iam-policy-binding ${impersonateServiceAccount} \\
+  --member=serviceAccount:${envServiceAccount} \\
+  --role=roles/iam.serviceAccountOpenIdTokenCreator \\
+  --project=<your-project>`;
+}
+
+function ScriptSnippet({
+  script,
+  language = 'bash',
+}: {
+  script: string;
+  language?: 'bash' | 'typescript';
+}) {
+  return (
+    <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
+      <Snippet language={language}>
+        {script}
+        <SnippetCopy copyText={script} />
+      </Snippet>
+    </Code>
+  );
+}
+
 export function Helper({
   isLambda,
   isTunnel,
@@ -100,8 +127,11 @@ export function Helper({
     OnboardingGuide,
     isGoogleIdTokenAuthAvailable,
   } = useRestateContext();
-  const { targetType, endpoint, isCloudRun } = useRegisterDeploymentContext();
+  const { targetType, endpoint, isCloudRun, googleAuth } =
+    useRegisterDeploymentContext();
   const isCloudRunWithGoogleAuth = isCloudRun && isGoogleIdTokenAuthAvailable;
+  const impersonateServiceAccount = googleAuth?.impersonateServiceAccount;
+
   const templates = OnboardingGuide ? (
     <OnboardingGuide
       stage={
@@ -124,7 +154,7 @@ export function Helper({
   }
 
   if (isCloudRunWithGoogleAuth && gcpServiceAccount) {
-    const script = getCloudRunScript(gcpServiceAccount.value);
+    const envServiceAccount = gcpServiceAccount.value;
     return (
       <>
         <Container
@@ -145,20 +175,69 @@ export function Helper({
             </div>
           }
         >
-          <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
-            Turn on{' '}
-            <span className="font-medium text-gray-600">
-              Authenticate with Google ID token
-            </span>{' '}
-            above, then grant <code>roles/run.invoker</code> to the service
-            account Restate impersonates, so it can invoke your private service.
-          </div>
-          <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
-            <Snippet language="bash">
-              {script}
-              <SnippetCopy copyText={script} />
-            </Snippet>
-          </Code>
+          {!googleAuth ? (
+            <>
+              <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+                For a private Cloud Run service, turn on{' '}
+                <span className="font-medium text-gray-600">
+                  Authenticate with Google ID token
+                </span>{' '}
+                above so Restate can mint OIDC tokens to invoke it.
+              </div>
+              {identityKey && (
+                <>
+                  <div className="mb-2 px-1.5 font-sans text-0.5xs text-gray-500">
+                    For a public service, use the identity key below so your
+                    service only accepts requests from your Restate environment:
+                  </div>
+                  <ScriptSnippet
+                    language="typescript"
+                    script={getHttpScript(targetType).replace(
+                      'IDENTITY_KEY',
+                      identityKey.value,
+                    )}
+                  />
+                </>
+              )}
+            </>
+          ) : impersonateServiceAccount ? (
+            <>
+              <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+                Restate will mint tokens as{' '}
+                <code>{impersonateServiceAccount}</code> (the account you
+                entered). Two grants are needed:
+              </div>
+              <div className="mb-2 px-1.5 font-sans text-0.5xs text-gray-500">
+                <span className="font-medium text-gray-600">1.</span> Let your
+                environment mint tokens as it — grant{' '}
+                <code>roles/iam.serviceAccountOpenIdTokenCreator</code> on{' '}
+                <code>{impersonateServiceAccount}</code> to Restate's own
+                service account:
+              </div>
+              <ScriptSnippet
+                script={getImpersonateGrantScript(
+                  impersonateServiceAccount,
+                  envServiceAccount,
+                )}
+              />
+              <div className="mt-3 mb-2 px-1.5 font-sans text-0.5xs text-gray-500">
+                <span className="font-medium text-gray-600">2.</span> Let it
+                invoke your service — grant <code>roles/run.invoker</code> to{' '}
+                <code>{impersonateServiceAccount}</code>:
+              </div>
+              <ScriptSnippet
+                script={getCloudRunScript(impersonateServiceAccount)}
+              />
+            </>
+          ) : (
+            <>
+              <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+                Grant <code>roles/run.invoker</code> to Restate's own service
+                account so it can invoke your private service:
+              </div>
+              <ScriptSnippet script={getCloudRunScript(envServiceAccount)} />
+            </>
+          )}
         </Container>
         {templates}
       </>
