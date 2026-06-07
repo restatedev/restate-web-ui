@@ -1,6 +1,4 @@
 import { FormFieldCheckbox, FormFieldInput } from '@restate/ui/form-field';
-import { Copy } from '@restate/ui/copy';
-import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useRegisterDeploymentContext } from './Context';
 import { tv } from 'tailwind-variants';
@@ -12,8 +10,7 @@ const styles = tv({
 export function Authentication({ className }: { className?: string }) {
   const { googleAuth, updateGoogleAuth, isPending } =
     useRegisterDeploymentContext();
-  const { gcpServiceAccount, isGoogleIdTokenAuthAvailable } =
-    useRestateContext();
+  const { isGoogleIdTokenAuthAvailable } = useRestateContext();
   const isEnabled = Boolean(googleAuth);
 
   if (!isGoogleIdTokenAuthAvailable) {
@@ -31,15 +28,7 @@ export function Authentication({ className }: { className?: string }) {
           disabled={isPending}
           direction="right"
           autoFocus
-          onChange={(checked) =>
-            updateGoogleAuth?.(
-              checked
-                ? gcpServiceAccount
-                  ? { impersonateServiceAccount: gcpServiceAccount.value }
-                  : {}
-                : undefined,
-            )
-          }
+          onChange={(checked) => updateGoogleAuth?.(checked ? {} : undefined)}
         >
           <span slot="title" className="text-sm font-medium text-gray-700">
             Authenticate with Google ID token
@@ -79,86 +68,43 @@ export function Authentication({ className }: { className?: string }) {
               </>
             }
           />
-          {gcpServiceAccount ? (
-            <FormFieldInput
-              readonly
-              name="auth_impersonate_service_account"
-              value={gcpServiceAccount.value}
-              className="[&_input]:pr-9"
-              label={
-                <>
-                  <span slot="title">Service account to impersonate</span>
-                  <span
-                    slot="description"
-                    className="block text-0.5xs leading-5"
-                  >
-                    Your environment's Google service account. Restate mints
-                    tokens as this identity. Grant it{' '}
-                    <code>roles/run.invoker</code> on your Cloud Run service so
-                    Restate can invoke it.{' '}
-                    {gcpServiceAccount.url && (
-                      <Link
-                        href={gcpServiceAccount.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        variant="secondary"
-                      >
-                        Learn more…
-                      </Link>
-                    )}
-                  </span>
-                </>
-              }
-            >
-              <Copy
-                copyText={gcpServiceAccount.value}
-                className="absolute top-1/2 right-0.5 ml-0 -translate-y-1/2 p-1.5"
-              />
-            </FormFieldInput>
-          ) : (
-            <FormFieldInput
-              name="auth_impersonate_service_account"
-              placeholder="caller@my-project.iam.gserviceaccount.com"
-              value={googleAuth?.impersonateServiceAccount ?? ''}
-              disabled={isPending}
-              onChange={(value) =>
-                updateGoogleAuth?.({
-                  ...googleAuth,
-                  impersonateServiceAccount: value || undefined,
-                })
-              }
-              label={
-                <>
-                  <span slot="title">
-                    Service account to impersonate{' '}
-                    <InlineTooltip
-                      title="Service account to impersonate"
-                      variant="indicator-button"
-                      description={
-                        <div>
-                          The account must allow Restate to impersonate it (
-                          <code>
-                            roles/iam.serviceAccountOpenIdTokenCreator
-                          </code>
-                          ). Also needed if Restate's own credentials can't
-                          issue ID tokens, such as federated or external
-                          accounts or a local <code>gcloud</code> login.
-                        </div>
-                      }
-                    />
-                  </span>
-                  <span
-                    slot="description"
-                    className="block text-0.5xs leading-5"
-                  >
-                    Optional. Leave empty to use Restate's own Google
-                    credentials, or enter a service account email to mint tokens
-                    as that account instead.{' '}
-                  </span>
-                </>
-              }
-            />
-          )}
+          <FormFieldInput
+            name="auth_impersonate_service_account"
+            placeholder="caller@my-project.iam.gserviceaccount.com"
+            value={googleAuth?.impersonateServiceAccount ?? ''}
+            disabled={isPending}
+            onChange={(value) =>
+              updateGoogleAuth?.({
+                ...googleAuth,
+                impersonateServiceAccount: value || undefined,
+              })
+            }
+            label={
+              <>
+                <span slot="title">
+                  Service account to impersonate{' '}
+                  <InlineTooltip
+                    title="Service account to impersonate"
+                    variant="indicator-button"
+                    description={
+                      <div>
+                        The account must allow Restate to impersonate it (
+                        <code>roles/iam.serviceAccountOpenIdTokenCreator</code>
+                        ). Also needed if Restate's own credentials can't issue
+                        ID tokens, such as federated or external accounts or a
+                        local <code>gcloud</code> login.
+                      </div>
+                    }
+                  />
+                </span>
+                <span slot="description" className="block text-0.5xs leading-5">
+                  Optional. Leave empty to mint tokens as Restate's own service
+                  account, or enter a service account email to mint tokens as
+                  that account instead.{' '}
+                </span>
+              </>
+            }
+          />
         </div>
       )}
     </div>
