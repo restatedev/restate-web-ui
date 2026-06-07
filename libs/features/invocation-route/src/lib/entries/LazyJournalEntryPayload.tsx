@@ -293,6 +293,7 @@ function PayloadPopover({
   tabs,
   contentClassName,
 }: PayloadPopoverProps) {
+  const { detail } = useJournalEntriesContext();
   const {
     base,
     value,
@@ -312,7 +313,7 @@ function PayloadPopover({
               )}
               <span className={triggerLabelStyle()}>
                 {triggerLabel}
-                {!isVoid && (
+                {!isVoid && detail.size && (
                   <PayloadSizeBadge
                     size={size}
                     className="text-3xs font-normal text-gray-400"
