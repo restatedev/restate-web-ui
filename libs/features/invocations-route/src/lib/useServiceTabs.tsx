@@ -213,20 +213,23 @@ function aggregateBreakdown(services: ServiceRow[]) {
 // Renders a tab count badge. Shows "filtered/total" when a status filter is
 // active and shrinks the visible count; "total" otherwise. When total is 0,
 // always shows just "0" (per UX: no "0/0"). When sampled, switches to a
-// percentage of the in-scope grand total (e.g., the service's share); the
-// grand-total badge collapses since it would always be 100%.
+// percentage of the in-scope grand total (e.g., the service's share); only the
+// grand-total ("All") badge collapses since it would always be 100%. Every
+// other tab shows its share — a lone service holding everything reads ~100%.
 function TabCountBadge({
   total,
   filtered,
   isLoading,
   isSampled,
   grandTotal,
+  collapseAtFull,
 }: {
   total: number;
   filtered: number;
   isLoading?: boolean;
   isSampled?: boolean;
   grandTotal?: number;
+  collapseAtFull?: boolean;
 }) {
   if (isLoading) {
     return (
@@ -238,7 +241,7 @@ function TabCountBadge({
     const denom = grandTotal ?? 0;
     if (denom <= 0) return null;
     const numerator = showFiltered ? filtered : total;
-    if (numerator === denom) return null;
+    if (collapseAtFull && numerator === denom) return null;
     return (
       <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
         {formatApproxPercentage(numerator / denom)}
@@ -312,6 +315,7 @@ function buildSummaryTab(
             isLoading={isLoading}
             isSampled={isSampled}
             grandTotal={grandTotal}
+            collapseAtFull={id === ALL_TAB_ID}
           />
         </span>
       </HoverTooltip>
