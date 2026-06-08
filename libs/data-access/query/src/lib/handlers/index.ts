@@ -1,6 +1,5 @@
 export { listInvocations } from './listInvocations';
 export { getInvocation } from './getInvocation';
-export { getInvocationJournal } from './getInvocationJournal';
 export { getJournalEntryV2 } from './getJournalEntryV2';
 export { getInvocationJournalV2 } from './getInvocationJournalV2';
 export { getInbox } from './getInbox';

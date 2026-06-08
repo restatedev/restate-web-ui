@@ -617,14 +617,12 @@ export function useSummaryInvocations(
     // — sampling is a per-call opt-in, not the implicit behavior.
     sampled = false,
     sampleSize,
-    includeDuration,
     range,
     meta: callerMeta,
     ...options
   }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
     sampled?: boolean;
     sampleSize?: number;
-    includeDuration?: boolean;
     range?: string;
   } = {},
 ) {
@@ -639,7 +637,6 @@ export function useSummaryInvocations(
       filters,
       sampled,
       sampleSize,
-      includeDuration,
       range,
     },
   });
@@ -1003,37 +1000,6 @@ export function useGetPausedError(
   const queryOptions = adminApi(
     'query',
     '/query/invocations/{invocationId}/paused-error',
-    'get',
-    {
-      baseUrl,
-      parameters: { path: { invocationId } },
-    },
-  );
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-    enabled: options?.enabled !== false && enabled,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
-export function useGetInvocationJournal(
-  invocationId: string,
-  options?: HookQueryOptions<
-    '/query/invocations/{invocationId}/journal',
-    'get'
-  >,
-) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/invocations/{invocationId}/journal',
     'get',
     {
       baseUrl,

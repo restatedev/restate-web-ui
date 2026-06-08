@@ -1,6 +1,6 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { convertInvocationsFilters } from '../convertFilters';
-import { type QueryContext } from './shared';
+import { type QueryContext, getSysInvocationListColumns } from './shared';
 
 const COUNT_LIMIT = 200_000;
 const INVOCATIONS_LIMIT = 100;
@@ -9,8 +9,12 @@ export async function countInvocations(
   this: QueryContext,
   filters: FilterItem[],
 ) {
+  const columns = getSysInvocationListColumns(
+    this.restateVersion,
+    this.features,
+  ).join(', ');
   const minimumCountEstimatePromise = this.query(
-    `SELECT COUNT(1) as total_count FROM (SELECT * FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
+    `SELECT COUNT(1) as total_count FROM (SELECT ${columns} FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
   const limitCountPromise = this.query(
     `SELECT id from sys_invocation ${convertInvocationsFilters(filters)} LIMIT ${INVOCATIONS_LIMIT}`,

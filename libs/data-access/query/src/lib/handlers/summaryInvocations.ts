@@ -2,7 +2,7 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import semverGte from 'semver/functions/gte';
 import { convertInvocationsFilters } from '../convertFilters';
-import { type QueryContext, DURATION_CALC } from './shared';
+import { type QueryContext, getSysInvocationListColumns } from './shared';
 
 const DEFAULT_SAMPLE_SIZE = 50000;
 // Filter fields applied client-side instead of in the SQL WHERE clause, so each
@@ -172,7 +172,6 @@ function buildResponse(
   sampled: boolean,
   range: string | undefined,
   appliedFilters: FilterItem[],
-  extra?: Record<string, unknown>,
 ) {
   const byStatus = Object.entries(buckets.status).map(
     ([name, { total, included }]) => ({
@@ -230,7 +229,6 @@ function buildResponse(
     byServiceAndHandlerAndStatus,
     ...(range !== undefined && { range }),
     appliedFilters,
-    ...extra,
   });
 }
 
@@ -251,7 +249,6 @@ export async function summaryInvocations(
   filters: FilterItem[],
   sampled = true,
   sampleSize = DEFAULT_SAMPLE_SIZE,
-  includeDuration = false,
   range?: string,
 ) {
   // TODO: re-enable split table path once compatible
@@ -266,7 +263,6 @@ export async function summaryInvocations(
   //     filters,
   //     sampled,
   //     sampleSize,
-  //     includeDuration,
   //     range,
   //   );
   // }
@@ -275,7 +271,6 @@ export async function summaryInvocations(
     filters,
     sampled,
     sampleSize,
-    includeDuration,
     range,
   );
 }
@@ -285,31 +280,23 @@ async function summaryInvocationsLegacy(
   filters: FilterItem[],
   sampled: boolean,
   sampleSize: number,
-  includeDuration: boolean,
   range: string | undefined,
 ) {
   const rangeFilter = rangeToCreatedAtFilter(range);
   const allFilters = rangeFilter ? [rangeFilter, ...filters] : filters;
   const baseFilters = allFilters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
   const where = convertInvocationsFilters(baseFilters);
+  const columns = getSysInvocationListColumns(
+    this.restateVersion,
+    this.features,
+  ).join(', ');
   const subquery = sampled
-    ? `(SELECT * FROM sys_invocation LIMIT ${sampleSize})`
+    ? `(SELECT ${columns} FROM sys_invocation LIMIT ${sampleSize})`
     : 'sys_invocation';
 
-  const countsPromise = this.query(
+  const { rows } = await this.query(
     `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`,
   );
-
-  const durationPromise = includeDuration
-    ? this.query(
-        `SELECT APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.5) as p50, APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.9) as p90, APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.99) as p99 FROM ${subquery} ${where}`,
-      )
-    : undefined;
-
-  const [{ rows }, durationResult] = await Promise.all([
-    countsPromise,
-    durationPromise,
-  ]);
 
   const matchers = buildInclusionMatcher(filters);
   const buckets = createBuckets();
@@ -331,21 +318,7 @@ async function summaryInvocationsLegacy(
     );
   }
 
-  let extra: Record<string, unknown> | undefined;
-  if (durationResult) {
-    const p = durationResult.rows?.at(0);
-    if (p?.p50 != null && p?.p90 != null && p?.p99 != null) {
-      extra = {
-        duration: {
-          p50: String(p.p50),
-          p90: String(p.p90),
-          p99: String(p.p99),
-        },
-      };
-    }
-  }
-
-  return buildResponse(buckets, totalCount, sampled, range, baseFilters, extra);
+  return buildResponse(buckets, totalCount, sampled, range, baseFilters);
 }
 
 async function summaryInvocationsSplit(
@@ -353,7 +326,6 @@ async function summaryInvocationsSplit(
   filters: FilterItem[],
   sampled: boolean,
   sampleSize: number,
-  includeDuration: boolean,
   range: string | undefined,
 ) {
   const baseFilters = filters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
@@ -374,22 +346,8 @@ async function summaryInvocationsSplit(
 
   const servicesPromise = this.query(`SELECT name FROM sys_service`);
 
-  const durationSubquery = sampled
-    ? `(SELECT * FROM sys_invocation LIMIT ${sampleSize})`
-    : 'sys_invocation';
-  const durationPromise = includeDuration
-    ? this.query(
-        `SELECT APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.5) as p50, APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.9) as p90, APPROX_PERCENTILE_CONT(${DURATION_CALC}, 0.99) as p99 FROM ${durationSubquery} ${where}`,
-      )
-    : undefined;
-
-  const [{ rows }, { rows: stateRows }, { rows: serviceRows }, durationResult] =
-    await Promise.all([
-      countsPromise,
-      statePromise,
-      servicesPromise,
-      durationPromise,
-    ]);
+  const [{ rows }, { rows: stateRows }, { rows: serviceRows }] =
+    await Promise.all([countsPromise, statePromise, servicesPromise]);
 
   const statePerServiceHandler = new Map<
     string,
@@ -498,19 +456,5 @@ async function summaryInvocationsSplit(
     }
   }
 
-  let extra: Record<string, unknown> | undefined;
-  if (durationResult) {
-    const p = durationResult.rows?.at(0);
-    if (p?.p50 != null && p?.p90 != null && p?.p99 != null) {
-      extra = {
-        duration: {
-          p50: String(p.p50),
-          p90: String(p.p90),
-          p99: String(p.p99),
-        },
-      };
-    }
-  }
-
-  return buildResponse(buckets, totalCount, sampled, range, baseFilters, extra);
+  return buildResponse(buckets, totalCount, sampled, range, baseFilters);
 }
