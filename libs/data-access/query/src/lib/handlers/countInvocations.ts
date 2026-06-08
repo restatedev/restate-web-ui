@@ -9,10 +9,7 @@ export async function countInvocations(
   this: QueryContext,
   filters: FilterItem[],
 ) {
-  const columns = getSysInvocationListColumns(
-    this.restateVersion,
-    this.features,
-  ).join(', ');
+  const columns = getSysInvocationListColumns(this.features).join(', ');
   const minimumCountEstimatePromise = this.query(
     `SELECT COUNT(1) as total_count FROM (SELECT ${columns} FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
   ).then(({ rows }) => rows?.at(0)?.total_count as number);

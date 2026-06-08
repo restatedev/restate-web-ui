@@ -31,7 +31,7 @@ export async function listInvocations(
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
   if (idRows.length > 0) {
-    const detailColumns = `${getSysInvocationListColumns(this.restateVersion, this.features).join(', ')}, ${DURATION_EXPRESSION}`;
+    const detailColumns = `${getSysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
     const { rows: invRows } = await this.query(
       `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters([
         {

@@ -64,11 +64,6 @@ const SYS_INVOCATION_DETAIL_COLUMNS = [
   'last_failure_related_command_type',
 ] as const;
 
-function supportsWaitingColumns(restateVersion: string): boolean {
-  const coerced = semverCoerce(restateVersion);
-  return coerced ? semverGte(coerced, '1.7.0') : false;
-}
-
 // `raw_length` was added to sys_journal in 1.7.0; older servers don't have the
 // column and DataFusion errors on an unknown column, so gate it to avoid
 // breaking the whole journal query.
@@ -78,10 +73,9 @@ export function supportsJournalRawLength(restateVersion: string): boolean {
 }
 
 export function getSysInvocationListColumns(
-  restateVersion: string,
   features: Set<string>,
 ): readonly string[] {
-  const base = supportsWaitingColumns(restateVersion)
+  const base = features.has('protocol_v7')
     ? [...SYS_INVOCATION_LIST_COLUMNS, ...SYS_INVOCATION_WAITING_COLUMNS]
     : SYS_INVOCATION_LIST_COLUMNS;
   return features.has('vqueues')
@@ -90,11 +84,10 @@ export function getSysInvocationListColumns(
 }
 
 export function getSysInvocationColumns(
-  restateVersion: string,
   features: Set<string>,
 ): readonly string[] {
   return [
-    ...getSysInvocationListColumns(restateVersion, features),
+    ...getSysInvocationListColumns(features),
     ...SYS_INVOCATION_DETAIL_COLUMNS,
   ];
 }

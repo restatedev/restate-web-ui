@@ -286,10 +286,7 @@ async function summaryInvocationsLegacy(
   const allFilters = rangeFilter ? [rangeFilter, ...filters] : filters;
   const baseFilters = allFilters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
   const where = convertInvocationsFilters(baseFilters);
-  const columns = getSysInvocationListColumns(
-    this.restateVersion,
-    this.features,
-  ).join(', ');
+  const columns = getSysInvocationListColumns(this.features).join(', ');
   const subquery = sampled
     ? `(SELECT ${columns} FROM sys_invocation LIMIT ${sampleSize})`
     : 'sys_invocation';
