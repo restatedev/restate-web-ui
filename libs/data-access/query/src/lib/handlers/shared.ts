@@ -64,11 +64,6 @@ const SYS_INVOCATION_DETAIL_COLUMNS = [
   'last_failure_related_command_type',
 ] as const;
 
-function supportsWaitingColumns(restateVersion: string): boolean {
-  const coerced = semverCoerce(restateVersion);
-  return coerced ? semverGte(coerced, '1.7.0') : false;
-}
-
 // `raw_length` was added to sys_journal in 1.7.0; older servers don't have the
 // column and DataFusion errors on an unknown column, so gate it to avoid
 // breaking the whole journal query.
@@ -78,10 +73,9 @@ export function supportsJournalRawLength(restateVersion: string): boolean {
 }
 
 export function getSysInvocationListColumns(
-  restateVersion: string,
   features: Set<string>,
 ): readonly string[] {
-  const base = supportsWaitingColumns(restateVersion)
+  const base = features.has('protocol_v7')
     ? [...SYS_INVOCATION_LIST_COLUMNS, ...SYS_INVOCATION_WAITING_COLUMNS]
     : SYS_INVOCATION_LIST_COLUMNS;
   return features.has('vqueues')
@@ -90,11 +84,10 @@ export function getSysInvocationListColumns(
 }
 
 export function getSysInvocationColumns(
-  restateVersion: string,
   features: Set<string>,
 ): readonly string[] {
   return [
-    ...getSysInvocationListColumns(restateVersion, features),
+    ...getSysInvocationListColumns(features),
     ...SYS_INVOCATION_DETAIL_COLUMNS,
   ];
 }
@@ -113,25 +106,23 @@ export type QueryContext = {
 export type StateServiceType = 'virtual_object' | 'workflow' | 'service';
 
 export function shouldFilterScopeIsNull(
-  context: { restateVersion: string; features: Set<string> },
+  context: { features: Set<string> },
   serviceType?: StateServiceType,
 ): boolean {
-  const coerced = semverCoerce(context.restateVersion);
-  const isAtLeast17 = coerced ? semverGte(coerced, '1.7.0') : false;
-  if (!isAtLeast17) return false;
+  if (!context.features.has('vqueues')) return false;
   // Virtual objects don't expose scope to users — force the NULL filter even
   // when the `vqueues` feature is enabled (scope is only meaningful for vqueue
   // services, not VOs).
   if (serviceType === 'virtual_object') return true;
-  if (context.features.has('vqueues')) return false;
-  return true;
+  return false;
 }
 
 export function scopeClause(
-  context: { restateVersion: string; features: Set<string> },
+  context: { features: Set<string> },
   explicitScope?: string,
   serviceType?: StateServiceType,
 ): string {
+  if (!context.features.has('vqueues')) return '';
   if (explicitScope !== undefined) {
     return ` AND scope = '${explicitScope}'`;
   }

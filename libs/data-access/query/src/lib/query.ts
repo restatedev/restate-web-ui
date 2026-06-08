@@ -16,7 +16,6 @@ import {
   createQueryContext,
   listInvocations,
   getInvocation,
-  getInvocationJournal,
   getJournalEntryV2,
   getInvocationJournalV2,
   getJournalEntryPayloads,
@@ -53,12 +52,10 @@ type BoundHandlers = {
     filters: FilterItem[],
     sampled?: boolean,
     sampleSize?: number,
-    includeDuration?: boolean,
     range?: string,
   ) => Promise<Response>;
   getInvocationsStatus: (invocationIds: string[]) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
-  getInvocationJournal: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
     invocationId: string,
     entryIndex: number,
@@ -132,7 +129,6 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getInvocationsStatus: getInvocationsStatus.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
-    getInvocationJournal: getInvocationJournal.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
     getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
@@ -223,10 +219,6 @@ export const routes = createRoutes('/query', {
       method: 'GET',
       pattern: '/invocations/:invocationId/journal/:entryIndex/payloads',
     },
-    journal: {
-      method: 'GET',
-      pattern: '/invocations/:invocationId/journal',
-    },
     cancel: { method: 'POST', pattern: '/invocations/cancel' },
     purge: { method: 'POST', pattern: '/invocations/purge' },
     kill: { method: 'POST', pattern: '/invocations/kill' },
@@ -299,22 +291,14 @@ router.map(routes, {
           filters = [],
           sampled,
           sampleSize,
-          includeDuration,
           range,
         }: {
           filters: FilterItem[];
           sampled?: boolean;
           sampleSize?: number;
-          includeDuration?: boolean;
           range?: string;
         } = await ctx.request.json();
-        return summaryInvocations(
-          filters,
-          sampled,
-          sampleSize,
-          includeDuration,
-          range,
-        );
+        return summaryInvocations(filters, sampled, sampleSize, range);
       },
       async statuses(ctx) {
         const { getInvocationsStatus } = ctx.storage.get(handlersKey);
@@ -341,10 +325,6 @@ router.map(routes, {
           ctx.params.invocationId,
           Number(ctx.params.entryIndex),
         );
-      },
-      async journal(ctx) {
-        const { getInvocationJournal } = ctx.storage.get(handlersKey);
-        return getInvocationJournal(ctx.params.invocationId);
       },
       async cancel(ctx) {
         const { batchCancelInvocations } = ctx.storage.get(handlersKey);
