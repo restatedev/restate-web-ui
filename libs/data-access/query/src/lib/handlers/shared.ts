@@ -7,6 +7,10 @@ export const DURATION_CALC =
 
 export const DURATION_EXPRESSION = `${DURATION_CALC} AS duration`;
 
+export function quoteSqlString(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`;
+}
+
 export const SYS_INVOCATION_LIST_COLUMNS = [
   'id',
   'target',

@@ -1,4 +1,4 @@
-import type { QueryContext } from './shared';
+import { type QueryContext, quoteSqlString } from './shared';
 
 type InvocationStatus =
   | 'succeeded'
@@ -10,10 +10,6 @@ type InvocationStatus =
   | 'ready'
   | 'paused'
   | 'backing-off';
-
-function quoteSqlString(value: string) {
-  return `'${value.replaceAll("'", "''")}'`;
-}
 
 function getInvocationStatus(
   status?: string,

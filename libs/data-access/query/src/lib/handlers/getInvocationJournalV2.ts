@@ -1,5 +1,4 @@
 import type {
-  Invocation,
   JournalEntryV2,
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
@@ -20,6 +19,7 @@ import {
   getSysInvocationColumns,
   supportsJournalRawLength,
 } from './shared';
+import { fetchVqueueStatus } from './vqueue';
 
 function sortJournalEntries(entries: JournalEntryV2[]) {
   const timestampCache = new Map<JournalEntryV2, number>();
@@ -86,23 +86,29 @@ export async function getInvocationJournalV2(
   this: QueryContext,
   invocationId: string,
   includePayloads = false,
+  vqueueId?: string,
   includeRaw = false,
 ): Promise<Response> {
   const entryJsonColumn = includePayloads ? 'entry_json' : 'entry_lite_json';
   const rawLengthColumn = supportsJournalRawLength(this.restateVersion)
     ? 'raw_length,'
     : '';
-  const [invocationQuery, journalQuery, eventsQuery] = await Promise.all([
-    this.query(
-      `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
-    ),
-    this.query(
-      `SELECT id, index, appended_at, entry_type, name, ${rawLengthColumn} ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' ORDER BY index`,
-    ),
-    this.query(
-      `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}' ORDER BY appended_at`,
-    ),
-  ]);
+  const [invocationQuery, journalQuery, eventsQuery, vqueueHint] =
+    await Promise.all([
+      this.query(
+        `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
+      ),
+      this.query(
+        `SELECT id, index, appended_at, entry_type, name, ${rawLengthColumn} ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' ORDER BY index`,
+      ),
+      this.query(
+        `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}' ORDER BY appended_at`,
+      ),
+      // Resolve the vqueue status in parallel using the id the UI carried over
+      // from its last poll. A missing or stale hint is recovered sequentially
+      // below, once the invocation's current vqueue_id is known.
+      fetchVqueueStatus(this, invocationId, vqueueId),
+    ]);
   const shouldFetchWithRaw =
     !includeRaw &&
     journalQuery.rows.some(
@@ -115,15 +121,13 @@ export async function getInvocationJournalV2(
       this,
       invocationId,
       includePayloads,
+      vqueueId,
       true,
     );
   }
 
-  const invocation = invocationQuery.rows
-    .map(convertInvocation)
-    .at(0) as Invocation;
-
-  if (!invocation) {
+  const rawInvocation = invocationQuery.rows.at(0);
+  if (!rawInvocation) {
     return new Response(
       JSON.stringify({
         message: ERROR_CODES[UI_ERROR_CODES.invocationNotFound]?.help,
@@ -136,6 +140,20 @@ export async function getInvocationJournalV2(
       },
     );
   }
+
+  let vqueueStatus = vqueueHint;
+  if (
+    !vqueueStatus &&
+    rawInvocation.vqueue_id &&
+    rawInvocation.vqueue_id !== vqueueId
+  ) {
+    vqueueStatus = await fetchVqueueStatus(
+      this,
+      invocationId,
+      rawInvocation.vqueue_id,
+    );
+  }
+  const invocation = convertInvocation(rawInvocation, vqueueStatus);
 
   const version = journalQuery.rows.at(0)?.version;
   const journalRows = journalQuery.rows as JournalRawEntry[];

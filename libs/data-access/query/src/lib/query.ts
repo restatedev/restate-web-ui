@@ -67,6 +67,7 @@ type BoundHandlers = {
   getInvocationJournalV2: (
     invocationId: string,
     includePayloads?: boolean,
+    vqueueId?: string,
   ) => Promise<Response>;
   getInbox: (
     service: string,
@@ -366,7 +367,12 @@ router.map(routes, {
         const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
         const includePayloads =
           ctx.url.searchParams.get('includePayloads') === 'true';
-        return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
+        const vqueueId = ctx.url.searchParams.get('vqueueId') ?? undefined;
+        return getInvocationJournalV2(
+          ctx.params.invocationId,
+          includePayloads,
+          vqueueId,
+        );
       },
     },
     virtualObjects: {

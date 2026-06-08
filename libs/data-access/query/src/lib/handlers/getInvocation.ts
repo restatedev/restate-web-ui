@@ -5,7 +5,7 @@ import { type QueryContext, getSysInvocationColumns } from './shared';
 export async function getInvocation(this: QueryContext, invocationId: string) {
   const invocations = await this.query(
     `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
-  ).then(({ rows }) => rows.map(convertInvocation));
+  ).then(({ rows }) => rows.map((row) => convertInvocation(row)));
   if (invocations.length > 0) {
     return new Response(JSON.stringify(invocations.at(0)), {
       status: 200,

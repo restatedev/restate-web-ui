@@ -43,7 +43,7 @@ export async function listInvocations(
         ...filters,
       ])} ORDER BY ${sort.field} ${sort.order}`,
     );
-    invocations = invRows.map(convertInvocation);
+    invocations = invRows.map((row) => convertInvocation(row));
   }
 
   // No total_count is sent — the UI derives the visible count from
