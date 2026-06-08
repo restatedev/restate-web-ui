@@ -2,7 +2,10 @@ import {
   Invocation,
   InvocationComputedStatus2,
 } from '@restate/data-access/admin-api-spec';
-import { useGetPausedError } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetPausedError,
+  useGetTransientError,
+} from '@restate/data-access/admin-api-hooks';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
@@ -152,6 +155,24 @@ export function Status({
         )
       : undefined;
   const hasPausedError = Boolean(pausedError) && invocation.status === 'paused';
+  const isRetrying = Boolean(invocation.isRetrying);
+  // The last transient (retry) error comes from sys_journal_events, not
+  // sys_invocation.last_failure — the latter is empty for vqueue-backed
+  // invocations that are backing-off.
+  const { data: transientErrorData } = useGetTransientError(invocation.id, {
+    enabled: isRetrying,
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+  const transientError =
+    isRetrying && transientErrorData?.message
+      ? new RestateError(
+          transientErrorData.message,
+          transientErrorData.relatedRestateErrorCode,
+          true,
+          transientErrorData.stack,
+        )
+      : undefined;
   const variant = getBadgeVariant(status, invocation.isRetrying);
   const error = getRestateError(invocation);
   return (
@@ -179,11 +200,11 @@ export function Status({
             is tight (e.g. the invocation header). md:contents keeps these as
             inline children of the badge at md+. */}
         <span className={secondaryStyles({ mini })}>
-          {(status === 'failed' || invocation.isRetrying) && (
+          {(status === 'failed' || isRetrying) && (
             <LastError
-              isRetrying={Boolean(invocation.isRetrying)}
+              isRetrying={isRetrying}
               isFailed={status === 'failed'}
-              error={error}
+              error={isRetrying ? transientError : error}
               attemptCount={invocation.retry_count}
             />
           )}

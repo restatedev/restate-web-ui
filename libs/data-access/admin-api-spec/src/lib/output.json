@@ -3433,6 +3433,97 @@
         }
       }
     },
+    "/query/invocations/{invocationId}/transient-error": {
+      "get": {
+        "tags": ["query-invocations"],
+        "summary": "Get transient error",
+        "description": "Get the most recent transient (retry) error for an invocation, read from sys_journal_events. Returns the error message, stack trace, error code, and related command information.",
+        "operationId": "get_transient_error",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transient error details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransientErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/invocations/{invocationId}/journal/{entryIndex}": {
       "get": {
         "tags": ["get-journal-entry"],
@@ -7949,6 +8040,45 @@
             "type": "string",
             "format": "date-time",
             "description": "Timestamp when the invocation was paused"
+          }
+        }
+      },
+      "TransientErrorResponse": {
+        "type": "object",
+        "description": "Most recent transient (retry) error for an invocation",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The transient error message"
+          },
+          "stack": {
+            "type": "string",
+            "description": "Stack trace of the error"
+          },
+          "code": {
+            "type": "integer",
+            "description": "Error code"
+          },
+          "relatedCommandName": {
+            "type": "string",
+            "description": "Name of the command that caused the error"
+          },
+          "relatedCommandType": {
+            "type": "string",
+            "description": "Type of the command that caused the error"
+          },
+          "relatedRestateErrorCode": {
+            "type": "string",
+            "description": "Restate-specific error code"
+          },
+          "relatedCommandIndex": {
+            "type": "integer",
+            "description": "Index of the command that caused the error"
+          },
+          "failedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the transient error occurred"
           }
         }
       },

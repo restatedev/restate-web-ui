@@ -34,6 +34,7 @@ import {
   getInvocationsStatus,
   summaryInvocations,
   getPausedError,
+  getTransientError,
   listDrainedDeployments,
   type ListStateArgs,
   type ListStateItem,
@@ -120,6 +121,7 @@ type BoundHandlers = {
     request: BatchInvocationsRequestBody,
   ) => Promise<Response>;
   getPausedError: (invocationId: string) => Promise<Response>;
+  getTransientError: (invocationId: string) => Promise<Response>;
   listDrainedDeployments: () => Promise<Response>;
 };
 
@@ -151,6 +153,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     batchResumeInvocations: batchResumeInvocations.bind(context),
     batchRestartAsNewInvocations: batchRestartAsNewInvocations.bind(context),
     getPausedError: getPausedError.bind(context),
+    getTransientError: getTransientError.bind(context),
     listDrainedDeployments: listDrainedDeployments.bind(context),
   };
 }
@@ -232,6 +235,10 @@ export const routes = createRoutes('/query', {
     pausedError: {
       method: 'GET',
       pattern: '/invocations/:invocationId/paused-error',
+    },
+    transientError: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/transient-error',
     },
   },
   invocationsV2: {
@@ -360,6 +367,10 @@ router.map(routes, {
       async pausedError(ctx) {
         const { getPausedError } = ctx.storage.get(handlersKey);
         return getPausedError(ctx.params.invocationId);
+      },
+      async transientError(ctx) {
+        const { getTransientError } = ctx.storage.get(handlersKey);
+        return getTransientError(ctx.params.invocationId);
       },
     },
     invocationsV2: {

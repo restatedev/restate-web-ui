@@ -1019,6 +1019,37 @@ export function useGetPausedError(
   };
 }
 
+export function useGetTransientError(
+  invocationId: string,
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/transient-error',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/transient-error',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId } },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useGetInvocationJournalEntry(
   invocationId: string,
   entryIndex: number,
