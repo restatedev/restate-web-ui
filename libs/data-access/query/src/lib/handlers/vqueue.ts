@@ -15,6 +15,12 @@ function vqueueStatusFlagEnabled(): boolean {
   // );
 }
 
+// Whether the vqueue status overlay should run: the server exposes virtual
+// queues (so sys_vqueues exists) and the local flag is on.
+export function vqueueStatusEnabled(ctx: QueryContext): boolean {
+  return ctx.features.has('vqueues') && vqueueStatusFlagEnabled();
+}
+
 // Looks up the live vqueue state for one invocation's entry. Runs no query —
 // and returns undefined — when the flag is off or no `vqueueId` is known.
 // Keyed by both the queue (`id`) and the invocation (`entry_id`): a stale
@@ -53,7 +59,7 @@ export async function fetchVqueueStatuses(
   invocationIds: string[],
 ): Promise<Map<string, VqueueStatus>> {
   const statuses = new Map<string, VqueueStatus>();
-  if (!ctx.features.has('vqueues') || !vqueueStatusFlagEnabled()) {
+  if (!vqueueStatusEnabled(ctx)) {
     return statuses;
   }
   const ids = [...new Set(invocationIds.filter(Boolean))];

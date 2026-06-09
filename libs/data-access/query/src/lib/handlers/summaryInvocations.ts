@@ -3,6 +3,7 @@ import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import semverGte from 'semver/functions/gte';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext, getSysInvocationListColumns } from './shared';
+import { vqueueStatusEnabled } from './vqueue';
 
 const DEFAULT_SAMPLE_SIZE = 50000;
 // Filter fields applied client-side instead of in the SQL WHERE clause, so each
@@ -291,8 +292,21 @@ async function summaryInvocationsLegacy(
     ? `(SELECT ${columns} FROM sys_invocation LIMIT ${sampleSize})`
     : 'sys_invocation';
 
+  // When vqueues are enabled, relabel 'ready' invocations that are actually
+  // backing-off in the queue (sys_invocation reports them as 'ready'). Counts
+  // are grouped, so the override has to happen in SQL before GROUP BY — a CASE
+  // over a LEFT JOIN to the backing-off set — rather than the per-row
+  // convertInvocation overlay used elsewhere.
+  const overlayVqueue = vqueueStatusEnabled(this);
+  const statusExpression = overlayVqueue
+    ? `CASE WHEN status = 'ready' AND vq.entry_id IS NOT NULL THEN 'backing-off' ELSE status END`
+    : 'status';
+  const vqueueJoin = overlayVqueue
+    ? `LEFT JOIN (SELECT entry_id FROM sys_vqueues WHERE stage = 'inbox' AND status = 'backing-off') vq ON vq.entry_id = si.id`
+    : '';
+
   const { rows } = await this.query(
-    `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`,
+    `SELECT ${statusExpression} AS status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${subquery} si ${vqueueJoin} ${where} GROUP BY ${statusExpression}, completion_result, target_service_name, target_handler_name`,
   );
 
   const matchers = buildInclusionMatcher(filters);
