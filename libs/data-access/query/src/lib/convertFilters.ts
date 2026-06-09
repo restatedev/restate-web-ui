@@ -412,8 +412,24 @@ export function convertInvocationsFilters(
   }
   if (statusFilters.length > 0) {
     statusFilters.forEach((statusFilter) => {
+      // The backing-off/ready rewrite only changes the result when exactly one
+      // of them is selected (it shifts vqueue-backed rows across that boundary).
+      // When both are present the union equals the plain terms, so skip the
+      // rewrite — and its sys_vqueues semi-joins — entirely.
+      const statusValues = new Set<string | undefined>(
+        statusFilter.type === 'STRING_LIST'
+          ? statusFilter.value
+          : statusFilter.type === 'STRING'
+            ? [statusFilter.value]
+            : [],
+      );
+      const rewriteStatus = (value?: string) =>
+        vqueueBackingOff &&
+        isVqueueRewrittenStatus(value) &&
+        !statusValues.has(value === 'backing-off' ? 'ready' : 'backing-off');
+
       if (statusFilter.type === 'STRING') {
-        if (vqueueBackingOff && isVqueueRewrittenStatus(statusFilter.value)) {
+        if (rewriteStatus(statusFilter.value)) {
           mappedFilters.push(vqueueStatusClause(statusFilter.value as string));
         } else {
           const { groups, operator } = getStatusFilterString(
@@ -439,7 +455,7 @@ export function convertInvocationsFilters(
         mappedFilters.push(
           `(${statusFilter.value
             .map((value) => {
-              if (vqueueBackingOff && isVqueueRewrittenStatus(value)) {
+              if (rewriteStatus(value)) {
                 return vqueueStatusClause(value);
               }
               const { groups, operator } = getStatusFilterString(value);
@@ -465,7 +481,7 @@ export function convertInvocationsFilters(
         mappedFilters.push(
           `(${statusFilter.value
             .map((value) => {
-              if (vqueueBackingOff && isVqueueRewrittenStatus(value)) {
+              if (rewriteStatus(value)) {
                 return `NOT ${vqueueStatusClause(value)}`;
               }
               const { groups, operator } = getStatusFilterString(value);
