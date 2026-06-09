@@ -160,7 +160,7 @@ export function Status({
   // sys_invocation.last_failure — the latter is empty for vqueue-backed
   // invocations that are backing-off.
   const { data: transientErrorData } = useGetTransientError(invocation.id, {
-    enabled: isRetrying,
+    enabled: isRetrying && !invocation.last_failure,
     refetchOnMount: true,
     staleTime: 0,
   });
