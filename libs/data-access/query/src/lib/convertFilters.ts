@@ -296,43 +296,59 @@ function getStatusFilterString(value?: string): {
   }
 }
 
-function deploymentPositiveFilter(value?: string) {
-  return `(${convertFilterStringToSqlClause({
-    field: 'last_attempt_deployment_id',
-    operation: 'EQUALS',
-    type: 'STRING',
-    value,
-  })} OR ${convertFilterStringToSqlClause({
-    field: 'pinned_deployment_id',
-    operation: 'EQUALS',
-    type: 'STRING',
-    value,
-  })})`;
+// An invocation "belongs to" a deployment via either the deployment that last
+// attempted it or the one it's pinned to. Both columns exist on the
+// sys_invocation view; sys_invocation_status only has pinned_deployment_id
+// (last_attempt_deployment_id lives in sys_invocation_state), so callers
+// targeting that table pass a narrower field set.
+const DEPLOYMENT_FILTER_FIELDS = [
+  'last_attempt_deployment_id',
+  'pinned_deployment_id',
+] as const;
+
+function deploymentPositiveFilter(
+  value: string | undefined,
+  fields: readonly string[],
+) {
+  return `(${fields
+    .map((field) =>
+      convertFilterStringToSqlClause({
+        field,
+        operation: 'EQUALS',
+        type: 'STRING',
+        value,
+      }),
+    )
+    .join(' OR ')})`;
 }
 
-function deploymentNegativeFilter(value?: string) {
-  return `((${convertFilterStringToSqlClause({
-    field: 'last_attempt_deployment_id',
-    operation: 'NOT_EQUALS',
-    type: 'STRING',
-    value,
-  })} OR ${convertFilterNullToSqlClause({
-    field: 'last_attempt_deployment_id',
-    operation: 'IS',
-    type: 'NULL',
-  })}) AND (${convertFilterStringToSqlClause({
-    field: 'pinned_deployment_id',
-    operation: 'NOT_EQUALS',
-    type: 'STRING',
-    value,
-  })} OR ${convertFilterNullToSqlClause({
-    field: 'pinned_deployment_id',
-    operation: 'IS',
-    type: 'NULL',
-  })}))`;
+function deploymentNegativeFilter(
+  value: string | undefined,
+  fields: readonly string[],
+) {
+  return `(${fields
+    .map(
+      (field) =>
+        `(${convertFilterStringToSqlClause({
+          field,
+          operation: 'NOT_EQUALS',
+          type: 'STRING',
+          value,
+        })} OR ${convertFilterNullToSqlClause({
+          field,
+          operation: 'IS',
+          type: 'NULL',
+        })})`,
+    )
+    .join(' AND ')})`;
 }
 
-export function convertInvocationsFilters(filters: FilterItem[]) {
+export function convertInvocationsFilters(
+  filters: FilterItem[],
+  options: { deploymentFields?: readonly string[] } = {},
+) {
+  const deploymentFields =
+    options.deploymentFields ?? DEPLOYMENT_FILTER_FIELDS;
   const statusFilters = filters.filter((filter) => filter.field === 'status');
   const deploymentFilter = filters.find(
     (filter) => filter.field === 'deployment',
@@ -348,24 +364,28 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
   if (deploymentFilter) {
     if (deploymentFilter.type === 'STRING') {
       if (deploymentFilter.operation === 'EQUALS') {
-        mappedFilters.push(deploymentPositiveFilter(deploymentFilter.value));
+        mappedFilters.push(
+          deploymentPositiveFilter(deploymentFilter.value, deploymentFields),
+        );
       }
       if (deploymentFilter.operation === 'NOT_EQUALS') {
-        mappedFilters.push(deploymentNegativeFilter(deploymentFilter.value));
+        mappedFilters.push(
+          deploymentNegativeFilter(deploymentFilter.value, deploymentFields),
+        );
       }
     }
     if (deploymentFilter.type === 'STRING_LIST') {
       if (deploymentFilter.operation === 'IN') {
         mappedFilters.push(
           `(${deploymentFilter.value
-            .map((value) => deploymentPositiveFilter(value))
+            .map((value) => deploymentPositiveFilter(value, deploymentFields))
             .join(' OR ')})`,
         );
       }
       if (deploymentFilter.operation === 'NOT_IN') {
         mappedFilters.push(
           `(${deploymentFilter.value
-            .map((value) => deploymentNegativeFilter(value))
+            .map((value) => deploymentNegativeFilter(value, deploymentFields))
             .join(' AND ')})`,
         );
       }

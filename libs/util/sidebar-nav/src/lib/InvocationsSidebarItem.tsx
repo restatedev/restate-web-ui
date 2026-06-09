@@ -96,13 +96,13 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
     filters: [{ id: 'idempotency_key', operation: 'IS NOT NULL' }],
     columns: [...DEFAULT_PRESET_COLUMNS, 'idempotency_key'],
   },
-  {
-    id: 'retried',
-    label: 'Most retried',
-    filters: [{ id: 'retry_count', operation: 'GREATER_THAN', value: 1 }],
-    sort: { field: 'retry_count', order: 'DESC' },
-    columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
-  },
+  // {
+  //   id: 'retried',
+  //   label: 'Most retried',
+  //   filters: [{ id: 'retry_count', operation: 'GREATER_THAN', value: 1 }],
+  //   sort: { field: 'retry_count', order: 'DESC' },
+  //   columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
+  // },
   {
     id: 'restarted',
     label: 'Restarted',
