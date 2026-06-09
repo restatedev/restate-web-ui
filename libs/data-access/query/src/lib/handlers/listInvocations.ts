@@ -9,7 +9,7 @@ import {
   getSysInvocationListColumns,
   DURATION_EXPRESSION,
 } from './shared';
-import { fetchVqueueStatuses } from './vqueue';
+import { fetchVqueueStatuses, vqueueStatusEnabled } from './vqueue';
 
 const INVOCATIONS_LIMIT = 250;
 
@@ -25,9 +25,12 @@ export async function listInvocations(
   const idSelectColumns = isSortByDuration
     ? `id, ${DURATION_EXPRESSION}`
     : 'id';
+  // vqueue-backed backing-off invocations show as 'ready' on the view, so the
+  // status filter rewrites backing-off/ready to match the overlaid status.
+  const vqueueBackingOff = vqueueStatusEnabled(this);
 
   const { rows: idRows } = await this.query(
-    `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters, { vqueueBackingOff })} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
   );
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
@@ -48,6 +51,7 @@ export async function listInvocations(
             },
             ...filters,
           ],
+          { vqueueBackingOff },
         )} ORDER BY ${sort.field} ${sort.order}`,
       ),
       fetchVqueueStatuses(this, ids),

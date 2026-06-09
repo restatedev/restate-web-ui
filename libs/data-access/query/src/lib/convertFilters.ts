@@ -343,11 +343,31 @@ function deploymentNegativeFilter(
     .join(' AND ')})`;
 }
 
+const VQUEUE_BACKING_OFF_SET =
+  "SELECT entry_id FROM sys_vqueues WHERE stage = 'inbox' AND status = 'backing-off'";
+
+// On the sys_invocation view a vqueue-backed backing-off invocation shows as
+// 'ready'. Rewrite the 'backing-off'/'ready' status terms so the filter matches
+// the overlaid status — and therefore the summary's buckets.
+function vqueueStatusClause(value: string): string {
+  return value === 'backing-off'
+    ? `(status = 'backing-off' OR (status = 'ready' AND id IN (${VQUEUE_BACKING_OFF_SET})))`
+    : `(status = 'ready' AND id NOT IN (${VQUEUE_BACKING_OFF_SET}))`;
+}
+
+function isVqueueRewrittenStatus(value?: string): boolean {
+  return value === 'backing-off' || value === 'ready';
+}
+
 export function convertInvocationsFilters(
   filters: FilterItem[],
-  options: { deploymentFields?: readonly string[] } = {},
+  options: {
+    deploymentFields?: readonly string[];
+    vqueueBackingOff?: boolean;
+  } = {},
 ) {
   const deploymentFields = options.deploymentFields ?? DEPLOYMENT_FILTER_FIELDS;
+  const vqueueBackingOff = options.vqueueBackingOff ?? false;
   const statusFilters = filters.filter((filter) => filter.field === 'status');
   const deploymentFilter = filters.find(
     (filter) => filter.field === 'deployment',
@@ -393,19 +413,25 @@ export function convertInvocationsFilters(
   if (statusFilters.length > 0) {
     statusFilters.forEach((statusFilter) => {
       if (statusFilter.type === 'STRING') {
-        const { groups, operator } = getStatusFilterString(statusFilter.value);
-        mappedFilters.push(
-          groups
-            .map(
-              ({ filters, operator }) =>
-                `(${filters
-                  .map(convertFilterToSqlClause)
-                  .filter(Boolean)
-                  .join(` ${operator} `)})`,
-            )
-            .filter(Boolean)
-            .join(` ${operator} `),
-        );
+        if (vqueueBackingOff && isVqueueRewrittenStatus(statusFilter.value)) {
+          mappedFilters.push(vqueueStatusClause(statusFilter.value as string));
+        } else {
+          const { groups, operator } = getStatusFilterString(
+            statusFilter.value,
+          );
+          mappedFilters.push(
+            groups
+              .map(
+                ({ filters, operator }) =>
+                  `(${filters
+                    .map(convertFilterToSqlClause)
+                    .filter(Boolean)
+                    .join(` ${operator} `)})`,
+              )
+              .filter(Boolean)
+              .join(` ${operator} `),
+          );
+        }
       } else if (
         statusFilter.type === 'STRING_LIST' &&
         statusFilter.operation === 'IN'
@@ -413,6 +439,9 @@ export function convertInvocationsFilters(
         mappedFilters.push(
           `(${statusFilter.value
             .map((value) => {
+              if (vqueueBackingOff && isVqueueRewrittenStatus(value)) {
+                return vqueueStatusClause(value);
+              }
               const { groups, operator } = getStatusFilterString(value);
               return groups
                 .map(
@@ -436,6 +465,9 @@ export function convertInvocationsFilters(
         mappedFilters.push(
           `(${statusFilter.value
             .map((value) => {
+              if (vqueueBackingOff && isVqueueRewrittenStatus(value)) {
+                return `NOT ${vqueueStatusClause(value)}`;
+              }
               const { groups, operator } = getStatusFilterString(value);
 
               return groups
