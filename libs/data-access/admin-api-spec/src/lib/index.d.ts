@@ -2552,11 +2552,9 @@ export interface components {
           | 'scheduled_at'
           | 'scheduled_start_at'
           | 'running_at'
-          | 'next_retry_at'
           | 'target_service_key'
           | 'target_service_name'
           | 'target_handler_name'
-          | 'retry_count'
           | 'duration';
         /** @enum {string} */
         order: 'ASC' | 'DESC';

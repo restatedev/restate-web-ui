@@ -347,8 +347,7 @@ export function convertInvocationsFilters(
   filters: FilterItem[],
   options: { deploymentFields?: readonly string[] } = {},
 ) {
-  const deploymentFields =
-    options.deploymentFields ?? DEPLOYMENT_FILTER_FIELDS;
+  const deploymentFields = options.deploymentFields ?? DEPLOYMENT_FILTER_FIELDS;
   const statusFilters = filters.filter((filter) => filter.field === 'status');
   const deploymentFilter = filters.find(
     (filter) => filter.field === 'deployment',

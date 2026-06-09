@@ -183,12 +183,12 @@ export function useSchema() {
         type: 'STRING',
       },
 
-      {
-        id: 'retry_count',
-        label: 'Attempt count',
-        operations: [{ value: 'GREATER_THAN', label: '>' }],
-        type: 'NUMBER',
-      },
+      // {
+      //   id: 'retry_count',
+      //   label: 'Attempt count',
+      //   operations: [{ value: 'GREATER_THAN', label: '>' }],
+      //   type: 'NUMBER',
+      // },
       {
         id: 'created_at',
         label: 'Created',
