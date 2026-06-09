@@ -1056,6 +1056,7 @@ export const TABLES = [
       { name: 'transitioned_at', description: '' },
       { name: 'num_attempts', description: '' },
       { name: 'num_pauses', description: '' },
+      { name: 'num_errors', description: '' },
       { name: 'num_suspensions', description: '' },
       { name: 'num_yields', description: '' },
       { name: 'first_attempt_at', description: '' },

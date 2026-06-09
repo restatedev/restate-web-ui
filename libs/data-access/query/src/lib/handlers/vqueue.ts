@@ -30,14 +30,14 @@ export async function fetchVqueueStatus(
   }
 
   const { rows } = await ctx.query(
-    `SELECT status, run_at, num_attempts, latest_attempt_at FROM sys_vqueues WHERE id = ${quoteSqlString(vqueueId)} AND entry_id = ${quoteSqlString(invocationId)}`,
+    `SELECT status, run_at, num_errors, latest_attempt_at FROM sys_vqueues WHERE id = ${quoteSqlString(vqueueId)} AND entry_id = ${quoteSqlString(invocationId)}`,
   );
   const row = rows.at(0);
   return row
     ? {
         status: row.status as string,
         run_at: row.run_at as string,
-        num_attempts: row.num_attempts as number,
+        num_errors: row.num_errors as number,
         latest_attempt_at: row.latest_attempt_at as string,
       }
     : undefined;

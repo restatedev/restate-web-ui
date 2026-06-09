@@ -13,6 +13,7 @@ export type VqueueStatus = {
   status?: string;
   run_at?: string;
   num_attempts?: number;
+  num_errors?: number;
   latest_attempt_at?: string;
 };
 
@@ -28,7 +29,7 @@ function applyVqueueStatus(
       ...invocation,
       status: 'backing-off',
       next_retry_at: vqueue.run_at,
-      retry_count: vqueue.num_attempts,
+      retry_count: vqueue.num_errors,
       last_start_at: vqueue.latest_attempt_at,
     };
   }
