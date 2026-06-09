@@ -18,6 +18,7 @@ export { summaryInvocations } from './summaryInvocations';
 export { getInvocationsStatus } from './getInvocationsStatus';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
+export { getTransientError } from './getTransientError';
 export { listDrainedDeployments } from './listDrainedDeployments';
 export {
   type QueryContext,

@@ -3,6 +3,7 @@ import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import semverGte from 'semver/functions/gte';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext, getSysInvocationListColumns } from './shared';
+import { vqueueStatusEnabled } from './vqueue';
 
 const DEFAULT_SAMPLE_SIZE = 50000;
 // Filter fields applied client-side instead of in the SQL WHERE clause, so each
@@ -285,15 +286,45 @@ async function summaryInvocationsLegacy(
   const rangeFilter = rangeToCreatedAtFilter(range);
   const allFilters = rangeFilter ? [rangeFilter, ...filters] : filters;
   const baseFilters = allFilters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
-  const where = convertInvocationsFilters(baseFilters);
-  const columns = getSysInvocationListColumns(this.features).join(', ');
-  const subquery = sampled
-    ? `(SELECT ${columns} FROM sys_invocation LIMIT ${sampleSize})`
-    : 'sys_invocation';
 
-  const { rows } = await this.query(
-    `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`,
-  );
+  // When vqueues are enabled, count off sys_invocation_status (the raw table —
+  // it carries vqueue_id/created_at, just not the sys_invocation_state columns
+  // the summary never selects) and resolve the runtime status with a
+  // vqueue-aware CASE. Only the coarse 'invoked' needs splitting: an inbox entry
+  // is backing-off, or (yielded) ready, otherwise it's running; 'inboxed' is
+  // pending; every other raw status (suspended/paused/scheduled/completed) is
+  // already fine-grained and passes through. Counts are grouped, so this has to
+  // happen in SQL before GROUP BY.
+  let query: string;
+  if (vqueueStatusEnabled(this)) {
+    // sys_invocation_status has none of the sys_invocation_state columns: match
+    // the deployment filter on pinned_deployment_id only, and drop the
+    // attempt-count (retry_count) filter — neither last_attempt_deployment_id
+    // nor retry_count exists on this table.
+    const statusTableFilters = baseFilters.filter(
+      (f) => f.field !== 'retry_count',
+    );
+    const where = convertInvocationsFilters(statusTableFilters, {
+      deploymentFields: ['pinned_deployment_id'],
+    });
+    const statusColumns =
+      'id, status, completion_result, target_service_name, target_handler_name';
+    const source = sampled
+      ? `(SELECT ${statusColumns} FROM sys_invocation_status ${where} LIMIT ${sampleSize})`
+      : 'sys_invocation_status';
+    const outerWhere = sampled ? '' : where;
+    const statusCase = `CASE WHEN status = 'invoked' AND vq.vq_status = 'backing-off' THEN 'backing-off' WHEN status = 'invoked' AND vq.vq_status = 'yielded' THEN 'ready' WHEN status = 'invoked' THEN 'running' WHEN status = 'inboxed' THEN 'pending' ELSE status END`;
+    query = `SELECT ${statusCase} AS status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${source} si LEFT JOIN (SELECT entry_id, status AS vq_status FROM sys_vqueues WHERE stage = 'inbox' AND status IN ('backing-off', 'yielded')) vq ON vq.entry_id = si.id ${outerWhere} GROUP BY ${statusCase}, completion_result, target_service_name, target_handler_name`;
+  } else {
+    const where = convertInvocationsFilters(baseFilters);
+    const columns = getSysInvocationListColumns(this.features).join(', ');
+    const subquery = sampled
+      ? `(SELECT ${columns} FROM sys_invocation LIMIT ${sampleSize})`
+      : 'sys_invocation';
+    query = `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`;
+  }
+
+  const { rows } = await this.query(query);
 
   const matchers = buildInclusionMatcher(filters);
   const buckets = createBuckets();

@@ -15,7 +15,7 @@ export function isFeatureEnabled(flag: FeatureFlag) {
   return localStorage.getItem(flag) === 'true';
 }
 
-function setFeatureFlag(flag: FeatureFlag, value: boolean) {
+export function setFeatureFlag(flag: FeatureFlag, value: boolean) {
   return localStorage.setItem(flag, String(value));
 }
 

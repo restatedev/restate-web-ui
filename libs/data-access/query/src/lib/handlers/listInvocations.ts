@@ -9,6 +9,7 @@ import {
   getSysInvocationListColumns,
   DURATION_EXPRESSION,
 } from './shared';
+import { fetchVqueueStatuses, vqueueStatusEnabled } from './vqueue';
 
 const INVOCATIONS_LIMIT = 250;
 
@@ -24,26 +25,40 @@ export async function listInvocations(
   const idSelectColumns = isSortByDuration
     ? `id, ${DURATION_EXPRESSION}`
     : 'id';
+  // vqueue-backed backing-off invocations show as 'ready' on the view, so the
+  // status filter rewrites backing-off/ready to match the overlaid status.
+  const vqueueBackingOff = vqueueStatusEnabled(this);
 
   const { rows: idRows } = await this.query(
-    `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters)} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters, { vqueueBackingOff })} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
   );
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
   if (idRows.length > 0) {
+    const ids = idRows.map(({ id }) => id);
     const detailColumns = `${getSysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
-    const { rows: invRows } = await this.query(
-      `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters([
-        {
-          field: 'id',
-          type: 'STRING_LIST',
-          operation: 'IN',
-          value: idRows.map(({ id }) => id),
-        },
-        ...filters,
-      ])} ORDER BY ${sort.field} ${sort.order}`,
+    // Detail rows and the vqueue overlay are fetched in parallel — both key off
+    // the page's ids, so the vqueue lookup adds no extra round-trip.
+    const [{ rows: invRows }, vqueueStatuses] = await Promise.all([
+      this.query(
+        `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters(
+          [
+            {
+              field: 'id',
+              type: 'STRING_LIST',
+              operation: 'IN',
+              value: ids,
+            },
+            ...filters,
+          ],
+          { vqueueBackingOff },
+        )} ORDER BY ${sort.field} ${sort.order}`,
+      ),
+      fetchVqueueStatuses(this, ids),
+    ]);
+    invocations = invRows.map((row) =>
+      convertInvocation(row, vqueueStatuses.get(row.id)),
     );
-    invocations = invRows.map(convertInvocation);
   }
 
   // No total_count is sent — the UI derives the visible count from

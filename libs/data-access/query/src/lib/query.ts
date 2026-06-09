@@ -34,6 +34,7 @@ import {
   getInvocationsStatus,
   summaryInvocations,
   getPausedError,
+  getTransientError,
   listDrainedDeployments,
   type ListStateArgs,
   type ListStateItem,
@@ -67,6 +68,7 @@ type BoundHandlers = {
   getInvocationJournalV2: (
     invocationId: string,
     includePayloads?: boolean,
+    vqueueId?: string,
   ) => Promise<Response>;
   getInbox: (
     service: string,
@@ -119,6 +121,7 @@ type BoundHandlers = {
     request: BatchInvocationsRequestBody,
   ) => Promise<Response>;
   getPausedError: (invocationId: string) => Promise<Response>;
+  getTransientError: (invocationId: string) => Promise<Response>;
   listDrainedDeployments: () => Promise<Response>;
 };
 
@@ -150,6 +153,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     batchResumeInvocations: batchResumeInvocations.bind(context),
     batchRestartAsNewInvocations: batchRestartAsNewInvocations.bind(context),
     getPausedError: getPausedError.bind(context),
+    getTransientError: getTransientError.bind(context),
     listDrainedDeployments: listDrainedDeployments.bind(context),
   };
 }
@@ -231,6 +235,10 @@ export const routes = createRoutes('/query', {
     pausedError: {
       method: 'GET',
       pattern: '/invocations/:invocationId/paused-error',
+    },
+    transientError: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/transient-error',
     },
   },
   invocationsV2: {
@@ -360,13 +368,22 @@ router.map(routes, {
         const { getPausedError } = ctx.storage.get(handlersKey);
         return getPausedError(ctx.params.invocationId);
       },
+      async transientError(ctx) {
+        const { getTransientError } = ctx.storage.get(handlersKey);
+        return getTransientError(ctx.params.invocationId);
+      },
     },
     invocationsV2: {
       async get(ctx) {
         const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
         const includePayloads =
           ctx.url.searchParams.get('includePayloads') === 'true';
-        return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
+        const vqueueId = ctx.url.searchParams.get('vqueueId') ?? undefined;
+        return getInvocationJournalV2(
+          ctx.params.invocationId,
+          includePayloads,
+          vqueueId,
+        );
       },
     },
     virtualObjects: {

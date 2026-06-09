@@ -296,43 +296,78 @@ function getStatusFilterString(value?: string): {
   }
 }
 
-function deploymentPositiveFilter(value?: string) {
-  return `(${convertFilterStringToSqlClause({
-    field: 'last_attempt_deployment_id',
-    operation: 'EQUALS',
-    type: 'STRING',
-    value,
-  })} OR ${convertFilterStringToSqlClause({
-    field: 'pinned_deployment_id',
-    operation: 'EQUALS',
-    type: 'STRING',
-    value,
-  })})`;
+// An invocation "belongs to" a deployment via either the deployment that last
+// attempted it or the one it's pinned to. Both columns exist on the
+// sys_invocation view; sys_invocation_status only has pinned_deployment_id
+// (last_attempt_deployment_id lives in sys_invocation_state), so callers
+// targeting that table pass a narrower field set.
+const DEPLOYMENT_FILTER_FIELDS = [
+  'last_attempt_deployment_id',
+  'pinned_deployment_id',
+] as const;
+
+function deploymentPositiveFilter(
+  value: string | undefined,
+  fields: readonly string[],
+) {
+  return `(${fields
+    .map((field) =>
+      convertFilterStringToSqlClause({
+        field,
+        operation: 'EQUALS',
+        type: 'STRING',
+        value,
+      }),
+    )
+    .join(' OR ')})`;
 }
 
-function deploymentNegativeFilter(value?: string) {
-  return `((${convertFilterStringToSqlClause({
-    field: 'last_attempt_deployment_id',
-    operation: 'NOT_EQUALS',
-    type: 'STRING',
-    value,
-  })} OR ${convertFilterNullToSqlClause({
-    field: 'last_attempt_deployment_id',
-    operation: 'IS',
-    type: 'NULL',
-  })}) AND (${convertFilterStringToSqlClause({
-    field: 'pinned_deployment_id',
-    operation: 'NOT_EQUALS',
-    type: 'STRING',
-    value,
-  })} OR ${convertFilterNullToSqlClause({
-    field: 'pinned_deployment_id',
-    operation: 'IS',
-    type: 'NULL',
-  })}))`;
+function deploymentNegativeFilter(
+  value: string | undefined,
+  fields: readonly string[],
+) {
+  return `(${fields
+    .map(
+      (field) =>
+        `(${convertFilterStringToSqlClause({
+          field,
+          operation: 'NOT_EQUALS',
+          type: 'STRING',
+          value,
+        })} OR ${convertFilterNullToSqlClause({
+          field,
+          operation: 'IS',
+          type: 'NULL',
+        })})`,
+    )
+    .join(' AND ')})`;
 }
 
-export function convertInvocationsFilters(filters: FilterItem[]) {
+const VQUEUE_BACKING_OFF_SET =
+  "SELECT entry_id FROM sys_vqueues WHERE stage = 'inbox' AND status = 'backing-off'";
+
+// On the sys_invocation view a vqueue-backed backing-off invocation shows as
+// 'ready'. Rewrite the 'backing-off'/'ready' status terms so the filter matches
+// the overlaid status — and therefore the summary's buckets.
+function vqueueStatusClause(value: string): string {
+  return value === 'backing-off'
+    ? `(status = 'backing-off' OR (status = 'ready' AND id IN (${VQUEUE_BACKING_OFF_SET})))`
+    : `(status = 'ready' AND id NOT IN (${VQUEUE_BACKING_OFF_SET}))`;
+}
+
+function isVqueueRewrittenStatus(value?: string): boolean {
+  return value === 'backing-off' || value === 'ready';
+}
+
+export function convertInvocationsFilters(
+  filters: FilterItem[],
+  options: {
+    deploymentFields?: readonly string[];
+    vqueueBackingOff?: boolean;
+  } = {},
+) {
+  const deploymentFields = options.deploymentFields ?? DEPLOYMENT_FILTER_FIELDS;
+  const vqueueBackingOff = options.vqueueBackingOff ?? false;
   const statusFilters = filters.filter((filter) => filter.field === 'status');
   const deploymentFilter = filters.find(
     (filter) => filter.field === 'deployment',
@@ -348,24 +383,28 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
   if (deploymentFilter) {
     if (deploymentFilter.type === 'STRING') {
       if (deploymentFilter.operation === 'EQUALS') {
-        mappedFilters.push(deploymentPositiveFilter(deploymentFilter.value));
+        mappedFilters.push(
+          deploymentPositiveFilter(deploymentFilter.value, deploymentFields),
+        );
       }
       if (deploymentFilter.operation === 'NOT_EQUALS') {
-        mappedFilters.push(deploymentNegativeFilter(deploymentFilter.value));
+        mappedFilters.push(
+          deploymentNegativeFilter(deploymentFilter.value, deploymentFields),
+        );
       }
     }
     if (deploymentFilter.type === 'STRING_LIST') {
       if (deploymentFilter.operation === 'IN') {
         mappedFilters.push(
           `(${deploymentFilter.value
-            .map((value) => deploymentPositiveFilter(value))
+            .map((value) => deploymentPositiveFilter(value, deploymentFields))
             .join(' OR ')})`,
         );
       }
       if (deploymentFilter.operation === 'NOT_IN') {
         mappedFilters.push(
           `(${deploymentFilter.value
-            .map((value) => deploymentNegativeFilter(value))
+            .map((value) => deploymentNegativeFilter(value, deploymentFields))
             .join(' AND ')})`,
         );
       }
@@ -373,20 +412,42 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
   }
   if (statusFilters.length > 0) {
     statusFilters.forEach((statusFilter) => {
+      // The backing-off/ready rewrite only changes the result when exactly one
+      // of them is selected (it shifts vqueue-backed rows across that boundary).
+      // When both are present the union equals the plain terms, so skip the
+      // rewrite — and its sys_vqueues semi-joins — entirely.
+      const statusValues = new Set<string | undefined>(
+        statusFilter.type === 'STRING_LIST'
+          ? statusFilter.value
+          : statusFilter.type === 'STRING'
+            ? [statusFilter.value]
+            : [],
+      );
+      const rewriteStatus = (value?: string) =>
+        vqueueBackingOff &&
+        isVqueueRewrittenStatus(value) &&
+        !statusValues.has(value === 'backing-off' ? 'ready' : 'backing-off');
+
       if (statusFilter.type === 'STRING') {
-        const { groups, operator } = getStatusFilterString(statusFilter.value);
-        mappedFilters.push(
-          groups
-            .map(
-              ({ filters, operator }) =>
-                `(${filters
-                  .map(convertFilterToSqlClause)
-                  .filter(Boolean)
-                  .join(` ${operator} `)})`,
-            )
-            .filter(Boolean)
-            .join(` ${operator} `),
-        );
+        if (rewriteStatus(statusFilter.value)) {
+          mappedFilters.push(vqueueStatusClause(statusFilter.value as string));
+        } else {
+          const { groups, operator } = getStatusFilterString(
+            statusFilter.value,
+          );
+          mappedFilters.push(
+            groups
+              .map(
+                ({ filters, operator }) =>
+                  `(${filters
+                    .map(convertFilterToSqlClause)
+                    .filter(Boolean)
+                    .join(` ${operator} `)})`,
+              )
+              .filter(Boolean)
+              .join(` ${operator} `),
+          );
+        }
       } else if (
         statusFilter.type === 'STRING_LIST' &&
         statusFilter.operation === 'IN'
@@ -394,6 +455,9 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
         mappedFilters.push(
           `(${statusFilter.value
             .map((value) => {
+              if (rewriteStatus(value)) {
+                return vqueueStatusClause(value);
+              }
               const { groups, operator } = getStatusFilterString(value);
               return groups
                 .map(
@@ -417,6 +481,9 @@ export function convertInvocationsFilters(filters: FilterItem[]) {
         mappedFilters.push(
           `(${statusFilter.value
             .map((value) => {
+              if (rewriteStatus(value)) {
+                return `NOT ${vqueueStatusClause(value)}`;
+              }
               const { groups, operator } = getStatusFilterString(value);
 
               return groups

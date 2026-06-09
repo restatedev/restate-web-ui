@@ -820,6 +820,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/{invocationId}/transient-error': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get transient error
+     * @description Get the most recent transient (retry) error for an invocation, read from sys_journal_events. Returns the error message, stack trace, error code, and related command information.
+     */
+    get: operations['get_transient_error'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/{invocationId}/journal/{entryIndex}': {
     parameters: {
       query?: never;
@@ -2532,11 +2552,9 @@ export interface components {
           | 'scheduled_at'
           | 'scheduled_start_at'
           | 'running_at'
-          | 'next_retry_at'
           | 'target_service_key'
           | 'target_service_name'
           | 'target_handler_name'
-          | 'retry_count'
           | 'duration';
         /** @enum {string} */
         order: 'ASC' | 'DESC';
@@ -3055,6 +3073,28 @@ export interface components {
        * @description Timestamp when the invocation was paused
        */
       pausedAt?: string;
+    };
+    /** @description Most recent transient (retry) error for an invocation */
+    TransientErrorResponse: {
+      /** @description The transient error message */
+      message?: string;
+      /** @description Stack trace of the error */
+      stack?: string;
+      /** @description Error code */
+      code?: number;
+      /** @description Name of the command that caused the error */
+      relatedCommandName?: string;
+      /** @description Type of the command that caused the error */
+      relatedCommandType?: string;
+      /** @description Restate-specific error code */
+      relatedRestateErrorCode?: string;
+      /** @description Index of the command that caused the error */
+      relatedCommandIndex?: number;
+      /**
+       * Format: date-time
+       * @description Timestamp when the transient error occurred
+       */
+      failedAt?: string;
     };
     CreatedLifecycleJournalEntryV2: {
       /** @enum {string} */
@@ -6330,6 +6370,77 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['PausedErrorResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_transient_error: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Transient error details */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['TransientErrorResponse'];
         };
       };
       400: {

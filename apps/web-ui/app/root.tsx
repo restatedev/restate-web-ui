@@ -187,6 +187,7 @@ setMetaPersister(
     storage: typeof localStorage !== 'undefined' ? localStorage : undefined,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     prefix: 'restate-meta',
+    refetchOnRestore: 'always',
   }).persisterFn,
 );
 

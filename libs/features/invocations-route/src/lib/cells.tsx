@@ -385,10 +385,10 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     withDate({ field: 'created_at', tooltipTitle: 'Created at' }),
     'created_at',
   ),
-  next_retry_at: withCell(
-    withDate({ field: 'next_retry_at', tooltipTitle: 'Next retry at' }),
-    'next_retry_at',
-  ),
+  // next_retry_at: withCell(
+  //   withDate({ field: 'next_retry_at', tooltipTitle: 'Next retry at' }),
+  //   'next_retry_at',
+  // ),
   completed_at: withCell(
     withDate({ field: 'completed_at', tooltipTitle: 'Completed at' }),
     'completed_at',
@@ -417,7 +417,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     'idempotency_key',
   ),
   journal_size: withCell(JournalCell, 'journal_size'),
-  retry_count: withCell(withField({ field: 'retry_count' }), 'retry_count'),
+  // retry_count: withCell(withField({ field: 'retry_count' }), 'retry_count'),
   deployment: withCell(InvocationDeploymentCell, 'deployment'),
   target_service_key: withCell(
     withField({ field: 'target_service_key' }),

@@ -1,6 +1,7 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext, getSysInvocationListColumns } from './shared';
+import { vqueueStatusEnabled } from './vqueue';
 
 const COUNT_LIMIT = 200_000;
 const INVOCATIONS_LIMIT = 100;
@@ -10,11 +11,12 @@ export async function countInvocations(
   filters: FilterItem[],
 ) {
   const columns = getSysInvocationListColumns(this.features).join(', ');
+  const vqueueBackingOff = vqueueStatusEnabled(this);
   const minimumCountEstimatePromise = this.query(
-    `SELECT COUNT(1) as total_count FROM (SELECT ${columns} FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters)}`,
+    `SELECT COUNT(1) as total_count FROM (SELECT ${columns} FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters, { vqueueBackingOff })}`,
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
   const limitCountPromise = this.query(
-    `SELECT id from sys_invocation ${convertInvocationsFilters(filters)} LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT id from sys_invocation ${convertInvocationsFilters(filters, { vqueueBackingOff })} LIMIT ${INVOCATIONS_LIMIT}`,
   ).then(({ rows }) => rows.length);
 
   const [minimumCountEstimate, countWithLimit] = await Promise.all([

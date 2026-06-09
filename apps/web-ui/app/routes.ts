@@ -18,4 +18,5 @@ export default [
     index('routes/invocations.tsx'),
     route(':id', 'routes/invocation.tsx'),
   ]),
+  route('feature-flags/:flag', 'routes/feature-flags.tsx'),
 ] satisfies RouteConfig;

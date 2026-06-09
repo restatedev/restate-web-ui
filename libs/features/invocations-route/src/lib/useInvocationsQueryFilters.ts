@@ -33,11 +33,11 @@ export const SORT_COLUMN_KEYS: ColumnKey[] = [
   'scheduled_at',
   'scheduled_start_at',
   'running_at',
-  'next_retry_at',
+  // 'next_retry_at',
   'target_service_key',
   'target_service_name',
   'target_handler_name',
-  'retry_count',
+  // 'retry_count',
   'duration',
 ] as const;
 

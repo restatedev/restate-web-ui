@@ -137,21 +137,21 @@ const makeShortcuts: (
       }),
     ],
   },
-  {
-    id: 'retried',
-    label: 'Most retried invocations',
-    columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
-    sort: {
-      field: 'retry_count',
-      order: 'DESC',
-    },
-    filters: [
-      toClause(schema, 'retry_count', {
-        operation: 'GREATER_THAN',
-        value: 1,
-      }),
-    ],
-  },
+  // {
+  //   id: 'retried',
+  //   label: 'Most retried invocations',
+  //   columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
+  //   sort: {
+  //     field: 'retry_count',
+  //     order: 'DESC',
+  //   },
+  //   filters: [
+  //     toClause(schema, 'retry_count', {
+  //       operation: 'GREATER_THAN',
+  //       value: 1,
+  //     }),
+  //   ],
+  // },
   {
     id: 'restarted',
     label: 'Restarted invocations',

@@ -13,7 +13,14 @@ export interface MetaSnapshot {
   features?: Record<string, boolean>;
 }
 
-export const metaQueryKey = (baseUrl: string) => ['meta', baseUrl] as const;
+function resolveBaseUrl(baseUrl: string): string {
+  return baseUrl === '' && typeof window !== 'undefined'
+    ? window.location.origin
+    : baseUrl;
+}
+
+export const metaQueryKey = (baseUrl: string) =>
+  ['meta', resolveBaseUrl(baseUrl)] as const;
 
 /** App-registered fallback. Surfaced as `placeholderData` and as a graceful-failure value. */
 let metaFallback: MetaSnapshot = {};
@@ -64,7 +71,7 @@ export function metaQueryOptions(
 > {
   return {
     queryKey: metaQueryKey(baseUrl),
-    queryFn: () => fetchMeta(baseUrl),
+    queryFn: () => fetchMeta(resolveBaseUrl(baseUrl)),
     placeholderData: metaFallback,
     staleTime: Infinity,
     ...(metaPersister
