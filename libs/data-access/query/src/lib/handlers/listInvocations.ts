@@ -38,15 +38,17 @@ export async function listInvocations(
     // the page's ids, so the vqueue lookup adds no extra round-trip.
     const [{ rows: invRows }, vqueueStatuses] = await Promise.all([
       this.query(
-        `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters([
-          {
-            field: 'id',
-            type: 'STRING_LIST',
-            operation: 'IN',
-            value: ids,
-          },
-          ...filters,
-        ])} ORDER BY ${sort.field} ${sort.order}`,
+        `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters(
+          [
+            {
+              field: 'id',
+              type: 'STRING_LIST',
+              operation: 'IN',
+              value: ids,
+            },
+            ...filters,
+          ],
+        )} ORDER BY ${sort.field} ${sort.order}`,
       ),
       fetchVqueueStatuses(this, ids),
     ]);
