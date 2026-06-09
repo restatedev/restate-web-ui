@@ -9,6 +9,7 @@ import {
   getSysInvocationListColumns,
   DURATION_EXPRESSION,
 } from './shared';
+import { fetchVqueueStatuses } from './vqueue';
 
 const INVOCATIONS_LIMIT = 250;
 
@@ -31,19 +32,27 @@ export async function listInvocations(
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
   if (idRows.length > 0) {
+    const ids = idRows.map(({ id }) => id);
     const detailColumns = `${getSysInvocationListColumns(this.features).join(', ')}, ${DURATION_EXPRESSION}`;
-    const { rows: invRows } = await this.query(
-      `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters([
-        {
-          field: 'id',
-          type: 'STRING_LIST',
-          operation: 'IN',
-          value: idRows.map(({ id }) => id),
-        },
-        ...filters,
-      ])} ORDER BY ${sort.field} ${sort.order}`,
+    // Detail rows and the vqueue overlay are fetched in parallel — both key off
+    // the page's ids, so the vqueue lookup adds no extra round-trip.
+    const [{ rows: invRows }, vqueueStatuses] = await Promise.all([
+      this.query(
+        `SELECT ${detailColumns} from sys_invocation ${convertInvocationsFilters([
+          {
+            field: 'id',
+            type: 'STRING_LIST',
+            operation: 'IN',
+            value: ids,
+          },
+          ...filters,
+        ])} ORDER BY ${sort.field} ${sort.order}`,
+      ),
+      fetchVqueueStatuses(this, ids),
+    ]);
+    invocations = invRows.map((row) =>
+      convertInvocation(row, vqueueStatuses.get(row.id)),
     );
-    invocations = invRows.map((row) => convertInvocation(row));
   }
 
   // No total_count is sent — the UI derives the visible count from

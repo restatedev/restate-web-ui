@@ -49,6 +49,10 @@ export async function getInvocationsStatus(
     `SELECT id, status, completion_result, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name FROM sys_invocation WHERE id IN (${uniqueInvocationIds.map(quoteSqlString).join(', ')})`,
   );
 
+  // TODO(vqueue): overlay backing-off status from sys_vqueues for queued
+  // invocations (batched fetchVqueueStatuses, WHERE entry_id IN). This computes
+  // status inline, so it needs its own merge. Low priority: consumers use this
+  // for completion polling + deployment selection, not a backing-off badge.
   const invocationsById = new Map(
     rows.map((row) => [
       row.id as string,
