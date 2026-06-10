@@ -1,4 +1,4 @@
-import ky from 'ky';
+import ky, { HTTPError, TimeoutError } from 'ky';
 import semverGte from 'semver/functions/gte';
 import semverCoerce from 'semver/functions/coerce';
 
@@ -135,6 +135,24 @@ export function scopeClause(
     : '';
 }
 
+// Network failures (refused connection, DNS, CORS) reject with a bare
+// `TypeError: Failed to fetch` that — unlike ky's HTTPError/TimeoutError —
+// carries no request context. Append the real downstream call so the /query
+// proxy reports what actually failed, not the in-browser /query/* route.
+function withRequestContext(method: string, url: string) {
+  return (error: unknown): never => {
+    if (
+      error instanceof Error &&
+      !(error instanceof HTTPError) &&
+      !(error instanceof TimeoutError) &&
+      error.name !== 'AbortError'
+    ) {
+      error.message = `${error.message}: ${method.toUpperCase()} ${url}`;
+    }
+    throw error;
+  };
+}
+
 function queryFetcher(
   query: string,
   {
@@ -147,14 +165,16 @@ function queryFetcher(
   queryHeaders.set('accept', 'application/json');
   queryHeaders.set('content-type', 'application/json');
 
+  const url = `${baseUrl}/query`;
   return ky
-    .post(`${baseUrl}/query`, {
+    .post(url, {
       json: { query },
       headers: queryHeaders,
       timeout: 60_000,
       signal,
     })
-    .json<{ rows: any[] }>();
+    .json<{ rows: any[] }>()
+    .catch(withRequestContext('POST', url));
 }
 
 function adminApiFetcher<T>(
@@ -179,13 +199,16 @@ function adminApiFetcher<T>(
     apiHeaders.set('content-type', 'application/json');
   }
 
-  return ky(`${baseUrl}${path}`, {
+  const url = `${baseUrl}${path}`;
+  return ky(url, {
     method,
     headers: apiHeaders,
     json,
     timeout: 60_000,
     signal,
-  }).json<T>();
+  })
+    .json<T>()
+    .catch(withRequestContext(method, url));
 }
 
 export function createQueryContext(
