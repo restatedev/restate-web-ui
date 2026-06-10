@@ -1,5 +1,9 @@
+import { tv } from '@restate/util/styles';
 import { Separator } from 'react-aria-components';
 
-export function DropdownSeparator() {
-  return <Separator className="mx-0 my-0 border-t-0 border-b" />;
+const styles = tv({
+  base: 'mx-0 my-0 border-t-0 border-b',
+});
+export function DropdownSeparator({ className }: { className?: string }) {
+  return <Separator className={styles({ className })} />;
 }
