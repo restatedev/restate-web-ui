@@ -17,11 +17,16 @@ const containerStyles = tv({
   base: '',
 });
 
-interface SelectProps
-  extends Pick<
-    AriaSelectProps<object>,
-    'name' | 'autoFocus' | 'autoComplete' | 'validate'
-  > {
+interface SelectProps extends Pick<
+  AriaSelectProps<object>,
+  | 'name'
+  | 'autoFocus'
+  | 'autoComplete'
+  | 'validate'
+  | 'selectedKey'
+  | 'defaultSelectedKey'
+  | 'onSelectionChange'
+> {
   className?: string;
   required?: boolean;
   disabled?: boolean;
