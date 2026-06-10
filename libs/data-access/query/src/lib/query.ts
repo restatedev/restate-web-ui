@@ -197,15 +197,36 @@ const handlersMiddleware: Middleware = (ctx, next) => {
 };
 
 async function extractErrorPayload(res: Response): Promise<string | undefined> {
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('application/json')) {
-    try {
-      return ((await res.json()) as { message?: string })?.message;
-    } catch {
-      // fall back if server lied
+  const contentType = res.headers.get('content-type') || '';
+  try {
+    if (contentType.includes('application/json')) {
+      const data = (await res.json()) as unknown;
+      if (typeof data === 'string') {
+        return data.trim() || undefined;
+      }
+      if (data && typeof data === 'object') {
+        const { message, error } = data as {
+          message?: unknown;
+          error?: unknown;
+        };
+        const nestedError =
+          error && typeof error === 'object'
+            ? (error as { message?: unknown }).message
+            : error;
+        const detail = message ?? nestedError;
+        if (typeof detail === 'string' && detail.trim()) {
+          return detail.trim();
+        }
+        // JSON we don't recognize — surface it raw rather than swallow it.
+        return JSON.stringify(data);
+      }
+      return undefined;
     }
+    return (await res.text()).trim() || undefined;
+  } catch {
+    // Body already consumed, or didn't match its declared content-type.
+    return undefined;
   }
-  return (await res.text()) as string;
 }
 
 export const routes = createRoutes('/query', {
@@ -473,28 +494,54 @@ async function queryHandler(req: Request) {
 export async function query(req: Request) {
   return queryHandler(req).catch(async (error) => {
     if (error instanceof HTTPError) {
+      const { status } = error.response;
       const body = await extractErrorPayload(error.response);
+      // ky's HTTPError message already reads
+      // "Request failed with status code <status> <statusText>: <method> <url>",
+      // which is a better fallback than anything we'd hand-roll.
       return new Response(
-        JSON.stringify(new RestateError(body || 'Oops something went wrong!')),
+        JSON.stringify(
+          new RestateError(
+            body || error.message,
+            undefined,
+            undefined,
+            undefined,
+            status,
+          ),
+        ),
         {
-          status: error.response.status,
+          status,
           headers: { 'Content-Type': 'application/json' },
         },
       );
     } else if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     } else if (error instanceof TimeoutError) {
+      // ky's message is "Request timed out: <method> <url>"; add the threshold.
+      const message = `${error.message} (after 60s)`;
       return new Response(
-        JSON.stringify(new RestateError('Request timed out after 60s')),
+        JSON.stringify(
+          new RestateError(message, undefined, undefined, undefined, 504),
+        ),
         {
           status: 504,
           headers: { 'Content-Type': 'application/json' },
         },
       );
     } else {
-      console.log('/query call failed!', error);
+      // Network failures are enriched with the real downstream call in the
+      // fetchers (see withRequestContext); other errors carry their own message.
+      const detail = error instanceof Error ? error.message?.trim() : undefined;
       return new Response(
-        JSON.stringify(new RestateError('Oops something went wrong!')),
+        JSON.stringify(
+          new RestateError(
+            detail || 'Oops something went wrong!',
+            undefined,
+            undefined,
+            undefined,
+            500,
+          ),
+        ),
         {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
