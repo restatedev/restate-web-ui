@@ -29,7 +29,7 @@ function applyVqueueStatus(
       ...invocation,
       status: 'backing-off',
       next_retry_at: vqueue.run_at,
-      retry_count: vqueue.num_errors,
+      retry_count: vqueue.num_attempts,
       last_start_at: vqueue.latest_attempt_at,
     };
   }
