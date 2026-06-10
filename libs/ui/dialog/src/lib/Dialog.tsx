@@ -38,7 +38,7 @@ export function QueryDialog({
   // query param (and the content it feeds) stays put, then strip the param once
   // the fade-out has finished.
   const [isClosing, setIsClosing] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isOpen = hasParam && !isClosing;
 
   // Once the param is gone the dialog is fully closed (this also covers the
