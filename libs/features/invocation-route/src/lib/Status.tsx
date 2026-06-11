@@ -344,12 +344,12 @@ export function LastError({
             <span className="truncate">{label}</span>
           ) : isFailed ? (
             errorCode
-          ) : (
+          ) : attemptCount ? (
             <span className="truncate">
               {formatOrdinals(attemptCount)}{' '}
               <span className="opacity2-80 font-normal">attempt</span>
             </span>
-          )}
+          ) : null}
           {error && (
             <Icon
               name={IconName.ChevronsUpDown}
