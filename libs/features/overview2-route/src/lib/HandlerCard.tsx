@@ -13,8 +13,8 @@ import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-lin
 import {
   InvocationCountLink,
   HandlerBreakdownTooltip,
-  MiniService,
 } from '@restate/features/service';
+import { Revision } from '@restate/features/deployment';
 import {
   buildStatusEntries,
   ServiceStatusBar,
@@ -32,11 +32,8 @@ import {
 const layoutStyles = tv({
   base: cx(
     'grid grid-cols-[auto_minmax(0,1fr)_13rem] items-center gap-x-3 gap-y-3',
-    "[grid-template-areas:'icon_primary_primary'_'service_service_chart']",
-    '@6xl:grid-cols-[auto_minmax(0,1.5fr)_minmax(0,1fr)_13rem]',
-    "@6xl:[grid-template-areas:'icon_primary_service_chart']",
-    '@min-[100rem]:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)_13rem]',
-    "@min-[100rem]:[grid-template-areas:'icon_primary_service_chart']",
+    "[grid-template-areas:'icon_primary_primary'_'chart_chart_chart']",
+    "@6xl:[grid-template-areas:'icon_primary_chart']",
   ),
 });
 
@@ -46,10 +43,6 @@ const iconCellStyles = tv({
 
 const primaryCellStyles = tv({
   base: 'flex min-w-0 items-center gap-2 [grid-area:primary]',
-});
-
-const serviceCellStyles = tv({
-  base: 'flex min-w-0 items-center [grid-area:service]',
 });
 
 const chartCellStyles = tv({
@@ -111,6 +104,12 @@ export function HandlerCard({
             </div>
             <div className={primaryCellStyles()}>
               <div className="flex min-w-0 items-center text-[0.92675rem] leading-7 font-medium text-zinc-700 italic">
+                <span className="max-w-44 min-w-0 font-normal text-zinc-500">
+                  <TruncateWithTooltip copyText={service.name}>
+                    {service.name}
+                  </TruncateWithTooltip>
+                </span>
+                <span className="mx-[0.5ch] shrink-0 text-zinc-400">/</span>
                 <TruncateWithTooltip copyText={handler.name}>
                   {handler.name}
                 </TruncateWithTooltip>
@@ -155,13 +154,9 @@ export function HandlerCard({
                   baseUrl={baseUrl}
                 />
               )}
-            </div>
-
-            <div className={serviceCellStyles({ className: 'pl-px' })}>
-              <MiniService
-                service={service}
-                className="gap-4 @6xl:gap-2 [&_*]:font-normal [&_a]:-ml-4 @6xl:[&_a]:-ml-2"
-              />
+              <span className="ml-1 shrink-0 text-0.5xs">
+                <Revision revision={service.revision} />
+              </span>
             </div>
 
             <div className={chartCellStyles()}>

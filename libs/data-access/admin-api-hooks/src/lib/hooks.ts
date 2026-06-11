@@ -40,8 +40,6 @@ import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRange, useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 
-export const RESTARTED_FROM_HEADER = 'x-restate-restarted-from';
-
 const SERVICE_TIMESTAMP = new Map<string, Date>();
 
 type ListDeploymentsServiceData = {
@@ -1714,19 +1712,16 @@ export function useRestartWorkflowAsNew(
         credentials: 'include',
         method: 'POST',
         body: body ? base64ToUint8Array(body) : undefined,
-        headers: {
-          ...headers
-            ?.filter(
-              ({ key }) =>
-                !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
-                !key.startsWith('x-restate-'),
-            )
-            .reduce(
-              (acc, { key, value }) => ({ ...acc, [key]: value }),
-              {} as Record<string, string>,
-            ),
-          [RESTARTED_FROM_HEADER]: invocationId,
-        },
+        headers: headers
+          ?.filter(
+            ({ key }) =>
+              !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
+              !key.startsWith('x-restate-'),
+          )
+          .reduce(
+            (acc, { key, value }) => ({ ...acc, [key]: value }),
+            {} as Record<string, string>,
+          ),
       }).then(async (res) => {
         if (res.ok) {
           return (await res.json()) as {

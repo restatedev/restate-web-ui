@@ -16,9 +16,7 @@ import { EntryCodecProvider } from './EntryCodecProvider';
 import { AwaitingOn } from './AwaitingOn';
 import { InvocationId } from '../InvocationId';
 import {
-  RESTARTED_FROM_HEADER,
   useGetInvocationJournalWithInvocationV2,
-  useGetJournalEntryPayloads,
   useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
 import { tv } from '@restate/util/styles';
@@ -204,15 +202,6 @@ const invocationIdStyles = tv({
 });
 
 function CreatedSource({ invocation }: { invocation?: Invocation }) {
-  // Journal lite doesn't include the Input entry's full headers, so reach for
-  // the payload endpoint to check for the restart marker header. Reuses cache
-  // across re-mounts; the same query is shared with the Input popover.
-  const { data: inputPayload } = useGetJournalEntryPayloads(
-    String(invocation?.id),
-    0,
-    { enabled: Boolean(invocation?.id), refetchOnMount: false },
-  );
-
   if (!invocation) {
     return (
       <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
@@ -221,19 +210,8 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
     );
   }
 
-  const inputEntry = invocation.journal?.entries?.find(
-    (e) => e.category === 'command' && e.type === 'Input',
-  ) as
-    | Extract<JournalEntryV2, { type?: 'Input'; category?: 'command' }>
-    | undefined;
-  const restartedFromHeader = (
-    inputPayload?.headers || inputEntry?.headers
-  )?.find(({ key }) => key === RESTARTED_FROM_HEADER);
-  const isRestartedFrom = Boolean(
-    invocation.invoked_by === 'restart_as_new' || restartedFromHeader,
-  );
-  const restartedFromValue =
-    invocation.restarted_from || restartedFromHeader?.value;
+  const isRestartedFrom = invocation.invoked_by === 'restart_as_new';
+  const restartedFromValue = invocation.restarted_from;
 
   return (
     <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">

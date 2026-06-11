@@ -1,8 +1,8 @@
 export function formatBytes(
   value: number,
-  unit: 'B' | 'KB' | 'MB' | 'GB' | 'TB' = 'B',
+  unit: 'B' | 'KiB' | 'MiB' | 'GiB' | 'TiB' = 'B',
 ): string {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
   const index = units.indexOf(unit);
   if (index === -1) throw new Error(`Invalid unit: ${unit}`);
 
@@ -17,7 +17,6 @@ export function formatBytes(
   const formatter = new Intl.NumberFormat('en', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-    notation: 'compact',
   });
 
   return `${formatter.format(bytes)} ${units[u]}`;
