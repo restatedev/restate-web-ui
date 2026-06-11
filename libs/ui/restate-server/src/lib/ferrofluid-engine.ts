@@ -48,8 +48,36 @@ const STATUS_HUE: Record<FerrofluidStatus, number> = {
 const SPRING = 0.012;
 const DAMPING = 0.965;
 const LERP = 0.02;
-function shapeFill(hue: number) {
-  return `hsla(${hue}, 20%, 65%, 1)`;
+
+const GOO_INFLUENCE = 1.6;
+const GOO_THRESHOLD_LOW = 0.39;
+const GOO_THRESHOLD_HIGH = 0.46;
+const FIELD_DETAIL = 0.5;
+const SHAPE_SATURATION = 20;
+const SHAPE_LIGHTNESS = 65;
+
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  const hue = ((h % 360) + 360) % 360;
+  const sat = s / 100;
+  const light = l / 100;
+  const c = (1 - Math.abs(2 * light - 1)) * sat;
+  const hp = hue / 60;
+  const x = c * (1 - Math.abs((hp % 2) - 1));
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  if (hp < 1) [r, g, b] = [c, x, 0];
+  else if (hp < 2) [r, g, b] = [x, c, 0];
+  else if (hp < 3) [r, g, b] = [0, c, x];
+  else if (hp < 4) [r, g, b] = [0, x, c];
+  else if (hp < 5) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const m = light - c / 2;
+  return [
+    Math.round((r + m) * 255),
+    Math.round((g + m) * 255),
+    Math.round((b + m) * 255),
+  ];
 }
 
 export class FerrofluidEngine {
@@ -74,6 +102,15 @@ export class FerrofluidEngine {
   private curNoiseSpeed = STATUS_PARAMS.idle.noiseSpeed;
   private curHue = STATUS_HUE.idle;
   private nextJolt = 0;
+  private fieldCanvas: HTMLCanvasElement | null = null;
+  private fieldCtx: CanvasRenderingContext2D | null = null;
+  private fieldImage: ImageData | null = null;
+  private fieldSize = 0;
+  private ballFieldX = new Float32Array(0);
+  private ballFieldY = new Float32Array(0);
+  private ballFieldR2 = new Float32Array(0);
+  private ballFieldInvR2 = new Float32Array(0);
+  private unwatchDpr: (() => void) | null = null;
 
   public isInitialized = false;
 
@@ -93,23 +130,17 @@ export class FerrofluidEngine {
   init(shapeCanvas: HTMLCanvasElement, colorCanvas: HTMLCanvasElement) {
     this.shapeCanvas = shapeCanvas;
     this.colorCanvas = colorCanvas;
-    this.dpr = window.devicePixelRatio || 1;
     this._logicalSize = shapeCanvas.clientWidth;
-
-    for (const c of [shapeCanvas, colorCanvas]) {
-      c.width = this._logicalSize * this.dpr;
-      c.height = this._logicalSize * this.dpr;
-    }
 
     this.shapeCtx = shapeCanvas.getContext('2d');
     this.colorCtx = colorCanvas.getContext('2d');
-    if (this.shapeCtx) this.shapeCtx.scale(this.dpr, this.dpr);
-    if (this.colorCtx) this.colorCtx.scale(this.dpr, this.dpr);
 
     this.cx = this._logicalSize / 2;
     this.cy = this._logicalSize / 2;
     this.baseRadius = this._logicalSize * 0.42;
 
+    this.configureResolution();
+    this.watchDpr();
     this.createMetaballs();
     this.isInitialized = true;
     this.animationId = requestAnimationFrame((ts) => this.loop(ts));
@@ -120,14 +151,57 @@ export class FerrofluidEngine {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
+    this.unwatchDpr?.();
+    this.unwatchDpr = null;
     this.isInitialized = false;
     this.metaballs = [];
     this.shapeCanvas = null;
     this.colorCanvas = null;
     this.shapeCtx = null;
     this.colorCtx = null;
+    this.fieldCanvas = null;
+    this.fieldCtx = null;
+    this.fieldImage = null;
     this.mousePos = null;
     this.mouseVelocity = 0;
+  }
+
+  private configureResolution() {
+    this.dpr = window.devicePixelRatio || 1;
+    const size = this._logicalSize;
+
+    for (const [canvas, ctx] of [
+      [this.shapeCanvas, this.shapeCtx],
+      [this.colorCanvas, this.colorCtx],
+    ] as const) {
+      if (!canvas || !ctx) continue;
+      canvas.width = size * this.dpr;
+      canvas.height = size * this.dpr;
+      ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    }
+
+    const detail = Math.min(1, FIELD_DETAIL * Math.max(1, this.dpr / 2));
+    this.fieldSize = Math.max(24, Math.round(size * detail));
+    this.fieldCanvas = this.fieldCanvas ?? document.createElement('canvas');
+    this.fieldCanvas.width = this.fieldSize;
+    this.fieldCanvas.height = this.fieldSize;
+    this.fieldCtx = this.fieldCanvas.getContext('2d');
+    this.fieldImage =
+      this.fieldCtx?.createImageData(this.fieldSize, this.fieldSize) ?? null;
+  }
+
+  private watchDpr() {
+    this.unwatchDpr?.();
+    this.unwatchDpr = null;
+    if (typeof window.matchMedia !== 'function') return;
+    const query = window.matchMedia(`(resolution: ${this.dpr}dppx)`);
+    const onChange = () => {
+      if (!this.isInitialized) return;
+      this.configureResolution();
+      this.watchDpr();
+    };
+    query.addEventListener('change', onChange);
+    this.unwatchDpr = () => query.removeEventListener('change', onChange);
   }
 
   mouseMove(nx: number, ny: number) {
@@ -215,6 +289,12 @@ export class FerrofluidEngine {
         40 + i * 20,
       );
     }
+
+    const count = this.metaballs.length;
+    this.ballFieldX = new Float32Array(count);
+    this.ballFieldY = new Float32Array(count);
+    this.ballFieldR2 = new Float32Array(count);
+    this.ballFieldInvR2 = new Float32Array(count);
   }
 
   private addBall(
@@ -348,20 +428,79 @@ export class FerrofluidEngine {
   }
 
   private draw() {
-    const sCtx = this.shapeCtx!;
-    const cCtx = this.colorCtx!;
+    this.drawShape();
+    this.drawColor();
+  }
+
+  private drawShape() {
+    const ctx = this.shapeCtx;
+    const fieldCtx = this.fieldCtx;
+    const fieldCanvas = this.fieldCanvas;
+    const image = this.fieldImage;
+    if (!ctx || !fieldCtx || !fieldCanvas || !image) return;
+
+    const { metaballs, fieldSize } = this;
+    const scale = fieldSize / this._logicalSize;
+    const count = metaballs.length;
+    const xs = this.ballFieldX;
+    const ys = this.ballFieldY;
+    const r2s = this.ballFieldR2;
+    const invR2s = this.ballFieldInvR2;
+
+    for (let i = 0; i < count; i++) {
+      const b = metaballs[i]!;
+      xs[i] = b.x * scale;
+      ys[i] = b.y * scale;
+      const influence = b.radius * scale * GOO_INFLUENCE;
+      r2s[i] = influence * influence;
+      invR2s[i] = 1 / r2s[i]!;
+    }
+
+    const [red, green, blue] = hslToRgb(
+      this.curHue,
+      SHAPE_SATURATION,
+      SHAPE_LIGHTNESS,
+    );
+    const invRange = 1 / (GOO_THRESHOLD_HIGH - GOO_THRESHOLD_LOW);
+    const data = image.data;
+    let p = 0;
+
+    for (let y = 0; y < fieldSize; y++) {
+      const py = y + 0.5;
+      for (let x = 0; x < fieldSize; x++) {
+        const px = x + 0.5;
+        let field = 0;
+        for (let i = 0; i < count; i++) {
+          const dx = px - xs[i]!;
+          const dy = py - ys[i]!;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < r2s[i]!) {
+            const q = 1 - d2 * invR2s[i]!;
+            field += q * q;
+          }
+        }
+        let a = (field - GOO_THRESHOLD_LOW) * invRange;
+        a = a <= 0 ? 0 : a >= 1 ? 1 : a * a * (3 - 2 * a);
+        data[p] = red;
+        data[p + 1] = green;
+        data[p + 2] = blue;
+        data[p + 3] = (a * 255) | 0;
+        p += 4;
+      }
+    }
+
+    fieldCtx.putImageData(image, 0, 0);
+    ctx.clearRect(0, 0, this._logicalSize, this._logicalSize);
+    ctx.drawImage(fieldCanvas, 0, 0, this._logicalSize, this._logicalSize);
+  }
+
+  private drawColor() {
+    const ctx = this.colorCtx;
+    if (!ctx) return;
     const size = this._logicalSize;
     const { cx, cy, baseRadius, metaballs, time } = this;
 
-    sCtx.clearRect(0, 0, size, size);
-    cCtx.clearRect(0, 0, size, size);
-
-    sCtx.fillStyle = shapeFill(this.curHue);
-    for (const b of metaballs) {
-      sCtx.beginPath();
-      sCtx.arc(b.x, b.y, b.radius, 0, TWO_PI);
-      sCtx.fill();
-    }
+    ctx.clearRect(0, 0, size, size);
 
     const baseHue = this.curHue + Math.sin(time * 0.15) * 8;
 
@@ -370,7 +509,7 @@ export class FerrofluidEngine {
         baseHue +
         ((b.hueOffset % 25) - 12) +
         Math.sin(time * 0.3 + b.noisePhase) * 6;
-      const grad = cCtx.createRadialGradient(
+      const grad = ctx.createRadialGradient(
         b.x - b.radius * 0.15,
         b.y - b.radius * 0.15,
         0,
@@ -381,10 +520,10 @@ export class FerrofluidEngine {
       grad.addColorStop(0, `hsla(${h}, 65%, 55%, 0.85)`);
       grad.addColorStop(0.6, `hsla(${h + 8}, 55%, 48%, 0.4)`);
       grad.addColorStop(1, `hsla(${h + 15}, 45%, 42%, 0)`);
-      cCtx.fillStyle = grad;
-      cCtx.beginPath();
-      cCtx.arc(b.x, b.y, b.radius * 1.1, 0, TWO_PI);
-      cCtx.fill();
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius * 1.1, 0, TWO_PI);
+      ctx.fill();
     }
 
     const meshHues = [
@@ -392,34 +531,31 @@ export class FerrofluidEngine {
       baseHue + 20 + Math.sin(time * 0.2) * 10,
       baseHue - 12 + Math.cos(time * 0.18) * 8,
     ];
-    const meshPoints = [
-      {
-        x: cx + Math.cos(time * 0.1) * baseRadius * 0.45,
-        y: cy + Math.sin(time * 0.13) * baseRadius * 0.4,
-        r: baseRadius * 0.9,
-        a: 0.7,
-      },
-      {
-        x: cx + Math.cos(time * 0.08 + 2.2) * baseRadius * 0.5,
-        y: cy + Math.sin(time * 0.11 + 2.2) * baseRadius * 0.45,
-        r: baseRadius * 0.85,
-        a: 0.6,
-      },
-      {
-        x: cx + Math.cos(time * 0.07 + 4.0) * baseRadius * 0.4,
-        y: cy + Math.sin(time * 0.09 + 4.0) * baseRadius * 0.5,
-        r: baseRadius * 0.8,
-        a: 0.5,
-      },
-    ];
-    for (let i = 0; i < meshPoints.length; i++) {
-      const p = meshPoints[i]!;
-      const h = meshHues[i]!;
-      const grad = cCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
-      grad.addColorStop(0, `hsla(${h}, 75%, 58%, ${p.a})`);
-      grad.addColorStop(1, `hsla(${h}, 75%, 58%, 0)`);
-      cCtx.fillStyle = grad;
-      cCtx.fillRect(0, 0, size, size);
+    const maxExtent = size * 0.47;
+
+    for (let i = 0; i < meshHues.length; i++) {
+      const source = metaballs[i + 1];
+      if (!source) break;
+      const hue = meshHues[i]!;
+      const radius = baseRadius * (0.78 - i * 0.06);
+      const alpha = 0.7 - i * 0.1;
+      let px = cx + (source.x - cx) * 0.6;
+      let py = cy + (source.y - cy) * 0.6;
+      const dx = px - cx;
+      const dy = py - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const maxDist = Math.max(0, maxExtent - radius);
+      if (dist > maxDist && dist > 0) {
+        px = cx + (dx / dist) * maxDist;
+        py = cy + (dy / dist) * maxDist;
+      }
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, radius);
+      grad.addColorStop(0, `hsla(${hue}, 75%, 58%, ${alpha})`);
+      grad.addColorStop(1, `hsla(${hue}, 75%, 58%, 0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, TWO_PI);
+      ctx.fill();
     }
   }
 }
