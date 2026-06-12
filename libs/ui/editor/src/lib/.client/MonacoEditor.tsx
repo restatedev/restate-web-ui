@@ -2,6 +2,8 @@ import { RefObject, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import './languageSetup';
 
+const MAX_EDITOR_FORMAT_LENGTH = 10_000_000;
+
 const MONACO_EDITOR_THEME = 'restate-editor';
 
 export function MonacoEditor({
@@ -24,6 +26,8 @@ export function MonacoEditor({
       return;
     }
 
+    const isLargeValue = (value?.length ?? 0) > MAX_EDITOR_FORMAT_LENGTH;
+
     if (applyTheme) {
       monaco.editor.defineTheme(MONACO_EDITOR_THEME, {
         base: 'vs',
@@ -42,8 +46,8 @@ export function MonacoEditor({
       language: 'json',
       folding: true,
       ...(applyTheme && { theme: MONACO_EDITOR_THEME }),
-      formatOnPaste: true,
-      formatOnType: true,
+      formatOnPaste: !isLargeValue,
+      formatOnType: !isLargeValue,
       minimap: { enabled: false },
       fontSize: 12,
       fontFamily: 'JetBrainsMonoVariable, mono',
@@ -89,7 +93,7 @@ export function MonacoEditor({
       const contentWidth = editor.getContentWidth();
       const contentHeight = editor.getContentHeight();
 
-      if (contentWidth) {
+      if (contentWidth && !isLargeValue) {
         el.style.width = `${Math.max(contentWidth, 300)}ch`;
       }
 
@@ -128,7 +132,11 @@ export function MonacoEditor({
       editor.onDidContentSizeChange(updateStyles),
     ];
 
-    void formatEditor();
+    if (isLargeValue) {
+      updateStyles();
+    } else {
+      void formatEditor();
+    }
 
     return () => {
       disposables.forEach((d) => d.dispose());
