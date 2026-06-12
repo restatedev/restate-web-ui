@@ -77,7 +77,7 @@ export async function fetchVqueueStatuses(
       statuses.set(row.entry_id as string, {
         status: row.status as string,
         run_at: row.run_at as string,
-        num_errors: row.num_errors as number,
+        num_attempts: row.num_attempts as number,
         latest_attempt_at: row.latest_attempt_at as string,
       });
     }
