@@ -113,3 +113,14 @@ export function base64ToUtf8OrOriginal(base64?: string) {
   }
   return uint8ArrayToUtf8OrBase64(base64ToUint8Array(base64));
 }
+
+export function uint8ArrayToUtf8OrByteArray(
+  value: Uint8Array<ArrayBufferLike>,
+): string | number[] {
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  try {
+    return decoder.decode(value);
+  } catch {
+    return Array.from(value);
+  }
+}

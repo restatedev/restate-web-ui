@@ -1950,7 +1950,7 @@ export interface components {
        *     The new state to replace the previous state with
        */
       new_state: {
-        [key: string]: number[];
+        [key: string]: number[] | string;
       };
       /**
        * @description # Service key

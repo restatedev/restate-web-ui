@@ -10,7 +10,10 @@ import {
   useDecodeState,
   type RestateCodecOptions,
 } from '@restate/features/codec';
-import { base64ToUint8Array } from '@restate/util/binary';
+import {
+  base64ToUint8Array,
+  uint8ArrayToUtf8OrByteArray,
+} from '@restate/util/binary';
 import { RestateError } from '@restate/util/errors';
 import {
   useMutation,
@@ -116,7 +119,9 @@ export function useEditState(
               }),
             ).then((encodedValue) => ({
               name: key,
-              value: Array.from(base64ToUint8Array(encodedValue)),
+              value: uint8ArrayToUtf8OrByteArray(
+                base64ToUint8Array(encodedValue),
+              ),
             })),
           ),
         ),
@@ -135,7 +140,9 @@ export function useEditState(
                   ...convertStateToObject(
                     query.data.state.map(({ name, value }) => ({
                       name,
-                      value: Array.from(base64ToUint8Array(value)),
+                      value: uint8ArrayToUtf8OrByteArray(
+                        base64ToUint8Array(value),
+                      ),
                     })),
                   ),
                 }),
