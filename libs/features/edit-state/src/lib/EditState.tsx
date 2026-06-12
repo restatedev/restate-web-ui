@@ -17,6 +17,7 @@ import {
   ReactNode,
   use,
   useId,
+  useMemo,
   useState,
 } from 'react';
 import {
@@ -167,6 +168,15 @@ function EditStateInner({
   );
   const queryClient = useQueryClient();
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
+  const editorValue = useMemo(
+    () =>
+      JSON.stringify(
+        typeof key === 'undefined'
+          ? query.data?.state
+          : query.data?.state?.[key],
+      ),
+    [key, query.data?.state],
+  );
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -311,13 +321,7 @@ function EditStateInner({
               className={codeStyles({ isPending: query.isPending })}
               onInput={mutation.reset}
               readonly={query.isPending}
-              {...(typeof key === 'undefined'
-                ? {
-                    value: JSON.stringify(query.data?.state, null, 4),
-                  }
-                : {
-                    value: JSON.stringify(query.data?.state?.[key], null, 4),
-                  })}
+              value={editorValue}
             />
           </>
         )}
