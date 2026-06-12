@@ -185,7 +185,7 @@ function EditStateInner({
     if (typeof value === 'string') {
       try {
         const obj: Record<string, string | undefined> = isPartial
-          ? { [key]: value || undefined }
+          ? { [key]: minifyJson(value) || undefined }
           : stringifyValues(JSON.parse(value));
         mutation.mutate({ state: obj, partial: isPartial });
       } catch (error) {
@@ -328,6 +328,14 @@ function EditStateInner({
       </StateDialogContent>
     </Dialog>
   );
+}
+
+function minifyJson(value: string) {
+  try {
+    return JSON.stringify(JSON.parse(value));
+  } catch {
+    return value;
+  }
 }
 
 function stringifyValues(state: Record<string, any>) {
