@@ -4,10 +4,7 @@ import { Chart, Pie, Slice, Tooltip } from '@restate/ui/charts';
 import type { ChartHandle } from '@restate/ui/charts';
 import { tv } from '@restate/util/styles';
 import { formatNumber } from '@restate/util/intl';
-import { toInvocationsHref } from '@restate/util/invocation-links';
-import { useRestateContext } from '@restate/features/restate-context';
-import { STATUS_LABELS } from './constants';
-import { getOrderedStatuses, type StatusEntry } from './useOrderedStatuses';
+import { type ArcSegment } from './heroSegments';
 
 export const chartContainerStyles = tv({
   base: 'absolute inset-0',
@@ -19,13 +16,9 @@ export const chartContainerStyles = tv({
   },
 });
 
-const LABEL_TO_STATUS = new Map(
-  Object.entries(STATUS_LABELS).map(([k, v]) => [v, k]),
-);
-
 function usePieInteractions(
   chartRef: React.RefObject<ChartHandle | null>,
-  onClickStatus: (statusName: string) => void,
+  onClickIndex: (dataIndex: number) => void,
 ) {
   useEffect(() => {
     const instance = chartRef.current?.getInstance();
@@ -49,8 +42,7 @@ function usePieInteractions(
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onClick = (params: any) => {
-      const status = LABEL_TO_STATUS.get(params.name) ?? params.name;
-      onClickStatus(status);
+      onClickIndex(params.dataIndex);
     };
 
     instance.on('mouseover', { seriesType: 'pie' }, onOver);
@@ -61,33 +53,29 @@ function usePieInteractions(
       instance.off('mouseout', onOut);
       instance.off('click', onClick);
     };
-  }, [chartRef, onClickStatus]);
+  }, [chartRef, onClickIndex]);
 }
 
 export function StatusArcEcharts({
-  byStatus,
+  segments,
   isLoading,
-  linkParams,
 }: {
-  byStatus: StatusEntry[];
+  segments: ArcSegment[];
   isLoading?: boolean;
-  linkParams?: URLSearchParams;
 }) {
-  const items = getOrderedStatuses(byStatus);
+  const items = segments.filter((s) => s.count > 0);
   const chartRef = useRef<ChartHandle>(null);
-  const { baseUrl } = useRestateContext();
   const navigate = useNavigate();
 
-  const onClickStatus = useCallback(
-    (statusName: string) => {
-      navigate(
-        toInvocationsHref(baseUrl, statusName, { existingParams: linkParams }),
-      );
+  const onClickIndex = useCallback(
+    (dataIndex: number) => {
+      const href = items[dataIndex]?.href;
+      if (href) navigate(href);
     },
-    [baseUrl, navigate, linkParams],
+    [items, navigate],
   );
 
-  usePieInteractions(chartRef, onClickStatus);
+  usePieInteractions(chartRef, onClickIndex);
 
   return (
     <div className={chartContainerStyles({ isLoading })}>
@@ -114,7 +102,7 @@ export function StatusArcEcharts({
             items.map((s) => (
               <Slice
                 key={s.name}
-                name={STATUS_LABELS[s.name] ?? s.name}
+                name={s.label}
                 value={s.count}
                 color={s.fillLight}
                 borderColor={s.stroke}

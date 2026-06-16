@@ -72,6 +72,30 @@ export function toInvocationsHref(
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 
+export function toInFlightInvocationsHref(
+  baseUrl: string,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_status',
+    JSON.stringify({ operation: 'NOT_IN', value: NON_IN_FLIGHT_STATUSES }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
+export function toCompletedInvocationsHref(
+  baseUrl: string,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_status',
+    JSON.stringify({ operation: 'IN', value: NON_IN_FLIGHT_STATUSES }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
 export function toServiceInvocationsHref(
   baseUrl: string,
   serviceName: string,
