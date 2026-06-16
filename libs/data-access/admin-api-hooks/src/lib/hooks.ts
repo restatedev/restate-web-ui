@@ -244,7 +244,7 @@ export function useGetMetrics(
   });
 
   const results = useQuery({
-    refetchInterval: 60_000,
+    refetchInterval: 5_000,
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
