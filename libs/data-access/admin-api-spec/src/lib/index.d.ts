@@ -1040,6 +1040,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/metrics': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get server metrics
+     * @description Aggregated, server-wide throughput and capacity metrics: per-second rates and gauges summed across all partition-processor leaders (metrics_processor), HTTP-ingress nodes (metrics_node), and durable logs (metrics_log).
+     */
+    get: operations['get_metrics'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/internal/invocations_batch_operations/kill': {
     parameters: {
       query?: never;
@@ -2540,6 +2560,29 @@ export interface components {
     u32: number;
     ListDrainedDeploymentsResponse: {
       deployment_ids: components['schemas']['DeploymentId'][];
+    };
+    /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
+    MetricsResponse: {
+      /** @description PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders. */
+      invocations_per_sec: number;
+      /** @description PROCESSOR (metrics_processor.events): journal events written per second — every journal entry on the leader counts as one event. */
+      events_per_sec: number;
+      /** @description PROCESSOR (metrics_processor.actions): user-facing billing/usage actions per second — one action per journal command, metered by payload (one action per started 64 KiB: action_units = ceil(len / 64 KiB), min 1, so 1 byte -> 1 action and 65 KiB -> 2). */
+      actions_per_sec: number;
+      /** @description PROCESSOR (metrics_processor.invoker_to_service_throughput): throughput from the invoker to the service deployments, MiB/s — bytes the invoker streams to SDK endpoints (new commands + replay). */
+      invoker_mibps: number;
+      /** @description PROCESSOR (metrics_processor.invoker_available_slots): invoker concurrency slots free for new invocations, summed across partitions. A partition whose invoker is unlimited or not yet running reports slots as (0, 0). */
+      slots_available: number;
+      /** @description PROCESSOR (metrics_processor.invoker_used_slots): invoker concurrency slots in use (capacity - available), summed across partitions — how many invocations are concurrently executing. */
+      slots_used: number;
+      /** @description INGRESS (metrics_node.throughput): ingress throughput, MiB/s — request + response body bytes seen at the HTTP ingress, turned into a rate by the sampler. */
+      ingress_mibps: number;
+      /** @description INGRESS (metrics_node.current_connections): currently open ingress connections (live gauge). */
+      connections: number;
+      /** @description INGRESS (metrics_node.waiting_invocations): admitted in-flight ingress requests blocked awaiting a result — request-response calls and attaches only; fire-and-forget sends are deliberately excluded. */
+      waiting: number;
+      /** @description DURABLE LOG (metrics_log.append_rate): bytes appended to Bifrost per second, MiB/s — summed across all logs, i.e. total durable-log write throughput. */
+      log_mibps: number;
     };
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
@@ -7199,6 +7242,73 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListDrainedDeploymentsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_metrics: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['MetricsResponse'];
         };
       };
       400: {

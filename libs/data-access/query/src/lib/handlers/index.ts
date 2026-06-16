@@ -16,6 +16,7 @@ export { batchRestartAsNewInvocations } from './batchRestartAsNewInvocations';
 export { countInvocations } from './countInvocations';
 export { summaryInvocations } from './summaryInvocations';
 export { getInvocationsStatus } from './getInvocationsStatus';
+export { getMetrics } from './getMetrics';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';

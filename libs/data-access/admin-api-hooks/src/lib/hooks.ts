@@ -234,6 +234,29 @@ export function useListDrainedDeployments(
   };
 }
 
+export function useGetMetrics(
+  options?: HookQueryOptions<'/query/metrics', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/metrics', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    refetchInterval: 60_000,
+    ...queryOptions,
+    ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function isVersionQuery(
   data: unknown,
   query: Query<unknown, unknown, unknown>,
