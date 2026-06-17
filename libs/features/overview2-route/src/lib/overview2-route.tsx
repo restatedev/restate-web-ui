@@ -1,23 +1,32 @@
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import { panelHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
-import {
-  useIsFetching,
-  useIsMutating,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useIsMutating, useQueryClient } from '@tanstack/react-query';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
-import { formatNumber } from '@restate/util/intl';
+import {
+  formatNumber,
+  formatPercentageWithoutFraction,
+} from '@restate/util/intl';
 import { IssuesBannerStack } from '@restate/ui/issue-banner';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
-import { StatusArcEcharts, StatusLegend } from '@restate/features/status-chart';
+import {
+  StatusArcEcharts,
+  StatusLegend,
+  buildCompletedSegments,
+  buildInFlightSegments,
+  splitInvocationTotals,
+  type ArcSegment,
+} from '@restate/features/status-chart';
+import {
+  toCompletedInvocationsHref,
+  toInFlightInvocationsHref,
+} from '@restate/util/invocation-links';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
 import { Spinner } from '@restate/ui/loading';
 import {
@@ -31,6 +40,14 @@ import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { TimeRangeToggle } from './TimeRangeToggle';
+import {
+  EngineCore,
+  InFlightMetrics,
+  CompletedMetrics,
+  EngineEgress,
+  OverviewMetricsRail,
+  useMetricsState,
+} from './EngineCluster';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
@@ -143,7 +160,7 @@ function PerspectiveLines({
   return (
     <svg
       ref={svgRef}
-      className="pointer-events-none absolute inset-x-0 top-0 z-5 h-full w-full text-slate-400"
+      className="pointer-events-none absolute inset-x-0 top-0 z-[25] hidden h-full w-full text-slate-400 @min-[64rem]/hero:block"
       viewBox={viewBox}
       fill="none"
     >
@@ -202,6 +219,74 @@ function TabCount({
   );
 }
 
+const gaugeStyles = tv({
+  base: 'relative -mb-9 aspect-square w-40 shrink-0 overflow-visible @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
+});
+
+const summaryStackStyles = tv({
+  base: 'relative z-40 col-span-3 col-start-1 row-start-3 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-2 @min-[76rem]/hero:col-start-3',
+  variants: {
+    metricsVisible: {
+      true: 'mt-4 @min-[64rem]/hero:mt-7',
+      false: 'mt-1 @min-[64rem]/hero:mt-2',
+    },
+  },
+});
+
+function HeroGauge({
+  segments,
+  count,
+  valueLabel,
+  label,
+  sublabel,
+  href,
+  isLoading,
+  isError,
+  className,
+}: {
+  segments: ArcSegment[];
+  count: number;
+  valueLabel?: string;
+  label: string;
+  sublabel?: string;
+  href: string;
+  isLoading?: boolean;
+  isError?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={gaugeStyles({ class: className })}>
+      <StatusArcEcharts segments={segments} isLoading={isLoading} />
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-4">
+        {isLoading ? (
+          <div className="h-7 w-14 animate-pulse rounded-lg bg-gray-200 sm:h-8" />
+        ) : isError ? (
+          <span className="text-2xl font-semibold text-gray-300">–</span>
+        ) : (
+          <Link
+            href={href}
+            variant="icon"
+            preserveQueryParams={false}
+            className="pointer-events-auto relative flex flex-col items-center gap-0 rounded-xl px-2 py-1 leading-none hover:bg-black/[0.03]"
+          >
+            <span className="text-2xl font-semibold text-gray-800 tabular-nums sm:text-3xl">
+              {valueLabel ?? formatNumber(count, true)}
+            </span>
+            <span className="mt-1 text-xs text-gray-500 sm:text-sm">
+              {label}
+            </span>
+            {sublabel && (
+              <span className="absolute top-full left-1/2 mt-0 hidden -translate-x-1/2 text-2xs whitespace-nowrap text-gray-400 tabular-nums @min-[40rem]/hero:block">
+                {sublabel}
+              </span>
+            )}
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function OverviewContent() {
   const {
     servicesMap,
@@ -224,6 +309,7 @@ function OverviewContent() {
     filter,
     setFilter,
     triggerManualRefresh,
+    overviewRefetchInterval,
   } = useOverviewContext();
   const servicesCount = servicesMap?.size ?? 0;
   const deploymentsCount = deploymentsMap?.size ?? 0;
@@ -232,18 +318,53 @@ function OverviewContent() {
     0,
   );
 
-  const { GettingStarted, status } = useRestateContext();
+  const { GettingStarted, status, baseUrl } = useRestateContext();
 
   const adminQueryPredicate = {
     predicate(query: { meta?: Record<string, unknown> }) {
       return Boolean(query.meta?.isAdmin);
     },
   };
-  const isAdminFetching = useIsFetching(adminQueryPredicate) > 0;
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
+  const metricsState = useMetricsState(overviewRefetchInterval);
   const queryClient = useQueryClient();
   const range = useRange();
   const rangeLabel = getRangeLabel(range);
+
+  const {
+    total: allTotal,
+    inFlight: inFlightTotal,
+    succeeded,
+    failed,
+  } = splitInvocationTotals(byStatus);
+  const completedSegments = useMemo(
+    () => buildCompletedSegments(byStatus, baseUrl, linkParams),
+    [byStatus, baseUrl, linkParams],
+  );
+  const completedTotal = succeeded + failed;
+  const completedSuccessRate =
+    completedTotal > 0 ? succeeded / completedTotal : 0;
+  const completedSuccessRateLabel =
+    completedTotal > 0
+      ? formatPercentageWithoutFraction(completedSuccessRate)
+      : undefined;
+  const completedLabel = completedTotal > 0 ? 'Succeeded' : 'Completed';
+  const completedSublabel =
+    completedTotal > 0
+      ? `of ${formatNumber(completedTotal, true)} completed`
+      : undefined;
+
+  const completedHref = toCompletedInvocationsHref(baseUrl, {
+    existingParams: linkParams,
+  });
+  const inFlightSegments = useMemo(
+    () => buildInFlightSegments(byStatus, baseUrl, linkParams),
+    [byStatus, baseUrl, linkParams],
+  );
+  const metricsVisible =
+    metricsState.isMetricsEnabled &&
+    metricsState.hasLoadedMetrics &&
+    (allTotal > 0 || metricsState.hasMetricActivity);
 
   let overallIssueSeverity: 'high' | 'low' | 'none' = 'none';
   for (const issues of serviceIssuesMap.values()) {
@@ -256,8 +377,8 @@ function OverviewContent() {
 
   const ferrofluidStatus = useRestateServerStatus({
     isHealthy: status === 'HEALTHY',
-    isError,
-    isActive: isAdminFetching || isAdminMutating,
+    isError: isError || isSummaryError,
+    isActive: metricsState.hasMetricActivity || isAdminMutating,
     issueSeverity: overallIssueSeverity,
   });
 
@@ -265,23 +386,19 @@ function OverviewContent() {
 
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
-  const pieRef = useRef<HTMLDivElement>(null);
-  const issuesRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
+  const heroReady = !isInitialLoading && !isBare && !isEmpty;
   const { paths, viewBox, fadeStart, fadeEnd } = usePerspectiveLines(
     containerRef,
     serverRef,
     panelEl,
-    !isInitialLoading && !isBare && !isEmpty,
+    heroReady,
   );
   const triggerRay = usePerspectiveRay(linesSvgRef);
-  const noInvocations =
-    !isSummaryLoading && !isSummaryError && totalCount === 0;
-  const statusCount = byStatus.filter((s) => s.count > 0).length;
-  const showLegend = statusCount > 0;
-  const firstServiceName = servicesMap?.values().next().value?.name;
+  const showHeroLegends =
+    isSummaryLoading || (!isSummaryError && totalCount > 0);
   const filterPlaceholder =
     mode === 'services'
       ? 'Filter services, handlers, or deployments…'
@@ -290,24 +407,28 @@ function OverviewContent() {
         : 'Filter handlers, services, or types…';
 
   const onRefresh = () => {
-    pieRef.current?.animate(
+    serverRef.current?.animate(
       [
         { transform: 'scale(1)' },
-        { transform: 'scale(1.03)' },
+        { transform: 'scale(1.04)' },
         { transform: 'scale(1)' },
       ],
       { duration: 500, easing: 'ease-in-out' },
     );
     triggerRay();
     triggerWave(serverRef, 'overview-card');
-    issuesRef.current?.animate(
-      [
-        { transform: 'translateY(0)' },
-        { transform: 'translateY(-3px)' },
-        { transform: 'translateY(0)' },
-      ],
-      { duration: 400, easing: 'ease-in-out' },
-    );
+    containerRef.current
+      ?.querySelectorAll<HTMLElement>('[data-overview-refresh-bounce]')
+      .forEach((el) => {
+        el.animate(
+          [
+            { transform: 'translateY(0)' },
+            { transform: 'translateY(-3px)' },
+            { transform: 'translateY(0)' },
+          ],
+          { duration: 400, easing: 'ease-in-out' },
+        );
+      });
     triggerManualRefresh();
   };
 
@@ -359,7 +480,7 @@ function OverviewContent() {
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-20"
+      className="@container/hero relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0"
     >
       <PerspectiveLines
         svgRef={linesSvgRef}
@@ -368,91 +489,101 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
-      <div className="relative flex w-full items-center justify-center">
-        <div className="hidden min-w-0 flex-1 justify-end pr-6 md:flex">
-          {showLegend && (
+      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)] @min-[108rem]/hero:pt-20">
+        <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-end @min-[76rem]/hero:col-start-1 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
+          {showHeroLegends && (
             <StatusLegend
-              byStatus={byStatus}
+              items={inFlightSegments}
               isLoading={isSummaryLoading}
-              isError={isSummaryError}
-              linkParams={linkParams}
               orientation="vertical"
-              half="first"
-              className="items-end"
+              className="w-full min-w-0 justify-items-end"
             />
           )}
         </div>
-        <div className="flex shrink-0 flex-col items-center gap-3">
-          <div
-            ref={pieRef}
-            className="relative -mb-10 h-[240px] w-[240px] overflow-visible"
-          >
-            <StatusArcEcharts
-              byStatus={byStatus}
+        <HeroGauge
+          className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-1 @min-[76rem]/hero:col-start-2"
+          segments={inFlightSegments}
+          count={inFlightTotal}
+          label="In-flight"
+          href={toInFlightInvocationsHref(baseUrl, {
+            existingParams: linkParams,
+          })}
+          isLoading={isSummaryLoading}
+          isError={isSummaryError}
+        />
+        <EngineCore
+          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block @min-[76rem]/hero:col-start-3"
+          serverRef={serverRef}
+          status={ferrofluidStatus}
+          onPress={onRefresh}
+        />
+        <HeroGauge
+          className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0 @min-[76rem]/hero:col-start-4"
+          segments={completedSegments}
+          count={completedTotal}
+          valueLabel={completedSuccessRateLabel}
+          label={completedLabel}
+          sublabel={completedSublabel}
+          href={completedHref}
+          isLoading={isSummaryLoading}
+          isError={isSummaryError}
+        />
+        <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-start @min-[76rem]/hero:col-start-5 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
+          {showHeroLegends && (
+            <StatusLegend
+              items={completedSegments}
               isLoading={isSummaryLoading}
-              linkParams={linkParams}
+              orientation="vertical"
+              className="min-w-0 place-items-start"
             />
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div
-                ref={serverRef}
-                className="pointer-events-auto z-20 scale-75"
-              >
-                <RestateServer
-                  status={ferrofluidStatus}
-                  onPress={onRefresh}
-                  aura={noInvocations ? 'prominent' : 'subtle'}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="relative z-10 -mt-2 flex min-h-7 w-[18rem] items-baseline justify-center gap-1.5">
-            {summaryError ? (
-              <Popover>
-                <PopoverTrigger>
-                  <Button
-                    variant="secondary"
-                    className="flex shrink-0 translate-y-0.5 items-center gap-1.5 rounded-xl border-orange-200/80 bg-orange-50/80 px-3 py-1 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
-                  >
-                    <Icon
-                      name={IconName.TriangleAlert}
-                      className="h-3.5 w-3.5 fill-orange-200 text-orange-500"
-                    />
-                    Could not load invocation data
-                    <Icon
-                      name={IconName.ChevronsUpDown}
-                      className="h-3.5 w-3.5 text-orange-400"
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="max-w-sm">
-                  <ErrorBanner error={summaryError} className="rounded-xl" />
-                </PopoverContent>
-              </Popover>
-            ) : isSummaryLoading ? (
-              <div className="w-36 translate-y-0.5 animate-pulse rounded-lg bg-gray-200 text-xl leading-6 font-semibold">
-                <br />
-              </div>
-            ) : noInvocations ? (
-              <p className="text-sm text-gray-400">
-                <Link
-                  {...(firstServiceName && {
-                    href: panelHref({ playground: firstServiceName }),
-                  })}
-                  variant="icon"
-                  className="-mr-1 flex items-center gap-1.5 rounded-xl text-gray-500"
-                >
-                  No invocations
-                </Link>
-              </p>
+          )}
+        </div>
+        <OverviewMetricsRail
+          side="left"
+          hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
+          data-overview-refresh-bounce=""
+          className="col-start-1 row-span-2 row-start-1 self-center justify-self-end @min-[64rem]/hero:hidden"
+        />
+        <OverviewMetricsRail
+          side="right"
+          hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
+          data-overview-refresh-bounce=""
+          className="col-start-3 row-span-2 row-start-1 self-center justify-self-start @min-[64rem]/hero:hidden"
+        />
+        <InFlightMetrics
+          hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
+          data-overview-refresh-bounce=""
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-2"
+        />
+        <EngineEgress
+          hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
+          data-overview-refresh-bounce=""
+          className="relative z-10 hidden w-[29rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[37rem]"
+        />
+        <CompletedMetrics
+          hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
+          data-overview-refresh-bounce=""
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-4"
+        />
+        <div
+          data-overview-refresh-bounce=""
+          className={summaryStackStyles({ metricsVisible })}
+        >
+          <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
+            {isSummaryLoading ? (
+              <span className="h-7 w-48 animate-pulse rounded-xl bg-gray-200" />
             ) : (
-              <>
-                <span className="text-xl leading-6 font-semibold text-gray-700 tabular-nums">
-                  {formatNumber(totalCount, true)}
+              <span className="flex items-baseline gap-1.5">
+                <span className="text-lg font-semibold text-gray-700 tabular-nums">
+                  {isSummaryError ? '–' : formatNumber(allTotal, true)}
                 </span>
-                <span className="text-sm leading-6 text-gray-500">
-                  {totalCount === 1 ? 'invocation' : 'invocations'}
-                </span>
-              </>
+                <span className="text-base text-gray-500">invocations</span>
+              </span>
             )}
             <TimeRangeToggle
               onChange={() => {
@@ -462,41 +593,35 @@ function OverviewContent() {
                 });
               }}
             />
+            {summaryError && (
+              <Popover>
+                <PopoverTrigger>
+                  <Button
+                    aria-label="Could not load invocation data"
+                    variant="secondary"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+                  >
+                    <Icon
+                      name={IconName.TriangleAlert}
+                      className="h-4 w-4 fill-red-200 text-red-600"
+                    />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="max-w-sm">
+                  <ErrorBanner error={summaryError} className="rounded-xl" />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+          <div className="relative mt-3 -mb-8 flex flex-col items-center">
+            <IssuesBannerStack />
+            <div className="h-5" />
           </div>
         </div>
-        <div className="hidden min-w-0 flex-1 justify-start pl-6 md:flex">
-          {showLegend && (
-            <StatusLegend
-              byStatus={byStatus}
-              isLoading={isSummaryLoading}
-              isError={isSummaryError}
-              linkParams={linkParams}
-              orientation="vertical"
-              half="second"
-            />
-          )}
-        </div>
-      </div>
-      {totalCount > 0 && (
-        <div className="md:hidden">
-          <StatusLegend
-            byStatus={byStatus}
-            isLoading={isSummaryLoading}
-            isError={isSummaryError}
-            linkParams={linkParams}
-          />
-        </div>
-      )}
-      <div
-        ref={issuesRef}
-        className="relative z-20 -mb-8 flex min-h-20 flex-col items-center"
-      >
-        <IssuesBannerStack className="mt-2" />
-        <div className="h-5" />
       </div>
 
       <ContentPanel
-        className="w-full"
+        className="z-20 w-full"
         tabs={{
           queryParam: OVERVIEW_MODE_PARAM,
           defaultId: 'services',

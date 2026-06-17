@@ -55,7 +55,10 @@ import {
   StatePanel,
 } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
-import { FeatureFlags } from '@restate/util/feature-flag';
+import {
+  FeatureFlags,
+  useIsFeatureFlagEnabled,
+} from '@restate/util/feature-flag';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import {
   DEPLOYMENT_QUERY_PARAM,
@@ -444,43 +447,54 @@ function TopbarPanels() {
   );
 }
 
+function AppContent() {
+  const executionMetricsEnabled = useIsFeatureFlagEnabled(
+    'FEATURE_EXECUTION_METRICS',
+  );
+
+  return (
+    <QueryProvider queryClient={queryClient}>
+      <PortalProvider>
+        <RestateContextProvider
+          adminBaseUrl={getCookieValue('adminBaseUrl')}
+          GettingStarted={RestateGettingStarted}
+          systemHealthMonitor={monitor}
+          queryHealthCheckEnabled
+          executionMetricsEnabled={executionMetricsEnabled}
+        >
+          <CodecRuntimeProvider>
+            <BatchOperationsProvider>
+              <EditState>
+                <LayoutOutlet zone={LayoutZone.Content}>
+                  <Outlet />
+                </LayoutOutlet>
+                <SidebarPanels />
+                <TopbarPanels />
+                <DeploymentDetails />
+                <ServiceDetails />
+                <DeleteDeployment />
+                <ServicePlayground />
+                <InvocationPanel />
+                <StatePanel />
+                <EditService />
+                <InvocationActions />
+                <PruneDrainedDeploymentsDialog />
+                <RegisterDeploymentDialog />
+                <UpdateDeploymentDialog />
+                <MonacoWarmup />
+              </EditState>
+            </BatchOperationsProvider>
+          </CodecRuntimeProvider>
+        </RestateContextProvider>
+      </PortalProvider>
+    </QueryProvider>
+  );
+}
+
 export default function App() {
   return (
     <FeatureFlags>
-      <QueryProvider queryClient={queryClient}>
-        <PortalProvider>
-          <RestateContextProvider
-            adminBaseUrl={getCookieValue('adminBaseUrl')}
-            GettingStarted={RestateGettingStarted}
-            systemHealthMonitor={monitor}
-            queryHealthCheckEnabled
-          >
-            <CodecRuntimeProvider>
-              <BatchOperationsProvider>
-                <EditState>
-                  <LayoutOutlet zone={LayoutZone.Content}>
-                    <Outlet />
-                  </LayoutOutlet>
-                  <SidebarPanels />
-                  <TopbarPanels />
-                  <DeploymentDetails />
-                  <ServiceDetails />
-                  <DeleteDeployment />
-                  <ServicePlayground />
-                  <InvocationPanel />
-                  <StatePanel />
-                  <EditService />
-                  <InvocationActions />
-                  <PruneDrainedDeploymentsDialog />
-                  <RegisterDeploymentDialog />
-                  <UpdateDeploymentDialog />
-                  <MonacoWarmup />
-                </EditState>
-              </BatchOperationsProvider>
-            </CodecRuntimeProvider>
-          </RestateContextProvider>
-        </PortalProvider>
-      </QueryProvider>
+      <AppContent />
     </FeatureFlags>
   );
 }

@@ -34,13 +34,44 @@ import type {
   HookQueryOptions,
   HookMutationOptions,
 } from '@restate/data-access/admin-api';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRange, useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
+const unsupportedMetricsBaseUrls = new Set<string>();
+
+function getErrorMessages(error: unknown): string[] {
+  if (!(error instanceof Error)) return [];
+  return [error.message, ...(error.cause ? getErrorMessages(error.cause) : [])];
+}
+
+function isMetricsUnsupportedError(error: unknown) {
+  return getErrorMessages(error).some(
+    (message) =>
+      /table .*metrics_(processor|node|log).* not found/i.test(message) ||
+      /metrics_(processor|node|log).* not found/i.test(message),
+  );
+}
+
+function useMeasuredQueryFn<Args extends unknown[], Result>(
+  queryFn: (...args: Args) => Result | Promise<Result>,
+  onFetchDuration?: (duration: number) => void,
+) {
+  return useCallback(
+    async (...args: Args) => {
+      const startedAt = Date.now();
+      try {
+        return await queryFn(...args);
+      } finally {
+        onFetchDuration?.(Date.now() - startedAt);
+      }
+    },
+    [queryFn, onFetchDuration],
+  );
+}
 
 type ListDeploymentsServiceData = {
   deployments: Record<Revision, DeploymentId[]>;
@@ -230,6 +261,55 @@ export function useListDrainedDeployments(
 
   return {
     ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useGetMetrics(
+  options?: HookQueryOptions<'/query/metrics', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const { isExecutionMetricsEnabled } = useRestateContext();
+  const baseUrl = useAdminBaseUrl();
+  const [isMetricsUnsupported, setIsMetricsUnsupported] = useState(() =>
+    unsupportedMetricsBaseUrls.has(baseUrl),
+  );
+  const isMetricsEnabled =
+    isExecutionMetricsEnabled &&
+    options?.enabled !== false &&
+    !isMetricsUnsupported;
+  const queryOptions = adminApi('query', '/query/metrics', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    refetchInterval: 2_000,
+    ...queryOptions,
+    ...options,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    enabled: enabled && isMetricsEnabled,
+  });
+
+  useEffect(() => {
+    setIsMetricsUnsupported(unsupportedMetricsBaseUrls.has(baseUrl));
+  }, [baseUrl]);
+
+  useEffect(() => {
+    if (!results.error || isMetricsUnsupported) return;
+    if (isMetricsUnsupportedError(results.error)) {
+      unsupportedMetricsBaseUrls.add(baseUrl);
+      setIsMetricsUnsupported(true);
+    }
+  }, [baseUrl, isMetricsUnsupported, results.error]);
+
+  const hasLoadedMetrics = isMetricsEnabled && results.dataUpdatedAt > 0;
+
+  return {
+    ...results,
+    data: isMetricsEnabled ? results.data : undefined,
+    hasLoadedMetrics,
+    isMetricsEnabled,
+    isMetricsUnsupported,
     queryKey: queryOptions.queryKey,
   };
 }
@@ -617,11 +697,13 @@ export function useSummaryInvocations(
     sampleSize,
     range,
     meta: callerMeta,
+    onFetchDuration,
     ...options
   }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
     sampled?: boolean;
     sampleSize?: number;
     range?: string;
+    onFetchDuration?: (duration: number) => void;
   } = {},
 ) {
   const enabled = useAPIStatus();
@@ -629,22 +711,28 @@ export function useSummaryInvocations(
   const currentRange = useRange();
   const isMonitorQuery = filters.length === 0 && range === currentRange;
 
-  const queryOptions = adminApi('query', '/query/invocations/summary', 'post', {
-    baseUrl,
-    body: {
-      filters,
-      sampled,
-      sampleSize,
-      range,
+  const { queryFn, ...queryOptions } = adminApi(
+    'query',
+    '/query/invocations/summary',
+    'post',
+    {
+      baseUrl,
+      body: {
+        filters,
+        sampled,
+        sampleSize,
+        range,
+      },
     },
-  });
+  );
+  const measuredQueryFn = useMeasuredQueryFn(queryFn, onFetchDuration);
 
   const results = useQuery({
     staleTime: 0,
     placeholderData: keepPreviousData,
-    refetchInterval: 60_000,
     ...queryOptions,
     ...options,
+    queryFn: measuredQueryFn,
     meta: {
       ...queryOptions.meta,
       ...getOverviewRefreshMeta(),

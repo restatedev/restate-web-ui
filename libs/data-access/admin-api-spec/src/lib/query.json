@@ -2580,6 +2580,86 @@
         }
       }
     },
+    "/query/metrics": {
+      "get": {
+        "tags": ["query-metrics"],
+        "summary": "Get server metrics",
+        "description": "Aggregated, server-wide throughput and capacity metrics: per-second rates and gauges summed across all partition-processor leaders (metrics_processor), HTTP-ingress nodes (metrics_node), and durable logs (metrics_log).",
+        "operationId": "get_metrics",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/internal/invocations_batch_operations/kill": {
       "post": {
         "tags": ["batch-invocation-operations"],
@@ -3092,6 +3172,64 @@
             "items": {
               "$ref": "#/components/schemas/DeploymentId"
             }
+          }
+        }
+      },
+      "MetricsResponse": {
+        "type": "object",
+        "description": "Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log).",
+        "required": [
+          "invocations_per_sec",
+          "events_per_sec",
+          "actions_per_sec",
+          "invoker_mibps",
+          "slots_available",
+          "slots_used",
+          "ingress_mibps",
+          "connections",
+          "waiting",
+          "log_mibps"
+        ],
+        "properties": {
+          "invocations_per_sec": {
+            "type": "number",
+            "description": "PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders."
+          },
+          "events_per_sec": {
+            "type": "number",
+            "description": "PROCESSOR (metrics_processor.events): journal events written per second — every journal entry on the leader counts as one event."
+          },
+          "actions_per_sec": {
+            "type": "number",
+            "description": "PROCESSOR (metrics_processor.actions): user-facing billing/usage actions per second — one action per journal command, metered by payload (one action per started 64 KiB: action_units = ceil(len / 64 KiB), min 1, so 1 byte -> 1 action and 65 KiB -> 2)."
+          },
+          "invoker_mibps": {
+            "type": "number",
+            "description": "PROCESSOR (metrics_processor.invoker_to_service_throughput): throughput from the invoker to the service deployments, MiB/s — bytes the invoker streams to SDK endpoints (new commands + replay)."
+          },
+          "slots_available": {
+            "type": "integer",
+            "description": "PROCESSOR (metrics_processor.invoker_available_slots): invoker concurrency slots free for new invocations, summed across partitions. A partition whose invoker is unlimited or not yet running reports slots as (0, 0)."
+          },
+          "slots_used": {
+            "type": "integer",
+            "description": "PROCESSOR (metrics_processor.invoker_used_slots): invoker concurrency slots in use (capacity - available), summed across partitions — how many invocations are concurrently executing."
+          },
+          "ingress_mibps": {
+            "type": "number",
+            "description": "INGRESS (metrics_node.throughput): ingress throughput, MiB/s — request + response body bytes seen at the HTTP ingress, turned into a rate by the sampler."
+          },
+          "connections": {
+            "type": "integer",
+            "description": "INGRESS (metrics_node.current_connections): currently open ingress connections (live gauge)."
+          },
+          "waiting": {
+            "type": "integer",
+            "description": "INGRESS (metrics_node.waiting_invocations): admitted in-flight ingress requests blocked awaiting a result — request-response calls and attaches only; fire-and-forget sends are deliberately excluded."
+          },
+          "log_mibps": {
+            "type": "number",
+            "description": "DURABLE LOG (metrics_log.append_rate): bytes appended to Bifrost per second, MiB/s — summed across all logs, i.e. total durable-log write throughput."
           }
         }
       },

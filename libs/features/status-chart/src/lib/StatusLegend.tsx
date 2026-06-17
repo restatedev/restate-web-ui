@@ -15,6 +15,7 @@ import {
   DEFAULT_STYLE,
 } from './constants';
 import { type StatusEntry } from './useOrderedStatuses';
+import { type ArcSegment } from './heroSegments';
 
 export const legendStyles = tv({
   base: 'flex items-start outline-none',
@@ -26,7 +27,11 @@ export const legendStyles = tv({
     orientation: {
       horizontal:
         'mx-auto max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
-      vertical: 'flex-col gap-0.5',
+      // Single-column grid (not flex-col): grid rows are sized to the track,
+      // so with min-w-0 they shrink to the column width and their labels can
+      // truncate. A flex column leaves rows at content width on the cross axis,
+      // so they overflow instead.
+      vertical: 'grid grid-cols-1 gap-0.5',
     },
   },
   defaultVariants: {
@@ -54,6 +59,28 @@ const legendItemStyles = tv({
       dimmed: 'opacity-40 saturate-50',
       faded: 'opacity-50',
     },
+    // Vertical (flanking) legends are constrained to their grid column, so the
+    // row caps at the column width and its label truncates instead of spilling
+    // out of the layout. Horizontal legends wrap between items as before.
+    orientation: {
+      horizontal: '',
+      vertical: 'max-w-full min-w-0',
+    },
+    compact: {
+      true: '',
+      false: '',
+    },
+  },
+  compoundVariants: [
+    {
+      orientation: 'vertical',
+      compact: false,
+      class: 'w-max max-w-none',
+    },
+  ],
+  defaultVariants: {
+    orientation: 'horizontal',
+    compact: true,
   },
 });
 
@@ -77,21 +104,64 @@ const bulletStyles = tv({
   },
 });
 
+const labelStyles = tv({
+  base: 'text-xs',
+  variants: {
+    // Vertical rows truncate within their column; horizontal rows stay on one
+    // line and wrap between items.
+    orientation: {
+      horizontal: 'whitespace-nowrap',
+      vertical: 'min-w-0 truncate',
+    },
+    compact: {
+      true: '',
+      false: '',
+    },
+    tone: {
+      normal: 'text-gray-600',
+      muted: 'text-gray-400',
+    },
+  },
+  compoundVariants: [
+    {
+      orientation: 'vertical',
+      compact: false,
+      class: 'min-w-max! overflow-visible! text-clip! whitespace-nowrap',
+    },
+  ],
+  defaultVariants: {
+    orientation: 'horizontal',
+    compact: true,
+    tone: 'normal',
+  },
+});
+
+type LegendRow = {
+  name: string;
+  label: string;
+  count: number;
+  fillLight: string;
+  stroke: string;
+  borderType?: 'dashed' | number[];
+  href?: string;
+};
+
 export function StatusLegend({
-  byStatus,
+  byStatus = [],
   isLoading,
   isError,
   linkParams,
   getHref,
   orientation = 'horizontal',
-  half,
   className,
   isDimmed,
   allItem,
   isSampled,
   leading,
+  items,
+  compact = true,
 }: {
-  byStatus: StatusEntry[];
+  byStatus?: StatusEntry[];
   isLoading?: boolean;
   isError?: boolean;
   linkParams?: URLSearchParams;
@@ -101,7 +171,6 @@ export function StatusLegend({
   // filter_target_service_name) that `toInvocationsHref` would strip.
   getHref?: (statusName: string) => string;
   orientation?: 'horizontal' | 'vertical';
-  half?: 'first' | 'second';
   className?: string;
   // Caller-driven dimming. When truthy for a given status name, that row is
   // faded — used by the invocations route to mirror the bar chart's
@@ -120,34 +189,57 @@ export function StatusLegend({
   // Custom content rendered as the first legend cell — used by the
   // invocations route to embed a count-mode toggle inline with the chips.
   leading?: ReactNode;
+  // Explicit, pre-built entries (label/count/style/href). When provided the
+  // legend renders these verbatim instead of deriving rows from the canonical
+  // status list — used by the overview hero, where each gauge has its own
+  // bespoke set (the aggregate "In-flight" bucket, or just the in-flight
+  // statuses). `allItem`/`getHref` are ignored in this mode.
+  items?: ArcSegment[];
+  compact?: boolean;
 }) {
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
+
+  // Counts looked up from byStatus (status mode); missing entries render as 0.
+  const countByStatus = new Map<string, number>();
+  for (const entry of byStatus) {
+    if (entry.count > 0) countByStatus.set(entry.name, entry.count);
+  }
+
   // Always iterate the canonical status list so the legend's wrap count and
   // height stay constant regardless of how many statuses are present in the
-  // data. Counts are looked up from byStatus; missing entries render as 0.
-  const countByStatus = new Map<string, number>();
+  // data — unless explicit `items` are supplied.
+  const rows: LegendRow[] = items
+    ? items
+    : ALL_STATUSES.map((s) => ({
+        name: s.name,
+        label: STATUS_LABELS[s.name] ?? s.name,
+        count: countByStatus.get(s.name) ?? 0,
+        fillLight: s.fillLight,
+        stroke: s.stroke,
+        borderType: s.borderType,
+      }));
+
+  // Population used for percentage chips: the whole in-scope total (all
+  // statuses across both halves in status mode; sum of items otherwise).
   let total = 0;
-  for (const entry of byStatus) {
-    if (entry.count > 0) {
-      countByStatus.set(entry.name, entry.count);
-      total += entry.count;
-    }
+  const totalSource = items ?? byStatus;
+  for (const entry of totalSource) {
+    if (entry.count > 0) total += entry.count;
   }
   const formatChip = (count: number) =>
     isSampled && total > 0
       ? formatApproxPercentage(count / total)
       : formatNumber(count, true);
-  const mid = Math.ceil(ALL_STATUSES.length / 2);
-  const displayItems =
-    half === 'first'
-      ? ALL_STATUSES.slice(0, mid)
-      : half === 'second'
-        ? ALL_STATUSES.slice(mid)
-        : ALL_STATUSES;
-  // Only show All on the first half (or when not splitting) so it doesn't
-  // duplicate when the legend is rendered in two halves elsewhere.
-  const showAllItem = allItem && half !== 'second' && state === 'success';
+
+  // Show the leading "All" reset entry only in status mode (never with
+  // explicit items).
+  const showAllItem = !items && allItem && state === 'success';
+
+  const resolveHref = (row: LegendRow) =>
+    row.href ??
+    getHref?.(row.name) ??
+    toInvocationsHref(baseUrl, row.name, { existingParams: linkParams });
 
   return (
     <div className={legendStyles({ isLoading, orientation, class: className })}>
@@ -187,31 +279,42 @@ export function StatusLegend({
             />
           </AriaGridListItem>
         )}
-        {displayItems.map((s) => {
-          const count = countByStatus.get(s.name) ?? 0;
-          const dimmed = isDimmed?.(s.name) ?? false;
-          const borderType = s.borderType ? 'dashed' : 'solid';
+        {rows.map((row) => {
+          const count = row.count;
+          const dimmed = isDimmed?.(row.name) ?? false;
+          const borderType = row.borderType ? 'dashed' : 'solid';
           const appearance =
             count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
           if (state === 'loading') {
             return (
               <AriaGridListItem
-                key={s.name}
-                id={s.name}
-                textValue={STATUS_LABELS[s.name] ?? s.name}
-                className={legendItemStyles({ state: 'loading', appearance })}
+                key={row.name}
+                id={row.name}
+                textValue={row.label}
+                className={legendItemStyles({
+                  state: 'loading',
+                  appearance,
+                  orientation,
+                  compact,
+                })}
               >
                 <div
                   className={bulletStyles({ state: 'loading', borderType })}
                   style={{
-                    backgroundColor: s.fillLight,
-                    borderColor: s.stroke,
+                    backgroundColor: row.fillLight,
+                    borderColor: row.stroke,
                   }}
                 />
-                <span className="text-xs text-gray-400">
-                  {STATUS_LABELS[s.name] ?? s.name}
+                <span
+                  className={labelStyles({
+                    orientation,
+                    compact,
+                    tone: 'muted',
+                  })}
+                >
+                  {row.label}
                 </span>
-                <span className="animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
+                <span className="shrink-0 animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
                   {formatChip(count)}
                 </span>
                 <Icon
@@ -224,52 +327,47 @@ export function StatusLegend({
           // success or error — render the same skeleton so layout stays
           // constant. For error we drop the count chip (we don't have data),
           // but keep the bullet + label so wrap behavior matches.
-          const isError = state === 'error';
+          const isErrorState = state === 'error';
           return (
             <AriaGridListItem
-              key={s.name}
-              id={s.name}
+              key={row.name}
+              id={row.name}
               textValue={
-                isError
-                  ? (STATUS_LABELS[s.name] ?? s.name)
-                  : `${STATUS_LABELS[s.name] ?? s.name} ${formatChip(count)}`
+                isErrorState ? row.label : `${row.label} ${formatChip(count)}`
               }
-              href={
-                isError
-                  ? undefined
-                  : (getHref?.(s.name) ??
-                    toInvocationsHref(baseUrl, s.name, {
-                      existingParams: linkParams,
-                    }))
-              }
+              href={isErrorState ? undefined : resolveHref(row)}
               className={legendItemStyles({
-                state: isError ? 'error' : 'success',
+                state: isErrorState ? 'error' : 'success',
                 appearance,
+                orientation,
+                compact,
               })}
             >
               <div
                 className={bulletStyles({
-                  state: isError ? 'error' : 'success',
+                  state: isErrorState ? 'error' : 'success',
                   borderType,
                 })}
                 style={{
-                  backgroundColor: s.fillLight,
-                  borderColor: s.stroke,
+                  backgroundColor: row.fillLight,
+                  borderColor: row.stroke,
                 }}
               />
               <span
-                className={
-                  isError ? 'text-xs text-gray-400' : 'text-xs text-gray-600'
-                }
+                className={labelStyles({
+                  orientation,
+                  compact,
+                  tone: isErrorState ? 'muted' : 'normal',
+                })}
               >
-                {STATUS_LABELS[s.name] ?? s.name}
+                {row.label}
               </span>
-              {!isError && (
-                <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+              {!isErrorState && (
+                <span className="inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
                   {formatChip(count)}
                 </span>
               )}
-              {!isError && (
+              {!isErrorState && (
                 <Icon
                   name={IconName.ChevronRight}
                   className="h-3.5 w-3.5 shrink-0 text-gray-400"

@@ -32,6 +32,7 @@ import {
   batchRestartAsNewInvocations,
   countInvocations,
   getInvocationsStatus,
+  getMetrics,
   summaryInvocations,
   getPausedError,
   getTransientError,
@@ -56,6 +57,7 @@ type BoundHandlers = {
     range?: string,
   ) => Promise<Response>;
   getInvocationsStatus: (invocationIds: string[]) => Promise<Response>;
+  getMetrics: () => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
     invocationId: string,
@@ -130,6 +132,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     countInvocations: countInvocations.bind(context),
     summaryInvocations: summaryInvocations.bind(context),
     getInvocationsStatus: getInvocationsStatus.bind(context),
+    getMetrics: getMetrics.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
@@ -287,6 +290,9 @@ export const routes = createRoutes('/query', {
   },
   deployments: {
     drained: { method: 'GET', pattern: '/deployments/drained' },
+  },
+  metrics: {
+    get: { method: 'GET', pattern: '/metrics' },
   },
 });
 
@@ -482,6 +488,12 @@ router.map(routes, {
       async drained(ctx) {
         const { listDrainedDeployments } = ctx.storage.get(handlersKey);
         return listDrainedDeployments();
+      },
+    },
+    metrics: {
+      async get(ctx) {
+        const { getMetrics } = ctx.storage.get(handlersKey);
+        return getMetrics();
       },
     },
   },

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
   useListDrainedDeployments,
   useListDeployments,
@@ -13,7 +13,33 @@ import {
 } from '@restate/features/system-health';
 import { handlerIssuesKey } from './sortHandlers';
 
+const MIN_OVERVIEW_REFETCH_INTERVAL = 3_000;
+const MAX_OVERVIEW_REFETCH_INTERVAL = 60_000;
+const OVERVIEW_REFETCH_DURATION_MULTIPLIER = 10;
+
+function getOverviewRefetchInterval(summaryFetchDuration: number) {
+  return Math.min(
+    MAX_OVERVIEW_REFETCH_INTERVAL,
+    Math.max(
+      MIN_OVERVIEW_REFETCH_INTERVAL,
+      summaryFetchDuration * OVERVIEW_REFETCH_DURATION_MULTIPLIER,
+    ),
+  );
+}
+
 export function useOverviewData(range?: string) {
+  const overviewRefetchIntervalRef = useRef(MIN_OVERVIEW_REFETCH_INTERVAL);
+  const overviewRefetchInterval = useCallback(
+    () => overviewRefetchIntervalRef.current,
+    [],
+  );
+  const updateOverviewRefetchInterval = useCallback(
+    (summaryFetchDuration: number) => {
+      overviewRefetchIntervalRef.current =
+        getOverviewRefetchInterval(summaryFetchDuration);
+    },
+    [],
+  );
   const {
     data: { sortedServiceNames, deployments: deploymentsMap } = {},
     isFetched,
@@ -30,7 +56,13 @@ export function useOverviewData(range?: string) {
     isError: isSummaryError,
     error: summaryError,
     queryKey: summaryQueryKey,
-  } = useSummaryInvocations([], { sampled: false, range });
+  } = useSummaryInvocations([], {
+    sampled: false,
+    range,
+    refetchInterval: overviewRefetchInterval,
+    onFetchDuration: updateOverviewRefetchInterval,
+  });
+
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
   const {
     data: drainedDeploymentIds = new Set(),
@@ -146,6 +178,7 @@ export function useOverviewData(range?: string) {
     isSummaryError,
     summaryError,
     summaryQueryKey,
+    overviewRefetchInterval,
     isInitialLoading,
     isBare,
     isEmpty,

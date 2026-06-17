@@ -2,16 +2,16 @@ import type { VqueueStatus } from '../convertInvocation';
 import { type QueryContext, quoteSqlString } from './shared';
 
 // Temporary, local-only flag persisted to localStorage and flipped via the
-// /feature-flags/FEATURE_VQUEUE_STATUS route. Read directly here: the query
-// layer sits below @restate/util/feature-flag in the dependency graph, so
-// importing that lib would create a cycle.
-// const VQUEUE_STATUS_FLAG = 'FEATURE_VQUEUE_STATUS';
+// /feature-flags/FEATURE_VQUEUE_OBSERVABILITY route. Read directly here: the
+// query layer sits below @restate/util/feature-flag in the dependency graph,
+// so importing that lib would create a cycle.
+// const VQUEUE_OBSERVABILITY_FLAG = 'FEATURE_VQUEUE_OBSERVABILITY';
 
 function vqueueStatusFlagEnabled(): boolean {
   return true;
   // return (
   //   typeof localStorage !== 'undefined' &&
-  //   localStorage.getItem(VQUEUE_STATUS_FLAG) === 'true'
+  //   localStorage.getItem(VQUEUE_OBSERVABILITY_FLAG) === 'true'
   // );
 }
 

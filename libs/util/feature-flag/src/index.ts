@@ -9,5 +9,9 @@ export {
 } from './lib/FeatureFlags';
 export * from './lib/withFeatureFlag';
 export { FEATURE_FLAGS } from './lib/type';
+export {
+  FEATURE_FLAG_METADATA,
+  type FeatureFlagMetadata,
+} from './lib/metadata';
 export { useOnboarding } from './lib/useOnboarding';
 export type { FeatureFlag } from './lib/type';
