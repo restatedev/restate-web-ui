@@ -123,9 +123,8 @@ function InternalRestateContextProvider({
   const features = useFeatures();
   const version = data?.version;
   const releasedVersion = version?.split('-')?.at(0);
-  const hasExecutionMetricsFeature = features.has(EXECUTION_METRICS_FEATURE);
-  const isExecutionMetricsEnabled =
-    executionMetricsEnabled && hasExecutionMetricsFeature;
+  // const hasExecutionMetricsFeature = features.has(EXECUTION_METRICS_FEATURE);
+  const isExecutionMetricsEnabled = executionMetricsEnabled;
   const resolvedIngress =
     ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
 

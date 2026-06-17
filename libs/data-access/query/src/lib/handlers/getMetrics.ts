@@ -1,7 +1,7 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { type QueryContext } from './shared';
 
-const EXECUTION_METRICS_FEATURE = 'execution-metrics';
+// const EXECUTION_METRICS_FEATURE = 'execution-metrics';
 
 // Server-wide throughput + capacity metrics, each summed across every row of its
 // source table. See the MetricsResponse schema in the OpenAPI spec for the
@@ -59,9 +59,9 @@ FROM
    FROM metrics_log) l`;
 
 export async function getMetrics(this: QueryContext) {
-  if (!this.features.has(EXECUTION_METRICS_FEATURE)) {
-    return Response.json({});
-  }
+  // if (!this.features.has(EXECUTION_METRICS_FEATURE)) {
+  //   return Response.json({});
+  // }
 
   const { rows } = await this.query(METRICS_QUERY);
   // The cross-joined aggregates always yield exactly one coalesced row, but
