@@ -64,11 +64,23 @@ const legendItemStyles = tv({
     // out of the layout. Horizontal legends wrap between items as before.
     orientation: {
       horizontal: '',
-      vertical: 'min-w-0 max-w-full',
+      vertical: 'max-w-full min-w-0',
+    },
+    compact: {
+      true: '',
+      false: '',
     },
   },
+  compoundVariants: [
+    {
+      orientation: 'vertical',
+      compact: false,
+      class: 'w-max max-w-none',
+    },
+  ],
   defaultVariants: {
     orientation: 'horizontal',
+    compact: true,
   },
 });
 
@@ -101,13 +113,25 @@ const labelStyles = tv({
       horizontal: 'whitespace-nowrap',
       vertical: 'min-w-0 truncate',
     },
+    compact: {
+      true: '',
+      false: '',
+    },
     tone: {
       normal: 'text-gray-600',
       muted: 'text-gray-400',
     },
   },
+  compoundVariants: [
+    {
+      orientation: 'vertical',
+      compact: false,
+      class: 'min-w-max! overflow-visible! text-clip! whitespace-nowrap',
+    },
+  ],
   defaultVariants: {
     orientation: 'horizontal',
+    compact: true,
     tone: 'normal',
   },
 });
@@ -135,6 +159,7 @@ export function StatusLegend({
   isSampled,
   leading,
   items,
+  compact = true,
 }: {
   byStatus?: StatusEntry[];
   isLoading?: boolean;
@@ -170,6 +195,7 @@ export function StatusLegend({
   // bespoke set (the aggregate "In-flight" bucket, or just the in-flight
   // statuses). `allItem`/`getHref` are ignored in this mode.
   items?: ArcSegment[];
+  compact?: boolean;
 }) {
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
@@ -269,6 +295,7 @@ export function StatusLegend({
                   state: 'loading',
                   appearance,
                   orientation,
+                  compact,
                 })}
               >
                 <div
@@ -278,7 +305,13 @@ export function StatusLegend({
                     borderColor: row.stroke,
                   }}
                 />
-                <span className={labelStyles({ orientation, tone: 'muted' })}>
+                <span
+                  className={labelStyles({
+                    orientation,
+                    compact,
+                    tone: 'muted',
+                  })}
+                >
                   {row.label}
                 </span>
                 <span className="shrink-0 animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
@@ -300,15 +333,14 @@ export function StatusLegend({
               key={row.name}
               id={row.name}
               textValue={
-                isErrorState
-                  ? row.label
-                  : `${row.label} ${formatChip(count)}`
+                isErrorState ? row.label : `${row.label} ${formatChip(count)}`
               }
               href={isErrorState ? undefined : resolveHref(row)}
               className={legendItemStyles({
                 state: isErrorState ? 'error' : 'success',
                 appearance,
                 orientation,
+                compact,
               })}
             >
               <div
@@ -324,6 +356,7 @@ export function StatusLegend({
               <span
                 className={labelStyles({
                   orientation,
+                  compact,
                   tone: isErrorState ? 'muted' : 'normal',
                 })}
               >

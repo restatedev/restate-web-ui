@@ -67,18 +67,13 @@ export function createSystemHealthMonitor(
   };
 
   const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-    if (!event || event.type !== 'updated') return;
+    if (!event) return;
 
-    if (
-      isSummaryInvocationsQuery(event.query) &&
-      event.query.meta?.['monitor']
-    ) {
-      const data = event.query.state.data as SummaryData | undefined;
-      if (!data) return;
-      closeKeys(tracked.sla);
-      tracked.sla = tracked.queryHealth ? [] : computeGlobalIssues(data);
-    }
-
+    // Handle the health check on ANY event (not only 'updated'): after a
+    // reset() the query can already be in `error`, and re-subscribing fires
+    // only observerAdded / observerResultsUpdated (no fresh 'updated' event),
+    // which previously dropped the issue. Re-checking the current state on
+    // every event re-detects an already-errored query.
     if (isQueryHealthCheckQuery(event)) {
       const { state } = event.query;
       if (state.status === 'error' && state.error && !tracked.queryHealth) {
@@ -94,6 +89,18 @@ export function createSystemHealthMonitor(
         issueQueue.close(tracked.queryHealth);
         tracked.queryHealth = null;
       }
+    }
+
+    if (event.type !== 'updated') return;
+
+    if (
+      isSummaryInvocationsQuery(event.query) &&
+      event.query.meta?.['monitor']
+    ) {
+      const data = event.query.state.data as SummaryData | undefined;
+      if (!data) return;
+      closeKeys(tracked.sla);
+      tracked.sla = tracked.queryHealth ? [] : computeGlobalIssues(data);
     }
 
     for (let i = 0; i < additionalObservers.length; i++) {
