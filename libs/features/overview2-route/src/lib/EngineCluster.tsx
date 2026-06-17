@@ -99,7 +99,17 @@ function Sparkline({
 }
 
 const metricStyles = tv({
-  base: 'group/metric flex flex-col items-start leading-none',
+  base: 'group/metric flex min-w-0 flex-col items-start leading-none',
+  variants: {
+    size: {
+      auto: '',
+      regular: 'w-20',
+      wide: 'w-[5.5rem] @min-[108rem]/hero:w-28',
+    },
+  },
+  defaultVariants: {
+    size: 'auto',
+  },
 });
 
 const valueSlotStyles = tv({
@@ -127,7 +137,7 @@ const metricUnitStyles = tv({
 });
 
 const metricLabelStyles = tv({
-  base: 'mt-1 text-2xs font-medium whitespace-nowrap text-gray-400 transition-colors group-hover/metric:text-gray-600',
+  base: 'mt-1 block max-w-full truncate text-2xs font-medium text-gray-400 transition-colors group-hover/metric:text-gray-600',
 });
 
 const metricSparklineStyles = tv({
@@ -145,6 +155,7 @@ function Metric({
   isLoading,
   className,
   history,
+  size = 'auto',
   width = 'rate',
 }: {
   value: number;
@@ -157,11 +168,12 @@ function Metric({
   isLoading?: boolean;
   className?: string;
   history?: number[];
+  size?: 'auto' | 'regular' | 'wide';
   width?: 'count' | 'rate' | 'bytes' | 'slots';
 }) {
   return (
     <HoverTooltip content={tooltip}>
-      <div className={metricStyles({ class: className })}>
+      <div className={metricStyles({ size, class: className })}>
         <span className={valueSlotStyles({ width })}>
           {isLoading ? (
             <span className="h-3.5 w-8 animate-pulse rounded bg-gray-200" />
@@ -244,7 +256,6 @@ type MetricSpec = {
   label: string;
   width: 'count' | 'rate' | 'bytes' | 'slots';
   tooltip: ReactNode;
-  className?: string;
 };
 
 const metricSpecs: Record<MetricId, MetricSpec> = {
@@ -270,15 +281,13 @@ const metricSpecs: Record<MetricId, MetricSpec> = {
     format: countFormat,
     label: 'Connections',
     width: 'count',
-    className: 'w-20',
     tooltip: 'Inbound client connections currently open to the ingress.',
   },
   awaiting: {
     valueKey: 'waiting',
     format: countFormat,
-    label: 'Awaiting',
+    label: 'Awaiting results',
     width: 'count',
-    className: 'w-20',
     tooltip:
       'Inbound requests currently waiting for an invocation result (request/response calls and attaches).',
   },
@@ -303,9 +312,8 @@ const metricSpecs: Record<MetricId, MetricSpec> = {
       );
     },
     animationKey: (used, values) => `${used}/${values.slots_available}`,
-    label: 'Slots used',
+    label: 'Concurrency slots',
     width: 'slots',
-    className: 'w-20',
     tooltip:
       'Concurrency slots currently in use, shown as used/total. Slots cap how many invocations run against your services at the same time.',
   },
@@ -314,16 +322,14 @@ const metricSpecs: Record<MetricId, MetricSpec> = {
     format: bytesRateFormat,
     label: 'Ingress I/O',
     width: 'bytes',
-    className: 'w-20',
     tooltip:
       'Data moving through the ingress — HTTP request and response bodies, in and out.',
   },
   deploymentIo: {
     valueKey: 'invoker_mibps',
     format: bytesRateFormat,
-    label: 'Deployment I/O',
+    label: 'Deployments I/O',
     width: 'bytes',
-    className: 'w-20',
     tooltip:
       'Data Restate exchanges with your service deployments to run invocations — sent and received.',
   },
@@ -442,8 +448,8 @@ const metricGroupStyles = tv({
   base: 'transition-opacity',
   variants: {
     layout: {
-      underGauge: 'flex items-start justify-center gap-2',
-      telemetry: 'flex flex-wrap items-start justify-center gap-x-2 gap-y-1.5',
+      underGauge: 'flex items-start justify-center gap-3',
+      telemetry: 'flex flex-nowrap items-start justify-center gap-x-1.5',
       rail: 'flex flex-col items-start gap-3',
     },
     tone: metricsToneVariants,
@@ -455,14 +461,14 @@ function MetricsGroup({
   layout,
   hasSummaryActivity = true,
   className,
-  itemClassName,
+  itemSize,
   ...props
 }: {
   ids: readonly MetricId[];
   layout: 'underGauge' | 'telemetry' | 'rail';
   hasSummaryActivity?: boolean;
   className?: string;
-  itemClassName?: string;
+  itemSize?: 'auto' | 'regular' | 'wide';
 } & ComponentPropsWithoutRef<'div'>) {
   const { m, isLoading, history, hasMetricActivity, tone } =
     useMetricsHistory();
@@ -485,7 +491,7 @@ function MetricsGroup({
             unit={spec.unit}
             label={spec.label}
             width={spec.width}
-            className={itemClassName ?? spec.className}
+            size={itemSize ?? (layout === 'telemetry' ? 'wide' : 'auto')}
             isLoading={isLoading}
             history={history[spec.valueKey]}
             tooltip={spec.tooltip}
@@ -526,7 +532,7 @@ export function OverviewMetricsRail({
     <MetricsGroup
       ids={side === 'left' ? LEFT_RAIL_METRIC_IDS : RIGHT_RAIL_METRIC_IDS}
       layout="rail"
-      itemClassName="w-20"
+      itemSize="regular"
       {...props}
     />
   );

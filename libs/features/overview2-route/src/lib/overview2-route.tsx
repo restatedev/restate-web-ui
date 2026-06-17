@@ -474,7 +474,7 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
-      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-3 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[76rem]/hero:grid-cols-[minmax(7rem,10rem)_auto_minmax(27rem,auto)_auto_minmax(7rem,10rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(29rem,auto)_auto_minmax(16rem,1fr)]">
+      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-3 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)]">
         <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-end @min-[76rem]/hero:col-start-1 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
           {showHeroLegends && (
             <StatusLegend
@@ -543,7 +543,7 @@ function OverviewContent() {
         <EngineEgress
           hasSummaryActivity={allTotal > 0}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden w-[27rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[29rem]"
+          className="relative z-10 hidden w-[29rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[37rem]"
         />
         <CompletedMetrics
           hasSummaryActivity={allTotal > 0}
