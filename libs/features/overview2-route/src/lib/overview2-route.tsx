@@ -5,11 +5,7 @@ import { tv } from '@restate/util/styles';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
-import {
-  useIsFetching,
-  useIsMutating,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { useIsMutating, useQueryClient } from '@tanstack/react-query';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import {
   formatNumber,
@@ -44,6 +40,14 @@ import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { TimeRangeToggle } from './TimeRangeToggle';
+import {
+  EngineCore,
+  InFlightMetrics,
+  CompletedMetrics,
+  EngineEgress,
+  OverviewMetricsRail,
+  useMetricsActivity,
+} from './EngineCluster';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
@@ -156,7 +160,7 @@ function PerspectiveLines({
   return (
     <svg
       ref={svgRef}
-      className="pointer-events-none absolute inset-x-0 top-0 z-5 h-full w-full text-slate-400"
+      className="pointer-events-none absolute inset-x-0 top-0 z-[25] hidden h-full w-full text-slate-400 @min-[64rem]/hero:block"
       viewBox={viewBox}
       fill="none"
     >
@@ -216,12 +220,13 @@ function TabCount({
 }
 
 const gaugeStyles = tv({
-  base: 'relative -mb-9 aspect-square w-52 shrink-0 overflow-visible md:-mb-10 md:w-56',
+  base: 'relative -mb-9 aspect-square w-[12.8rem] shrink-0 overflow-visible @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
 });
 
 function HeroGauge({
   segments,
   count,
+  valueLabel,
   label,
   sublabel,
   href,
@@ -231,6 +236,7 @@ function HeroGauge({
 }: {
   segments: ArcSegment[];
   count: number;
+  valueLabel?: string;
   label: string;
   sublabel?: string;
   href: string;
@@ -254,7 +260,7 @@ function HeroGauge({
             className="pointer-events-auto relative flex flex-col items-center gap-0 rounded-xl px-2 py-1 leading-none hover:bg-black/[0.03]"
           >
             <span className="text-2xl font-semibold text-gray-800 tabular-nums sm:text-3xl">
-              {formatNumber(count, true)}
+              {valueLabel ?? formatNumber(count, true)}
             </span>
             <span className="mt-1 text-xs text-gray-500 sm:text-sm">
               {label}
@@ -308,25 +314,36 @@ function OverviewContent() {
       return Boolean(query.meta?.isAdmin);
     },
   };
-  const isAdminFetching = useIsFetching(adminQueryPredicate) > 0;
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
+  const hasMetricActivity = useMetricsActivity();
   const queryClient = useQueryClient();
   const range = useRange();
   const rangeLabel = getRangeLabel(range);
 
-  const { total: allTotal, inFlight: inFlightTotal } =
-    splitInvocationTotals(byStatus);
-  // The right gauge shows only completed outcomes (succeeded / failed); the
-  // in-flight bucket has its own gauge on the left.
+  const {
+    total: allTotal,
+    inFlight: inFlightTotal,
+    succeeded,
+    failed,
+  } = splitInvocationTotals(byStatus);
   const completedSegments = useMemo(
     () => buildCompletedSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
   );
-  const completedTotal = allTotal - inFlightTotal;
+  const completedTotal = succeeded + failed;
+  const completedSuccessRate =
+    completedTotal > 0 ? succeeded / completedTotal : 0;
+  const completedSuccessRateLabel =
+    formatPercentageWithoutFraction(completedSuccessRate);
   const completedSublabel =
-    allTotal > 0
-      ? `${formatPercentageWithoutFraction(completedTotal / allTotal)} of all`
-      : undefined;
+    completedTotal > 0
+      ? `of ${formatNumber(completedTotal, true)} completed`
+      : 'of 0 completed';
+  const succeededHref =
+    completedSegments.find((segment) => segment.name === 'succeeded')?.href ??
+    toCompletedInvocationsHref(baseUrl, {
+      existingParams: linkParams,
+    });
   const inFlightSegments = useMemo(
     () => buildInFlightSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
@@ -343,8 +360,8 @@ function OverviewContent() {
 
   const ferrofluidStatus = useRestateServerStatus({
     isHealthy: status === 'HEALTHY',
-    isError,
-    isActive: isAdminFetching || isAdminMutating,
+    isError: isError || isSummaryError,
+    isActive: hasMetricActivity || isAdminMutating,
     issueSeverity: overallIssueSeverity,
   });
 
@@ -352,23 +369,17 @@ function OverviewContent() {
 
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
-  const pieRef = useRef<HTMLDivElement>(null);
-  const issuesRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
+  const heroReady = !isInitialLoading && !isBare && !isEmpty;
   const { paths, viewBox, fadeStart, fadeEnd } = usePerspectiveLines(
     containerRef,
     serverRef,
     panelEl,
-    !isInitialLoading && !isBare && !isEmpty,
+    heroReady,
   );
   const triggerRay = usePerspectiveRay(linesSvgRef);
-  const noInvocations =
-    !isSummaryLoading && !isSummaryError && totalCount === 0;
-  // Skeleton legends while loading; real legends once there's data. Hidden on
-  // error or when there are no invocations (the gauges + central note carry
-  // the empty/error state).
   const showHeroLegends =
     isSummaryLoading || (!isSummaryError && totalCount > 0);
   const filterPlaceholder =
@@ -379,24 +390,28 @@ function OverviewContent() {
         : 'Filter handlers, services, or types…';
 
   const onRefresh = () => {
-    pieRef.current?.animate(
+    serverRef.current?.animate(
       [
         { transform: 'scale(1)' },
-        { transform: 'scale(1.03)' },
+        { transform: 'scale(1.04)' },
         { transform: 'scale(1)' },
       ],
       { duration: 500, easing: 'ease-in-out' },
     );
     triggerRay();
     triggerWave(serverRef, 'overview-card');
-    issuesRef.current?.animate(
-      [
-        { transform: 'translateY(0)' },
-        { transform: 'translateY(-3px)' },
-        { transform: 'translateY(0)' },
-      ],
-      { duration: 400, easing: 'ease-in-out' },
-    );
+    containerRef.current
+      ?.querySelectorAll<HTMLElement>('[data-overview-refresh-bounce]')
+      .forEach((el) => {
+        el.animate(
+          [
+            { transform: 'translateY(0)' },
+            { transform: 'translateY(-3px)' },
+            { transform: 'translateY(0)' },
+          ],
+          { duration: 400, easing: 'ease-in-out' },
+        );
+      });
     triggerManualRefresh();
   };
 
@@ -448,7 +463,7 @@ function OverviewContent() {
   return (
     <div
       ref={containerRef}
-      className="relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-20"
+      className="@container/hero relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-8 @min-[64rem]/hero:pt-16 @min-[108rem]/hero:pt-20"
     >
       <PerspectiveLines
         svgRef={linesSvgRef}
@@ -457,111 +472,129 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
-      <div
-        ref={pieRef}
-        className="grid w-full max-w-7xl grid-cols-1 items-center justify-items-center gap-2 sm:gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto_auto_minmax(0,1fr)] md:gap-x-3"
-      >
-        <div className="hidden min-w-0 self-center justify-self-end md:col-start-1 md:row-start-1 xl:block">
+      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-3 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[76rem]/hero:grid-cols-[minmax(7rem,10rem)_auto_minmax(27rem,auto)_auto_minmax(7rem,10rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(29rem,auto)_auto_minmax(16rem,1fr)]">
+        <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-end @min-[76rem]/hero:col-start-1 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
           {showHeroLegends && (
             <StatusLegend
               items={inFlightSegments}
               isLoading={isSummaryLoading}
               orientation="vertical"
-              className="min-w-0 justify-items-end"
+              className="w-full min-w-0 justify-items-end"
             />
           )}
         </div>
         <HeroGauge
-          className="md:col-start-2 md:row-start-1"
+          className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-1 @min-[76rem]/hero:col-start-2"
           segments={inFlightSegments}
           count={inFlightTotal}
-          label="in-flight"
+          label="In-flight"
           href={toInFlightInvocationsHref(baseUrl, {
             existingParams: linkParams,
           })}
           isLoading={isSummaryLoading}
           isError={isSummaryError}
         />
-        <div
-          ref={serverRef}
-          className="pointer-events-auto z-20 scale-75 md:col-start-3 md:row-start-1 md:scale-90"
-        >
-          <RestateServer
-            status={ferrofluidStatus}
-            onPress={onRefresh}
-            aura={noInvocations ? 'prominent' : 'subtle'}
-          />
-        </div>
+        <EngineCore
+          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block @min-[76rem]/hero:col-start-3"
+          serverRef={serverRef}
+          status={ferrofluidStatus}
+          onPress={onRefresh}
+        />
         <HeroGauge
-          className="md:col-start-4 md:row-start-1"
+          className="col-start-2 row-start-2 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[76rem]/hero:col-start-4"
           segments={completedSegments}
           count={completedTotal}
-          label="Completed"
+          valueLabel={completedSuccessRateLabel}
+          label="Succeeded"
           sublabel={completedSublabel}
-          href={toCompletedInvocationsHref(baseUrl, {
-            existingParams: linkParams,
-          })}
+          href={succeededHref}
           isLoading={isSummaryLoading}
           isError={isSummaryError}
         />
-        <div className="hidden min-w-0 self-center justify-self-start md:col-start-5 md:row-start-1 xl:block">
+        <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-start @min-[76rem]/hero:col-start-5 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
           {showHeroLegends && (
             <StatusLegend
               items={completedSegments}
               isLoading={isSummaryLoading}
               orientation="vertical"
-              className="min-w-0"
+              className="w-full min-w-0"
             />
           )}
         </div>
-        <div className="relative z-10 -mt-8 flex min-h-7 flex-col items-center gap-1.5 md:col-start-4 md:row-start-2 md:-mt-12">
-          <TimeRangeToggle
-            onChange={() => {
-              queryClient.cancelQueries({
-                queryKey: summaryQueryKey,
-                exact: true,
-              });
-            }}
-          />
+        <OverviewMetricsRail
+          side="left"
+          data-overview-refresh-bounce=""
+          className="col-start-1 row-span-2 row-start-1 self-center justify-self-end @min-[64rem]/hero:hidden"
+        />
+        <OverviewMetricsRail
+          side="right"
+          data-overview-refresh-bounce=""
+          className="col-start-3 row-span-2 row-start-1 self-center justify-self-start @min-[64rem]/hero:hidden"
+        />
+        <InFlightMetrics
+          data-overview-refresh-bounce=""
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-2"
+        />
+        <EngineEgress
+          data-overview-refresh-bounce=""
+          className="relative z-10 hidden w-[27rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[29rem]"
+        />
+        <CompletedMetrics
+          data-overview-refresh-bounce=""
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-4"
+        />
+        <div
+          data-overview-refresh-bounce=""
+          className="relative z-40 col-span-3 col-start-1 row-start-3 mt-1 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:mt-4 @min-[76rem]/hero:col-start-3"
+        >
+          <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
+            {isSummaryLoading ? (
+              <span className="h-7 w-48 animate-pulse rounded-xl bg-gray-200" />
+            ) : (
+              <span className="flex items-baseline gap-1.5">
+                <span className="text-lg font-semibold text-gray-700 tabular-nums">
+                  {isSummaryError ? '–' : formatNumber(allTotal, true)}
+                </span>
+                <span className="text-base text-gray-500">invocations</span>
+              </span>
+            )}
+            <TimeRangeToggle
+              onChange={() => {
+                queryClient.cancelQueries({
+                  queryKey: summaryQueryKey,
+                  exact: true,
+                });
+              }}
+            />
+            {summaryError && (
+              <Popover>
+                <PopoverTrigger>
+                  <Button
+                    aria-label="Could not load invocation data"
+                    variant="secondary"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+                  >
+                    <Icon
+                      name={IconName.TriangleAlert}
+                      className="h-4 w-4 fill-red-200 text-red-600"
+                    />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="max-w-sm">
+                  <ErrorBanner error={summaryError} className="rounded-xl" />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+          <div className="relative mt-3 -mb-8 flex flex-col items-center">
+            <IssuesBannerStack />
+            <div className="h-5" />
+          </div>
         </div>
-      </div>
-
-      {summaryError && (
-        <div className="relative z-10 mt-1 flex justify-center">
-          <Popover>
-            <PopoverTrigger>
-              <Button
-                variant="secondary"
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border-orange-200/80 bg-orange-50/80 px-3 py-1 text-xs text-orange-600 shadow-none hover:bg-orange-100/80"
-              >
-                <Icon
-                  name={IconName.TriangleAlert}
-                  className="h-3.5 w-3.5 fill-orange-200 text-orange-500"
-                />
-                Could not load invocation data
-                <Icon
-                  name={IconName.ChevronsUpDown}
-                  className="h-3.5 w-3.5 text-orange-400"
-                />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="max-w-sm">
-              <ErrorBanner error={summaryError} className="rounded-xl" />
-            </PopoverContent>
-          </Popover>
-        </div>
-      )}
-
-      <div
-        ref={issuesRef}
-        className="relative z-20 mt-2 -mb-8 flex flex-col items-center"
-      >
-        <IssuesBannerStack />
-        <div className="h-5" />
       </div>
 
       <ContentPanel
-        className="w-full"
+        className="z-20 w-full"
         tabs={{
           queryParam: OVERVIEW_MODE_PARAM,
           defaultId: 'services',
