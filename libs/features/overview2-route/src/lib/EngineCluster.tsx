@@ -433,7 +433,8 @@ function MetricsGroup({
   className?: string;
   itemClassName?: string;
 } & ComponentPropsWithoutRef<'div'>) {
-  const { m, isLoading, history, hasMetricActivity, tone } = useMetricsHistory();
+  const { m, isLoading, history, hasMetricActivity, tone } =
+    useMetricsHistory();
   if (!hasSummaryActivity && !hasMetricActivity) return null;
   return (
     <div

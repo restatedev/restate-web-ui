@@ -68,7 +68,9 @@ export function buildCompletedSegments(
       count: failed,
       fillLight: failedStyle.fillLight,
       stroke: failedStyle.stroke,
-      href: toInvocationsHref(baseUrl, 'failed', { existingParams: linkParams }),
+      href: toInvocationsHref(baseUrl, 'failed', {
+        existingParams: linkParams,
+      }),
     },
   ];
 }
