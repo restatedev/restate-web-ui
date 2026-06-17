@@ -17,7 +17,7 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
   FEATURE_EXECUTION_METRICS: {
     title: 'Execution metrics',
     description:
-      'Surface per-invocation execution metrics and timings across the overview and invocations.',
+      "Expose the Restate server's execution metrics — throughput, capacity, and ingress activity.",
     available: true,
   },
 };

@@ -49,10 +49,12 @@ function Component() {
           <Icon name={IconName.Sparkles} className="h-5 w-5 text-gray-500" />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-xl font-semibold text-gray-800">Features</h1>
+          <h1 className="text-xl font-semibold text-gray-800">
+            Restate UI Labs
+          </h1>
           <p className="text-sm text-gray-500">
-            Turn experimental features on or off. Preferences are saved in this
-            browser only.
+            Turn UI experimental features on or off. Preferences are saved in
+            this browser only.
           </p>
         </div>
       </div>
