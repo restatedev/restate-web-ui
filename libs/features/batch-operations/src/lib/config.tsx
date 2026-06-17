@@ -29,7 +29,7 @@ export interface OperationConfig {
   formAction: string;
   progressTitle: string;
   completedText: string;
-  emptyMessage: string;
+  emptyMessage: (hasVqueues: boolean) => string;
 }
 
 export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
@@ -70,7 +70,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Cancellation frees held resources, cooperates with your handler code to roll back changes, and allows proper cleanup. It is non-blocking, so the call may return before cleanup finishes. In rare cases, cancellation may not take effect, retry the operation if needed.',
     progressTitle: 'Cancelling invocations',
     completedText: 'Cancelled',
-    emptyMessage: 'Only in-flight invocations can be cancelled.',
+    emptyMessage: () => 'Only in-flight invocations can be cancelled.',
   },
   pause: {
     title: 'Pause Invocations',
@@ -110,7 +110,10 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Paused invocations will stop executing until manually resumed.',
     progressTitle: 'Pausing invocations',
     completedText: 'Paused',
-    emptyMessage: 'Only running invocations can be paused.',
+    emptyMessage: (hasVqueues) =>
+      hasVqueues
+        ? 'Only running or suspended invocations can be paused.'
+        : 'Only running invocations can be paused.',
   },
   'restart-as-new': {
     title: 'Restart as New Invocations',
@@ -149,7 +152,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Creates a new invocation with the same input (if any) as the original leaving the original unchanged. The new invocation will have a different ID',
     progressTitle: 'Restarting invocations',
     completedText: 'Restarted',
-    emptyMessage: 'Only completed invocations can be restarted.',
+    emptyMessage: () => 'Only completed invocations can be restarted.',
   },
   resume: {
     title: 'Resume Invocations',
@@ -185,7 +188,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     ),
     progressTitle: 'Resuming invocations',
     completedText: 'Resumed',
-    emptyMessage: 'Only paused invocations can be resumed.',
+    emptyMessage: () => 'Only paused invocations can be resumed.',
   },
   'retry-now': {
     title: 'Retry Invocations now',
@@ -224,7 +227,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'These invocations are backing off after a failed attempt. Retrying triggers a new attempt immediately instead of waiting for the next scheduled retry, keeping their current deployment.',
     progressTitle: 'Retrying invocations',
     completedText: 'Retried',
-    emptyMessage: 'Only backing-off invocations can be retried.',
+    emptyMessage: () => 'Only backing-off invocations can be retried.',
   },
   kill: {
     title: 'Kill Invocations',
@@ -263,7 +266,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'Killing immediately stops all calls in the invocation tree without executing compensation logic. This may leave your service in an inconsistent state. Only use as a last resort after trying other fixes.',
     progressTitle: 'Killing invocations',
     completedText: 'Killed',
-    emptyMessage: 'Only in-flight invocations can be killed.',
+    emptyMessage: () => 'Only in-flight invocations can be killed.',
   },
   purge: {
     title: 'Purge Invocations',
@@ -302,6 +305,6 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
       'After an invocation completes, it will be retained by Restate for some time, in order to introspect it and, in case of idempotent requests, to perform deduplication.',
     progressTitle: 'Purging invocations',
     completedText: 'Purged',
-    emptyMessage: 'Only completed invocations can be purged.',
+    emptyMessage: () => 'Only completed invocations can be purged.',
   },
 };
