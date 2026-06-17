@@ -45,10 +45,7 @@ const unsupportedMetricsBaseUrls = new Set<string>();
 
 function getErrorMessages(error: unknown): string[] {
   if (!(error instanceof Error)) return [];
-  return [
-    error.message,
-    ...(error.cause ? getErrorMessages(error.cause) : []),
-  ];
+  return [error.message, ...(error.cause ? getErrorMessages(error.cause) : [])];
 }
 
 function isMetricsUnsupportedError(error: unknown) {
