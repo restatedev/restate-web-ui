@@ -299,6 +299,7 @@ function OverviewContent() {
     filter,
     setFilter,
     triggerManualRefresh,
+    overviewRefetchInterval,
   } = useOverviewContext();
   const servicesCount = servicesMap?.size ?? 0;
   const deploymentsCount = deploymentsMap?.size ?? 0;
@@ -315,7 +316,7 @@ function OverviewContent() {
     },
   };
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
-  const hasMetricActivity = useMetricsActivity();
+  const hasMetricActivity = useMetricsActivity(overviewRefetchInterval);
   const queryClient = useQueryClient();
   const range = useRange();
   const rangeLabel = getRangeLabel(range);
@@ -526,27 +527,32 @@ function OverviewContent() {
         <OverviewMetricsRail
           side="left"
           hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
           className="col-start-1 row-span-2 row-start-1 self-center justify-self-end @min-[64rem]/hero:hidden"
         />
         <OverviewMetricsRail
           side="right"
           hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
           className="col-start-3 row-span-2 row-start-1 self-center justify-self-start @min-[64rem]/hero:hidden"
         />
         <InFlightMetrics
           hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
           className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-2"
         />
         <EngineEgress
           hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
           className="relative z-10 hidden w-[29rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[37rem]"
         />
         <CompletedMetrics
           hasSummaryActivity={allTotal > 0}
+          metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
           className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-4"
         />

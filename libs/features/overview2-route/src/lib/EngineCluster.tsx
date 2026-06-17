@@ -219,6 +219,9 @@ function toValues(data: MetricsData) {
 type MetricValues = ReturnType<typeof toValues>;
 type MetricKey = keyof MetricValues;
 type MetricHistory = Partial<Record<MetricKey, number[]>>;
+type MetricsRefetchInterval = NonNullable<
+  Parameters<typeof useGetMetrics>[0]
+>['refetchInterval'];
 
 const IN_FLIGHT_METRIC_IDS = ['invocations', 'actions'] as const;
 const EGRESS_METRIC_IDS = [
@@ -366,8 +369,10 @@ const ACTIVITY_KEYS: MetricKey[] = [
   'log_mibps',
 ];
 
-function useMetricsHistory() {
-  const { data, isPending, dataUpdatedAt, isError } = useGetMetrics();
+function useMetricsHistory(refetchInterval?: MetricsRefetchInterval) {
+  const { data, isPending, dataUpdatedAt, isError } = useGetMetrics(
+    refetchInterval === undefined ? undefined : { refetchInterval },
+  );
   const [historyState, setHistoryState] = useState<{
     at: number;
     history: MetricHistory;
@@ -405,8 +410,10 @@ function useMetricsHistory() {
   return { m, isLoading: isPending && !data, history, hasMetricActivity, tone };
 }
 
-export function useMetricsActivity() {
-  const { data } = useGetMetrics();
+export function useMetricsActivity(refetchInterval?: MetricsRefetchInterval) {
+  const { data } = useGetMetrics(
+    refetchInterval === undefined ? undefined : { refetchInterval },
+  );
   const m = toValues(data);
   return ACTIVITY_KEYS.some((key) => m[key] > 0);
 }
@@ -462,6 +469,7 @@ function MetricsGroup({
   hasSummaryActivity = true,
   className,
   itemSize,
+  metricsRefetchInterval,
   ...props
 }: {
   ids: readonly MetricId[];
@@ -469,9 +477,11 @@ function MetricsGroup({
   hasSummaryActivity?: boolean;
   className?: string;
   itemSize?: 'auto' | 'regular' | 'wide';
+  metricsRefetchInterval?: MetricsRefetchInterval;
 } & ComponentPropsWithoutRef<'div'>) {
-  const { m, isLoading, history, hasMetricActivity, tone } =
-    useMetricsHistory();
+  const { m, isLoading, history, hasMetricActivity, tone } = useMetricsHistory(
+    metricsRefetchInterval,
+  );
   if (!hasSummaryActivity && !hasMetricActivity) return null;
   return (
     <div
@@ -504,6 +514,7 @@ function MetricsGroup({
 
 type MetricsProps = ComponentPropsWithoutRef<'div'> & {
   hasSummaryActivity?: boolean;
+  metricsRefetchInterval?: MetricsRefetchInterval;
 };
 
 export function InFlightMetrics(props: MetricsProps) {

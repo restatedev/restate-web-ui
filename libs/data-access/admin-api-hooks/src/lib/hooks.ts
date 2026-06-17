@@ -42,6 +42,23 @@ import { base64ToUint8Array } from '@restate/util/binary';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
 
+function useMeasuredQueryFn<Args extends unknown[], Result>(
+  queryFn: (...args: Args) => Result | Promise<Result>,
+  onFetchDuration?: (duration: number) => void,
+) {
+  return useCallback(
+    async (...args: Args) => {
+      const startedAt = Date.now();
+      try {
+        return await queryFn(...args);
+      } finally {
+        onFetchDuration?.(Date.now() - startedAt);
+      }
+    },
+    [queryFn, onFetchDuration],
+  );
+}
+
 type ListDeploymentsServiceData = {
   deployments: Record<Revision, DeploymentId[]>;
   sortedRevisions: number[];
@@ -640,11 +657,13 @@ export function useSummaryInvocations(
     sampleSize,
     range,
     meta: callerMeta,
+    onFetchDuration,
     ...options
   }: HookQueryOptions<'/query/invocations/summary', 'post'> & {
     sampled?: boolean;
     sampleSize?: number;
     range?: string;
+    onFetchDuration?: (duration: number) => void;
   } = {},
 ) {
   const enabled = useAPIStatus();
@@ -652,21 +671,28 @@ export function useSummaryInvocations(
   const currentRange = useRange();
   const isMonitorQuery = filters.length === 0 && range === currentRange;
 
-  const queryOptions = adminApi('query', '/query/invocations/summary', 'post', {
-    baseUrl,
-    body: {
-      filters,
-      sampled,
-      sampleSize,
-      range,
+  const { queryFn, ...queryOptions } = adminApi(
+    'query',
+    '/query/invocations/summary',
+    'post',
+    {
+      baseUrl,
+      body: {
+        filters,
+        sampled,
+        sampleSize,
+        range,
+      },
     },
-  });
+  );
+  const measuredQueryFn = useMeasuredQueryFn(queryFn, onFetchDuration);
 
   const results = useQuery({
     staleTime: 0,
     placeholderData: keepPreviousData,
     ...queryOptions,
     ...options,
+    queryFn: measuredQueryFn,
     meta: {
       ...queryOptions.meta,
       ...getOverviewRefreshMeta(),
