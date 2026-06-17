@@ -337,15 +337,15 @@ const metricSpecs: Record<MetricId, MetricSpec> = {
     valueKey: 'events_per_sec',
     format: rateFormat,
     unit: '/s',
-    label: 'Journal entries',
+    label: 'Log events',
     width: 'rate',
     tooltip:
-      'Durable journal entries recorded per second — every command an invocation issues and every result that completes one.',
+      'Durable log events recorded per second — every command an invocation issues and every result that completes one.',
   },
   durableWrite: {
     valueKey: 'log_mibps',
     format: bytesRateFormat,
-    label: 'Journal write',
+    label: 'Log throughput',
     width: 'bytes',
     tooltip:
       'Data written to the durable log per second to make invocations recoverable — covers journal entries, and their associated payloads plus all other recorded activity (incoming requests, timers, and more).',
