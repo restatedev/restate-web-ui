@@ -356,16 +356,16 @@ function useMetricsHistory() {
 
   const m = toValues(data);
   const history = historyState.history;
-  const hasActivity = ACTIVITY_KEYS.some(
+  const hasMetricActivity = ACTIVITY_KEYS.some(
     (key) => m[key] > 0 || history[key]?.some((v) => v > 0),
   );
-  const state: 'visible' | 'idle' | 'stale' = !hasActivity
-    ? 'idle'
+  const tone: 'active' | 'quiet' | 'stale' = !hasMetricActivity
+    ? 'quiet'
     : isError
       ? 'stale'
-      : 'visible';
+      : 'active';
 
-  return { m, isLoading: isPending && !data, history, state };
+  return { m, isLoading: isPending && !data, history, hasMetricActivity, tone };
 }
 
 export function useMetricsActivity() {
@@ -401,9 +401,9 @@ export function EngineCore({
   );
 }
 
-const metricsStateVariants = {
-  visible: '',
-  idle: '',
+const metricsToneVariants = {
+  active: '',
+  quiet: '',
   stale: 'opacity-40',
 } as const;
 
@@ -415,7 +415,7 @@ const metricGroupStyles = tv({
       telemetry: 'flex flex-wrap items-start justify-center gap-x-2 gap-y-1.5',
       rail: 'flex flex-col items-start gap-3',
     },
-    state: metricsStateVariants,
+    tone: metricsToneVariants,
   },
 });
 
@@ -433,12 +433,12 @@ function MetricsGroup({
   className?: string;
   itemClassName?: string;
 } & ComponentPropsWithoutRef<'div'>) {
-  const { m, isLoading, history, state } = useMetricsHistory();
-  if (!hasSummaryActivity && state === 'idle') return null;
+  const { m, isLoading, history, hasMetricActivity, tone } = useMetricsHistory();
+  if (!hasSummaryActivity && !hasMetricActivity) return null;
   return (
     <div
       {...props}
-      className={metricGroupStyles({ layout, state, class: className })}
+      className={metricGroupStyles({ layout, tone, class: className })}
     >
       {ids.map((id) => {
         const spec = metricSpecs[id];
