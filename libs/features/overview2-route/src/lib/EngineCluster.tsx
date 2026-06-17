@@ -422,16 +422,19 @@ const metricGroupStyles = tv({
 function MetricsGroup({
   ids,
   layout,
+  hasSummaryActivity = true,
   className,
   itemClassName,
   ...props
 }: {
   ids: readonly MetricId[];
   layout: 'underGauge' | 'telemetry' | 'rail';
+  hasSummaryActivity?: boolean;
   className?: string;
   itemClassName?: string;
 } & ComponentPropsWithoutRef<'div'>) {
   const { m, isLoading, history, state } = useMetricsHistory();
+  if (!hasSummaryActivity && state === 'idle') return null;
   return (
     <div
       {...props}
@@ -458,19 +461,23 @@ function MetricsGroup({
   );
 }
 
-export function InFlightMetrics(props: ComponentPropsWithoutRef<'div'>) {
+type MetricsProps = ComponentPropsWithoutRef<'div'> & {
+  hasSummaryActivity?: boolean;
+};
+
+export function InFlightMetrics(props: MetricsProps) {
   return (
     <MetricsGroup ids={IN_FLIGHT_METRIC_IDS} layout="underGauge" {...props} />
   );
 }
 
-export function CompletedMetrics(props: ComponentPropsWithoutRef<'div'>) {
+export function CompletedMetrics(props: MetricsProps) {
   return (
     <MetricsGroup ids={COMPLETED_METRIC_IDS} layout="underGauge" {...props} />
   );
 }
 
-export function EngineEgress(props: ComponentPropsWithoutRef<'div'>) {
+export function EngineEgress(props: MetricsProps) {
   return <MetricsGroup ids={EGRESS_METRIC_IDS} layout="telemetry" {...props} />;
 }
 
@@ -479,7 +486,7 @@ export function OverviewMetricsRail({
   ...props
 }: {
   side: 'left' | 'right';
-} & ComponentPropsWithoutRef<'div'>) {
+} & MetricsProps) {
   return (
     <MetricsGroup
       ids={side === 'left' ? LEFT_RAIL_METRIC_IDS : RIGHT_RAIL_METRIC_IDS}

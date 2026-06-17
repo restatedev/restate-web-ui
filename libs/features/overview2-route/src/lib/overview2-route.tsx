@@ -334,16 +334,18 @@ function OverviewContent() {
   const completedSuccessRate =
     completedTotal > 0 ? succeeded / completedTotal : 0;
   const completedSuccessRateLabel =
-    formatPercentageWithoutFraction(completedSuccessRate);
+    completedTotal > 0
+      ? formatPercentageWithoutFraction(completedSuccessRate)
+      : undefined;
+  const completedLabel = completedTotal > 0 ? 'Succeeded' : 'Completed';
   const completedSublabel =
     completedTotal > 0
       ? `of ${formatNumber(completedTotal, true)} completed`
-      : 'of 0 completed';
-  const succeededHref =
-    completedSegments.find((segment) => segment.name === 'succeeded')?.href ??
-    toCompletedInvocationsHref(baseUrl, {
-      existingParams: linkParams,
-    });
+      : undefined;
+
+  const completedHref = toCompletedInvocationsHref(baseUrl, {
+    existingParams: linkParams,
+  });
   const inFlightSegments = useMemo(
     () => buildInFlightSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
@@ -505,9 +507,9 @@ function OverviewContent() {
           segments={completedSegments}
           count={completedTotal}
           valueLabel={completedSuccessRateLabel}
-          label="Succeeded"
+          label={completedLabel}
           sublabel={completedSublabel}
-          href={succeededHref}
+          href={completedHref}
           isLoading={isSummaryLoading}
           isError={isSummaryError}
         />
@@ -523,23 +525,28 @@ function OverviewContent() {
         </div>
         <OverviewMetricsRail
           side="left"
+          hasSummaryActivity={allTotal > 0}
           data-overview-refresh-bounce=""
           className="col-start-1 row-span-2 row-start-1 self-center justify-self-end @min-[64rem]/hero:hidden"
         />
         <OverviewMetricsRail
           side="right"
+          hasSummaryActivity={allTotal > 0}
           data-overview-refresh-bounce=""
           className="col-start-3 row-span-2 row-start-1 self-center justify-self-start @min-[64rem]/hero:hidden"
         />
         <InFlightMetrics
+          hasSummaryActivity={allTotal > 0}
           data-overview-refresh-bounce=""
           className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-2"
         />
         <EngineEgress
+          hasSummaryActivity={allTotal > 0}
           data-overview-refresh-bounce=""
           className="relative z-10 hidden w-[27rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[29rem]"
         />
         <CompletedMetrics
+          hasSummaryActivity={allTotal > 0}
           data-overview-refresh-bounce=""
           className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-4"
         />
