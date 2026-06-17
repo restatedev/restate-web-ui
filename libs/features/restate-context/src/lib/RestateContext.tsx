@@ -5,6 +5,7 @@ import {
   useVersion,
   useQueryHealthCheck,
   useAdminBaseUrl,
+  useFeatures,
 } from '@restate/data-access/admin-api';
 import {
   ComponentType,
@@ -17,6 +18,8 @@ import {
 } from 'react';
 import semverGt from 'semver/functions/gte';
 import { RangeProvider } from './Range';
+
+const EXECUTION_METRICS_FEATURE = 'execution-metrics';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 
@@ -62,6 +65,7 @@ type RestateContext = {
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
   isGoogleIdTokenAuthAvailable?: boolean;
+  isExecutionMetricsEnabled: boolean;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -69,6 +73,7 @@ const InternalRestateContext = createContext<RestateContext>({
   ingressUrl: '',
   baseUrl: '',
   isGoogleIdTokenAuthAvailable: true,
+  isExecutionMetricsEnabled: false,
 });
 
 function InternalRestateContextProvider({
@@ -86,6 +91,7 @@ function InternalRestateContextProvider({
   identityKey,
   gcpServiceAccount,
   isGoogleIdTokenAuthAvailable = true,
+  executionMetricsEnabled = false,
   queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
   isPending?: boolean;
@@ -104,6 +110,7 @@ function InternalRestateContextProvider({
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
   isGoogleIdTokenAuthAvailable?: boolean;
+  executionMetricsEnabled?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
@@ -113,8 +120,12 @@ function InternalRestateContextProvider({
     refetchInterval: 1000 * 60,
   });
   const { data } = useVersion({ enabled: !isPending && isSuccess });
+  const features = useFeatures();
   const version = data?.version;
   const releasedVersion = version?.split('-')?.at(0);
+  const hasExecutionMetricsFeature = features.has(EXECUTION_METRICS_FEATURE);
+  const isExecutionMetricsEnabled =
+    executionMetricsEnabled && hasExecutionMetricsFeature;
   const resolvedIngress =
     ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
 
@@ -162,6 +173,7 @@ function InternalRestateContextProvider({
         identityKey,
         gcpServiceAccount,
         isGoogleIdTokenAuthAvailable,
+        isExecutionMetricsEnabled,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -186,6 +198,7 @@ export function RestateContextProvider({
   identityKey,
   gcpServiceAccount,
   isGoogleIdTokenAuthAvailable = true,
+  executionMetricsEnabled = false,
   systemHealthMonitor,
   queryHealthCheckEnabled = false,
 }: PropsWithChildren<{
@@ -206,6 +219,7 @@ export function RestateContextProvider({
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
   isGoogleIdTokenAuthAvailable?: boolean;
+  executionMetricsEnabled?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
 }>) {
@@ -224,6 +238,7 @@ export function RestateContextProvider({
         identityKey={identityKey}
         gcpServiceAccount={gcpServiceAccount}
         isGoogleIdTokenAuthAvailable={isGoogleIdTokenAuthAvailable}
+        executionMetricsEnabled={executionMetricsEnabled}
         systemHealthMonitor={systemHealthMonitor}
         queryHealthCheckEnabled={queryHealthCheckEnabled}
       >

@@ -475,7 +475,7 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
-      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-3 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)] @min-[108rem]/hero:pt-20">
+      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)] @min-[108rem]/hero:pt-20">
         <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-end @min-[76rem]/hero:col-start-1 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
           {showHeroLegends && (
             <StatusLegend
@@ -504,7 +504,7 @@ function OverviewContent() {
           onPress={onRefresh}
         />
         <HeroGauge
-          className="col-start-2 row-start-2 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[76rem]/hero:col-start-4"
+          className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0 @min-[76rem]/hero:col-start-4"
           segments={completedSegments}
           count={completedTotal}
           valueLabel={completedSuccessRateLabel}
@@ -542,23 +542,23 @@ function OverviewContent() {
           hasSummaryActivity={allTotal > 0}
           metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-2"
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-2"
         />
         <EngineEgress
           hasSummaryActivity={allTotal > 0}
           metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden w-[29rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[37rem]"
+          className="relative z-10 hidden w-[29rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[37rem]"
         />
         <CompletedMetrics
           hasSummaryActivity={allTotal > 0}
           metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-8 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-4"
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-4"
         />
         <div
           data-overview-refresh-bounce=""
-          className="relative z-40 col-span-3 col-start-1 row-start-3 mt-1 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:mt-4 @min-[76rem]/hero:col-start-3"
+          className="relative z-40 col-span-3 col-start-1 row-start-3 mt-4 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:mt-7 @min-[76rem]/hero:col-start-3"
         >
           <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
             {isSummaryLoading ? (

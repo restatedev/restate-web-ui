@@ -25,6 +25,10 @@ function markScrollSuppressed() {
   scrollSuppressUntil = Date.now() + SCROLL_SUPPRESS_MS;
 }
 
+const contentStyles = tv({
+  base: '"flex **:text-gray-200" items-start gap-4 py-0 break-all **:text-xs',
+});
+
 export function HoverTooltip({
   children,
   content,
@@ -36,9 +40,11 @@ export function HoverTooltip({
   suppressOnScroll = false,
   placement,
   disabled = false,
+  contentClassName,
 }: PropsWithChildren<{
   content: ReactNode;
   className?: string;
+  contentClassName?: string;
   offset?: number;
   crossOffset?: number;
   size?: 'sm' | 'default' | 'lg';
@@ -212,7 +218,7 @@ export function HoverTooltip({
         >
           <div
             ref={contentRef}
-            className="flex items-start gap-4 py-0 break-all **:text-xs **:text-gray-200"
+            className={contentStyles({ className: contentClassName })}
           >
             <div className="flex flex-col items-start gap-1">{content}</div>
           </div>

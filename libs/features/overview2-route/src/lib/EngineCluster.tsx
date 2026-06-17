@@ -172,7 +172,11 @@ function Metric({
   width?: 'count' | 'rate' | 'bytes' | 'slots';
 }) {
   return (
-    <HoverTooltip content={tooltip}>
+    <HoverTooltip
+      content={tooltip}
+      size="default"
+      contentClassName="break-normal"
+    >
       <div className={metricStyles({ size, class: className })}>
         <span className={valueSlotStyles({ width })}>
           {isLoading ? (
@@ -370,9 +374,10 @@ const ACTIVITY_KEYS: MetricKey[] = [
 ];
 
 function useMetricsHistory(refetchInterval?: MetricsRefetchInterval) {
-  const { data, isPending, dataUpdatedAt, isError } = useGetMetrics(
-    refetchInterval === undefined ? undefined : { refetchInterval },
-  );
+  const { data, isPending, dataUpdatedAt, isError, isMetricsEnabled } =
+    useGetMetrics(
+      refetchInterval === undefined ? undefined : { refetchInterval },
+    );
   const [historyState, setHistoryState] = useState<{
     at: number;
     history: MetricHistory;
@@ -396,26 +401,35 @@ function useMetricsHistory(refetchInterval?: MetricsRefetchInterval) {
     });
   }, [data, dataUpdatedAt]);
 
-  const m = toValues(data);
+  const metricValues = toValues(data);
   const history = historyState.history;
-  const hasMetricActivity = ACTIVITY_KEYS.some(
-    (key) => m[key] > 0 || history[key]?.some((v) => v > 0),
-  );
+  const hasMetricActivity =
+    isMetricsEnabled &&
+    ACTIVITY_KEYS.some(
+      (key) => metricValues[key] > 0 || history[key]?.some((v) => v > 0),
+    );
   const tone: 'active' | 'quiet' | 'stale' = !hasMetricActivity
     ? 'quiet'
     : isError
       ? 'stale'
       : 'active';
 
-  return { m, isLoading: isPending && !data, history, hasMetricActivity, tone };
+  return {
+    metricValues,
+    isLoading: isMetricsEnabled && isPending && !data,
+    history,
+    hasMetricActivity,
+    isMetricsEnabled,
+    tone,
+  };
 }
 
 export function useMetricsActivity(refetchInterval?: MetricsRefetchInterval) {
   const { data } = useGetMetrics(
     refetchInterval === undefined ? undefined : { refetchInterval },
   );
-  const m = toValues(data);
-  return ACTIVITY_KEYS.some((key) => m[key] > 0);
+  const metricValues = toValues(data);
+  return ACTIVITY_KEYS.some((key) => metricValues[key] > 0);
 }
 
 const coreStyles = tv({
@@ -479,9 +493,15 @@ function MetricsGroup({
   itemSize?: 'auto' | 'regular' | 'wide';
   metricsRefetchInterval?: MetricsRefetchInterval;
 } & ComponentPropsWithoutRef<'div'>) {
-  const { m, isLoading, history, hasMetricActivity, tone } = useMetricsHistory(
-    metricsRefetchInterval,
-  );
+  const {
+    metricValues,
+    isLoading,
+    history,
+    hasMetricActivity,
+    isMetricsEnabled,
+    tone,
+  } = useMetricsHistory(metricsRefetchInterval);
+  if (!isMetricsEnabled) return null;
   if (!hasSummaryActivity && !hasMetricActivity) return null;
   return (
     <div
@@ -490,14 +510,14 @@ function MetricsGroup({
     >
       {ids.map((id) => {
         const spec = metricSpecs[id];
-        const value = m[spec.valueKey];
+        const value = metricValues[spec.valueKey];
         return (
           <Metric
             key={id}
             value={value}
-            format={(value) => spec.format(value, m)}
-            renderValue={spec.renderValue?.(value, m)}
-            animationKey={spec.animationKey?.(value, m)}
+            format={(value) => spec.format(value, metricValues)}
+            renderValue={spec.renderValue?.(value, metricValues)}
+            animationKey={spec.animationKey?.(value, metricValues)}
             unit={spec.unit}
             label={spec.label}
             width={spec.width}

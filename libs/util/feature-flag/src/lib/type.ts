@@ -5,5 +5,7 @@ export const FEATURE_FLAGS = [
   // for vqueue-backed invocations from sys_vqueues. Flip it via the
   // /feature-flags/<FLAG> route (see apps/web-ui routes/feature-flags.tsx).
   'FEATURE_VQUEUE_STATUS',
+
+  'FEATURE_EXECUTION_METRICS',
 ] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];

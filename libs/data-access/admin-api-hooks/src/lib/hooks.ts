@@ -255,6 +255,9 @@ export function useGetMetrics(
   options?: HookQueryOptions<'/query/metrics', 'get'>,
 ) {
   const enabled = useAPIStatus();
+  const { isExecutionMetricsEnabled } = useRestateContext();
+  const isMetricsEnabled =
+    isExecutionMetricsEnabled && options?.enabled !== false;
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/metrics', 'get', {
     baseUrl,
@@ -265,11 +268,13 @@ export function useGetMetrics(
     ...queryOptions,
     ...options,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
-    enabled: options?.enabled !== false && enabled,
+    enabled: enabled && isMetricsEnabled,
   });
 
   return {
     ...results,
+    data: isMetricsEnabled ? results.data : undefined,
+    isMetricsEnabled,
     queryKey: queryOptions.queryKey,
   };
 }
