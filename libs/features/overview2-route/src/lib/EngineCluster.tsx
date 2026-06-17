@@ -14,32 +14,32 @@ import {
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { useGetMetrics } from '@restate/data-access/admin-api-hooks';
 
-const rateFormat = (n: number) => formatNumber(n);
+const rateFormat = (n: number) => formatNumber(n, true);
 const countFormat = (n: number) => formatNumber(Math.round(n), true);
 const bytesRateFormat = (n: number) => `${formatBytes(n, 'MiB')}/s`;
 
-function AnimatedNumber({
-  value,
-  format,
+function AnimatedValue({
+  animationKey,
   className,
+  children,
 }: {
-  value: number;
-  format: (n: number) => string;
+  animationKey: number | string;
   className?: string;
+  children: ReactNode;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const prev = useRef(value);
+  const prev = useRef(animationKey);
   useEffect(() => {
-    if (prev.current === value) return;
-    prev.current = value;
+    if (prev.current === animationKey) return;
+    prev.current = animationKey;
     ref.current?.animate([{ opacity: 0.5 }, { opacity: 1 }], {
       duration: 300,
       easing: 'ease-out',
     });
-  }, [value]);
+  }, [animationKey]);
   return (
     <span ref={ref} className={className}>
-      {format(value)}
+      {children}
     </span>
   );
 }
@@ -109,12 +109,17 @@ const valueSlotStyles = tv({
       count: 'w-9',
       rate: 'w-14',
       bytes: 'w-20',
+      slots: 'w-20',
     },
   },
 });
 
 const metricValueStyles = tv({
   base: 'text-sm font-medium text-gray-500 tabular-nums transition-colors group-hover/metric:text-gray-700',
+});
+
+const metricSecondaryValueStyles = tv({
+  base: 'text-2xs font-normal text-gray-400 transition-colors group-hover/metric:text-gray-500',
 });
 
 const metricUnitStyles = tv({
@@ -132,6 +137,8 @@ const metricSparklineStyles = tv({
 function Metric({
   value,
   format,
+  renderValue,
+  animationKey = value,
   label,
   unit,
   tooltip,
@@ -142,13 +149,15 @@ function Metric({
 }: {
   value: number;
   format: (n: number) => string;
+  renderValue?: ReactNode;
+  animationKey?: number | string;
   label: string;
   unit?: string;
   tooltip: ReactNode;
   isLoading?: boolean;
   className?: string;
   history?: number[];
-  width?: 'count' | 'rate' | 'bytes';
+  width?: 'count' | 'rate' | 'bytes' | 'slots';
 }) {
   return (
     <HoverTooltip content={tooltip}>
@@ -158,11 +167,12 @@ function Metric({
             <span className="h-3.5 w-8 animate-pulse rounded bg-gray-200" />
           ) : (
             <span className="flex items-baseline gap-0.5 whitespace-nowrap">
-              <AnimatedNumber
-                value={value}
-                format={format}
+              <AnimatedValue
+                animationKey={animationKey}
                 className={metricValueStyles()}
-              />
+              >
+                {renderValue ?? format(value)}
+              </AnimatedValue>
               {unit && <span className={metricUnitStyles()}>{unit}</span>}
             </span>
           )}
@@ -194,7 +204,8 @@ function toValues(data: MetricsData) {
   };
 }
 
-type MetricKey = keyof ReturnType<typeof toValues>;
+type MetricValues = ReturnType<typeof toValues>;
+type MetricKey = keyof MetricValues;
 type MetricHistory = Partial<Record<MetricKey, number[]>>;
 
 const IN_FLIGHT_METRIC_IDS = ['invocations', 'actions'] as const;
@@ -226,10 +237,12 @@ type MetricId =
   | (typeof COMPLETED_METRIC_IDS)[number];
 type MetricSpec = {
   valueKey: MetricKey;
-  format: (n: number) => string;
+  format: (n: number, values: MetricValues) => string;
+  renderValue?: (n: number, values: MetricValues) => ReactNode;
+  animationKey?: (n: number, values: MetricValues) => number | string;
   unit?: string;
   label: string;
-  width: 'count' | 'rate' | 'bytes';
+  width: 'count' | 'rate' | 'bytes' | 'slots';
   tooltip: ReactNode;
   className?: string;
 };
@@ -271,12 +284,30 @@ const metricSpecs: Record<MetricId, MetricSpec> = {
   },
   slotsUsed: {
     valueKey: 'slots_used',
-    format: countFormat,
+    format: (used, values) => {
+      const total = used + values.slots_available;
+      return total > 0
+        ? `${countFormat(used)}/${countFormat(total)}`
+        : countFormat(used);
+    },
+    renderValue: (used, values) => {
+      const total = used + values.slots_available;
+      if (total <= 0) return countFormat(used);
+      return (
+        <>
+          {countFormat(used)}
+          <span className={metricSecondaryValueStyles()}>
+            /{countFormat(total)}
+          </span>
+        </>
+      );
+    },
+    animationKey: (used, values) => `${used}/${values.slots_available}`,
     label: 'Slots used',
-    width: 'count',
+    width: 'slots',
     className: 'w-20',
     tooltip:
-      'Concurrency slots currently in use. Slots cap how many invocations run against your services at the same time.',
+      'Concurrency slots currently in use, shown as used/total. Slots cap how many invocations run against your services at the same time.',
   },
   ingress: {
     valueKey: 'ingress_mibps',
@@ -443,11 +474,14 @@ function MetricsGroup({
     >
       {ids.map((id) => {
         const spec = metricSpecs[id];
+        const value = m[spec.valueKey];
         return (
           <Metric
             key={id}
-            value={m[spec.valueKey]}
-            format={spec.format}
+            value={value}
+            format={(value) => spec.format(value, m)}
+            renderValue={spec.renderValue?.(value, m)}
+            animationKey={spec.animationKey?.(value, m)}
             unit={spec.unit}
             label={spec.label}
             width={spec.width}
