@@ -534,7 +534,7 @@ function OverviewContent() {
               items={completedSegments}
               isLoading={isSummaryLoading}
               orientation="vertical"
-              className="w-full min-w-0"
+              className="min-w-0 place-items-start"
             />
           )}
         </div>
