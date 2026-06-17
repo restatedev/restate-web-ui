@@ -45,7 +45,7 @@ function Component() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-2 sm:px-6">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-white shadow-xs">
           <Icon name={IconName.Sparkles} className="h-5 w-5 text-gray-500" />
         </div>
         <div className="flex flex-col">
@@ -58,7 +58,7 @@ function Component() {
           </p>
         </div>
       </div>
-      <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border bg-white shadow-xs">
         {FEATURE_FLAGS.map((flag) => (
           <FeatureFlagRow key={flag} flag={flag} />
         ))}

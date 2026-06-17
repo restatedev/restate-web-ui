@@ -34,13 +34,30 @@ import type {
   HookQueryOptions,
   HookMutationOptions,
 } from '@restate/data-access/admin-api';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRange, useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
+const unsupportedMetricsBaseUrls = new Set<string>();
+
+function getErrorMessages(error: unknown): string[] {
+  if (!(error instanceof Error)) return [];
+  return [
+    error.message,
+    ...(error.cause ? getErrorMessages(error.cause) : []),
+  ];
+}
+
+function isMetricsUnsupportedError(error: unknown) {
+  return getErrorMessages(error).some(
+    (message) =>
+      /table .*metrics_(processor|node|log).* not found/i.test(message) ||
+      /metrics_(processor|node|log).* not found/i.test(message),
+  );
+}
 
 function useMeasuredQueryFn<Args extends unknown[], Result>(
   queryFn: (...args: Args) => Result | Promise<Result>,
@@ -256,9 +273,14 @@ export function useGetMetrics(
 ) {
   const enabled = useAPIStatus();
   const { isExecutionMetricsEnabled } = useRestateContext();
-  const isMetricsEnabled =
-    isExecutionMetricsEnabled && options?.enabled !== false;
   const baseUrl = useAdminBaseUrl();
+  const [isMetricsUnsupported, setIsMetricsUnsupported] = useState(() =>
+    unsupportedMetricsBaseUrls.has(baseUrl),
+  );
+  const isMetricsEnabled =
+    isExecutionMetricsEnabled &&
+    options?.enabled !== false &&
+    !isMetricsUnsupported;
   const queryOptions = adminApi('query', '/query/metrics', 'get', {
     baseUrl,
   });
@@ -271,10 +293,26 @@ export function useGetMetrics(
     enabled: enabled && isMetricsEnabled,
   });
 
+  useEffect(() => {
+    setIsMetricsUnsupported(unsupportedMetricsBaseUrls.has(baseUrl));
+  }, [baseUrl]);
+
+  useEffect(() => {
+    if (!results.error || isMetricsUnsupported) return;
+    if (isMetricsUnsupportedError(results.error)) {
+      unsupportedMetricsBaseUrls.add(baseUrl);
+      setIsMetricsUnsupported(true);
+    }
+  }, [baseUrl, isMetricsUnsupported, results.error]);
+
+  const hasLoadedMetrics = isMetricsEnabled && results.dataUpdatedAt > 0;
+
   return {
     ...results,
     data: isMetricsEnabled ? results.data : undefined,
+    hasLoadedMetrics,
     isMetricsEnabled,
+    isMetricsUnsupported,
     queryKey: queryOptions.queryKey,
   };
 }

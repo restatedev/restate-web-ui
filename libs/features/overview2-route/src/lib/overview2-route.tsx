@@ -46,7 +46,7 @@ import {
   CompletedMetrics,
   EngineEgress,
   OverviewMetricsRail,
-  useMetricsActivity,
+  useMetricsState,
 } from './EngineCluster';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { SortByDropdown } from './SortByDropdown';
@@ -223,6 +223,16 @@ const gaugeStyles = tv({
   base: 'relative -mb-9 aspect-square w-40 shrink-0 overflow-visible @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
 });
 
+const summaryStackStyles = tv({
+  base: 'relative z-40 col-span-3 col-start-1 row-start-3 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-2 @min-[76rem]/hero:col-start-3',
+  variants: {
+    metricsVisible: {
+      true: 'mt-4 @min-[64rem]/hero:mt-7',
+      false: 'mt-1 @min-[64rem]/hero:mt-2',
+    },
+  },
+});
+
 function HeroGauge({
   segments,
   count,
@@ -316,7 +326,7 @@ function OverviewContent() {
     },
   };
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
-  const hasMetricActivity = useMetricsActivity(overviewRefetchInterval);
+  const metricsState = useMetricsState(overviewRefetchInterval);
   const queryClient = useQueryClient();
   const range = useRange();
   const rangeLabel = getRangeLabel(range);
@@ -351,6 +361,10 @@ function OverviewContent() {
     () => buildInFlightSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
   );
+  const metricsVisible =
+    metricsState.isMetricsEnabled &&
+    metricsState.hasLoadedMetrics &&
+    (allTotal > 0 || metricsState.hasMetricActivity);
 
   let overallIssueSeverity: 'high' | 'low' | 'none' = 'none';
   for (const issues of serviceIssuesMap.values()) {
@@ -364,7 +378,7 @@ function OverviewContent() {
   const ferrofluidStatus = useRestateServerStatus({
     isHealthy: status === 'HEALTHY',
     isError: isError || isSummaryError,
-    isActive: hasMetricActivity || isAdminMutating,
+    isActive: metricsState.hasMetricActivity || isAdminMutating,
     issueSeverity: overallIssueSeverity,
   });
 
@@ -558,7 +572,7 @@ function OverviewContent() {
         />
         <div
           data-overview-refresh-bounce=""
-          className="relative z-40 col-span-3 col-start-1 row-start-3 mt-4 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:mt-7 @min-[76rem]/hero:col-start-3"
+          className={summaryStackStyles({ metricsVisible })}
         >
           <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
             {isSummaryLoading ? (

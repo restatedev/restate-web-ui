@@ -374,10 +374,16 @@ const ACTIVITY_KEYS: MetricKey[] = [
 ];
 
 function useMetricsHistory(refetchInterval?: MetricsRefetchInterval) {
-  const { data, isPending, dataUpdatedAt, isError, isMetricsEnabled } =
-    useGetMetrics(
-      refetchInterval === undefined ? undefined : { refetchInterval },
-    );
+  const {
+    data,
+    isPending,
+    dataUpdatedAt,
+    isError,
+    hasLoadedMetrics,
+    isMetricsEnabled,
+  } = useGetMetrics(
+    refetchInterval === undefined ? undefined : { refetchInterval },
+  );
   const [historyState, setHistoryState] = useState<{
     at: number;
     history: MetricHistory;
@@ -419,17 +425,20 @@ function useMetricsHistory(refetchInterval?: MetricsRefetchInterval) {
     isLoading: isMetricsEnabled && isPending && !data,
     history,
     hasMetricActivity,
+    hasLoadedMetrics,
     isMetricsEnabled,
     tone,
   };
 }
 
-export function useMetricsActivity(refetchInterval?: MetricsRefetchInterval) {
-  const { data } = useGetMetrics(
+export function useMetricsState(refetchInterval?: MetricsRefetchInterval) {
+  const { data, hasLoadedMetrics, isMetricsEnabled } = useGetMetrics(
     refetchInterval === undefined ? undefined : { refetchInterval },
   );
   const metricValues = toValues(data);
-  return ACTIVITY_KEYS.some((key) => metricValues[key] > 0);
+  const hasMetricActivity =
+    isMetricsEnabled && ACTIVITY_KEYS.some((key) => metricValues[key] > 0);
+  return { hasLoadedMetrics, hasMetricActivity, isMetricsEnabled };
 }
 
 const coreStyles = tv({
@@ -498,10 +507,11 @@ function MetricsGroup({
     isLoading,
     history,
     hasMetricActivity,
+    hasLoadedMetrics,
     isMetricsEnabled,
     tone,
   } = useMetricsHistory(metricsRefetchInterval);
-  if (!isMetricsEnabled) return null;
+  if (!isMetricsEnabled || !hasLoadedMetrics) return null;
   if (!hasSummaryActivity && !hasMetricActivity) return null;
   return (
     <div
