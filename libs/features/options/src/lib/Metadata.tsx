@@ -5,6 +5,8 @@ import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import { OptionListItemWithTooltip } from './utils';
 
+const HIDDEN_METADATA_PREFIX = 'dev.restate.';
+
 const COMMIT_KEYS = [
   'github.commit.sha',
   'github_commit_sha',
@@ -26,7 +28,9 @@ export function Metadata({
   metadata?: Record<string, string>;
   className?: string;
 }) {
-  const metadata = Object.entries(metadataList ?? {});
+  const metadata = Object.entries(metadataList ?? {}).filter(
+    ([name]) => !name.startsWith(HIDDEN_METADATA_PREFIX),
+  );
   const metadataExcludingGithub = metadata.filter(
     ([name]) =>
       ![...COMMIT_KEYS, ...ACTION_RUN_ID_KEYS, ...REPO_KEYS].includes(name),

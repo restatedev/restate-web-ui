@@ -4,6 +4,7 @@ import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
+import { useFeatures } from '@restate/data-access/admin-api';
 import { RestateMinimumVersion } from '@restate/util/feature-flag';
 import { Icon, IconName } from '@restate/ui/icons';
 import { KillInvocation } from './KillInvocation';
@@ -22,6 +23,7 @@ interface ActionConfig {
   condition: (
     invocation: Invocation,
     isVersionGte?: (version: string) => boolean,
+    hasVqueues?: boolean,
   ) => boolean;
   component: ReturnType<typeof withConfirmation>;
   icon: IconName;
@@ -30,6 +32,7 @@ interface ActionConfig {
   isPrimary?: (
     invocation: Invocation,
     isVersionGte?: (version: string) => boolean,
+    hasVqueues?: boolean,
   ) => boolean;
   minVersion?: string;
 }
@@ -79,11 +82,12 @@ const ACTION_CONFIGS: ActionConfig[] = [
   },
   {
     key: 'pause',
-    condition: (invocation) =>
+    condition: (invocation, _isVersionGte, hasVqueues) =>
       !invocation.completion_result &&
-      !['paused', 'ready', 'pending', 'suspended', 'scheduled'].includes(
+      !['paused', 'ready', 'pending', 'scheduled'].includes(
         invocation.status,
-      ),
+      ) &&
+      (hasVqueues || invocation.status !== 'suspended'),
     component: PauseInvocation,
     icon: IconName.Pause,
     label: 'Pause',
@@ -159,18 +163,20 @@ const mainButtonStyles = tv({
 function getAvailableActions(
   invocation: Invocation,
   isVersionGte?: (version: string) => boolean,
+  hasVqueues?: boolean,
 ): ActionConfig[] {
   return ACTION_CONFIGS.filter((config) =>
-    config.condition(invocation, isVersionGte),
+    config.condition(invocation, isVersionGte, hasVqueues),
   );
 }
 
 function getPrimaryAction(
   invocation: Invocation,
   isVersionGte?: (version: string) => boolean,
+  hasVqueues?: boolean,
 ): ActionConfig | undefined {
   return ACTION_CONFIGS.find((config) =>
-    config.isPrimary?.(invocation, isVersionGte),
+    config.isPrimary?.(invocation, isVersionGte, hasVqueues),
   );
 }
 
@@ -186,12 +192,17 @@ export function Actions({
   splitClassName?: string;
 }) {
   const { isVersionGte } = useRestateContext();
+  const hasVqueues = useFeatures().has('vqueues');
   if (!invocation) {
     return null;
   }
 
-  const availableActions = getAvailableActions(invocation, isVersionGte);
-  const primaryAction = getPrimaryAction(invocation, isVersionGte);
+  const availableActions = getAvailableActions(
+    invocation,
+    isVersionGte,
+    hasVqueues,
+  );
+  const primaryAction = getPrimaryAction(invocation, isVersionGte, hasVqueues);
 
   const renderDropdownItem = (config: ActionConfig) => {
     const item = (
