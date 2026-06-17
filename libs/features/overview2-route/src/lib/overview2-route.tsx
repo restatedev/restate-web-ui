@@ -220,7 +220,7 @@ function TabCount({
 }
 
 const gaugeStyles = tv({
-  base: 'relative -mb-9 aspect-square w-[12.8rem] shrink-0 overflow-visible @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
+  base: 'relative -mb-9 aspect-square w-40 shrink-0 overflow-visible @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
 });
 
 function HeroGauge({
@@ -266,7 +266,7 @@ function HeroGauge({
               {label}
             </span>
             {sublabel && (
-              <span className="absolute top-full left-1/2 mt-0 -translate-x-1/2 text-2xs whitespace-nowrap text-gray-400 tabular-nums">
+              <span className="absolute top-full left-1/2 mt-0 hidden -translate-x-1/2 text-2xs whitespace-nowrap text-gray-400 tabular-nums @min-[40rem]/hero:block">
                 {sublabel}
               </span>
             )}
@@ -465,7 +465,7 @@ function OverviewContent() {
   return (
     <div
       ref={containerRef}
-      className="@container/hero relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0 pt-8 @min-[64rem]/hero:pt-16 @min-[108rem]/hero:pt-20"
+      className="@container/hero relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0"
     >
       <PerspectiveLines
         svgRef={linesSvgRef}
@@ -474,7 +474,7 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
-      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-3 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)]">
+      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-3 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)] @min-[108rem]/hero:pt-20">
         <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-end @min-[76rem]/hero:col-start-1 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
           {showHeroLegends && (
             <StatusLegend
