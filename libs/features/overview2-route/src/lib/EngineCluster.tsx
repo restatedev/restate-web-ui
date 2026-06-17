@@ -122,7 +122,7 @@ const metricUnitStyles = tv({
 });
 
 const metricLabelStyles = tv({
-  base: 'mt-1 text-2xs whitespace-nowrap text-gray-400 transition-colors group-hover/metric:text-gray-500',
+  base: 'mt-1 text-2xs font-medium whitespace-nowrap text-gray-400 transition-colors group-hover/metric:text-gray-600',
 });
 
 const metricSparklineStyles = tv({
