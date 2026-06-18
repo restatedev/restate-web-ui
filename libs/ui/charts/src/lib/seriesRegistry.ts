@@ -26,6 +26,9 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
       barWidth: series.barWidth,
       barCategoryGap: '0%',
     };
+    if (series.color) {
+      bar.itemStyle = { color: series.color };
+    }
     if (series.stack) {
       bar.stack = series.stack;
     }

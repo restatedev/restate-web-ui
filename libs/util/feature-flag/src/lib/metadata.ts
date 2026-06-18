@@ -20,4 +20,10 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
       "Expose the Restate server's execution metrics — throughput, capacity, and ingress activity.",
     available: true,
   },
+  FEATURE_COMPLETION_HISTORY: {
+    title: 'Completion history',
+    description:
+      'Show a timeline of succeeded vs failed invocations over the last day.',
+    available: true,
+  },
 };

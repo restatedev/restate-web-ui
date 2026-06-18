@@ -40,12 +40,18 @@
         "libs/features/batch-operations/src/index.ts"
       ],
       "@restate/features/codec": ["libs/features/codec/src/index.ts"],
+      "@restate/features/completion-history": [
+        "libs/features/completion-history/src/index.ts"
+      ],
       "@restate/features/deployment": ["libs/features/deployment/src/index.ts"],
       "@restate/features/deployment-details": [
         "libs/features/deployment-details/src/index.ts"
       ],
       "@restate/features/edit-state": ["libs/features/edit-state/src/index.ts"],
       "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
+      "@restate/features/features-route": [
+        "libs/features/features-route/src/index.ts"
+      ],
       "@restate/features/getting-started": [
         "libs/features/getting-started/src/index.ts"
       ],

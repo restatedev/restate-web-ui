@@ -77,6 +77,7 @@ export type BarSeriesCfg = BaseSeriesCfg & {
   dataKey: string;
   barWidth?: number | string;
   stack?: string;
+  color?: string;
 };
 export type BarTimeSeriesCfg = BaseSeriesCfg & {
   type: 'bar-time';
