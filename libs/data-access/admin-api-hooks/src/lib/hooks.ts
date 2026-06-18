@@ -745,6 +745,47 @@ export function useSummaryInvocations(
   return { ...results, queryKey: queryOptions.queryKey };
 }
 
+export function useCompletedInvocationsBreakdown({
+  startTime,
+  endTime,
+  interval,
+  filters = [],
+  ...options
+}: HookQueryOptions<'/query/invocations/completed-breakdown', 'post'> & {
+  startTime: string;
+  endTime: string;
+  interval: string;
+  filters?: FilterItem[];
+}) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/completed-breakdown',
+    'post',
+    {
+      baseUrl,
+      body: {
+        startTime,
+        endTime,
+        interval,
+        filters,
+      },
+    },
+  );
+
+  const results = useQuery({
+    staleTime: 0,
+    placeholderData: keepPreviousData,
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
 function isCompletedInvocationStatus(
   status?: components['schemas']['InvocationStatus'],
 ) {

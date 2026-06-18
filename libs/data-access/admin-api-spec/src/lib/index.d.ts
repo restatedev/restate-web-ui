@@ -640,6 +640,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/completed-breakdown': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Get completed invocations breakdown over time
+     * @description Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed. Buckets `completed_at` into fixed-width [start, start + interval) buckets across the [startTime, endTime) window. `failed` currently aggregates failed + killed + cancelled.
+     */
+    post: operations['get_completed_invocations_breakdown'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/statuses': {
     parameters: {
       query?: never;
@@ -3891,6 +3911,38 @@ export interface components {
       range?: string;
       appliedFilters?: components['schemas']['FilterItem'][];
     };
+    /** @description Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed over a [startTime, endTime) window. NOTE: `failed` currently aggregates failed + killed + cancelled; these may be split into their own fields later. */
+    CompletedInvocationsBreakdownResponse: {
+      /**
+       * Format: date-time
+       * @description Inclusive lower bound of the window, echoed from the request.
+       */
+      startTime: string;
+      /**
+       * Format: date-time
+       * @description Exclusive upper bound of the window, echoed from the request.
+       */
+      endTime: string;
+      /** @description Bucket width as an ISO 8601 duration, echoed from the request. */
+      interval: string;
+      /** @description Contiguous, zero-filled buckets ordered by start ascending. Each bucket covers [start, end). */
+      buckets: {
+        /**
+         * Format: date-time
+         * @description Inclusive start timestamp of the bucket.
+         */
+        start: string;
+        /**
+         * Format: date-time
+         * @description Exclusive end timestamp of the bucket (start + interval); equals the next bucket's start.
+         */
+        end: string;
+        /** @description Invocations that completed successfully (completion_result = success) within the bucket. */
+        succeeded: number;
+        /** @description Invocations that completed unsuccessfully within the bucket. Currently includes failed, killed, and cancelled. */
+        failed: number;
+      }[];
+    };
   };
   responses: {
     /** @description Bad request */
@@ -5766,6 +5818,92 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['InvocationsSummaryResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_completed_invocations_breakdown: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /**
+           * Format: date-time
+           * @description Inclusive lower bound of the window (ISO 8601 date-time).
+           */
+          startTime: string;
+          /**
+           * Format: date-time
+           * @description Exclusive upper bound of the window (ISO 8601 date-time).
+           */
+          endTime: string;
+          /** @description Bucket width as an ISO 8601 duration, e.g. PT5M, PT1H, P1D. */
+          interval: string;
+          filters?: components['schemas']['FilterItem'][];
+        };
+      };
+    };
+    responses: {
+      /** @description Completed invocations breakdown over time */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CompletedInvocationsBreakdownResponse'];
         };
       };
       400: {
