@@ -22,7 +22,7 @@ const groupStyles = tv({
 });
 
 const inputStyles = tv({
-  base: 'flex min-w-0 flex-1 items-center justify-center overflow-x-auto overflow-y-hidden whitespace-nowrap px-1 [scrollbar-width:none]',
+  base: 'flex min-w-0 flex-1 [scrollbar-width:none] items-center justify-center overflow-x-auto overflow-y-hidden px-1 whitespace-nowrap',
 });
 
 const separatorStyles = tv({
@@ -49,11 +49,10 @@ export interface DateTimeRangeInputValue {
   end?: string;
 }
 
-interface InputProps
-  extends Pick<
-    AriaDateRangePickerProps<ZonedDateTime>,
-    'startName' | 'endName' | 'autoFocus' | 'validate'
-  > {
+interface InputProps extends Pick<
+  AriaDateRangePickerProps<ZonedDateTime>,
+  'startName' | 'endName' | 'autoFocus' | 'validate'
+> {
   className?: string;
   required?: boolean;
   disabled?: boolean;
