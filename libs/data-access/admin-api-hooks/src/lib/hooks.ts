@@ -791,7 +791,8 @@ export function useCompletedInvocationsBreakdown({
 }
 
 const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
+const COMPLETED_TIMELINE_BUCKETS = 24;
+const COMPLETED_TIMELINE_HISTORY_BUCKETS = COMPLETED_TIMELINE_BUCKETS - 1;
 const COMPLETED_BREAKDOWN_PATH = '/query/invocations/completed-breakdown';
 
 type CompletedBreakdownData =
@@ -854,16 +855,14 @@ const completedBreakdownPersister: any =
   completedBreakdownPersisterApi.persisterFn;
 
 /**
- * Hourly succeeded/failed timeline from yesterday 00:00 through now, split at a
- * single `boundary` (the end of history and the start of the live hour — one
- * value, held in state):
+ * Hourly succeeded/failed timeline for the last 24 buckets, split at a single
+ * `boundary` (the end of history and the start of the live hour):
  *
- *  - `history` — [yesterday 00:00, boundary): one expensive immutable scan.
+ *  - `history` — [boundary - 23h, boundary): one immutable scan.
  *    staleTime Infinity + refetchOnMount false + persisted, so it runs once and
  *    is shared across tabs/windows and reloads.
- *  - `live` — [boundary, now): the current partial hour, polled on
- *    `refetchInterval`. The key is stable per boundary while the queryFn reads
- *    `now` afresh each poll, so polling refreshes a single cache entry.
+ *  - `live` — [boundary, boundary + 1h): the current partial hour, polled on
+ *    `refetchInterval`.
  *
  * On the hour rollover the just-completed hour from the live poll is folded into
  * history and `boundary` advances. The extended history key is *seeded* from the
@@ -884,21 +883,22 @@ export function useCompletedInvocationsTimeline({
   const enabled = callerEnabled !== false && apiEnabled;
   const interval = 'PT1H';
 
-  // `boundary` is the split point: end of history and start of the live hour,
-  // one value (so `useState`). `historyStart` is fixed for the session. Captured
-  // once at mount via the lazy initializer; `boundary` advances on rollover.
+  // `boundary` is the split point: end of history and start of the live hour.
+  // `historyStart` tracks the beginning of the rolling history window.
   const [{ historyStart, boundary }, setSplit] = useState(() => {
     const now = Date.now();
+    const boundary = floorTo(now, HOUR_MS);
     return {
-      historyStart: floorTo(now, DAY_MS) - DAY_MS,
-      boundary: floorTo(now, HOUR_MS),
+      historyStart: boundary - COMPLETED_TIMELINE_HISTORY_BUCKETS * HOUR_MS,
+      boundary,
     };
   });
   const historyStartISO = new Date(historyStart).toISOString();
   const boundaryISO = new Date(boundary).toISOString();
 
-  // history — [yesterday 00:00, boundary). Fetched once and pinned; on rollover
-  // its key changes but we seed the new key (below) so it never re-scans.
+  // history — [historyStart, boundary). Fetched once and pinned; on rollover
+  // its key changes but we seed the new key (below) so it usually avoids a
+  // re-scan.
   const historyApi = adminApi('query', COMPLETED_BREAKDOWN_PATH, 'post', {
     baseUrl,
     body: {
@@ -958,6 +958,9 @@ export function useCompletedInvocationsTimeline({
     const previous = queryClient.getQueryData<CompletedBreakdownData>(
       historyApi.queryKey,
     );
+    const nextHistoryStart =
+      nextBoundary - COMPLETED_TIMELINE_HISTORY_BUCKETS * HOUR_MS;
+    const nextHistoryStartISO = new Date(nextHistoryStart).toISOString();
     const nextBoundaryISO = new Date(nextBoundary).toISOString();
     if (previous && nextBoundary === boundary + HOUR_MS) {
       const liveData = queryClient.getQueryData<CompletedBreakdownData>(
@@ -973,7 +976,7 @@ export function useCompletedInvocationsTimeline({
         {
           baseUrl,
           body: {
-            startTime: historyStartISO,
+            startTime: nextHistoryStartISO,
             endTime: nextBoundaryISO,
             interval,
             filters,
@@ -983,14 +986,18 @@ export function useCompletedInvocationsTimeline({
       queryClient.setQueryData<CompletedBreakdownData>(
         nextHistoryApi.queryKey,
         {
-          startTime: historyStartISO,
+          startTime: nextHistoryStartISO,
           endTime: nextBoundaryISO,
           interval,
-          buckets: mergeBuckets(previous.buckets, completed),
+          buckets: mergeBuckets(previous.buckets, completed).filter(
+            (bucket) =>
+              bucket.start >= nextHistoryStartISO &&
+              bucket.start < nextBoundaryISO,
+          ),
         },
       );
     }
-    setSplit((split) => ({ ...split, boundary: nextBoundary }));
+    setSplit({ historyStart: nextHistoryStart, boundary: nextBoundary });
     // history/live keys, `filters` and `interval` are all derived from the
     // primitives below; the tick that drives this is `liveUpdatedAt`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
