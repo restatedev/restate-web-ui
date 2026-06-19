@@ -19,7 +19,7 @@ const FAILED_STROKE = '#ef4444';
 const FAILED_FILL = '#fca5a5';
 const BAR_MIN_HEIGHT = 4;
 const BAR_BASELINE_GAP = 3;
-const BAR_BASELINE_EDGE_GAP = BAR_MIN_HEIGHT + BAR_BASELINE_GAP;
+const BAR_BASELINE_EDGE_GAP = BAR_MIN_HEIGHT + BAR_BASELINE_GAP + 2;
 
 const TOOLTIP_SERIES = [
   { dataKey: 'succeeded', label: 'Succeeded', color: SUCCEEDED_STROKE },
