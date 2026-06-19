@@ -62,6 +62,7 @@ import {
   type JournalDetail,
 } from './useJournalDetail';
 import { JournalDetailToggle } from './JournalDetailToggle';
+import { useHiddenEntryMatchers } from './hiddenEntries';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -173,11 +174,6 @@ export function JournalV2({
   withTimeline?: boolean;
 }) {
   const [isLive, setIsLive] = useState(true);
-  // The detailed-view selection lives in the URL (?detail=). The toggle is only
-  // shown on the full timeline view; embedded previews (withTimeline={false})
-  // stay compact and don't read or write the URL.
-  const journalDetail = useJournalDetail();
-  const detail = withTimeline ? journalDetail.detail : COMPACT_DETAIL;
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
   const {
     data,
@@ -230,6 +226,17 @@ export function JournalV2({
     refetchOnWindowFocus: false,
   });
 
+  const hiddenEntryMatchersByInvocation = useHiddenEntryMatchers(data);
+
+  // The detailed-view selection lives in the URL (?detail=). The toggle is only
+  // shown on the full timeline view; embedded previews (withTimeline={false})
+  // stay compact and don't read or write the URL. The `hidden` category is only
+  // offered when a loaded handler actually defines hidden entries.
+  const journalDetail = useJournalDetail({
+    hasHiddenEntries: hiddenEntryMatchersByInvocation.size > 0,
+  });
+  const detail = withTimeline ? journalDetail.detail : COMPACT_DETAIL;
+
   const addInvocationId = useCallback(
     (id: string) => {
       invalidate();
@@ -255,7 +262,12 @@ export function JournalV2({
     inputEntry,
     relatedEntriesByInvocation,
     lifecycleDataByInvocation,
-  } = useProcessedJournal(invocationId, data, detail);
+  } = useProcessedJournal(
+    invocationId,
+    data,
+    detail,
+    hiddenEntryMatchersByInvocation,
+  );
   const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
     !withTimeline &&
@@ -420,6 +432,7 @@ export function JournalV2({
                 <ContentPanelToolbar className="relative items-end! pr-5 pl-3">
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pb-1 pl-10">
                     <JournalDetailToggle
+                      availableCategories={journalDetail.availableCategories}
                       selectedCategories={journalDetail.selectedCategories}
                       isCompact={journalDetail.isCompact}
                       onCompact={journalDetail.setCompact}

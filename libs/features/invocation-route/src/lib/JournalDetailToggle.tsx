@@ -12,7 +12,6 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 import {
-  DETAIL_CATEGORIES,
   DETAIL_CATEGORY_DESCRIPTIONS,
   DETAIL_CATEGORY_LABELS,
   type DetailCategory,
@@ -54,12 +53,14 @@ const styles = tv({
 });
 
 export function JournalDetailToggle({
+  availableCategories,
   selectedCategories,
   isCompact,
   onCompact,
   onDetailed,
   onChange,
 }: {
+  availableCategories: DetailCategory[];
   selectedCategories: DetailCategory[];
   isCompact: boolean;
   onCompact: () => void;
@@ -68,7 +69,7 @@ export function JournalDetailToggle({
 }) {
   const isDetailed = !isCompact;
   const isPartial =
-    isDetailed && selectedCategories.length < DETAIL_CATEGORIES.length;
+    isDetailed && selectedCategories.length < availableCategories.length;
   const { container, compact, pill, body, chevron, count } = styles({
     isCompact,
     isDetailed,
@@ -114,7 +115,7 @@ export function JournalDetailToggle({
                 shouldCloseOnSelect={false}
                 aria-label="Detailed view categories"
               >
-                {DETAIL_CATEGORIES.map((category) => (
+                {availableCategories.map((category) => (
                   <DropdownItem key={category} value={category}>
                     <div className="flex flex-col gap-0.5 whitespace-normal">
                       <span>{DETAIL_CATEGORY_LABELS[category]}</span>

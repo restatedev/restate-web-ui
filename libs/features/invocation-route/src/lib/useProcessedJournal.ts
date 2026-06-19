@@ -2,6 +2,7 @@ import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import { useMemo } from 'react';
 import type { JournalDetail } from './useJournalDetail';
+import { isHiddenEntryName, type HiddenEntryMatcher } from './hiddenEntries';
 
 // Event types that the lifecycle viewer renders separately from the main
 // timeline.
@@ -221,6 +222,7 @@ function shouldIncludeEntry(
   parentCommand: JournalEntryV2 | undefined,
   detail: JournalDetail,
   depth: number,
+  hiddenEntryMatcher: HiddenEntryMatcher | undefined,
 ): boolean {
   // Placeholder rows are kept only at the root so the loading state still
   // renders; nested invocations whose journal hasn't loaded are dropped.
@@ -268,6 +270,15 @@ function shouldIncludeEntry(
   ) {
     return false;
   }
+  // Entries the handler author marked hidden-by-default via metadata
+  // (dev.restate.tooling.journal.hidden.names / hidden.name.prefix), matched by
+  // the entry's `name` (Run/Call/OneWayCall). Revealed by the `hidden` category.
+  if (
+    !detail.hidden &&
+    isHiddenEntryName(hiddenEntryMatcher, (entry as { name?: string }).name)
+  ) {
+    return false;
+  }
   // Paused and Suspended raw events live in the lifecycle viewer (transformed
   // into Paused/Suspended lifecycle entries by lifeCycles.ts), not the main
   // list.
@@ -287,6 +298,7 @@ export function useProcessedJournal(
   invocationId: string,
   data: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
   detail: JournalDetail,
+  hiddenEntryMatchersByInvocation: Map<string, HiddenEntryMatcher>,
 ) {
   return useMemo(() => {
     const preprocessedData = new Map<string, PreprocessedInvocationData>();
@@ -326,6 +338,7 @@ export function useProcessedJournal(
           combinedEntry.parentCommand,
           detail,
           combinedEntry.depth,
+          hiddenEntryMatchersByInvocation.get(combinedEntry.invocationId),
         )
       ) {
         continue;
@@ -346,5 +359,5 @@ export function useProcessedJournal(
       relatedEntriesByInvocation,
       lifecycleDataByInvocation,
     };
-  }, [invocationId, data, detail]);
+  }, [invocationId, data, detail, hiddenEntryMatchersByInvocation]);
 }
