@@ -55,7 +55,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         const start = api.value(series.startRangeKey);
         const end = api.value(series.endRangeKey);
         const val = api.value(series.dataKey);
-        const minH = 4;
+        const minH = series.minBarHeight ?? 4;
 
         const x0 = Number(api.coord([start, 0])[0]);
         const x1 = Number(api.coord([end, 0])[0]);

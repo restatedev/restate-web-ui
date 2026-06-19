@@ -848,6 +848,7 @@ const completedBreakdownPersisterApi = experimental_createQueryPersister({
   maxAge: 2 * HOUR_MS,
   prefix: COMPLETED_BREAKDOWN_PREFIX,
   buster: 'v1',
+  refetchOnRestore: 'always',
 });
 completedBreakdownGc.run = completedBreakdownPersisterApi.persisterGc;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -859,8 +860,8 @@ const completedBreakdownPersister: any =
  * `boundary` (the end of history and the start of the live hour):
  *
  *  - `history` — [boundary - 23h, boundary): one immutable scan.
- *    staleTime Infinity + refetchOnMount false + persisted, so it runs once and
- *    is shared across tabs/windows and reloads.
+ *    staleTime Infinity + refetchOnMount false + persisted, so it restores
+ *    across tabs/windows and reloads, then refreshes once after restore.
  *  - `live` — [boundary, boundary + 1h): the current partial hour, polled on
  *    `refetchInterval`.
  *

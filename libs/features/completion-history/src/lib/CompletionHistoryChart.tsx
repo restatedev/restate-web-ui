@@ -132,6 +132,7 @@ export function CompletionHistoryChart({
             barWidth={6}
             gap={0.25}
             baselineGap={3}
+            minBarHeight={8}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
             onSelect={
@@ -154,6 +155,7 @@ export function CompletionHistoryChart({
             barWidth={6}
             gap={0.25}
             baselineGap={3}
+            minBarHeight={8}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
             onSelect={

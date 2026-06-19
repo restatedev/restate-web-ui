@@ -217,6 +217,7 @@
 
 ## Patterns That Work
 
+- For TanStack persisted queries with `staleTime: Infinity`, always set the persister option `refetchOnRestore: 'always'`. Treat persisted data as a warm placeholder, not final truth; otherwise localStorage can keep old server data forever.
 - For ECharts custom series with grouped child shapes, use `$mergeChildren: 'byName'` plus child `name`s when one child has live/pulse behavior and siblings are stable; put transition lists on the nested `shape` (`transition: ['y', 'height']`) when only vertical bar growth should animate, so x/width changes from polling or axis reflow do not slide old bars horizontally.
 - For the overview hero completion chart, the flanking legends should start at the same container breakpoint as the desktop chart (`@min-[64rem]/hero`), using five grid columns with constrained `minmax` side tracks so labels truncate instead of hiding the legends on short wide screens.
 - For shared ECharts interactions, keep `instance.on/off` lifecycle and visual hover syncing inside `@restate/ui/charts`; feature charts should expose behavior-level actions on the visual primitive (`<Slice onSelect>`, `<Series onSelect>`) rather than chart-level event params.

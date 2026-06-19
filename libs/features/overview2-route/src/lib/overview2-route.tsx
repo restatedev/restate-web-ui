@@ -245,6 +245,16 @@ const gaugeStyles = tv({
   base: 'relative -mb-9 aspect-square w-40 shrink-0 overflow-visible @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
 });
 
+const gaugeLabelStyles = tv({
+  base: 'text-xs text-gray-500 sm:text-sm',
+  variants: {
+    textOnly: {
+      true: 'text-sm font-medium text-gray-400 sm:text-base',
+      false: 'mt-1',
+    },
+  },
+});
+
 const summaryStackStyles = tv({
   base: 'relative z-40 col-span-3 col-start-1 row-start-3 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-3',
   variants: {
@@ -264,6 +274,7 @@ function HeroGauge({
   href,
   isLoading,
   isError,
+  textOnly,
   className,
 }: {
   segments: ArcSegment[];
@@ -274,6 +285,7 @@ function HeroGauge({
   href: string;
   isLoading?: boolean;
   isError?: boolean;
+  textOnly?: boolean;
   className?: string;
 }) {
   return (
@@ -291,12 +303,12 @@ function HeroGauge({
             preserveQueryParams={false}
             className="pointer-events-auto relative flex flex-col items-center gap-0 rounded-xl px-2 py-1 leading-none hover:bg-black/[0.03]"
           >
-            <span className="text-2xl font-semibold text-gray-800 tabular-nums sm:text-3xl">
-              {valueLabel ?? formatNumber(count, true)}
-            </span>
-            <span className="mt-1 text-xs text-gray-500 sm:text-sm">
-              {label}
-            </span>
+            {!textOnly && (
+              <span className="text-2xl font-semibold text-gray-800 tabular-nums sm:text-3xl">
+                {valueLabel ?? formatNumber(count, true)}
+              </span>
+            )}
+            <span className={gaugeLabelStyles({ textOnly })}>{label}</span>
             {sublabel && (
               <span className="absolute top-full left-1/2 mt-0 hidden -translate-x-1/2 text-2xs whitespace-nowrap text-gray-400 tabular-nums @min-[40rem]/hero:block">
                 {sublabel}
@@ -413,6 +425,8 @@ function OverviewContent() {
     completedTotal > 0
       ? `of ${formatNumber(completedTotal, true)} completed`
       : undefined;
+  const isSummaryEmpty =
+    !isSummaryLoading && !isSummaryError && allTotal === 0;
 
   const completedHref = toCompletedInvocationsHref(baseUrl, {
     existingParams: linkParams,
@@ -611,7 +625,16 @@ function OverviewContent() {
           className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-2"
           segments={inFlightSegments}
           count={inFlightTotal}
-          label={<Ellipsis>In-flight</Ellipsis>}
+          label={
+            isSummaryEmpty ? (
+              'No in-flight'
+            ) : inFlightTotal > 0 ? (
+              <Ellipsis>In-flight</Ellipsis>
+            ) : (
+              'In-flight'
+            )
+          }
+          textOnly={isSummaryEmpty}
           href={toInFlightInvocationsHref(baseUrl, {
             existingParams: linkParams,
           })}
@@ -651,8 +674,9 @@ function OverviewContent() {
             segments={completedSegments}
             count={completedTotal}
             valueLabel={completedSuccessRateLabel}
-            label={completedLabel}
+            label={isSummaryEmpty ? 'No completed' : completedLabel}
             sublabel={completedSublabel}
+            textOnly={isSummaryEmpty}
             href={completedHref}
             isLoading={isSummaryLoading}
             isError={isSummaryError}
@@ -703,10 +727,20 @@ function OverviewContent() {
                 <span className="h-7 w-48 animate-pulse rounded-xl bg-gray-200" />
               ) : (
                 <span className="flex items-baseline gap-1.5">
-                  <span className="text-lg font-semibold text-gray-700 tabular-nums">
-                    {isSummaryError ? '–' : formatNumber(allTotal, true)}
-                  </span>
-                  <span className="text-base text-gray-500">invocations</span>
+                  {isSummaryEmpty ? (
+                    <span className="text-base font-medium text-gray-400">
+                      No invocations
+                    </span>
+                  ) : (
+                    <>
+                      <span className="text-lg font-semibold text-gray-700 tabular-nums">
+                        {isSummaryError ? '–' : formatNumber(allTotal, true)}
+                      </span>
+                      <span className="text-base text-gray-500">
+                        invocations
+                      </span>
+                    </>
+                  )}
                 </span>
               )}
               <TimeRangeToggle
