@@ -49,7 +49,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
       },
       selectedMode: 'single',
       clip: true,
-      cursor: series.cursor,
+      cursor: series.cursor ?? (series.onSelect ? 'pointer' : undefined),
 
       renderItem(params, api) {
         const start = api.value(series.startRangeKey);

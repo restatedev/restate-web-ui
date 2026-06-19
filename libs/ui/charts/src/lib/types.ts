@@ -76,9 +76,26 @@ export type RefLineConfig = {
   dashed?: boolean;
 };
 
-export type ChartSelectHandler = (
-  params: ECElementEvent,
-  chart: EChartsType,
+export type SliceSelectEvent = {
+  name: string;
+  value: number;
+  dataIndex: number;
+  event: ECElementEvent;
+  chart: EChartsType;
+};
+export type SliceSelectHandler = (event: SliceSelectEvent) => void;
+
+export type BarTimeSeriesSelectEvent<T extends object = object> = {
+  data: T;
+  dataIndex: number;
+  start: Date;
+  end: Date;
+  value: unknown;
+  event: ECElementEvent;
+  chart: EChartsType;
+};
+export type BarTimeSeriesSelectHandler<T extends object = object> = (
+  event: BarTimeSeriesSelectEvent<T>,
 ) => void;
 
 export type BaseSeriesCfg = {
@@ -96,7 +113,7 @@ export type BarSeriesCfg = BaseSeriesCfg & {
   stack?: string;
   color?: string;
 };
-export type BarTimeSeriesCfg = BaseSeriesCfg & {
+export type BarTimeSeriesCfg<T extends object = object> = BaseSeriesCfg & {
   type: 'bar-time';
   dataKey: string;
   startRangeKey: string;
@@ -109,8 +126,12 @@ export type BarTimeSeriesCfg = BaseSeriesCfg & {
   baselineGap?: number;
   cursor?: string;
   liveIndex?: number;
+  onSelect?: BarTimeSeriesSelectHandler<T>;
 };
-export type AnySeriesCfg = BarSeriesCfg | BarTimeSeriesCfg | BaseSeriesCfg;
+export type AnySeriesCfg<T extends object = object> =
+  | BarSeriesCfg
+  | BarTimeSeriesCfg<T>
+  | BaseSeriesCfg;
 
 export type SliceConfig = {
   name: string;
@@ -126,6 +147,7 @@ export type SliceConfig = {
   shadowBlur?: number;
   shadowColor?: string;
   shadowOffsetY?: number;
+  onSelect?: SliceSelectHandler;
 };
 
 export type PieConfig = {
@@ -147,7 +169,7 @@ export type ChartConfig<T extends object> = {
   grid?: GridConfig;
   tooltip?: TooltipConfig;
   legend?: LegendConfig;
-  series: AnySeriesCfg[];
+  series: AnySeriesCfg<T>[];
   refLines: RefLineConfig[];
   pie?: PieConfig;
 };
@@ -161,7 +183,6 @@ export type ChartProps<T extends object> = {
   theme?: 'light' | 'dark';
   timeZone?: 'system' | 'UTC';
   renderer?: 'canvas' | 'svg';
-  onSelect?: ChartSelectHandler;
   children: ReactNode;
   ref?: Ref<ChartHandle>;
 };

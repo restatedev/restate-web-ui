@@ -34,6 +34,9 @@ export function usePie(
       padAngle: pieCfg.padAngle,
       minAngle: pieCfg.minAngle,
       silent: pieCfg.silent,
+      cursor: pieCfg.slices.some((slice) => slice.onSelect)
+        ? 'pointer'
+        : undefined,
       label: { show: pieCfg.showLabel ?? true },
       labelLine: { show: pieCfg.showLabel ?? true },
       data: pieCfg.slices.map((slice) => ({

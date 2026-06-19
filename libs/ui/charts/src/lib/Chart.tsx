@@ -10,6 +10,7 @@ import { useDatasetSource } from './hooks/useDatasetSource';
 import { useEchartsInit } from './hooks/useEchartsInit';
 import { useApplyOption } from './hooks/useApplyOption';
 import { usePie } from './hooks/usePie';
+import { useChartEvents } from './hooks/useChartEvents';
 import invariant from 'tiny-invariant';
 
 export function Chart<T extends object>({
@@ -85,6 +86,16 @@ export function Chart<T extends object>({
   const chartRef = useEchartsInit(containerRef, theme, renderer);
   echartsInstanceRef.current = chartRef.current;
   useApplyOption(chartRef, option);
+  useChartEvents(chartRef, {
+    data: data ?? [],
+    pie: parsed.pie,
+    series: parsed.series,
+    resetKey: `${theme}:${renderer ?? 'svg'}`,
+    pieHighlightSeriesIndex: parsed.pie?.gradient ? 1 : undefined,
+    linkedHoverSeriesIndices: parsed.series.flatMap((s, index) =>
+      s.type === 'bar-time' ? [index] : [],
+    ),
+  });
 
   useImperativeHandle(ref, () => ({
     getInstance: () => chartRef.current,
