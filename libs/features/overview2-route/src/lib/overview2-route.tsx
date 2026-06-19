@@ -425,8 +425,7 @@ function OverviewContent() {
     completedTotal > 0
       ? `of ${formatNumber(completedTotal, true)} completed`
       : undefined;
-  const isSummaryEmpty =
-    !isSummaryLoading && !isSummaryError && allTotal === 0;
+  const isSummaryEmpty = !isSummaryLoading && !isSummaryError && allTotal === 0;
 
   const completedHref = toCompletedInvocationsHref(baseUrl, {
     existingParams: linkParams,
