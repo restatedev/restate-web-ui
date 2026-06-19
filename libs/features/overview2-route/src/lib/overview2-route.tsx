@@ -45,6 +45,7 @@ import {
   InFlightMetrics,
   CompletedMetrics,
   EngineEgress,
+  EngineEgressTop,
   OverviewMetricsRail,
   useMetricsState,
 } from './EngineCluster';
@@ -55,6 +56,9 @@ import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 import { HandlersGridList } from './HandlersGridList';
 import { getRangeLabel, useRange } from '@restate/features/restate-context';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
+import { CompletionHistory } from '@restate/features/completion-history';
+import { useCompletedInvocationsTimeline } from '@restate/data-access/admin-api-hooks';
 
 const LINE_COUNT = 7;
 
@@ -330,6 +334,14 @@ function OverviewContent() {
   const queryClient = useQueryClient();
   const range = useRange();
   const rangeLabel = getRangeLabel(range);
+  const isCompletionHistoryEnabled = useIsFeatureFlagEnabled(
+    'FEATURE_COMPLETION_HISTORY',
+  );
+  const { buckets: completionBuckets, isPending: isCompletionLoading } =
+    useCompletedInvocationsTimeline({
+      refetchInterval: overviewRefetchInterval,
+      enabled: isCompletionHistoryEnabled,
+    });
 
   const {
     total: allTotal,
@@ -341,6 +353,20 @@ function OverviewContent() {
     () => buildCompletedSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
   );
+  // When the completion chart replaces the gauge, the right legend shows the
+  // current (live) hour's counts instead of the range totals, still linking to
+  // the succeeded/failed invocations via the segment hrefs.
+  const currentHourBucket = completionBuckets.at(-1);
+  const completedLegendSegments =
+    isCompletionHistoryEnabled && currentHourBucket
+      ? completedSegments.map((segment) => ({
+          ...segment,
+          count:
+            segment.name === 'succeeded'
+              ? currentHourBucket.succeeded
+              : currentHourBucket.failed,
+        }))
+      : completedSegments;
   const completedTotal = succeeded + failed;
   const completedSuccessRate =
     completedTotal > 0 ? succeeded / completedTotal : 0;
@@ -489,7 +515,7 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
-      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)] @min-[108rem]/hero:pt-20">
+      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[auto_auto_auto] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_auto_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_auto_auto_minmax(16rem,1fr)] @min-[108rem]/hero:pt-20">
         <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-end @min-[76rem]/hero:col-start-1 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
           {showHeroLegends && (
             <StatusLegend
@@ -512,30 +538,56 @@ function OverviewContent() {
           isError={isSummaryError}
         />
         <EngineCore
-          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block @min-[76rem]/hero:col-start-3"
+          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3"
           serverRef={serverRef}
           status={ferrofluidStatus}
           onPress={onRefresh}
+          aboveServer={
+            <EngineEgressTop
+              hasSummaryActivity={allTotal > 0}
+              metricsRefetchInterval={overviewRefetchInterval}
+              data-overview-refresh-bounce=""
+              className="pointer-events-auto mb-1"
+            />
+          }
         />
-        <HeroGauge
-          className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0 @min-[76rem]/hero:col-start-4"
-          segments={completedSegments}
-          count={completedTotal}
-          valueLabel={completedSuccessRateLabel}
-          label={completedLabel}
-          sublabel={completedSublabel}
-          href={completedHref}
-          isLoading={isSummaryLoading}
-          isError={isSummaryError}
-        />
+        {isCompletionHistoryEnabled ? (
+          <CompletionHistory
+            buckets={completionBuckets}
+            isPending={isCompletionLoading}
+            className="col-start-2 row-start-2 mt-3 h-20 w-40 self-start overflow-hidden @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-8 @min-[64rem]/hero:h-32 @min-[64rem]/hero:w-[15.4rem] @min-[76rem]/hero:col-start-4"
+          />
+        ) : (
+          <HeroGauge
+            className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0 @min-[76rem]/hero:col-start-4"
+            segments={completedSegments}
+            count={completedTotal}
+            valueLabel={completedSuccessRateLabel}
+            label={completedLabel}
+            sublabel={completedSublabel}
+            href={completedHref}
+            isLoading={isSummaryLoading}
+            isError={isSummaryError}
+          />
+        )}
         <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-start @min-[76rem]/hero:col-start-5 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
           {showHeroLegends && (
-            <StatusLegend
-              items={completedSegments}
-              isLoading={isSummaryLoading}
-              orientation="vertical"
-              className="min-w-0 place-items-start"
-            />
+            <div className="flex w-full flex-col gap-1">
+              {isCompletionHistoryEnabled && (
+                <span className="px-1.5 text-2xs font-medium tracking-wide text-gray-400 uppercase">
+                  This hour
+                </span>
+              )}
+              <StatusLegend
+                items={completedLegendSegments}
+                isLoading={
+                  isSummaryLoading ||
+                  (isCompletionHistoryEnabled && isCompletionLoading)
+                }
+                orientation="vertical"
+                className="min-w-0 place-items-start"
+              />
+            </div>
           )}
         </div>
         <OverviewMetricsRail
@@ -562,7 +614,7 @@ function OverviewContent() {
           hasSummaryActivity={allTotal > 0}
           metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden w-[29rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[37rem]"
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3"
         />
         <CompletedMetrics
           hasSummaryActivity={allTotal > 0}
@@ -574,45 +626,47 @@ function OverviewContent() {
           data-overview-refresh-bounce=""
           className={summaryStackStyles({ metricsVisible })}
         >
-          <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
-            {isSummaryLoading ? (
-              <span className="h-7 w-48 animate-pulse rounded-xl bg-gray-200" />
-            ) : (
-              <span className="flex items-baseline gap-1.5">
-                <span className="text-lg font-semibold text-gray-700 tabular-nums">
-                  {isSummaryError ? '–' : formatNumber(allTotal, true)}
+          {!isCompletionHistoryEnabled && (
+            <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
+              {isSummaryLoading ? (
+                <span className="h-7 w-48 animate-pulse rounded-xl bg-gray-200" />
+              ) : (
+                <span className="flex items-baseline gap-1.5">
+                  <span className="text-lg font-semibold text-gray-700 tabular-nums">
+                    {isSummaryError ? '–' : formatNumber(allTotal, true)}
+                  </span>
+                  <span className="text-base text-gray-500">invocations</span>
                 </span>
-                <span className="text-base text-gray-500">invocations</span>
-              </span>
-            )}
-            <TimeRangeToggle
-              onChange={() => {
-                queryClient.cancelQueries({
-                  queryKey: summaryQueryKey,
-                  exact: true,
-                });
-              }}
-            />
-            {summaryError && (
-              <Popover>
-                <PopoverTrigger>
-                  <Button
-                    aria-label="Could not load invocation data"
-                    variant="secondary"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
-                  >
-                    <Icon
-                      name={IconName.TriangleAlert}
-                      className="h-4 w-4 fill-red-200 text-red-600"
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="max-w-sm">
-                  <ErrorBanner error={summaryError} className="rounded-xl" />
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
+              )}
+              <TimeRangeToggle
+                onChange={() => {
+                  queryClient.cancelQueries({
+                    queryKey: summaryQueryKey,
+                    exact: true,
+                  });
+                }}
+              />
+              {summaryError && (
+                <Popover>
+                  <PopoverTrigger>
+                    <Button
+                      aria-label="Could not load invocation data"
+                      variant="secondary"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+                    >
+                      <Icon
+                        name={IconName.TriangleAlert}
+                        className="h-4 w-4 fill-red-200 text-red-600"
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="max-w-sm">
+                    <ErrorBanner error={summaryError} className="rounded-xl" />
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+          )}
           <div className="relative mt-3 -mb-8 flex flex-col items-center">
             <IssuesBannerStack />
             <div className="h-5" />
@@ -684,7 +738,10 @@ function OverviewContent() {
                 formatServiceSortLabel={(option) =>
                   option.value === 'health'
                     ? `${option.label} ${rangeLabel}`
-                    : option.label
+                    : option.value === 'invocations' &&
+                        isCompletionHistoryEnabled
+                      ? 'In-flight invocations'
+                      : option.label
                 }
               />
             </div>

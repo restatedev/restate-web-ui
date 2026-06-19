@@ -6,6 +6,7 @@ import {
   useSummaryInvocations,
 } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
   checkSlaThresholds,
   getServiceIssues,
@@ -48,6 +49,12 @@ export function useOverviewData(range?: string) {
     error,
   } = useListDeployments();
 
+  // With the completion chart on, the completed breakdown is shown separately,
+  // so the overview summary only needs in-flight invocations.
+  const isCompletionHistoryEnabled = useIsFeatureFlagEnabled(
+    'FEATURE_COMPLETION_HISTORY',
+  );
+
   const { data: servicesMap } = useListServices(sortedServiceNames);
   const {
     data: rawSummaryData,
@@ -59,6 +66,7 @@ export function useOverviewData(range?: string) {
   } = useSummaryInvocations([], {
     sampled: false,
     range,
+    excludeCompleted: isCompletionHistoryEnabled,
     refetchInterval: overviewRefetchInterval,
     onFetchDuration: updateOverviewRefetchInterval,
   });
