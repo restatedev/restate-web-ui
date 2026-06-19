@@ -2810,9 +2810,15 @@ export interface components {
       /** @enum {string} */
       type: 'DATE';
       /** @enum {string} */
-      operation: 'BEFORE' | 'AFTER';
-      /** Format: date-time */
-      value: string;
+      operation: 'BEFORE' | 'AFTER' | 'BETWEEN';
+      value:
+        | string
+        | {
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+          };
     };
     StateInterfaceResponse: {
       keys?: {

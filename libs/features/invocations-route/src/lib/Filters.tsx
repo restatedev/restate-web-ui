@@ -11,11 +11,13 @@ import {
   FormFieldNumberInput,
   FormFieldInput,
   FormFieldDateTimeInput,
+  FormFieldDateTimeRangeInput,
 } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
 import { FocusShortcutKey } from '@restate/ui/keyboard';
 import {
   QueryClause,
+  QueryClauseDateRangeValue,
   QueryClauseOperationId,
   QueryClauseType,
   useNewQueryId,
@@ -164,10 +166,15 @@ function EditQueryTrigger({
                     const operation = Array.from(operations).at(
                       -1,
                     ) as QueryClauseOperationId;
-                    const newClause = new QueryClause(clause.schema, {
-                      ...(!['IS NULL', 'IS NOT NULL'].includes(operation) &&
-                        clause.value),
+                    const clearsValue = ['IS NULL', 'IS NOT NULL'].includes(
                       operation,
+                    );
+                    const newClause = new QueryClause(clause.schema, {
+                      ...(!clearsValue && clause.value),
+                      operation,
+                      ...(!clearsValue && {
+                        value: getValueForOperation(clause, operation),
+                      }),
                       fieldValue: clause.value.fieldValue,
                     });
                     Promise.resolve(newClause.schema.loadOptions?.()).then(
@@ -236,6 +243,31 @@ function EditQueryTrigger({
       </DropdownPopover>
     </Dropdown>
   );
+}
+
+function isDateRangeValue(value: unknown): value is QueryClauseDateRangeValue {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    ('start' in value || 'end' in value)
+  );
+}
+
+function getValueForOperation(
+  clause: QueryClause<QueryClauseType>,
+  operation: QueryClauseOperationId,
+) {
+  if (clause.type !== 'DATE') {
+    return clause.value.value;
+  }
+  const value = clause.value.value;
+  if (operation === 'BETWEEN') {
+    return isDateRangeValue(value) ? value : { start: value as Date };
+  }
+  if (isDateRangeValue(value)) {
+    return operation === 'BEFORE' ? value.end : value.start;
+  }
+  return value;
 }
 
 function ValueSelector({
@@ -349,6 +381,68 @@ function ValueSelector({
   }
 
   if (clause.type === 'DATE') {
+    if (clause.value.operation === 'BETWEEN') {
+      const value = isDateRangeValue(clause.value.value)
+        ? clause.value.value
+        : { start: clause.value.value as Date | undefined };
+      return (
+        <>
+          <FormFieldDateTimeRangeInput
+            autoFocus
+            placeholder={clause.label}
+            placeholderValue={new Date().toISOString()}
+            value={{
+              start: value.start?.toISOString(),
+              end: value.end?.toISOString(),
+            }}
+            onChange={(value) => {
+              const range =
+                value?.start && value.end
+                  ? {
+                      start: new Date(value.start),
+                      end: new Date(value.end),
+                    }
+                  : undefined;
+              const newClause = new QueryClause(clause.schema, {
+                ...clause.value,
+                value: range,
+              });
+              onUpdate?.(newClause);
+            }}
+            className="m-1 w-[32rem] max-w-[calc(100vw-2rem)]"
+          />
+          <DropdownMenu
+            shouldCloseOnSelect={false}
+            className="border-t border-gray-100 pt-1"
+            onSelect={(selectedValue) => {
+              const multiplier: Record<string, number> = {
+                '1m': 1,
+                '1h': 60,
+                '1D': 60 * 24,
+              };
+              const end = new Date();
+              const newClause = new QueryClause(clause.schema, {
+                ...clause.value,
+                value: selectedValue
+                  ? {
+                      start: new Date(
+                        end.getTime() -
+                          60 * 1000 * (multiplier[selectedValue] ?? 1),
+                      ),
+                      end,
+                    }
+                  : undefined,
+              });
+              onUpdate?.(newClause);
+            }}
+          >
+            <DropdownItem value="1m">Last minute</DropdownItem>
+            <DropdownItem value="1h">Last hour</DropdownItem>
+            <DropdownItem value="1D">Last day</DropdownItem>
+          </DropdownMenu>
+        </>
+      );
+    }
     return (
       <>
         <FormFieldDateTimeInput

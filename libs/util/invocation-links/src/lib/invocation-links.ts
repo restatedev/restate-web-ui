@@ -78,18 +78,14 @@ export function toCompletedInvocationsBucketHref(
     'filter_status',
     JSON.stringify({ operation: 'IN', value: statusValues }),
   );
-  params.append(
+  params.set(
     'filter_completed_at',
     JSON.stringify({
-      operation: 'AFTER',
-      value: start instanceof Date ? start.toISOString() : start,
-    }),
-  );
-  params.append(
-    'filter_completed_at',
-    JSON.stringify({
-      operation: 'BEFORE',
-      value: end instanceof Date ? end.toISOString() : end,
+      operation: 'BETWEEN',
+      value: {
+        start: start instanceof Date ? start.toISOString() : start,
+        end: end instanceof Date ? end.toISOString() : end,
+      },
     }),
   );
   return `${baseUrl}/invocations?${params.toString()}`;

@@ -22,6 +22,11 @@ export function useSchema() {
     const serviceNames = [
       ...(listDeploymentsData?.sortedServiceNames ?? []),
     ].sort();
+    const dateOperations = [
+      { value: 'BEFORE' as const, label: 'before' },
+      { value: 'AFTER' as const, label: 'after' },
+      { value: 'BETWEEN' as const, label: 'between' },
+    ];
     return [
       {
         id: 'id',
@@ -192,37 +197,25 @@ export function useSchema() {
       {
         id: 'created_at',
         label: 'Created',
-        operations: [
-          { value: 'BEFORE', label: 'before' },
-          { value: 'AFTER', label: 'after' },
-        ],
+        operations: dateOperations,
         type: 'DATE',
       },
       {
         id: 'scheduled_at',
         label: 'Scheduled',
-        operations: [
-          { value: 'BEFORE', label: 'before' },
-          { value: 'AFTER', label: 'after' },
-        ],
+        operations: dateOperations,
         type: 'DATE',
       },
       {
         id: 'modified_at',
         label: 'Modified',
-        operations: [
-          { value: 'BEFORE', label: 'before' },
-          { value: 'AFTER', label: 'after' },
-        ],
+        operations: dateOperations,
         type: 'DATE',
       },
       {
         id: 'completed_at',
         label: 'Completed',
-        operations: [
-          { value: 'BEFORE', label: 'before' },
-          { value: 'AFTER', label: 'after' },
-        ],
+        operations: dateOperations,
         type: 'DATE',
       },
       {

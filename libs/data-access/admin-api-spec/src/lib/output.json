@@ -7514,11 +7514,29 @@
           },
           "operation": {
             "type": "string",
-            "enum": ["BEFORE", "AFTER"]
+            "enum": ["BEFORE", "AFTER", "BETWEEN"]
           },
           "value": {
-            "type": "string",
-            "format": "date-time"
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "object",
+                "required": ["start", "end"],
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            ]
           }
         }
       },

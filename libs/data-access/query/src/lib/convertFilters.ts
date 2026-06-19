@@ -64,7 +64,12 @@ function convertFilterDateToSqlClause(
       return `${filter.field} > '${filter.value}'`;
     case 'BEFORE':
       return `${filter.field} < '${filter.value}'`;
+    case 'BETWEEN':
+      if (filter.value != null && typeof filter.value === 'object') {
+        return `(${filter.field} >= '${filter.value.start}' AND ${filter.field} < '${filter.value.end}')`;
+      }
   }
+  return undefined;
 }
 
 function convertFilterStringListToSqlClause(
@@ -96,6 +101,8 @@ function negateOperation(op: FilterItem['operation']): FilterItem['operation'] {
       return 'BEFORE';
     case 'BEFORE':
       return 'AFTER';
+    case 'BETWEEN':
+      return 'BETWEEN';
     case 'CONTAINS':
       return 'NOT_CONTAINS';
     case 'EQUALS':

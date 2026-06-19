@@ -1,6 +1,10 @@
 const formatter = new Intl.DateTimeFormat('en', {
   dateStyle: 'medium',
 });
+const rangeFormatter = new Intl.DateTimeFormat('en', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
 
 export function formatDate(value: Date) {
   if (isNaN(value.valueOf())) {
@@ -14,5 +18,5 @@ export function formatDateRange(start: Date, end: Date) {
     return '';
   }
 
-  return formatter.formatRange(start, end);
+  return rangeFormatter.formatRange(start, end);
 }
