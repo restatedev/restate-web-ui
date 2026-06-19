@@ -15,6 +15,7 @@ import {
   useJournalEntriesContext,
 } from '../JournalContext';
 import { useMemo } from 'react';
+import { formatPlurals } from '@restate/util/intl';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2
@@ -201,7 +202,7 @@ function FutureNode({
 }
 
 const triggerStyles = tv({
-  base: 'flex h-5 items-center gap-1 truncate rounded-md bg-white/70 px-1.5 py-0.5 text-2xs',
+  base: 'flex h-5 items-center gap-1 truncate rounded-md bg-white/70 px-1.5 py-0.5 text-2xs font-normal',
   variants: {
     state: {
       suspended: 'text-zinc-700',
@@ -281,8 +282,9 @@ export function AwaitingOn({
   if (!future) return null;
   const roots = unwrapCancelWrapper(future);
   const count = roots.reduce((acc, root) => acc + countFutureLeaves(root), 0);
-  const label = isPending ? 'awaiting on' : 'awaited on';
-  const title = isPending ? 'Awaiting on' : 'Awaited on';
+  const countLabel = `${count} ${formatPlurals(count, { one: 'entry', other: 'entries' })}`;
+  const label = isPending ? `awaiting ${countLabel}` : `awaited ${countLabel}`;
+  const title = isPending ? `Awaiting ${countLabel}` : `Awaited ${countLabel}`;
   return (
     <Popover>
       <PopoverTrigger>
@@ -290,7 +292,7 @@ export function AwaitingOn({
           variant="secondary"
           className={triggerStyles({ state, className })}
         >
-          {label} {count}
+          {label}
           <Icon
             name={IconName.ChevronsUpDown}
             className="h-3 w-3 shrink-0 text-gray-500"

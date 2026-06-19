@@ -58,8 +58,11 @@ export function useAxes<T extends object>(
   const yAxisPosition = yAxisCfg?.position;
   const yAxisMin = yAxisCfg?.min;
   const yAxisMax = yAxisCfg?.max;
+  const yAxisInterval = yAxisCfg?.interval;
+  const yAxisSplitLine = yAxisCfg?.splitLine;
   const yAxisVisibleValues = yAxisCfg?.visibleValues;
   const yAxisLabelFormatter = yAxisCfg?.labelFormatter;
+  const yAxisLabelInside = yAxisCfg?.labelInside;
 
   const yAxis = useMemo<AxY>(() => {
     const visibleValues = yAxisVisibleValues;
@@ -77,9 +80,11 @@ export function useAxes<T extends object>(
       axisLabel: {
         fontFamily: 'InterVariable, sans-serif',
         color: 'oklch(55.1% .027 264.364)',
+        inside: yAxisLabelInside,
+        margin: yAxisLabelInside ? 0 : undefined,
       },
       splitLine: {
-        show: true,
+        show: yAxisSplitLine ?? true,
         lineStyle: {
           type: 'dashed',
           color: 'rgba(0,0,0,0.1)',
@@ -90,6 +95,7 @@ export function useAxes<T extends object>(
     if (axis.type === 'value') {
       axis.min = yAxisMin;
       axis.max = yAxisMax;
+      axis.interval = yAxisInterval;
       const axisLabel = axis.axisLabel;
       const splitLine = axis.splitLine;
       if (axisLabel) {
@@ -99,7 +105,7 @@ export function useAxes<T extends object>(
         };
       }
       if (visibleValues?.length && splitLine) {
-        splitLine.show = false;
+        splitLine.show = yAxisSplitLine ?? false;
       }
     }
     return axis as AxY;
@@ -109,8 +115,11 @@ export function useAxes<T extends object>(
     yAxisPosition,
     yAxisMin,
     yAxisMax,
+    yAxisInterval,
+    yAxisSplitLine,
     yAxisVisibleValues,
     yAxisLabelFormatter,
+    yAxisLabelInside,
   ]);
 
   return { xAxis, yAxis, grid };

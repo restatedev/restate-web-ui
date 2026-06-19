@@ -1,4 +1,11 @@
-import { Chart, Series, TimeXAxis, Tooltip, YAxis } from '@restate/ui/charts';
+import {
+  CartesianGrid,
+  Chart,
+  Series,
+  TimeXAxis,
+  Tooltip,
+  YAxis,
+} from '@restate/ui/charts';
 import { formatHourRange, formatNumber } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 
@@ -73,17 +80,10 @@ export function CompletionHistoryChart({
   const maxFailed = Math.max(0, ...buckets.map((bucket) => bucket.failed));
   const yAxisMax = Math.max(1, maxSucceeded);
   const yAxisMin = -Math.max(1, maxFailed);
+  const yAxisInterval = yAxisMax - yAxisMin;
 
   return (
     <div className={containerStyles({ className })}>
-      <div className="pointer-events-none absolute inset-y-1.5 right-0 left-14 z-0">
-        {maxSucceeded > 0 && (
-          <span className="absolute inset-x-0 top-0 border-t border-dashed border-black/10" />
-        )}
-        {maxFailed > 0 && (
-          <span className="absolute inset-x-0 bottom-0 border-t border-dashed border-black/10" />
-        )}
-      </div>
       <div className="relative z-10 h-full w-full">
         <Chart<CompletionRow>
           data={data}
@@ -91,14 +91,29 @@ export function CompletionHistoryChart({
           height="100%"
           renderer="canvas"
         >
+          <CartesianGrid<CompletionRow>
+            top={16}
+            right={0}
+            bottom={16}
+            left={0}
+          />
           <TimeXAxis<CompletionRow> dataKey="start" show={false} />
           <YAxis<CompletionRow>
             type="value"
+            position="right"
             min={yAxisMin}
             max={yAxisMax}
+            interval={yAxisInterval}
             visibleValues={[yAxisMin, yAxisMax]}
             show
-            labelFormatter={(value) => formatNumber(Math.abs(value), true)}
+            labelInside
+            splitLine
+            labelFormatter={(value) => {
+              const label = formatNumber(Math.abs(value), true);
+              if (Math.abs(value - yAxisMax) < 1) return `${label}\n`;
+              if (Math.abs(value - yAxisMin) < 1) return `\n\n${label}`;
+              return label;
+            }}
           />
           <Tooltip
             trigger="item"
@@ -114,8 +129,8 @@ export function CompletionHistoryChart({
             endRangeKey="end"
             color={SUCCEEDED_STROKE}
             fillColor={SUCCEEDED_FILL}
-            barWidth={5}
-            gap={1}
+            barWidth={6}
+            gap={0.25}
             baselineGap={3}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
@@ -136,8 +151,8 @@ export function CompletionHistoryChart({
             endRangeKey="end"
             color={FAILED_STROKE}
             fillColor={FAILED_FILL}
-            barWidth={5}
-            gap={1}
+            barWidth={6}
+            gap={0.25}
             baselineGap={3}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}

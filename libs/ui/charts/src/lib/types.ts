@@ -30,6 +30,8 @@ export type AxisConfig<T extends object> = {
   labelFormatter?: (value: number) => string;
   min?: number;
   max?: number;
+  interval?: number;
+  splitLine?: boolean;
   visibleValues?: number[];
   dataKey: Exclude<keyof T, number | symbol>;
 };
@@ -42,6 +44,7 @@ export interface YAxisConfig<T extends object> extends Omit<
   'dataKey'
 > {
   position?: 'left' | 'right';
+  labelInside?: boolean;
   dataKey?: Exclude<keyof T, number | symbol>;
 }
 
