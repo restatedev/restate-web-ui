@@ -40,7 +40,7 @@ import {
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatPlurals } from '@restate/util/intl';
 import {
   TimelineEngineProvider,
   useTimelineEngineContext,
@@ -262,6 +262,7 @@ export function JournalV2({
     inputEntry,
     relatedEntriesByInvocation,
     lifecycleDataByInvocation,
+    hiddenEntriesCount,
   } = useProcessedJournal(
     invocationId,
     data,
@@ -491,6 +492,12 @@ export function JournalV2({
                           entry={typedInputEntry}
                           invocation={data?.[invocationId]}
                         />
+                        {!detail.hidden && (
+                          <HiddenEntriesChip
+                            count={hiddenEntriesCount}
+                            className="mt-0.5 mr-2 ml-auto"
+                          />
+                        )}
                       </div>
                       <div
                         ref={containerWidthRef}
@@ -927,5 +934,61 @@ function JournalPurgedMessage() {
         retention has elapsed or it was cleared.
       </div>
     </div>
+  );
+}
+
+const hiddenEntriesChipStyles = tv({
+  base: 'inline-flex shrink-0 cursor-help items-center gap-1 rounded-md bg-zinc-500/10 px-1.5 py-0.5 font-sans text-xs font-normal text-gray-500 tabular-nums',
+});
+
+// Compact, passive indicator that some entries are hidden in the current view.
+// It is not itself the reveal control — that's the Detailed dropdown. Its
+// popover explains the count and, where there is no dropdown (embedded previews
+// via `href`), offers a Show link to the full timeline with hidden revealed.
+function HiddenEntriesChip({
+  count,
+  href,
+  className,
+}: {
+  count: number;
+  href?: string;
+  className?: string;
+}) {
+  if (count <= 0) {
+    return null;
+  }
+
+  return (
+    <HoverTooltip
+      placement="bottom"
+      className={className}
+      content={
+        <div className="flex flex-col items-start gap-1">
+          <span>
+            {count}{' '}
+            {formatPlurals(count, { one: 'entry is', other: 'entries are' })}{' '}
+            hidden by the service/handler.
+          </span>
+          {href ? (
+            <Link
+              variant="icon"
+              href={href}
+              className="text-blue-300 underline hover:text-blue-200"
+            >
+              Show in detailed view
+            </Link>
+          ) : (
+            <span className="text-gray-400">
+              Switch to the Detailed view to see them.
+            </span>
+          )}
+        </div>
+      }
+    >
+      <span className={hiddenEntriesChipStyles()}>
+        <Icon name={IconName.EyeOff} className="h-3 w-3 text-gray-400" />
+        {count}
+      </span>
+    </HoverTooltip>
   );
 }

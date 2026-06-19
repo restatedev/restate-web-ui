@@ -222,7 +222,6 @@ function shouldIncludeEntry(
   parentCommand: JournalEntryV2 | undefined,
   detail: JournalDetail,
   depth: number,
-  hiddenEntryMatcher: HiddenEntryMatcher | undefined,
 ): boolean {
   // Placeholder rows are kept only at the root so the loading state still
   // renders; nested invocations whose journal hasn't loaded are dropped.
@@ -267,15 +266,6 @@ function shouldIncludeEntry(
     entry.category === 'event' &&
     (entry.type === 'Suspended' || entry.type === 'Paused') &&
     entry.isPending !== true
-  ) {
-    return false;
-  }
-  // Entries the handler author marked hidden-by-default via metadata
-  // (dev.restate.tooling.journal.hidden.names / hidden.name.prefix), matched by
-  // the entry's `name` (Run/Call/OneWayCall). Revealed by the `hidden` category.
-  if (
-    !detail.hidden &&
-    isHiddenEntryName(hiddenEntryMatcher, (entry as { name?: string }).name)
   ) {
     return false;
   }
@@ -330,6 +320,10 @@ export function useProcessedJournal(
     // Inputs are dropped from the timeline.
     let inputEntry: JournalEntryV2 | undefined;
     const entriesWithoutInput: CombinedJournalEntry[] = [];
+    // Count of entries matched by a handler's hidden rules. They're dropped
+    // from the list in compact mode (and shown when `detail.hidden` is on); the
+    // count drives the "N entries hidden" footer either way.
+    let hiddenEntriesCount = 0;
 
     for (const combinedEntry of allCombinedEntries) {
       if (
@@ -338,7 +332,6 @@ export function useProcessedJournal(
           combinedEntry.parentCommand,
           detail,
           combinedEntry.depth,
-          hiddenEntryMatchersByInvocation.get(combinedEntry.invocationId),
         )
       ) {
         continue;
@@ -348,12 +341,26 @@ export function useProcessedJournal(
         if (combinedEntry.invocationId === invocationId) {
           inputEntry = combinedEntry.entry;
         }
-      } else {
-        entriesWithoutInput.push(combinedEntry);
+        continue;
       }
+
+      if (
+        isHiddenEntryName(
+          hiddenEntryMatchersByInvocation.get(combinedEntry.invocationId),
+          (combinedEntry.entry as { name?: string } | undefined)?.name,
+        )
+      ) {
+        hiddenEntriesCount += 1;
+        if (!detail.hidden) {
+          continue;
+        }
+      }
+
+      entriesWithoutInput.push(combinedEntry);
     }
 
     return {
+      hiddenEntriesCount,
       entriesWithoutInput,
       inputEntry,
       relatedEntriesByInvocation,

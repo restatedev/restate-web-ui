@@ -34,7 +34,8 @@ export const DETAIL_CATEGORY_DESCRIPTIONS: Record<DetailCategory, string> = {
   completions:
     'The notification sent when an action completes, whether it succeeded or failed',
   lifecycle: 'Past suspensions and pauses',
-  hidden: 'Entries the service marked hidden by default in its handler metadata',
+  hidden:
+    'Entries the service/handler marked hidden by default in the metadata',
   size: 'Approximate byte size shown next to each payload',
 };
 
