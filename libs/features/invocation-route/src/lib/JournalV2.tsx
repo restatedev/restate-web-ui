@@ -40,7 +40,7 @@ import {
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatPlurals } from '@restate/util/intl';
 import {
   TimelineEngineProvider,
   useTimelineEngineContext,
@@ -62,6 +62,7 @@ import {
   type JournalDetail,
 } from './useJournalDetail';
 import { JournalDetailToggle } from './JournalDetailToggle';
+import { useHiddenEntryMatchers } from './hiddenEntries';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
@@ -173,11 +174,6 @@ export function JournalV2({
   withTimeline?: boolean;
 }) {
   const [isLive, setIsLive] = useState(true);
-  // The detailed-view selection lives in the URL (?detail=). The toggle is only
-  // shown on the full timeline view; embedded previews (withTimeline={false})
-  // stay compact and don't read or write the URL.
-  const journalDetail = useJournalDetail();
-  const detail = withTimeline ? journalDetail.detail : COMPACT_DETAIL;
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
   const {
     data,
@@ -230,6 +226,17 @@ export function JournalV2({
     refetchOnWindowFocus: false,
   });
 
+  const hiddenEntryMatchersByInvocation = useHiddenEntryMatchers(data);
+
+  // The detailed-view selection lives in the URL (?detail=). The toggle is only
+  // shown on the full timeline view; embedded previews (withTimeline={false})
+  // stay compact and don't read or write the URL. The `hidden` category is only
+  // offered when a loaded handler actually defines hidden entries.
+  const journalDetail = useJournalDetail({
+    hasHiddenEntries: hiddenEntryMatchersByInvocation.size > 0,
+  });
+  const detail = withTimeline ? journalDetail.detail : COMPACT_DETAIL;
+
   const addInvocationId = useCallback(
     (id: string) => {
       invalidate();
@@ -255,7 +262,13 @@ export function JournalV2({
     inputEntry,
     relatedEntriesByInvocation,
     lifecycleDataByInvocation,
-  } = useProcessedJournal(invocationId, data, detail);
+    hiddenEntriesCount,
+  } = useProcessedJournal(
+    invocationId,
+    data,
+    detail,
+    hiddenEntryMatchersByInvocation,
+  );
   const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
     !withTimeline &&
@@ -420,6 +433,7 @@ export function JournalV2({
                 <ContentPanelToolbar className="relative items-end! pr-5 pl-3">
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pb-1 pl-10">
                     <JournalDetailToggle
+                      availableCategories={journalDetail.availableCategories}
                       selectedCategories={journalDetail.selectedCategories}
                       isCompact={journalDetail.isCompact}
                       onCompact={journalDetail.setCompact}
@@ -478,6 +492,12 @@ export function JournalV2({
                           entry={typedInputEntry}
                           invocation={data?.[invocationId]}
                         />
+                        {!detail.hidden && (
+                          <HiddenEntriesChip
+                            count={hiddenEntriesCount}
+                            className="mt-0.5 mr-2 ml-auto"
+                          />
+                        )}
                       </div>
                       <div
                         ref={containerWidthRef}
@@ -914,5 +934,61 @@ function JournalPurgedMessage() {
         retention has elapsed or it was cleared.
       </div>
     </div>
+  );
+}
+
+const hiddenEntriesChipStyles = tv({
+  base: 'inline-flex shrink-0 cursor-help items-center gap-1 rounded-md bg-zinc-500/10 px-1.5 py-0.5 font-sans text-xs font-normal text-gray-500 tabular-nums',
+});
+
+// Compact, passive indicator that some entries are hidden in the current view.
+// It is not itself the reveal control — that's the Detailed dropdown. Its
+// popover explains the count and, where there is no dropdown (embedded previews
+// via `href`), offers a Show link to the full timeline with hidden revealed.
+function HiddenEntriesChip({
+  count,
+  href,
+  className,
+}: {
+  count: number;
+  href?: string;
+  className?: string;
+}) {
+  if (count <= 0) {
+    return null;
+  }
+
+  return (
+    <HoverTooltip
+      placement="bottom"
+      className={className}
+      content={
+        <div className="flex flex-col items-start gap-1">
+          <span>
+            {count}{' '}
+            {formatPlurals(count, { one: 'entry is', other: 'entries are' })}{' '}
+            hidden by the service/handler.
+          </span>
+          {href ? (
+            <Link
+              variant="icon"
+              href={href}
+              className="text-blue-300 underline hover:text-blue-200"
+            >
+              Show in detailed view
+            </Link>
+          ) : (
+            <span className="text-gray-400">
+              Switch to the Detailed view to see them.
+            </span>
+          )}
+        </div>
+      }
+    >
+      <span className={hiddenEntriesChipStyles()}>
+        <Icon name={IconName.EyeOff} className="h-3 w-3 text-gray-400" />
+        {count}
+      </span>
+    </HoverTooltip>
   );
 }

@@ -17,6 +17,8 @@ overrides:
   picomatch@>=4.0.0 <4.0.4: '>=4.0.4'
   lodash@<=4.17.23: '>=4.18.0'
   js-cookie@<=3.0.5: ^3.0.6
+  undici@>=7.0.0 <7.28.0: ^7.28.0
+  undici@>=7.23.0 <7.28.0: ^7.28.0
 
 patchedDependencies:
   '@stoplight/elements@9.0.19': e2ebd50f3505a6bf00afb346a0bb423d0d059fe102cbcd99fef7902376e474ae
@@ -152,8 +154,8 @@ importers:
         specifier: 2.6.3
         version: 2.6.3
       undici:
-        specifier: '>=7.24.0'
-        version: 7.25.0
+        specifier: ^7.28.0
+        version: 7.28.0
       urlpattern-polyfill:
         specifier: 10.1.0
         version: 10.1.0
@@ -9236,12 +9238,8 @@ packages:
     resolution: {integrity: sha512-ZgpWDC5gmNiuY9CnLVXEH8rl50xhRCuLNA97fAUnKi8RRuV4E6KG31pDTsLVUKnohJE0I3XDrTeEydAXRw47xg==}
     engines: {node: '>=18.17'}
 
-  undici@7.24.7:
-    resolution: {integrity: sha512-H/nlJ/h0ggGC+uRL3ovD+G0i4bqhvsDOpbDv7At5eFLlj2b41L8QliGbnl2H7SnDiYhENphh1tQFJZf+MyfLsQ==}
-    engines: {node: '>=20.18.1'}
-
-  undici@7.25.0:
-    resolution: {integrity: sha512-xXnp4kTyor2Zq+J1FfPI6Eq3ew5h6Vl0F/8d9XU5zZQf1tX9s2Su1/3PiMmUANFULpmksxkClamIZcaUqryHsQ==}
+  undici@7.28.0:
+    resolution: {integrity: sha512-cRZYrTDwWznlnRiPjggAGxZXanty6M8RV1ff8Wm4LWXBp7/IG8v5DnOm74DtUBp9OONpK75YlPnIjQqX0dBDtA==}
     engines: {node: '>=20.18.1'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
@@ -11852,7 +11850,7 @@ snapshots:
       isomorphic-ws: 5.0.0(ws@8.18.0)
       node-schedule: 2.1.1
       typescript: 6.0.3
-      undici: 7.24.7
+      undici: 7.28.0
       ws: 8.18.0
     transitivePeerDependencies:
       - bufferutil
@@ -18072,7 +18070,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.1
-      undici: 7.25.0
+      undici: 7.28.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -20812,9 +20810,7 @@ snapshots:
 
   undici@6.25.0: {}
 
-  undici@7.24.7: {}
-
-  undici@7.25.0: {}
+  undici@7.28.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 

@@ -2,6 +2,7 @@ import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import { useMemo } from 'react';
 import type { JournalDetail } from './useJournalDetail';
+import { isHiddenEntryName, type HiddenEntryMatcher } from './hiddenEntries';
 
 // Event types that the lifecycle viewer renders separately from the main
 // timeline.
@@ -287,6 +288,7 @@ export function useProcessedJournal(
   invocationId: string,
   data: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
   detail: JournalDetail,
+  hiddenEntryMatchersByInvocation: Map<string, HiddenEntryMatcher>,
 ) {
   return useMemo(() => {
     const preprocessedData = new Map<string, PreprocessedInvocationData>();
@@ -318,6 +320,10 @@ export function useProcessedJournal(
     // Inputs are dropped from the timeline.
     let inputEntry: JournalEntryV2 | undefined;
     const entriesWithoutInput: CombinedJournalEntry[] = [];
+    // Count of entries matched by a handler's hidden rules. They're dropped
+    // from the list in compact mode (and shown when `detail.hidden` is on); the
+    // count drives the "N entries hidden" footer either way.
+    let hiddenEntriesCount = 0;
 
     for (const combinedEntry of allCombinedEntries) {
       if (
@@ -335,16 +341,30 @@ export function useProcessedJournal(
         if (combinedEntry.invocationId === invocationId) {
           inputEntry = combinedEntry.entry;
         }
-      } else {
-        entriesWithoutInput.push(combinedEntry);
+        continue;
       }
+
+      if (
+        isHiddenEntryName(
+          hiddenEntryMatchersByInvocation.get(combinedEntry.invocationId),
+          (combinedEntry.entry as { name?: string } | undefined)?.name,
+        )
+      ) {
+        hiddenEntriesCount += 1;
+        if (!detail.hidden) {
+          continue;
+        }
+      }
+
+      entriesWithoutInput.push(combinedEntry);
     }
 
     return {
+      hiddenEntriesCount,
       entriesWithoutInput,
       inputEntry,
       relatedEntriesByInvocation,
       lifecycleDataByInvocation,
     };
-  }, [invocationId, data, detail]);
+  }, [invocationId, data, detail, hiddenEntryMatchersByInvocation]);
 }

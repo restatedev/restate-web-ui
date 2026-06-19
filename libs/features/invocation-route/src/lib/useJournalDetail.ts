@@ -6,13 +6,16 @@ import type { DropdownMenuSelection } from '@restate/ui/dropdown';
 // categories can be toggled independently. Most map 1:1 onto the rows that
 // `shouldIncludeEntry` (useProcessedJournal) hides in compact mode; `size` is
 // the exception — it adds no rows, it toggles the approximate byte-size badge
-// shown on each payload button.
+// shown on each payload button. `hidden` reveals entries the handler author
+// marked hidden-by-default via metadata, and is only offered when at least one
+// loaded handler defines such entries (see `availableCategories`).
 export const DETAIL_QUERY_PARAM = 'detail';
 
 export const DETAIL_CATEGORIES = [
   'errors',
   'completions',
   'lifecycle',
+  'hidden',
   'size',
 ] as const;
 export type DetailCategory = (typeof DETAIL_CATEGORIES)[number];
@@ -21,6 +24,7 @@ export const DETAIL_CATEGORY_LABELS: Record<DetailCategory, string> = {
   errors: 'Transient errors',
   completions: 'Completions',
   lifecycle: 'Lifecycle history',
+  hidden: 'Hidden entries',
   size: 'Payload sizes',
 };
 
@@ -30,6 +34,8 @@ export const DETAIL_CATEGORY_DESCRIPTIONS: Record<DetailCategory, string> = {
   completions:
     'The notification sent when an action completes, whether it succeeded or failed',
   lifecycle: 'Past suspensions and pauses',
+  hidden:
+    'Entries the service/handler marked hidden by default in the metadata',
   size: 'Approximate byte size shown next to each payload',
 };
 
@@ -41,6 +47,7 @@ export const COMPACT_DETAIL: JournalDetail = Object.freeze({
   errors: false,
   completions: false,
   lifecycle: false,
+  hidden: false,
   size: false,
 });
 
@@ -51,7 +58,9 @@ export const COMPACT_DETAIL: JournalDetail = Object.freeze({
 // links are stable regardless of click order. Memoized on `searchParams`
 // (stable until `location.search` changes) so the live-poll re-renders don't
 // churn `useProcessedJournal`.
-export function useJournalDetail() {
+export function useJournalDetail({
+  hasHiddenEntries = false,
+}: { hasHiddenEntries?: boolean } = {}) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const detail = useMemo<JournalDetail>(() => {
@@ -60,13 +69,25 @@ export function useJournalDetail() {
       errors: selected.has('errors'),
       completions: selected.has('completions'),
       lifecycle: selected.has('lifecycle'),
+      hidden: selected.has('hidden'),
       size: selected.has('size'),
     };
   }, [searchParams]);
 
+  // `hidden` is only meaningful when a loaded handler actually defines
+  // hidden-by-default entries; otherwise it's dropped so the toggle never
+  // offers a category that can't do anything. The rest are always available.
+  const availableCategories = useMemo(
+    () =>
+      DETAIL_CATEGORIES.filter(
+        (category) => category !== 'hidden' || hasHiddenEntries,
+      ),
+    [hasHiddenEntries],
+  );
+
   const selectedCategories = useMemo(
-    () => DETAIL_CATEGORIES.filter((category) => detail[category]),
-    [detail],
+    () => availableCategories.filter((category) => detail[category]),
+    [detail, availableCategories],
   );
 
   const isCompact = selectedCategories.length === 0;
@@ -85,7 +106,7 @@ export function useJournalDetail() {
   const writeCategories = useCallback(
     (categories: Iterable<DetailCategory>) => {
       const next = new Set(categories);
-      const ordered = DETAIL_CATEGORIES.filter((category) =>
+      const ordered = availableCategories.filter((category) =>
         next.has(category),
       );
       if (ordered.length > 0) {
@@ -97,7 +118,7 @@ export function useJournalDetail() {
         return old;
       });
     },
-    [setSearchParams],
+    [setSearchParams, availableCategories],
   );
 
   const setCompact = useCallback(() => {
@@ -114,18 +135,19 @@ export function useJournalDetail() {
   const setSelection = useCallback(
     (selection: DropdownMenuSelection) => {
       if (selection === 'all') {
-        writeCategories(DETAIL_CATEGORIES);
+        writeCategories(availableCategories);
       } else {
         writeCategories(
           Array.from(selection, (key) => String(key) as DetailCategory),
         );
       }
     },
-    [writeCategories],
+    [writeCategories, availableCategories],
   );
 
   return {
     detail,
+    availableCategories,
     selectedCategories,
     isCompact,
     setCompact,
