@@ -20,6 +20,16 @@ export function isSummaryInvocationsQuery(
   return isQueryForPath(query, '/query/invocations/summary', 'post');
 }
 
+export function isCompletedBreakdownQuery(
+  query: Query | QueryCacheNotifyEvent['query'],
+): boolean {
+  return isQueryForPath(
+    query,
+    '/query/invocations/completed-breakdown',
+    'post',
+  );
+}
+
 export function isQueryHealthCheckQuery(event: QueryCacheNotifyEvent): boolean {
   return event.query.meta?.[QUERY_HEALTH_META_TAG] === true;
 }

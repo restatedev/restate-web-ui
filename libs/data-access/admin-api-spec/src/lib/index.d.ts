@@ -5806,6 +5806,11 @@ export interface operations {
           sampleSize?: number;
           /** @default false */
           includeDuration?: boolean;
+          /**
+           * @description Exclude completed invocations (succeeded/failed/killed/cancelled) from the scan, returning only in-flight statuses.
+           * @default false
+           */
+          excludeCompleted?: boolean;
           range?: string;
         };
       };

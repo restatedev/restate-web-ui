@@ -2528,6 +2528,11 @@
                     "type": "boolean",
                     "default": false
                   },
+                  "excludeCompleted": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Exclude completed invocations (succeeded/failed/killed/cancelled) from the scan, returning only in-flight statuses."
+                  },
                   "range": {
                     "type": "string"
                   }

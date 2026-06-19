@@ -57,6 +57,7 @@ type BoundHandlers = {
     sampled?: boolean,
     sampleSize?: number,
     range?: string,
+    excludeCompleted?: boolean,
   ) => Promise<Response>;
   completedInvocationsBreakdown: (
     args: CompletedInvocationsBreakdownArgs,
@@ -337,13 +338,21 @@ router.map(routes, {
           sampled,
           sampleSize,
           range,
+          excludeCompleted,
         }: {
           filters: FilterItem[];
           sampled?: boolean;
           sampleSize?: number;
           range?: string;
+          excludeCompleted?: boolean;
         } = await ctx.request.json();
-        return summaryInvocations(filters, sampled, sampleSize, range);
+        return summaryInvocations(
+          filters,
+          sampled,
+          sampleSize,
+          range,
+          excludeCompleted,
+        );
       },
       async completedBreakdown(ctx) {
         const { completedInvocationsBreakdown } = ctx.storage.get(handlersKey);

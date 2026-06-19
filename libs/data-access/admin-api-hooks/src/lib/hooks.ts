@@ -697,6 +697,7 @@ export function useSummaryInvocations(
     sampled = false,
     sampleSize,
     range,
+    excludeCompleted,
     meta: callerMeta,
     onFetchDuration,
     ...options
@@ -704,6 +705,7 @@ export function useSummaryInvocations(
     sampled?: boolean;
     sampleSize?: number;
     range?: string;
+    excludeCompleted?: boolean;
     onFetchDuration?: (duration: number) => void;
   } = {},
 ) {
@@ -723,6 +725,7 @@ export function useSummaryInvocations(
         sampled,
         sampleSize,
         range,
+        excludeCompleted,
       },
     },
   );
@@ -872,7 +875,7 @@ export function useCompletedInvocationsTimeline({
   enabled: callerEnabled,
 }: {
   filters?: FilterItem[];
-  refetchInterval?: number;
+  refetchInterval?: number | (() => number | false);
   enabled?: boolean;
 } = {}) {
   const apiEnabled = useAPIStatus();
@@ -952,8 +955,9 @@ export function useCompletedInvocationsTimeline({
     if (nextBoundary <= boundary || liveUpdatedAt < nextBoundary) {
       return;
     }
-    const previous =
-      queryClient.getQueryData<CompletedBreakdownData>(historyApi.queryKey);
+    const previous = queryClient.getQueryData<CompletedBreakdownData>(
+      historyApi.queryKey,
+    );
     const nextBoundaryISO = new Date(nextBoundary).toISOString();
     if (previous && nextBoundary === boundary + HOUR_MS) {
       const liveData = queryClient.getQueryData<CompletedBreakdownData>(
@@ -990,7 +994,14 @@ export function useCompletedInvocationsTimeline({
     // history/live keys, `filters` and `interval` are all derived from the
     // primitives below; the tick that drives this is `liveUpdatedAt`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liveUpdatedAt, boundary, baseUrl, historyStartISO, filtersKey, queryClient]);
+  }, [
+    liveUpdatedAt,
+    boundary,
+    baseUrl,
+    historyStartISO,
+    filtersKey,
+    queryClient,
+  ]);
 
   // Only ever surface buckets up to the end of the current hour: clamp the live
   // source so a bucket beyond the live window can't leak in (today `live` is
