@@ -219,6 +219,7 @@
 
 - For ECharts custom series with grouped child shapes, use `$mergeChildren: 'byName'` plus child `name`s when one child has live/pulse behavior and siblings are stable; put transition lists on the nested `shape` (`transition: ['y', 'height']`) when only vertical bar growth should animate, so x/width changes from polling or axis reflow do not slide old bars horizontally.
 - For the overview hero completion chart, the flanking legends should start at the same container breakpoint as the desktop chart (`@min-[64rem]/hero`), using five grid columns with constrained `minmax` side tracks so labels truncate instead of hiding the legends on short wide screens.
+- For shared ECharts interactions, keep `instance.on/off` lifecycle and visual hover syncing inside `@restate/ui/charts`; feature charts should expose only behavior-level actions like `onSelect`.
 - When smooth-interpolating timestamps between API polls, advance related timestamps (e.g., `dataUpdatedAt`) by the same elapsed amount to avoid flicker — simplest form: use `Date.now()` in live-follow mode
 - For `Now` marker visibility under headroom smoothing, use a stable bound check (`dataUpdatedAt <= end (+epsilon)`) instead of a near-zero threshold that toggles every poll
 - For right-edge `Now` cut-off, keep marker mounted and switch badge side by viewport half (render badge to the left when `Now` is in right half)

@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import type { EChartsType, SetOptionOpts, ComposeOption } from 'echarts/core';
+import type {
+  EChartsType,
+  SetOptionOpts,
+  ComposeOption,
+  ECElementEvent,
+} from 'echarts/core';
 import type {
   BarSeriesOption,
   CustomSeriesOption,
@@ -70,6 +75,11 @@ export type RefLineConfig = {
   name?: string;
   dashed?: boolean;
 };
+
+export type ChartSelectHandler = (
+  params: ECElementEvent,
+  chart: EChartsType,
+) => void;
 
 export type BaseSeriesCfg = {
   id?: string;
@@ -151,6 +161,7 @@ export type ChartProps<T extends object> = {
   theme?: 'light' | 'dark';
   timeZone?: 'system' | 'UTC';
   renderer?: 'canvas' | 'svg';
+  onSelect?: ChartSelectHandler;
   children: ReactNode;
   ref?: Ref<ChartHandle>;
 };
