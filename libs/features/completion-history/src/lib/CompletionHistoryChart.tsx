@@ -67,6 +67,19 @@ export function CompletionHistoryChart({
     );
   }
 
+  const hasCompletedInvocations = buckets.some(
+    (bucket) => bucket.succeeded > 0 || bucket.failed > 0,
+  );
+  if (!hasCompletedInvocations) {
+    return (
+      <div className={containerStyles({ className })}>
+        <div className="relative z-10 flex h-full w-full translate-y-3.5 items-center justify-center px-3 text-center text-sm font-medium whitespace-nowrap text-gray-400 sm:text-base">
+          No completed invocations
+        </div>
+      </div>
+    );
+  }
+
   const data: CompletionRow[] = buckets.map((bucket) => ({
     start: Date.parse(bucket.start),
     end: Date.parse(bucket.end),
