@@ -1,5 +1,4 @@
 export { ONBOARDING_QUERY_PARAM } from './lib/constants';
-export { RestateMinimumVersion } from './lib/RestateMinimumVersion';
 export * from './lib/FeatureFlag';
 export {
   isFeatureEnabled,

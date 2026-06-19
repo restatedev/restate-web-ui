@@ -20,7 +20,7 @@ import {
   ComboBoxItem,
 } from '@restate/ui/form-field';
 import { InlineTooltip } from '@restate/ui/tooltip';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';

@@ -13,7 +13,7 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button, SubmitButton } from '@restate/ui/button';

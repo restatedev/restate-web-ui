@@ -5,7 +5,7 @@ import { tv } from '@restate/util/styles';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useFeatures } from '@restate/data-access/admin-api';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { Icon, IconName } from '@restate/ui/icons';
 import { KillInvocation } from './KillInvocation';
 import { CancelInvocation } from './CancelInvocation';
