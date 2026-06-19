@@ -99,16 +99,21 @@ function Sparkline({
 }
 
 const metricStyles = tv({
-  base: 'group/metric flex min-w-0 flex-col items-start leading-none',
+  base: 'group/metric flex min-w-0 flex-col leading-none',
   variants: {
     size: {
       auto: '',
       regular: 'w-20',
       wide: 'w-[5.5rem] @min-[108rem]/hero:w-28',
     },
+    align: {
+      start: 'items-start text-left',
+      center: 'items-center text-center',
+    },
   },
   defaultVariants: {
     size: 'auto',
+    align: 'start',
   },
 });
 
@@ -121,6 +126,13 @@ const valueSlotStyles = tv({
       bytes: 'w-20',
       slots: 'w-20',
     },
+    align: {
+      start: '',
+      center: 'justify-center',
+    },
+  },
+  defaultVariants: {
+    align: 'start',
   },
 });
 
@@ -157,6 +169,8 @@ function Metric({
   history,
   size = 'auto',
   width = 'rate',
+  align = 'start',
+  hideSparkline = false,
 }: {
   value: number;
   format: (n: number) => string;
@@ -170,6 +184,8 @@ function Metric({
   history?: number[];
   size?: 'auto' | 'regular' | 'wide';
   width?: 'count' | 'rate' | 'bytes' | 'slots';
+  align?: 'start' | 'center';
+  hideSparkline?: boolean;
 }) {
   return (
     <HoverTooltip
@@ -177,8 +193,8 @@ function Metric({
       size="default"
       contentClassName="break-normal"
     >
-      <div className={metricStyles({ size, class: className })}>
-        <span className={valueSlotStyles({ width })}>
+      <div className={metricStyles({ size, align, class: className })}>
+        <span className={valueSlotStyles({ width, align })}>
           {isLoading ? (
             <span className="h-3.5 w-8 animate-pulse rounded bg-gray-200" />
           ) : (
@@ -194,10 +210,12 @@ function Metric({
           )}
         </span>
         <span className={metricLabelStyles()}>{label}</span>
-        <Sparkline
-          values={isLoading ? [] : (history ?? [])}
-          className={metricSparklineStyles()}
-        />
+        {!hideSparkline && (
+          <Sparkline
+            values={isLoading ? [] : (history ?? [])}
+            className={metricSparklineStyles()}
+          />
+        )}
       </div>
     </HoverTooltip>
   );
@@ -235,6 +253,11 @@ const EGRESS_METRIC_IDS = [
   'ingress',
   'deploymentIo',
 ] as const;
+// The egress metrics are split around the server in the hero: the first three
+// sit above it (without sparklines, to stay short), the I/O pair sits centered
+// below it.
+const EGRESS_TOP_METRIC_IDS = ['connections', 'awaiting', 'slotsUsed'] as const;
+const EGRESS_BOTTOM_METRIC_IDS = ['ingress', 'deploymentIo'] as const;
 const COMPLETED_METRIC_IDS = ['durableEntries', 'durableWrite'] as const;
 const LEFT_RAIL_METRIC_IDS = [
   'invocations',
@@ -442,7 +465,7 @@ export function useMetricsState(refetchInterval?: MetricsRefetchInterval) {
 }
 
 const coreStyles = tv({
-  base: 'relative flex justify-center',
+  base: 'relative flex flex-col items-center justify-center',
 });
 
 export function EngineCore({
@@ -450,14 +473,17 @@ export function EngineCore({
   status,
   onPress,
   className,
+  aboveServer,
 }: {
   serverRef: React.RefObject<HTMLDivElement | null>;
   status: FerrofluidStatus;
   onPress?: () => void;
   className?: string;
+  aboveServer?: ReactNode;
 }) {
   return (
     <div className={coreStyles({ class: className })}>
+      {aboveServer}
       <div
         ref={serverRef}
         className="relative z-20 scale-75 @min-[64rem]/hero:scale-90"
@@ -479,7 +505,7 @@ const metricGroupStyles = tv({
   variants: {
     layout: {
       underGauge: 'flex items-start justify-center gap-3',
-      telemetry: 'flex flex-nowrap items-start justify-center gap-x-1.5',
+      telemetry: 'flex flex-nowrap items-start justify-center gap-x-3',
       rail: 'flex flex-col items-start gap-3',
     },
     tone: metricsToneVariants,
@@ -493,6 +519,8 @@ function MetricsGroup({
   className,
   itemSize,
   metricsRefetchInterval,
+  hideSparkline,
+  align = 'center',
   ...props
 }: {
   ids: readonly MetricId[];
@@ -501,6 +529,8 @@ function MetricsGroup({
   className?: string;
   itemSize?: 'auto' | 'regular' | 'wide';
   metricsRefetchInterval?: MetricsRefetchInterval;
+  hideSparkline?: boolean;
+  align?: 'start' | 'center';
 } & ComponentPropsWithoutRef<'div'>) {
   const {
     metricValues,
@@ -534,6 +564,8 @@ function MetricsGroup({
             size={itemSize ?? (layout === 'telemetry' ? 'wide' : 'auto')}
             isLoading={isLoading}
             history={history[spec.valueKey]}
+            hideSparkline={hideSparkline}
+            align={align}
             tooltip={spec.tooltip}
           />
         );
@@ -560,7 +592,24 @@ export function CompletedMetrics(props: MetricsProps) {
 }
 
 export function EngineEgress(props: MetricsProps) {
-  return <MetricsGroup ids={EGRESS_METRIC_IDS} layout="telemetry" {...props} />;
+  return (
+    <MetricsGroup
+      ids={EGRESS_BOTTOM_METRIC_IDS}
+      layout="telemetry"
+      {...props}
+    />
+  );
+}
+
+export function EngineEgressTop(props: MetricsProps) {
+  return (
+    <MetricsGroup
+      ids={EGRESS_TOP_METRIC_IDS}
+      layout="telemetry"
+      hideSparkline
+      {...props}
+    />
+  );
 }
 
 export function OverviewMetricsRail({
