@@ -11,11 +11,11 @@ export type AuraIntensity = 'subtle' | 'prominent';
 export type ServerAppearance = 'ghost' | 'solid';
 
 const containerStyles = tv({
-  base: 'group/server relative h-[150px] min-w-[150px]',
+  base: 'group/server relative h-[132px] min-w-[132px]',
 });
 
 const buttonStyles = tv({
-  base: 'group flex h-[142px] w-[142px] border-none bg-none px-0 py-0 shadow-none drop-shadow-none transition-all duration-300 hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:hover:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/6%))_drop-shadow(0_10px_8px_--theme(--color-blue-400/12%))_drop-shadow(0_24px_18px_--theme(--color-blue-400/8%))]',
+  base: 'group flex h-[124px] w-[124px] border-none bg-none px-0 py-0 shadow-none drop-shadow-none transition-all duration-300 hover:scale-105 hover:bg-transparent focus:outline-hidden pressed:scale-95 pressed:bg-transparent [&:hover:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/6%))_drop-shadow(0_10px_8px_--theme(--color-blue-400/12%))_drop-shadow(0_24px_18px_--theme(--color-blue-400/8%))]',
   variants: {
     isEmpty: {
       true: 'relative m-[4px]',

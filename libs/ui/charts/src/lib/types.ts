@@ -25,6 +25,7 @@ export type AxisConfig<T extends object> = {
   labelFormatter?: (value: number) => string;
   min?: number;
   max?: number;
+  visibleValues?: number[];
   dataKey: Exclude<keyof T, number | symbol>;
 };
 
@@ -46,11 +47,17 @@ export type GridConfig = {
   top?: number | string;
   bottom?: number | string;
 };
+export type TooltipSeries = {
+  dataKey: string;
+  label?: string;
+  color?: string;
+};
 export type TooltipConfig = {
   show?: boolean;
   trigger?: 'axis' | 'item';
   formatRange?: (start: Date, end: Date, timeZone: 'system' | 'UTC') => string;
   formatValue?: (value: number) => string;
+  series?: TooltipSeries[];
 };
 export type LegendConfig = {
   // show?: boolean;
@@ -86,6 +93,12 @@ export type BarTimeSeriesCfg = BaseSeriesCfg & {
   endRangeKey: string;
   barWidth?: number | string;
   stack?: string;
+  color?: string;
+  fillColor?: string;
+  gap?: number;
+  baselineGap?: number;
+  cursor?: string;
+  liveIndex?: number;
 };
 export type AnySeriesCfg = BarSeriesCfg | BarTimeSeriesCfg | BaseSeriesCfg;
 

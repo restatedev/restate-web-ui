@@ -53,12 +53,27 @@ export function useAxes<T extends object>(
     return axis as AxX;
   }, [xAxisCfg.max, xAxisCfg.min, xAxisCfg?.position, xAxisCfg?.show, xType]);
 
+  const yAxisType = yAxisCfg?.type;
+  const yAxisShow = yAxisCfg?.show;
+  const yAxisPosition = yAxisCfg?.position;
+  const yAxisMin = yAxisCfg?.min;
+  const yAxisMax = yAxisCfg?.max;
+  const yAxisVisibleValues = yAxisCfg?.visibleValues;
+  const yAxisLabelFormatter = yAxisCfg?.labelFormatter;
+
   const yAxis = useMemo<AxY>(() => {
+    const visibleValues = yAxisVisibleValues;
+    const isVisibleValue = (value: number) =>
+      Boolean(
+        visibleValues?.some(
+          (visibleValue) => Math.abs(value - visibleValue) < 1,
+        ),
+      );
     const axis: AxY = {
       id: 'y',
-      type: (yAxisCfg?.type as AxisType) || 'value',
-      show: yAxisCfg?.show,
-      position: yAxisCfg?.position,
+      type: (yAxisType as AxisType) || 'value',
+      show: yAxisShow,
+      position: yAxisPosition,
       axisLabel: {
         fontFamily: 'InterVariable, sans-serif',
         color: 'oklch(55.1% .027 264.364)',
@@ -73,18 +88,29 @@ export function useAxes<T extends object>(
       splitNumber: 2,
     };
     if (axis.type === 'value') {
-      axis.min = yAxisCfg?.min;
-      axis.max = yAxisCfg?.max;
-      axis.axisLabel!.formatter = yAxisCfg?.labelFormatter;
+      axis.min = yAxisMin;
+      axis.max = yAxisMax;
+      const axisLabel = axis.axisLabel;
+      const splitLine = axis.splitLine;
+      if (axisLabel) {
+        axisLabel.formatter = (value: number) => {
+          if (visibleValues?.length && !isVisibleValue(value)) return '';
+          return yAxisLabelFormatter?.(value) ?? `${value}`;
+        };
+      }
+      if (visibleValues?.length && splitLine) {
+        splitLine.show = false;
+      }
     }
     return axis as AxY;
   }, [
-    yAxisCfg?.type,
-    yAxisCfg?.show,
-    yAxisCfg?.position,
-    yAxisCfg?.min,
-    yAxisCfg?.max,
-    yAxisCfg?.labelFormatter,
+    yAxisType,
+    yAxisShow,
+    yAxisPosition,
+    yAxisMin,
+    yAxisMax,
+    yAxisVisibleValues,
+    yAxisLabelFormatter,
   ]);
 
   return { xAxis, yAxis, grid };

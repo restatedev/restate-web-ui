@@ -19,7 +19,10 @@ export function XAxis<T extends object>(props: ChartConfig<T>['xAxis']) {
   return null;
 }
 export function TimeXAxis<T extends object>(
-  props: Pick<NonNullable<ChartConfig<T>['xAxis']>, 'dataKey' | 'min' | 'max'>,
+  props: Pick<
+    NonNullable<ChartConfig<T>['xAxis']>,
+    'dataKey' | 'min' | 'max' | 'show'
+  >,
 ) {
   return null;
 }
@@ -103,7 +106,7 @@ export function buildConfigFromChildren<T extends object>(
   Children.forEach(children, (ch) => {
     if (!isValidElement(ch)) return;
     if (isXAxis(ch)) {
-      const resolveConfig = { ...cfg.xAxis, ...ch.props, show: true };
+      const resolveConfig = { show: true, ...cfg.xAxis, ...ch.props };
       if (!resolveConfig?.type || !resolveConfig?.dataKey) {
         throw new Error('<XAxis type="..." dataKey="..."> is required.');
       }
@@ -114,7 +117,7 @@ export function buildConfigFromChildren<T extends object>(
       };
     }
     if (isTimeXAxis(ch)) {
-      const resolveConfig = { ...cfg.xAxis, ...ch.props, show: true };
+      const resolveConfig = { show: true, ...cfg.xAxis, ...ch.props };
       if (!resolveConfig?.dataKey) {
         throw new Error('<TimeXAxis dataKey="..."> is required.');
       }
