@@ -35,6 +35,7 @@ export function HandlerBreakdownTooltip({
   total,
   rangeLabel,
   linkParams,
+  noun,
 }: {
   serviceName: string;
   handlerName: string;
@@ -42,6 +43,7 @@ export function HandlerBreakdownTooltip({
   total: number;
   rangeLabel: ReactNode;
   linkParams?: URLSearchParams;
+  noun?: { one: string; other: string };
 }) {
   const { baseUrl } = useRestateContext();
   const totalLink = toServiceAndHandlerInvocationsHref(
@@ -74,6 +76,7 @@ export function HandlerBreakdownTooltip({
       total={total}
       totalLink={totalLink}
       statuses={statuses}
+      noun={noun}
       getStatusLink={(statusName) =>
         toServiceAndHandlerStatusInvocationsHref(
           baseUrl,
@@ -94,6 +97,7 @@ export function ServiceBreakdownTooltip({
   rangeLabel,
   linkParams,
   serviceIssues,
+  noun,
 }: {
   serviceName: string;
   statuses: StatusBarEntry[];
@@ -101,6 +105,7 @@ export function ServiceBreakdownTooltip({
   rangeLabel: ReactNode;
   linkParams?: URLSearchParams;
   serviceIssues?: ServiceIssue[];
+  noun?: { one: string; other: string };
 }) {
   const { baseUrl } = useRestateContext();
   const totalLink = toServiceInvocationsHref(baseUrl, serviceName, {
@@ -124,6 +129,7 @@ export function ServiceBreakdownTooltip({
       total={total}
       totalLink={totalLink}
       statuses={statuses}
+      noun={noun}
       getStatusLink={(statusName) =>
         toServiceStatusInvocationsHref(baseUrl, serviceName, statusName, {
           existingParams: linkParams,

@@ -53,6 +53,7 @@ function StatusBar({
   getStatusLink,
   issuesByStatus,
   isLoading,
+  noun,
 }: {
   title: ReactNode;
   total: number;
@@ -61,6 +62,7 @@ function StatusBar({
   getStatusLink: (statusName: string) => string;
   issuesByStatus?: Map<string, IssueSeverity>;
   isLoading?: boolean;
+  noun?: { one: string; other: string };
 }) {
   if (!total) return <div className="h-3" />;
 
@@ -72,6 +74,7 @@ function StatusBar({
       statuses={statuses}
       getStatusLink={getStatusLink}
       issuesByStatus={issuesByStatus}
+      noun={noun}
     />
   );
 
@@ -102,6 +105,8 @@ export function ServiceStatusBar({
   serviceIssues = [],
   linkParams,
   isLoading,
+  noun,
+  rangeLabel,
 }: {
   serviceName: string;
   handlerName?: string;
@@ -109,6 +114,10 @@ export function ServiceStatusBar({
   serviceIssues?: ServiceIssue[];
   linkParams?: URLSearchParams;
   isLoading?: boolean;
+  noun?: { one: string; other: string };
+  // Overrides the default range label in the tooltip header (e.g. "in-flight"
+  // for the overview when the summary is scoped to in-flight invocations).
+  rangeLabel?: ReactNode;
 }) {
   const { baseUrl } = useRestateContext();
   const range = data?.range;
@@ -143,7 +152,7 @@ export function ServiceStatusBar({
         )}
       </div>
       <div className="text-0.5xs! font-normal text-gray-400!">
-        {getRangeLabel(range)}
+        {rangeLabel ?? getRangeLabel(range)}
       </div>
     </>
   );
@@ -178,6 +187,7 @@ export function ServiceStatusBar({
       getStatusLink={getStatusLink}
       issuesByStatus={issuesByStatus}
       isLoading={isLoading}
+      noun={noun}
     />
   );
 }
