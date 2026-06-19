@@ -62,14 +62,23 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         const hasValue = typeof val === 'number' && !isNaN(val);
         const down = hasValue && (Number(val) < 0 || Object.is(val, -0));
         const y0 = Number(api.coord([start, 0])[1]);
-        let yv = hasValue ? Number(api.coord([start, val])[1]) : y0;
-        if (y0 === yv) {
-          yv = down ? y0 + minH : y0 - minH;
-        }
+        const yv = hasValue ? Number(api.coord([start, val])[1]) : y0;
         const coordY = 'y' in params.coordSys ? Number(params.coordSys.y) : 0;
         const coordHeight =
           'height' in params.coordSys ? Number(params.coordSys.height) : 0;
         const coordBottom = coordY + coordHeight;
+        const baselineEdgeGap = series.minBaselineEdgeGap ?? 0;
+        const effectiveBaselineEdgeGap = Math.min(
+          baselineEdgeGap,
+          coordHeight / 2,
+        );
+        const yBase =
+          effectiveBaselineEdgeGap > 0
+            ? Math.min(
+                Math.max(y0, coordY + effectiveBaselineEdgeGap),
+                coordBottom - effectiveBaselineEdgeGap,
+              )
+            : y0;
 
         const width = x1 - x0;
         const gap = series.gap ?? (width > 20 ? 1 : 0.25);
@@ -78,8 +87,9 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
           typeof series.barWidth === 'number'
             ? Math.min(width, series.barWidth)
             : width - 2 * gap;
-        const baseline = down ? y0 + baselineGap : y0 - baselineGap;
-        const height = Math.max(minH, Math.abs(baseline - yv));
+        const baseline = down ? yBase + baselineGap : yBase - baselineGap;
+        const directionDistance = down ? yv - baseline : baseline - yv;
+        const height = Math.max(minH, Math.max(0, directionDistance));
         const top = down ? baseline : baseline - height;
 
         if (barWidth <= 0 || height <= 0) return;
@@ -130,11 +140,11 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         };
         const hitAreaShape = {
           x,
-          y: down ? y0 : coordY,
+          y: down ? yBase : coordY,
           width: barWidth,
           height: down
-            ? Math.max(0, coordBottom - y0)
-            : Math.max(0, y0 - coordY),
+            ? Math.max(0, coordBottom - yBase)
+            : Math.max(0, yBase - coordY),
           r: radius,
         };
 

@@ -128,6 +128,7 @@ export type BarTimeSeriesCfg<T extends object = object> = BaseSeriesCfg & {
   gap?: number;
   baselineGap?: number;
   minBarHeight?: number;
+  minBaselineEdgeGap?: number;
   cursor?: string;
   liveIndex?: number;
   onSelect?: BarTimeSeriesSelectHandler<T>;

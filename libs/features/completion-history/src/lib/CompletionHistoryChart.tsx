@@ -17,6 +17,9 @@ const SUCCEEDED_STROKE = '#22c55e';
 const SUCCEEDED_FILL = '#86efac';
 const FAILED_STROKE = '#ef4444';
 const FAILED_FILL = '#fca5a5';
+const BAR_MIN_HEIGHT = 8;
+const BAR_BASELINE_GAP = 3;
+const BAR_BASELINE_EDGE_GAP = BAR_MIN_HEIGHT + BAR_BASELINE_GAP;
 
 const TOOLTIP_SERIES = [
   { dataKey: 'succeeded', label: 'Succeeded', color: SUCCEEDED_STROKE },
@@ -144,8 +147,9 @@ export function CompletionHistoryChart({
             fillColor={SUCCEEDED_FILL}
             barWidth={6}
             gap={0.25}
-            baselineGap={3}
-            minBarHeight={8}
+            baselineGap={BAR_BASELINE_GAP}
+            minBarHeight={BAR_MIN_HEIGHT}
+            minBaselineEdgeGap={BAR_BASELINE_EDGE_GAP}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
             onSelect={
@@ -167,8 +171,9 @@ export function CompletionHistoryChart({
             fillColor={FAILED_FILL}
             barWidth={6}
             gap={0.25}
-            baselineGap={3}
-            minBarHeight={8}
+            baselineGap={BAR_BASELINE_GAP}
+            minBarHeight={BAR_MIN_HEIGHT}
+            minBaselineEdgeGap={BAR_BASELINE_EDGE_GAP}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
             onSelect={
