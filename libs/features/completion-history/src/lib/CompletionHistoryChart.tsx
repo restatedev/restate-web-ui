@@ -17,7 +17,7 @@ const SUCCEEDED_STROKE = '#22c55e';
 const SUCCEEDED_FILL = '#86efac';
 const FAILED_STROKE = '#ef4444';
 const FAILED_FILL = '#fca5a5';
-const BAR_MIN_HEIGHT = 8;
+const BAR_MIN_HEIGHT = 4;
 const BAR_BASELINE_GAP = 3;
 const BAR_BASELINE_EDGE_GAP = BAR_MIN_HEIGHT + BAR_BASELINE_GAP;
 
