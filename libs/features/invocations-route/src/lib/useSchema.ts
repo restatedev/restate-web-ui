@@ -217,6 +217,15 @@ export function useSchema() {
         type: 'DATE',
       },
       {
+        id: 'completed_at',
+        label: 'Completed',
+        operations: [
+          { value: 'BEFORE', label: 'before' },
+          { value: 'AFTER', label: 'after' },
+        ],
+        type: 'DATE',
+      },
+      {
         id: 'restarted_from',
         label: 'Restarted from',
         operations: [{ value: 'EQUALS', label: 'is' }],
