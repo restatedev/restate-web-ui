@@ -324,6 +324,7 @@ function FlowConnectors({
             data-index={i}
             cx={segment.x}
             cy={segment.y}
+            opacity="0"
             r={i % 2 === 0 ? 1.8 : 1.2}
             fill="rgb(129 140 248 / 0.85)"
           />
