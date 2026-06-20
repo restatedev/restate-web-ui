@@ -50,6 +50,7 @@ export interface YAxisConfig<T extends object> extends Omit<
 
 export type GridConfig = {
   show?: boolean;
+  containLabel?: boolean;
   left?: number | string;
   right?: number | string;
   top?: number | string;

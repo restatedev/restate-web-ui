@@ -43,7 +43,7 @@ export function Legend<T extends object>(props: ChartConfig<T>['legend']) {
 export function CartesianGrid<T extends object>(
   props: Pick<
     NonNullable<ChartConfig<T>['grid']>,
-    'top' | 'left' | 'bottom' | 'right'
+    'top' | 'left' | 'bottom' | 'right' | 'containLabel'
   >,
 ) {
   return null;

@@ -7,15 +7,36 @@ export function useAxes<T extends object>(
   xType: AxisType,
   gridCfg: GridConfig | undefined,
 ): { xAxis: AxX; yAxis: AxY; grid: GridConfig } {
+  const yAxisType = yAxisCfg?.type;
+  const yAxisShow = yAxisCfg?.show;
+  const yAxisPosition = yAxisCfg?.position;
+  const yAxisMin = yAxisCfg?.min;
+  const yAxisMax = yAxisCfg?.max;
+  const yAxisInterval = yAxisCfg?.interval;
+  const yAxisSplitLine = yAxisCfg?.splitLine;
+  const yAxisVisibleValues = yAxisCfg?.visibleValues;
+  const yAxisLabelFormatter = yAxisCfg?.labelFormatter;
+  const yAxisLabelInside = yAxisCfg?.labelInside;
+
   const grid = useMemo(() => {
     return {
       show: false,
+      containLabel:
+        gridCfg?.containLabel ?? (yAxisShow !== false && !yAxisLabelInside),
       top: gridCfg?.top,
       bottom: gridCfg?.bottom,
       left: gridCfg?.left,
       right: gridCfg?.right,
     };
-  }, [gridCfg?.bottom, gridCfg?.left, gridCfg?.right, gridCfg?.top]);
+  }, [
+    gridCfg?.bottom,
+    gridCfg?.containLabel,
+    gridCfg?.left,
+    gridCfg?.right,
+    gridCfg?.top,
+    yAxisLabelInside,
+    yAxisShow,
+  ]);
   const xAxis = useMemo<AxX>(() => {
     const axis: AxX = {
       id: 'x',
@@ -52,17 +73,6 @@ export function useAxes<T extends object>(
 
     return axis as AxX;
   }, [xAxisCfg.max, xAxisCfg.min, xAxisCfg?.position, xAxisCfg?.show, xType]);
-
-  const yAxisType = yAxisCfg?.type;
-  const yAxisShow = yAxisCfg?.show;
-  const yAxisPosition = yAxisCfg?.position;
-  const yAxisMin = yAxisCfg?.min;
-  const yAxisMax = yAxisCfg?.max;
-  const yAxisInterval = yAxisCfg?.interval;
-  const yAxisSplitLine = yAxisCfg?.splitLine;
-  const yAxisVisibleValues = yAxisCfg?.visibleValues;
-  const yAxisLabelFormatter = yAxisCfg?.labelFormatter;
-  const yAxisLabelInside = yAxisCfg?.labelInside;
 
   const yAxis = useMemo<AxY>(() => {
     const visibleValues = yAxisVisibleValues;
