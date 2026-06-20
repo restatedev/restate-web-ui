@@ -242,14 +242,14 @@ function TabCount({
 }
 
 const gaugeStyles = tv({
-  base: 'relative -mb-9 aspect-square w-40 shrink-0 overflow-visible @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
+  base: 'relative -mb-7 aspect-square w-36 shrink-0 overflow-visible @min-[26rem]/hero:w-40 @min-[40rem]/hero:w-[11.25rem] @min-[64rem]/hero:-mb-9 @min-[64rem]/hero:w-[13.2rem]',
 });
 
 const gaugeLabelStyles = tv({
-  base: 'text-xs text-gray-500 sm:text-sm',
+  base: 'text-xs text-gray-500',
   variants: {
     textOnly: {
-      true: 'text-sm font-medium text-gray-400 sm:text-base',
+      true: 'text-sm font-medium text-gray-400',
       false: 'mt-1',
     },
   },
@@ -295,7 +295,7 @@ function HeroGauge({
         {isLoading ? (
           <div className="h-7 w-14 animate-pulse rounded-lg bg-gray-200 sm:h-8" />
         ) : isError ? (
-          <span className="text-2xl font-semibold text-gray-300">–</span>
+          <span className="text-xl font-semibold text-gray-300">–</span>
         ) : (
           <Link
             href={href}
@@ -304,7 +304,7 @@ function HeroGauge({
             className="pointer-events-auto relative flex flex-col items-center gap-0 rounded-xl px-2 py-1 leading-none hover:bg-black/[0.03]"
           >
             {!textOnly && (
-              <span className="text-2xl font-semibold text-gray-800 tabular-nums sm:text-3xl">
+              <span className="text-2xl font-semibold text-gray-800 tabular-nums">
                 {valueLabel ?? formatNumber(count, true)}
               </span>
             )}

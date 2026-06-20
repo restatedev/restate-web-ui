@@ -17,9 +17,8 @@ const SUCCEEDED_STROKE = '#22c55e';
 const SUCCEEDED_FILL = '#86efac';
 const FAILED_STROKE = '#ef4444';
 const FAILED_FILL = '#fca5a5';
-const BAR_MIN_HEIGHT = 4;
+const BAR_MIN_HEIGHT = 1.5;
 const BAR_BASELINE_GAP = 3;
-const BAR_BASELINE_EDGE_GAP = BAR_MIN_HEIGHT + BAR_BASELINE_GAP + 2;
 
 const TOOLTIP_SERIES = [
   { dataKey: 'succeeded', label: 'Succeeded', color: SUCCEEDED_STROKE },
@@ -127,7 +126,7 @@ export function CompletionHistoryChart({
             labelFormatter={(value) => {
               const label = formatNumber(Math.abs(value), true);
               if (Math.abs(value - yAxisMax) < 1) return `${label}\n`;
-              if (Math.abs(value - yAxisMin) < 1) return `\n\n${label}`;
+              if (Math.abs(value - yAxisMin) < 1) return `\n\n\n${label}`;
               return label;
             }}
           />
@@ -149,7 +148,7 @@ export function CompletionHistoryChart({
             gap={0.25}
             baselineGap={BAR_BASELINE_GAP}
             minBarHeight={BAR_MIN_HEIGHT}
-            minBaselineEdgeGap={BAR_BASELINE_EDGE_GAP}
+            clip={false}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
             onSelect={
@@ -173,7 +172,7 @@ export function CompletionHistoryChart({
             gap={0.25}
             baselineGap={BAR_BASELINE_GAP}
             minBarHeight={BAR_MIN_HEIGHT}
-            minBaselineEdgeGap={BAR_BASELINE_EDGE_GAP}
+            clip={false}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
             onSelect={

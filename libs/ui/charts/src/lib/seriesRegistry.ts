@@ -48,7 +48,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         y: series.dataKey,
       },
       selectedMode: 'single',
-      clip: true,
+      clip: series.clip ?? true,
       cursor: series.cursor ?? (series.onSelect ? 'pointer' : undefined),
 
       renderItem(params, api) {
@@ -67,18 +67,6 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         const coordHeight =
           'height' in params.coordSys ? Number(params.coordSys.height) : 0;
         const coordBottom = coordY + coordHeight;
-        const baselineEdgeGap = series.minBaselineEdgeGap ?? 0;
-        const effectiveBaselineEdgeGap = Math.min(
-          baselineEdgeGap,
-          coordHeight / 2,
-        );
-        const yBase =
-          effectiveBaselineEdgeGap > 0
-            ? Math.min(
-                Math.max(y0, coordY + effectiveBaselineEdgeGap),
-                coordBottom - effectiveBaselineEdgeGap,
-              )
-            : y0;
 
         const width = x1 - x0;
         const gap = series.gap ?? (width > 20 ? 1 : 0.25);
@@ -87,7 +75,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
           typeof series.barWidth === 'number'
             ? Math.min(width, series.barWidth)
             : width - 2 * gap;
-        const baseline = down ? yBase + baselineGap : yBase - baselineGap;
+        const baseline = down ? y0 + baselineGap : y0 - baselineGap;
         const directionDistance = down ? yv - baseline : baseline - yv;
         const height = Math.max(minH, Math.max(0, directionDistance));
         const top = down ? baseline : baseline - height;
@@ -140,11 +128,11 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         };
         const hitAreaShape = {
           x,
-          y: down ? yBase : coordY,
+          y: down ? y0 : coordY,
           width: barWidth,
           height: down
-            ? Math.max(0, coordBottom - yBase)
-            : Math.max(0, yBase - coordY),
+            ? Math.max(0, coordBottom - y0, baseline + height - y0)
+            : Math.max(0, y0 - coordY),
           r: radius,
         };
 
