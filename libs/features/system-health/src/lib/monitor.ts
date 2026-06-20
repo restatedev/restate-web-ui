@@ -5,7 +5,7 @@ import {
   isCompletedBreakdownQuery,
 } from '@restate/data-access/admin-api-hooks';
 import { issueQueue } from './issue-queue';
-import { getGlobalIssues } from './service-issues';
+import { checkSlaThresholds, getGlobalIssues } from './service-issues';
 import { RestateError } from '@restate/util/errors';
 
 interface AdditionalObserver {
@@ -22,6 +22,7 @@ interface SystemHealthMonitorOptions {
 
 type SummaryData = {
   byStatus: { name: string; count: number }[];
+  byServiceAndStatus?: { service: string; status: string; count: number }[];
 };
 
 type CompletedBreakdownData = {
@@ -37,6 +38,17 @@ function closeKeys(keys: string[]) {
   for (const key of keys) issueQueue.close(key);
 }
 
+function statusCountsFromRows(rows: { status: string; count: number }[]) {
+  const statusCounts = new Map<string, number>();
+  for (const entry of rows) {
+    statusCounts.set(
+      entry.status,
+      (statusCounts.get(entry.status) ?? 0) + entry.count,
+    );
+  }
+  return statusCounts;
+}
+
 function computeGlobalIssues(summaryData: SummaryData): string[] {
   const globalStatusCounts = new Map<string, number>();
   for (const entry of summaryData.byStatus) {
@@ -49,6 +61,31 @@ function computeGlobalIssues(summaryData: SummaryData): string[] {
   return getGlobalIssues(globalStatusCounts).map((issue) =>
     issueQueue.add({ severity: issue.severity, label: issue.label }),
   );
+}
+
+function computeServiceIssues(summaryData: SummaryData): string[] {
+  const serviceRows = new Map<
+    string,
+    { service: string; status: string; count: number }[]
+  >();
+  for (const entry of summaryData.byServiceAndStatus ?? []) {
+    const rows = serviceRows.get(entry.service) ?? [];
+    rows.push(entry);
+    serviceRows.set(entry.service, rows);
+  }
+
+  return Array.from(serviceRows)
+    .flatMap(([serviceName, rows]) =>
+      checkSlaThresholds(statusCountsFromRows(rows)).map((issue) => ({
+        severity: issue.severity,
+        label: `${serviceName}: ${issue.label}`,
+      })),
+    )
+    .sort((a, b) => {
+      if (a.severity !== b.severity) return a.severity === 'high' ? -1 : 1;
+      return a.label.localeCompare(b.label);
+    })
+    .map((issue) => issueQueue.add(issue));
 }
 
 function toRestateError(error: unknown): RestateError {
@@ -106,7 +143,9 @@ export function createSystemHealthMonitor(
       const data = event.query.state.data as SummaryData | undefined;
       if (!data) return;
       closeKeys(tracked.sla);
-      tracked.sla = tracked.queryHealth ? [] : computeGlobalIssues(data);
+      tracked.sla = tracked.queryHealth
+        ? []
+        : [...computeGlobalIssues(data), ...computeServiceIssues(data)];
     }
 
     // The completion breakdown's current-hour bucket carries the live failure
