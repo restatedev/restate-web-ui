@@ -89,7 +89,11 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
           ? (series.color ?? api.visual('color'))
           : 'rgba(0,0,0,0.1)';
         const x = x0 + (width - barWidth) / 2;
-        const radius = Math.min(5, barWidth / 2, height / 2);
+        const outerRadius = Math.min(5, barWidth / 2, height / 2);
+        const baselineRadius = Math.min(1, barWidth / 2, height / 2);
+        const radius = down
+          ? [baselineRadius, baselineRadius, outerRadius, outerRadius]
+          : [outerRadius, outerRadius, baselineRadius, baselineRadius];
         const cx = x + barWidth / 2;
         const isLive =
           series.liveIndex != null && params.dataIndex === series.liveIndex;
@@ -107,8 +111,8 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         };
         const highlightY = down ? top + height - 1.25 : top + 1.25;
         const highlightShape = {
-          x1: x + radius,
-          x2: x + barWidth - radius,
+          x1: x + outerRadius,
+          x2: x + barWidth - outerRadius,
           y1: highlightY,
           y2: highlightY,
         };
@@ -133,7 +137,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
           height: down
             ? Math.max(0, coordBottom - y0, baseline + height - y0)
             : Math.max(0, y0 - coordY),
-          r: radius,
+          r: 0,
         };
 
         return {
