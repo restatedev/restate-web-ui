@@ -486,9 +486,11 @@ export function EngineCore({
       {aboveServer}
       <div
         ref={serverRef}
-        className="relative z-20 scale-75 @min-[64rem]/hero:scale-90"
+        className="relative z-20 h-[79px] w-[79px] @min-[64rem]/hero:h-[92px] @min-[64rem]/hero:w-[92px]"
       >
-        <RestateServer status={status} onPress={onPress} />
+        <div className="absolute top-1/2 left-1/2 -translate-1/2 scale-[0.6] @min-[64rem]/hero:scale-[0.7]">
+          <RestateServer status={status} onPress={onPress} appearance="solid" />
+        </div>
       </div>
     </div>
   );

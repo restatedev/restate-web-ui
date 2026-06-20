@@ -212,6 +212,127 @@ function PerspectiveLines({
   );
 }
 
+function useFlowConnectors(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  gaugeRef: React.RefObject<HTMLDivElement | null>,
+  serverRef: React.RefObject<HTMLDivElement | null>,
+  logsRef: React.RefObject<HTMLDivElement | null>,
+  enabled: boolean,
+) {
+  const [data, setData] = useState<{
+    segments: { x: number; y: number; dx: number }[];
+    viewBox: string;
+  }>({ segments: [], viewBox: '0 0 1 1' });
+
+  useEffect(() => {
+    if (!enabled) return;
+    const container = containerRef.current;
+    const server = serverRef.current;
+    if (!container || !server) return;
+
+    const update = () => {
+      const cRect = container.getBoundingClientRect();
+      const w = cRect.width;
+      const h = cRect.height;
+      if (w === 0 || h === 0) return;
+
+      const sRect = server.getBoundingClientRect();
+      const serverLeft = sRect.left - cRect.left;
+      const serverRight = sRect.right - cRect.left;
+      const serverY = sRect.top - cRect.top + sRect.height / 2;
+
+      const segments: { x: number; y: number; dx: number }[] = [];
+
+      const gauge = gaugeRef.current;
+      if (gauge) {
+        const gRect = gauge.getBoundingClientRect();
+        const x = gRect.right - cRect.left - 12;
+        segments.push({ x: serverLeft, y: serverY, dx: x - serverLeft });
+      }
+
+      const logs = logsRef.current;
+      if (logs) {
+        const lRect = logs.getBoundingClientRect();
+        const x = lRect.left - cRect.left + 6;
+        segments.push({ x: serverRight, y: serverY, dx: x - serverRight });
+      }
+
+      setData({ segments, viewBox: `0 0 ${w} ${h}` });
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [containerRef, gaugeRef, serverRef, logsRef, enabled]);
+
+  return data;
+}
+
+const FLOW_PARTICLES = 5;
+const FLOW_DURATION = 3600;
+
+function FlowConnectors({
+  segments,
+  viewBox,
+}: {
+  segments: { x: number; y: number; dx: number }[];
+  viewBox: string;
+}) {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const particles = svg.querySelectorAll<SVGCircleElement>('[data-particle]');
+    const animations = Array.from(particles).map((circle) => {
+      const dx = Number(circle.dataset.dx);
+      const index = Number(circle.dataset.index);
+      return circle.animate(
+        [
+          { transform: 'translateX(0px)', opacity: 0 },
+          { opacity: 0.32, offset: 0.2 },
+          { opacity: 0.32, offset: 0.7 },
+          { transform: `translateX(${dx}px)`, opacity: 0 },
+        ],
+        {
+          duration: FLOW_DURATION,
+          delay: (index * FLOW_DURATION) / FLOW_PARTICLES,
+          iterations: Infinity,
+          easing: 'linear',
+        },
+      );
+    });
+    return () => animations.forEach((animation) => animation.cancel());
+  }, [segments]);
+
+  if (segments.length === 0) return null;
+
+  return (
+    <svg
+      ref={svgRef}
+      className="pointer-events-none absolute inset-x-0 top-0 z-[24] hidden h-full w-full @min-[64rem]/hero:block"
+      viewBox={viewBox}
+      fill="none"
+    >
+      {segments.map((segment, segmentIndex) =>
+        Array.from({ length: FLOW_PARTICLES }).map((_, i) => (
+          <circle
+            key={`${segmentIndex}-${i}`}
+            data-particle=""
+            data-dx={segment.dx}
+            data-index={i}
+            cx={segment.x}
+            cy={segment.y}
+            r={i % 2 === 0 ? 1.8 : 1.2}
+            fill="rgb(129 140 248 / 0.85)"
+          />
+        )),
+      )}
+    </svg>
+  );
+}
+
 const emptyServerStyles = tv({
   base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ring-1 ring-white/80 @tall:pt-10 @tall:pb-40',
   variants: {
@@ -276,6 +397,7 @@ function HeroGauge({
   isError,
   textOnly,
   className,
+  ref,
 }: {
   segments: ArcSegment[];
   count: number;
@@ -287,9 +409,10 @@ function HeroGauge({
   isError?: boolean;
   textOnly?: boolean;
   className?: string;
+  ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
-    <div className={gaugeStyles({ class: className })}>
+    <div ref={ref} className={gaugeStyles({ class: className })}>
       <StatusArcEcharts segments={segments} isLoading={isLoading} />
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-4">
         {isLoading ? (
@@ -476,6 +599,8 @@ function OverviewContent() {
 
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
+  const gaugeRef = useRef<HTMLDivElement>(null);
+  const logsRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
@@ -487,6 +612,13 @@ function OverviewContent() {
     heroReady,
   );
   const triggerRay = usePerspectiveRay(linesSvgRef);
+  const flowConnectors = useFlowConnectors(
+    containerRef,
+    gaugeRef,
+    serverRef,
+    logsRef,
+    heroReady,
+  );
   const showHeroLegends =
     isSummaryLoading || (!isSummaryError && totalCount > 0);
   const filterPlaceholder =
@@ -609,6 +741,12 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
+      {!isSummaryEmpty && (
+        <FlowConnectors
+          segments={flowConnectors.segments}
+          viewBox={flowConnectors.viewBox}
+        />
+      )}
       <div className="relative z-30 grid w-full grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 px-4 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[minmax(8rem,1fr)_auto_auto_auto_minmax(8rem,1fr)] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(12rem,1fr)_auto_auto_auto_minmax(12rem,1fr)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_auto_auto_minmax(16rem,1fr)] @min-[108rem]/hero:px-8 @min-[108rem]/hero:pt-20">
         <div className="hidden w-full min-w-0 self-center justify-self-end @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block">
           {showHeroLegends && (
@@ -621,6 +759,7 @@ function OverviewContent() {
           )}
         </div>
         <HeroGauge
+          ref={gaugeRef}
           className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-2"
           segments={inFlightSegments}
           count={inFlightTotal}
@@ -641,7 +780,7 @@ function OverviewContent() {
           isError={isSummaryError}
         />
         <EngineCore
-          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex"
+          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mx-10 @min-[64rem]/hero:flex"
           serverRef={serverRef}
           status={ferrofluidStatus}
           onPress={onRefresh}
@@ -661,6 +800,7 @@ function OverviewContent() {
               'min-w-0 place-items-center',
             )}
             <CompletionHistoryChart
+              ref={logsRef}
               buckets={completionBuckets}
               isPending={isCompletionLoading}
               onBucketClick={onCompletionBucketClick}
@@ -669,6 +809,7 @@ function OverviewContent() {
           </>
         ) : (
           <HeroGauge
+            ref={logsRef}
             className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0"
             segments={completedSegments}
             count={completedTotal}
