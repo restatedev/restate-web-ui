@@ -21,8 +21,7 @@ export function useAxes<T extends object>(
   const grid = useMemo(() => {
     return {
       show: false,
-      containLabel:
-        gridCfg?.containLabel ?? (yAxisShow !== false && !yAxisLabelInside),
+      containLabel: gridCfg?.containLabel,
       top: gridCfg?.top,
       bottom: gridCfg?.bottom,
       left: gridCfg?.left,
@@ -34,8 +33,6 @@ export function useAxes<T extends object>(
     gridCfg?.left,
     gridCfg?.right,
     gridCfg?.top,
-    yAxisLabelInside,
-    yAxisShow,
   ]);
   const xAxis = useMemo<AxX>(() => {
     const axis: AxX = {

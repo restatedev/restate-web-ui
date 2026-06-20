@@ -4,10 +4,11 @@ import {
   Chart,
   TimeXAxis,
   Tooltip,
-  YAxis,
+  ValueYAxis,
 } from '@restate/ui/charts';
 import { formatHourRange, formatNumber } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
+import type { Ref } from 'react';
 
 const containerStyles = tv({
   base: 'relative min-w-0',
@@ -53,6 +54,7 @@ type CompletionHistoryChartProps = {
     bucket: CompletionBucket,
     outcome: CompletionBucketOutcome,
   ) => void;
+  ref?: Ref<HTMLDivElement>;
 };
 
 export function CompletionHistoryChart({
@@ -60,10 +62,11 @@ export function CompletionHistoryChart({
   isPending,
   className,
   onBucketClick,
+  ref,
 }: CompletionHistoryChartProps) {
   if (isPending) {
     return (
-      <div className={containerStyles({ className })}>
+      <div ref={ref} className={containerStyles({ className })}>
         <div className="h-full w-full animate-pulse rounded-xl bg-gray-200" />
       </div>
     );
@@ -74,7 +77,7 @@ export function CompletionHistoryChart({
   );
   if (!hasCompletedInvocations) {
     return (
-      <div className={containerStyles({ className })}>
+      <div ref={ref} className={containerStyles({ className })}>
         <div className="relative z-10 flex h-full w-full translate-y-3.5 items-center justify-center px-3 text-center text-sm font-medium whitespace-nowrap text-gray-400 sm:text-base">
           No completed invocations
         </div>
@@ -98,7 +101,7 @@ export function CompletionHistoryChart({
   const yAxisInterval = yAxisMax - yAxisMin;
 
   return (
-    <div className={containerStyles({ className })}>
+    <div ref={ref} className={containerStyles({ className })}>
       <div className="relative z-10 h-full w-full">
         <Chart<CompletionRow>
           data={data}
@@ -113,8 +116,7 @@ export function CompletionHistoryChart({
             left={0}
           />
           <TimeXAxis<CompletionRow> dataKey="start" show={false} />
-          <YAxis<CompletionRow>
-            type="value"
+          <ValueYAxis<CompletionRow>
             position="right"
             min={yAxisMin}
             max={yAxisMax}
