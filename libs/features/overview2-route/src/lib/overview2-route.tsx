@@ -864,7 +864,12 @@ function OverviewContent() {
           >
             <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
               {isSummaryLoading ? (
-                <span className="h-7 w-48 animate-pulse rounded-xl bg-gray-200" />
+                <span className="flex h-7 animate-pulse items-baseline gap-1.5 rounded-xl bg-gray-200 text-transparent">
+                  <span className="text-lg font-semibold tabular-nums">
+                    {isSummaryError ? '–' : formatNumber(allTotal, true)}
+                  </span>
+                  <span className="text-base">invocations</span>
+                </span>
               ) : (
                 <span className="flex items-baseline gap-1.5">
                   {isSummaryEmpty ? (
