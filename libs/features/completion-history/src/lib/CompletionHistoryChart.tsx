@@ -75,15 +75,6 @@ export function CompletionHistoryChart({
   const hasCompletedInvocations = buckets.some(
     (bucket) => bucket.succeeded > 0 || bucket.failed > 0,
   );
-  if (!hasCompletedInvocations) {
-    return (
-      <div ref={ref} className={containerStyles({ className })}>
-        <div className="relative z-10 flex h-full w-full translate-y-3.5 items-center justify-center px-3 text-center text-sm font-medium whitespace-nowrap text-gray-400 sm:text-base">
-          No completed invocations
-        </div>
-      </div>
-    );
-  }
 
   const data: CompletionRow[] = buckets.map((bucket) => ({
     start: Date.parse(bucket.start),
@@ -102,35 +93,43 @@ export function CompletionHistoryChart({
 
   return (
     <div ref={ref} className={containerStyles({ className })}>
-      <div className="relative z-10 h-full w-full">
-        <Chart<CompletionRow>
-          data={data}
-          width="100%"
-          height="100%"
-          renderer="canvas"
-        >
+      <div className="relative z-10 h-full w-full translate-y-2">
+        <Chart<CompletionRow> data={data} width="100%" height="100%">
           <CartesianGrid<CompletionRow>
             top={16}
             right={0}
-            bottom={16}
+            bottom={32}
             left={0}
           />
           <TimeXAxis<CompletionRow> dataKey="start" show={false} />
           <ValueYAxis<CompletionRow>
             position="right"
-            min={yAxisMin}
-            max={yAxisMax}
-            interval={yAxisInterval}
-            visibleValues={[yAxisMin, yAxisMax]}
-            show
-            labelInside
-            splitLine
-            labelFormatter={(value) => {
-              const label = formatNumber(Math.abs(value), true);
-              if (Math.abs(value - yAxisMax) < 1) return `${label}\n`;
-              if (Math.abs(value - yAxisMin) < 1) return `\n\n\n${label}`;
-              return label;
-            }}
+            {...(hasCompletedInvocations
+              ? {
+                  min: yAxisMin,
+                  max: yAxisMax,
+                  interval: yAxisInterval,
+                  visibleValues: [yAxisMin, yAxisMax],
+                  show: true,
+                  labelInside: true,
+                  splitLine: true,
+                  labelFormatter: (value) => {
+                    const label = formatNumber(Math.abs(value), true);
+                    if (Math.abs(value - yAxisMax) < 1) return `${label}\n`;
+                    if (Math.abs(value - yAxisMin) < 1) return `\n\n${label}`;
+                    return label;
+                  },
+                }
+              : {
+                  min: -1,
+                  max: 1,
+                  interval: 2,
+                  visibleValues: [-1, 1],
+                  show: true,
+                  labelInside: true,
+                  splitLine: true,
+                  labelFormatter: () => '',
+                })}
           />
           <Tooltip
             trigger="item"
@@ -148,7 +147,7 @@ export function CompletionHistoryChart({
             barWidth={6}
             gap={0.25}
             baselineGap={BAR_BASELINE_GAP}
-            minBarHeight={BAR_MIN_HEIGHT}
+            minBarHeight={hasCompletedInvocations ? BAR_MIN_HEIGHT : 0}
             clip={false}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
@@ -171,7 +170,7 @@ export function CompletionHistoryChart({
             barWidth={6}
             gap={0.25}
             baselineGap={BAR_BASELINE_GAP}
-            minBarHeight={BAR_MIN_HEIGHT}
+            minBarHeight={hasCompletedInvocations ? BAR_MIN_HEIGHT : 0}
             clip={false}
             cursor={onBucketClick ? 'pointer' : undefined}
             liveIndex={data.length - 1}
@@ -185,6 +184,11 @@ export function CompletionHistoryChart({
             }
           />
         </Chart>
+        {!hasCompletedInvocations && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center px-3 text-center text-sm font-medium whitespace-nowrap text-gray-400">
+            No completed invocations
+          </div>
+        )}
       </div>
     </div>
   );
