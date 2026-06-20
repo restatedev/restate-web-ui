@@ -983,7 +983,7 @@ function OverviewContent() {
         <ContentPanelToolbar className="">
           <DeploymentActions />
         </ContentPanelToolbar>
-        <ContentPanelHeader className="px-2 py-1.5">
+        <ContentPanelHeader className="px-1 py-0.5">
           <div
             ref={setPanelEl}
             className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between"
@@ -1011,11 +1011,11 @@ function OverviewContent() {
                 <AriaInput
                   ref={filterRef}
                   placeholder={filterPlaceholder}
-                  className="mt-0 w-full min-w-0 rounded-xl border border-black/10 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-800 shadow-xs outline-offset-2 placeholder:text-gray-500/70 focus:ring-0 focus:outline-2 focus:outline-blue-600"
+                  className="mt-0 h-7 w-full min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-0.5 pr-8 pl-7 text-sm text-gray-800 shadow-none outline-offset-2 placeholder:text-gray-500/65 hover:bg-white/30 focus:border-blue-500/30 focus:bg-white/55 focus:ring-0 focus:outline-2 focus:outline-blue-600"
                 />
                 <Icon
                   name={IconName.Search}
-                  className="pointer-events-none absolute top-0 bottom-0 left-2 aspect-square h-full p-1 text-gray-400"
+                  className="pointer-events-none absolute top-0 bottom-0 left-1.5 aspect-square h-full p-1 text-gray-400"
                 />
                 <FocusShortcutKey
                   variant="light"
@@ -1027,7 +1027,7 @@ function OverviewContent() {
         </ContentPanelHeader>
         <ContentPanelBody className="pb-20">
           <ContentPanelSection>
-            <div className="pt-2">
+            <div className="">
               {isError && !isDeploymentsFetching && error && (
                 <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
               )}

@@ -204,6 +204,7 @@
 
 ## User Preferences
 
+- For overview content panel polish, do not change shared `ContentPanel`/`ContentPanelHeader` chrome. Keep chrome stable and scope compactness to the controls inside the overview header.
 - Uses Tailwind CSS with `tv()` from `@restate/util/styles` for component variants
 - Never use string interpolation for dynamic Tailwind classes — always use `tv()` with variants
 - Never add comments unless explicitly requested
