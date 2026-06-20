@@ -30,10 +30,7 @@ export function YAxis<T extends object>(props: ChartConfig<T>['yAxis']) {
   return null;
 }
 export function ValueYAxis<T extends object>(
-  props: Pick<
-    NonNullable<ChartConfig<T>['yAxis']>,
-    'dataKey' | 'position' | 'labelFormatter' | 'min' | 'max'
-  >,
+  props: Omit<NonNullable<ChartConfig<T>['yAxis']>, 'type'>,
 ) {
   return null;
 }
