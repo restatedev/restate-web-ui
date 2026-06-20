@@ -433,6 +433,11 @@
                     "type": "boolean",
                     "default": false
                   },
+                  "excludeCompleted": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Exclude completed invocations (succeeded/failed/killed/cancelled) from the scan, returning only in-flight statuses."
+                  },
                   "range": {
                     "type": "string"
                   }
@@ -449,6 +454,119 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InvocationsSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/invocations/completed-breakdown": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Get completed invocations breakdown over time",
+        "description": "Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed. Buckets `completed_at` into fixed-width [start, start + interval) buckets across the [startTime, endTime) window. `failed` currently aggregates failed + killed + cancelled.",
+        "operationId": "get_completed_invocations_breakdown",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["startTime", "endTime", "interval"],
+                "properties": {
+                  "startTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Inclusive lower bound of the window (ISO 8601 date-time)."
+                  },
+                  "endTime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Exclusive upper bound of the window (ISO 8601 date-time)."
+                  },
+                  "interval": {
+                    "type": "string",
+                    "description": "Bucket width as an ISO 8601 duration, e.g. PT5M, PT1H, P1D."
+                  },
+                  "filters": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FilterItem"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Completed invocations breakdown over time",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedInvocationsBreakdownResponse"
                 }
               }
             }
@@ -3767,11 +3885,29 @@
           },
           "operation": {
             "type": "string",
-            "enum": ["BEFORE", "AFTER"]
+            "enum": ["BEFORE", "AFTER", "BETWEEN"]
           },
           "value": {
-            "type": "string",
-            "format": "date-time"
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "object",
+                "required": ["start", "end"],
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            ]
           }
         }
       },
@@ -6282,6 +6418,55 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FilterItem"
+            }
+          }
+        }
+      },
+      "CompletedInvocationsBreakdownResponse": {
+        "type": "object",
+        "description": "Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed over a [startTime, endTime) window. NOTE: `failed` currently aggregates failed + killed + cancelled; these may be split into their own fields later.",
+        "required": ["startTime", "endTime", "interval", "buckets"],
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Inclusive lower bound of the window, echoed from the request."
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Exclusive upper bound of the window, echoed from the request."
+          },
+          "interval": {
+            "type": "string",
+            "description": "Bucket width as an ISO 8601 duration, echoed from the request."
+          },
+          "buckets": {
+            "type": "array",
+            "description": "Contiguous, zero-filled buckets ordered by start ascending. Each bucket covers [start, end).",
+            "items": {
+              "type": "object",
+              "required": ["start", "end", "succeeded", "failed"],
+              "properties": {
+                "start": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Inclusive start timestamp of the bucket."
+                },
+                "end": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Exclusive end timestamp of the bucket (start + interval); equals the next bucket's start."
+                },
+                "succeeded": {
+                  "type": "integer",
+                  "description": "Invocations that completed successfully (completion_result = success) within the bucket."
+                },
+                "failed": {
+                  "type": "integer",
+                  "description": "Invocations that completed unsuccessfully within the bucket. Currently includes failed, killed, and cancelled."
+                }
+              }
             }
           }
         }

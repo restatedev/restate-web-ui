@@ -35,6 +35,7 @@ import type {
   HookMutationOptions,
 } from '@restate/data-access/admin-api';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
 import { RestateError } from '@restate/util/errors';
 import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRange, useRestateContext } from '@restate/features/restate-context';
@@ -696,6 +697,7 @@ export function useSummaryInvocations(
     sampled = false,
     sampleSize,
     range,
+    excludeCompleted,
     meta: callerMeta,
     onFetchDuration,
     ...options
@@ -703,6 +705,7 @@ export function useSummaryInvocations(
     sampled?: boolean;
     sampleSize?: number;
     range?: string;
+    excludeCompleted?: boolean;
     onFetchDuration?: (duration: number) => void;
   } = {},
 ) {
@@ -722,6 +725,7 @@ export function useSummaryInvocations(
         sampled,
         sampleSize,
         range,
+        excludeCompleted,
       },
     },
   );
@@ -743,6 +747,296 @@ export function useSummaryInvocations(
   });
 
   return { ...results, queryKey: queryOptions.queryKey };
+}
+
+export function useCompletedInvocationsBreakdown({
+  startTime,
+  endTime,
+  interval,
+  filters = [],
+  ...options
+}: HookQueryOptions<'/query/invocations/completed-breakdown', 'post'> & {
+  startTime: string;
+  endTime: string;
+  interval: string;
+  filters?: FilterItem[];
+}) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/completed-breakdown',
+    'post',
+    {
+      baseUrl,
+      body: {
+        startTime,
+        endTime,
+        interval,
+        filters,
+      },
+    },
+  );
+
+  const results = useQuery({
+    staleTime: 0,
+    placeholderData: keepPreviousData,
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return { ...results, queryKey: queryOptions.queryKey };
+}
+
+const HOUR_MS = 60 * 60 * 1000;
+const COMPLETED_TIMELINE_BUCKETS = 24;
+const COMPLETED_TIMELINE_HISTORY_BUCKETS = COMPLETED_TIMELINE_BUCKETS - 1;
+const COMPLETED_BREAKDOWN_PATH = '/query/invocations/completed-breakdown';
+
+type CompletedBreakdownData =
+  components['schemas']['CompletedInvocationsBreakdownResponse'];
+type CompletedBreakdownBucket = CompletedBreakdownData['buckets'][number];
+
+function floorTo(ms: number, unit: number) {
+  return Math.floor(ms / unit) * unit;
+}
+
+// Merge bucket lists, deduped by start (later sources win), ordered ascending.
+function mergeBuckets(
+  ...sources: (readonly CompletedBreakdownBucket[] | undefined)[]
+): CompletedBreakdownBucket[] {
+  const byStart = new Map<string, CompletedBreakdownBucket>();
+  for (const source of sources) {
+    for (const bucket of source ?? []) {
+      byStart.set(bucket.start, bucket);
+    }
+  }
+  return [...byStart.values()].sort((a, b) =>
+    a.start < b.start ? -1 : a.start > b.start ? 1 : 0,
+  );
+}
+
+const COMPLETED_BREAKDOWN_PREFIX = 'restate-completed-breakdown';
+
+// localStorage-backed persister for the immutable history, with self-cleanup.
+// The wrapper adds `entries()` (raw localStorage has none, and persisterGc needs
+// it to enumerate) scoped to our prefix, and runs persisterGc on every write —
+// so each newly saved snapshot sweeps out the expired ones from past sessions
+// instead of letting them pile up. `maxAge` is short because the key rotates
+// hourly (a persisted entry is only useful for a same-hour reload), and `buster`
+// drops entries when the bucket shape changes. The live query is not persisted.
+const completedBreakdownGc: { run?: () => Promise<void> } = {};
+const completedBreakdownStorage =
+  typeof localStorage === 'undefined'
+    ? undefined
+    : {
+        getItem: (key: string) => localStorage.getItem(key),
+        setItem: (key: string, value: string) => {
+          localStorage.setItem(key, value);
+          void completedBreakdownGc.run?.()?.catch(() => undefined);
+        },
+        removeItem: (key: string) => localStorage.removeItem(key),
+        entries: (): Array<[string, string]> =>
+          Object.entries(localStorage).filter(([key]) =>
+            key.startsWith(COMPLETED_BREAKDOWN_PREFIX),
+          ),
+      };
+const completedBreakdownPersisterApi = experimental_createQueryPersister({
+  storage: completedBreakdownStorage,
+  maxAge: 2 * HOUR_MS,
+  prefix: COMPLETED_BREAKDOWN_PREFIX,
+  buster: 'v1',
+  refetchOnRestore: 'always',
+});
+completedBreakdownGc.run = completedBreakdownPersisterApi.persisterGc;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const completedBreakdownPersister: any =
+  completedBreakdownPersisterApi.persisterFn;
+
+/**
+ * Hourly succeeded/failed timeline for the last 24 buckets, split at a single
+ * `boundary` (the end of history and the start of the live hour):
+ *
+ *  - `history` — [boundary - 23h, boundary): one immutable scan.
+ *    staleTime Infinity + refetchOnMount false + persisted, so it restores
+ *    across tabs/windows and reloads, then refreshes once after restore.
+ *  - `live` — [boundary, boundary + 1h): the current partial hour, polled on
+ *    `refetchInterval`.
+ *
+ * On the hour rollover the just-completed hour from the live poll is folded into
+ * history and `boundary` advances. The extended history key is *seeded* from the
+ * old data + the poll, so the expensive scan is never re-run.
+ */
+export function useCompletedInvocationsTimeline({
+  filters = [],
+  refetchInterval = 30_000,
+  enabled: callerEnabled,
+}: {
+  filters?: FilterItem[];
+  refetchInterval?: number | (() => number | false);
+  enabled?: boolean;
+} = {}) {
+  const apiEnabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const enabled = callerEnabled !== false && apiEnabled;
+  const interval = 'PT1H';
+
+  // `boundary` is the split point: end of history and start of the live hour.
+  // `historyStart` tracks the beginning of the rolling history window.
+  const [{ historyStart, boundary }, setSplit] = useState(() => {
+    const now = Date.now();
+    const boundary = floorTo(now, HOUR_MS);
+    return {
+      historyStart: boundary - COMPLETED_TIMELINE_HISTORY_BUCKETS * HOUR_MS,
+      boundary,
+    };
+  });
+  const historyStartISO = new Date(historyStart).toISOString();
+  const boundaryISO = new Date(boundary).toISOString();
+
+  // history — [historyStart, boundary). Fetched once and pinned; on rollover
+  // its key changes but we seed the new key (below) so it usually avoids a
+  // re-scan.
+  const historyApi = adminApi('query', COMPLETED_BREAKDOWN_PATH, 'post', {
+    baseUrl,
+    body: {
+      startTime: historyStartISO,
+      endTime: boundaryISO,
+      interval,
+      filters,
+    },
+  });
+  const history = useQuery({
+    ...historyApi,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    placeholderData: keepPreviousData,
+    persister: completedBreakdownPersister,
+    enabled,
+  });
+
+  // live — the current, still-accumulating hour, [boundary, boundary + 1h). The
+  // server only counts `completed_at < endTime` and nothing has completed past
+  // `now`, so this is just "the current hour so far". Because the window is the
+  // whole hour (not `now`), the body is stable per boundary, so polling
+  // (refetchInterval) refreshes a single cache entry as completions trickle in —
+  // no need to thread `now` through the key. Not persisted; the rollover effect
+  // folds it into history once the hour ends.
+  const liveApi = adminApi('query', COMPLETED_BREAKDOWN_PATH, 'post', {
+    baseUrl,
+    body: {
+      startTime: boundaryISO,
+      endTime: new Date(boundary + HOUR_MS).toISOString(),
+      interval,
+      filters,
+    },
+  });
+  const live = useQuery({
+    ...liveApi,
+    staleTime: 0,
+    refetchInterval,
+    enabled,
+  });
+
+  // Rollover: each poll, check whether the wall clock has entered a new hour.
+  // On a single-hour step, fold the now-complete hour (from the live poll) into
+  // history and seed the extended history key so the expensive scan isn't re-run.
+  // A multi-hour jump (e.g. a long-backgrounded tab) can't be backfilled from the
+  // single-hour live window, so skip the seed and let history refetch the full
+  // range once when the boundary advances.
+  const liveUpdatedAt = live.dataUpdatedAt;
+  const filtersKey = JSON.stringify(filters);
+  useEffect(() => {
+    const nextBoundary = floorTo(Date.now(), HOUR_MS);
+    // Not a new hour yet, or the latest poll predates the boundary (so it hasn't
+    // captured the completed hour) — wait for the next poll.
+    if (nextBoundary <= boundary || liveUpdatedAt < nextBoundary) {
+      return;
+    }
+    const previous = queryClient.getQueryData<CompletedBreakdownData>(
+      historyApi.queryKey,
+    );
+    const nextHistoryStart =
+      nextBoundary - COMPLETED_TIMELINE_HISTORY_BUCKETS * HOUR_MS;
+    const nextHistoryStartISO = new Date(nextHistoryStart).toISOString();
+    const nextBoundaryISO = new Date(nextBoundary).toISOString();
+    if (previous && nextBoundary === boundary + HOUR_MS) {
+      const liveData = queryClient.getQueryData<CompletedBreakdownData>(
+        liveApi.queryKey,
+      );
+      const completed = (liveData?.buckets ?? []).filter(
+        (bucket) => bucket.start < nextBoundaryISO,
+      );
+      const nextHistoryApi = adminApi(
+        'query',
+        COMPLETED_BREAKDOWN_PATH,
+        'post',
+        {
+          baseUrl,
+          body: {
+            startTime: nextHistoryStartISO,
+            endTime: nextBoundaryISO,
+            interval,
+            filters,
+          },
+        },
+      );
+      queryClient.setQueryData<CompletedBreakdownData>(
+        nextHistoryApi.queryKey,
+        {
+          startTime: nextHistoryStartISO,
+          endTime: nextBoundaryISO,
+          interval,
+          buckets: mergeBuckets(previous.buckets, completed).filter(
+            (bucket) =>
+              bucket.start >= nextHistoryStartISO &&
+              bucket.start < nextBoundaryISO,
+          ),
+        },
+      );
+    }
+    setSplit({ historyStart: nextHistoryStart, boundary: nextBoundary });
+    // history/live keys, `filters` and `interval` are all derived from the
+    // primitives below; the tick that drives this is `liveUpdatedAt`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    liveUpdatedAt,
+    boundary,
+    baseUrl,
+    historyStartISO,
+    filtersKey,
+    queryClient,
+  ]);
+
+  // Only ever surface buckets up to the end of the current hour: clamp the live
+  // source so a bucket beyond the live window can't leak in (today `live` is
+  // keyed to [boundary, boundary + 1h) so this is just the one current-hour
+  // bucket, but the clamp keeps the result correct regardless).
+  const historyBuckets = history.data?.buckets;
+  const liveData = live.data;
+  const buckets = useMemo(() => {
+    const hourEndISO = new Date(boundary + HOUR_MS).toISOString();
+    const liveBuckets = (liveData?.buckets ?? []).filter(
+      (bucket) => bucket.start < hourEndISO,
+    );
+    return mergeBuckets(historyBuckets, liveBuckets);
+  }, [historyBuckets, liveData, boundary]);
+
+  return {
+    buckets,
+    // The expensive history gates the first render; the live tail fills in
+    // without blocking.
+    isPending: history.isPending,
+    isLoading: history.isLoading,
+    isFetching: history.isFetching || live.isFetching,
+    isError: history.isError || live.isError,
+    error: history.error ?? live.error ?? null,
+    history,
+    live,
+  };
 }
 
 function isCompletedInvocationStatus(

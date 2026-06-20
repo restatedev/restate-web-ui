@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import type { EChartsType, SetOptionOpts, ComposeOption } from 'echarts/core';
+import type {
+  EChartsType,
+  SetOptionOpts,
+  ComposeOption,
+  ECElementEvent,
+} from 'echarts/core';
 import type {
   BarSeriesOption,
   CustomSeriesOption,
@@ -25,6 +30,9 @@ export type AxisConfig<T extends object> = {
   labelFormatter?: (value: number) => string;
   min?: number;
   max?: number;
+  interval?: number;
+  splitLine?: boolean;
+  visibleValues?: number[];
   dataKey: Exclude<keyof T, number | symbol>;
 };
 
@@ -36,21 +44,29 @@ export interface YAxisConfig<T extends object> extends Omit<
   'dataKey'
 > {
   position?: 'left' | 'right';
+  labelInside?: boolean;
   dataKey?: Exclude<keyof T, number | symbol>;
 }
 
 export type GridConfig = {
   show?: boolean;
+  containLabel?: boolean;
   left?: number | string;
   right?: number | string;
   top?: number | string;
   bottom?: number | string;
+};
+export type TooltipSeries = {
+  dataKey: string;
+  label?: string;
+  color?: string;
 };
 export type TooltipConfig = {
   show?: boolean;
   trigger?: 'axis' | 'item';
   formatRange?: (start: Date, end: Date, timeZone: 'system' | 'UTC') => string;
   formatValue?: (value: number) => string;
+  series?: TooltipSeries[];
 };
 export type LegendConfig = {
   // show?: boolean;
@@ -63,6 +79,28 @@ export type RefLineConfig = {
   name?: string;
   dashed?: boolean;
 };
+
+export type SliceSelectEvent = {
+  name: string;
+  value: number;
+  dataIndex: number;
+  event: ECElementEvent;
+  chart: EChartsType;
+};
+export type SliceSelectHandler = (event: SliceSelectEvent) => void;
+
+export type BarTimeSeriesSelectEvent<T extends object = object> = {
+  data: T;
+  dataIndex: number;
+  start: Date;
+  end: Date;
+  value: unknown;
+  event: ECElementEvent;
+  chart: EChartsType;
+};
+export type BarTimeSeriesSelectHandler<T extends object = object> = (
+  event: BarTimeSeriesSelectEvent<T>,
+) => void;
 
 export type BaseSeriesCfg = {
   id?: string;
@@ -77,16 +115,29 @@ export type BarSeriesCfg = BaseSeriesCfg & {
   dataKey: string;
   barWidth?: number | string;
   stack?: string;
+  color?: string;
 };
-export type BarTimeSeriesCfg = BaseSeriesCfg & {
+export type BarTimeSeriesCfg<T extends object = object> = BaseSeriesCfg & {
   type: 'bar-time';
   dataKey: string;
   startRangeKey: string;
   endRangeKey: string;
   barWidth?: number | string;
   stack?: string;
+  color?: string;
+  fillColor?: string;
+  gap?: number;
+  baselineGap?: number;
+  minBarHeight?: number;
+  clip?: boolean;
+  cursor?: string;
+  liveIndex?: number;
+  onSelect?: BarTimeSeriesSelectHandler<T>;
 };
-export type AnySeriesCfg = BarSeriesCfg | BarTimeSeriesCfg | BaseSeriesCfg;
+export type AnySeriesCfg<T extends object = object> =
+  | BarSeriesCfg
+  | BarTimeSeriesCfg<T>
+  | BaseSeriesCfg;
 
 export type SliceConfig = {
   name: string;
@@ -102,6 +153,7 @@ export type SliceConfig = {
   shadowBlur?: number;
   shadowColor?: string;
   shadowOffsetY?: number;
+  onSelect?: SliceSelectHandler;
 };
 
 export type PieConfig = {
@@ -123,7 +175,7 @@ export type ChartConfig<T extends object> = {
   grid?: GridConfig;
   tooltip?: TooltipConfig;
   legend?: LegendConfig;
-  series: AnySeriesCfg[];
+  series: AnySeriesCfg<T>[];
   refLines: RefLineConfig[];
   pie?: PieConfig;
 };

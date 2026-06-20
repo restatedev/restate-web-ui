@@ -48,9 +48,47 @@ export function toFilterParams(filters: FilterItem[]): URLSearchParams {
       'value' in f
         ? { operation: f.operation, value: f.value }
         : { operation: f.operation };
-    params.set(`filter_${f.field}`, JSON.stringify(body));
+    params.append(`filter_${f.field}`, JSON.stringify(body));
   }
   return params;
+}
+
+export function toCompletedInvocationsBucketHref(
+  baseUrl: string,
+  {
+    start,
+    end,
+    outcome = 'completed',
+    existingParams,
+  }: {
+    start: string | Date;
+    end: string | Date;
+    outcome?: 'completed' | 'succeeded' | 'failed';
+    existingParams?: URLSearchParams;
+  },
+) {
+  const params = buildParams(existingParams);
+  const statusValues =
+    outcome === 'succeeded'
+      ? ['succeeded']
+      : outcome === 'failed'
+        ? FAILED_SUBSTATES
+        : NON_IN_FLIGHT_STATUSES;
+  params.set(
+    'filter_status',
+    JSON.stringify({ operation: 'IN', value: statusValues }),
+  );
+  params.set(
+    'filter_completed_at',
+    JSON.stringify({
+      operation: 'BETWEEN',
+      value: {
+        start: start instanceof Date ? start.toISOString() : start,
+        end: end instanceof Date ? end.toISOString() : end,
+      },
+    }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
 }
 
 export function toInvocationsHref(

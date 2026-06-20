@@ -27,6 +27,7 @@ import {
   buildStatusEntries,
   ServiceStatusBar,
 } from '@restate/features/status-chart';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
   getRangeLabel,
   useRestateContext,
@@ -135,6 +136,15 @@ export function ServiceCard({
 }) {
   const { OnboardingGuide } = useRestateContext();
   const isOnboarding = useOnboarding();
+  // When the summary is scoped to in-flight invocations (completion-history
+  // feature), make the counts/labels say so.
+  const isInFlightOnly = useIsFeatureFlagEnabled('FEATURE_COMPLETION_HISTORY');
+  const invocationNoun = isInFlightOnly
+    ? { one: 'in-flight', other: 'in-flight' }
+    : { one: 'invocation', other: 'invocations' };
+  const breakdownRangeLabel = isInFlightOnly
+    ? ''
+    : getRangeLabel(summaryData?.range);
   const serviceStatuses = byServiceAndStatus.filter(
     (st) => st.service === service.name && st.count > 0,
   );
@@ -211,15 +221,17 @@ export function ServiceCard({
                   isError={isSummaryError}
                   size="sm"
                   variant="minimal"
+                  noun={invocationNoun}
                   breakdownTooltip={
                     breakdownTotal > 0 ? (
                       <ServiceBreakdownTooltip
                         serviceName={service.name}
                         statuses={breakdownStatuses}
                         total={breakdownTotal}
-                        rangeLabel={getRangeLabel(summaryData?.range)}
+                        rangeLabel={breakdownRangeLabel}
                         linkParams={linkParams}
                         serviceIssues={serviceIssues}
+                        noun={invocationNoun}
                       />
                     ) : undefined
                   }
@@ -232,6 +244,8 @@ export function ServiceCard({
                   serviceIssues={serviceIssues}
                   isLoading={isSummaryLoading}
                   linkParams={linkParams}
+                  noun={invocationNoun}
+                  rangeLabel={breakdownRangeLabel}
                 />
               </div>
             </div>

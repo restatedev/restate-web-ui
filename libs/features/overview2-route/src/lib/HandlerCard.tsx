@@ -21,6 +21,7 @@ import {
 } from '@restate/features/status-chart';
 import { HandlerInputOutput } from '@restate/feature/handler-input-output';
 import { getRangeLabel } from '@restate/features/restate-context';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import type { ServiceIssue } from '@restate/features/system-health';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
 import {
@@ -83,6 +84,15 @@ export function HandlerCard({
   );
   const statuses = buildStatusEntries(rows);
   const total = statuses.reduce((sum, s) => sum + s.count, 0);
+  // When the summary is scoped to in-flight invocations (completion-history
+  // feature), make the counts/labels say so.
+  const isInFlightOnly = useIsFeatureFlagEnabled('FEATURE_COMPLETION_HISTORY');
+  const invocationNoun = isInFlightOnly
+    ? { one: 'in-flight', other: 'in-flight' }
+    : { one: 'invocation', other: 'invocations' };
+  const breakdownRangeLabel = isInFlightOnly
+    ? ''
+    : getRangeLabel(summaryData?.range);
 
   return (
     <div className="px-2">
@@ -167,6 +177,8 @@ export function HandlerCard({
                   data={summaryData}
                   isLoading={isSummaryLoading}
                   linkParams={linkParams}
+                  noun={invocationNoun}
+                  rangeLabel={breakdownRangeLabel}
                 />
               </div>
               <InvocationCountLink
@@ -181,6 +193,7 @@ export function HandlerCard({
                 isError={isSummaryError}
                 size="sm"
                 variant="minimal"
+                noun={invocationNoun}
                 breakdownTooltip={
                   total > 0 ? (
                     <HandlerBreakdownTooltip
@@ -188,8 +201,9 @@ export function HandlerCard({
                       handlerName={handler.name}
                       statuses={statuses}
                       total={total}
-                      rangeLabel={getRangeLabel(summaryData?.range)}
+                      rangeLabel={breakdownRangeLabel}
                       linkParams={linkParams}
+                      noun={invocationNoun}
                     />
                   ) : undefined
                 }

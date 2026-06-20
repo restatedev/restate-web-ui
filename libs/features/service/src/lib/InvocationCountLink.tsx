@@ -37,6 +37,7 @@ export function InvocationCountLink({
   variant = 'default',
   breakdownTooltip,
   className,
+  noun = { one: 'invocation', other: 'invocations' },
 }: {
   href: string;
   className?: string;
@@ -46,6 +47,7 @@ export function InvocationCountLink({
   size?: 'sm' | 'md';
   variant?: 'default' | 'minimal';
   breakdownTooltip?: ReactNode;
+  noun?: { one: string; other: string };
 }) {
   if (variant === 'minimal') {
     if (isError || count === 0) {
@@ -57,7 +59,7 @@ export function InvocationCountLink({
     const link = (
       <Link href={href} variant="icon" className={styles({ className })}>
         {formatNumber(count, true)}
-        <span className="hidden group-hover:inline">invocations</span>
+        <span className="hidden group-hover:inline">{noun.other}</span>
         <Icon
           name={IconName.ChevronRight}
           className="hidden h-4 w-4 group-hover:inline-block"
@@ -95,8 +97,7 @@ export function InvocationCountLink({
         variant="secondary"
         className="relative z-10 inline-flex w-auto min-w-0 items-center gap-0.5 truncate rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
       >
-        {formatNumber(count, true)}{' '}
-        {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
+        {formatNumber(count, true)} {formatPlurals(count, noun)}
         <Icon name={IconName.ChevronRight} className="h-4 w-4" />
       </Link>
     );
@@ -111,7 +112,7 @@ export function InvocationCountLink({
   }
   return (
     <div className="z-10 inline-flex min-w-0 items-center px-1.5 py-0.5 text-0.5xs text-gray-400">
-      No invocations
+      No {noun.other}
     </div>
   );
 }

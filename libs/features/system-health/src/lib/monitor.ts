@@ -2,6 +2,7 @@ import type { QueryClient, QueryCacheNotifyEvent } from '@tanstack/react-query';
 import {
   isSummaryInvocationsQuery,
   isQueryHealthCheckQuery,
+  isCompletedBreakdownQuery,
 } from '@restate/data-access/admin-api-hooks';
 import { issueQueue } from './issue-queue';
 import { getGlobalIssues } from './service-issues';
@@ -21,6 +22,10 @@ interface SystemHealthMonitorOptions {
 
 type SummaryData = {
   byStatus: { name: string; count: number }[];
+};
+
+type CompletedBreakdownData = {
+  buckets: { start: string; succeeded: number; failed: number }[];
 };
 
 export interface SystemHealthMonitor {
@@ -62,6 +67,7 @@ export function createSystemHealthMonitor(
 ): SystemHealthMonitor {
   const tracked = {
     sla: [] as string[],
+    completedSla: [] as string[],
     queryHealth: null as string | null,
     additional: new Map<number, string[]>(),
   };
@@ -103,6 +109,28 @@ export function createSystemHealthMonitor(
       tracked.sla = tracked.queryHealth ? [] : computeGlobalIssues(data);
     }
 
+    // The completion breakdown's current-hour bucket carries the live failure
+    // rate (the live query's last bucket is the current hour; the history
+    // query's is an earlier hour, so it's skipped).
+    // if (isCompletedBreakdownQuery(event.query)) {
+    //   const data = event.query.state.data as CompletedBreakdownData | undefined;
+    //   const last = data?.buckets?.at(-1);
+    //   const currentHourStart = Math.floor(Date.now() / 3_600_000) * 3_600_000;
+    //   if (last && Date.parse(last.start) === currentHourStart) {
+    //     closeKeys(tracked.completedSla);
+    //     // Feed the hour's succeeded/failed as status counts so the shared
+    //     // failure-rate check applies (failed / completed, both counted here).
+    //     tracked.completedSla = tracked.queryHealth
+    //       ? []
+    //       : computeGlobalIssues({
+    //           byStatus: [
+    //             { name: 'succeeded', count: last.succeeded },
+    //             { name: 'failed', count: last.failed },
+    //           ],
+    //         });
+    //   }
+    // }
+
     for (let i = 0; i < additionalObservers.length; i++) {
       const observer = additionalObservers[i];
       if (!observer?.match(event)) continue;
@@ -114,6 +142,8 @@ export function createSystemHealthMonitor(
   function clearTracked() {
     closeKeys(tracked.sla);
     tracked.sla = [];
+    closeKeys(tracked.completedSla);
+    tracked.completedSla = [];
     if (tracked.queryHealth) {
       issueQueue.close(tracked.queryHealth);
       tracked.queryHealth = null;

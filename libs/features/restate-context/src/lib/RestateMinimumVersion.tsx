@@ -1,5 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from './RestateContext';
 
 export function RestateMinimumVersion({
   children,

@@ -1,6 +1,6 @@
 import { Button } from '@restate/ui/button';
 import { SectionTitle, Section } from '@restate/ui/section';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { humanTimeToMs } from '@restate/util/humantime';
 import { useSearchParams } from 'react-router';
 import { SERVICE_RETENTION_EDIT } from './constants';

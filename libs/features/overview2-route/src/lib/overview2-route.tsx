@@ -1,4 +1,5 @@
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
@@ -8,6 +9,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { useIsMutating, useQueryClient } from '@tanstack/react-query';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import {
+  formatDurations,
   formatNumber,
   formatPercentageWithoutFraction,
 } from '@restate/util/intl';
@@ -24,11 +26,12 @@ import {
   type ArcSegment,
 } from '@restate/features/status-chart';
 import {
+  toCompletedInvocationsBucketHref,
   toCompletedInvocationsHref,
   toInFlightInvocationsHref,
 } from '@restate/util/invocation-links';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
-import { Spinner } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui/loading';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -45,6 +48,7 @@ import {
   InFlightMetrics,
   CompletedMetrics,
   EngineEgress,
+  EngineEgressTop,
   OverviewMetricsRail,
   useMetricsState,
 } from './EngineCluster';
@@ -55,8 +59,26 @@ import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 import { HandlersGridList } from './HandlersGridList';
 import { getRangeLabel, useRange } from '@restate/features/restate-context';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
+import {
+  CompletionHistoryChart,
+  type CompletionBucketOutcome,
+} from '@restate/features/completion-history';
+import { useCompletedInvocationsTimeline } from '@restate/data-access/admin-api-hooks';
+import { useNavigate } from 'react-router';
 
 const LINE_COUNT = 7;
+const MINUTE_MS = 60 * 1000;
+
+function formatElapsedBucketLabel(bucket?: { start: string; end: string }) {
+  if (!bucket) return undefined;
+  const startMs = Date.parse(bucket.start);
+  const endMs = Date.parse(bucket.end);
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return undefined;
+  const elapsedMs = Math.max(0, Math.min(Date.now(), endMs) - startMs);
+  const minutes = Math.max(1, Math.min(60, Math.ceil(elapsedMs / MINUTE_MS)));
+  return `Last ${formatDurations({ minutes }, { style: 'short' })}`;
+}
 
 function usePerspectiveLines(
   containerRef: React.RefObject<HTMLDivElement | null>,
@@ -190,6 +212,128 @@ function PerspectiveLines({
   );
 }
 
+function useFlowConnectors(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  gaugeRef: React.RefObject<HTMLDivElement | null>,
+  serverRef: React.RefObject<HTMLDivElement | null>,
+  logsRef: React.RefObject<HTMLDivElement | null>,
+  enabled: boolean,
+) {
+  const [data, setData] = useState<{
+    segments: { x: number; y: number; dx: number }[];
+    viewBox: string;
+  }>({ segments: [], viewBox: '0 0 1 1' });
+
+  useEffect(() => {
+    if (!enabled) return;
+    const container = containerRef.current;
+    const server = serverRef.current;
+    if (!container || !server) return;
+
+    const update = () => {
+      const cRect = container.getBoundingClientRect();
+      const w = cRect.width;
+      const h = cRect.height;
+      if (w === 0 || h === 0) return;
+
+      const sRect = server.getBoundingClientRect();
+      const serverLeft = sRect.left - cRect.left;
+      const serverRight = sRect.right - cRect.left;
+      const serverY = sRect.top - cRect.top + sRect.height / 2;
+
+      const segments: { x: number; y: number; dx: number }[] = [];
+
+      const gauge = gaugeRef.current;
+      if (gauge) {
+        const gRect = gauge.getBoundingClientRect();
+        const x = gRect.right - cRect.left - 12;
+        segments.push({ x: serverLeft, y: serverY, dx: x - serverLeft });
+      }
+
+      const logs = logsRef.current;
+      if (logs) {
+        const lRect = logs.getBoundingClientRect();
+        const x = lRect.left - cRect.left + 6;
+        segments.push({ x: serverRight, y: serverY, dx: x - serverRight });
+      }
+
+      setData({ segments, viewBox: `0 0 ${w} ${h}` });
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [containerRef, gaugeRef, serverRef, logsRef, enabled]);
+
+  return data;
+}
+
+const FLOW_PARTICLES = 5;
+const FLOW_DURATION = 3600;
+
+function FlowConnectors({
+  segments,
+  viewBox,
+}: {
+  segments: { x: number; y: number; dx: number }[];
+  viewBox: string;
+}) {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const particles = svg.querySelectorAll<SVGCircleElement>('[data-particle]');
+    const animations = Array.from(particles).map((circle) => {
+      const dx = Number(circle.dataset.dx);
+      const index = Number(circle.dataset.index);
+      return circle.animate(
+        [
+          { transform: 'translateX(0px)', opacity: 0 },
+          { opacity: 0.32, offset: 0.2 },
+          { opacity: 0.32, offset: 0.7 },
+          { transform: `translateX(${dx}px)`, opacity: 0 },
+        ],
+        {
+          duration: FLOW_DURATION,
+          delay: (index * FLOW_DURATION) / FLOW_PARTICLES,
+          iterations: Infinity,
+          easing: 'linear',
+        },
+      );
+    });
+    return () => animations.forEach((animation) => animation.cancel());
+  }, [segments]);
+
+  if (segments.length === 0) return null;
+
+  return (
+    <svg
+      ref={svgRef}
+      className="pointer-events-none absolute inset-x-0 top-0 z-[24] hidden h-full w-full @min-[64rem]/hero:block"
+      viewBox={viewBox}
+      fill="none"
+    >
+      {segments.map((segment, segmentIndex) =>
+        Array.from({ length: FLOW_PARTICLES }).map((_, i) => (
+          <circle
+            key={`${segmentIndex}-${i}`}
+            data-particle=""
+            data-dx={segment.dx}
+            data-index={i}
+            cx={segment.x}
+            cy={segment.y}
+            opacity="0"
+            r={i % 2 === 0 ? 1.8 : 1.2}
+            fill="rgb(129 140 248 / 0.85)"
+          />
+        )),
+      )}
+    </svg>
+  );
+}
+
 const emptyServerStyles = tv({
   base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ring-1 ring-white/80 @tall:pt-10 @tall:pb-40',
   variants: {
@@ -220,11 +364,21 @@ function TabCount({
 }
 
 const gaugeStyles = tv({
-  base: 'relative -mb-9 aspect-square w-40 shrink-0 overflow-visible @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:-mb-11 @min-[64rem]/hero:w-[15.4rem]',
+  base: 'relative -mb-7 aspect-square w-36 shrink-0 overflow-visible @min-[26rem]/hero:w-40 @min-[40rem]/hero:w-[11.25rem] @min-[64rem]/hero:-mb-9 @min-[64rem]/hero:w-[13.2rem]',
+});
+
+const gaugeLabelStyles = tv({
+  base: 'text-xs text-gray-500',
+  variants: {
+    textOnly: {
+      true: 'text-sm font-medium text-gray-400',
+      false: 'mt-1',
+    },
+  },
 });
 
 const summaryStackStyles = tv({
-  base: 'relative z-40 col-span-3 col-start-1 row-start-3 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-2 @min-[76rem]/hero:col-start-3',
+  base: 'relative z-40 col-span-3 col-start-1 row-start-3 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-3',
   variants: {
     metricsVisible: {
       true: 'mt-4 @min-[64rem]/hero:mt-7',
@@ -242,26 +396,30 @@ function HeroGauge({
   href,
   isLoading,
   isError,
+  textOnly,
   className,
+  ref,
 }: {
   segments: ArcSegment[];
   count: number;
   valueLabel?: string;
-  label: string;
+  label: ReactNode;
   sublabel?: string;
   href: string;
   isLoading?: boolean;
   isError?: boolean;
+  textOnly?: boolean;
   className?: string;
+  ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
-    <div className={gaugeStyles({ class: className })}>
+    <div ref={ref} className={gaugeStyles({ class: className })}>
       <StatusArcEcharts segments={segments} isLoading={isLoading} />
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-4">
         {isLoading ? (
           <div className="h-7 w-14 animate-pulse rounded-lg bg-gray-200 sm:h-8" />
         ) : isError ? (
-          <span className="text-2xl font-semibold text-gray-300">–</span>
+          <span className="text-xl font-semibold text-gray-300">–</span>
         ) : (
           <Link
             href={href}
@@ -269,12 +427,12 @@ function HeroGauge({
             preserveQueryParams={false}
             className="pointer-events-auto relative flex flex-col items-center gap-0 rounded-xl px-2 py-1 leading-none hover:bg-black/[0.03]"
           >
-            <span className="text-2xl font-semibold text-gray-800 tabular-nums sm:text-3xl">
-              {valueLabel ?? formatNumber(count, true)}
-            </span>
-            <span className="mt-1 text-xs text-gray-500 sm:text-sm">
-              {label}
-            </span>
+            {!textOnly && (
+              <span className="text-2xl font-semibold text-gray-800 tabular-nums">
+                {valueLabel ?? formatNumber(count, true)}
+              </span>
+            )}
+            <span className={gaugeLabelStyles({ textOnly })}>{label}</span>
             {sublabel && (
               <span className="absolute top-full left-1/2 mt-0 hidden -translate-x-1/2 text-2xs whitespace-nowrap text-gray-400 tabular-nums @min-[40rem]/hero:block">
                 {sublabel}
@@ -288,6 +446,7 @@ function HeroGauge({
 }
 
 function OverviewContent() {
+  const navigate = useNavigate();
   const {
     servicesMap,
     deploymentsMap,
@@ -330,6 +489,14 @@ function OverviewContent() {
   const queryClient = useQueryClient();
   const range = useRange();
   const rangeLabel = getRangeLabel(range);
+  const isCompletionHistoryEnabled = useIsFeatureFlagEnabled(
+    'FEATURE_COMPLETION_HISTORY',
+  );
+  const { buckets: completionBuckets, isPending: isCompletionLoading } =
+    useCompletedInvocationsTimeline({
+      refetchInterval: overviewRefetchInterval,
+      enabled: isCompletionHistoryEnabled,
+    });
 
   const {
     total: allTotal,
@@ -341,6 +508,35 @@ function OverviewContent() {
     () => buildCompletedSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
   );
+  // When the completion chart replaces the gauge, the right legend shows the
+  // current (live) hour's counts instead of the range totals, still linking to
+  // the succeeded/failed invocations via the segment hrefs.
+  const currentHourBucket = completionBuckets.at(-1);
+  const completedLegendSegments =
+    isCompletionHistoryEnabled && currentHourBucket
+      ? completedSegments.map((segment) => ({
+          ...segment,
+          count:
+            segment.name === 'succeeded'
+              ? currentHourBucket.succeeded
+              : currentHourBucket.failed,
+          href: toCompletedInvocationsBucketHref(baseUrl, {
+            start: currentHourBucket.start,
+            end: currentHourBucket.end,
+            outcome: segment.name === 'succeeded' ? 'succeeded' : 'failed',
+            existingParams: linkParams,
+          }),
+        }))
+      : completedSegments;
+  const currentHourCompleted =
+    (currentHourBucket?.succeeded ?? 0) + (currentHourBucket?.failed ?? 0);
+  const currentHourSuccessRateLabel =
+    currentHourCompleted > 0
+      ? formatPercentageWithoutFraction(
+          (currentHourBucket?.succeeded ?? 0) / currentHourCompleted,
+        )
+      : undefined;
+  const currentHourWindowLabel = formatElapsedBucketLabel(currentHourBucket);
   const completedTotal = succeeded + failed;
   const completedSuccessRate =
     completedTotal > 0 ? succeeded / completedTotal : 0;
@@ -353,10 +549,27 @@ function OverviewContent() {
     completedTotal > 0
       ? `of ${formatNumber(completedTotal, true)} completed`
       : undefined;
+  const isSummaryEmpty = !isSummaryLoading && !isSummaryError && allTotal === 0;
 
   const completedHref = toCompletedInvocationsHref(baseUrl, {
     existingParams: linkParams,
   });
+  const onCompletionBucketClick = useCallback(
+    (
+      bucket: { start: string; end: string },
+      outcome: CompletionBucketOutcome,
+    ) => {
+      navigate(
+        toCompletedInvocationsBucketHref(baseUrl, {
+          start: bucket.start,
+          end: bucket.end,
+          outcome,
+          existingParams: linkParams,
+        }),
+      );
+    },
+    [baseUrl, linkParams, navigate],
+  );
   const inFlightSegments = useMemo(
     () => buildInFlightSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
@@ -378,7 +591,8 @@ function OverviewContent() {
   const ferrofluidStatus = useRestateServerStatus({
     isHealthy: status === 'HEALTHY',
     isError: isError || isSummaryError,
-    isActive: metricsState.hasMetricActivity || isAdminMutating,
+    isActive:
+      inFlightTotal > 0 || metricsState.hasMetricActivity || isAdminMutating,
     issueSeverity: overallIssueSeverity,
   });
 
@@ -386,6 +600,8 @@ function OverviewContent() {
 
   const { triggerWave } = useWaveAnimation();
   const serverRef = useRef<HTMLDivElement>(null);
+  const gaugeRef = useRef<HTMLDivElement>(null);
+  const logsRef = useRef<HTMLDivElement>(null);
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
@@ -397,6 +613,13 @@ function OverviewContent() {
     heroReady,
   );
   const triggerRay = usePerspectiveRay(linesSvgRef);
+  const flowConnectors = useFlowConnectors(
+    containerRef,
+    gaugeRef,
+    serverRef,
+    logsRef,
+    heroReady,
+  );
   const showHeroLegends =
     isSummaryLoading || (!isSummaryError && totalCount > 0);
   const filterPlaceholder =
@@ -405,6 +628,36 @@ function OverviewContent() {
       : mode === 'deployments'
         ? 'Filter deployments or services…'
         : 'Filter handlers, services, or types…';
+  const renderCompletionSummary = (
+    className: string,
+    legendClassName = 'min-w-0 place-items-start',
+  ) =>
+    showHeroLegends ? (
+      <div className={className}>
+        {isCompletionHistoryEnabled && (
+          <span className="px-1.5 text-2xs font-medium tracking-wide text-gray-400 uppercase">
+            <Ellipsis>{currentHourWindowLabel}</Ellipsis>
+          </span>
+        )}
+        {isCompletionHistoryEnabled && currentHourSuccessRateLabel && (
+          <span className="px-1.5 text-sm font-semibold text-gray-700 tabular-nums">
+            {currentHourSuccessRateLabel}
+            <span className="ml-1 text-2xs font-normal text-gray-400">
+              success rate
+            </span>
+          </span>
+        )}
+        <StatusLegend
+          items={completedLegendSegments}
+          isLoading={
+            isSummaryLoading ||
+            (isCompletionHistoryEnabled && isCompletionLoading)
+          }
+          orientation="vertical"
+          className={legendClassName}
+        />
+      </div>
+    ) : null;
 
   const onRefresh = () => {
     serverRef.current?.animate(
@@ -489,8 +742,14 @@ function OverviewContent() {
         fadeStart={fadeStart}
         fadeEnd={fadeEnd}
       />
-      <div className="relative z-30 grid w-full max-w-[112rem] grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[auto_minmax(29rem,auto)_auto] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(5.5rem,8rem)_auto_minmax(29rem,auto)_auto_minmax(5.5rem,8rem)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_minmax(37rem,auto)_auto_minmax(16rem,1fr)] @min-[108rem]/hero:pt-20">
-        <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-end @min-[76rem]/hero:col-start-1 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
+      {!isSummaryEmpty && (
+        <FlowConnectors
+          segments={flowConnectors.segments}
+          viewBox={flowConnectors.viewBox}
+        />
+      )}
+      <div className="relative z-30 grid w-full grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 px-4 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[minmax(8rem,1fr)_auto_auto_auto_minmax(8rem,1fr)] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(12rem,1fr)_auto_auto_auto_minmax(12rem,1fr)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_auto_auto_minmax(16rem,1fr)] @min-[108rem]/hero:px-8 @min-[108rem]/hero:pt-20">
+        <div className="hidden w-full min-w-0 self-center justify-self-end @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block">
           {showHeroLegends && (
             <StatusLegend
               items={inFlightSegments}
@@ -501,10 +760,20 @@ function OverviewContent() {
           )}
         </div>
         <HeroGauge
-          className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-1 @min-[76rem]/hero:col-start-2"
+          ref={gaugeRef}
+          className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-2"
           segments={inFlightSegments}
           count={inFlightTotal}
-          label="In-flight"
+          label={
+            isSummaryEmpty ? (
+              'No in-flight'
+            ) : inFlightTotal > 0 ? (
+              <Ellipsis>In-flight</Ellipsis>
+            ) : (
+              'In-flight'
+            )
+          }
+          textOnly={isSummaryEmpty}
           href={toInFlightInvocationsHref(baseUrl, {
             existingParams: linkParams,
           })}
@@ -512,32 +781,51 @@ function OverviewContent() {
           isError={isSummaryError}
         />
         <EngineCore
-          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block @min-[76rem]/hero:col-start-3"
+          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mx-10 @min-[64rem]/hero:flex"
           serverRef={serverRef}
           status={ferrofluidStatus}
           onPress={onRefresh}
-        />
-        <HeroGauge
-          className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0 @min-[76rem]/hero:col-start-4"
-          segments={completedSegments}
-          count={completedTotal}
-          valueLabel={completedSuccessRateLabel}
-          label={completedLabel}
-          sublabel={completedSublabel}
-          href={completedHref}
-          isLoading={isSummaryLoading}
-          isError={isSummaryError}
-        />
-        <div className="hidden w-full max-w-[10rem] min-w-0 self-center justify-self-start @min-[76rem]/hero:col-start-5 @min-[76rem]/hero:row-start-1 @min-[76rem]/hero:block @min-[108rem]/hero:max-w-none">
-          {showHeroLegends && (
-            <StatusLegend
-              items={completedSegments}
-              isLoading={isSummaryLoading}
-              orientation="vertical"
-              className="min-w-0 place-items-start"
+          aboveServer={
+            <EngineEgressTop
+              hasSummaryActivity={allTotal > 0}
+              metricsRefetchInterval={overviewRefetchInterval}
+              data-overview-refresh-bounce=""
+              className="pointer-events-auto mb-1"
             />
-          )}
-        </div>
+          }
+        />
+        {isCompletionHistoryEnabled ? (
+          <>
+            {renderCompletionSummary(
+              'col-start-2 row-start-2 mt-4 flex w-64 max-w-[calc(100vw-7rem)] min-w-0 flex-col items-center gap-1 self-start justify-self-center text-center @min-[40rem]/hero:w-72 @min-[64rem]/hero:hidden',
+              'min-w-0 place-items-center',
+            )}
+            <CompletionHistoryChart
+              ref={logsRef}
+              buckets={completionBuckets}
+              isPending={isCompletionLoading}
+              onBucketClick={onCompletionBucketClick}
+              className="hidden h-20 w-40 self-start overflow-hidden @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block @min-[64rem]/hero:h-32 @min-[64rem]/hero:w-[15.4rem] @min-[64rem]/hero:self-center"
+            />
+          </>
+        ) : (
+          <HeroGauge
+            ref={logsRef}
+            className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0"
+            segments={completedSegments}
+            count={completedTotal}
+            valueLabel={completedSuccessRateLabel}
+            label={isSummaryEmpty ? 'No completed' : completedLabel}
+            sublabel={completedSublabel}
+            textOnly={isSummaryEmpty}
+            href={completedHref}
+            isLoading={isSummaryLoading}
+            isError={isSummaryError}
+          />
+        )}
+        {renderCompletionSummary(
+          'hidden w-full min-w-0 flex-col gap-1 self-center justify-self-start @min-[64rem]/hero:col-start-5 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex',
+        )}
         <OverviewMetricsRail
           side="left"
           hasSummaryActivity={allTotal > 0}
@@ -556,68 +844,89 @@ function OverviewContent() {
           hasSummaryActivity={allTotal > 0}
           metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-2"
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
         />
         <EngineEgress
           hasSummaryActivity={allTotal > 0}
           metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden w-[29rem] self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-3 @min-[108rem]/hero:w-[37rem]"
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
         />
         <CompletedMetrics
           hasSummaryActivity={allTotal > 0}
           metricsRefetchInterval={overviewRefetchInterval}
           data-overview-refresh-bounce=""
-          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex @min-[76rem]/hero:col-start-4"
+          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
         />
-        <div
-          data-overview-refresh-bounce=""
-          className={summaryStackStyles({ metricsVisible })}
-        >
-          <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
-            {isSummaryLoading ? (
-              <span className="h-7 w-48 animate-pulse rounded-xl bg-gray-200" />
-            ) : (
-              <span className="flex items-baseline gap-1.5">
-                <span className="text-lg font-semibold text-gray-700 tabular-nums">
-                  {isSummaryError ? '–' : formatNumber(allTotal, true)}
+        {!isCompletionHistoryEnabled && (
+          <div
+            data-overview-refresh-bounce=""
+            className={summaryStackStyles({ metricsVisible })}
+          >
+            <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
+              {isSummaryLoading ? (
+                <span className="flex h-7 animate-pulse items-baseline gap-1.5 rounded-xl bg-gray-200 text-transparent">
+                  <span className="text-lg font-semibold tabular-nums">
+                    {isSummaryError ? '–' : formatNumber(allTotal, true)}
+                  </span>
+                  <span className="text-base">invocations</span>
                 </span>
-                <span className="text-base text-gray-500">invocations</span>
-              </span>
-            )}
-            <TimeRangeToggle
-              onChange={() => {
-                queryClient.cancelQueries({
-                  queryKey: summaryQueryKey,
-                  exact: true,
-                });
-              }}
-            />
-            {summaryError && (
-              <Popover>
-                <PopoverTrigger>
-                  <Button
-                    aria-label="Could not load invocation data"
-                    variant="secondary"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
-                  >
-                    <Icon
-                      name={IconName.TriangleAlert}
-                      className="h-4 w-4 fill-red-200 text-red-600"
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="max-w-sm">
-                  <ErrorBanner error={summaryError} className="rounded-xl" />
-                </PopoverContent>
-              </Popover>
-            )}
+              ) : (
+                <span className="flex items-baseline gap-1.5">
+                  {isSummaryEmpty ? (
+                    <span className="text-base font-medium text-gray-400">
+                      No invocations
+                    </span>
+                  ) : (
+                    <>
+                      <span className="text-lg font-semibold text-gray-700 tabular-nums">
+                        {isSummaryError ? '–' : formatNumber(allTotal, true)}
+                      </span>
+                      <span className="text-base text-gray-500">
+                        invocations
+                      </span>
+                    </>
+                  )}
+                </span>
+              )}
+              <TimeRangeToggle
+                onChange={() => {
+                  queryClient.cancelQueries({
+                    queryKey: summaryQueryKey,
+                    exact: true,
+                  });
+                }}
+              />
+              {summaryError && (
+                <Popover>
+                  <PopoverTrigger>
+                    <Button
+                      aria-label="Could not load invocation data"
+                      variant="secondary"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+                    >
+                      <Icon
+                        name={IconName.TriangleAlert}
+                        className="h-4 w-4 fill-red-200 text-red-600"
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="max-w-sm">
+                    <ErrorBanner error={summaryError} className="rounded-xl" />
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
           </div>
-          <div className="relative mt-3 -mb-8 flex flex-col items-center">
-            <IssuesBannerStack />
-            <div className="h-5" />
-          </div>
-        </div>
+        )}
+      </div>
+
+      <div
+        data-overview-refresh-bounce=""
+        className="relative z-40 mt-3 -mb-8 flex flex-col items-center"
+      >
+        <IssuesBannerStack />
+        <div className="h-5" />
       </div>
 
       <ContentPanel
@@ -674,7 +983,7 @@ function OverviewContent() {
         <ContentPanelToolbar className="">
           <DeploymentActions />
         </ContentPanelToolbar>
-        <ContentPanelHeader className="px-2 py-1.5">
+        <ContentPanelHeader className="px-1 py-0.5">
           <div
             ref={setPanelEl}
             className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between"
@@ -684,7 +993,10 @@ function OverviewContent() {
                 formatServiceSortLabel={(option) =>
                   option.value === 'health'
                     ? `${option.label} ${rangeLabel}`
-                    : option.label
+                    : option.value === 'invocations' &&
+                        isCompletionHistoryEnabled
+                      ? 'In-flight invocations'
+                      : option.label
                 }
               />
             </div>
@@ -699,11 +1011,11 @@ function OverviewContent() {
                 <AriaInput
                   ref={filterRef}
                   placeholder={filterPlaceholder}
-                  className="mt-0 w-full min-w-0 rounded-xl border border-black/10 bg-white px-2 py-1 pr-8 pl-8 text-sm text-gray-800 shadow-xs outline-offset-2 placeholder:text-gray-500/70 focus:ring-0 focus:outline-2 focus:outline-blue-600"
+                  className="mt-0 h-7 w-full min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-0.5 pr-8 pl-7 text-sm text-gray-800 shadow-none outline-offset-2 placeholder:text-gray-500/65 hover:bg-white/30 focus:border-blue-500/30 focus:bg-white/55 focus:ring-0 focus:outline-2 focus:outline-blue-600"
                 />
                 <Icon
                   name={IconName.Search}
-                  className="pointer-events-none absolute top-0 bottom-0 left-2 aspect-square h-full p-1 text-gray-400"
+                  className="pointer-events-none absolute top-0 bottom-0 left-1.5 aspect-square h-full p-1 text-gray-400"
                 />
                 <FocusShortcutKey
                   variant="light"
@@ -715,7 +1027,7 @@ function OverviewContent() {
         </ContentPanelHeader>
         <ContentPanelBody className="pb-20">
           <ContentPanelSection>
-            <div className="pt-2">
+            <div className="">
               {isError && !isDeploymentsFetching && error && (
                 <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
               )}

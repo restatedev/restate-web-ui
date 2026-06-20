@@ -122,20 +122,62 @@ export function useTooltip(
       separator.style.marginTop = '16px';
       separator.style.marginBottom = '16px';
 
-      const body = document.createElement('div');
-      body.textContent =
-        typeof yValue === 'number' ? yFormatter(yValue) : 'No data available';
-      body.style.fontSize = typeof yValue === 'number' ? '1.4em' : '1em';
-      body.style.fontWeight = '400';
-      body.style.color =
-        typeof yValue === 'number'
-          ? 'rgba(255,255,255,0.9)'
-          : 'rgba(255,255,255,0.6)';
-
       container.appendChild(header);
       container.appendChild(subheader);
       container.appendChild(separator);
-      container.appendChild(body);
+
+      const seriesDescriptors = tooltipCfg?.series;
+      if (seriesDescriptors?.length) {
+        const list = document.createElement('div');
+        list.style.display = 'flex';
+        list.style.flexDirection = 'column';
+        list.style.gap = '6px';
+        for (const descriptor of seriesDescriptors) {
+          const raw = (value as Record<string, unknown>)[descriptor.dataKey];
+          const row = document.createElement('div');
+          row.style.display = 'flex';
+          row.style.alignItems = 'center';
+
+          const dotColor = descriptor.color ?? '#ccc';
+          const dot = document.createElement('span');
+          dot.style.display = 'inline-block';
+          dot.style.width = '12px';
+          dot.style.height = '12px';
+          dot.style.borderRadius = '50%';
+          dot.style.flexShrink = '0';
+          dot.style.marginRight = '8px';
+          dot.style.backgroundColor = dotColor;
+          dot.style.border = `1.5px solid color-mix(in srgb, ${dotColor} 70%, black)`;
+          dot.style.boxShadow = 'inset 0 1px 0 0 rgba(255,255,255,0.35)';
+
+          const val = document.createElement('span');
+          val.textContent = typeof raw === 'number' ? yFormatter(raw) : '';
+          val.style.fontWeight = '600';
+          val.style.color = 'rgba(255,255,255,0.95)';
+          val.style.marginRight = '8px';
+
+          const label = document.createElement('span');
+          label.textContent = descriptor.label ?? '';
+          label.style.color = 'rgba(255,255,255,0.7)';
+
+          row.appendChild(dot);
+          row.appendChild(val);
+          row.appendChild(label);
+          list.appendChild(row);
+        }
+        container.appendChild(list);
+      } else {
+        const body = document.createElement('div');
+        body.textContent =
+          typeof yValue === 'number' ? yFormatter(yValue) : 'No data available';
+        body.style.fontSize = typeof yValue === 'number' ? '1.4em' : '1em';
+        body.style.fontWeight = '400';
+        body.style.color =
+          typeof yValue === 'number'
+            ? 'rgba(255,255,255,0.9)'
+            : 'rgba(255,255,255,0.6)';
+        container.appendChild(body);
+      }
 
       return container;
     };
@@ -143,6 +185,7 @@ export function useTooltip(
     return {
       show,
       trigger,
+      appendTo: 'body',
       axisPointer: { type: trigger === 'axis' ? 'shadow' : 'line' },
       formatter: (p) => defaultFormatter(p),
       backgroundColor: 'oklab(0.274 0.00165715 -0.00576662 / 0.9)',
@@ -167,5 +210,6 @@ export function useTooltip(
     tooltipCfg?.formatValue,
     tooltipCfg?.show,
     tooltipCfg?.trigger,
+    tooltipCfg?.series,
   ]);
 }

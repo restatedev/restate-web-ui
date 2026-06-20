@@ -1,16 +1,31 @@
 import { DurationFormat } from '@formatjs/intl-durationformat';
 import { parseAbsoluteToLocal, parseDuration } from '@internationalized/date';
 
-const formatter = new DurationFormat('en', {
-  style: 'narrow',
-  round: true,
-  milliseconds: 'numeric',
-});
+type DurationStyle = 'long' | 'short' | 'narrow' | 'digital';
 
-export function formatDurations({
-  isPast,
-  ...duration
-}: Parameters<DurationFormat['format']>[0] & { isPast?: boolean }) {
+const getFormatter = (style: DurationStyle = 'narrow') =>
+  new DurationFormat('en', {
+    style,
+    round: true,
+    milliseconds: 'numeric',
+  });
+
+const formatter = getFormatter();
+
+type FormatDurationOptions = {
+  style?: DurationStyle;
+};
+
+export function formatDurations(
+  {
+    isPast,
+    ...duration
+  }: Parameters<DurationFormat['format']>[0] & { isPast?: boolean },
+  options?: FormatDurationOptions,
+) {
+  const activeFormatter = options?.style
+    ? getFormatter(options.style)
+    : formatter;
   const allEntries = Object.values(duration);
   const isDurationZero = allEntries.reduce((p, c) => p + c, 0) === 0;
   if (isDurationZero) {
@@ -23,7 +38,7 @@ export function formatDurations({
   if (!isValid) {
     return '';
   }
-  const parts = formatter.formatToParts(duration);
+  const parts = activeFormatter.formatToParts(duration);
   const shouldShowFraction =
     !duration.minutes && !duration.hours && !duration.days;
   const formatted = parts.reduce((result, { type, value, unit }) => {

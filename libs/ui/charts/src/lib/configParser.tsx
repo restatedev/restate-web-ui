@@ -19,7 +19,10 @@ export function XAxis<T extends object>(props: ChartConfig<T>['xAxis']) {
   return null;
 }
 export function TimeXAxis<T extends object>(
-  props: Pick<NonNullable<ChartConfig<T>['xAxis']>, 'dataKey' | 'min' | 'max'>,
+  props: Pick<
+    NonNullable<ChartConfig<T>['xAxis']>,
+    'dataKey' | 'min' | 'max' | 'show'
+  >,
 ) {
   return null;
 }
@@ -27,10 +30,7 @@ export function YAxis<T extends object>(props: ChartConfig<T>['yAxis']) {
   return null;
 }
 export function ValueYAxis<T extends object>(
-  props: Pick<
-    NonNullable<ChartConfig<T>['yAxis']>,
-    'dataKey' | 'position' | 'labelFormatter' | 'min' | 'max'
-  >,
+  props: Omit<NonNullable<ChartConfig<T>['yAxis']>, 'type'>,
 ) {
   return null;
 }
@@ -43,7 +43,7 @@ export function Legend<T extends object>(props: ChartConfig<T>['legend']) {
 export function CartesianGrid<T extends object>(
   props: Pick<
     NonNullable<ChartConfig<T>['grid']>,
-    'top' | 'left' | 'bottom' | 'right'
+    'top' | 'left' | 'bottom' | 'right' | 'containLabel'
   >,
 ) {
   return null;
@@ -59,7 +59,7 @@ export function Series<T extends object>(
   return null;
 }
 export function BarTimeSeries<T extends object>(
-  props: Pick<BarTimeSeriesCfg, 'dataKey' | 'startRangeKey' | 'endRangeKey'>,
+  props: Omit<BarTimeSeriesCfg<T>, 'type'>,
 ) {
   return null;
 }
@@ -103,7 +103,7 @@ export function buildConfigFromChildren<T extends object>(
   Children.forEach(children, (ch) => {
     if (!isValidElement(ch)) return;
     if (isXAxis(ch)) {
-      const resolveConfig = { ...cfg.xAxis, ...ch.props, show: true };
+      const resolveConfig = { show: true, ...cfg.xAxis, ...ch.props };
       if (!resolveConfig?.type || !resolveConfig?.dataKey) {
         throw new Error('<XAxis type="..." dataKey="..."> is required.');
       }
@@ -114,7 +114,7 @@ export function buildConfigFromChildren<T extends object>(
       };
     }
     if (isTimeXAxis(ch)) {
-      const resolveConfig = { ...cfg.xAxis, ...ch.props, show: true };
+      const resolveConfig = { show: true, ...cfg.xAxis, ...ch.props };
       if (!resolveConfig?.dataKey) {
         throw new Error('<TimeXAxis dataKey="..."> is required.');
       }

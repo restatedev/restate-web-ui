@@ -4,6 +4,7 @@ import { useFeatures } from '@restate/data-access/admin-api';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
+  FilterItem,
 } from '@restate/data-access/admin-api-spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -19,9 +20,38 @@ import { BatchState } from './types';
 import { useBatchMutation } from './useBatchMutation';
 import { useProgress } from './useProgress';
 import { OPERATION_CONFIG, OperationConfig } from './config';
-import { QueryClause } from '@restate/ui/query-builder';
+import {
+  QueryClause,
+  QueryClauseOperationId,
+  QueryClauseType,
+  QueryClauseValue,
+} from '@restate/ui/query-builder';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
+
+function toQueryClauseValue(
+  filter: FilterItem,
+): QueryClauseValue<QueryClauseType> | undefined {
+  if (!('value' in filter)) return undefined;
+  if (filter.type === 'DATE') {
+    if (typeof filter.value === 'string') {
+      return new Date(filter.value);
+    }
+    return {
+      start: new Date(filter.value.start),
+      end: new Date(filter.value.end),
+    };
+  }
+  return filter.value;
+}
+
+function formatFilterValue(filter: FilterItem) {
+  if (!('value' in filter)) return '';
+  if (typeof filter.value === 'object') {
+    return JSON.stringify(filter.value);
+  }
+  return filter.value;
+}
 
 function BatchOperationContent({
   count,
@@ -103,20 +133,21 @@ function Filters({
   const hasStatusFilter = paramsWithFilters?.filters.some(
     (filter) => filter.field === 'status' && !filter.isActionImplicitFilter,
   );
-  const paramsWithFiltersWithServiceAndStatus = [
-    ...(hasServiceFilter
-      ? []
-      : [
-          {
-            field: 'target_service_name',
-            type: 'STRING_LIST',
-            operation: 'IN',
-            value: [],
-          },
-        ]),
-    ...(hasStatusFilter
-      ? []
-      : [{ field: 'status', type: 'STRING_LIST', operation: 'IN', value: [] }]),
+  const implicitServiceFilter: FilterItem = {
+    field: 'target_service_name',
+    type: 'STRING_LIST',
+    operation: 'IN',
+    value: [],
+  };
+  const implicitStatusFilter: FilterItem = {
+    field: 'status',
+    type: 'STRING_LIST',
+    operation: 'IN',
+    value: [],
+  };
+  const paramsWithFiltersWithServiceAndStatus: FilterItem[] = [
+    ...(hasServiceFilter ? [] : [implicitServiceFilter]),
+    ...(hasStatusFilter ? [] : [implicitStatusFilter]),
     ...(paramsWithFilters?.filters ?? []).filter(
       (filter) => !filter.isActionImplicitFilter,
     ),
@@ -130,8 +161,8 @@ function Filters({
         );
         const queryClause = clauseSchema
           ? new QueryClause(clauseSchema, {
-              operation: filter.operation as any,
-              value: 'value' in filter ? filter.value : undefined,
+              operation: filter.operation as QueryClauseOperationId,
+              value: toQueryClauseValue(filter),
               fieldValue: filter.field,
             })
           : undefined;
@@ -157,8 +188,7 @@ function Filters({
                   queryClause.value.operation === 'IN') &&
                 (queryClause.isAllSelected || queryClause.isNothingSelected)
                   ? 'Any'
-                  : queryClause?.valueLabel ||
-                    ('value' in filter ? filter.value : '')}
+                  : queryClause?.valueLabel || formatFilterValue(filter)}
               </span>
             </TruncateWithTooltip>
           </div>

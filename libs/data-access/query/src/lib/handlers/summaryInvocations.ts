@@ -245,12 +245,24 @@ function filtersCompatibleWithSplitTable(filters: FilterItem[]): boolean {
   );
 }
 
+// `excludeCompleted` keeps the scan to in-flight invocations — the overview uses
+// it when the completion chart shows the completed breakdown separately. `status`
+// is a HIGHLIGHT field (resolved client-side), so this is applied directly to the
+// SQL rather than going through `filters`.
+function withInflightOnly(where: string, excludeCompleted: boolean): string {
+  if (!excludeCompleted) return where;
+  return where
+    ? `${where} AND status != 'completed'`
+    : "WHERE status != 'completed'";
+}
+
 export async function summaryInvocations(
   this: QueryContext,
   filters: FilterItem[],
   sampled = true,
   sampleSize = DEFAULT_SAMPLE_SIZE,
   range?: string,
+  excludeCompleted = false,
 ) {
   // TODO: re-enable split table path once compatible
   // if (
@@ -273,6 +285,7 @@ export async function summaryInvocations(
     sampled,
     sampleSize,
     range,
+    excludeCompleted,
   );
 }
 
@@ -282,6 +295,7 @@ async function summaryInvocationsLegacy(
   sampled: boolean,
   sampleSize: number,
   range: string | undefined,
+  excludeCompleted: boolean,
 ) {
   const rangeFilter = rangeToCreatedAtFilter(range);
   const allFilters = rangeFilter ? [rangeFilter, ...filters] : filters;
@@ -304,9 +318,12 @@ async function summaryInvocationsLegacy(
     const statusTableFilters = baseFilters.filter(
       (f) => f.field !== 'retry_count',
     );
-    const where = convertInvocationsFilters(statusTableFilters, {
-      deploymentFields: ['pinned_deployment_id'],
-    });
+    const where = withInflightOnly(
+      convertInvocationsFilters(statusTableFilters, {
+        deploymentFields: ['pinned_deployment_id'],
+      }),
+      excludeCompleted,
+    );
     const statusColumns =
       'id, status, completion_result, target_service_name, target_handler_name';
     const source = sampled
@@ -316,7 +333,10 @@ async function summaryInvocationsLegacy(
     const statusCase = `CASE WHEN status = 'invoked' AND vq.vq_status = 'backing-off' THEN 'backing-off' WHEN status = 'invoked' AND vq.vq_status = 'yielded' THEN 'ready' WHEN status = 'invoked' THEN 'running' WHEN status = 'inboxed' THEN 'pending' ELSE status END`;
     query = `SELECT ${statusCase} AS status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${source} si LEFT JOIN (SELECT entry_id, status AS vq_status FROM sys_vqueues WHERE stage = 'inbox' AND status IN ('backing-off', 'yielded')) vq ON vq.entry_id = si.id ${outerWhere} GROUP BY ${statusCase}, completion_result, target_service_name, target_handler_name`;
   } else {
-    const where = convertInvocationsFilters(baseFilters);
+    const where = withInflightOnly(
+      convertInvocationsFilters(baseFilters),
+      excludeCompleted,
+    );
     const columns = getSysInvocationListColumns(this.features).join(', ');
     const subquery = sampled
       ? `(SELECT ${columns} FROM sys_invocation LIMIT ${sampleSize})`

@@ -48,8 +48,10 @@ export function InvocationsBreakdownTooltipContent({
   issuesByStatus,
   isStatusDimmed,
   isSampled,
+  noun = { one: 'invocation', other: 'invocations' },
 }: {
   title: ReactNode;
+  noun?: { one: string; other: string };
   // Total in the current scope (denominator for percentages). When a status
   // filter is also active, pass `filteredTotal` to show it alongside as
   // `filtered/total`.
@@ -84,7 +86,7 @@ export function InvocationsBreakdownTooltipContent({
             total === 0 ? (
               <>
                 <span className="!text-xl !text-gray-50">No</span>
-                <span className="!text-sm !text-gray-400">invocations</span>
+                <span className="!text-sm !text-gray-400">{noun.other}</span>
               </>
             ) : (
               <>
@@ -92,7 +94,7 @@ export function InvocationsBreakdownTooltipContent({
                   {filteredShare ?? 'All'}
                 </span>
                 <span className="!text-sm !text-gray-400">
-                  {filteredShare ? 'of invocations' : 'invocations'}
+                  {filteredShare ? `of ${noun.other}` : noun.other}
                 </span>
               </>
             )
@@ -107,10 +109,7 @@ export function InvocationsBreakdownTooltipContent({
                 </span>
               )}
               <span className="!text-sm !text-gray-400">
-                {formatPlurals(showFiltered ? filteredTotal : total, {
-                  one: 'invocation',
-                  other: 'invocations',
-                })}
+                {formatPlurals(showFiltered ? filteredTotal : total, noun)}
               </span>
             </>
           )}

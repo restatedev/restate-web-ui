@@ -19,7 +19,7 @@ import {
   ComboBoxSection,
   ComboBoxItem,
 } from '@restate/ui/form-field';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';

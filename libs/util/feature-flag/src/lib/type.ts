@@ -5,5 +5,7 @@ export const FEATURE_FLAGS = [
   'FEATURE_VQUEUE_OBSERVABILITY',
 
   'FEATURE_EXECUTION_METRICS',
+
+  'FEATURE_COMPLETION_HISTORY',
 ] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];

@@ -1,4 +1,4 @@
-import { formatDateTime } from '@restate/util/intl';
+import { formatDateRange, formatDateTime } from '@restate/util/intl';
 
 export type QueryClauseType =
   | 'CUSTOM_STRING'
@@ -13,6 +13,7 @@ export type QueryClauseOperationId =
   | 'NOT_IN'
   | 'BEFORE'
   | 'AFTER'
+  | 'BETWEEN'
   | 'LESS_THAN'
   | 'GREATER_THAN'
   | 'CONTAINS'
@@ -28,6 +29,10 @@ interface Option<T extends string> {
 
 export type QueryClauseOperation = Option<QueryClauseOperationId>;
 export type QueryClauseOption = Option<string>;
+export type QueryClauseDateRangeValue = {
+  start?: Date;
+  end?: Date;
+};
 export interface QueryClauseSchema<T extends QueryClauseType> {
   id: string;
   label: string;
@@ -46,7 +51,7 @@ export type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
       : T extends 'STRING_LIST'
         ? string[]
         : T extends 'DATE'
-          ? Date
+          ? Date | QueryClauseDateRangeValue
           : never;
 
 export class QueryClause<T extends QueryClauseType> {
@@ -99,6 +104,17 @@ export class QueryClause<T extends QueryClauseType> {
     if (value instanceof Date) {
       return formatDateTime(value, 'system');
     }
+    if (isDateRangeValue(value)) {
+      if (value.start && value.end) {
+        return formatDateRange(value.start, value.end);
+      }
+      if (value.start) {
+        return `${formatDateTime(value.start, 'system')} to ?`;
+      }
+      if (value.end) {
+        return `? to ${formatDateTime(value.end, 'system')}`;
+      }
+    }
     if (Array.isArray(value)) {
       return value
         .map((v) => this.options?.find((opt) => opt.value === v)?.label ?? v)
@@ -114,6 +130,20 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   get isValid() {
+    if (isDateRangeValue(this.value.value)) {
+      const start = this.value.value.start;
+      const end = this.value.value.end;
+      return Boolean(
+        start &&
+        end &&
+        isValidDate(start) &&
+        isValidDate(end) &&
+        start.getTime() < end.getTime(),
+      );
+    }
+    if (this.value.value instanceof Date) {
+      return isValidDate(this.value.value);
+    }
     if (Array.isArray(this.value.value)) {
       return this.value.value.length > 0;
     } else {
@@ -154,7 +184,7 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   get fieldValue() {
-    return this.value.fieldValue ?? this.id;
+    return this.value.fieldValue ?? this.schema.id;
   }
 
   constructor(
@@ -200,7 +230,7 @@ export class QueryClause<T extends QueryClauseType> {
     try {
       const parsedValue = JSON.parse(value) as {
         operation?: QueryClauseOperationId;
-        value?: number | string | string[];
+        value?: number | string | string[] | SerializedDateRangeValue;
         fieldValue?: string;
       };
       return new QueryClause(schema, {
@@ -208,13 +238,43 @@ export class QueryClause<T extends QueryClauseType> {
         value: getValue(schema.type, parsedValue.value),
         fieldValue: parsedValue.fieldValue,
       });
-    } catch (error) {
+    } catch {
       return new QueryClause(schema);
     }
   }
 }
 
-function getValue(type: QueryClauseType, value?: number | string | string[]) {
+type SerializedDateRangeValue = {
+  start?: string;
+  end?: string;
+};
+
+function isDateRangeValue(value: unknown): value is QueryClauseDateRangeValue {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    ('start' in value || 'end' in value)
+  );
+}
+
+function isSerializedDateRangeValue(
+  value: unknown,
+): value is SerializedDateRangeValue {
+  return (
+    value != null &&
+    typeof value === 'object' &&
+    ('start' in value || 'end' in value)
+  );
+}
+
+function isValidDate(value: Date) {
+  return !Number.isNaN(value.getTime());
+}
+
+function getValue(
+  type: QueryClauseType,
+  value?: number | string | string[] | SerializedDateRangeValue,
+) {
   if (type === 'CUSTOM_STRING' && typeof value === 'string') {
     return value;
   }
@@ -226,6 +286,12 @@ function getValue(type: QueryClauseType, value?: number | string | string[]) {
   }
   if (type === 'DATE' && typeof value === 'string') {
     return new Date(value);
+  }
+  if (type === 'DATE' && isSerializedDateRangeValue(value)) {
+    return {
+      start: value.start ? new Date(value.start) : undefined,
+      end: value.end ? new Date(value.end) : undefined,
+    };
   }
   if (
     type === 'STRING_LIST' &&

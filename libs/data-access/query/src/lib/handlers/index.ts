@@ -15,6 +15,10 @@ export { batchResumeInvocations } from './batchResumeInvocations';
 export { batchRestartAsNewInvocations } from './batchRestartAsNewInvocations';
 export { countInvocations } from './countInvocations';
 export { summaryInvocations } from './summaryInvocations';
+export {
+  completedInvocationsBreakdown,
+  type CompletedInvocationsBreakdownArgs,
+} from './completedInvocationsBreakdown';
 export { getInvocationsStatus } from './getInvocationsStatus';
 export { getMetrics } from './getMetrics';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';

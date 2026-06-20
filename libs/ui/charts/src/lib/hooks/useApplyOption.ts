@@ -13,7 +13,7 @@ export function useApplyOption(
       inst.setOption(option, {
         notMerge: false,
         lazyUpdate: true,
-        replaceMerge: ['dataset', 'series'],
+        replaceMerge: ['dataset', 'grid', 'xAxis', 'yAxis', 'series'],
       });
     } catch (e) {
       console.error('[Echarts] setOption failed', e);

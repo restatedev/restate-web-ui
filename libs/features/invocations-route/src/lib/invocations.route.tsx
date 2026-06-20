@@ -102,7 +102,7 @@ import {
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
 import { FilterShortcuts } from './FilterShortcuts';
-import { RestateMinimumVersion } from '@restate/util/feature-flag';
+import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useStatusBarProps } from './useStatusBarProps';
 import { useServiceTabs } from './useServiceTabs';
 import { hasStatusFilter } from './statusFilter';
