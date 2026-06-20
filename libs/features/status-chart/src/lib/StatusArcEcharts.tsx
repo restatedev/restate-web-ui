@@ -30,7 +30,7 @@ export function StatusArcEcharts({
       <Chart width="100%" height="100%" theme="light" renderer="canvas">
         <Tooltip trigger="item" formatValue={(v) => formatNumber(v)} />
         <Pie
-          radius={['81%', '92%']}
+          radius={['85%', '92%']}
           center={['50%', '50%']}
           startAngle={210}
           endAngle={-30}
