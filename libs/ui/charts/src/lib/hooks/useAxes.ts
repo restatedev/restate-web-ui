@@ -87,8 +87,16 @@ export function useAxes<T extends object>(
       axisLabel: {
         fontFamily: 'InterVariable, sans-serif',
         color: 'oklch(55.1% .027 264.364)',
-        inside: yAxisLabelInside,
-        margin: yAxisLabelInside ? 0 : undefined,
+        align: yAxisLabelInside
+          ? yAxisPosition === 'right'
+            ? 'right'
+            : 'left'
+          : yAxisPosition === 'right'
+            ? 'left'
+            : 'right',
+        hideOverlap: true,
+        inside: yAxisLabelInside ?? false,
+        margin: yAxisLabelInside ? 0 : 12,
       },
       splitLine: {
         show: yAxisSplitLine ?? true,
