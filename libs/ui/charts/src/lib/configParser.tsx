@@ -62,10 +62,7 @@ export function Series<T extends object>(
   return null;
 }
 export function BarTimeSeries<T extends object>(
-  props: Pick<
-    BarTimeSeriesCfg<T>,
-    'dataKey' | 'startRangeKey' | 'endRangeKey' | 'onSelect'
-  >,
+  props: Omit<BarTimeSeriesCfg<T>, 'type'>,
 ) {
   return null;
 }

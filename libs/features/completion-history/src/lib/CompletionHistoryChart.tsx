@@ -1,7 +1,7 @@
 import {
+  BarTimeSeries,
   CartesianGrid,
   Chart,
-  Series,
   TimeXAxis,
   Tooltip,
   YAxis,
@@ -136,8 +136,7 @@ export function CompletionHistoryChart({
             formatValue={(value) => formatNumber(Math.abs(value))}
             series={TOOLTIP_SERIES}
           />
-          <Series
-            type="bar-time"
+          <BarTimeSeries
             name="Succeeded"
             dataKey="succeeded"
             startRangeKey="start"
@@ -160,8 +159,7 @@ export function CompletionHistoryChart({
                 : undefined
             }
           />
-          <Series
-            type="bar-time"
+          <BarTimeSeries
             name="Failed, Cancelled or Killed"
             dataKey="failed"
             startRangeKey="start"
