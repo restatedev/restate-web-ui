@@ -255,7 +255,10 @@ export function useEditState(
       ...decodedQuery,
       isPending: query.isPending || decodedQuery.isPending,
       error: query.error || decodedQuery.error,
-      data: query.data ? decodedQuery.data : undefined,
+      data:
+        query.data && !decodedQuery.isPlaceholderData
+          ? decodedQuery.data
+          : undefined,
     },
   };
 }
