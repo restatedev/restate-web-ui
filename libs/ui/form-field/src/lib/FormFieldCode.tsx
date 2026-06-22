@@ -1,5 +1,5 @@
 import { focusRing } from '@restate/ui/focus';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { tv } from '@restate/util/styles';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui/editor';
@@ -16,6 +16,7 @@ export function FormFieldCode({
   className,
   onInput,
   readonly,
+  mountEditor = true,
 }: {
   name: string;
   value?: string;
@@ -23,6 +24,7 @@ export function FormFieldCode({
   readonly?: boolean;
   className?: string;
   onInput?: (value: string) => void;
+  mountEditor?: boolean;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -38,15 +40,23 @@ export function FormFieldCode({
     [onInput],
   );
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.value = value ?? '';
+    }
+  }, [value]);
+
   return (
     <>
-      <Editor
-        value={value}
-        className={inputStyles({ className })}
-        editorRef={editorRef}
-        onInput={onContentChange}
-        readonly={readonly}
-      />
+      {mountEditor && (
+        <Editor
+          value={value}
+          className={inputStyles({ className })}
+          editorRef={editorRef}
+          onInput={onContentChange}
+          readonly={readonly}
+        />
+      )}
       <input
         type="hidden"
         className="hidden"

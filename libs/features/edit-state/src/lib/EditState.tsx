@@ -5,9 +5,15 @@ import {
   DialogFooter,
 } from '@restate/ui/dialog';
 import { Form } from 'react-router';
+import { Disclosure, DisclosurePanel } from 'react-aria-components';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
-import { FormFieldCode, FormFieldInput } from '@restate/ui/form-field';
+import {
+  FormFieldCode,
+  FormFieldInput,
+  FormFieldSelect,
+} from '@restate/ui/form-field';
+import { ListBoxItem } from '@restate/ui/listbox';
 import {
   createContext,
   Dispatch,
@@ -18,6 +24,7 @@ import {
   use,
   useId,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -31,7 +38,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
-import { useEditState } from './useEditState';
+import { useEditState, type EditStateValue } from './useEditState';
 
 const styles = tv({
   base: '',
@@ -53,6 +60,10 @@ const styles = tv({
   },
 });
 
+const valueFormatStyles = tv({
+  base: 'shrink-0 [&_button]:gap-1 [&_button]:border-none [&_button]:bg-transparent [&_button]:px-1.5 [&_button]:py-1 [&_button]:text-xs [&_button]:font-normal [&_button]:text-gray-500 [&_button]:shadow-none [&_button_[data-description]]:hidden [&_button:hover]:bg-black/3 [&_button:hover]:text-gray-700 [&>div]:rounded-lg [&>div]:border-none [&>div]:bg-transparent [&>div]:p-0 [&>div]:shadow-none',
+});
+
 const codeStyles = tv({
   base: 'mt-2 overflow-auto font-mono',
   variants: {
@@ -61,6 +72,38 @@ const codeStyles = tv({
     },
   },
 });
+
+const STATE_VALUE_EXPAND_THRESHOLD = 200;
+
+type StateValueFormat = 'text' | 'binary';
+
+type StateFormRowModel = {
+  id: string;
+  name?: string;
+  value: string;
+  defaultFormat: StateValueFormat;
+};
+
+type StateFormValues = Record<
+  string,
+  {
+    text: string;
+    defaultFormat: StateValueFormat;
+  }
+>;
+
+function createStateFormRows(values: StateFormValues): StateFormRowModel[] {
+  return Object.entries(values).map(([name, value]) => ({
+    id: name,
+    name,
+    value: value.text,
+    defaultFormat: value.defaultFormat,
+  }));
+}
+
+function createStateFormRowId() {
+  return Math.random().toString(36).slice(2);
+}
 
 const EditStateContext = createContext<{
   isEditing: boolean;
@@ -168,29 +211,46 @@ function EditStateInner({
   );
   const queryClient = useQueryClient();
   const hasActiveInvocations = (queue?.size ?? 0) > 0;
+  const stateVersion = query.data?.version ?? '';
+  const decodedValues = query.data?.values;
   const editorValue = useMemo(
-    () =>
-      JSON.stringify(
-        typeof key === 'undefined'
-          ? query.data?.state
-          : query.data?.state?.[key],
-      ),
-    [key, query.data?.state],
+    () => (typeof key === 'undefined' ? undefined : decodedValues?.[key]?.text),
+    [key, decodedValues],
   );
 
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    if (!isPartial && !isDeleting) {
+      const state: Record<string, EditStateValue> = {};
+      for (const row of formData.getAll('state-row')) {
+        if (typeof row !== 'string') {
+          continue;
+        }
+
+        const name = formData.get(`state-key-${row}`);
+        const fieldValue = formData.get(`state-value-${row}`);
+        if (
+          typeof name === 'string' &&
+          name &&
+          typeof fieldValue === 'string'
+        ) {
+          state[name] =
+            resolveValueFormat(
+              fieldValue,
+              formData.get(`state-format-${row}`),
+            ) ?? '';
+        }
+      }
+      mutation.mutate({ state, partial: false });
+      return;
+    }
     const value = isDeleting ? '{}' : formData.get('value');
     if (typeof value === 'string') {
-      try {
-        const obj: Record<string, string | undefined> = isPartial
-          ? { [key]: value || undefined }
-          : stringifyValues(JSON.parse(value));
-        mutation.mutate({ state: obj, partial: isPartial });
-      } catch (error) {
-        mutation.mutate({ state: value as any, partial: isPartial });
-      }
+      const obj: Record<string, EditStateValue> = isPartial
+        ? { [key]: resolveValueFormat(value, formData.get('value-format')) }
+        : stringifyValues(JSON.parse(value));
+      mutation.mutate({ state: obj, partial: isPartial });
     }
   };
   const error = query.error || mutation.error;
@@ -310,11 +370,40 @@ function EditStateInner({
         {query.isPending && !isDeleting && !query.data && (
           <div className="min-h-20 w-full animate-pulse rounded-lg border border-gray-200 bg-slate-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]" />
         )}
-        {query.data && !isDeleting && (
+        {query.data && !isDeleting && !isPartial && (
           <>
             <p className="mt-2 text-sm text-gray-500">
-              Please update the current value:
+              Please update the current keys and values:
             </p>
+            {decodedValues && (
+              <StateFormRows
+                key={JSON.stringify([service, objectKey, scope, stateVersion])}
+                values={decodedValues}
+                stateVersion={stateVersion}
+                readonly={query.isPending}
+                isPending={query.isPending}
+                onInput={mutation.reset}
+              />
+            )}
+          </>
+        )}
+        {query.data && !isDeleting && isPartial && (
+          <>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <p className="text-sm text-gray-500">
+                Please update the current value:
+              </p>
+              {isPartial && (
+                <ValueFormatSelect
+                  key={`${service}/${objectKey}/${key}/${stateVersion}`}
+                  name="value-format"
+                  defaultFormat={
+                    query.data?.values?.[key]?.defaultFormat ?? 'text'
+                  }
+                  disabled={query.isPending}
+                />
+              )}
+            </div>
             <FormFieldCode
               autoFocus
               name="value"
@@ -330,7 +419,234 @@ function EditStateInner({
   );
 }
 
-function stringifyValues(state: Record<string, any>) {
+function StateFormRows({
+  values,
+  stateVersion,
+  readonly,
+  isPending,
+  onInput,
+}: {
+  values: StateFormValues;
+  stateVersion: string;
+  readonly?: boolean;
+  isPending?: boolean;
+  onInput?: VoidFunction;
+}) {
+  const [stateRows, setStateRows] = useState(() => createStateFormRows(values));
+  const rowsRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollRowsToBottom = () => {
+    requestAnimationFrame(() => {
+      const rows = rowsRef.current;
+      rows?.scrollTo({ top: rows.scrollHeight, behavior: 'smooth' });
+    });
+  };
+
+  return (
+    <>
+      <div
+        ref={rowsRef}
+        className="mt-2 flex max-h-[50vh] flex-col gap-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 p-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+      >
+        {stateRows.map((row) => (
+          <StateFormRow
+            key={row.id}
+            field={row.id}
+            name={row.name}
+            value={row.value}
+            defaultFormat={row.defaultFormat}
+            readonly={readonly}
+            isPending={isPending}
+            onInput={onInput}
+            onRemove={() =>
+              setStateRows((rows) => rows.filter(({ id }) => id !== row.id))
+            }
+          />
+        ))}
+      </div>
+      <Button
+        variant="secondary"
+        type="button"
+        disabled={readonly}
+        onClick={() => {
+          setStateRows((rows) => [
+            ...rows,
+            {
+              id: createStateFormRowId(),
+              value: '',
+              defaultFormat: 'text',
+            },
+          ]);
+          scrollRowsToBottom();
+        }}
+        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border-dashed bg-transparent px-3 py-1.5 text-sm text-gray-500 shadow-none hover:bg-gray-50"
+      >
+        <Icon name={IconName.Plus} className="h-3.5 w-3.5" /> Add key
+      </Button>
+    </>
+  );
+}
+
+function StateFormRow({
+  field,
+  name,
+  value,
+  defaultFormat = 'text',
+  readonly,
+  isPending,
+  onInput,
+  onRemove,
+}: {
+  field: string;
+  name?: string;
+  value: string;
+  defaultFormat?: StateValueFormat;
+  readonly?: boolean;
+  isPending?: boolean;
+  onInput?: VoidFunction;
+  onRemove: VoidFunction;
+}) {
+  const [isExpanded, setIsExpanded] = useState(
+    value.length <= STATE_VALUE_EXPAND_THRESHOLD,
+  );
+  const [hasMountedEditor, setHasMountedEditor] = useState(isExpanded);
+  const expandRow = () => {
+    setIsExpanded(true);
+    setHasMountedEditor(true);
+  };
+
+  return (
+    <Disclosure
+      isExpanded={isExpanded}
+      onExpandedChange={(expanded) => {
+        setIsExpanded(expanded);
+        if (expanded) {
+          setHasMountedEditor(true);
+        }
+      }}
+      className="group shrink-0 overflow-hidden rounded-[0.625rem] border border-gray-200 bg-white shadow-xs"
+    >
+      <input type="hidden" name="state-row" value={field} />
+      <div className="relative flex items-center gap-1.5 py-1.5 pr-2 pl-1.5">
+        <Button
+          slot="trigger"
+          variant="icon"
+          type="button"
+          aria-label="Toggle value"
+          className="absolute inset-0 z-0 h-full w-full rounded-none border-0 p-0 hover:bg-gray-50/80 pressed:bg-gray-100"
+        />
+        <div className="relative z-10 flex max-w-[48ch] shrink-0 cursor-text items-center rounded-lg border border-transparent transition-[background-color,border-color,box-shadow] focus-within:border-gray-200 focus-within:bg-gray-100 focus-within:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] hover:border-gray-200 hover:bg-gray-100 hover:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+          <span className="shrink-0 border-r border-gray-200/80 py-1 pr-2 pl-1.5 text-0.5xs font-medium text-gray-400 uppercase">
+            key
+          </span>
+          <div className="min-w-0 shrink-0" onFocusCapture={expandRow}>
+            <FormFieldInput
+              required
+              name={`state-key-${field}`}
+              defaultValue={name}
+              placeholder="key"
+              className="[&_input]:[field-sizing:content] [&_input]:min-h-7 [&_input]:w-auto [&_input]:max-w-[40ch] [&_input]:min-w-[6ch] [&_input]:border-none [&_input]:bg-transparent [&_input]:px-1.5 [&_input]:py-1 [&_input]:font-mono [&_input]:text-xs [&_input]:shadow-none [&_input:focus]:outline-hidden [&>div]:min-h-7"
+            />
+          </div>
+        </div>
+        <div className="pointer-events-none min-h-7 flex-auto" />
+        <ValueFormatSelect
+          name={`state-format-${field}`}
+          defaultFormat={defaultFormat}
+          disabled={readonly}
+          className="relative z-10"
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none relative z-10 shrink-0 rounded-md p-1.5 text-gray-400 group-hover:text-gray-700"
+        >
+          <Icon
+            name={IconName.ChevronDown}
+            className="h-4 w-4 transition-transform group-expanded:rotate-180"
+          />
+        </span>
+        <Button
+          variant="icon"
+          type="button"
+          onClick={onRemove}
+          aria-label={name ? `Remove ${name}` : 'Remove key'}
+          className="relative z-10 shrink-0 rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+        >
+          <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      <DisclosurePanel className="border-t border-gray-200/75 bg-gray-50">
+        <FormFieldCode
+          name={`state-value-${field}`}
+          value={value}
+          mountEditor={hasMountedEditor}
+          readonly={readonly}
+          onInput={onInput}
+          className={codeStyles({
+            isPending,
+            className:
+              'mt-0 rounded-none border-none bg-transparent shadow-none',
+          })}
+        />
+      </DisclosurePanel>
+    </Disclosure>
+  );
+}
+
+function ValueFormatSelect({
+  name,
+  defaultFormat,
+  disabled,
+  className,
+}: {
+  name: string;
+  defaultFormat: StateValueFormat;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <FormFieldSelect
+      name={name}
+      defaultSelectedKey={defaultFormat}
+      disabled={disabled}
+      placeholder="Value format"
+      className={valueFormatStyles({ className })}
+    >
+      <ListBoxItem value="text">
+        <div>Text</div>
+        <div data-description className="text-xs opacity-70">
+          Edit as text
+        </div>
+      </ListBoxItem>
+      <ListBoxItem value="binary">
+        <div>Binary (Base64)</div>
+        <div data-description className="text-xs opacity-70">
+          Edit as Base64, store decoded bytes
+        </div>
+      </ListBoxItem>
+    </FormFieldSelect>
+  );
+}
+
+function resolveValueFormat(
+  value: string,
+  mode: FormDataEntryValue | null,
+): EditStateValue {
+  if (mode === 'binary') {
+    return value ? { base64: value.trim() } : undefined;
+  }
+  return minifyJson(value) || undefined;
+}
+
+function minifyJson(value: string) {
+  try {
+    return JSON.stringify(JSON.parse(value));
+  } catch {
+    return value;
+  }
+}
+
+function stringifyValues(state: Record<string, unknown>) {
   return convertStateToObject(
     Array.from(Object.entries(state)).map(([name, value]) => ({
       name,

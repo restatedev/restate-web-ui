@@ -10,7 +10,10 @@ import {
   useDecodeState,
   type RestateCodecOptions,
 } from '@restate/features/codec';
-import { base64ToUint8Array } from '@restate/util/binary';
+import {
+  base64ToUint8Array,
+  uint8ArrayToUtf8OrByteArray,
+} from '@restate/util/binary';
 import { RestateError } from '@restate/util/errors';
 import {
   useMutation,
@@ -23,8 +26,20 @@ import { useCallback } from 'react';
 function isValidJSON(value: unknown) {
   try {
     return Boolean(JSON.stringify(value));
-  } catch (error) {
+  } catch {
     return false;
+  }
+}
+
+export type EditStateValue = string | { base64: string } | undefined;
+
+function decodeBase64StateValue(key: string, base64: string) {
+  try {
+    return uint8ArrayToUtf8OrByteArray(base64ToUint8Array(base64));
+  } catch {
+    throw new RestateError(
+      `The value for "${key}" is not valid Base64. Please fix it or switch the value format to Text.`,
+    );
   }
 }
 
@@ -39,7 +54,7 @@ export function useEditState(
     StateResponse['state'] | undefined,
     RestateError | Error,
     {
-      state: Record<string, string | undefined>;
+      state: Record<string, EditStateValue>;
       partial?: boolean;
     }
   > & { enabled?: boolean } = {},
@@ -86,7 +101,7 @@ export function useEditState(
 
   const mutate = useCallback(
     async (variables: {
-      state: Record<string, string | undefined>;
+      state: Record<string, EditStateValue>;
       partial?: boolean;
     }) => {
       if (!version && variables.partial) {
@@ -105,8 +120,15 @@ export function useEditState(
 
       const encodedVariables = convertStateToObject(
         await Promise.all(
-          Object.entries(variables.state).map(([key, value]) =>
-            Promise.resolve(
+          Object.entries(variables.state).map(([key, value]) => {
+            if (value && typeof value === 'object') {
+              return Promise.resolve({
+                name: key,
+                value: decodeBase64StateValue(key, value.base64),
+              });
+            }
+
+            return Promise.resolve(
               encode(value, {
                 ...resolvedCodecOptions,
                 command: {
@@ -116,9 +138,11 @@ export function useEditState(
               }),
             ).then((encodedValue) => ({
               name: key,
-              value: Array.from(base64ToUint8Array(encodedValue)),
-            })),
-          ),
+              value: uint8ArrayToUtf8OrByteArray(
+                base64ToUint8Array(encodedValue),
+              ),
+            }));
+          }),
         ),
       );
 
@@ -135,7 +159,9 @@ export function useEditState(
                   ...convertStateToObject(
                     query.data.state.map(({ name, value }) => ({
                       name,
-                      value: Array.from(base64ToUint8Array(value)),
+                      value: uint8ArrayToUtf8OrByteArray(
+                        base64ToUint8Array(value),
+                      ),
                     })),
                   ),
                 }),
@@ -229,7 +255,10 @@ export function useEditState(
       ...decodedQuery,
       isPending: query.isPending || decodedQuery.isPending,
       error: query.error || decodedQuery.error,
-      data: query.data ? decodedQuery.data : undefined,
+      data:
+        query.data && !decodedQuery.isPlaceholderData
+          ? decodedQuery.data
+          : undefined,
     },
   };
 }
