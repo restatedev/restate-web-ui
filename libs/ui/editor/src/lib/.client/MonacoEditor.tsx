@@ -4,6 +4,15 @@ import './languageSetup';
 
 const MAX_EDITOR_FORMAT_LENGTH = 10_000_000;
 
+function isFormattableJson(value?: string) {
+  try {
+    JSON.parse(value ?? '');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const MONACO_EDITOR_THEME = 'restate-editor';
 
 export function MonacoEditor({
@@ -27,6 +36,7 @@ export function MonacoEditor({
     }
 
     const isLargeValue = (value?.length ?? 0) > MAX_EDITOR_FORMAT_LENGTH;
+    const shouldFormat = !isLargeValue && isFormattableJson(value);
 
     if (applyTheme) {
       monaco.editor.defineTheme(MONACO_EDITOR_THEME, {
@@ -46,8 +56,8 @@ export function MonacoEditor({
       language: 'json',
       folding: true,
       ...(applyTheme && { theme: MONACO_EDITOR_THEME }),
-      formatOnPaste: !isLargeValue,
-      formatOnType: !isLargeValue,
+      formatOnPaste: shouldFormat,
+      formatOnType: shouldFormat,
       minimap: { enabled: false },
       fontSize: 12,
       fontFamily: 'JetBrainsMonoVariable, mono',
@@ -63,6 +73,7 @@ export function MonacoEditor({
       automaticLayout: true,
       scrollbar: {
         useShadows: false,
+        alwaysConsumeMouseWheel: false,
       },
       overviewRulerBorder: false,
       overviewRulerLanes: 0,
@@ -82,6 +93,7 @@ export function MonacoEditor({
       scrollBeyondLastColumn: 0,
       tabSize: 2,
       renderLineHighlight: 'none',
+      renderValidationDecorations: 'off',
       ...(readonly && {
         readOnly: true,
         domReadOnly: true,
@@ -132,10 +144,10 @@ export function MonacoEditor({
       editor.onDidContentSizeChange(updateStyles),
     ];
 
-    if (isLargeValue) {
-      updateStyles();
-    } else {
+    if (shouldFormat) {
       void formatEditor();
+    } else {
+      updateStyles();
     }
 
     return () => {

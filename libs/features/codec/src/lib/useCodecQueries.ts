@@ -1,5 +1,6 @@
 import { useQueries, useQuery, type QueryKey } from '@tanstack/react-query';
 import { convertStateToObject } from '@restate/data-access/admin-api-hooks';
+import { base64ToUint8Array } from '@restate/util/binary';
 import { combineErrors } from '@restate/util/errors';
 import type { RestateCodecOptions } from './types';
 import { useCodecRuntime } from './useCodecRuntime';
@@ -7,13 +8,41 @@ import { useCodecRuntime } from './useCodecRuntime';
 function safeParse(value: string) {
   try {
     return JSON.parse(value);
-  } catch (error) {
+  } catch {
     if (value === '') {
       return undefined;
     }
 
     return value;
   }
+}
+
+function isBinaryStateValue(base64Value: string) {
+  try {
+    new TextDecoder('utf-8', { fatal: true }).decode(
+      base64ToUint8Array(base64Value),
+    );
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+export type DecodedStateValue = {
+  text: string;
+  parsed: unknown;
+  defaultFormat: 'text' | 'binary';
+};
+
+function getDefaultStateValueFormat(
+  base64Value: string | undefined,
+  isBase64: boolean | undefined,
+): DecodedStateValue['defaultFormat'] {
+  if (!isBase64 || !base64Value) {
+    return 'text';
+  }
+
+  return isBinaryStateValue(base64Value) ? 'binary' : 'text';
 }
 
 export function useDecodeState(
@@ -48,15 +77,24 @@ export function useDecodeState(
       const isPlaceholderData = results.some(
         (result) => result.isPlaceholderData,
       );
+      const values = results.map((result, index) => {
+        const item = state.at(index);
+        const text = result.data ?? '';
+        const value: DecodedStateValue = {
+          text,
+          parsed: safeParse(text),
+          defaultFormat: getDefaultStateValueFormat(item?.value, isBase64),
+        };
+
+        return {
+          name: item?.name ?? '',
+          value,
+        };
+      });
 
       return {
         data: {
-          state: convertStateToObject(
-            results.filter(Boolean).map((result, index) => ({
-              value: safeParse(result.data ?? ''),
-              name: state.at(index)?.name ?? '',
-            })),
-          ),
+          values: convertStateToObject(values),
           version,
         },
         error: combineErrors(

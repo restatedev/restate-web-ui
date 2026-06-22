@@ -26,8 +26,20 @@ import { useCallback } from 'react';
 function isValidJSON(value: unknown) {
   try {
     return Boolean(JSON.stringify(value));
-  } catch (error) {
+  } catch {
     return false;
+  }
+}
+
+export type EditStateValue = string | { base64: string } | undefined;
+
+function decodeBase64StateValue(key: string, base64: string) {
+  try {
+    return uint8ArrayToUtf8OrByteArray(base64ToUint8Array(base64));
+  } catch {
+    throw new RestateError(
+      `The value for "${key}" is not valid Base64. Please fix it or switch the value format to Text.`,
+    );
   }
 }
 
@@ -42,7 +54,7 @@ export function useEditState(
     StateResponse['state'] | undefined,
     RestateError | Error,
     {
-      state: Record<string, string | undefined>;
+      state: Record<string, EditStateValue>;
       partial?: boolean;
     }
   > & { enabled?: boolean } = {},
@@ -89,7 +101,7 @@ export function useEditState(
 
   const mutate = useCallback(
     async (variables: {
-      state: Record<string, string | undefined>;
+      state: Record<string, EditStateValue>;
       partial?: boolean;
     }) => {
       if (!version && variables.partial) {
@@ -108,8 +120,15 @@ export function useEditState(
 
       const encodedVariables = convertStateToObject(
         await Promise.all(
-          Object.entries(variables.state).map(([key, value]) =>
-            Promise.resolve(
+          Object.entries(variables.state).map(([key, value]) => {
+            if (value && typeof value === 'object') {
+              return Promise.resolve({
+                name: key,
+                value: decodeBase64StateValue(key, value.base64),
+              });
+            }
+
+            return Promise.resolve(
               encode(value, {
                 ...resolvedCodecOptions,
                 command: {
@@ -122,8 +141,8 @@ export function useEditState(
               value: uint8ArrayToUtf8OrByteArray(
                 base64ToUint8Array(encodedValue),
               ),
-            })),
-          ),
+            }));
+          }),
         ),
       );
 
