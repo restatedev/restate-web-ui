@@ -24,6 +24,7 @@ import {
   use,
   useId,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -432,10 +433,21 @@ function StateFormRows({
   onInput?: VoidFunction;
 }) {
   const [stateRows, setStateRows] = useState(() => createStateFormRows(values));
+  const rowsRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollRowsToBottom = () => {
+    requestAnimationFrame(() => {
+      const rows = rowsRef.current;
+      rows?.scrollTo({ top: rows.scrollHeight, behavior: 'smooth' });
+    });
+  };
 
   return (
     <>
-      <div className="mt-2 flex max-h-[50vh] flex-col gap-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 p-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div
+        ref={rowsRef}
+        className="mt-2 flex max-h-[50vh] flex-col gap-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 p-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+      >
         {stateRows.map((row) => (
           <StateFormRow
             key={row.id}
@@ -456,7 +468,7 @@ function StateFormRows({
         variant="secondary"
         type="button"
         disabled={readonly}
-        onClick={() =>
+        onClick={() => {
           setStateRows((rows) => [
             ...rows,
             {
@@ -464,8 +476,9 @@ function StateFormRows({
               value: '',
               defaultFormat: 'text',
             },
-          ])
-        }
+          ]);
+          scrollRowsToBottom();
+        }}
         className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border-dashed bg-transparent px-3 py-1.5 text-sm text-gray-500 shadow-none hover:bg-gray-50"
       >
         <Icon name={IconName.Plus} className="h-3.5 w-3.5" /> Add key
