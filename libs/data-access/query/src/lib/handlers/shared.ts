@@ -128,7 +128,7 @@ export function scopeClause(
 ): string {
   if (!context.features.has('vqueues')) return '';
   if (explicitScope !== undefined) {
-    return ` AND scope = '${explicitScope}'`;
+    return ` AND scope = ${quoteSqlString(explicitScope)}`;
   }
   return shouldFilterScopeIsNull(context, serviceType)
     ? ' AND scope IS NULL'

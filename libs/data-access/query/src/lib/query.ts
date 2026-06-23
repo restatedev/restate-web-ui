@@ -88,6 +88,7 @@ type BoundHandlers = {
     service: string,
     key: string,
     serviceType?: StateServiceType,
+    stateKeys?: string[],
   ) => Promise<Response>;
   getStateInterface: (
     service: string,
@@ -109,6 +110,7 @@ type BoundHandlers = {
     service: string,
     scope: string,
     key: string,
+    stateKeys?: string[],
   ) => Promise<Response>;
   batchCancelInvocations: (
     request: BatchInvocationsRequestBody,
@@ -146,16 +148,16 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
-    getState: (service, key, serviceType) =>
-      getState.call(context, service, key, undefined, serviceType),
+    getState: (service, key, serviceType, stateKeys) =>
+      getState.call(context, service, key, undefined, serviceType, stateKeys),
     getStateInterface: (service, serviceKey, scope, serviceType) =>
       getStateInterface.call(context, service, serviceKey, scope, serviceType),
     queryState: (service, args, serviceType) =>
       queryState.call(context, service, args, serviceType),
     listState: (service, args, serviceType) =>
       listState.call(context, service, args, serviceType),
-    getScopedState: (service, scope, key) =>
-      getState.call(context, service, key, scope),
+    getScopedState: (service, scope, key, stateKeys) =>
+      getState.call(context, service, key, scope, undefined, stateKeys),
     batchCancelInvocations: batchCancelInvocations.bind(context),
     batchPurgeInvocations: batchPurgeInvocations.bind(context),
     batchKillInvocations: batchKillInvocations.bind(context),
@@ -459,6 +461,7 @@ router.map(routes, {
             ctx.params.name,
             ctx.params.key,
             readServiceType(ctx.url.searchParams),
+            ctx.url.searchParams.getAll('stateKey'),
           );
         },
         async keys(ctx) {
@@ -505,6 +508,7 @@ router.map(routes, {
             ctx.params.name,
             ctx.params.scope,
             ctx.params.key,
+            ctx.url.searchParams.getAll('stateKey'),
           );
         },
       },

@@ -7165,6 +7165,8 @@ export interface operations {
   get_state: {
     parameters: {
       query?: {
+        /** @description state key filter; when omitted, all state entries are returned */
+        stateKey?: string[];
         /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
         serviceType?: 'service' | 'virtual_object' | 'workflow';
       };
@@ -7330,7 +7332,10 @@ export interface operations {
   };
   get_scoped_state: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description state key filter; when omitted, all state entries are returned */
+        stateKey?: string[];
+      };
       header?: never;
       path: {
         /** @description service name */
