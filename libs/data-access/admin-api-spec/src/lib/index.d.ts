@@ -2831,6 +2831,13 @@ export interface components {
         value: string;
       }[];
     };
+    ListStateResponse: {
+      state: {
+        name: string;
+        value?: string;
+        size: number;
+      }[];
+    };
     JournalEntry: components['schemas']['JournalBaseEntry'] &
       (
         | components['schemas']['InputJournalEntryType']
@@ -7098,7 +7105,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            objects: (components['schemas']['StateResponse'] & {
+            objects: (components['schemas']['ListStateResponse'] & {
               key: string;
               scope?: string;
             })[];

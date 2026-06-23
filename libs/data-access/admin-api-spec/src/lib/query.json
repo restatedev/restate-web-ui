@@ -2191,7 +2191,7 @@
                         "type": "object",
                         "allOf": [
                           {
-                            "$ref": "#/components/schemas/StateResponse"
+                            "$ref": "#/components/schemas/ListStateResponse"
                           },
                           {
                             "type": "object",
@@ -3943,6 +3943,30 @@
                 },
                 "value": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ListStateResponse": {
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "size"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "number"
                 }
               }
             }
