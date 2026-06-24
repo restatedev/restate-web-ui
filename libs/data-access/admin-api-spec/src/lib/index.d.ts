@@ -1060,6 +1060,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/state/storage-size': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get state storage size
+     * @description Aggregated state storage size by service name. Each service total is the sum of value_length for rows in the state table.
+     */
+    get: operations['get_state_storage_size'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/metrics': {
     parameters: {
       query?: never;
@@ -2580,6 +2600,15 @@ export interface components {
     u32: number;
     ListDrainedDeploymentsResponse: {
       deployment_ids: components['schemas']['DeploymentId'][];
+    };
+    /** @description State storage size grouped by service name. Each size is the sum of value_length for the service's rows in the state table. */
+    StateStorageSizeResponse: {
+      services: {
+        /** @description Service name from the state table. */
+        service_name: string;
+        /** @description Total stored state value size in bytes for the service. */
+        size: number;
+      }[];
     };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
@@ -7403,6 +7432,73 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListDrainedDeploymentsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_state_storage_size: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['StateStorageSizeResponse'];
         };
       };
       400: {

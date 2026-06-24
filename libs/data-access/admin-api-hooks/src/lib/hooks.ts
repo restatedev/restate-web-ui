@@ -315,6 +315,27 @@ export function useGetMetrics(
   };
 }
 
+export function useGetStateStorageSize(
+  options?: HookQueryOptions<'/query/state/storage-size', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/state/storage-size', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function isVersionQuery(
   data: unknown,
   query: Query<unknown, unknown, unknown>,

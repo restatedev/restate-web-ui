@@ -33,6 +33,7 @@ import {
   countInvocations,
   getInvocationsStatus,
   getMetrics,
+  getStateStorageSize,
   summaryInvocations,
   completedInvocationsBreakdown,
   type CompletedInvocationsBreakdownArgs,
@@ -64,6 +65,7 @@ type BoundHandlers = {
   ) => Promise<Response>;
   getInvocationsStatus: (invocationIds: string[]) => Promise<Response>;
   getMetrics: () => Promise<Response>;
+  getStateStorageSize: () => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
     invocationId: string,
@@ -142,6 +144,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     completedInvocationsBreakdown: completedInvocationsBreakdown.bind(context),
     getInvocationsStatus: getInvocationsStatus.bind(context),
     getMetrics: getMetrics.bind(context),
+    getStateStorageSize: getStateStorageSize.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
@@ -306,6 +309,9 @@ export const routes = createRoutes('/query', {
   },
   metrics: {
     get: { method: 'GET', pattern: '/metrics' },
+  },
+  state: {
+    storageSize: { method: 'GET', pattern: '/state/storage-size' },
   },
 });
 
@@ -523,6 +529,12 @@ router.map(routes, {
       async get(ctx) {
         const { getMetrics } = ctx.storage.get(handlersKey);
         return getMetrics();
+      },
+    },
+    state: {
+      async storageSize(ctx) {
+        const { getStateStorageSize } = ctx.storage.get(handlersKey);
+        return getStateStorageSize();
       },
     },
   },

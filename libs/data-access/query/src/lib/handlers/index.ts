@@ -21,6 +21,7 @@ export {
 } from './completedInvocationsBreakdown';
 export { getInvocationsStatus } from './getInvocationsStatus';
 export { getMetrics } from './getMetrics';
+export { getStateStorageSize } from './getStateStorageSize';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';

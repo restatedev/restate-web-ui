@@ -2724,6 +2724,86 @@
         }
       }
     },
+    "/query/state/storage-size": {
+      "get": {
+        "tags": ["query-state"],
+        "summary": "Get state storage size",
+        "description": "Aggregated state storage size by service name. Each service total is the sum of value_length for rows in the state table.",
+        "operationId": "get_state_storage_size",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateStorageSizeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/metrics": {
       "get": {
         "tags": ["query-metrics"],
@@ -3315,6 +3395,30 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DeploymentId"
+            }
+          }
+        }
+      },
+      "StateStorageSizeResponse": {
+        "type": "object",
+        "description": "State storage size grouped by service name. Each size is the sum of value_length for the service's rows in the state table.",
+        "required": ["services"],
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["service_name", "size"],
+              "properties": {
+                "service_name": {
+                  "type": "string",
+                  "description": "Service name from the state table."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "Total stored state value size in bytes for the service."
+                }
+              }
             }
           }
         }
