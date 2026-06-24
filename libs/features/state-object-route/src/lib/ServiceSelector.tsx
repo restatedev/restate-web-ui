@@ -1,5 +1,6 @@
 import {
   useListDeployments,
+  useListStateServices,
   useListServices,
 } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
@@ -14,8 +15,16 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useMemo } from 'react';
-import { useHref, useParams, useSearchParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import invariant from 'tiny-invariant';
+
+export type StateRouteServiceType = 'virtual_object' | 'workflow';
+
+type StateRouteService = {
+  name: string;
+  serviceType?: StateRouteServiceType;
+  hasState: boolean;
+};
 
 export function getStateServiceSearch(searchParams: URLSearchParams) {
   const newSearchParams = new URLSearchParams(searchParams);
@@ -41,7 +50,15 @@ export function getStateServiceHref({
   }`;
 }
 
-function getDefaultVirtualObjectOrWorkflow(services: string[]) {
+function getStateRouteServiceType(
+  serviceType: string | undefined,
+): StateRouteServiceType | undefined {
+  if (serviceType === 'VirtualObject') return 'virtual_object';
+  if (serviceType === 'Workflow') return 'workflow';
+  return undefined;
+}
+
+export function getDefaultStateService(services: string[]) {
   if (typeof window !== 'undefined') {
     const previousSelectedState = localStorage.getItem('state_last_service');
     return previousSelectedState && services.includes(previousSelectedState)
@@ -51,58 +68,148 @@ function getDefaultVirtualObjectOrWorkflow(services: string[]) {
   return services.at(0);
 }
 
-export function useValidateVirtualObject() {
+export function useStateServiceCatalog() {
+  const { data: deployments, isPending: isDeploymentsPending } =
+    useListDeployments();
+  const deploymentServiceNames = useMemo(
+    () => Array.from(deployments?.services.keys() ?? []).sort(),
+    [deployments],
+  );
+  const deploymentServicesPlaceholder = useMemo(
+    () =>
+      deploymentServiceNames.length > 0
+        ? { services: deploymentServiceNames }
+        : undefined,
+    [deploymentServiceNames],
+  );
+  const {
+    data: stateServicesData,
+    isPending: isStateServicesPending,
+    isPlaceholderData,
+  } = useListStateServices({
+    placeholderData: deploymentServicesPlaceholder,
+  });
+  const { data: serviceData, isPending: isServicesPending } = useListServices(
+    deploymentServiceNames,
+  );
+
+  return useMemo(() => {
+    const stateServiceNames = new Set(stateServicesData?.services ?? []);
+    const byName = new Map<string, StateRouteService>();
+
+    for (const service of stateServiceNames) {
+      byName.set(service, {
+        name: service,
+        hasState: true,
+      });
+    }
+
+    for (const service of serviceData.values()) {
+      const serviceType = getStateRouteServiceType(service.ty);
+      if (!serviceType) continue;
+      const item = byName.get(service.name);
+      byName.set(service.name, {
+        name: service.name,
+        serviceType,
+        hasState: item?.hasState ?? false,
+      });
+    }
+
+    const sortByName = (a: StateRouteService, b: StateRouteService) =>
+      a.name.localeCompare(b.name);
+    const virtualObjects = Array.from(byName.values())
+      .filter((service) => service.serviceType === 'virtual_object')
+      .sort(sortByName);
+    const workflows = Array.from(byName.values())
+      .filter((service) => service.serviceType === 'workflow')
+      .sort(sortByName);
+    const stateOnlyServices = Array.from(byName.values())
+      .filter((service) => !service.serviceType && service.hasState)
+      .sort(sortByName);
+    const services = [
+      ...virtualObjects,
+      ...workflows,
+      ...stateOnlyServices,
+    ].map((service) => service.name);
+    const serviceTypes = new Map(
+      [...virtualObjects, ...workflows].map((service) => [
+        service.name,
+        service.serviceType,
+      ]),
+    );
+
+    return {
+      isPending:
+        isStateServicesPending || isDeploymentsPending || isServicesPending,
+      isUsingPlaceholderServices: isPlaceholderData,
+      services,
+      serviceTypes,
+      virtualObjects: virtualObjects.map((service) => service.name),
+      workflows: workflows.map((service) => service.name),
+      stateOnlyServices: stateOnlyServices.map((service) => service.name),
+    };
+  }, [
+    isDeploymentsPending,
+    isPlaceholderData,
+    isServicesPending,
+    isStateServicesPending,
+    serviceData,
+    stateServicesData,
+  ]);
+}
+
+export function useCurrentStateServiceParam() {
   const { virtualObject: serviceParam } = useParams<{
     virtualObject: string;
   }>();
   invariant(serviceParam, 'Missing virtualObject param');
+  return serviceParam;
+}
+
+export function useValidateVirtualObject(serviceParamOverride?: string) {
+  const { virtualObject: routeServiceParam } = useParams<{
+    virtualObject: string;
+  }>();
+  const serviceParam = serviceParamOverride ?? routeServiceParam;
+  invariant(serviceParam, 'Missing virtualObject param');
   const [searchParams] = useSearchParams();
-  const { data: deployments, isPending } = useListDeployments();
-  const services = Array.from(deployments?.services.keys() ?? []);
-  const servicesSize = services.length;
-  const { data } = useListServices(services);
-  const virtualObjects = Array.from(data.values() ?? [])
-    .filter((service) => service.ty === 'VirtualObject')
-    .map((service) => service.name)
-    .sort();
-  const workflows = Array.from(data.values() ?? [])
-    .filter((service) => service.ty === 'Workflow')
-    .map((service) => service.name)
-    .sort();
-  const virtualObjectsAndWorkflows = [...virtualObjects, ...workflows];
-  const newService = getDefaultVirtualObjectOrWorkflow(
-    virtualObjectsAndWorkflows,
-  );
-
-  const base = useHref('/');
-  const defaultService = useHref(newService ? `../${newService}` : '..', {
-    relative: 'path',
-  }).replace(base, '');
-
-  const isInValid =
-    data.size === servicesSize &&
-    servicesSize > 0 &&
-    !virtualObjectsAndWorkflows.includes(serviceParam);
-  const search = searchParams.toString();
-
-  return {
-    isValidating: isPending,
-    isValid: virtualObjectsAndWorkflows.includes(serviceParam),
-    redirectTo: isInValid
-      ? `/${defaultService}${search ? `?${search}` : ''}`
-      : undefined,
-    virtualObjectsAndWorkflows,
+  const { baseUrl } = useRestateContext();
+  const {
+    isPending,
+    isUsingPlaceholderServices,
+    services,
+    serviceTypes,
     virtualObjects,
     workflows,
+    stateOnlyServices,
+  } = useStateServiceCatalog();
+  const defaultService = getDefaultStateService(services);
+  const canRedirect = !isPending && !isUsingPlaceholderServices;
+  const isValid = services.includes(serviceParam);
+
+  return {
+    isValidating: isPending || isUsingPlaceholderServices,
+    isValid: !canRedirect || isValid,
+    redirectTo:
+      canRedirect && services.length > 0 && !isValid && defaultService
+        ? getStateServiceHref({
+            baseUrl,
+            service: defaultService,
+            searchParams,
+          })
+        : undefined,
+    services,
+    serviceType: serviceTypes.get(serviceParam),
+    virtualObjects,
+    workflows,
+    stateOnlyServices,
   };
 }
 
 export function ServiceSelector() {
-  const { virtualObject: serviceParam } = useParams<{
-    virtualObject: string;
-  }>();
-  invariant(serviceParam, 'Missing virtualObject param');
-  const { virtualObjects, workflows } = useValidateVirtualObject();
+  const serviceParam = useCurrentStateServiceParam();
+  const { virtualObjects, workflows, stateOnlyServices } =
+    useValidateVirtualObject(serviceParam);
 
   return (
     <Dropdown>
@@ -152,6 +259,21 @@ export function ServiceSelector() {
               }
             >
               {workflows.map((service) => (
+                <DropDownVirtualObject service={service} key={service} />
+              ))}
+            </DropdownMenu>
+          </DropdownSection>
+        )}
+        {stateOnlyServices.length > 0 && (
+          <DropdownSection title="Services with state">
+            <DropdownMenu
+              selectable
+              selectedItems={[serviceParam]}
+              onSelect={(value) =>
+                localStorage.setItem('state_last_service', value)
+              }
+            >
+              {stateOnlyServices.map((service) => (
                 <DropDownVirtualObject service={service} key={service} />
               ))}
             </DropdownMenu>

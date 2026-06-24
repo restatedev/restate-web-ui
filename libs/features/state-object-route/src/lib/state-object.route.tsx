@@ -41,6 +41,7 @@ import {
 import { Form, Navigate, useParams, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import invariant from 'tiny-invariant';
+import { tv } from '@restate/util/styles';
 import {
   ClauseChip,
   FiltersTrigger,
@@ -51,12 +52,14 @@ import { useResolvedCodecOptions } from '@restate/features/codec';
 import { toStateParam } from './toStateParam';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useFeatures } from '@restate/data-access/admin-api';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
   getStateServiceHref,
   ServiceSelector,
   useValidateVirtualObject,
 } from './ServiceSelector';
 import { StateObjectTable } from './StateObjectTable';
+import { StateStorageBreakdown } from './StateStorageBreakdown';
 import type { StateObjectRecord } from './types';
 
 function urlKeyFor(schemaClause: QueryClauseSchema<QueryClauseType>) {
@@ -116,21 +119,31 @@ const STATE_PAGE_SIZE = 30;
 const MAX_VISIBLE_STATE_SERVICE_TABS = 5;
 const CUSTOM_KEY_ID = `__rs-state-key__`;
 
+const stateRouteStyles = tv({
+  base: 'relative flex min-h-0 flex-1 flex-col',
+  variants: {
+    hasStorageBreakdown: {
+      true: 'gap-4 pt-20',
+      false: '',
+    },
+  },
+});
+
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const submitRef = useSubmitShortcut();
 
-  const { virtualObject: serviceName } = useParams<{ virtualObject: string }>();
+  const { virtualObject: serviceName } = useParams<{
+    virtualObject: string;
+  }>();
   invariant(serviceName, 'Missing virtualObject param');
-  const {
-    isValid,
-    isValidating,
-    redirectTo,
-    workflows,
-    virtualObjectsAndWorkflows,
-  } = useValidateVirtualObject();
-  const isWorkflow = workflows.includes(serviceName);
+  const { isValid, isValidating, redirectTo, services, serviceType } =
+    useValidateVirtualObject(serviceName);
+  const isWorkflow = serviceType === 'workflow';
   const { baseUrl } = useRestateContext();
+  const showStateStorage = useIsFeatureFlagEnabled(
+    'FEATURE_STATE_STORAGE_BREAKDOWN',
+  );
 
   const [keysSet, setKeysSet] = useState(
     () =>
@@ -144,6 +157,7 @@ function Component() {
   const { isSuccess: versionReady } = useVersion();
   const hasVqueues = useFeatures().has('vqueues');
   const hasScopeInUrl = searchParams.has('sysFilter_scope');
+  const exposesScope = hasVqueues && serviceType !== 'virtual_object';
   const schema = useMemo(() => {
     const stringOps = [
       // TODO: add is null/ is not null
@@ -160,7 +174,7 @@ function Component() {
       type: 'STRING',
       metadata: { isSystem: true, column: 'service_key' },
     });
-    if ((hasVqueues && isWorkflow) || hasScopeInUrl) {
+    if (exposesScope || hasScopeInUrl) {
       clauses.push({
         id: '__sys_service_scope',
         label: 'Scope',
@@ -183,7 +197,7 @@ function Component() {
       type: 'CUSTOM_STRING',
     } as QueryClauseSchema<QueryClauseType>);
     return clauses;
-  }, [keysSet, serviceName, hasVqueues, isWorkflow, hasScopeInUrl]);
+  }, [keysSet, serviceName, exposesScope, hasScopeInUrl]);
 
   const queryFilters = useMemo(
     () => clausesToFilterArgs(getQuery(searchParams, schema)),
@@ -196,18 +210,13 @@ function Component() {
     data: serviceKeysData,
     isFetching,
     queryKey,
-  } = useQueryVirtualObjectState(
-    serviceName,
-    queryFilters,
-    isWorkflow ? 'workflow' : 'virtual_object',
-    {
-      refetchOnMount: true,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      staleTime: 0,
-      enabled: isValid,
-    },
-  );
+  } = useQueryVirtualObjectState(serviceName, queryFilters, serviceType, {
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    enabled: isValid,
+  });
 
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
     if (error) return [];
@@ -232,7 +241,7 @@ function Component() {
   const listObjects = useListVirtualObjectState(
     serviceName,
     listStateArgs,
-    isWorkflow ? 'workflow' : 'virtual_object',
+    serviceType,
     {
       refetchOnMount: true,
       refetchOnReconnect: false,
@@ -294,9 +303,6 @@ function Component() {
   const totalSize = Math.ceil(allItems.length / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
-  const resolvedServiceCodecOptions = useResolvedCodecOptions({
-    service: { value: { name: serviceName } },
-  });
 
   useEffect(() => {
     if (allItems.length <= STATE_PAGE_SIZE * pageIndex) {
@@ -306,6 +312,18 @@ function Component() {
   const stateError = error || listObjects.error;
   const hasActiveFilters = Array.from(searchParams.keys()).some(
     (key) => key.startsWith('filter_') || key.startsWith('sysFilter_'),
+  );
+  const serviceCodecOptions = useMemo(
+    () =>
+      serviceType
+        ? {
+            service: { value: { name: serviceName } },
+          }
+        : undefined,
+    [serviceName, serviceType],
+  );
+  const resolvedServiceCodecOptions = useResolvedCodecOptions(
+    serviceCodecOptions,
   );
   const isStateLoading =
     isFetching ||
@@ -333,7 +351,7 @@ function Component() {
   );
   const serviceTabs = useMemo<ContentPanelTabs>(
     () => ({
-      items: virtualObjectsAndWorkflows.map((service) => ({
+      items: services.map((service) => ({
         id: service,
         label: (
           <span
@@ -350,7 +368,7 @@ function Component() {
       onSelect: (service) =>
         localStorage.setItem('state_last_service', service),
     }),
-    [baseUrl, searchParams, serviceName, virtualObjectsAndWorkflows],
+    [baseUrl, searchParams, serviceName, services],
   );
 
   if (redirectTo) {
@@ -359,123 +377,136 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <ContentPanel tabs={serviceTabs}>
-        <ContentPanelBody className="pb-32">
-          <ContentPanelSection flush>
-            {stateError ? (
-              <div className="px-4 py-20">
-                <EmptyState
-                  icon={IconName.TriangleAlert}
-                  intent="danger"
-                  title="Couldn’t load state"
-                >
-                  <ErrorBanner
-                    error={stateError}
-                    className="w-full rounded-xl text-left"
-                  />
-                </EmptyState>
-              </div>
-            ) : stateObjects.length > 0 || isStateLoading ? (
-              <StateObjectTable
-                key={serviceName}
-                items={stateObjects}
-                codecOptions={resolvedServiceCodecOptions}
-                serviceName={serviceName}
-                serviceType={isWorkflow ? 'workflow' : 'virtual_object'}
-                isLoading={isStateLoading && stateObjects.length === 0}
-                numOfRows={currentPageItems.length || 5}
-                onOpenObject={openStatePanel}
-                onEditObject={(row) =>
-                  setEditState({
-                    isEditing: true,
-                    isDeleting: false,
-                    objectKey: row.key,
-                    service: serviceName,
-                    scope: row.scope,
-                  })
-                }
-                onDeleteObject={(row) =>
-                  setEditState({
-                    isEditing: true,
-                    isDeleting: true,
-                    objectKey: row.key,
-                    service: serviceName,
-                    scope: row.scope,
-                  })
-                }
-                onEditValue={(row, stateKey) =>
-                  setEditState({
-                    isEditing: true,
-                    isDeleting: false,
-                    key: stateKey,
-                    objectKey: row.key,
-                    service: serviceName,
-                    scope: row.scope,
-                  })
-                }
-              />
-            ) : (
-              <div className="px-4 py-20">
-                <EmptyState
-                  icon={IconName.Database}
-                  title="No state found"
-                  description={
-                    hasActiveFilters
-                      ? 'No state matches the current filters. Try adjusting or clearing them.'
-                      : isWorkflow
-                        ? 'State stored by this Workflow will appear here.'
-                        : 'State stored by this Virtual Object will appear here.'
+      <div
+        className={stateRouteStyles({
+          hasStorageBreakdown: showStateStorage,
+        })}
+      >
+        {showStateStorage && (
+          <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch gap-2 px-4">
+            <StateStorageBreakdown />
+          </div>
+        )}
+        <ContentPanel tabs={serviceTabs}>
+          <ContentPanelBody className="pb-32">
+            <ContentPanelSection flush>
+              {stateError ? (
+                <div className="px-4 py-20">
+                  <EmptyState
+                    icon={IconName.TriangleAlert}
+                    intent="danger"
+                    title="Couldn’t load state"
+                  >
+                    <ErrorBanner
+                      error={stateError}
+                      className="w-full rounded-xl text-left"
+                    />
+                  </EmptyState>
+                </div>
+              ) : stateObjects.length > 0 || isStateLoading ? (
+                <StateObjectTable
+                  key={serviceName}
+                  items={stateObjects}
+                  codecOptions={resolvedServiceCodecOptions}
+                  serviceName={serviceName}
+                  serviceType={serviceType}
+                  isLoading={isStateLoading && stateObjects.length === 0}
+                  numOfRows={currentPageItems.length || 5}
+                  onOpenObject={openStatePanel}
+                  onEditObject={(row) =>
+                    setEditState({
+                      isEditing: true,
+                      isDeleting: false,
+                      objectKey: row.key,
+                      service: serviceName,
+                      scope: row.scope,
+                    })
+                  }
+                  onDeleteObject={(row) =>
+                    setEditState({
+                      isEditing: true,
+                      isDeleting: true,
+                      objectKey: row.key,
+                      service: serviceName,
+                      scope: row.scope,
+                    })
+                  }
+                  onEditValue={(row, stateKey) =>
+                    setEditState({
+                      isEditing: true,
+                      isDeleting: false,
+                      key: stateKey,
+                      objectKey: row.key,
+                      service: serviceName,
+                      scope: row.scope,
+                    })
                   }
                 />
-              </div>
-            )}
-            <Footnote
-              data={serviceKeysData}
-              isFetching={isFetching || listObjects.isFetching}
-              key={dataUpdate}
-            >
-              {!isFetching && !error && totalSize > 1 && (
-                <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex === 0}
-                    onClick={() => setPageIndex(0)}
-                  >
-                    <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex === 0}
-                    onClick={() => setPageIndex(pageIndex - 1)}
-                    className=""
-                  >
-                    <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-                  </Button>
-                  <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                    {pageIndex + 1} / {totalSize}
-                  </div>
-
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex + 1 === totalSize}
-                    onClick={() => setPageIndex(pageIndex + 1)}
-                    className=""
-                  >
-                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex + 1 === totalSize}
-                    onClick={() => setPageIndex(totalSize - 1)}
-                  >
-                    <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-                  </Button>
+              ) : (
+                <div className="px-4 py-20">
+                  <EmptyState
+                    icon={IconName.Database}
+                    title="No state found"
+                    description={
+                      hasActiveFilters
+                        ? 'No state matches the current filters. Try adjusting or clearing them.'
+                        : isWorkflow
+                          ? 'State stored by this Workflow will appear here.'
+                          : serviceType === 'virtual_object'
+                            ? 'State stored by this Virtual Object will appear here.'
+                            : 'State stored by this service will appear here.'
+                    }
+                  />
                 </div>
               )}
-            </Footnote>
-          </ContentPanelSection>
-        </ContentPanelBody>
-      </ContentPanel>
+              <Footnote
+                data={serviceKeysData}
+                isFetching={isFetching || listObjects.isFetching}
+                key={dataUpdate}
+              >
+                {!isFetching && !error && totalSize > 1 && (
+                  <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex === 0}
+                      onClick={() => setPageIndex(0)}
+                    >
+                      <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex === 0}
+                      onClick={() => setPageIndex(pageIndex - 1)}
+                      className=""
+                    >
+                      <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
+                    </Button>
+                    <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
+                      {pageIndex + 1} / {totalSize}
+                    </div>
+
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex + 1 === totalSize}
+                      onClick={() => setPageIndex(pageIndex + 1)}
+                      className=""
+                    >
+                      <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex + 1 === totalSize}
+                      onClick={() => setPageIndex(totalSize - 1)}
+                    >
+                      <Icon name={IconName.ChevronLast} className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </Footnote>
+            </ContentPanelSection>
+          </ContentPanelBody>
+        </ContentPanel>
+      </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
           action={`/query/services/${serviceName}/state`}

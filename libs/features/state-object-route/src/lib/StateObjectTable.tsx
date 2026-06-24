@@ -4,7 +4,7 @@ import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import { ErrorBanner } from '@restate/ui/error';
 import { DropdownItem, DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatBytes, formatPlurals } from '@restate/util/intl';
+import { formatBytes, formatNumber, formatPlurals } from '@restate/util/intl';
 import {
   Popover,
   PopoverContent,
@@ -26,6 +26,7 @@ import { ComponentProps, Fragment, useId, useMemo, useState } from 'react';
 import type { StateObjectRecord, StateTableColumnId } from './types';
 
 const VISIBLE_STATE_KEYS = 5;
+const STATE_KEY_LOAD_BATCH = 100;
 const COLLAPSED_STATE_PREVIEW_KEYS = 5;
 
 type StateServiceType = 'virtual_object' | 'workflow' | 'service';
@@ -42,6 +43,7 @@ type StateChildRow =
       id: string;
       kind: 'load_more';
       hiddenCount: number;
+      loadCount: number;
     };
 
 function EditStateTrigger(props: ComponentProps<typeof Button>) {
@@ -59,7 +61,7 @@ function EditStateTrigger(props: ComponentProps<typeof Button>) {
 
 const stateObjectStyles = tv({
   slots: {
-    objectKeyCell: '[&&&]:overflow-visible',
+    objectKeyCell: '[&&&]:overflow-hidden',
     objectKey: 'flex min-w-0 items-center gap-2',
     chevron:
       'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
@@ -67,19 +69,20 @@ const stateObjectStyles = tv({
       'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-500',
     stateKeyCell: 'bg-gray-50/35',
     stateKeyCount:
-      '-ml-1.5 rounded-md border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-medium text-gray-500',
+      '-ml-1.5 inline-block max-w-full truncate rounded-md border border-gray-200 bg-gray-50 px-1.5 py-0.5 align-middle font-medium text-gray-500',
     valueButton:
       'group/value flex w-full min-w-0 items-center justify-start rounded-lg border-0 bg-transparent! px-1.5 py-0.5 text-left font-mono text-xs text-zinc-500 shadow-none! hover:bg-transparent! pressed:bg-transparent!',
     valueButtonContent:
-      'inline-flex max-w-full min-w-0 items-center gap-1 rounded-lg px-1.5 py-0.5 group-hover/value:bg-gray-100 group-pressed/value:bg-gray-200',
+      'inline-flex max-w-full min-w-0 items-center gap-1 overflow-hidden rounded-lg px-1.5 py-0.5 group-hover/value:bg-gray-100 group-pressed/value:bg-gray-200',
     valueButtonMeta: 'shrink-0 font-sans text-0.5xs text-zinc-400',
     valueStatus: 'px-3 py-2 text-xs text-zinc-500',
-    sizeText: 'font-mono text-xs text-zinc-500',
+    sizeText:
+      'block max-w-full truncate font-mono text-xs whitespace-nowrap text-zinc-500',
     collapsedPreview:
       'flex max-w-full min-w-0 items-baseline gap-1 overflow-hidden font-mono text-xs whitespace-nowrap text-zinc-500',
-    collapsedPreviewPair:
-      'inline-flex max-w-full shrink-0 items-baseline gap-1',
-    collapsedPreviewKey: 'font-medium text-zinc-600',
+    collapsedPreviewPair: 'inline-flex max-w-full min-w-0 items-baseline gap-1',
+    collapsedPreviewKey:
+      'inline-block max-w-[18ch] min-w-0 truncate align-bottom font-medium text-zinc-600',
     collapsedPreviewValue:
       'inline-block max-w-[28ch] truncate align-bottom text-zinc-500',
     collapsedPreviewPunctuation: 'shrink-0 text-zinc-400',
@@ -109,7 +112,7 @@ export function StateObjectTable({
   items: StateObjectRecord[];
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType: StateServiceType;
+  serviceType?: StateServiceType;
   isLoading?: boolean;
   numOfRows: number;
   onOpenObject: (key: string, scope?: string) => void;
@@ -163,9 +166,9 @@ export function StateObjectTable({
     [hasScopeColumn],
   );
   const [collapsedKeys, setCollapsedKeys] = useState<Set<Key>>(() => new Set());
-  const [expandedStateKeys, setExpandedStateKeys] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [visibleStateKeyCounts, setVisibleStateKeyCounts] = useState<
+    Map<string, number>
+  >(() => new Map());
   const expandedKeys = useMemo(
     () =>
       new Set<Key>(
@@ -208,11 +211,11 @@ export function StateObjectTable({
       bodyDependencies={[
         codecOptions,
         expandedKeys,
-        expandedStateKeys,
+        visibleStateKeyCounts,
         serviceName,
         serviceType,
       ]}
-      rowDependencies={[codecOptions, expandedKeys, expandedStateKeys]}
+      rowDependencies={[codecOptions, expandedKeys, visibleStateKeyCounts]}
       renderCell={(row, col) => (
         <StateObjectCell
           row={row}
@@ -230,9 +233,19 @@ export function StateObjectTable({
           codecOptions={codecOptions}
           serviceName={serviceName}
           serviceType={serviceType}
-          isShowingAllKeys={expandedStateKeys.has(row.id)}
-          onShowAllKeys={() =>
-            setExpandedStateKeys((prev) => new Set(prev).add(row.id))
+          visibleStateKeyCount={
+            visibleStateKeyCounts.get(row.id) ?? VISIBLE_STATE_KEYS
+          }
+          onVisibleStateKeyCountChange={(count) =>
+            setVisibleStateKeyCounts((prev) => {
+              const next = new Map(prev);
+              if (count <= VISIBLE_STATE_KEYS) {
+                next.delete(row.id);
+              } else {
+                next.set(row.id, count);
+              }
+              return next;
+            })
           }
           onEditValue={(stateKey) => onEditValue(row, stateKey)}
         />
@@ -449,23 +462,26 @@ function StateObjectChildRows({
   codecOptions,
   serviceName,
   serviceType,
-  isShowingAllKeys,
-  onShowAllKeys,
+  visibleStateKeyCount,
+  onVisibleStateKeyCountChange,
   onEditValue,
 }: {
   row: StateObjectRecord;
   columns: PanelTableColumn[];
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType: StateServiceType;
-  isShowingAllKeys: boolean;
-  onShowAllKeys: VoidFunction;
+  serviceType?: StateServiceType;
+  visibleStateKeyCount: number;
+  onVisibleStateKeyCountChange: (count: number) => void;
   onEditValue: (stateKey: string) => void;
 }) {
-  const visibleState = isShowingAllKeys
-    ? row.state
-    : row.state.slice(0, VISIBLE_STATE_KEYS);
+  const visibleState = row.state.slice(0, visibleStateKeyCount);
   const hiddenKeyCount = row.state.length - visibleState.length;
+  const nextVisibleStateKeyCount = Math.min(
+    row.state.length,
+    visibleState.length + STATE_KEY_LOAD_BATCH,
+  );
+  const loadKeyCount = nextVisibleStateKeyCount - visibleState.length;
   const childRows: StateChildRow[] = [
     ...visibleState.map(({ name, value, size }) => ({
       id: `${row.id}\x00${name}`,
@@ -480,6 +496,7 @@ function StateObjectChildRows({
             id: `${row.id}\x00__load_more__`,
             kind: 'load_more' as const,
             hiddenCount: hiddenKeyCount,
+            loadCount: loadKeyCount,
           },
         ] satisfies StateChildRow[])
       : []),
@@ -497,7 +514,7 @@ function StateObjectChildRows({
         codecOptions,
         serviceName,
         serviceType,
-        isShowingAllKeys,
+        visibleStateKeyCount,
       ]}
     >
       {(child) => (
@@ -517,7 +534,9 @@ function StateObjectChildRows({
               codecOptions={codecOptions}
               serviceName={serviceName}
               serviceType={serviceType}
-              onShowAllKeys={onShowAllKeys}
+              onShowMoreKeys={() =>
+                onVisibleStateKeyCountChange(nextVisibleStateKeyCount)
+              }
               onEditValue={onEditValue}
             />
           )}
@@ -534,7 +553,7 @@ function StateChildCell({
   codecOptions,
   serviceName,
   serviceType,
-  onShowAllKeys,
+  onShowMoreKeys,
   onEditValue,
 }: {
   row: StateObjectRecord;
@@ -542,8 +561,8 @@ function StateChildCell({
   col: PanelTableColumn;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType: StateServiceType;
-  onShowAllKeys: VoidFunction;
+  serviceType?: StateServiceType;
+  onShowMoreKeys: VoidFunction;
   onEditValue: (stateKey: string) => void;
 }) {
   const {
@@ -566,11 +585,19 @@ function StateChildCell({
         <Cell className={loadMoreCell()}>
           <Button
             variant="secondary"
-            onClick={onShowAllKeys}
-            className="w-fit rounded-lg px-2 py-1 text-xs font-normal text-gray-600"
+            onClick={onShowMoreKeys}
+            className="w-fit max-w-full truncate rounded-lg px-2 py-1 text-xs font-normal text-gray-600"
           >
-            Load {child.hiddenCount} more{' '}
-            {child.hiddenCount === 1 ? 'key' : 'keys'}
+            Load {formatNumber(child.loadCount)} more{' '}
+            {child.loadCount === 1 ? 'key' : 'keys'}
+            {child.hiddenCount > child.loadCount ? (
+              <>
+                {' '}
+                <span className="ml-1 text-gray-400">
+                  of {formatNumber(child.hiddenCount)}
+                </span>
+              </>
+            ) : null}
           </Button>
         </Cell>
       );
@@ -657,7 +684,7 @@ function StateValuePreview({
   row: StateObjectRecord;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType: StateServiceType;
+  serviceType?: StateServiceType;
   onEdit: VoidFunction;
 }) {
   const portalId = useId();
@@ -770,10 +797,10 @@ function StateValuePreview({
 }
 
 const stylesKey = tv({
-  base: 'relative -ml-1 w-fit max-w-full font-mono text-zinc-600',
+  base: 'relative -ml-1 max-w-full min-w-0 font-mono text-zinc-600',
   slots: {
-    text: '',
-    container: 'inline-flex w-full items-center pl-1 align-middle',
+    text: 'block max-w-full min-w-0 truncate',
+    container: 'block max-w-full min-w-0 pl-1 align-middle',
   },
 });
 

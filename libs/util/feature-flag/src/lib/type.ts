@@ -7,5 +7,7 @@ export const FEATURE_FLAGS = [
   'FEATURE_EXECUTION_METRICS',
 
   'FEATURE_COMPLETION_HISTORY',
+
+  'FEATURE_STATE_STORAGE_BREAKDOWN',
 ] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];
