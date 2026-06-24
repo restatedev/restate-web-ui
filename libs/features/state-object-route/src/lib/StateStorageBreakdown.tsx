@@ -19,16 +19,16 @@ const MAX_VISIBLE_STORAGE_SERVICES = 10;
 
 const STORAGE_SEGMENT_COLORS = [
   '#1d4ed8',
-  '#2563eb',
-  '#3b82f6',
-  '#60a5fa',
-  '#7dd3fc',
-  '#93c5fd',
-  '#bfdbfe',
-  '#dbeafe',
-  '#e0f2fe',
-  '#eff6ff',
-  '#c7d2fe',
+  '#2f6fe1',
+  '#4488e9',
+  '#5d9ef0',
+  '#76b2f5',
+  '#91c3f8',
+  '#abd3fa',
+  '#c2e0fc',
+  '#d8ebfd',
+  '#e7f3fe',
+  '#f3f8ff',
 ];
 
 const styles = tv({

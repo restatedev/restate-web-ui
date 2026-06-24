@@ -22,7 +22,14 @@ import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Portal } from '@restate/ui/portal';
 import { Collection, type Key } from 'react-aria-components';
-import { ComponentProps, Fragment, useId, useMemo, useState } from 'react';
+import {
+  ComponentProps,
+  Fragment,
+  useCallback,
+  useId,
+  useMemo,
+  useState,
+} from 'react';
 import type { StateObjectRecord, StateTableColumnId } from './types';
 
 const VISIBLE_STATE_KEYS = 5;
@@ -66,7 +73,7 @@ const stateObjectStyles = tv({
     chevron:
       'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
     objectIcon:
-      'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-500',
+      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-zinc-500 shadow-xs',
     stateKeyCell: 'bg-gray-50/35',
     stateKeyCount:
       '-ml-1.5 inline-block max-w-full truncate rounded-md border border-gray-200 bg-gray-50 px-1.5 py-0.5 align-middle font-medium text-gray-500',
@@ -175,23 +182,36 @@ export function StateObjectTable({
     ],
     [hasScopeColumn, serviceType],
   );
-  const [collapsedKeys, setCollapsedKeys] = useState<Set<Key>>(() => new Set());
+  const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(() => new Set());
   const [visibleStateKeyCounts, setVisibleStateKeyCounts] = useState<
     Map<string, number>
   >(() => new Map());
-  const expandedKeys = useMemo(
+  const itemIds = useMemo(
+    () => new Set<Key>(items.map((item) => item.id)),
+    [items],
+  );
+  const visibleExpandedKeys = useMemo(
     () =>
       new Set<Key>(
-        items
-          .map((item) => item.id)
-          .filter((itemId) => !collapsedKeys.has(itemId)),
+        Array.from(expandedKeys).filter((itemId) => itemIds.has(itemId)),
       ),
-    [collapsedKeys, items],
+    [expandedKeys, itemIds],
   );
   const objectRows = useMemo(
     () => new Map(items.map((item) => [item.id, item])),
     [items],
   );
+  const toggleExpanded = useCallback((rowId: Key) => {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(rowId)) {
+        next.delete(rowId);
+      } else {
+        next.add(rowId);
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <PanelTable
@@ -201,37 +221,35 @@ export function StateObjectTable({
       isLoading={isLoading}
       numOfRows={numOfRows}
       treeColumn="object_key"
-      expandedKeys={expandedKeys}
+      expandedKeys={visibleExpandedKeys}
       onExpandedChange={(nextExpandedKeys) => {
-        const nextExpanded = new Set(nextExpandedKeys);
-        setCollapsedKeys(
-          new Set(
-            items
-              .map((item) => item.id)
-              .filter((itemId) => !nextExpanded.has(itemId)),
-          ),
-        );
+        setExpandedKeys(new Set(nextExpandedKeys));
       }}
       onRowAction={(rowId) => {
         const row = objectRows.get(String(rowId));
-        if (row) {
-          onOpenObject(row.key, row.scope);
+        if (row && row.state.length > 0) {
+          toggleExpanded(row.id);
         }
       }}
       bodyDependencies={[
         codecOptions,
-        expandedKeys,
+        visibleExpandedKeys,
         visibleStateKeyCounts,
         serviceName,
         serviceType,
       ]}
-      rowDependencies={[codecOptions, expandedKeys, visibleStateKeyCounts]}
+      rowDependencies={[
+        codecOptions,
+        visibleExpandedKeys,
+        visibleStateKeyCounts,
+      ]}
       renderCell={(row, col) => (
         <StateObjectCell
           row={row}
           col={col}
           codecOptions={codecOptions}
-          isExpanded={expandedKeys.has(row.id)}
+          isExpanded={visibleExpandedKeys.has(row.id)}
+          onOpenObject={onOpenObject}
           onEditObject={onEditObject}
           onDeleteObject={onDeleteObject}
         />
@@ -269,6 +287,7 @@ function StateObjectCell({
   col,
   codecOptions,
   isExpanded,
+  onOpenObject,
   onEditObject,
   onDeleteObject,
 }: {
@@ -276,6 +295,7 @@ function StateObjectCell({
   col: PanelTableColumn<StateTableColumnId>;
   codecOptions?: RestateCodecOptions;
   isExpanded: boolean;
+  onOpenObject: (key: string, scope?: string) => void;
   onEditObject: (row: StateObjectRecord) => void;
   onDeleteObject: (row: StateObjectRecord) => void;
 }) {
@@ -303,9 +323,13 @@ function StateObjectCell({
             <span className="h-5 w-5 shrink-0" />
           )}
           <span className={objectIcon()}>
-            <Icon name={IconName.Database} className="h-4 w-4" />
+            <Icon name={IconName.Database} className="h-full w-full p-1" />
           </span>
-          <KeyCell serviceKey={row.key} className="text-sm font-medium" />
+          <KeyCell
+            serviceKey={row.key}
+            onOpen={() => onOpenObject(row.key, row.scope)}
+            className="text-sm font-medium"
+          />
         </div>
       </Cell>
     );
@@ -811,24 +835,36 @@ const stylesKey = tv({
   slots: {
     text: 'block max-w-full min-w-0 truncate',
     container: 'block max-w-full min-w-0 pl-1 align-middle',
+    button:
+      'relative -ml-1 block max-w-full min-w-0 rounded-md border-0 bg-transparent p-0 text-left font-mono text-zinc-600 shadow-none hover:bg-gray-100 pressed:bg-gray-200',
   },
 });
 
 function KeyCell({
   serviceKey,
   className,
+  onOpen,
 }: {
   serviceKey: string;
   className?: string;
+  onOpen?: VoidFunction;
 }) {
-  const { base, text, container } = stylesKey();
-  return (
-    <div className={base({ className })}>
-      <div className={container({})}>
-        <TruncateWithTooltip copyText={serviceKey}>
-          <span className={text()}>{serviceKey}</span>
-        </TruncateWithTooltip>
-      </div>
+  const { base, text, container, button } = stylesKey();
+  const content = (
+    <div className={container({})}>
+      <TruncateWithTooltip copyText={serviceKey}>
+        <span className={text()}>{serviceKey}</span>
+      </TruncateWithTooltip>
     </div>
   );
+
+  if (onOpen) {
+    return (
+      <Button variant="icon" onClick={onOpen} className={button({ className })}>
+        {content}
+      </Button>
+    );
+  }
+
+  return <div className={base({ className })}>{content}</div>;
 }
