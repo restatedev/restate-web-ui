@@ -66,6 +66,8 @@ const stateObjectStyles = tv({
     objectIcon:
       'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 text-blue-500',
     stateKeyCell: 'bg-gray-50/35',
+    stateKeyCount:
+      '-ml-1.5 rounded-md border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-medium text-gray-500',
     valueButton:
       'group/value flex w-full min-w-0 items-center justify-start rounded-lg border-0 bg-transparent! px-1.5 py-0.5 text-left font-mono text-xs text-zinc-500 shadow-none! hover:bg-transparent! pressed:bg-transparent!',
     valueButtonContent:
@@ -263,6 +265,7 @@ function StateObjectCell({
     actions,
     objectActionButton,
     sizeText,
+    stateKeyCount,
   } = stateObjectStyles();
 
   if (col.id === 'object_key') {
@@ -298,7 +301,7 @@ function StateObjectCell({
   if (col.id === 'state_key') {
     return (
       <Cell>
-        <span className="rounded-md border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-medium text-gray-500">
+        <span className={stateKeyCount()}>
           {row.state.length}{' '}
           {formatPlurals(row.state.length, { one: 'key', other: 'keys' })}
         </span>
