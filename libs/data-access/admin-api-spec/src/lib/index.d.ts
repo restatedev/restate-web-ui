@@ -1990,7 +1990,7 @@ export interface components {
        *     The new state to replace the previous state with
        */
       new_state: {
-        [key: string]: number[] | string;
+        [key: string]: number[];
       };
       /**
        * @description # Service key
@@ -2572,9 +2572,9 @@ export interface components {
     UserLimits: {
       /**
        * Format: int32
-       * @description Maximum concurrent invocations. `None` means unlimited.
+       * @description Maximum concurrent running invocations. `None` means unlimited.
        */
-      action_concurrency?: number | null;
+      concurrency?: number | null;
     };
     /**
      * Format: int32

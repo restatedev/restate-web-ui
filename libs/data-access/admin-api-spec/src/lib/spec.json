@@ -2494,17 +2494,8 @@
             "type": "object",
             "description": "# New State\n\nThe new state to replace the previous state with",
             "additionalProperties": {
-              "oneOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "integer",
-                    "format": "int32",
-                    "minimum": 0
-                  }
-                },
-                { "type": "string" }
-              ]
+              "type": "array",
+              "items": { "type": "integer", "format": "int32", "minimum": 0 }
             },
             "propertyNames": { "type": "string" }
           },
@@ -3022,10 +3013,10 @@
         "type": "object",
         "description": "Per-rule effective limits.\n\n`None` on a field means \"unlimited\" (no rule constrains this dimension).\nUnder the `bilrost` feature this type is also the wire shape persisted\ninside [`crate::PersistedRule`]; under `serde` it's the JSON wire shape\nfor the admin REST model — adding a new limit kind here means allocating\na fresh `bilrost(tag(...))` next to the new field.",
         "properties": {
-          "action_concurrency": {
+          "concurrency": {
             "type": ["integer", "null"],
             "format": "int32",
-            "description": "Maximum concurrent invocations. `None` means unlimited.",
+            "description": "Maximum concurrent running invocations. `None` means unlimited.",
             "minimum": 1
           }
         }
