@@ -2191,7 +2191,7 @@
                         "type": "object",
                         "allOf": [
                           {
-                            "$ref": "#/components/schemas/StateResponse"
+                            "$ref": "#/components/schemas/ListStateResponse"
                           },
                           {
                             "type": "object",
@@ -2296,6 +2296,19 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "stateKey",
+            "in": "query",
+            "description": "state key filter; when omitted, all state entries are returned",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
           },
           {
             "name": "serviceType",
@@ -2560,6 +2573,19 @@
             "description": "key",
             "required": true,
             "schema": { "type": "string" }
+          },
+          {
+            "name": "stateKey",
+            "in": "query",
+            "description": "state key filter; when omitted, all state entries are returned",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
           }
         ],
         "responses": {
@@ -2631,6 +2657,166 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListDrainedDeploymentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/state/services": {
+      "get": {
+        "tags": ["query-state"],
+        "summary": "List state services",
+        "description": "Distinct service names from the state table.",
+        "operationId": "list_state_services",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListStateServicesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/state/storage-size": {
+      "get": {
+        "tags": ["query-state"],
+        "summary": "Get state storage size",
+        "description": "Aggregated state storage size by service name. Each service total is the sum of value_length for rows in the state table.",
+        "operationId": "get_state_storage_size",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateStorageSizeResponse"
                 }
               }
             }
@@ -3293,6 +3479,43 @@
           }
         }
       },
+      "ListStateServicesResponse": {
+        "type": "object",
+        "description": "Distinct service names with rows in the state table.",
+        "required": ["services"],
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "StateStorageSizeResponse": {
+        "type": "object",
+        "description": "State storage size grouped by service name. Each size is the sum of value_length for the service's rows in the state table.",
+        "required": ["services"],
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["service_name", "size"],
+              "properties": {
+                "service_name": {
+                  "type": "string",
+                  "description": "Service name from the state table."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "Total stored state value size in bytes for the service."
+                }
+              }
+            }
+          }
+        }
+      },
       "MetricsResponse": {
         "type": "object",
         "description": "Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log).",
@@ -3943,6 +4166,30 @@
                 },
                 "value": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ListStateResponse": {
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "size"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "number"
                 }
               }
             }

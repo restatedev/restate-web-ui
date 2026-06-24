@@ -42,6 +42,10 @@ export interface PanelTableProps<
   | 'onRowAction'
   | 'sortDescriptor'
   | 'onSortChange'
+  | 'treeColumn'
+  | 'expandedKeys'
+  | 'defaultExpandedKeys'
+  | 'onExpandedChange'
 > {
   columns: PanelTableColumn<TColId>[];
   items: T[];
@@ -53,6 +57,7 @@ export interface PanelTableProps<
   bodyKey?: string | number;
   onSelectionChange?: (keys: Set<Key>) => void;
   renderCell: (row: T, col: PanelTableColumn<TColId>) => ReactElement;
+  renderChildRows?: (row: T, columns: PanelTableColumn[]) => ReactNode;
   rowClassName?: string;
   rowDependencies?: unknown[];
 }
@@ -90,6 +95,7 @@ export function PanelTable<
   columns,
   items,
   renderCell,
+  renderChildRows,
   rowClassName,
   rowDependencies,
   selectionMode,
@@ -98,6 +104,10 @@ export function PanelTable<
   onRowAction,
   sortDescriptor,
   onSortChange,
+  treeColumn,
+  expandedKeys,
+  defaultExpandedKeys,
+  onExpandedChange,
   isLoading,
   error,
   numOfRows,
@@ -235,6 +245,7 @@ export function PanelTable<
         dependencies={[...(rowDependencies ?? []), dataTableColumns]}
         className={rowClassName}
         leadingCell={<Cell />}
+        childRows={renderChildRows?.(item, dataTableColumns)}
       >
         {(col) => {
           if (col.id === RIGHT_SPACER_ID) {
@@ -244,7 +255,13 @@ export function PanelTable<
         }}
       </Row>
     ),
-    [renderCell, rowClassName, rowDependencies, dataTableColumns],
+    [
+      renderCell,
+      renderChildRows,
+      rowClassName,
+      rowDependencies,
+      dataTableColumns,
+    ],
   );
 
   const renderColumns = (
@@ -340,6 +357,10 @@ export function PanelTable<
             selectedKeys={selectedKeys}
             onSelectionChange={handleSelectionChange}
             onRowAction={onRowAction}
+            treeColumn={treeColumn}
+            expandedKeys={expandedKeys}
+            defaultExpandedKeys={defaultExpandedKeys}
+            onExpandedChange={onExpandedChange}
             className={dataTableInner()}
           >
             <TableHeader

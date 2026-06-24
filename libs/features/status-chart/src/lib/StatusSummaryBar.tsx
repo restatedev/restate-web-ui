@@ -1,7 +1,10 @@
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import { Icon, IconName } from '@restate/ui/icons';
+import type { ReactNode } from 'react';
 import {
   formatNumber,
+  formatPlurals,
   formatPercentageWithoutFraction,
   formatApproxPercentage,
 } from '@restate/util/intl';
@@ -76,22 +79,37 @@ function Segment({
   isSampled?: boolean;
 }) {
   const percentage = formatPercentageWithoutFraction(entry.count / total);
+  const label = STATUS_LABELS[entry.name] ?? entry.name;
   const tooltipContent = (
-    <div className="flex flex-col gap-0.5">
-      <div className="text-xs font-medium">
-        {STATUS_LABELS[entry.name] ?? entry.name}
-      </div>
-      <div className="text-2xs opacity-80">
-        {isSampled ? (
-          <>
-            {formatApproxPercentage(entry.count / total)}{' '}
-            <span className="opacity-70">· sampled</span>
-          </>
-        ) : (
-          <>
-            {formatNumber(entry.count, true)} · {percentage}
-          </>
-        )}
+    <div className="flex min-w-56 flex-col">
+      <div className="mb-2">
+        <div className="text-base! leading-7 font-medium text-gray-300!">
+          {label}
+        </div>
+        <TooltipSummary href={href}>
+          {isSampled ? (
+            <>
+              <span className="!text-xl !text-gray-50">
+                {formatApproxPercentage(entry.count / total)}
+              </span>
+              <span className="!text-sm !text-gray-400">of invocations</span>
+              <span className="!text-sm !text-gray-500">· sampled</span>
+            </>
+          ) : (
+            <>
+              <span className="!text-xl !text-gray-50">
+                {formatNumber(entry.count, true)}
+              </span>
+              <span className="!text-sm !text-gray-400">
+                {formatPlurals(entry.count, {
+                  one: 'invocation',
+                  other: 'invocations',
+                })}
+              </span>
+              <span className="!text-sm !text-gray-500">· {percentage}</span>
+            </>
+          )}
+        </TooltipSummary>
       </div>
     </div>
   );
@@ -101,7 +119,7 @@ function Segment({
       className={segmentWrapStyles()}
       style={{ flexGrow: entry.count, flexBasis: 0 }}
     >
-      <HoverTooltip content={tooltipContent} className="h-full">
+      <HoverTooltip content={tooltipContent} className="h-full" size="lg">
         <div
           className={segmentStyles({
             borderType: entry.borderType ? 'dashed' : 'solid',
@@ -125,6 +143,36 @@ function Segment({
         </div>
       </HoverTooltip>
     </div>
+  );
+}
+
+function TooltipSummary({
+  href,
+  children,
+}: {
+  href?: string;
+  children: ReactNode;
+}) {
+  const className =
+    '-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none hover:bg-white/10';
+
+  if (!href) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <Link
+      href={href}
+      preserveQueryParams={false}
+      variant="secondary"
+      className={className}
+    >
+      {children}
+      <Icon
+        name={IconName.ChevronRight}
+        className="ml-auto h-3.5 w-3.5 shrink-0 !text-zinc-500"
+      />
+    </Link>
   );
 }
 

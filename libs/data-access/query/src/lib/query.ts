@@ -33,6 +33,8 @@ import {
   countInvocations,
   getInvocationsStatus,
   getMetrics,
+  getStateStorageSize,
+  listStateServices,
   summaryInvocations,
   completedInvocationsBreakdown,
   type CompletedInvocationsBreakdownArgs,
@@ -64,6 +66,8 @@ type BoundHandlers = {
   ) => Promise<Response>;
   getInvocationsStatus: (invocationIds: string[]) => Promise<Response>;
   getMetrics: () => Promise<Response>;
+  getStateStorageSize: () => Promise<Response>;
+  listStateServices: () => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
     invocationId: string,
@@ -88,6 +92,7 @@ type BoundHandlers = {
     service: string,
     key: string,
     serviceType?: StateServiceType,
+    stateKeys?: string[],
   ) => Promise<Response>;
   getStateInterface: (
     service: string,
@@ -109,6 +114,7 @@ type BoundHandlers = {
     service: string,
     scope: string,
     key: string,
+    stateKeys?: string[],
   ) => Promise<Response>;
   batchCancelInvocations: (
     request: BatchInvocationsRequestBody,
@@ -140,22 +146,24 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     completedInvocationsBreakdown: completedInvocationsBreakdown.bind(context),
     getInvocationsStatus: getInvocationsStatus.bind(context),
     getMetrics: getMetrics.bind(context),
+    getStateStorageSize: getStateStorageSize.bind(context),
+    listStateServices: listStateServices.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
     getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
-    getState: (service, key, serviceType) =>
-      getState.call(context, service, key, undefined, serviceType),
+    getState: (service, key, serviceType, stateKeys) =>
+      getState.call(context, service, key, undefined, serviceType, stateKeys),
     getStateInterface: (service, serviceKey, scope, serviceType) =>
       getStateInterface.call(context, service, serviceKey, scope, serviceType),
     queryState: (service, args, serviceType) =>
       queryState.call(context, service, args, serviceType),
     listState: (service, args, serviceType) =>
       listState.call(context, service, args, serviceType),
-    getScopedState: (service, scope, key) =>
-      getState.call(context, service, key, scope),
+    getScopedState: (service, scope, key, stateKeys) =>
+      getState.call(context, service, key, scope, undefined, stateKeys),
     batchCancelInvocations: batchCancelInvocations.bind(context),
     batchPurgeInvocations: batchPurgeInvocations.bind(context),
     batchKillInvocations: batchKillInvocations.bind(context),
@@ -304,6 +312,10 @@ export const routes = createRoutes('/query', {
   },
   metrics: {
     get: { method: 'GET', pattern: '/metrics' },
+  },
+  state: {
+    services: { method: 'GET', pattern: '/state/services' },
+    storageSize: { method: 'GET', pattern: '/state/storage-size' },
   },
 });
 
@@ -459,6 +471,7 @@ router.map(routes, {
             ctx.params.name,
             ctx.params.key,
             readServiceType(ctx.url.searchParams),
+            ctx.url.searchParams.getAll('stateKey'),
           );
         },
         async keys(ctx) {
@@ -505,6 +518,7 @@ router.map(routes, {
             ctx.params.name,
             ctx.params.scope,
             ctx.params.key,
+            ctx.url.searchParams.getAll('stateKey'),
           );
         },
       },
@@ -519,6 +533,16 @@ router.map(routes, {
       async get(ctx) {
         const { getMetrics } = ctx.storage.get(handlersKey);
         return getMetrics();
+      },
+    },
+    state: {
+      async services(ctx) {
+        const { listStateServices } = ctx.storage.get(handlersKey);
+        return listStateServices();
+      },
+      async storageSize(ctx) {
+        const { getStateStorageSize } = ctx.storage.get(handlersKey);
+        return getStateStorageSize();
       },
     },
   },

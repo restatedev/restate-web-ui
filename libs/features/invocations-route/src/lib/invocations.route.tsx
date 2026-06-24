@@ -266,10 +266,6 @@ function Component() {
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
-  // Visible row count (capped at the list endpoint's limit) and the true
-  // filter-matched total from the summary endpoint. Used by the Actions
-  // badge / dropdown / footnote.
-  const visibleCount = data?.rows?.length ?? 0;
   const totalCount = summaryData?.totalCount ?? 0;
   // Sample-bounded total display: when sampled and the estimate hits the
   // sample cap, format as "~50K+"; otherwise "~X". Used by the Actions

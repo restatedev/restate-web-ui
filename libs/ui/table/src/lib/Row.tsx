@@ -30,11 +30,12 @@ const rowStyles = tv({
 
 interface RowProps<T extends object> extends Pick<
   AriaRowProps<T>,
-  'id' | 'columns' | 'children' | 'dependencies'
+  'id' | 'columns' | 'children' | 'dependencies' | 'hasChildItems'
 > {
   className?: string;
   ref?: Ref<HTMLTableRowElement>;
   leadingCell?: ReactNode;
+  childRows?: ReactNode;
 }
 
 function SelectionCheckbox({ rowKey }: { rowKey?: Key }) {
@@ -65,6 +66,7 @@ export function Row<T extends { id?: string }>({
   className,
   ref,
   leadingCell,
+  childRows,
   ...otherProps
 }: RowProps<T>) {
   const { selectionBehavior, allowsDragging } = useTableOptions();
@@ -88,6 +90,7 @@ export function Row<T extends { id?: string }>({
         </Cell>
       )}
       <Collection items={columns}>{children}</Collection>
+      {childRows}
     </AriaRow>
   );
 }

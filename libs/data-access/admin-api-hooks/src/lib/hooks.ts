@@ -315,6 +315,48 @@ export function useGetMetrics(
   };
 }
 
+export function useGetStateStorageSize(
+  options?: HookQueryOptions<'/query/state/storage-size', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/state/storage-size', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListStateServices(
+  options?: HookQueryOptions<'/query/state/services', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/state/services', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function isVersionQuery(
   data: unknown,
   query: Query<unknown, unknown, unknown>,
@@ -1679,9 +1721,14 @@ export function useGetVirtualObjectState(
   scope?: string,
   serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>,
+  stateKeys: string[] = [],
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
+  const query = {
+    ...(serviceType ? { serviceType } : {}),
+    ...(stateKeys.length > 0 ? { stateKey: stateKeys } : {}),
+  };
   const queryOptions =
     scope !== undefined
       ? adminApi(
@@ -1690,14 +1737,19 @@ export function useGetVirtualObjectState(
           'get',
           {
             baseUrl,
-            parameters: { path: { name: serviceName, scope, key } },
+            parameters: {
+              path: { name: serviceName, scope, key },
+              ...(stateKeys.length > 0
+                ? { query: { stateKey: stateKeys } }
+                : {}),
+            },
           },
         )
       : adminApi('query', '/query/services/{name}/keys/{key}/state', 'get', {
           baseUrl,
           parameters: {
             path: { key, name: serviceName },
-            ...(serviceType ? { query: { serviceType } } : {}),
+            ...(Object.keys(query).length > 0 ? { query } : {}),
           },
         });
 

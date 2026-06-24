@@ -26,4 +26,9 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
       'Show a timeline of succeeded vs failed invocations over the last day.',
     available: true,
   },
+  FEATURE_STATE_STORAGE_BREAKDOWN: {
+    title: 'State storage breakdown',
+    description: 'Show state storage usage grouped by service.',
+    available: true,
+  },
 };

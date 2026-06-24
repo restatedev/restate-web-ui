@@ -4,6 +4,7 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
+import { vqueueStatusEnabled } from './vqueue';
 
 const DEFAULT_PAGE_SIZE = 1000;
 
@@ -33,9 +34,10 @@ export async function getInvocationIds(
     : [];
 
   const allFilters = [...filters, ...createdAfterFilter];
+  const vqueueBackingOff = vqueueStatusEnabled(this);
 
   const invocationData = await this.query(
-    `SELECT id, created_at from sys_invocation ${convertInvocationsFilters(allFilters)} ORDER BY created_at ASC LIMIT ${pageSize}`,
+    `SELECT id, created_at from sys_invocation ${convertInvocationsFilters(allFilters, { vqueueBackingOff })} ORDER BY created_at ASC LIMIT ${pageSize}`,
   ).then(({ rows }) => rows as Pick<RawInvocation, 'id' | 'created_at'>[]);
 
   const invocationIds = invocationData.map(({ id }) => id);

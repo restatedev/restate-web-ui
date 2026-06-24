@@ -110,6 +110,7 @@ const EditStateContext = createContext<{
   key?: string;
   objectKey?: string;
   service?: string;
+  resolveCodecMetadata?: boolean;
   scope?: string;
   setEditState: Dispatch<
     React.SetStateAction<{
@@ -118,6 +119,7 @@ const EditStateContext = createContext<{
       key?: string;
       service?: string;
       objectKey?: string;
+      resolveCodecMetadata?: boolean;
       scope?: string;
     }>
   >;
@@ -138,6 +140,7 @@ export function EditState({ children }: PropsWithChildren) {
     key?: string;
     objectKey?: string;
     service?: string;
+    resolveCodecMetadata?: boolean;
     scope?: string;
   }>({
     isEditing: false,
@@ -152,6 +155,7 @@ export function EditState({ children }: PropsWithChildren) {
         service={editState.service}
         objectKey={editState.objectKey}
         stateKey={editState.key}
+        resolveCodecMetadata={editState.resolveCodecMetadata}
         scope={editState.scope}
         isDeleting={editState.isDeleting}
         onOpenChange={(isEditing) => setEditState((s) => ({ ...s, isEditing }))}
@@ -165,6 +169,7 @@ function EditStateInner({
   service,
   objectKey,
   stateKey: key,
+  resolveCodecMetadata,
   scope,
   isOpen,
   onOpenChange,
@@ -174,6 +179,7 @@ function EditStateInner({
   stateKey?: string;
   objectKey?: string;
   scope?: string;
+  resolveCodecMetadata?: boolean;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   isDeleting?: boolean;
@@ -184,6 +190,7 @@ function EditStateInner({
     scope,
     {
       enabled: Boolean(service && objectKey),
+      resolveCodecMetadata,
       onSuccess(data, variables) {
         onOpenChange(false);
         showSuccessNotification(

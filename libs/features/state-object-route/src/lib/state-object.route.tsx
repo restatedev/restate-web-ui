@@ -1,37 +1,24 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { useVersion } from '@restate/data-access/admin-api';
 import {
-  useListDeployments,
-  useListServices,
   useListVirtualObjectState,
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
 import { Button, SubmitButton } from '@restate/ui/button';
-import { Cell, PanelTable, PanelTableColumn } from '@restate/ui/table';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
+  type ContentPanelTabs,
 } from '@restate/ui/content-panel';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
-import { SortDescriptor } from 'react-stately';
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownMenuSelection,
-  DropdownPopover,
-  DropdownSection,
-  DropdownTrigger,
-} from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import {
-  ComponentProps,
   PropsWithChildren,
   useCallback,
   useEffect,
@@ -51,39 +38,30 @@ import {
   QueryClauseType,
   useQueryBuilder,
 } from '@restate/ui/query-builder';
-import {
-  Form,
-  useHref,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from 'react-router';
+import { Form, Navigate, useParams, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import invariant from 'tiny-invariant';
+import { tv } from '@restate/util/styles';
 import {
   ClauseChip,
   FiltersTrigger,
 } from '@restate/features/invocations-route';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  usePopover,
-} from '@restate/ui/popover';
-import { DecodedValue, Value } from '@restate/features/invocation-route';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
 import { STATE_QUERY_NAME } from './constants';
 import { useEditStateContext } from '@restate/features/edit-state';
-import {
-  StaticCodecOptionsProvider,
-  useResolvedCodecOptions,
-} from '@restate/features/codec';
+import { useResolvedCodecOptions } from '@restate/features/codec';
 import { toStateParam } from './toStateParam';
-import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
-import { Portal } from '@restate/ui/portal';
 import { useFeatures } from '@restate/data-access/admin-api';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
+import {
+  getStateServiceHref,
+  ServiceSelector,
+  StateOnlyServiceWarningIcon,
+  useValidateVirtualObject,
+} from './ServiceSelector';
+import { StateObjectTable } from './StateObjectTable';
+import { StateStorageBreakdown } from './StateStorageBreakdown';
+import type { StateObjectRecord } from './types';
 
 function urlKeyFor(schemaClause: QueryClauseSchema<QueryClauseType>) {
   if (schemaClause.metadata?.isSystem) {
@@ -120,10 +98,12 @@ function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
   let stateFilter: FilterItem | undefined;
   for (const clause of clauses) {
     if (!clause.isValid) continue;
+    const operation = clause.value.operation;
+    if (!operation) continue;
     const column = clause.schema.metadata?.column as string | undefined;
     const filter = {
       field: column ?? clause.fieldValue,
-      operation: clause.value.operation!,
+      operation,
       type: clause.type === 'CUSTOM_STRING' ? 'STRING' : clause.type,
       value: clause.value.value,
     } as FilterItem;
@@ -137,33 +117,40 @@ function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
 }
 
 const STATE_PAGE_SIZE = 30;
+const MAX_VISIBLE_STATE_SERVICE_TABS = 5;
 const CUSTOM_KEY_ID = `__rs-state-key__`;
 
-function EditStateTrigger(props: ComponentProps<typeof Button>) {
-  const { close } = usePopover();
-  return (
-    <Button
-      {...props}
-      onClick={(e) => {
-        close?.();
-        props?.onClick?.(e);
-      }}
-    />
-  );
-}
-
-const actionButtonStyles = tv({
-  base: 'invisible absolute right-full z-2 translate-x-px rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] drop-shadow-[-20px_2px_4px_rgba(255,255,255,0.4)] group-hover:visible',
+const stateRouteStyles = tv({
+  base: 'relative flex min-h-0 flex-1 flex-col',
+  variants: {
+    hasStorageBreakdown: {
+      true: 'gap-4 pt-20',
+      false: '',
+    },
+  },
 });
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const submitRef = useSubmitShortcut();
 
-  const { virtualObject: serviceName } = useParams<{ virtualObject: string }>();
+  const { virtualObject: serviceName } = useParams<{
+    virtualObject: string;
+  }>();
   invariant(serviceName, 'Missing virtualObject param');
-  const { isValid, isValidating, workflows } = useValidateVirtualObject();
-  const isWorkflow = workflows.includes(serviceName);
+  const {
+    isValid,
+    isValidating,
+    redirectTo,
+    services,
+    serviceType,
+    stateOnlyServices,
+  } = useValidateVirtualObject(serviceName);
+  const isWorkflow = serviceType === 'workflow';
+  const { baseUrl } = useRestateContext();
+  const showStateStorage = useIsFeatureFlagEnabled(
+    'FEATURE_STATE_STORAGE_BREAKDOWN',
+  );
 
   const [keysSet, setKeysSet] = useState(
     () =>
@@ -173,11 +160,11 @@ function Component() {
           .map((key) => key.replace(/^filter_/, '')),
       ),
   );
-  const keys = Array.from(keysSet.values());
 
   const { isSuccess: versionReady } = useVersion();
   const hasVqueues = useFeatures().has('vqueues');
   const hasScopeInUrl = searchParams.has('sysFilter_scope');
+  const exposesScope = hasVqueues && serviceType !== 'virtual_object';
   const schema = useMemo(() => {
     const stringOps = [
       // TODO: add is null/ is not null
@@ -194,7 +181,7 @@ function Component() {
       type: 'STRING',
       metadata: { isSystem: true, column: 'service_key' },
     });
-    if ((hasVqueues && isWorkflow) || hasScopeInUrl) {
+    if (exposesScope || hasScopeInUrl) {
       clauses.push({
         id: '__sys_service_scope',
         label: 'Scope',
@@ -217,7 +204,7 @@ function Component() {
       type: 'CUSTOM_STRING',
     } as QueryClauseSchema<QueryClauseType>);
     return clauses;
-  }, [keysSet, serviceName, hasVqueues, isWorkflow, hasScopeInUrl]);
+  }, [keysSet, serviceName, exposesScope, hasScopeInUrl]);
 
   const queryFilters = useMemo(
     () => clausesToFilterArgs(getQuery(searchParams, schema)),
@@ -230,18 +217,13 @@ function Component() {
     data: serviceKeysData,
     isFetching,
     queryKey,
-  } = useQueryVirtualObjectState(
-    serviceName,
-    queryFilters,
-    isWorkflow ? 'workflow' : 'virtual_object',
-    {
-      refetchOnMount: true,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      staleTime: 0,
-      enabled: isValid,
-    },
-  );
+  } = useQueryVirtualObjectState(serviceName, queryFilters, serviceType, {
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    enabled: isValid,
+  });
 
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
     if (error) return [];
@@ -258,15 +240,15 @@ function Component() {
   }, [pageIndex, allItems]);
   const listStateArgs = useMemo(
     () =>
-      currentPageItems.some((item) => item.scope !== undefined)
+      hasVqueues
         ? { items: currentPageItems }
         : { keys: currentPageItems.map((item) => item.key) },
-    [currentPageItems],
+    [currentPageItems, hasVqueues],
   );
   const listObjects = useListVirtualObjectState(
     serviceName,
     listStateArgs,
-    isWorkflow ? 'workflow' : 'virtual_object',
+    serviceType,
     {
       refetchOnMount: true,
       refetchOnReconnect: false,
@@ -275,15 +257,12 @@ function Component() {
     },
   );
 
-  const flattenedData = useMemo(() => {
+  const stateObjects = useMemo<StateObjectRecord[]>(() => {
     if (listObjects.error) return [];
     return (
       listObjects.data?.objects.map((obj) => ({
         ...obj,
-        state: obj.state.reduce(
-          (p, c) => ({ ...p, [c.name]: c.value }),
-          {} as Record<string, string>,
-        ),
+        id: `${obj.key ?? ''}\x00${obj.scope ?? ''}`,
       })) ?? []
     );
   }, [listObjects.data, listObjects.error]);
@@ -308,7 +287,6 @@ function Component() {
     }
   }, [listObjects.data, isFetching]);
 
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
   const [, startTransition] = useTransition();
 
   const setPageIndex = useCallback(
@@ -321,26 +299,6 @@ function Component() {
     [],
   );
 
-  const [selectedColumns, setSelectedColumns] = useState<DropdownMenuSelection>(
-    new Set(['service_key']),
-  );
-
-  useEffect(() => {
-    setSelectedColumns(new Set(['service_key']));
-  }, [serviceName]);
-
-  useEffect(() => {
-    setSelectedColumns((old) => {
-      if (old instanceof Set && old.size <= 2) {
-        return new Set([
-          'service_key',
-          ...Array.from(keysSet.values()).slice(0, 6),
-        ]);
-      }
-      return old;
-    });
-  }, [keysSet]);
-
   const queryCLient = useQueryClient();
 
   const query = useQueryBuilder(getQuery(searchParams, schema), !versionReady);
@@ -349,158 +307,102 @@ function Component() {
     queryRef.current = query;
   });
 
-  const showScopeColumn = hasVqueues && isWorkflow;
-
-  const selectedColumnsArray = useMemo(() => {
-    const cols = Array.from(selectedColumns).map((id, index) => ({
-      name: id === 'service_key' ? `${serviceName} (Key)` : id,
-      id: String(id),
-      isRowHeader: index === 0,
-    }));
-    if (showScopeColumn) {
-      const keyIndex = cols.findIndex((c) => c.id === 'service_key');
-      cols.splice(keyIndex + 1, 0, {
-        id: 'scope',
-        name: 'Scope',
-        isRowHeader: false,
-      });
-    }
-    cols.push({
-      id: '__actions__',
-      name: 'Actions',
-      isRowHeader: false,
-    });
-    return cols;
-  }, [selectedColumns, serviceName, showScopeColumn]);
-
   const totalSize = Math.ceil(allItems.length / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
-  const { EncodingWaterMark } = useRestateContext();
-  const resolvedServiceCodecOptions = useResolvedCodecOptions({
-    service: { value: { name: serviceName } },
-  });
 
   useEffect(() => {
     if (allItems.length <= STATE_PAGE_SIZE * pageIndex) {
       setPageIndex(0);
     }
   }, [pageIndex, allItems, setPageIndex]);
-  const hash =
-    'hash' +
-    flattenedData.map(({ key, scope }) => `${key}\x00${scope ?? ''}`).join('');
-
-  const panelColumns = useMemo<PanelTableColumn[]>(
-    () =>
-      selectedColumnsArray.map((col) => {
-        if (col.id === '__actions__') {
-          return {
-            id: '__actions__',
-            name: (
-              <Dropdown>
-                <DropdownTrigger>
-                  {keys.length > 0 && (
-                    <Button
-                      variant="icon"
-                      className="self-end rounded-lg p-0.5"
-                    >
-                      <Icon
-                        name={IconName.TableProperties}
-                        className="aspect-square h-4 w-4 text-gray-500"
-                      />
-                    </Button>
-                  )}
-                </DropdownTrigger>
-                <DropdownPopover>
-                  <DropdownSection title="Columns">
-                    <DropdownMenu
-                      multiple
-                      selectable
-                      selectedItems={selectedColumns}
-                      onSelect={setSelectedColumns}
-                    >
-                      <DropdownItem key="service_key" value="service_key">
-                        {serviceName} (Key)
-                      </DropdownItem>
-                      {keys
-                        .filter((k) => k !== 'service_key')
-                        .map((k) => (
-                          <DropdownItem key={k} value={k}>
-                            {k}
-                          </DropdownItem>
-                        ))}
-                    </DropdownMenu>
-                  </DropdownSection>
-                </DropdownPopover>
-              </Dropdown>
-            ),
-            width: 40,
-            allowsSorting: false,
-          };
-        }
-        return {
-          id: col.id,
-          name: col.name,
-          isRowHeader: col.isRowHeader,
-          allowsSorting: false,
-        };
-      }),
-    [selectedColumnsArray, keys, selectedColumns, serviceName],
-  );
-
-  const panelItems = useMemo(
-    () =>
-      flattenedData.map((row) => ({
-        ...row,
-        id: `${row.key ?? ''}\x00${row.scope ?? ''}`,
-      })),
-    [flattenedData],
-  );
-
   const stateError = error || listObjects.error;
   const hasActiveFilters = Array.from(searchParams.keys()).some(
     (key) => key.startsWith('filter_') || key.startsWith('sysFilter_'),
   );
+  const serviceCodecOptions = useMemo(
+    () =>
+      serviceType
+        ? {
+            service: { value: { name: serviceName } },
+          }
+        : undefined,
+    [serviceName, serviceType],
+  );
+  const resolvedServiceCodecOptions =
+    useResolvedCodecOptions(serviceCodecOptions);
+  const isStateLoading =
+    isFetching ||
+    isValidating ||
+    (listObjects.isFetching && currentPageItems.length !== 0);
+  const openStatePanel = useCallback(
+    (rowKey: string, rowScope?: string) => {
+      setSearchParams(
+        (old) => {
+          old.set(
+            STATE_QUERY_NAME,
+            toStateParam({
+              key: rowKey,
+              virtualObject: serviceName,
+              scope: rowScope || undefined,
+            }),
+          );
+          old.set('panel', STATE_QUERY_NAME);
+          return old;
+        },
+        { preventScrollReset: true },
+      );
+    },
+    [serviceName, setSearchParams],
+  );
+  const serviceTabs = useMemo<ContentPanelTabs>(
+    () => ({
+      items: services.map((service) => ({
+        id: service,
+        label: (
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span
+              className="truncate [[role=tab]_&]:max-w-[12ch]"
+              title={service}
+            >
+              {service}
+            </span>
+            {stateOnlyServices.includes(service) && (
+              <StateOnlyServiceWarningIcon />
+            )}
+          </span>
+        ),
+        href: getStateServiceHref({ baseUrl, service, searchParams }),
+      })),
+      maxVisible: MAX_VISIBLE_STATE_SERVICE_TABS,
+      selectedId: serviceName,
+      onSelect: (service) =>
+        localStorage.setItem('state_last_service', service),
+    }),
+    [baseUrl, searchParams, serviceName, services, stateOnlyServices],
+  );
+
+  if (redirectTo) {
+    return <Navigate to={redirectTo} replace />;
+  }
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <ContentPanel>
-        <ContentPanelBody className="pb-32">
-          <ContentPanelSection flush>
-            <PanelTable
-              aria-label="State"
-              sortDescriptor={sortDescriptor}
-              onSortChange={setSortDescriptor}
-              bodyKey={hash}
-              columns={panelColumns}
-              items={panelItems}
-              onRowAction={(rowId) => {
-                const [rowKey, rowScope] = String(rowId).split('\x00');
-                setSearchParams(
-                  (old) => {
-                    old.set(
-                      STATE_QUERY_NAME,
-                      toStateParam({
-                        key: rowKey ?? '',
-                        virtualObject: serviceName,
-                        scope: rowScope || undefined,
-                      }),
-                    );
-                    old.set('panel', STATE_QUERY_NAME);
-                    return old;
-                  },
-                  { preventScrollReset: true },
-                );
-              }}
-              numOfRows={currentPageItems.length || 5}
-              bodyDependencies={[selectedColumnsArray, pageIndex, stateError]}
-              isLoading={
-                isFetching ||
-                isValidating ||
-                (listObjects.isFetching && currentPageItems.length !== 0)
-              }
-              emptyPlaceholder={
-                stateError ? (
+      <div
+        className={stateRouteStyles({
+          hasStorageBreakdown: showStateStorage,
+        })}
+      >
+        {showStateStorage && (
+          <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch gap-2 px-4">
+            <StateStorageBreakdown />
+          </div>
+        )}
+        <ContentPanel tabs={serviceTabs}>
+          <ContentPanelBody className="pb-32">
+            <ContentPanelSection flush>
+              {stateError ? (
+                <div className="px-4 py-20">
                   <EmptyState
                     icon={IconName.TriangleAlert}
                     intent="danger"
@@ -511,7 +413,51 @@ function Component() {
                       className="w-full rounded-xl text-left"
                     />
                   </EmptyState>
-                ) : (
+                </div>
+              ) : stateObjects.length > 0 || isStateLoading ? (
+                <StateObjectTable
+                  key={serviceName}
+                  items={stateObjects}
+                  codecOptions={resolvedServiceCodecOptions}
+                  serviceName={serviceName}
+                  serviceType={serviceType}
+                  isLoading={isStateLoading && stateObjects.length === 0}
+                  numOfRows={currentPageItems.length || 5}
+                  onOpenObject={openStatePanel}
+                  onEditObject={(row) =>
+                    setEditState({
+                      isEditing: true,
+                      isDeleting: false,
+                      objectKey: row.key,
+                      service: serviceName,
+                      resolveCodecMetadata: Boolean(serviceType),
+                      scope: row.scope,
+                    })
+                  }
+                  onDeleteObject={(row) =>
+                    setEditState({
+                      isEditing: true,
+                      isDeleting: true,
+                      objectKey: row.key,
+                      service: serviceName,
+                      resolveCodecMetadata: Boolean(serviceType),
+                      scope: row.scope,
+                    })
+                  }
+                  onEditValue={(row, stateKey) =>
+                    setEditState({
+                      isEditing: true,
+                      isDeleting: false,
+                      key: stateKey,
+                      objectKey: row.key,
+                      service: serviceName,
+                      resolveCodecMetadata: Boolean(serviceType),
+                      scope: row.scope,
+                    })
+                  }
+                />
+              ) : (
+                <div className="px-4 py-20">
                   <EmptyState
                     icon={IconName.Database}
                     title="No state found"
@@ -520,244 +466,61 @@ function Component() {
                         ? 'No state matches the current filters. Try adjusting or clearing them.'
                         : isWorkflow
                           ? 'State stored by this Workflow will appear here.'
-                          : 'State stored by this Virtual Object will appear here.'
+                          : serviceType === 'virtual_object'
+                            ? 'State stored by this Virtual Object will appear here.'
+                            : 'State stored by this service will appear here.'
                     }
                   />
-                )
-              }
-              rowClassName="bg-transparent [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-              rowDependencies={[panelColumns]}
-              renderCell={(row, { id }) => {
-                if (id === 'service_key') {
-                  return (
-                    <Cell key={id}>
-                      <KeyCell serviceKey={String(row.key)} />
-                    </Cell>
-                  );
-                } else if (id === 'scope') {
-                  return (
-                    <Cell key={id}>
-                      {row.scope !== undefined ? (
-                        <KeyCell serviceKey={row.scope} />
-                      ) : null}
-                    </Cell>
-                  );
-                } else if (id === '__actions__') {
-                  return (
-                    <Cell className="align-top [&&&]:overflow-visible">
-                      <SplitButton
-                        menus={
-                          <>
-                            <DropdownItem value="edit">Edit…</DropdownItem>
-                            <DropdownItem destructive value="delete">
-                              Delete…
-                            </DropdownItem>
-                          </>
-                        }
-                        mini
-                        onSelect={(key) => {
-                          if (key === 'edit') {
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: false,
-                              objectKey: row.key!,
-                              service: serviceName,
-                              scope: row.scope,
-                            });
-                          }
-                          if (key === 'delete') {
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: true,
-                              objectKey: row.key!,
-                              service: serviceName,
-                              scope: row.scope,
-                            });
-                          }
-                        }}
-                      >
-                        <EditStateTrigger
-                          className={actionButtonStyles()}
-                          variant="secondary"
-                          onClick={() =>
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: false,
-                              objectKey: row.key!,
-                              service: serviceName,
-                              scope: row.scope,
-                            })
-                          }
-                        >
-                          Edit
-                        </EditStateTrigger>
-                      </SplitButton>
-                    </Cell>
-                  );
-                } else {
-                  const stateCodecOptions = {
-                    ...resolvedServiceCodecOptions,
-                    key: row.key!,
-                    command: {
-                      type: 'GetState' as const,
-                      name: id,
-                    },
-                  };
-
-                  return (
-                    <Cell
-                      key={id}
-                      className="group [&:has(*:focus)_*]:visible [&:has(*:hover)_*]:visible"
-                    >
-                      <div className="item-center flex h-full min-h-5 w-full justify-start gap-1">
-                        {row.state?.[id] && (
-                          <Popover>
-                            <PopoverTrigger>
-                              <Button
-                                className="truncate rounded-xl px-3 py-0.5 font-mono [font-size:inherit] text-inherit shadow-none"
-                                variant="secondary"
-                              >
-                                <span className="flex min-w-0 items-center truncate pr-0.5">
-                                  {EncodingWaterMark && (
-                                    <EncodingWaterMark
-                                      value={row.state?.[id]}
-                                      mini
-                                      className="mr-1"
-                                    />
-                                  )}
-                                  <span className="block truncate">
-                                    <StaticCodecOptionsProvider
-                                      options={stateCodecOptions}
-                                    >
-                                      <DecodedValue
-                                        value={row.state?.[id]}
-                                        isBase64
-                                      />
-                                    </StaticCodecOptionsProvider>
-                                  </span>
-                                </span>
-                              </Button>
-                            </PopoverTrigger>
-
-                            <PopoverContent>
-                              <DropdownSection
-                                className="mb-1 w-[90vw] max-w-[min(90vw,50rem)] overflow-auto py-0 pr-0 pl-4"
-                                title={
-                                  <div className="flex items-center text-0.5xs">
-                                    {id}
-                                    <Portal
-                                      id="state-value"
-                                      className="mr-1 ml-auto"
-                                    />
-                                    <EditStateTrigger
-                                      onClick={() =>
-                                        setEditState({
-                                          isEditing: true,
-                                          isDeleting: false,
-                                          key: id,
-                                          objectKey: row.key!,
-                                          service: serviceName,
-                                          scope: row.scope,
-                                        })
-                                      }
-                                      variant="secondary"
-                                      className="flex shrink-0 items-center gap-1 rounded-lg px-1.5 py-0.5 text-xs font-normal"
-                                    >
-                                      Edit
-                                      <Icon
-                                        name={IconName.ExternalLink}
-                                        className="h-3 w-3"
-                                      />
-                                    </EditStateTrigger>
-                                  </div>
-                                }
-                              >
-                                <StaticCodecOptionsProvider
-                                  options={stateCodecOptions}
-                                >
-                                  <Value
-                                    value={row.state?.[id]}
-                                    className="w-full py-0 font-mono text-xs"
-                                    showCopyButton
-                                    portalId="state-value"
-                                  />
-                                </StaticCodecOptionsProvider>
-                              </DropdownSection>
-                            </PopoverContent>
-                          </Popover>
-                        )}
-                        <EditStateTrigger
-                          onClick={() =>
-                            setEditState({
-                              isEditing: true,
-                              isDeleting: false,
-                              key: id,
-                              objectKey: row.key!,
-                              service: serviceName,
-                              scope: row.scope,
-                            })
-                          }
-                          variant="icon"
-                          className="invisible shrink-0 group-hover:visible"
-                        >
-                          <Icon
-                            name={IconName.Pencil}
-                            className="h-3 w-3 fill-current opacity-70"
-                          />
-                        </EditStateTrigger>
-                      </div>
-                    </Cell>
-                  );
-                }
-              }}
-            />
-            <Footnote
-              data={serviceKeysData}
-              isFetching={isFetching || listObjects.isFetching}
-              key={dataUpdate}
-            >
-              {!isFetching && !error && totalSize > 1 && (
-                <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex === 0}
-                    onClick={() => setPageIndex(0)}
-                  >
-                    <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex === 0}
-                    onClick={() => setPageIndex(pageIndex - 1)}
-                    className=""
-                  >
-                    <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-                  </Button>
-                  <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                    {pageIndex + 1} / {totalSize}
-                  </div>
-
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex + 1 === totalSize}
-                    onClick={() => setPageIndex(pageIndex + 1)}
-                    className=""
-                  >
-                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex + 1 === totalSize}
-                    onClick={() => setPageIndex(totalSize - 1)}
-                  >
-                    <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-                  </Button>
                 </div>
               )}
-            </Footnote>
-          </ContentPanelSection>
-        </ContentPanelBody>
-      </ContentPanel>
+              <Footnote
+                data={serviceKeysData}
+                isFetching={isFetching || listObjects.isFetching}
+                key={dataUpdate}
+              >
+                {!isFetching && !error && totalSize > 1 && (
+                  <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex === 0}
+                      onClick={() => setPageIndex(0)}
+                    >
+                      <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex === 0}
+                      onClick={() => setPageIndex(pageIndex - 1)}
+                      className=""
+                    >
+                      <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
+                    </Button>
+                    <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
+                      {pageIndex + 1} / {totalSize}
+                    </div>
+
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex + 1 === totalSize}
+                      onClick={() => setPageIndex(pageIndex + 1)}
+                      className=""
+                    >
+                      <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="icon"
+                      disabled={pageIndex + 1 === totalSize}
+                      onClick={() => setPageIndex(totalSize - 1)}
+                    >
+                      <Icon name={IconName.ChevronLast} className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </Footnote>
+            </ContentPanelSection>
+          </ContentPanelBody>
+        </ContentPanel>
+      </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <Form
           action={`/query/services/${serviceName}/state`}
@@ -826,33 +589,6 @@ function Component() {
   );
 }
 
-const stylesKey = tv({
-  base: 'relative -ml-1 w-fit max-w-full font-mono text-zinc-600',
-  slots: {
-    text: '',
-    container: 'inline-flex w-full items-center pl-1 align-middle',
-  },
-});
-
-function KeyCell({
-  serviceKey,
-  className,
-}: {
-  serviceKey: string;
-  className?: string;
-}) {
-  const { base, text, container } = stylesKey();
-  return (
-    <div className={base({ className })}>
-      <div className={container({})}>
-        <TruncateWithTooltip copyText={serviceKey}>
-          <span className={text()}>{serviceKey}</span>
-        </TruncateWithTooltip>
-      </div>
-    </div>
-  );
-}
-
 function Footnote({
   data,
   isFetching,
@@ -906,156 +642,6 @@ function Footnote({
       )}
       <div>{children}</div>
     </div>
-  );
-}
-
-function getDefaultVirtualObjectOrWorkflow(services: string[]) {
-  if (typeof window !== 'undefined') {
-    const previousSelectedState = localStorage.getItem('state_last_service');
-    return previousSelectedState && services.includes(previousSelectedState)
-      ? previousSelectedState
-      : services.at(0);
-  }
-  return services.at(0);
-}
-
-function useValidateVirtualObject() {
-  const { virtualObject: serviceParam } = useParams<{
-    virtualObject: string;
-  }>();
-  invariant(serviceParam, 'Missing virtualObject param');
-  const { data: deployments, isPending } = useListDeployments();
-  const services = Array.from(deployments?.services.keys() ?? []);
-  const servicesSize = services.length;
-  const { data } = useListServices(services);
-  const virtualObjects = Array.from(data.values() ?? [])
-    .filter((service) => service.ty === 'VirtualObject')
-    .map((service) => service.name)
-    .sort();
-  const workflows = Array.from(data.values() ?? [])
-    .filter((service) => service.ty === 'Workflow')
-    .map((service) => service.name)
-    .sort();
-  const virtualObjectsAndWorkflows = [...virtualObjects, ...workflows];
-  const navigate = useNavigate();
-  const newService = getDefaultVirtualObjectOrWorkflow(
-    virtualObjectsAndWorkflows,
-  );
-
-  const base = useHref('/');
-  const defaultService = useHref(newService ? `../${newService}` : '..', {
-    relative: 'path',
-  }).replace(base, '');
-
-  const isInValid =
-    data.size === servicesSize &&
-    servicesSize > 0 &&
-    !virtualObjectsAndWorkflows.includes(serviceParam);
-
-  useEffect(() => {
-    if (isInValid) {
-      navigate(`/${defaultService}${window.location.search}`, {
-        relative: 'path',
-      });
-    }
-  }, [navigate, defaultService, isInValid]);
-
-  return {
-    isValidating: isPending,
-    isValid: virtualObjectsAndWorkflows.includes(serviceParam),
-    virtualObjectsAndWorkflows,
-    virtualObjects,
-    workflows,
-  };
-}
-
-function ServiceSelector() {
-  const { virtualObject: serviceParam } = useParams<{
-    virtualObject: string;
-  }>();
-  invariant(serviceParam, 'Missing virtualObject param');
-  const { virtualObjects, workflows } = useValidateVirtualObject();
-
-  return (
-    <Dropdown>
-      <DropdownTrigger>
-        <Button
-          variant="secondary"
-          className="flex min-w-0 shrink-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
-        >
-          <span className="shrink-0 whitespace-nowrap">
-            {virtualObjects.includes(serviceParam)
-              ? 'Virtual Object'
-              : workflows.includes(serviceParam)
-                ? 'Workflow'
-                : 'Service'}
-          </span>
-          <span className="font-mono">is</span>
-          <span className="truncate font-semibold">{serviceParam}</span>
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="ml-2 h-3.5 w-3.5 shrink-0"
-          />
-        </Button>
-      </DropdownTrigger>
-      <DropdownPopover placement="top">
-        {virtualObjects.length > 0 && (
-          <DropdownSection title="Virtual Objects">
-            <DropdownMenu
-              selectable
-              selectedItems={[serviceParam]}
-              onSelect={(value) =>
-                localStorage.setItem('state_last_service', value)
-              }
-            >
-              {virtualObjects.map((service) => (
-                <DropDownVirtualObject service={service} key={service} />
-              ))}
-            </DropdownMenu>
-          </DropdownSection>
-        )}
-        {workflows.length > 0 && (
-          <DropdownSection title="Workflows">
-            <DropdownMenu
-              selectable
-              selectedItems={[serviceParam]}
-              onSelect={(value) =>
-                localStorage.setItem('state_last_service', value)
-              }
-            >
-              {workflows.map((service) => (
-                <DropDownVirtualObject service={service} key={service} />
-              ))}
-            </DropdownMenu>
-          </DropdownSection>
-        )}
-      </DropdownPopover>
-    </Dropdown>
-  );
-}
-
-function DropDownVirtualObject({ service }: { service: string }) {
-  const [searchParams] = useSearchParams();
-
-  const search = useMemo(() => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    Array.from(newSearchParams.keys())
-      .filter(
-        (key) => key.startsWith('filter_') || key.startsWith('sysFilter_'),
-      )
-      .forEach((key) => newSearchParams.delete(key));
-
-    return newSearchParams.toString();
-  }, [searchParams]);
-
-  // TODO: refactor using useHref
-  const base = useHref('/');
-  const href = useHref(`../${service}?${search}`, { relative: 'path' });
-
-  return (
-    <DropdownItem value={service} href={href.replace(base, '')}>
-      {service}
-    </DropdownItem>
   );
 }
 
