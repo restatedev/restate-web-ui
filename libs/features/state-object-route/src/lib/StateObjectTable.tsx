@@ -97,6 +97,16 @@ const stateObjectStyles = tv({
   },
 });
 
+function getObjectKeyColumnName(serviceType: StateServiceType | undefined) {
+  if (serviceType === 'workflow') {
+    return 'Workflow id';
+  }
+  if (serviceType === 'virtual_object') {
+    return 'Virtual object key';
+  }
+  return 'Service key';
+}
+
 export function StateObjectTable({
   items,
   codecOptions,
@@ -125,7 +135,7 @@ export function StateObjectTable({
     () => [
       {
         id: 'object_key',
-        name: 'Object key',
+        name: getObjectKeyColumnName(serviceType),
         isRowHeader: true,
         defaultWidth: 240,
         minWidth: 180,
@@ -163,7 +173,7 @@ export function StateObjectTable({
         width: 72,
       },
     ],
-    [hasScopeColumn],
+    [hasScopeColumn, serviceType],
   );
   const [collapsedKeys, setCollapsedKeys] = useState<Set<Key>>(() => new Set());
   const [visibleStateKeyCounts, setVisibleStateKeyCounts] = useState<

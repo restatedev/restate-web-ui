@@ -419,6 +419,7 @@ function Component() {
                       isDeleting: false,
                       objectKey: row.key,
                       service: serviceName,
+                      resolveCodecMetadata: Boolean(serviceType),
                       scope: row.scope,
                     })
                   }
@@ -428,6 +429,7 @@ function Component() {
                       isDeleting: true,
                       objectKey: row.key,
                       service: serviceName,
+                      resolveCodecMetadata: Boolean(serviceType),
                       scope: row.scope,
                     })
                   }
@@ -438,6 +440,7 @@ function Component() {
                       key: stateKey,
                       objectKey: row.key,
                       service: serviceName,
+                      resolveCodecMetadata: Boolean(serviceType),
                       scope: row.scope,
                     })
                   }

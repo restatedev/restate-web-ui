@@ -49,6 +49,7 @@ export function useEditState(
   scope?: string,
   {
     enabled,
+    resolveCodecMetadata = true,
     ...options
   }: UseMutationOptions<
     StateResponse['state'] | undefined,
@@ -57,15 +58,17 @@ export function useEditState(
       state: Record<string, EditStateValue>;
       partial?: boolean;
     }
-  > & { enabled?: boolean } = {},
+  > & { enabled?: boolean; resolveCodecMetadata?: boolean } = {},
 ) {
   const baseUrl = useAdminBaseUrl();
   const codecOptions = {
-    service: {
-      value: {
-        name: service,
+    ...(resolveCodecMetadata && {
+      service: {
+        value: {
+          name: service,
+        },
       },
-    },
+    }),
     key: objectKey,
   } satisfies RestateCodecOptions;
   const { encode, options: resolvedCodecOptions } =
