@@ -2884,6 +2884,139 @@
         }
       }
     },
+    "/query/limits/rules": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "List limit rules",
+        "description": "Configured limit rules from the sys_rules table.",
+        "operationId": "list_limit_rules",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListLimitRulesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/rules/{pattern}": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "Get limit rule",
+        "description": "Configured limit rule from the sys_rules table.",
+        "operationId": "get_limit_rule",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/rules/{pattern}/details": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "Get limit rule with effective limits",
+        "description": "Configured limit rule plus matching effective limit rows.",
+        "operationId": "get_limit_rule_with_limits",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LimitRuleWithLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/rules/{pattern}/user-limits": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "Get effective user limits for rule",
+        "description": "Effective limit rows matching a configured rule pattern.",
+        "operationId": "get_user_limits_for_rule",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUserLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/user-limits": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "List effective user limits",
+        "description": "Effective limit rows and usage from the sys_user_limits table.",
+        "operationId": "list_user_limits",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUserLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/metrics": {
       "get": {
         "tags": ["query-metrics"],
@@ -3513,6 +3646,100 @@
                 }
               }
             }
+          }
+        }
+      },
+      "ListLimitRulesResponse": {
+        "type": "object",
+        "description": "Configured limit rules from the sys_rules table.",
+        "required": ["rules"],
+        "properties": {
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RuleResponse"
+            }
+          }
+        }
+      },
+      "ListUserLimitsResponse": {
+        "type": "object",
+        "description": "Effective limit rows and usage from the sys_user_limits table.",
+        "required": ["limits"],
+        "properties": {
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLimitRow"
+            }
+          }
+        }
+      },
+      "LimitRuleWithLimitsResponse": {
+        "type": "object",
+        "description": "Configured limit rule plus matching effective limit rows.",
+        "required": ["rule", "limits"],
+        "properties": {
+          "rule": {
+            "$ref": "#/components/schemas/RuleResponse"
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLimitRow"
+            }
+          }
+        }
+      },
+      "UserLimitRow": {
+        "type": "object",
+        "required": [
+          "scope",
+          "l1",
+          "l2",
+          "level",
+          "usage",
+          "concurrency_limit",
+          "rule_pattern",
+          "available",
+          "num_waiters"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "nullable": true
+          },
+          "l1": {
+            "type": "string",
+            "nullable": true
+          },
+          "l2": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "nullable": true
+          },
+          "usage": {
+            "type": "integer",
+            "nullable": true
+          },
+          "concurrency_limit": {
+            "type": "integer",
+            "nullable": true
+          },
+          "rule_pattern": {
+            "type": "string",
+            "nullable": true
+          },
+          "available": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_waiters": {
+            "type": "integer",
+            "nullable": true
           }
         }
       },

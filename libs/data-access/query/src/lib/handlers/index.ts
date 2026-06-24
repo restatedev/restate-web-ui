@@ -23,6 +23,12 @@ export { getInvocationsStatus } from './getInvocationsStatus';
 export { getMetrics } from './getMetrics';
 export { getStateStorageSize } from './getStateStorageSize';
 export { listStateServices } from './listStateServices';
+export {
+  getLimitRule,
+  getLimitRuleWithLimits,
+  listLimitRules,
+} from './listLimitRules';
+export { getUserLimitsForRule, listUserLimits } from './listUserLimits';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';

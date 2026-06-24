@@ -2,11 +2,122 @@ import * as adminApi from '@restate/data-access/admin-api-spec';
 import { http, HttpResponse } from 'msw';
 import { adminApiDb, getName } from './adminApiDb';
 
+type RuleResponse = adminApi.components['schemas']['RuleResponse'];
+type UpsertRuleRequest = adminApi.components['schemas']['UpsertRuleRequest'];
+type DeleteRuleRequest = adminApi.components['schemas']['DeleteRuleRequest'];
+type QueryRequest =
+  adminApi.operations['query']['requestBody']['content']['application/json'];
+type QueryResponse =
+  adminApi.operations['query']['responses']['200']['content']['application/json'];
+
 type FormatParameterWithColon<S extends string> =
   S extends `${infer A}{${infer P}}${infer B}` ? `${A}:${P}${B}` : S;
 type GetPath<S extends keyof adminApi.paths> = FormatParameterWithColon<
   keyof Pick<adminApi.paths, S>
 >;
+
+const limitRules = new Map<string, RuleResponse>(
+  [
+    {
+      pattern: '*',
+      description: 'Default cluster concurrency',
+      disabled: false,
+      version: 1,
+      last_modified_millis_since_epoch: Date.now() - 3_600_000,
+      limits: { concurrency: 100 },
+    },
+    {
+      pattern: 'checkout/*',
+      description: 'Checkout services',
+      disabled: false,
+      version: 1,
+      last_modified_millis_since_epoch: Date.now() - 1_800_000,
+      limits: { concurrency: 25 },
+    },
+    {
+      pattern: 'imports/bulk',
+      description: 'Paused import jobs',
+      disabled: true,
+      version: 1,
+      last_modified_millis_since_epoch: Date.now() - 900_000,
+      limits: { concurrency: 5 },
+    },
+  ].map((rule) => [rule.pattern, rule]),
+);
+
+function conflict(message: string): any {
+  return HttpResponse.json({ message } as any, { status: 409 });
+}
+
+function checkUpsertPrecondition(
+  request: UpsertRuleRequest,
+  rule: RuleResponse | undefined,
+) {
+  const precondition = request.precondition ?? { type: 'none' };
+  if (precondition.type === 'none') return true;
+  if (precondition.type === 'does_not_exist') return !rule;
+  return rule?.version === precondition.version;
+}
+
+function toRuleResponse(
+  request: UpsertRuleRequest,
+  existing: RuleResponse | undefined,
+): RuleResponse {
+  return {
+    pattern: request.pattern,
+    description: request.description ?? null,
+    disabled: request.disabled ?? false,
+    limits: request.limits ?? {},
+    version: (existing?.version ?? 0) + 1,
+    last_modified_millis_since_epoch: Date.now(),
+  };
+}
+
+function unquoteSqlString(value: string) {
+  return value.replaceAll("''", "'");
+}
+
+function getSqlStringFilter(sql: string, column: string) {
+  const match = new RegExp(`${column}\\s*=\\s*'((?:''|[^'])*)'`, 'i').exec(sql);
+  return match ? unquoteSqlString(match[1] ?? '') : undefined;
+}
+
+function ruleRows(pattern?: string) {
+  return Array.from(limitRules.values())
+    .filter((rule) => pattern === undefined || rule.pattern === pattern)
+    .map((rule) => ({
+      pattern: rule.pattern,
+      concurrency: rule.limits.concurrency ?? null,
+      description: rule.description,
+      disabled: rule.disabled,
+      version: rule.version,
+      last_modified_millis_since_epoch: rule.last_modified_millis_since_epoch,
+    }));
+}
+
+function userLimitRows(pattern?: string) {
+  return Array.from(limitRules.values())
+    .filter((rule) => !rule.disabled)
+    .filter((rule) => pattern === undefined || rule.pattern === pattern)
+    .map((rule, index) => {
+      const [scope = null, l1 = null, l2 = null] = rule.pattern.split('/');
+      const concurrency = rule.limits.concurrency ?? null;
+      const usage =
+        concurrency == null ? index + 1 : Math.min(index + 1, concurrency);
+      return {
+        scope,
+        l1,
+        l2,
+        level: 'rule',
+        usage,
+        concurrency_limit: concurrency,
+        rule_pattern: rule.pattern,
+        available:
+          concurrency == null ? null : Math.max(concurrency - usage, 0),
+        num_waiters: 0,
+      };
+    });
+}
 
 const listDeploymentsHandler = http.get<
   never,
@@ -188,8 +299,97 @@ const versionHandler = http.get<
     max_admin_api_version: 1,
     min_admin_api_version: 1,
     ingress_endpoint: 'http://localhost:8080',
-    features: {},
+    features: { vqueues: true },
   });
+});
+
+const queryHandler = http.post<
+  never,
+  QueryRequest,
+  QueryResponse,
+  GetPath<'/query'>
+>('/query', async ({ request }) => {
+  const requestBody = await request.json();
+  const sql = requestBody.query;
+
+  if (/\bFROM\s+sys_rules\b/i.test(sql)) {
+    return HttpResponse.json({
+      rows: ruleRows(getSqlStringFilter(sql, 'pattern')),
+    } as any);
+  }
+
+  if (/\bFROM\s+sys_user_limits\b/i.test(sql)) {
+    return HttpResponse.json({
+      rows: userLimitRows(getSqlStringFilter(sql, 'rule_pattern')),
+    } as any);
+  }
+
+  return HttpResponse.json({ message: 'Query is not mocked' } as any, {
+    status: 501,
+  });
+});
+
+const upsertRulesHandler = http.put<
+  never,
+  UpsertRuleRequest[],
+  RuleResponse[],
+  GetPath<'/limits/rules'>
+>('/limits/rules', async ({ request }) => {
+  const requests = await request.json();
+  const nextRules = new Map(limitRules);
+  const response: RuleResponse[] = [];
+
+  for (const upsert of requests) {
+    const existing = nextRules.get(upsert.pattern);
+    if (!checkUpsertPrecondition(upsert, existing)) {
+      return conflict(`Precondition failed for rule ${upsert.pattern}`);
+    }
+    const next = toRuleResponse(upsert, existing);
+    nextRules.set(next.pattern, next);
+    response.push(next);
+  }
+
+  limitRules.clear();
+  for (const [pattern, rule] of nextRules) {
+    limitRules.set(pattern, rule);
+  }
+
+  return HttpResponse.json(response);
+});
+
+const deleteRulesHandler = http.post<
+  never,
+  DeleteRuleRequest[],
+  string[],
+  GetPath<'/limits/rules/bulk-delete'>
+>('/limits/rules/bulk-delete', async ({ request }) => {
+  const requests = await request.json();
+  const nextRules = new Map(limitRules);
+  const removed: string[] = [];
+
+  for (const deleteRequest of requests) {
+    const existing = nextRules.get(deleteRequest.pattern);
+    const expectedVersion = deleteRequest.expected_version;
+    if (
+      expectedVersion != null &&
+      (!existing || existing.version !== expectedVersion)
+    ) {
+      return conflict(`Precondition failed for rule ${deleteRequest.pattern}`);
+    }
+  }
+
+  for (const deleteRequest of requests) {
+    if (nextRules.delete(deleteRequest.pattern)) {
+      removed.push(deleteRequest.pattern);
+    }
+  }
+
+  limitRules.clear();
+  for (const [pattern, rule] of nextRules) {
+    limitRules.set(pattern, rule);
+  }
+
+  return HttpResponse.json(removed);
 });
 
 const deploymentDetailsHandler = http.get<
@@ -299,6 +499,9 @@ export const adminApiMockHandlers = [
   healthHandler,
   registerDeploymentHandler,
   versionHandler,
+  queryHandler,
+  upsertRulesHandler,
+  deleteRulesHandler,
   deploymentDetailsHandler,
   serviceDetailsHandler,
 ];

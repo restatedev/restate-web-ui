@@ -36,6 +36,11 @@ import {
   getMetrics,
   getStateStorageSize,
   listStateServices,
+  getLimitRule,
+  getLimitRuleWithLimits,
+  getUserLimitsForRule,
+  listLimitRules,
+  listUserLimits,
   summaryInvocations,
   completedInvocationsBreakdown,
   type CompletedInvocationsBreakdownArgs,
@@ -69,6 +74,11 @@ type BoundHandlers = {
   getMetrics: () => Promise<Response>;
   getStateStorageSize: () => Promise<Response>;
   listStateServices: () => Promise<Response>;
+  listLimitRules: () => Promise<Response>;
+  getLimitRule: (pattern: string) => Promise<Response>;
+  getLimitRuleWithLimits: (pattern: string) => Promise<Response>;
+  listUserLimits: () => Promise<Response>;
+  getUserLimitsForRule: (pattern: string) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
     invocationId: string,
@@ -149,6 +159,11 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getMetrics: getMetrics.bind(context),
     getStateStorageSize: getStateStorageSize.bind(context),
     listStateServices: listStateServices.bind(context),
+    listLimitRules: listLimitRules.bind(context),
+    getLimitRule: getLimitRule.bind(context),
+    getLimitRuleWithLimits: getLimitRuleWithLimits.bind(context),
+    listUserLimits: listUserLimits.bind(context),
+    getUserLimitsForRule: getUserLimitsForRule.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
@@ -317,6 +332,18 @@ export const routes = createRoutes('/query', {
   state: {
     services: { method: 'GET', pattern: '/state/services' },
     storageSize: { method: 'GET', pattern: '/state/storage-size' },
+  },
+  limits: {
+    rules: {
+      list: { method: 'GET', pattern: '/limits/rules' },
+      get: { method: 'GET', pattern: '/limits/rules/:pattern' },
+      details: { method: 'GET', pattern: '/limits/rules/:pattern/details' },
+      userLimits: {
+        method: 'GET',
+        pattern: '/limits/rules/:pattern/user-limits',
+      },
+    },
+    userLimits: { method: 'GET', pattern: '/limits/user-limits' },
   },
 });
 
@@ -544,6 +571,30 @@ router.map(routes, {
       async storageSize(ctx) {
         const { getStateStorageSize } = ctx.storage.get(handlersKey);
         return getStateStorageSize();
+      },
+    },
+    limits: {
+      rules: {
+        async list(ctx) {
+          const { listLimitRules } = ctx.storage.get(handlersKey);
+          return listLimitRules();
+        },
+        async get(ctx) {
+          const { getLimitRule } = ctx.storage.get(handlersKey);
+          return getLimitRule(ctx.params.pattern);
+        },
+        async details(ctx) {
+          const { getLimitRuleWithLimits } = ctx.storage.get(handlersKey);
+          return getLimitRuleWithLimits(ctx.params.pattern);
+        },
+        async userLimits(ctx) {
+          const { getUserLimitsForRule } = ctx.storage.get(handlersKey);
+          return getUserLimitsForRule(ctx.params.pattern);
+        },
+      },
+      async userLimits(ctx) {
+        const { listUserLimits } = ctx.storage.get(handlersKey);
+        return listUserLimits();
       },
     },
   },

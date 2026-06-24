@@ -1100,6 +1100,106 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/limits/rules': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List limit rules
+     * @description Configured limit rules from the sys_rules table.
+     */
+    get: operations['list_limit_rules'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get limit rule
+     * @description Configured limit rule from the sys_rules table.
+     */
+    get: operations['get_limit_rule'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}/details': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get limit rule with effective limits
+     * @description Configured limit rule plus matching effective limit rows.
+     */
+    get: operations['get_limit_rule_with_limits'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}/user-limits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get effective user limits for rule
+     * @description Effective limit rows matching a configured rule pattern.
+     */
+    get: operations['get_user_limits_for_rule'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/user-limits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List effective user limits
+     * @description Effective limit rows and usage from the sys_user_limits table.
+     */
+    get: operations['list_user_limits'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/metrics': {
     parameters: {
       query?: never;
@@ -2633,6 +2733,30 @@ export interface components {
         /** @description Total stored state value size in bytes for the service. */
         size: number;
       }[];
+    };
+    /** @description Configured limit rules from the sys_rules table. */
+    ListLimitRulesResponse: {
+      rules: components['schemas']['RuleResponse'][];
+    };
+    /** @description Effective limit rows and usage from the sys_user_limits table. */
+    ListUserLimitsResponse: {
+      limits: components['schemas']['UserLimitRow'][];
+    };
+    /** @description Configured limit rule plus matching effective limit rows. */
+    LimitRuleWithLimitsResponse: {
+      rule: components['schemas']['RuleResponse'];
+      limits: components['schemas']['UserLimitRow'][];
+    };
+    UserLimitRow: {
+      scope: string | null;
+      l1: string | null;
+      l2: string | null;
+      level: string | null;
+      usage: number | null;
+      concurrency_limit: number | null;
+      rule_pattern: string | null;
+      available: number | null;
+      num_waiters: number | null;
     };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
@@ -7638,6 +7762,110 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_limit_rules: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListLimitRulesResponse'];
+        };
+      };
+    };
+  };
+  get_limit_rule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RuleResponse'];
+        };
+      };
+    };
+  };
+  get_limit_rule_with_limits: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LimitRuleWithLimitsResponse'];
+        };
+      };
+    };
+  };
+  get_user_limits_for_rule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_user_limits: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
         };
       };
     };
