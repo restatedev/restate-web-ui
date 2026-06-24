@@ -2724,6 +2724,86 @@
         }
       }
     },
+    "/query/state/services": {
+      "get": {
+        "tags": ["query-state"],
+        "summary": "List state services",
+        "description": "Distinct service names from the state table.",
+        "operationId": "list_state_services",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListStateServicesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/state/storage-size": {
       "get": {
         "tags": ["query-state"],
@@ -3395,6 +3475,19 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DeploymentId"
+            }
+          }
+        }
+      },
+      "ListStateServicesResponse": {
+        "type": "object",
+        "description": "Distinct service names with rows in the state table.",
+        "required": ["services"],
+        "properties": {
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         }

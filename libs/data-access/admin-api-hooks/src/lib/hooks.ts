@@ -336,6 +336,27 @@ export function useGetStateStorageSize(
   };
 }
 
+export function useListStateServices(
+  options?: HookQueryOptions<'/query/state/services', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/state/services', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function isVersionQuery(
   data: unknown,
   query: Query<unknown, unknown, unknown>,

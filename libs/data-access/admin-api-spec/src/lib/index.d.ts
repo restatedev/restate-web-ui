@@ -1060,6 +1060,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/state/services': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List state services
+     * @description Distinct service names from the state table.
+     */
+    get: operations['list_state_services'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/state/storage-size': {
     parameters: {
       query?: never;
@@ -2600,6 +2620,10 @@ export interface components {
     u32: number;
     ListDrainedDeploymentsResponse: {
       deployment_ids: components['schemas']['DeploymentId'][];
+    };
+    /** @description Distinct service names with rows in the state table. */
+    ListStateServicesResponse: {
+      services: string[];
     };
     /** @description State storage size grouped by service name. Each size is the sum of value_length for the service's rows in the state table. */
     StateStorageSizeResponse: {
@@ -7432,6 +7456,73 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListDrainedDeploymentsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_state_services: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListStateServicesResponse'];
         };
       };
       400: {

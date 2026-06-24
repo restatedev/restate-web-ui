@@ -22,6 +22,7 @@ export {
 export { getInvocationsStatus } from './getInvocationsStatus';
 export { getMetrics } from './getMetrics';
 export { getStateStorageSize } from './getStateStorageSize';
+export { listStateServices } from './listStateServices';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';
