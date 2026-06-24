@@ -13,6 +13,8 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
+import { issueAlertIconStyles } from '@restate/ui/issue-banner';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
@@ -25,6 +27,42 @@ type StateRouteService = {
   serviceType?: StateRouteServiceType;
   hasState: boolean;
 };
+
+const stateOnlyServiceWarning = 'Service no longer registered';
+
+export function StateOnlyServiceWarningIcon({
+  tooltip = true,
+}: {
+  tooltip?: boolean;
+}) {
+  const icon = (
+    <span
+      role="img"
+      aria-label={stateOnlyServiceWarning}
+      title={tooltip ? undefined : stateOnlyServiceWarning}
+      className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full"
+    >
+      <Icon
+        name={IconName.TriangleAlert}
+        className={`${issueAlertIconStyles({ severity: 'low' })} h-3.5 w-3.5`}
+      />
+    </span>
+  );
+
+  if (!tooltip) {
+    return icon;
+  }
+
+  return (
+    <HoverTooltip
+      content={stateOnlyServiceWarning}
+      placement="top"
+      className="inline-flex shrink-0"
+    >
+      {icon}
+    </HoverTooltip>
+  );
+}
 
 export function getStateServiceSearch(searchParams: URLSearchParams) {
   const newSearchParams = new URLSearchParams(searchParams);
@@ -210,6 +248,7 @@ export function ServiceSelector() {
   const serviceParam = useCurrentStateServiceParam();
   const { virtualObjects, workflows, stateOnlyServices } =
     useValidateVirtualObject(serviceParam);
+  const isStateOnlyService = stateOnlyServices.includes(serviceParam);
 
   return (
     <Dropdown>
@@ -227,6 +266,7 @@ export function ServiceSelector() {
           </span>
           <span className="font-mono">is</span>
           <span className="truncate font-semibold">{serviceParam}</span>
+          {isStateOnlyService && <StateOnlyServiceWarningIcon />}
           <Icon
             name={IconName.ChevronsUpDown}
             className="ml-2 h-3.5 w-3.5 shrink-0"
@@ -274,7 +314,11 @@ export function ServiceSelector() {
               }
             >
               {stateOnlyServices.map((service) => (
-                <DropDownVirtualObject service={service} key={service} />
+                <DropDownVirtualObject
+                  service={service}
+                  key={service}
+                  isStateOnly
+                />
               ))}
             </DropdownMenu>
           </DropdownSection>
@@ -284,7 +328,13 @@ export function ServiceSelector() {
   );
 }
 
-function DropDownVirtualObject({ service }: { service: string }) {
+function DropDownVirtualObject({
+  service,
+  isStateOnly,
+}: {
+  service: string;
+  isStateOnly?: boolean;
+}) {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
   const href = useMemo(
@@ -294,7 +344,19 @@ function DropDownVirtualObject({ service }: { service: string }) {
 
   return (
     <DropdownItem value={service} href={href}>
-      {service}
+      {isStateOnly ? (
+        <span className="flex min-w-0 flex-col gap-0.5 py-0.5">
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate">{service}</span>
+            <StateOnlyServiceWarningIcon tooltip={false} />
+          </span>
+          <span className="truncate text-xs text-zinc-500 group-focused:text-blue-100 dark:text-zinc-400">
+            {stateOnlyServiceWarning}
+          </span>
+        </span>
+      ) : (
+        <span className="truncate">{service}</span>
+      )}
     </DropdownItem>
   );
 }

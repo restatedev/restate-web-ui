@@ -56,6 +56,7 @@ import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
   getStateServiceHref,
   ServiceSelector,
+  StateOnlyServiceWarningIcon,
   useValidateVirtualObject,
 } from './ServiceSelector';
 import { StateObjectTable } from './StateObjectTable';
@@ -137,8 +138,14 @@ function Component() {
     virtualObject: string;
   }>();
   invariant(serviceName, 'Missing virtualObject param');
-  const { isValid, isValidating, redirectTo, services, serviceType } =
-    useValidateVirtualObject(serviceName);
+  const {
+    isValid,
+    isValidating,
+    redirectTo,
+    services,
+    serviceType,
+    stateOnlyServices,
+  } = useValidateVirtualObject(serviceName);
   const isWorkflow = serviceType === 'workflow';
   const { baseUrl } = useRestateContext();
   const showStateStorage = useIsFeatureFlagEnabled(
@@ -354,11 +361,16 @@ function Component() {
       items: services.map((service) => ({
         id: service,
         label: (
-          <span
-            className="truncate [[role=tab]_&]:max-w-[12ch]"
-            title={service}
-          >
-            {service}
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span
+              className="truncate [[role=tab]_&]:max-w-[12ch]"
+              title={service}
+            >
+              {service}
+            </span>
+            {stateOnlyServices.includes(service) && (
+              <StateOnlyServiceWarningIcon />
+            )}
           </span>
         ),
         href: getStateServiceHref({ baseUrl, service, searchParams }),
@@ -368,7 +380,7 @@ function Component() {
       onSelect: (service) =>
         localStorage.setItem('state_last_service', service),
     }),
-    [baseUrl, searchParams, serviceName, services],
+    [baseUrl, searchParams, serviceName, services, stateOnlyServices],
   );
 
   if (redirectTo) {
