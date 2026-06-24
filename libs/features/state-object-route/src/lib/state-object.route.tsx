@@ -329,9 +329,8 @@ function Component() {
         : undefined,
     [serviceName, serviceType],
   );
-  const resolvedServiceCodecOptions = useResolvedCodecOptions(
-    serviceCodecOptions,
-  );
+  const resolvedServiceCodecOptions =
+    useResolvedCodecOptions(serviceCodecOptions);
   const isStateLoading =
     isFetching ||
     isValidating ||
