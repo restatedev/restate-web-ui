@@ -28,6 +28,8 @@ export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';
 export { listDrainedDeployments } from './listDrainedDeployments';
 export {
+  QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL,
+  QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS,
   type QueryContext,
   type StateServiceType,
   createQueryContext,

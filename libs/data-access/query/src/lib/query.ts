@@ -12,6 +12,7 @@ import {
   type Middleware,
 } from '@remix-run/fetch-router';
 import {
+  QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL,
   type QueryContext,
   createQueryContext,
   listInvocations,
@@ -579,7 +580,7 @@ export async function query(req: Request) {
       throw error;
     } else if (error instanceof TimeoutError) {
       // ky's message is "Request timed out: <method> <url>"; add the threshold.
-      const message = `${error.message} (after 60s)`;
+      const message = `${error.message} (after ${QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL})`;
       return new Response(
         JSON.stringify(
           new RestateError(message, undefined, undefined, undefined, 504),
