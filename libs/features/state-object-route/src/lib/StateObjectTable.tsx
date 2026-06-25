@@ -328,7 +328,7 @@ function StateObjectCell({
           <KeyCell
             serviceKey={row.key}
             onOpen={() => onOpenObject(row.key, row.scope)}
-            className="text-sm font-medium"
+            className="text-0.5xs font-medium"
           />
         </div>
       </Cell>

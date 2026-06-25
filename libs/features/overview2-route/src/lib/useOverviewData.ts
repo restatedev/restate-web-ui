@@ -42,7 +42,7 @@ export function useOverviewData(range?: string) {
     [],
   );
   const {
-    data: { sortedServiceNames, deployments: deploymentsMap } = {},
+    data: { deployments: deploymentsMap } = {},
     isFetched,
     isFetching,
     isError,
@@ -55,7 +55,7 @@ export function useOverviewData(range?: string) {
     'FEATURE_COMPLETION_HISTORY',
   );
 
-  const { data: servicesMap } = useListServices(sortedServiceNames);
+  const { data: servicesMap } = useListServices();
   const {
     data: rawSummaryData,
     isPending: isSummaryPending,

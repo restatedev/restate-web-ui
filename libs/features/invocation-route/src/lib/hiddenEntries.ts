@@ -58,17 +58,7 @@ type InvocationsData = ReturnType<
 // target handler (falling back to service-level metadata, mirroring the serde
 // preview convention). Only invocations with at least one rule are included.
 export function useHiddenEntryMatchers(data?: InvocationsData) {
-  const serviceNames = useMemo(() => {
-    const names = new Set<string>();
-    for (const invocation of Object.values(data ?? {})) {
-      if (invocation?.target_service_name) {
-        names.add(invocation.target_service_name);
-      }
-    }
-    return [...names].sort();
-  }, [data]);
-
-  const { data: services } = useListServices(serviceNames);
+  const { data: services } = useListServices();
 
   return useMemo(() => {
     const byInvocation = new Map<string, HiddenEntryMatcher>();

@@ -43,6 +43,7 @@ import { base64ToUint8Array } from '@restate/util/binary';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
 const unsupportedMetricsBaseUrls = new Set<string>();
+const EMPTY_SERVICES_MAP = new Map<string, Service>();
 
 function getErrorMessages(error: unknown): string[] {
   if (!(error instanceof Error)) return [];
@@ -465,6 +466,9 @@ export function useRegisterDeployment(
             queryKey,
           });
         });
+        queryCLient.invalidateQueries({
+          queryKey: getListServicesAdminApi(baseUrl).queryKey,
+        });
       }
       return onSuccess?.(data, variables, context, meta);
     },
@@ -558,6 +562,9 @@ export function useUpdateDeployment(
           });
         });
         queryCLient.invalidateQueries({
+          queryKey: getListServicesAdminApi(baseUrl).queryKey,
+        });
+        queryCLient.invalidateQueries({
           queryKey: adminApi('query', '/deployments', 'get', { baseUrl })
             .queryKey,
         });
@@ -601,6 +608,27 @@ function getServiceAdminApi(init: {
   };
 }
 
+function listServicesSelector(
+  data: { services: Service[] } | null | undefined,
+): Map<string, Service> {
+  const services = new Map<string, Service>();
+  for (const service of data?.services ?? []) {
+    services.set(service.name, {
+      ...service,
+      handlers: [...service.handlers].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      ),
+    });
+  }
+  return services;
+}
+
+function getListServicesAdminApi(baseUrl: string) {
+  return adminApi('query', '/services', 'get', {
+    baseUrl,
+  });
+}
+
 export function useServiceDetails(
   service: string,
   options?: HookQueryOptions<'/services/{service}', 'get'>,
@@ -634,37 +662,22 @@ export function useServiceDetails(
 }
 
 export function useListServices(
-  services: string[] = [],
-  options?: HookQueryOptions<'/services/{service}', 'get'>,
+  options?: Omit<HookQueryOptions<'/services', 'get'>, 'select'>,
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
+  const queryOptions = getListServicesAdminApi(baseUrl);
 
-  const results = useQueries({
-    queries: services.map((service) => ({
-      ...getServiceAdminApi({
-        baseUrl,
-        parameters: { path: { service } },
-      }),
-      staleTime: 0,
-      ...options,
-      enabled: options?.enabled !== false && enabled,
-    })),
-    combine: (results) => {
-      return {
-        data: results.reduce((result, service) => {
-          if (service.data) {
-            result.set(service.data?.name, service.data);
-          }
-          return result;
-        }, new Map<string, Service>()),
-        isPending: results.some((result) => result.isPending) || !enabled,
-        promise: Promise.all(results.map(({ promise }) => promise)),
-      };
-    },
+  const results = useQuery({
+    staleTime: 0,
+    ...queryOptions,
+    ...options,
+    select: listServicesSelector,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    enabled: options?.enabled !== false && enabled,
   });
 
-  return results;
+  return { ...results, data: results.data ?? EMPTY_SERVICES_MAP };
 }
 
 export function useDeploymentDetails(
@@ -1243,13 +1256,27 @@ export function useModifyService(
   options?: HookMutationOptions<'/services/{service}', 'patch'>,
 ) {
   const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const mutationOptions = adminApi('mutate', '/services/{service}', 'patch', {
+    baseUrl,
+    resolvedPath: `/services/${service}`,
+  });
 
   return useMutation({
-    ...adminApi('mutate', '/services/{service}', 'patch', {
-      baseUrl,
-      resolvedPath: `/services/${service}`,
-    }),
+    ...mutationOptions,
     ...options,
+    onSettled(data, error, variables, context, meta) {
+      queryClient.invalidateQueries({
+        queryKey: getListServicesAdminApi(baseUrl).queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: getServiceAdminApi({
+          baseUrl,
+          parameters: { path: { service } },
+        }).queryKey,
+      });
+      options?.onSettled?.(data, error, variables, context, meta);
+    },
   });
 }
 
