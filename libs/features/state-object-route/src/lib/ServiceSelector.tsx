@@ -127,9 +127,7 @@ export function useStateServiceCatalog() {
   } = useListStateServices({
     placeholderData: deploymentServicesPlaceholder,
   });
-  const { data: serviceData, isPending: isServicesPending } = useListServices(
-    deploymentServiceNames,
-  );
+  const { data: serviceData, isPending: isServicesPending } = useListServices();
 
   return useMemo(() => {
     const stateServiceNames = new Set(stateServicesData?.services ?? []);

@@ -13,9 +13,8 @@ export function useSchema() {
     useListDeployments();
   const { data: listSubscriptions, isPending: subscriptionsIsLoading } =
     useListSubscriptions();
-  const { data: listServices, isPending: servicesIsLoading } = useListServices(
-    listDeploymentsData?.sortedServiceNames,
-  );
+  const { data: listServices, isPending: servicesIsLoading } =
+    useListServices();
   const hasVqueues = useFeatures().has('vqueues');
 
   const schema = useMemo(() => {
