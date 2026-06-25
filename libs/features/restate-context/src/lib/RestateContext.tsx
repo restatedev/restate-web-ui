@@ -145,7 +145,6 @@ function InternalRestateContextProvider({
 
   useQueryHealthCheck({
     enabled: queryHealthCheckEnabled && status === 'HEALTHY',
-    refetchInterval: 60_000,
   });
 
   const adminBaseUrl = useAdminBaseUrl();

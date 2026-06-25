@@ -7,6 +7,9 @@ export const DURATION_CALC =
 
 export const DURATION_EXPRESSION = `${DURATION_CALC} AS duration`;
 
+export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS = 10 * 60_000;
+export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL = '10m';
+
 export function quoteSqlString(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;
 }
@@ -170,7 +173,7 @@ function queryFetcher(
     .post(url, {
       json: { query },
       headers: queryHeaders,
-      timeout: 60_000,
+      timeout: QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS,
       signal,
     })
     .json<{ rows: any[] }>()
@@ -204,7 +207,7 @@ function adminApiFetcher<T>(
     method,
     headers: apiHeaders,
     json,
-    timeout: 60_000,
+    timeout: QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS,
     signal,
   })
     .json<T>()

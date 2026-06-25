@@ -141,6 +141,8 @@ function Component() {
     () => currentPageItems.map(({ row, id }) => ({ id: String(id), row })),
     [currentPageItems],
   );
+  const isQueryFetching = isFetching && Boolean(query);
+  const visiblePanelItems = isQueryFetching ? [] : panelItems;
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -150,9 +152,10 @@ function Component() {
             <PanelTable
               aria-label="Introspection SQL"
               columns={panelColumns}
-              items={panelItems}
+              items={visiblePanelItems}
               bodyDependencies={[allColumns, pageIndex, error]}
-              isLoading={isPending && !!query}
+              isLoading={isQueryFetching}
+              numOfRows={panelItems.length || 5}
               emptyPlaceholder={
                 error ? (
                   <EmptyState
@@ -200,12 +203,7 @@ function Component() {
                 <IntrospectionCell col={id} row={item.row} key={id} />
               )}
             />
-            <Footnote
-              data={data}
-              isFetching={isFetching}
-              key={dataUpdate}
-              query={query}
-            >
+            <Footnote data={data} key={dataUpdate} query={query}>
               {!isPending && !error && totalSize > 1 && (
                 <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
                   <Button
@@ -250,7 +248,7 @@ function Component() {
       </ContentPanel>
       <Toolbar
         setQuery={setQuery}
-        isPending={isFetching}
+        isPending={isQueryFetching}
         initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
       />
     </SnapshotTimeProvider>
@@ -259,11 +257,9 @@ function Component() {
 
 function Footnote({
   data,
-  isFetching,
   children,
   query,
 }: PropsWithChildren<{
-  isFetching: boolean;
   data?: ReturnType<typeof useSqlQuery>['data'];
   query?: string;
 }>) {
@@ -281,11 +277,13 @@ function Footnote({
     }
 
     return () => {
-      interval && clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, [data]);
 
-  const { isPast, ...parts } = durationSinceLastSnapshot(now);
+  const parts = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
 
   return (

@@ -9,6 +9,8 @@ import {
 } from '@restate/ui/keyboard';
 import type { editor } from 'monaco-editor';
 import { QueryHistoryDropdown } from './QueryHistoryDropdown';
+import { PredefinedQueriesDropdown } from './PredefinedQueriesDropdown';
+import { useFeatures } from '@restate/data-access/admin-api';
 
 const SQLEditor = lazy(() =>
   import('./.client/SQLEditor').then((m) => ({ default: m.SQLEditor })),
@@ -29,6 +31,7 @@ export function Toolbar({
   const containerRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   const submitRef = useSubmitShortcut();
+  const hasVqueues = useFeatures().has('vqueues');
 
   const lastSubmittedQuery = useRef(initialQuery);
   const setQuery = useCallback(
@@ -46,7 +49,7 @@ export function Toolbar({
     }
   }, [initialQuery]);
 
-  const selectFromHistory = useCallback((query: string) => {
+  const selectQuery = useCallback((query: string) => {
     const editor = editorRef.current;
     if (!editor) {
       return;
@@ -87,7 +90,7 @@ export function Toolbar({
               </div>
             </div>
 
-            <div className="relative h-full min-w-0 flex-auto pr-32">
+            <div className="relative h-full min-w-0 flex-auto pr-44">
               <Suspense fallback={<div />}>
                 <SQLEditor
                   className="h-full [&_.codicon-symbol-function:before]:content-['\ec24']! [&_.codicon-symbol-struct:before]:content-['\ebb7']! [&_.monaco-editor]:outline-hidden! [&_.monaco-list-row.monaco-list-row.monaco-list-row]:rounded-lg [&_.monaco-list-row.monaco-list-row.monaco-list-row]:pl-1.5 [&_.monaco-list-row.monaco-list-row.monaco-list-row.focused]:bg-blue-600 [&_.monaco-list-row.monaco-list-row.monaco-list-row.focused]:text-white [&_.monaco-list-row.monaco-list-row.monaco-list-row:hover]:bg-blue-600! [&_.monaco-list-row.monaco-list-row.monaco-list-row:hover]:text-white [&_.readMore:before]:[line-height:28px] [&_.suggest-details.suggest-details.suggest-details]:rounded-xl [&_.suggest-details.suggest-details.suggest-details]:border [&_.suggest-details.suggest-details.suggest-details]:border-black/10 [&_.suggest-details.suggest-details.suggest-details]:bg-gray-100 [&_.suggest-details.suggest-details.suggest-details]:bg-clip-padding [&_.suggest-details.suggest-details.suggest-details]:text-slate-700 [&_.suggest-details.suggest-details.suggest-details]:shadow-lg [&_.suggest-widget_.monaco-list]:rounded-xl [&_.suggest-widget_.monaco-list_.monaco-list-row.focused_.codicon]:text-white! [&_.suggest-widget_.monaco-list_.monaco-list-row.focused>.contents>.main_.monaco-highlighted-label_.highlight]:text-blue-200! [&_.suggest-widget_.monaco-list_.monaco-list-row:hover_.codicon]:text-white! [&_.suggest-widget_.monaco-list_.monaco-list-row:hover>.contents>.main_.monaco-highlighted-label_.highlight]:text-blue-200! [&_.suggest-widget_.monaco-list_.monaco-list-row:not(.focused):not(:hover)>.contents>.main_.monaco-highlighted-label_.highlight]:text-blue-500! [&_.suggest-widget_.monaco-list_.monaco-list-row:not(.focused):not(:hover)>.contents>.main_.monaco-icon-label.monaco-icon-label.monaco-icon-label]:text-gray-700 [&_.suggest-widget_.monaco-list_.monaco-list-row:not(:hover):not(.focused)_.codicon]:text-blue-500! [&_.suggest-widget.suggest-widget.suggest-widget]:rounded-xl [&_.suggest-widget.suggest-widget.suggest-widget]:border [&_.suggest-widget.suggest-widget.suggest-widget]:border-black/10 [&_.suggest-widget.suggest-widget.suggest-widget]:bg-gray-100 [&_.suggest-widget.suggest-widget.suggest-widget]:bg-clip-padding [&_.suggest-widget.suggest-widget.suggest-widget]:text-slate-700 [&_.suggest-widget.suggest-widget.suggest-widget]:shadow-lg [&_textarea]:border-none [&_textarea]:[box-shadow:none] [&_textarea]:outline-hidden [&&&_.suggest-widget_.monaco-list_.monaco-list-row:hover.string-label>.contents>.main>.right>.readMore]:visible [&&&_.suggest-widget_.monaco-list_.monaco-list-row:hover.string-label>.contents>.main>.right>.readMore]:block [&&&_.suggest-widget_.monaco-list_.monaco-list-row:hover>.contents>.main>.right>.details-label]:block [&&&_.suggest-widget_.monaco-list_.monaco-list-row:hover>.contents>.main>.right>.details-label]:text-white"
@@ -104,7 +107,11 @@ export function Toolbar({
           </div>
         </div>
         <div className="absolute top-1 right-1 bottom-1 flex items-stretch gap-1">
-          <QueryHistoryDropdown onSelect={selectFromHistory} />
+          <PredefinedQueriesDropdown
+            hasVqueues={hasVqueues}
+            onSelect={selectQuery}
+          />
+          <QueryHistoryDropdown onSelect={selectQuery} />
           <SubmitButton
             ref={submitRef}
             isPending={isPending}
