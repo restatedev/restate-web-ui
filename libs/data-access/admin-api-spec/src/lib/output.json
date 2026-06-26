@@ -5011,6 +5011,17 @@
         "summary": "List limit rules",
         "description": "Configured limit rules from the sys_rules table.",
         "operationId": "list_limit_rules",
+        "parameters": [
+          {
+            "name": "include_stats",
+            "in": "query",
+            "description": "When true, includes aggregate live limit statistics for each rule.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -7282,7 +7293,87 @@
           "rules": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RuleResponse"
+              "$ref": "#/components/schemas/LimitRuleWithStats"
+            }
+          }
+        }
+      },
+      "LimitRuleWithStats": {
+        "type": "object",
+        "description": "Configured limit rule, optionally including aggregate live limit statistics.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RuleResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "stats": {
+                "$ref": "#/components/schemas/LimitRuleStats"
+              }
+            }
+          }
+        ]
+      },
+      "LimitRuleStats": {
+        "type": "object",
+        "description": "Aggregate live limit statistics for the matches (sys_user_limits rows) currently resolving to a rule.",
+        "required": ["pending", "matches", "backed_up"],
+        "properties": {
+          "pending": {
+            "type": "integer",
+            "description": "Total invocations pending for capacity across the rule's matches (SUM of num_waiters)."
+          },
+          "matches": {
+            "type": "integer",
+            "description": "Number of live sys_user_limits rows (matches) currently resolving to the rule."
+          },
+          "backed_up": {
+            "type": "integer",
+            "description": "Number of those matches that currently have at least one pending invocation (num_waiters > 0)."
+          },
+          "worst_counter": {
+            "type": "object",
+            "nullable": true,
+            "description": "The deepest match under this rule: the one with the highest num_waiters / concurrency_limit ratio (tie-break: most pending). Drives the Depth (x limit) column. Null when nothing is pending.",
+            "required": [
+              "scope",
+              "l1",
+              "l2",
+              "level",
+              "usage",
+              "concurrency_limit",
+              "num_waiters"
+            ],
+            "properties": {
+              "scope": {
+                "type": "string",
+                "nullable": true
+              },
+              "l1": {
+                "type": "string",
+                "nullable": true
+              },
+              "l2": {
+                "type": "string",
+                "nullable": true
+              },
+              "level": {
+                "type": "string",
+                "nullable": true
+              },
+              "usage": {
+                "type": "integer",
+                "nullable": true
+              },
+              "concurrency_limit": {
+                "type": "integer",
+                "nullable": true
+              },
+              "num_waiters": {
+                "type": "integer",
+                "nullable": true
+              }
             }
           }
         }

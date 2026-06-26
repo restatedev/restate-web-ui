@@ -48,6 +48,8 @@ const unsupportedMetricsBaseUrls = new Set<string>();
 const EMPTY_SERVICES_MAP = new Map<string, Service>();
 
 export type LimitRule = components['schemas']['RuleResponse'];
+export type LimitRuleStats = components['schemas']['LimitRuleStats'];
+export type LimitRuleWithStats = components['schemas']['LimitRuleWithStats'];
 export type UserLimitRow = components['schemas']['UserLimitRow'];
 export type UpsertLimitRuleRequest = components['schemas']['UpsertRuleRequest'];
 export type DeleteLimitRuleRequest = components['schemas']['DeleteRuleRequest'];
@@ -77,6 +79,10 @@ type SingleDeleteLimitRuleOptions = Omit<
   >,
   'mutationFn' | 'mutationKey'
 >;
+
+type ListLimitRulesOptions = HookQueryOptions<'/query/limits/rules', 'get'> & {
+  includeStats?: boolean;
+};
 
 function isLimitsQuery(query: Query) {
   return (
@@ -407,21 +413,21 @@ export function useListStateServices(
   };
 }
 
-export function useListLimitRules(
-  options?: HookQueryOptions<'/query/limits/rules', 'get'>,
-) {
+export function useListLimitRules(options?: ListLimitRulesOptions) {
   const enabled = useAPIStatus();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const baseUrl = useAdminBaseUrl();
+  const { includeStats, ...queryConfig } = options ?? {};
   const queryOptions = adminApi('query', '/query/limits/rules', 'get', {
     baseUrl,
+    parameters: includeStats ? { query: { include_stats: true } } : undefined,
   });
 
   const results = useQuery({
     ...queryOptions,
-    ...options,
-    enabled: options?.enabled !== false && enabled && hasVqueues,
+    ...queryConfig,
+    enabled: queryConfig.enabled !== false && enabled && hasVqueues,
   });
 
   return {

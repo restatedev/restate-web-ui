@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import { adminApiDb, getName } from './adminApiDb';
 
 type RuleResponse = adminApi.components['schemas']['RuleResponse'];
+type LimitRuleStats = adminApi.components['schemas']['LimitRuleStats'];
 type UpsertRuleRequest = adminApi.components['schemas']['UpsertRuleRequest'];
 type DeleteRuleRequest = adminApi.components['schemas']['DeleteRuleRequest'];
 type QueryRequest =
@@ -15,6 +16,17 @@ type FormatParameterWithColon<S extends string> =
 type GetPath<S extends keyof adminApi.paths> = FormatParameterWithColon<
   keyof Pick<adminApi.paths, S>
 >;
+
+type WorstCounter = NonNullable<LimitRuleStats['worst_counter']>;
+
+type LimitRuleAggregateRow = {
+  rule_pattern: string;
+  pending: number;
+  matches: number;
+  backed_up: number;
+};
+
+type WorstCounterRow = WorstCounter & { rule_pattern: string };
 
 const limitRules = new Map<string, RuleResponse>(
   [
@@ -33,6 +45,14 @@ const limitRules = new Map<string, RuleResponse>(
       version: 1,
       last_modified_millis_since_epoch: Date.now() - 1_800_000,
       limits: { concurrency: 25 },
+    },
+    {
+      pattern: 'payments/charge',
+      description: 'Payment charge path',
+      disabled: false,
+      version: 1,
+      last_modified_millis_since_epoch: Date.now() - 1_200_000,
+      limits: { concurrency: 8 },
     },
     {
       pattern: 'imports/bulk',
@@ -95,28 +115,118 @@ function ruleRows(pattern?: string) {
     }));
 }
 
-function userLimitRows(pattern?: string) {
-  return Array.from(limitRules.values())
+type UserLimitRowMock = {
+  scope: string | null;
+  l1: string | null;
+  l2: string | null;
+  level: string;
+  usage: number;
+  concurrency_limit: number | null;
+  rule_pattern: string;
+  available: number | null;
+  num_waiters: number;
+};
+
+// Explicit per-rule matches (sys_user_limits rows) tuned to span the depth
+// gradient: pale-amber shallow backlogs up to a deep-red 6x match, plus
+// no-queue rows. Demonstrates the Pending bar, Depth (x limit) and the
+// no-queue/backed-up split in mock mode.
+const MOCK_RULE_MATCHES: Record<
+  string,
+  Array<{ l1: string; usage: number; limit: number | null; waiters: number }>
+> = {
+  '*': [
+    { l1: 'orders', usage: 100, limit: 100, waiters: 120 },
+    { l1: 'webhooks', usage: 100, limit: 100, waiters: 30 },
+    { l1: 'emails', usage: 40, limit: 100, waiters: 0 },
+    { l1: 'exports', usage: 12, limit: 100, waiters: 0 },
+  ],
+  'checkout/*': [
+    { l1: 'cart', usage: 25, limit: 25, waiters: 60 },
+    { l1: 'session', usage: 10, limit: 25, waiters: 0 },
+  ],
+  'payments/charge': [
+    { l1: 'visa', usage: 8, limit: 8, waiters: 48 },
+    { l1: 'amex', usage: 8, limit: 8, waiters: 6 },
+    { l1: 'paypal', usage: 3, limit: 8, waiters: 0 },
+  ],
+};
+
+function userLimitRows(pattern?: string): UserLimitRowMock[] {
+  const rows: UserLimitRowMock[] = [];
+  Array.from(limitRules.values())
     .filter((rule) => !rule.disabled)
     .filter((rule) => pattern === undefined || rule.pattern === pattern)
-    .map((rule, index) => {
-      const [scope = null, l1 = null, l2 = null] = rule.pattern.split('/');
+    .forEach((rule) => {
+      const [scope = null] = rule.pattern.split('/');
       const concurrency = rule.limits.concurrency ?? null;
-      const usage =
-        concurrency == null ? index + 1 : Math.min(index + 1, concurrency);
-      return {
-        scope,
-        l1,
-        l2,
-        level: 'rule',
-        usage,
-        concurrency_limit: concurrency,
-        rule_pattern: rule.pattern,
-        available:
-          concurrency == null ? null : Math.max(concurrency - usage, 0),
-        num_waiters: 0,
-      };
+      const matches = MOCK_RULE_MATCHES[rule.pattern] ?? [
+        { l1: 'key-1', usage: concurrency ?? 6, limit: concurrency, waiters: 0 },
+      ];
+      for (const match of matches) {
+        const limit = match.limit ?? concurrency;
+        rows.push({
+          scope,
+          l1: match.l1,
+          l2: null,
+          level: 'level1',
+          usage: match.usage,
+          concurrency_limit: limit,
+          rule_pattern: rule.pattern,
+          available: limit == null ? null : Math.max(limit - match.usage, 0),
+          num_waiters: match.waiters,
+        });
+      }
     });
+  return rows;
+}
+
+function userLimitAggregateRows(): LimitRuleAggregateRow[] {
+  const stats = new Map<string, LimitRuleAggregateRow>();
+  for (const row of userLimitRows()) {
+    if (!row.rule_pattern) continue;
+    const existing = stats.get(row.rule_pattern) ?? {
+      rule_pattern: row.rule_pattern,
+      pending: 0,
+      matches: 0,
+      backed_up: 0,
+    };
+    const waiters = row.num_waiters ?? 0;
+    existing.pending += waiters;
+    existing.matches += 1;
+    existing.backed_up += waiters > 0 ? 1 : 0;
+    stats.set(row.rule_pattern, existing);
+  }
+  return Array.from(stats.values());
+}
+
+function matchDepthRatio(row: UserLimitRowMock) {
+  const limit = row.concurrency_limit;
+  if (!limit || limit <= 0) return 0;
+  return (row.num_waiters ?? 0) / limit;
+}
+
+function userLimitWorstRows(): WorstCounterRow[] {
+  const worst = new Map<string, { row: UserLimitRowMock; ratio: number }>();
+  for (const row of userLimitRows()) {
+    const waiters = row.num_waiters ?? 0;
+    if (!row.rule_pattern || waiters <= 0) continue;
+    const ratio = matchDepthRatio(row);
+    const current = worst.get(row.rule_pattern);
+    if (!current || ratio > current.ratio) {
+      worst.set(row.rule_pattern, { row, ratio });
+    }
+  }
+  return Array.from(worst.values()).map(({ row }) => ({
+    rule_pattern: row.rule_pattern,
+    scope: row.scope,
+    l1: row.l1,
+    l2: row.l2,
+    level: row.level,
+    usage: row.usage,
+    concurrency_limit: row.concurrency_limit,
+    num_waiters: row.num_waiters,
+  }));
 }
 
 const listDeploymentsHandler = http.get<
@@ -319,6 +429,18 @@ const queryHandler = http.post<
   }
 
   if (/\bFROM\s+sys_user_limits\b/i.test(sql)) {
+    if (/\bROW_NUMBER\b/i.test(sql)) {
+      return HttpResponse.json({
+        rows: userLimitWorstRows(),
+      } as any);
+    }
+
+    if (/\bGROUP\s+BY\s+rule_pattern\b/i.test(sql)) {
+      return HttpResponse.json({
+        rows: userLimitAggregateRows(),
+      } as any);
+    }
+
     return HttpResponse.json({
       rows: userLimitRows(getSqlStringFilter(sql, 'rule_pattern')),
     } as any);

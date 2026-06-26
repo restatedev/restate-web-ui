@@ -2736,7 +2736,30 @@ export interface components {
     };
     /** @description Configured limit rules from the sys_rules table. */
     ListLimitRulesResponse: {
-      rules: components['schemas']['RuleResponse'][];
+      rules: components['schemas']['LimitRuleWithStats'][];
+    };
+    /** @description Configured limit rule, optionally including aggregate live limit statistics. */
+    LimitRuleWithStats: components['schemas']['RuleResponse'] & {
+      stats?: components['schemas']['LimitRuleStats'];
+    };
+    /** @description Aggregate live limit statistics for the matches (sys_user_limits rows) currently resolving to a rule. */
+    LimitRuleStats: {
+      /** @description Total invocations pending for capacity across the rule's matches (SUM of num_waiters). */
+      pending: number;
+      /** @description Number of live sys_user_limits rows (matches) currently resolving to the rule. */
+      matches: number;
+      /** @description Number of those matches that currently have at least one pending invocation (num_waiters > 0). */
+      backed_up: number;
+      /** @description The deepest match under this rule: the one with the highest num_waiters / concurrency_limit ratio (tie-break: most pending). Drives the Depth (x limit) column. Null when nothing is pending. */
+      worst_counter?: {
+        scope: string | null;
+        l1: string | null;
+        l2: string | null;
+        level: string | null;
+        usage: number | null;
+        concurrency_limit: number | null;
+        num_waiters: number | null;
+      } | null;
     };
     /** @description Effective limit rows and usage from the sys_user_limits table. */
     ListUserLimitsResponse: {
@@ -7768,7 +7791,10 @@ export interface operations {
   };
   list_limit_rules: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description When true, includes aggregate live limit statistics for each rule. */
+        include_stats?: boolean;
+      };
       header?: never;
       path?: never;
       cookie?: never;

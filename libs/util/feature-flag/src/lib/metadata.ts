@@ -11,8 +11,8 @@ export interface FeatureFlagMetadata {
 export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
   FEATURE_VQUEUE_OBSERVABILITY: {
     title: 'Virtual queue observability',
-    description: 'Expose virtual-queue observability data for invocations.',
-    available: false,
+    description: 'Expose virtual-queue observability and limit-rule data.',
+    available: true,
   },
   FEATURE_EXECUTION_METRICS: {
     title: 'Execution metrics',

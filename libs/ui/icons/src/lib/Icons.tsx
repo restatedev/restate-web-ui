@@ -32,6 +32,7 @@ import {
   ChevronUp,
   Info,
   ArrowRight,
+  Infinity,
   ArrowLeft,
   ChevronLeft,
   Settings,
@@ -245,6 +246,7 @@ export const enum IconName {
   LifeBuoy = 'LifeBuoy',
   ScanEye = 'ScanEye',
   HatGlasses = 'HatGlasses',
+  Infinity = 'Infinity',
 }
 export interface IconsProps {
   name: IconName;
@@ -375,6 +377,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.LifeBuoy]: LifeBuoy,
   [IconName.ScanEye]: ScanEye,
   [IconName.HatGlasses]: HatGlasses,
+  [IconName.Infinity]: Infinity,
 };
 
 const styles = tv({

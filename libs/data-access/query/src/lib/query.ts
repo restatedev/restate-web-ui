@@ -74,7 +74,7 @@ type BoundHandlers = {
   getMetrics: () => Promise<Response>;
   getStateStorageSize: () => Promise<Response>;
   listStateServices: () => Promise<Response>;
-  listLimitRules: () => Promise<Response>;
+  listLimitRules: (includeStats?: boolean) => Promise<Response>;
   getLimitRule: (pattern: string) => Promise<Response>;
   getLimitRuleWithLimits: (pattern: string) => Promise<Response>;
   listUserLimits: () => Promise<Response>;
@@ -577,7 +577,9 @@ router.map(routes, {
       rules: {
         async list(ctx) {
           const { listLimitRules } = ctx.storage.get(handlersKey);
-          return listLimitRules();
+          return listLimitRules(
+            ctx.url.searchParams.get('include_stats') === 'true',
+          );
         },
         async get(ctx) {
           const { getLimitRule } = ctx.storage.get(handlersKey);
