@@ -20,6 +20,7 @@ import {
   QueryClauseDateRangeValue,
   QueryClauseOperationId,
   QueryClauseType,
+  queryClauseOperationRequiresValue,
   useNewQueryId,
 } from '@restate/ui/query-builder';
 import {
@@ -70,11 +71,9 @@ export function ClauseChip({
             (item.isAllSelected || item.isNothingSelected)
               ? 'Any'
               : item.valueLabel ||
-                (['IS NULL', 'IS NOT NULL'].includes(
-                  item.value.operation as string,
-                )
-                  ? ''
-                  : '?')}
+                (queryClauseOperationRequiresValue(item.value.operation)
+                  ? '?'
+                  : '')}
           </span>
         </>
         <Icon
@@ -166,13 +165,11 @@ function EditQueryTrigger({
                     const operation = Array.from(operations).at(
                       -1,
                     ) as QueryClauseOperationId;
-                    const clearsValue = ['IS NULL', 'IS NOT NULL'].includes(
-                      operation,
-                    );
+                    const requiresValue =
+                      queryClauseOperationRequiresValue(operation);
                     const newClause = new QueryClause(clause.schema, {
-                      ...(!clearsValue && clause.value),
                       operation,
-                      ...(!clearsValue && {
+                      ...(requiresValue && {
                         value: getValueForOperation(clause, operation),
                       }),
                       fieldValue: clause.value.fieldValue,
@@ -312,6 +309,9 @@ function ValueSelector({
   }
 
   if (clause.type === 'STRING' || clause.type === 'CUSTOM_STRING') {
+    if (!queryClauseOperationRequiresValue(clause.value.operation)) {
+      return null;
+    }
     if (clause.options) {
       return (
         <DropdownMenu
@@ -339,9 +339,6 @@ function ValueSelector({
           ))}
         </DropdownMenu>
       );
-    }
-    if (['IS NULL', 'IS NOT NULL'].includes(clause.value.operation as string)) {
-      return null;
     }
     return (
       <FormFieldInput
