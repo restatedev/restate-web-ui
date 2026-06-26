@@ -26,6 +26,13 @@ export function useSchema() {
       { value: 'AFTER' as const, label: 'after' },
       { value: 'BETWEEN' as const, label: 'between' },
     ];
+    const nullableStringOperations = [
+      { value: 'IS NULL' as const, label: 'is null' },
+      { value: 'IS NOT NULL' as const, label: 'is not null' },
+      { value: 'EQUALS' as const, label: 'is' },
+      { value: 'CONTAINS' as const, label: 'contains' },
+      { value: 'NOT_CONTAINS' as const, label: 'not contains' },
+    ];
     return [
       {
         id: 'id',
@@ -182,7 +189,7 @@ export function useSchema() {
         label: 'Idempotency key',
         operations: [
           { value: 'EQUALS', label: 'is' },
-          { value: 'IS NOT NULL', label: 'is not Null' },
+          { value: 'IS NOT NULL', label: 'is not null' },
         ],
         type: 'STRING',
       },
@@ -228,13 +235,13 @@ export function useSchema() {
             {
               id: 'scope',
               label: 'Scope',
-              operations: [{ value: 'EQUALS' as const, label: 'is' }],
+              operations: nullableStringOperations,
               type: 'STRING' as const,
             },
             {
               id: 'limit_key',
               label: 'Limit key',
-              operations: [{ value: 'EQUALS' as const, label: 'is' }],
+              operations: nullableStringOperations,
               type: 'STRING' as const,
             },
           ]

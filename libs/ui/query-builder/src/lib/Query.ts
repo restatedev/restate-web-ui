@@ -54,6 +54,12 @@ export type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
           ? Date | QueryClauseDateRangeValue
           : never;
 
+export function queryClauseOperationRequiresValue(
+  operation?: QueryClauseOperationId,
+) {
+  return !['IS NULL', 'IS NOT NULL'].includes(operation as string);
+}
+
 export class QueryClause<T extends QueryClauseType> {
   get id() {
     return this.schema.id;
@@ -148,8 +154,10 @@ export class QueryClause<T extends QueryClauseType> {
       return this.value.value.length > 0;
     } else {
       return (
-        !!this.value.value ||
-        ['IS NULL', 'IS NOT NULL'].includes(this.value.operation as string)
+        !queryClauseOperationRequiresValue(this.value.operation) ||
+        (this.value.value !== undefined &&
+          this.value.value !== null &&
+          this.value.value !== '')
       );
     }
   }
@@ -213,8 +221,10 @@ export class QueryClause<T extends QueryClauseType> {
 
   toString() {
     if (
-      !this.value.value &&
-      !['IS NULL', 'IS NOT NULL'].includes(this.value.operation as string)
+      queryClauseOperationRequiresValue(this.value.operation) &&
+      (this.value.value === undefined ||
+        this.value.value === null ||
+        this.value.value === '')
     ) {
       return undefined;
     }
