@@ -1981,6 +1981,33 @@ export function useGetTransientError(
   };
 }
 
+export function useGetVqueue(
+  vqueueId?: string,
+  invocationId?: string,
+  options?: HookQueryOptions<'/query/vqueues/{vqueueId}', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/vqueues/{vqueueId}', 'get', {
+    baseUrl,
+    parameters: {
+      path: { vqueueId: vqueueId ?? '' },
+      query: { invocationId },
+    },
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled && Boolean(vqueueId),
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useGetInvocationJournalEntry(
   invocationId: string,
   entryIndex: number,

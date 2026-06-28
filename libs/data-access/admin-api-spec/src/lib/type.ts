@@ -88,6 +88,12 @@ export type JournalEntryPayloads =
   components['schemas']['JournalEntryPayloads'];
 export type FailureEntry = components['schemas']['FailureEntry'];
 
+// Virtual-queue snapshot (rendered as "Flow" in the UI; kept in vqueue terms
+// everywhere in code).
+export type InvocationVqueue =
+  components['schemas']['InvocationVqueueResponse'];
+export type VqueueGateDuration = components['schemas']['VqueueGateDuration'];
+
 export type HTTPDeployment = Exclude<Deployment, { arn: string }>;
 export type LambdaDeployment = Exclude<Deployment, { uri: string }>;
 export type DeploymentType = 'uri' | 'arn';
