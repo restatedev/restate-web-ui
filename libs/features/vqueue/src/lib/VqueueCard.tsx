@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import type { InvocationVqueue } from '@restate/data-access/admin-api-spec';
 import { Target } from '@restate/features/invocation-ui';
+import { PatternChip } from '@restate/features/limits-ui';
 import { Section, SectionContent } from '@restate/ui/section';
+import { Icon, IconName } from '@restate/ui/icons';
+import { tv } from '@restate/util/styles';
+import { formatNumber } from '@restate/util/intl';
 import { STAGE_TONES, type StageKey, softTint } from './palette';
-import { durationToSeconds, formatVqueueDuration } from './duration';
+import { durationToSeconds } from './duration';
 import { QueueBar } from './QueueBar';
 import { QueueStats } from './QueueStats';
 import { Timeline, type TimelineEvent } from './Timeline';
@@ -13,8 +18,19 @@ const chipClass =
   'inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-2xs text-gray-600';
 const chipLabelClass =
   'text-3xs font-bold tracking-wide text-gray-400 uppercase';
+const chevronStyles = tv({
+  base: 'h-3.5 w-3.5 text-gray-400 transition-transform',
+  variants: { open: { true: 'rotate-90', false: '' } },
+});
 
-export function VqueueCard({ data }: { data: InvocationVqueue }) {
+export function VqueueCard({
+  data,
+  showService = true,
+}: {
+  data: InvocationVqueue;
+  showService?: boolean;
+}) {
+  const [showActivity, setShowActivity] = useState(false);
   const identity = data.identity ?? {};
   const counts: NonNullable<InvocationVqueue['counts']> = data.counts ?? {};
   const stageAvg = data.stageAvg ?? {};
@@ -22,14 +38,17 @@ export function VqueueCard({ data }: { data: InvocationVqueue }) {
   const nowBlocks = head.nowBlocks ?? [];
   const avgBlocks = head.avgBlocks ?? [];
   const blocked = Boolean(data.status?.blocked);
-
-  // The head's longest live wait — drives its "blocked for <duration>" line.
-  const dominantBlock = [...nowBlocks].sort(
-    (a, b) => durationToSeconds(b.duration) - durationToSeconds(a.duration),
-  )[0];
-  const headDurationLabel = dominantBlock
-    ? formatVqueueDuration(dominantBlock.duration)
-    : undefined;
+  const scheduling = data.status?.scheduling;
+  const statusBelowHead =
+    (scheduling === 'blocked' || scheduling === 'scheduled') &&
+    Boolean(head.entryId);
+  const blockedResource = data.status?.blockedResource;
+  const limitScope =
+    identity.scope ??
+    blockedResource?.scope ??
+    blockedResource?.blockedRule?.split('/')[0];
+  const limitKeyValue = identity.limitKey ?? blockedResource?.limitKey;
+  const limitPattern = [limitScope, limitKeyValue].filter(Boolean).join('/');
 
   // Avg time spent per stage (inbox/running/suspended), shown as comparison
   // bars under each stage; their sum is the end-to-end caption.
@@ -88,25 +107,28 @@ export function VqueueCard({ data }: { data: InvocationVqueue }) {
       color: '#22c55e',
     },
   ];
-  const serviceLink = identity.service ? (
-    <Target
-      target={identity.service}
-      showHandler={false}
-      className="flex-initial"
-    />
-  ) : null;
+  const serviceLink =
+    showService && identity.service ? (
+      <Target
+        target={identity.service}
+        showHandler={false}
+        className="h-6 flex-initial [&_[data-target]]:h-6"
+      />
+    ) : null;
+  const finishedCount = counts.finished ?? 0;
   const showSubtitle = Boolean(
     (identity.vqueueId && serviceLink) ||
     identity.objectKey ||
-    identity.limitKey ||
-    identity.isPaused,
+    limitPattern ||
+    identity.isPaused ||
+    finishedCount > 0,
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6">
+    <div className="flex w-full flex-col gap-6">
       {/* the queue card: header (id + status), body (visualisation), footer
           (timeline) */}
-      <Section>
+      <Section className="border bg-gray-200/50 p-0">
         {/* header — id + status on the left, service / key / limit on the right */}
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 px-2 py-1.5">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
@@ -119,7 +141,7 @@ export function VqueueCard({ data }: { data: InvocationVqueue }) {
                 </span>
               ))
             )}
-            <VqueueStatus data={data} />
+            {!statusBelowHead && <VqueueStatus data={data} variant="default" />}
           </div>
           {showSubtitle && (
             <div className="flex flex-wrap items-center gap-1.5">
@@ -138,12 +160,13 @@ export function VqueueCard({ data }: { data: InvocationVqueue }) {
                   Paused
                 </span>
               )}
-              {identity.limitKey && (
-                <span className={`${chipClass} font-mono`}>
-                  <span className={chipLabelClass}>limit</span>
-                  {[identity.scope, identity.limitKey]
-                    .filter(Boolean)
-                    .join('/')}
+              {limitPattern && <PatternChip pattern={limitPattern} />}
+              {finishedCount > 0 && (
+                <span className="inline-flex items-baseline gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-2xs text-gray-500">
+                  <span className="font-semibold text-zinc-700 tabular-nums">
+                    {formatNumber(finishedCount, true)}
+                  </span>
+                  finished
                 </span>
               )}
             </div>
@@ -152,39 +175,65 @@ export function VqueueCard({ data }: { data: InvocationVqueue }) {
 
         {/* body — the queue: inboxed · suspended · paused → head → running →
             finished */}
-        <SectionContent raised className="px-2 pt-2 pb-5 sm:px-4">
+        <SectionContent
+          raised
+          className="border-white/50 bg-linear-to-b from-gray-50 to-gray-50/80 px-2 pt-2 pb-5 shadow-zinc-800/3 sm:px-4"
+        >
           <QueueBar
             counts={counts}
             blocked={blocked}
-            durationLabel={headDurationLabel}
             headEntryId={head.entryId}
             entry={data.entry}
             stageTimes={stageTimes}
             maxTimeSeconds={maxTimeSeconds}
             nowBlocks={nowBlocks}
             headStatus={head}
+            statusSlot={
+              statusBelowHead ? (
+                <VqueueStatus data={data} variant="mini" />
+              ) : null
+            }
           />
         </SectionContent>
 
-        {/* footer — title + stats (bars) on one row, timeline below */}
+        {/* footer — collapsible recent-activity (collapsed by default) */}
         <div className="px-2 pt-3 pb-1">
-          <div className="mb-5 flex flex-wrap items-start gap-x-6 gap-y-2 px-1">
-            <div className="flex shrink-0 flex-col gap-0.5">
-              <span className="text-2xs font-medium text-gray-500">
-                Recent activity and stats
+          <div className="flex flex-wrap items-start gap-x-6 gap-y-2 px-1">
+            <button
+              type="button"
+              onClick={() => setShowActivity((open) => !open)}
+              aria-expanded={showActivity}
+              className="-mx-1 flex shrink-0 flex-col gap-0.5 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-black/3"
+            >
+              <span className="flex items-center gap-1.5 text-2xs font-medium text-gray-500">
+                <Icon
+                  name={IconName.ChevronRight}
+                  className={chevronStyles({ open: showActivity })}
+                />
+                <span>
+                  Recent activity and stats{' '}
+                  <span className="text-2xs text-gray-400">
+                    (across the queue)
+                  </span>
+                </span>
               </span>
-              <span className="text-2xs text-gray-400">(across the queue)</span>
-            </div>
-            <div className="flex min-w-0 flex-1 justify-end">
-              <QueueStats
-                queueSeconds={queueSeconds}
-                e2eSeconds={e2eSeconds}
-                avgBlocks={avgBlocks}
-                blocked={blocked}
-              />
-            </div>
+            </button>
+            {showActivity && (
+              <div className="flex min-w-0 flex-1 justify-end">
+                <QueueStats
+                  queueSeconds={queueSeconds}
+                  e2eSeconds={e2eSeconds}
+                  avgBlocks={avgBlocks}
+                  blocked={blocked}
+                />
+              </div>
+            )}
           </div>
-          <Timeline events={timelineEvents} />
+          {showActivity && (
+            <div className="mt-5">
+              <Timeline events={timelineEvents} />
+            </div>
+          )}
         </div>
       </Section>
     </div>

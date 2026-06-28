@@ -20,6 +20,7 @@ import {
   FiltersTrigger,
 } from '@restate/features/invocations-route';
 import { tv } from '@restate/util/styles';
+import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { Dispatch, SetStateAction } from 'react';
 import { useSearchParams } from 'react-router';
 import { QuickFilterPreset, SortOption } from './limitsSchema';
@@ -148,6 +149,7 @@ export interface LimitsQueryBarProps {
   defaultSort: LimitSort;
   placeholder: string;
   isFetching?: boolean;
+  queryKey?: QueryKey;
 }
 
 export function LimitsQueryBar({
@@ -158,8 +160,10 @@ export function LimitsQueryBar({
   defaultSort,
   placeholder,
   isFetching,
+  queryKey,
 }: LimitsQueryBarProps) {
   const submitRef = useSubmitShortcut();
+  const queryClient = useQueryClient();
   const { query, sortParams, setSortParams, commitQuery } = useLimitsForm({
     kind,
     schema,
@@ -169,9 +173,12 @@ export function LimitsQueryBar({
   return (
     <form
       className="relative flex w-[60rem] max-w-full flex-col"
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         commitQuery();
+        if (queryKey) {
+          await queryClient.invalidateQueries({ queryKey });
+        }
       }}
     >
       <QueryBuilder query={query} schema={schema} multiple>

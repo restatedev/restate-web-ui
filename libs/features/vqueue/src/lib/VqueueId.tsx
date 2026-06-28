@@ -13,9 +13,11 @@ const styles = tv({
 export function VqueueId({
   id,
   className,
+  showCopy = true,
 }: {
   id: string;
   className?: string;
+  showCopy?: boolean;
 }) {
   const short = id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-5)}` : id;
   return (
@@ -29,10 +31,12 @@ export function VqueueId({
       <HoverTooltip content={id}>
         <span className="truncate text-2xs">{short}</span>
       </HoverTooltip>
-      <Copy
-        copyText={id}
-        className="ml-0.5 shrink-0 p-1 text-zinc-400 [&_svg]:h-3 [&_svg]:w-3"
-      />
+      {showCopy && (
+        <Copy
+          copyText={id}
+          className="ml-0.5 shrink-0 p-1 text-zinc-400 [&_svg]:h-3 [&_svg]:w-3"
+        />
+      )}
     </div>
   );
 }

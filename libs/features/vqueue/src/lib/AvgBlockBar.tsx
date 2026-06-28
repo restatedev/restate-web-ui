@@ -77,7 +77,7 @@ export function AvgBlockBar({
         </div>
       }
     >
-      <div className="flex flex-col gap-1">
+      <div className="mt-2 flex flex-col gap-1">
         {showLabel && (
           <span className="text-2xs whitespace-nowrap text-gray-400">
             <span className="font-medium text-gray-500 tabular-nums">

@@ -16,6 +16,7 @@ import { JournalV2 } from './JournalV2';
 import { Target } from '@restate/features/invocation-ui';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from '@restate/features/invocation-ui';
+import { Vqueue } from '@restate/features/vqueue';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
@@ -33,6 +34,7 @@ import {
 } from '@restate/util/errors';
 import { useInvocationsRecent } from '@restate/util/sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 
 const metadataContainerStyles = tv({
   base: 'mt-6 mb-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl md:mb-0 [&:has(*)]:grid',
@@ -176,6 +178,9 @@ function Component() {
   const isVirtualObject =
     journalAndInvocationData?.target_service_ty === 'virtual_object';
   const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
+  const vqueueObservabilityEnabled = useIsFeatureFlagEnabled(
+    'FEATURE_VQUEUE_OBSERVABILITY',
+  );
 
   const { OnboardingGuide } = useRestateContext();
   // `?restore=1` is the invocations route's opt-in marker for restoring the
@@ -215,6 +220,20 @@ function Component() {
       </InvocationPageProvider>
     );
   }
+
+  const keysIdsCard = (
+    <KeysIdsSection
+      invocation={journalAndInvocationData}
+      className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+    />
+  );
+  const deploymentCard = (
+    <DeploymentSection
+      invocation={journalAndInvocationData}
+      className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+      raised
+    />
+  );
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
@@ -257,42 +276,57 @@ function Component() {
             className="relative z-10 flex flex-col gap-4 px-5"
             data-failure-anchor-root
           >
-            <div
-              className={metadataContainerStyles({
-                isVirtualObject,
-                isPending,
-                isWorkflow,
-              })}
-            >
-              {isPending && (
-                <>
-                  <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-                  <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-                  <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-                  <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-                </>
-              )}
-              <KeysIdsSection
-                invocation={journalAndInvocationData}
-                className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-              />
-              <DeploymentSection
-                invocation={journalAndInvocationData}
-                className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-                raised
-              />
-              <VirtualObjectSection
-                invocation={journalAndInvocationData}
-                raised
-                key={journalAndInvocationData?.status}
-                className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
-              />
-              <WorkflowKeySection
-                invocation={journalAndInvocationData}
-                raised
-                className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-              />
-            </div>
+            {vqueueObservabilityEnabled ? (
+              <div className="mt-6 mb-6 flex flex-col gap-4 md:mb-0 md:flex-row md:items-start">
+                <div className="flex flex-col gap-4 md:w-72 md:shrink-0 lg:w-auto lg:shrink lg:grow lg:basis-0">
+                  {isPending && (
+                    <>
+                      <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                      <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                    </>
+                  )}
+                  {keysIdsCard}
+                  {deploymentCard}
+                </div>
+                <div className="min-w-0 grow basis-0 lg:grow-[2]">
+                  <Vqueue
+                    vqueueId={journalAndInvocationData?.vqueue_id}
+                    invocationId={id}
+                    showService={false}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div
+                className={metadataContainerStyles({
+                  isVirtualObject,
+                  isPending,
+                  isWorkflow,
+                })}
+              >
+                {isPending && (
+                  <>
+                    <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                    <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                    <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
+                    <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
+                  </>
+                )}
+                {keysIdsCard}
+                {deploymentCard}
+                <VirtualObjectSection
+                  invocation={journalAndInvocationData}
+                  raised
+                  key={journalAndInvocationData?.status}
+                  className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
+                />
+                <WorkflowKeySection
+                  invocation={journalAndInvocationData}
+                  raised
+                  className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+                />
+              </div>
+            )}
             {shouldShowFailure && !error && (
               // No timeline below `md` (the journal panel/divider are
               // display:none there) → nothing to anchor to, so hide the whole

@@ -4,23 +4,27 @@ import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
 import { Ellipsis } from '@restate/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatNumber } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
+import { PatternChip } from '@restate/features/limits-ui';
+import { useRestateContext } from '@restate/features/restate-context';
 import { durationToSeconds, formatVqueueDuration } from './duration';
-import { LimitDetail } from './LimitDetail';
 import { gateLabel, gateTone } from './palette';
 
 // The scheduler's verdict for the queue head — the queue-level counterpart to an
 // invocation's Status. Mirrors Status.tsx: a dashed status pill, an optional
 // secondary chip that opens a popover with the detail (here: the blocking
 // resource), and a muted "for / in <time>" trailing the pill.
-type SchedulingStatus = NonNullable<
-  NonNullable<InvocationVqueue['status']>['scheduling']
->;
+type SchedulingStatus =
+  | NonNullable<NonNullable<InvocationVqueue['status']>['scheduling']>
+  | 'running'
+  | 'paused'
+  | 'idle';
 
 const STATUS_LABEL: Record<SchedulingStatus, string> = {
   dormant: 'Dormant',
@@ -28,6 +32,9 @@ const STATUS_LABEL: Record<SchedulingStatus, string> = {
   ready: 'Ready',
   scheduled: 'Scheduled',
   blocked: 'Blocked',
+  running: 'Running',
+  paused: 'Paused',
+  idle: 'Idle',
 };
 
 const STATUS_VARIANT: Record<SchedulingStatus, 'default' | 'info' | 'warning'> =
@@ -37,6 +44,9 @@ const STATUS_VARIANT: Record<SchedulingStatus, 'default' | 'info' | 'warning'> =
     ready: 'info',
     scheduled: 'default',
     blocked: 'warning',
+    running: 'info',
+    paused: 'warning',
+    idle: 'default',
   };
 
 // User-facing copy per blocked reason, keyed by the canonical BlockedResource
@@ -97,12 +107,6 @@ const RESOURCE_GATE: Record<string, string> = {
   'throttling-rules': 'throttling_rules',
 };
 
-const LEVEL_LABEL: Record<string, string> = {
-  scope: 'scope',
-  level1: 'level 1',
-  level2: 'level 2',
-};
-
 const styles = tv({
   base: 'relative inline-flex max-w-full items-center gap-2',
   variants: {
@@ -118,19 +122,30 @@ const styles = tv({
       scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
       // Head can't run — seats the resource chip on the right.
       blocked: 'border-dashed py-0.5 pr-0.5',
+      running: 'border-dashed py-0.5 pr-0.5',
+      paused: 'border-dashed',
+      idle: 'border-dashed border-zinc-300 bg-transparent text-zinc-500',
     },
-    mini: { true: '', false: '', md: 'max-md:pr-2' },
   },
 });
 
-// Secondary detail (resource chip / time) — collapses below `md` when mini="md",
-// for tight layouts; the default keeps it always visible.
-const secondaryStyles = tv({
-  base: '',
+const miniLabel = tv({
+  base: 'text-2xs font-medium',
   variants: {
-    mini: { true: 'hidden', false: 'contents', md: 'hidden md:contents' },
+    status: {
+      dormant: 'text-gray-500',
+      empty: 'text-gray-400',
+      ready: 'text-blue-700',
+      scheduled: 'text-gray-600',
+      blocked: 'text-orange-700',
+      running: 'text-blue-700',
+      paused: 'text-amber-700',
+      idle: 'text-gray-500',
+    },
   },
-  defaultVariants: { mini: false },
+});
+const blockedChip = tv({
+  base: 'flex h-5 items-center gap-1 truncate rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs text-orange-700 shadow-none',
 });
 
 const timeStyles = tv({
@@ -148,17 +163,15 @@ function resolveStatus(data: InvocationVqueue): SchedulingStatus {
   ) {
     return raw;
   }
-  // Older servers don't carry the scheduler verdict; derive a sensible default.
-  if (data.status?.blocked) {
-    return 'blocked';
+  // No scheduler row — derive. Paused is checked before running because a paused
+  // queue also has no scheduler row yet can still have in-flight invocations.
+  if (data.identity?.isPaused) {
+    return 'paused';
   }
-  const counts = data.counts ?? {};
-  const total =
-    (counts.inbox ?? 0) +
-    (counts.running ?? 0) +
-    (counts.suspended ?? 0) +
-    (counts.paused ?? 0);
-  return total === 0 ? 'empty' : 'dormant';
+  if ((data.counts?.running ?? 0) > 0) {
+    return 'running';
+  }
+  return 'idle';
 }
 
 // Canonical blocked key from the parsed resource, or the gate string — which may
@@ -211,36 +224,115 @@ function describeBlocked(data: InvocationVqueue) {
 export function VqueueStatus({
   data,
   className,
-  mini = false,
+  variant = 'default',
 }: {
   data: InvocationVqueue;
   className?: string;
-  mini?: boolean | 'md';
+  variant?: 'default' | 'mini';
 }) {
   const status = resolveStatus(data);
-  const variant = STATUS_VARIANT[status];
+
+  if (status === 'idle') {
+    return null;
+  }
+
+  const showNextItem =
+    variant === 'default' && (status === 'blocked' || status === 'scheduled');
+  const innerChip =
+    status === 'blocked' ? (
+      <BlockedDetail
+        data={data}
+        className={variant === 'mini' ? 'shadow-xs' : undefined}
+      />
+    ) : status === 'running' ? (
+      <RunningCount data={data} />
+    ) : null;
 
   return (
-    <div className="flex flex-row flex-wrap items-baseline gap-0.5">
-      <Badge variant={variant} className={styles({ className, status, mini })}>
-        <Ellipsis visible={status === 'ready'}>{STATUS_LABEL[status]}</Ellipsis>
-        <span className={secondaryStyles({ mini })}>
-          {status === 'blocked' && <BlockedDetail data={data} />}
-        </span>
-      </Badge>
-      <span className={secondaryStyles({ mini })}>
-        <StatusTime data={data} status={status} />
-      </span>
+    <div
+      className={
+        variant === 'mini'
+          ? 'flex flex-row flex-wrap items-center gap-1 pl-1'
+          : 'flex flex-row flex-wrap items-baseline gap-1'
+      }
+    >
+      {showNextItem && (
+        <span className="text-2xs text-gray-500">Next item</span>
+      )}
+      {variant === 'mini' ? (
+        <>
+          <span className={miniLabel({ status })}>{STATUS_LABEL[status]}</span>
+          {innerChip}
+        </>
+      ) : (
+        <Badge
+          variant={STATUS_VARIANT[status]}
+          className={styles({ className, status })}
+        >
+          <Ellipsis visible={status === 'ready'}>
+            {STATUS_LABEL[status]}
+          </Ellipsis>
+          {innerChip}
+        </Badge>
+      )}
+      <StatusTime data={data} status={status} />
     </div>
   );
 }
 
+function RunningCount({ data }: { data: InvocationVqueue }) {
+  const n = data.counts?.running ?? 0;
+  if (n <= 0) {
+    return null;
+  }
+  return (
+    <span className="flex h-5 items-center rounded-md border border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs font-medium text-blue-700">
+      {formatNumber(n)} {n === 1 ? 'item' : 'items'}
+    </span>
+  );
+}
+
+function ruleMatchHref(
+  baseUrl: string,
+  rule: string,
+  matchKey: string,
+): string {
+  const base = `${baseUrl}/limits/rules/${encodeURIComponent(rule)}`;
+  if (!matchKey) {
+    return base;
+  }
+  const m = encodeURIComponent(matchKey);
+  return `${base}?match=${m}&tab=${m}`;
+}
+
 // The blocking resource, as a chip that opens a popover with the full reason —
 // the queue-side analogue of Status.tsx's "after…" error chip.
-function BlockedDetail({ data }: { data: InvocationVqueue }) {
+function BlockedDetail({
+  data,
+  className,
+}: {
+  data: InvocationVqueue;
+  className?: string;
+}) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { resource, chip, title, lead, isRuleBlock } = describeBlocked(data);
+  const { baseUrl } = useRestateContext();
+  const { resource, chip, title, lead } = describeBlocked(data);
   const forLabel = blockedForLabel(data);
+  const rulePattern = resource?.blockedRule;
+  const ruleScope = resource?.scope ?? rulePattern?.split('/')[0];
+  const limitKey = resource?.limitKey;
+  const matchKey =
+    resource?.blockedLevel === 'scope'
+      ? (ruleScope ?? '')
+      : resource?.blockedLevel === 'level1'
+        ? [ruleScope, limitKey?.split('/')[0]].filter(Boolean).join('/')
+        : [ruleScope, limitKey].filter(Boolean).join('/');
+  const matchHref = rulePattern
+    ? ruleMatchHref(baseUrl, rulePattern, matchKey)
+    : undefined;
+  const ruleHref = rulePattern
+    ? `${baseUrl}/limits/rules/${encodeURIComponent(rulePattern)}`
+    : undefined;
   const retryAt =
     resource?.resource === 'invoker-throttling'
       ? resource.estimatedRetryAt
@@ -252,10 +344,7 @@ function BlockedDetail({ data }: { data: InvocationVqueue }) {
   return (
     <Popover>
       <PopoverTrigger>
-        <Button
-          variant="secondary"
-          className="flex h-5 items-center gap-1 truncate rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs text-orange-700 shadow-none"
-        >
+        <Button variant="secondary" className={blockedChip({ className })}>
           <Icon
             name={IconName.TriangleAlert}
             className="h-3 w-3 shrink-0 text-orange-600"
@@ -268,77 +357,123 @@ function BlockedDetail({ data }: { data: InvocationVqueue }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent>
-        <DropdownSection title={`Blocked on ${title}`}>
-          <div className="flex w-[20rem] max-w-[80vw] flex-col gap-2 p-2.5">
-            <p className="text-2xs text-gray-500">
-              {lead}
-              {forLabel && (
-                <>
-                  {' '}
-                  Blocked for{' '}
-                  <span className="font-medium text-zinc-700 tabular-nums">
-                    {forLabel}
-                  </span>
-                  .
-                </>
+        <DropdownSection
+          title={
+            resource?.resource === 'limit-key-concurrency'
+              ? 'Blocked — concurrency limit full'
+              : `Blocked on ${title}`
+          }
+        >
+          {resource?.resource === 'limit-key-concurrency' && rulePattern ? (
+            <div className="flex w-[20rem] max-w-[80vw] flex-col p-1.5">
+              {matchHref && (
+                <LimitLinkRow
+                  label="counter"
+                  pattern={matchKey || rulePattern}
+                  href={matchHref}
+                  subtitle="usage & the queues sharing it"
+                />
               )}
-            </p>
-
-            {resource?.resource === 'lock' &&
-              (resource.lockName || resource.scope) && (
-                <DetailBox>
-                  {resource.lockName && (
-                    <DetailRow label="lock">
-                      <Mono>{resource.lockName}</Mono>
-                    </DetailRow>
-                  )}
-                  {resource.scope && (
-                    <DetailRow label="scope">
-                      <Mono>{resource.scope}</Mono>
-                    </DetailRow>
-                  )}
-                </DetailBox>
+              {matchHref && ruleHref && (
+                <div className="mx-2 my-1 h-px bg-gray-200/70" />
               )}
-
-            {resource?.resource === 'invoker-throttling' &&
-              retryAt &&
-              retryLabel && (
-                <DetailBox>
-                  <DetailRow label="retries">
-                    <DateTooltip
-                      date={new Date(retryAt)}
-                      title="Invoker retries at"
-                    >
-                      <span className="tabular-nums">in {retryLabel}</span>
-                    </DateTooltip>
-                  </DetailRow>
-                </DetailBox>
+              {ruleHref && (
+                <LimitLinkRow
+                  label="rule"
+                  pattern={rulePattern}
+                  href={ruleHref}
+                  subtitle="view or change the limit"
+                  isRule
+                />
               )}
-
-            {resource?.resource === 'limit-key-concurrency' && (
-              <DetailBox>
-                <DetailRow label="rule">
-                  <Mono>{resource.blockedRule ?? 'removed'}</Mono>
-                </DetailRow>
-                {resource.limitKey && (
-                  <DetailRow label="key">
-                    <Mono>{resource.limitKey}</Mono>
-                  </DetailRow>
+            </div>
+          ) : (
+            <div className="flex w-[20rem] max-w-[80vw] flex-col gap-2 p-2.5">
+              <p className="text-2xs text-gray-500">
+                {lead}
+                {forLabel && (
+                  <>
+                    {' '}
+                    Blocked for{' '}
+                    <span className="font-medium text-zinc-700 tabular-nums">
+                      {forLabel}
+                    </span>
+                    .
+                  </>
                 )}
-                {resource.blockedLevel && (
-                  <DetailRow label="level">
-                    {LEVEL_LABEL[resource.blockedLevel] ??
-                      resource.blockedLevel}
-                  </DetailRow>
-                )}
-              </DetailBox>
-            )}
+              </p>
 
-            {isRuleBlock && <LimitDetail />}
-          </div>
+              {resource?.resource === 'lock' &&
+                (resource.lockName || resource.scope) && (
+                  <DetailBox>
+                    {resource.lockName && (
+                      <DetailRow label="lock">
+                        <Mono>{resource.lockName}</Mono>
+                      </DetailRow>
+                    )}
+                    {resource.scope && (
+                      <DetailRow label="scope">
+                        <Mono>{resource.scope}</Mono>
+                      </DetailRow>
+                    )}
+                  </DetailBox>
+                )}
+
+              {resource?.resource === 'invoker-throttling' &&
+                retryAt &&
+                retryLabel && (
+                  <DetailBox>
+                    <DetailRow label="retries">
+                      <DateTooltip
+                        date={new Date(retryAt)}
+                        title="Invoker retries at"
+                      >
+                        <span className="tabular-nums">in {retryLabel}</span>
+                      </DateTooltip>
+                    </DetailRow>
+                  </DetailBox>
+                )}
+            </div>
+          )}
         </DropdownSection>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function LimitLinkRow({
+  label,
+  pattern,
+  href,
+  subtitle,
+  isRule,
+}: {
+  label: string;
+  pattern: string;
+  href: string;
+  subtitle: string;
+  isRule?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      variant="secondary"
+      className="flex items-center gap-2.5 rounded-lg p-2 no-underline transition-colors hover:bg-black/4"
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="w-12 shrink-0 text-3xs font-bold tracking-wide text-gray-400 uppercase">
+            {label}
+          </span>
+          <PatternChip pattern={pattern} isRule={isRule} className="min-w-0" />
+        </div>
+        <span className="pl-14 text-2xs text-gray-400">{subtitle}</span>
+      </div>
+      <Icon
+        name={IconName.ChevronRight}
+        className="h-4 w-4 shrink-0 text-gray-400"
+      />
+    </Link>
   );
 }
 
@@ -374,20 +509,6 @@ function StatusTime({
   };
 
   if (status === 'blocked') {
-    const resource = data.status?.blockedResource;
-    if (
-      resource?.resource === 'invoker-throttling' &&
-      resource.estimatedRetryAt
-    ) {
-      const badge = fromDate(
-        resource.estimatedRetryAt,
-        'retries in',
-        'Invoker retries at',
-      );
-      if (badge) {
-        return badge;
-      }
-    }
     const forLabel = blockedForLabel(data);
     if (!forLabel) {
       return null;
@@ -440,16 +561,14 @@ function Mono({ children }: PropsWithChildren) {
   return <span className="font-mono">{children}</span>;
 }
 
-// How long the head has been blocked: the wait on the gate it's blocked on, or
-// the longest live gate wait when the gate isn't named.
+// How long the head has been blocked: the sum of all live gate waits.
 function blockedForLabel(data: InvocationVqueue): string | undefined {
-  const blockedOn = data.status?.blockedOn;
-  const nowBlocks = data.head?.nowBlocks ?? [];
-  const dominant = blockedOn
-    ? nowBlocks.find((block) => block.gate === blockedOn)
-    : [...nowBlocks].sort(
-        (a, b) => durationToSeconds(b.duration) - durationToSeconds(a.duration),
-      )[0];
-  const label = dominant ? formatVqueueDuration(dominant.duration) : '';
-  return label || undefined;
+  const sumSeconds = (data.head?.nowBlocks ?? []).reduce(
+    (acc, block) => acc + durationToSeconds(block.duration),
+    0,
+  );
+  if (sumSeconds <= 0) {
+    return undefined;
+  }
+  return formatVqueueDuration(sumSeconds * 1000) || undefined;
 }

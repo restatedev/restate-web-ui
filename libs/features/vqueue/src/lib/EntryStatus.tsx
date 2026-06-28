@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import { Badge } from '@restate/ui/badge';
+import { Icon, IconName } from '@restate/ui/icons';
 import { Ellipsis } from '@restate/ui/loading';
 import { DateTooltip } from '@restate/ui/tooltip';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatOrdinals } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 
@@ -79,7 +80,7 @@ const styles = tv({
       pending:
         'border-dashed border-amber-300/90 bg-transparent text-amber-700',
       scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
-      'backing-off': 'border-dashed border-orange-300/80',
+      'backing-off': 'border-dashed border-orange-300/80 py-0.5 pr-0.5',
       yielded: 'border-dashed border-zinc-300 bg-transparent text-zinc-500',
       running: 'border-dashed',
       suspended: 'border-dashed border-zinc-400/60 bg-zinc-200/40',
@@ -152,11 +153,6 @@ function plural(n: number, one: string, many = `${one}s`) {
 function extrasFor(entry: EntryStatusData, ui: UiStatus): string[] {
   const extras: string[] = [];
   switch (ui) {
-    case 'backing-off':
-      if (entry.retryAttempts)
-        extras.push(plural(entry.retryAttempts, 'retry', 'retries'));
-      if (entry.numErrors) extras.push(plural(entry.numErrors, 'error'));
-      break;
     case 'yielded':
       if (entry.numYields) extras.push(plural(entry.numYields, 'yield'));
       break;
@@ -198,10 +194,12 @@ export function EntryStatus({
   entry,
   className,
   showDetail = true,
+  showTime = true,
 }: {
   entry: EntryStatusData;
   className?: string;
   showDetail?: boolean;
+  showTime?: boolean;
 }) {
   const ui = resolveStatus(entry.stage, entry.status);
   if (!ui) {
@@ -216,23 +214,46 @@ export function EntryStatus({
         className={styles({ status: ui, className })}
       >
         <Ellipsis visible={ui === 'running'}>{STATUS_LABEL[ui]}</Ellipsis>
+        {ui === 'backing-off' && <BackingOffChip entry={entry} />}
       </Badge>
-      {showDetail && <Trailing entry={entry} ui={ui} />}
+      {showDetail && <Trailing entry={entry} ui={ui} showTime={showTime} />}
     </div>
+  );
+}
+
+function BackingOffChip({ entry }: { entry: EntryStatusData }) {
+  const n = entry.numAttempts ?? entry.retryAttempts ?? 0;
+  if (!n) {
+    return null;
+  }
+  return (
+    <span className="flex h-5 items-center gap-1 rounded-md border border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs text-orange-700">
+      <Icon
+        name={IconName.TriangleAlert}
+        className="h-3 w-3 shrink-0 text-orange-600"
+      />
+      <span className="truncate">
+        {formatOrdinals(n)}{' '}
+        <span className="font-normal opacity-80">attempt</span>
+      </span>
+    </span>
   );
 }
 
 function Trailing({
   entry,
   ui,
+  showTime,
 }: {
   entry: EntryStatusData;
   ui: UiStatus;
+  showTime: boolean;
 }): ReactNode {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const spec = TIME[ui];
   const date = entry[spec.field];
-  const label = date ? formatDurations(durationSinceLastSnapshot(date)) : '';
+  const label =
+    showTime && date ? formatDurations(durationSinceLastSnapshot(date)) : '';
   const extras = extrasFor(entry, ui);
 
   if (!label && extras.length === 0) {

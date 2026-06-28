@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import type {
   InvocationVqueue,
   VqueueGateDuration,
@@ -6,7 +6,11 @@ import type {
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { InvocationId } from '@restate/features/invocation-ui';
-import { formatNumber } from '@restate/util/intl';
+import {
+  formatNumber,
+  formatPercentageWithoutFraction,
+} from '@restate/util/intl';
+import { tv } from '@restate/util/styles';
 import {
   STAGE_LABELS,
   STAGE_TONES,
@@ -24,9 +28,19 @@ type StageTime = { raw: string; seconds: number };
 
 // One tick == one invocation while the queue fits; only a large queue scales
 // down representatively (so a stage with 1 item never balloons into many ticks).
-const TICK_CAP = 48;
+const TICK_CAP = 15;
 // Queue order: waiting (inbox → head) → in progress → done (finished).
 const IN_PROGRESS_STAGES: StageKey[] = ['running', 'suspended', 'paused'];
+const SHOW_FINISHED = false;
+const gridStyles = tv({
+  base: 'grid w-full grid-flow-col grid-rows-[auto_auto] items-stretch justify-between gap-y-2',
+  variants: {
+    showFinished: {
+      true: 'grid-cols-[max-content_repeat(4,minmax(8rem,max-content))]',
+      false: 'grid-cols-[max-content_repeat(3,minmax(8rem,max-content))]',
+    },
+  },
+});
 
 // The lifecycle statuses each bucket can hold — shown as a hint under the stage
 // so the grouping is clear.
@@ -158,12 +172,12 @@ function StatBlock({
   includes?: string[];
 }) {
   const tone = STAGE_TONES[stage];
-  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+  const pct = total > 0 ? formatPercentageWithoutFraction(count / total) : 0;
   const empty = count <= 0;
   return (
     <div className="relative self-stretch pl-2.5">
       <div
-        className="absolute top-0 bottom-0 left-0 w-0.5 rounded-full"
+        className="absolute top-0 bottom-0 left-0 w-0.5 rounded-full opacity-50"
         style={{ background: empty ? '#d4d4d8' : tone.stroke }}
       />
       {empty ? (
@@ -176,13 +190,13 @@ function StatBlock({
       <div className="mt-3">
         <div
           className={`text-xl leading-none font-semibold tabular-nums ${
-            empty ? 'text-gray-300' : 'text-zinc-800'
+            empty ? 'text-gray-300' : 'text-zinc-500'
           }`}
         >
           {formatNumber(count, true)}
         </div>
         <div className="mt-1 text-2xs whitespace-nowrap text-gray-500 tabular-nums">
-          {STAGE_LABELS[stage]} · {pct}%
+          {STAGE_LABELS[stage]} · {pct}
         </div>
         {includes && includes.length > 0 && (
           <div className="mt-1 max-w-28 text-3xs leading-snug text-gray-400">
@@ -215,23 +229,23 @@ function EntryId({ id }: { id: string }) {
 export function QueueBar({
   counts,
   blocked,
-  durationLabel,
   headEntryId,
   entry,
   stageTimes,
   maxTimeSeconds,
   nowBlocks = [],
   headStatus,
+  statusSlot,
 }: {
   counts: Counts;
   blocked: boolean;
-  durationLabel?: string;
   headEntryId?: string;
   entry?: Entry;
   stageTimes: Partial<Record<StageKey, StageTime>>;
   maxTimeSeconds: number;
   nowBlocks?: VqueueGateDuration[];
   headStatus?: EntryStatusData;
+  statusSlot?: ReactNode;
 }) {
   const running = counts.running ?? 0;
   const finished = counts.finished ?? 0;
@@ -315,7 +329,7 @@ export function QueueBar({
           via items-stretch, so the head box matches the vertical lines); bottom =
           per-stage avg-time bars. */}
       <div className="overflow-x-auto pt-5">
-        <div className="grid w-full auto-cols-max grid-flow-col grid-rows-[auto_auto] items-stretch justify-between gap-y-2">
+        <div className={gridStyles({ showFinished: SHOW_FINISHED })}>
           {/* inbox + its head (the front of the inbox, expanded) grouped in one
             column; the remaining stages then spread across the width */}
           <div className="flex items-stretch gap-x-3 self-stretch">
@@ -328,26 +342,26 @@ export function QueueBar({
               includes={STAGE_INCLUDES.inbox}
             />
             {headEntryId && (
-              <div className="-mt-5 flex flex-col gap-1.5 self-start">
+              <div className="-mt-4 flex flex-col gap-0 self-start">
                 <div className="px-1 text-3xs font-bold tracking-wide text-gray-400 uppercase">
-                  head
+                  Next item
                 </div>
-                <div className="flex flex-col gap-2 rounded-lg bg-gray-50 px-3 py-2">
+                <div className="flex flex-col gap-2 rounded-lg py-2 pr-3">
                   <div className="flex items-center gap-2">
                     <EntryId id={headEntryId} />
                     {headStatus && (
-                      <EntryStatus entry={headStatus} showDetail={!blocked} />
+                      <EntryStatus
+                        entry={headStatus}
+                        showDetail={!blocked}
+                        showTime={false}
+                      />
                     )}
                   </div>
-                  {/* the head's live block — label + thin breakdown bar */}
+                </div>
+                <div className="flex gap-1">
+                  {statusSlot}
                   {blocked && hasNowBlocks && (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-2xs whitespace-nowrap text-gray-500">
-                        blocked for{' '}
-                        <span className="font-medium text-gray-600 tabular-nums">
-                          {durationLabel}
-                        </span>
-                      </span>
+                    <div className="min-w-8">
                       <AvgBlockBar blocks={nowBlocks} live showLabel={false} />
                     </div>
                   )}
@@ -368,23 +382,27 @@ export function QueueBar({
 
           {IN_PROGRESS_STAGES.map(renderStage)}
 
-          {/* finished — same column rhythm as a stage, just no comb */}
-          <div className="relative self-stretch pl-2.5">
-            <div className="absolute top-0 bottom-0 left-0 w-0.5 rounded-full bg-gray-300" />
-            <div className="h-9" />
-            <div className="mt-3">
-              <div className="text-xl leading-none font-semibold text-gray-400 tabular-nums">
-                {formatNumber(finished, true)}
+          {SHOW_FINISHED && (
+            <>
+              {/* finished — same column rhythm as a stage, just no comb */}
+              <div className="relative self-stretch pl-2.5">
+                <div className="absolute top-0 bottom-0 left-0 w-0.5 rounded-full bg-gray-300/50" />
+                <div className="h-9" />
+                <div className="mt-3">
+                  <div className="text-xl leading-none font-semibold text-gray-400 tabular-nums">
+                    {formatNumber(finished, true)}
+                  </div>
+                  <div className="mt-1 text-2xs whitespace-nowrap text-gray-500 tabular-nums">
+                    Finished
+                  </div>
+                  <div className="mt-1 max-w-28 text-3xs leading-snug text-gray-400">
+                    {FINISHED_INCLUDES.join(' · ')}
+                  </div>
+                </div>
               </div>
-              <div className="mt-1 text-2xs whitespace-nowrap text-gray-500 tabular-nums">
-                Finished
-              </div>
-              <div className="mt-1 max-w-28 text-3xs leading-snug text-gray-400">
-                {FINISHED_INCLUDES.join(' · ')}
-              </div>
-            </div>
-          </div>
-          <div />
+              <div />
+            </>
+          )}
         </div>
       </div>
     </div>

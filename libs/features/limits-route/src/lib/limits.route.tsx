@@ -15,11 +15,14 @@ import {
   useUpdateLimitRule,
 } from '@restate/data-access/admin-api-hooks';
 import { useFeatures } from '@restate/data-access/admin-api';
+import type { InvocationVqueue } from '@restate/data-access/admin-api-spec';
 import { Ellipsis } from '@restate/ui/loading';
 import { InvocationId, Target } from '@restate/features/invocation-route';
 import { useRestateContext } from '@restate/features/restate-context';
+import { Vqueue, VqueueId, VqueueStatus } from '@restate/features/vqueue';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -52,11 +55,17 @@ import { formatDurations, formatNumber } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
-  getDuration,
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+  FormEvent,
+  ReactNode,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from 'react';
 import {
   Input as AriaInput,
   Label,
@@ -64,7 +73,6 @@ import {
   type SortDescriptor,
 } from 'react-aria-components';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
-import { PatternChip } from './PatternChip';
 import {
   buildPattern,
   MatchExamples,
@@ -76,9 +84,10 @@ import {
   analyzeKey,
   parseKey,
   parsePattern,
+  PatternChip,
   type KeyAnalysis,
   type ParsedPattern,
-} from './patternMatching';
+} from '@restate/features/limits-ui';
 import { LimitsQueryBar } from './LimitsQueryBar';
 import {
   COUNTER_PRESETS,
@@ -183,7 +192,7 @@ const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
     id: 'activeMatches',
     name: (
       <span className="inline-flex items-center gap-1 whitespace-nowrap">
-        <span>Active matches</span>
+        <span>Counters</span>
         <span className="text-zinc-400">/</span>
         <span className="text-zinc-500">over capacity</span>
       </span>
@@ -200,7 +209,7 @@ const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
 const COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
   {
     id: 'key',
-    name: 'Match',
+    name: 'Counter',
     isRowHeader: true,
     defaultWidth: 280,
     minWidth: 220,
@@ -343,7 +352,7 @@ function useLimitsAccess() {
 function LimitsUnavailable({ reason }: { reason: 'flag' | 'cluster' }) {
   return (
     <EmptyState
-      icon={reason === 'flag' ? IconName.Sparkles : IconName.Gauge}
+      icon={reason === 'flag' ? IconName.Sparkles : IconName.SlidersHorizontal}
       intent="neutral"
       title={
         reason === 'flag'
@@ -1122,7 +1131,7 @@ function RulesHero() {
     <div className="flex flex-col gap-1.5 pr-2 pl-10">
       <div className="flex items-center gap-2">
         <Icon
-          name={IconName.Gauge}
+          name={IconName.SlidersHorizontal}
           className="h-6 w-6 shrink-0 text-gray-400"
         />
         <h1 className="text-xl font-semibold tracking-tight text-gray-900">
@@ -1264,7 +1273,11 @@ function LimitsListComponent() {
               error={rules.error as Error | null}
               emptyPlaceholder={
                 <EmptyState
-                  icon={trimmedQuery ? IconName.ScanSearch : IconName.Gauge}
+                  icon={
+                    trimmedQuery
+                      ? IconName.ScanSearch
+                      : IconName.SlidersHorizontal
+                  }
                   title={trimmedQuery ? 'No matching rules' : 'No limit rules'}
                   description={
                     trimmedQuery
@@ -1358,26 +1371,10 @@ function parseMatchKey(key: string): {
   return { scope, l1, l2 };
 }
 
-// Block durations come back as ISO-8601 (e.g. "PT115323.68S", "P0D").
-function isoDurationToMs(value?: string | null): number {
-  if (!value) return 0;
-  const m = value.match(
-    /^P(?:(\d+(?:\.\d+)?)D)?(?:T(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?$/,
-  );
-  if (!m) return 0;
-  const [, d, h, min, s] = m;
-  return (
-    (Number(d ?? 0) * 86400 +
-      Number(h ?? 0) * 3600 +
-      Number(min ?? 0) * 60 +
-      Number(s ?? 0)) *
-    1000
-  );
-}
-
 type TargetColumn =
   | 'service'
   | 'scopeKey'
+  | 'vqueueId'
   | 'status'
   | 'running'
   | 'inbox'
@@ -1392,117 +1389,79 @@ const TARGET_COLUMNS: PanelTableColumn<TargetColumn>[] = [
     defaultWidth: 240,
     minWidth: 180,
   },
+  { id: 'vqueueId', name: 'Queue ID', defaultWidth: 170, minWidth: 130 },
   { id: 'service', name: 'Service', defaultWidth: 190, minWidth: 140 },
-  { id: 'status', name: 'Status', defaultWidth: 210, minWidth: 150 },
-  { id: 'running', name: 'Running', defaultWidth: 110, minWidth: 90 },
-  { id: 'inbox', name: 'Inbox', defaultWidth: 110, minWidth: 90 },
-  { id: 'head', name: 'Head', defaultWidth: 190, minWidth: 150 },
-  { id: 'lastActivity', name: 'Last activity' },
+  { id: 'status', name: 'Status' },
+  { id: 'running', name: 'Running', defaultWidth: 100, minWidth: 40 },
+  { id: 'inbox', name: 'Inbox', defaultWidth: 100, minWidth: 40 },
+  { id: 'head', name: 'Head', defaultWidth: 150 },
+  { id: 'lastActivity', name: 'Last activity', defaultWidth: 130 },
 ];
 
-const BLOCKED_ON_LABEL: Record<string, string> = {
-  'limit-key-concurrency': 'on rules',
-  lock: 'on lock',
-  'invoker-concurrency': 'on invoker',
-  'invoker-throttling': 'throttled',
-  'invoker-memory': 'on memory',
-  'throttling-rules': 'throttled',
-  'deployment-concurrency': 'on deployment',
-};
-
-// The 7 block "gates", coloured by resource — the State bar stacks them so the
-// dominant reason a head is stuck reads at a glance.
-const GATE_DURATIONS: {
-  key: keyof LimitTargetRow;
-  color: string;
-  label: string;
-}[] = [
-  { key: 'concurrency_rules_block_duration', color: '#f87171', label: 'rules' },
-  { key: 'lock_block_duration', color: '#fbbf24', label: 'lock' },
-  {
-    key: 'invoker_concurrency_block_duration',
-    color: '#60a5fa',
-    label: 'invoker concurrency',
-  },
-  {
-    key: 'invoker_throttling_block_duration',
-    color: '#fb923c',
-    label: 'invoker throttling',
-  },
-  {
-    key: 'invoker_memory_block_duration',
-    color: '#a78bfa',
-    label: 'invoker memory',
-  },
-  {
-    key: 'throttling_rules_block_duration',
-    color: '#f59e0b',
-    label: 'throttling rules',
-  },
-  {
-    key: 'deployment_concurrency_block_duration',
-    color: '#34d399',
-    label: 'deployment',
-  },
-];
-
-function GateBar({ row }: { row: LimitTargetRow }) {
-  const segs = GATE_DURATIONS.map((g) => ({
-    ...g,
-    ms: isoDurationToMs(row[g.key] as string | null | undefined),
-  })).filter((s) => s.ms > 0);
-  const total = segs.reduce((sum, s) => sum + s.ms, 0);
-  if (total <= 0) return null;
-  return (
-    <div className="flex h-2 w-20 shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-100">
-      {segs.map((s) => (
-        <div
-          key={s.key as string}
-          className="h-full"
-          style={{
-            width: `${(s.ms / total) * 100}%`,
-            backgroundColor: s.color,
-          }}
-          title={s.label}
-        />
-      ))}
-    </div>
-  );
+function targetToVqueueStatus(row: LimitTargetRow): InvocationVqueue {
+  const blockedResource =
+    (row.blocked_on === 'concurrency_rules' ||
+      row.blocked_on === 'limit-key-concurrency') &&
+    (row.blocked_rule || row.blocked_level || row.limit_key)
+      ? {
+          resource: 'limit-key-concurrency' as const,
+          ...(row.blocked_rule ? { blockedRule: row.blocked_rule } : {}),
+          ...(row.blocked_level
+            ? {
+                blockedLevel: row.blocked_level as
+                  | 'scope'
+                  | 'level1'
+                  | 'level2',
+              }
+            : {}),
+          ...(row.limit_key ? { limitKey: row.limit_key } : {}),
+        }
+      : undefined;
+  const nowBlocks: { gate: string; duration: string }[] = [];
+  for (const gate of [
+    'concurrency_rules',
+    'throttling_rules',
+    'invoker_concurrency',
+    'invoker_throttling',
+    'invoker_memory',
+    'lock',
+    'deployment_concurrency',
+  ] as const) {
+    const duration = row[`${gate}_block_duration`];
+    if (typeof duration === 'string' && duration) {
+      nowBlocks.push({ gate, duration });
+    }
+  }
+  return {
+    supported: true,
+    identity: { isPaused: Boolean(row.queue_is_paused) },
+    status: {
+      blocked: row.status === 'blocked' || Boolean(row.blocked_on),
+      ...(row.status
+        ? {
+            scheduling: row.status as
+              | 'dormant'
+              | 'empty'
+              | 'ready'
+              | 'scheduled'
+              | 'blocked',
+          }
+        : {}),
+      ...(row.blocked_on ? { blockedOn: row.blocked_on } : {}),
+      ...(blockedResource ? { blockedResource } : {}),
+    },
+    counts: {
+      inbox: row.num_inbox ?? 0,
+      running: row.num_running ?? 0,
+      suspended: row.num_suspended ?? 0,
+      paused: row.num_paused ?? 0,
+    },
+    head: { nowBlocks },
+  };
 }
 
 function TargetStatusCell({ row }: { row: LimitTargetRow }) {
-  if (row.status === 'blocked') {
-    const ms = isoDurationToMs(row.head_wait);
-    const label = row.blocked_on
-      ? (BLOCKED_ON_LABEL[row.blocked_on] ?? row.blocked_on)
-      : 'blocked';
-    return (
-      <span className="inline-flex items-center gap-2 text-xs whitespace-nowrap">
-        <GateBar row={row} />
-        <span className="text-0.5xs font-medium text-gray-500">{label}</span>
-        {ms > 0 && (
-          <span className="text-0.5xs font-semibold text-orange-700 tabular-nums">
-            {formatDurations(getDuration(ms))}
-          </span>
-        )}
-      </span>
-    );
-  }
-  if ((row.num_running ?? 0) > 0) {
-    return (
-      <Badge size="sm" variant="info">
-        running
-      </Badge>
-    );
-  }
-  if (row.status === 'scheduled') {
-    return (
-      <Badge size="sm" variant="warning">
-        scheduled
-      </Badge>
-    );
-  }
-  return <span className="text-2xs text-zinc-300">—</span>;
+  return <VqueueStatus data={targetToVqueueStatus(row)} />;
 }
 
 function TargetLastActivityCell({ row }: { row: LimitTargetRow }) {
@@ -1532,7 +1491,11 @@ function renderTargetCell(
     case 'service':
       return (
         <Cell>
-          <Target target={row.service_name} showHandler={false} />
+          <Target
+            target={row.service_name}
+            showHandler={false}
+            className="h-6 [&_[data-target]]:h-6"
+          />
         </Cell>
       );
     case 'scopeKey': {
@@ -1551,6 +1514,30 @@ function renderTargetCell(
         </Cell>
       );
     }
+    case 'vqueueId':
+      return (
+        <Cell>
+          <Popover>
+            <PopoverTrigger>
+              <Button
+                variant="secondary"
+                className="flex min-w-0 items-center gap-1 rounded-md border-none bg-transparent p-0.5 shadow-none hover:bg-black/4"
+              >
+                <VqueueId id={row.id} showCopy={false} className="min-w-0" />
+                <Icon
+                  name={IconName.ChevronsUpDown}
+                  className="h-3 w-3 shrink-0 text-gray-400"
+                />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[64rem] max-w-[96vw]">
+              <div className="p-2">
+                <Vqueue vqueueId={row.id} />
+              </div>
+            </PopoverContent>
+          </Popover>
+        </Cell>
+      );
     case 'status':
       return (
         <Cell>
@@ -1676,6 +1663,7 @@ function MatchTabLabel({
   // MobileTabsDropdown's trigger <button>, and a nested <button> is invalid HTML.
   return (
     <span className="inline-flex items-center gap-1.5">
+      <Icon name={IconName.Gauge} className="h-4 w-4 fill-none! opacity-60" />
       <span className="font-mono">{matchKey}</span>
       {usage != null && <CapacityBadge count={usage} pct={pct} />}
       <span
@@ -1759,7 +1747,7 @@ function RuleDetailComponent() {
   if (!pattern) {
     return (
       <EmptyState
-        icon={IconName.Gauge}
+        icon={IconName.SlidersHorizontal}
         title="No rule selected"
         description="Open a configured rule to inspect its active limits."
       >
@@ -1805,6 +1793,7 @@ function RuleDetailComponent() {
             pattern={pattern}
             disabled={rule?.disabled}
             radius="lg"
+            isRule
             className="h-[1.875rem] p-0.5 text-sm mix-blend-luminosity"
           />
           {rule && <RuleStatus rule={rule} />}
@@ -1837,7 +1826,7 @@ function RuleDetailComponent() {
         className="-mt-12"
         tabs={{
           items: [
-            { id: ALL_TAB, label: 'All matches' },
+            { id: ALL_TAB, label: 'Counters' },
             ...matches.map((m) => {
               const counter = counterRows.find((r) => counterKey(r) === m);
               return {
@@ -1863,13 +1852,13 @@ function RuleDetailComponent() {
           <ContentPanelSection flush>
             {isAllTab ? (
               <PanelTable
-                aria-label="All matches for rule"
+                aria-label="Counters for rule"
                 columns={COUNTER_COLUMNS}
                 items={counterRows}
                 caption={
                   rule?.limits.concurrency != null ? (
                     <LimitsInfoBanner>
-                      The matches below each get their own limit of{' '}
+                      The counters below each get their own limit of{' '}
                       <span className="font-semibold text-gray-800">
                         {formatNumber(rule.limits.concurrency)}
                       </span>{' '}
@@ -1883,7 +1872,7 @@ function RuleDetailComponent() {
                 emptyPlaceholder={
                   <EmptyState
                     icon={IconName.Radio}
-                    title="No active matches"
+                    title="No active counter"
                     description="This rule is configured, but no active limits currently resolve to it."
                   />
                 }
@@ -1920,8 +1909,9 @@ function RuleDetailComponent() {
             sorts={COUNTER_SORTS}
             presets={COUNTER_PRESETS}
             defaultSort={COUNTER_DEFAULT_SORT}
-            placeholder="Filter matches…"
+            placeholder="Filter counters…"
             isFetching={counters.isFetching}
+            queryKey={counters.queryKey}
           />
         ) : (
           <LimitsQueryBar
@@ -1932,6 +1922,7 @@ function RuleDetailComponent() {
             presets={TARGET_PRESETS}
             defaultSort={TARGET_DEFAULT_SORT}
             placeholder="Filter targets…"
+            queryKey={['/query/limits/targets']}
           />
         )}
       </LayoutOutlet>
@@ -1970,7 +1961,10 @@ function RuleBreadcrumb({ pattern }: { pattern?: string }) {
       <span className="text-gray-300">/</span>
       <h1 className="flex min-w-0 items-center gap-1.5 truncate py-0.5 font-mono text-sm font-normal text-gray-600">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-xs">
-          <Icon name={IconName.Gauge} className="h-4 w-4 text-blue-500" />
+          <Icon
+            name={IconName.SlidersHorizontal}
+            className="h-4 w-4 text-blue-500"
+          />
         </span>
         <span className="min-w-0 truncate">{pattern}</span>
         {pattern && (
@@ -2004,6 +1998,7 @@ function RuleFormDialog({
 }) {
   const create = useCreateLimitRule();
   const update = useUpdateLimitRule();
+  const formId = useId();
   const isEditing = Boolean(rule);
   const [fields, setFields] = useState<PatternFields>(() =>
     splitPatternToFields(rule?.pattern ?? ''),
@@ -2062,7 +2057,7 @@ function RuleFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <form className="flex flex-col gap-5" onSubmit={submit}>
+        <form id={formId} className="flex flex-col gap-5" onSubmit={submit}>
           <div className="flex items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-xs">
               <Icon name={IconName.Gauge} className="h-5 w-5 text-blue-500" />
@@ -2134,6 +2129,7 @@ function RuleFormDialog({
                 </DialogClose>
                 <Button
                   type="submit"
+                  form={formId}
                   variant="primary"
                   disabled={pending || !pattern.trim()}
                 >

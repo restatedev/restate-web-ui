@@ -138,11 +138,11 @@ export function Timeline({ events }: { events: TimelineEvent[] }) {
         {/* the baseline runs off both ends — fading in before the first event
             and out past `now` — so the timeline reads as infinite */}
         <div
-          className="absolute top-[5px] left-0 h-px bg-gradient-to-r from-transparent to-gray-200"
+          className="absolute top-[5px] left-0 h-px bg-gradient-to-r from-gray-100 to-gray-300"
           style={{ width: `${xs[0] ?? LEFT}%` }}
         />
         <div
-          className="absolute top-[5px] h-px bg-gradient-to-r from-gray-200 to-transparent"
+          className="absolute top-[5px] h-px bg-gradient-to-r from-gray-300 to-gray-100"
           style={{ left: `${nowX}%`, width: `${Math.max(0, 100 - nowX)}%` }}
         />
         {/* baseline; a break leaves a gap holding the ⁄⁄ mark + how much time
@@ -154,7 +154,7 @@ export function Timeline({ events }: { events: TimelineEvent[] }) {
             return (
               <div
                 key={`seg-${i}`}
-                className="absolute top-[5px] h-px bg-gray-200"
+                className="absolute top-[5px] h-px bg-gray-300"
                 style={{ left: `${from}%`, width: `${to - from}%` }}
               />
             );
@@ -167,8 +167,8 @@ export function Timeline({ events }: { events: TimelineEvent[] }) {
               style={{ left: `${mid}%` }}
             >
               <span className="flex items-center gap-[2px]">
-                <span className="h-2.5 w-px rotate-[20deg] bg-gray-300" />
-                <span className="h-2.5 w-px rotate-[20deg] bg-gray-300" />
+                <span className="h-2.5 w-px rotate-[20deg] bg-gray-400" />
+                <span className="h-2.5 w-px rotate-[20deg] bg-gray-400" />
               </span>
               <span className="text-3xs whitespace-nowrap text-gray-400 tabular-nums">
                 {formatVqueueDuration(gap)}

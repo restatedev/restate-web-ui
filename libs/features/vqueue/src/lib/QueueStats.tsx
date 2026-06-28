@@ -28,7 +28,7 @@ function StatRow({ stat, maxScale }: { stat: Stat; maxScale: number }) {
     stat.total > 0 ? formatVqueueDuration(stat.total * 1000) : '0s';
 
   const bar = (
-    <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100">
+    <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100/0">
       {visible.length > 0 && (
         <div
           className="flex h-full gap-[1.5px] overflow-hidden rounded-full"

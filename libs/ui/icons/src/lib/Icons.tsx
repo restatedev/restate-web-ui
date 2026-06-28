@@ -99,6 +99,7 @@ import {
   Layers,
   Blocks,
   LifeBuoy,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -247,6 +248,7 @@ export const enum IconName {
   ScanEye = 'ScanEye',
   HatGlasses = 'HatGlasses',
   Infinity = 'Infinity',
+  SlidersHorizontal = 'SlidersHorizontal',
 }
 export interface IconsProps {
   name: IconName;
@@ -378,6 +380,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ScanEye]: ScanEye,
   [IconName.HatGlasses]: HatGlasses,
   [IconName.Infinity]: Infinity,
+  [IconName.SlidersHorizontal]: SlidersHorizontal,
 };
 
 const styles = tv({

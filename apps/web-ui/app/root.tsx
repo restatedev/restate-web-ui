@@ -393,7 +393,7 @@ function SidebarPanels() {
         {vqueueObservabilityEnabled && (
           <SidebarNavItem
             href="/limits/rules"
-            icon={IconName.Gauge}
+            icon={IconName.SlidersHorizontal}
             label="Limits"
             preserveSearchParams={PRESERVED_PARAMS}
           />
