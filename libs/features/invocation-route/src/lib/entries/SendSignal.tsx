@@ -3,7 +3,7 @@ import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
-import { InvocationId } from '../InvocationId';
+import { InvocationId } from '@restate/features/invocation-ui';
 import { Value } from '../Value';
 
 export function SendSignal({
