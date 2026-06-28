@@ -71,6 +71,7 @@
       "@restate/features/limits-route": [
         "libs/features/limits-route/src/index.ts"
       ],
+      "@restate/features/limits-ui": ["libs/features/limits-ui/src/index.ts"],
       "@restate/features/options": ["libs/features/options/src/index.ts"],
       "@restate/features/overview-route": [
         "libs/features/overview-route/src/index.ts"
