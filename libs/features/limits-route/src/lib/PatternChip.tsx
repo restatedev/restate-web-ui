@@ -1,7 +1,7 @@
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+import { cx, tv } from '@restate/util/styles';
 import { useRef } from 'react';
 import { patternComponents } from './patternMatching';
 
@@ -19,7 +19,7 @@ const SLANT = '[clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0%_100%)]';
 
 const styles = tv({
   slots: {
-    root: 'relative inline-flex h-6 max-w-full min-w-0 items-stretch rounded-lg bg-white font-mono text-xs font-medium text-zinc-600 shadow-xs ring-1 ring-gray-200 ring-inset transition-all [&:has([data-pressed=true])]:shadow-none',
+    root: 'relative inline-flex h-6 max-w-full min-w-0 items-stretch rounded-lg bg-white font-mono text-xs font-medium text-zinc-600 shadow-xs ring-1 ring-gray-200 transition-all ring-inset [&:has([data-pressed=true])]:shadow-none',
     iconBox: 'flex shrink-0 items-center pl-2',
     iconGlyph: 'h-3.5 w-3.5 text-zinc-400',
     scope: 'flex min-w-0 items-center truncate py-0.5 pr-2.5 pl-1.5',
@@ -39,6 +39,20 @@ const styles = tv({
       },
       false: {},
     },
+    // `lg` rounds the chip (and its end cap) a touch more — used by the detail
+    // header where the chip sits larger.
+    radius: {
+      md: {},
+      lg: {
+        root: 'rounded-[0.5625rem]',
+        cap: 'rounded-r-[calc(0.5625rem-1px)]',
+        // Header chip sits larger, so its gauge icon is 5% bigger (14 → 14.7px).
+        iconGlyph: 'h-[0.91875rem] w-[0.91875rem]',
+      },
+    },
+  },
+  defaultVariants: {
+    radius: 'md',
   },
 });
 
@@ -81,26 +95,42 @@ export function PatternChip({
   pattern,
   href,
   disabled,
+  active,
   className,
   ariaLabel,
   icon = IconName.Gauge,
+  radius,
 }: {
   pattern: string;
   href?: string;
   disabled?: boolean;
+  // When set (a prefix like "golf/g1"), only that governed prefix is in the
+  // bounded chip; the rest (the specific instance) trails outside as faint plain
+  // text after a slim diagonal tick (matching the chip's seam angle) — so the
+  // limit boundary is obvious without a "/" or a loud accent.
+  active?: string;
   className?: string;
   ariaLabel?: string;
   icon?: IconName;
+  radius?: 'md' | 'lg';
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const components = patternComponents(pattern);
-  const [scope, ...rest] = components;
-  const slots = styles({ disabled });
-  const capFill = rest.length ? fillFor(rest.length - 1) : 'bg-white';
-  const showCap = Boolean(href) || rest.length > 0;
 
-  return (
-    <div className={slots.root({ className })}>
+  // Split at the active prefix: the bounded chip holds the governed prefix; the
+  // tail is the specific instance, shown faint past the chip's angled edge.
+  // Without `active` (or while disabled) it all stays in one rounded chip.
+  const activeCount =
+    active && !disabled ? patternComponents(active).length : components.length;
+  const splitAt = Math.min(activeCount, components.length);
+  const chipComponents = components.slice(0, splitAt);
+  const tail = components.slice(splitAt);
+
+  const [scope, ...rest] = chipComponents;
+  const slots = styles({ disabled, radius });
+
+  const inner = (
+    <>
       <span className={slots.iconBox()}>
         <Icon name={icon} className={slots.iconGlyph()} />
       </span>
@@ -125,23 +155,69 @@ export function PatternChip({
           </span>
         </span>
       ))}
-      {showCap && (
-        <div className={slots.cap({ className: capFill })}>
-          {href ? (
-            <Link
-              ref={linkRef}
-              href={href}
-              aria-label={ariaLabel ?? pattern}
-              variant="secondary"
-              className={slots.link()}
-            >
-              <Icon name={IconName.ChevronRight} className={slots.linkIcon()} />
-            </Link>
-          ) : (
-            <span className="w-2" aria-hidden="true" />
-          )}
-        </div>
-      )}
-    </div>
+    </>
+  );
+
+  // No active prefix → the regular rounded, ring-bordered chip.
+  if (tail.length === 0) {
+    const capFill = rest.length ? fillFor(rest.length - 1) : 'bg-white';
+    const showCap = Boolean(href) || rest.length > 0;
+    return (
+      <div className={slots.root({ className })}>
+        {inner}
+        {showCap && (
+          <div className={slots.cap({ className: capFill })}>
+            {href ? (
+              <Link
+                ref={linkRef}
+                href={href}
+                aria-label={ariaLabel ?? pattern}
+                variant="secondary"
+                className={slots.link()}
+              >
+                <Icon
+                  name={IconName.ChevronRight}
+                  className={slots.linkIcon()}
+                />
+              </Link>
+            ) : (
+              <span className="w-2" aria-hidden="true" />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Active → a "tag" chip whose RIGHT EDGE is a real diagonal. A CSS ring/border
+  // can't bend along a diagonal, so the shape comes from `clip-path` (rounded
+  // left survives via border-radius ∩ clip-path) and the 1px border is a nested
+  // gray layer clipped to the same shape, 1px larger than the white fill. The
+  // instance trails faint just past the angle.
+  return (
+    <span
+      className={cx('inline-flex max-w-full min-w-0 items-center', className)}
+    >
+      {/* drop-shadow (not box-shadow) on a non-clipped wrapper so the shadow
+          follows the clipped diagonal instead of being cut off by clip-path. */}
+      {/* One clipped chip. The 1px border (four hard 1px drop-shadows in
+          gray-200) and the soft shadow live on a NON-clipped wrapper, so they
+          trace the clipped shape uniformly — rounded corners, straight edges and
+          the diagonal all get the same 1px — which a layered inset border can't
+          do along a slant. */}
+      <span className="inline-flex max-w-full min-w-0 shrink-0 [filter:drop-shadow(1px_0_0_#e4e4e7)_drop-shadow(-1px_0_0_#e4e4e7)_drop-shadow(0_1px_0_#e4e4e7)_drop-shadow(0_-1px_0_#e4e4e7)_drop-shadow(0_1px_1.5px_rgb(0_0_0/0.07))]">
+        <span className="inline-flex h-6 max-w-full min-w-0 items-stretch rounded-l-lg rounded-r-[3px] bg-white font-mono text-xs font-medium text-zinc-600 [clip-path:polygon(0_0,100%_0,calc(100%-7px)_100%,0_100%)]">
+          {inner}
+        </span>
+      </span>
+      <span className="-ml-0.5 min-w-0 shrink truncate pl-1.5 font-mono text-xs whitespace-nowrap text-zinc-400">
+        {tail.map((component, index) => (
+          <span key={index}>
+            {index > 0 && <span className="mx-[0.375rem]">/</span>}
+            {component}
+          </span>
+        ))}
+      </span>
+    </span>
   );
 }

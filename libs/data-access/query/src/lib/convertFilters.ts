@@ -534,3 +534,10 @@ export function convertFilters(filters: FilterItem[]) {
     return `WHERE ${mappedFilters.join(' AND ')}`;
   }
 }
+
+// Like convertFilters, but returns the AND-joined predicate WITHOUT the leading
+// `WHERE` (empty string when there are no filters) so callers can compose it
+// with their own base clauses.
+export function filtersToClause(filters: FilterItem[]): string {
+  return filters.map(convertFilterToSqlClause).filter(Boolean).join(' AND ');
+}

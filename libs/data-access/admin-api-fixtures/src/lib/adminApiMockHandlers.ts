@@ -161,7 +161,12 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
       const [scope = null] = rule.pattern.split('/');
       const concurrency = rule.limits.concurrency ?? null;
       const matches = MOCK_RULE_MATCHES[rule.pattern] ?? [
-        { l1: 'key-1', usage: concurrency ?? 6, limit: concurrency, waiters: 0 },
+        {
+          l1: 'key-1',
+          usage: concurrency ?? 6,
+          limit: concurrency,
+          waiters: 0,
+        },
       ];
       for (const match of matches) {
         const limit = match.limit ?? concurrency;

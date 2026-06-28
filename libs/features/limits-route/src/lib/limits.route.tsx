@@ -3,16 +3,20 @@ import {
   LimitRule,
   LimitRuleStats,
   LimitRuleWithStats,
+  LimitTargetRow,
   UpdateLimitRuleRequest,
   UserLimitRow,
   useCreateLimitRule,
   useDeleteLimitRule,
-  useGetLimitRuleWithLimits,
+  useGetLimitRule,
+  useListLimitCounters,
   useListLimitRules,
-  useListUserLimits,
+  useListLimitTargets,
   useUpdateLimitRule,
 } from '@restate/data-access/admin-api-hooks';
 import { useFeatures } from '@restate/data-access/admin-api';
+import { Ellipsis } from '@restate/ui/loading';
+import { InvocationId, Target } from '@restate/features/invocation-route';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
@@ -35,13 +39,23 @@ import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput, Switch } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
+import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Link } from '@restate/ui/link';
 import { SplitButton } from '@restate/ui/split-button';
 import { Cell, PanelTable, PanelTableColumn } from '@restate/ui/table';
-import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { formatDateTime, formatNumber } from '@restate/util/intl';
+import {
+  DateTooltip,
+  HoverTooltip,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
+import { formatDurations, formatNumber } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
+import {
+  getDuration,
+  SnapshotTimeProvider,
+  useDurationSinceLastSnapshot,
+} from '@restate/util/snapshot-time';
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import {
   Input as AriaInput,
@@ -49,7 +63,7 @@ import {
   SearchField,
   type SortDescriptor,
 } from 'react-aria-components';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { PatternChip } from './PatternChip';
 import {
   buildPattern,
@@ -65,9 +79,25 @@ import {
   type KeyAnalysis,
   type ParsedPattern,
 } from './patternMatching';
+import { LimitsQueryBar } from './LimitsQueryBar';
+import {
+  COUNTER_PRESETS,
+  COUNTER_SCHEMA,
+  COUNTER_SORTS,
+  TARGET_PRESETS,
+  TARGET_SCHEMA,
+  TARGET_SORTS,
+} from './limitsSchema';
+import {
+  getLimitsFormSignature,
+  useLimitsParameters,
+  type LimitSort,
+} from './useLimitsQuery';
 
 const LIMITS_FEATURE_FLAG = 'FEATURE_VQUEUE_OBSERVABILITY';
-const DETAILS_TAB_QUERY = 'tab';
+
+const COUNTER_DEFAULT_SORT: LimitSort = { field: 'num_waiters', order: 'DESC' };
+const TARGET_DEFAULT_SORT: LimitSort = { field: 'head_wait', order: 'DESC' };
 
 type RuleColumn =
   | 'pattern'
@@ -88,23 +118,7 @@ type RuleSortColumn =
 
 type WorstCounter = NonNullable<LimitRuleStats['worst_counter']>;
 
-type CounterColumn =
-  | 'scope'
-  | 'l1'
-  | 'l2'
-  | 'level'
-  | 'capacity'
-  | 'num_waiters'
-  | 'rule_pattern';
-
-type PlaygroundColumn =
-  | 'source'
-  | 'scope'
-  | 'l1'
-  | 'l2'
-  | 'level'
-  | 'matches'
-  | 'winning_rule';
+type CounterColumn = 'key' | 'usage' | 'depth' | 'num_waiters';
 
 interface RuleSummary {
   // Invocations pending for capacity across the rule's matches (SUM num_waiters).
@@ -128,11 +142,6 @@ type CounterRow = UserLimitRow & {
   id: string;
 };
 
-type PlaygroundRow = UserLimitRow & {
-  id: string;
-  source: 'live' | 'sample';
-};
-
 const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
   {
     id: 'pattern',
@@ -151,10 +160,10 @@ const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
   },
   {
     id: 'pending',
-    name: 'Pending',
+    name: 'Waiting queues',
     allowsSorting: true,
-    defaultWidth: 130,
-    minWidth: 110,
+    defaultWidth: 175,
+    minWidth: 150,
   },
   {
     id: 'depth',
@@ -189,104 +198,58 @@ const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
 ];
 
 const COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
-  { id: 'scope', name: 'Scope', isRowHeader: true, defaultWidth: 180 },
-  { id: 'l1', name: 'L1', defaultWidth: 160 },
-  { id: 'l2', name: 'L2', defaultWidth: 160 },
-  { id: 'level', name: 'Level', width: 100 },
-  { id: 'capacity', name: 'Capacity', defaultWidth: 260, minWidth: 220 },
-  { id: 'num_waiters', name: 'Pending', width: 110 },
-  { id: 'rule_pattern', name: 'Matched rule', defaultWidth: 220 },
+  {
+    id: 'key',
+    name: 'Match',
+    isRowHeader: true,
+    defaultWidth: 280,
+    minWidth: 220,
+  },
+  {
+    id: 'usage',
+    name: (
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        <span>Usage</span>
+        <span className="inline-flex items-center gap-0.5 text-0.5xs text-zinc-500">
+          (% limit)
+        </span>
+      </span>
+    ),
+    width: 130,
+  },
+  {
+    id: 'depth',
+    name: (
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        <span>Depth</span>
+        <span className="inline-flex items-center gap-0.5 text-0.5xs text-zinc-500">
+          (x limit)
+        </span>
+      </span>
+    ),
+    width: 110,
+  },
+  { id: 'num_waiters', name: 'Waiting queues', minWidth: 180 },
 ];
-
-const PLAYGROUND_COLUMNS: PanelTableColumn<PlaygroundColumn>[] = [
-  { id: 'source', name: 'Source', width: 90 },
-  { id: 'scope', name: 'Scope', isRowHeader: true, defaultWidth: 160 },
-  { id: 'l1', name: 'L1', defaultWidth: 140 },
-  { id: 'l2', name: 'L2', defaultWidth: 140 },
-  { id: 'level', name: 'Level', width: 100 },
-  { id: 'matches', name: 'Pattern test', width: 130 },
-  { id: 'winning_rule', name: 'Current winning rule', defaultWidth: 230 },
-];
-
-const summaryTileStyles = tv({
-  base: 'flex min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white/80 px-3 py-2 shadow-xs',
-});
-
-const patternWorkbenchStyles = tv({
-  slots: {
-    root: 'flex min-h-0 flex-col',
-    form: 'border-b border-gray-200 bg-gray-50/80 px-3 py-3',
-    fields: 'grid gap-2 md:grid-cols-[repeat(4,minmax(0,1fr))_auto]',
-    addButton:
-      'mt-5 flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-0.5xs',
-    summary: 'mt-2 flex items-center gap-2 text-xs text-gray-500',
-  },
-  variants: {
-    compact: {
-      true: {
-        root: 'gap-3',
-        form: 'rounded-xl border border-gray-200 bg-white/70 p-2 shadow-xs',
-        summary: 'px-1',
-      },
-      false: {
-        root: 'gap-0',
-      },
-    },
-  },
-});
-
-const capacityMeterStyles = tv({
-  slots: {
-    root: 'flex min-w-0 flex-col gap-1',
-    line: 'flex min-w-0 items-baseline gap-1.5 text-xs',
-    value: 'font-semibold text-gray-700',
-    status: 'text-gray-400',
-    track:
-      'h-1.5 w-full max-w-48 overflow-hidden rounded-full border border-gray-200 bg-gray-100',
-    fill: 'h-full rounded-full transition-[width]',
-  },
-  variants: {
-    state: {
-      unlimited: {
-        status: 'text-gray-400',
-        track: 'hidden',
-        fill: 'bg-transparent',
-      },
-      available: {
-        status: 'text-gray-500',
-        fill: 'bg-blue-400',
-      },
-      saturated: {
-        status: 'font-semibold text-orange-700',
-        track: 'border-orange-200 bg-orange-50',
-        fill: 'bg-orange-500',
-      },
-    },
-  },
-});
 
 const ruleHeaderStyles = tv({
-  base: 'sticky top-3 z-50 mx-5 mt-2 flex min-w-0 items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-3 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/6%),0_12px_28px_-10px_--theme(--color-zinc-800/12%),inset_0_2px_0_0_--theme(--color-white/95%)] backdrop-blur-xl backdrop-saturate-200 transition-colors sm:top-6',
+  base: 'sticky top-3 z-50 mx-5 mt-2 flex items-center gap-3 rounded-2xl border bg-linear-to-r px-3 py-3 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/6%),0_12px_28px_-10px_--theme(--color-zinc-800/12%),inset_0_2px_0_0_--theme(--color-white/95%)] backdrop-blur-xl backdrop-saturate-200 transition-colors sm:top-6',
   variants: {
     disabled: {
-      true: 'border-gray-300/70 from-gray-200/70 from-0% via-white via-50% to-gray-100',
+      true: 'border-gray-300/60 from-gray-200/50 from-0% via-white via-50% to-gray-100',
       false:
         'border-blue-300/60 from-blue-100 from-0% via-white via-50% to-blue-50',
     },
   },
+  defaultVariants: { disabled: false },
 });
 
-function formatLimit(value: number | null | undefined) {
-  return value == null ? 'Unlimited' : formatNumber(value);
-}
-
-function nullableText(value: string | number | null | undefined) {
-  if (value == null || value === '') return 'none';
-  return String(value);
+function counterKey(row: Pick<UserLimitRow, 'scope' | 'l1' | 'l2'>): string {
+  return [row.scope, row.l1, row.l2].filter(Boolean).join('/');
 }
 
 function ruleDetailsHref(baseUrl: string, pattern: string) {
-  return `${baseUrl}/limits/rules/details?pattern=${encodeURIComponent(pattern)}`;
+  return `${baseUrl}/limits/rules/${encodeURIComponent(pattern)}`;
 }
 
 // Depth (× limit): pending / configured limit for a single match. 1× means a
@@ -301,37 +264,6 @@ function counterDepthRatio(
   const limit = counter.concurrency_limit;
   if (limit == null || limit <= 0) return 0;
   return (counter.num_waiters ?? 0) / limit;
-}
-
-function summarizeLimitRows(counters: UserLimitRow[]): RuleSummary {
-  let worstCounter: WorstCounter | null = null;
-  let depthRatio = 0;
-  const summary = counters.reduce(
-    (acc, counter) => {
-      const waiters = counter.num_waiters ?? 0;
-      acc.matches += 1;
-      acc.pending += waiters;
-      acc.backedUp += waiters > 0 ? 1 : 0;
-      if (waiters > 0) {
-        const ratio = counterDepthRatio(counter);
-        if (ratio > depthRatio) {
-          depthRatio = ratio;
-          worstCounter = counter;
-        }
-      }
-      return acc;
-    },
-    {
-      pending: 0,
-      matches: 0,
-      backedUp: 0,
-      depthRatio: 0,
-      worstCounter: null as WorstCounter | null,
-    },
-  );
-  summary.depthRatio = depthRatio;
-  summary.worstCounter = worstCounter;
-  return summary;
 }
 
 function toCounterRows(counters: UserLimitRow[]): CounterRow[] {
@@ -433,32 +365,6 @@ function LimitsUnavailable({ reason }: { reason: 'flag' | 'cluster' }) {
   );
 }
 
-function SummaryTile({
-  icon,
-  label,
-  value,
-}: {
-  icon: IconName;
-  label: string;
-  value: ReactNode;
-}) {
-  return (
-    <div className={summaryTileStyles()}>
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-500 shadow-xs">
-        <Icon name={icon} className="h-4 w-4" />
-      </span>
-      <span className="flex min-w-0 flex-col">
-        <span className="text-2xs font-medium text-gray-400 uppercase">
-          {label}
-        </span>
-        <span className="truncate text-sm font-semibold text-gray-800">
-          {value}
-        </span>
-      </span>
-    </div>
-  );
-}
-
 function RulePatternCell({
   rule,
   winsLevel,
@@ -536,6 +442,114 @@ function LimitValue({
   );
 }
 
+const ruleStatusStyles = tv({
+  base: 'inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-dashed py-0.5 pr-2 pl-0.5',
+  variants: {
+    disabled: {
+      true: 'border-zinc-400/70',
+      false: 'border-blue-300/80',
+    },
+  },
+});
+
+const ruleStatusLabelStyles = tv({
+  base: 'text-sm font-medium',
+  variants: {
+    disabled: {
+      true: 'text-zinc-500',
+      false: 'text-blue-700',
+    },
+  },
+});
+
+// Enabled/disabled lives in a subtle pill on the right of the header: a status
+// dot (a live "ping" when enabled, static gray when disabled) + the label.
+const ruleStatusPillStyles = tv({
+  base: 'inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1 ring-1 ring-inset',
+  variants: {
+    disabled: {
+      true: 'bg-white/60 ring-black/5',
+      false: 'bg-white/70 ring-blue-200/70',
+    },
+  },
+});
+
+// The limit value sits in a raised white chip (border + shadow) so it reads as
+// the key figure; its number is blue when enabled, dimmed when disabled.
+const ruleLimitBadgeStyles = tv({
+  base: 'border-gray-200 bg-white text-sm font-semibold tabular-nums shadow-sm',
+  variants: {
+    disabled: {
+      true: 'text-zinc-400',
+      false: 'text-blue-700',
+    },
+  },
+});
+
+function RuleStatus({ rule }: { rule: LimitRule }) {
+  const limit = rule.limits.concurrency;
+  return (
+    <div className={ruleStatusStyles({ disabled: rule.disabled })}>
+      <Badge
+        size="sm"
+        className={ruleLimitBadgeStyles({ disabled: rule.disabled })}
+      >
+        {limit == null ? (
+          <Icon name={IconName.Infinity} className="h-3.5 w-3.5" />
+        ) : (
+          formatNumber(limit)
+        )}
+      </Badge>
+      <span className={ruleStatusLabelStyles({ disabled: rule.disabled })}>
+        concurrency limit
+      </span>
+    </div>
+  );
+}
+
+function RuleStatusDot({ disabled }: { disabled?: boolean }) {
+  if (disabled) {
+    return (
+      <span
+        className="h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400"
+        aria-hidden="true"
+      />
+    );
+  }
+  return (
+    <span className="relative flex h-1.5 w-1.5 shrink-0" aria-hidden="true">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-500" />
+    </span>
+  );
+}
+
+function RuleStatusIndicator({ rule }: { rule: LimitRule }) {
+  return (
+    <span className={ruleStatusPillStyles({ disabled: rule.disabled })}>
+      <RuleStatusDot disabled={rule.disabled} />
+      <span className={ruleStatusLabelStyles({ disabled: rule.disabled })}>
+        {rule.disabled ? 'Disabled' : 'Enabled'}
+      </span>
+    </span>
+  );
+}
+
+function RuleModified({ millis }: { millis: number }) {
+  const durationSince = useDurationSinceLastSnapshot();
+  const date = new Date(millis);
+  const duration = formatDurations(durationSince(date));
+  return (
+    <span className="shrink-0 text-2xs whitespace-nowrap text-gray-500">
+      modified{' '}
+      <DateTooltip date={date} title="Last modified">
+        <span className="font-medium text-gray-500">{duration}</span>
+      </DateTooltip>{' '}
+      ago
+    </span>
+  );
+}
+
 const DEEP_DEPTH_ALERT = 2;
 
 // Depth severity tiers in the app's hue language (gray / amber / red) but
@@ -566,6 +580,17 @@ const DEPTH_TIERS = {
     text: '#b91c1c',
   },
 };
+
+// Usage chip: neutral — white fill, gray border, gray text. Same shape/height as
+// the Depth badge.
+function CapacityBadge({ count, pct }: { count: number; pct: number | null }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-0.5 text-xs leading-4 font-medium text-gray-600 tabular-nums">
+      {formatNumber(count)}
+      {pct != null && <span className="font-normal opacity-70">({pct}%)</span>}
+    </span>
+  );
+}
 
 function depthStatus(ratio: number) {
   if (ratio < 1) return DEPTH_TIERS.ok;
@@ -773,84 +798,57 @@ function RuleMatchesCell({ summary }: { summary: RuleSummary }) {
   );
 }
 
-function CapacityMeter({ row }: { row: UserLimitRow }) {
-  const limit = row.concurrency_limit;
-  const usage = row.usage ?? 0;
-  const available = row.available;
-  const state =
-    limit == null ? 'unlimited' : available === 0 ? 'saturated' : 'available';
-  const { root, line, value, status, track, fill } = capacityMeterStyles({
-    state,
-  });
-  const percent =
-    limit == null || limit <= 0
-      ? 0
-      : Math.min(100, Math.max(0, (usage / limit) * 100));
-  const statusText =
-    limit == null
-      ? 'Unlimited'
-      : available === 0
-        ? 'At limit'
-        : `${formatNumber(available ?? 0)} available`;
-
-  return (
-    <div className={root()}>
-      <div className={line()}>
-        <span className={value()}>
-          {limit == null
-            ? 'Unlimited'
-            : `${formatNumber(usage)} / ${formatNumber(limit)} used`}
-        </span>
-        <span className={status()}>{statusText}</span>
-      </div>
-      <div className={track()} aria-hidden="true">
-        <div className={fill()} style={{ width: `${percent}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function PatternBadge({
-  pattern,
-  disabled,
-  className,
-}: {
-  pattern: string | null | undefined;
-  disabled?: boolean;
-  className?: string;
-}) {
-  if (!pattern) {
-    return (
-      <Badge size="sm" className={className}>
-        none
-      </Badge>
-    );
+function CounterDepthCell({ row }: { row: UserLimitRow }) {
+  const depthRatio = counterDepthRatio(row);
+  if (depthRatio <= 0) {
+    return <span className={ruleNumberStyles({ muted: true })}>—</span>;
   }
+  const { badgeBg, badgeBorder, text } = depthStatus(depthRatio);
   return (
-    <Badge
-      size="sm"
-      variant={disabled ? 'default' : 'info'}
-      className={className}
+    <span
+      aria-label={`${depthRatio.toFixed(1)} times limit`}
+      className="inline-flex items-center rounded-md border px-1.5 py-0 text-2xs leading-4 font-medium tabular-nums"
+      style={{
+        backgroundColor: badgeBg,
+        borderColor: badgeBorder,
+        color: text,
+      }}
     >
-      <span className="min-w-0 truncate font-mono">{pattern}</span>
-    </Badge>
+      {depthRatio.toFixed(1)}x
+    </span>
   );
 }
 
-function NumericBadge({
-  value,
-  muted,
+function CounterPendingCell({
+  row,
+  maxPending,
 }: {
-  value: number | null | undefined;
-  muted?: boolean;
+  row: UserLimitRow;
+  maxPending: number;
 }) {
+  const pending = row.num_waiters ?? 0;
+  if (pending <= 0) {
+    return <span className={ruleNumberStyles({ muted: true })}>0</span>;
+  }
+  const { barFill, barBorder } = depthStatus(counterDepthRatio(row));
+  const widthPercent = Math.max(4, (pending / Math.max(maxPending, 1)) * 100);
   return (
-    <Badge
-      size="sm"
-      className={muted ? 'border-none bg-transparent text-zinc-400' : ''}
-    >
-      {value == null ? 'none' : formatNumber(value)}
-    </Badge>
+    <div className="flex w-full max-w-40 items-center gap-2 pr-2">
+      <div className="flex h-3 min-w-0 flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${widthPercent}%`,
+            minWidth: 4,
+            backgroundColor: barFill,
+            outline: `1px solid ${barBorder}`,
+          }}
+        />
+      </div>
+      <span className="min-w-5 shrink-0 text-right text-xs font-medium text-zinc-600 tabular-nums">
+        {formatNumber(pending)}
+      </span>
+    </div>
   );
 }
 
@@ -950,6 +948,51 @@ function RuleActions({
   );
 }
 
+function RuleHeaderActions({
+  onEdit,
+  onDelete,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <SplitButton
+      mini={false}
+      variant="secondary"
+      className="h-[28.5px] text-[0.9375rem]"
+      onSelect={(key) => {
+        if (key === 'edit') onEdit();
+        if (key === 'delete') onDelete();
+      }}
+      menus={[
+        <DropdownItem key="edit" value="edit">
+          <Icon
+            name={IconName.Pencil}
+            className="h-3.5 w-3.5 shrink-0 opacity-80"
+          />
+          Edit…
+        </DropdownItem>,
+        <DropdownItem key="delete" value="delete" destructive>
+          <Icon
+            name={IconName.Trash}
+            className="h-3.5 w-3.5 shrink-0 opacity-80"
+          />
+          Delete…
+        </DropdownItem>,
+      ]}
+    >
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={onEdit}
+        className="flex items-center rounded-l-lg rounded-r-none px-2.5 py-1 text-[0.9375rem]"
+      >
+        Edit
+      </Button>
+    </SplitButton>
+  );
+}
+
 const ruleDescriptionStyles = tv({
   base: 'block min-w-0 truncate text-xs',
   variants: {
@@ -1039,45 +1082,36 @@ function renderRuleCell(
 function renderCounterCell(
   row: CounterRow,
   column: PanelTableColumn<CounterColumn>,
-  currentRule?: string,
+  maxPending: number,
 ) {
-  const isCurrentRule =
-    column.id === 'rule_pattern' &&
-    currentRule !== undefined &&
-    row.rule_pattern === currentRule;
   switch (column.id) {
-    case 'scope':
-    case 'l1':
-    case 'l2':
-    case 'level':
+    case 'key':
       return (
         <Cell>
-          <span className="block min-w-0 truncate font-mono text-xs">
-            <TruncateWithTooltip>
-              {nullableText(row[column.id])}
-            </TruncateWithTooltip>
-          </span>
+          <PatternChip pattern={counterKey(row) || '—'} className="min-w-0" />
         </Cell>
       );
-    case 'capacity':
+    case 'usage': {
+      const limit = row.concurrency_limit;
+      const usage = row.usage ?? 0;
+      const pct =
+        limit != null && limit > 0 ? Math.round((usage / limit) * 100) : null;
       return (
         <Cell>
-          <CapacityMeter row={row} />
+          <CapacityBadge count={usage} pct={pct} />
         </Cell>
       );
-    case 'rule_pattern':
+    }
+    case 'depth':
       return (
         <Cell>
-          <PatternBadge
-            pattern={row.rule_pattern}
-            className={isCurrentRule ? 'ring-1 ring-blue-300' : undefined}
-          />
+          <CounterDepthCell row={row} />
         </Cell>
       );
     default:
       return (
         <Cell>
-          <NumericBadge value={row.num_waiters} muted={!row.num_waiters} />
+          <CounterPendingCell row={row} maxPending={maxPending} />
         </Cell>
       );
   }
@@ -1087,7 +1121,10 @@ function RulesHero() {
   return (
     <div className="flex flex-col gap-1.5 pr-2 pl-10">
       <div className="flex items-center gap-2">
-        <Icon name={IconName.Gauge} className="h-6 w-6 shrink-0 text-gray-400" />
+        <Icon
+          name={IconName.Gauge}
+          className="h-6 w-6 shrink-0 text-gray-400"
+        />
         <h1 className="text-xl font-semibold tracking-tight text-gray-900">
           Limit rules
         </h1>
@@ -1113,7 +1150,7 @@ function RuleSearch({
       aria-label="Test a key against the rules"
       value={value}
       onChange={onChange}
-      className="relative flex min-w-0 max-w-[22rem] flex-1 items-center"
+      className="relative flex max-w-[22rem] min-w-0 flex-1 items-center"
     >
       <Label className="sr-only">Test a key against the rules</Label>
       <Icon
@@ -1123,7 +1160,7 @@ function RuleSearch({
       <AriaInput
         placeholder="Test a key — e.g. acme/team"
         spellCheck={false}
-        className="h-8 w-full rounded-xl border border-transparent bg-transparent pr-7 pl-8 font-mono text-xs text-gray-700 outline-none transition placeholder:font-sans placeholder:text-gray-400 hover:border-gray-200 hover:bg-gray-100 focus:border-gray-200 focus:bg-gray-100"
+        className="h-8 w-full rounded-xl border border-transparent bg-transparent pr-7 pl-8 font-mono text-xs text-gray-700 transition outline-none placeholder:font-sans placeholder:text-gray-400 hover:border-gray-200 hover:bg-gray-100 focus:border-gray-200 focus:bg-gray-100"
       />
     </SearchField>
   );
@@ -1184,7 +1221,9 @@ function LimitsListComponent() {
   const filteredRows = useMemo(() => {
     if (!trimmedQuery) return sortedRows;
     if (keyAnalysis) {
-      return sortedRows.filter((row) => keyAnalysis.applicable.has(row.pattern));
+      return sortedRows.filter((row) =>
+        keyAnalysis.applicable.has(row.pattern),
+      );
     }
     const needle = trimmedQuery.toLowerCase();
     return sortedRows.filter((row) =>
@@ -1273,31 +1312,447 @@ function LimitsListComponent() {
   );
 }
 
+const MATCH_QUERY_PARAM = 'match';
+const TAB_QUERY_PARAM = 'tab';
+const ALL_TAB = 'all';
+
+function buildTabHref(params: URLSearchParams, tabId: string): string {
+  const next = new URLSearchParams(params);
+  if (tabId === ALL_TAB) next.delete(TAB_QUERY_PARAM);
+  else next.set(TAB_QUERY_PARAM, tabId);
+  const s = next.toString();
+  return s ? `?${s}` : '?';
+}
+
+function buildOpenMatchHref(params: URLSearchParams, key: string): string {
+  const next = new URLSearchParams(params);
+  if (!next.getAll(MATCH_QUERY_PARAM).includes(key)) {
+    next.append(MATCH_QUERY_PARAM, key);
+  }
+  next.set(TAB_QUERY_PARAM, key);
+  return `?${next.toString()}`;
+}
+
+function buildCloseMatchHref(
+  params: URLSearchParams,
+  key: string,
+  activeTab: string,
+): string {
+  const next = new URLSearchParams(params);
+  const remaining = next.getAll(MATCH_QUERY_PARAM).filter((m) => m !== key);
+  next.delete(MATCH_QUERY_PARAM);
+  remaining.forEach((m) => next.append(MATCH_QUERY_PARAM, m));
+  if (activeTab === key) next.delete(TAB_QUERY_PARAM);
+  const s = next.toString();
+  return s ? `?${s}` : '?';
+}
+
+// A match-tab key encodes the counter positionally: scope/l1/l2 (the same shape
+// counterKey() builds), so it parses straight back into the targets filter.
+function parseMatchKey(key: string): {
+  scope?: string;
+  l1?: string;
+  l2?: string;
+} {
+  const [scope, l1, l2] = key.split('/');
+  return { scope, l1, l2 };
+}
+
+// Block durations come back as ISO-8601 (e.g. "PT115323.68S", "P0D").
+function isoDurationToMs(value?: string | null): number {
+  if (!value) return 0;
+  const m = value.match(
+    /^P(?:(\d+(?:\.\d+)?)D)?(?:T(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?)?$/,
+  );
+  if (!m) return 0;
+  const [, d, h, min, s] = m;
+  return (
+    (Number(d ?? 0) * 86400 +
+      Number(h ?? 0) * 3600 +
+      Number(min ?? 0) * 60 +
+      Number(s ?? 0)) *
+    1000
+  );
+}
+
+type TargetColumn =
+  | 'service'
+  | 'scopeKey'
+  | 'status'
+  | 'running'
+  | 'inbox'
+  | 'head'
+  | 'lastActivity';
+
+const TARGET_COLUMNS: PanelTableColumn<TargetColumn>[] = [
+  {
+    id: 'scopeKey',
+    name: 'Scope / limit key',
+    isRowHeader: true,
+    defaultWidth: 240,
+    minWidth: 180,
+  },
+  { id: 'service', name: 'Service', defaultWidth: 190, minWidth: 140 },
+  { id: 'status', name: 'Status', defaultWidth: 210, minWidth: 150 },
+  { id: 'running', name: 'Running', defaultWidth: 110, minWidth: 90 },
+  { id: 'inbox', name: 'Inbox', defaultWidth: 110, minWidth: 90 },
+  { id: 'head', name: 'Head', defaultWidth: 190, minWidth: 150 },
+  { id: 'lastActivity', name: 'Last activity' },
+];
+
+const BLOCKED_ON_LABEL: Record<string, string> = {
+  'limit-key-concurrency': 'on rules',
+  lock: 'on lock',
+  'invoker-concurrency': 'on invoker',
+  'invoker-throttling': 'throttled',
+  'invoker-memory': 'on memory',
+  'throttling-rules': 'throttled',
+  'deployment-concurrency': 'on deployment',
+};
+
+// The 7 block "gates", coloured by resource — the State bar stacks them so the
+// dominant reason a head is stuck reads at a glance.
+const GATE_DURATIONS: {
+  key: keyof LimitTargetRow;
+  color: string;
+  label: string;
+}[] = [
+  { key: 'concurrency_rules_block_duration', color: '#f87171', label: 'rules' },
+  { key: 'lock_block_duration', color: '#fbbf24', label: 'lock' },
+  {
+    key: 'invoker_concurrency_block_duration',
+    color: '#60a5fa',
+    label: 'invoker concurrency',
+  },
+  {
+    key: 'invoker_throttling_block_duration',
+    color: '#fb923c',
+    label: 'invoker throttling',
+  },
+  {
+    key: 'invoker_memory_block_duration',
+    color: '#a78bfa',
+    label: 'invoker memory',
+  },
+  {
+    key: 'throttling_rules_block_duration',
+    color: '#f59e0b',
+    label: 'throttling rules',
+  },
+  {
+    key: 'deployment_concurrency_block_duration',
+    color: '#34d399',
+    label: 'deployment',
+  },
+];
+
+function GateBar({ row }: { row: LimitTargetRow }) {
+  const segs = GATE_DURATIONS.map((g) => ({
+    ...g,
+    ms: isoDurationToMs(row[g.key] as string | null | undefined),
+  })).filter((s) => s.ms > 0);
+  const total = segs.reduce((sum, s) => sum + s.ms, 0);
+  if (total <= 0) return null;
+  return (
+    <div className="flex h-2 w-20 shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-100">
+      {segs.map((s) => (
+        <div
+          key={s.key as string}
+          className="h-full"
+          style={{
+            width: `${(s.ms / total) * 100}%`,
+            backgroundColor: s.color,
+          }}
+          title={s.label}
+        />
+      ))}
+    </div>
+  );
+}
+
+function TargetStatusCell({ row }: { row: LimitTargetRow }) {
+  if (row.status === 'blocked') {
+    const ms = isoDurationToMs(row.head_wait);
+    const label = row.blocked_on
+      ? (BLOCKED_ON_LABEL[row.blocked_on] ?? row.blocked_on)
+      : 'blocked';
+    return (
+      <span className="inline-flex items-center gap-2 text-xs whitespace-nowrap">
+        <GateBar row={row} />
+        <span className="text-0.5xs font-medium text-gray-500">{label}</span>
+        {ms > 0 && (
+          <span className="text-0.5xs font-semibold text-orange-700 tabular-nums">
+            {formatDurations(getDuration(ms))}
+          </span>
+        )}
+      </span>
+    );
+  }
+  if ((row.num_running ?? 0) > 0) {
+    return (
+      <Badge size="sm" variant="info">
+        running
+      </Badge>
+    );
+  }
+  if (row.status === 'scheduled') {
+    return (
+      <Badge size="sm" variant="warning">
+        scheduled
+      </Badge>
+    );
+  }
+  return <span className="text-2xs text-zinc-300">—</span>;
+}
+
+function TargetLastActivityCell({ row }: { row: LimitTargetRow }) {
+  const durationSince = useDurationSinceLastSnapshot();
+  const ts = row.last_finish_at || row.last_attempt_at || row.last_enqueued_at;
+  if (!ts) return <span className="text-2xs text-zinc-300">—</span>;
+  const date = new Date(ts);
+  return (
+    <span className="text-2xs text-gray-500">
+      <DateTooltip date={date} title="Last activity">
+        <span className="font-medium">
+          {formatDurations(durationSince(date))}
+        </span>
+      </DateTooltip>{' '}
+      ago
+    </span>
+  );
+}
+
+function renderTargetCell(
+  row: LimitTargetRow,
+  column: PanelTableColumn<TargetColumn>,
+  scope: string | undefined,
+  matchKey: string,
+) {
+  switch (column.id) {
+    case 'service':
+      return (
+        <Cell>
+          <Target target={row.service_name} showHandler={false} />
+        </Cell>
+      );
+    case 'scopeKey': {
+      const pattern = [scope, row.limit_key].filter(Boolean).join('/');
+      return (
+        <Cell>
+          {pattern ? (
+            <PatternChip
+              pattern={pattern}
+              active={matchKey}
+              className="min-w-0"
+            />
+          ) : (
+            <span className="text-2xs text-zinc-300">—</span>
+          )}
+        </Cell>
+      );
+    }
+    case 'status':
+      return (
+        <Cell>
+          <TargetStatusCell row={row} />
+        </Cell>
+      );
+    case 'running': {
+      const n = row.num_running ?? 0;
+      return (
+        <Cell>
+          {n > 0 ? (
+            <Badge variant="info" size="sm" className="tabular-nums">
+              <Ellipsis>{formatNumber(n)}</Ellipsis>
+            </Badge>
+          ) : (
+            <span className={ruleNumberStyles({ muted: true })}>0</span>
+          )}
+        </Cell>
+      );
+    }
+    case 'inbox': {
+      const n = row.num_inbox ?? 0;
+      return (
+        <Cell>
+          {n > 0 ? (
+            <Badge variant="default" size="sm" className="tabular-nums">
+              {formatNumber(n)}
+            </Badge>
+          ) : (
+            <span className={ruleNumberStyles({ muted: true })}>0</span>
+          )}
+        </Cell>
+      );
+    }
+    case 'lastActivity':
+      return (
+        <Cell>
+          <TargetLastActivityCell row={row} />
+        </Cell>
+      );
+    default:
+      return (
+        <Cell>
+          {row.head_entry_id ? (
+            <InvocationId id={row.head_entry_id} />
+          ) : (
+            <span className="text-2xs text-zinc-300">—</span>
+          )}
+        </Cell>
+      );
+  }
+}
+
+function TargetsTable({
+  matchKey,
+  params,
+}: {
+  matchKey: string;
+  params: ReturnType<typeof useLimitsParameters>;
+}) {
+  const { scope, l1, l2 } = parseMatchKey(matchKey);
+  const targets = useListLimitTargets({
+    scope,
+    l1,
+    l2,
+    filters: params.filters,
+    sort: params.sort,
+  });
+  const rows = targets.data?.targets ?? [];
+  return (
+    <SnapshotTimeProvider lastSnapshot={targets.dataUpdatedAt}>
+      <PanelTable
+        aria-label={`Targets for ${matchKey}`}
+        columns={TARGET_COLUMNS}
+        items={rows}
+        caption={
+          <LimitsInfoBanner>
+            The queues below all compete for{' '}
+            <span className="font-mono font-medium text-gray-800">
+              {matchKey}
+            </span>
+            ’s limit.
+          </LimitsInfoBanner>
+        }
+        isLoading={targets.isPending}
+        error={targets.error as Error | null}
+        emptyPlaceholder={
+          <EmptyState
+            icon={IconName.Radio}
+            title="No targets"
+            description="This match has no active virtual queues."
+          />
+        }
+        renderCell={(row, column) =>
+          renderTargetCell(
+            row as LimitTargetRow,
+            column as PanelTableColumn<TargetColumn>,
+            scope,
+            matchKey,
+          )
+        }
+      />
+    </SnapshotTimeProvider>
+  );
+}
+
+function MatchTabLabel({
+  matchKey,
+  usage,
+  limit,
+  onClose,
+}: {
+  matchKey: string;
+  usage?: number | null;
+  limit?: number | null;
+  onClose: () => void;
+}) {
+  const pct =
+    usage != null && limit != null && limit > 0
+      ? Math.round((usage / limit) * 100)
+      : null;
+  // The close affordance is a span (not a button): a tab also renders inside the
+  // MobileTabsDropdown's trigger <button>, and a nested <button> is invalid HTML.
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="font-mono">{matchKey}</span>
+      {usage != null && <CapacityBadge count={usage} pct={pct} />}
+      <span
+        role="button"
+        tabIndex={0}
+        aria-label={`Close ${matchKey}`}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }
+        }}
+        className="-mr-1 flex h-4 w-4 cursor-default items-center justify-center rounded text-gray-400 hover:bg-black/5 hover:text-gray-600"
+      >
+        <Icon name={IconName.X} className="h-3 w-3" />
+      </span>
+    </span>
+  );
+}
+
+// A subtle info strip explaining what the table's rows represent. Rendered into
+// PanelTable's `caption` slot, so it sits below the sticky column header and
+// scrolls with the rows. `mt-9` clears the floating header overlap.
+function LimitsInfoBanner({ children }: { children: ReactNode }) {
+  return (
+    <div className="mx-2 mt-11 -mb-9 flex items-start gap-2 rounded-xl border border-blue-200/60 bg-blue-50/50 px-3 py-2">
+      <Icon
+        name={IconName.Info}
+        className="mt-px h-4 w-4 shrink-0 text-blue-500/80"
+      />
+      <p className="text-xs leading-relaxed text-gray-600">{children}</p>
+    </div>
+  );
+}
+
 function RuleDetailComponent() {
   const { flagEnabled, hasVqueues } = useLimitsAccess();
   const { baseUrl } = useRestateContext();
   const navigate = useNavigate();
+  const params = useParams();
   const [searchParams] = useSearchParams();
-  const pattern = searchParams.get('pattern') ?? undefined;
-  const selectedTab =
-    searchParams.get(DETAILS_TAB_QUERY) === 'playground'
-      ? 'playground'
-      : 'counters';
-  const details = useGetLimitRuleWithLimits(pattern, {
-    enabled: flagEnabled && hasVqueues && Boolean(pattern),
-  });
+  const pattern = params.pattern;
+  const enabled = flagEnabled && hasVqueues && Boolean(pattern);
+
+  const ruleQuery = useGetLimitRule(pattern, { enabled });
+  const counterParams = useLimitsParameters(
+    'counter',
+    COUNTER_SCHEMA,
+    COUNTER_DEFAULT_SORT,
+  );
+  const counters = useListLimitCounters(pattern, counterParams, { enabled });
+  const targetParams = useLimitsParameters(
+    'target',
+    TARGET_SCHEMA,
+    TARGET_DEFAULT_SORT,
+  );
+
   const [isEditOpen, setEditOpen] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
-  const allCounters = useListUserLimits({
-    enabled: flagEnabled && hasVqueues && selectedTab === 'playground',
-  });
 
-  const rule = details.data?.rule;
+  const rule = ruleQuery.data;
   const counterRows = useMemo(
-    () => toCounterRows(details.data?.limits ?? []),
-    [details.data?.limits],
+    () => toCounterRows(counters.data?.limits ?? []),
+    [counters.data?.limits],
   );
-  const summary = summarizeLimitRows(details.data?.limits ?? []);
+  const maxPending = useMemo(
+    () =>
+      counterRows.reduce((max, row) => Math.max(max, row.num_waiters ?? 0), 0),
+    [counterRows],
+  );
 
   if (!flagEnabled) return <LimitsUnavailable reason="flag" />;
   if (!hasVqueues) return <LimitsUnavailable reason="cluster" />;
@@ -1315,7 +1770,7 @@ function RuleDetailComponent() {
     );
   }
 
-  if (details.error && !rule) {
+  if (ruleQuery.error && !rule) {
     return (
       <div className="flex min-h-0 flex-1 flex-col pt-4">
         <RuleBreadcrumb pattern={pattern} />
@@ -1325,7 +1780,10 @@ function RuleDetailComponent() {
           title="This rule could not be loaded"
           description="The rule may have been deleted or changed."
         >
-          <ErrorBanner error={details.error as Error} className="rounded-xl" />
+          <ErrorBanner
+            error={ruleQuery.error as Error}
+            className="rounded-xl"
+          />
           <Link href={`${baseUrl}/limits/rules`} variant="secondary-button">
             Back to rules
           </Link>
@@ -1334,126 +1792,98 @@ function RuleDetailComponent() {
     );
   }
 
+  const matches = searchParams.getAll(MATCH_QUERY_PARAM);
+  const activeTab = searchParams.get(TAB_QUERY_PARAM) ?? ALL_TAB;
+  const isAllTab = activeTab === ALL_TAB;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
       <RuleBreadcrumb pattern={pattern} />
-      <div className={ruleHeaderStyles({ disabled: rule?.disabled })}>
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-xs">
-            <Icon name={IconName.Gauge} className="h-4.5 w-4.5 text-blue-500" />
-          </span>
-          <h1 className="min-w-0 truncate font-mono text-sm font-semibold text-gray-700">
-            {pattern}
-          </h1>
-          {rule?.disabled && (
-            <Badge size="sm" variant="default">
-              disabled
-            </Badge>
+      <SnapshotTimeProvider lastSnapshot={ruleQuery.dataUpdatedAt}>
+        <div className={ruleHeaderStyles({ disabled: rule?.disabled })}>
+          <PatternChip
+            pattern={pattern}
+            disabled={rule?.disabled}
+            radius="lg"
+            className="h-[1.875rem] p-0.5 text-sm mix-blend-luminosity"
+          />
+          {rule && <RuleStatus rule={rule} />}
+          {rule && (
+            <RuleModified millis={rule.last_modified_millis_since_epoch} />
+          )}
+          {rule && (
+            <div className="ml-auto flex shrink-0 items-center gap-3">
+              <RuleStatusIndicator rule={rule} />
+              <RuleHeaderActions
+                onEdit={() => setEditOpen(true)}
+                onDelete={() => setDeleteOpen(true)}
+              />
+            </div>
           )}
         </div>
-        {rule && (
-          <div className="flex shrink-0 items-center gap-2">
-            <RuleEnabledSwitch rule={rule} />
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-0.5xs"
-              onClick={() => setEditOpen(true)}
-            >
-              <Icon name={IconName.Pencil} className="h-3.5 w-3.5" />
-              Edit
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-0.5xs text-red-600 hover:bg-red-50"
-              onClick={() => setDeleteOpen(true)}
-            >
-              <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
-              Delete
-            </Button>
-          </div>
-        )}
-      </div>
-      <div className="relative z-10 grid gap-2 px-5 pt-6 md:grid-cols-4">
-        <SummaryTile
-          icon={IconName.Gauge}
-          label="Concurrency"
-          value={formatLimit(rule?.limits.concurrency)}
-        />
-        <SummaryTile
-          icon={IconName.ClockAlert}
-          label="Pending"
-          value={formatNumber(summary.pending)}
-        />
-        <SummaryTile
-          icon={IconName.ChartNoAxesCombined}
-          label="Deepest match"
-          value={
-            summary.depthRatio > 0 ? `${summary.depthRatio.toFixed(1)}×` : '—'
-          }
-        />
-        <SummaryTile
-          icon={IconName.Radio}
-          label="Backed up"
-          value={
-            <>
-              {formatNumber(summary.backedUp)}
-              <span className="font-normal text-gray-400">
-                {' / '}
-                {formatNumber(summary.matches)}
-              </span>
-            </>
-          }
-        />
-      </div>
+      </SnapshotTimeProvider>
       {rule && (
-        <div className="relative z-10 grid gap-2 px-5 pt-2 md:grid-cols-3">
-          <RuleMeta label="Description">
+        <div className="relative z-10 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 px-5 pt-2 pl-8 text-sm text-gray-500">
+          <span className="min-w-0">
             {rule.description || 'No description'}
-          </RuleMeta>
-          <RuleMeta label="Version">{formatNumber(rule.version)}</RuleMeta>
-          <RuleMeta label="Last modified">
-            {formatDateTime(
-              new Date(rule.last_modified_millis_since_epoch),
-              'system',
-            )}
-          </RuleMeta>
+          </span>
+          <span className="text-gray-300">·</span>
+          <span className="whitespace-nowrap text-gray-400">
+            v{formatNumber(rule.version)}
+          </span>
         </div>
       )}
       <ContentPanel
         className="-mt-12"
         tabs={{
           items: [
-            {
-              id: 'counters',
-              label: 'Active limits',
-              href: ruleDetailsHref(baseUrl, pattern),
-            },
-            {
-              id: 'playground',
-              label: 'Pattern workbench',
-              href: `${ruleDetailsHref(baseUrl, pattern)}&${DETAILS_TAB_QUERY}=playground`,
-            },
+            { id: ALL_TAB, label: 'All matches' },
+            ...matches.map((m) => {
+              const counter = counterRows.find((r) => counterKey(r) === m);
+              return {
+                id: m,
+                label: (
+                  <MatchTabLabel
+                    matchKey={m}
+                    usage={counter?.usage}
+                    limit={counter?.concurrency_limit}
+                    onClose={() =>
+                      navigate(buildCloseMatchHref(searchParams, m, activeTab))
+                    }
+                  />
+                ),
+              };
+            }),
           ],
-          selectedId: selectedTab,
+          selectedId: activeTab,
+          onSelect: (id) => navigate(buildTabHref(searchParams, id)),
         }}
       >
         <ContentPanelBody className="pb-24">
           <ContentPanelSection flush>
-            {selectedTab === 'counters' ? (
+            {isAllTab ? (
               <PanelTable
-                aria-label="Active limits for rule"
-                columns={COUNTER_COLUMNS.filter(
-                  (column) => column.id !== 'rule_pattern',
-                )}
+                aria-label="All matches for rule"
+                columns={COUNTER_COLUMNS}
                 items={counterRows}
-                isLoading={details.isPending}
-                error={details.error as Error | null}
+                caption={
+                  rule?.limits.concurrency != null ? (
+                    <LimitsInfoBanner>
+                      The matches below each get their own limit of{' '}
+                      <span className="font-semibold text-gray-800">
+                        {formatNumber(rule.limits.concurrency)}
+                      </span>{' '}
+                      — not {formatNumber(rule.limits.concurrency)} shared
+                      across all.
+                    </LimitsInfoBanner>
+                  ) : undefined
+                }
+                isLoading={counters.isPending}
+                error={counters.error as Error | null}
                 emptyPlaceholder={
                   <EmptyState
                     icon={IconName.Radio}
-                    title="No active limits"
+                    title="No active matches"
                     description="This rule is configured, but no active limits currently resolve to it."
                   />
                 }
@@ -1461,20 +1891,50 @@ function RuleDetailComponent() {
                   renderCounterCell(
                     row,
                     column as PanelTableColumn<CounterColumn>,
+                    maxPending,
                   )
                 }
+                onRowAction={(key) => {
+                  const row = counterRows.find((r) => r.id === key);
+                  if (row) {
+                    navigate(buildOpenMatchHref(searchParams, counterKey(row)));
+                  }
+                }}
               />
             ) : (
-              <PatternWorkbench
-                pattern={pattern}
-                counters={allCounters.data?.limits ?? []}
-                isLoading={allCounters.isPending}
-                error={allCounters.error as Error | null}
+              <TargetsTable
+                matchKey={activeTab}
+                params={targetParams}
+                key={activeTab}
               />
             )}
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>
+      <LayoutOutlet zone={LayoutZone.Toolbar}>
+        {isAllTab ? (
+          <LimitsQueryBar
+            key={`counter:${getLimitsFormSignature(searchParams, 'counter')}`}
+            kind="counter"
+            schema={COUNTER_SCHEMA}
+            sorts={COUNTER_SORTS}
+            presets={COUNTER_PRESETS}
+            defaultSort={COUNTER_DEFAULT_SORT}
+            placeholder="Filter matches…"
+            isFetching={counters.isFetching}
+          />
+        ) : (
+          <LimitsQueryBar
+            key={`target:${activeTab}:${getLimitsFormSignature(searchParams, 'target')}`}
+            kind="target"
+            schema={TARGET_SCHEMA}
+            sorts={TARGET_SORTS}
+            presets={TARGET_PRESETS}
+            defaultSort={TARGET_DEFAULT_SORT}
+            placeholder="Filter targets…"
+          />
+        )}
+      </LayoutOutlet>
       {rule && (
         <>
           <RuleFormDialog
@@ -1491,19 +1951,6 @@ function RuleDetailComponent() {
           />
         </>
       )}
-    </div>
-  );
-}
-
-function RuleMeta({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0 rounded-xl border border-gray-200 bg-white/80 px-3 py-2 shadow-xs">
-      <div className="text-2xs font-medium text-gray-400 uppercase">
-        {label}
-      </div>
-      <div className="min-w-0 truncate text-sm font-semibold text-gray-700">
-        <TruncateWithTooltip>{children}</TruncateWithTooltip>
-      </div>
     </div>
   );
 }
@@ -1627,13 +2074,13 @@ function RuleFormDialog({
               <p className="text-sm text-gray-500">
                 {isEditing
                   ? 'Update the concurrency limit for this pattern.'
-                  : 'Match invocations by scope and key, then cap their concurrency.'}
+                  : 'Match invocations by scope and a limit key, then cap their concurrency.'}
               </p>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium text-gray-600">Pattern</span>
+            <span className="text-sm font-medium text-gray-700">Pattern</span>
             {isEditing ? (
               <div className="flex flex-wrap items-center gap-2">
                 <PatternChip pattern={pattern} />
@@ -1646,7 +2093,7 @@ function RuleFormDialog({
             )}
           </div>
 
-          <div className="grid gap-3 md:grid-cols-[11rem_minmax(0,1fr)]">
+          <div className="grid gap-3 md:grid-cols-[10rem_minmax(0,1fr)_auto]">
             <FormFieldInput
               label="Concurrency"
               value={concurrency}
@@ -1660,15 +2107,19 @@ function RuleFormDialog({
               onChange={setDescription}
               placeholder="No description"
             />
+            <div className="flex flex-col">
+              <span className="mb-1.5 text-sm font-medium text-gray-700">
+                Enabled
+              </span>
+              <div className="flex min-h-8.5 items-center">
+                <Switch
+                  isSelected={enabled}
+                  onChange={setEnabled}
+                  aria-label="Enabled"
+                />
+              </div>
+            </div>
           </div>
-
-          <Switch
-            isSelected={enabled}
-            onChange={setEnabled}
-            className="w-fit text-sm font-medium text-gray-700"
-          >
-            Enabled
-          </Switch>
 
           {pattern && <MatchExamples pattern={pattern} />}
 
@@ -1743,191 +2194,6 @@ function DeleteRuleDialog({
       }}
     />
   );
-}
-
-function rowSegments(row: Pick<UserLimitRow, 'scope' | 'l1' | 'l2'>) {
-  return [row.scope, row.l1, row.l2].filter((segment): segment is string =>
-    Boolean(segment),
-  );
-}
-
-function patternMatchesRow(pattern: string, row: UserLimitRow) {
-  const parts = pattern.split('/').filter(Boolean);
-  if (parts.length === 0) return false;
-  if (parts.length === 1 && parts[0] === '*') return true;
-  const segments = rowSegments(row);
-  for (let index = 0; index < parts.length; index += 1) {
-    const part = parts[index];
-    if (part === '*') return true;
-    if (part !== segments[index]) return false;
-  }
-  return parts.length === segments.length;
-}
-
-function PatternWorkbench({
-  pattern,
-  counters,
-  compact,
-  isLoading,
-  error,
-}: {
-  pattern: string;
-  counters: UserLimitRow[];
-  compact?: boolean;
-  isLoading: boolean;
-  error: Error | null;
-}) {
-  const [samples, setSamples] = useState<PlaygroundRow[]>([]);
-  const [scope, setScope] = useState('');
-  const [l1, setL1] = useState('');
-  const [l2, setL2] = useState('');
-  const [level, setLevel] = useState('');
-  const rows = useMemo<PlaygroundRow[]>(
-    () => [
-      ...counters.map((counter, index) => ({
-        ...counter,
-        id: `live:${index}:${counter.scope ?? ''}:${counter.l1 ?? ''}:${counter.l2 ?? ''}:${counter.level ?? ''}`,
-        source: 'live' as const,
-      })),
-      ...samples,
-    ],
-    [counters, samples],
-  );
-  const matches = rows.filter((row) => patternMatchesRow(pattern, row)).length;
-  const { root, form, fields, addButton, summary } = patternWorkbenchStyles({
-    compact,
-  });
-  const addSample = () => {
-    const next: PlaygroundRow = {
-      id: `sample:${Date.now()}:${samples.length}`,
-      source: 'sample',
-      scope: scope.trim() || null,
-      l1: l1.trim() || null,
-      l2: l2.trim() || null,
-      level: level.trim() || null,
-      usage: null,
-      concurrency_limit: null,
-      rule_pattern: null,
-      available: null,
-      num_waiters: null,
-    };
-    setSamples((current) => [...current, next]);
-    setScope('');
-    setL1('');
-    setL2('');
-    setLevel('');
-  };
-
-  return (
-    <div className={root()}>
-      <div className={form()}>
-        <div className={fields()}>
-          <FormFieldInput
-            label="Scope"
-            value={scope}
-            onChange={setScope}
-            placeholder="scope"
-          />
-          <FormFieldInput
-            label="L1"
-            value={l1}
-            onChange={setL1}
-            placeholder="l1"
-          />
-          <FormFieldInput
-            label="L2"
-            value={l2}
-            onChange={setL2}
-            placeholder="l2"
-          />
-          <FormFieldInput
-            label="Level"
-            value={level}
-            onChange={setLevel}
-            placeholder="level"
-          />
-          <Button
-            type="button"
-            variant="secondary"
-            className={addButton()}
-            onClick={addSample}
-          >
-            <Icon name={IconName.Plus} className="h-3.5 w-3.5" />
-            Add sample
-          </Button>
-        </div>
-        <div className={summary()}>
-          <Badge size="sm" variant="info">
-            {formatNumber(matches)} matching
-          </Badge>
-          <Badge size="sm">
-            {formatNumber(rows.length - matches)} not matching
-          </Badge>
-        </div>
-      </div>
-      <PanelTable
-        aria-label="Pattern workbench"
-        columns={PLAYGROUND_COLUMNS}
-        items={rows}
-        isLoading={isLoading}
-        error={error}
-        numOfRows={compact ? 5 : undefined}
-        emptyPlaceholder={
-          <EmptyState
-            icon={IconName.Binoculars}
-            title="No active limits"
-            description="Add a sample row to test this pattern."
-          />
-        }
-        renderCell={(row, column) => renderPlaygroundCell(row, column, pattern)}
-      />
-    </div>
-  );
-}
-
-function renderPlaygroundCell(
-  row: PlaygroundRow,
-  column: PanelTableColumn<PlaygroundColumn>,
-  pattern: string,
-) {
-  const matches = patternMatchesRow(pattern, row);
-  switch (column.id) {
-    case 'source':
-      return (
-        <Cell>
-          <Badge size="sm" variant={row.source === 'live' ? 'info' : 'default'}>
-            {row.source}
-          </Badge>
-        </Cell>
-      );
-    case 'scope':
-    case 'l1':
-    case 'l2':
-    case 'level':
-      return (
-        <Cell>
-          <span className="block min-w-0 truncate font-mono text-xs">
-            <TruncateWithTooltip>
-              {nullableText(row[column.id])}
-            </TruncateWithTooltip>
-          </span>
-        </Cell>
-      );
-    case 'matches':
-      return (
-        <Cell>
-          <Badge size="sm" variant={matches ? 'success' : 'default'}>
-            {matches ? 'Matches' : 'No match'}
-          </Badge>
-        </Cell>
-      );
-    case 'winning_rule':
-      return (
-        <Cell>
-          <PatternBadge pattern={row.rule_pattern} />
-        </Cell>
-      );
-  }
 }
 
 export const limits = { Component: LimitsListComponent };

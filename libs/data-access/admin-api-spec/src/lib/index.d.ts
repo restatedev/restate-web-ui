@@ -1200,6 +1200,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/limits/rules/{pattern}/counters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List counters (active matches) for a rule
+     * @description Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.
+     */
+    post: operations['list_limit_counters'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/targets': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List targets (virtual queues) for a counter
+     * @description Virtual queues governed by a (scope, limit key) counter, joined with their scheduler head/blocked state, filtered and sorted server-side.
+     */
+    post: operations['list_limit_targets'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/metrics': {
     parameters: {
       query?: never;
@@ -2781,6 +2821,43 @@ export interface components {
       available: number | null;
       num_waiters: number | null;
     };
+    /** @description Virtual queues for a counter, with scheduler head/blocked state. */
+    ListLimitTargetsResponse: {
+      targets: components['schemas']['LimitTargetRow'][];
+      /** @description Busiest queue's live load (running + inbox + suspended + paused) across the whole filtered set, for scaling the Load bar. */
+      max_load?: number;
+    };
+    LimitTargetRow: {
+      id: string;
+      service_name: string;
+      lock_name?: string | null;
+      limit_key?: string | null;
+      is_active?: boolean | null;
+      queue_is_paused?: boolean | null;
+      num_running?: number | null;
+      num_inbox?: number | null;
+      num_suspended?: number | null;
+      num_paused?: number | null;
+      num_finished?: number | null;
+      last_finish_at?: string | null;
+      last_attempt_at?: string | null;
+      last_enqueued_at?: string | null;
+      created_at?: string | null;
+      avg_end_to_end_duration?: string | null;
+      head_entry_id?: string | null;
+      status?: string | null;
+      blocked_on?: string | null;
+      blocked_rule?: string | null;
+      blocked_level?: string | null;
+      invoker_concurrency_block_duration?: string | null;
+      throttling_rules_block_duration?: string | null;
+      invoker_throttling_block_duration?: string | null;
+      invoker_memory_block_duration?: string | null;
+      concurrency_rules_block_duration?: string | null;
+      lock_block_duration?: string | null;
+      deployment_concurrency_block_duration?: string | null;
+      head_wait?: string | null;
+    };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
       /** @description PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders. */
@@ -2822,6 +2899,22 @@ export interface components {
         /** @enum {string} */
         order: 'ASC' | 'DESC';
       };
+    };
+    LimitSort: {
+      field: string;
+      /** @enum {string} */
+      order: 'ASC' | 'DESC';
+    };
+    ListLimitCountersRequestBody: {
+      filters?: components['schemas']['FilterItem'][];
+      sort?: components['schemas']['LimitSort'];
+    };
+    ListLimitTargetsRequestBody: {
+      scope?: string;
+      l1?: string;
+      l2?: string;
+      filters?: components['schemas']['FilterItem'][];
+      sort?: components['schemas']['LimitSort'];
     };
     GetInvocationsStatusRequestBody: {
       invocationIds: string[];
@@ -7892,6 +7985,55 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_limit_counters: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitCountersRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_limit_targets: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitTargetsRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListLimitTargetsResponse'];
         };
       };
     };

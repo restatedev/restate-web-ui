@@ -51,6 +51,7 @@ export type LimitRule = components['schemas']['RuleResponse'];
 export type LimitRuleStats = components['schemas']['LimitRuleStats'];
 export type LimitRuleWithStats = components['schemas']['LimitRuleWithStats'];
 export type UserLimitRow = components['schemas']['UserLimitRow'];
+export type LimitTargetRow = components['schemas']['LimitTargetRow'];
 export type UpsertLimitRuleRequest = components['schemas']['UpsertRuleRequest'];
 export type DeleteLimitRuleRequest = components['schemas']['DeleteRuleRequest'];
 export type CreateLimitRuleRequest = Omit<
@@ -90,7 +91,9 @@ function isLimitsQuery(query: Query) {
     isQueryForPath(query, '/query/limits/rules/{pattern}', 'get') ||
     isQueryForPath(query, '/query/limits/rules/{pattern}/details', 'get') ||
     isQueryForPath(query, '/query/limits/rules/{pattern}/user-limits', 'get') ||
-    isQueryForPath(query, '/query/limits/user-limits', 'get')
+    isQueryForPath(query, '/query/limits/rules/{pattern}/counters', 'post') ||
+    isQueryForPath(query, '/query/limits/user-limits', 'get') ||
+    isQueryForPath(query, '/query/limits/targets', 'post')
   );
 }
 
@@ -445,6 +448,66 @@ export function useListUserLimits(
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/limits/user-limits', 'get', {
     baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled && hasVqueues,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListLimitCounters(
+  pattern: string | undefined,
+  body: components['schemas']['ListLimitCountersRequestBody'],
+  options?: HookQueryOptions<'/query/limits/rules/{pattern}/counters', 'post'>,
+) {
+  const enabled = useAPIStatus();
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const baseUrl = useAdminBaseUrl();
+  const resolvedPattern = pattern ?? '';
+  const queryOptions = adminApi(
+    'query',
+    '/query/limits/rules/{pattern}/counters',
+    'post',
+    {
+      baseUrl,
+      resolvedPath: `/query/limits/rules/${encodeURIComponent(resolvedPattern)}/counters`,
+      parameters: { path: { pattern: resolvedPattern } },
+      body,
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(pattern) && options?.enabled !== false && enabled && hasVqueues,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListLimitTargets(
+  body: components['schemas']['ListLimitTargetsRequestBody'],
+  options?: HookQueryOptions<'/query/limits/targets', 'post'>,
+) {
+  const enabled = useAPIStatus();
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/limits/targets', 'post', {
+    baseUrl,
+    body,
   });
 
   const results = useQuery({

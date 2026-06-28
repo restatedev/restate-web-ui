@@ -97,7 +97,11 @@ export function formatKey(key: LimitKey): string {
     .join('/');
 }
 
-function compRank(comp: PatternComp, input: string, bit: number): number | null {
+function compRank(
+  comp: PatternComp,
+  input: string,
+  bit: number,
+): number | null {
   if (comp === '*') {
     return 0;
   }

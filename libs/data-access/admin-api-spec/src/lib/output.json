@@ -5149,6 +5149,77 @@
         }
       }
     },
+    "/query/limits/rules/{pattern}/counters": {
+      "post": {
+        "tags": ["query-limits"],
+        "summary": "List counters (active matches) for a rule",
+        "description": "Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.",
+        "operationId": "list_limit_counters",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitCountersRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUserLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/targets": {
+      "post": {
+        "tags": ["query-limits"],
+        "summary": "List targets (virtual queues) for a counter",
+        "description": "Virtual queues governed by a (scope, limit key) counter, joined with their scheduler head/blocked state, filtered and sorted server-side.",
+        "operationId": "list_limit_targets",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitTargetsRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListLimitTargetsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/metrics": {
       "get": {
         "tags": ["query-metrics"],
@@ -7459,6 +7530,143 @@
           }
         }
       },
+      "ListLimitTargetsResponse": {
+        "type": "object",
+        "description": "Virtual queues for a counter, with scheduler head/blocked state.",
+        "required": ["targets"],
+        "properties": {
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LimitTargetRow"
+            }
+          },
+          "max_load": {
+            "type": "number",
+            "description": "Busiest queue's live load (running + inbox + suspended + paused) across the whole filtered set, for scaling the Load bar."
+          }
+        }
+      },
+      "LimitTargetRow": {
+        "type": "object",
+        "required": ["id", "service_name"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "lock_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "limit_key": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "queue_is_paused": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "num_running": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_inbox": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_suspended": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_paused": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_finished": {
+            "type": "integer",
+            "nullable": true
+          },
+          "last_finish_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_attempt_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_enqueued_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_end_to_end_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "head_entry_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_rule": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_level": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoker_concurrency_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "throttling_rules_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoker_throttling_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoker_memory_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrency_rules_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "lock_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "deployment_concurrency_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "head_wait": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "MetricsResponse": {
         "type": "object",
         "description": "Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log).",
@@ -7555,6 +7763,56 @@
                 "enum": ["ASC", "DESC"]
               }
             }
+          }
+        }
+      },
+      "LimitSort": {
+        "type": "object",
+        "required": ["field", "order"],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "order": {
+            "type": "string",
+            "enum": ["ASC", "DESC"]
+          }
+        }
+      },
+      "ListLimitCountersRequestBody": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterItem"
+            }
+          },
+          "sort": {
+            "$ref": "#/components/schemas/LimitSort"
+          }
+        }
+      },
+      "ListLimitTargetsRequestBody": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string"
+          },
+          "l1": {
+            "type": "string"
+          },
+          "l2": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterItem"
+            }
+          },
+          "sort": {
+            "$ref": "#/components/schemas/LimitSort"
           }
         }
       },
