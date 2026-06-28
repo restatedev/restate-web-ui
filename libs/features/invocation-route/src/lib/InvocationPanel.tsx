@@ -31,7 +31,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
-import { getSearchParams } from './InvocationId';
+import { getSearchParams } from '@restate/features/invocation-ui';
 import { InvokedBySection } from './InvokedBySection';
 import { RetentionSection } from './RetentionSection';
 

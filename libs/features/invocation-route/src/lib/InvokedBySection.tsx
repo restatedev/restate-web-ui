@@ -1,8 +1,8 @@
 import { Invocation } from '@restate/data-access/admin-api-spec';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
-import { Target } from './Target';
-import { InvocationId } from './InvocationId';
+import { Target } from '@restate/features/invocation-ui';
+import { InvocationId } from '@restate/features/invocation-ui';
 import { useListSubscriptions } from '@restate/data-access/admin-api-hooks';
 
 const styles = tv({ base: '' });
