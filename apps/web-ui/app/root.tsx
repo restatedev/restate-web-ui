@@ -26,6 +26,7 @@ import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   OverviewSidebarItem,
   InvocationsSidebarItem,
+  LimitsSidebarItem,
   StateSidebarItem,
   IntrospectionSidebarItem,
 } from '@restate/util/sidebar-nav';
@@ -391,12 +392,7 @@ function SidebarPanels() {
         <InvocationsSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
         <StateSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
         {vqueueObservabilityEnabled && (
-          <SidebarNavItem
-            href="/limits/rules"
-            icon={IconName.SlidersHorizontal}
-            label="Limits"
-            preserveSearchParams={PRESERVED_PARAMS}
-          />
+          <LimitsSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
         )}
         <IntrospectionSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
       </SidebarNav>

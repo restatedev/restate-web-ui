@@ -9,5 +9,8 @@ export {
   useInvocationsRecent,
   useInvocationsLastQuery,
 } from './lib/useInvocationsMemory';
+export { LimitsSidebarItem } from './lib/LimitsSidebarItem';
+export type { LimitsRecent } from './lib/limitsRecent';
+export { useLimitsRecent } from './lib/useLimitsMemory';
 export { StateSidebarItem } from './lib/StateSidebarItem';
 export { IntrospectionSidebarItem } from './lib/IntrospectionSidebarItem';

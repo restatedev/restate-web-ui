@@ -19,6 +19,7 @@ import type { InvocationVqueue } from '@restate/data-access/admin-api-spec';
 import { Ellipsis } from '@restate/ui/loading';
 import { InvocationId, Target } from '@restate/features/invocation-route';
 import { useRestateContext } from '@restate/features/restate-context';
+import { useLimitsRecent } from '@restate/util/sidebar-nav';
 import { Vqueue, VqueueId, VqueueStatus } from '@restate/features/vqueue';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
@@ -442,7 +443,7 @@ function LimitValue({
         className="-ml-0.5 leading-3.5 font-semibold tabular-nums"
       >
         {value != null ? (
-          formatNumber(value)
+          formatNumber(value, true)
         ) : (
           <Icon name={IconName.Infinity} className="h-3.5 w-3.5" />
         )}
@@ -1731,6 +1732,18 @@ function RuleDetailComponent() {
   const [isEditOpen, setEditOpen] = useState(false);
   const [isDeleteOpen, setDeleteOpen] = useState(false);
 
+  // Remember the rule (or the open counter) for the sidebar's recent slot.
+  const { setRecent } = useLimitsRecent();
+  useEffect(() => {
+    if (!pattern) return;
+    const tab = searchParams.get(TAB_QUERY_PARAM);
+    setRecent(
+      tab
+        ? { type: 'counter', pattern, match: tab }
+        : { type: 'rule', pattern },
+    );
+  }, [pattern, searchParams, setRecent]);
+
   const rule = ruleQuery.data;
   const counterRows = useMemo(
     () => toCounterRows(counters.data?.limits ?? []),
@@ -1871,7 +1884,7 @@ function RuleDetailComponent() {
                 error={counters.error as Error | null}
                 emptyPlaceholder={
                   <EmptyState
-                    icon={IconName.Radio}
+                    icon={IconName.Gauge}
                     title="No active counter"
                     description="This rule is configured, but no active limits currently resolve to it."
                   />
