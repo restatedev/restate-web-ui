@@ -6692,12 +6692,19 @@
             "type": "object",
             "description": "# New State\n\nThe new state to replace the previous state with",
             "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "int32",
-                "minimum": 0
-              }
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             "propertyNames": {
               "type": "string"
