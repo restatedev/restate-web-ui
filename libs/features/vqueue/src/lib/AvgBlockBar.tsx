@@ -90,7 +90,7 @@ export function AvgBlockBar({
           {items.map((item, i) => (
             <div
               key={item.gate}
-              className="h-full"
+              className="h-full min-w-[3px]"
               style={{
                 // Normalise so the grow factors sum to 1 — sub-second totals
                 // would otherwise leave the bar mostly empty (sum < 1).

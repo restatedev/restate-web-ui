@@ -7,6 +7,7 @@ import { durationToSeconds, formatVqueueDuration } from './duration';
 type StatSegment = {
   key: string;
   label: string;
+  description?: string;
   seconds: number;
   color: string;
 };
@@ -31,13 +32,13 @@ function StatRow({ stat, maxScale }: { stat: Stat; maxScale: number }) {
     <div className="h-1 w-full overflow-hidden rounded-full bg-gray-100/0">
       {visible.length > 0 && (
         <div
-          className="flex h-full gap-[1.5px] overflow-hidden rounded-full"
+          className="flex h-full min-w-min gap-[1.5px] overflow-hidden rounded-full"
           style={{ width: `${fillPct}%` }}
         >
           {visible.map((segment) => (
             <div
               key={segment.key}
-              className="h-full"
+              className="h-full min-w-[3px]"
               style={{
                 // Normalise so the grow factors sum to 1 (sub-second totals would
                 // otherwise leave the fill mostly empty).
@@ -76,22 +77,29 @@ function StatRow({ stat, maxScale }: { stat: Stat; maxScale: number }) {
               <div className="-mx-3 border-t border-white/10" />
               <div className="flex flex-col gap-1">
                 {visible.map((segment) => (
-                  <div key={segment.key} className="flex items-center gap-2">
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
-                      style={{ backgroundColor: segment.color }}
-                    />
-                    <span className="text-2xs text-gray-300">
-                      {segment.label}
-                    </span>
-                    <span className="ml-auto text-2xs font-semibold text-gray-100 tabular-nums">
-                      {formatVqueueDuration(segment.seconds * 1000)}
-                    </span>
-                    <span className="text-2xs text-gray-400 tabular-nums">
-                      {formatPercentageWithoutFraction(
-                        segment.seconds / stat.total,
-                      )}
-                    </span>
+                  <div key={segment.key} className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                        style={{ backgroundColor: segment.color }}
+                      />
+                      <span className="text-2xs text-gray-300">
+                        {segment.label}
+                      </span>
+                      <span className="ml-auto text-2xs font-semibold text-gray-100 tabular-nums">
+                        {formatVqueueDuration(segment.seconds * 1000)}
+                      </span>
+                      <span className="text-2xs text-gray-400 tabular-nums">
+                        {formatPercentageWithoutFraction(
+                          segment.seconds / stat.total,
+                        )}
+                      </span>
+                    </div>
+                    {segment.description && (
+                      <span className="max-w-[15rem] pl-[1.125rem] text-3xs leading-snug whitespace-normal text-gray-400">
+                        {segment.description}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -131,13 +139,17 @@ export function QueueStats({
       segments: [
         {
           key: 'queue',
-          label: 'queue',
+          label: 'queued',
+          description:
+            'From when it could have started until it first started. (Excludes any scheduled delay before it was runnable.)',
           seconds: queueSeconds,
           color: STAGE_TONES.inbox.stroke,
         },
         {
           key: 'processing',
-          label: 'processing',
+          label: 'execution',
+          description:
+            'Time from first start to finish, completed runs only (running plus any suspends/retries between attempts).',
           seconds: Math.max(0, e2eSeconds - queueSeconds),
           color: STAGE_TONES.running.stroke,
         },
