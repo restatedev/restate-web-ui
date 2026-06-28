@@ -94,7 +94,9 @@ export function LimitsSidebarItem({
       ),
       match: (loc) => {
         const k = classify(loc);
-        return k?.type === 'counter' && k.pattern === pattern && k.match === match;
+        return (
+          k?.type === 'counter' && k.pattern === pattern && k.match === match
+        );
       },
       preserveSearchParams: false,
     });
