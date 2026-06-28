@@ -5005,6 +5005,221 @@
         }
       }
     },
+    "/query/limits/rules": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "List limit rules",
+        "description": "Configured limit rules from the sys_rules table.",
+        "operationId": "list_limit_rules",
+        "parameters": [
+          {
+            "name": "include_stats",
+            "in": "query",
+            "description": "When true, includes aggregate live limit statistics for each rule.",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListLimitRulesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/rules/{pattern}": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "Get limit rule",
+        "description": "Configured limit rule from the sys_rules table.",
+        "operationId": "get_limit_rule",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/rules/{pattern}/details": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "Get limit rule with effective limits",
+        "description": "Configured limit rule plus matching effective limit rows.",
+        "operationId": "get_limit_rule_with_limits",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LimitRuleWithLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/rules/{pattern}/user-limits": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "Get effective user limits for rule",
+        "description": "Effective limit rows matching a configured rule pattern.",
+        "operationId": "get_user_limits_for_rule",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUserLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/user-limits": {
+      "get": {
+        "tags": ["query-limits"],
+        "summary": "List effective user limits",
+        "description": "Effective limit rows and usage from the sys_user_limits table.",
+        "operationId": "list_user_limits",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUserLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/rules/{pattern}/counters": {
+      "post": {
+        "tags": ["query-limits"],
+        "summary": "List counters (active matches) for a rule",
+        "description": "Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.",
+        "operationId": "list_limit_counters",
+        "parameters": [
+          {
+            "name": "pattern",
+            "in": "path",
+            "description": "Limit rule pattern.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitCountersRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUserLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/targets": {
+      "post": {
+        "tags": ["query-limits"],
+        "summary": "List targets (virtual queues) for a counter",
+        "description": "Virtual queues governed by a (scope, limit key) counter, joined with their scheduler head/blocked state, filtered and sorted server-side.",
+        "operationId": "list_limit_targets",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitTargetsRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListLimitTargetsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/metrics": {
       "get": {
         "tags": ["query-metrics"],
@@ -6397,19 +6612,12 @@
             "type": "object",
             "description": "# New State\n\nThe new state to replace the previous state with",
             "additionalProperties": {
-              "oneOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "integer",
-                    "format": "int32",
-                    "minimum": 0
-                  }
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32",
+                "minimum": 0
+              }
             },
             "propertyNames": {
               "type": "string"
@@ -7031,10 +7239,10 @@
         "type": "object",
         "description": "Per-rule effective limits.\n\n`None` on a field means \"unlimited\" (no rule constrains this dimension).\nUnder the `bilrost` feature this type is also the wire shape persisted\ninside [`crate::PersistedRule`]; under `serde` it's the JSON wire shape\nfor the admin REST model — adding a new limit kind here means allocating\na fresh `bilrost(tag(...))` next to the new field.",
         "properties": {
-          "action_concurrency": {
+          "concurrency": {
             "type": ["integer", "null"],
             "format": "int32",
-            "description": "Maximum concurrent invocations. `None` means unlimited.",
+            "description": "Maximum concurrent running invocations. `None` means unlimited.",
             "minimum": 1
           }
         }
@@ -7148,6 +7356,317 @@
           }
         }
       },
+      "ListLimitRulesResponse": {
+        "type": "object",
+        "description": "Configured limit rules from the sys_rules table.",
+        "required": ["rules"],
+        "properties": {
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LimitRuleWithStats"
+            }
+          }
+        }
+      },
+      "LimitRuleWithStats": {
+        "type": "object",
+        "description": "Configured limit rule, optionally including aggregate live limit statistics.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RuleResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "stats": {
+                "$ref": "#/components/schemas/LimitRuleStats"
+              }
+            }
+          }
+        ]
+      },
+      "LimitRuleStats": {
+        "type": "object",
+        "description": "Aggregate live limit statistics for the matches (sys_user_limits rows) currently resolving to a rule.",
+        "required": ["pending", "matches", "backed_up"],
+        "properties": {
+          "pending": {
+            "type": "integer",
+            "description": "Total invocations pending for capacity across the rule's matches (SUM of num_waiters)."
+          },
+          "matches": {
+            "type": "integer",
+            "description": "Number of live sys_user_limits rows (matches) currently resolving to the rule."
+          },
+          "backed_up": {
+            "type": "integer",
+            "description": "Number of those matches that currently have at least one pending invocation (num_waiters > 0)."
+          },
+          "worst_counter": {
+            "type": "object",
+            "nullable": true,
+            "description": "The deepest match under this rule: the one with the highest num_waiters / concurrency_limit ratio (tie-break: most pending). Drives the Depth (x limit) column. Null when nothing is pending.",
+            "required": [
+              "scope",
+              "l1",
+              "l2",
+              "level",
+              "usage",
+              "concurrency_limit",
+              "num_waiters"
+            ],
+            "properties": {
+              "scope": {
+                "type": "string",
+                "nullable": true
+              },
+              "l1": {
+                "type": "string",
+                "nullable": true
+              },
+              "l2": {
+                "type": "string",
+                "nullable": true
+              },
+              "level": {
+                "type": "string",
+                "nullable": true
+              },
+              "usage": {
+                "type": "integer",
+                "nullable": true
+              },
+              "concurrency_limit": {
+                "type": "integer",
+                "nullable": true
+              },
+              "num_waiters": {
+                "type": "integer",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "ListUserLimitsResponse": {
+        "type": "object",
+        "description": "Effective limit rows and usage from the sys_user_limits table.",
+        "required": ["limits"],
+        "properties": {
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLimitRow"
+            }
+          }
+        }
+      },
+      "LimitRuleWithLimitsResponse": {
+        "type": "object",
+        "description": "Configured limit rule plus matching effective limit rows.",
+        "required": ["rule", "limits"],
+        "properties": {
+          "rule": {
+            "$ref": "#/components/schemas/RuleResponse"
+          },
+          "limits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserLimitRow"
+            }
+          }
+        }
+      },
+      "UserLimitRow": {
+        "type": "object",
+        "required": [
+          "scope",
+          "l1",
+          "l2",
+          "level",
+          "usage",
+          "concurrency_limit",
+          "rule_pattern",
+          "available",
+          "num_waiters"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "nullable": true
+          },
+          "l1": {
+            "type": "string",
+            "nullable": true
+          },
+          "l2": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "nullable": true
+          },
+          "usage": {
+            "type": "integer",
+            "nullable": true
+          },
+          "concurrency_limit": {
+            "type": "integer",
+            "nullable": true
+          },
+          "rule_pattern": {
+            "type": "string",
+            "nullable": true
+          },
+          "available": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_waiters": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "ListLimitTargetsResponse": {
+        "type": "object",
+        "description": "Virtual queues for a counter, with scheduler head/blocked state.",
+        "required": ["targets"],
+        "properties": {
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LimitTargetRow"
+            }
+          },
+          "max_load": {
+            "type": "number",
+            "description": "Busiest queue's live load (running + inbox + suspended + paused) across the whole filtered set, for scaling the Load bar."
+          }
+        }
+      },
+      "LimitTargetRow": {
+        "type": "object",
+        "required": ["id", "service_name"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "lock_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "limit_key": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_active": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "queue_is_paused": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "num_running": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_inbox": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_suspended": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_paused": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_finished": {
+            "type": "integer",
+            "nullable": true
+          },
+          "last_finish_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_attempt_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_enqueued_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_end_to_end_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "head_entry_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_rule": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_level": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoker_concurrency_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "throttling_rules_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoker_throttling_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoker_memory_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrency_rules_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "lock_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "deployment_concurrency_block_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "head_wait": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "MetricsResponse": {
         "type": "object",
         "description": "Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log).",
@@ -7244,6 +7763,56 @@
                 "enum": ["ASC", "DESC"]
               }
             }
+          }
+        }
+      },
+      "LimitSort": {
+        "type": "object",
+        "required": ["field", "order"],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "order": {
+            "type": "string",
+            "enum": ["ASC", "DESC"]
+          }
+        }
+      },
+      "ListLimitCountersRequestBody": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterItem"
+            }
+          },
+          "sort": {
+            "$ref": "#/components/schemas/LimitSort"
+          }
+        }
+      },
+      "ListLimitTargetsRequestBody": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string"
+          },
+          "l1": {
+            "type": "string"
+          },
+          "l2": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterItem"
+            }
+          },
+          "sort": {
+            "$ref": "#/components/schemas/LimitSort"
           }
         }
       },

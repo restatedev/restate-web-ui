@@ -60,6 +60,9 @@ export interface PanelTableProps<
   renderChildRows?: (row: T, columns: PanelTableColumn[]) => ReactNode;
   rowClassName?: string;
   rowDependencies?: unknown[];
+  // Optional content rendered inside the scroll area, just below the sticky
+  // column header and above the rows (scrolls with the rows). Omit for no effect.
+  caption?: ReactNode;
 }
 
 const SELECTION_WIDTH = 36;
@@ -114,6 +117,7 @@ export function PanelTable<
   emptyPlaceholder,
   bodyDependencies,
   bodyKey,
+  caption,
   ...ariaProps
 }: PanelTableProps<T, TColId>) {
   const ariaLabel = ariaProps['aria-label'];
@@ -349,6 +353,7 @@ export function PanelTable<
         </div>
       </div>
       <div ref={setDataTableScrollEl} className={dataTableScroll()}>
+        {caption}
         <ResizableTableContainer>
           <AriaTable
             aria-label={ariaLabel}

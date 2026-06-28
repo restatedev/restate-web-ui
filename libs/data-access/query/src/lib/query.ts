@@ -36,6 +36,13 @@ import {
   getMetrics,
   getStateStorageSize,
   listStateServices,
+  getLimitRule,
+  getLimitRuleWithLimits,
+  getUserLimitsForRule,
+  listLimitCountersForRule,
+  listLimitRules,
+  listUserLimits,
+  listLimitTargets,
   summaryInvocations,
   completedInvocationsBreakdown,
   type CompletedInvocationsBreakdownArgs,
@@ -69,6 +76,23 @@ type BoundHandlers = {
   getMetrics: () => Promise<Response>;
   getStateStorageSize: () => Promise<Response>;
   listStateServices: () => Promise<Response>;
+  listLimitRules: (includeStats?: boolean) => Promise<Response>;
+  getLimitRule: (pattern: string) => Promise<Response>;
+  getLimitRuleWithLimits: (pattern: string) => Promise<Response>;
+  listUserLimits: () => Promise<Response>;
+  getUserLimitsForRule: (pattern: string) => Promise<Response>;
+  listLimitCountersForRule: (
+    pattern: string,
+    filters: FilterItem[],
+    sort?: components['schemas']['LimitSort'],
+  ) => Promise<Response>;
+  listLimitTargets: (args: {
+    scope?: string;
+    l1?: string;
+    l2?: string;
+    filters?: FilterItem[];
+    sort?: components['schemas']['LimitSort'];
+  }) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
     invocationId: string,
@@ -149,6 +173,13 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getMetrics: getMetrics.bind(context),
     getStateStorageSize: getStateStorageSize.bind(context),
     listStateServices: listStateServices.bind(context),
+    listLimitRules: listLimitRules.bind(context),
+    getLimitRule: getLimitRule.bind(context),
+    getLimitRuleWithLimits: getLimitRuleWithLimits.bind(context),
+    listUserLimits: listUserLimits.bind(context),
+    getUserLimitsForRule: getUserLimitsForRule.bind(context),
+    listLimitCountersForRule: listLimitCountersForRule.bind(context),
+    listLimitTargets: (args) => listLimitTargets.call(context, args),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
@@ -317,6 +348,23 @@ export const routes = createRoutes('/query', {
   state: {
     services: { method: 'GET', pattern: '/state/services' },
     storageSize: { method: 'GET', pattern: '/state/storage-size' },
+  },
+  limits: {
+    rules: {
+      list: { method: 'GET', pattern: '/limits/rules' },
+      get: { method: 'GET', pattern: '/limits/rules/:pattern' },
+      details: { method: 'GET', pattern: '/limits/rules/:pattern/details' },
+      userLimits: {
+        method: 'GET',
+        pattern: '/limits/rules/:pattern/user-limits',
+      },
+      counters: {
+        method: 'POST',
+        pattern: '/limits/rules/:pattern/counters',
+      },
+    },
+    userLimits: { method: 'GET', pattern: '/limits/user-limits' },
+    targets: { method: 'POST', pattern: '/limits/targets' },
   },
 });
 
@@ -544,6 +592,52 @@ router.map(routes, {
       async storageSize(ctx) {
         const { getStateStorageSize } = ctx.storage.get(handlersKey);
         return getStateStorageSize();
+      },
+    },
+    limits: {
+      rules: {
+        async list(ctx) {
+          const { listLimitRules } = ctx.storage.get(handlersKey);
+          return listLimitRules(
+            ctx.url.searchParams.get('include_stats') === 'true',
+          );
+        },
+        async get(ctx) {
+          const { getLimitRule } = ctx.storage.get(handlersKey);
+          return getLimitRule(ctx.params.pattern);
+        },
+        async details(ctx) {
+          const { getLimitRuleWithLimits } = ctx.storage.get(handlersKey);
+          return getLimitRuleWithLimits(ctx.params.pattern);
+        },
+        async userLimits(ctx) {
+          const { getUserLimitsForRule } = ctx.storage.get(handlersKey);
+          return getUserLimitsForRule(ctx.params.pattern);
+        },
+        async counters(ctx) {
+          const { listLimitCountersForRule } = ctx.storage.get(handlersKey);
+          const {
+            filters = [],
+            sort,
+          }: components['schemas']['ListLimitCountersRequestBody'] =
+            await ctx.request.json();
+          return listLimitCountersForRule(ctx.params.pattern, filters, sort);
+        },
+      },
+      async userLimits(ctx) {
+        const { listUserLimits } = ctx.storage.get(handlersKey);
+        return listUserLimits();
+      },
+      async targets(ctx) {
+        const { listLimitTargets } = ctx.storage.get(handlersKey);
+        const {
+          scope,
+          l1,
+          l2,
+          filters = [],
+          sort,
+        }: components['schemas']['ListLimitTargetsRequestBody'] = await ctx.request.json();
+        return listLimitTargets({ scope, l1, l2, filters, sort });
       },
     },
   },

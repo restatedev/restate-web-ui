@@ -23,6 +23,22 @@ export { getInvocationsStatus } from './getInvocationsStatus';
 export { getMetrics } from './getMetrics';
 export { getStateStorageSize } from './getStateStorageSize';
 export { listStateServices } from './listStateServices';
+export {
+  getLimitRule,
+  getLimitRuleWithLimits,
+  listLimitRules,
+} from './listLimitRules';
+export {
+  getUserLimitsForRule,
+  listUserLimits,
+  listLimitCountersForRule,
+  getLimitCountersRows,
+} from './listUserLimits';
+export { listLimitTargets, getLimitTargetsRows } from './listLimitTargets';
+export type {
+  LimitTargetRow,
+  ListLimitTargetsResponse,
+} from './listLimitTargets';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';

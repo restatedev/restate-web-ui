@@ -1100,6 +1100,146 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/limits/rules': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List limit rules
+     * @description Configured limit rules from the sys_rules table.
+     */
+    get: operations['list_limit_rules'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get limit rule
+     * @description Configured limit rule from the sys_rules table.
+     */
+    get: operations['get_limit_rule'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}/details': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get limit rule with effective limits
+     * @description Configured limit rule plus matching effective limit rows.
+     */
+    get: operations['get_limit_rule_with_limits'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}/user-limits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get effective user limits for rule
+     * @description Effective limit rows matching a configured rule pattern.
+     */
+    get: operations['get_user_limits_for_rule'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/user-limits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List effective user limits
+     * @description Effective limit rows and usage from the sys_user_limits table.
+     */
+    get: operations['list_user_limits'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}/counters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List counters (active matches) for a rule
+     * @description Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.
+     */
+    post: operations['list_limit_counters'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/targets': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List targets (virtual queues) for a counter
+     * @description Virtual queues governed by a (scope, limit key) counter, joined with their scheduler head/blocked state, filtered and sorted server-side.
+     */
+    post: operations['list_limit_targets'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/metrics': {
     parameters: {
       query?: never;
@@ -1990,7 +2130,7 @@ export interface components {
        *     The new state to replace the previous state with
        */
       new_state: {
-        [key: string]: number[] | string;
+        [key: string]: number[];
       };
       /**
        * @description # Service key
@@ -2572,9 +2712,9 @@ export interface components {
     UserLimits: {
       /**
        * Format: int32
-       * @description Maximum concurrent invocations. `None` means unlimited.
+       * @description Maximum concurrent running invocations. `None` means unlimited.
        */
-      action_concurrency?: number | null;
+      concurrency?: number | null;
     };
     /**
      * Format: int32
@@ -2634,6 +2774,90 @@ export interface components {
         size: number;
       }[];
     };
+    /** @description Configured limit rules from the sys_rules table. */
+    ListLimitRulesResponse: {
+      rules: components['schemas']['LimitRuleWithStats'][];
+    };
+    /** @description Configured limit rule, optionally including aggregate live limit statistics. */
+    LimitRuleWithStats: components['schemas']['RuleResponse'] & {
+      stats?: components['schemas']['LimitRuleStats'];
+    };
+    /** @description Aggregate live limit statistics for the matches (sys_user_limits rows) currently resolving to a rule. */
+    LimitRuleStats: {
+      /** @description Total invocations pending for capacity across the rule's matches (SUM of num_waiters). */
+      pending: number;
+      /** @description Number of live sys_user_limits rows (matches) currently resolving to the rule. */
+      matches: number;
+      /** @description Number of those matches that currently have at least one pending invocation (num_waiters > 0). */
+      backed_up: number;
+      /** @description The deepest match under this rule: the one with the highest num_waiters / concurrency_limit ratio (tie-break: most pending). Drives the Depth (x limit) column. Null when nothing is pending. */
+      worst_counter?: {
+        scope: string | null;
+        l1: string | null;
+        l2: string | null;
+        level: string | null;
+        usage: number | null;
+        concurrency_limit: number | null;
+        num_waiters: number | null;
+      } | null;
+    };
+    /** @description Effective limit rows and usage from the sys_user_limits table. */
+    ListUserLimitsResponse: {
+      limits: components['schemas']['UserLimitRow'][];
+    };
+    /** @description Configured limit rule plus matching effective limit rows. */
+    LimitRuleWithLimitsResponse: {
+      rule: components['schemas']['RuleResponse'];
+      limits: components['schemas']['UserLimitRow'][];
+    };
+    UserLimitRow: {
+      scope: string | null;
+      l1: string | null;
+      l2: string | null;
+      level: string | null;
+      usage: number | null;
+      concurrency_limit: number | null;
+      rule_pattern: string | null;
+      available: number | null;
+      num_waiters: number | null;
+    };
+    /** @description Virtual queues for a counter, with scheduler head/blocked state. */
+    ListLimitTargetsResponse: {
+      targets: components['schemas']['LimitTargetRow'][];
+      /** @description Busiest queue's live load (running + inbox + suspended + paused) across the whole filtered set, for scaling the Load bar. */
+      max_load?: number;
+    };
+    LimitTargetRow: {
+      id: string;
+      service_name: string;
+      lock_name?: string | null;
+      limit_key?: string | null;
+      is_active?: boolean | null;
+      queue_is_paused?: boolean | null;
+      num_running?: number | null;
+      num_inbox?: number | null;
+      num_suspended?: number | null;
+      num_paused?: number | null;
+      num_finished?: number | null;
+      last_finish_at?: string | null;
+      last_attempt_at?: string | null;
+      last_enqueued_at?: string | null;
+      created_at?: string | null;
+      avg_end_to_end_duration?: string | null;
+      head_entry_id?: string | null;
+      status?: string | null;
+      blocked_on?: string | null;
+      blocked_rule?: string | null;
+      blocked_level?: string | null;
+      invoker_concurrency_block_duration?: string | null;
+      throttling_rules_block_duration?: string | null;
+      invoker_throttling_block_duration?: string | null;
+      invoker_memory_block_duration?: string | null;
+      concurrency_rules_block_duration?: string | null;
+      lock_block_duration?: string | null;
+      deployment_concurrency_block_duration?: string | null;
+      head_wait?: string | null;
+    };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
       /** @description PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders. */
@@ -2675,6 +2899,22 @@ export interface components {
         /** @enum {string} */
         order: 'ASC' | 'DESC';
       };
+    };
+    LimitSort: {
+      field: string;
+      /** @enum {string} */
+      order: 'ASC' | 'DESC';
+    };
+    ListLimitCountersRequestBody: {
+      filters?: components['schemas']['FilterItem'][];
+      sort?: components['schemas']['LimitSort'];
+    };
+    ListLimitTargetsRequestBody: {
+      scope?: string;
+      l1?: string;
+      l2?: string;
+      filters?: components['schemas']['FilterItem'][];
+      sort?: components['schemas']['LimitSort'];
     };
     GetInvocationsStatusRequestBody: {
       invocationIds: string[];
@@ -7638,6 +7878,162 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_limit_rules: {
+    parameters: {
+      query?: {
+        /** @description When true, includes aggregate live limit statistics for each rule. */
+        include_stats?: boolean;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListLimitRulesResponse'];
+        };
+      };
+    };
+  };
+  get_limit_rule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RuleResponse'];
+        };
+      };
+    };
+  };
+  get_limit_rule_with_limits: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LimitRuleWithLimitsResponse'];
+        };
+      };
+    };
+  };
+  get_user_limits_for_rule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_user_limits: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_limit_counters: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitCountersRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_limit_targets: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitTargetsRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListLimitTargetsResponse'];
         };
       };
     };

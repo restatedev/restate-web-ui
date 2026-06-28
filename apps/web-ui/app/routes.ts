@@ -18,6 +18,10 @@ export default [
     index('routes/invocations.tsx'),
     route(':id', 'routes/invocation.tsx'),
   ]),
+  ...prefix('limits', [
+    route('rules', 'routes/limits.tsx'),
+    route('rules/:pattern', 'routes/limit-rule.tsx'),
+  ]),
   route('features', 'routes/features.tsx'),
   route('feature-flags/:flag', 'routes/feature-flags.tsx'),
 ] satisfies RouteConfig;

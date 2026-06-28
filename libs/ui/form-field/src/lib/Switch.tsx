@@ -22,20 +22,20 @@ const styles = tv({
 
 const trackStyles = tv({
   extend: focusRing,
-  base: 'flex h-5 w-9 shrink-0 items-center rounded-full border border-black/5 px-0.5 shadow-[inset_0_1px_1.5px_0px_rgba(0,0,0,0.1)] transition-colors duration-200',
+  base: 'flex h-5 w-9 shrink-0 items-center rounded-full px-0.5 transition-colors duration-200',
   variants: {
     isSelected: {
       false: 'bg-gray-200 group-pressed:bg-gray-300',
-      true: 'bg-blue-600 group-pressed:bg-blue-700',
+      true: 'bg-blue-500 group-pressed:bg-blue-600',
     },
     isDisabled: {
-      true: 'border-transparent bg-gray-100 shadow-none',
+      true: 'bg-gray-100',
     },
   },
 });
 
 const thumbStyles = tv({
-  base: 'h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200',
+  base: 'h-4 w-4 rounded-full bg-white shadow-xs transition-transform duration-200',
   variants: {
     isSelected: {
       false: 'translate-x-0',

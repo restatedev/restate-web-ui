@@ -19,6 +19,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarNav,
+  SidebarNavItem,
   useSidebar,
 } from '@restate/ui/layout';
 import { HoverTooltip } from '@restate/ui/tooltip';
@@ -376,6 +377,10 @@ function SidebarFooterContent() {
 }
 
 function SidebarPanels() {
+  const vqueueObservabilityEnabled = useIsFeatureFlagEnabled(
+    'FEATURE_VQUEUE_OBSERVABILITY',
+  );
+
   return (
     <>
       <SidebarHeader>
@@ -385,6 +390,14 @@ function SidebarPanels() {
         <OverviewSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
         <InvocationsSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
         <StateSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
+        {vqueueObservabilityEnabled && (
+          <SidebarNavItem
+            href="/limits/rules"
+            icon={IconName.Gauge}
+            label="Limits"
+            preserveSearchParams={PRESERVED_PARAMS}
+          />
+        )}
         <IntrospectionSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
       </SidebarNav>
       <SidebarFooter>
@@ -395,6 +408,10 @@ function SidebarPanels() {
 }
 
 function TopbarPanels() {
+  const vqueueObservabilityEnabled = useIsFeatureFlagEnabled(
+    'FEATURE_VQUEUE_OBSERVABILITY',
+  );
+
   return (
     <>
       <LayoutOutlet zone={LayoutZone.AppBar}>
@@ -417,27 +434,47 @@ function TopbarPanels() {
           </Button>
           <LayoutOutlet zone={LayoutZone.Nav}>
             <Nav ariaCurrentValue="page">
-              <NavItem
-                preserveSearchParams={PRESERVED_PARAMS}
-                href={'/overview'}
-              >
-                Overview
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_PARAMS}
-                href={'/invocations'}
-              >
-                Invocations
-              </NavItem>
-              <NavItem preserveSearchParams={PRESERVED_PARAMS} href={'/state'}>
-                State
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_PARAMS}
-                href={'/introspection'}
-              >
-                Introspection
-              </NavItem>
+              {[
+                <NavItem
+                  key="overview"
+                  preserveSearchParams={PRESERVED_PARAMS}
+                  href={'/overview'}
+                >
+                  Overview
+                </NavItem>,
+                <NavItem
+                  key="invocations"
+                  preserveSearchParams={PRESERVED_PARAMS}
+                  href={'/invocations'}
+                >
+                  Invocations
+                </NavItem>,
+                <NavItem
+                  key="state"
+                  preserveSearchParams={PRESERVED_PARAMS}
+                  href={'/state'}
+                >
+                  State
+                </NavItem>,
+                ...(vqueueObservabilityEnabled
+                  ? [
+                      <NavItem
+                        key="limits"
+                        preserveSearchParams={PRESERVED_PARAMS}
+                        href={'/limits/rules'}
+                      >
+                        Limits
+                      </NavItem>,
+                    ]
+                  : []),
+                <NavItem
+                  key="introspection"
+                  preserveSearchParams={PRESERVED_PARAMS}
+                  href={'/introspection'}
+                >
+                  Introspection
+                </NavItem>,
+              ]}
             </Nav>
           </LayoutOutlet>
         </div>
