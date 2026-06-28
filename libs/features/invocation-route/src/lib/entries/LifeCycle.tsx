@@ -14,7 +14,7 @@ import { ENTRY_COMMANDS_COMPONENTS } from '../Entry';
 import { ComponentType } from 'react';
 import { EntryCodecProvider } from './EntryCodecProvider';
 import { AwaitingOn } from './AwaitingOn';
-import { InvocationId } from '../InvocationId';
+import { InvocationId } from '@restate/features/invocation-ui';
 import {
   useGetInvocationJournalWithInvocationV2,
   useListSubscriptions,

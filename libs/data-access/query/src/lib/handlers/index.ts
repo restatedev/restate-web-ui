@@ -42,6 +42,7 @@ export type {
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';
+export { getVqueue } from './getVqueue';
 export { listDrainedDeployments } from './listDrainedDeployments';
 export {
   QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL,

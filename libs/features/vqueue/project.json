@@ -1,0 +1,9 @@
+{
+  "name": "vqueue",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/vqueue/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project vqueue --web",
+  "targets": {}
+}

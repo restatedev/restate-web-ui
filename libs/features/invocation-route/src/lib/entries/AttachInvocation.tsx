@@ -1,6 +1,6 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { EntryProps } from './types';
-import { InvocationId } from '../InvocationId';
+import { InvocationId } from '@restate/features/invocation-ui';
 import { EntryExpression } from './EntryExpression';
 import { tv } from '@restate/util/styles';
 import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';

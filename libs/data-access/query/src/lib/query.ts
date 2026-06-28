@@ -48,6 +48,7 @@ import {
   type CompletedInvocationsBreakdownArgs,
   getPausedError,
   getTransientError,
+  getVqueue,
   listDrainedDeployments,
   type ListStateArgs,
   type ListStateItem,
@@ -161,6 +162,7 @@ type BoundHandlers = {
   ) => Promise<Response>;
   getPausedError: (invocationId: string) => Promise<Response>;
   getTransientError: (invocationId: string) => Promise<Response>;
+  getVqueue: (vqueueId: string, invocationId?: string) => Promise<Response>;
   listDrainedDeployments: () => Promise<Response>;
 };
 
@@ -204,6 +206,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     batchRestartAsNewInvocations: batchRestartAsNewInvocations.bind(context),
     getPausedError: getPausedError.bind(context),
     getTransientError: getTransientError.bind(context),
+    getVqueue: getVqueue.bind(context),
     listDrainedDeployments: listDrainedDeployments.bind(context),
   };
 }
@@ -314,6 +317,10 @@ export const routes = createRoutes('/query', {
     transientError: {
       method: 'GET',
       pattern: '/invocations/:invocationId/transient-error',
+    },
+    vqueue: {
+      method: 'GET',
+      pattern: '/vqueues/:vqueueId',
     },
   },
   invocationsV2: {
@@ -484,6 +491,12 @@ router.map(routes, {
       async transientError(ctx) {
         const { getTransientError } = ctx.storage.get(handlersKey);
         return getTransientError(ctx.params.invocationId);
+      },
+      async vqueue(ctx) {
+        const { getVqueue } = ctx.storage.get(handlersKey);
+        const invocationId =
+          ctx.url.searchParams.get('invocationId') ?? undefined;
+        return getVqueue(ctx.params.vqueueId, invocationId);
       },
     },
     invocationsV2: {
