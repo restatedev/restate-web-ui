@@ -98,7 +98,8 @@ export function PatternChip({
   active,
   className,
   ariaLabel,
-  icon = IconName.Gauge,
+  icon,
+  isRule,
   radius,
 }: {
   pattern: string;
@@ -112,6 +113,7 @@ export function PatternChip({
   className?: string;
   ariaLabel?: string;
   icon?: IconName;
+  isRule?: boolean;
   radius?: 'md' | 'lg';
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
@@ -128,11 +130,13 @@ export function PatternChip({
 
   const [scope, ...rest] = chipComponents;
   const slots = styles({ disabled, radius });
+  const resolvedIcon =
+    icon ?? (isRule ? IconName.SlidersHorizontal : IconName.Gauge);
 
   const inner = (
     <>
       <span className={slots.iconBox()}>
-        <Icon name={icon} className={slots.iconGlyph()} />
+        <Icon name={resolvedIcon} className={slots.iconGlyph()} />
       </span>
       <span className={slots.scope()}>
         <TruncateWithTooltip

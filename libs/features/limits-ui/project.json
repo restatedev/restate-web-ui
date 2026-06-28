@@ -1,0 +1,9 @@
+{
+  "name": "limits-ui",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/limits-ui/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project limits-ui --web",
+  "targets": {}
+}
