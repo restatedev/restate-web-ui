@@ -366,13 +366,13 @@ function isVqueueRewrittenStatus(value?: string): boolean {
   return value === 'backing-off' || value === 'ready';
 }
 
-export function convertInvocationsFilters(
+function invocationsFilterClauses(
   filters: FilterItem[],
   options: {
     deploymentFields?: readonly string[];
     vqueueBackingOff?: boolean;
   } = {},
-) {
+): string[] {
   const deploymentFields = options.deploymentFields ?? DEPLOYMENT_FILTER_FIELDS;
   const vqueueBackingOff = options.vqueueBackingOff ?? false;
   const statusFilters = filters.filter((filter) => filter.field === 'status');
@@ -385,7 +385,7 @@ export function convertInvocationsFilters(
       (filter) => filter.field !== 'status' && filter.field !== 'deployment',
     )
     .map(convertFilterToSqlClause)
-    .filter(Boolean);
+    .filter((clause): clause is string => Boolean(clause));
 
   if (deploymentFilter) {
     if (deploymentFilter.type === 'STRING') {
@@ -518,11 +518,186 @@ export function convertInvocationsFilters(
     });
   }
 
-  if (mappedFilters.length === 0) {
-    return '';
-  } else {
-    return `WHERE ${mappedFilters.join(' AND ')}`;
+  return mappedFilters;
+}
+
+export function convertInvocationsFilters(
+  filters: FilterItem[],
+  options: {
+    deploymentFields?: readonly string[];
+    vqueueBackingOff?: boolean;
+  } = {},
+): string {
+  const clauses = invocationsFilterClauses(filters, options);
+  return clauses.length === 0 ? '' : `WHERE ${clauses.join(' AND ')}`;
+}
+
+// ---------------------------------------------------------------------------
+// Base-join variant of the invocations filter.
+//
+// `sys_invocation` exposes a *computed* `status` column whose
+// running/backing-off/ready branches read sys_invocation_state (the build side
+// of the view's join). A filter on those values can't be pushed into the large
+// sys_invocation_status scan, so the view falls back to a full scan + full CASE
+// materialization. Querying the raw tables ourselves lets us front the filter
+// with a pushable `ss.status = 'invoked'` predicate that prunes the scan first,
+// with the in_flight/retry_count/vqueue tests running as a cheap post-join
+// filter. `ss` = sys_invocation_status, `sis` = sys_invocation_state.
+// ---------------------------------------------------------------------------
+
+// The computed statuses whose view CASE branch depends on sys_invocation_state;
+// the only ones the view can't push down, and all three are raw 'invoked'.
+const INVOKED_DERIVED_STATUSES = new Set(['running', 'backing-off', 'ready']);
+
+// Computed status -> the raw sys_invocation_status.status enum value it matches.
+// Drives the pushable `ss.status IN (...)` prefilter.
+const COMPUTED_TO_RAW_STATUS: Record<string, string> = {
+  pending: 'inboxed',
+  scheduled: 'scheduled',
+  suspended: 'suspended',
+  paused: 'paused',
+  running: 'invoked',
+  'backing-off': 'invoked',
+  ready: 'invoked',
+  completed: 'completed',
+  succeeded: 'completed',
+  failed: 'completed',
+  killed: 'completed',
+  cancelled: 'completed',
+};
+
+// Translate one computed-status value into a predicate over the raw join.
+// `selectedValues` is the rest of the same filter's values: when both
+// backing-off and ready are selected their union is the plain
+// 'invoked AND not-running' set, so the vqueue semi-join can be skipped.
+function baseJoinStatusClause(
+  value: string,
+  vqueueBackingOff: boolean,
+  selectedValues: Set<string>,
+): string {
+  switch (value) {
+    case 'pending':
+      return "ss.status = 'inboxed'";
+    case 'running':
+      // in_flight is NULL when there's no state row (LEFT JOIN) -> not running.
+      return "ss.status = 'invoked' AND sis.in_flight";
+    case 'backing-off':
+      return vqueueBackingOff && !selectedValues.has('ready')
+        ? `ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND (sis.retry_count > 0 OR ss.id IN (${VQUEUE_BACKING_OFF_SET}))`
+        : "ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND sis.retry_count > 0";
+    case 'ready':
+      return vqueueBackingOff && !selectedValues.has('backing-off')
+        ? `ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND COALESCE(sis.retry_count, 0) = 0 AND ss.id NOT IN (${VQUEUE_BACKING_OFF_SET})`
+        : "ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND COALESCE(sis.retry_count, 0) = 0";
+    default: {
+      // scheduled / suspended / paused / completed / succeeded / failed /
+      // killed / cancelled already resolve to raw ss.status (+ completion_*)
+      // predicates via the shared builder, keeping the kill/cancel error lists
+      // defined in one place.
+      const { groups, operator } = getStatusFilterString(value);
+      return groups
+        .map(
+          ({ filters, operator }) =>
+            `(${filters
+              .map(convertFilterToSqlClause)
+              .filter(Boolean)
+              .join(` ${operator} `)})`,
+        )
+        .filter(Boolean)
+        .join(` ${operator} `);
+    }
   }
+}
+
+// Whether the id query should be built over the raw base join instead of the
+// sys_invocation view. True only when a positive (IN/EQUALS) status filter
+// targets an invoked-derived status — exactly the case the view can't push
+// down. Terminal-only and negated status filters keep using the view.
+export function shouldUseBaseJoinForStatus(filters: FilterItem[]): boolean {
+  const statusFilters = filters.filter((filter) => filter.field === 'status');
+  if (statusFilters.length === 0) {
+    return false;
+  }
+  const allPositive = statusFilters.every(
+    (filter) =>
+      (filter.type === 'STRING_LIST' && filter.operation === 'IN') ||
+      (filter.type === 'STRING' && filter.operation === 'EQUALS'),
+  );
+  if (!allPositive) {
+    return false;
+  }
+  return statusFilters.some((filter) => {
+    const values =
+      filter.type === 'STRING_LIST'
+        ? filter.value
+        : filter.type === 'STRING' && filter.value !== undefined
+          ? [filter.value]
+          : [];
+    return values.some((value) => INVOKED_DERIVED_STATUSES.has(value));
+  });
+}
+
+// WHERE clause for the base join. Non-status filters are plain column
+// predicates valid on either base table, so they reuse the shared builder;
+// status filters are translated to the raw predicates above and fronted with a
+// pushable `ss.status IN (...)` prefilter. Only positive status filters reach
+// here (see shouldUseBaseJoinForStatus).
+export function convertInvocationsFiltersForBaseJoin(
+  filters: FilterItem[],
+  options: { vqueueBackingOff?: boolean } = {},
+): string {
+  const vqueueBackingOff = options.vqueueBackingOff ?? false;
+
+  const clauses = invocationsFilterClauses(
+    filters.filter((filter) => filter.field !== 'status'),
+    { vqueueBackingOff },
+  );
+
+  const statusFilters = filters.filter((filter) => filter.field === 'status');
+  const rawStatuses = new Set<string>();
+  // Only emit the prefilter when every value maps to a known raw status; an
+  // unmapped value could otherwise be wrongly excluded by the IN list.
+  let allKnown = true;
+  const statusClauses: string[] = [];
+
+  for (const statusFilter of statusFilters) {
+    const values =
+      statusFilter.type === 'STRING_LIST'
+        ? statusFilter.value
+        : statusFilter.type === 'STRING' && statusFilter.value !== undefined
+          ? [statusFilter.value]
+          : [];
+    const selected = new Set<string>(values);
+    for (const value of values) {
+      const raw = COMPUTED_TO_RAW_STATUS[value];
+      if (raw) {
+        rawStatuses.add(raw);
+      } else {
+        allKnown = false;
+      }
+    }
+    statusClauses.push(
+      `(${values
+        .map(
+          (value) =>
+            `(${baseJoinStatusClause(value, vqueueBackingOff, selected)})`,
+        )
+        .join(' OR ')})`,
+    );
+  }
+
+  // Pushable prefilter first: the raw ss.status predicate the scan prunes on,
+  // logically implied by statusClauses but invisible to the planner without it.
+  if (allKnown && rawStatuses.size > 0) {
+    clauses.unshift(
+      `ss.status IN (${[...rawStatuses]
+        .map((status) => `'${status}'`)
+        .join(', ')})`,
+    );
+  }
+  clauses.push(...statusClauses);
+
+  return clauses.length === 0 ? '' : `WHERE ${clauses.join(' AND ')}`;
 }
 
 export function convertFilters(filters: FilterItem[]) {

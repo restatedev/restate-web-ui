@@ -3,7 +3,11 @@ import type {
   components,
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
-import { convertInvocationsFilters } from '../convertFilters';
+import {
+  convertInvocationsFilters,
+  convertInvocationsFiltersForBaseJoin,
+  shouldUseBaseJoinForStatus,
+} from '../convertFilters';
 import {
   type QueryContext,
   getSysInvocationListColumns,
@@ -46,6 +50,12 @@ export async function listInvocations(
   const idSelectColumns = isSortByDuration
     ? `id, ${DURATION_EXPRESSION}`
     : 'id';
+  // Base-join id columns: `id` must be qualified (it exists on both sides of the
+  // join); the duration expression references sys_invocation_status columns
+  // only, so it resolves unambiguously, as do all sortable columns.
+  const baseIdSelectColumns = isSortByDuration
+    ? `ss.id AS id, ${DURATION_EXPRESSION}`
+    : 'ss.id AS id';
   // No sort → omit ORDER BY entirely; rows come back in scan order (fastest).
   const orderBy = sort ? `ORDER BY ${sort.field} ${sort.order}` : '';
   // vqueue-backed backing-off invocations show as 'ready' on the view, so the
@@ -68,10 +78,23 @@ export async function listInvocations(
   // statuses come from the queue overlay rather than this table. The detail
   // query below re-applies the status filter, so a row that just left the
   // processing set is dropped rather than shown.
+  // A status filter on an invoked-derived status (running/backing-off/ready)
+  // can't be pushed into the sys_invocation view's scan, forcing a full scan of
+  // the large status table. Build the join over the raw tables instead, where a
+  // pushable `ss.status = 'invoked'` prefilter prunes the scan before the join
+  // (see convertInvocationsFiltersForBaseJoin). Skipped in sampled mode, which
+  // caps the scan on the view by its own strategy.
+  const useBaseJoin = !sampled && shouldUseBaseJoinForStatus(filters);
+
   const idQuery =
     !vqueueBackingOff && !sort && isProcessingPresetFilters(filters)
       ? `SELECT id FROM sys_invocation_state LIMIT ${INVOCATIONS_LIMIT}`
-      : `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`;
+      : useBaseJoin
+        ? `SELECT ${baseIdSelectColumns} FROM sys_invocation_status ss LEFT JOIN sys_invocation_state sis ON sis.id = ss.id ${convertInvocationsFiltersForBaseJoin(
+            filters,
+            { vqueueBackingOff },
+          )} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`
+        : `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`;
 
   const { rows: idRows } = await this.query(idQuery);
 
