@@ -151,7 +151,7 @@ const LIST_SAMPLED_DEFAULT_BY_PRESET: Partial<
   processing: false,
   stuck: true,
   scheduled: true,
-  custom: false,
+  custom: true,
 };
 function getListSampledDefault(preset: InvocationPreset): boolean {
   return LIST_SAMPLED_DEFAULT_BY_PRESET[preset] ?? LIST_SAMPLED_DEFAULT;
