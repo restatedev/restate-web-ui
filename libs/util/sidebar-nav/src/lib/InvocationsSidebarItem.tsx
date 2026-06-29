@@ -6,6 +6,8 @@ import {
 } from '@restate/ui/layout';
 import { IconName } from '@restate/ui/icons';
 import { useLocation } from 'react-router';
+import { useEffect } from 'react';
+import { useRestateContext } from '@restate/features/restate-context';
 import { useInvocationsRecent } from './useInvocationsMemory';
 
 // ─────────────────────────────────────────────────────────────
@@ -48,6 +50,18 @@ const STUCK_MODIFIED_BEFORE_MS = 30 * 60 * 1000;
 
 const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
+    id: 'processing',
+    label: 'Processing',
+    filters: [
+      {
+        id: 'status',
+        operation: 'IN',
+        value: ['running', 'backing-off', 'ready'],
+      },
+    ],
+    sort: SORT_NONE,
+  },
+  {
     id: 'inflight',
     label: 'In-flight',
     filters: [
@@ -74,18 +88,6 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
       },
     ],
     sort: { field: 'modified_at', order: 'ASC' },
-  },
-  {
-    id: 'processing',
-    label: 'Processing',
-    filters: [
-      {
-        id: 'status',
-        operation: 'IN',
-        value: ['running', 'backing-off', 'ready'],
-      },
-    ],
-    sort: SORT_NONE,
   },
   {
     id: 'workflow',
@@ -141,9 +143,13 @@ const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
   id: 'all',
   label: 'All',
   filters: [],
+  // Carry the default columns so the All link is never a truly-empty URL — the
+  // route loader treats only an empty /invocations as a fresh entry to apply
+  // the configured default preset to, so this keeps "All" meaning "All".
+  columns: DEFAULT_PRESET_COLUMNS,
 };
 
-function shortcutHref(path: string, s: InvocationShortcut): string {
+function shortcutSearch(s: InvocationShortcut): string {
   const params = new URLSearchParams();
   for (const f of s.filters) {
     const value =
@@ -170,7 +176,37 @@ function shortcutHref(path: string, s: InvocationShortcut): string {
       params.append('column', col);
     }
   }
-  return `${path}?${params.toString()}`;
+  return params.toString();
+}
+
+function shortcutHref(path: string, s: InvocationShortcut): string {
+  return `${path}?${shortcutSearch(s)}`;
+}
+
+/**
+ * Search string (filters + sort + columns) for a preset id, for callers that
+ * navigate/redirect to a preset without a path (e.g. the /invocations route
+ * loader). Empty for unknown ids.
+ */
+export function getInvocationPresetSearch(id: string): string {
+  const shortcut =
+    id === ALL_INVOCATIONS_SHORTCUT.id
+      ? ALL_INVOCATIONS_SHORTCUT
+      : INVOCATION_SHORTCUTS.find((s) => s.id === id);
+  return shortcut ? shortcutSearch(shortcut) : '';
+}
+
+// Module-level mirror of RestateContext's `defaultInvocationsPreset`, so the
+// /invocations route loader (a plain module function that can't read React
+// context) can apply it. Synced by InvocationsSidebarItem on render. On a cold
+// load it isn't set until the sidebar mounts (after loaders run), so the loader
+// falls back to the All view then — the nav link still points at the preset.
+let configuredDefaultInvocationsPreset: string | undefined;
+export function setDefaultInvocationsPreset(preset: string | undefined) {
+  configuredDefaultInvocationsPreset = preset;
+}
+export function getDefaultInvocationsPreset(): string | undefined {
+  return configuredDefaultInvocationsPreset;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -330,7 +366,19 @@ export function InvocationsSidebarItem({
 }: InvocationsSidebarItemProps) {
   const path = `${baseUrl}/invocations`;
   const { recent } = useInvocationsRecent();
+  const { defaultInvocationsPreset } = useRestateContext();
   const location = useLocation();
+
+  // Mirror the configured default preset to the module store so the route
+  // loader can apply it on the next /invocations navigation.
+  useEffect(() => {
+    setDefaultInvocationsPreset(defaultInvocationsPreset);
+  }, [defaultInvocationsPreset]);
+
+  // The Invocations nav link lands on the configured preset (All when unset).
+  const defaultShortcut =
+    INVOCATION_SHORTCUTS.find((s) => s.id === defaultInvocationsPreset) ??
+    ALL_INVOCATIONS_SHORTCUT;
   const current = classifyInvocationsUrl(
     path,
     location.pathname,
@@ -342,22 +390,27 @@ export function InvocationsSidebarItem({
   const classify = (loc: SidebarLocation) =>
     classifyInvocationsUrl(path, loc.pathname, loc.searchParams);
 
+  const presetSubItems: SidebarSubItem[] = INVOCATION_SHORTCUTS.map((s) => ({
+    href: shortcutHref(path, s),
+    label: s.label,
+    match: ((loc) => {
+      const k = classify(loc);
+      return k?.kind === 'preset' && k.id === s.id;
+    }) satisfies SidebarMatch,
+    preserveSearchParams,
+  }));
+  const allSubItem: SidebarSubItem = {
+    href: shortcutHref(path, ALL_INVOCATIONS_SHORTCUT),
+    label: 'All',
+    match: (loc) => classify(loc)?.kind === 'all',
+    preserveSearchParams,
+  };
+  // Requested rail order: Processing, In-flight, Stuck, then All, then the
+  // rest — so All sits after the first three presets in the sub-item list.
   const subItems: SidebarSubItem[] = [
-    {
-      href: shortcutHref(path, ALL_INVOCATIONS_SHORTCUT),
-      label: 'All',
-      match: (loc) => classify(loc)?.kind === 'all',
-      preserveSearchParams,
-    },
-    ...INVOCATION_SHORTCUTS.map((s) => ({
-      href: shortcutHref(path, s),
-      label: s.label,
-      match: ((loc) => {
-        const k = classify(loc);
-        return k?.kind === 'preset' && k.id === s.id;
-      }) satisfies SidebarMatch,
-      preserveSearchParams,
-    })),
+    ...presetSubItems.slice(0, 3),
+    allSubItem,
+    ...presetSubItems.slice(3),
   ];
 
   // The 5th slot (rendered between the fixed rail and the More dropdown)
@@ -366,7 +419,7 @@ export function InvocationsSidebarItem({
   // - on a custom-filter /invocations URL → "Last query" (active)
   // - on an overflow preset (Idempotent, Most retried, …) → preset label (active)
   // - otherwise fall back to the last remembered detail/custom (not active)
-  // Fixed rail presets (All, In-flight, Stuck, Processing) don't appear here —
+  // Fixed rail presets (Processing, In-flight, Stuck, All) don't appear here —
   // they already have their own row in the rail.
   const FIXED_PRESET_IDS = new Set(['inflight', 'stuck', 'processing']);
 
@@ -428,7 +481,7 @@ export function InvocationsSidebarItem({
 
   return (
     <SidebarNavItem
-      href={shortcutHref(path, ALL_INVOCATIONS_SHORTCUT)}
+      href={shortcutHref(path, defaultShortcut)}
       icon={IconName.Invocation}
       label="Invocations"
       preserveSearchParams={preserveSearchParams}

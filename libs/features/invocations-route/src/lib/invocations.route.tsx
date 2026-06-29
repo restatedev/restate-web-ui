@@ -26,6 +26,8 @@ import {
 } from './userPreferences';
 import {
   getInvocationPreset,
+  getInvocationPresetSearch,
+  getDefaultInvocationsPreset,
   getInvocationsLastQuery,
   matchesAnyInvocationPreset,
   useInvocationsLastQuery,
@@ -1171,6 +1173,20 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   let params = new URLSearchParams(url.searchParams);
   params.sort();
   const originalSearch = params.toString();
+
+  // Fresh, query-less entry to /invocations (typed URL / app landing): apply the
+  // configured default preset. The Invocations nav link and the "All" sub-item
+  // both carry params, so only a truly empty URL reaches here — this avoids
+  // trapping a user who explicitly cleared their filters back to the All view.
+  if (originalSearch === '') {
+    const preset = getDefaultInvocationsPreset();
+    if (preset && preset !== 'all') {
+      const presetSearch = getInvocationPresetSearch(preset);
+      if (presetSearch) {
+        return redirect(`?${presetSearch}`);
+      }
+    }
+  }
 
   // Explicit opt-in to last-filter restoration. The "Back to invocations"
   // link on the detail page navigates here with ?restore=1; no other entry

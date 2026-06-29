@@ -63,10 +63,16 @@ const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
 ) => FilterShortcut[] = (schema) => [
   {
-    id: 'all',
-    label: 'All',
+    id: 'processing',
+    label: 'Processing',
     columns: DEFAULT_PRESET_COLUMNS,
-    filters: [],
+    sort: SORT_NONE,
+    filters: [
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: ['running', 'backing-off', 'ready'],
+      }),
+    ],
   },
   {
     id: 'inflight',
@@ -99,16 +105,10 @@ const makeShortcuts: (
     ],
   },
   {
-    id: 'processing',
-    label: 'Processing',
+    id: 'all',
+    label: 'All',
     columns: DEFAULT_PRESET_COLUMNS,
-    sort: SORT_NONE,
-    filters: [
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: ['running', 'backing-off', 'ready'],
-      }),
-    ],
+    filters: [],
   },
   {
     id: 'workflow',

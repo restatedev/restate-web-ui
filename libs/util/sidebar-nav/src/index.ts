@@ -3,6 +3,9 @@ export {
   InvocationsSidebarItem,
   matchesAnyInvocationPreset,
   getInvocationPreset,
+  getInvocationPresetSearch,
+  getDefaultInvocationsPreset,
+  setDefaultInvocationsPreset,
 } from './lib/InvocationsSidebarItem';
 export type { InvocationPreset } from './lib/InvocationsSidebarItem';
 export type { InvocationsRecent } from './lib/invocationsRecent';
