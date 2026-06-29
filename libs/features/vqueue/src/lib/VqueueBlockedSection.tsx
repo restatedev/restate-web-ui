@@ -8,7 +8,11 @@ import { formatPercentageWithoutFraction } from '@restate/util/intl';
 import { STAGE_TONES, gateLabel, type Tone } from './palette';
 import { durationToSeconds, formatVqueueDuration } from './duration';
 
-const AMBER: Tone = { fillLight: '#fcd34d', stroke: '#f59e0b', text: '#b45309' };
+const AMBER: Tone = {
+  fillLight: '#fcd34d',
+  stroke: '#f59e0b',
+  text: '#b45309',
+};
 
 // Visible neutral for the dominant "queued" slice — the inbox tone (zinc-200) is
 // too light to read on the gray track.
@@ -53,15 +57,31 @@ function barFill(tone: Tone) {
 // multiple on a negligible slice shouldn't shout).
 function ratioColors(ratio: number, muted?: boolean) {
   if (muted) {
-    return { backgroundColor: '#fafafa', borderColor: '#e4e4e7', color: '#a1a1aa' };
+    return {
+      backgroundColor: '#fafafa',
+      borderColor: '#e4e4e7',
+      color: '#a1a1aa',
+    };
   }
   if (ratio > 1.15) {
-    return { backgroundColor: '#fffbeb', borderColor: '#fde68a', color: '#b45309' };
+    return {
+      backgroundColor: '#fffbeb',
+      borderColor: '#fde68a',
+      color: '#b45309',
+    };
   }
   if (ratio < 0.85) {
-    return { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0', color: '#15803d' };
+    return {
+      backgroundColor: '#f0fdf4',
+      borderColor: '#bbf7d0',
+      color: '#15803d',
+    };
   }
-  return { backgroundColor: '#f4f4f5', borderColor: '#e4e4e7', color: '#52525b' };
+  return {
+    backgroundColor: '#f4f4f5',
+    borderColor: '#e4e4e7',
+    color: '#52525b',
+  };
 }
 
 function CompareVerdict({
@@ -191,7 +211,10 @@ export function VqueueBlockedSection({
   if (endToEndS <= 0) {
     return null;
   }
-  const queuedS = Math.max(0, ((firstAttempt ?? finish) - firstRunnable) / 1000);
+  const queuedS = Math.max(
+    0,
+    ((firstAttempt ?? finish) - firstRunnable) / 1000,
+  );
   const executionS = firstAttempt
     ? Math.max(0, (finish - firstAttempt) / 1000)
     : 0;
