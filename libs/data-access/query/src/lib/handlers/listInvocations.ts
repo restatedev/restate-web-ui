@@ -3,7 +3,11 @@ import type {
   components,
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
-import { convertInvocationsFilters } from '../convertFilters';
+import {
+  convertInvocationsFilters,
+  convertInvocationsFiltersForBaseJoin,
+  shouldUseBaseJoinForStatus,
+} from '../convertFilters';
 import {
   type QueryContext,
   getSysInvocationListColumns,
@@ -14,11 +18,16 @@ import { fetchVqueueStatuses, vqueueStatusEnabled } from './vqueue';
 const INVOCATIONS_LIMIT = 250;
 const DEFAULT_SAMPLE_SIZE = 50000;
 
-// The "Processing" preset: status IN running/backing-off/ready and nothing
-// else. Without vqueues these are exactly the rows of sys_invocation_state, so
-// the id scan can hit that small table directly (see below).
-const PROCESSING_STATUSES = ['running', 'backing-off', 'ready'];
-function isProcessingPresetFilters(filters: FilterItem[]): boolean {
+// The state-table-backed statuses: 'running' (in_flight) and 'backing-off'
+// (invoked, not in-flight, retry_count > 0). With vqueues off these map exactly
+// to the rows of sys_invocation_state — every running/backing-off row has a
+// state row, and every state row is one of these two — so the id scan can hit
+// that small table directly (see below). 'ready' is deliberately excluded: a
+// ready invocation has retry_count = 0 and no state row, so it does NOT live in
+// sys_invocation_state; the full processing preset (incl. ready) therefore
+// falls through to the base join, which computes ready correctly.
+const STATE_TABLE_STATUSES = ['running', 'backing-off'];
+function isStateTableStatusFilter(filters: FilterItem[]): boolean {
   if (filters.length !== 1) return false;
   const f = filters[0];
   if (
@@ -30,8 +39,8 @@ function isProcessingPresetFilters(filters: FilterItem[]): boolean {
     return false;
   }
   return (
-    f.value.length === PROCESSING_STATUSES.length &&
-    PROCESSING_STATUSES.every((status) => f.value.includes(status))
+    f.value.length === STATE_TABLE_STATUSES.length &&
+    STATE_TABLE_STATUSES.every((status) => f.value.includes(status))
   );
 }
 
@@ -46,6 +55,12 @@ export async function listInvocations(
   const idSelectColumns = isSortByDuration
     ? `id, ${DURATION_EXPRESSION}`
     : 'id';
+  // Base-join id columns: `id` must be qualified (it exists on both sides of the
+  // join); the duration expression references sys_invocation_status columns
+  // only, so it resolves unambiguously, as do all sortable columns.
+  const baseIdSelectColumns = isSortByDuration
+    ? `ss.id AS id, ${DURATION_EXPRESSION}`
+    : 'ss.id AS id';
   // No sort → omit ORDER BY entirely; rows come back in scan order (fastest).
   const orderBy = sort ? `ORDER BY ${sort.field} ${sort.order}` : '';
   // vqueue-backed backing-off invocations show as 'ready' on the view, so the
@@ -61,17 +76,31 @@ export async function listInvocations(
     ? `(SELECT ${getSysInvocationListColumns(this.features).join(', ')} FROM sys_invocation LIMIT ${sampleSize})`
     : 'sys_invocation';
 
-  // Fast path: the unfiltered, unsorted "Processing" preset maps exactly to the
-  // rows of sys_invocation_state (in-flight invocations), a much smaller table —
-  // scanning it without a status filter avoids a filtered scan over the large
-  // sys_invocation. Only valid with vqueues off; with vqueues the processing
-  // statuses come from the queue overlay rather than this table. The detail
-  // query below re-applies the status filter, so a row that just left the
-  // processing set is dropped rather than shown.
+  // Fast path: with vqueues off, an unsorted running+backing-off filter maps
+  // exactly to the rows of sys_invocation_state (a much smaller table), so scan
+  // it directly instead of filter-scanning the large sys_invocation. 'ready' is
+  // excluded from this preset (it has no state row), so the full processing
+  // preset falls through to the base join below, which computes ready correctly.
+  // Only valid with vqueues off; with vqueues the processing statuses come from
+  // the queue overlay rather than this table. The detail query below re-applies
+  // the status filter, so a row that just left the set is dropped not shown.
+  // A status filter on an invoked-derived status (running/backing-off/ready)
+  // can't be pushed into the sys_invocation view's scan, forcing a full scan of
+  // the large status table. Build the join over the raw tables instead, where a
+  // pushable `ss.status = 'invoked'` prefilter prunes the scan before the join
+  // (see convertInvocationsFiltersForBaseJoin). Skipped in sampled mode, which
+  // caps the scan on the view by its own strategy.
+  const useBaseJoin = !sampled && shouldUseBaseJoinForStatus(filters);
+
   const idQuery =
-    !vqueueBackingOff && !sort && isProcessingPresetFilters(filters)
+    !vqueueBackingOff && !sort && isStateTableStatusFilter(filters)
       ? `SELECT id FROM sys_invocation_state LIMIT ${INVOCATIONS_LIMIT}`
-      : `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`;
+      : useBaseJoin
+        ? `SELECT ${baseIdSelectColumns} FROM sys_invocation_status ss LEFT JOIN sys_invocation_state sis ON sis.id = ss.id ${convertInvocationsFiltersForBaseJoin(
+            filters,
+            { vqueueBackingOff },
+          )} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`
+        : `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`;
 
   const { rows: idRows } = await this.query(idQuery);
 

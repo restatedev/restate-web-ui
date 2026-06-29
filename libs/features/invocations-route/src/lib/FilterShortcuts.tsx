@@ -70,7 +70,7 @@ const makeShortcuts: (
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
-        value: ['running', 'backing-off', 'ready'],
+        value: ['running', 'backing-off'],
       }),
     ],
   },
@@ -81,7 +81,7 @@ const makeShortcuts: (
     filters: [
       toClause(schema, 'status', {
         operation: 'NOT_IN',
-        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+        value: ['succeeded', 'failed', 'cancelled', 'killed', 'scheduled'],
       }),
     ],
   },
@@ -109,6 +109,17 @@ const makeShortcuts: (
     label: 'All',
     columns: DEFAULT_PRESET_COLUMNS,
     filters: [],
+  },
+  {
+    id: 'notcompleted',
+    label: 'Not completed',
+    columns: DEFAULT_PRESET_COLUMNS,
+    filters: [
+      toClause(schema, 'status', {
+        operation: 'NOT_IN',
+        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+      }),
+    ],
   },
   {
     id: 'workflow',
