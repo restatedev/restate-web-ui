@@ -26,9 +26,11 @@ const chevronStyles = tv({
 export function VqueueCard({
   data,
   showService = true,
+  showStatus = true,
 }: {
   data: InvocationVqueue;
   showService?: boolean;
+  showStatus?: boolean;
 }) {
   const [showActivity, setShowActivity] = useState(false);
   const identity = data.identity ?? {};
@@ -141,7 +143,9 @@ export function VqueueCard({
                 </span>
               ))
             )}
-            {!statusBelowHead && <VqueueStatus data={data} variant="default" />}
+            {showStatus && !statusBelowHead && (
+              <VqueueStatus data={data} variant="default" />
+            )}
           </div>
           {showSubtitle && (
             <div className="flex flex-wrap items-center gap-1.5">

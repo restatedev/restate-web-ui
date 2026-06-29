@@ -15,12 +15,14 @@ type LifeCycleEvent =
   | Extract<JournalEntryV2, { type?: 'Created'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Scheduled'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Paused'; category?: 'event' }>
+  | Extract<JournalEntryV2, { type?: 'Queued'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Retrying'; category?: 'event' }>;
 
 export function lifeCycles(
   eventRawEntries: JournalRawEntry[],
   allocateSyntheticIndex: () => number,
   invocation?: Invocation,
+  vqueue?: { first_runnable_at?: string; first_attempt_at?: string },
 ): LifeCycleEvent[] {
   if (!invocation) {
     return [];
@@ -53,6 +55,18 @@ export function lifeCycles(
       end: invocation.scheduled_start_at,
       isPending: invocation.status === 'scheduled',
       index: -3,
+    });
+  }
+  if (vqueue?.first_runnable_at) {
+    events.push({
+      type: 'Queued',
+      start: vqueue.first_runnable_at,
+      category: 'event',
+      end: vqueue.first_attempt_at,
+      isPending:
+        !vqueue.first_attempt_at &&
+        new Date(vqueue.first_runnable_at).getTime() <= Date.now(),
+      index: -1,
     });
   }
   if (invocation.completed_at) {

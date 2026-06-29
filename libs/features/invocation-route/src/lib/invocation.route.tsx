@@ -16,7 +16,7 @@ import { JournalV2 } from './JournalV2';
 import { Target } from '@restate/features/invocation-ui';
 import { useRestateContext } from '@restate/features/restate-context';
 import { InvocationPageProvider } from '@restate/features/invocation-ui';
-import { Vqueue } from '@restate/features/vqueue';
+import { Vqueue, VqueueBlockedSection } from '@restate/features/vqueue';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
@@ -234,6 +234,13 @@ function Component() {
       raised
     />
   );
+  const vqueueBlockedCard = (
+    <VqueueBlockedSection
+      total={journalAndInvocationData?.vqueueBlocked?.total}
+      latestAttempt={journalAndInvocationData?.vqueueBlocked?.latestAttempt}
+      className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+    />
+  );
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
@@ -287,12 +294,14 @@ function Component() {
                   )}
                   {keysIdsCard}
                   {deploymentCard}
+                  {vqueueBlockedCard}
                 </div>
                 <div className="min-w-0 grow basis-0 lg:grow-[2]">
                   <Vqueue
                     vqueueId={journalAndInvocationData?.vqueue_id}
                     invocationId={id}
                     showService={false}
+                    showStatus={false}
                   />
                 </div>
               </div>

@@ -10,6 +10,7 @@ const LIFECYCLE_EVENT_TYPES = new Set([
   'Created',
   'Running',
   'Pending',
+  'Queued',
   'Scheduled',
   'Suspended',
   'Paused',
@@ -238,6 +239,12 @@ function shouldIncludeEntry(
   // Raw completion events are internal — results land on the command via
   // relatedEntries instead.
   if (entry.category === 'event' && entry.type === 'Completion') {
+    return false;
+  }
+  if (entry.category === 'event' && entry.type === 'Pending') {
+    return false;
+  }
+  if (entry.category === 'notification' && entry.type === '') {
     return false;
   }
   // CallInvocationId notifications are an implementation detail.

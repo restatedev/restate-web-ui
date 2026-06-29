@@ -42,6 +42,7 @@ const LIFECYCLE_TIME: Partial<
   Created: {},
   Running: { connector: 'since', durationWhenEnded: true },
   Pending: { connector: 'since', durationWhenEnded: true },
+  Queued: { connector: 'since', durationWhenEnded: true },
   Scheduled: { useEnd: true },
   Suspended: { connector: 'at' },
   Paused: { connector: 'at' },
@@ -55,6 +56,7 @@ export function LifeCycle({
 }: EntryProps<
   | Extract<JournalEntryV2, { type?: 'Created'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Pending'; category?: 'event' }>
+  | Extract<JournalEntryV2, { type?: 'Queued'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Scheduled'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Completion'; category?: 'event' }>
   | Extract<JournalEntryV2, { type?: 'Killed'; category?: 'event' }>

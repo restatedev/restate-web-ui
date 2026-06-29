@@ -109,6 +109,7 @@ export const ENTRY_EVENTS_COMPONENTS: {
   Running: LifeCycle,
   Suspended: LifeCycle,
   Pending: LifeCycle,
+  Queued: LifeCycle,
   Completion: undefined,
   Retrying: LifeCycle,
   Scheduled: LifeCycle,

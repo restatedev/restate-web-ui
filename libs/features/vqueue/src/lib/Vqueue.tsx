@@ -16,11 +16,13 @@ export function Vqueue({
   invocationId,
   enabled = true,
   showService = true,
+  showStatus = true,
 }: {
   vqueueId?: string;
   invocationId?: string;
   enabled?: boolean;
   showService?: boolean;
+  showStatus?: boolean;
 }) {
   const flagEnabled = useIsFeatureFlagEnabled('FEATURE_VQUEUE_OBSERVABILITY');
   const { data, isPending, error, dataUpdatedAt } = useGetVqueue(
@@ -72,7 +74,11 @@ export function Vqueue({
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-      <VqueueCard data={data} showService={showService} />
+      <VqueueCard
+        data={data}
+        showService={showService}
+        showStatus={showStatus}
+      />
     </SnapshotTimeProvider>
   );
 }

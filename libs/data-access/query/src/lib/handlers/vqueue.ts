@@ -1,3 +1,4 @@
+import type { VqueueGateDuration } from '@restate/data-access/admin-api-spec';
 import type { VqueueStatus } from '../convertInvocation';
 import { type QueryContext, quoteSqlString } from './shared';
 
@@ -36,7 +37,7 @@ export async function fetchVqueueStatus(
   }
 
   const { rows } = await ctx.query(
-    `SELECT status, run_at, num_attempts, latest_attempt_at FROM sys_vqueues WHERE id = ${quoteSqlString(vqueueId)} AND entry_id = ${quoteSqlString(invocationId)}`,
+    `SELECT status, run_at, num_attempts, latest_attempt_at, first_runnable_at, first_attempt_at FROM sys_vqueues WHERE id = ${quoteSqlString(vqueueId)} AND entry_id = ${quoteSqlString(invocationId)}`,
   );
   const row = rows.at(0);
   return row
@@ -45,6 +46,8 @@ export async function fetchVqueueStatus(
         run_at: row.run_at as string,
         num_attempts: row.num_attempts as number,
         latest_attempt_at: row.latest_attempt_at as string,
+        first_runnable_at: row.first_runnable_at as string,
+        first_attempt_at: row.first_attempt_at as string,
       }
     : undefined;
 }
@@ -83,4 +86,53 @@ export async function fetchVqueueStatuses(
     }
   }
   return statuses;
+}
+
+const BLOCKED_GATES = [
+  'concurrency_rules',
+  'throttling_rules',
+  'invoker_concurrency',
+  'invoker_throttling',
+  'invoker_memory',
+  'lock',
+  'deployment_concurrency',
+] as const;
+
+export interface VqueueBlocked {
+  total: VqueueGateDuration[];
+  latestAttempt: VqueueGateDuration[];
+}
+
+export async function fetchVqueueEntryBlocked(
+  ctx: QueryContext,
+  invocationId: string,
+): Promise<VqueueBlocked | undefined> {
+  if (!invocationId || !vqueueStatusEnabled(ctx)) {
+    return undefined;
+  }
+  const columns = BLOCKED_GATES.flatMap((gate) => [
+    `total_blocked_on_${gate}`,
+    `latest_attempt_blocked_on_${gate}`,
+  ]);
+  const { rows } = await ctx.query(
+    `SELECT ${columns.join(', ')} FROM sys_vqueue_entry_status WHERE entry_id = ${quoteSqlString(invocationId)}`,
+  );
+  const row = rows.at(0);
+  if (!row) {
+    return undefined;
+  }
+  const build = (prefix: string): VqueueGateDuration[] => {
+    const out: VqueueGateDuration[] = [];
+    for (const gate of BLOCKED_GATES) {
+      const value = row[`${prefix}${gate}`];
+      if (typeof value === 'string' && value) {
+        out.push({ gate, duration: value });
+      }
+    }
+    return out;
+  };
+  return {
+    total: build('total_blocked_on_'),
+    latestAttempt: build('latest_attempt_blocked_on_'),
+  };
 }

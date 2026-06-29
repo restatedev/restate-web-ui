@@ -280,7 +280,7 @@ function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
   ) {
     return 'idleNeutral';
   }
-  if (entry?.type === 'Pending') {
+  if (entry?.type === 'Pending' || entry?.type === 'Queued') {
     return 'idlePending';
   }
   if (entry?.type === 'Paused') {

@@ -1875,6 +1875,24 @@
                     {
                       "type": "object",
                       "properties": {
+                        "vqueueBlocked": {
+                          "type": "object",
+                          "description": "Blocked-time breakdown from sys_vqueue_entry_status: total over the queue's life and over the last attempt.",
+                          "properties": {
+                            "total": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/VqueueGateDuration"
+                              }
+                            },
+                            "latestAttempt": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/VqueueGateDuration"
+                              }
+                            }
+                          }
+                        },
                         "journal": {
                           "type": "object",
                           "properties": {
@@ -4981,6 +4999,9 @@
                 "$ref": "#/components/schemas/PendingLifecycleJournalEntryV2"
               },
               {
+                "$ref": "#/components/schemas/QueuedLifecycleJournalEntryV2"
+              },
+              {
                 "$ref": "#/components/schemas/CompletionLifecycleJournalEntryV2"
               },
               {
@@ -5796,6 +5817,19 @@
           "type": {
             "type": "string",
             "enum": ["Pending"]
+          }
+        }
+      },
+      "QueuedLifecycleJournalEntryV2": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["event"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["Queued"]
           }
         }
       },
