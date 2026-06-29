@@ -197,8 +197,8 @@ function SampleModeToggle({
   );
 }
 // Segmented control matching the JournalDetailToggle's inset-container +
-// white "active" pill. Shares the hero's estimate/exact state: "Sampled" caps
-// the scan for speed, "Full scan" counts every invocation.
+// white "active" pill. Drives the table's own sampling: "Partial" caps the scan
+// for speed; "Complete" counts every invocation.
 const sampleScanToggleStyles = tv({
   slots: {
     // Track outline is an inset box-shadow, not a real border, so the
@@ -234,20 +234,7 @@ function SampleScanToggle({
   return (
     <div className={container()}>
       <HoverTooltip
-        content="Count every invocation — accurate but slower on large datasets"
-        placement="top"
-        className="block"
-      >
-        <Button
-          variant="secondary"
-          onClick={() => onChange(false)}
-          className={segment({ active: !sampled })}
-        >
-          Full scan
-        </Button>
-      </HoverTooltip>
-      <HoverTooltip
-        content="Scan a sample for faster results"
+        content="A fast, partial scan — loads quickly, but may leave some results out."
         placement="top"
         className="block"
       >
@@ -256,9 +243,39 @@ function SampleScanToggle({
           onClick={() => onChange(true)}
           className={segment({ active: sampled })}
         >
-          Sampled
+          Partial
         </Button>
       </HoverTooltip>
+      <HoverTooltip
+        content="Scans every invocation for exact results, with accurate totals and sorting."
+        placement="top"
+        className="block"
+      >
+        <Button
+          variant="secondary"
+          onClick={() => onChange(false)}
+          className={segment({ active: !sampled })}
+        >
+          Complete
+        </Button>
+      </HoverTooltip>
+    </div>
+  );
+}
+
+// Shown above the table while the list is sampled: the rows are a partial,
+// unsorted slice, so counts/order can't be trusted as the full picture.
+function SampleNotice() {
+  return (
+    <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-2 text-xs text-blue-700">
+      <Icon
+        name={IconName.Info}
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500"
+      />
+      <span>
+        Showing partial results — some may be missing, and totals and sorting
+        may be misleading.
+      </span>
     </div>
   );
 }
@@ -702,6 +719,7 @@ function Component() {
             <ContentPanelSection flush>
               <PanelTable
                 aria-label="Invocations"
+                caption={listSampled && !error ? <SampleNotice /> : undefined}
                 columns={panelColumns}
                 items={currentPageItems}
                 selectionMode="multiple"
