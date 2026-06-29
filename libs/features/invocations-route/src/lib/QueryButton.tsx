@@ -9,9 +9,12 @@ import {
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { COLUMN_NAMES } from './columns';
-import { SortInvocations } from '@restate/data-access/admin-api-spec';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
-import { SORT_COLUMN_KEYS } from './useInvocationsQueryFilters';
+import {
+  SORT_COLUMN_KEYS,
+  SORT_NONE,
+  type SortSelection,
+} from './useInvocationsQueryFilters';
 
 function QueryButton({
   operation,
@@ -27,9 +30,13 @@ function QueryButton({
       variant="secondary"
       className="flex min-w-0 shrink-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
     >
-      <span className="font-mono">{operation}</span>
-      <span className="shrink-0 whitespace-nowrap">{field}</span>
-      <span className="truncate font-semibold">{value}</span>
+      {operation != null && <span className="font-mono">{operation}</span>}
+      {field != null && (
+        <span className="shrink-0 whitespace-nowrap">{field}</span>
+      )}
+      {value != null && (
+        <span className="truncate font-semibold">{value}</span>
+      )}
       <Icon
         name={IconName.ChevronsUpDown}
         className="ml-2 h-3.5 w-3.5 shrink-0"
@@ -42,24 +49,33 @@ export function Sort({
   setSortParams,
   sortParams,
 }: {
-  sortParams: SortInvocations;
-  setSortParams: Dispatch<SetStateAction<SortInvocations>>;
+  sortParams: SortSelection;
+  setSortParams: Dispatch<SetStateAction<SortSelection>>;
 }) {
+  const isNone = sortParams.field === SORT_NONE;
   return (
     <Dropdown>
       <DropdownTrigger>
         <QueryButton
-          field="Sort by"
-          value={COLUMN_NAMES[sortParams.field]}
+          field={isNone ? 'No sorting' : 'Sort by'}
+          value={
+            sortParams.field === SORT_NONE
+              ? undefined
+              : COLUMN_NAMES[sortParams.field]
+          }
           operation={
-            <Icon
-              name={
-                sortParams.order === 'ASC'
-                  ? IconName.ArrowUp
-                  : IconName.ArrowDown
-              }
-              className="h-3.5 w-3.5"
-            />
+            isNone ? (
+              <Icon name={IconName.Minus} className="h-3.5 w-3.5" />
+            ) : (
+              <Icon
+                name={
+                  sortParams.order === 'ASC'
+                    ? IconName.ArrowUp
+                    : IconName.ArrowDown
+                }
+                className="h-3.5 w-3.5"
+              />
+            )
           }
         />
       </DropdownTrigger>
@@ -71,10 +87,13 @@ export function Sort({
             onSelect={(value) =>
               setSortParams((sortParams) => ({
                 ...sortParams,
-                field: value as SortInvocations['field'],
+                field: value as SortSelection['field'],
               }))
             }
           >
+            <DropdownItem key={SORT_NONE} value={SORT_NONE}>
+              No sorting
+            </DropdownItem>
             {SORT_COLUMN_KEYS.map((item) => (
               <DropdownItem key={item} value={item}>
                 {COLUMN_NAMES[item]}
@@ -82,21 +101,23 @@ export function Sort({
             ))}
           </DropdownMenu>
         </DropdownSection>
-        <DropdownSection>
-          <DropdownMenu
-            selectable
-            selectedItems={[sortParams?.order]}
-            onSelect={(value) =>
-              setSortParams((sortParams) => ({
-                ...sortParams,
-                order: value as SortInvocations['order'],
-              }))
-            }
-          >
-            <DropdownItem value="ASC">Ascending</DropdownItem>
-            <DropdownItem value="DESC">Descending</DropdownItem>
-          </DropdownMenu>
-        </DropdownSection>
+        {!isNone && (
+          <DropdownSection>
+            <DropdownMenu
+              selectable
+              selectedItems={[sortParams?.order]}
+              onSelect={(value) =>
+                setSortParams((sortParams) => ({
+                  ...sortParams,
+                  order: value as SortSelection['order'],
+                }))
+              }
+            >
+              <DropdownItem value="ASC">Ascending</DropdownItem>
+              <DropdownItem value="DESC">Descending</DropdownItem>
+            </DropdownMenu>
+          </DropdownSection>
+        )}
       </DropdownPopover>
     </Dropdown>
   );
