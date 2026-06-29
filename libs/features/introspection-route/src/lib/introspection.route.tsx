@@ -41,6 +41,10 @@ function Component() {
     useSqlQuery(query, {
       enabled: Boolean(query),
       refetchOnMount: false,
+      // This SQL query is explicit and user-initiated (and can be expensive),
+      // so don't silently re-run it just because the window regained focus
+      // after switching back from another window/tab.
+      refetchOnWindowFocus: false,
     });
   const queryCLient = useQueryClient();
 

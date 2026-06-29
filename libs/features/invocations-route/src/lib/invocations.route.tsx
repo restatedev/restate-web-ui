@@ -414,6 +414,8 @@ function Component() {
   } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
     sampled: summarySampled,
     sampleSize: summarySampled ? SAMPLE_SIZE : undefined,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
   const { data: deploymentsData } = useListDeployments();
@@ -460,7 +462,7 @@ function Component() {
       sampleSize: listSampled ? SAMPLE_SIZE : undefined,
     },
     {
-      refetchOnMount: true,
+      refetchOnMount: false,
       refetchOnReconnect: false,
       staleTime: 0,
       refetchOnWindowFocus: false,
