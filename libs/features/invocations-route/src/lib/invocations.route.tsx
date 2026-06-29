@@ -886,6 +886,20 @@ function Component() {
                         className="w-full rounded-xl text-left"
                       />
                     </EmptyState>
+                  ) : listSampled && totalCount > 0 ? (
+                    <EmptyState
+                      icon={IconName.ScanSearch}
+                      title="No matches in this partial scan"
+                      description="Some invocations match, but this partial scan didn’t surface them. Run a complete scan to search every invocation."
+                    >
+                      <Button
+                        variant="primary"
+                        onClick={() => setListSampledOverride(false)}
+                        className="rounded-lg px-3 py-1 text-xs"
+                      >
+                        Run a complete scan
+                      </Button>
+                    </EmptyState>
                   ) : (
                     <EmptyState
                       icon={IconName.Invocation}
