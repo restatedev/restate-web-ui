@@ -10,7 +10,12 @@ export const DEFAULT_INVOCATION_COLUMNS = [
 ];
 
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
-const NON_IN_FLIGHT_STATUSES = ['succeeded', 'failed', 'cancelled', 'killed'];
+const COMPLETED_STATUSES = ['succeeded', ...FAILED_SUBSTATES];
+// Scheduled invocations haven't started executing yet, so they're neither
+// completed nor in-flight — excluded from the in-flight view too. Keep this in
+// sync with the In-flight preset (INVOCATION_SHORTCUTS / makeShortcuts),
+// including value order, so links built here still resolve to that preset.
+const NON_IN_FLIGHT_STATUSES = [...COMPLETED_STATUSES, 'scheduled'];
 
 function resolveStatuses(statusName: string, expandFailed = true): string[] {
   if (expandFailed && statusName === 'failed') return FAILED_SUBSTATES;
@@ -73,7 +78,7 @@ export function toCompletedInvocationsBucketHref(
       ? ['succeeded']
       : outcome === 'failed'
         ? FAILED_SUBSTATES
-        : NON_IN_FLIGHT_STATUSES;
+        : COMPLETED_STATUSES;
   params.set(
     'filter_status',
     JSON.stringify({ operation: 'IN', value: statusValues }),
@@ -129,7 +134,7 @@ export function toCompletedInvocationsHref(
   const params = buildParams(existingParams);
   params.set(
     'filter_status',
-    JSON.stringify({ operation: 'IN', value: NON_IN_FLIGHT_STATUSES }),
+    JSON.stringify({ operation: 'IN', value: COMPLETED_STATUSES }),
   );
   return `${baseUrl}/invocations?${params.toString()}`;
 }

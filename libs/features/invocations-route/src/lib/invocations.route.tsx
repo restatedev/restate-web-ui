@@ -139,7 +139,7 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 const PAGE_SIZE = 30;
-const SAMPLE_SIZE = 200_000;
+const SAMPLE_SIZE = 1_000_000;
 // How long the loading skeleton may be up before we reassure the user with the
 // slow-query banner.
 const SLOW_QUERY_MS = 5_000;
