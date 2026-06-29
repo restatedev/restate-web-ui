@@ -303,6 +303,30 @@ function getStatusFilterString(value?: string): {
   }
 }
 
+// The completed-derived UI statuses: not stored statuses, each is
+// status = 'completed' refined by completion_result/completion_failure.
+const COMPLETED_SUBSTATES = ['succeeded', 'failed', 'cancelled', 'killed'];
+
+// Collapse the completed family to a single 'completed' when a filter carries
+// the whole set (or an explicit 'completed'). 'completed' is one pushable
+// raw-status predicate that matches every completed row exactly; the substates'
+// completion_failure lists have gaps (e.g. '[409] Error 409' is excluded from
+// 'failed' yet not matched by 'killed'/'cancelled'), so the expanded form both
+// blocks scan pruning and keeps a few completed rows the umbrella drops. A
+// partial set (e.g. just 'failed') is left untouched.
+function normalizeCompletedStatuses(values: string[]): string[] {
+  const set = new Set(values);
+  const collapses =
+    set.has('completed') || COMPLETED_SUBSTATES.every((value) => set.has(value));
+  if (!collapses) {
+    return values;
+  }
+  const rest = values.filter(
+    (value) => value !== 'completed' && !COMPLETED_SUBSTATES.includes(value),
+  );
+  return [...rest, 'completed'];
+}
+
 // An invocation "belongs to" a deployment via either the deployment that last
 // attempted it or the one it's pinned to. Both columns exist on the
 // sys_invocation view; sys_invocation_status only has pinned_deployment_id
@@ -419,17 +443,19 @@ function invocationsFilterClauses(
   }
   if (statusFilters.length > 0) {
     statusFilters.forEach((statusFilter) => {
+      // Collapse the completed family to a single 'completed' (see
+      // normalizeCompletedStatuses); only a STRING_LIST can carry the full set.
+      const values =
+        statusFilter.type === 'STRING_LIST'
+          ? normalizeCompletedStatuses(statusFilter.value)
+          : statusFilter.type === 'STRING' && statusFilter.value !== undefined
+            ? [statusFilter.value]
+            : [];
       // The backing-off/ready rewrite only changes the result when exactly one
       // of them is selected (it shifts vqueue-backed rows across that boundary).
       // When both are present the union equals the plain terms, so skip the
       // rewrite — and its sys_vqueues semi-joins — entirely.
-      const statusValues = new Set<string | undefined>(
-        statusFilter.type === 'STRING_LIST'
-          ? statusFilter.value
-          : statusFilter.type === 'STRING'
-            ? [statusFilter.value]
-            : [],
-      );
+      const statusValues = new Set<string | undefined>(values);
       const rewriteStatus = (value?: string) =>
         vqueueBackingOff &&
         isVqueueRewrittenStatus(value) &&
@@ -460,7 +486,7 @@ function invocationsFilterClauses(
         statusFilter.operation === 'IN'
       ) {
         mappedFilters.push(
-          `(${statusFilter.value
+          `(${values
             .map((value) => {
               if (rewriteStatus(value)) {
                 return vqueueStatusClause(value);
@@ -486,7 +512,7 @@ function invocationsFilterClauses(
         statusFilter.operation === 'NOT_IN'
       ) {
         mappedFilters.push(
-          `(${statusFilter.value
+          `(${values
             .map((value) => {
               if (rewriteStatus(value)) {
                 return `NOT ${vqueueStatusClause(value)}`;
@@ -566,6 +592,24 @@ const COMPUTED_TO_RAW_STATUS: Record<string, string> = {
   cancelled: 'completed',
 };
 
+// Raw sys_invocation_status.status enum value -> the computed statuses that map
+// to it. A NOT_IN filter can prune a raw status at the scan only when *every*
+// computed status here is excluded (e.g. all of running/backing-off/ready to
+// drop 'invoked'). 'completed' uses the umbrella value only; excluding just its
+// substates (succeeded/failed/…) stays a post-join filter, never a wrong
+// result.
+const RAW_TO_COMPUTED: Record<string, readonly string[]> = {
+  inboxed: ['pending'],
+  scheduled: ['scheduled'],
+  suspended: ['suspended'],
+  paused: ['paused'],
+  invoked: ['running', 'backing-off', 'ready'],
+  completed: ['completed'],
+};
+
+const POSITIVE_STATUS_OPS = new Set(['IN', 'EQUALS']);
+const NEGATIVE_STATUS_OPS = new Set(['NOT_IN', 'NOT_EQUALS']);
+
 // Translate one computed-status value into a predicate over the raw join.
 // `selectedValues` is the rest of the same filter's values: when both
 // backing-off and ready are selected their union is the plain
@@ -583,12 +627,12 @@ function baseJoinStatusClause(
       return "ss.status = 'invoked' AND sis.in_flight";
     case 'backing-off':
       return vqueueBackingOff && !selectedValues.has('ready')
-        ? `ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND (sis.retry_count > 0 OR ss.id IN (${VQUEUE_BACKING_OFF_SET}))`
-        : "ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND sis.retry_count > 0";
+        ? `ss.status = 'invoked' AND (sis.in_flight IS NOT TRUE) AND (sis.retry_count > 0 OR ss.id IN (${VQUEUE_BACKING_OFF_SET}))`
+        : "ss.status = 'invoked' AND (sis.in_flight IS NOT TRUE) AND sis.retry_count > 0";
     case 'ready':
       return vqueueBackingOff && !selectedValues.has('backing-off')
-        ? `ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND COALESCE(sis.retry_count, 0) = 0 AND ss.id NOT IN (${VQUEUE_BACKING_OFF_SET})`
-        : "ss.status = 'invoked' AND sis.in_flight IS DISTINCT FROM TRUE AND COALESCE(sis.retry_count, 0) = 0";
+        ? `ss.status = 'invoked' AND (sis.in_flight IS NOT TRUE) AND COALESCE(sis.retry_count, 0) = 0 AND ss.id NOT IN (${VQUEUE_BACKING_OFF_SET})`
+        : "ss.status = 'invoked' AND (sis.in_flight IS NOT TRUE) AND COALESCE(sis.retry_count, 0) = 0";
     default: {
       // scheduled / suspended / paused / completed / succeeded / failed /
       // killed / cancelled already resolve to raw ss.status (+ completion_*)
@@ -609,39 +653,56 @@ function baseJoinStatusClause(
   }
 }
 
+// Values of one status filter, normalized to a string[] (an unset STRING value
+// contributes nothing).
+function statusFilterValues(filter: FilterItem): string[] {
+  if (filter.type === 'STRING_LIST') {
+    return filter.value;
+  }
+  if (filter.type === 'STRING' && filter.value !== undefined) {
+    return [filter.value];
+  }
+  return [];
+}
+
 // Whether the id query should be built over the raw base join instead of the
-// sys_invocation view. True only when a positive (IN/EQUALS) status filter
-// targets an invoked-derived status — exactly the case the view can't push
-// down. Terminal-only and negated status filters keep using the view.
+// sys_invocation view. True only when a status filter can't be pushed into the
+// view's scan but can on the raw join:
+//   - positive (IN/EQUALS) targeting an invoked-derived status, or
+//   - negated (NOT_IN/NOT_EQUALS) excluding *all* invoked-derived statuses,
+//     which yields a pushable `ss.status NOT IN ('invoked')` prefilter.
+// Terminal-only filters (already pushed down on the view) and negated subsets
+// of the invoked statuses (no pushable prefilter) keep using the view.
 export function shouldUseBaseJoinForStatus(filters: FilterItem[]): boolean {
   const statusFilters = filters.filter((filter) => filter.field === 'status');
   if (statusFilters.length === 0) {
     return false;
   }
-  const allPositive = statusFilters.every(
+  // Only IN/EQUALS/NOT_IN/NOT_EQUALS are translated to the raw join.
+  const allSupported = statusFilters.every(
     (filter) =>
-      (filter.type === 'STRING_LIST' && filter.operation === 'IN') ||
-      (filter.type === 'STRING' && filter.operation === 'EQUALS'),
+      POSITIVE_STATUS_OPS.has(filter.operation) ||
+      NEGATIVE_STATUS_OPS.has(filter.operation),
   );
-  if (!allPositive) {
+  if (!allSupported) {
     return false;
   }
   return statusFilters.some((filter) => {
-    const values =
-      filter.type === 'STRING_LIST'
-        ? filter.value
-        : filter.type === 'STRING' && filter.value !== undefined
-          ? [filter.value]
-          : [];
-    return values.some((value) => INVOKED_DERIVED_STATUSES.has(value));
+    const values = statusFilterValues(filter);
+    if (POSITIVE_STATUS_OPS.has(filter.operation)) {
+      return values.some((value) => INVOKED_DERIVED_STATUSES.has(value));
+    }
+    return [...INVOKED_DERIVED_STATUSES].every((status) =>
+      values.includes(status),
+    );
   });
 }
 
 // WHERE clause for the base join. Non-status filters are plain column
 // predicates valid on either base table, so they reuse the shared builder;
-// status filters are translated to the raw predicates above and fronted with a
-// pushable `ss.status IN (...)` prefilter. Only positive status filters reach
-// here (see shouldUseBaseJoinForStatus).
+// status filters are translated to the raw predicates above and fronted with
+// pushable `ss.status IN (...)` / `NOT IN (...)` prefilters. Handles both
+// positive (IN/EQUALS) and negated (NOT_IN/NOT_EQUALS) status filters.
 export function convertInvocationsFiltersForBaseJoin(
   filters: FilterItem[],
   options: { vqueueBackingOff?: boolean } = {},
@@ -654,43 +715,68 @@ export function convertInvocationsFiltersForBaseJoin(
   );
 
   const statusFilters = filters.filter((filter) => filter.field === 'status');
-  const rawStatuses = new Set<string>();
-  // Only emit the prefilter when every value maps to a known raw status; an
+  const includeRaw = new Set<string>();
+  // Only emit the IN prefilter when every value maps to a known raw status; an
   // unmapped value could otherwise be wrongly excluded by the IN list.
-  let allKnown = true;
+  let includeAllKnown = true;
+  const excludeRaw = new Set<string>();
   const statusClauses: string[] = [];
 
   for (const statusFilter of statusFilters) {
-    const values =
-      statusFilter.type === 'STRING_LIST'
-        ? statusFilter.value
-        : statusFilter.type === 'STRING' && statusFilter.value !== undefined
-          ? [statusFilter.value]
-          : [];
+    const values = normalizeCompletedStatuses(statusFilterValues(statusFilter));
     const selected = new Set<string>(values);
-    for (const value of values) {
-      const raw = COMPUTED_TO_RAW_STATUS[value];
-      if (raw) {
-        rawStatuses.add(raw);
-      } else {
-        allKnown = false;
+
+    if (NEGATIVE_STATUS_OPS.has(statusFilter.operation)) {
+      // Negated: AND of the NULL-safe negations. `IS NOT TRUE` (not `NOT`) so
+      // an invoked row with no state row — clause NULL — is kept, matching the
+      // view, whose computed status column is never null.
+      for (const [raw, computed] of Object.entries(RAW_TO_COMPUTED)) {
+        if (computed.every((status) => selected.has(status))) {
+          excludeRaw.add(raw);
+        }
       }
+      statusClauses.push(
+        `(${values
+          .map(
+            (value) =>
+              `((${baseJoinStatusClause(value, vqueueBackingOff, selected)}) IS NOT TRUE)`,
+          )
+          .join(' AND ')})`,
+      );
+    } else {
+      // Positive: OR of the per-value clauses; collect the raw statuses they
+      // touch for a pushable `ss.status IN (...)` prefilter.
+      for (const value of values) {
+        const raw = COMPUTED_TO_RAW_STATUS[value];
+        if (raw) {
+          includeRaw.add(raw);
+        } else {
+          includeAllKnown = false;
+        }
+      }
+      statusClauses.push(
+        `(${values
+          .map(
+            (value) =>
+              `(${baseJoinStatusClause(value, vqueueBackingOff, selected)})`,
+          )
+          .join(' OR ')})`,
+      );
     }
-    statusClauses.push(
-      `(${values
-        .map(
-          (value) =>
-            `(${baseJoinStatusClause(value, vqueueBackingOff, selected)})`,
-        )
-        .join(' OR ')})`,
-    );
   }
 
-  // Pushable prefilter first: the raw ss.status predicate the scan prunes on,
+  // Pushable prefilters first: the raw ss.status predicates the scan prunes on,
   // logically implied by statusClauses but invisible to the planner without it.
-  if (allKnown && rawStatuses.size > 0) {
+  if (excludeRaw.size > 0) {
     clauses.unshift(
-      `ss.status IN (${[...rawStatuses]
+      `ss.status NOT IN (${[...excludeRaw]
+        .map((status) => `'${status}'`)
+        .join(', ')})`,
+    );
+  }
+  if (includeAllKnown && includeRaw.size > 0) {
+    clauses.unshift(
+      `ss.status IN (${[...includeRaw]
         .map((status) => `'${status}'`)
         .join(', ')})`,
     );
