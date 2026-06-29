@@ -46,6 +46,7 @@ type RestateContext = {
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
+  observabilityDashboardUrl?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -82,6 +83,7 @@ function InternalRestateContextProvider({
   systemHealthMonitor,
   ingressUrl,
   baseUrl = '',
+  observabilityDashboardUrl,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -97,6 +99,7 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
+  observabilityDashboardUrl?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -162,6 +165,7 @@ function InternalRestateContextProvider({
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,
+        observabilityDashboardUrl,
         EncodingWaterMark,
         tunnel,
         GettingStarted,
@@ -187,6 +191,7 @@ export function RestateContextProvider({
   ingressUrl,
   isPending,
   baseUrl,
+  observabilityDashboardUrl,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -204,6 +209,7 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
+  observabilityDashboardUrl?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -227,6 +233,7 @@ export function RestateContextProvider({
         ingressUrl={ingressUrl}
         isPending={isPending}
         baseUrl={baseUrl}
+        observabilityDashboardUrl={observabilityDashboardUrl}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}
