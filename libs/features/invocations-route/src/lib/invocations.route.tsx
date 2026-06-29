@@ -25,10 +25,14 @@ import {
   type CountMode,
 } from './userPreferences';
 import {
+  getInvocationPreset,
+  getInvocationPresetSearch,
+  getDefaultInvocationsPreset,
   getInvocationsLastQuery,
   matchesAnyInvocationPreset,
   useInvocationsLastQuery,
   useInvocationsRecent,
+  type InvocationPreset,
 } from '@restate/util/sidebar-nav';
 import { InvocationCell } from './cells';
 import {
@@ -51,6 +55,9 @@ import {
   formatNumber,
   formatPlurals,
 } from '@restate/util/intl';
+import { tv } from '@restate/util/styles';
+import { HoverTooltip } from '@restate/ui/tooltip';
+import { RestateServer } from '@restate/ui/restate-server';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   ContentPanel,
@@ -95,6 +102,7 @@ import { Sort } from './QueryButton';
 import {
   FILTER_QUERY_PREFIX,
   getFormUrlSignature,
+  isNoSort,
   isSortValid,
   setDefaultSort,
   setSort,
@@ -131,6 +139,29 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 const SAMPLE_SIZE = 200_000;
+// How long the loading skeleton may be up before we reassure the user with the
+// slow-query banner.
+const SLOW_QUERY_MS = 5_000;
+
+// The table (list) query has its own sampling default, independent of the
+// summary's estimate/exact knob, chosen per query preset. `custom` covers any
+// non-preset filter combination; LIST_SAMPLED_DEFAULT is the fallback for
+// presets not listed here. This is the single place to tune per-query
+// list-sampling defaults.
+const LIST_SAMPLED_DEFAULT = true;
+const LIST_SAMPLED_DEFAULT_BY_PRESET: Partial<
+  Record<InvocationPreset, boolean>
+> = {
+  all: true,
+  inflight: true,
+  processing: false,
+  stuck: true,
+  scheduled: true,
+  custom: true,
+};
+function getListSampledDefault(preset: InvocationPreset): boolean {
+  return LIST_SAMPLED_DEFAULT_BY_PRESET[preset] ?? LIST_SAMPLED_DEFAULT;
+}
 
 function SampleModeToggle({
   mode,
@@ -171,9 +202,158 @@ function SampleModeToggle({
     </div>
   );
 }
+// Segmented control matching the JournalDetailToggle's inset-container +
+// white "active" pill. Drives the table's own sampling: "Partial" caps the scan
+// for speed; "Complete" counts every invocation.
+const sampleScanToggleStyles = tv({
+  slots: {
+    // Track outline is an inset box-shadow, not a real border, so the
+    // container's height matches the segment (and the neighboring buttons)
+    // exactly instead of growing by the border width.
+    container:
+      'inline-flex items-stretch self-end rounded-lg bg-black/3 shadow-[inset_0_0_0_0.5px_rgba(39,39,42,0.06),inset_0_1px_0_0_rgba(0,0,0,0.03)]',
+    // Match the Columns/Actions secondary buttons exactly (rounded-lg, p-0.5
+    // px-2, text-0.5xs) so heights/text/corners line up. The active segment
+    // keeps the secondary white/border/shadow look; the inactive one goes
+    // transparent so the track shows through.
+    segment: 'rounded-lg p-0.5 px-2 text-0.5xs',
+  },
+  variants: {
+    active: {
+      true: {},
+      false: {
+        segment:
+          'border-transparent bg-transparent text-gray-600 shadow-none hover:bg-black/5',
+      },
+    },
+  },
+});
+
+function SampleScanToggle({
+  sampled,
+  onChange,
+}: {
+  sampled: boolean;
+  onChange: (sampled: boolean) => void;
+}) {
+  const { container, segment } = sampleScanToggleStyles();
+  return (
+    <div className={container()}>
+      <HoverTooltip
+        content="A fast, partial scan — loads quickly, but may leave some results out."
+        placement="top"
+        className="block"
+      >
+        <Button
+          variant="secondary"
+          onClick={() => onChange(true)}
+          className={segment({ active: sampled })}
+        >
+          Partial
+        </Button>
+      </HoverTooltip>
+      <HoverTooltip
+        content="Scans every invocation for exact results, with accurate totals and sorting."
+        placement="top"
+        className="block"
+      >
+        <Button
+          variant="secondary"
+          onClick={() => onChange(false)}
+          className={segment({ active: !sampled })}
+        >
+          Complete
+        </Button>
+      </HoverTooltip>
+    </div>
+  );
+}
+
+// Shown above the table while the list is sampled: the rows are a partial,
+// unsorted slice, so counts/order can't be trusted as the full picture.
+function SampleNotice() {
+  return (
+    <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-2 text-xs text-blue-700">
+      <Icon
+        name={IconName.Info}
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500"
+      />
+      <span>
+        Showing partial results — some may be missing, and totals and sorting
+        may be misleading.
+      </span>
+    </div>
+  );
+}
+
+// Calm, reassuring banner shown over the loading table once a query has been
+// running for a while (>10s). A slow scan shouldn't read as a broken page, so
+// the tone is warm — and it offers escape hatches: switch to a faster partial
+// view (cancelling the in-flight complete scan) and, when configured, a link
+// to the observability dashboard.
+function SlowQueryBanner({
+  isComplete,
+  dashboardUrl,
+  onSwitchToPartial,
+}: {
+  isComplete: boolean;
+  dashboardUrl?: string;
+  onSwitchToPartial: () => void;
+}) {
+  return (
+    <div className="m-2 mx-auto mt-11 flex max-w-md flex-col items-center gap-2 px-5 py-4 text-center">
+      <div
+        inert
+        className="pointer-events-none relative -my-2 h-24 w-24 overflow-hidden"
+      >
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.75]">
+          <RestateServer status="active" appearance="ghost" />
+        </div>
+      </div>
+      <div className="text-sm font-semibold text-gray-800">
+        Hang tight — this is taking a moment
+      </div>
+      <p className="max-w-sm text-xs text-gray-500">
+        {isComplete
+          ? 'A complete scan reads every invocation, which can take a while on large datasets. You can switch to a faster partial view, or keep waiting for exact results.'
+          : 'Larger datasets can take a little longer to load — thanks for your patience.'}
+      </p>
+      {(isComplete || dashboardUrl) && (
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+          {isComplete && (
+            <Button
+              variant="primary"
+              onClick={onSwitchToPartial}
+              className="rounded-lg px-3 py-1 text-xs"
+            >
+              Show a faster partial view
+            </Button>
+          )}
+          {dashboardUrl && (
+            <a
+              href={dashboardUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50"
+            >
+              Open the dashboard
+              <Icon
+                name={IconName.ExternalLink}
+                className="h-3 w-3 opacity-70"
+              />
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { OnboardingGuide, baseUrl } = useRestateContext();
+  const { OnboardingGuide, baseUrl, observabilityDashboardUrl } =
+    useRestateContext();
+  const queryClient = useQueryClient();
   const { saveLastQuery } = useInvocationsLastQuery();
   const { setRecent } = useInvocationsRecent();
   const {
@@ -207,7 +387,22 @@ function Component() {
     setUserCountMode(mode);
     setCountModeState(mode);
   }, []);
-  const wantsSampled = countMode === 'estimate';
+  const summarySampled = countMode === 'estimate';
+
+  // The table's sampling is its own knob. Until the user picks a mode it
+  // follows the per-preset default (LIST_SAMPLED_DEFAULT_BY_PRESET); once they
+  // toggle it, that explicit choice sticks for the rest of the session across
+  // every query/preset. Session-scoped: a fresh visit to /invocations starts
+  // back on the per-preset default.
+  const searchString = searchParams.toString();
+  const listPreset = useMemo<InvocationPreset>(
+    () => getInvocationPreset(new URLSearchParams(searchString)),
+    [searchString],
+  );
+  const [listSampledOverride, setListSampledOverride] = useState<
+    boolean | null
+  >(null);
+  const listSampled = listSampledOverride ?? getListSampledDefault(listPreset);
 
   const {
     data: summaryData,
@@ -215,11 +410,10 @@ function Component() {
     isPlaceholderData: isSummaryPlaceholder,
     isFetching: isSummaryFetching,
   } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
-    sampled: wantsSampled,
-    sampleSize: wantsSampled ? SAMPLE_SIZE : undefined,
+    sampled: summarySampled,
+    sampleSize: summarySampled ? SAMPLE_SIZE : undefined,
   });
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
-  const isSampled = wantsSampled;
   const { data: deploymentsData } = useListDeployments();
 
   const statusFilter = useMemo(() => {
@@ -235,7 +429,7 @@ function Component() {
     deploymentsData,
     statusFilter,
     isSummaryLoading,
-    isSampled,
+    summarySampled,
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -257,21 +451,41 @@ function Component() {
     isFetching,
     isPending,
     queryKey,
-  } = useListInvocations(listInvocationsParameters, {
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 0,
-    refetchOnWindowFocus: false,
-  });
+  } = useListInvocations(
+    {
+      ...listInvocationsParameters,
+      sampled: listSampled,
+      sampleSize: listSampled ? SAMPLE_SIZE : undefined,
+    },
+    {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
+
+  // Once the loading skeleton has been up past SLOW_QUERY_MS, surface a calm
+  // reassurance banner. Reset (and restart the clock) whenever a fresh query
+  // starts — a new filter/sort or sampling change gets its own grace period.
+  const [isSlowQuery, setIsSlowQuery] = useState(false);
+  useEffect(() => {
+    setIsSlowQuery(false);
+    if (!isFetching) {
+      return;
+    }
+    const timer = setTimeout(() => setIsSlowQuery(true), SLOW_QUERY_MS);
+    return () => clearTimeout(timer);
+  }, [isFetching, searchString, listSampled]);
 
   const totalCount = summaryData?.totalCount ?? 0;
   // Sample-bounded total display: when sampled and the estimate hits the
   // sample cap, format as "~50K+"; otherwise "~X". Used by the Actions
   // badge / dropdown header to mirror the Footnote.
-  const sampledHitCap = isSampled && totalCount >= SAMPLE_SIZE;
-  const actionsTotalDisplay = isSampled
+  const sampledHitCap = summarySampled && totalCount >= SAMPLE_SIZE;
+  const actionsTotalDisplay = summarySampled
     ? `~${formatNumber(sampledHitCap ? SAMPLE_SIZE : totalCount, true)}${sampledHitCap ? '+' : ''}`
     : formatNumber(totalCount, true);
 
@@ -364,6 +578,22 @@ function Component() {
     }
   }, [searchParams, saveLastQuery, setRecent]);
 
+  // A slow load takes over the caption with the reassurance banner; otherwise
+  // the partial-results notice shows when sampled.
+  const tableCaption =
+    isSlowQuery && isFetching ? (
+      <SlowQueryBanner
+        isComplete={!listSampled}
+        dashboardUrl={observabilityDashboardUrl}
+        onSwitchToPartial={() => {
+          queryClient.cancelQueries({ queryKey });
+          setListSampledOverride(true);
+        }}
+      />
+    ) : listSampled && !error ? (
+      <SampleNotice />
+    ) : undefined;
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex min-h-0 flex-1 flex-col gap-4 pt-20">
@@ -374,7 +604,7 @@ function Component() {
             isFetching={isSummaryFetching}
             isDimmed={statusDim}
             getHref={statusHref}
-            isSampled={isSampled}
+            isSampled={summarySampled}
           />
           <StatusLegend
             byStatus={byStatus}
@@ -387,7 +617,7 @@ function Component() {
               href: clearStatusFilterHref,
               dimmed: hasStatusFilter(statusFilter),
             }}
-            isSampled={isSampled}
+            isSampled={summarySampled}
             leading={
               <SampleModeToggle mode={countMode} onChange={setCountMode} />
             }
@@ -395,6 +625,10 @@ function Component() {
         </div>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">
+            <SampleScanToggle
+              sampled={listSampled}
+              onChange={setListSampledOverride}
+            />
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -585,6 +819,7 @@ function Component() {
             <ContentPanelSection flush>
               <PanelTable
                 aria-label="Invocations"
+                caption={tableCaption}
                 columns={panelColumns}
                 items={currentPageItems}
                 selectionMode="multiple"
@@ -665,7 +900,7 @@ function Component() {
                 data={data}
                 totalCount={totalCount}
                 isFetching={isFetching}
-                isSampled={isSampled}
+                isSampled={listSampled}
                 sampleSize={SAMPLE_SIZE}
                 key={dataUpdate}
               >
@@ -774,7 +1009,18 @@ function InvocationsForm({
       className="relative flex w-[60rem] flex-col"
       onSubmit={async (event) => {
         event.preventDefault();
-        commitQuery();
+        // The Query button and the Cmd/Ctrl+Enter shortcut submit via a real
+        // button click, so they carry a `submitter` — those are explicit "run
+        // it now" actions and always refetch. Closing a filter chip
+        // auto-submits via requestSubmit() (no submitter); that should only
+        // refetch when the query actually changed.
+        const isExplicitSubmit = Boolean(
+          (event.nativeEvent as SubmitEvent).submitter,
+        );
+        const changed = commitQuery();
+        if (!isExplicitSubmit && !changed) {
+          return;
+        }
         await Promise.all([
           queryCLient.invalidateQueries({ queryKey }),
           queryCLient.invalidateQueries({
@@ -928,6 +1174,20 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   params.sort();
   const originalSearch = params.toString();
 
+  // Fresh, query-less entry to /invocations (typed URL / app landing): apply the
+  // configured default preset. The Invocations nav link and the "All" sub-item
+  // both carry params, so only a truly empty URL reaches here — this avoids
+  // trapping a user who explicitly cleared their filters back to the All view.
+  if (originalSearch === '') {
+    const preset = getDefaultInvocationsPreset();
+    if (preset && preset !== 'all') {
+      const presetSearch = getInvocationPresetSearch(preset);
+      if (presetSearch) {
+        return redirect(`?${presetSearch}`);
+      }
+    }
+  }
+
   // Explicit opt-in to last-filter restoration. The "Back to invocations"
   // link on the detail page navigates here with ?restore=1; no other entry
   // path triggers it. Default navigation (sidebar All, fresh URL, shortcuts)
@@ -962,7 +1222,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     }
   }
 
-  if (!isSortValid(params)) {
+  if (!isSortValid(params) && !isNoSort(params)) {
     const userSort = getUserLastSort();
     if (userSort) {
       params = setSort(params, {

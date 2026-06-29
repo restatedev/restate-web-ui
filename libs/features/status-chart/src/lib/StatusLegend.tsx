@@ -255,7 +255,11 @@ export function StatusLegend({
           <AriaGridListItem
             key="__all__"
             id="__all__"
-            textValue={isSampled ? 'All (sampled)' : `All ${allItem.count}`}
+            textValue={
+              isSampled
+                ? 'All statuses (sampled)'
+                : `All statuses ${allItem.count}`
+            }
             href={allItem.href}
             className={legendItemStyles({
               state: 'success',
@@ -267,7 +271,7 @@ export function StatusLegend({
                     : 'normal',
             })}
           >
-            <span className="text-xs text-gray-600">All</span>
+            <span className="text-xs text-gray-600">All statuses</span>
             {!isSampled && (
               <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
                 {formatNumber(allItem.count, true)}

@@ -46,6 +46,13 @@ type RestateContext = {
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
   baseUrl: string;
+  observabilityDashboardUrl?: string;
+  // Preset applied when landing on /invocations without an explicit query (e.g.
+  // the Invocations nav link) — falls back to the "All" view when unset. A
+  // preset id from @restate/util/sidebar-nav ('all' | 'inflight' | 'processing'
+  // | 'stuck' | …). Kept as a string to avoid a dependency cycle with
+  // sidebar-nav; the invocations route validates it.
+  defaultInvocationsPreset?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -82,6 +89,8 @@ function InternalRestateContextProvider({
   systemHealthMonitor,
   ingressUrl,
   baseUrl = '',
+  observabilityDashboardUrl,
+  defaultInvocationsPreset,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -97,6 +106,8 @@ function InternalRestateContextProvider({
   isPending?: boolean;
   ingressUrl?: string;
   baseUrl?: string;
+  observabilityDashboardUrl?: string;
+  defaultInvocationsPreset?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -162,6 +173,8 @@ function InternalRestateContextProvider({
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,
+        observabilityDashboardUrl,
+        defaultInvocationsPreset,
         EncodingWaterMark,
         tunnel,
         GettingStarted,
@@ -187,6 +200,8 @@ export function RestateContextProvider({
   ingressUrl,
   isPending,
   baseUrl,
+  observabilityDashboardUrl,
+  defaultInvocationsPreset,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -204,6 +219,8 @@ export function RestateContextProvider({
   ingressUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
+  observabilityDashboardUrl?: string;
+  defaultInvocationsPreset?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -227,6 +244,8 @@ export function RestateContextProvider({
         ingressUrl={ingressUrl}
         isPending={isPending}
         baseUrl={baseUrl}
+        observabilityDashboardUrl={observabilityDashboardUrl}
+        defaultInvocationsPreset={defaultInvocationsPreset}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}

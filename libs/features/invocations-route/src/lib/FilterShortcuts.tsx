@@ -23,13 +23,14 @@ import { useSearchParams } from 'react-router';
 import {
   FILTER_QUERY_PREFIX,
   SORT_QUERY_PREFIX,
+  SORT_NONE,
   getFilterParamKey,
 } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
 interface FilterShortcut {
   columns: ColumnKey[];
-  sort?: SortInvocations;
+  sort?: SortInvocations | typeof SORT_NONE;
   filters: QueryClause<QueryClauseType>[];
   label: string;
   id: string;
@@ -62,14 +63,20 @@ const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
 ) => FilterShortcut[] = (schema) => [
   {
-    id: 'all',
-    label: 'All',
+    id: 'processing',
+    label: 'Processing',
     columns: DEFAULT_PRESET_COLUMNS,
-    filters: [],
+    sort: SORT_NONE,
+    filters: [
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: ['running', 'backing-off', 'ready'],
+      }),
+    ],
   },
   {
     id: 'inflight',
-    label: 'In-flight invocations',
+    label: 'In-flight',
     columns: DEFAULT_PRESET_COLUMNS,
     filters: [
       toClause(schema, 'status', {
@@ -80,7 +87,7 @@ const makeShortcuts: (
   },
   {
     id: 'stuck',
-    label: 'Stuck invocations',
+    label: 'Stuck',
     columns: DEFAULT_PRESET_COLUMNS,
     sort: {
       field: 'modified_at',
@@ -96,6 +103,12 @@ const makeShortcuts: (
         value: new Date(Date.now() - STUCK_MODIFIED_BEFORE_MS),
       }),
     ],
+  },
+  {
+    id: 'all',
+    label: 'All',
+    columns: DEFAULT_PRESET_COLUMNS,
+    filters: [],
   },
   {
     id: 'workflow',
@@ -129,7 +142,7 @@ const makeShortcuts: (
   },
   {
     id: 'idempotent',
-    label: 'Idempotent invocations',
+    label: 'Idempotent',
     columns: [...DEFAULT_PRESET_COLUMNS, 'idempotency_key'],
     filters: [
       toClause(schema, 'idempotency_key', {
@@ -139,7 +152,7 @@ const makeShortcuts: (
   },
   // {
   //   id: 'retried',
-  //   label: 'Most retried invocations',
+  //   label: 'Most retried',
   //   columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
   //   sort: {
   //     field: 'retry_count',
@@ -154,7 +167,7 @@ const makeShortcuts: (
   // },
   {
     id: 'restarted',
-    label: 'Restarted invocations',
+    label: 'Restarted',
     columns: [...DEFAULT_PRESET_COLUMNS, 'restarted_from'],
     filters: [
       toClause(schema, 'invoked_by', {
@@ -165,7 +178,7 @@ const makeShortcuts: (
   },
   {
     id: 'scheduled',
-    label: 'Scheduled invocations',
+    label: 'Scheduled',
     columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
     sort: {
       field: 'scheduled_start_at',
@@ -183,6 +196,10 @@ const makeShortcuts: (
 const itemStyles = tv({
   base: 'max-h-5 shrink-0 rounded-full border border-white/20 bg-transparent px-3 py-0.5 text-xs text-white/80 hover:bg-white/15 pressed:bg-white/20',
 });
+
+// Quick-filter pills shown inline before the "More" overflow dropdown.
+const VISIBLE_SHORTCUTS_COUNT = 4;
+
 export function FilterShortcuts({
   setPageIndex,
   schema,
@@ -191,7 +208,8 @@ export function FilterShortcuts({
   schema: QueryClauseSchema<QueryClauseType>[];
 }) {
   const [shortcuts] = useState(() => makeShortcuts(schema));
-  const [first, second, third, ...rest] = shortcuts;
+  const visibleShortcuts = shortcuts.slice(0, VISIBLE_SHORTCUTS_COUNT);
+  const overflowShortcuts = shortcuts.slice(VISIBLE_SHORTCUTS_COUNT);
   const [searchParams, setSearchParams] = useSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
 
@@ -221,7 +239,10 @@ export function FilterShortcuts({
       newSearchParams.append(COLUMN_QUERY_PREFIX, col);
     });
 
-    if (item.sort) {
+    if (item.sort === SORT_NONE) {
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', SORT_NONE);
+      newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
+    } else if (item.sort) {
       newSearchParams.set(SORT_QUERY_PREFIX + 'field', item.sort.field);
       newSearchParams.set(SORT_QUERY_PREFIX + 'order', item.sort.order);
     } else {
@@ -237,62 +258,47 @@ export function FilterShortcuts({
 
   return (
     <>
-      {first && (
+      {visibleShortcuts.map((item) => (
         <Button
+          key={item.id}
           variant="icon"
-          onClick={() => setFilter(first)}
+          onClick={() => setFilter(item)}
           className={itemStyles()}
         >
-          {first?.label}
+          {item.label}
         </Button>
+      ))}
+      {overflowShortcuts.length > 0 && (
+        <Dropdown>
+          <DropdownTrigger>
+            <Button variant="icon" className={itemStyles()}>
+              More
+              <Icon
+                name={IconName.ChevronsUpDown}
+                className="-mr-2 ml-2 h-3 w-3"
+              />
+            </Button>
+          </DropdownTrigger>
+          <DropdownPopover>
+            <DropdownSection title="Quick filters">
+              <DropdownMenu
+                onSelect={(value) => {
+                  const filter = shortcuts.find(({ id }) => id === value);
+                  if (filter) {
+                    setFilter(filter);
+                  }
+                }}
+              >
+                {overflowShortcuts.map((item) => (
+                  <DropdownItem value={item.id} key={item.id}>
+                    {item.label}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </DropdownSection>
+          </DropdownPopover>
+        </Dropdown>
       )}
-      {second && (
-        <Button
-          variant="icon"
-          onClick={() => setFilter(second)}
-          className={itemStyles()}
-        >
-          {second?.label}
-        </Button>
-      )}
-      {third && (
-        <Button
-          variant="icon"
-          onClick={() => setFilter(third)}
-          className={itemStyles()}
-        >
-          {third?.label}
-        </Button>
-      )}
-      <Dropdown>
-        <DropdownTrigger>
-          <Button variant="icon" className={itemStyles()}>
-            More
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="-mr-2 ml-2 h-3 w-3"
-            />
-          </Button>
-        </DropdownTrigger>
-        <DropdownPopover>
-          <DropdownSection title="Quick filters">
-            <DropdownMenu
-              onSelect={(value) => {
-                const filter = shortcuts.find(({ id }) => id === value);
-                if (filter) {
-                  setFilter(filter);
-                }
-              }}
-            >
-              {rest.map((item) => (
-                <DropdownItem value={item.id} key={item.id}>
-                  {item.label}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </DropdownSection>
-        </DropdownPopover>
-      </Dropdown>
     </>
   );
 }

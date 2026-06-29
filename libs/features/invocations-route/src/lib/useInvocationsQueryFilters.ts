@@ -41,6 +41,18 @@ export const SORT_COLUMN_KEYS: ColumnKey[] = [
   'duration',
 ] as const;
 
+// Sentinel sort field meaning "don't sort": the list query then omits its
+// ORDER BY and returns rows in scan order (fastest, but unstable order).
+export const SORT_NONE = 'none';
+export type SortSelection = {
+  field: SortInvocations['field'] | typeof SORT_NONE;
+  order: SortInvocations['order'];
+};
+
+export function isNoSort(searchParams: URLSearchParams) {
+  return searchParams.get(SORT_QUERY_PREFIX + 'field') === SORT_NONE;
+}
+
 export function isSortValid(searchParams: URLSearchParams) {
   const field = searchParams.get(SORT_QUERY_PREFIX + 'field') as ColumnKey;
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order') || '';
@@ -63,11 +75,14 @@ export function setDefaultSort(searchParams: URLSearchParams) {
   return setSort(searchParams, { field: 'modified_at', order: 'DESC' });
 }
 
-function deriveSortFromUrl(searchParams: URLSearchParams): SortInvocations {
+function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
+  if (isNoSort(searchParams)) {
+    return { field: SORT_NONE, order: 'DESC' };
+  }
   const field = searchParams.get(SORT_QUERY_PREFIX + 'field');
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order');
   if (isSortValid(searchParams) && field && order) {
-    return { field, order } as SortInvocations;
+    return { field, order } as SortSelection;
   }
   return { field: 'modified_at', order: 'DESC' };
 }
@@ -112,7 +127,11 @@ export function useListInvocationsParameters() {
             value: clause.value.value,
           }) as FilterItem,
       );
-    const sort = deriveSortFromUrl(searchParams);
+    const selection = deriveSortFromUrl(searchParams);
+    const sort =
+      selection.field === SORT_NONE
+        ? undefined
+        : (selection as SortInvocations);
     return { filters, sort };
   }, [searchString, schema, isLoading]);
 
@@ -140,7 +159,7 @@ export function useInvocationsForm({
   const [searchParams, setSearchParams] = useSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
 
-  const [sortParams, _setSortParams] = useState<SortInvocations>(() =>
+  const [sortParams, _setSortParams] = useState<SortSelection>(() =>
     deriveSortFromUrl(searchParams),
   );
   const sortManuallyChangedRef = useRef(false);
@@ -176,22 +195,37 @@ export function useInvocationsForm({
       newSearchParams.append(COLUMN_QUERY_PREFIX, String(col));
     });
 
-    const field = sortParams?.field || 'modified_at';
-    const order = sortParams?.order || 'DESC';
-    newSearchParams.set(SORT_QUERY_PREFIX + 'field', field);
-    newSearchParams.set(SORT_QUERY_PREFIX + 'order', order);
-    if (sortManuallyChangedRef.current) {
-      setUserLastSort({ field, order });
+    if (sortParams.field === SORT_NONE) {
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', SORT_NONE);
+      newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
       sortManuallyChangedRef.current = false;
+    } else {
+      const field = sortParams?.field || 'modified_at';
+      const order = sortParams?.order || 'DESC';
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', field);
+      newSearchParams.set(SORT_QUERY_PREFIX + 'order', order);
+      if (sortManuallyChangedRef.current) {
+        setUserLastSort({ field, order });
+        sortManuallyChangedRef.current = false;
+      }
     }
     const sortedNewSearchParams = new URLSearchParams(newSearchParams);
     sortedNewSearchParams.sort();
     const sortedOldSearchParams = new URLSearchParams(searchParams);
     sortedOldSearchParams.sort();
 
-    if (sortedOldSearchParams.toString() !== sortedNewSearchParams.toString()) {
-      resetPageIndex();
+    const changed =
+      sortedOldSearchParams.toString() !== sortedNewSearchParams.toString();
+
+    // Nothing to apply (e.g. opening then closing a filter chip without an
+    // edit): leave the URL untouched and report no change. The caller decides
+    // whether to still refetch (explicit Query press) or skip it (auto-submit
+    // on close).
+    if (!changed) {
+      return false;
     }
+
+    resetPageIndex();
     // Keep lastQuery in sync with the committed state so the next "Back to
     // invocations" navigation (?restore=1) restores what the user actually
     // just submitted. Saving here is a hot-path optimization — the route's
@@ -199,17 +233,7 @@ export function useInvocationsForm({
     saveLastQuery(newSearchParams);
     setSearchParams(newSearchParams, { preventScrollReset: true });
 
-    return query.items
-      .filter((clause) => clause.isValid)
-      .map(
-        (clause) =>
-          ({
-            field: clause.fieldValue,
-            operation: clause.value.operation!,
-            type: clause.type,
-            value: clause.value.value,
-          }) as FilterItem,
-      );
+    return true;
   };
 
   return {

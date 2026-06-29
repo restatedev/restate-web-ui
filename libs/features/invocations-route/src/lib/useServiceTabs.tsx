@@ -340,7 +340,7 @@ function buildServiceTabItems(
   allParams.delete('filter_target_service_name');
   const allTab = buildSummaryTab(
     ALL_TAB_ID,
-    'All',
+    'All services',
     services,
     baseUrl,
     allParams,

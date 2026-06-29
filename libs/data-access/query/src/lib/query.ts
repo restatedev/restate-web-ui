@@ -53,6 +53,8 @@ type BoundHandlers = {
   listInvocations: (
     filters: FilterItem[],
     sort?: components['schemas']['ListInvocationsRequestBody']['sort'],
+    sampled?: boolean,
+    sampleSize?: number,
   ) => Promise<Response>;
   countInvocations: (filters: FilterItem[]) => Promise<Response>;
   summaryInvocations: (
@@ -334,9 +336,10 @@ router.map(routes, {
         const {
           filters = [],
           sort,
-        }: components['schemas']['ListInvocationsRequestBody'] =
-          await ctx.request.json();
-        return listInvocations(filters, sort);
+          sampled,
+          sampleSize,
+        }: components['schemas']['ListInvocationsRequestBody'] = await ctx.request.json();
+        return listInvocations(filters, sort, sampled, sampleSize);
       },
       async count(ctx) {
         const { countInvocations } = ctx.storage.get(handlersKey);
