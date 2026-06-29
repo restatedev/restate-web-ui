@@ -99,6 +99,7 @@ import { Sort } from './QueryButton';
 import {
   FILTER_QUERY_PREFIX,
   getFormUrlSignature,
+  isNoSort,
   isSortValid,
   setDefaultSort,
   setSort,
@@ -1089,7 +1090,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     }
   }
 
-  if (!isSortValid(params)) {
+  if (!isSortValid(params) && !isNoSort(params)) {
     const userSort = getUserLastSort();
     if (userSort) {
       params = setSort(params, {

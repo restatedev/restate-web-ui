@@ -41,6 +41,18 @@ export const SORT_COLUMN_KEYS: ColumnKey[] = [
   'duration',
 ] as const;
 
+// Sentinel sort field meaning "don't sort": the list query then omits its
+// ORDER BY and returns rows in scan order (fastest, but unstable order).
+export const SORT_NONE = 'none';
+export type SortSelection = {
+  field: SortInvocations['field'] | typeof SORT_NONE;
+  order: SortInvocations['order'];
+};
+
+export function isNoSort(searchParams: URLSearchParams) {
+  return searchParams.get(SORT_QUERY_PREFIX + 'field') === SORT_NONE;
+}
+
 export function isSortValid(searchParams: URLSearchParams) {
   const field = searchParams.get(SORT_QUERY_PREFIX + 'field') as ColumnKey;
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order') || '';
@@ -63,11 +75,14 @@ export function setDefaultSort(searchParams: URLSearchParams) {
   return setSort(searchParams, { field: 'modified_at', order: 'DESC' });
 }
 
-function deriveSortFromUrl(searchParams: URLSearchParams): SortInvocations {
+function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
+  if (isNoSort(searchParams)) {
+    return { field: SORT_NONE, order: 'DESC' };
+  }
   const field = searchParams.get(SORT_QUERY_PREFIX + 'field');
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order');
   if (isSortValid(searchParams) && field && order) {
-    return { field, order } as SortInvocations;
+    return { field, order } as SortSelection;
   }
   return { field: 'modified_at', order: 'DESC' };
 }
@@ -112,7 +127,11 @@ export function useListInvocationsParameters() {
             value: clause.value.value,
           }) as FilterItem,
       );
-    const sort = deriveSortFromUrl(searchParams);
+    const selection = deriveSortFromUrl(searchParams);
+    const sort =
+      selection.field === SORT_NONE
+        ? undefined
+        : (selection as SortInvocations);
     return { filters, sort };
   }, [searchString, schema, isLoading]);
 
@@ -140,7 +159,7 @@ export function useInvocationsForm({
   const [searchParams, setSearchParams] = useSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
 
-  const [sortParams, _setSortParams] = useState<SortInvocations>(() =>
+  const [sortParams, _setSortParams] = useState<SortSelection>(() =>
     deriveSortFromUrl(searchParams),
   );
   const sortManuallyChangedRef = useRef(false);
@@ -176,13 +195,19 @@ export function useInvocationsForm({
       newSearchParams.append(COLUMN_QUERY_PREFIX, String(col));
     });
 
-    const field = sortParams?.field || 'modified_at';
-    const order = sortParams?.order || 'DESC';
-    newSearchParams.set(SORT_QUERY_PREFIX + 'field', field);
-    newSearchParams.set(SORT_QUERY_PREFIX + 'order', order);
-    if (sortManuallyChangedRef.current) {
-      setUserLastSort({ field, order });
+    if (sortParams.field === SORT_NONE) {
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', SORT_NONE);
+      newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
       sortManuallyChangedRef.current = false;
+    } else {
+      const field = sortParams?.field || 'modified_at';
+      const order = sortParams?.order || 'DESC';
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', field);
+      newSearchParams.set(SORT_QUERY_PREFIX + 'order', order);
+      if (sortManuallyChangedRef.current) {
+        setUserLastSort({ field, order });
+        sortManuallyChangedRef.current = false;
+      }
     }
     const sortedNewSearchParams = new URLSearchParams(newSearchParams);
     sortedNewSearchParams.sort();

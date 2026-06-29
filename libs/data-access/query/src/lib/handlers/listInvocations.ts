@@ -17,17 +17,16 @@ const DEFAULT_SAMPLE_SIZE = 50000;
 export async function listInvocations(
   this: QueryContext,
   filters: FilterItem[],
-  sort: components['schemas']['ListInvocationsRequestBody']['sort'] = {
-    field: 'modified_at',
-    order: 'DESC',
-  },
+  sort?: components['schemas']['ListInvocationsRequestBody']['sort'],
   sampled = false,
   sampleSize = DEFAULT_SAMPLE_SIZE,
 ) {
-  const isSortByDuration = sort.field === 'duration';
+  const isSortByDuration = sort?.field === 'duration';
   const idSelectColumns = isSortByDuration
     ? `id, ${DURATION_EXPRESSION}`
     : 'id';
+  // No sort → omit ORDER BY entirely; rows come back in scan order (fastest).
+  const orderBy = sort ? `ORDER BY ${sort.field} ${sort.order}` : '';
   // vqueue-backed backing-off invocations show as 'ready' on the view, so the
   // status filter rewrites backing-off/ready to match the overlaid status.
   const vqueueBackingOff = vqueueStatusEnabled(this);
@@ -42,7 +41,7 @@ export async function listInvocations(
     : 'sys_invocation';
 
   const { rows: idRows } = await this.query(
-    `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`,
   );
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
@@ -64,7 +63,7 @@ export async function listInvocations(
             ...filters,
           ],
           { vqueueBackingOff },
-        )} ORDER BY ${sort.field} ${sort.order}`,
+        )} ${orderBy}`,
       ),
       fetchVqueueStatuses(this, ids),
     ]);
