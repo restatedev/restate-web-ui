@@ -3,6 +3,7 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
+import { PatternChip } from '@restate/features/limits-ui';
 
 const styles = tv({ base: '' });
 export function KeysIdsSection({
@@ -72,39 +73,15 @@ export function KeysIdsSection({
           </div>
         )}
 
-        {scope && (
+        {(scope || limitKey) && (
           <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
             <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
-              Scope
+              Scope / Limit Key
             </span>
-            <Badge
-              size="sm"
-              className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
-            >
-              <div className="truncate">{scope}</div>
-              <Copy
-                copyText={scope}
-                className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-              />
-            </Badge>
-          </div>
-        )}
-
-        {limitKey && (
-          <div className="flex h-9 items-center px-1.5 py-1 not-last:border-b">
-            <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
-              Limit Key
-            </span>
-            <Badge
-              size="sm"
-              className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
-            >
-              <div className="truncate">{limitKey}</div>
-              <Copy
-                copyText={limitKey}
-                className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-              />
-            </Badge>
+            <PatternChip
+              pattern={[scope, limitKey].filter(Boolean).join('/')}
+              className="ml-1 min-w-0"
+            />
           </div>
         )}
 

@@ -9,6 +9,7 @@ import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
+import { PatternChip } from '@restate/features/limits-ui';
 import { CellProps } from './cells/types';
 import { InvocationIdCell } from './cells/InvocationId';
 import {
@@ -250,6 +251,16 @@ function RestartedFromCell({ invocation }: CellProps) {
   return <InvocationId id={invocation.restarted_from} />;
 }
 
+function ScopeLimitKeyCell({ invocation }: CellProps) {
+  const pattern = [invocation.scope, invocation.limit_key]
+    .filter(Boolean)
+    .join('/');
+  if (!pattern) {
+    return null;
+  }
+  return <PatternChip pattern={pattern} className="max-w-full" />;
+}
+
 function JournalCell({ invocation }: CellProps) {
   const { baseUrl } = useRestateContext();
   const location = useLocation();
@@ -454,14 +465,7 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
   ),
   restarted_from: withCell(RestartedFromCell, 'restarted_from'),
   duration: withCell(DurationCell, 'duration'),
-  scope: withCell(
-    withField({ field: 'scope', className: 'font-mono' }),
-    'scope',
-  ),
-  limit_key: withCell(
-    withField({ field: 'limit_key', className: 'font-mono' }),
-    'limit_key',
-  ),
+  scope: withCell(ScopeLimitKeyCell, 'scope'),
 };
 
 export function InvocationCell({

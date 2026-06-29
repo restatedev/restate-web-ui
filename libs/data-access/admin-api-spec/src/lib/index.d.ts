@@ -3615,6 +3615,10 @@ export interface components {
         /** Format: date-time */
         firstRunnableAt?: string;
         /** Format: date-time */
+        firstAttemptAt?: string;
+        /** Format: date-time */
+        transitionedAt?: string;
+        /** Format: date-time */
         nextAt?: string;
         /** @description Cumulative per-gate wait of this entry across all attempts. */
         totalBlocks?: components['schemas']['VqueueGateDuration'][];
@@ -7396,11 +7400,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['Invocation'] & {
-            /** @description Blocked-time breakdown from sys_vqueue_entry_status: total over the queue's life and over the last attempt. */
-            vqueueBlocked?: {
-              total?: components['schemas']['VqueueGateDuration'][];
-              latestAttempt?: components['schemas']['VqueueGateDuration'][];
-            };
             journal?: {
               version?: number;
               entries?: components['schemas']['JournalEntryV2'][];

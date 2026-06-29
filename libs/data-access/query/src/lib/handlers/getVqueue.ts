@@ -74,6 +74,7 @@ interface VqueueEntryRow {
   next_at?: string;
   created_at?: string;
   first_runnable_at?: string;
+  first_attempt_at?: string;
   sequence_number?: number;
   retry_attempts?: number;
   num_attempts?: number;
@@ -430,6 +431,8 @@ export async function getVqueue(
         errors: entryRow.num_errors,
         createdAt: entryRow.created_at,
         firstRunnableAt: entryRow.first_runnable_at,
+        firstAttemptAt: entryRow.first_attempt_at,
+        transitionedAt: entryRow.transitioned_at,
         nextAt: entryRow.next_at,
         totalBlocks: gateDurations(
           entryRow,

@@ -1875,24 +1875,6 @@
                     {
                       "type": "object",
                       "properties": {
-                        "vqueueBlocked": {
-                          "type": "object",
-                          "description": "Blocked-time breakdown from sys_vqueue_entry_status: total over the queue's life and over the last attempt.",
-                          "properties": {
-                            "total": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/components/schemas/VqueueGateDuration"
-                              }
-                            },
-                            "latestAttempt": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/components/schemas/VqueueGateDuration"
-                              }
-                            }
-                          }
-                        },
                         "journal": {
                           "type": "object",
                           "properties": {
@@ -5656,6 +5638,8 @@
               "errors": { "type": "integer" },
               "createdAt": { "type": "string", "format": "date-time" },
               "firstRunnableAt": { "type": "string", "format": "date-time" },
+              "firstAttemptAt": { "type": "string", "format": "date-time" },
+              "transitionedAt": { "type": "string", "format": "date-time" },
               "nextAt": { "type": "string", "format": "date-time" },
               "totalBlocks": {
                 "type": "array",
