@@ -98,6 +98,17 @@ const makeShortcuts: (
     ],
   },
   {
+    id: 'processing',
+    label: 'Processing invocations',
+    columns: DEFAULT_PRESET_COLUMNS,
+    filters: [
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: ['running', 'backing-off', 'ready'],
+      }),
+    ],
+  },
+  {
     id: 'workflow',
     label: 'Workflow runs',
     columns: DEFAULT_PRESET_COLUMNS,

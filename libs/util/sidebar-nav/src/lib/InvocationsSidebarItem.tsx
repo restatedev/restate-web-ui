@@ -71,6 +71,17 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
     sort: { field: 'modified_at', order: 'ASC' },
   },
   {
+    id: 'processing',
+    label: 'Processing',
+    filters: [
+      {
+        id: 'status',
+        operation: 'IN',
+        value: ['running', 'backing-off', 'ready'],
+      },
+    ],
+  },
+  {
     id: 'workflow',
     label: 'Workflow runs',
     filters: [
@@ -258,6 +269,35 @@ export function matchesAnyInvocationPreset(
 ): boolean {
   if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) return true;
   return INVOCATION_SHORTCUTS.some((s) => urlMatchesShortcut(searchParams, s));
+}
+
+// Keep in sync with ALL_INVOCATIONS_SHORTCUT + INVOCATION_SHORTCUTS ids.
+export type InvocationPreset =
+  | 'all'
+  | 'inflight'
+  | 'stuck'
+  | 'processing'
+  | 'workflow'
+  | 'vo'
+  | 'idempotent'
+  | 'restarted'
+  | 'scheduled'
+  | 'custom';
+
+/**
+ * Classifies a query by its `filter_*` params into the preset it matches, or
+ * `'custom'` for any other filter combination. Same matching semantics as
+ * `matchesAnyInvocationPreset` (sort/column params ignored), but returns which
+ * preset rather than just whether one matched.
+ */
+export function getInvocationPreset(
+  searchParams: URLSearchParams,
+): InvocationPreset {
+  if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) return 'all';
+  const preset = INVOCATION_SHORTCUTS.find((s) =>
+    urlMatchesShortcut(searchParams, s),
+  );
+  return (preset?.id as InvocationPreset) ?? 'custom';
 }
 
 // ─────────────────────────────────────────────────────────────

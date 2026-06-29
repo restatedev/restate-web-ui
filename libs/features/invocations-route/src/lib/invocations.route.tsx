@@ -25,10 +25,12 @@ import {
   type CountMode,
 } from './userPreferences';
 import {
+  getInvocationPreset,
   getInvocationsLastQuery,
   matchesAnyInvocationPreset,
   useInvocationsLastQuery,
   useInvocationsRecent,
+  type InvocationPreset,
 } from '@restate/util/sidebar-nav';
 import { InvocationCell } from './cells';
 import {
@@ -134,6 +136,26 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 const PAGE_SIZE = 30;
 const SAMPLE_SIZE = 200_000;
 
+// The table (list) query has its own sampling default, independent of the
+// summary's estimate/exact knob, chosen per query preset. `custom` covers any
+// non-preset filter combination; LIST_SAMPLED_DEFAULT is the fallback for
+// presets not listed here. This is the single place to tune per-query
+// list-sampling defaults.
+const LIST_SAMPLED_DEFAULT = true;
+const LIST_SAMPLED_DEFAULT_BY_PRESET: Partial<
+  Record<InvocationPreset, boolean>
+> = {
+  all: true,
+  inflight: true,
+  processing: false,
+  stuck: true,
+  scheduled: true,
+  custom: false,
+};
+function getListSampledDefault(preset: InvocationPreset): boolean {
+  return LIST_SAMPLED_DEFAULT_BY_PRESET[preset] ?? LIST_SAMPLED_DEFAULT;
+}
+
 function SampleModeToggle({
   mode,
   onChange,
@@ -201,14 +223,13 @@ const sampleScanToggleStyles = tv({
 });
 
 function SampleScanToggle({
-  mode,
+  sampled,
   onChange,
 }: {
-  mode: CountMode;
-  onChange: (mode: CountMode) => void;
+  sampled: boolean;
+  onChange: (sampled: boolean) => void;
 }) {
   const { container, segment } = sampleScanToggleStyles();
-  const isSampled = mode === 'estimate';
   return (
     <div className={container()}>
       <HoverTooltip
@@ -218,8 +239,8 @@ function SampleScanToggle({
       >
         <Button
           variant="secondary"
-          onClick={() => onChange('exact')}
-          className={segment({ active: !isSampled })}
+          onClick={() => onChange(false)}
+          className={segment({ active: !sampled })}
         >
           Full scan
         </Button>
@@ -231,8 +252,8 @@ function SampleScanToggle({
       >
         <Button
           variant="secondary"
-          onClick={() => onChange('estimate')}
-          className={segment({ active: isSampled })}
+          onClick={() => onChange(true)}
+          className={segment({ active: sampled })}
         >
           Sampled
         </Button>
@@ -277,7 +298,22 @@ function Component() {
     setUserCountMode(mode);
     setCountModeState(mode);
   }, []);
-  const wantsSampled = countMode === 'estimate';
+  const summarySampled = countMode === 'estimate';
+
+  // The table's sampling is its own knob. Until the user picks a mode it
+  // follows the per-preset default (LIST_SAMPLED_DEFAULT_BY_PRESET); once they
+  // toggle it, that explicit choice sticks for the rest of the session across
+  // every query/preset. Session-scoped: a fresh visit to /invocations starts
+  // back on the per-preset default.
+  const searchString = searchParams.toString();
+  const listPreset = useMemo<InvocationPreset>(
+    () => getInvocationPreset(new URLSearchParams(searchString)),
+    [searchString],
+  );
+  const [listSampledOverride, setListSampledOverride] = useState<
+    boolean | null
+  >(null);
+  const listSampled = listSampledOverride ?? getListSampledDefault(listPreset);
 
   const {
     data: summaryData,
@@ -285,11 +321,10 @@ function Component() {
     isPlaceholderData: isSummaryPlaceholder,
     isFetching: isSummaryFetching,
   } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
-    sampled: wantsSampled,
-    sampleSize: wantsSampled ? SAMPLE_SIZE : undefined,
+    sampled: summarySampled,
+    sampleSize: summarySampled ? SAMPLE_SIZE : undefined,
   });
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
-  const isSampled = wantsSampled;
   const { data: deploymentsData } = useListDeployments();
 
   const statusFilter = useMemo(() => {
@@ -305,7 +340,7 @@ function Component() {
     deploymentsData,
     statusFilter,
     isSummaryLoading,
-    isSampled,
+    summarySampled,
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -330,8 +365,8 @@ function Component() {
   } = useListInvocations(
     {
       ...listInvocationsParameters,
-      sampled: wantsSampled,
-      sampleSize: wantsSampled ? SAMPLE_SIZE : undefined,
+      sampled: listSampled,
+      sampleSize: listSampled ? SAMPLE_SIZE : undefined,
     },
     {
       refetchOnMount: true,
@@ -347,8 +382,8 @@ function Component() {
   // Sample-bounded total display: when sampled and the estimate hits the
   // sample cap, format as "~50K+"; otherwise "~X". Used by the Actions
   // badge / dropdown header to mirror the Footnote.
-  const sampledHitCap = isSampled && totalCount >= SAMPLE_SIZE;
-  const actionsTotalDisplay = isSampled
+  const sampledHitCap = summarySampled && totalCount >= SAMPLE_SIZE;
+  const actionsTotalDisplay = summarySampled
     ? `~${formatNumber(sampledHitCap ? SAMPLE_SIZE : totalCount, true)}${sampledHitCap ? '+' : ''}`
     : formatNumber(totalCount, true);
 
@@ -451,7 +486,7 @@ function Component() {
             isFetching={isSummaryFetching}
             isDimmed={statusDim}
             getHref={statusHref}
-            isSampled={isSampled}
+            isSampled={summarySampled}
           />
           <StatusLegend
             byStatus={byStatus}
@@ -464,7 +499,7 @@ function Component() {
               href: clearStatusFilterHref,
               dimmed: hasStatusFilter(statusFilter),
             }}
-            isSampled={isSampled}
+            isSampled={summarySampled}
             leading={
               <SampleModeToggle mode={countMode} onChange={setCountMode} />
             }
@@ -472,7 +507,10 @@ function Component() {
         </div>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">
-            <SampleScanToggle mode={countMode} onChange={setCountMode} />
+            <SampleScanToggle
+              sampled={listSampled}
+              onChange={setListSampledOverride}
+            />
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -743,7 +781,7 @@ function Component() {
                 data={data}
                 totalCount={totalCount}
                 isFetching={isFetching}
-                isSampled={isSampled}
+                isSampled={listSampled}
                 sampleSize={SAMPLE_SIZE}
                 key={dataUpdate}
               >
