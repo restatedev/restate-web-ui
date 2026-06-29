@@ -15,16 +15,12 @@ import {
 import { handlerIssuesKey } from './sortHandlers';
 
 const MIN_OVERVIEW_REFETCH_INTERVAL = 3_000;
-const MAX_OVERVIEW_REFETCH_INTERVAL = 60_000;
 const OVERVIEW_REFETCH_DURATION_MULTIPLIER = 10;
 
 function getOverviewRefetchInterval(summaryFetchDuration: number) {
-  return Math.min(
-    MAX_OVERVIEW_REFETCH_INTERVAL,
-    Math.max(
-      MIN_OVERVIEW_REFETCH_INTERVAL,
-      summaryFetchDuration * OVERVIEW_REFETCH_DURATION_MULTIPLIER,
-    ),
+  return Math.max(
+    MIN_OVERVIEW_REFETCH_INTERVAL,
+    summaryFetchDuration * OVERVIEW_REFETCH_DURATION_MULTIPLIER,
   );
 }
 
@@ -69,6 +65,8 @@ export function useOverviewData(range?: string) {
     excludeCompleted: isCompletionHistoryEnabled,
     refetchInterval: overviewRefetchInterval,
     onFetchDuration: updateOverviewRefetchInterval,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
