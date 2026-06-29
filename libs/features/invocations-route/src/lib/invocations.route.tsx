@@ -852,7 +852,18 @@ function InvocationsForm({
       className="relative flex w-[60rem] flex-col"
       onSubmit={async (event) => {
         event.preventDefault();
-        commitQuery();
+        // The Query button and the Cmd/Ctrl+Enter shortcut submit via a real
+        // button click, so they carry a `submitter` — those are explicit "run
+        // it now" actions and always refetch. Closing a filter chip
+        // auto-submits via requestSubmit() (no submitter); that should only
+        // refetch when the query actually changed.
+        const isExplicitSubmit = Boolean(
+          (event.nativeEvent as SubmitEvent).submitter,
+        );
+        const changed = commitQuery();
+        if (!isExplicitSubmit && !changed) {
+          return;
+        }
         await Promise.all([
           queryCLient.invalidateQueries({ queryKey }),
           queryCLient.invalidateQueries({

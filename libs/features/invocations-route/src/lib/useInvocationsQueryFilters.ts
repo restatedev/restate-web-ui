@@ -189,9 +189,18 @@ export function useInvocationsForm({
     const sortedOldSearchParams = new URLSearchParams(searchParams);
     sortedOldSearchParams.sort();
 
-    if (sortedOldSearchParams.toString() !== sortedNewSearchParams.toString()) {
-      resetPageIndex();
+    const changed =
+      sortedOldSearchParams.toString() !== sortedNewSearchParams.toString();
+
+    // Nothing to apply (e.g. opening then closing a filter chip without an
+    // edit): leave the URL untouched and report no change. The caller decides
+    // whether to still refetch (explicit Query press) or skip it (auto-submit
+    // on close).
+    if (!changed) {
+      return false;
     }
+
+    resetPageIndex();
     // Keep lastQuery in sync with the committed state so the next "Back to
     // invocations" navigation (?restore=1) restores what the user actually
     // just submitted. Saving here is a hot-path optimization — the route's
@@ -199,17 +208,7 @@ export function useInvocationsForm({
     saveLastQuery(newSearchParams);
     setSearchParams(newSearchParams, { preventScrollReset: true });
 
-    return query.items
-      .filter((clause) => clause.isValid)
-      .map(
-        (clause) =>
-          ({
-            field: clause.fieldValue,
-            operation: clause.value.operation!,
-            type: clause.type,
-            value: clause.value.value,
-          }) as FilterItem,
-      );
+    return true;
   };
 
   return {
