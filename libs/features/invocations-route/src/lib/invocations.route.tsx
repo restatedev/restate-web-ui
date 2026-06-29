@@ -106,6 +106,7 @@ import {
   isSortValid,
   setDefaultSort,
   setSort,
+  SORT_QUERY_PREFIX,
   useInvocationsForm,
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
@@ -1193,7 +1194,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   // path triggers it. Default navigation (sidebar All, fresh URL, shortcuts)
   // shows the unfiltered view. The flag is consumed and stripped, then we
   // fall through to the redirect at the bottom so the user lands on a clean
-  // URL with the restored filter_* keys.
+  // URL with the restored filter_*/sort_*/column keys.
   if (params.get('restore') === '1') {
     params.delete('restore');
     // `request.url` includes the router basename (e.g. web-ui's `/ui`), which
@@ -1211,10 +1212,21 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     );
     if (lastQuery) {
       Array.from(lastQuery.keys())
-        .filter((k) => k.startsWith(FILTER_QUERY_PREFIX))
+        .filter(
+          (k) =>
+            k.startsWith(FILTER_QUERY_PREFIX) ||
+            k.startsWith(SORT_QUERY_PREFIX) ||
+            k === COLUMN_QUERY_PREFIX,
+        )
         .forEach((k) => {
           // Only restore keys the caller hasn't already set — explicit
-          // filter_* on the URL always wins over the saved state.
+          // filter_*/sort_*/column on the URL always wins over the saved
+          // state. Restoring sort_* (incl. the `sort_field=none` no-sort
+          // marker) keeps a no-sort preset like Processing from picking up the
+          // default sort on back-navigation; restoring column keeps
+          // preset-specific columns (idempotency_key, scheduled_start_at, …).
+          // The `column` key repeats per value, but the guard makes the first
+          // occurrence append all of them and the rest no-op.
           if (!params.has(k)) {
             lastQuery.getAll(k).forEach((v) => params.append(k, v));
           }
