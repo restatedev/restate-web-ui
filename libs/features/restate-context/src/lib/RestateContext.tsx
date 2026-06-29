@@ -47,6 +47,12 @@ type RestateContext = {
   ingressUrl: string;
   baseUrl: string;
   observabilityDashboardUrl?: string;
+  // Preset applied when landing on /invocations without an explicit query (e.g.
+  // the Invocations nav link) — falls back to the "All" view when unset. A
+  // preset id from @restate/util/sidebar-nav ('all' | 'inflight' | 'processing'
+  // | 'stuck' | …). Kept as a string to avoid a dependency cycle with
+  // sidebar-nav; the invocations route validates it.
+  defaultInvocationsPreset?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -84,6 +90,7 @@ function InternalRestateContextProvider({
   ingressUrl,
   baseUrl = '',
   observabilityDashboardUrl,
+  defaultInvocationsPreset,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -100,6 +107,7 @@ function InternalRestateContextProvider({
   ingressUrl?: string;
   baseUrl?: string;
   observabilityDashboardUrl?: string;
+  defaultInvocationsPreset?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -166,6 +174,7 @@ function InternalRestateContextProvider({
         isVersionGte,
         baseUrl,
         observabilityDashboardUrl,
+        defaultInvocationsPreset,
         EncodingWaterMark,
         tunnel,
         GettingStarted,
@@ -192,6 +201,7 @@ export function RestateContextProvider({
   isPending,
   baseUrl,
   observabilityDashboardUrl,
+  defaultInvocationsPreset,
   EncodingWaterMark,
   tunnel,
   GettingStarted,
@@ -210,6 +220,7 @@ export function RestateContextProvider({
   isPending?: boolean;
   baseUrl?: string;
   observabilityDashboardUrl?: string;
+  defaultInvocationsPreset?: string;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -234,6 +245,7 @@ export function RestateContextProvider({
         isPending={isPending}
         baseUrl={baseUrl}
         observabilityDashboardUrl={observabilityDashboardUrl}
+        defaultInvocationsPreset={defaultInvocationsPreset}
         EncodingWaterMark={EncodingWaterMark}
         tunnel={tunnel}
         GettingStarted={GettingStarted}

@@ -366,9 +366,9 @@ export function InvocationsSidebarItem({
   // - on a custom-filter /invocations URL → "Last query" (active)
   // - on an overflow preset (Idempotent, Most retried, …) → preset label (active)
   // - otherwise fall back to the last remembered detail/custom (not active)
-  // Fixed rail presets (All, In-flight, Stuck) don't appear here — they
-  // already have their own row in the rail.
-  const FIXED_PRESET_IDS = new Set(['inflight', 'stuck']);
+  // Fixed rail presets (All, In-flight, Stuck, Processing) don't appear here —
+  // they already have their own row in the rail.
+  const FIXED_PRESET_IDS = new Set(['inflight', 'stuck', 'processing']);
 
   const extraSubItems: SidebarSubItem[] = [];
   if (current?.kind === 'detail') {
@@ -435,7 +435,7 @@ export function InvocationsSidebarItem({
       disabled={disabled}
       subItems={subItems}
       extraSubItems={extraSubItems}
-      visibleSubCount={3}
+      visibleSubCount={4}
     />
   );
 }
