@@ -3589,6 +3589,13 @@
               "$ref": "#/components/schemas/FilterItem"
             }
           },
+          "sampled": {
+            "type": "boolean"
+          },
+          "sampleSize": {
+            "type": "integer",
+            "minimum": 1
+          },
           "sort": {
             "type": "object",
             "required": ["field", "order"],

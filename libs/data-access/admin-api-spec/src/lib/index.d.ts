@@ -2660,6 +2660,8 @@ export interface components {
     VirtualObjectState: string[];
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
+      sampled?: boolean;
+      sampleSize?: number;
       sort?: {
         /** @enum {string} */
         field:

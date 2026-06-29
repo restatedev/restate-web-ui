@@ -12,6 +12,7 @@ import {
 import { fetchVqueueStatuses, vqueueStatusEnabled } from './vqueue';
 
 const INVOCATIONS_LIMIT = 250;
+const DEFAULT_SAMPLE_SIZE = 50000;
 
 export async function listInvocations(
   this: QueryContext,
@@ -20,6 +21,8 @@ export async function listInvocations(
     field: 'modified_at',
     order: 'DESC',
   },
+  sampled = false,
+  sampleSize = DEFAULT_SAMPLE_SIZE,
 ) {
   const isSortByDuration = sort.field === 'duration';
   const idSelectColumns = isSortByDuration
@@ -29,8 +32,17 @@ export async function listInvocations(
   // status filter rewrites backing-off/ready to match the overlaid status.
   const vqueueBackingOff = vqueueStatusEnabled(this);
 
+  // Sampled mode caps the scan to the first `sampleSize` rows before the
+  // filter/sort/limit, trading completeness for speed on huge tables — the same
+  // trade-off the summary endpoint's estimate mode makes. The subquery projects
+  // the full list column set so the outer WHERE, ORDER BY, and duration
+  // expression all resolve against it.
+  const source = sampled
+    ? `(SELECT ${getSysInvocationListColumns(this.features).join(', ')} FROM sys_invocation LIMIT ${sampleSize})`
+    : 'sys_invocation';
+
   const { rows: idRows } = await this.query(
-    `SELECT ${idSelectColumns} from sys_invocation ${convertInvocationsFilters(filters, { vqueueBackingOff })} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
+    `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ORDER BY ${sort.field} ${sort.order} LIMIT ${INVOCATIONS_LIMIT}`,
   );
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
