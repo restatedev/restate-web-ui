@@ -415,7 +415,6 @@ function Component() {
     sampled: summarySampled,
     sampleSize: summarySampled ? SAMPLE_SIZE : undefined,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
   });
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
   const { data: deploymentsData } = useListDeployments();
@@ -462,7 +461,6 @@ function Component() {
       sampleSize: listSampled ? SAMPLE_SIZE : undefined,
     },
     {
-      refetchOnMount: false,
       refetchOnReconnect: false,
       staleTime: 0,
       refetchOnWindowFocus: false,
@@ -485,13 +483,23 @@ function Component() {
   }, [isFetching, searchString, listSampled]);
 
   const totalCount = summaryData?.totalCount ?? 0;
-  // Sample-bounded total display: when sampled and the estimate hits the
-  // sample cap, format as "~50K+"; otherwise "~X". Used by the Actions
-  // badge / dropdown header to mirror the Footnote.
-  const sampledHitCap = summarySampled && totalCount >= SAMPLE_SIZE;
-  const actionsTotalDisplay = summarySampled
-    ? `~${formatNumber(sampledHitCap ? SAMPLE_SIZE : totalCount, true)}${sampledHitCap ? '+' : ''}`
-    : formatNumber(totalCount, true);
+  // The list caps at INVOCATIONS_LIMIT rows. When it comes back under that cap
+  // it holds every matching invocation, so its row count IS the exact total —
+  // trust it over the summary's totalCount, which is a separate (often sampled)
+  // query that can disagree, e.g. a Complete scan showing far more rows than the
+  // sampled estimate. Only a capped list falls back to the summary's total.
+  const listRowCount = data?.rows?.length ?? 0;
+  const listLimit = data?.limit ?? 0;
+  const listCapped = listLimit > 0 && listRowCount >= listLimit;
+  const hasExactListTotal = data != null && !listCapped;
+  const effectiveTotal = hasExactListTotal ? listRowCount : totalCount;
+  // "~" only when the shown total is a sampled estimate (capped list + sampled
+  // summary). An exact list count or an exact summary count needs no "~".
+  const totalIsEstimate = !hasExactListTotal && summarySampled;
+  const sampledHitCap = totalIsEstimate && effectiveTotal >= SAMPLE_SIZE;
+  const actionsTotalDisplay = totalIsEstimate
+    ? `~${formatNumber(sampledHitCap ? SAMPLE_SIZE : effectiveTotal, true)}${sampledHitCap ? '+' : ''}`
+    : formatNumber(effectiveTotal, true);
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
@@ -674,7 +682,7 @@ function Component() {
                   className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
                 >
                   Actions
-                  {Boolean(selectedInvocationIds.size || totalCount) && (
+                  {Boolean(selectedInvocationIds.size || effectiveTotal) && (
                     <Badge
                       size="xs"
                       variant={
@@ -703,12 +711,12 @@ function Component() {
                             on {selectedInvocationIds.size} selected items
                           </span>
                         </span>
-                      ) : totalCount > 0 ? (
+                      ) : effectiveTotal > 0 ? (
                         <span>
                           Actions{' '}
                           <span className="font-normal opacity-90">
                             on all {actionsTotalDisplay}{' '}
-                            {formatPlurals(totalCount, {
+                            {formatPlurals(effectiveTotal, {
                               one: 'result',
                               other: 'results',
                             })}
@@ -904,7 +912,7 @@ function Component() {
                 data={data}
                 totalCount={totalCount}
                 isFetching={isFetching}
-                isSampled={listSampled}
+                isCountSampled={summarySampled}
                 sampleSize={SAMPLE_SIZE}
                 key={dataUpdate}
               >
@@ -1070,14 +1078,14 @@ function Footnote({
   data,
   totalCount,
   isFetching,
-  isSampled,
+  isCountSampled,
   sampleSize,
   children,
 }: PropsWithChildren<{
   isFetching: boolean;
   data?: ReturnType<typeof useListInvocations>['data'];
   totalCount: number;
-  isSampled?: boolean;
+  isCountSampled?: boolean;
   sampleSize?: number;
 }>) {
   const [now, setNow] = useState(() => Date.now());
@@ -1119,7 +1127,7 @@ function Footnote({
         <div className="ml-auto">
           {visibleCount === 0 && totalCount === 0 ? (
             'No invocations found'
-          ) : isSampled && listWasCapped ? (
+          ) : isCountSampled && listWasCapped ? (
             <>
               <span className="font-medium text-gray-500">
                 {formatNumber(visibleCount)}
@@ -1134,7 +1142,7 @@ function Footnote({
                 other: 'invocations',
               })}
             </>
-          ) : isSampled ? (
+          ) : isCountSampled ? (
             <>
               <span className="font-medium text-gray-500">
                 {formatNumber(visibleCount)}
