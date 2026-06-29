@@ -14,6 +14,27 @@ import { fetchVqueueStatuses, vqueueStatusEnabled } from './vqueue';
 const INVOCATIONS_LIMIT = 250;
 const DEFAULT_SAMPLE_SIZE = 50000;
 
+// The "Processing" preset: status IN running/backing-off/ready and nothing
+// else. Without vqueues these are exactly the rows of sys_invocation_state, so
+// the id scan can hit that small table directly (see below).
+const PROCESSING_STATUSES = ['running', 'backing-off', 'ready'];
+function isProcessingPresetFilters(filters: FilterItem[]): boolean {
+  if (filters.length !== 1) return false;
+  const f = filters[0];
+  if (
+    !f ||
+    f.field !== 'status' ||
+    f.type !== 'STRING_LIST' ||
+    f.operation !== 'IN'
+  ) {
+    return false;
+  }
+  return (
+    f.value.length === PROCESSING_STATUSES.length &&
+    PROCESSING_STATUSES.every((status) => f.value.includes(status))
+  );
+}
+
 export async function listInvocations(
   this: QueryContext,
   filters: FilterItem[],
@@ -40,9 +61,19 @@ export async function listInvocations(
     ? `(SELECT ${getSysInvocationListColumns(this.features).join(', ')} FROM sys_invocation LIMIT ${sampleSize})`
     : 'sys_invocation';
 
-  const { rows: idRows } = await this.query(
-    `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`,
-  );
+  // Fast path: the unfiltered, unsorted "Processing" preset maps exactly to the
+  // rows of sys_invocation_state (in-flight invocations), a much smaller table —
+  // scanning it without a status filter avoids a filtered scan over the large
+  // sys_invocation. Only valid with vqueues off; with vqueues the processing
+  // statuses come from the queue overlay rather than this table. The detail
+  // query below re-applies the status filter, so a row that just left the
+  // processing set is dropped rather than shown.
+  const idQuery =
+    !vqueueBackingOff && !sort && isProcessingPresetFilters(filters)
+      ? `SELECT id FROM sys_invocation_state LIMIT ${INVOCATIONS_LIMIT}`
+      : `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`;
+
+  const { rows: idRows } = await this.query(idQuery);
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
   if (idRows.length > 0) {
