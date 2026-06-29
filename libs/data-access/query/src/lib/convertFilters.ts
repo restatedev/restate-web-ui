@@ -317,7 +317,8 @@ const COMPLETED_SUBSTATES = ['succeeded', 'failed', 'cancelled', 'killed'];
 function normalizeCompletedStatuses(values: string[]): string[] {
   const set = new Set(values);
   const collapses =
-    set.has('completed') || COMPLETED_SUBSTATES.every((value) => set.has(value));
+    set.has('completed') ||
+    COMPLETED_SUBSTATES.every((value) => set.has(value));
   if (!collapses) {
     return values;
   }

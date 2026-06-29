@@ -768,7 +768,7 @@ function OverviewContent() {
             isSummaryEmpty ? (
               'No in-flight'
             ) : inFlightTotal > 0 ? (
-              <Ellipsis>In-flight</Ellipsis>
+              <Ellipsis>In-flight / scheduled</Ellipsis>
             ) : (
               'In-flight'
             )

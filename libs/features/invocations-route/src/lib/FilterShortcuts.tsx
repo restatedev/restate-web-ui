@@ -81,7 +81,7 @@ const makeShortcuts: (
     filters: [
       toClause(schema, 'status', {
         operation: 'NOT_IN',
-        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+        value: ['succeeded', 'failed', 'cancelled', 'killed', 'scheduled'],
       }),
     ],
   },
