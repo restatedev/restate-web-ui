@@ -34,9 +34,7 @@ function QueryButton({
       {field != null && (
         <span className="shrink-0 whitespace-nowrap">{field}</span>
       )}
-      {value != null && (
-        <span className="truncate font-semibold">{value}</span>
-      )}
+      {value != null && <span className="truncate font-semibold">{value}</span>}
       <Icon
         name={IconName.ChevronsUpDown}
         className="ml-2 h-3.5 w-3.5 shrink-0"

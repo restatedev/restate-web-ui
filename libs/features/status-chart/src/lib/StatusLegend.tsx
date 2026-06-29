@@ -256,7 +256,9 @@ export function StatusLegend({
             key="__all__"
             id="__all__"
             textValue={
-              isSampled ? 'All statuses (sampled)' : `All statuses ${allItem.count}`
+              isSampled
+                ? 'All statuses (sampled)'
+                : `All statuses ${allItem.count}`
             }
             href={allItem.href}
             className={legendItemStyles({

@@ -338,8 +338,7 @@ router.map(routes, {
           sort,
           sampled,
           sampleSize,
-        }: components['schemas']['ListInvocationsRequestBody'] =
-          await ctx.request.json();
+        }: components['schemas']['ListInvocationsRequestBody'] = await ctx.request.json();
         return listInvocations(filters, sort, sampled, sampleSize);
       },
       async count(ctx) {
