@@ -501,6 +501,11 @@ function Component() {
     ? `~${formatNumber(sampledHitCap ? SAMPLE_SIZE : effectiveTotal, true)}${sampledHitCap ? '+' : ''}`
     : formatNumber(effectiveTotal, true);
 
+  // An empty list only means "genuinely none" when an exact source confirms it:
+  // a Complete list scan (its 0 is authoritative), or an Exact summary counting
+  // 0. Otherwise the 0 may just be a sampling miss, so offer a complete scan.
+  const offerCompleteScan = listSampled && (summarySampled || totalCount > 0);
+
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
   >(new Set());
@@ -886,7 +891,7 @@ function Component() {
                         className="w-full rounded-xl text-left"
                       />
                     </EmptyState>
-                  ) : listSampled && totalCount > 0 ? (
+                  ) : offerCompleteScan ? (
                     <EmptyState
                       icon={IconName.ScanSearch}
                       title="No matches in this partial scan"
