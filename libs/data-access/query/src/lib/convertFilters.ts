@@ -444,11 +444,14 @@ function invocationsFilterClauses(
   }
   if (statusFilters.length > 0) {
     statusFilters.forEach((statusFilter) => {
-      // Collapse the completed family to a single 'completed' (see
-      // normalizeCompletedStatuses); only a STRING_LIST can carry the full set.
+      // No completed-family collapse here: status filters route to the base
+      // join (shouldUseBaseJoinForStatus), where the collapse + raw ss.status
+      // pushdown live. This view path now only runs for status filters in
+      // sampled mode; collapsing on the computed `status` would just create a
+      // 2-branch predicate that trips the CSE which blocks pushdown.
       const values =
         statusFilter.type === 'STRING_LIST'
-          ? normalizeCompletedStatuses(statusFilter.value)
+          ? statusFilter.value
           : statusFilter.type === 'STRING' && statusFilter.value !== undefined
             ? [statusFilter.value]
             : [];
@@ -572,10 +575,6 @@ export function convertInvocationsFilters(
 // filter. `ss` = sys_invocation_status, `sis` = sys_invocation_state.
 // ---------------------------------------------------------------------------
 
-// The computed statuses whose view CASE branch depends on sys_invocation_state;
-// the only ones the view can't push down, and all three are raw 'invoked'.
-const INVOKED_DERIVED_STATUSES = new Set(['running', 'backing-off', 'ready']);
-
 // Computed status -> the raw sys_invocation_status.status enum value it matches.
 // Drives the pushable `ss.status IN (...)` prefilter.
 const COMPUTED_TO_RAW_STATUS: Record<string, string> = {
@@ -667,36 +666,25 @@ function statusFilterValues(filter: FilterItem): string[] {
 }
 
 // Whether the id query should be built over the raw base join instead of the
-// sys_invocation view. True only when a status filter can't be pushed into the
-// view's scan but can on the raw join:
-//   - positive (IN/EQUALS) targeting an invoked-derived status, or
-//   - negated (NOT_IN/NOT_EQUALS) excluding *all* invoked-derived statuses,
-//     which yields a pushable `ss.status NOT IN ('invoked')` prefilter.
-// Terminal-only filters (already pushed down on the view) and negated subsets
-// of the invoked statuses (no pushable prefilter) keep using the view.
+// sys_invocation view. Any status filter is routed to the base join: it filters
+// raw ss.status, which always pushes into the scan, whereas the view's computed
+// `status` blocks pushdown whenever the filter touches an invoked-derived value
+// (its CASE branch reads sys_invocation_state) or spans 2+ status branches —
+// DataFusion then materializes the whole status CASE as a common subexpression
+// (CSE) and full-scans (e.g. `status != 'completed' AND status != 'scheduled'`
+// scanned 31M rows). The view doesn't prune its own join for terminal filters
+// either, so the base join is never slower. Only IN/EQUALS/NOT_IN/NOT_EQUALS are
+// translated; any other status operation stays on the view.
 export function shouldUseBaseJoinForStatus(filters: FilterItem[]): boolean {
   const statusFilters = filters.filter((filter) => filter.field === 'status');
   if (statusFilters.length === 0) {
     return false;
   }
-  // Only IN/EQUALS/NOT_IN/NOT_EQUALS are translated to the raw join.
-  const allSupported = statusFilters.every(
+  return statusFilters.every(
     (filter) =>
       POSITIVE_STATUS_OPS.has(filter.operation) ||
       NEGATIVE_STATUS_OPS.has(filter.operation),
   );
-  if (!allSupported) {
-    return false;
-  }
-  return statusFilters.some((filter) => {
-    const values = statusFilterValues(filter);
-    if (POSITIVE_STATUS_OPS.has(filter.operation)) {
-      return values.some((value) => INVOKED_DERIVED_STATUSES.has(value));
-    }
-    return [...INVOKED_DERIVED_STATUSES].every((status) =>
-      values.includes(status),
-    );
-  });
 }
 
 // WHERE clause for the base join. Non-status filters are plain column
