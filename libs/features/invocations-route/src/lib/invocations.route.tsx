@@ -55,6 +55,7 @@ import {
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { HoverTooltip } from '@restate/ui/tooltip';
+import { RestateServer } from '@restate/ui/restate-server';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   ContentPanel,
@@ -136,6 +137,9 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 const SAMPLE_SIZE = 200_000;
+// How long the loading skeleton may be up before we reassure the user with the
+// slow-query banner.
+const SLOW_QUERY_MS = 5_000;
 
 // The table (list) query has its own sampling default, independent of the
 // summary's estimate/exact knob, chosen per query preset. `custom` covers any
@@ -280,9 +284,74 @@ function SampleNotice() {
   );
 }
 
+// Calm, reassuring banner shown over the loading table once a query has been
+// running for a while (>10s). A slow scan shouldn't read as a broken page, so
+// the tone is warm — and it offers escape hatches: switch to a faster partial
+// view (cancelling the in-flight complete scan) and, when configured, a link
+// to the observability dashboard.
+function SlowQueryBanner({
+  isComplete,
+  dashboardUrl,
+  onSwitchToPartial,
+}: {
+  isComplete: boolean;
+  dashboardUrl?: string;
+  onSwitchToPartial: () => void;
+}) {
+  return (
+    <div className="m-2 mx-auto mt-11 flex max-w-md flex-col items-center gap-2 px-5 py-4 text-center">
+      <div
+        inert
+        className="pointer-events-none relative -my-2 h-24 w-24 overflow-hidden"
+      >
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.75]">
+          <RestateServer status="active" appearance="ghost" />
+        </div>
+      </div>
+      <div className="text-sm font-semibold text-gray-800">
+        Hang tight — this is taking a moment
+      </div>
+      <p className="max-w-sm text-xs text-gray-500">
+        {isComplete
+          ? 'A complete scan reads every invocation, which can take a while on large datasets. You can switch to a faster partial view, or keep waiting for exact results.'
+          : 'Larger datasets can take a little longer to load — thanks for your patience.'}
+      </p>
+      {(isComplete || dashboardUrl) && (
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+          {isComplete && (
+            <Button
+              variant="primary"
+              onClick={onSwitchToPartial}
+              className="rounded-lg px-3 py-1 text-xs"
+            >
+              Show a faster partial view
+            </Button>
+          )}
+          {dashboardUrl && (
+            <a
+              href={dashboardUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50"
+            >
+              Open the dashboard
+              <Icon
+                name={IconName.ExternalLink}
+                className="h-3 w-3 opacity-70"
+              />
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { OnboardingGuide, baseUrl } = useRestateContext();
+  const { OnboardingGuide, baseUrl, observabilityDashboardUrl } =
+    useRestateContext();
+  const queryClient = useQueryClient();
   const { saveLastQuery } = useInvocationsLastQuery();
   const { setRecent } = useInvocationsRecent();
   const {
@@ -396,6 +465,19 @@ function Component() {
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
+  // Once the loading skeleton has been up past SLOW_QUERY_MS, surface a calm
+  // reassurance banner. Reset (and restart the clock) whenever a fresh query
+  // starts — a new filter/sort or sampling change gets its own grace period.
+  const [isSlowQuery, setIsSlowQuery] = useState(false);
+  useEffect(() => {
+    setIsSlowQuery(false);
+    if (!isFetching) {
+      return;
+    }
+    const timer = setTimeout(() => setIsSlowQuery(true), SLOW_QUERY_MS);
+    return () => clearTimeout(timer);
+  }, [isFetching, searchString, listSampled]);
+
   const totalCount = summaryData?.totalCount ?? 0;
   // Sample-bounded total display: when sampled and the estimate hits the
   // sample cap, format as "~50K+"; otherwise "~X". Used by the Actions
@@ -493,6 +575,22 @@ function Component() {
       setRecent({ type: 'custom', value: searchParams.toString() });
     }
   }, [searchParams, saveLastQuery, setRecent]);
+
+  // A slow load takes over the caption with the reassurance banner; otherwise
+  // the partial-results notice shows when sampled.
+  const tableCaption =
+    isSlowQuery && isFetching ? (
+      <SlowQueryBanner
+        isComplete={!listSampled}
+        dashboardUrl={observabilityDashboardUrl}
+        onSwitchToPartial={() => {
+          queryClient.cancelQueries({ queryKey });
+          setListSampledOverride(true);
+        }}
+      />
+    ) : listSampled && !error ? (
+      <SampleNotice />
+    ) : undefined;
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -719,7 +817,7 @@ function Component() {
             <ContentPanelSection flush>
               <PanelTable
                 aria-label="Invocations"
-                caption={listSampled && !error ? <SampleNotice /> : undefined}
+                caption={tableCaption}
                 columns={panelColumns}
                 items={currentPageItems}
                 selectionMode="multiple"
