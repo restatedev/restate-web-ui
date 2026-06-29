@@ -70,7 +70,7 @@ const makeShortcuts: (
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
-        value: ['running', 'backing-off', 'ready'],
+        value: ['running', 'backing-off'],
       }),
     ],
   },

@@ -56,7 +56,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
       {
         id: 'status',
         operation: 'IN',
-        value: ['running', 'backing-off', 'ready'],
+        value: ['running', 'backing-off'],
       },
     ],
     sort: SORT_NONE,
