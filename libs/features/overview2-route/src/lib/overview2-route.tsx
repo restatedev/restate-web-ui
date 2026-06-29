@@ -28,7 +28,7 @@ import {
 import {
   toCompletedInvocationsBucketHref,
   toCompletedInvocationsHref,
-  toInFlightInvocationsHref,
+  toInFlightPlusScheduledInvocationsHref,
 } from '@restate/util/invocation-links';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
@@ -774,7 +774,7 @@ function OverviewContent() {
             )
           }
           textOnly={isSummaryEmpty}
-          href={toInFlightInvocationsHref(baseUrl, {
+          href={toInFlightPlusScheduledInvocationsHref(baseUrl, {
             existingParams: linkParams,
           })}
           isLoading={isSummaryLoading}

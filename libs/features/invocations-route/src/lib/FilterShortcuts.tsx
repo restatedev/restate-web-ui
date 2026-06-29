@@ -111,6 +111,17 @@ const makeShortcuts: (
     filters: [],
   },
   {
+    id: 'notcompleted',
+    label: 'Not completed',
+    columns: DEFAULT_PRESET_COLUMNS,
+    filters: [
+      toClause(schema, 'status', {
+        operation: 'NOT_IN',
+        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+      }),
+    ],
+  },
+  {
     id: 'workflow',
     label: 'Workflow runs',
     columns: DEFAULT_PRESET_COLUMNS,

@@ -127,6 +127,22 @@ export function toInFlightInvocationsHref(
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 
+// "In-flight / scheduled": every non-completed invocation, INCLUDING scheduled
+// ones that haven't started yet (NOT_IN completed). Broader than
+// toInFlightInvocationsHref, which excludes scheduled. Use this where scheduled
+// work should be surfaced alongside in-flight — e.g. the overview hero gauge.
+export function toInFlightPlusScheduledInvocationsHref(
+  baseUrl: string,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_status',
+    JSON.stringify({ operation: 'NOT_IN', value: COMPLETED_STATUSES }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
 export function toCompletedInvocationsHref(
   baseUrl: string,
   { existingParams }: { existingParams?: URLSearchParams } = {},

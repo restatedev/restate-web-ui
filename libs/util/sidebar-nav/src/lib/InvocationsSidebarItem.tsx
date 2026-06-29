@@ -90,6 +90,19 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
     sort: { field: 'modified_at', order: 'ASC' },
   },
   {
+    id: 'notcompleted',
+    label: 'Not completed',
+    filters: [
+      {
+        id: 'status',
+        operation: 'NOT_IN',
+        // Mirror of COMPLETED_STATUSES in @restate/util/invocation-links;
+        // matches toInFlightPlusScheduledInvocationsHref (in-flight + scheduled).
+        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+      },
+    ],
+  },
+  {
     id: 'workflow',
     label: 'Workflow runs',
     filters: [
@@ -219,8 +232,9 @@ export function getDefaultInvocationsPreset(): string | undefined {
 //
 //   - 'detail': on `/invocations/{id}`. `id` is the invocation id; drives
 //               the "{id}" extra sub-item.
-//   - 'all':    on `/invocations` with no non-empty filters — the baseline
-//               "show everything recent" view. Matches the All sidebar item.
+//   - 'all':    on `/invocations` with no non-empty filters (the time-range
+//               scope filter aside) — the baseline "show everything recent"
+//               view. Matches the All sidebar item.
 //   - 'preset': on `/invocations` and the URL's filter set matches one of
 //               the named shortcuts (In-flight, Stuck, Workflow runs, …).
 //               `id` is the shortcut id, used to highlight that sub-item.
@@ -252,6 +266,13 @@ function isFilterParamEmpty(value: string | null): boolean {
   }
 }
 
+// Time-range scoping filter that callers layer on top of any preset — e.g. the
+// overview hero gauge forwards the selected range as filter_created_at (the one
+// filter buildParams in @restate/util/invocation-links preserves). It's
+// orthogonal to which preset a URL represents, so preset matching ignores it,
+// the same way sort/column params are ignored.
+const SCOPING_FILTER_KEYS = new Set(['filter_created_at']);
+
 function urlMatchesShortcut(
   searchParams: URLSearchParams,
   s: InvocationShortcut,
@@ -262,7 +283,10 @@ function urlMatchesShortcut(
     (f) => !(Array.isArray(f.value) && f.value.length === 0),
   );
   const urlNonEmpty = Array.from(searchParams.entries()).filter(
-    ([k, v]) => k.startsWith('filter_') && !isFilterParamEmpty(v),
+    ([k, v]) =>
+      k.startsWith('filter_') &&
+      !SCOPING_FILTER_KEYS.has(k) &&
+      !isFilterParamEmpty(v),
   );
   if (urlNonEmpty.length !== required.length) return false;
   return required.every((f) => {
@@ -326,6 +350,7 @@ export type InvocationPreset =
   | 'idempotent'
   | 'restarted'
   | 'scheduled'
+  | 'notcompleted'
   | 'custom';
 
 /**
