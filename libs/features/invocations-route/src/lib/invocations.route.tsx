@@ -51,6 +51,8 @@ import {
   formatNumber,
   formatPlurals,
 } from '@restate/util/intl';
+import { tv } from '@restate/util/styles';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   ContentPanel,
@@ -171,6 +173,74 @@ function SampleModeToggle({
     </div>
   );
 }
+// Segmented control matching the JournalDetailToggle's inset-container +
+// white "active" pill. Shares the hero's estimate/exact state: "Sampled" caps
+// the scan for speed, "Full scan" counts every invocation.
+const sampleScanToggleStyles = tv({
+  slots: {
+    // Track outline is an inset box-shadow, not a real border, so the
+    // container's height matches the segment (and the neighboring buttons)
+    // exactly instead of growing by the border width.
+    container:
+      'inline-flex items-stretch self-end rounded-lg bg-black/3 shadow-[inset_0_0_0_0.5px_rgba(39,39,42,0.06),inset_0_1px_0_0_rgba(0,0,0,0.03)]',
+    // Match the Columns/Actions secondary buttons exactly (rounded-lg, p-0.5
+    // px-2, text-0.5xs) so heights/text/corners line up. The active segment
+    // keeps the secondary white/border/shadow look; the inactive one goes
+    // transparent so the track shows through.
+    segment: 'rounded-lg p-0.5 px-2 text-0.5xs',
+  },
+  variants: {
+    active: {
+      true: {},
+      false: {
+        segment:
+          'border-transparent bg-transparent text-gray-600 shadow-none hover:bg-black/5',
+      },
+    },
+  },
+});
+
+function SampleScanToggle({
+  mode,
+  onChange,
+}: {
+  mode: CountMode;
+  onChange: (mode: CountMode) => void;
+}) {
+  const { container, segment } = sampleScanToggleStyles();
+  const isSampled = mode === 'estimate';
+  return (
+    <div className={container()}>
+      <HoverTooltip
+        content="Count every invocation — accurate but slower on large datasets"
+        placement="top"
+        className="block"
+      >
+        <Button
+          variant="secondary"
+          onClick={() => onChange('exact')}
+          className={segment({ active: !isSampled })}
+        >
+          Full scan
+        </Button>
+      </HoverTooltip>
+      <HoverTooltip
+        content="Scan a sample for faster results"
+        placement="top"
+        className="block"
+      >
+        <Button
+          variant="secondary"
+          onClick={() => onChange('estimate')}
+          className={segment({ active: isSampled })}
+        >
+          Sampled
+        </Button>
+      </HoverTooltip>
+    </div>
+  );
+}
+
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { OnboardingGuide, baseUrl } = useRestateContext();
@@ -257,12 +327,19 @@ function Component() {
     isFetching,
     isPending,
     queryKey,
-  } = useListInvocations(listInvocationsParameters, {
-    refetchOnMount: true,
-    refetchOnReconnect: false,
-    staleTime: 0,
-    refetchOnWindowFocus: false,
-  });
+  } = useListInvocations(
+    {
+      ...listInvocationsParameters,
+      sampled: wantsSampled,
+      sampleSize: wantsSampled ? SAMPLE_SIZE : undefined,
+    },
+    {
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
@@ -395,6 +472,7 @@ function Component() {
         </div>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">
+            <SampleScanToggle mode={countMode} onChange={setCountMode} />
             <Dropdown>
               <DropdownTrigger>
                 <Button
