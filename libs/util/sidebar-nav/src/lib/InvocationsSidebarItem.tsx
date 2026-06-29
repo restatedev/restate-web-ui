@@ -12,6 +12,11 @@ import { useInvocationsRecent } from './useInvocationsMemory';
 // Preset definitions
 // ─────────────────────────────────────────────────────────────
 
+// Sort sentinel mirroring SORT_NONE in @restate/features/invocations-route
+// (this util lib can't depend on the feature lib). A preset with `sort: 'none'`
+// emits `sort_field=none`, which the route reads as "don't sort".
+const SORT_NONE = 'none';
+
 interface InvocationShortcut {
   id: string;
   label: string;
@@ -21,7 +26,7 @@ interface InvocationShortcut {
     value?: unknown;
     relativeMs?: number;
   }[];
-  sort?: { field: string; order: 'ASC' | 'DESC' };
+  sort?: { field: string; order: 'ASC' | 'DESC' } | typeof SORT_NONE;
   columns?: string[];
 }
 
@@ -80,6 +85,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
         value: ['running', 'backing-off', 'ready'],
       },
     ],
+    sort: SORT_NONE,
   },
   {
     id: 'workflow',
@@ -153,7 +159,9 @@ function shortcutHref(path: string, s: InvocationShortcut): string {
       ),
     );
   }
-  if (s.sort) {
+  if (s.sort === SORT_NONE) {
+    params.set('sort_field', SORT_NONE);
+  } else if (s.sort) {
     params.set('sort_field', s.sort.field);
     params.set('sort_order', s.sort.order);
   }

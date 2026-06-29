@@ -23,13 +23,14 @@ import { useSearchParams } from 'react-router';
 import {
   FILTER_QUERY_PREFIX,
   SORT_QUERY_PREFIX,
+  SORT_NONE,
   getFilterParamKey,
 } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
 interface FilterShortcut {
   columns: ColumnKey[];
-  sort?: SortInvocations;
+  sort?: SortInvocations | typeof SORT_NONE;
   filters: QueryClause<QueryClauseType>[];
   label: string;
   id: string;
@@ -101,6 +102,7 @@ const makeShortcuts: (
     id: 'processing',
     label: 'Processing invocations',
     columns: DEFAULT_PRESET_COLUMNS,
+    sort: SORT_NONE,
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
@@ -232,7 +234,10 @@ export function FilterShortcuts({
       newSearchParams.append(COLUMN_QUERY_PREFIX, col);
     });
 
-    if (item.sort) {
+    if (item.sort === SORT_NONE) {
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', SORT_NONE);
+      newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
+    } else if (item.sort) {
       newSearchParams.set(SORT_QUERY_PREFIX + 'field', item.sort.field);
       newSearchParams.set(SORT_QUERY_PREFIX + 'order', item.sort.order);
     } else {
