@@ -149,17 +149,17 @@ const SLOW_QUERY_MS = 5_000;
 // non-preset filter combination; LIST_SAMPLED_DEFAULT is the fallback for
 // presets not listed here. This is the single place to tune per-query
 // list-sampling defaults.
-const LIST_SAMPLED_DEFAULT = true;
+const LIST_SAMPLED_DEFAULT = false;
 const LIST_SAMPLED_DEFAULT_BY_PRESET: Partial<
   Record<InvocationPreset, boolean>
 > = {
-  all: true,
-  inflight: true,
+  all: false,
+  inflight: false,
   processing: false,
-  stuck: true,
-  scheduled: true,
-  notcompleted: true,
-  custom: true,
+  stuck: false,
+  scheduled: false,
+  notcompleted: false,
+  custom: false,
 };
 function getListSampledDefault(preset: InvocationPreset): boolean {
   return LIST_SAMPLED_DEFAULT_BY_PRESET[preset] ?? LIST_SAMPLED_DEFAULT;
