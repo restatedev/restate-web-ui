@@ -24,7 +24,14 @@ const proxyHandler: RequestHandler = async (req, res) => {
       new WritableStream({
         start() {
           res.statusCode = response.status;
-          response.headers.forEach((v, n) => res.setHeader(n, v));
+          response.headers.forEach((v, n) => {
+            // undici's fetch already decompressed the body, so the original
+            // content-encoding/content-length no longer match the bytes we pipe.
+            if (['content-encoding', 'content-length'].includes(n.toLowerCase())) {
+              return;
+            }
+            res.setHeader(n, v);
+          });
         },
         write(chunk) {
           res.write(chunk);
