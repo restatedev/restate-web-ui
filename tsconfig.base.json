@@ -110,6 +110,7 @@
       "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/charts": ["libs/ui/charts/src/index.ts"],
+      "@restate/ui/chip": ["libs/ui/chip/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
       "@restate/ui/content-panel": ["libs/ui/content-panel/src/index.ts"],
       "@restate/ui/copy": ["libs/ui/copy/src/index.ts"],
