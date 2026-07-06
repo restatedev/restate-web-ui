@@ -1556,6 +1556,33 @@ export function useGetJournalEntryPayloads(
   });
 }
 
+export function useGetJournalEntryMetadata(
+  invocationId: string,
+  entryIndex: number,
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/journal/{entryIndex}/metadata',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/journal/{entryIndex}/metadata',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId, entryIndex } },
+    },
+  );
+
+  return useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+}
+
 export function useGetInvocationJournalWithInvocationV2(
   invocationId: string,
   options?: HookQueryOptions<'/query/v2/invocations/{invocationId}', 'get'>,

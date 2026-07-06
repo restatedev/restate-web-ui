@@ -20,6 +20,7 @@ import {
   getJournalEntryV2,
   getInvocationJournalV2,
   getJournalEntryPayloads,
+  getJournalEntryMetadata,
   getInbox,
   getState,
   getStateInterface,
@@ -77,6 +78,10 @@ type BoundHandlers = {
     entryIndex: number,
   ) => Promise<Response>;
   getJournalEntryPayloads: (
+    invocationId: string,
+    entryIndex: number,
+  ) => Promise<Response>;
+  getJournalEntryMetadata: (
     invocationId: string,
     entryIndex: number,
   ) => Promise<Response>;
@@ -155,6 +160,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getInvocation: getInvocation.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
     getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
+    getJournalEntryMetadata: getJournalEntryMetadata.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
     getState: (service, key, serviceType, stateKeys) =>
@@ -268,6 +274,10 @@ export const routes = createRoutes('/query', {
     journalEntryPayloads: {
       method: 'GET',
       pattern: '/invocations/:invocationId/journal/:entryIndex/payloads',
+    },
+    journalEntryMetadata: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/journal/:entryIndex/metadata',
     },
     cancel: { method: 'POST', pattern: '/invocations/cancel' },
     purge: { method: 'POST', pattern: '/invocations/purge' },
@@ -398,6 +408,13 @@ router.map(routes, {
       async journalEntryPayloads(ctx) {
         const { getJournalEntryPayloads } = ctx.storage.get(handlersKey);
         return getJournalEntryPayloads(
+          ctx.params.invocationId,
+          Number(ctx.params.entryIndex),
+        );
+      },
+      async journalEntryMetadata(ctx) {
+        const { getJournalEntryMetadata } = ctx.storage.get(handlersKey);
+        return getJournalEntryMetadata(
           ctx.params.invocationId,
           Number(ctx.params.entryIndex),
         );

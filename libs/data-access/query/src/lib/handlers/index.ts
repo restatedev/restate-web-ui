@@ -24,6 +24,7 @@ export { getMetrics } from './getMetrics';
 export { getStateStorageSize } from './getStateStorageSize';
 export { listStateServices } from './listStateServices';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
+export { getJournalEntryMetadata } from './getJournalEntryMetadata';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';
 export { listDrainedDeployments } from './listDrainedDeployments';

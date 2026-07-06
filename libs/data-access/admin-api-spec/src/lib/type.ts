@@ -86,6 +86,8 @@ export type SortInvocations = Exclude<
 >;
 export type JournalEntryPayloads =
   components['schemas']['JournalEntryPayloads'];
+export type JournalEntryMetadata =
+  components['schemas']['JournalEntryMetadata'];
 export type FailureEntry = components['schemas']['FailureEntry'];
 
 export type HTTPDeployment = Exclude<Deployment, { arn: string }>;

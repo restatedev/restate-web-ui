@@ -3842,6 +3842,106 @@
         }
       }
     },
+    "/query/invocations/{invocationId}/journal/{entryIndex}/metadata": {
+      "get": {
+        "tags": ["get-journal-entry-metadata"],
+        "summary": "Get journal entry metadata",
+        "description": "Get lightweight metadata for a specific journal entry. This endpoint returns only the entry type, the lite entry representation (entry_lite_json), and the appended_at timestamp, excluding the potentially large payload fields.",
+        "operationId": "get_journal_entry_metadata",
+        "parameters": [
+          {
+            "name": "invocationId",
+            "in": "path",
+            "description": "Invocation id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entryIndex",
+            "in": "path",
+            "description": "Entry index",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata for the journal entry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JournalEntryMetadata"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/v2/invocations/{invocationId}": {
       "get": {
         "tags": ["get-invocation"],
@@ -8239,6 +8339,27 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "JournalEntryMetadata": {
+        "type": "object",
+        "description": "Lightweight metadata for a journal entry. Excludes the potentially large payload fields.",
+        "required": ["index", "entry_type"],
+        "properties": {
+          "index": {
+            "type": "integer"
+          },
+          "entry_type": {
+            "$ref": "#/components/schemas/JournalRawEntry/properties/entry_type"
+          },
+          "entry_lite_json": {
+            "type": "string",
+            "description": "Lite JSON representation of the entry without payload data"
+          },
+          "appended_at": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },

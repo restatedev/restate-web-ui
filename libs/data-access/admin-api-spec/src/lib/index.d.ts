@@ -900,6 +900,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/invocations/{invocationId}/journal/{entryIndex}/metadata': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get journal entry metadata
+     * @description Get lightweight metadata for a specific journal entry. This endpoint returns only the entry type, the lite entry representation (entry_lite_json), and the appended_at timestamp, excluding the potentially large payload fields.
+     */
+    get: operations['get_journal_entry_metadata'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/v2/invocations/{invocationId}': {
     parameters: {
       query?: never;
@@ -3072,6 +3092,15 @@ export interface components {
       }[];
       /** @description State keys for GetEagerStateKeys entries */
       keys?: string[];
+    };
+    /** @description Lightweight metadata for a journal entry. Excludes the potentially large payload fields. */
+    JournalEntryMetadata: {
+      index: number;
+      entry_type: components['schemas']['JournalRawEntry']['entry_type'];
+      /** @description Lite JSON representation of the entry without payload data */
+      entry_lite_json?: string;
+      /** Format: date-time */
+      appended_at?: string;
     };
     JournalBaseEntry: {
       index: number;
@@ -6840,6 +6869,79 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['JournalEntryPayloads'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_journal_entry_metadata: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation id */
+        invocationId: string;
+        /** @description Entry index */
+        entryIndex: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Metadata for the journal entry */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['JournalEntryMetadata'];
         };
       };
       400: {
