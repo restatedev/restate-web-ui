@@ -1,7 +1,7 @@
 import { Invocation } from '@restate/data-access/admin-api-spec';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
-import { Retention } from './Retention';
+import { Retention } from '@restate/features/invocation-ui';
 
 const styles = tv({ base: '' });
 export function RetentionSection({

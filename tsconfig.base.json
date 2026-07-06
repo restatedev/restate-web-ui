@@ -39,6 +39,9 @@
       "@restate/features/batch-operations": [
         "libs/features/batch-operations/src/index.ts"
       ],
+      "@restate/features/breadcrumbs": [
+        "libs/features/breadcrumbs/src/index.ts"
+      ],
       "@restate/features/codec": ["libs/features/codec/src/index.ts"],
       "@restate/features/completion-history": [
         "libs/features/completion-history/src/index.ts"
@@ -61,6 +64,9 @@
       ],
       "@restate/features/invocation-route": [
         "libs/features/invocation-route/src/index.ts"
+      ],
+      "@restate/features/invocation-ui": [
+        "libs/features/invocation-ui/src/index.ts"
       ],
       "@restate/features/invocations-route": [
         "libs/features/invocations-route/src/index.ts"
@@ -108,8 +114,10 @@
       "@restate/ui/action-text": ["libs/ui/action-text/src/index.ts"],
       "@restate/ui/api": ["libs/ui/api/src/index.ts"],
       "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],
+      "@restate/ui/breadcrumbs": ["libs/ui/breadcrumbs/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
       "@restate/ui/charts": ["libs/ui/charts/src/index.ts"],
+      "@restate/ui/chip": ["libs/ui/chip/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
       "@restate/ui/content-panel": ["libs/ui/content-panel/src/index.ts"],
       "@restate/ui/copy": ["libs/ui/copy/src/index.ts"],

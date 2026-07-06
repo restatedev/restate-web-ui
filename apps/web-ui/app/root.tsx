@@ -34,6 +34,7 @@ import { Button } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
+import { BreadcrumbsProvider } from '@restate/features/breadcrumbs';
 import { Icon, IconName, Restate } from '@restate/ui/icons';
 import { RestateContextProvider } from '@restate/features/restate-context';
 import { CodecRuntimeProvider } from '@restate/features/codec';
@@ -46,31 +47,19 @@ import {
 import { Spinner } from '@restate/ui/loading';
 import {
   InvocationActions,
-  INVOCATION_QUERY_NAME,
   InvocationPanel,
 } from '@restate/features/invocation-route';
 import { Support } from '@restate/features/support';
-import {
-  STATE_QUERY_NAME,
-  StatePanel,
-} from '@restate/features/state-object-route';
+import { StatePanel } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
 import {
   FeatureFlags,
   useIsFeatureFlagEnabled,
 } from '@restate/util/feature-flag';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
-import {
-  DEPLOYMENT_QUERY_PARAM,
-  DeleteDeployment,
-} from '@restate/features/deployment';
+import { DeleteDeployment } from '@restate/features/deployment';
 import { PruneDrainedDeploymentsDialog } from '@restate/features/prune-deployments';
-import {
-  HANDLER_QUERY_PARAM,
-  SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-  ServicePlayground,
-} from '@restate/features/service';
+import { ServicePlayground } from '@restate/features/service';
 import { DeploymentDetails } from '@restate/features/deployment-details';
 import { EditService, ServiceDetails } from '@restate/features/service-details';
 import { GettingStarted } from '@restate/features/getting-started';
@@ -88,7 +77,7 @@ import { experimental_createQueryPersister } from '@tanstack/react-query-persist
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
-import { PANEL_QUERY_PARAM } from '@restate/util/panel';
+import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 
 const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
 
@@ -277,16 +266,6 @@ function getCookieValue(name: string) {
   return cookieValue && decodeURIComponent(cookieValue);
 }
 
-const PRESERVED_PARAMS = [
-  SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-  INVOCATION_QUERY_NAME,
-  STATE_QUERY_NAME,
-  HANDLER_QUERY_PARAM,
-  PANEL_QUERY_PARAM,
-];
-
 const SUPPORT_LINKS: { href: string; label: string; icon: IconName }[] = [
   {
     href: 'https://docs.restate.dev/',
@@ -382,10 +361,12 @@ function SidebarPanels() {
         <SidebarHeaderContent />
       </SidebarHeader>
       <SidebarNav>
-        <OverviewSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
-        <InvocationsSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
-        <StateSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
-        <IntrospectionSidebarItem preserveSearchParams={PRESERVED_PARAMS} />
+        <OverviewSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
+        <InvocationsSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
+        <StateSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
+        <IntrospectionSidebarItem
+          preserveSearchParams={PRESERVED_QUERY_PARAMS}
+        />
       </SidebarNav>
       <SidebarFooter>
         <SidebarFooterContent />
@@ -418,22 +399,25 @@ function TopbarPanels() {
           <LayoutOutlet zone={LayoutZone.Nav}>
             <Nav ariaCurrentValue="page">
               <NavItem
-                preserveSearchParams={PRESERVED_PARAMS}
+                preserveSearchParams={PRESERVED_QUERY_PARAMS}
                 href={'/overview'}
               >
                 Overview
               </NavItem>
               <NavItem
-                preserveSearchParams={PRESERVED_PARAMS}
+                preserveSearchParams={PRESERVED_QUERY_PARAMS}
                 href={'/invocations'}
               >
                 Invocations
               </NavItem>
-              <NavItem preserveSearchParams={PRESERVED_PARAMS} href={'/state'}>
+              <NavItem
+                preserveSearchParams={PRESERVED_QUERY_PARAMS}
+                href={'/state'}
+              >
                 State
               </NavItem>
               <NavItem
-                preserveSearchParams={PRESERVED_PARAMS}
+                preserveSearchParams={PRESERVED_QUERY_PARAMS}
                 href={'/introspection'}
               >
                 Introspection
@@ -465,9 +449,11 @@ function AppContent() {
           <CodecRuntimeProvider>
             <BatchOperationsProvider>
               <EditState>
-                <LayoutOutlet zone={LayoutZone.Content}>
-                  <Outlet />
-                </LayoutOutlet>
+                <BreadcrumbsProvider>
+                  <LayoutOutlet zone={LayoutZone.Content}>
+                    <Outlet />
+                  </LayoutOutlet>
+                </BreadcrumbsProvider>
                 <SidebarPanels />
                 <TopbarPanels />
                 <DeploymentDetails />

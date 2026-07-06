@@ -1,22 +1,19 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
-import { INVOCATION_QUERY_NAME } from './constants';
-import { panelHref } from '@restate/util/panel';
+import { getSearchParams, INVOCATION_QUERY_NAME } from '@restate/util/panel';
 import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
-  HANDLER_QUERY_PARAM,
-  SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-} from '@restate/features/service';
-import { useIsInInvocationPage } from './InvocationPageContext';
-import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
-import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
+  Popover,
+  PopoverContent,
+  PopoverHoverTrigger,
+} from '@restate/ui/popover';
+import { InvocationPopoverContent } from './InvocationPopoverContent';
 
 const styles = tv({
   base: 'relative font-mono text-zinc-600',
@@ -68,45 +65,19 @@ const styles = tv({
   },
 });
 
-export function getSearchParams(
-  search: string,
-  excludingInvocationId?: string,
-  isLive?: boolean,
-) {
-  const searchParams = new URLSearchParams(search);
-  Array.from(searchParams.keys()).forEach((key) => {
-    if (
-      ![
-        SERVICE_PLAYGROUND_QUERY_PARAM,
-        SERVICE_QUERY_PARAM,
-        DEPLOYMENT_QUERY_PARAM,
-        INVOCATION_QUERY_NAME,
-        ONBOARDING_QUERY_PARAM,
-        HANDLER_QUERY_PARAM,
-        'state', // TODO resolve circular dependency
-        // STATE_QUERY_NAME,
-      ].includes(key)
-    ) {
-      searchParams.delete(key);
-    }
-    if (key === INVOCATION_QUERY_NAME && excludingInvocationId) {
-      searchParams.delete(key, excludingInvocationId);
-    }
-  });
-  return '?' + searchParams.toString();
-}
 export function InvocationId({
   id,
   className,
   size = 'default',
-  isLive = false,
   truncateInMiddle = false,
+  popover = true,
 }: {
   id: Invocation['id'];
   className?: string;
   size?: 'sm' | 'default' | 'icon' | 'md';
   isLive?: boolean;
   truncateInMiddle?: boolean;
+  popover?: boolean;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });
@@ -116,40 +87,12 @@ export function InvocationId({
   const { baseUrl } = useRestateContext();
   const isIcon = size === 'icon';
   const location = useLocation();
-
-  const isInInvocationsPage = useIsInInvocationPage();
-  const [isMetaKeyPressed, setIsMetaKeyPressed] = useState(false);
-  const openInSidebar = Boolean(isInInvocationsPage) && !isMetaKeyPressed;
-
-  useEffect(() => {
-    const keyDownHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Meta' || e.key === 'Shift') {
-        setIsMetaKeyPressed(true);
-      }
-    };
-    const keyUpHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Meta' || e.key === 'Shift') {
-        setIsMetaKeyPressed(false);
-      }
-    };
-    window.addEventListener('keydown', keyDownHandler);
-    window.addEventListener('keyup', keyUpHandler);
-
-    return () => {
-      window.removeEventListener('keydown', keyDownHandler);
-      window.removeEventListener('keyup', keyUpHandler);
-    };
-  }, []);
+  const hasPopover = popover;
 
   const linkElement = (
     <Link
       ref={linkRef}
-      {...(openInSidebar && {
-        href: panelHref({ invocation: id }),
-      })}
-      {...(!openInSidebar && {
-        href: `${baseUrl}/invocations/${id}${getSearchParams(location.search, undefined, isLive)}`,
-      })}
+      href={`${baseUrl}/invocations/${id}${getSearchParams(location.search)}`}
       aria-label={id}
       variant="secondary"
       className={link()}
@@ -159,7 +102,19 @@ export function InvocationId({
     </Link>
   );
 
-  return (
+  const idText = (
+    <span className={text()}>
+      {truncateInMiddle ? (
+        <span>
+          {id?.substring(0, 8)}…{id?.slice(-5)}
+        </span>
+      ) : (
+        id
+      )}
+    </span>
+  );
+
+  const element = (
     <div className={base({ className })}>
       <div className={container({})}>
         <div className={icon()}>
@@ -169,26 +124,21 @@ export function InvocationId({
           />
         </div>
 
-        {!isIcon && (
-          <TruncateWithTooltip
-            copyText={id}
-            triggerRef={linkRef}
-            tooltipContent={id}
-            alwaysShow={truncateInMiddle}
-          >
-            <span className={text()}>
-              {truncateInMiddle ? (
-                <span>
-                  {id?.substring(0, 8)}…{id?.slice(-5)}
-                </span>
-              ) : (
-                id
-              )}
-            </span>
-          </TruncateWithTooltip>
-        )}
+        {!isIcon &&
+          (hasPopover ? (
+            <span className="min-w-0 truncate">{idText}</span>
+          ) : (
+            <TruncateWithTooltip
+              copyText={id}
+              triggerRef={linkRef}
+              tooltipContent={id}
+              alwaysShow={truncateInMiddle}
+            >
+              {idText}
+            </TruncateWithTooltip>
+          ))}
 
-        {isIcon ? (
+        {isIcon && !hasPopover ? (
           <HoverTooltip content={id} offset={20} className="static">
             {linkElement}
           </HoverTooltip>
@@ -198,4 +148,16 @@ export function InvocationId({
       </div>
     </div>
   );
+
+  if (hasPopover) {
+    return (
+      <Popover>
+        <PopoverHoverTrigger>{element}</PopoverHoverTrigger>
+        <PopoverContent placement="bottom" isNonModal>
+          <InvocationPopoverContent id={id} />
+        </PopoverContent>
+      </Popover>
+    );
+  }
+  return element;
 }

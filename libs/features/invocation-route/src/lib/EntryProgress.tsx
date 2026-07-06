@@ -7,11 +7,11 @@ import { formatDurations } from '@restate/util/intl';
 import { getDuration } from '@restate/util/snapshot-time';
 import { CSSProperties, PropsWithChildren } from 'react';
 import { tv } from '@restate/util/styles';
-import { useJournalTimelineContext } from './JournalContext';
+import { useJournalTimelineContext } from '@restate/features/invocation-ui';
 import { Ellipsis } from '@restate/ui/loading';
-import { EntryTooltip } from './EntryTooltip';
+import { EntryTooltip } from '@restate/features/invocation-ui';
 import { Icon, IconName } from '@restate/ui/icons';
-import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
+import { isEntryCompletionAmbiguous } from '@restate/features/invocation-ui';
 import { ErrorBoundary } from './ErrorBoundry';
 
 const pointStyles = tv({

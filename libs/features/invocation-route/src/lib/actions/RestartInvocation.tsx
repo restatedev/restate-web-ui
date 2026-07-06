@@ -21,7 +21,7 @@ import { ListBoxItem } from '@restate/ui/listbox';
 import { Badge } from '@restate/ui/badge';
 import { Revision } from '@restate/features/deployment';
 
-import { CommandEntryType } from '../entries/types';
+import { CommandEntryType } from '@restate/features/invocation-ui';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;
@@ -295,9 +295,9 @@ function RestartInvocationContent() {
 
                 const isTunnel = Boolean(
                   tunnel?.isEnabled &&
-                    deployment &&
-                    isHttpDeployment(deployment) &&
-                    tunnel.fromHttp(deployment.uri),
+                  deployment &&
+                  isHttpDeployment(deployment) &&
+                  tunnel.fromHttp(deployment.uri),
                 );
                 const endpoint = getEndpoint(deployment);
                 const tunnelEndpoint = isTunnel

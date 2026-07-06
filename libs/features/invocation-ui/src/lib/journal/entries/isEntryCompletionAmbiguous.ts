@@ -45,7 +45,7 @@ export function isEntryCompletionAmbiguous(
   return {
     isAmbiguous: Boolean(
       refEntry?.isPending &&
-        (invocationIsCompleted || cancelledAfterEntry || invocationIspaused),
+      (invocationIsCompleted || cancelledAfterEntry || invocationIspaused),
     ),
     mode: unambiguousEnd
       ? invocationIspaused && unambiguousEnd === invocation.modified_at

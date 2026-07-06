@@ -4,7 +4,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
-import { getRestateError, Status } from './Status';
+import { getRestateError, Status } from '@restate/features/invocation-ui';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
@@ -13,13 +13,13 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Section } from '@restate/ui/section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
-import { Target } from './Target';
+import { Target } from '@restate/features/invocation-ui';
 import { useRestateContext } from '@restate/features/restate-context';
-import { InvocationPageProvider } from './InvocationPageContext';
 import { WorkflowKeySection } from './WorkflowKeySection';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { useEffect, useMemo, useRef } from 'react';
+import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { ContentPanel, ContentPanelBody } from '@restate/ui/content-panel';
 import { EmptyState } from '@restate/ui/empty-state';
 import {
@@ -203,231 +203,192 @@ function Component() {
   const hasUnavailableError = Boolean(error) && !journalAndInvocationData;
   if (hasUnavailableError) {
     return (
-      <InvocationPageProvider isInInvocationPage>
-        <div className="flex min-h-0 flex-1 flex-col pt-4">
-          <InvocationBreadcrumb id={id} backHref={invocationsBackHref} />
-          <InvocationUnavailable
-            id={id}
-            error={error as Error}
-            backHref={invocationsBackHref}
-          />
-        </div>
-      </InvocationPageProvider>
+      <div className="flex min-h-0 flex-1 flex-col pt-4">
+        <Breadcrumbs className="mt-8 px-5 md:mt-0" />
+        <InvocationUnavailable
+          id={id}
+          error={error as Error}
+          backHref={invocationsBackHref}
+        />
+      </div>
     );
   }
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-      <InvocationPageProvider isInInvocationPage>
-        <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-          <InvocationBreadcrumb id={id} backHref={invocationsBackHref} />
-          {/* Sticky floating header: target + status stay visible while the
+      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
+        <Breadcrumbs className="mt-8 px-5 md:mt-0" />
+        {/* Sticky floating header: target + status stay visible while the
             page scrolls. Status-tinted gradient telegraphs invocation state
             without coloring the whole card. */}
+        <div
+          className={headerCardStyles({
+            intent: getHeaderIntent(journalAndInvocationData),
+          })}
+        >
+          {journalAndInvocationData?.target && (
+            <Target
+              target={journalAndInvocationData.target}
+              className="max-w-fit shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity md:min-w-0"
+            />
+          )}
+          {journalAndInvocationData && (
+            <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
+              <Status
+                invocation={journalAndInvocationData}
+                className=""
+                mini="md"
+              />
+            </div>
+          )}
+          <div className="ml-auto shrink-0">
+            <Actions
+              invocation={journalAndInvocationData}
+              mini="md"
+              className="rounded-l-lg text-[0.9375rem]"
+              splitClassName="rounded-lg md:rounded-l-none"
+            />
+          </div>
+        </div>
+        <div
+          className="relative z-10 flex flex-col gap-4 px-5"
+          data-failure-anchor-root
+        >
           <div
-            className={headerCardStyles({
-              intent: getHeaderIntent(journalAndInvocationData),
+            className={metadataContainerStyles({
+              isVirtualObject,
+              isPending,
+              isWorkflow,
             })}
           >
-            {journalAndInvocationData?.target && (
-              <Target
-                target={journalAndInvocationData.target}
-                className="max-w-fit shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity md:min-w-0"
-              />
+            {isPending && (
+              <>
+                <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
+                <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
+                <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
+              </>
             )}
-            {journalAndInvocationData && (
-              <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
-                <Status
-                  invocation={journalAndInvocationData}
-                  className=""
-                  mini="md"
-                />
-              </div>
-            )}
-            <div className="ml-auto shrink-0">
-              <Actions
-                invocation={journalAndInvocationData}
-                mini="md"
-                className="rounded-l-lg text-[0.9375rem]"
-                splitClassName="rounded-lg md:rounded-l-none"
-              />
-            </div>
+            <KeysIdsSection
+              invocation={journalAndInvocationData}
+              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+            />
+            <DeploymentSection
+              invocation={journalAndInvocationData}
+              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+              raised
+            />
+            <VirtualObjectSection
+              invocation={journalAndInvocationData}
+              raised
+              key={journalAndInvocationData?.status}
+              className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
+            />
+            <WorkflowKeySection
+              invocation={journalAndInvocationData}
+              raised
+              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+            />
           </div>
-          <div
-            className="relative z-10 flex flex-col gap-4 px-5"
-            data-failure-anchor-root
-          >
-            <div
-              className={metadataContainerStyles({
-                isVirtualObject,
-                isPending,
-                isWorkflow,
-              })}
-            >
-              {isPending && (
-                <>
-                  <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-                  <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-                  <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-                  <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-                </>
-              )}
-              <KeysIdsSection
+          {shouldShowFailure && !error && (
+            // No timeline below `md` (the journal panel/divider are
+            // display:none there) → nothing to anchor to, so hide the whole
+            // block. A CSS media query, not :has(), because the divider stays
+            // in the DOM below `md` (just display:none) so :has() always
+            // matches. md:contents keeps the children as flex items at md+.
+            <div className="hidden md:contents">
+              <Anchor
                 invocation={journalAndInvocationData}
-                className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
+                hasLastFailure={Boolean(lastError)}
               />
-              <DeploymentSection
-                invocation={journalAndInvocationData}
-                className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-                raised
-              />
-              <VirtualObjectSection
-                invocation={journalAndInvocationData}
-                raised
-                key={journalAndInvocationData?.status}
-                className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
-              />
-              <WorkflowKeySection
-                invocation={journalAndInvocationData}
-                raised
-                className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-              />
-            </div>
-            {shouldShowFailure && !error && (
-              // No timeline below `md` (the journal panel/divider are
-              // display:none there) → nothing to anchor to, so hide the whole
-              // block. A CSS media query, not :has(), because the divider stays
-              // in the DOM below `md` (just display:none) so :has() always
-              // matches. md:contents keeps the children as flex items at md+.
-              <div className="hidden md:contents">
-                <Anchor
-                  invocation={journalAndInvocationData}
-                  hasLastFailure={Boolean(lastError)}
-                />
 
-                {/* Page-centered (mx-auto, content-width). The notch/stem slide
+              {/* Page-centered (mx-auto, content-width). The notch/stem slide
                   along the bottom edge to follow the journal divider; the
                   banner only nudges over (--failure-banner-shift) once the
                   notch nears an edge, so a wide error shifts rather than
                   shrinks. */}
-                <div
-                  className="relative mx-auto w-fit max-w-full"
-                  style={{ left: 'var(--failure-banner-shift, 0px)' }}
+              <div
+                className="relative mx-auto w-fit max-w-full"
+                style={{ left: 'var(--failure-banner-shift, 0px)' }}
+              >
+                <Section
+                  id="last-failure-section"
+                  className={lastFailureContainer({})}
                 >
-                  <Section
-                    id="last-failure-section"
-                    className={lastFailureContainer({})}
-                  >
-                    <ErrorBanner
-                      error={lastError}
-                      className={lastFailureContent({ isFailed })}
-                      isTransient={!isFailed}
-                    />
-                  </Section>
-                  <div
-                    aria-hidden
-                    className={lastFailureNotch({ isFailed })}
-                    style={{
-                      left: 'var(--failure-notch-x, 50%)',
-                      display: 'var(--failure-notch-display, none)',
-                    }}
+                  <ErrorBanner
+                    error={lastError}
+                    className={lastFailureContent({ isFailed })}
+                    isTransient={!isFailed}
                   />
-                </div>
-                {Boolean(
-                  journalAndInvocationData?.last_failure_related_command_index ??
-                  pausedErrorData?.relatedCommandIndex,
-                ) && (
-                  <div
-                    className="-translate-y-2 px-2"
-                    style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
-                  >
-                    <Link
-                      variant="icon"
-                      className="inline-flex rounded-md px-2 text-xs"
-                      href={`#command-${journalAndInvocationData?.last_failure_related_command_index ?? pausedErrorData?.relatedCommandIndex}`}
-                    >
-                      Go to the related line (#
-                      {journalAndInvocationData?.last_failure_related_command_index ??
-                        pausedErrorData?.relatedCommandIndex}
-                      )
-                      <Icon
-                        name={IconName.ChevronDown}
-                        className="ml-1 h-4 w-4"
-                      />
-                    </Link>
-                  </div>
-                )}
+                </Section>
+                <div
+                  aria-hidden
+                  className={lastFailureNotch({ isFailed })}
+                  style={{
+                    left: 'var(--failure-notch-x, 50%)',
+                    display: 'var(--failure-notch-display, none)',
+                  }}
+                />
               </div>
-            )}
-            {error && journalAndInvocationData && (
-              <ErrorBanner error={error} className="rounded-xl" />
-            )}
-          </div>
-
-          <ContentPanel
-            className="-mt-20"
-            tabs={{
-              items: [
-                {
-                  id: 'journal',
-                  label: (
-                    <span className="inline-flex items-center">
-                      Journal
-                      {OnboardingGuide && (
-                        <OnboardingGuide stage="view-invocation" />
-                      )}
-                    </span>
-                  ),
-                },
-              ],
-              defaultId: 'journal',
-            }}
-          >
-            <ContentPanelBody>
-              <JournalV2 invocationId={String(id)} key={String(id)} />
-            </ContentPanelBody>
-          </ContentPanel>
+              {Boolean(
+                journalAndInvocationData?.last_failure_related_command_index ??
+                pausedErrorData?.relatedCommandIndex,
+              ) && (
+                <div
+                  className="-translate-y-2 px-2"
+                  style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
+                >
+                  <Link
+                    variant="icon"
+                    className="inline-flex rounded-md px-2 text-xs"
+                    href={`#command-${journalAndInvocationData?.last_failure_related_command_index ?? pausedErrorData?.relatedCommandIndex}`}
+                  >
+                    Go to the related line (#
+                    {journalAndInvocationData?.last_failure_related_command_index ??
+                      pausedErrorData?.relatedCommandIndex}
+                    )
+                    <Icon
+                      name={IconName.ChevronDown}
+                      className="ml-1 h-4 w-4"
+                    />
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+          {error && journalAndInvocationData && (
+            <ErrorBanner error={error} className="rounded-xl" />
+          )}
         </div>
-      </InvocationPageProvider>
+
+        <ContentPanel
+          className="-mt-20"
+          tabs={{
+            items: [
+              {
+                id: 'journal',
+                label: (
+                  <span className="inline-flex items-center">
+                    Journal
+                    {OnboardingGuide && (
+                      <OnboardingGuide stage="view-invocation" />
+                    )}
+                  </span>
+                ),
+              },
+            ],
+            defaultId: 'journal',
+          }}
+        >
+          <ContentPanelBody>
+            <JournalV2 invocationId={String(id)} key={String(id)} />
+          </ContentPanelBody>
+        </ContentPanel>
+      </div>
     </SnapshotTimeProvider>
   );
 }
 export const invocation = { Component };
-
-function InvocationBreadcrumb({
-  id,
-  backHref,
-}: {
-  id?: string;
-  backHref: string;
-}) {
-  return (
-    <div className="@container mt-8 flex items-center gap-1.5 px-5 text-sm text-gray-500 md:mt-0">
-      <Link
-        className="flex items-center gap-1 text-gray-500 hover:text-gray-700"
-        variant="secondary"
-        href={backHref}
-      >
-        <Icon name={IconName.ArrowLeft} className="h-4 w-4" />
-        Invocations
-      </Link>
-      <span className="text-gray-300">/</span>
-      <h1 className="flex min-w-0 items-center gap-1.5 truncate py-0.5 font-mono text-sm font-normal text-gray-600">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-xs">
-          <Icon
-            name={IconName.Invocation}
-            className="h-4 w-4 fill-blue-50 text-blue-500"
-          />
-        </span>
-        <span className="min-w-0 truncate">{id}</span>
-        <Copy
-          copyText={String(id)}
-          className="ml-0 shrink-0 rounded-md p-1 [&_svg]:h-3 [&_svg]:w-3"
-        />
-      </h1>
-    </div>
-  );
-}
 
 function InvocationUnavailable({
   id,

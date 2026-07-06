@@ -17,7 +17,7 @@ import { tv } from '@restate/util/styles';
 import { formatOrdinals } from '@restate/util/intl';
 import { Ellipsis } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';
-import { AwaitingOn } from './entries/AwaitingOn';
+import { AwaitingOn } from './journal/entries/AwaitingOn';
 
 export function getRestateError(invocation?: Invocation) {
   if (!invocation) {

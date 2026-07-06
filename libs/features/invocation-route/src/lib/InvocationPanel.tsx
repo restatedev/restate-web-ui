@@ -31,7 +31,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
-import { getSearchParams } from './InvocationId';
+import { getSearchParams } from '@restate/features/invocation-ui';
 import { InvokedBySection } from './InvokedBySection';
 import { RetentionSection } from './RetentionSection';
 
@@ -129,7 +129,11 @@ function InvocationPanelContent() {
             <Link
               href={`${baseUrl}/invocations/${invocationId}${getSearchParams(
                 location.search,
-                invocationId,
+                {
+                  remove: [
+                    { name: INVOCATION_QUERY_NAME, value: invocationId },
+                  ],
+                },
               )}`}
               className="flex h-7 w-7 items-center justify-center rounded-full border bg-white text-center text-gray-800 no-underline shadow-xs hover:bg-gray-100 pressed:bg-gray-200"
             >

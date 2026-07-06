@@ -17,6 +17,7 @@ export function InvocationIdCell({ invocation }: CellProps) {
       className={styles({ isOnboarding })}
       isLive={isOnboarding}
       truncateInMiddle
+      popover={false}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Value } from './Value';
+import { Value } from '@restate/features/invocation-ui';
 import { CodecOptionsProvider } from '@restate/features/codec';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';

@@ -1,7 +1,7 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { EntryProps } from './types';
 import { EntryExpression } from './EntryExpression';
-import { InvocationId } from '../InvocationId';
+import { InvocationId } from '../../InvocationId';
 
 export function Cancel({
   entry,

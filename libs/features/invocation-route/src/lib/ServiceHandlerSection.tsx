@@ -1,7 +1,7 @@
 import { Invocation } from '@restate/data-access/admin-api-spec';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
-import { Target } from './Target';
+import { Target } from '@restate/features/invocation-ui';
 
 const styles = tv({ base: '' });
 export function ServiceHandlerSection({

@@ -177,7 +177,10 @@ export function PopoverHoverTrigger({
   const popoverContext = useContext(PopoverContext);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const triggerEl = getTriggerElement(popoverContext);
+  const getTriggerEl = useCallback(
+    () => getTriggerElement(popoverContext),
+    [popoverContext],
+  );
 
   const { isOpen, setIsOpen } = usePopover();
 
@@ -200,6 +203,7 @@ export function PopoverHoverTrigger({
 
   const isPointInSafeArea = useCallback(
     (x: number, y: number) => {
+      const triggerEl = getTriggerEl();
       const popoverEl =
         typeof document !== 'undefined' &&
         document.querySelector(
@@ -241,7 +245,7 @@ export function PopoverHoverTrigger({
 
       return true;
     },
-    [triggerEl],
+    [getTriggerEl],
   );
 
   const handleMouseMove = useCallback(
@@ -265,12 +269,13 @@ export function PopoverHoverTrigger({
   }, [clearCloseTimeout, setIsOpen]);
 
   useEffect(() => {
+    const triggerEl = getTriggerEl();
     triggerEl?.addEventListener('mouseenter', handleTriggerMouseEnter);
 
     return () => {
       triggerEl?.removeEventListener('mouseenter', handleTriggerMouseEnter);
     };
-  }, [handleTriggerMouseEnter, triggerEl]);
+  });
 
   useEffect(() => {
     if (isOpen) {

@@ -19,10 +19,10 @@ import { Button } from '@restate/ui/button';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { useRestateContext } from '@restate/features/restate-context';
 import { ErrorBanner } from '@restate/ui/error';
-import { JournalContextProvider } from './JournalContext';
+import { JournalContextProvider } from '@restate/features/invocation-ui';
 import { Indicator, Spinner } from '@restate/ui/loading';
-import { Entry } from './Entry';
-import { Input } from './entries/Input';
+import { Entry } from '@restate/features/invocation-ui';
+import { Input } from '@restate/features/invocation-ui';
 import { EntryProgress } from './EntryProgress';
 import {
   PortalProvider,
@@ -55,12 +55,12 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
-import { Retention } from './Retention';
+import { Retention } from '@restate/features/invocation-ui';
 import {
   COMPACT_DETAIL,
   useJournalDetail,
   type JournalDetail,
-} from './useJournalDetail';
+} from '@restate/features/invocation-ui';
 import { JournalDetailToggle } from './JournalDetailToggle';
 import { useHiddenEntryMatchers } from './hiddenEntries';
 
