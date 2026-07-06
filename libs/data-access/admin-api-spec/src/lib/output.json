@@ -8453,9 +8453,6 @@
                 "$ref": "#/components/schemas/PendingLifecycleJournalEntryV2"
               },
               {
-                "$ref": "#/components/schemas/QueuedLifecycleJournalEntryV2"
-              },
-              {
                 "$ref": "#/components/schemas/CompletionLifecycleJournalEntryV2"
               },
               {
@@ -9494,19 +9491,6 @@
           "type": {
             "type": "string",
             "enum": ["Pending"]
-          }
-        }
-      },
-      "QueuedLifecycleJournalEntryV2": {
-        "type": "object",
-        "properties": {
-          "category": {
-            "type": "string",
-            "enum": ["event"]
-          },
-          "type": {
-            "type": "string",
-            "enum": ["Queued"]
           }
         }
       },

@@ -3112,7 +3112,6 @@ export interface components {
         | components['schemas']['SuspendedLifecycleJournalEntryV2']
         | components['schemas']['PausedLifecycleJournalEntryV2']
         | components['schemas']['PendingLifecycleJournalEntryV2']
-        | components['schemas']['QueuedLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
         | components['schemas']['KilledLifecycleJournalEntryV2']
         | components['schemas']['JournalGroupEntryV2']
@@ -3600,12 +3599,6 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Pending';
-    };
-    QueuedLifecycleJournalEntryV2: {
-      /** @enum {string} */
-      category?: 'event';
-      /** @enum {string} */
-      type?: 'Queued';
     };
     CompletionLifecycleJournalEntryV2: {
       /** @enum {string} */
