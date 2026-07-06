@@ -23,10 +23,17 @@ export { getInvocationsStatus } from './getInvocationsStatus';
 export { getMetrics } from './getMetrics';
 export { getStateStorageSize } from './getStateStorageSize';
 export { listStateServices } from './listStateServices';
+export { getLimitRule, listLimitRules } from './listLimitRules';
+export {
+  listUserLimits,
+  listLimitCountersForRule,
+  getLimitCountersRows,
+} from './listUserLimits';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getJournalEntryMetadata } from './getJournalEntryMetadata';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';
+export { getVqueue } from './getVqueue';
 export { listDrainedDeployments } from './listDrainedDeployments';
 export {
   QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL,

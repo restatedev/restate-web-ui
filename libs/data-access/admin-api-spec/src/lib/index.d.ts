@@ -860,6 +860,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/vqueues/{vqueueId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get vqueue
+     * @description Get the virtual-queue (vqueue) snapshot keyed by the vqueue id: queue counts, per-stage averages, the head's live wait breakdown, and the biting limit. Reads sys_vqueue_meta and sys_scheduler (joined on the vqueue id) and — separately keyed on (scope, limit_key) — sys_user_limits and sys_rules. When the optional invocationId is supplied, the response also carries that invocation's own entry position and wait history (read from the vqueue entry-status table) so the UI can highlight it in the queue.
+     */
+    get: operations['get_vqueue'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/{invocationId}/journal/{entryIndex}': {
     parameters: {
       query?: never;
@@ -1114,6 +1134,86 @@ export interface paths {
     get: operations['get_state_storage_size'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List limit rules
+     * @description Configured limit rules from the sys_rules table.
+     */
+    get: operations['list_limit_rules'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get limit rule
+     * @description Configured limit rule from the sys_rules table.
+     */
+    get: operations['get_limit_rule'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/user-limits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List effective user limits
+     * @description Effective limit rows and usage from the sys_user_limits table.
+     */
+    get: operations['list_user_limits'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/rules/{pattern}/counters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List counters (active matches) for a rule
+     * @description Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.
+     */
+    post: operations['list_limit_counters'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2592,9 +2692,9 @@ export interface components {
     UserLimits: {
       /**
        * Format: int32
-       * @description Maximum concurrent invocations. `None` means unlimited.
+       * @description Maximum concurrent running invocations. `None` means unlimited.
        */
-      action_concurrency?: number | null;
+      concurrency?: number | null;
     };
     /**
      * Format: int32
@@ -2654,6 +2754,25 @@ export interface components {
         size: number;
       }[];
     };
+    /** @description Configured limit rules from the sys_rules table. */
+    ListLimitRulesResponse: {
+      rules: components['schemas']['RuleResponse'][];
+    };
+    /** @description Effective limit rows and usage from the sys_user_limits table. */
+    ListUserLimitsResponse: {
+      limits: components['schemas']['UserLimitRow'][];
+    };
+    UserLimitRow: {
+      scope: string | null;
+      l1: string | null;
+      l2: string | null;
+      level: string | null;
+      usage: number | null;
+      concurrency_limit: number | null;
+      rule_pattern: string | null;
+      available: number | null;
+      num_waiters: number | null;
+    };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
       /** @description PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders. */
@@ -2697,6 +2816,15 @@ export interface components {
         /** @enum {string} */
         order: 'ASC' | 'DESC';
       };
+    };
+    LimitSort: {
+      field: string;
+      /** @enum {string} */
+      order: 'ASC' | 'DESC';
+    };
+    ListLimitCountersRequestBody: {
+      filters?: components['schemas']['FilterItem'][];
+      sort?: components['schemas']['LimitSort'];
     };
     GetInvocationsStatusRequestBody: {
       invocationIds: string[];
@@ -2984,6 +3112,7 @@ export interface components {
         | components['schemas']['SuspendedLifecycleJournalEntryV2']
         | components['schemas']['PausedLifecycleJournalEntryV2']
         | components['schemas']['PendingLifecycleJournalEntryV2']
+        | components['schemas']['QueuedLifecycleJournalEntryV2']
         | components['schemas']['CompletionLifecycleJournalEntryV2']
         | components['schemas']['KilledLifecycleJournalEntryV2']
         | components['schemas']['JournalGroupEntryV2']
@@ -3234,6 +3363,168 @@ export interface components {
        */
       pausedAt?: string;
     };
+    /** @description How long a wait was held at one scheduling gate. */
+    VqueueGateDuration: {
+      /** @description Gate key: concurrency_rules, throttling_rules, invoker_concurrency, invoker_throttling, invoker_memory, lock, or deployment_concurrency. */
+      gate: string;
+      /** @description ISO 8601 duration spent at this gate. */
+      duration: string;
+    };
+    /** @description Virtual-queue flow snapshot for the target an invocation belongs to. `supported` is false when the server exposes no virtual queues or the invocation has no resolvable queue. */
+    InvocationVqueueResponse: {
+      supported: boolean;
+      identity?: {
+        service?: string;
+        /** @description Virtual-object key, present only for virtual objects. */
+        objectKey?: string;
+        scope?: string;
+        limitKey?: string;
+        isPaused?: boolean;
+        vqueueId?: string;
+      };
+      status?: {
+        blocked?: boolean;
+        /** @description Gate the head is currently blocked on, e.g. concurrency_rules. */
+        blockedOn?: string;
+        /**
+         * @description Scheduler verdict for the queue head (SchedulingStatus name): dormant (untracked / nothing runnable), empty, ready (head runnable now), scheduled (head waits for a future run_at), blocked (head can't run — see blockedOn). Absent on older servers.
+         * @enum {string}
+         */
+        scheduling?: 'dormant' | 'empty' | 'ready' | 'scheduled' | 'blocked';
+        /**
+         * Format: date-time
+         * @description When the head becomes visible / runnable; set only for the 'scheduled' status.
+         */
+        scheduledAt?: string;
+        /** @description Parsed BlockedResource (sys_scheduler.blocked_on_json) — the specific reason a 'blocked' head can't run. Field set depends on `resource`. */
+        blockedResource?: {
+          /**
+           * @description Which resource the head is blocked on.
+           * @enum {string}
+           */
+          resource?:
+            | 'lock'
+            | 'invoker-concurrency'
+            | 'invoker-throttling'
+            | 'invoker-memory'
+            | 'deployment-concurrency'
+            | 'limit-key-concurrency';
+          /** @description Limit/lock scope; absent for an unscoped lock. */
+          scope?: string;
+          /** @description service/key of the contended virtual-object lock (resource=lock). */
+          lockName?: string;
+          /**
+           * Format: date-time
+           * @description When the invoker is expected to retry (resource=invoker-throttling).
+           */
+          estimatedRetryAt?: string;
+          /** @description Contended limit key (resource=limit-key-concurrency). */
+          limitKey?: string;
+          /**
+           * @description Which level of the rule hierarchy is at its limit (resource=limit-key-concurrency).
+           * @enum {string}
+           */
+          blockedLevel?: 'scope' | 'level1' | 'level2';
+          /** @description Governing rule pattern (resource=limit-key-concurrency); absent if the rule was removed. */
+          blockedRule?: string;
+        };
+      };
+      counts?: {
+        inbox?: number;
+        running?: number;
+        suspended?: number;
+        paused?: number;
+        finished?: number;
+      };
+      /** @description EMA of time spent per stage (ISO 8601 durations). Only inbox/running/suspended have averages; queue is the avg time waiting in the queue before dispatch; endToEnd is the total. */
+      stageAvg?: {
+        inbox?: string;
+        running?: string;
+        suspended?: string;
+        queue?: string;
+        endToEnd?: string;
+      };
+      /** @description Per-target 'last time ANY entry did X' timestamps. */
+      events?: {
+        /** Format: date-time */
+        enqueuedAt?: string;
+        /** Format: date-time */
+        startAt?: string;
+        /** Format: date-time */
+        attemptAt?: string;
+        /** Format: date-time */
+        finishAt?: string;
+      };
+      head?: {
+        entryId?: string;
+        /** @description Head entry's queue stage: inbox | running | suspended | paused | finished. */
+        stage?: string;
+        /** @description Head entry's lifecycle status: new | scheduled | backing-off | yielded | started | succeeded | failed | cancelled | killed. */
+        status?: string;
+        /** @description Entry kind: invocation | state-mutation. */
+        kind?: string;
+        /**
+         * Format: date-time
+         * @description When the head entered its current stage/status.
+         */
+        transitionedAt?: string;
+        /**
+         * Format: date-time
+         * @description When the head next runs (scheduled run_at / retry time), if any.
+         */
+        nextAt?: string;
+        /**
+         * Format: date-time
+         * @description When the head was first enqueued.
+         */
+        createdAt?: string;
+        sequenceNumber?: number;
+        retryAttempts?: number;
+        numAttempts?: number;
+        numErrors?: number;
+        numSuspensions?: number;
+        numPauses?: number;
+        numYields?: number;
+        deployment?: string;
+        hasLock?: boolean;
+        /** @description Cumulative per-gate wait of the head entry across all attempts. */
+        totalBlocks?: components['schemas']['VqueueGateDuration'][];
+        /** @description Live per-gate wait of the head (up to 7 gates), head-specific and reset when the head changes. */
+        nowBlocks?: components['schemas']['VqueueGateDuration'][];
+        /** @description EMA per-gate wait (subset of 4 gates) for the 'usually' ghost bar. */
+        avgBlocks?: components['schemas']['VqueueGateDuration'][];
+      };
+      /** @description This invocation's own entry in the queue. Null when it is no longer queued. */
+      entry?: {
+        id?: string;
+        status?: string;
+        /** @description Queue stage bucket (inbox/running/suspended/paused) — the authoritative column the counts are grouped by, distinct from the lifecycle status. */
+        stage?: string;
+        /** @description 1-based rank among the target's inbox entries. */
+        position?: number;
+        /** @description Total inbox entries (num_inbox). */
+        total?: number;
+        attempts?: number;
+        suspensions?: number;
+        pauses?: number;
+        yields?: number;
+        errors?: number;
+        /** Format: date-time */
+        createdAt?: string;
+        /** Format: date-time */
+        firstRunnableAt?: string;
+        /** Format: date-time */
+        firstAttemptAt?: string;
+        /** Format: date-time */
+        transitionedAt?: string;
+        /** Format: date-time */
+        nextAt?: string;
+        /** @description Cumulative per-gate wait of this entry across all attempts. */
+        totalBlocks?: components['schemas']['VqueueGateDuration'][];
+        /** @description Per-gate wait of this entry's most recent attempt. */
+        latestBlocks?: components['schemas']['VqueueGateDuration'][];
+      };
+    };
     /** @description Most recent transient (retry) error for an invocation */
     TransientErrorResponse: {
       /** @description The transient error message */
@@ -3309,6 +3600,12 @@ export interface components {
       category?: 'event';
       /** @enum {string} */
       type?: 'Pending';
+    };
+    QueuedLifecycleJournalEntryV2: {
+      /** @enum {string} */
+      category?: 'event';
+      /** @enum {string} */
+      type?: 'Queued';
     };
     CompletionLifecycleJournalEntryV2: {
       /** @enum {string} */
@@ -6776,6 +7073,64 @@ export interface operations {
       };
     };
   };
+  get_vqueue: {
+    parameters: {
+      query?: {
+        /** @description Optional invocation id to highlight within the queue */
+        invocationId?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Vqueue id */
+        vqueueId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Flow snapshot */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InvocationVqueueResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
   get_journal_entry: {
     parameters: {
       query?: never;
@@ -7742,6 +8097,92 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_limit_rules: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListLimitRulesResponse'];
+        };
+      };
+    };
+  };
+  get_limit_rule: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['RuleResponse'];
+        };
+      };
+    };
+  };
+  list_user_limits: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_limit_counters: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Limit rule pattern. */
+        pattern: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitCountersRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListUserLimitsResponse'];
         };
       };
     };

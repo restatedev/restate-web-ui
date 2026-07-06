@@ -15,6 +15,8 @@ export type VqueueStatus = {
   num_attempts?: number;
   num_errors?: number;
   latest_attempt_at?: string;
+  first_runnable_at?: string;
+  first_attempt_at?: string;
 };
 
 // Overlay live vqueue state onto the sys_invocation row. sys_invocation can't
