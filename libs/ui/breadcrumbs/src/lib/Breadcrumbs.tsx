@@ -29,6 +29,34 @@ const styles = tv({
     ellipsisButton: 'h-full rounded-none px-1.5 py-0 text-zinc-500',
     menuItem: 'flex max-w-60 min-w-0 items-center gap-1.5 text-xs',
   },
+  variants: {
+    hiddenOnMobile: {
+      true: {
+        chip: 'max-md:hidden',
+      },
+      false: {},
+    },
+    isList: {
+      true: {
+        chip: 'pl-1',
+      },
+      false: {},
+    },
+  },
+  defaultVariants: {
+    hiddenOnMobile: false,
+    isList: false,
+  },
+});
+
+const chipStyles = tv({
+  base: '',
+  variants: {
+    isList: {
+      true: 'pl-1',
+      false: '',
+    },
+  },
 });
 
 export function CrumbContent({ crumb }: BreadcrumbComponentProps) {
@@ -85,16 +113,6 @@ function CollapsedCrumbs({
   );
 }
 
-const chipStyles = tv({
-  base: '',
-  variants: {
-    isList: {
-      true: 'pl-1',
-      false: '',
-    },
-  },
-});
-
 export function Breadcrumbs({ className }: { className?: string }) {
   const crumbs = useBreadcrumbs();
   const pages = useBreadcrumbPages();
@@ -114,8 +132,6 @@ export function Breadcrumbs({ className }: { className?: string }) {
         const isCollapsedOnDesktop =
           isDesktopCollapsed && index >= 2 && index <= total - 3;
         const isEdge = index === 0 || index === total - 1;
-        const visibility =
-          !isEdge && isMobileCollapsed ? 'max-md:hidden' : undefined;
 
         const page = pages.find(
           (pageDefinition) => pageDefinition.pattern === crumb.pattern,
@@ -132,7 +148,10 @@ export function Breadcrumbs({ className }: { className?: string }) {
             right="angled"
             href={crumb.href}
             aria-label={crumb.label}
-            className={chip({ className: visibility })}
+            className={chip({
+              hiddenOnMobile: !isEdge && isMobileCollapsed,
+              isList: crumb.kind === 'list',
+            })}
           >
             <ChipSegment
               className={chipStyles({ isList: crumb.kind === 'list' })}
