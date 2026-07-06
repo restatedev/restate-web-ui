@@ -9,6 +9,54 @@ export const SERVICE_PLAYGROUND_QUERY_PARAM = 'servicePlayground';
 export const INVOCATION_QUERY_NAME = 'invocation';
 export const STATE_QUERY_NAME = 'state';
 export const DEPLOYMENT_QUERY_PARAM = 'deployment';
+export const ONBOARDING_QUERY_PARAM = 'onboarding';
+
+export const PRESERVED_QUERY_PARAMS = [
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  DEPLOYMENT_QUERY_PARAM,
+  INVOCATION_QUERY_NAME,
+  STATE_QUERY_NAME,
+  HANDLER_QUERY_PARAM,
+  PANEL_QUERY_PARAM,
+];
+
+const INVOCATION_LINK_PRESERVED_PARAMS = [
+  SERVICE_PLAYGROUND_QUERY_PARAM,
+  SERVICE_QUERY_PARAM,
+  DEPLOYMENT_QUERY_PARAM,
+  INVOCATION_QUERY_NAME,
+  ONBOARDING_QUERY_PARAM,
+  HANDLER_QUERY_PARAM,
+  STATE_QUERY_NAME,
+];
+
+export function getSearchParams(
+  search: string,
+  options?: {
+    preserve?: string[];
+    remove?: (string | { name: string; value: string })[];
+  },
+) {
+  const preserved = new Set([
+    ...INVOCATION_LINK_PRESERVED_PARAMS,
+    ...(options?.preserve ?? []),
+  ]);
+  const searchParams = new URLSearchParams(search);
+  Array.from(searchParams.keys()).forEach((key) => {
+    if (!preserved.has(key)) {
+      searchParams.delete(key);
+    }
+  });
+  options?.remove?.forEach((entry) => {
+    if (typeof entry === 'string') {
+      searchParams.delete(entry);
+    } else {
+      searchParams.delete(entry.name, entry.value);
+    }
+  });
+  return '?' + searchParams.toString();
+}
 
 export function useActivePanel(): string | null {
   const [searchParams] = useSearchParams();

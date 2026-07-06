@@ -15,6 +15,7 @@ export function PopoverContent({
   className?: string;
   triggerRef?: RefObject<Element | null>;
   placement?: Placement;
+  isNonModal?: boolean;
 }>) {
   return (
     <PopoverOverlay {...props} className={styles({ className })}>

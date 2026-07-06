@@ -26,6 +26,7 @@ export function PopoverOverlay({
   className?: string;
   triggerRef?: RefObject<Element | null>;
   placement?: Placement;
+  isNonModal?: boolean;
 }>) {
   return (
     <AriaPopover
