@@ -1,0 +1,9 @@
+{
+  "name": "breadcrumbs",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/breadcrumbs/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project breadcrumbs --web",
+  "targets": {}
+}
