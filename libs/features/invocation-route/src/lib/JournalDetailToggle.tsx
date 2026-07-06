@@ -15,7 +15,7 @@ import {
   DETAIL_CATEGORY_DESCRIPTIONS,
   DETAIL_CATEGORY_LABELS,
   type DetailCategory,
-} from './useJournalDetail';
+} from '@restate/features/invocation-ui';
 
 // Segmented control matching the old Compact|Detailed Nav box (subtle inset
 // background + white "active" pill), but Detailed is now a split button: the

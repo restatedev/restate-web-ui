@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverHoverTrigger,
 } from '@restate/ui/popover';
-import { useInvocationIdPopoverContent } from './InvocationIdPopover';
+import { InvocationPopoverContent } from './InvocationPopoverContent';
 
 const styles = tv({
   base: 'relative font-mono text-zinc-600',
@@ -87,8 +87,7 @@ export function InvocationId({
   const { baseUrl } = useRestateContext();
   const isIcon = size === 'icon';
   const location = useLocation();
-  const PopoverContentComponent = useInvocationIdPopoverContent();
-  const hasPopover = popover && Boolean(PopoverContentComponent);
+  const hasPopover = popover;
 
   const linkElement = (
     <Link
@@ -150,12 +149,12 @@ export function InvocationId({
     </div>
   );
 
-  if (hasPopover && PopoverContentComponent) {
+  if (hasPopover) {
     return (
       <Popover>
         <PopoverHoverTrigger>{element}</PopoverHoverTrigger>
         <PopoverContent placement="bottom" isNonModal>
-          <PopoverContentComponent id={id} />
+          <InvocationPopoverContent id={id} />
         </PopoverContent>
       </Popover>
     );

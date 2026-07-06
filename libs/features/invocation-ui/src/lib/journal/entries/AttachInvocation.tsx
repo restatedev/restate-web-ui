@@ -1,28 +1,26 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { EntryProps } from './types';
-import { Expression, InputOutput } from '../Expression';
-import { Target } from '@restate/features/invocation-ui';
-import { InvocationId } from '@restate/features/invocation-ui';
-import { Spinner } from '@restate/ui/loading';
+import { InvocationId } from '../../InvocationId';
+import { EntryExpression } from './EntryExpression';
 import { tv } from '@restate/util/styles';
 import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { CircularRefWarning } from './CircularRefWarning';
-import { EntryExpression } from './EntryExpression';
+import { Button } from '@restate/ui/button';
+import { Spinner } from '@restate/ui/loading';
+import { Icon, IconName } from '@restate/ui/icons';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
-import { Value } from '../Value';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5',
 });
-export function Call({
+
+export function AttachInvocation({
   entry,
   invocation,
   className,
 }: EntryProps<
-  Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
+  Extract<JournalEntryV2, { type?: 'AttachInvocation'; category?: 'command' }>
 >) {
   const {
     addInvocationId,
@@ -36,56 +34,23 @@ export function Call({
   const isExpanded =
     !isCircularRef &&
     entry.invocationId &&
-    invocationIds.includes(entry.invocationId);
+    invocationIds.includes(entry.invocationId) &&
+    !isPending;
 
   const invokedIsPending = isPending?.[String(entry.invocationId)];
   const invokedError = invocationsError?.[String(entry.invocationId)];
 
   return (
     <>
-      <div className={styles({})}>
+      <div className={styles({ className })}>
         <EntryExpression
           entry={entry}
           invocation={invocation}
           input={
-            <>
-              {entry.name && (
-                <InputOutput
-                  name={JSON.stringify(entry.name)}
-                  popoverTitle={'Name'}
-                  popoverContent={
-                    <Value
-                      value={entry.name}
-                      className="font-mono text-xs"
-                      showCopyButton
-                      portalId="expression-value"
-                    />
-                  }
-                />
-              )}
-              {entry.name && ', '}
-              <Target
-                showHandler={false}
-                target={[entry.serviceName, entry.serviceKey, entry.handlerName]
-                  .filter((v) => typeof v === 'string')
-                  .join('/')}
-                className="mx-0.5 h-6 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
-              />
-            </>
-          }
-          chain={
-            <Expression
-              name={'.' + entry.handlerName}
-              operationSymbol=""
-              className="pr-0 [&>*>*>*]:flex-auto"
-              input={
-                <LazyJournalEntryPayload.Input
-                  invocationId={invocation?.id}
-                  entry={entry}
-                  title="Input"
-                  isBase64
-                />
-              }
+            <InvocationId
+              id={String(entry.invocationId)}
+              className="mx-0.5 max-w-[15ch] truncate text-2xs font-semibold text-gray-500 not-italic"
+              size="md"
             />
           }
           output={
@@ -98,16 +63,6 @@ export function Call({
             />
           }
         />
-        {entry.invocationId && (
-          <>
-            <div className="-ml-1.5 text-gray-400">,</div>
-            <InvocationId
-              id={entry.invocationId}
-              className="mr-2 -ml-1"
-              size="icon"
-            />
-          </>
-        )}
       </div>
       {!disableExpand && (
         <div className="absolute top-0 right-1 bottom-0 flex items-center">

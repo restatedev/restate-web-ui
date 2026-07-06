@@ -1,7 +1,7 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { useGetInvocationsJournalWithInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import { useMemo } from 'react';
-import type { JournalDetail } from './useJournalDetail';
+import type { JournalDetail } from '@restate/features/invocation-ui';
 import { isHiddenEntryName, type HiddenEntryMatcher } from './hiddenEntries';
 
 // Event types that the lifecycle viewer renders separately from the main

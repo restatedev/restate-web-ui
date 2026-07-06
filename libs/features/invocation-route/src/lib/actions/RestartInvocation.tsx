@@ -21,7 +21,7 @@ import { ListBoxItem } from '@restate/ui/listbox';
 import { Badge } from '@restate/ui/badge';
 import { Revision } from '@restate/features/deployment';
 
-import { CommandEntryType } from '../entries/types';
+import { CommandEntryType } from '@restate/features/invocation-ui';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;

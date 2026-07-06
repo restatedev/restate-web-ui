@@ -4,7 +4,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
-import { getRestateError, Status } from './Status';
+import { getRestateError, Status } from '@restate/features/invocation-ui';
 import { DeploymentSection } from './DeploymentSection';
 import { VirtualObjectSection } from './VirtualObjectSection';
 import { KeysIdsSection } from './KeysIdsSection';
