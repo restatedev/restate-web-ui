@@ -10,7 +10,11 @@ export {
 } from './lib/InvocationDeployment';
 export * from './lib/constants';
 export * from './lib/InvocationPanel';
-export * from './lib/InvocationId';
+export {
+  InvocationId,
+  getSearchParams,
+  Target,
+} from '@restate/features/invocation-ui';
 export * from './lib/invocation.route';
-export { Target } from './lib/Target';
+export { InvocationPopoverContent } from './lib/InvocationPopoverContent';
 export { Retention } from './lib/Retention';

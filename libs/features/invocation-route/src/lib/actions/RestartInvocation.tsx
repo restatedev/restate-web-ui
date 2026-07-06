@@ -295,9 +295,9 @@ function RestartInvocationContent() {
 
                 const isTunnel = Boolean(
                   tunnel?.isEnabled &&
-                    deployment &&
-                    isHttpDeployment(deployment) &&
-                    tunnel.fromHttp(deployment.uri),
+                  deployment &&
+                  isHttpDeployment(deployment) &&
+                  tunnel.fromHttp(deployment.uri),
                 );
                 const endpoint = getEndpoint(deployment);
                 const tunnelEndpoint = isTunnel

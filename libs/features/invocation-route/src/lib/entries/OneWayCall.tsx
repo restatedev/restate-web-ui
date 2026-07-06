@@ -1,8 +1,8 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
-import { Target } from '../Target';
-import { InvocationId } from '../InvocationId';
+import { Target } from '@restate/features/invocation-ui';
+import { InvocationId } from '@restate/features/invocation-ui';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
 import { DateTooltip } from '@restate/ui/tooltip';
