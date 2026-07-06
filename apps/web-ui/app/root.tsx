@@ -34,8 +34,7 @@ import { Button } from '@restate/ui/button';
 import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util/react-query';
 import { Nav, NavItem } from '@restate/ui/nav';
-import { BreadcrumbsProvider } from '@restate/ui/breadcrumbs';
-import { BREADCRUMB_PAGES } from './breadcrumbs';
+import { BreadcrumbsProvider } from '@restate/features/breadcrumbs';
 import { Icon, IconName, Restate } from '@restate/ui/icons';
 import { RestateContextProvider } from '@restate/features/restate-context';
 import { CodecRuntimeProvider } from '@restate/features/codec';
@@ -450,7 +449,7 @@ function AppContent() {
           <CodecRuntimeProvider>
             <BatchOperationsProvider>
               <EditState>
-                <BreadcrumbsProvider pages={BREADCRUMB_PAGES}>
+                <BreadcrumbsProvider>
                   <LayoutOutlet zone={LayoutZone.Content}>
                     <Outlet />
                   </LayoutOutlet>

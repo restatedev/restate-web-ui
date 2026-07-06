@@ -39,6 +39,9 @@
       "@restate/features/batch-operations": [
         "libs/features/batch-operations/src/index.ts"
       ],
+      "@restate/features/breadcrumbs": [
+        "libs/features/breadcrumbs/src/index.ts"
+      ],
       "@restate/features/codec": ["libs/features/codec/src/index.ts"],
       "@restate/features/completion-history": [
         "libs/features/completion-history/src/index.ts"
