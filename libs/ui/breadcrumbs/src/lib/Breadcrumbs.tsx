@@ -85,6 +85,16 @@ function CollapsedCrumbs({
   );
 }
 
+const chipStyles = tv({
+  base: '',
+  variants: {
+    isList: {
+      true: 'pl-1',
+      false: '',
+    },
+  },
+});
+
 export function Breadcrumbs({ className }: { className?: string }) {
   const crumbs = useBreadcrumbs();
   const pages = useBreadcrumbPages();
@@ -124,7 +134,9 @@ export function Breadcrumbs({ className }: { className?: string }) {
             aria-label={crumb.label}
             className={chip({ className: visibility })}
           >
-            <ChipSegment>
+            <ChipSegment
+              className={chipStyles({ isList: crumb.kind === 'list' })}
+            >
               <Content crumb={crumb} />
             </ChipSegment>
           </Chip>
