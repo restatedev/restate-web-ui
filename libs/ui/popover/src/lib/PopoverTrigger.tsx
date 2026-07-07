@@ -171,11 +171,19 @@ function getPolygon(
       return [];
   }
 }
+const HOVER_OPEN_DELAY = 250;
+
+// Mirrors react-aria's global tooltip manager (which Popover lacks): at most
+// one hover popover is open at a time, and while one is open, hovering another
+// trigger hands off immediately instead of waiting for the warmup delay.
+let closeActiveHoverPopover: (() => void) | null = null;
+
 export function PopoverHoverTrigger({
   children,
 }: PropsWithChildren<NonNullable<unknown>>) {
   const popoverContext = useContext(PopoverContext);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getTriggerEl = useCallback(
     () => getTriggerElement(popoverContext),
@@ -191,6 +199,13 @@ export function PopoverHoverTrigger({
     }
   }, []);
 
+  const clearOpenTimeout = useCallback(() => {
+    if (openTimeoutRef.current) {
+      clearTimeout(openTimeoutRef.current);
+      openTimeoutRef.current = null;
+    }
+  }, []);
+
   const scheduleClose = useCallback(
     (timeout = 50) => {
       clearCloseTimeout();
@@ -200,6 +215,31 @@ export function PopoverHoverTrigger({
     },
     [clearCloseTimeout, setIsOpen],
   );
+
+  const close = useCallback(() => {
+    setIsOpen?.(false);
+  }, [setIsOpen]);
+
+  const open = useCallback(() => {
+    clearOpenTimeout();
+    clearCloseTimeout();
+    if (closeActiveHoverPopover && closeActiveHoverPopover !== close) {
+      closeActiveHoverPopover();
+    }
+    setIsOpen?.(true);
+  }, [clearOpenTimeout, clearCloseTimeout, close, setIsOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      closeActiveHoverPopover = close;
+      return () => {
+        if (closeActiveHoverPopover === close) {
+          closeActiveHoverPopover = null;
+        }
+      };
+    }
+    return undefined;
+  }, [isOpen, close]);
 
   const isPointInSafeArea = useCallback(
     (x: number, y: number) => {
@@ -265,15 +305,29 @@ export function PopoverHoverTrigger({
 
   const handleTriggerMouseEnter = useCallback(() => {
     clearCloseTimeout();
-    setIsOpen?.(true);
-  }, [clearCloseTimeout, setIsOpen]);
+    if (isOpen) {
+      return;
+    }
+    if (closeActiveHoverPopover) {
+      open();
+    } else {
+      clearOpenTimeout();
+      openTimeoutRef.current = setTimeout(open, HOVER_OPEN_DELAY);
+    }
+  }, [clearCloseTimeout, clearOpenTimeout, isOpen, open]);
+
+  const handleTriggerMouseLeave = useCallback(() => {
+    clearOpenTimeout();
+  }, [clearOpenTimeout]);
 
   useEffect(() => {
     const triggerEl = getTriggerEl();
     triggerEl?.addEventListener('mouseenter', handleTriggerMouseEnter);
+    triggerEl?.addEventListener('mouseleave', handleTriggerMouseLeave);
 
     return () => {
       triggerEl?.removeEventListener('mouseenter', handleTriggerMouseEnter);
+      triggerEl?.removeEventListener('mouseleave', handleTriggerMouseLeave);
     };
   });
 
@@ -289,6 +343,13 @@ export function PopoverHoverTrigger({
 
     return undefined;
   }, [clearCloseTimeout, handleMouseMove, isOpen]);
+
+  useEffect(() => {
+    return () => {
+      clearCloseTimeout();
+      clearOpenTimeout();
+    };
+  }, [clearCloseTimeout, clearOpenTimeout]);
 
   return children;
 }
