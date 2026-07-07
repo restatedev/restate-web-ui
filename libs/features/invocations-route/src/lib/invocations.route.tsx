@@ -138,31 +138,6 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 const PAGE_SIZE = 30;
-const SAMPLE_SIZE = 1_000_000;
-// How long the loading skeleton may be up before we reassure the user with the
-// slow-query banner.
-const SLOW_QUERY_MS = 5_000;
-
-// The table (list) query has its own sampling default, independent of the
-// summary's estimate/exact knob, chosen per query preset. `custom` covers any
-// non-preset filter combination; LIST_SAMPLED_DEFAULT is the fallback for
-// presets not listed here. This is the single place to tune per-query
-// list-sampling defaults.
-const LIST_SAMPLED_DEFAULT = false;
-const LIST_SAMPLED_DEFAULT_BY_PRESET: Partial<
-  Record<InvocationPreset, boolean>
-> = {
-  all: false,
-  inflight: false,
-  processing: false,
-  stuck: false,
-  scheduled: false,
-  notcompleted: false,
-  custom: false,
-};
-function getListSampledDefault(preset: InvocationPreset): boolean {
-  return LIST_SAMPLED_DEFAULT_BY_PRESET[preset] ?? LIST_SAMPLED_DEFAULT;
-}
 
 function SampleModeToggle({
   mode,
@@ -352,8 +327,14 @@ function SlowQueryBanner({
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { OnboardingGuide, baseUrl, observabilityDashboardUrl } =
-    useRestateContext();
+  const {
+    OnboardingGuide,
+    baseUrl,
+    observabilityDashboardUrl,
+    invocationsListOptions,
+  } = useRestateContext();
+  const { sampleSize, slowQueryMs, listSampledDefault } =
+    invocationsListOptions;
   const queryClient = useQueryClient();
   const { saveLastQuery } = useInvocationsLastQuery();
   const { setRecent } = useInvocationsRecent();
@@ -391,10 +372,10 @@ function Component() {
   const summarySampled = countMode === 'estimate';
 
   // The table's sampling is its own knob. Until the user picks a mode it
-  // follows the per-preset default (LIST_SAMPLED_DEFAULT_BY_PRESET); once they
-  // toggle it, that explicit choice sticks for the rest of the session across
-  // every query/preset. Session-scoped: a fresh visit to /invocations starts
-  // back on the per-preset default.
+  // follows the per-preset default (invocationsListOptions from the Restate
+  // context); once they toggle it, that explicit choice sticks for the rest of
+  // the session across every query/preset. Session-scoped: a fresh visit to
+  // /invocations starts back on the per-preset default.
   const searchString = searchParams.toString();
   const listPreset = useMemo<InvocationPreset>(
     () => getInvocationPreset(new URLSearchParams(searchString)),
@@ -403,7 +384,10 @@ function Component() {
   const [listSampledOverride, setListSampledOverride] = useState<
     boolean | null
   >(null);
-  const listSampled = listSampledOverride ?? getListSampledDefault(listPreset);
+  const listSampled =
+    listSampledOverride ??
+    invocationsListOptions.listSampledDefaultByPreset[listPreset] ??
+    listSampledDefault;
 
   const {
     data: summaryData,
@@ -412,7 +396,7 @@ function Component() {
     isFetching: isSummaryFetching,
   } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
     sampled: summarySampled,
-    sampleSize: summarySampled ? SAMPLE_SIZE : undefined,
+    sampleSize: summarySampled ? sampleSize : undefined,
     refetchOnWindowFocus: false,
   });
   const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
@@ -457,7 +441,7 @@ function Component() {
     {
       ...listInvocationsParameters,
       sampled: listSampled,
-      sampleSize: listSampled ? SAMPLE_SIZE : undefined,
+      sampleSize: listSampled ? sampleSize : undefined,
     },
     {
       refetchOnReconnect: false,
@@ -468,7 +452,7 @@ function Component() {
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
 
-  // Once the loading skeleton has been up past SLOW_QUERY_MS, surface a calm
+  // Once the loading skeleton has been up past slowQueryMs, surface a calm
   // reassurance banner. Reset (and restart the clock) whenever a fresh query
   // starts — a new filter/sort or sampling change gets its own grace period.
   const [isSlowQuery, setIsSlowQuery] = useState(false);
@@ -477,9 +461,9 @@ function Component() {
     if (!isFetching) {
       return;
     }
-    const timer = setTimeout(() => setIsSlowQuery(true), SLOW_QUERY_MS);
+    const timer = setTimeout(() => setIsSlowQuery(true), slowQueryMs);
     return () => clearTimeout(timer);
-  }, [isFetching, searchString, listSampled]);
+  }, [isFetching, searchString, listSampled, slowQueryMs]);
 
   const totalCount = summaryData?.totalCount ?? 0;
   // The list caps at INVOCATIONS_LIMIT rows. When it comes back under that cap
@@ -495,9 +479,9 @@ function Component() {
   // "~" only when the shown total is a sampled estimate (capped list + sampled
   // summary). An exact list count or an exact summary count needs no "~".
   const totalIsEstimate = !hasExactListTotal && summarySampled;
-  const sampledHitCap = totalIsEstimate && effectiveTotal >= SAMPLE_SIZE;
+  const sampledHitCap = totalIsEstimate && effectiveTotal >= sampleSize;
   const actionsTotalDisplay = totalIsEstimate
-    ? `~${formatNumber(sampledHitCap ? SAMPLE_SIZE : effectiveTotal, true)}${sampledHitCap ? '+' : ''}`
+    ? `~${formatNumber(sampledHitCap ? sampleSize : effectiveTotal, true)}${sampledHitCap ? '+' : ''}`
     : formatNumber(effectiveTotal, true);
 
   // An empty list only means "genuinely none" when an exact source confirms it:
@@ -931,7 +915,7 @@ function Component() {
                 totalCount={totalCount}
                 isFetching={isFetching}
                 isCountSampled={summarySampled}
-                sampleSize={SAMPLE_SIZE}
+                sampleSize={sampleSize}
                 key={dataUpdate}
               >
                 {!isPending && !error && totalSize > 1 && (
