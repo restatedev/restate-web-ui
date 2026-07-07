@@ -32,7 +32,7 @@ export function IntrospectionCell({
   if (typeof value === 'string' && value.startsWith('inv_')) {
     return (
       <Cell>
-        <InvocationId id={value} popover={false} />
+        <InvocationId id={value} />
       </Cell>
     );
   }

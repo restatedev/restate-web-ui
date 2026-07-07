@@ -19,8 +19,6 @@ import {
 import semverGt from 'semver/functions/gte';
 import { RangeProvider } from './Range';
 
-const EXECUTION_METRICS_FEATURE = 'execution-metrics';
-
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 
 type OnboardingComponent = ComponentType<{
