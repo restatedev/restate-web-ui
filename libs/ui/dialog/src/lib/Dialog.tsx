@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router';
 import { PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { DialogTrigger } from 'react-aria-components';
 import { Button } from '@restate/ui/button';
+import { registerTransientQueryParams } from '@restate/util/panel';
 
 interface DialogProps {
   open?: boolean;
@@ -32,6 +33,7 @@ export function QueryDialog({
   onClose?: VoidFunction;
   onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
+  registerTransientQueryParams(query);
   const [searchParams, setSearchParams] = useSearchParams();
   const hasParam = searchParams.has(query);
   // `isClosing` drives the exit animation: flip the dialog to closed while the
@@ -78,7 +80,9 @@ export function QueryDialog({
               }
               return next;
             },
-            { preventScrollReset: true },
+            // Replace so history keeps no dialog-open entry — pressing back
+            // after dismissing must not reopen the dialog.
+            { preventScrollReset: true, replace: true },
           );
         }, 250);
       }}

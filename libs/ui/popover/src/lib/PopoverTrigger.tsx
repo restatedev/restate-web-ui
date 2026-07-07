@@ -171,11 +171,39 @@ function getPolygon(
       return [];
   }
 }
+const HOVER_OPEN_DELAY = 250;
+
+// Mirrors react-aria's global tooltip manager (which Popover lacks): at most
+// one hover popover is open at a time, and while one is open, hovering another
+// trigger hands off immediately instead of waiting for the warmup delay.
+//
+// TODO: nested popovers don't survive inside a hover popover's content.
+// Two independent causes:
+//   1. A nested PopoverHoverTrigger takes the instant-handoff path and closes
+//      the parent via this singleton — unmounting itself with it.
+//   2. Regardless of the singleton, the "other trigger" rule in
+//      isPointInSafeArea treats any [aria-expanded] element inside the open
+//      card (e.g. the LastError click-popover badge in the invocation hover
+//      card) as unsafe, so the parent closes ~50ms after the pointer rests on
+//      it.
+// Fix (Radix HoverCard / menu-tree style): replace this single slot with a
+// module-level stack of open hover popovers ({ close, triggerEl, popoverEl }).
+//   - On open(B): pop-and-close entries from the top while B's trigger is NOT
+//     DOM-contained in that entry's popover element (sibling handoff stays as
+//     is), stop at the first ancestor, then push B on top.
+//   - Remove entries by identity on close/unmount, not just from the top.
+//   - In isPointInSafeArea: exempt triggers contained in the popover's own
+//     popover element from the "other trigger" rule (fixes cause 2), and treat
+//     the popover area of any stack entry above yours (your descendants) as
+//     safe so ancestors stay open while the pointer is in a nested card.
+let closeActiveHoverPopover: (() => void) | null = null;
+
 export function PopoverHoverTrigger({
   children,
 }: PropsWithChildren<NonNullable<unknown>>) {
   const popoverContext = useContext(PopoverContext);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getTriggerEl = useCallback(
     () => getTriggerElement(popoverContext),
@@ -191,6 +219,13 @@ export function PopoverHoverTrigger({
     }
   }, []);
 
+  const clearOpenTimeout = useCallback(() => {
+    if (openTimeoutRef.current) {
+      clearTimeout(openTimeoutRef.current);
+      openTimeoutRef.current = null;
+    }
+  }, []);
+
   const scheduleClose = useCallback(
     (timeout = 50) => {
       clearCloseTimeout();
@@ -200,6 +235,31 @@ export function PopoverHoverTrigger({
     },
     [clearCloseTimeout, setIsOpen],
   );
+
+  const close = useCallback(() => {
+    setIsOpen?.(false);
+  }, [setIsOpen]);
+
+  const open = useCallback(() => {
+    clearOpenTimeout();
+    clearCloseTimeout();
+    if (closeActiveHoverPopover && closeActiveHoverPopover !== close) {
+      closeActiveHoverPopover();
+    }
+    setIsOpen?.(true);
+  }, [clearOpenTimeout, clearCloseTimeout, close, setIsOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      closeActiveHoverPopover = close;
+      return () => {
+        if (closeActiveHoverPopover === close) {
+          closeActiveHoverPopover = null;
+        }
+      };
+    }
+    return undefined;
+  }, [isOpen, close]);
 
   const isPointInSafeArea = useCallback(
     (x: number, y: number) => {
@@ -265,15 +325,29 @@ export function PopoverHoverTrigger({
 
   const handleTriggerMouseEnter = useCallback(() => {
     clearCloseTimeout();
-    setIsOpen?.(true);
-  }, [clearCloseTimeout, setIsOpen]);
+    if (isOpen) {
+      return;
+    }
+    if (closeActiveHoverPopover) {
+      open();
+    } else {
+      clearOpenTimeout();
+      openTimeoutRef.current = setTimeout(open, HOVER_OPEN_DELAY);
+    }
+  }, [clearCloseTimeout, clearOpenTimeout, isOpen, open]);
+
+  const handleTriggerMouseLeave = useCallback(() => {
+    clearOpenTimeout();
+  }, [clearOpenTimeout]);
 
   useEffect(() => {
     const triggerEl = getTriggerEl();
     triggerEl?.addEventListener('mouseenter', handleTriggerMouseEnter);
+    triggerEl?.addEventListener('mouseleave', handleTriggerMouseLeave);
 
     return () => {
       triggerEl?.removeEventListener('mouseenter', handleTriggerMouseEnter);
+      triggerEl?.removeEventListener('mouseleave', handleTriggerMouseLeave);
     };
   });
 
@@ -289,6 +363,13 @@ export function PopoverHoverTrigger({
 
     return undefined;
   }, [clearCloseTimeout, handleMouseMove, isOpen]);
+
+  useEffect(() => {
+    return () => {
+      clearCloseTimeout();
+      clearOpenTimeout();
+    };
+  }, [clearCloseTimeout, clearOpenTimeout]);
 
   return children;
 }

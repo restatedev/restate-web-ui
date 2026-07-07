@@ -196,6 +196,52 @@ function EntryContent({
   );
 }
 
+export const ENTRY_COMMANDS_NAMES: {
+  [K in CommandEntryType]: string;
+} = {
+  Input: '',
+  GetState: 'get',
+  GetEagerState: 'get',
+  SetState: 'set',
+  GetStateKeys: 'keys',
+  GetEagerStateKeys: 'keys',
+  ClearState: 'clear',
+  ClearAllState: 'clearAll',
+  Call: 'call',
+  Run: 'run',
+  Output: '',
+  OneWayCall: 'send',
+  Sleep: 'sleep',
+  CompleteAwakeable: 'awakeable',
+  Awakeable: 'awakeable',
+  AttachInvocation: 'attach',
+  Cancel: 'cancel',
+  GetPromise: 'promise',
+  PeekPromise: 'promise',
+  CompletePromise: 'promise',
+  GetLazyState: 'get',
+  GetLazyStateKeys: 'keys',
+  SendSignal: 'signal',
+};
+
+export const ENTRY_NOTIFICATIONS_NAMES: {
+  [K in NotificationEntryType]: string;
+} = {
+  Call: 'call',
+  Sleep: 'sleep',
+  GetPromise: 'promise',
+  PeekPromise: 'promise',
+  CompletePromise: 'promise',
+  CompleteAwakeable: 'awakeable',
+  Run: 'run',
+  AttachInvocation: 'attach',
+  Cancel: 'cancel',
+  CallInvocationId: '',
+  GetLazyState: 'get',
+  GetLazyStateKeys: 'keys',
+  Signal: 'signal',
+};
+
 const ENTRY_COMMANDS_TITLES: {
   [K in CommandEntryType]: string;
 } = {

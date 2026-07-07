@@ -7,6 +7,7 @@ import {
   keepPreviousData,
   MutationOptions,
   Query,
+  QueryClient,
   useMutation,
   useQueries,
   useQuery,
@@ -37,13 +38,58 @@ import type {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
 import { RestateError } from '@restate/util/errors';
-import { useAPIStatus } from '@restate/data-access/admin-api';
+import { useAPIStatus, useFeatures } from '@restate/data-access/admin-api';
 import { useRange, useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
+import { isQueryForPath } from './queryMatchers';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
 const unsupportedMetricsBaseUrls = new Set<string>();
 const EMPTY_SERVICES_MAP = new Map<string, Service>();
+
+export type LimitRule = components['schemas']['RuleResponse'];
+export type UserLimitRow = components['schemas']['UserLimitRow'];
+export type UpsertLimitRuleRequest = components['schemas']['UpsertRuleRequest'];
+export type DeleteLimitRuleRequest = components['schemas']['DeleteRuleRequest'];
+export type CreateLimitRuleRequest = Omit<
+  UpsertLimitRuleRequest,
+  'precondition'
+>;
+export type UpdateLimitRuleRequest = Omit<
+  UpsertLimitRuleRequest,
+  'precondition'
+> & {
+  version: number;
+};
+
+type SingleUpsertLimitRuleOptions<Variables> = Omit<
+  MutationOptions<LimitRule | undefined, RestateError | Error, Variables>,
+  'mutationFn' | 'mutationKey'
+>;
+
+type SingleDeleteLimitRuleOptions = Omit<
+  MutationOptions<
+    string | undefined,
+    RestateError | Error,
+    DeleteLimitRuleRequest
+  >,
+  'mutationFn' | 'mutationKey'
+>;
+
+function isLimitsQuery(query: Query) {
+  return (
+    isQueryForPath(query, '/query/limits/rules', 'get') ||
+    isQueryForPath(query, '/query/limits/rules/{pattern}', 'get') ||
+    isQueryForPath(query, '/query/limits/rules/{pattern}/counters', 'post') ||
+    isQueryForPath(query, '/query/limits/user-limits', 'get')
+  );
+}
+
+function invalidateLimitsQueries(queryClient: QueryClient) {
+  queryClient.invalidateQueries({
+    predicate: isLimitsQuery,
+  });
+}
 
 function getErrorMessages(error: unknown): string[] {
   if (!(error instanceof Error)) return [];
@@ -356,6 +402,336 @@ export function useListStateServices(
     ...results,
     queryKey: queryOptions.queryKey,
   };
+}
+
+export function useListLimitRules(
+  options?: HookQueryOptions<'/query/limits/rules', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/limits/rules', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled && hasVqueues,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListUserLimits(
+  options?: HookQueryOptions<'/query/limits/user-limits', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/limits/user-limits', 'get', {
+    baseUrl,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled && hasVqueues,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListLimitCounters(
+  pattern: string | undefined,
+  body: components['schemas']['ListLimitCountersRequestBody'],
+  options?: HookQueryOptions<'/query/limits/rules/{pattern}/counters', 'post'>,
+) {
+  const enabled = useAPIStatus();
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const baseUrl = useAdminBaseUrl();
+  const resolvedPattern = pattern ?? '';
+  const queryOptions = adminApi(
+    'query',
+    '/query/limits/rules/{pattern}/counters',
+    'post',
+    {
+      baseUrl,
+      resolvedPath: `/query/limits/rules/${encodeURIComponent(resolvedPattern)}/counters`,
+      parameters: { path: { pattern: resolvedPattern } },
+      body,
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(pattern) && options?.enabled !== false && enabled && hasVqueues,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useGetLimitRule(
+  pattern: string | undefined,
+  options?: HookQueryOptions<'/query/limits/rules/{pattern}', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const baseUrl = useAdminBaseUrl();
+  const resolvedPattern = pattern ?? '';
+  const queryOptions = adminApi(
+    'query',
+    '/query/limits/rules/{pattern}',
+    'get',
+    {
+      baseUrl,
+      resolvedPath: `/query/limits/rules/${encodeURIComponent(resolvedPattern)}`,
+      parameters: { path: { pattern: resolvedPattern } },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(pattern) && options?.enabled !== false && enabled && hasVqueues,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useUpsertLimitRules(
+  options?: HookMutationOptions<'/limits/rules', 'put'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  const mutationOptions = adminApi('mutate', '/limits/rules', 'put', {
+    baseUrl,
+  });
+  const { mutationFn, mutationKey, meta } = mutationOptions;
+
+  return useMutation({
+    mutationKey,
+    meta,
+    ...rest,
+    mutationFn: async (variables, context) => {
+      const data = await mutationFn(variables, context);
+      if (!data) {
+        throw new Error('No response from server');
+      }
+      return data;
+    },
+    onSuccess(data, variables, context, meta) {
+      invalidateLimitsQueries(queryClient);
+      onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useUpsertLimitRule(
+  options?: SingleUpsertLimitRuleOptions<UpsertLimitRuleRequest>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  const mutationOptions = adminApi('mutate', '/limits/rules', 'put', {
+    baseUrl,
+  });
+  const { mutationFn, mutationKey, meta } = mutationOptions;
+
+  return useMutation<
+    LimitRule | undefined,
+    RestateError | Error,
+    UpsertLimitRuleRequest
+  >({
+    mutationKey,
+    meta,
+    ...rest,
+    mutationFn: async (rule, context) => {
+      const data = await mutationFn(
+        {
+          body: [rule],
+        },
+        context,
+      );
+      return data?.[0];
+    },
+    onSuccess(data, variables, context, meta) {
+      invalidateLimitsQueries(queryClient);
+      onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useCreateLimitRule(
+  options?: SingleUpsertLimitRuleOptions<CreateLimitRuleRequest>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  const mutationOptions = adminApi('mutate', '/limits/rules', 'put', {
+    baseUrl,
+  });
+  const { mutationFn, mutationKey, meta } = mutationOptions;
+
+  return useMutation<
+    LimitRule | undefined,
+    RestateError | Error,
+    CreateLimitRuleRequest
+  >({
+    mutationKey,
+    meta,
+    ...rest,
+    mutationFn: async (rule, context) => {
+      const data = await mutationFn(
+        {
+          body: [
+            {
+              ...rule,
+              precondition: { type: 'does_not_exist' },
+            },
+          ],
+        },
+        context,
+      );
+      return data?.[0];
+    },
+    onSuccess(data, variables, context, meta) {
+      invalidateLimitsQueries(queryClient);
+      onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useUpdateLimitRule(
+  options?: SingleUpsertLimitRuleOptions<UpdateLimitRuleRequest>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  const mutationOptions = adminApi('mutate', '/limits/rules', 'put', {
+    baseUrl,
+  });
+  const { mutationFn, mutationKey, meta } = mutationOptions;
+
+  return useMutation<
+    LimitRule | undefined,
+    RestateError | Error,
+    UpdateLimitRuleRequest
+  >({
+    mutationKey,
+    meta,
+    ...rest,
+    mutationFn: async ({ version, ...rule }, context) => {
+      const data = await mutationFn(
+        {
+          body: [
+            {
+              ...rule,
+              precondition: { type: 'matches', version },
+            },
+          ],
+        },
+        context,
+      );
+      return data?.[0];
+    },
+    onSuccess(data, variables, context, meta) {
+      invalidateLimitsQueries(queryClient);
+      onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useDeleteLimitRules(
+  options?: HookMutationOptions<'/limits/rules/bulk-delete', 'post'>,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  const mutationOptions = adminApi(
+    'mutate',
+    '/limits/rules/bulk-delete',
+    'post',
+    {
+      baseUrl,
+    },
+  );
+  const { mutationFn, mutationKey, meta } = mutationOptions;
+
+  return useMutation({
+    mutationKey,
+    meta,
+    ...rest,
+    mutationFn: async (variables, context) => {
+      const data = await mutationFn(variables, context);
+      if (!data) {
+        throw new Error('No response from server');
+      }
+      return data;
+    },
+    onSuccess(data, variables, context, meta) {
+      invalidateLimitsQueries(queryClient);
+      onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useDeleteLimitRule(options?: SingleDeleteLimitRuleOptions) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+  const mutationOptions = adminApi(
+    'mutate',
+    '/limits/rules/bulk-delete',
+    'post',
+    {
+      baseUrl,
+    },
+  );
+  const { mutationFn, mutationKey, meta } = mutationOptions;
+
+  return useMutation<
+    string | undefined,
+    RestateError | Error,
+    DeleteLimitRuleRequest
+  >({
+    mutationKey,
+    meta,
+    ...rest,
+    mutationFn: async (request, context) => {
+      const data = await mutationFn(
+        {
+          body: [request],
+        },
+        context,
+      );
+      return data?.[0];
+    },
+    onSuccess(data, variables, context, meta) {
+      invalidateLimitsQueries(queryClient);
+      onSuccess?.(data, variables, context, meta);
+    },
+  });
 }
 
 export function isVersionQuery(
@@ -1499,6 +1875,33 @@ export function useGetTransientError(
   };
 }
 
+export function useGetVqueue(
+  vqueueId?: string,
+  invocationId?: string,
+  options?: HookQueryOptions<'/query/vqueues/{vqueueId}', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/vqueues/{vqueueId}', 'get', {
+    baseUrl,
+    parameters: {
+      path: { vqueueId: vqueueId ?? '' },
+      query: { invocationId },
+    },
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled && Boolean(vqueueId),
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useGetInvocationJournalEntry(
   invocationId: string,
   entryIndex: number,
@@ -1542,6 +1945,33 @@ export function useGetJournalEntryPayloads(
   const queryOptions = adminApi(
     'query',
     '/query/invocations/{invocationId}/journal/{entryIndex}/payloads',
+    'get',
+    {
+      baseUrl,
+      parameters: { path: { invocationId, entryIndex } },
+    },
+  );
+
+  return useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled,
+  });
+}
+
+export function useGetJournalEntryMetadata(
+  invocationId: string,
+  entryIndex: number,
+  options?: HookQueryOptions<
+    '/query/invocations/{invocationId}/journal/{entryIndex}/metadata',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/invocations/{invocationId}/journal/{entryIndex}/metadata',
     'get',
     {
       baseUrl,

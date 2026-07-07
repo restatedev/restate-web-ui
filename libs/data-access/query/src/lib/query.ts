@@ -20,6 +20,7 @@ import {
   getJournalEntryV2,
   getInvocationJournalV2,
   getJournalEntryPayloads,
+  getJournalEntryMetadata,
   getInbox,
   getState,
   getStateInterface,
@@ -36,11 +37,16 @@ import {
   getMetrics,
   getStateStorageSize,
   listStateServices,
+  getLimitRule,
+  listLimitCountersForRule,
+  listLimitRules,
+  listUserLimits,
   summaryInvocations,
   completedInvocationsBreakdown,
   type CompletedInvocationsBreakdownArgs,
   getPausedError,
   getTransientError,
+  getVqueue,
   listDrainedDeployments,
   type ListStateArgs,
   type ListStateItem,
@@ -71,12 +77,24 @@ type BoundHandlers = {
   getMetrics: () => Promise<Response>;
   getStateStorageSize: () => Promise<Response>;
   listStateServices: () => Promise<Response>;
+  listLimitRules: () => Promise<Response>;
+  getLimitRule: (pattern: string) => Promise<Response>;
+  listUserLimits: () => Promise<Response>;
+  listLimitCountersForRule: (
+    pattern: string,
+    filters: FilterItem[],
+    sort?: components['schemas']['LimitSort'],
+  ) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
     invocationId: string,
     entryIndex: number,
   ) => Promise<Response>;
   getJournalEntryPayloads: (
+    invocationId: string,
+    entryIndex: number,
+  ) => Promise<Response>;
+  getJournalEntryMetadata: (
     invocationId: string,
     entryIndex: number,
   ) => Promise<Response>;
@@ -139,6 +157,7 @@ type BoundHandlers = {
   ) => Promise<Response>;
   getPausedError: (invocationId: string) => Promise<Response>;
   getTransientError: (invocationId: string) => Promise<Response>;
+  getVqueue: (vqueueId: string, invocationId?: string) => Promise<Response>;
   listDrainedDeployments: () => Promise<Response>;
 };
 
@@ -151,10 +170,15 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getMetrics: getMetrics.bind(context),
     getStateStorageSize: getStateStorageSize.bind(context),
     listStateServices: listStateServices.bind(context),
+    listLimitRules: listLimitRules.bind(context),
+    getLimitRule: getLimitRule.bind(context),
+    listUserLimits: listUserLimits.bind(context),
+    listLimitCountersForRule: listLimitCountersForRule.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
     getJournalEntryV2: getJournalEntryV2.bind(context),
     getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
+    getJournalEntryMetadata: getJournalEntryMetadata.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
     getState: (service, key, serviceType, stateKeys) =>
@@ -175,6 +199,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     batchRestartAsNewInvocations: batchRestartAsNewInvocations.bind(context),
     getPausedError: getPausedError.bind(context),
     getTransientError: getTransientError.bind(context),
+    getVqueue: getVqueue.bind(context),
     listDrainedDeployments: listDrainedDeployments.bind(context),
   };
 }
@@ -269,6 +294,10 @@ export const routes = createRoutes('/query', {
       method: 'GET',
       pattern: '/invocations/:invocationId/journal/:entryIndex/payloads',
     },
+    journalEntryMetadata: {
+      method: 'GET',
+      pattern: '/invocations/:invocationId/journal/:entryIndex/metadata',
+    },
     cancel: { method: 'POST', pattern: '/invocations/cancel' },
     purge: { method: 'POST', pattern: '/invocations/purge' },
     kill: { method: 'POST', pattern: '/invocations/kill' },
@@ -285,6 +314,10 @@ export const routes = createRoutes('/query', {
     transientError: {
       method: 'GET',
       pattern: '/invocations/:invocationId/transient-error',
+    },
+    vqueue: {
+      method: 'GET',
+      pattern: '/vqueues/:vqueueId',
     },
   },
   invocationsV2: {
@@ -319,6 +352,17 @@ export const routes = createRoutes('/query', {
   state: {
     services: { method: 'GET', pattern: '/state/services' },
     storageSize: { method: 'GET', pattern: '/state/storage-size' },
+  },
+  limits: {
+    rules: {
+      list: { method: 'GET', pattern: '/limits/rules' },
+      get: { method: 'GET', pattern: '/limits/rules/:pattern' },
+      counters: {
+        method: 'POST',
+        pattern: '/limits/rules/:pattern/counters',
+      },
+    },
+    userLimits: { method: 'GET', pattern: '/limits/user-limits' },
   },
 });
 
@@ -402,6 +446,13 @@ router.map(routes, {
           Number(ctx.params.entryIndex),
         );
       },
+      async journalEntryMetadata(ctx) {
+        const { getJournalEntryMetadata } = ctx.storage.get(handlersKey);
+        return getJournalEntryMetadata(
+          ctx.params.invocationId,
+          Number(ctx.params.entryIndex),
+        );
+      },
       async cancel(ctx) {
         const { batchCancelInvocations } = ctx.storage.get(handlersKey);
         const request: BatchInvocationsRequestBody = await ctx.request.json();
@@ -439,6 +490,12 @@ router.map(routes, {
       async transientError(ctx) {
         const { getTransientError } = ctx.storage.get(handlersKey);
         return getTransientError(ctx.params.invocationId);
+      },
+      async vqueue(ctx) {
+        const { getVqueue } = ctx.storage.get(handlersKey);
+        const invocationId =
+          ctx.url.searchParams.get('invocationId') ?? undefined;
+        return getVqueue(ctx.params.vqueueId, invocationId);
       },
     },
     invocationsV2: {
@@ -547,6 +604,31 @@ router.map(routes, {
       async storageSize(ctx) {
         const { getStateStorageSize } = ctx.storage.get(handlersKey);
         return getStateStorageSize();
+      },
+    },
+    limits: {
+      rules: {
+        async list(ctx) {
+          const { listLimitRules } = ctx.storage.get(handlersKey);
+          return listLimitRules();
+        },
+        async get(ctx) {
+          const { getLimitRule } = ctx.storage.get(handlersKey);
+          return getLimitRule(ctx.params.pattern);
+        },
+        async counters(ctx) {
+          const { listLimitCountersForRule } = ctx.storage.get(handlersKey);
+          const {
+            filters = [],
+            sort,
+          }: components['schemas']['ListLimitCountersRequestBody'] =
+            await ctx.request.json();
+          return listLimitCountersForRule(ctx.params.pattern, filters, sort);
+        },
+      },
+      async userLimits(ctx) {
+        const { listUserLimits } = ctx.storage.get(handlersKey);
+        return listUserLimits();
       },
     },
   },

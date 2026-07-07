@@ -15,11 +15,10 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
 } from 'react';
 import semverGt from 'semver/functions/gte';
 import { RangeProvider } from './Range';
-
-const EXECUTION_METRICS_FEATURE = 'execution-metrics';
 
 export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
 
@@ -40,6 +39,37 @@ type OnboardingComponent = ComponentType<{
   service?: string;
   children?: ReactNode;
 }>;
+// Tuning knobs for the invocations list page. `sampleSize` caps sampled
+// list/summary scans; `slowQueryMs` is how long the loading skeleton may be up
+// before the slow-query reassurance banner appears. The table (list) query has
+// its own sampling default, independent of the summary's estimate/exact knob,
+// chosen per query preset: `listSampledDefaultByPreset` is keyed by preset id
+// from @restate/util/sidebar-nav ('all' | 'inflight' | … | 'custom' for any
+// non-preset filter combination) — kept as strings to avoid a dependency cycle
+// with sidebar-nav — and `listSampledDefault` is the fallback for presets not
+// listed there.
+export type InvocationsListOptions = {
+  sampleSize: number;
+  slowQueryMs: number;
+  listSampledDefault: boolean;
+  listSampledDefaultByPreset: Partial<Record<string, boolean>>;
+};
+
+const DEFAULT_INVOCATIONS_LIST_OPTIONS: InvocationsListOptions = {
+  sampleSize: 1_000_000,
+  slowQueryMs: 5_000,
+  listSampledDefault: false,
+  listSampledDefaultByPreset: {
+    all: false,
+    inflight: false,
+    processing: false,
+    stuck: false,
+    scheduled: false,
+    notcompleted: false,
+    custom: false,
+  },
+};
+
 type RestateContext = {
   status: Status;
   version?: string;
@@ -53,6 +83,7 @@ type RestateContext = {
   // | 'stuck' | …). Kept as a string to avoid a dependency cycle with
   // sidebar-nav; the invocations route validates it.
   defaultInvocationsPreset?: string;
+  invocationsListOptions: InvocationsListOptions;
   EncodingWaterMark?: ComponentType<{
     value?: string;
     className?: string;
@@ -81,6 +112,7 @@ const InternalRestateContext = createContext<RestateContext>({
   baseUrl: '',
   isGoogleIdTokenAuthAvailable: true,
   isExecutionMetricsEnabled: false,
+  invocationsListOptions: DEFAULT_INVOCATIONS_LIST_OPTIONS,
 });
 
 function InternalRestateContextProvider({
@@ -102,6 +134,7 @@ function InternalRestateContextProvider({
   isGoogleIdTokenAuthAvailable = true,
   executionMetricsEnabled = false,
   queryHealthCheckEnabled = false,
+  invocationsListOptions,
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
@@ -124,6 +157,7 @@ function InternalRestateContextProvider({
   executionMetricsEnabled?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
+  invocationsListOptions?: Partial<InvocationsListOptions>;
 }>) {
   const { isSuccess, failureCount } = useHealth({
     enabled: !isPending,
@@ -165,6 +199,18 @@ function InternalRestateContextProvider({
     };
   }, [adminBaseUrl, systemHealthMonitor]);
 
+  const resolvedInvocationsListOptions = useMemo<InvocationsListOptions>(
+    () => ({
+      ...DEFAULT_INVOCATIONS_LIST_OPTIONS,
+      ...invocationsListOptions,
+      listSampledDefaultByPreset: {
+        ...DEFAULT_INVOCATIONS_LIST_OPTIONS.listSampledDefaultByPreset,
+        ...invocationsListOptions?.listSampledDefaultByPreset,
+      },
+    }),
+    [invocationsListOptions],
+  );
+
   return (
     <InternalRestateContext.Provider
       value={{
@@ -185,6 +231,7 @@ function InternalRestateContextProvider({
         gcpServiceAccount,
         isGoogleIdTokenAuthAvailable,
         isExecutionMetricsEnabled,
+        invocationsListOptions: resolvedInvocationsListOptions,
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
@@ -214,6 +261,7 @@ export function RestateContextProvider({
   executionMetricsEnabled = false,
   systemHealthMonitor,
   queryHealthCheckEnabled = false,
+  invocationsListOptions,
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
@@ -237,6 +285,7 @@ export function RestateContextProvider({
   executionMetricsEnabled?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
+  invocationsListOptions?: Partial<InvocationsListOptions>;
 }>) {
   return (
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
@@ -258,6 +307,7 @@ export function RestateContextProvider({
         executionMetricsEnabled={executionMetricsEnabled}
         systemHealthMonitor={systemHealthMonitor}
         queryHealthCheckEnabled={queryHealthCheckEnabled}
+        invocationsListOptions={invocationsListOptions}
       >
         {children}
       </InternalRestateContextProvider>

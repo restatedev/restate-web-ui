@@ -116,7 +116,6 @@ function getHeaderIntent(
     case 'pending':
       return 'pending';
     case 'paused':
-    case 'scheduled':
     case 'backing-off':
       return 'warning';
     case 'running':

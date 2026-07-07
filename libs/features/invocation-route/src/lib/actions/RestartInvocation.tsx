@@ -9,6 +9,7 @@ import {
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useRestateContext } from '@restate/features/restate-context';
+import { registerTransientQueryParams } from '@restate/util/panel';
 import { useSearchParams } from 'react-router';
 import {
   Deployment,
@@ -21,39 +22,16 @@ import { ListBoxItem } from '@restate/ui/listbox';
 import { Badge } from '@restate/ui/badge';
 import { Revision } from '@restate/features/deployment';
 
-import { CommandEntryType } from '@restate/features/invocation-ui';
-
-const NAME_COMMANDS_COMPONENTS: {
-  [K in CommandEntryType]: string;
-} = {
-  Input: '',
-  GetState: 'get',
-  GetEagerState: 'get',
-  SetState: 'set',
-  GetStateKeys: 'keys',
-  GetEagerStateKeys: 'keys',
-  ClearState: 'clear',
-  ClearAllState: 'clearAll',
-  Call: 'call',
-  Run: 'run',
-  Output: '',
-  OneWayCall: 'send',
-  Sleep: 'sleep',
-  CompleteAwakeable: 'awakeable',
-  Awakeable: 'awakeable',
-  AttachInvocation: 'attach',
-  Cancel: 'cancel',
-  GetPromise: 'promise',
-  PeekPromise: 'promise',
-  CompletePromise: 'promise',
-  GetLazyState: 'get',
-  GetLazyStateKeys: 'keys',
-  SendSignal: 'signal',
-};
+import {
+  CommandEntryType,
+  ENTRY_COMMANDS_NAMES,
+  EntryChain,
+} from '@restate/features/invocation-ui';
 
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
 export const RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM =
   'restart-new-invocation-from';
+registerTransientQueryParams(RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM);
 
 function EntryParams({
   entry,
@@ -90,33 +68,6 @@ function EntryParams({
       return null;
   }
 }
-function EntryChain({
-  entry,
-}: {
-  entry: Extract<JournalEntryV2, { category?: 'command' }>;
-}) {
-  switch (entry.type) {
-    case 'Call':
-    case 'OneWayCall':
-      return (
-        <>
-          .{entry.handlerName}
-          <span className="opacity-70">(…)</span>
-        </>
-      );
-    case 'CompleteAwakeable':
-      return (
-        <>
-          .resolve
-          <span className="opacity-70">(…)</span>
-        </>
-      );
-
-    default:
-      return null;
-  }
-}
-
 function RestartInvocationContent() {
   const [searchParams] = useSearchParams();
   const invocationId = searchParams.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
@@ -238,11 +189,7 @@ function RestartInvocationContent() {
                     <div className="flex items-center gap-1.5 font-mono text-0.5xs">
                       <div className="opacity-70">{entry.commandIndex}</div>
                       <div className="font-medium italic">
-                        {
-                          NAME_COMMANDS_COMPONENTS[
-                            entry.type as CommandEntryType
-                          ]
-                        }
+                        {ENTRY_COMMANDS_NAMES[entry.type as CommandEntryType]}
                         <span className="inline-flex items-baseline">
                           <span className="opacity-70">(</span>
                           <span className="max-w-[30ch] truncate px-0.5 font-sans text-xs opacity-70">
@@ -511,12 +458,23 @@ export const RestartInvocation = withConfirmation({
     const invocationId = _variables.parameters?.path.invocation_id;
     const newInvocationId = data?.new_invocation_id;
     if (newInvocationId) {
+      // When the dialog param is in the URL, the current history entry is the
+      // dialog-open one (pushed by the trigger, on top of the clean source
+      // page) — replace it so back from the new invocation lands on the clean
+      // source page, not the open dialog. Without the param (skip-confirmation
+      // trigger path), the current entry is the real source page: push.
+      const isDialogEntry = searchParams.has(
+        RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
+      );
       searchParams.delete(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
       searchParams.delete(RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM);
-      navigate({
-        pathname: `${baseUrl}/invocations/${newInvocationId}`,
-        search: searchParams.toString(),
-      });
+      navigate(
+        {
+          pathname: `${baseUrl}/invocations/${newInvocationId}`,
+          search: searchParams.toString(),
+        },
+        { replace: isDialogEntry },
+      );
       showSuccessNotification(
         <p>
           <code className="font-semibold">

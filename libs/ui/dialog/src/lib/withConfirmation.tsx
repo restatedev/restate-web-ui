@@ -23,6 +23,7 @@ import {
   UserPreferenceId,
 } from '@restate/features/user-preference';
 import { FormFieldCheckbox, FormFieldLabel } from '@restate/ui/form-field';
+import { registerTransientQueryParams } from '@restate/util/panel';
 
 export interface BaseHelpers {
   navigate: ReturnType<typeof useNavigate>;
@@ -99,6 +100,8 @@ export function withConfirmation<
   THook extends UseMutationHook,
   THelpers = object,
 >(config: WithConfirmationConfig<THook, THelpers>) {
+  registerTransientQueryParams(config.queryParam);
+
   function Dialog() {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -116,7 +119,7 @@ export function withConfirmation<
             old.delete(config.queryParam);
             return old;
           },
-          { preventScrollReset: true },
+          { preventScrollReset: true, replace: true },
         );
         config.onSuccess?.(data, variables, context, {
           navigate,

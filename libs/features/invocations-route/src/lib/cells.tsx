@@ -1,4 +1,8 @@
-import { Invocation, ServiceType } from '@restate/data-access/admin-api-spec';
+import {
+  Invocation,
+  JournalEntryV2,
+  ServiceType,
+} from '@restate/data-access/admin-api-spec';
 import { Cell } from '@restate/ui/table';
 import {
   DateTooltip,
@@ -39,8 +43,17 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useLocation } from 'react-router';
-import { useListSubscriptions } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetJournalEntryMetadata,
+  useListSubscriptions,
+} from '@restate/data-access/admin-api-hooks';
 import { Ellipsis } from '@restate/ui/loading';
+import {
+  Duration,
+  ENTRY_COMMANDS_NAMES,
+  ENTRY_NOTIFICATIONS_NAMES,
+  EntryChain,
+} from '@restate/features/invocation-ui';
 
 function withDate({
   tooltipTitle,
@@ -250,6 +263,82 @@ function RestartedFromCell({ invocation }: CellProps) {
   return <InvocationId id={invocation.restarted_from} />;
 }
 
+const lastEntryIconStyles = tv({
+  base: 'h-3 w-3 shrink-0',
+  variants: {
+    result: {
+      success: 'text-zinc-400',
+      failure: 'text-orange-600',
+    },
+  },
+  defaultVariants: {
+    result: 'success',
+  },
+});
+
+function LastJournalEntry({ invocation }: { invocation: Invocation }) {
+  const { data } = useGetJournalEntryMetadata(
+    invocation.id,
+    (invocation.journal_size || 1) - 1,
+  );
+
+  const fnName = data?.type
+    ? data.category === 'notification'
+      ? { ...ENTRY_NOTIFICATIONS_NAMES }[data.type]
+      : data.category === 'command'
+        ? { ...ENTRY_COMMANDS_NAMES }[data.type]
+        : undefined
+    : undefined;
+
+  if (!data || !fnName) {
+    return null;
+  }
+
+  const isCompletion = data.category === 'notification';
+
+  return (
+    <div className="flex max-w-full items-center gap-1 pl-0.5 text-2xs text-zinc-500/80">
+      <Icon
+        name={IconName.CornerDownRight}
+        className="h-3 w-3 shrink-0 text-zinc-400"
+      />
+      <span className="truncate font-mono font-medium text-zinc-500/90 italic">
+        {fnName}
+        <span className="opacity-70">()</span>
+        {data.category === 'command' && (
+          <EntryChain
+            entry={data as Extract<JournalEntryV2, { category?: 'command' }>}
+          />
+        )}
+      </span>
+      {isCompletion ? (
+        <>
+          <span className="shrink-0 opacity-70">→</span>
+          <Icon
+            name={
+              data.resultType === 'failure' ? IconName.CircleX : IconName.Check
+            }
+            className={lastEntryIconStyles({
+              result: data.resultType === 'failure' ? 'failure' : 'success',
+            })}
+          />
+        </>
+      ) : (
+        <Ellipsis className="shrink-0" />
+      )}
+      {data.start && (
+        <Duration
+          prefix={isCompletion ? 'completed' : 'started'}
+          suffix="ago"
+          date={data.start}
+          tooltipTitle="Last entry appended at"
+          className="shrink-0 px-0"
+        />
+      )}
+    </div>
+  );
+}
+
 function JournalCell({ invocation }: CellProps) {
   const { baseUrl } = useRestateContext();
   const location = useLocation();
@@ -269,60 +358,65 @@ function JournalCell({ invocation }: CellProps) {
   }
 
   return (
-    <Popover>
-      <PopoverTrigger>
-        <Button
-          variant="secondary"
-          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs"
-        >
-          {invocation.journal_commands_size || invocation.journal_size}{' '}
-          {formatPlurals(invocation.journal_size, {
-            one: 'entry',
-            other: 'entries',
-          })}
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3 w-3 shrink-0 text-gray-500"
-          />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="max-w-2xl">
-        <DropdownSection
-          title={
-            <div className="flex items-center">
-              <div className="mr-12">
-                Journal{' '}
-                <Retention
-                  invocation={invocation}
-                  type="journal"
-                  prefixForCompletion="retention "
-                  prefixForInProgress="retained "
-                />
+    <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5">
+      <Popover>
+        <PopoverTrigger>
+          <Button
+            variant="icon"
+            className="gap-1 rounded-md px-1.5 py-0 text-2xs leading-6 text-zinc-500"
+          >
+            {invocation.journal_commands_size || invocation.journal_size}{' '}
+            {formatPlurals(invocation.journal_size, {
+              one: 'entry',
+              other: 'entries',
+            })}
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="h-3 w-3 shrink-0 text-gray-500"
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="max-w-2xl">
+          <DropdownSection
+            title={
+              <div className="flex items-center">
+                <div className="mr-12">
+                  Journal{' '}
+                  <Retention
+                    invocation={invocation}
+                    type="journal"
+                    prefixForCompletion="retention "
+                    prefixForInProgress="retained "
+                  />
+                </div>
+                <Link
+                  variant="secondary-button"
+                  href={`${baseUrl}/invocations/${invocation.id}${getSearchParams(
+                    location.search,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-auto flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal"
+                >
+                  Timeline
+                  <Icon name={IconName.ExternalLink} className="h-3 w-3" />
+                </Link>
               </div>
-              <Link
-                variant="secondary-button"
-                href={`${baseUrl}/invocations/${invocation.id}${getSearchParams(
-                  location.search,
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-auto flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal"
-              >
-                Timeline
-                <Icon name={IconName.ExternalLink} className="h-3 w-3" />
-              </Link>
-            </div>
-          }
-          className="overflow-hidden rounded-2xl bg-gray-50"
-        >
-          <JournalV2
-            invocationId={invocation.id}
-            className="*:rounded-2xl *:text-xs"
-            withTimeline={false}
-          />
-        </DropdownSection>
-      </PopoverContent>
-    </Popover>
+            }
+            className="overflow-hidden rounded-2xl bg-gray-50"
+          >
+            <JournalV2
+              invocationId={invocation.id}
+              className="*:rounded-2xl *:text-xs"
+              withTimeline={false}
+            />
+          </DropdownSection>
+        </PopoverContent>
+      </Popover>
+      {invocation.status === 'running' && (
+        <LastJournalEntry invocation={invocation} />
+      )}
+    </div>
   );
 }
 
