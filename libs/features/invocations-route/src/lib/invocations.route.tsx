@@ -96,7 +96,11 @@ import {
 } from '@restate/features/service';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
-import { PANEL_QUERY_PARAM, STATE_QUERY_NAME } from '@restate/util/panel';
+import {
+  PANEL_QUERY_PARAM,
+  STATE_QUERY_NAME,
+  stripTransientQueryParams,
+} from '@restate/util/panel';
 import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
@@ -572,9 +576,10 @@ function Component() {
   }, []);
 
   useEffect(() => {
-    saveLastQuery(searchParams);
-    if (!matchesAnyInvocationPreset(searchParams)) {
-      setRecent({ type: 'custom', value: searchParams.toString() });
+    const restorableSearchParams = stripTransientQueryParams(searchParams);
+    saveLastQuery(restorableSearchParams);
+    if (!matchesAnyInvocationPreset(restorableSearchParams)) {
+      setRecent({ type: 'custom', value: restorableSearchParams.toString() });
     }
   }, [searchParams, saveLastQuery, setRecent]);
 

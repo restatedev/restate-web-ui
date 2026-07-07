@@ -363,7 +363,7 @@ function JournalCell({ invocation }: CellProps) {
         <PopoverTrigger>
           <Button
             variant="icon"
-            className="gap-1 rounded-md px-1.5 py-0.5 text-2xs text-zinc-500"
+            className="gap-1 rounded-md px-1.5 py-0 text-2xs leading-6 text-zinc-500"
           >
             {invocation.journal_commands_size || invocation.journal_size}{' '}
             {formatPlurals(invocation.journal_size, {

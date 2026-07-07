@@ -1,5 +1,11 @@
 import { IconName } from '@restate/ui/icons';
-import { classify, computeNextTrail, MAX_TRAIL_LENGTH } from './trail';
+import { registerTransientQueryParams } from '@restate/util/panel';
+import {
+  classify,
+  computeNextTrail,
+  MAX_TRAIL_LENGTH,
+  sanitizeCrumb,
+} from './trail';
 import type { Crumb, PageDefinition } from './types';
 
 const pages: PageDefinition[] = [
@@ -202,5 +208,38 @@ describe('computeNextTrail', () => {
     expect(trail.at(-1)?.pathname).toBe(
       `/invocations/inv-${MAX_TRAIL_LENGTH + 4}`,
     );
+  });
+
+  it('should exclude registered transient query params from crumb hrefs', () => {
+    registerTransientQueryParams('test-dialog');
+    const list = visit(undefined, '/invocations');
+    const trail = visit(list, '/invocations/inv-1', '?a=1&test-dialog=inv-1');
+    expect(trail.at(-1)?.href).toBe('/invocations/inv-1?a=1');
+  });
+});
+
+describe('sanitizeCrumb', () => {
+  const crumb: Crumb = {
+    kind: 'detail',
+    resource: 'invocations',
+    pattern: '/invocations/:id',
+    pathname: '/invocations/inv-1',
+    href: '/invocations/inv-1?a=1&test-dialog=inv-1',
+    label: 'inv-1',
+    icon: IconName.Invocation,
+    params: { id: 'inv-1' },
+  };
+
+  it('should strip transient query params from stored hrefs', () => {
+    registerTransientQueryParams('test-dialog');
+    expect(sanitizeCrumb(crumb).href).toBe('/invocations/inv-1?a=1');
+  });
+
+  it('should return clean crumbs unchanged', () => {
+    registerTransientQueryParams('test-dialog');
+    const clean = { ...crumb, href: '/invocations/inv-1?a=1' };
+    expect(sanitizeCrumb(clean)).toBe(clean);
+    const noQuery = { ...crumb, href: '/invocations/inv-1' };
+    expect(sanitizeCrumb(noQuery)).toBe(noQuery);
   });
 });

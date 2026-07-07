@@ -1,4 +1,5 @@
 import { generatePath, matchPath, type Params } from 'react-router';
+import { stripTransientSearch } from '@restate/util/panel';
 import type { Crumb, PageDefinition } from './types';
 
 export const MAX_TRAIL_LENGTH = 20;
@@ -44,11 +45,23 @@ function createCrumb(
     resource: page.resource,
     pattern: page.pattern,
     pathname,
-    href: `${pathname}${search}`,
+    // Crumb hrefs are restored later, so one-shot params (open confirmation
+    // dialogs) must not be part of them.
+    href: `${pathname}${stripTransientSearch(search)}`,
     label: typeof page.label === 'function' ? page.label(params) : page.label,
     icon: page.icon,
     params,
   };
+}
+
+export function sanitizeCrumb(crumb: Crumb): Crumb {
+  const queryIndex = crumb.href.indexOf('?');
+  if (queryIndex === -1) {
+    return crumb;
+  }
+  const search = stripTransientSearch(crumb.href.slice(queryIndex));
+  const href = `${crumb.href.slice(0, queryIndex)}${search}`;
+  return href === crumb.href ? crumb : { ...crumb, href };
 }
 
 export function computeNextTrail({

@@ -9,6 +9,7 @@ import {
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useRestateContext } from '@restate/features/restate-context';
+import { registerTransientQueryParams } from '@restate/util/panel';
 import { useSearchParams } from 'react-router';
 import {
   Deployment,
@@ -30,6 +31,7 @@ import {
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
 export const RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM =
   'restart-new-invocation-from';
+registerTransientQueryParams(RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM);
 
 function EntryParams({
   entry,
@@ -456,12 +458,23 @@ export const RestartInvocation = withConfirmation({
     const invocationId = _variables.parameters?.path.invocation_id;
     const newInvocationId = data?.new_invocation_id;
     if (newInvocationId) {
+      // When the dialog param is in the URL, the current history entry is the
+      // dialog-open one (pushed by the trigger, on top of the clean source
+      // page) — replace it so back from the new invocation lands on the clean
+      // source page, not the open dialog. Without the param (skip-confirmation
+      // trigger path), the current entry is the real source page: push.
+      const isDialogEntry = searchParams.has(
+        RESTART_AS_NEW_INVOCATION_QUERY_PARAM,
+      );
       searchParams.delete(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
       searchParams.delete(RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM);
-      navigate({
-        pathname: `${baseUrl}/invocations/${newInvocationId}`,
-        search: searchParams.toString(),
-      });
+      navigate(
+        {
+          pathname: `${baseUrl}/invocations/${newInvocationId}`,
+          search: searchParams.toString(),
+        },
+        { replace: isDialogEntry },
+      );
       showSuccessNotification(
         <p>
           <code className="font-semibold">

@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { useLocation } from 'react-router';
 import { getStoredTrail, storeTrail } from './store';
-import { computeNextTrail } from './trail';
+import { computeNextTrail, sanitizeCrumb } from './trail';
 import type { Crumb, PageDefinition, TrailCrumb } from './types';
 
 const BreadcrumbsContext = createContext<{
@@ -30,7 +30,7 @@ export function BreadcrumbsProvider({
     const isRestorable =
       stored && stored.at(-1)?.pathname === location.pathname;
     const next = isRestorable
-      ? stored
+      ? stored.map(sanitizeCrumb)
       : computeNextTrail({
           pages,
           prevTrail: prevTrailRef.current,

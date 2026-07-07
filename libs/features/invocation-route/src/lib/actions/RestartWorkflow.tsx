@@ -155,11 +155,17 @@ export const RestartWorkflow = withConfirmation({
     const invocationId = _variables.invocationId;
     const newInvocationId = data?.invocationId;
     if (newInvocationId) {
+      const isDialogEntry = searchParams.has(
+        RESTART_AS_NEW_WORKFLOW_QUERY_PARAM,
+      );
       searchParams.delete(RESTART_AS_NEW_WORKFLOW_QUERY_PARAM);
-      navigate({
-        pathname: `${baseUrl}/invocations/${newInvocationId}`,
-        search: searchParams.toString(),
-      });
+      navigate(
+        {
+          pathname: `${baseUrl}/invocations/${newInvocationId}`,
+          search: searchParams.toString(),
+        },
+        { replace: isDialogEntry },
+      );
       showSuccessNotification(
         <p>
           <code className="font-semibold">
