@@ -86,8 +86,6 @@ export type SortInvocations = Exclude<
 >;
 export type JournalEntryPayloads =
   components['schemas']['JournalEntryPayloads'];
-export type JournalEntryMetadata =
-  components['schemas']['JournalEntryMetadata'];
 export type FailureEntry = components['schemas']['FailureEntry'];
 
 // Virtual-queue snapshot (rendered as "Flow" in the UI; kept in vqueue terms

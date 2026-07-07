@@ -929,7 +929,7 @@ export interface paths {
     };
     /**
      * Get journal entry metadata
-     * @description Get lightweight metadata for a specific journal entry. This endpoint returns only the entry type, the lite entry representation (entry_lite_json), and the appended_at timestamp, excluding the potentially large payload fields.
+     * @description Get a single journal entry converted from its lite representation (entry_lite_json), excluding the potentially large payload fields. Use this for lightweight polling of an entry's type, category, result and timing.
      */
     get: operations['get_journal_entry_metadata'];
     put?: never;
@@ -3220,15 +3220,6 @@ export interface components {
       }[];
       /** @description State keys for GetEagerStateKeys entries */
       keys?: string[];
-    };
-    /** @description Lightweight metadata for a journal entry. Excludes the potentially large payload fields. */
-    JournalEntryMetadata: {
-      index: number;
-      entry_type: components['schemas']['JournalRawEntry']['entry_type'];
-      /** @description Lite JSON representation of the entry without payload data */
-      entry_lite_json?: string;
-      /** Format: date-time */
-      appended_at?: string;
     };
     JournalBaseEntry: {
       index: number;
@@ -7289,7 +7280,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['JournalEntryMetadata'];
+          'application/json': components['schemas']['JournalEntryV2'];
         };
       };
       400: {

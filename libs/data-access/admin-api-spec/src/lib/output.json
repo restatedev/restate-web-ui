@@ -3926,7 +3926,7 @@
       "get": {
         "tags": ["get-journal-entry-metadata"],
         "summary": "Get journal entry metadata",
-        "description": "Get lightweight metadata for a specific journal entry. This endpoint returns only the entry type, the lite entry representation (entry_lite_json), and the appended_at timestamp, excluding the potentially large payload fields.",
+        "description": "Get a single journal entry converted from its lite representation (entry_lite_json), excluding the potentially large payload fields. Use this for lightweight polling of an entry's type, category, result and timing.",
         "operationId": "get_journal_entry_metadata",
         "parameters": [
           {
@@ -3954,7 +3954,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JournalEntryMetadata"
+                  "$ref": "#/components/schemas/JournalEntryV2"
                 }
               }
             }
@@ -8636,27 +8636,6 @@
             "items": {
               "type": "string"
             }
-          }
-        }
-      },
-      "JournalEntryMetadata": {
-        "type": "object",
-        "description": "Lightweight metadata for a journal entry. Excludes the potentially large payload fields.",
-        "required": ["index", "entry_type"],
-        "properties": {
-          "index": {
-            "type": "integer"
-          },
-          "entry_type": {
-            "$ref": "#/components/schemas/JournalRawEntry/properties/entry_type"
-          },
-          "entry_lite_json": {
-            "type": "string",
-            "description": "Lite JSON representation of the entry without payload data"
-          },
-          "appended_at": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },

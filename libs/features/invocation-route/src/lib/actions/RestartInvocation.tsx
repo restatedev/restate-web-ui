@@ -21,35 +21,11 @@ import { ListBoxItem } from '@restate/ui/listbox';
 import { Badge } from '@restate/ui/badge';
 import { Revision } from '@restate/features/deployment';
 
-import { CommandEntryType } from '@restate/features/invocation-ui';
-
-const NAME_COMMANDS_COMPONENTS: {
-  [K in CommandEntryType]: string;
-} = {
-  Input: '',
-  GetState: 'get',
-  GetEagerState: 'get',
-  SetState: 'set',
-  GetStateKeys: 'keys',
-  GetEagerStateKeys: 'keys',
-  ClearState: 'clear',
-  ClearAllState: 'clearAll',
-  Call: 'call',
-  Run: 'run',
-  Output: '',
-  OneWayCall: 'send',
-  Sleep: 'sleep',
-  CompleteAwakeable: 'awakeable',
-  Awakeable: 'awakeable',
-  AttachInvocation: 'attach',
-  Cancel: 'cancel',
-  GetPromise: 'promise',
-  PeekPromise: 'promise',
-  CompletePromise: 'promise',
-  GetLazyState: 'get',
-  GetLazyStateKeys: 'keys',
-  SendSignal: 'signal',
-};
+import {
+  CommandEntryType,
+  ENTRY_COMMANDS_NAMES,
+  EntryChain,
+} from '@restate/features/invocation-ui';
 
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
 export const RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM =
@@ -90,33 +66,6 @@ function EntryParams({
       return null;
   }
 }
-function EntryChain({
-  entry,
-}: {
-  entry: Extract<JournalEntryV2, { category?: 'command' }>;
-}) {
-  switch (entry.type) {
-    case 'Call':
-    case 'OneWayCall':
-      return (
-        <>
-          .{entry.handlerName}
-          <span className="opacity-70">(…)</span>
-        </>
-      );
-    case 'CompleteAwakeable':
-      return (
-        <>
-          .resolve
-          <span className="opacity-70">(…)</span>
-        </>
-      );
-
-    default:
-      return null;
-  }
-}
-
 function RestartInvocationContent() {
   const [searchParams] = useSearchParams();
   const invocationId = searchParams.get(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
@@ -238,11 +187,7 @@ function RestartInvocationContent() {
                     <div className="flex items-center gap-1.5 font-mono text-0.5xs">
                       <div className="opacity-70">{entry.commandIndex}</div>
                       <div className="font-medium italic">
-                        {
-                          NAME_COMMANDS_COMPONENTS[
-                            entry.type as CommandEntryType
-                          ]
-                        }
+                        {ENTRY_COMMANDS_NAMES[entry.type as CommandEntryType]}
                         <span className="inline-flex items-baseline">
                           <span className="opacity-70">(</span>
                           <span className="max-w-[30ch] truncate px-0.5 font-sans text-xs opacity-70">

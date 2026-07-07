@@ -50,7 +50,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   completed_at: 'Completed at',
   target: 'Target',
   status: 'Status',
-  journal_size: 'Journal',
+  journal_size: 'Journal / Last entry',
   invoked_by: 'Invoked by',
   deployment: 'Deployment',
   // retry_count: 'Attempt count',
