@@ -111,7 +111,9 @@ const stateObjectStyles = tv({
   },
 });
 
-function getObjectKeyColumnName(serviceType: StateServiceType | undefined) {
+export function getObjectKeyColumnName(
+  serviceType: StateServiceType | undefined,
+) {
   if (serviceType === 'workflow') {
     return 'Workflow id';
   }
@@ -644,23 +646,21 @@ function StateChildCell({
     sizeText,
   } = stateObjectStyles();
 
-  if (col.id === 'object_key' || col.id === 'scope') {
-    return <Cell className={childObjectCell()} />;
-  }
-
   if (child.kind === 'status') {
-    if (col.id === 'state_key') {
+    if (col.id === 'object_key') {
       return (
         <Cell className={loadMoreCell()}>
           {child.status === 'loading' ? (
-            <span className={childStatus()}>
+            <span className={childStatus({ className: 'pl-7' })}>
               <Spinner className="h-3.5 w-3.5 shrink-0" />
               Loading keys…
             </span>
           ) : child.status === 'empty' ? (
-            <span className={childStatus()}>No state keys</span>
+            <span className={childStatus({ className: 'pl-7' })}>
+              No state keys
+            </span>
           ) : (
-            <span className={childStatus()}>
+            <span className={childStatus({ className: 'pl-7' })}>
               Couldn’t load keys
               <Button
                 variant="secondary"
@@ -684,6 +684,10 @@ function StateChildCell({
       );
     }
     return <Cell className={loadMoreCell()} />;
+  }
+
+  if (col.id === 'object_key' || col.id === 'scope') {
+    return <Cell className={childObjectCell()} />;
   }
 
   if (child.kind === 'load_more') {
