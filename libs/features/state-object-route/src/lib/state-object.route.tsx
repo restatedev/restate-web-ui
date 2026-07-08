@@ -541,7 +541,7 @@ function Component() {
             sortedOldSearchParams.sort();
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
-            await queryCLient.invalidateQueries({
+            await queryCLient.resetQueries({
               predicate: (query) => {
                 const [resolvedUrl] = query.queryKey;
                 return (
