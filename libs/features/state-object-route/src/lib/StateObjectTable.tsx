@@ -82,9 +82,9 @@ const stateObjectStyles = tv({
     objectIcon:
       'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-zinc-500 shadow-xs',
     stateKeyCell: 'bg-gray-50/35',
-    stateKeyContent: 'flex max-w-full min-w-0 items-center gap-0.5',
-    stateKeyCopy:
-      'invisible ml-0 shrink-0 rounded-md p-1 text-gray-400 group-hover/row:visible focus:visible hover:bg-gray-100 hover:text-gray-600 [&_svg]:h-3 [&_svg]:w-3',
+    keyContent: 'flex max-w-full min-w-0 items-center gap-0.5',
+    keyCopy:
+      'invisible ml-0 shrink-0 rounded-md p-1 text-gray-400 group-hover/row:visible hover:bg-gray-100 hover:text-gray-600 focus:visible [&_svg]:h-3 [&_svg]:w-3',
     valueButton:
       'group/value flex w-full min-w-0 items-center justify-start rounded-lg border-0 bg-transparent! px-1.5 py-0.5 text-left font-mono text-xs text-zinc-500 shadow-none! hover:bg-transparent! pressed:bg-transparent!',
     valueButtonContent:
@@ -316,6 +316,8 @@ function StateObjectCell({
     objectKey,
     chevron,
     objectIcon,
+    keyContent,
+    keyCopy,
     actionsCell,
     actions,
     objectActionButton,
@@ -331,11 +333,14 @@ function StateObjectCell({
           <span className={objectIcon()}>
             <Icon name={IconName.Database} className="h-full w-full p-1" />
           </span>
-          <KeyCell
-            serviceKey={row.key}
-            onOpen={() => onOpenObject(row.key, row.scope)}
-            className="text-0.5xs font-medium"
-          />
+          <div className={keyContent()}>
+            <KeyCell
+              serviceKey={row.key}
+              onOpen={() => onOpenObject(row.key, row.scope)}
+              className="text-0.5xs font-medium"
+            />
+            <Copy copyText={row.key} className={keyCopy()} />
+          </div>
         </div>
       </Cell>
     );
@@ -540,6 +545,18 @@ function StateObjectChildRows({
   );
   const entries = loadedEntries ?? row.state.slice(0, STATE_ENTRIES_PAGE_SIZE);
   const hasError = Boolean(entriesQuery.error);
+  const status = hasError
+    ? 'error'
+    : !loadedEntries
+      ? 'loading'
+      : entries.length === 0
+        ? 'empty'
+        : undefined;
+  const trailingRow: StateChildRow | undefined = status
+    ? { id: `${row.id}\x00__${status}__`, kind: 'status', status }
+    : entriesQuery.hasNextPage
+      ? { id: `${row.id}\x00__load_more__`, kind: 'load_more' }
+      : undefined;
   const childRows: StateChildRow[] = [
     ...entries.map(({ name, value, size }) => ({
       id: `${row.id}\x00${name}`,
@@ -548,38 +565,7 @@ function StateObjectChildRows({
       ...(value !== undefined ? { value } : {}),
       size,
     })),
-    ...(hasError
-      ? ([
-          {
-            id: `${row.id}\x00__error__`,
-            kind: 'status',
-            status: 'error',
-          },
-        ] satisfies StateChildRow[])
-      : !loadedEntries
-        ? ([
-            {
-              id: `${row.id}\x00__loading__`,
-              kind: 'status',
-              status: 'loading',
-            },
-          ] satisfies StateChildRow[])
-        : entries.length === 0
-          ? ([
-              {
-                id: `${row.id}\x00__empty__`,
-                kind: 'status',
-                status: 'empty',
-              },
-            ] satisfies StateChildRow[])
-          : entriesQuery.hasNextPage
-            ? ([
-                {
-                  id: `${row.id}\x00__load_more__`,
-                  kind: 'load_more',
-                },
-              ] satisfies StateChildRow[])
-            : []),
+    ...(trailingRow ? [trailingRow] : []),
   ];
   const { childRow, childRowLast } = stateObjectStyles();
   const lastChildRowId = childRows.at(-1)?.id;
@@ -659,8 +645,8 @@ function StateChildCell({
   const {
     childObjectCell,
     stateKeyCell,
-    stateKeyContent,
-    stateKeyCopy,
+    keyContent,
+    keyCopy,
     loadMoreCell,
     childStatus,
     actionsCell,
@@ -739,9 +725,9 @@ function StateChildCell({
   if (col.id === 'state_key') {
     return (
       <Cell className={stateKeyCell()}>
-        <div className={stateKeyContent()}>
+        <div className={keyContent()}>
           <KeyCell serviceKey={child.name} className="text-xs font-medium" />
-          <Copy copyText={child.name} className={stateKeyCopy()} />
+          <Copy copyText={child.name} className={keyCopy()} />
         </div>
       </Cell>
     );
