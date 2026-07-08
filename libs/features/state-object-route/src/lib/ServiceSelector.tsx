@@ -1,5 +1,4 @@
 import {
-  useListDeployments,
   useListStateServices,
   useListServices,
 } from '@restate/data-access/admin-api-hooks';
@@ -107,31 +106,22 @@ export function getDefaultStateService(services: string[]) {
 }
 
 export function useStateServiceCatalog() {
-  const { data: deployments, isPending: isDeploymentsPending } =
-    useListDeployments();
+  const { data: serviceData, isPending: isServicesPending } = useListServices();
   const deploymentServiceNames = useMemo(
-    () => Array.from(deployments?.services.keys() ?? []).sort(),
-    [deployments],
-  );
-  const deploymentServicesPlaceholder = useMemo(
-    () =>
-      deploymentServiceNames.length > 0
-        ? { services: deploymentServiceNames }
-        : undefined,
-    [deploymentServiceNames],
+    () => ({ services: Array.from(serviceData.keys() ?? []).sort() }),
+    [serviceData],
   );
   const {
     data: stateServicesData,
     isPending: isStateServicesPending,
     isPlaceholderData,
   } = useListStateServices({
-    placeholderData: deploymentServicesPlaceholder,
+    placeholderData: deploymentServiceNames,
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
-  const { data: serviceData, isPending: isServicesPending } = useListServices();
 
   return useMemo(() => {
     const stateServiceNames = new Set(stateServicesData?.services ?? []);
@@ -179,10 +169,8 @@ export function useStateServiceCatalog() {
     );
 
     return {
-      isPending:
-        isStateServicesPending || isDeploymentsPending || isServicesPending,
+      isPending: isStateServicesPending && isServicesPending,
       isUsingPlaceholderServices: isPlaceholderData,
-      isServiceMetadataPending: isDeploymentsPending || isServicesPending,
       services,
       serviceTypes,
       virtualObjects: virtualObjects.map((service) => service.name),
@@ -190,7 +178,6 @@ export function useStateServiceCatalog() {
       stateOnlyServices: stateOnlyServices.map((service) => service.name),
     };
   }, [
-    isDeploymentsPending,
     isPlaceholderData,
     isServicesPending,
     isStateServicesPending,
@@ -218,7 +205,6 @@ export function useValidateVirtualObject(serviceParamOverride?: string) {
   const {
     isPending,
     isUsingPlaceholderServices,
-    isServiceMetadataPending,
     services,
     serviceTypes,
     virtualObjects,
@@ -230,8 +216,7 @@ export function useValidateVirtualObject(serviceParamOverride?: string) {
   const isValid = services.includes(serviceParam);
 
   return {
-    isValidating: isPending || isUsingPlaceholderServices,
-    isServiceMetadataPending,
+    isValidating: isPending,
     isValid: !canRedirect || isValid,
     redirectTo:
       canRedirect && services.length > 0 && !isValid && defaultService

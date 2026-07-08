@@ -2301,7 +2301,6 @@ export function useQueryVirtualObjectState(
 export function useListVirtualObjectState(
   serviceName: string,
   args: { keys: string[] } | { items: { key: string; scope?: string }[] },
-  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/state', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -2314,12 +2313,9 @@ export function useListVirtualObjectState(
       baseUrl,
       parameters: {
         path: { name: serviceName },
-        ...(serviceType ? { query: { serviceType } } : {}),
       },
       body: args,
-      resolvedPath: serviceType
-        ? `/query/services/${serviceName}/state?serviceType=${serviceType}`
-        : `/query/services/${serviceName}/state`,
+      resolvedPath: `/query/services/${serviceName}/state`,
     },
   );
 

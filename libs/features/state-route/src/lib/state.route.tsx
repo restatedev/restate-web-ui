@@ -26,7 +26,7 @@ function Component() {
     useStateServiceCatalog();
   const defaultService = getDefaultStateService(services);
 
-  if (defaultService && !isUsingPlaceholderServices) {
+  if (defaultService) {
     return (
       <Navigate
         to={`./${encodeURIComponent(defaultService)}${window.location.search}`}
