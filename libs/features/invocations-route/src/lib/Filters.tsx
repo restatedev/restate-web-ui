@@ -37,11 +37,13 @@ export function ClauseChip({
   onRemove,
   onUpdate,
   formRef,
+  emptyValueLabel,
 }: {
   item: QueryClause<QueryClauseType>;
   onRemove?: VoidFunction;
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
   formRef?: RefObject<HTMLFormElement | null>;
+  emptyValueLabel?: string;
 }) {
   const isNew = useNewQueryId() === item.id;
   return (
@@ -72,7 +74,7 @@ export function ClauseChip({
               ? 'Any'
               : item.valueLabel ||
                 (queryClauseOperationRequiresValue(item.value.operation)
-                  ? '?'
+                  ? (emptyValueLabel ?? '?')
                   : '')}
           </span>
         </>
@@ -225,13 +227,21 @@ function EditQueryTrigger({
             <ValueSelector clause={clause} onUpdate={onUpdate} />
           </DropdownSection>
           <div className="mt-1 flex items-center justify-between gap-2 px-2 pb-2">
-            <Button
-              variant="destructive"
-              className="border-transparent bg-transparent bg-none px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
-              onClick={() => onRemove?.()}
-            >
-              Remove
-            </Button>
+            {onRemove ? (
+              <Button
+                variant="destructive"
+                className="border-transparent bg-transparent bg-none px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
+                onClick={() => {
+                  onRemove();
+                  setIsOpen(false);
+                  onClose?.();
+                }}
+              >
+                Remove
+              </Button>
+            ) : (
+              <span />
+            )}
             <Button type="submit" variant="primary" className="px-4 py-1">
               Done
             </Button>
@@ -355,6 +365,43 @@ function ValueSelector({
         }}
         className="m-1 [&_label]:hidden"
       />
+    );
+  }
+
+  if (clause.type === 'KEY_VALUE') {
+    return (
+      <>
+        <FormFieldInput
+          autoFocus={!clause.value.fieldValue}
+          label="Key"
+          placeholder="Key"
+          value={clause.value.fieldValue ?? ''}
+          onChange={(fieldValue) => {
+            const newClause = new QueryClause(clause.schema, {
+              ...clause.value,
+              fieldValue,
+            });
+            onUpdate?.(newClause);
+          }}
+          className="m-1 [&_label]:hidden"
+        />
+        {queryClauseOperationRequiresValue(clause.value.operation) && (
+          <FormFieldInput
+            autoFocus={Boolean(clause.value.fieldValue)}
+            label="Value"
+            placeholder="Value"
+            value={clause.value.value as string}
+            onChange={(value) => {
+              const newClause = new QueryClause(clause.schema, {
+                ...clause.value,
+                value,
+              });
+              onUpdate?.(newClause);
+            }}
+            className="m-1 [&_label]:hidden"
+          />
+        )}
+      </>
     );
   }
 

@@ -59,7 +59,7 @@ import {
   StateOnlyServiceWarningIcon,
   useValidateVirtualObject,
 } from './ServiceSelector';
-import { StateObjectTable } from './StateObjectTable';
+import { getObjectKeyColumnName, StateObjectTable } from './StateObjectTable';
 import { StateStorageBreakdown } from './StateStorageBreakdown';
 import type { StateObjectRecord } from './types';
 
@@ -73,6 +73,9 @@ function urlKeyFor(schemaClause: QueryClauseSchema<QueryClauseType>) {
 }
 
 function urlKeyForClause(clause: QueryClause<QueryClauseType>) {
+  if (clause.type === 'KEY_VALUE') {
+    return `filter_${clause.fieldValue}`;
+  }
   return urlKeyFor(clause.schema);
 }
 
@@ -80,14 +83,37 @@ function getQuery(
   searchParams: URLSearchParams,
   schema: QueryClauseSchema<QueryClauseType>[],
 ) {
-  return schema
-    .filter((schemaClause) => searchParams.get(urlKeyFor(schemaClause)))
-    .map((schemaClause) => {
-      return QueryClause.fromJSON(
-        schemaClause,
-        searchParams.get(urlKeyFor(schemaClause)) ?? '',
-      );
+  const clauses = schema
+    .filter((schemaClause) => schemaClause.type !== 'KEY_VALUE')
+    .flatMap((schemaClause) => {
+      const rawValue = searchParams.get(urlKeyFor(schemaClause));
+      if (rawValue) {
+        return [QueryClause.fromJSON(schemaClause, rawValue)];
+      }
+      if (schemaClause.metadata?.persistent) {
+        return [new QueryClause(schemaClause)];
+      }
+      return [];
     });
+
+  const customSchema = schema.find(
+    (schemaClause) => schemaClause.type === 'KEY_VALUE',
+  );
+  if (customSchema) {
+    const schemaKeys = new Set(schema.map(urlKeyFor));
+    for (const [param, rawValue] of searchParams.entries()) {
+      if (!param.startsWith('filter_') || schemaKeys.has(param)) continue;
+      const fieldValue = param.slice('filter_'.length);
+      if (!fieldValue) continue;
+      const parsed = QueryClause.fromJSON(customSchema, rawValue);
+      clauses.push(
+        new QueryClause(customSchema, { ...parsed.value, fieldValue }),
+      );
+      break;
+    }
+  }
+
+  return clauses;
 }
 
 function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
@@ -104,7 +130,7 @@ function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
     const filter = {
       field: column ?? clause.fieldValue,
       operation,
-      type: clause.type === 'CUSTOM_STRING' ? 'STRING' : clause.type,
+      type: clause.type === 'KEY_VALUE' ? 'STRING' : clause.type,
       value: clause.value.value,
     } as FilterItem;
     if (clause.schema.metadata?.isSystem) {
@@ -119,6 +145,7 @@ function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
 const STATE_PAGE_SIZE = 30;
 const MAX_VISIBLE_STATE_SERVICE_TABS = 5;
 const CUSTOM_KEY_ID = `__rs-state-key__`;
+const SERVICE_KEY_CLAUSE_ID = '__sys_service_key';
 
 const stateRouteStyles = tv({
   base: 'relative flex min-h-0 flex-1 flex-col',
@@ -152,15 +179,6 @@ function Component() {
     'FEATURE_STATE_STORAGE_BREAKDOWN',
   );
 
-  const [keysSet, setKeysSet] = useState(
-    () =>
-      new Set(
-        Array.from(new URLSearchParams(window.location.search).keys())
-          .filter((key) => key.startsWith('filter_'))
-          .map((key) => key.replace(/^filter_/, '')),
-      ),
-  );
-
   const { isSuccess: versionReady } = useVersion();
   const hasVqueues = useFeatures().has('vqueues');
   const hasScopeInUrl = searchParams.has('sysFilter_scope');
@@ -175,11 +193,11 @@ function Component() {
     ];
     const clauses: QueryClauseSchema<QueryClauseType>[] = [];
     clauses.push({
-      id: '__sys_service_key',
-      label: `${serviceName} (Key)`,
+      id: SERVICE_KEY_CLAUSE_ID,
+      label: getObjectKeyColumnName(serviceType),
       operations: stringOps,
       type: 'STRING',
-      metadata: { isSystem: true, column: 'service_key' },
+      metadata: { isSystem: true, column: 'service_key', persistent: true },
     });
     if (exposesScope || hasScopeInUrl) {
       clauses.push({
@@ -187,24 +205,18 @@ function Component() {
         label: 'Scope',
         operations: stringOps,
         type: 'STRING',
-        metadata: { isSystem: true, column: 'scope' },
+        metadata: { isSystem: true, column: 'scope', persistent: exposesScope },
       });
     }
-    Array.from(keysSet.values()).forEach((key) => {
-      clauses.push({
-        id: key,
-        label: key,
-        operations: stringOps,
-        type: 'STRING',
-      });
-    });
+
     clauses.push({
       id: CUSTOM_KEY_ID,
+      label: 'State key',
       operations: stringOps,
-      type: 'CUSTOM_STRING',
-    } as QueryClauseSchema<QueryClauseType>);
+      type: 'KEY_VALUE',
+    });
     return clauses;
-  }, [keysSet, serviceName, exposesScope, hasScopeInUrl]);
+  }, [exposesScope, hasScopeInUrl, serviceType]);
 
   const queryFilters = useMemo(
     () => clausesToFilterArgs(getQuery(searchParams, schema)),
@@ -267,26 +279,6 @@ function Component() {
     );
   }, [listObjects.data, listObjects.error]);
 
-  useEffect(() => {
-    if (!isFetching && listObjects.data !== undefined) {
-      const keys = listObjects.data.objects
-        .map((obj) => obj.state.map(({ name }) => name))
-        .flat();
-      setKeysSet((s) => {
-        const next = new Set(
-          [
-            ...Array.from(s.values()).filter((v) => keys.includes(v)),
-            ...keys,
-          ].sort(),
-        );
-        if (next.size === s.size && [...next].every((v) => s.has(v))) {
-          return s;
-        }
-        return next;
-      });
-    }
-  }, [listObjects.data, isFetching]);
-
   const [, startTransition] = useTransition();
 
   const setPageIndex = useCallback(
@@ -301,7 +293,10 @@ function Component() {
 
   const queryCLient = useQueryClient();
 
-  const query = useQueryBuilder(getQuery(searchParams, schema), !versionReady);
+  const query = useQueryBuilder(
+    getQuery(searchParams, schema),
+    !versionReady || isValidating,
+  );
   const queryRef = useRef(query);
   useEffect(() => {
     queryRef.current = query;
@@ -564,6 +559,12 @@ function Component() {
             query={query}
             schema={schema}
             multiple
+            canRemoveItem={(key) =>
+              !schema.some(
+                (schemaClause) =>
+                  schemaClause.id === key && schemaClause.metadata?.persistent,
+              )
+            }
             key={
               schema
                 .map((s) => s.id)
@@ -578,7 +579,19 @@ function Component() {
               title="Filters"
               className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
             >
-              {ClauseChip}
+              {(props) =>
+                props.item.schema.metadata?.persistent ? (
+                  <ClauseChip
+                    {...props}
+                    onRemove={() =>
+                      props.onUpdate?.(new QueryClause(props.item.schema))
+                    }
+                    emptyValueLabel="any"
+                  />
+                ) : (
+                  <ClauseChip {...props} />
+                )
+              }
             </AddQueryTrigger>
           </QueryBuilder>
           <SubmitButton
