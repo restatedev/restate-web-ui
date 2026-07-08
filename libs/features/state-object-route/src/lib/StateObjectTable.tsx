@@ -4,7 +4,6 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
-import { Copy } from '@restate/ui/copy';
 import { ErrorBanner } from '@restate/ui/error';
 import { DropdownItem, DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -82,9 +81,6 @@ const stateObjectStyles = tv({
     objectIcon:
       'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-zinc-500 shadow-xs',
     stateKeyCell: 'bg-gray-50/35',
-    keyContent: 'flex max-w-full min-w-0 items-center gap-0.5',
-    keyCopy:
-      'invisible ml-0 shrink-0 rounded-md p-1 text-gray-400 group-hover/row:visible hover:bg-gray-100 hover:text-gray-600 focus:visible [&_svg]:h-3 [&_svg]:w-3',
     valueButton:
       'group/value flex w-full min-w-0 items-center justify-start rounded-lg border-0 bg-transparent! px-1.5 py-0.5 text-left font-mono text-xs text-zinc-500 shadow-none! hover:bg-transparent! pressed:bg-transparent!',
     valueButtonContent:
@@ -316,8 +312,6 @@ function StateObjectCell({
     objectKey,
     chevron,
     objectIcon,
-    keyContent,
-    keyCopy,
     actionsCell,
     actions,
     objectActionButton,
@@ -333,14 +327,11 @@ function StateObjectCell({
           <span className={objectIcon()}>
             <Icon name={IconName.Database} className="h-full w-full p-1" />
           </span>
-          <div className={keyContent()}>
-            <KeyCell
-              serviceKey={row.key}
-              onOpen={() => onOpenObject(row.key, row.scope)}
-              className="text-0.5xs font-medium"
-            />
-            <Copy copyText={row.key} className={keyCopy()} />
-          </div>
+          <KeyCell
+            serviceKey={row.key}
+            onOpen={() => onOpenObject(row.key, row.scope)}
+            className="text-0.5xs font-medium"
+          />
         </div>
       </Cell>
     );
@@ -645,8 +636,6 @@ function StateChildCell({
   const {
     childObjectCell,
     stateKeyCell,
-    keyContent,
-    keyCopy,
     loadMoreCell,
     childStatus,
     actionsCell,
@@ -725,10 +714,7 @@ function StateChildCell({
   if (col.id === 'state_key') {
     return (
       <Cell className={stateKeyCell()}>
-        <div className={keyContent()}>
-          <KeyCell serviceKey={child.name} className="text-xs font-medium" />
-          <Copy copyText={child.name} className={keyCopy()} />
-        </div>
+        <KeyCell serviceKey={child.name} className="text-xs font-medium" />
       </Cell>
     );
   }
@@ -919,7 +905,6 @@ function StateValuePreview({
 const stylesKey = tv({
   base: 'relative -ml-1 max-w-full min-w-0 font-mono text-zinc-600',
   slots: {
-    text: 'block max-w-full min-w-0 truncate',
     container: 'block max-w-full min-w-0 pl-1 align-middle',
     button:
       'relative -ml-1 block max-w-full min-w-0 rounded-md border-0 bg-transparent p-0 text-left font-mono text-zinc-600 shadow-none hover:bg-gray-100 pressed:bg-gray-200',
@@ -935,11 +920,11 @@ function KeyCell({
   className?: string;
   onOpen?: VoidFunction;
 }) {
-  const { base, text, container, button } = stylesKey();
+  const { base, container, button } = stylesKey();
   const content = (
     <div className={container({})}>
       <TruncateWithTooltip copyText={serviceKey}>
-        <span className={text()}>{serviceKey}</span>
+        {serviceKey}
       </TruncateWithTooltip>
     </div>
   );
