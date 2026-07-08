@@ -14,7 +14,7 @@ export type ListStateArgs = { keys: string[] } | { items: ListStateItem[] };
 // Entries with larger values are absent from the preview on purpose — they only
 // show up when a row is expanded (listStateEntries).
 const PREVIEW_VALUE_SIZE_LIMIT = 2 * 1024;
-const PREVIEW_ROW_LIMIT = 5000;
+const PREVIEW_ROW_LIMIT = 1500;
 
 type StateEntry = { name: string; value?: string; size: number };
 

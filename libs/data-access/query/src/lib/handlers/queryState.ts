@@ -6,6 +6,8 @@ import {
   type StateServiceType,
 } from './shared';
 
+const STATE_OBJECTS_LIMIT = 300;
+
 export async function queryState(
   this: QueryContext,
   service: string,
@@ -48,12 +50,17 @@ export async function queryState(
   // Lists the state objects (DISTINCT service_key[, scope]) only — state
   // entries and values are fetched separately with their own bounds, per page
   // by listState and per object by listStateEntries, so this response stays
-  // small no matter how many entries each object holds.
+  // small no matter how many entries each object holds. Fetches one extra row
+  // to report truncation ("300+") without a count query; with no ORDER BY the
+  // limit stops the scan early, so which objects survive truncation is
+  // arbitrary — filtering is the way to reach the rest.
   const query = `SELECT DISTINCT ${projection}
     FROM state ${convertFilters(filtersWithService)}
-    LIMIT 4500`;
+    LIMIT ${STATE_OBJECTS_LIMIT + 1}`;
 
-  const { rows } = await this.query(query);
+  const { rows: allRows } = await this.query(query);
+  const truncated = allRows.length > STATE_OBJECTS_LIMIT;
+  const rows = allRows.slice(0, STATE_OBJECTS_LIMIT);
 
   const body = hasVqueues
     ? {
@@ -61,8 +68,12 @@ export async function queryState(
           key: row.service_key,
           ...(row.scope != null ? { scope: row.scope } : {}),
         })),
+        ...(truncated ? { truncated } : {}),
       }
-    : { keys: rows.map((row) => row.service_key) };
+    : {
+        keys: rows.map((row) => row.service_key),
+        ...(truncated ? { truncated } : {}),
+      };
 
   return new Response(JSON.stringify(body), {
     status: 200,

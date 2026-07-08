@@ -7877,12 +7877,16 @@ export interface operations {
           'application/json':
             | {
                 keys: string[];
+                /** @description true when more objects match than the server-side limit returned */
+                truncated?: boolean;
               }
             | {
                 items: {
                   key: string;
                   scope?: string;
                 }[];
+                /** @description true when more objects match than the server-side limit returned */
+                truncated?: boolean;
               };
         };
       };

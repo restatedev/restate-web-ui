@@ -4895,6 +4895,10 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "truncated": {
+                          "type": "boolean",
+                          "description": "true when more objects match than the server-side limit returned"
                         }
                       }
                     },
@@ -4916,6 +4920,10 @@
                               }
                             }
                           }
+                        },
+                        "truncated": {
+                          "type": "boolean",
+                          "description": "true when more objects match than the server-side limit returned"
                         }
                       }
                     }
