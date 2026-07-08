@@ -2387,7 +2387,9 @@ export function useListVirtualObjectStateEntries(
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage?.hasMore ? (lastPage.entries.at(-1)?.name ?? undefined) : undefined,
+      lastPage?.hasMore
+        ? (lastPage.entries.at(-1)?.name ?? undefined)
+        : undefined,
     staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
