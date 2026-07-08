@@ -57,7 +57,7 @@ export function useQueryBuilder(
   });
 
   const initialClausesSignature = initialClauses
-    .map((c) => `${c.id}:${String(c)}`)
+    .map((c) => `${c.id}:${c.schema.label}:${String(c)}`)
     .join('|');
 
   useEffect(() => {

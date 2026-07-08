@@ -165,15 +165,11 @@ function Component() {
     virtualObject: string;
   }>();
   invariant(serviceName, 'Missing virtualObject param');
-  const {
-    isValid,
-    isServiceMetadataPending,
-    redirectTo,
-    services,
-    serviceType,
-    stateOnlyServices,
-  } = useValidateVirtualObject(serviceName);
+  const { isValid, redirectTo, services, serviceType, stateOnlyServices } =
+    useValidateVirtualObject(serviceName);
   const isWorkflow = serviceType === 'workflow';
+  const queryServiceType =
+    serviceType === 'virtual_object' ? serviceType : undefined;
   const { baseUrl } = useRestateContext();
   const showStateStorage = useIsFeatureFlagEnabled(
     'FEATURE_STATE_STORAGE_BREAKDOWN',
@@ -228,12 +224,12 @@ function Component() {
     error,
     data: serviceKeysData,
     isFetching,
-  } = useQueryVirtualObjectState(serviceName, queryFilters, serviceType, {
+  } = useQueryVirtualObjectState(serviceName, queryFilters, queryServiceType, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     staleTime: 0,
-    enabled: isValid && !isServiceMetadataPending,
+    enabled: isValid,
   });
 
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
@@ -256,17 +252,12 @@ function Component() {
         : { keys: currentPageItems.map((item) => item.key) },
     [currentPageItems, hasVqueues],
   );
-  const listObjects = useListVirtualObjectState(
-    serviceName,
-    listStateArgs,
-    serviceType,
-    {
-      refetchOnMount: true,
-      refetchOnReconnect: false,
-      staleTime: 0,
-      refetchOnWindowFocus: false,
-    },
-  );
+  const listObjects = useListVirtualObjectState(serviceName, listStateArgs, {
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
 
   const stateObjects = useMemo<StateObjectRecord[]>(() => {
     if (error || listObjects.error) return [];
@@ -302,10 +293,7 @@ function Component() {
 
   const queryCLient = useQueryClient();
 
-  const query = useQueryBuilder(
-    getQuery(searchParams, schema),
-    !versionReady || isServiceMetadataPending,
-  );
+  const query = useQueryBuilder(getQuery(searchParams, schema), !versionReady);
   const queryRef = useRef(query);
   useEffect(() => {
     queryRef.current = query;
@@ -336,9 +324,7 @@ function Component() {
   const resolvedServiceCodecOptions =
     useResolvedCodecOptions(serviceCodecOptions);
   const isStateLoading =
-    isFetching ||
-    isServiceMetadataPending ||
-    (listObjects.isFetching && currentPageItems.length !== 0);
+    isFetching || (listObjects.isFetching && currentPageItems.length !== 0);
   const openStatePanel = useCallback(
     (rowKey: string, rowScope?: string) => {
       setSearchParams(

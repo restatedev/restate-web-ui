@@ -7589,10 +7589,7 @@ export interface operations {
   };
   list_virtual_object_state: {
     parameters: {
-      query?: {
-        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
-        serviceType?: 'service' | 'virtual_object' | 'workflow';
-      };
+      query?: never;
       header?: never;
       path: {
         /** @description service name */
