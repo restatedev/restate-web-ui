@@ -228,13 +228,12 @@ function Component() {
     error,
     data: serviceKeysData,
     isFetching,
-    queryKey,
   } = useQueryVirtualObjectState(serviceName, queryFilters, serviceType, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     staleTime: 0,
-    enabled: isValid,
+    enabled: isValid && !isValidating,
   });
 
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
@@ -542,7 +541,6 @@ function Component() {
             sortedOldSearchParams.sort();
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
-            await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
               predicate: (query) => {
                 const [resolvedUrl] = query.queryKey;
