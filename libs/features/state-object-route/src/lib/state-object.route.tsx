@@ -167,7 +167,7 @@ function Component() {
   invariant(serviceName, 'Missing virtualObject param');
   const {
     isValid,
-    isValidating,
+    isServiceMetadataPending,
     redirectTo,
     services,
     serviceType,
@@ -233,7 +233,7 @@ function Component() {
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     staleTime: 0,
-    enabled: isValid && !isValidating,
+    enabled: isValid && !isServiceMetadataPending,
   });
 
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
@@ -269,14 +269,24 @@ function Component() {
   );
 
   const stateObjects = useMemo<StateObjectRecord[]>(() => {
-    if (listObjects.error) return [];
-    return (
-      listObjects.data?.objects.map((obj) => ({
-        ...obj,
-        id: `${obj.key ?? ''}\x00${obj.scope ?? ''}`,
-      })) ?? []
+    if (error || listObjects.error) return [];
+    const previews = new Map(
+      (listObjects.data?.objects ?? []).map((obj) => [
+        `${obj.key ?? ''}\x00${obj.scope ?? ''}`,
+        obj,
+      ]),
     );
-  }, [listObjects.data, listObjects.error]);
+    return currentPageItems.map((item) => {
+      const id = `${item.key}\x00${item.scope ?? ''}`;
+      return {
+        id,
+        key: item.key,
+        ...(item.scope !== undefined ? { scope: item.scope } : {}),
+        state: previews.get(id)?.state ?? [],
+      };
+    });
+  }, [currentPageItems, listObjects.data, listObjects.error, error]);
+  const isLoadingPreviews = listObjects.isFetching && !listObjects.data;
 
   const [, startTransition] = useTransition();
 
@@ -294,7 +304,7 @@ function Component() {
 
   const query = useQueryBuilder(
     getQuery(searchParams, schema),
-    !versionReady || isValidating,
+    !versionReady || isServiceMetadataPending,
   );
   const queryRef = useRef(query);
   useEffect(() => {
@@ -327,7 +337,7 @@ function Component() {
     useResolvedCodecOptions(serviceCodecOptions);
   const isStateLoading =
     isFetching ||
-    isValidating ||
+    isServiceMetadataPending ||
     (listObjects.isFetching && currentPageItems.length !== 0);
   const openStatePanel = useCallback(
     (rowKey: string, rowScope?: string) => {
@@ -416,6 +426,7 @@ function Component() {
                   serviceName={serviceName}
                   serviceType={serviceType}
                   isLoading={isStateLoading && stateObjects.length === 0}
+                  isLoadingPreviews={isLoadingPreviews}
                   numOfRows={currentPageItems.length || 5}
                   onOpenObject={openStatePanel}
                   onEditObject={(row) =>

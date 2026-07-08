@@ -97,6 +97,8 @@ const stateObjectStyles = tv({
     collapsedPreviewValue:
       'inline-block max-w-[28ch] truncate align-bottom text-zinc-500',
     collapsedPreviewPunctuation: 'shrink-0 text-zinc-400',
+    previewSkeleton:
+      'block h-4 w-44 max-w-full animate-pulse rounded-md bg-gray-200/80',
     refreshingStatus:
       'flex min-w-0 items-center gap-1.5 text-xs text-zinc-400 italic',
     childStatus: 'flex min-w-0 items-center gap-1.5 text-xs text-gray-500',
@@ -148,6 +150,7 @@ export function StateObjectTable({
   serviceName,
   serviceType,
   isLoading,
+  isLoadingPreviews,
   numOfRows,
   onOpenObject,
   onEditObject,
@@ -159,6 +162,7 @@ export function StateObjectTable({
   serviceName: string;
   serviceType?: StateServiceType;
   isLoading?: boolean;
+  isLoadingPreviews?: boolean;
   numOfRows: number;
   onOpenObject: (key: string, scope?: string) => void;
   onEditObject: (row: StateObjectRecord) => void;
@@ -261,8 +265,9 @@ export function StateObjectTable({
         visibleExpandedKeys,
         serviceName,
         serviceType,
+        isLoadingPreviews,
       ]}
-      rowDependencies={[codecOptions, visibleExpandedKeys]}
+      rowDependencies={[codecOptions, visibleExpandedKeys, isLoadingPreviews]}
       renderCell={(row, col) => (
         <StateObjectCell
           row={row}
@@ -270,6 +275,7 @@ export function StateObjectTable({
           codecOptions={codecOptions}
           serviceName={serviceName}
           isExpanded={visibleExpandedKeys.has(row.id)}
+          isLoadingPreview={isLoadingPreviews}
           onOpenObject={onOpenObject}
           onEditObject={onEditObject}
           onDeleteObject={onDeleteObject}
@@ -296,6 +302,7 @@ function StateObjectCell({
   codecOptions,
   serviceName,
   isExpanded,
+  isLoadingPreview,
   onOpenObject,
   onEditObject,
   onDeleteObject,
@@ -305,6 +312,7 @@ function StateObjectCell({
   codecOptions?: RestateCodecOptions;
   serviceName: string;
   isExpanded: boolean;
+  isLoadingPreview?: boolean;
   onOpenObject: (key: string, scope?: string) => void;
   onEditObject: (row: StateObjectRecord) => void;
   onDeleteObject: (row: StateObjectRecord) => void;
@@ -364,6 +372,7 @@ function StateObjectCell({
           row={row}
           codecOptions={codecOptions}
           serviceName={serviceName}
+          isLoadingPreview={isLoadingPreview}
         />
       </Cell>
     );
@@ -439,10 +448,12 @@ function StateObjectCollapsedPreview({
   row,
   codecOptions,
   serviceName,
+  isLoadingPreview,
 }: {
   row: StateObjectRecord;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
+  isLoadingPreview?: boolean;
 }) {
   const {
     collapsedPreview,
@@ -450,6 +461,7 @@ function StateObjectCollapsedPreview({
     collapsedPreviewKey,
     collapsedPreviewValue,
     collapsedPreviewPunctuation,
+    previewSkeleton,
   } = stateObjectStyles();
   const { entriesQuery, loadedEntries } = useStateObjectEntries(
     serviceName,
@@ -457,6 +469,10 @@ function StateObjectCollapsedPreview({
     false,
   );
   const entries = loadedEntries ?? row.state;
+
+  if (isLoadingPreview && !loadedEntries && row.state.length === 0) {
+    return <span className={previewSkeleton()} />;
+  }
   const previewState = entries.slice(0, COLLAPSED_STATE_PREVIEW_KEYS);
   const isComplete = Boolean(loadedEntries) && !entriesQuery.hasNextPage;
   const showEllipsis = !isComplete || entries.length > previewState.length;
