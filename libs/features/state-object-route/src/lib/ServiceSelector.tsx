@@ -178,6 +178,7 @@ export function useStateServiceCatalog() {
       isPending:
         isStateServicesPending || isDeploymentsPending || isServicesPending,
       isUsingPlaceholderServices: isPlaceholderData,
+      isServiceMetadataPending: isDeploymentsPending || isServicesPending,
       services,
       serviceTypes,
       virtualObjects: virtualObjects.map((service) => service.name),
@@ -213,6 +214,7 @@ export function useValidateVirtualObject(serviceParamOverride?: string) {
   const {
     isPending,
     isUsingPlaceholderServices,
+    isServiceMetadataPending,
     services,
     serviceTypes,
     virtualObjects,
@@ -225,6 +227,7 @@ export function useValidateVirtualObject(serviceParamOverride?: string) {
 
   return {
     isValidating: isPending || isUsingPlaceholderServices,
+    isServiceMetadataPending,
     isValid: !canRedirect || isValid,
     redirectTo:
       canRedirect && services.length > 0 && !isValid && defaultService
