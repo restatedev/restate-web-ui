@@ -45,6 +45,10 @@ export async function queryState(
   const hasVqueues = this.features.has('vqueues');
   const projection = hasVqueues ? 'service_key, scope' : 'service_key';
 
+  // Lists the state objects (DISTINCT service_key[, scope]) only — state
+  // entries and values are fetched separately with their own bounds, per page
+  // by listState and per object by listStateEntries, so this response stays
+  // small no matter how many entries each object holds.
   const query = `SELECT DISTINCT ${projection}
     FROM state ${convertFilters(filtersWithService)}
     LIMIT 4500`;

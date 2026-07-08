@@ -2,6 +2,7 @@ import { formatDateRange, formatDateTime } from '@restate/util/intl';
 
 export type QueryClauseType =
   | 'CUSTOM_STRING'
+  | 'KEY_VALUE'
   | 'STRING'
   | 'STRING_LIST'
   | 'NUMBER'
@@ -46,13 +47,15 @@ export type QueryClauseValue<T extends QueryClauseType> = T extends 'STRING'
   ? string
   : T extends 'CUSTOM_STRING'
     ? string
-    : T extends 'NUMBER'
-      ? number
-      : T extends 'STRING_LIST'
-        ? string[]
-        : T extends 'DATE'
-          ? Date | QueryClauseDateRangeValue
-          : never;
+    : T extends 'KEY_VALUE'
+      ? string
+      : T extends 'NUMBER'
+        ? number
+        : T extends 'STRING_LIST'
+          ? string[]
+          : T extends 'DATE'
+            ? Date | QueryClauseDateRangeValue
+            : never;
 
 export function queryClauseOperationRequiresValue(
   operation?: QueryClauseOperationId,
@@ -73,12 +76,18 @@ export class QueryClause<T extends QueryClauseType> {
     if (this.type === 'CUSTOM_STRING') {
       return this.fieldValue;
     }
+    if (this.type === 'KEY_VALUE') {
+      return this.value.fieldValue || this.schema.label;
+    }
     return this.schema.label;
   }
 
   get textValue() {
     if (this.type === 'CUSTOM_STRING') {
       return this.fieldValue;
+    }
+    if (this.type === 'KEY_VALUE') {
+      return this.value.fieldValue || this.schema.label;
     }
     return this.schema.label;
   }
@@ -136,6 +145,9 @@ export class QueryClause<T extends QueryClauseType> {
   }
 
   get isValid() {
+    if (this.type === 'KEY_VALUE' && !this.value.fieldValue) {
+      return false;
+    }
     if (isDateRangeValue(this.value.value)) {
       const start = this.value.value.start;
       const end = this.value.value.end;
@@ -286,6 +298,9 @@ function getValue(
   value?: number | string | string[] | SerializedDateRangeValue,
 ) {
   if (type === 'CUSTOM_STRING' && typeof value === 'string') {
+    return value;
+  }
+  if (type === 'KEY_VALUE' && typeof value === 'string') {
     return value;
   }
   if (type === 'STRING' && typeof value === 'string') {

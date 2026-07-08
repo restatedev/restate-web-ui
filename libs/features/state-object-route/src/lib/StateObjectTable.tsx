@@ -1,10 +1,14 @@
-import { useGetVirtualObjectState } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetVirtualObjectState,
+  useListVirtualObjectStateEntries,
+} from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
 import { ErrorBanner } from '@restate/ui/error';
 import { DropdownItem, DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatBytes, formatNumber, formatPlurals } from '@restate/util/intl';
+import { Spinner } from '@restate/ui/loading';
+import { formatBytes } from '@restate/util/intl';
 import {
   Popover,
   PopoverContent,
@@ -32,9 +36,8 @@ import {
 } from 'react';
 import type { StateObjectRecord, StateTableColumnId } from './types';
 
-const VISIBLE_STATE_KEYS = 5;
-const STATE_KEY_LOAD_BATCH = 100;
 const COLLAPSED_STATE_PREVIEW_KEYS = 5;
+const STATE_ENTRIES_PAGE_SIZE = 100;
 
 type StateServiceType = 'virtual_object' | 'workflow' | 'service';
 
@@ -49,8 +52,11 @@ type StateChildRow =
   | {
       id: string;
       kind: 'load_more';
-      hiddenCount: number;
-      loadCount: number;
+    }
+  | {
+      id: string;
+      kind: 'status';
+      status: 'loading' | 'empty' | 'error';
     };
 
 function EditStateTrigger(props: ComponentProps<typeof Button>) {
@@ -75,8 +81,6 @@ const stateObjectStyles = tv({
     objectIcon:
       'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-zinc-500 shadow-xs',
     stateKeyCell: 'bg-gray-50/35',
-    stateKeyCount:
-      '-ml-1.5 inline-block max-w-full truncate rounded-md border border-gray-200 bg-gray-50 px-1.5 py-0.5 align-middle font-medium text-gray-500',
     valueButton:
       'group/value flex w-full min-w-0 items-center justify-start rounded-lg border-0 bg-transparent! px-1.5 py-0.5 text-left font-mono text-xs text-zinc-500 shadow-none! hover:bg-transparent! pressed:bg-transparent!',
     valueButtonContent:
@@ -93,6 +97,9 @@ const stateObjectStyles = tv({
     collapsedPreviewValue:
       'inline-block max-w-[28ch] truncate align-bottom text-zinc-500',
     collapsedPreviewPunctuation: 'shrink-0 text-zinc-400',
+    refreshingStatus:
+      'flex min-w-0 items-center gap-1.5 text-xs text-zinc-400 italic',
+    childStatus: 'flex min-w-0 items-center gap-1.5 text-xs text-gray-500',
     actionsCell: '[&&&]:overflow-visible',
     actions: 'flex min-w-0 items-center justify-end gap-1.5',
     objectActionButton:
@@ -104,7 +111,9 @@ const stateObjectStyles = tv({
   },
 });
 
-function getObjectKeyColumnName(serviceType: StateServiceType | undefined) {
+export function getObjectKeyColumnName(
+  serviceType: StateServiceType | undefined,
+) {
   if (serviceType === 'workflow') {
     return 'Workflow id';
   }
@@ -112,6 +121,25 @@ function getObjectKeyColumnName(serviceType: StateServiceType | undefined) {
     return 'Virtual object key';
   }
   return 'Service key';
+}
+
+function useStateObjectEntries(
+  serviceName: string,
+  row: StateObjectRecord,
+  enabled: boolean,
+) {
+  const entriesQuery = useListVirtualObjectStateEntries(
+    serviceName,
+    row.key,
+    row.scope,
+    { enabled, pageSize: STATE_ENTRIES_PAGE_SIZE },
+  );
+  const loadedEntries = useMemo(
+    () => entriesQuery.data?.pages.flatMap((page) => page?.entries ?? []),
+    [entriesQuery.data],
+  );
+
+  return { entriesQuery, loadedEntries };
 }
 
 export function StateObjectTable({
@@ -183,9 +211,6 @@ export function StateObjectTable({
     [hasScopeColumn, serviceType],
   );
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(() => new Set());
-  const [visibleStateKeyCounts, setVisibleStateKeyCounts] = useState<
-    Map<string, number>
-  >(() => new Map());
   const itemIds = useMemo(
     () => new Set<Key>(items.map((item) => item.id)),
     [items],
@@ -227,27 +252,23 @@ export function StateObjectTable({
       }}
       onRowAction={(rowId) => {
         const row = objectRows.get(String(rowId));
-        if (row && row.state.length > 0) {
+        if (row) {
           toggleExpanded(row.id);
         }
       }}
       bodyDependencies={[
         codecOptions,
         visibleExpandedKeys,
-        visibleStateKeyCounts,
         serviceName,
         serviceType,
       ]}
-      rowDependencies={[
-        codecOptions,
-        visibleExpandedKeys,
-        visibleStateKeyCounts,
-      ]}
+      rowDependencies={[codecOptions, visibleExpandedKeys]}
       renderCell={(row, col) => (
         <StateObjectCell
           row={row}
           col={col}
           codecOptions={codecOptions}
+          serviceName={serviceName}
           isExpanded={visibleExpandedKeys.has(row.id)}
           onOpenObject={onOpenObject}
           onEditObject={onEditObject}
@@ -261,20 +282,7 @@ export function StateObjectTable({
           codecOptions={codecOptions}
           serviceName={serviceName}
           serviceType={serviceType}
-          visibleStateKeyCount={
-            visibleStateKeyCounts.get(row.id) ?? VISIBLE_STATE_KEYS
-          }
-          onVisibleStateKeyCountChange={(count) =>
-            setVisibleStateKeyCounts((prev) => {
-              const next = new Map(prev);
-              if (count <= VISIBLE_STATE_KEYS) {
-                next.delete(row.id);
-              } else {
-                next.set(row.id, count);
-              }
-              return next;
-            })
-          }
+          isExpanded={visibleExpandedKeys.has(row.id)}
           onEditValue={(stateKey) => onEditValue(row, stateKey)}
         />
       )}
@@ -286,6 +294,7 @@ function StateObjectCell({
   row,
   col,
   codecOptions,
+  serviceName,
   isExpanded,
   onOpenObject,
   onEditObject,
@@ -294,6 +303,7 @@ function StateObjectCell({
   row: StateObjectRecord;
   col: PanelTableColumn<StateTableColumnId>;
   codecOptions?: RestateCodecOptions;
+  serviceName: string;
   isExpanded: boolean;
   onOpenObject: (key: string, scope?: string) => void;
   onEditObject: (row: StateObjectRecord) => void;
@@ -307,21 +317,15 @@ function StateObjectCell({
     actionsCell,
     actions,
     objectActionButton,
-    sizeText,
-    stateKeyCount,
   } = stateObjectStyles();
 
   if (col.id === 'object_key') {
     return (
       <Cell className={objectKeyCell()}>
         <div className={objectKey()}>
-          {row.state.length > 0 ? (
-            <Button slot="chevron" variant="icon" className={chevron()}>
-              <Icon name={IconName.ChevronRight} className="h-full w-full" />
-            </Button>
-          ) : (
-            <span className="h-5 w-5 shrink-0" />
-          )}
+          <Button slot="chevron" variant="icon" className={chevron()}>
+            <Icon name={IconName.ChevronRight} className="h-full w-full" />
+          </Button>
           <span className={objectIcon()}>
             <Icon name={IconName.Database} className="h-full w-full p-1" />
           </span>
@@ -345,37 +349,22 @@ function StateObjectCell({
     );
   }
 
-  if (col.id === 'state_key') {
-    return (
-      <Cell>
-        <span className={stateKeyCount()}>
-          {row.state.length}{' '}
-          {formatPlurals(row.state.length, { one: 'key', other: 'keys' })}
-        </span>
-      </Cell>
-    );
-  }
-
-  if (col.id === 'size') {
-    return (
-      <Cell>
-        <span className={sizeText()}>
-          {formatBytes(
-            row.state.reduce((total, state) => total + state.size, 0),
-          )}
-        </span>
-      </Cell>
-    );
-  }
-
   if (col.id === 'value') {
     if (isExpanded) {
-      return <Cell />;
+      return (
+        <Cell>
+          <StateObjectRefreshingStatus row={row} serviceName={serviceName} />
+        </Cell>
+      );
     }
 
     return (
       <Cell>
-        <StateObjectCollapsedPreview row={row} codecOptions={codecOptions} />
+        <StateObjectCollapsedPreview
+          row={row}
+          codecOptions={codecOptions}
+          serviceName={serviceName}
+        />
       </Cell>
     );
   }
@@ -420,12 +409,40 @@ function StateObjectCell({
   return <Cell />;
 }
 
+function StateObjectRefreshingStatus({
+  row,
+  serviceName,
+}: {
+  row: StateObjectRecord;
+  serviceName: string;
+}) {
+  const { refreshingStatus } = stateObjectStyles();
+  const { entriesQuery } = useStateObjectEntries(serviceName, row, false);
+  const isRefreshing =
+    entriesQuery.isFetching &&
+    !entriesQuery.isFetchingNextPage &&
+    Boolean(entriesQuery.data);
+
+  if (!isRefreshing) {
+    return null;
+  }
+
+  return (
+    <span className={refreshingStatus()}>
+      <Spinner className="h-3.5 w-3.5 shrink-0" />
+      Refreshing keys…
+    </span>
+  );
+}
+
 function StateObjectCollapsedPreview({
   row,
   codecOptions,
+  serviceName,
 }: {
   row: StateObjectRecord;
   codecOptions?: RestateCodecOptions;
+  serviceName: string;
 }) {
   const {
     collapsedPreview,
@@ -434,8 +451,15 @@ function StateObjectCollapsedPreview({
     collapsedPreviewValue,
     collapsedPreviewPunctuation,
   } = stateObjectStyles();
-  const previewState = row.state.slice(0, COLLAPSED_STATE_PREVIEW_KEYS);
-  const hiddenCount = row.state.length - previewState.length;
+  const { entriesQuery, loadedEntries } = useStateObjectEntries(
+    serviceName,
+    row,
+    false,
+  );
+  const entries = loadedEntries ?? row.state;
+  const previewState = entries.slice(0, COLLAPSED_STATE_PREVIEW_KEYS);
+  const isComplete = Boolean(loadedEntries) && !entriesQuery.hasNextPage;
+  const showEllipsis = !isComplete || entries.length > previewState.length;
 
   return (
     <span className={collapsedPreview()}>
@@ -477,7 +501,7 @@ function StateObjectCollapsedPreview({
           </span>
         </Fragment>
       ))}
-      {hiddenCount > 0 ? (
+      {showEllipsis ? (
         <>
           {previewState.length > 0 ? (
             <span className={collapsedPreviewPunctuation()}>,</span>
@@ -496,8 +520,7 @@ function StateObjectChildRows({
   codecOptions,
   serviceName,
   serviceType,
-  visibleStateKeyCount,
-  onVisibleStateKeyCountChange,
+  isExpanded,
   onEditValue,
 }: {
   row: StateObjectRecord;
@@ -505,35 +528,37 @@ function StateObjectChildRows({
   codecOptions?: RestateCodecOptions;
   serviceName: string;
   serviceType?: StateServiceType;
-  visibleStateKeyCount: number;
-  onVisibleStateKeyCountChange: (count: number) => void;
+  isExpanded: boolean;
   onEditValue: (stateKey: string) => void;
 }) {
-  const visibleState = row.state.slice(0, visibleStateKeyCount);
-  const hiddenKeyCount = row.state.length - visibleState.length;
-  const nextVisibleStateKeyCount = Math.min(
-    row.state.length,
-    visibleState.length + STATE_KEY_LOAD_BATCH,
+  const { entriesQuery, loadedEntries } = useStateObjectEntries(
+    serviceName,
+    row,
+    isExpanded,
   );
-  const loadKeyCount = nextVisibleStateKeyCount - visibleState.length;
+  const entries = loadedEntries ?? row.state.slice(0, STATE_ENTRIES_PAGE_SIZE);
+  const hasError = Boolean(entriesQuery.error);
+  const status = hasError
+    ? 'error'
+    : !loadedEntries
+      ? 'loading'
+      : entries.length === 0
+        ? 'empty'
+        : undefined;
+  const trailingRow: StateChildRow | undefined = status
+    ? { id: `${row.id}\x00__${status}__`, kind: 'status', status }
+    : entriesQuery.hasNextPage
+      ? { id: `${row.id}\x00__load_more__`, kind: 'load_more' }
+      : undefined;
   const childRows: StateChildRow[] = [
-    ...visibleState.map(({ name, value, size }) => ({
+    ...entries.map(({ name, value, size }) => ({
       id: `${row.id}\x00${name}`,
       kind: 'state' as const,
       name,
-      value,
+      ...(value !== undefined ? { value } : {}),
       size,
     })),
-    ...(hiddenKeyCount > 0
-      ? ([
-          {
-            id: `${row.id}\x00__load_more__`,
-            kind: 'load_more' as const,
-            hiddenCount: hiddenKeyCount,
-            loadCount: loadKeyCount,
-          },
-        ] satisfies StateChildRow[])
-      : []),
+    ...(trailingRow ? [trailingRow] : []),
   ];
   const { childRow, childRowLast } = stateObjectStyles();
   const lastChildRowId = childRows.at(-1)?.id;
@@ -548,7 +573,11 @@ function StateObjectChildRows({
         codecOptions,
         serviceName,
         serviceType,
-        visibleStateKeyCount,
+        entriesQuery.dataUpdatedAt,
+        entriesQuery.error,
+        entriesQuery.hasNextPage,
+        entriesQuery.isFetchingNextPage,
+        Boolean(loadedEntries),
       ]}
     >
       {(child) => (
@@ -568,9 +597,10 @@ function StateObjectChildRows({
               codecOptions={codecOptions}
               serviceName={serviceName}
               serviceType={serviceType}
-              onShowMoreKeys={() =>
-                onVisibleStateKeyCountChange(nextVisibleStateKeyCount)
-              }
+              error={entriesQuery.error}
+              isFetchingNextPage={entriesQuery.isFetchingNextPage}
+              onLoadMore={() => entriesQuery.fetchNextPage()}
+              onRetry={() => entriesQuery.refetch()}
               onEditValue={onEditValue}
             />
           )}
@@ -587,7 +617,10 @@ function StateChildCell({
   codecOptions,
   serviceName,
   serviceType,
-  onShowMoreKeys,
+  error,
+  isFetchingNextPage,
+  onLoadMore,
+  onRetry,
   onEditValue,
 }: {
   row: StateObjectRecord;
@@ -596,18 +629,62 @@ function StateChildCell({
   codecOptions?: RestateCodecOptions;
   serviceName: string;
   serviceType?: StateServiceType;
-  onShowMoreKeys: VoidFunction;
+  error?: Error | null;
+  isFetchingNextPage: boolean;
+  onLoadMore: VoidFunction;
+  onRetry: VoidFunction;
   onEditValue: (stateKey: string) => void;
 }) {
   const {
     childObjectCell,
     stateKeyCell,
     loadMoreCell,
+    childStatus,
     actionsCell,
     actions,
     objectActionButton,
     sizeText,
   } = stateObjectStyles();
+
+  if (child.kind === 'status') {
+    if (col.id === 'object_key') {
+      return (
+        <Cell className={loadMoreCell()}>
+          {child.status === 'loading' ? (
+            <span className={childStatus({ className: 'pl-7' })}>
+              <Spinner className="h-3.5 w-3.5 shrink-0" />
+              Loading keys…
+            </span>
+          ) : child.status === 'empty' ? (
+            <span className={childStatus({ className: 'pl-7' })}>
+              No state keys
+            </span>
+          ) : (
+            <span className={childStatus({ className: 'pl-7' })}>
+              Couldn’t load keys
+              <Button
+                variant="secondary"
+                onClick={onRetry}
+                className="rounded-lg px-2 py-0.5 text-xs font-normal text-gray-600"
+              >
+                Retry
+              </Button>
+            </span>
+          )}
+        </Cell>
+      );
+    }
+    if (col.id === 'value' && child.status === 'error') {
+      return (
+        <Cell className={loadMoreCell()}>
+          <span className="block max-w-full truncate text-xs text-red-600">
+            {error?.message}
+          </span>
+        </Cell>
+      );
+    }
+    return <Cell className={loadMoreCell()} />;
+  }
 
   if (col.id === 'object_key' || col.id === 'scope') {
     return <Cell className={childObjectCell()} />;
@@ -619,19 +696,18 @@ function StateChildCell({
         <Cell className={loadMoreCell()}>
           <Button
             variant="secondary"
-            onClick={onShowMoreKeys}
-            className="w-fit max-w-full truncate rounded-lg px-2 py-1 text-xs font-normal text-gray-600"
+            onClick={onLoadMore}
+            disabled={isFetchingNextPage}
+            className="flex w-fit max-w-full items-center gap-1.5 truncate rounded-lg px-2 py-1 text-xs font-normal text-gray-600"
           >
-            Load {formatNumber(child.loadCount)} more{' '}
-            {child.loadCount === 1 ? 'key' : 'keys'}
-            {child.hiddenCount > child.loadCount ? (
+            {isFetchingNextPage ? (
               <>
-                {' '}
-                <span className="ml-1 text-gray-400">
-                  of {formatNumber(child.hiddenCount)}
-                </span>
+                <Spinner className="h-3.5 w-3.5 shrink-0" />
+                Loading more keys…
               </>
-            ) : null}
+            ) : (
+              'Load more keys'
+            )}
           </Button>
         </Cell>
       );
@@ -833,7 +909,6 @@ function StateValuePreview({
 const stylesKey = tv({
   base: 'relative -ml-1 max-w-full min-w-0 font-mono text-zinc-600',
   slots: {
-    text: 'block max-w-full min-w-0 truncate',
     container: 'block max-w-full min-w-0 pl-1 align-middle',
     button:
       'relative -ml-1 block max-w-full min-w-0 rounded-md border-0 bg-transparent p-0 text-left font-mono text-zinc-600 shadow-none hover:bg-gray-100 pressed:bg-gray-200',
@@ -849,11 +924,11 @@ function KeyCell({
   className?: string;
   onOpen?: VoidFunction;
 }) {
-  const { base, text, container, button } = stylesKey();
+  const { base, container, button } = stylesKey();
   const content = (
     <div className={container({})}>
       <TruncateWithTooltip copyText={serviceKey}>
-        <span className={text()}>{serviceKey}</span>
+        {serviceKey}
       </TruncateWithTooltip>
     </div>
   );

@@ -1040,6 +1040,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/services/{name}/keys/{key}/state/entries': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List a page of state entries
+     * @description List one page of state entries for a single state object, ordered by key
+     */
+    post: operations['list_state_entries'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/services/{name}/state/query': {
     parameters: {
       query?: never;
@@ -7687,6 +7707,96 @@ export interface operations {
             'state'
           > & {
             version?: string;
+          };
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_state_entries: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description service name */
+        name: string;
+        /** @description key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @description scope of the state object; omit for scope-less objects */
+          scope?: string;
+          /** @description keyset cursor — return entries with key strictly greater than this */
+          after?: string;
+          /** @description page size */
+          limit?: number;
+        };
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            entries: {
+              name: string;
+              value?: string;
+              size: number;
+            }[];
+            hasMore: boolean;
           };
         };
       };

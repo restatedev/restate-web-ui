@@ -33,6 +33,14 @@ function isValidJSON(value: unknown) {
 
 export type EditStateValue = string | { base64: string } | undefined;
 
+function sizeOfBase64Value(value: string) {
+  try {
+    return base64ToUint8Array(value).length;
+  } catch {
+    return value.length;
+  }
+}
+
 function decodeBase64StateValue(key: string, base64: string) {
   try {
     return uint8ArrayToUtf8OrByteArray(base64ToUint8Array(base64));
@@ -199,19 +207,26 @@ export function useEditState(
     meta,
     onSuccess(data, variables, context, mutationMeta) {
       options?.onSuccess?.(data, variables, context, mutationMeta);
+      const listStatePath = `/query/services/${service}/state`;
       queryClient.setQueriesData(
         {
           predicate: (query) => {
+            const [resolvedUrl] = query.queryKey;
             return (
-              Array.isArray(query.queryKey) &&
-              query.queryKey.at(0) === `/query/services/${service}/state`
+              typeof resolvedUrl === 'string' &&
+              (resolvedUrl === listStatePath ||
+                resolvedUrl.startsWith(`${listStatePath}?`))
             );
           },
         },
         (
           oldData:
             | {
-                objects: { key: string; state: StateResponse['state'] }[];
+                objects: {
+                  key: string;
+                  scope?: string;
+                  state: { name: string; value?: string; size: number }[];
+                }[];
               }
             | undefined,
         ) => {
@@ -222,10 +237,14 @@ export function useEditState(
           return {
             ...oldData,
             objects: oldData.objects.map((oldObject) => {
-              if (oldObject.key === objectKey) {
+              if (oldObject.key === objectKey && oldObject.scope === scope) {
                 return {
                   ...oldObject,
-                  state: data,
+                  state: data.map(({ name, value }) => ({
+                    name,
+                    value,
+                    size: sizeOfBase64Value(value),
+                  })),
                 };
               }
 

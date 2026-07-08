@@ -2588,6 +2588,146 @@
         }
       }
     },
+    "/query/services/{name}/keys/{key}/state/entries": {
+      "post": {
+        "tags": ["list-state-entries"],
+        "summary": "List a page of state entries",
+        "description": "List one page of state entries for a single state object, ordered by key",
+        "operationId": "list_state_entries",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "service name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "description": "scope of the state object; omit for scope-less objects"
+                  },
+                  "after": {
+                    "type": "string",
+                    "description": "keyset cursor — return entries with key strictly greater than this"
+                  },
+                  "limit": {
+                    "type": "number",
+                    "description": "page size"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["entries", "hasMore"],
+                  "properties": {
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["name", "size"],
+                        "properties": {
+                          "name": { "type": "string" },
+                          "value": { "type": "string" },
+                          "size": { "type": "number" }
+                        }
+                      }
+                    },
+                    "hasMore": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/services/{name}/state/query": {
       "post": {
         "tags": ["query-state"],
