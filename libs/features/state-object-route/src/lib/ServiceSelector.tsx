@@ -126,6 +126,10 @@ export function useStateServiceCatalog() {
     isPlaceholderData,
   } = useListStateServices({
     placeholderData: deploymentServicesPlaceholder,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const { data: serviceData, isPending: isServicesPending } = useListServices();
 
