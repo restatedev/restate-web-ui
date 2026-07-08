@@ -7,6 +7,10 @@ export { getState } from './getState';
 export { getStateInterface } from './getStateInterface';
 export { queryState } from './queryState';
 export { listState, type ListStateArgs, type ListStateItem } from './listState';
+export {
+  listStateEntries,
+  type ListStateEntriesArgs,
+} from './listStateEntries';
 export { batchCancelInvocations } from './batchCancelInvocations';
 export { batchPurgeInvocations } from './batchPurgeInvocations';
 export { batchKillInvocations } from './batchKillInvocations';

@@ -19,6 +19,12 @@ export async function getState(
     stateKeys.length > 0
       ? ` AND key IN (${stateKeys.map(quoteSqlString).join(', ')})`
       : '';
+  // Full state fetch for a single object: the edit flow needs every entry
+  // because the optimistic-concurrency version is a hash over the whole state,
+  // and the value popover uses it with an explicit stateKeys=[name] to lazily
+  // load one large value. Unbounded by design — do not use this for listing;
+  // that's what listState (page previews) and listStateEntries (paged
+  // entries) are for.
   const state: { name: string; value: string }[] = await this.query(
     `SELECT key, value FROM state WHERE service_name = ${quoteSqlString(service)} AND service_key = ${quoteSqlString(key)}${scopeClause(this, scope, serviceType)}${stateKeyClause}`,
   ).then(({ rows }) =>

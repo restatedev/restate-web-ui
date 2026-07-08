@@ -1,10 +1,5 @@
 import { hexToBase64 } from '@restate/util/binary';
-import {
-  quoteSqlString,
-  scopeClause,
-  type QueryContext,
-  type StateServiceType,
-} from './shared';
+import { quoteSqlString, type QueryContext } from './shared';
 
 export interface ListStateItem {
   key: string;
@@ -12,15 +7,16 @@ export interface ListStateItem {
 }
 
 export type ListStateArgs = { keys: string[] } | { items: ListStateItem[] };
-const INITIAL_STATE_VALUE_SIZE_LIMIT = 64 * 1024;
 
-type StateRecord = Record<string, { value?: string; size: number }>;
+// The preview response is bounded on two axes: PREVIEW_ROW_LIMIT caps rows and
+// PREVIEW_VALUE_SIZE_LIMIT caps bytes per value, so the worst-case payload is
+// ~PREVIEW_ROW_LIMIT × 2 × PREVIEW_VALUE_SIZE_LIMIT (values arrive hex-encoded).
+// Entries with larger values are absent from the preview on purpose — they only
+// show up when a row is expanded (listStateEntries).
+const PREVIEW_VALUE_SIZE_LIMIT = 2 * 1024;
+const PREVIEW_ROW_LIMIT = 5000;
 
-function scopePredicate(scope: string | undefined) {
-  return scope === undefined
-    ? 'scope IS NULL'
-    : `scope = ${quoteSqlString(scope)}`;
-}
+type StateEntry = { name: string; value?: string; size: number };
 
 function encodeStateValue(value: unknown) {
   return value == null
@@ -28,216 +24,99 @@ function encodeStateValue(value: unknown) {
     : ((hexToBase64(String(value)) ?? '') as string);
 }
 
-function toStateEntries(state: StateRecord) {
-  return Object.entries(state).map(([name, { value, size }]) => ({
-    name,
-    ...(value !== undefined ? { value } : {}),
-    size,
-  }));
-}
-
 export async function listState(
   this: QueryContext,
   service: string,
   args: ListStateArgs,
-  serviceType?: StateServiceType,
 ) {
-  if ('keys' in args) {
-    return listStateByKeys.call(this, service, args.keys, serviceType);
-  }
-  return listStateByItems.call(this, service, args.items);
-}
-
-async function listStateByKeys(
-  this: QueryContext,
-  service: string,
-  keys: string[],
-  serviceType?: StateServiceType,
-) {
-  if (keys.length === 0) {
+  const items: ListStateItem[] =
+    'keys' in args ? args.keys.map((key) => ({ key })) : args.items;
+  if (items.length === 0) {
     return emptyResponse();
   }
 
   const hasScopeColumn = this.features.has('vqueues');
   const idOf = (key: string, scope: string | null | undefined) =>
     `${key}\x00${scope ?? ''}`;
-  const scopeProjection = hasScopeColumn ? 'scope, ' : '';
-  const metadataQuery = `SELECT service_key, ${scopeProjection}key, value_length
-    FROM state WHERE service_name = ${quoteSqlString(service)} AND service_key IN (${keys
-      .map(quoteSqlString)
-      .join(', ')})${scopeClause(this, undefined, serviceType)}`;
 
   const groups = new Map<
     string,
-    {
-      key: string;
-      scope?: string;
-      state: StateRecord;
-    }
+    { key: string; scope?: string; state: StateEntry[] }
   >();
-  for (const key of keys) {
-    const id = idOf(key, undefined);
-    if (!groups.has(id)) groups.set(id, { key, state: {} });
+  for (const item of items) {
+    const id = idOf(item.key, item.scope);
+    if (!groups.has(id)) {
+      groups.set(id, {
+        key: item.key,
+        ...(item.scope !== undefined ? { scope: item.scope } : {}),
+        state: [],
+      });
+    }
   }
 
-  const smallValues: {
-    serviceKey: string;
-    scope?: string;
-    stateKey: string;
-  }[] = [];
-  const { rows: metadataRows } = await this.query(metadataQuery);
-  for (const row of metadataRows) {
-    const serviceKey = String(row.service_key);
+  const serviceKeys = [...new Set(items.map((item) => item.key))];
+  const scopes = [
+    ...new Set(
+      items.flatMap((item) => (item.scope !== undefined ? [item.scope] : [])),
+    ),
+  ];
+  const hasScopelessItem = items.some((item) => item.scope === undefined);
+
+  // Scope side of the coarse superset filter: exact (service_key, scope) pair
+  // matching is done in JS below, so the SQL only needs a pushdown-friendly
+  // superset of the page's scopes. Servers without the `vqueues` feature have
+  // no scope column at all, so it must not be referenced there.
+  let scopeFilter = '';
+  if (hasScopeColumn) {
+    const scopeIn =
+      scopes.length > 0
+        ? `scope IN (${scopes.map(quoteSqlString).join(', ')})`
+        : '';
+    if (scopeIn && hasScopelessItem) {
+      scopeFilter = ` AND (${scopeIn} OR scope IS NULL)`;
+    } else if (scopeIn) {
+      scopeFilter = ` AND ${scopeIn}`;
+    } else {
+      scopeFilter = ' AND scope IS NULL';
+    }
+  }
+
+  // Single bounded preview query for the whole page of state objects:
+  // - plain column predicates (service_name, service_key IN, scope,
+  //   value_length) all push down into the partition scan;
+  // - value_length <= PREVIEW_VALUE_SIZE_LIMIT keeps big values from ever
+  //   leaving the scanner — the preview is small values only by design;
+  // - no ORDER BY, so the LIMIT terminates the scan as soon as enough rows
+  //   match (an ordered limit would have to consume every matching row);
+  // - which entries win when the LIMIT is hit is therefore arbitrary — the
+  //   preview is best-effort and the UI always renders a trailing ellipsis.
+  const previewQuery = `SELECT service_key, ${hasScopeColumn ? 'scope, ' : ''}key, value_length, value
+    FROM state
+    WHERE service_name = ${quoteSqlString(service)}
+      AND service_key IN (${serviceKeys.map(quoteSqlString).join(', ')})${scopeFilter}
+      AND value_length <= ${PREVIEW_VALUE_SIZE_LIMIT}
+    LIMIT ${PREVIEW_ROW_LIMIT}`;
+
+  const { rows } = await this.query(previewQuery);
+  for (const row of rows) {
     const scope =
       hasScopeColumn && row.scope != null ? String(row.scope) : undefined;
-    const stateKey = String(row.key);
-    const size = Number(row.value_length ?? 0);
-    const id = idOf(serviceKey, scope);
-    let group = groups.get(id);
-    if (!group) {
-      group = {
-        key: serviceKey,
-        ...(scope !== undefined ? { scope } : {}),
-        state: {},
-      };
-      groups.set(id, group);
-    }
-    group.state[stateKey] = { size };
-    if (size <= INITIAL_STATE_VALUE_SIZE_LIMIT) {
-      smallValues.push({ serviceKey, scope, stateKey });
-    }
-  }
-
-  if (smallValues.length > 0) {
-    const smallValuePredicate = smallValues
-      .map(({ serviceKey, scope, stateKey }) =>
-        hasScopeColumn
-          ? `(service_key = ${quoteSqlString(serviceKey)} AND ${scopePredicate(scope)} AND key = ${quoteSqlString(stateKey)})`
-          : `(service_key = ${quoteSqlString(serviceKey)} AND key = ${quoteSqlString(stateKey)})`,
-      )
-      .join(' OR ');
-    const valueQuery = `SELECT service_key, ${scopeProjection}key, value
-      FROM state WHERE service_name = ${quoteSqlString(service)}${scopeClause(this, undefined, serviceType)}
-        AND value_length <= ${INITIAL_STATE_VALUE_SIZE_LIMIT}
-        AND (${smallValuePredicate})`;
-
-    const { rows: valueRowsResult } = await this.query(valueQuery);
-    for (const row of valueRowsResult) {
-      const scope =
-        hasScopeColumn && row.scope != null ? String(row.scope) : undefined;
-      const group = groups.get(idOf(String(row.service_key), scope));
-      const state = group?.state[String(row.key)];
-      const value = encodeStateValue(row.value);
-      if (state && value !== undefined) {
-        state.value = value;
-      }
-    }
+    // The coarse filter can match (service_key, scope) combinations that are
+    // not on the page (same key under another requested scope) — drop those.
+    const group = groups.get(idOf(String(row.service_key), scope));
+    if (!group) continue;
+    const value = encodeStateValue(row.value);
+    group.state.push({
+      name: String(row.key),
+      ...(value !== undefined ? { value } : {}),
+      size: Number(row.value_length ?? 0),
+    });
   }
 
   const objects = Array.from(groups.values()).map(({ key, scope, state }) => ({
     key,
     ...(scope !== undefined ? { scope } : {}),
-    state: toStateEntries(state),
-  }));
-
-  return new Response(JSON.stringify({ objects }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-async function listStateByItems(
-  this: QueryContext,
-  service: string,
-  items: ListStateItem[],
-) {
-  if (items.length === 0) {
-    return emptyResponse();
-  }
-
-  const itemRows = items
-    .map(({ key, scope }) =>
-      scope !== undefined
-        ? `(${quoteSqlString(key)}, ${quoteSqlString(scope)})`
-        : `(${quoteSqlString(key)}, NULL)`,
-    )
-    .join(', ');
-
-  const metadataQuery = `WITH pairs(service_key, scope) AS (VALUES ${itemRows})
-    SELECT s.service_key, s.scope, s.key, s.value_length
-    FROM state s
-    JOIN pairs p
-      ON s.service_key = p.service_key
-     AND (s.scope = p.scope OR (s.scope IS NULL AND p.scope IS NULL))
-    WHERE s.service_name = ${quoteSqlString(service)}`;
-
-  const idOf = (key: string, scope: string | null | undefined) =>
-    `${key}\x00${scope ?? ''}`;
-
-  const groups = new Map<
-    string,
-    {
-      key: string;
-      scope?: string;
-      state: StateRecord;
-    }
-  >();
-
-  for (const item of items) {
-    const id = idOf(item.key, item.scope);
-    if (!groups.has(id)) {
-      groups.set(id, { key: item.key, scope: item.scope, state: {} });
-    }
-  }
-
-  const smallValues: {
-    serviceKey: string;
-    scope?: string;
-    stateKey: string;
-  }[] = [];
-  const { rows: metadataRows } = await this.query(metadataQuery);
-  for (const row of metadataRows) {
-    const serviceKey = String(row.service_key);
-    const scope = row.scope == null ? undefined : String(row.scope);
-    const stateKey = String(row.key);
-    const size = Number(row.value_length ?? 0);
-    const group = groups.get(idOf(serviceKey, scope));
-    if (!group) continue;
-    group.state[stateKey] = { size };
-    if (size <= INITIAL_STATE_VALUE_SIZE_LIMIT) {
-      smallValues.push({ serviceKey, scope, stateKey });
-    }
-  }
-
-  if (smallValues.length > 0) {
-    const smallValuePredicate = smallValues
-      .map(
-        ({ serviceKey, scope, stateKey }) =>
-          `(service_key = ${quoteSqlString(serviceKey)} AND ${scopePredicate(scope)} AND key = ${quoteSqlString(stateKey)})`,
-      )
-      .join(' OR ');
-    const valueQuery = `SELECT service_key, scope, key, value
-      FROM state WHERE service_name = ${quoteSqlString(service)}
-        AND value_length <= ${INITIAL_STATE_VALUE_SIZE_LIMIT}
-        AND (${smallValuePredicate})`;
-
-    const { rows: valueRowsResult } = await this.query(valueQuery);
-    for (const row of valueRowsResult) {
-      const serviceKey = String(row.service_key);
-      const scope = row.scope == null ? undefined : String(row.scope);
-      const group = groups.get(idOf(serviceKey, scope));
-      const state = group?.state[String(row.key)];
-      const value = encodeStateValue(row.value);
-      if (state && value !== undefined) {
-        state.value = value;
-      }
-    }
-  }
-
-  const objects = Array.from(groups.values()).map((g) => ({
-    key: g.key,
-    ...(g.scope !== undefined ? { scope: g.scope } : {}),
-    state: toStateEntries(g.state),
+    state: state.sort((a, b) => a.name.localeCompare(b.name)),
   }));
 
   return new Response(JSON.stringify({ objects }), {

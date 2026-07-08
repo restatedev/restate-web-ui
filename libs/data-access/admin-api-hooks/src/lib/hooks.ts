@@ -8,6 +8,7 @@ import {
   MutationOptions,
   Query,
   QueryClient,
+  useInfiniteQuery,
   useMutation,
   useQueries,
   useQuery,
@@ -2333,6 +2334,70 @@ export function useListVirtualObjectState(
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListVirtualObjectStateEntries(
+  serviceName: string,
+  key: string,
+  scope?: string,
+  options?: { enabled?: boolean; pageSize?: number },
+) {
+  const apiEnabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const pageSize = options?.pageSize ?? 100;
+
+  const queryKey = useMemo(
+    () => [
+      // Keep the resolved path under `/query/services/{service}/…/state` so the
+      // edit-state and state-route invalidation predicates sweep these pages.
+      `/query/services/${serviceName}/keys/${key}/state/entries`,
+      {
+        baseUrl,
+        method: 'post',
+        parameters: { path: { name: serviceName, key } },
+        body: { ...(scope !== undefined ? { scope } : {}), limit: pageSize },
+      },
+    ],
+    [baseUrl, key, pageSize, scope, serviceName],
+  );
+
+  const results = useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam, signal }) => {
+      const { queryFn, queryKey: pageQueryKey } = adminApi(
+        'query',
+        '/query/services/{name}/keys/{key}/state/entries',
+        'post',
+        {
+          baseUrl,
+          parameters: { path: { name: serviceName, key } },
+          body: {
+            ...(scope !== undefined ? { scope } : {}),
+            ...(pageParam !== undefined ? { after: pageParam } : {}),
+            limit: pageSize,
+          },
+        },
+      );
+      return queryFn({
+        signal,
+        queryKey: pageQueryKey,
+        meta: undefined,
+      } as Parameters<typeof queryFn>[0]);
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage?.hasMore ? (lastPage.entries.at(-1)?.name ?? undefined) : undefined,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    enabled: options?.enabled !== false && apiEnabled,
+  });
+
+  return {
+    ...results,
+    queryKey,
   };
 }
 

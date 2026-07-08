@@ -549,8 +549,14 @@ function Component() {
             setSearchParams(newSearchParams, { preventScrollReset: true });
             await queryCLient.invalidateQueries({ queryKey });
             await queryCLient.invalidateQueries({
-              predicate: (query) =>
-                query.queryKey[0] === `/query/services/${serviceName}/state`,
+              predicate: (query) => {
+                const [resolvedUrl] = query.queryKey;
+                return (
+                  typeof resolvedUrl === 'string' &&
+                  resolvedUrl.startsWith(`/query/services/${serviceName}/`) &&
+                  resolvedUrl.includes('/state')
+                );
+              },
             });
           }}
         >
