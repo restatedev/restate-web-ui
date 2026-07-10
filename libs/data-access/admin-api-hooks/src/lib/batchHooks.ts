@@ -4,6 +4,7 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import {
   MutationOptions,
+  QueryClient,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
@@ -11,6 +12,16 @@ import { adminApi } from '@restate/data-access/admin-api';
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type { HookMutationOptions } from '@restate/data-access/admin-api';
 import { useState, useEffect, useRef } from 'react';
+import { isSummaryInvocationsQuery } from './queryMatchers';
+
+function invalidateInvocationsQueries(queryClient: QueryClient) {
+  queryClient.invalidateQueries({
+    queryKey: ['/query/invocations'],
+  });
+  queryClient.invalidateQueries({
+    predicate: isSummaryInvocationsQuery,
+  });
+}
 
 function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
   batchSize: number,
@@ -202,9 +213,7 @@ export function useBatchCancelInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      queryClient.invalidateQueries({
-        queryKey: ['/query/invocations'],
-      });
+      invalidateInvocationsQueries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
@@ -268,9 +277,7 @@ export function useBatchPurgeInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      queryClient.invalidateQueries({
-        queryKey: ['/query/invocations'],
-      });
+      invalidateInvocationsQueries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
@@ -334,9 +341,7 @@ export function useBatchRestateAsNewInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      queryClient.invalidateQueries({
-        queryKey: ['/query/invocations'],
-      });
+      invalidateInvocationsQueries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
@@ -400,9 +405,7 @@ export function useBatchKillInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      queryClient.invalidateQueries({
-        queryKey: ['/query/invocations'],
-      });
+      invalidateInvocationsQueries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
@@ -466,9 +469,7 @@ export function useBatchPauseInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      queryClient.invalidateQueries({
-        queryKey: ['/query/invocations'],
-      });
+      invalidateInvocationsQueries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
@@ -533,9 +534,7 @@ export function useBatchResumeInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      queryClient.invalidateQueries({
-        queryKey: ['/query/invocations'],
-      });
+      invalidateInvocationsQueries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },

@@ -25,7 +25,13 @@ export function LoadingRows({
                   paddingRight: `${hashCode((index + 1) * 11, (i + 1) * 13)}%`,
                 }}
               >
-                <div className="min-h-full w-full animate-pulse rounded-md bg-slate-200" />
+                <div
+                  className="min-h-full w-full animate-pulse rounded-md bg-slate-200 motion-reduce:animate-none"
+                  style={{
+                    animationDelay: `-${(index * 160 + i * 90) % 1600}ms`,
+                    animationDuration: '2s',
+                  }}
+                />
               </div>
             </Cell>
           ))}

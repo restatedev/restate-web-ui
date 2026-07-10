@@ -57,7 +57,6 @@ import {
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { HoverTooltip } from '@restate/ui/tooltip';
-import { RestateServer } from '@restate/ui/restate-server';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import {
   ContentPanel,
@@ -266,12 +265,24 @@ function SampleNotice() {
   );
 }
 
-// Calm, reassuring banner shown over the loading table once a query has been
-// running for a while (>10s). A slow scan shouldn't read as a broken page, so
-// the tone is warm — and it offers escape hatches: switch to a faster partial
-// view (cancelling the in-flight complete scan) and, when configured, a link
-// to the observability dashboard.
-function SlowQueryBanner({
+const queryLoadingOverlayStyles = tv({
+  slots: {
+    overlay: 'pointer-events-none absolute inset-0 z-20 overflow-hidden',
+    details:
+      'pointer-events-auto absolute top-32 left-1/2 z-10 flex w-[min(32rem,calc(100%-2rem))] -translate-x-1/2 flex-col items-center gap-2 text-center duration-500 animate-in fade-in slide-in-from-bottom-1 motion-reduce:animate-none',
+    title:
+      'flex items-center justify-center gap-2 text-sm font-semibold text-gray-800',
+    scanner: 'relative h-5 w-8 shrink-0',
+    scannerMemory:
+      'absolute top-1 right-0 flex h-3 w-4 flex-col justify-between',
+    scannerMemoryLine: 'h-0.5 w-full rounded-full bg-indigo-200',
+    scannerLens:
+      'absolute top-0.5 left-0 h-4 w-4 animate-memoryScan text-indigo-600 drop-shadow-[0_1px_1px_--theme(--color-indigo-950/10%)] motion-reduce:animate-none',
+    veil: 'pointer-events-none absolute -inset-x-20 -inset-y-8 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(249,250,251,0.98)_0%,rgba(249,250,251,0.88)_45%,rgba(249,250,251,0.45)_65%,transparent_78%)]',
+  },
+});
+
+function SlowQueryOverlay({
   isComplete,
   dashboardUrl,
   onSwitchToPartial,
@@ -280,51 +291,65 @@ function SlowQueryBanner({
   dashboardUrl?: string;
   onSwitchToPartial: () => void;
 }) {
+  const {
+    overlay,
+    details,
+    title,
+    scanner,
+    scannerMemory,
+    scannerMemoryLine,
+    scannerLens,
+    veil,
+  } = queryLoadingOverlayStyles();
+
   return (
-    <div className="m-2 mx-auto mt-11 flex max-w-md flex-col items-center gap-2 px-5 py-4 text-center">
-      <div
-        inert
-        className="pointer-events-none relative -my-2 h-24 w-24 overflow-hidden"
-      >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-[0.75]">
-          <RestateServer status="active" appearance="ghost" />
+    <div className={overlay()}>
+      <div className={details()} aria-live="polite">
+        <div aria-hidden className={veil()} />
+        <div className={title()}>
+          <span aria-hidden className={scanner()}>
+            <span className={scannerMemory()}>
+              <span className={scannerMemoryLine()} />
+              <span className={scannerMemoryLine()} />
+              <span className={scannerMemoryLine()} />
+            </span>
+            <Icon name={IconName.ScanSearch} className={scannerLens()} />
+          </span>
+          <span>Hang tight — this is taking a moment</span>
         </div>
+        <p className="max-w-sm text-xs text-gray-500">
+          {isComplete
+            ? 'A complete scan reads every invocation, which can take a while on large datasets. You can switch to a faster partial view, or keep waiting for exact results.'
+            : 'Larger datasets can take a little longer to load — thanks for your patience.'}
+        </p>
+        {(isComplete || dashboardUrl) && (
+          <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
+            {isComplete && (
+              <Button
+                variant="primary"
+                onClick={onSwitchToPartial}
+                className="rounded-lg px-3 py-1 text-xs"
+              >
+                Show a faster partial view
+              </Button>
+            )}
+            {dashboardUrl && (
+              <a
+                href={dashboardUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50"
+              >
+                Open the dashboard
+                <Icon
+                  name={IconName.ExternalLink}
+                  className="h-3 w-3 opacity-70"
+                />
+              </a>
+            )}
+          </div>
+        )}
       </div>
-      <div className="text-sm font-semibold text-gray-800">
-        Hang tight — this is taking a moment
-      </div>
-      <p className="max-w-sm text-xs text-gray-500">
-        {isComplete
-          ? 'A complete scan reads every invocation, which can take a while on large datasets. You can switch to a faster partial view, or keep waiting for exact results.'
-          : 'Larger datasets can take a little longer to load — thanks for your patience.'}
-      </p>
-      {(isComplete || dashboardUrl) && (
-        <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
-          {isComplete && (
-            <Button
-              variant="primary"
-              onClick={onSwitchToPartial}
-              className="rounded-lg px-3 py-1 text-xs"
-            >
-              Show a faster partial view
-            </Button>
-          )}
-          {dashboardUrl && (
-            <a
-              href={dashboardUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50"
-            >
-              Open the dashboard
-              <Icon
-                name={IconName.ExternalLink}
-                className="h-3 w-3 opacity-70"
-              />
-            </a>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -583,11 +608,9 @@ function Component() {
     }
   }, [searchParams, saveLastQuery, setRecent]);
 
-  // A slow load takes over the caption with the reassurance banner; otherwise
-  // the partial-results notice shows when sampled.
   const tableCaption =
-    isSlowQuery && isFetching ? (
-      <SlowQueryBanner
+    isFetching && isSlowQuery ? (
+      <SlowQueryOverlay
         isComplete={!listSampled}
         dashboardUrl={observabilityDashboardUrl}
         onSwitchToPartial={() => {
@@ -595,7 +618,7 @@ function Component() {
           setListSampledOverride(true);
         }}
       />
-    ) : listSampled && !error ? (
+    ) : !isFetching && listSampled && !error ? (
       <SampleNotice />
     ) : undefined;
 
@@ -866,7 +889,7 @@ function Component() {
                 bodyKey={hash}
                 bodyDependencies={[selectedColumns, pageIndex, error]}
                 isLoading={isFetching}
-                numOfRows={currentPageItems.length || 5}
+                numOfRows={Math.max(currentPageItems.length, 8)}
                 emptyPlaceholder={
                   error ? (
                     <EmptyState
@@ -963,14 +986,16 @@ function Component() {
                 )}
               </Footnote>
             </ContentPanelSection>
+            {OnboardingGuide && (
+              <div className="ml-10">
+                <OnboardingGuide
+                  stage="view-invocations"
+                  service={data?.rows.at(0)?.target_service_name}
+                />
+              </div>
+            )}
           </ContentPanelBody>
         </ContentPanel>
-        {OnboardingGuide && (
-          <OnboardingGuide
-            stage="view-invocations"
-            service={data?.rows.at(0)?.target_service_name}
-          />
-        )}
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <InvocationsForm

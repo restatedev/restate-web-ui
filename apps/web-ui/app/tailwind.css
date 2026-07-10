@@ -154,4 +154,15 @@
     }
   }
   --animate-shimmerSweep: shimmerSweep 1.6s ease-in-out infinite;
+
+  @keyframes memoryScan {
+    0%,
+    100% {
+      transform: translateX(0) rotate(-8deg);
+    }
+    50% {
+      transform: translateX(0.75rem) rotate(8deg);
+    }
+  }
+  --animate-memoryScan: memoryScan 1.6s ease-in-out infinite;
 }
