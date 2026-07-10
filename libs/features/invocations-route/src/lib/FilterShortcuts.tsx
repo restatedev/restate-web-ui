@@ -94,7 +94,7 @@ const makeShortcuts: (
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
-        value: ['pending', 'backing-off', 'suspended', 'paused', 'ready'],
+        value: ['pending', 'backing-off', 'paused', 'ready'],
       }),
     ],
   },
