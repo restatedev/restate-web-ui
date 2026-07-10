@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useGetInvocation } from '@restate/data-access/admin-api-hooks';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
+import { Spinner } from '@restate/ui/loading';
 import { Status } from './Status';
 import { Target } from './Target';
 
@@ -14,7 +15,7 @@ export function InvocationPopoverContent({
   id,
   title,
 }: InvocationPopoverContentProps) {
-  const { data: invocation } = useGetInvocation(id, {
+  const { data: invocation, isPending } = useGetInvocation(id, {
     refetchOnMount: 'always',
   });
   return (
@@ -35,7 +36,12 @@ export function InvocationPopoverContent({
         }
       >
         <div className="flex flex-wrap items-start gap-3 px-3 py-2.5">
-          {invocation && (
+          {isPending ? (
+            <div className="flex min-h-6 w-full items-center justify-center gap-1.5 text-xs text-zinc-500">
+              <Spinner className="h-4 w-4" />
+              Loading…
+            </div>
+          ) : invocation ? (
             <>
               <Target
                 target={invocation.target}
@@ -43,7 +49,7 @@ export function InvocationPopoverContent({
               />
               <Status invocation={invocation} />
             </>
-          )}
+          ) : null}
         </div>
       </DropdownSection>
     </div>
