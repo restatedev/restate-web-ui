@@ -966,10 +966,12 @@ function Component() {
           </ContentPanelBody>
         </ContentPanel>
         {OnboardingGuide && (
-          <OnboardingGuide
-            stage="view-invocations"
-            service={data?.rows.at(0)?.target_service_name}
-          />
+          <div className="ml-10">
+            <OnboardingGuide
+              stage="view-invocations"
+              service={data?.rows.at(0)?.target_service_name}
+            />
+          </div>
         )}
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
