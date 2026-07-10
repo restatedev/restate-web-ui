@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { type ReactNode, useRef } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
@@ -65,20 +65,24 @@ const styles = tv({
   },
 });
 
-export function InvocationId({
-  id,
-  className,
-  size = 'default',
-  truncateInMiddle = false,
-  popover = true,
-}: {
+interface InvocationIdProps {
   id: Invocation['id'];
   className?: string;
   size?: 'sm' | 'default' | 'icon' | 'md';
   isLive?: boolean;
   truncateInMiddle?: boolean;
   popover?: boolean;
-}) {
+  title?: ReactNode;
+}
+
+export function InvocationId({
+  id,
+  className,
+  size = 'default',
+  truncateInMiddle = false,
+  popover = true,
+  title,
+}: InvocationIdProps) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const { base, icon, text, link, container, linkIcon } = styles({ size });
   const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
@@ -154,7 +158,7 @@ export function InvocationId({
       <Popover>
         <PopoverHoverTrigger>{element}</PopoverHoverTrigger>
         <PopoverContent placement="bottom" isNonModal>
-          <InvocationPopoverContent id={id} />
+          <InvocationPopoverContent id={id} title={title} />
         </PopoverContent>
       </Popover>
     );

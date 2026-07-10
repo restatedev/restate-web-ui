@@ -7,16 +7,9 @@ import {
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { panelHref } from '@restate/util/panel';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
-import {
-  HoverTooltip,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@restate/ui/tooltip';
+import { HoverTooltip } from '@restate/ui/tooltip';
 import { formatNumber, formatOrdinals } from '@restate/util/intl';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
@@ -24,6 +17,7 @@ import { DropdownSection } from '@restate/ui/dropdown';
 import { State } from './State';
 import { Spinner } from '@restate/ui/loading';
 import { useState } from 'react';
+import { InvocationId } from '@restate/features/invocation-ui';
 
 const styles = tv({ base: '' });
 export function VirtualObjectSection({
@@ -182,30 +176,19 @@ export function VirtualObjectSection({
                   {((typeof position === 'number' && position > 0) ||
                     position === undefined) && (
                     <div className="absolute top-1 right-2 flex translate-x-1/2 -translate-y-1/2 flex-col items-center">
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Link
-                            href={panelHref({ invocation: head })}
-                            aria-label={head}
-                            variant="secondary"
-                            className="block h-6 w-6 rounded-lg border bg-white shadow-xs"
-                          >
-                            <Icon
-                              name={IconName.Invocation}
-                              className="h-full w-full animate-pulse p-1 text-zinc-500"
-                            />
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent size="sm">
-                          <div>
+                      <InvocationId
+                        id={head}
+                        size="icon"
+                        title={
+                          <span className="truncate text-xs font-medium text-zinc-600">
                             <span className="font-mono">
                               {invocation?.target_service_name}
                             </span>{' '}
                             is locked by{' '}
                             <span className="font-mono">{head}</span>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
+                          </span>
+                        }
+                      />
                     </div>
                   )}
 

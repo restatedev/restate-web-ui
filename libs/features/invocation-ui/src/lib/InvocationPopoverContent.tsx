@@ -1,10 +1,19 @@
+import type { ReactNode } from 'react';
 import { useGetInvocation } from '@restate/data-access/admin-api-hooks';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Status } from './Status';
 import { Target } from './Target';
 
-export function InvocationPopoverContent({ id }: { id: string }) {
+interface InvocationPopoverContentProps {
+  id: string;
+  title?: ReactNode;
+}
+
+export function InvocationPopoverContent({
+  id,
+  title,
+}: InvocationPopoverContentProps) {
   const { data: invocation } = useGetInvocation(id, {
     refetchOnMount: 'always',
   });
@@ -13,9 +22,11 @@ export function InvocationPopoverContent({ id }: { id: string }) {
       <DropdownSection
         title={
           <span className="flex min-w-0 items-center gap-1.5">
-            <span className="truncate font-mono text-xs font-medium text-zinc-600">
-              {id}
-            </span>
+            {title ?? (
+              <span className="truncate font-mono text-xs font-medium text-zinc-600">
+                {id}
+              </span>
+            )}
             <Copy
               copyText={id}
               className="s ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-gray-700"
