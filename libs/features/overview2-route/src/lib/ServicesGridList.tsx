@@ -14,12 +14,13 @@ export function ServicesGridList() {
     filter,
     servicesMap,
     deploymentsMap,
-    summaryData,
-    byServiceAndStatus,
     invocationCounts,
+    serviceStageCounts,
+    servicesWithHighInbox,
     serviceIssuesMap,
-    isSummaryError,
-    isSummaryLoading,
+    loadServiceInboxBreakdown,
+    isServiceSummaryError,
+    isServiceSummaryLoading,
     isDeploymentsFetching,
     baseUrl,
     linkParams,
@@ -47,7 +48,12 @@ export function ServicesGridList() {
       aria-label="Services"
       columns={[]}
       items={services}
-      dependencies={[serviceIssuesMap, summaryData, isSummaryLoading]}
+      dependencies={[
+        serviceIssuesMap,
+        invocationCounts,
+        serviceStageCounts,
+        isServiceSummaryLoading,
+      ]}
       sortDescriptor={resolvedServiceSortDescriptor}
       onSortChange={setServiceSortDescriptor}
       onAction={(key) => open(SERVICE_QUERY_PARAM, String(key))}
@@ -71,12 +77,17 @@ export function ServicesGridList() {
             return (
               <ServiceCard
                 service={service}
-                summaryData={summaryData}
-                byServiceAndStatus={byServiceAndStatus}
+                invocationCount={invocationCounts.get(service.name) ?? 0}
+                stageCounts={serviceStageCounts.get(service.name) ?? []}
                 baseUrl={baseUrl}
                 serviceIssues={issues}
-                isSummaryError={isSummaryError}
-                isSummaryLoading={isSummaryLoading}
+                onServiceStatusOpen={
+                  servicesWithHighInbox.has(service.name)
+                    ? () => void loadServiceInboxBreakdown(service.name)
+                    : undefined
+                }
+                isSummaryError={isServiceSummaryError}
+                isSummaryLoading={isServiceSummaryLoading}
                 isDeploymentsFetching={isDeploymentsFetching}
                 linkParams={linkParams}
                 isFocusVisible={isFocusVisible}

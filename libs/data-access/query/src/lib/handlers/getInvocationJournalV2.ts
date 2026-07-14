@@ -1,9 +1,10 @@
 import type {
   JournalEntryV2,
   JournalRawEntry,
+  operations,
 } from '@restate/data-access/admin-api-spec';
 import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
-import { convertInvocation, type TransientError } from '../convertInvocation';
+import { convertInvocationV2, type TransientError } from '../convertInvocation';
 import { convertJournalV2 } from '../convertJournalV2';
 import {
   createFutureEntries,
@@ -17,9 +18,13 @@ import {
 import {
   type QueryContext,
   getSysInvocationColumns,
+  quoteSqlString,
   supportsJournalRawLength,
 } from './shared';
-import { fetchVqueueStatus } from './vqueue';
+import { fetchVqueueStatuses } from './vqueue';
+
+type InvocationJournalV2Response =
+  operations['get_invocation_journal_v2']['responses']['200']['content']['application/json'];
 
 function sortJournalEntries(entries: JournalEntryV2[]) {
   const timestampCache = new Map<JournalEntryV2, number>();
@@ -105,28 +110,26 @@ export async function getInvocationJournalV2(
   this: QueryContext,
   invocationId: string,
   includePayloads = false,
-  vqueueId?: string,
   includeRaw = false,
 ): Promise<Response> {
+  const requestTime = new Date().toISOString();
+  const invocationIdSql = quoteSqlString(invocationId);
   const entryJsonColumn = includePayloads ? 'entry_json' : 'entry_lite_json';
   const rawLengthColumn = supportsJournalRawLength(this.restateVersion)
     ? 'raw_length,'
     : '';
-  const [invocationQuery, journalQuery, eventsQuery, vqueueHint] =
+  const [invocationQuery, journalQuery, eventsQuery, vqueueStatuses] =
     await Promise.all([
       this.query(
-        `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = '${invocationId}'`,
+        `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
       ),
       this.query(
-        `SELECT id, index, appended_at, entry_type, name, ${rawLengthColumn} ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' ORDER BY index`,
+        `SELECT id, index, appended_at, entry_type, name, ${rawLengthColumn} ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql} ORDER BY index`,
       ),
       this.query(
-        `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = '${invocationId}' ORDER BY appended_at`,
+        `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = ${invocationIdSql} ORDER BY appended_at`,
       ),
-      // Resolve the vqueue status in parallel using the id the UI carried over
-      // from its last poll. If it's missing or stale, the whole batch is
-      // re-fired with the correct id below so all four queries stay in sync.
-      fetchVqueueStatus(this, invocationId, vqueueId),
+      fetchVqueueStatuses(this, [invocationId]),
     ]);
   const shouldFetchWithRaw =
     !includeRaw &&
@@ -140,13 +143,20 @@ export async function getInvocationJournalV2(
       this,
       invocationId,
       includePayloads,
-      vqueueId,
       true,
     );
   }
 
   const rawInvocation = invocationQuery.rows.at(0);
-  if (!rawInvocation) {
+  const invocation = rawInvocation
+    ? convertInvocationV2(
+        rawInvocation,
+        vqueueStatuses.get(invocationId),
+        requestTime,
+        getLastTransientError(eventsQuery.rows),
+      )
+    : undefined;
+  if (!invocation) {
     return new Response(
       JSON.stringify({
         message: ERROR_CODES[UI_ERROR_CODES.invocationNotFound]?.help,
@@ -159,31 +169,6 @@ export async function getInvocationJournalV2(
       },
     );
   }
-
-  // The hint was missing or stale (came back empty) but the invocation is
-  // actually in a vqueue: re-run the whole batch with the correct id so the
-  // journal, events and vqueue state are all sampled at the same time. The
-  // `!== vqueueId` guard bounds this to a single retry — the recall passes the
-  // discovered id, so the next pass can't re-trigger (no infinite loop, even
-  // when that id also resolves to no row).
-  if (
-    !vqueueHint &&
-    rawInvocation.vqueue_id &&
-    rawInvocation.vqueue_id !== vqueueId
-  ) {
-    return getInvocationJournalV2.call(
-      this,
-      invocationId,
-      includePayloads,
-      rawInvocation.vqueue_id,
-      includeRaw,
-    );
-  }
-  const invocation = convertInvocation(
-    rawInvocation,
-    vqueueHint,
-    getLastTransientError(eventsQuery.rows),
-  );
 
   const version = journalQuery.rows.at(0)?.version;
   const journalRows = journalQuery.rows as JournalRawEntry[];
@@ -268,7 +253,7 @@ export async function getInvocationJournalV2(
         entries: entriesWithLifeCycleEvents,
         version,
       },
-    }),
+    } satisfies InvocationJournalV2Response),
     {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

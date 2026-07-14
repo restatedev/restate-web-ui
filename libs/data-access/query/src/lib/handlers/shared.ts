@@ -9,6 +9,7 @@ export const DURATION_EXPRESSION = `${DURATION_CALC} AS duration`;
 
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS = 10 * 60_000;
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL = '10m';
+export const BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT = 500;
 
 export function quoteSqlString(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;

@@ -1,4 +1,8 @@
-import type { QueryCacheNotifyEvent, Query } from '@tanstack/react-query';
+import type {
+  QueryCacheNotifyEvent,
+  Query,
+  QueryClient,
+} from '@tanstack/react-query';
 
 const QUERY_HEALTH_META_TAG = 'query-health-check';
 
@@ -14,20 +18,25 @@ export function isDeploymentsQuery(event: QueryCacheNotifyEvent): boolean {
   return isQueryForPath(event.query, '/deployments', 'get');
 }
 
-export function isSummaryInvocationsQuery(
+export function isInvocationsV2Query(
   query: Query | QueryCacheNotifyEvent['query'],
 ): boolean {
-  return isQueryForPath(query, '/query/invocations/summary', 'post');
+  const queryPath = Array.isArray(query.queryKey)
+    ? query.queryKey[0]
+    : undefined;
+  return (
+    (typeof query.meta?.['path'] === 'string' &&
+      query.meta['path'].startsWith('/query/v2/invocations')) ||
+    (typeof queryPath === 'string' &&
+      queryPath.startsWith('/query/v2/invocations'))
+  );
 }
 
-export function isCompletedBreakdownQuery(
-  query: Query | QueryCacheNotifyEvent['query'],
-): boolean {
-  return isQueryForPath(
-    query,
-    '/query/invocations/completed-breakdown',
-    'post',
-  );
+export function invalidateInvocationsV2Queries(queryClient: QueryClient) {
+  return queryClient.invalidateQueries({
+    refetchType: 'active',
+    predicate: isInvocationsV2Query,
+  });
 }
 
 export function isQueryHealthCheckQuery(event: QueryCacheNotifyEvent): boolean {

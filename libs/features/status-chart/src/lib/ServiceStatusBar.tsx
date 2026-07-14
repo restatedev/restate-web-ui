@@ -54,6 +54,7 @@ function StatusBar({
   issuesByStatus,
   isLoading,
   noun,
+  onOpenChange,
 }: {
   title: ReactNode;
   total: number;
@@ -63,6 +64,7 @@ function StatusBar({
   issuesByStatus?: Map<string, IssueSeverity>;
   isLoading?: boolean;
   noun?: { one: string; other: string };
+  onOpenChange?: (isOpen: boolean) => void;
 }) {
   if (!total) return <div className="h-3" />;
 
@@ -79,7 +81,11 @@ function StatusBar({
   );
 
   return (
-    <HoverTooltip content={tooltipContent} size="lg">
+    <HoverTooltip
+      content={tooltipContent}
+      size="lg"
+      onOpenChange={onOpenChange}
+    >
       <div className={styles({ isLoading })}>
         {statuses.map((s) => (
           <div
@@ -102,15 +108,18 @@ export function ServiceStatusBar({
   serviceName,
   handlerName,
   data,
+  statusEntries,
   serviceIssues = [],
   linkParams,
   isLoading,
   noun,
   rangeLabel,
+  onOpenChange,
 }: {
   serviceName: string;
   handlerName?: string;
   data?: components['schemas']['InvocationsSummaryResponse'];
+  statusEntries?: StatusBarEntry[];
   serviceIssues?: ServiceIssue[];
   linkParams?: URLSearchParams;
   isLoading?: boolean;
@@ -118,6 +127,7 @@ export function ServiceStatusBar({
   // Overrides the default range label in the tooltip header (e.g. "in-flight"
   // for the overview when the summary is scoped to in-flight invocations).
   rangeLabel?: ReactNode;
+  onOpenChange?: (isOpen: boolean) => void;
 }) {
   const { baseUrl } = useRestateContext();
   const range = data?.range;
@@ -127,7 +137,7 @@ export function ServiceStatusBar({
         (s) => s.service === serviceName && s.handler === handlerName,
       )
     : (data?.byServiceAndStatus ?? []).filter((s) => s.service === serviceName);
-  const statuses = buildStatusEntries(rows);
+  const statuses = statusEntries ?? buildStatusEntries(rows);
   const total = statuses.reduce((sum, s) => sum + s.count, 0);
   const issuesByStatus = handlerName
     ? undefined
@@ -188,6 +198,7 @@ export function ServiceStatusBar({
       issuesByStatus={issuesByStatus}
       isLoading={isLoading}
       noun={noun}
+      onOpenChange={onOpenChange}
     />
   );
 }

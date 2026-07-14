@@ -41,7 +41,7 @@ export function removeUserCol(col: ColumnKey) {
 }
 
 export interface UserSort {
-  field: string;
+  field: (typeof SORT_COLUMN_KEYS)[number];
   order: 'ASC' | 'DESC';
 }
 
@@ -50,7 +50,7 @@ export function getUserLastSort(): UserSort | null {
   if (!parsed) return null;
   if (
     typeof parsed.field !== 'string' ||
-    !SORT_COLUMN_KEYS.includes(parsed.field as ColumnKey)
+    !SORT_COLUMN_KEYS.includes(parsed.field)
   )
     return null;
   if (parsed.order !== 'ASC' && parsed.order !== 'DESC') return null;

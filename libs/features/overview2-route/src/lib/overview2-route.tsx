@@ -6,7 +6,7 @@ import { tv } from '@restate/util/styles';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
-import { useIsMutating, useQueryClient } from '@tanstack/react-query';
+import { useIsMutating } from '@tanstack/react-query';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import {
   formatDurations,
@@ -21,7 +21,9 @@ import {
   StatusArcEcharts,
   StatusLegend,
   buildCompletedSegments,
+  buildInboxBreakdownSegments,
   buildInFlightSegments,
+  buildInFlightStageSegments,
   splitInvocationTotals,
   type ArcSegment,
 } from '@restate/features/status-chart';
@@ -29,6 +31,7 @@ import {
   toCompletedInvocationsBucketHref,
   toCompletedInvocationsHref,
   toInFlightPlusScheduledInvocationsHref,
+  toInvocationsHref,
 } from '@restate/util/invocation-links';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
@@ -42,7 +45,6 @@ import {
 import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
-import { TimeRangeToggle } from './TimeRangeToggle';
 import {
   EngineCore,
   InFlightMetrics,
@@ -58,13 +60,12 @@ import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 import { HandlersGridList } from './HandlersGridList';
-import { getRangeLabel, useRange } from '@restate/features/restate-context';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
   CompletionHistoryChart,
   type CompletionBucketOutcome,
 } from '@restate/features/completion-history';
-import { useCompletedInvocationsTimeline } from '@restate/data-access/admin-api-hooks';
+import { useFinishedInvocationsTimelineV2 } from '@restate/data-access/admin-api-hooks';
 import { useNavigate } from 'react-router';
 
 const LINE_COUNT = 7;
@@ -397,6 +398,7 @@ function HeroGauge({
   isLoading,
   isError,
   textOnly,
+  valueFormat,
   className,
   ref,
 }: {
@@ -409,12 +411,17 @@ function HeroGauge({
   isLoading?: boolean;
   isError?: boolean;
   textOnly?: boolean;
+  valueFormat?: 'count' | 'approximate-percentage';
   className?: string;
   ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
     <div ref={ref} className={gaugeStyles({ class: className })}>
-      <StatusArcEcharts segments={segments} isLoading={isLoading} />
+      <StatusArcEcharts
+        segments={segments}
+        isLoading={isLoading}
+        valueFormat={valueFormat}
+      />
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-4">
         {isLoading ? (
           <div className="h-7 w-14 animate-pulse rounded-lg bg-gray-200 sm:h-8" />
@@ -450,13 +457,18 @@ function OverviewContent() {
   const {
     servicesMap,
     deploymentsMap,
+    byStage,
     byStatus,
     totalCount,
     serviceIssuesMap,
     isSummaryLoading,
+    isBreakdownSampled,
+    isInboxBreakdownLoading,
+    isInboxBreakdownError,
+    isCompletedBreakdownLoading,
+    isCompletedBreakdownError,
     isSummaryError,
     summaryError,
-    summaryQueryKey,
     isInitialLoading,
     isBare,
     isEmpty,
@@ -486,24 +498,23 @@ function OverviewContent() {
   };
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
   const metricsState = useMetricsState(overviewRefetchInterval);
-  const queryClient = useQueryClient();
-  const range = useRange();
-  const rangeLabel = getRangeLabel(range);
   const isCompletionHistoryEnabled = useIsFeatureFlagEnabled(
     'FEATURE_COMPLETION_HISTORY',
   );
   const { buckets: completionBuckets, isPending: isCompletionLoading } =
-    useCompletedInvocationsTimeline({
+    useFinishedInvocationsTimelineV2({
       refetchInterval: overviewRefetchInterval,
       enabled: isCompletionHistoryEnabled,
     });
 
-  const {
-    total: allTotal,
-    inFlight: inFlightTotal,
-    succeeded,
-    failed,
-  } = splitInvocationTotals(byStatus);
+  const { finished, succeeded, failed, cancelled, killed } =
+    splitInvocationTotals(byStatus);
+  const allTotal = byStage.reduce((sum, stage) => sum + stage.count, 0);
+  const inFlightTotal = byStage
+    .filter((stage) => stage.name !== 'finished')
+    .reduce((sum, stage) => sum + stage.count, 0);
+  const completedTotal =
+    byStage.find((stage) => stage.name === 'finished')?.count ?? 0;
   const completedSegments = useMemo(
     () => buildCompletedSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
@@ -512,24 +523,51 @@ function OverviewContent() {
   // current (live) hour's counts instead of the range totals, still linking to
   // the succeeded/failed invocations via the segment hrefs.
   const currentHourBucket = completionBuckets.at(-1);
+  const currentHourCompleted = currentHourBucket
+    ? currentHourBucket.succeeded +
+      currentHourBucket.failed +
+      currentHourBucket.cancelled +
+      currentHourBucket.killed
+    : 0;
+  const currentHourOutcomeCounts: Record<string, number> = currentHourBucket
+    ? {
+        succeeded: currentHourBucket.succeeded,
+        failed: currentHourBucket.failed,
+        cancelled: currentHourBucket.cancelled,
+        killed: currentHourBucket.killed,
+      }
+    : {};
   const completedLegendSegments =
     isCompletionHistoryEnabled && currentHourBucket
-      ? completedSegments.map((segment) => ({
-          ...segment,
-          count:
-            segment.name === 'succeeded'
-              ? currentHourBucket.succeeded
-              : currentHourBucket.failed,
-          href: toCompletedInvocationsBucketHref(baseUrl, {
-            start: currentHourBucket.start,
-            end: currentHourBucket.end,
-            outcome: segment.name === 'succeeded' ? 'succeeded' : 'failed',
-            existingParams: linkParams,
-          }),
-        }))
+      ? completedSegments.map((segment) => {
+          const segmentStatuses = segment.statuses ?? [];
+          const groupsUnsuccessful =
+            segmentStatuses.includes('cancelled') &&
+            segmentStatuses.includes('killed');
+          return {
+            ...segment,
+            count:
+              segment.name === 'finished'
+                ? currentHourCompleted
+                : groupsUnsuccessful
+                  ? currentHourBucket.failed +
+                    currentHourBucket.cancelled +
+                    currentHourBucket.killed
+                  : (currentHourOutcomeCounts[segment.name] ?? 0),
+            href: toCompletedInvocationsBucketHref(baseUrl, {
+              start: currentHourBucket.start,
+              end: currentHourBucket.end,
+              outcome:
+                segment.name === 'finished'
+                  ? 'completed'
+                  : groupsUnsuccessful
+                    ? 'unsuccessful'
+                    : (segment.name as CompletionBucketOutcome),
+              existingParams: linkParams,
+            }),
+          };
+        })
       : completedSegments;
-  const currentHourCompleted =
-    (currentHourBucket?.succeeded ?? 0) + (currentHourBucket?.failed ?? 0);
   const currentHourSuccessRateLabel =
     currentHourCompleted > 0
       ? formatPercentageWithoutFraction(
@@ -537,16 +575,19 @@ function OverviewContent() {
         )
       : undefined;
   const currentHourWindowLabel = formatElapsedBucketLabel(currentHourBucket);
-  const completedTotal = succeeded + failed;
+  const completedOutcomeTotal = succeeded + failed + cancelled + killed;
   const completedSuccessRate =
-    completedTotal > 0 ? succeeded / completedTotal : 0;
+    finished === 0 && completedOutcomeTotal > 0
+      ? succeeded / completedOutcomeTotal
+      : 0;
   const completedSuccessRateLabel =
-    completedTotal > 0
+    finished === 0 && completedOutcomeTotal > 0
       ? formatPercentageWithoutFraction(completedSuccessRate)
       : undefined;
-  const completedLabel = completedTotal > 0 ? 'Succeeded' : 'Completed';
+  const completedLabel =
+    finished > 0 ? 'Completed' : completedTotal > 0 ? 'Succeeded' : 'Completed';
   const completedSublabel =
-    completedTotal > 0
+    finished === 0 && completedOutcomeTotal > 0
       ? `of ${formatNumber(completedTotal, true)} completed`
       : undefined;
   const isSummaryEmpty = !isSummaryLoading && !isSummaryError && allTotal === 0;
@@ -573,6 +614,17 @@ function OverviewContent() {
   const inFlightSegments = useMemo(
     () => buildInFlightSegments(byStatus, baseUrl, linkParams),
     [byStatus, baseUrl, linkParams],
+  );
+  const inFlightLegendSegments = useMemo(
+    () => buildInFlightStageSegments(byStage, baseUrl, linkParams),
+    [byStage, baseUrl, linkParams],
+  );
+  const inboxBreakdownSegments = useMemo(
+    () =>
+      buildInboxBreakdownSegments(byStatus, (name) =>
+        toInvocationsHref(baseUrl, name, { existingParams: linkParams }),
+      ),
+    [baseUrl, byStatus, linkParams],
   );
   const metricsVisible =
     metricsState.isMetricsEnabled &&
@@ -651,10 +703,14 @@ function OverviewContent() {
           items={completedLegendSegments}
           isLoading={
             isSummaryLoading ||
-            (isCompletionHistoryEnabled && isCompletionLoading)
+            (isCompletionHistoryEnabled && isCompletionLoading) ||
+            (!isCompletionHistoryEnabled && isCompletedBreakdownLoading)
           }
+          isError={!isCompletionHistoryEnabled && isCompletedBreakdownError}
           orientation="vertical"
           className={legendClassName}
+          isSampled={!isCompletionHistoryEnabled && isBreakdownSampled}
+          totalCount={completedTotal}
         />
       </div>
     ) : null;
@@ -752,10 +808,17 @@ function OverviewContent() {
         <div className="hidden w-full min-w-0 self-center justify-self-end @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block">
           {showHeroLegends && (
             <StatusLegend
-              items={inFlightSegments}
+              items={inFlightLegendSegments}
               isLoading={isSummaryLoading}
               orientation="vertical"
               className="w-full min-w-0 justify-items-end"
+              breakdown={{
+                name: 'inbox',
+                items: inboxBreakdownSegments,
+                isLoading: isInboxBreakdownLoading,
+                isError: isInboxBreakdownError,
+                isSampled: isBreakdownSampled,
+              }}
             />
           )}
         </div>
@@ -763,6 +826,7 @@ function OverviewContent() {
           ref={gaugeRef}
           className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-2"
           segments={inFlightSegments}
+          valueFormat={isBreakdownSampled ? 'approximate-percentage' : 'count'}
           count={inFlightTotal}
           label={
             isSummaryEmpty ? (
@@ -814,13 +878,16 @@ function OverviewContent() {
             className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0"
             segments={completedSegments}
             count={completedTotal}
+            valueFormat={
+              isBreakdownSampled ? 'approximate-percentage' : 'count'
+            }
             valueLabel={completedSuccessRateLabel}
             label={isSummaryEmpty ? 'No completed' : completedLabel}
             sublabel={completedSublabel}
             textOnly={isSummaryEmpty}
             href={completedHref}
-            isLoading={isSummaryLoading}
-            isError={isSummaryError}
+            isLoading={isSummaryLoading || isCompletedBreakdownLoading}
+            isError={isSummaryError || isCompletedBreakdownError}
           />
         )}
         {renderCompletionSummary(
@@ -858,65 +925,28 @@ function OverviewContent() {
           data-overview-refresh-bounce=""
           className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
         />
-        {!isCompletionHistoryEnabled && (
+        {!isCompletionHistoryEnabled && summaryError && (
           <div
             data-overview-refresh-bounce=""
             className={summaryStackStyles({ metricsVisible })}
           >
-            <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
-              {isSummaryLoading ? (
-                <span className="flex h-7 animate-pulse items-baseline gap-1.5 rounded-xl bg-gray-200 text-transparent">
-                  <span className="text-lg font-semibold tabular-nums">
-                    {isSummaryError ? '–' : formatNumber(allTotal, true)}
-                  </span>
-                  <span className="text-base">invocations</span>
-                </span>
-              ) : (
-                <span className="flex items-baseline gap-1.5">
-                  {isSummaryEmpty ? (
-                    <span className="text-base font-medium text-gray-400">
-                      No invocations
-                    </span>
-                  ) : (
-                    <>
-                      <span className="text-lg font-semibold text-gray-700 tabular-nums">
-                        {isSummaryError ? '–' : formatNumber(allTotal, true)}
-                      </span>
-                      <span className="text-base text-gray-500">
-                        invocations
-                      </span>
-                    </>
-                  )}
-                </span>
-              )}
-              <TimeRangeToggle
-                onChange={() => {
-                  queryClient.cancelQueries({
-                    queryKey: summaryQueryKey,
-                    exact: true,
-                  });
-                }}
-              />
-              {summaryError && (
-                <Popover>
-                  <PopoverTrigger>
-                    <Button
-                      aria-label="Could not load invocation data"
-                      variant="secondary"
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
-                    >
-                      <Icon
-                        name={IconName.TriangleAlert}
-                        className="h-4 w-4 fill-red-200 text-red-600"
-                      />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="max-w-sm">
-                    <ErrorBanner error={summaryError} className="rounded-xl" />
-                  </PopoverContent>
-                </Popover>
-              )}
-            </div>
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  aria-label="Could not load invocation data"
+                  variant="secondary"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+                >
+                  <Icon
+                    name={IconName.TriangleAlert}
+                    className="h-4 w-4 fill-red-200 text-red-600"
+                  />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="max-w-sm">
+                <ErrorBanner error={summaryError} className="rounded-xl" />
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </div>
@@ -989,16 +1019,7 @@ function OverviewContent() {
             className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <SortByDropdown
-                formatServiceSortLabel={(option) =>
-                  option.value === 'health'
-                    ? `${option.label} ${rangeLabel}`
-                    : option.value === 'invocations' &&
-                        isCompletionHistoryEnabled
-                      ? 'In-flight invocations'
-                      : option.label
-                }
-              />
+              <SortByDropdown />
             </div>
             <SearchField
               aria-label="Filter"

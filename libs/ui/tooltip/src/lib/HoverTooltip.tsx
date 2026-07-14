@@ -20,6 +20,7 @@ const styles = tv({
 const SCROLL_SUPPRESS_MS = 700;
 const PRESS_SUPPRESS_MS = 700;
 let scrollSuppressUntil = 0;
+let closeActiveHoverTooltip: (() => void) | null = null;
 
 function markScrollSuppressed() {
   scrollSuppressUntil = Date.now() + SCROLL_SUPPRESS_MS;
@@ -41,6 +42,7 @@ export function HoverTooltip({
   placement,
   disabled = false,
   contentClassName,
+  onOpenChange,
 }: PropsWithChildren<{
   content: ReactNode;
   className?: string;
@@ -52,6 +54,7 @@ export function HoverTooltip({
   suppressOnScroll?: boolean;
   placement?: 'top' | 'bottom' | 'left' | 'right';
   disabled?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const cursorAnchorRef = useRef<HTMLSpanElement>(null);
@@ -62,12 +65,32 @@ export function HoverTooltip({
   const pressSuppressUntilRef = useRef(0);
 
   const [isOpen, setIsOpen] = useState(false);
-  const open = useCallback(() => {
-    setIsOpen(true);
-  }, []);
+  const isOpenRef = useRef(false);
   const close = useCallback(() => {
+    if (!isOpenRef.current) return;
+    isOpenRef.current = false;
     setIsOpen(false);
-  }, []);
+    onOpenChange?.(false);
+  }, [onOpenChange]);
+  const open = useCallback(() => {
+    if (isOpenRef.current) return;
+    if (closeActiveHoverTooltip && closeActiveHoverTooltip !== close) {
+      closeActiveHoverTooltip();
+    }
+    isOpenRef.current = true;
+    setIsOpen(true);
+    onOpenChange?.(true);
+  }, [close, onOpenChange]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    closeActiveHoverTooltip = close;
+    return () => {
+      if (closeActiveHoverTooltip === close) {
+        closeActiveHoverTooltip = null;
+      }
+    };
+  }, [close, isOpen]);
 
   const clearReopenTimeout = useCallback(() => {
     if (reopenTimeoutRef.current) {
@@ -171,8 +194,11 @@ export function HoverTooltip({
     (e: MouseEvent<HTMLElement>) => {
       isPointerOverRef.current = true;
       updateCursorAnchor(e);
+      if (closeActiveHoverTooltip && closeActiveHoverTooltip !== close) {
+        open();
+      }
     },
-    [updateCursorAnchor],
+    [close, open, updateCursorAnchor],
   );
 
   const handleMouseLeave = useCallback(() => {

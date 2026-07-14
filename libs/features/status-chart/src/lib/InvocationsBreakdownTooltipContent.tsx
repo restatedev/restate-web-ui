@@ -18,20 +18,24 @@ import {
 
 export type StatusBarEntry = {
   name: string;
+  label?: string;
   count: number;
 } & (typeof STATUS_STYLE)[string];
 
 export function buildStatusEntries(
-  rows: { status: string; count: number }[],
+  rows: { status: string; label?: string; count: number }[],
 ): StatusBarEntry[] {
   const map = new Map<string, number>();
+  const labels = new Map<string, string>();
   for (const row of rows) {
     if (row.count <= 0) continue;
     map.set(row.status, (map.get(row.status) ?? 0) + row.count);
+    if (row.label) labels.set(row.status, row.label);
   }
   return STATUS_ORDER.filter((name) => (map.get(name) ?? 0) > 0).map(
     (name) => ({
       name,
+      label: labels.get(name),
       count: map.get(name) ?? 0,
       ...(STATUS_STYLE[name] ?? DEFAULT_STYLE),
     }),
@@ -144,7 +148,7 @@ export function InvocationsBreakdownTooltipContent({
                 }}
               />
               <span className="pr-2 !text-0.5xs !text-gray-300">
-                {STATUS_LABELS[s.name] ?? s.name}
+                {s.label ?? STATUS_LABELS[s.name] ?? s.name}
               </span>
               <span className="ml-auto flex items-center gap-1.5">
                 {severity && (

@@ -600,6 +600,97 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/v2/invocations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List invocations using the v2 query planner
+     * @description Uses durable invocation status for statuses represented there and VQueue entries only for running, backing-off, ready, and yielded. Deployment filters always mean the pinned deployment.
+     */
+    post: operations['list_invocations_v2'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/v2/invocations/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Return invocation summary
+     * @description Returns coarse stages, response-defined status buckets, and service buckets. Filters listed in highlightFields remain visible as highlighted buckets; every other filter is applied to the aggregate population.
+     */
+    post: operations['summary_invocations_v2'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/v2/invocations/inbox': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Break down inboxed invocations by due state or status */
+    post: operations['inbox_invocations_breakdown_v2'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/v2/invocations/finished-breakdown': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Break down finished invocations by outcome */
+    post: operations['finished_invocations_breakdown_v2'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/v2/invocations/finished-history': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Return finished invocation outcomes in date buckets */
+    post: operations['finished_invocations_history_v2'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/invocations/count': {
     parameters: {
       query?: never;
@@ -2817,6 +2908,316 @@ export interface components {
       log_mibps: number;
     };
     VirtualObjectState: string[];
+    InvocationQueryModeV2:
+      | {
+          /** @enum {string} */
+          type: 'exact';
+        }
+      | {
+          /** @enum {string} */
+          type: 'sampled';
+          /** @description Maximum invocation entries retained in the sample. Defaults to 50000. */
+          sampleSize?: number;
+        };
+    FinishedInvocationQueryModeV2:
+      | {
+          /** @enum {string} */
+          type: 'exact';
+        }
+      | {
+          /** @enum {string} */
+          type: 'sampled';
+          /** @description Maximum finished invocation entries scanned before aggregation. Defaults to 50000. */
+          sampleSize?: number;
+        };
+    InvocationV2FilterItem: components['schemas']['FilterItem'] & {
+      /** @enum {string} */
+      field:
+        | 'id'
+        | 'status'
+        | 'target_service_name'
+        | 'target_service_key'
+        | 'target_handler_name'
+        | 'target_service_ty'
+        | 'deployment'
+        | 'invoked_by_subscription_id'
+        | 'invoked_by'
+        | 'invoked_by_service_name'
+        | 'invoked_by_id'
+        | 'idempotency_key'
+        | 'created_at'
+        | 'modified_at'
+        | 'completed_at'
+        | 'scope'
+        | 'limit_key';
+    };
+    InvocationV2Sort: {
+      /** @enum {string} */
+      field: 'created_at' | 'modified_at' | 'transitioned_at';
+      /** @enum {string} */
+      order: 'ASC' | 'DESC';
+    };
+    ListInvocationsV2RequestBody: {
+      filters?: components['schemas']['InvocationV2FilterItem'][];
+      sort?: components['schemas']['InvocationV2Sort'];
+      mode?: components['schemas']['InvocationQueryModeV2'];
+    };
+    InvocationVqueueStateV2: {
+      vqueue_id?: string;
+      /** @enum {string} */
+      stage: 'inbox' | 'running' | 'suspended' | 'paused' | 'finished';
+      status: string;
+      /** Format: date-time */
+      next_at?: string;
+      /** Format: date-time */
+      created_at?: string;
+      /** Format: date-time */
+      transitioned_at?: string;
+      /** Format: date-time */
+      first_attempt_at?: string;
+      /** Format: date-time */
+      latest_attempt_at?: string;
+      /** Format: date-time */
+      first_runnable_at?: string;
+      /** Format: uint32 */
+      retry_attempts?: number;
+      /** Format: uint32 */
+      num_attempts?: number;
+      /** Format: uint32 */
+      num_errors?: number;
+      deployment?: string;
+    };
+    InvocationV2: components['schemas']['Invocation'] & {
+      vqueue?: components['schemas']['InvocationVqueueStateV2'];
+    };
+    ListInvocationsV2Response: {
+      rows: components['schemas']['InvocationV2'][];
+      limit: number;
+      /** @enum {string} */
+      mode: 'exact' | 'sampled';
+      isPartial: boolean;
+      sample?: {
+        sampleSize: number;
+      };
+      partial?:
+        | {
+            /** @enum {string} */
+            reason: 'vqueue-limit';
+            queueLimit: number;
+          }
+        | {
+            /** @enum {string} */
+            reason: 'candidate-limit';
+            candidateLimit: number;
+          };
+    };
+    SummaryInvocationsV2RequestBody: {
+      filters?: components['schemas']['InvocationV2FilterItem'][];
+      mode?: components['schemas']['InvocationQueryModeV2'];
+      /**
+       * @description Selects the response sections. Stages returns coarse stage and service totals; breakdowns returns inner status distributions; all returns both.
+       * @enum {string}
+       */
+      view?: 'all' | 'stages' | 'breakdowns';
+      /** @description Filters on these fields do not restrict the aggregate population. Their matching response buckets are marked with isIncluded instead. */
+      highlightFields?: ('status' | 'target_service_name')[];
+    };
+    InvocationStatusSummaryBucketV2: {
+      /** @description Stable key for this response-defined bucket. It may represent several invocation statuses. */
+      key: string;
+      label: string;
+      /** @description Invocation status filter values represented by this bucket. */
+      statuses: components['schemas']['InvocationStatus'][];
+      count: number;
+      /** @description Whether this bucket matches the removed status highlight filters. */
+      isIncluded: boolean;
+    };
+    InvocationServiceSummaryBucketV2: {
+      service: string;
+      count: number;
+      statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
+      /** @description Whether this bucket matches the removed target_service_name highlight filters. */
+      isIncluded: boolean;
+    };
+    InvocationStageSummaryBucketV2: {
+      key: components['schemas']['InvocationSummaryStageV2'];
+      label: string;
+      /** @description Invocation status filter values represented by this stage. */
+      statuses: components['schemas']['InvocationStatus'][];
+      count: number;
+      /** @description Whether this stage's inner status distribution came from a bounded population. */
+      breakdownIsPartial: boolean;
+      /**
+       * @description The status granularity currently available inside this stage.
+       * @enum {string}
+       */
+      breakdownCoverage: 'full' | 'coarse' | 'missing';
+      /** @description Whether another breakdown view of this endpoint can safely provide more granular status buckets. */
+      breakdownCanRefine: boolean;
+      /** @description Whether this stage contains a status matched by the removed status highlight filters. */
+      isIncluded: boolean;
+    };
+    SummaryInvocationsV2Response: {
+      /** @description Time spent executing and assembling this summary response in the query handler, in milliseconds. */
+      queryDurationMs: number;
+      /** @enum {string} */
+      mode: 'exact' | 'sampled';
+      isPartial: boolean;
+      /** @description Whether the coarse stage totals are derived from a bounded population rather than exact metadata counters. */
+      stageCountsArePartial: boolean;
+      total: number;
+      sample?: {
+        sampleSize: number;
+      };
+      appliedFilters: components['schemas']['InvocationV2FilterItem'][];
+      stageBuckets: components['schemas']['InvocationStageSummaryBucketV2'][];
+      statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
+      serviceBuckets: components['schemas']['InvocationServiceSummaryBucketV2'][];
+    };
+    InboxInvocationsBreakdownV2RequestBody: {
+      /**
+       * @description Selects one physical aggregation. Due does not group by status; status does not calculate first-runnable due state.
+       * @enum {string}
+       */
+      groupBy: 'due' | 'status';
+      /** @description Bounds the global VQueue status breakdown. Due breakdowns and service-filtered requests remain exact within their selected population. */
+      mode?: components['schemas']['InvocationQueryModeV2'];
+      /** @description Filter by service. VQueue mode bounds the metadata population to one million queues and conservatively reports the result as partial without a separate population-count query. */
+      serviceNames?: string[];
+      /** @description Include service breakdowns. In VQueue mode serviceNames is required because grouping every service would require an unbounded metadata-to-entry join. */
+      groupByService?: boolean;
+    };
+    InboxInvocationDueServiceBreakdownV2: {
+      service: string;
+      total: number;
+      due: number;
+      notDue: number;
+    };
+    InboxInvocationsDueBreakdownV2Response: {
+      /** @enum {string} */
+      groupBy: 'due';
+      /** Format: date-time */
+      asOf: string;
+      total: number;
+      due: number;
+      notDue: number;
+      isPartial: boolean;
+      partial?: components['schemas']['InboxInvocationsPartialV2'];
+      /** @description Present only when groupByService is true. */
+      byService?: components['schemas']['InboxInvocationDueServiceBreakdownV2'][];
+    };
+    InboxInvocationStatusBreakdownV2: {
+      status: components['schemas']['InvocationStatus'];
+      count: number;
+    };
+    InboxInvocationStatusServiceBreakdownV2: {
+      service: string;
+      count: number;
+    };
+    InboxInvocationStatusServiceAndStatusBreakdownV2: {
+      service: string;
+      status: components['schemas']['InvocationStatus'];
+      count: number;
+    };
+    InboxInvocationsStatusBreakdownV2Response: {
+      /** @enum {string} */
+      groupBy: 'status';
+      total: number;
+      byStatus: components['schemas']['InboxInvocationStatusBreakdownV2'][];
+      isPartial: boolean;
+      partial?: components['schemas']['InboxInvocationsPartialV2'];
+      /** @description Present only when groupByService is true. */
+      byService?: components['schemas']['InboxInvocationStatusServiceBreakdownV2'][];
+      /** @description Present only when groupByService is true. */
+      byServiceAndStatus?: components['schemas']['InboxInvocationStatusServiceAndStatusBreakdownV2'][];
+    };
+    InboxInvocationsPartialV2: {
+      /** @enum {string} */
+      reason: 'vqueue-limit';
+      queueLimit: number;
+    };
+    InboxInvocationsBreakdownV2Response:
+      | components['schemas']['InboxInvocationsDueBreakdownV2Response']
+      | components['schemas']['InboxInvocationsStatusBreakdownV2Response'];
+    /** @enum {string} */
+    InvocationSummaryStageV2:
+      | 'inbox'
+      | 'running'
+      | 'suspended'
+      | 'paused'
+      | 'finished';
+    /** @description Defaults to a bounded sampled breakdown; request exact mode explicitly when a full retained-finished scan is acceptable. */
+    FinishedInvocationsBreakdownV2RequestBody: {
+      mode?: components['schemas']['FinishedInvocationQueryModeV2'];
+      /**
+       * Format: date-time
+       * @description Inclusive completion-time lower bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode.
+       */
+      startTime?: string;
+      /**
+       * Format: date-time
+       * @description Exclusive completion-time upper bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode.
+       */
+      endTime?: string;
+    };
+    FinishedInvocationOutcomeBreakdownV2: {
+      /** @enum {string} */
+      status: 'succeeded' | 'failed' | 'cancelled' | 'killed';
+      count: number;
+    };
+    FinishedInvocationsBreakdownV2Response: {
+      /** @enum {string} */
+      mode: 'exact' | 'sampled';
+      /**
+       * @description VQueue mode reports all four outcomes exactly. Legacy mode avoids reading completion_failure and groups killed/cancelled into failed.
+       * @enum {string}
+       */
+      granularity: 'exact' | 'failure-grouped';
+      isPartial: boolean;
+      scannedCount: number;
+      outcomes: components['schemas']['FinishedInvocationOutcomeBreakdownV2'][];
+    };
+    FinishedInvocationsHistoryV2RequestBody: {
+      /**
+       * Format: date-time
+       * @description Inclusive completion-time lower bound.
+       */
+      startTime: string;
+      /**
+       * Format: date-time
+       * @description Exclusive completion-time upper bound.
+       */
+      endTime: string;
+      /**
+       * Format: duration
+       * @description Fixed-width ISO 8601 bucket interval, for example PT5M, PT1H, or P1D. The requested range may contain at most 10000 buckets.
+       */
+      interval: string;
+    };
+    FinishedInvocationsHistoryBucketV2: {
+      /** Format: date-time */
+      start: string;
+      /** Format: date-time */
+      end: string;
+      succeeded: number;
+      failed: number;
+      cancelled: number;
+      killed: number;
+    };
+    FinishedInvocationsHistoryV2Response: {
+      /** Format: date-time */
+      startTime: string;
+      /** Format: date-time */
+      endTime: string;
+      /** Format: duration */
+      interval: string;
+      /**
+       * @description VQueue mode separates all four outcomes. Legacy mode reports every non-success outcome as failed.
+       * @enum {string}
+       */
+      granularity: 'exact' | 'failure-grouped';
+      buckets: components['schemas']['FinishedInvocationsHistoryBucketV2'][];
+    };
     ListInvocationsRequestBody: {
       filters?: components['schemas']['FilterItem'][];
       sampled?: boolean;
@@ -2856,6 +3257,7 @@ export interface components {
       | 'cancelled'
       | 'killed'
       | 'running'
+      | 'yielded'
       | 'suspended'
       | 'scheduled'
       | 'pending'
@@ -4162,6 +4564,12 @@ export interface components {
       journal_commands_size?: number;
       /** Format: uint64 */
       retry_count?: number;
+      /** Format: date-time */
+      first_runnable_at?: string;
+      /** Format: uint32 */
+      num_attempts?: number;
+      /** Format: uint32 */
+      num_errors?: number;
       /** Format: uint64 */
       last_failure_related_entry_index?: number;
       last_failure_related_entry_name?: string;
@@ -4217,6 +4625,7 @@ export interface components {
         | 'ready'
         | 'running'
         | 'backing-off'
+        | 'yielded'
         | 'suspended'
         | 'completed'
         | 'paused';
@@ -4247,6 +4656,12 @@ export interface components {
       journal_commands_size?: number;
       /** Format: uint64 */
       retry_count?: number;
+      /** Format: date-time */
+      first_runnable_at?: string;
+      /** Format: uint32 */
+      num_attempts?: number;
+      /** Format: uint32 */
+      num_errors?: number;
       /** Format: uint64 */
       last_failure_related_command_index?: number;
       last_failure_related_command_name?: string;
@@ -6113,6 +6528,171 @@ export interface operations {
       };
     };
   };
+  list_invocations_v2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListInvocationsV2RequestBody'];
+      };
+    };
+    responses: {
+      /** @description Invocation page */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListInvocationsV2Response'];
+        };
+      };
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  summary_invocations_v2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SummaryInvocationsV2RequestBody'];
+      };
+    };
+    responses: {
+      /** @description Invocation summary */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SummaryInvocationsV2Response'];
+        };
+      };
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  inbox_invocations_breakdown_v2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InboxInvocationsBreakdownV2RequestBody'];
+      };
+    };
+    responses: {
+      /** @description Inbox breakdown selected by groupBy */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['InboxInvocationsBreakdownV2Response'];
+        };
+      };
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  finished_invocations_breakdown_v2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['FinishedInvocationsBreakdownV2RequestBody'];
+      };
+    };
+    responses: {
+      /** @description Finished invocation breakdown */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FinishedInvocationsBreakdownV2Response'];
+        };
+      };
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  finished_invocations_history_v2: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['FinishedInvocationsHistoryV2RequestBody'];
+      };
+    };
+    responses: {
+      /** @description Finished invocation outcome history */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['FinishedInvocationsHistoryV2Response'];
+        };
+      };
+      /** @description Invalid query */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
   count_invocations: {
     parameters: {
       query?: never;
@@ -7375,7 +7955,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['Invocation'] & {
+          'application/json': components['schemas']['InvocationV2'] & {
             journal?: {
               version?: number;
               entries?: components['schemas']['JournalEntryV2'][];

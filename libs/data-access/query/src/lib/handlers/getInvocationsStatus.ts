@@ -1,37 +1,7 @@
+import type { RawInvocation } from '@restate/data-access/admin-api-spec';
+import { convertInvocation } from '../convertInvocation';
 import { type QueryContext, quoteSqlString } from './shared';
-
-type InvocationStatus =
-  | 'succeeded'
-  | 'failed'
-  | 'running'
-  | 'suspended'
-  | 'scheduled'
-  | 'pending'
-  | 'ready'
-  | 'paused'
-  | 'backing-off';
-
-function getInvocationStatus(
-  status?: string,
-  completionResult?: string,
-): InvocationStatus | undefined {
-  if (status === 'completed') {
-    return completionResult === 'success' ? 'succeeded' : 'failed';
-  }
-
-  switch (status) {
-    case 'running':
-    case 'suspended':
-    case 'scheduled':
-    case 'pending':
-    case 'ready':
-    case 'paused':
-    case 'backing-off':
-      return status;
-    default:
-      return undefined;
-  }
-}
+import { fetchVqueueStatuses } from './vqueue';
 
 export async function getInvocationsStatus(
   this: QueryContext,
@@ -45,32 +15,40 @@ export async function getInvocationsStatus(
     return Response.json({ invocations: {} });
   }
 
-  const { rows } = await this.query(
-    `SELECT id, status, completion_result, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name FROM sys_invocation WHERE id IN (${uniqueInvocationIds.map(quoteSqlString).join(', ')})`,
-  );
+  const [invocationResult, vqueueStatuses] = await Promise.all([
+    this.query(
+      `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name${this.features.has('vqueues') ? ', vqueue_id' : ''} FROM sys_invocation WHERE id IN (${uniqueInvocationIds.map(quoteSqlString).join(', ')})`,
+    ),
+    fetchVqueueStatuses(this, uniqueInvocationIds),
+  ]);
 
-  // TODO(vqueue): overlay backing-off status from sys_vqueues for queued
-  // invocations (batched fetchVqueueStatuses, WHERE entry_id IN). This computes
-  // status inline, so it needs its own merge. Low priority: consumers use this
-  // for completion polling + deployment selection, not a backing-off badge.
-  const invocationsById = new Map(
-    rows.map((row) => [
-      row.id as string,
-      {
-        status: getInvocationStatus(
-          row.status as string | undefined,
-          row.completion_result as string | undefined,
-        ),
-        pinnedDeploymentId: row.pinned_deployment_id as string | undefined,
-        lastAttemptDeploymentId: row.last_attempt_deployment_id as
-          | string
-          | undefined,
-        targetServiceName: row.target_service_name as string | undefined,
-        targetServiceKey: row.target_service_key as string | undefined,
-        targetHandlerName: row.target_handler_name as string | undefined,
-      },
-    ]),
-  );
+  const invocationsById = new Map<
+    string,
+    {
+      status: string;
+      pinnedDeploymentId?: string;
+      lastAttemptDeploymentId?: string;
+      targetServiceName?: string;
+      targetServiceKey?: string;
+      targetHandlerName?: string;
+    }
+  >();
+  for (const row of invocationResult.rows) {
+    const invocation = convertInvocation(
+      row as RawInvocation,
+      vqueueStatuses.get(row.id as string),
+    );
+    invocationsById.set(row.id as string, {
+      status: invocation.status,
+      pinnedDeploymentId: invocation.pinned_deployment_id,
+      lastAttemptDeploymentId: row.last_attempt_deployment_id as
+        | string
+        | undefined,
+      targetServiceName: row.target_service_name as string | undefined,
+      targetServiceKey: row.target_service_key as string | undefined,
+      targetHandlerName: row.target_handler_name as string | undefined,
+    });
+  }
 
   return Response.json({
     invocations: Object.fromEntries(

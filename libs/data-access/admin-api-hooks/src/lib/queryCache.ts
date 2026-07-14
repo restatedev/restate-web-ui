@@ -1,9 +1,23 @@
+import type {
+  components,
+  operations,
+} from '@restate/data-access/admin-api-spec';
 import { Query, QueryClient } from '@tanstack/react-query';
 import {
   isGetInvocationJournalWithInvocationV2,
-  isListInvocations,
-  useListInvocations,
+  isListInvocationsV2,
 } from './hooks';
+import { useListInvocationsV2 } from './invocationV2Hooks';
+
+type InvocationDetail =
+  operations['get_invocation_journal_v2']['responses']['200']['content']['application/json'];
+type InvocationV2 = components['schemas']['InvocationV2'];
+
+function toListInvocation(detail: InvocationDetail): InvocationV2 {
+  const invocation = { ...detail };
+  delete invocation.journal;
+  return invocation;
+}
 
 export function queryCacheOnSuccess(
   queryClient: QueryClient,
@@ -14,26 +28,20 @@ export function queryCacheOnSuccess(
     queryClient.setQueriesData(
       {
         predicate: (query) => {
-          return isListInvocations({}, query);
+          return isListInvocationsV2({}, query);
         },
       },
-      (oldData: ReturnType<typeof useListInvocations>['data']) => {
-        if (data && oldData) {
-          const { journal, ...newInvocation } = data ?? {};
-          if (newInvocation) {
-            return {
-              ...oldData,
-              rows: oldData.rows.map((oldInvocation) => {
-                if (oldInvocation.id === newInvocation.id) {
-                  return newInvocation;
-                } else {
-                  return oldInvocation;
-                }
-              }),
-            };
-          }
-        }
-        return oldData;
+      (oldData: ReturnType<typeof useListInvocationsV2>['data']) => {
+        if (!data || !oldData) return oldData;
+        const newInvocation = toListInvocation(data);
+        return {
+          ...oldData,
+          rows: oldData.rows.map((oldInvocation) =>
+            oldInvocation.id === newInvocation.id
+              ? newInvocation
+              : oldInvocation,
+          ),
+        };
       },
     );
   }

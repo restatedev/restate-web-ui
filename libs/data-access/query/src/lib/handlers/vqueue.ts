@@ -1,61 +1,14 @@
 import type { VqueueStatus } from '../convertInvocation';
 import { type QueryContext, quoteSqlString } from './shared';
 
-// Temporary, local-only flag persisted to localStorage and flipped via the
-// /feature-flags/FEATURE_VQUEUE_OBSERVABILITY route. Read directly here: the
-// query layer sits below @restate/util/feature-flag in the dependency graph,
-// so importing that lib would create a cycle.
-// const VQUEUE_OBSERVABILITY_FLAG = 'FEATURE_VQUEUE_OBSERVABILITY';
-
-function vqueueStatusFlagEnabled(): boolean {
-  return true;
-  // return (
-  //   typeof localStorage !== 'undefined' &&
-  //   localStorage.getItem(VQUEUE_OBSERVABILITY_FLAG) === 'true'
-  // );
-}
-
-// Whether the vqueue status overlay should run: the server exposes virtual
-// queues (so sys_vqueues exists) and the local flag is on.
+// Whether the VQueue status overlay should run: the server exposes virtual
+// queues and the local flag is on.
 export function vqueueStatusEnabled(ctx: QueryContext): boolean {
-  return ctx.features.has('vqueues') && vqueueStatusFlagEnabled();
+  return ctx.features.has('vqueues');
 }
 
-// Looks up the live vqueue state for one invocation's entry. Runs no query —
-// and returns undefined — when the flag is off or no `vqueueId` is known.
-// Keyed by both the queue (`id`) and the invocation (`entry_id`): a stale
-// `vqueueId` (the entry has since moved queues) therefore returns nothing, so
-// callers can retry with the invocation's current vqueue_id.
-export async function fetchVqueueStatus(
-  ctx: QueryContext,
-  invocationId: string,
-  vqueueId?: string,
-): Promise<VqueueStatus | undefined> {
-  if (!vqueueId || !invocationId || !vqueueStatusFlagEnabled()) {
-    return undefined;
-  }
-
-  const { rows } = await ctx.query(
-    `SELECT status, run_at, num_attempts, latest_attempt_at, first_runnable_at, first_attempt_at FROM sys_vqueues WHERE id = ${quoteSqlString(vqueueId)} AND entry_id = ${quoteSqlString(invocationId)}`,
-  );
-  const row = rows.at(0);
-  return row
-    ? {
-        status: row.status as string,
-        run_at: row.run_at as string,
-        num_attempts: row.num_attempts as number,
-        latest_attempt_at: row.latest_attempt_at as string,
-        first_runnable_at: row.first_runnable_at as string,
-        first_attempt_at: row.first_attempt_at as string,
-      }
-    : undefined;
-}
-
-// Batched lookup for lists: resolve vqueue state for many invocations at once,
-// keyed by entry_id (unique per invocation). Returns a map id → status; queued
-// invocations are present, the rest are absent. Unlike the single-id lookup it
-// queries entry_id directly, so it gates on the `vqueues` capability explicitly
-// (sys_vqueues may not exist otherwise).
+// Point lookup keyed by entry_id (unique per invocation). List population
+// scans still use sys_vqueues so positive stage predicates can prune keyspaces.
 export async function fetchVqueueStatuses(
   ctx: QueryContext,
   invocationIds: string[],
@@ -70,17 +23,26 @@ export async function fetchVqueueStatuses(
   }
 
   const { rows } = await ctx.query(
-    `SELECT entry_id, status, run_at, num_attempts, latest_attempt_at FROM sys_vqueues WHERE entry_id IN (${ids
+    `SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN (${ids
       .map(quoteSqlString)
-      .join(', ')})`,
+      .join(', ')}) AND entry_kind = 'invocation'`,
   );
   for (const row of rows) {
     if (row.entry_id) {
       statuses.set(row.entry_id as string, {
+        vqueue_id: row.vqueue_id as string,
+        stage: row.stage as VqueueStatus['stage'],
         status: row.status as string,
-        run_at: row.run_at as string,
-        num_attempts: row.num_attempts as number,
+        next_at: row.next_at as string,
+        created_at: row.created_at as string,
+        transitioned_at: row.transitioned_at as string,
+        first_attempt_at: row.first_attempt_at as string,
         latest_attempt_at: row.latest_attempt_at as string,
+        first_runnable_at: row.first_runnable_at as string,
+        retry_attempts: row.retry_attempts as number,
+        num_attempts: row.num_attempts as number,
+        num_errors: row.num_errors as number,
+        deployment: row.deployment as string,
       });
     }
   }

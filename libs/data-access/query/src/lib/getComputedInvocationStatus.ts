@@ -3,27 +3,29 @@ import type {
   RawInvocation,
 } from '@restate/data-access/admin-api-spec';
 
-export function getComputedInvocationStatus(invocation: RawInvocation): {
+export type InvocationWithComputedStatus = Omit<RawInvocation, 'status'> & {
+  status: RawInvocation['status'] | InvocationComputedStatus2;
+};
+
+export function getComputedInvocationStatus(
+  invocation: InvocationWithComputedStatus,
+): {
   isRetrying: boolean;
   status: InvocationComputedStatus2;
 } {
   const isSuccessful = invocation.completion_result === 'success';
   const isCancelled = Boolean(
     invocation.completion_result === 'failure' &&
-      invocation.completion_failure &&
-      [
-        '[409] canceled',
-        '[409] cancelled',
-        '[409] error 409',
-        '[409 aborted] canceled',
-        '[409 aborted] cancelled',
-      ].includes(invocation.completion_failure?.toLowerCase()),
+    invocation.completion_failure &&
+    ['[409] canceled', '[409] cancelled'].includes(
+      invocation.completion_failure?.toLowerCase(),
+    ),
   );
   const isKilled = Boolean(
     invocation.completion_result === 'failure' &&
-      ['[409] killed', '[409 aborted] killed'].includes(
-        invocation.completion_failure?.toLowerCase() ?? '',
-      ),
+    ['[409] killed'].includes(
+      invocation.completion_failure?.toLowerCase() ?? '',
+    ),
   );
   const isRunning = invocation.status === 'running';
   const isCompleted = invocation.status === 'completed';
@@ -31,10 +33,10 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
   const hasLastFailure = Boolean(invocation.last_failure);
   const isRetrying = Boolean(
     invocation.status === 'backing-off' ||
-      (invocation.retry_count &&
-        invocation.retry_count > 1 &&
-        isRunning &&
-        hasLastFailure),
+    (invocation.retry_count &&
+      invocation.retry_count > 1 &&
+      isRunning &&
+      hasLastFailure),
   );
 
   if (isCompleted) {
@@ -62,10 +64,15 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
   switch (invocation.status) {
     case 'pending':
     case 'ready':
+    case 'yielded':
     case 'scheduled':
     case 'running':
     case 'paused':
     case 'suspended':
+    case 'succeeded':
+    case 'failed':
+    case 'cancelled':
+    case 'killed':
       return { status: invocation.status, isRetrying: false };
 
     default: {
@@ -74,7 +81,10 @@ export function getComputedInvocationStatus(invocation: RawInvocation): {
         invocation.completion_result,
         invocation.completion_failure,
       );
-      return { status: invocation.status as any, isRetrying: false };
+      return {
+        status: invocation.status as InvocationComputedStatus2,
+        isRetrying: false,
+      };
     }
   }
 }

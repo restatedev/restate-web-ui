@@ -5,7 +5,14 @@ import {
 import type { ReactNode } from 'react';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
-import { formatNumber, formatApproxPercentage } from '@restate/util/intl';
+import { Button } from '@restate/ui/button';
+import { Link } from '@restate/ui/link';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import {
+  formatNumber,
+  formatApproxPercentage,
+  formatPercentageWithoutFraction,
+} from '@restate/util/intl';
 import { toInvocationsHref } from '@restate/util/invocation-links';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
@@ -155,11 +162,15 @@ export function StatusLegend({
   orientation = 'horizontal',
   className,
   isDimmed,
+  isItemLoading,
+  isItemSampled,
   allItem,
   isSampled,
   leading,
   items,
   compact = true,
+  totalCount,
+  breakdown,
 }: {
   byStatus?: StatusEntry[];
   isLoading?: boolean;
@@ -177,6 +188,8 @@ export function StatusLegend({
   // filter_status dimming. Component is agnostic to where the signal comes
   // from.
   isDimmed?: (statusName: string) => boolean;
+  isItemLoading?: (statusName: string) => boolean;
+  isItemSampled?: (statusName: string) => boolean;
   // Leading "All" reset entry — mirrors the All tab in the service tab strip.
   // When provided, prepended to the legend; clicking it should clear the
   // status filter (caller builds the href). Dimmed alongside non-matching
@@ -196,6 +209,14 @@ export function StatusLegend({
   // statuses). `allItem`/`getHref` are ignored in this mode.
   items?: ArcSegment[];
   compact?: boolean;
+  totalCount?: number;
+  breakdown?: {
+    name: string;
+    items: ArcSegment[];
+    isLoading?: boolean;
+    isError?: boolean;
+    isSampled?: boolean;
+  };
 }) {
   const { baseUrl } = useRestateContext();
   const state = isLoading ? 'loading' : isError ? 'error' : 'success';
@@ -206,45 +227,179 @@ export function StatusLegend({
     if (entry.count > 0) countByStatus.set(entry.name, entry.count);
   }
 
-  // Always iterate the canonical status list so the legend's wrap count and
-  // height stay constant regardless of how many statuses are present in the
-  // data — unless explicit `items` are supplied.
+  // The API-defined buckets are authoritative once data is available. The
+  // canonical list is used only to keep the initial loading skeleton stable.
   const rows: LegendRow[] = items
     ? items
-    : ALL_STATUSES.map((s) => ({
-        name: s.name,
-        label: STATUS_LABELS[s.name] ?? s.name,
-        count: countByStatus.get(s.name) ?? 0,
-        fillLight: s.fillLight,
-        stroke: s.stroke,
-        borderType: s.borderType,
-      }));
+    : byStatus.length > 0
+      ? byStatus.map((entry) => {
+          const style = STATUS_STYLE[entry.name] ?? DEFAULT_STYLE;
+          return {
+            name: entry.name,
+            label: entry.label ?? STATUS_LABELS[entry.name] ?? entry.name,
+            count: countByStatus.get(entry.name) ?? 0,
+            fillLight: style.fillLight,
+            stroke: style.stroke,
+            borderType: style.borderType,
+          };
+        })
+      : ALL_STATUSES.map((status) => ({
+          name: status.name,
+          label: STATUS_LABELS[status.name] ?? status.name,
+          count: 0,
+          fillLight: status.fillLight,
+          stroke: status.stroke,
+          borderType: status.borderType,
+        }));
 
   // Population used for percentage chips: the whole in-scope total (all
   // statuses across both halves in status mode; sum of items otherwise).
-  let total = 0;
+  let calculatedTotal = 0;
   const totalSource = items ?? byStatus;
   for (const entry of totalSource) {
-    if (entry.count > 0) total += entry.count;
+    if (entry.count > 0) calculatedTotal += entry.count;
   }
-  const formatChip = (count: number) =>
-    isSampled && total > 0
-      ? formatApproxPercentage(count / total)
-      : formatNumber(count, true);
+  const total = totalCount ?? calculatedTotal;
+  const formatChip = (row: LegendRow) => {
+    if (!isSampled || total <= 0) return formatNumber(row.count, true);
+    const percentage = row.count / total;
+    return isItemSampled?.(row.name) === false
+      ? formatPercentageWithoutFraction(percentage)
+      : formatApproxPercentage(percentage);
+  };
 
   // Show the leading "All" reset entry only in status mode (never with
   // explicit items).
-  const showAllItem = !items && allItem && state === 'success';
+  const showAllItem = !items && allItem && state !== 'error';
+  const allItemIsSampled = Boolean(isSampled && !isItemSampled);
 
   const resolveHref = (row: LegendRow) =>
     row.href ??
     getHref?.(row.name) ??
     toInvocationsHref(baseUrl, row.name, { existingParams: linkParams });
+  const breakdownRow = breakdown
+    ? rows.find((row) => row.name === breakdown.name)
+    : undefined;
+  const visibleRows = breakdownRow
+    ? rows.filter((row) => row.name !== breakdownRow.name)
+    : rows;
+  const breakdownTotal = breakdownRow?.count ?? 0;
 
   return (
     <div className={legendStyles({ isLoading, orientation, class: className })}>
       {leading && (
         <div className="flex items-center px-1.5 py-0.5">{leading}</div>
+      )}
+      {breakdown && breakdownRow && (
+        <div
+          className={legendItemStyles({
+            state: state === 'error' ? 'error' : state,
+            appearance:
+              breakdownTotal === 0
+                ? 'faded'
+                : isDimmed?.(breakdownRow.name)
+                  ? 'dimmed'
+                  : 'normal',
+            orientation,
+            compact,
+          })}
+        >
+          <Link
+            href={resolveHref(breakdownRow)}
+            preserveQueryParams={false}
+            variant="secondary"
+            className="flex min-w-0 items-center gap-1.5 text-gray-700 no-underline outline-offset-2 outline-blue-600 focus-visible:outline-2"
+            disabled={state !== 'success'}
+          >
+            <span
+              className={bulletStyles({
+                state,
+                borderType: breakdownRow.borderType ? 'dashed' : 'solid',
+              })}
+              style={{
+                backgroundColor: breakdownRow.fillLight,
+                borderColor: breakdownRow.stroke,
+              }}
+            />
+            <span className={labelStyles({ orientation, compact })}>
+              {breakdownRow.label}
+            </span>
+            <span className="inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+              {formatChip(breakdownRow)}
+            </span>
+          </Link>
+          <Popover>
+            <PopoverTrigger>
+              <Button
+                variant="icon"
+                aria-label={`Show ${breakdownRow.label} breakdown`}
+                className="h-5 w-5 rounded-md p-0"
+                disabled={state !== 'success'}
+              >
+                <Icon
+                  name={IconName.ChevronDown}
+                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent placement="bottom" className="w-72">
+              <div className="p-3">
+                <div className="mb-2">
+                  <div className="text-sm font-medium text-gray-800">
+                    {breakdownRow.label} breakdown
+                  </div>
+                  {breakdown.isSampled && (
+                    <div className="text-xs text-gray-500">
+                      Estimated from a sample
+                    </div>
+                  )}
+                </div>
+                {breakdown.isError ? (
+                  <div className="rounded-lg bg-red-50 px-2.5 py-2 text-xs text-red-700">
+                    Could not load this breakdown.
+                  </div>
+                ) : breakdown.isLoading ? (
+                  <div className="h-16 animate-pulse rounded-lg bg-gray-100" />
+                ) : (
+                  <div className="flex flex-col gap-0.5">
+                    {breakdown.items.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        preserveQueryParams={false}
+                        variant="secondary"
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-gray-700 no-underline hover:bg-black/5"
+                      >
+                        <span
+                          className={bulletStyles({
+                            state: 'success',
+                            borderType: item.borderType ? 'dashed' : 'solid',
+                          })}
+                          style={{
+                            backgroundColor: item.fillLight,
+                            borderColor: item.stroke,
+                          }}
+                        />
+                        <span>{item.label}</span>
+                        <span className="ml-auto inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                          {breakdown.isSampled && breakdownTotal > 0
+                            ? formatApproxPercentage(
+                                item.count / breakdownTotal,
+                              )
+                            : formatNumber(item.count, true)}
+                        </span>
+                        <Icon
+                          name={IconName.ChevronRight}
+                          className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                        />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       )}
       <AriaGridList
         aria-label="Invocation statuses"
@@ -256,13 +411,13 @@ export function StatusLegend({
             key="__all__"
             id="__all__"
             textValue={
-              isSampled
+              allItemIsSampled
                 ? 'All statuses (sampled)'
                 : `All statuses ${allItem.count}`
             }
-            href={allItem.href}
+            href={state === 'success' ? allItem.href : undefined}
             className={legendItemStyles({
-              state: 'success',
+              state: state === 'loading' ? 'loading' : 'success',
               appearance:
                 allItem.count === 0
                   ? 'faded'
@@ -272,7 +427,7 @@ export function StatusLegend({
             })}
           >
             <span className="text-xs text-gray-600">All statuses</span>
-            {!isSampled && (
+            {!allItemIsSampled && (
               <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
                 {formatNumber(allItem.count, true)}
               </span>
@@ -283,13 +438,17 @@ export function StatusLegend({
             />
           </AriaGridListItem>
         )}
-        {rows.map((row) => {
+        {visibleRows.map((row) => {
           const count = row.count;
           const dimmed = isDimmed?.(row.name) ?? false;
+          const rowState =
+            state === 'success' && isItemLoading?.(row.name)
+              ? 'loading'
+              : state;
           const borderType = row.borderType ? 'dashed' : 'solid';
           const appearance =
             count === 0 ? 'faded' : dimmed ? 'dimmed' : 'normal';
-          if (state === 'loading') {
+          if (rowState === 'loading') {
             return (
               <AriaGridListItem
                 key={row.name}
@@ -318,9 +477,15 @@ export function StatusLegend({
                 >
                   {row.label}
                 </span>
-                <span className="shrink-0 animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
-                  {formatChip(count)}
-                </span>
+                {count > 0 ? (
+                  <span className="inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                    {formatChip(row)}
+                  </span>
+                ) : (
+                  <span className="shrink-0 animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
+                    {formatChip(row)}
+                  </span>
+                )}
                 <Icon
                   name={IconName.ChevronRight}
                   className="h-3.5 w-3.5 shrink-0 text-gray-400"
@@ -331,13 +496,13 @@ export function StatusLegend({
           // success or error — render the same skeleton so layout stays
           // constant. For error we drop the count chip (we don't have data),
           // but keep the bullet + label so wrap behavior matches.
-          const isErrorState = state === 'error';
+          const isErrorState = rowState === 'error';
           return (
             <AriaGridListItem
               key={row.name}
               id={row.name}
               textValue={
-                isErrorState ? row.label : `${row.label} ${formatChip(count)}`
+                isErrorState ? row.label : `${row.label} ${formatChip(row)}`
               }
               href={isErrorState ? undefined : resolveHref(row)}
               className={legendItemStyles({
@@ -368,7 +533,7 @@ export function StatusLegend({
               </span>
               {!isErrorState && (
                 <span className="inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-                  {formatChip(count)}
+                  {formatChip(row)}
                 </span>
               )}
               {!isErrorState && (

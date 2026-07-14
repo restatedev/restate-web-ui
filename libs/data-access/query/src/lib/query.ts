@@ -16,6 +16,16 @@ import {
   type QueryContext,
   createQueryContext,
   listInvocations,
+  listInvocationsV2,
+  type ListInvocationsV2Args,
+  summaryInvocationsV2,
+  type SummaryInvocationsV2Args,
+  inboxInvocationsBreakdownV2,
+  type InboxInvocationsBreakdownV2Args,
+  finishedInvocationsBreakdownV2,
+  type FinishedInvocationsBreakdownV2Args,
+  finishedInvocationsHistoryV2,
+  type FinishedInvocationsHistoryV2Args,
   getInvocation,
   getJournalEntryV2,
   getInvocationJournalV2,
@@ -64,6 +74,17 @@ type BoundHandlers = {
     sampled?: boolean,
     sampleSize?: number,
   ) => Promise<Response>;
+  listInvocationsV2: (args: ListInvocationsV2Args) => Promise<Response>;
+  summaryInvocationsV2: (args: SummaryInvocationsV2Args) => Promise<Response>;
+  inboxInvocationsBreakdownV2: (
+    args: InboxInvocationsBreakdownV2Args,
+  ) => Promise<Response>;
+  finishedInvocationsBreakdownV2: (
+    args: FinishedInvocationsBreakdownV2Args,
+  ) => Promise<Response>;
+  finishedInvocationsHistoryV2: (
+    args: FinishedInvocationsHistoryV2Args,
+  ) => Promise<Response>;
   countInvocations: (filters: FilterItem[]) => Promise<Response>;
   summaryInvocations: (
     filters: FilterItem[],
@@ -103,7 +124,6 @@ type BoundHandlers = {
   getInvocationJournalV2: (
     invocationId: string,
     includePayloads?: boolean,
-    vqueueId?: string,
   ) => Promise<Response>;
   getInbox: (
     service: string,
@@ -166,6 +186,12 @@ type BoundHandlers = {
 
 function bindHandlers(context: QueryContext): BoundHandlers {
   return {
+    listInvocationsV2: listInvocationsV2.bind(context),
+    summaryInvocationsV2: summaryInvocationsV2.bind(context),
+    inboxInvocationsBreakdownV2: inboxInvocationsBreakdownV2.bind(context),
+    finishedInvocationsBreakdownV2:
+      finishedInvocationsBreakdownV2.bind(context),
+    finishedInvocationsHistoryV2: finishedInvocationsHistoryV2.bind(context),
     countInvocations: countInvocations.bind(context),
     summaryInvocations: summaryInvocations.bind(context),
     completedInvocationsBreakdown: completedInvocationsBreakdown.bind(context),
@@ -223,8 +249,9 @@ function readServiceType(
 const decodeParamsMiddleware: Middleware = (ctx, next) => {
   const params = ctx.params as Record<string, string | undefined>;
   for (const key in params) {
-    if (params[key] !== undefined) {
-      params[key] = decodeURIComponent(params[key]!);
+    const value = params[key];
+    if (value !== undefined) {
+      params[key] = decodeURIComponent(value);
     }
   }
   return next();
@@ -325,6 +352,20 @@ export const routes = createRoutes('/query', {
     },
   },
   invocationsV2: {
+    list: { method: 'POST', pattern: '/v2/invocations' },
+    summary: { method: 'POST', pattern: '/v2/invocations/summary' },
+    inbox: {
+      method: 'POST',
+      pattern: '/v2/invocations/inbox',
+    },
+    finishedBreakdown: {
+      method: 'POST',
+      pattern: '/v2/invocations/finished-breakdown',
+    },
+    finishedHistory: {
+      method: 'POST',
+      pattern: '/v2/invocations/finished-history',
+    },
     get: { method: 'GET', pattern: '/v2/invocations/:invocationId' },
   },
   virtualObjects: {
@@ -507,16 +548,39 @@ router.map(routes, {
       },
     },
     invocationsV2: {
+      async list(ctx) {
+        const { listInvocationsV2 } = ctx.storage.get(handlersKey);
+        const body = (await ctx.request.json()) as ListInvocationsV2Args;
+        return listInvocationsV2(body);
+      },
+      async summary(ctx) {
+        const { summaryInvocationsV2 } = ctx.storage.get(handlersKey);
+        const body = (await ctx.request.json()) as SummaryInvocationsV2Args;
+        return summaryInvocationsV2(body);
+      },
+      async inbox(ctx) {
+        const { inboxInvocationsBreakdownV2 } = ctx.storage.get(handlersKey);
+        const body =
+          (await ctx.request.json()) as InboxInvocationsBreakdownV2Args;
+        return inboxInvocationsBreakdownV2(body);
+      },
+      async finishedBreakdown(ctx) {
+        const { finishedInvocationsBreakdownV2 } = ctx.storage.get(handlersKey);
+        const body =
+          (await ctx.request.json()) as FinishedInvocationsBreakdownV2Args;
+        return finishedInvocationsBreakdownV2(body);
+      },
+      async finishedHistory(ctx) {
+        const { finishedInvocationsHistoryV2 } = ctx.storage.get(handlersKey);
+        const body =
+          (await ctx.request.json()) as FinishedInvocationsHistoryV2Args;
+        return finishedInvocationsHistoryV2(body);
+      },
       async get(ctx) {
         const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
         const includePayloads =
           ctx.url.searchParams.get('includePayloads') === 'true';
-        const vqueueId = ctx.url.searchParams.get('vqueueId') ?? undefined;
-        return getInvocationJournalV2(
-          ctx.params.invocationId,
-          includePayloads,
-          vqueueId,
-        );
+        return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
       },
     },
     virtualObjects: {

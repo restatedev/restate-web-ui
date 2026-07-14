@@ -45,6 +45,14 @@ export function useFeatures(): Set<string> {
   return data ?? EMPTY_FEATURES;
 }
 
+export function hasCompleteVqueueInvocationPopulation(
+  features: ReadonlySet<string>,
+) {
+  return (
+    features.has('vqueues') && !features.has('vqueues_migration_skip_completed')
+  );
+}
+
 /** Restate server version for the current admin baseUrl. */
 export function useRestateVersion(): string | undefined {
   const baseUrl = useAdminBaseUrl();

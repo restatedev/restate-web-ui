@@ -1,39 +1,45 @@
 import { useSearchParams } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
-import {
-  FAILED_SUBSTATES,
-  hasStatusFilter,
-  isSingleStatusSelection,
-  isStatusInFilter,
-  type StatusFilter,
-} from './statusFilter';
+import type { components } from '@restate/data-access/admin-api-spec';
+import { hasStatusFilter, type StatusFilter } from './statusFilter';
+
+type StatusBucket = components['schemas']['InvocationStatusSummaryBucketV2'];
 
 /**
- * Props for StatusSummaryBar + StatusLegend driven off the URL's status
- * filter. Returns `isDimmed` (per-status fade signal) and `getHref` (per-segment
- * click target). Keeps the bar/legend components presentation-only.
+ * Props for StatusSummaryBar + StatusLegend driven by response-defined
+ * buckets and the URL's status filter.
  *
  * Click semantics encoded in `getHref`:
- *   * Clicking the SINGLE IN selection → toggles off by deleting the key.
- *   * Otherwise → REPLACE with IN [statusName]. Clicking a status while a
- *     NOT_IN filter is active narrows to that single status instead of
- *     trying to round-trip the negation.
+ *   * Clicking the bucket's exact IN selection toggles it off.
+ *   * Otherwise the filter is replaced with the statuses represented by the
+ *     bucket, including coarse groups such as Processing.
  */
-export function useStatusBarProps(statusFilter: StatusFilter) {
+export function useStatusBarProps(
+  statusFilter: StatusFilter,
+  statusBuckets: StatusBucket[],
+) {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
+  const buckets = new Map(statusBuckets.map((bucket) => [bucket.key, bucket]));
 
   const isDimmed = (statusName: string) =>
     hasStatusFilter(statusFilter) &&
-    !isStatusInFilter(statusFilter, statusName);
+    buckets.get(statusName)?.isIncluded === false;
 
   const getHref = (statusName: string) => {
     const out = new URLSearchParams(searchParams);
-    if (isSingleStatusSelection(statusFilter, statusName)) {
+    const statuses = buckets.get(statusName)?.statuses ?? [];
+    const isCurrentSelection =
+      statusFilter?.operation === 'IN' &&
+      statusFilter.value.length === statuses.length &&
+      statuses.every((status) => statusFilter.value.includes(status));
+    if (isCurrentSelection) {
       out.delete('filter_status');
     } else {
-      const value = statusName === 'failed' ? FAILED_SUBSTATES : [statusName];
-      out.set('filter_status', JSON.stringify({ operation: 'IN', value }));
+      out.set(
+        'filter_status',
+        JSON.stringify({ operation: 'IN', value: statuses }),
+      );
     }
     return `${baseUrl}/invocations?${out.toString()}`;
   };

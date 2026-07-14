@@ -21,6 +21,9 @@ export function OverviewSidebarItem({
   carryParams.delete('view');
   Array.from(carryParams.keys()).forEach((key) => {
     if (
+      (Array.isArray(preserveSearchParams)
+        ? !preserveSearchParams.includes(key)
+        : !preserveSearchParams) ||
       key.startsWith('filter_') ||
       key.startsWith('sort_') ||
       key === 'column'

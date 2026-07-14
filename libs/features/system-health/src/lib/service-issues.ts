@@ -1,4 +1,8 @@
-import type { Deployment, Service } from '@restate/data-access/admin-api-spec';
+import {
+  INVOCATION_STATUS_DEFINITIONS,
+  TERMINAL_INVOCATION_STATUSES,
+  type Deployment,
+} from '@restate/data-access/admin-api-spec';
 import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features/deployment';
 import { SLA_THRESHOLDS, MIN_TRAFFIC_THRESHOLD } from './thresholds';
 
@@ -13,16 +17,13 @@ export interface ServiceIssue {
   status?: string;
 }
 
-const COMPLETED_STATUSES = ['succeeded', 'failed'];
-const NON_COMPLETED_STATUSES = [
-  'running',
-  'suspended',
-  'scheduled',
-  'pending',
-  'ready',
-  'backing-off',
-  'paused',
-];
+const COMPLETED_STATUSES = new Set<string>(TERMINAL_INVOCATION_STATUSES);
+const NON_COMPLETED_STATUSES = new Set<string>([
+  'inbox',
+  ...INVOCATION_STATUS_DEFINITIONS.filter(
+    ({ stage }) => stage !== 'finished',
+  ).map(({ key }) => key),
+]);
 
 export function checkSlaThresholds(
   statusCounts: Map<string, number>,
@@ -32,12 +33,17 @@ export function checkSlaThresholds(
   let completed = 0;
   let nonCompleted = 0;
   for (const [status, count] of statusCounts) {
-    if (COMPLETED_STATUSES.includes(status)) completed += count;
-    if (NON_COMPLETED_STATUSES.includes(status)) nonCompleted += count;
+    if (COMPLETED_STATUSES.has(status)) completed += count;
+    if (NON_COMPLETED_STATUSES.has(status)) nonCompleted += count;
   }
 
   for (const [status, threshold] of Object.entries(SLA_THRESHOLDS)) {
-    const count = statusCounts.get(status) ?? 0;
+    const count =
+      status === 'failed'
+        ? (statusCounts.get('failed') ?? 0) +
+          (statusCounts.get('cancelled') ?? 0) +
+          (statusCounts.get('killed') ?? 0)
+        : (statusCounts.get(status) ?? 0);
     if (count === 0) continue;
 
     const denominator = status === 'failed' ? completed : nonCompleted;
@@ -63,14 +69,11 @@ export function checkSlaThresholds(
 
   return issues;
 }
-
 export function getServiceIssues({
-  service,
   deployment,
   isVersionGte,
   statusCounts,
 }: {
-  service: Service;
   deployment?: Deployment;
   isVersionGte?: (version: string) => boolean;
   statusCounts: Map<string, number>;

@@ -36,6 +36,7 @@ import { ScrollableTimeline } from './ScrollableTimeline';
 import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util/styles';
 import {
+  isCompletedInvocationStatus,
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
@@ -142,9 +143,7 @@ function hasNonCompletedReferencedInvocations(
 ) {
   return invocationIds.some((invocationId) => {
     const invocation = invocations?.[invocationId];
-    return (
-      invocation?.status !== 'succeeded' && invocation?.status !== 'failed'
-    );
+    return !isCompletedInvocationStatus(invocation?.status);
   });
 }
 

@@ -60,6 +60,9 @@ export type CancelSignalJournalEntryType =
   components['schemas']['CancelSignalJournalEntryType'];
 export type EntryType = Exclude<JournalEntry['entry_type'], undefined>;
 export type Invocation = components['schemas']['Invocation'];
+export type InvocationStatus = components['schemas']['InvocationStatus'];
+export type InvocationSummaryStage =
+  components['schemas']['InvocationSummaryStageV2'];
 export type InvocationFuture = components['schemas']['InvocationFuture'];
 export type ServiceName = Service['name'];
 export type DeploymentId = Deployment['id'];
@@ -97,6 +100,60 @@ export type VqueueGateDuration = components['schemas']['VqueueGateDuration'];
 export type HTTPDeployment = Exclude<Deployment, { arn: string }>;
 export type LambdaDeployment = Exclude<Deployment, { uri: string }>;
 export type DeploymentType = 'uri' | 'arn';
+
+export const INVOCATION_STATUS_DEFINITIONS = [
+  { key: 'scheduled', label: 'Scheduled', stage: 'inbox' },
+  { key: 'pending', label: 'Pending', stage: 'inbox' },
+  { key: 'ready', label: 'Ready', stage: 'inbox' },
+  { key: 'yielded', label: 'Yielded', stage: 'inbox' },
+  { key: 'backing-off', label: 'Backing off', stage: 'inbox' },
+  { key: 'running', label: 'Running', stage: 'running' },
+  { key: 'suspended', label: 'Suspended', stage: 'suspended' },
+  { key: 'paused', label: 'Paused', stage: 'paused' },
+  { key: 'succeeded', label: 'Succeeded', stage: 'finished' },
+  { key: 'failed', label: 'Failed', stage: 'finished' },
+  { key: 'cancelled', label: 'Cancelled', stage: 'finished' },
+  { key: 'killed', label: 'Killed', stage: 'finished' },
+] as const satisfies readonly {
+  key: InvocationStatus;
+  label: string;
+  stage: InvocationSummaryStage;
+}[];
+
+export const INVOCATION_SUMMARY_STAGES = [
+  'inbox',
+  'running',
+  'suspended',
+  'paused',
+  'finished',
+] as const satisfies readonly InvocationSummaryStage[];
+
+export const NOT_COMPLETED_INVOCATION_STAGES = INVOCATION_SUMMARY_STAGES.filter(
+  (stage) => stage !== 'finished',
+);
+
+export const INVOCATION_STATUSES = INVOCATION_STATUS_DEFINITIONS.map(
+  ({ key }) => key,
+);
+
+export const INBOX_INVOCATION_STATUSES = INVOCATION_STATUS_DEFINITIONS.filter(
+  ({ stage }) => stage === 'inbox',
+).map(({ key }) => key);
+
+export const TERMINAL_INVOCATION_STATUSES =
+  INVOCATION_STATUS_DEFINITIONS.filter(({ stage }) => stage === 'finished').map(
+    ({ key }) => key,
+  );
+
+export function getInvocationStatusesForStage(stage: InvocationSummaryStage) {
+  return INVOCATION_STATUS_DEFINITIONS.filter(
+    (definition) => definition.stage === stage,
+  ).map(({ key }) => key);
+}
+
+export function getInvocationStatusLabel(status: string) {
+  return INVOCATION_STATUS_DEFINITIONS.find(({ key }) => key === status)?.label;
+}
 export function isHttpDeployment(
   deployment: Deployment,
 ): deployment is HTTPDeployment {

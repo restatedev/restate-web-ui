@@ -14,7 +14,7 @@ import type { SortDescriptor } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
-import { useRange, useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features/restate-context';
 import {
   HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -23,7 +23,6 @@ import {
 import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
-import { toFilterParams } from '@restate/util/invocation-links';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 import { useOverviewData } from './useOverviewData';
 import {
@@ -65,8 +64,7 @@ const DEFAUTL_SORT = {
 export function OverviewProvider({ children }: { children: ReactNode }) {
   const [searchParams] = useSearchParams();
   const mode = getOverviewMode(searchParams.get(OVERVIEW_MODE_PARAM));
-  const range = useRange();
-  const overviewData = useOverviewData(range);
+  const overviewData = useOverviewData();
   const { baseUrl } = useRestateContext();
   const queryClient = useQueryClient();
   const [isManualRefreshing, startTransition] = useTransition();
@@ -103,18 +101,14 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
     useState<SortDescriptor | null>(null);
   const [filter, setFilter] = useState('');
 
-  const appliedFilters = overviewData.appliedFilters;
   const linkParams = useMemo(() => {
     const next = new URLSearchParams();
     for (const key of PRESERVE_PARAMS) {
       const value = searchParams.get(key);
       if (value != null) next.set(key, value);
     }
-    for (const [key, value] of toFilterParams(appliedFilters)) {
-      next.set(key, value);
-    }
     return next;
-  }, [appliedFilters, searchParams]);
+  }, [searchParams]);
 
   const resolvedServiceSortDescriptor =
     serviceSortDescriptor ?? initialSortRef.current ?? DEFAUTL_SORT;

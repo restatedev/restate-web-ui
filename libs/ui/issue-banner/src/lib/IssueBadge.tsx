@@ -17,10 +17,12 @@ export function IssueBadge({
   issues,
   serviceName,
   baseUrl,
+  onOpenChange,
 }: {
   issues: ServiceIssue[];
   serviceName: string;
   baseUrl: string;
+  onOpenChange?: (isOpen: boolean) => void;
 }) {
   const hasHigh = useMemo(
     () => issues.some((i) => i.severity === 'high'),
@@ -33,7 +35,7 @@ export function IssueBadge({
   }
 
   return (
-    <Popover>
+    <Popover onOpenChange={onOpenChange}>
       <PopoverTrigger>
         <Button variant="secondary" className={issueButtonStyles({ severity })}>
           <div className="relative mx-0.5 flex h-2.5 w-2.5 shrink-0">
