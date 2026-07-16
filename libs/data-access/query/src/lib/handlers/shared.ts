@@ -117,11 +117,10 @@ export function shouldFilterScopeIsNull(
   serviceType?: StateServiceType,
 ): boolean {
   if (!context.features.has('vqueues')) return false;
-  // Virtual objects don't expose scope to users — force the NULL filter even
-  // when the `vqueues` feature is enabled (scope is only meaningful for vqueue
-  // services, not VOs).
-  if (serviceType === 'virtual_object') return true;
-  return false;
+  return (
+    serviceType === 'virtual_object' &&
+    !context.features.has('scoped_virtual_objects')
+  );
 }
 
 export function scopeClause(
@@ -130,12 +129,13 @@ export function scopeClause(
   serviceType?: StateServiceType,
 ): string {
   if (!context.features.has('vqueues')) return '';
+  if (shouldFilterScopeIsNull(context, serviceType)) {
+    return ' AND scope IS NULL';
+  }
   if (explicitScope !== undefined) {
     return ` AND scope = ${quoteSqlString(explicitScope)}`;
   }
-  return shouldFilterScopeIsNull(context, serviceType)
-    ? ' AND scope IS NULL'
-    : '';
+  return ' AND scope IS NULL';
 }
 
 // Network failures (refused connection, DNS, CORS) reject with a bare

@@ -2095,7 +2095,7 @@
           {
             "name": "scope",
             "in": "query",
-            "description": "Workflow scope",
+            "description": "Service scope",
             "schema": {
               "type": "string"
             }
@@ -2205,13 +2205,13 @@
           {
             "name": "scope",
             "in": "query",
-            "description": "workflow scope filter",
+            "description": "service scope filter",
             "schema": { "type": "string" }
           },
           {
             "name": "serviceType",
             "in": "query",
-            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "description": "service type hint used to apply scope compatibility rules for virtual objects",
             "schema": {
               "type": "string",
               "enum": ["service", "virtual_object", "workflow"]
@@ -2484,7 +2484,7 @@
           {
             "name": "serviceType",
             "in": "query",
-            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "description": "service type hint used to apply scope compatibility rules for virtual objects",
             "schema": {
               "type": "string",
               "enum": ["service", "virtual_object", "workflow"]
@@ -2738,7 +2738,7 @@
           {
             "name": "serviceType",
             "in": "query",
-            "description": "service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags",
+            "description": "service type hint used to apply scope compatibility rules for virtual objects",
             "schema": {
               "type": "string",
               "enum": ["service", "virtual_object", "workflow"]
@@ -2882,7 +2882,7 @@
           {
             "name": "scope",
             "in": "path",
-            "description": "workflow scope",
+            "description": "service scope",
             "required": true,
             "schema": { "type": "string" }
           },

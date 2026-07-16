@@ -16,7 +16,13 @@ export async function queryState(
 ) {
   const { systemFilters = [], stateFilter } = args;
 
-  const hasScopeFilter = systemFilters.some((f) => f.field === 'scope');
+  const filtersScopeIsNull = shouldFilterScopeIsNull(this, serviceType);
+  const supportedSystemFilters = filtersScopeIsNull
+    ? systemFilters.filter((filter) => filter.field !== 'scope')
+    : systemFilters;
+  const hasScopeFilter = supportedSystemFilters.some(
+    (filter) => filter.field === 'scope',
+  );
   const filtersWithService: FilterItem[] = [
     {
       field: 'service_name',
@@ -24,10 +30,10 @@ export async function queryState(
       value: service,
       type: 'STRING',
     },
-    ...(!hasScopeFilter && shouldFilterScopeIsNull(this, serviceType)
+    ...(!hasScopeFilter && filtersScopeIsNull
       ? ([{ field: 'scope', operation: 'IS', type: 'NULL' }] as FilterItem[])
       : []),
-    ...systemFilters,
+    ...supportedSystemFilters,
     ...(stateFilter
       ? ([
           {
