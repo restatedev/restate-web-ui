@@ -2,6 +2,7 @@
 
 ## Skill Notes
 
+- 2026-07-16: Scope filters need `IS NULL` / `IS NOT NULL` in addition to string comparisons. Keep `EQUALS` first for the persistent empty Scope clause so opening the state route does not silently default to unscoped objects.
 - 2026-07-16: Scoped Virtual Objects require both `/version` features `vqueues` and `scoped_virtual_objects` (underscore; the server config option uses hyphens). State listings may span scopes when enabled, but exact reads for an object with no scope must still add `scope IS NULL` so an unscoped key never merges with the same key in scoped namespaces.
 - 2026-07-16: A real scoped-VO `state` export confirms identity collisions are expected: `myObject3/i1` appears under scopes `a`, `c`, and NULL, and `myObject3/i2` under `a` and `b`. Treat `(service_name, service_key, scope)` as the state-object identity everywhere; missing JSON `scope` represents SQL NULL.
 - 2026-07-16: Resolve the `building-restate-services` skill's relative references from its own directory (`skills/building-restate-services/references/...`), not from the plugin's top-level `skills/` directory.

@@ -187,11 +187,15 @@ function Component() {
     (serviceType !== 'virtual_object' || supportsScopedVirtualObjects);
   const schema = useMemo(() => {
     const stringOps = [
-      // TODO: add is null/ is not null
       { value: 'EQUALS' as const, label: 'is' },
       { value: 'NOT_EQUALS' as const, label: 'is not' },
       { value: 'CONTAINS' as const, label: 'contains' },
       { value: 'NOT_CONTAINS' as const, label: 'does not contain' },
+    ];
+    const nullableStringOps = [
+      ...stringOps,
+      { value: 'IS NULL' as const, label: 'is null' },
+      { value: 'IS NOT NULL' as const, label: 'is not null' },
     ];
     const clauses: QueryClauseSchema<QueryClauseType>[] = [];
     clauses.push({
@@ -205,7 +209,7 @@ function Component() {
       clauses.push({
         id: '__sys_service_scope',
         label: 'Scope',
-        operations: stringOps,
+        operations: nullableStringOps,
         type: 'STRING',
         metadata: { isSystem: true, column: 'scope', persistent: exposesScope },
       });
