@@ -1,5 +1,5 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import { useVersion } from '@restate/data-access/admin-api';
+import { useFeatures, useVersion } from '@restate/data-access/admin-api';
 import {
   useListVirtualObjectState,
   useQueryVirtualObjectState,
@@ -51,7 +51,6 @@ import { useEditStateContext } from '@restate/features/edit-state';
 import { useResolvedCodecOptions } from '@restate/features/codec';
 import { toStateParam } from './toStateParam';
 import { useRestateContext } from '@restate/features/restate-context';
-import { useFeatures } from '@restate/data-access/admin-api';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
   getStateServiceHref,
@@ -176,9 +175,16 @@ function Component() {
   );
 
   const { isSuccess: versionReady } = useVersion();
-  const hasVqueues = useFeatures().has('vqueues');
-  const hasScopeInUrl = searchParams.has('sysFilter_scope');
-  const exposesScope = hasVqueues && serviceType !== 'virtual_object';
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const supportsScopedVirtualObjects =
+    hasVqueues && features.has('scoped_virtual_objects');
+  const exposesScope =
+    hasVqueues &&
+    (serviceType !== 'virtual_object' || supportsScopedVirtualObjects);
+  const hasScopeInUrl =
+    searchParams.has('sysFilter_scope') &&
+    (serviceType !== 'virtual_object' || supportsScopedVirtualObjects);
   const schema = useMemo(() => {
     const stringOps = [
       // TODO: add is null/ is not null

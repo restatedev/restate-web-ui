@@ -7438,7 +7438,7 @@ export interface operations {
       query?: {
         /** @description Invocation id */
         invocationId?: string;
-        /** @description Workflow scope */
+        /** @description Service scope */
         scope?: string;
       };
       header?: never;
@@ -7515,9 +7515,9 @@ export interface operations {
       query?: {
         /** @description service key */
         serviceKey?: string[];
-        /** @description workflow scope filter */
+        /** @description service scope filter */
         scope?: string;
-        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
+        /** @description service type hint used to apply scope compatibility rules for virtual objects */
         serviceType?: 'service' | 'virtual_object' | 'workflow';
       };
       header?: never;
@@ -7680,7 +7680,7 @@ export interface operations {
       query?: {
         /** @description state key filter; when omitted, all state entries are returned */
         stateKey?: string[];
-        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
+        /** @description service type hint used to apply scope compatibility rules for virtual objects */
         serviceType?: 'service' | 'virtual_object' | 'workflow';
       };
       header?: never;
@@ -7850,7 +7850,7 @@ export interface operations {
   query_virtual_object_state: {
     parameters: {
       query?: {
-        /** @description service type hint — when 'virtual_object', forces scope IS NULL on Restate >= 1.7 regardless of feature flags */
+        /** @description service type hint used to apply scope compatibility rules for virtual objects */
         serviceType?: 'service' | 'virtual_object' | 'workflow';
       };
       header?: never;
@@ -7947,7 +7947,7 @@ export interface operations {
       path: {
         /** @description service name */
         name: string;
-        /** @description workflow scope */
+        /** @description service scope */
         scope: string;
         /** @description key */
         key: string;

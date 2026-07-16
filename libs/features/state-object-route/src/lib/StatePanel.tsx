@@ -42,7 +42,9 @@ function Footnote({ dataUpdatedAt }: { dataUpdatedAt?: number }) {
     }
 
     return () => {
-      interval && clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, [dataUpdatedAt]);
 
