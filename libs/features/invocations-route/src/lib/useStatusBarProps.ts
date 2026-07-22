@@ -1,6 +1,9 @@
 import { useSearchParams } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
-import type { components } from '@restate/data-access/admin-api-spec';
+import {
+  TERMINAL_INVOCATION_STATUSES,
+  type components,
+} from '@restate/data-access/admin-api-spec';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
 
 type StatusBucket = components['schemas']['InvocationStatusSummaryBucketV2'];
@@ -28,18 +31,20 @@ export function useStatusBarProps(
 
   const getHref = (statusName: string) => {
     const out = new URLSearchParams(searchParams);
-    const statuses = buckets.get(statusName)?.statuses ?? [];
+    const isNotCompleted = statusName === 'not-completed';
+    const statuses =
+      isNotCompleted || statusName === 'finished'
+        ? TERMINAL_INVOCATION_STATUSES
+        : (buckets.get(statusName)?.statuses ?? []);
+    const operation = isNotCompleted ? 'NOT_IN' : 'IN';
     const isCurrentSelection =
-      statusFilter?.operation === 'IN' &&
+      statusFilter?.operation === operation &&
       statusFilter.value.length === statuses.length &&
       statuses.every((status) => statusFilter.value.includes(status));
     if (isCurrentSelection) {
       out.delete('filter_status');
     } else {
-      out.set(
-        'filter_status',
-        JSON.stringify({ operation: 'IN', value: statuses }),
-      );
+      out.set('filter_status', JSON.stringify({ operation, value: statuses }));
     }
     return `${baseUrl}/invocations?${out.toString()}`;
   };

@@ -16,7 +16,10 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Button } from '@restate/ui/button';
-import type { components } from '@restate/data-access/admin-api-spec';
+import {
+  TERMINAL_INVOCATION_STATUSES,
+  type components,
+} from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
@@ -121,7 +124,19 @@ const makeShortcuts: (
     filters: [
       toClause(schema, 'status', {
         operation: 'NOT_IN',
-        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+        value: TERMINAL_INVOCATION_STATUSES,
+      }),
+    ],
+  },
+  {
+    id: 'completed',
+    label: 'Completed',
+    columns: DEFAULT_PRESET_COLUMNS,
+    sort: { field: 'created_at', order: 'DESC' },
+    filters: [
+      toClause(schema, 'status', {
+        operation: 'IN',
+        value: TERMINAL_INVOCATION_STATUSES,
       }),
     ],
   },

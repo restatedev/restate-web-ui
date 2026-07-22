@@ -98,6 +98,18 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
       },
     ],
   },
+  {
+    id: 'completed',
+    label: 'Completed',
+    sort: { field: 'created_at', order: 'DESC' },
+    filters: [
+      {
+        id: 'status',
+        operation: 'IN',
+        value: TERMINAL_INVOCATION_STATUSES,
+      },
+    ],
+  },
   // {
   //   id: 'idempotent',
   //   label: 'Idempotent',
@@ -348,6 +360,7 @@ export type InvocationPreset =
   | 'idempotent'
   | 'scheduled'
   | 'notcompleted'
+  | 'completed'
   | 'custom';
 
 /**

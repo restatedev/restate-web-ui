@@ -939,7 +939,33 @@ function OverviewContent() {
             className={summaryStackStyles({ metricsVisible })}
           >
             <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
-              {!hasVqueues && <TimeRangeToggle />}
+              {!hasVqueues && (
+                <>
+                  {isSummaryLoading ? (
+                    <span className="h-7 w-36 animate-pulse rounded-xl bg-gray-200" />
+                  ) : (
+                    <span className="flex items-baseline gap-1.5">
+                      {isSummaryEmpty ? (
+                        <span className="text-base font-medium text-gray-400">
+                          No invocations
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-lg font-semibold text-gray-700 tabular-nums">
+                            {isSummaryError
+                              ? '–'
+                              : formatNumber(totalCount, true)}
+                          </span>
+                          <span className="text-base text-gray-500">
+                            {totalCount === 1 ? 'invocation' : 'invocations'}
+                          </span>
+                        </>
+                      )}
+                    </span>
+                  )}
+                  <TimeRangeToggle />
+                </>
+              )}
               {!isCompletionHistoryEnabled && summaryError && (
                 <Popover>
                   <PopoverTrigger>
