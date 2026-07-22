@@ -340,6 +340,7 @@ describe('POST /query/v2/invocations', () => {
                 v.latest_attempt_at,
                 v.first_runnable_at,
                 v.retry_attempts,
+                v.retry_count_since_last_stored_command,
                 v.num_attempts,
                 v.num_errors,
                 v.deployment
@@ -761,6 +762,7 @@ describe('POST /query/v2/invocations', () => {
                 v.latest_attempt_at,
                 v.first_runnable_at,
                 v.retry_attempts,
+                v.retry_count_since_last_stored_command,
                 v.num_attempts,
                 v.num_errors,
                 v.deployment
@@ -1140,6 +1142,7 @@ describe('POST /query/v2/invocations', () => {
                 v.latest_attempt_at,
                 v.first_runnable_at,
                 v.retry_attempts,
+                v.retry_count_since_last_stored_command,
                 v.num_attempts,
                 v.num_errors,
                 v.deployment
@@ -1244,6 +1247,7 @@ describe('POST /query/v2/invocations', () => {
                 v.latest_attempt_at,
                 v.first_runnable_at,
                 v.retry_attempts,
+                v.retry_count_since_last_stored_command,
                 v.num_attempts,
                 v.num_errors,
                 v.deployment
@@ -1355,6 +1359,7 @@ describe('POST /query/v2/invocations', () => {
                 v.latest_attempt_at,
                 v.first_runnable_at,
                 v.retry_attempts,
+                v.retry_count_since_last_stored_command,
                 v.num_attempts,
                 v.num_errors,
                 v.deployment
@@ -1559,6 +1564,7 @@ describe('POST /query/v2/invocations', () => {
                 v.latest_attempt_at,
                 v.first_runnable_at,
                 v.retry_attempts,
+                v.retry_count_since_last_stored_command,
                 v.num_attempts,
                 v.num_errors,
                 v.deployment

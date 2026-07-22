@@ -64,6 +64,7 @@ describe('convertInvocation VQueue overlay', () => {
         next_at: '2026-01-01T00:00:20.000Z',
         deployment: 'dp-1',
         retry_attempts: 3,
+        retry_count_since_last_stored_command: 7,
         num_attempts: 4,
         num_errors: 2,
         first_runnable_at: '2026-01-01T00:00:01.000Z',
@@ -79,7 +80,7 @@ describe('convertInvocation VQueue overlay', () => {
       first_runnable_at: '2026-01-01T00:00:01.000Z',
       num_attempts: 4,
       num_errors: 2,
-      retry_count: 3,
+      retry_count: 7,
       running_at: '2026-01-01T00:00:02.000Z',
       last_start_at: '2026-01-01T00:00:10.000Z',
       next_retry_at: '2026-01-01T00:00:20.000Z',
@@ -101,6 +102,16 @@ describe('convertInvocation VQueue overlay', () => {
       scheduled_start_at: '2026-01-02T00:00:00.000Z',
       first_runnable_at: '2026-01-03T00:00:00.000Z',
     });
+  });
+
+  it('falls back to the invocation retry count when the VQueue retry count is unavailable', () => {
+    const invocation = convertInvocation(rawInvocation({ retry_count: 5 }), {
+      stage: 'inbox',
+      status: 'backing-off',
+      retry_attempts: 2,
+    });
+
+    expect(invocation.retry_count).toBe(5);
   });
 
   it('uses the exact VQueue terminal outcome instead of the raw completion', () => {

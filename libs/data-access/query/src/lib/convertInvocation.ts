@@ -31,7 +31,8 @@ function applyVqueueOverlay(
     first_runnable_at: vqueue.first_runnable_at ?? invocation.first_runnable_at,
     num_attempts: vqueue.num_attempts ?? invocation.num_attempts,
     num_errors: vqueue.num_errors ?? invocation.num_errors,
-    retry_count: vqueue.retry_attempts ?? invocation.retry_count,
+    retry_count:
+      vqueue.retry_count_since_last_stored_command ?? invocation.retry_count,
     running_at: vqueue.first_attempt_at ?? invocation.running_at,
     last_start_at: vqueue.latest_attempt_at ?? invocation.last_start_at,
     next_retry_at:

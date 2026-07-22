@@ -23,7 +23,7 @@ export async function fetchVqueueStatuses(
   }
 
   const { rows } = await ctx.query(
-    `SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN (${ids
+    `SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN (${ids
       .map(quoteSqlString)
       .join(', ')}) AND entry_kind = 'invocation'`,
   );
@@ -40,6 +40,8 @@ export async function fetchVqueueStatuses(
         latest_attempt_at: row.latest_attempt_at as string,
         first_runnable_at: row.first_runnable_at as string,
         retry_attempts: row.retry_attempts as number,
+        retry_count_since_last_stored_command:
+          row.retry_count_since_last_stored_command as number,
         num_attempts: row.num_attempts as number,
         num_errors: row.num_errors as number,
         deployment: row.deployment as string,
