@@ -1,40 +1,37 @@
 import { useCallback, useMemo, useRef } from 'react';
 import {
+  getInvocationSummaryStageCount,
+  getServiceInvocationStageBreakdownV2,
+  getInvocationStatusBreakdownV2,
+  getServiceInvocationStatusBreakdownV2,
+  useLazyServiceInboxStatusBreakdownsV2,
   useListDrainedDeployments,
   useListDeployments,
   useListServices,
-  useSummaryInvocations,
+  useProgressiveInvocationSummaryV2,
 } from '@restate/data-access/admin-api-hooks';
-import { useRestateContext } from '@restate/features/restate-context';
-import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
-  checkSlaThresholds,
+  getOverviewRefreshMeta,
+  useFeatures,
+} from '@restate/data-access/admin-api';
+import {
   getServiceIssues,
+  MIN_TRAFFIC_THRESHOLD,
   type ServiceIssue,
 } from '@restate/features/system-health';
-import { handlerIssuesKey } from './sortHandlers';
+import { useRange, useRestateContext } from '@restate/features/restate-context';
+import {
+  getOverviewRefetchInterval,
+  INITIAL_OVERVIEW_REFETCH_INTERVAL,
+} from './overviewPolling';
 
-const MIN_OVERVIEW_REFETCH_INTERVAL = 3_000;
-const OVERVIEW_REFETCH_DURATION_MULTIPLIER = 10;
-
-function getOverviewRefetchInterval(summaryFetchDuration: number) {
-  return Math.max(
-    MIN_OVERVIEW_REFETCH_INTERVAL,
-    summaryFetchDuration * OVERVIEW_REFETCH_DURATION_MULTIPLIER,
-  );
-}
-
-export function useOverviewData(range?: string) {
-  const overviewRefetchIntervalRef = useRef(MIN_OVERVIEW_REFETCH_INTERVAL);
+export function useOverviewData() {
+  const hasVqueues = useFeatures().has('vqueues');
+  const range = useRange();
+  const summaryRange = range === 'P1D' || range === 'ALL' ? range : 'PT1H';
+  const overviewRefetchIntervalRef = useRef(INITIAL_OVERVIEW_REFETCH_INTERVAL);
   const overviewRefetchInterval = useCallback(
     () => overviewRefetchIntervalRef.current,
-    [],
-  );
-  const updateOverviewRefetchInterval = useCallback(
-    (summaryFetchDuration: number) => {
-      overviewRefetchIntervalRef.current =
-        getOverviewRefetchInterval(summaryFetchDuration);
-    },
     [],
   );
   const {
@@ -44,146 +41,156 @@ export function useOverviewData(range?: string) {
     isError,
     error,
   } = useListDeployments();
-
-  // With the completion chart on, the completed breakdown is shown separately,
-  // so the overview summary only needs in-flight invocations.
-  const isCompletionHistoryEnabled = useIsFeatureFlagEnabled(
-    'FEATURE_COMPLETION_HISTORY',
-  );
-
   const { data: servicesMap } = useListServices();
-  const {
-    data: rawSummaryData,
-    isPending: isSummaryPending,
-    isPlaceholderData: isSummaryPlaceholder,
-    isError: isSummaryError,
-    error: summaryError,
-    queryKey: summaryQueryKey,
-  } = useSummaryInvocations([], {
-    sampled: false,
-    range,
-    excludeCompleted: isCompletionHistoryEnabled,
-    refetchInterval: overviewRefetchInterval,
-    onFetchDuration: updateOverviewRefetchInterval,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
+  const summary = useProgressiveInvocationSummaryV2(
+    {
+      mode: { type: 'sampled', sampleSize: 1_000_000 },
+      ...(!hasVqueues && { range: summaryRange }),
+    },
+    {
+      refetchInterval: (query) => {
+        const queryDurationMs = query.state.data?.queryDurationMs;
+        if (queryDurationMs !== undefined) {
+          overviewRefetchIntervalRef.current =
+            getOverviewRefetchInterval(queryDurationMs);
+        }
+        return overviewRefetchIntervalRef.current;
+      },
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      meta: getOverviewRefreshMeta(),
+    },
+  );
+  const inboxCount = getInvocationSummaryStageCount(summary.data, 'inbox');
 
-  const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
+  const byStatus = useMemo(
+    () => getInvocationStatusBreakdownV2(summary.data),
+    [summary.data],
+  );
+  const byStage = useMemo(
+    () =>
+      (summary.data?.stageBuckets ?? []).map((bucket) => ({
+        name: bucket.key,
+        label: bucket.label,
+        count: bucket.count,
+        statuses: bucket.statuses,
+      })),
+    [summary.data?.stageBuckets],
+  );
+  const invocationCounts = useMemo(
+    () =>
+      new Map(
+        (summary.data?.serviceBuckets ?? []).map(({ service, count }) => [
+          service,
+          count,
+        ]),
+      ),
+    [summary.data?.serviceBuckets],
+  );
+  const serviceStageCounts = useMemo(() => {
+    const counts = new Map<string, { name: string; count: number }[]>();
+    for (const { service } of summary.data?.serviceBuckets ?? []) {
+      counts.set(
+        service,
+        getServiceInvocationStageBreakdownV2(summary.data, service),
+      );
+    }
+    return counts;
+  }, [summary.data]);
+  const servicesWithHighInbox = useMemo(
+    () =>
+      new Set(
+        [...serviceStageCounts]
+          .filter(([service, stages]) => {
+            const inbox = stages.find(({ name }) => name === 'inbox');
+            return (
+              (inbox?.count ?? 0) >= MIN_TRAFFIC_THRESHOLD &&
+              servicesMap?.has(service)
+            );
+          })
+          .map(([service]) => service),
+      ),
+    [serviceStageCounts, servicesMap],
+  );
+  const {
+    breakdowns: serviceInboxBreakdowns,
+    load: loadServiceInboxBreakdown,
+  } = useLazyServiceInboxStatusBreakdownsV2();
+  const { isNew, isVersionGte } = useRestateContext();
+  const serviceIssuesMap = useMemo(() => {
+    const map = new Map<string, ServiceIssue[]>();
+    for (const service of servicesMap?.values() ?? []) {
+      const inboxBreakdown = serviceInboxBreakdowns.get(service.name);
+      const stageCounts = new Map(
+        (serviceStageCounts.get(service.name) ?? []).map(({ name, count }) => [
+          name,
+          count,
+        ]),
+      );
+      const issues = getServiceIssues({
+        deployment: deploymentsMap?.get(service.deployment_id),
+        isVersionGte,
+        statusCounts: inboxBreakdown
+          ? getServiceInvocationStatusBreakdownV2(
+              summary.data,
+              service.name,
+              inboxBreakdown,
+            )
+          : stageCounts,
+      });
+      if (issues.length > 0) map.set(service.name, issues);
+    }
+    return map;
+  }, [
+    deploymentsMap,
+    isVersionGte,
+    serviceInboxBreakdowns,
+    serviceStageCounts,
+    summary.data,
+    servicesMap,
+  ]);
+
   const {
     data: drainedDeploymentIds = new Set(),
     isPending: isDeploymentStatusLoading,
   } = useListDrainedDeployments();
-  const summaryData = isSummaryError ? undefined : rawSummaryData;
-  const { isNew, isVersionGte } = useRestateContext();
-
-  const byStatus = summaryData?.byStatus ?? [];
-  const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
-  const totalCount = summaryData?.totalCount ?? 0;
-  const appliedFilters = summaryData?.appliedFilters ?? [];
-
-  const { invocationCounts, serviceStatusCounts } = useMemo(() => {
-    const counts = new Map<string, number>();
-    const statusCounts = new Map<string, Map<string, number>>();
-    for (const entry of byServiceAndStatus) {
-      counts.set(entry.service, (counts.get(entry.service) ?? 0) + entry.count);
-      let statusMap = statusCounts.get(entry.service);
-      if (!statusMap) {
-        statusMap = new Map();
-        statusCounts.set(entry.service, statusMap);
-      }
-      statusMap.set(
-        entry.status,
-        (statusMap.get(entry.status) ?? 0) + entry.count,
-      );
-    }
-    return { invocationCounts: counts, serviceStatusCounts: statusCounts };
-  }, [byServiceAndStatus]);
-
-  const handlerInvocationCounts = useMemo(() => {
-    const map = new Map<string, Map<string, number>>();
-    for (const entry of summaryData?.byServiceAndHandler ?? []) {
-      let perService = map.get(entry.service);
-      if (!perService) {
-        perService = new Map();
-        map.set(entry.service, perService);
-      }
-      perService.set(
-        entry.handler,
-        (perService.get(entry.handler) ?? 0) + entry.count,
-      );
-    }
-    return map;
-  }, [summaryData?.byServiceAndHandler]);
-
-  const serviceIssuesMap = useMemo(() => {
-    const map = new Map<string, ServiceIssue[]>();
-    for (const service of servicesMap?.values() ?? []) {
-      const deployment = deploymentsMap?.get(service.deployment_id);
-      const statusCounts = serviceStatusCounts.get(service.name) ?? new Map();
-      const issues = getServiceIssues({
-        service,
-        deployment,
-        isVersionGte,
-        statusCounts,
-      });
-      if (issues.length > 0) {
-        map.set(service.name, issues);
-      }
-    }
-    return map;
-  }, [servicesMap, deploymentsMap, serviceStatusCounts, isVersionGte]);
-
-  const handlerIssuesMap = useMemo(() => {
-    const handlerStatusCounts = new Map<string, Map<string, number>>();
-    for (const entry of summaryData?.byServiceAndHandlerAndStatus ?? []) {
-      const key = handlerIssuesKey(entry.service, entry.handler);
-      let counts = handlerStatusCounts.get(key);
-      if (!counts) {
-        counts = new Map();
-        handlerStatusCounts.set(key, counts);
-      }
-      counts.set(entry.status, (counts.get(entry.status) ?? 0) + entry.count);
-    }
-    const map = new Map<string, ServiceIssue[]>();
-    for (const [key, statusCounts] of handlerStatusCounts) {
-      const issues = checkSlaThresholds(statusCounts);
-      if (issues.length > 0) {
-        map.set(key, issues);
-      }
-    }
-    return map;
-  }, [summaryData?.byServiceAndHandlerAndStatus]);
-
+  const isSummaryLoading = summary.isPending || summary.isPlaceholderData;
+  const isInboxBreakdownLoading =
+    inboxCount > 0 && summary.isBreakdownLoading('inbox');
+  const isSummaryError = summary.isError;
+  const summaryError = summary.error;
   const hasData = isNew || deploymentsMap !== undefined;
   const isInitialLoading = !isFetched && !isNew;
-  // "bare" = fetched (or attempted) but never got data — typically after an
-  // initial-load error. No empty-state placeholder yet because we don't know
-  // whether there are deployments.
   const isBare = !isInitialLoading && !hasData;
   const isEmpty =
     !isInitialLoading &&
     hasData &&
     (!deploymentsMap || deploymentsMap.size === 0);
-
   return {
     servicesMap,
     deploymentsMap,
-    summaryData,
+    byStage,
     byStatus,
-    byServiceAndStatus,
-    totalCount,
-    appliedFilters,
+    appliedFilters: summary.data?.appliedFilters ?? [],
+    totalCount: summary.data?.total ?? 0,
     invocationCounts,
-    handlerInvocationCounts,
+    serviceStageCounts,
+    servicesWithHighInbox,
     serviceIssuesMap,
-    handlerIssuesMap,
+    loadServiceInboxBreakdown,
     drainedDeploymentIds,
     isDeploymentStatusLoading,
     isSummaryLoading,
+    hasVqueues,
+    isBreakdownSampled: hasVqueues,
+    isInboxBreakdownLoading,
+    isInboxBreakdownError: summary.isBreakdownError('inbox'),
+    isCompletedBreakdownLoading: summary.isBreakdownLoading('finished'),
+    isCompletedBreakdownError: summary.isBreakdownError('finished'),
     isSummaryError,
     summaryError,
-    summaryQueryKey,
+    isServiceSummaryLoading: isSummaryLoading,
+    isServiceSummaryError: isSummaryError,
     overviewRefetchInterval,
     isInitialLoading,
     isBare,

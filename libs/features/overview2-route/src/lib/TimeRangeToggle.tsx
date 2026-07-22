@@ -22,7 +22,7 @@ const RANGES = [
   { value: PeriodRange.ALL, label: 'overall' },
 ] as const;
 
-export function TimeRangeToggle({ onChange }: { onChange?: () => void }) {
+export function TimeRangeToggle() {
   const currentRange = useRange();
   const setRange = useSetRange();
   const label = getRangeLabel(currentRange);
@@ -46,10 +46,7 @@ export function TimeRangeToggle({ onChange }: { onChange?: () => void }) {
           <DropdownMenu
             selectable
             selectedItems={[currentRange]}
-            onSelect={(key) => {
-              onChange?.();
-              setRange(key || DEFAULT_RANGE);
-            }}
+            onSelect={(key) => setRange(key || DEFAULT_RANGE)}
             aria-label="Time range"
           >
             {RANGES.map((range) => (

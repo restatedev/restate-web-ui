@@ -79,7 +79,7 @@ function Segment({
   isSampled?: boolean;
 }) {
   const percentage = formatPercentageWithoutFraction(entry.count / total);
-  const label = STATUS_LABELS[entry.name] ?? entry.name;
+  const label = entry.label ?? STATUS_LABELS[entry.name] ?? entry.name;
   const tooltipContent = (
     <div className="flex min-w-56 flex-col">
       <div className="mb-2">

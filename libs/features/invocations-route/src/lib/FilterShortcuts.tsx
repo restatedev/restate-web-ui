@@ -1,5 +1,5 @@
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useMemo } from 'react';
 import {
   QueryClause,
   QueryClauseOperationId,
@@ -16,7 +16,10 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Button } from '@restate/ui/button';
-import { SortInvocations } from '@restate/data-access/admin-api-spec';
+import {
+  TERMINAL_INVOCATION_STATUSES,
+  type components,
+} from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
@@ -27,10 +30,11 @@ import {
   getFilterParamKey,
 } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
+import { useFeatures } from '@restate/data-access/admin-api';
 
 interface FilterShortcut {
   columns: ColumnKey[];
-  sort?: SortInvocations | typeof SORT_NONE;
+  sort?: components['schemas']['InvocationV2Sort'] | typeof SORT_NONE;
   filters: QueryClause<QueryClauseType>[];
   label: string;
   id: string;
@@ -45,7 +49,9 @@ function toClause(
     fieldValue?: string;
   },
 ) {
-  return new QueryClause(schema.find((clause) => clause.id === id)!, value);
+  const clause = schema.find((clause) => clause.id === id);
+  if (!clause) throw new Error(`Unknown invocation filter: ${id}`);
+  return new QueryClause(clause, value);
 }
 
 const DEFAULT_PRESET_COLUMNS: ColumnKey[] = [
@@ -59,12 +65,13 @@ const DEFAULT_PRESET_COLUMNS: ColumnKey[] = [
 
 const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
-) => FilterShortcut[] = (schema) => [
+  supportsVqueueOnlyFields: boolean,
+) => FilterShortcut[] = (schema, supportsVqueueOnlyFields) => [
   {
     id: 'processing',
     label: 'Processing',
     columns: DEFAULT_PRESET_COLUMNS,
-    sort: SORT_NONE,
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
@@ -76,6 +83,7 @@ const makeShortcuts: (
     id: 'inflight',
     label: 'In-flight',
     columns: DEFAULT_PRESET_COLUMNS,
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       toClause(schema, 'status', {
         operation: 'NOT_IN',
@@ -87,14 +95,17 @@ const makeShortcuts: (
     id: 'stuck',
     label: 'Stuck',
     columns: DEFAULT_PRESET_COLUMNS,
-    sort: {
-      field: 'modified_at',
-      order: 'ASC',
-    },
+    sort: { field: 'created_at', order: 'ASC' },
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
-        value: ['pending', 'backing-off', 'paused', 'ready'],
+        value: [
+          'pending',
+          'backing-off',
+          'paused',
+          'ready',
+          ...(supportsVqueueOnlyFields ? (['yielded'] as const) : []),
+        ],
       }),
     ],
   },
@@ -102,46 +113,30 @@ const makeShortcuts: (
     id: 'all',
     label: 'All',
     columns: DEFAULT_PRESET_COLUMNS,
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [],
   },
   {
     id: 'notcompleted',
     label: 'Not completed',
     columns: DEFAULT_PRESET_COLUMNS,
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       toClause(schema, 'status', {
         operation: 'NOT_IN',
-        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+        value: TERMINAL_INVOCATION_STATUSES,
       }),
     ],
   },
   {
-    id: 'workflow',
-    label: 'Workflow runs',
+    id: 'completed',
+    label: 'Completed',
     columns: DEFAULT_PRESET_COLUMNS,
-    filters: [
-      toClause(schema, 'target_service_ty', {
-        operation: 'IN',
-        value: ['workflow'],
-      }),
-      toClause(schema, 'target_handler_name', {
-        operation: 'IN',
-        value: ['run'],
-      }),
-    ],
-  },
-  {
-    id: 'vo',
-    label: 'Active Virtual Objects',
-    columns: DEFAULT_PRESET_COLUMNS,
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
-        value: ['running', 'backing-off', 'suspended', 'paused'],
-      }),
-      toClause(schema, 'target_service_ty', {
-        operation: 'IN',
-        value: ['virtual_object'],
+        value: TERMINAL_INVOCATION_STATUSES,
       }),
     ],
   },
@@ -171,24 +166,10 @@ const makeShortcuts: (
   //   ],
   // },
   {
-    id: 'restarted',
-    label: 'Restarted',
-    columns: [...DEFAULT_PRESET_COLUMNS, 'restarted_from'],
-    filters: [
-      toClause(schema, 'invoked_by', {
-        operation: 'EQUALS',
-        value: 'restart_as_new',
-      }),
-    ],
-  },
-  {
     id: 'scheduled',
     label: 'Scheduled',
     columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
-    sort: {
-      field: 'scheduled_start_at',
-      order: 'ASC',
-    },
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
@@ -212,7 +193,12 @@ export function FilterShortcuts({
   setPageIndex: Dispatch<SetStateAction<number>>;
   schema: QueryClauseSchema<QueryClauseType>[];
 }) {
-  const [shortcuts] = useState(() => makeShortcuts(schema));
+  const features = useFeatures();
+  const supportsVqueueOnlyFields = features.has('vqueues');
+  const shortcuts = useMemo(
+    () => makeShortcuts(schema, supportsVqueueOnlyFields),
+    [schema, supportsVqueueOnlyFields],
+  );
   const visibleShortcuts = shortcuts.slice(0, VISIBLE_SHORTCUTS_COUNT);
   const overflowShortcuts = shortcuts.slice(VISIBLE_SHORTCUTS_COUNT);
   const [searchParams, setSearchParams] = useSearchParams();

@@ -55,14 +55,20 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         const start = api.value(series.startRangeKey);
         const end = api.value(series.endRangeKey);
         const val = api.value(series.dataKey);
+        const stackStart = series.stackStartKey
+          ? api.value(series.stackStartKey)
+          : 0;
         const minH = series.minBarHeight ?? 4;
 
         const x0 = Number(api.coord([start, 0])[0]);
         const x1 = Number(api.coord([end, 0])[0]);
         const hasValue = typeof val === 'number' && !isNaN(val);
+        const numericStackStart =
+          typeof stackStart === 'number' && !isNaN(stackStart) ? stackStart : 0;
+        const stackEnd = numericStackStart + (hasValue ? Number(val) : 0);
         const down = hasValue && (Number(val) < 0 || Object.is(val, -0));
-        const y0 = Number(api.coord([start, 0])[1]);
-        const yv = hasValue ? Number(api.coord([start, val])[1]) : y0;
+        const y0 = Number(api.coord([start, numericStackStart])[1]);
+        const yv = Number(api.coord([start, stackEnd])[1]);
         const coordY = 'y' in params.coordSys ? Number(params.coordSys.y) : 0;
         const coordHeight =
           'height' in params.coordSys ? Number(params.coordSys.height) : 0;
@@ -70,14 +76,16 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
 
         const width = x1 - x0;
         const gap = series.gap ?? (width > 20 ? 1 : 0.25);
-        const baselineGap = series.baselineGap ?? 0;
+        const baselineGap =
+          numericStackStart === 0 ? (series.baselineGap ?? 0) : 0;
         const barWidth =
           typeof series.barWidth === 'number'
             ? Math.min(width, series.barWidth)
             : width - 2 * gap;
         const baseline = down ? y0 + baselineGap : y0 - baselineGap;
         const directionDistance = down ? yv - baseline : baseline - yv;
-        const height = Math.max(minH, Math.max(0, directionDistance));
+        const height =
+          val === 0 ? 0 : Math.max(minH, Math.max(0, directionDistance));
         const top = down ? baseline : baseline - height;
 
         if (barWidth <= 0 || height <= 0) return;

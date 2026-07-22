@@ -18,6 +18,10 @@ const SUCCEEDED_STROKE = '#22c55e';
 const SUCCEEDED_FILL = '#86efac';
 const FAILED_STROKE = '#ef4444';
 const FAILED_FILL = '#fca5a5';
+const CANCELLED_STROKE = '#f97316';
+const CANCELLED_FILL = '#fdba74';
+const KILLED_STROKE = '#be123c';
+const KILLED_FILL = '#fda4af';
 const BAR_MIN_HEIGHT = 1.5;
 const BAR_BASELINE_GAP = 3;
 
@@ -25,9 +29,11 @@ const TOOLTIP_SERIES = [
   { dataKey: 'succeeded', label: 'Succeeded', color: SUCCEEDED_STROKE },
   {
     dataKey: 'failed',
-    label: 'Failed, Cancelled or Killed',
+    label: 'Failed',
     color: FAILED_STROKE,
   },
+  { dataKey: 'cancelled', label: 'Cancelled', color: CANCELLED_STROKE },
+  { dataKey: 'killed', label: 'Killed', color: KILLED_STROKE },
 ];
 
 type CompletionBucket = {
@@ -35,15 +41,25 @@ type CompletionBucket = {
   end: string;
   succeeded: number;
   failed: number;
+  cancelled: number;
+  killed: number;
 };
 
-export type CompletionBucketOutcome = 'succeeded' | 'failed';
+export type CompletionBucketOutcome =
+  | 'succeeded'
+  | 'failed'
+  | 'cancelled'
+  | 'killed';
 
 type CompletionRow = {
   start: number;
   end: number;
   succeeded: number;
   failed: number;
+  cancelledStart: number;
+  cancelled: number;
+  killedStart: number;
+  killed: number;
 };
 
 type CompletionHistoryChartProps = {
@@ -73,7 +89,11 @@ export function CompletionHistoryChart({
   }
 
   const hasCompletedInvocations = buckets.some(
-    (bucket) => bucket.succeeded > 0 || bucket.failed > 0,
+    (bucket) =>
+      bucket.succeeded > 0 ||
+      bucket.failed > 0 ||
+      bucket.cancelled > 0 ||
+      bucket.killed > 0,
   );
 
   const data: CompletionRow[] = buckets.map((bucket) => ({
@@ -81,14 +101,23 @@ export function CompletionHistoryChart({
     end: Date.parse(bucket.end),
     succeeded: bucket.succeeded,
     failed: -bucket.failed,
+    cancelledStart: -bucket.failed,
+    cancelled: -bucket.cancelled,
+    killedStart: -(bucket.failed + bucket.cancelled),
+    killed: -bucket.killed,
   }));
   const maxSucceeded = Math.max(
     0,
     ...buckets.map((bucket) => bucket.succeeded),
   );
-  const maxFailed = Math.max(0, ...buckets.map((bucket) => bucket.failed));
+  const maxUnsuccessful = Math.max(
+    0,
+    ...buckets.map(
+      (bucket) => bucket.failed + bucket.cancelled + bucket.killed,
+    ),
+  );
   const yAxisMax = Math.max(1, maxSucceeded);
-  const yAxisMin = -Math.max(1, maxFailed);
+  const yAxisMin = -Math.max(1, maxUnsuccessful);
   const yAxisInterval = yAxisMax - yAxisMin;
 
   return (
@@ -161,7 +190,7 @@ export function CompletionHistoryChart({
             }
           />
           <BarTimeSeries
-            name="Failed, Cancelled or Killed"
+            name="Failed"
             dataKey="failed"
             startRangeKey="start"
             endRangeKey="end"
@@ -179,6 +208,54 @@ export function CompletionHistoryChart({
                 ? ({ dataIndex }) => {
                     const bucket = buckets[dataIndex];
                     if (bucket) onBucketClick(bucket, 'failed');
+                  }
+                : undefined
+            }
+          />
+          <BarTimeSeries
+            name="Cancelled"
+            dataKey="cancelled"
+            stackStartKey="cancelledStart"
+            startRangeKey="start"
+            endRangeKey="end"
+            color={CANCELLED_STROKE}
+            fillColor={CANCELLED_FILL}
+            barWidth={6}
+            gap={0.25}
+            baselineGap={BAR_BASELINE_GAP}
+            minBarHeight={hasCompletedInvocations ? BAR_MIN_HEIGHT : 0}
+            clip={false}
+            cursor={onBucketClick ? 'pointer' : undefined}
+            liveIndex={data.length - 1}
+            onSelect={
+              onBucketClick
+                ? ({ dataIndex }) => {
+                    const bucket = buckets[dataIndex];
+                    if (bucket) onBucketClick(bucket, 'cancelled');
+                  }
+                : undefined
+            }
+          />
+          <BarTimeSeries
+            name="Killed"
+            dataKey="killed"
+            stackStartKey="killedStart"
+            startRangeKey="start"
+            endRangeKey="end"
+            color={KILLED_STROKE}
+            fillColor={KILLED_FILL}
+            barWidth={6}
+            gap={0.25}
+            baselineGap={BAR_BASELINE_GAP}
+            minBarHeight={hasCompletedInvocations ? BAR_MIN_HEIGHT : 0}
+            clip={false}
+            cursor={onBucketClick ? 'pointer' : undefined}
+            liveIndex={data.length - 1}
+            onSelect={
+              onBucketClick
+                ? ({ dataIndex }) => {
+                    const bucket = buckets[dataIndex];
+                    if (bucket) onBucketClick(bucket, 'killed');
                   }
                 : undefined
             }

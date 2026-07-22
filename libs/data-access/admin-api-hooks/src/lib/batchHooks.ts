@@ -4,7 +4,6 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import {
   MutationOptions,
-  QueryClient,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
@@ -12,16 +11,7 @@ import { adminApi } from '@restate/data-access/admin-api';
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type { HookMutationOptions } from '@restate/data-access/admin-api';
 import { useState, useEffect, useRef } from 'react';
-import { isSummaryInvocationsQuery } from './queryMatchers';
-
-function invalidateInvocationsQueries(queryClient: QueryClient) {
-  queryClient.invalidateQueries({
-    queryKey: ['/query/invocations'],
-  });
-  queryClient.invalidateQueries({
-    predicate: isSummaryInvocationsQuery,
-  });
-}
+import { invalidateInvocationsV2Queries } from './queryMatchers';
 
 function toBatchMutationFn<Body extends BatchInvocationsRequestBody>(
   batchSize: number,
@@ -213,11 +203,12 @@ export function useBatchCancelInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      invalidateInvocationsQueries(queryClient);
+      void invalidateInvocationsV2Queries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
     onError(error, variables, onMutateResult, context) {
+      void invalidateInvocationsV2Queries(queryClient);
       onError?.(error, variables, onMutateResult, context);
     },
     onSettled(data, error, variables, onMutateResult, context) {
@@ -277,11 +268,12 @@ export function useBatchPurgeInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      invalidateInvocationsQueries(queryClient);
+      void invalidateInvocationsV2Queries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
     onError(error, variables, onMutateResult, context) {
+      void invalidateInvocationsV2Queries(queryClient);
       onError?.(error, variables, onMutateResult, context);
     },
     onSettled(data, error, variables, onMutateResult, context) {
@@ -341,11 +333,12 @@ export function useBatchRestateAsNewInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      invalidateInvocationsQueries(queryClient);
+      void invalidateInvocationsV2Queries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
     onError(error, variables, onMutateResult, context) {
+      void invalidateInvocationsV2Queries(queryClient);
       onError?.(error, variables, onMutateResult, context);
     },
     onSettled(data, error, variables, onMutateResult, context) {
@@ -405,11 +398,12 @@ export function useBatchKillInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      invalidateInvocationsQueries(queryClient);
+      void invalidateInvocationsV2Queries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
     onError(error, variables, onMutateResult, context) {
+      void invalidateInvocationsV2Queries(queryClient);
       onError?.(error, variables, onMutateResult, context);
     },
     onSettled(data, error, variables, onMutateResult, context) {
@@ -469,11 +463,12 @@ export function useBatchPauseInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      invalidateInvocationsQueries(queryClient);
+      void invalidateInvocationsV2Queries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
     onError(error, variables, onMutateResult, context) {
+      void invalidateInvocationsV2Queries(queryClient);
       onError?.(error, variables, onMutateResult, context);
     },
     onSettled(data, error, variables, onMutateResult, context) {
@@ -534,11 +529,12 @@ export function useBatchResumeInvocations(
     ...restOptions,
     mutationFn,
     onSuccess(data, variables, context, meta) {
-      invalidateInvocationsQueries(queryClient);
+      void invalidateInvocationsV2Queries(queryClient);
 
       onSuccess?.(data, variables, context, meta);
     },
     onError(error, variables, onMutateResult, context) {
+      void invalidateInvocationsV2Queries(queryClient);
       onError?.(error, variables, onMutateResult, context);
     },
     onSettled(data, error, variables, onMutateResult, context) {

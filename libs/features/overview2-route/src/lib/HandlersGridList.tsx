@@ -7,20 +7,12 @@ import {
 } from '@restate/util/panel';
 import { useOverviewContext } from './OverviewContext';
 import { HandlerCard } from './HandlerCard';
-import {
-  type OverviewHandler,
-  handlerIssuesKey,
-  sortHandlers,
-} from './sortHandlers';
+import { type OverviewHandler, sortHandlers } from './sortHandlers';
 
 export function HandlersGridList() {
   const {
     filter,
     servicesMap,
-    summaryData,
-    handlerInvocationCounts,
-    handlerIssuesMap,
-    isSummaryError,
     isSummaryLoading,
     baseUrl,
     linkParams,
@@ -36,8 +28,6 @@ export function HandlersGridList() {
   const handlers = sortHandlers(
     filteredHandlers,
     resolvedHandlerSortDescriptor,
-    handlerInvocationCounts,
-    handlerIssuesMap,
   );
 
   const { open } = usePanel();
@@ -51,7 +41,7 @@ export function HandlersGridList() {
       aria-label="Handlers"
       columns={[]}
       items={itemsById}
-      dependencies={[handlerIssuesMap, summaryData, isSummaryLoading]}
+      dependencies={[isSummaryLoading]}
       sortDescriptor={resolvedHandlerSortDescriptor}
       onSortChange={setHandlerSortDescriptor}
       onAction={(key) => {
@@ -69,17 +59,6 @@ export function HandlersGridList() {
       {(item) => {
         const { service, handler } = item;
         const id = `${service.name}.${handler.name}`;
-        const issues =
-          handlerIssuesMap.get(handlerIssuesKey(service.name, handler.name)) ??
-          [];
-        const issueSeverity = issues.some((issue) => issue.severity === 'high')
-          ? ('high' as const)
-          : issues.length > 0
-            ? ('low' as const)
-            : ('none' as const);
-        const handlerCount =
-          handlerInvocationCounts.get(service.name)?.get(handler.name) ?? 0;
-
         return (
           <GridListItem id={id} item={item} textValue={id}>
             {({ isFocusVisible, isHovered, isPressed }) => (
@@ -87,16 +66,10 @@ export function HandlersGridList() {
                 service={service}
                 handler={handler}
                 baseUrl={baseUrl}
-                handlerIssues={issues}
-                summaryData={summaryData}
-                isSummaryError={isSummaryError}
-                isSummaryLoading={isSummaryLoading}
-                handlerCount={handlerCount}
                 linkParams={linkParams}
                 isFocusVisible={isFocusVisible}
                 isHovered={isHovered}
                 isPressed={isPressed}
-                issueSeverity={issueSeverity}
               />
             )}
           </GridListItem>

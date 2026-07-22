@@ -7,11 +7,11 @@ import { vqueueStatusEnabled } from './vqueue';
 
 const DEFAULT_SAMPLE_SIZE = 50000;
 // Filter fields applied client-side instead of in the SQL WHERE clause, so each
-// facet keyed on one of these fields can report `total` (all rows, ignoring the
+// summary bucket keyed on one of these fields can report `total` (all rows, ignoring the
 // filter) alongside `included` (rows matching the filter). This lets the UI show
 // siblings of a selected value rather than collapsing them out of the response.
 // `target_handler_name` is intentionally NOT here: no current UI shows a
-// per-handler facet at this level, so leaving it in HIGHLIGHT made the bar
+// per-handler breakdown at this level, so leaving it in HIGHLIGHT made the bar
 // and tab counts ignore the handler filter and disagree with the table.
 const HIGHLIGHT_FIELDS = new Set(['status', 'target_service_name']);
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
@@ -20,9 +20,14 @@ const RANGE_DURATIONS_MS: Record<string, number> = {
   P1D: 24 * 60 * 60 * 1000,
 };
 
-function rangeToCreatedAtFilter(
-  range: string | undefined,
-): FilterItem | undefined {
+export function rangeToCreatedAtFilter(range: string | undefined):
+  | {
+      type: 'DATE';
+      field: 'created_at';
+      operation: 'AFTER';
+      value: string;
+    }
+  | undefined {
   if (!range) return undefined;
   const ms = RANGE_DURATIONS_MS[range];
   if (!ms) return undefined;

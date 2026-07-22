@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { Chart, Pie, Slice, Tooltip } from '@restate/ui/charts';
 import { tv } from '@restate/util/styles';
-import { formatNumber } from '@restate/util/intl';
+import { formatApproxPercentage, formatNumber } from '@restate/util/intl';
 import { type ArcSegment } from './heroSegments';
 
 export const chartContainerStyles = tv({
@@ -18,17 +18,30 @@ export const chartContainerStyles = tv({
 export function StatusArcEcharts({
   segments,
   isLoading,
+  valueFormat = 'count',
 }: {
   segments: ArcSegment[];
   isLoading?: boolean;
+  valueFormat?: 'count' | 'approximate-percentage';
 }) {
   const items = useMemo(() => segments.filter((s) => s.count > 0), [segments]);
+  const total = useMemo(
+    () => items.reduce((sum, item) => sum + item.count, 0),
+    [items],
+  );
   const navigate = useNavigate();
 
   return (
     <div className={chartContainerStyles({ isLoading })}>
       <Chart width="100%" height="100%" theme="light" renderer="canvas">
-        <Tooltip trigger="item" formatValue={(v) => formatNumber(v)} />
+        <Tooltip
+          trigger="item"
+          formatValue={(value) =>
+            valueFormat === 'approximate-percentage' && total > 0
+              ? formatApproxPercentage(Number(value) / total)
+              : formatNumber(value)
+          }
+        />
         <Pie
           radius={['85%', '92%']}
           center={['50%', '50%']}

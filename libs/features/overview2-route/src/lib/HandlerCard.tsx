@@ -1,33 +1,17 @@
-import type {
-  Handler,
-  Service,
-  components,
-} from '@restate/data-access/admin-api-spec';
+import type { Handler, Service } from '@restate/data-access/admin-api-spec';
 import { cx, tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { panelHref } from '@restate/util/panel';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { IssueBadge } from '@restate/ui/issue-banner';
 import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
-import {
-  InvocationCountLink,
-  HandlerBreakdownTooltip,
-} from '@restate/features/service';
 import { Revision } from '@restate/features/deployment';
-import {
-  buildStatusEntries,
-  ServiceStatusBar,
-} from '@restate/features/status-chart';
 import { HandlerInputOutput } from '@restate/feature/handler-input-output';
-import { getRangeLabel } from '@restate/features/restate-context';
-import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
-import type { ServiceIssue } from '@restate/features/system-health';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
 import {
+  cardActionLinkStyles,
   cardContainerStyles,
   cardInnerStyles,
-  type IssueSeverity,
 } from './cardShell';
 
 const layoutStyles = tv({
@@ -54,55 +38,26 @@ export function HandlerCard({
   service,
   handler,
   baseUrl,
-  handlerIssues,
-  summaryData,
-  isSummaryError,
-  isSummaryLoading,
-  handlerCount,
   linkParams,
   isFocusVisible,
   isHovered,
   isPressed,
-  issueSeverity,
 }: {
   service: Service;
   handler: Handler;
   baseUrl: string;
-  handlerIssues: ServiceIssue[];
-  summaryData?: components['schemas']['InvocationsSummaryResponse'];
-  isSummaryError: boolean;
-  isSummaryLoading: boolean;
-  handlerCount: number;
   linkParams?: URLSearchParams;
   isFocusVisible?: boolean;
   isHovered?: boolean;
   isPressed?: boolean;
-  issueSeverity?: IssueSeverity;
 }) {
-  const rows = (summaryData?.byServiceAndHandlerAndStatus ?? []).filter(
-    (s) => s.service === service.name && s.handler === handler.name,
-  );
-  const statuses = buildStatusEntries(rows);
-  const total = statuses.reduce((sum, s) => sum + s.count, 0);
-  // When the summary is scoped to in-flight invocations (completion-history
-  // feature), make the counts/labels say so.
-  const isInFlightOnly = useIsFeatureFlagEnabled('FEATURE_COMPLETION_HISTORY');
-  const invocationNoun = isInFlightOnly
-    ? { one: 'in-flight', other: 'in-flight' }
-    : { one: 'invocation', other: 'invocations' };
-  const breakdownRangeLabel = isInFlightOnly
-    ? ''
-    : getRangeLabel(summaryData?.range);
-
   return (
     <div className="px-2">
       <div
         className={cardContainerStyles({ isFocusVisible })}
         {...waveAnimationProps('overview-card')}
       >
-        <div
-          className={cardInnerStyles({ issueSeverity, isHovered, isPressed })}
-        >
+        <div className={cardInnerStyles({ isHovered, isPressed })}>
           <div className={layoutStyles()}>
             <div className={iconCellStyles()}>
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
@@ -157,57 +112,25 @@ export function HandlerCard({
                   />
                 </Link>
               </HoverTooltip>
-              {handlerIssues.length > 0 && (
-                <IssueBadge
-                  issues={handlerIssues}
-                  serviceName={service.name}
-                  baseUrl={baseUrl}
-                />
-              )}
               <span className="ml-1 shrink-0 text-0.5xs">
                 <Revision revision={service.revision} />
               </span>
             </div>
 
             <div className={chartCellStyles()}>
-              <div className="min-w-0 flex-1">
-                <ServiceStatusBar
-                  serviceName={service.name}
-                  handlerName={handler.name}
-                  data={summaryData}
-                  isLoading={isSummaryLoading}
-                  linkParams={linkParams}
-                  noun={invocationNoun}
-                  rangeLabel={breakdownRangeLabel}
-                />
-              </div>
-              <InvocationCountLink
+              <Link
                 href={toServiceAndHandlerInvocationsHref(
                   baseUrl,
                   service.name,
                   handler.name,
                   { existingParams: linkParams },
                 )}
-                count={handlerCount}
-                isLoading={isSummaryLoading}
-                isError={isSummaryError}
-                size="sm"
-                variant="minimal"
-                noun={invocationNoun}
-                breakdownTooltip={
-                  total > 0 ? (
-                    <HandlerBreakdownTooltip
-                      serviceName={service.name}
-                      handlerName={handler.name}
-                      statuses={statuses}
-                      total={total}
-                      rangeLabel={breakdownRangeLabel}
-                      linkParams={linkParams}
-                      noun={invocationNoun}
-                    />
-                  ) : undefined
-                }
-              />
+                variant="secondary"
+                className={cardActionLinkStyles({ class: 'ml-auto' })}
+              >
+                <div className="min-w-0 truncate">Invocations</div>
+                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>

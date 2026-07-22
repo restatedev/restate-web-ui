@@ -1,5 +1,6 @@
 import { adminApi, useAdminBaseUrl } from '@restate/data-access/admin-api';
-import { useMutation } from '@tanstack/react-query';
+import { invalidateListServices } from '@restate/data-access/admin-api-hooks';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 
 export type FailedDeployment = { deploymentId: string; error: string };
@@ -23,6 +24,7 @@ function toErrorMessage(error: unknown) {
 
 export function useDeleteDeployments() {
   const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
   const deleteDeploymentOptions = adminApi(
     'mutate',
     '/deployments/{deployment}',
@@ -102,6 +104,11 @@ export function useDeleteDeployments() {
         failedCount: results.filter((result) => result.status === 'rejected')
           .length,
       };
+    },
+    onSuccess: ({ failedCount }, deploymentIds) => {
+      if (failedCount < deploymentIds.length) {
+        invalidateListServices(queryClient, baseUrl);
+      }
     },
   });
 

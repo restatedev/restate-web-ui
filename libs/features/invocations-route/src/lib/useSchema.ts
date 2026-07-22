@@ -15,7 +15,8 @@ export function useSchema() {
     useListSubscriptions();
   const { data: listServices, isPending: servicesIsLoading } =
     useListServices();
-  const hasVqueues = useFeatures().has('vqueues');
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
 
   const schema = useMemo(() => {
     const serviceNames = [
@@ -60,6 +61,9 @@ export function useSchema() {
           { value: 'succeeded', label: 'Succeeded' },
           { value: 'failed', label: 'Failed' },
           { value: 'ready', label: 'Ready' },
+          ...(hasVqueues
+            ? [{ value: 'yielded' as const, label: 'Yielded' }]
+            : []),
         ],
       },
       {
@@ -94,11 +98,8 @@ export function useSchema() {
           Array.from(
             new Set(
               Array.from(listServices.values())
-                .filter(Boolean)
-                .map((service) =>
-                  (service!.handlers ?? []).map((handler) => handler.name),
-                )
-                .flat(),
+                .flatMap((service) => service?.handlers ?? [])
+                .map((handler) => handler.name),
             ).values(),
           )
             .sort()
@@ -207,12 +208,6 @@ export function useSchema() {
         type: 'DATE',
       },
       {
-        id: 'scheduled_at',
-        label: 'Scheduled',
-        operations: dateOperations,
-        type: 'DATE',
-      },
-      {
         id: 'modified_at',
         label: 'Modified',
         operations: dateOperations,
@@ -223,12 +218,6 @@ export function useSchema() {
         label: 'Completed',
         operations: dateOperations,
         type: 'DATE',
-      },
-      {
-        id: 'restarted_from',
-        label: 'Restarted from',
-        operations: [{ value: 'EQUALS', label: 'is' }],
-        type: 'STRING',
       },
       ...(hasVqueues
         ? [

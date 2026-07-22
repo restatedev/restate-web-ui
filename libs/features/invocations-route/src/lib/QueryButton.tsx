@@ -8,13 +8,19 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
-import { COLUMN_NAMES } from './columns';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 import {
   SORT_COLUMN_KEYS,
   SORT_NONE,
   type SortSelection,
 } from './useInvocationsQueryFilters';
+
+const SORT_FIELD_LABELS: Record<
+  Exclude<SortSelection['field'], typeof SORT_NONE>,
+  string
+> = {
+  created_at: 'Created at',
+};
 
 function QueryButton({
   operation,
@@ -59,7 +65,7 @@ export function Sort({
           value={
             sortParams.field === SORT_NONE
               ? undefined
-              : COLUMN_NAMES[sortParams.field]
+              : SORT_FIELD_LABELS[sortParams.field]
           }
           operation={
             isNone ? (
@@ -94,7 +100,7 @@ export function Sort({
             </DropdownItem>
             {SORT_COLUMN_KEYS.map((item) => (
               <DropdownItem key={item} value={item}>
-                {COLUMN_NAMES[item]}
+                {SORT_FIELD_LABELS[item]}
               </DropdownItem>
             ))}
           </DropdownMenu>

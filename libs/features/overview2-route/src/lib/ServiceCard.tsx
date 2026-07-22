@@ -1,4 +1,4 @@
-import type { Service, components } from '@restate/data-access/admin-api-spec';
+import type { Service } from '@restate/data-access/admin-api-spec';
 import { cx, tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
@@ -16,22 +16,17 @@ import { IssueBadge } from '@restate/ui/issue-banner';
 import { toServiceInvocationsHref } from '@restate/util/invocation-links';
 import {
   InvocationCountLink,
-  ServiceBreakdownTooltip,
   HandlerGridList,
 } from '@restate/features/service';
-import {
-  LatestRevisionDeployment,
-  AllRevisions,
-} from '@restate/features/deployment';
 import {
   buildStatusEntries,
   ServiceStatusBar,
 } from '@restate/features/status-chart';
-import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
-  getRangeLabel,
-  useRestateContext,
-} from '@restate/features/restate-context';
+  LatestRevisionDeployment,
+  AllRevisions,
+} from '@restate/features/deployment';
+import { useRestateContext } from '@restate/features/restate-context';
 import { useOnboarding } from '@restate/util/feature-flag';
 import type { ServiceIssue } from '@restate/features/system-health';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
@@ -107,10 +102,11 @@ const playIconStyles = tv({
 
 export function ServiceCard({
   service,
-  summaryData,
-  byServiceAndStatus,
+  invocationCount,
+  stageCounts,
   baseUrl,
   serviceIssues,
+  onServiceStatusOpen,
   isSummaryError,
   isSummaryLoading,
   isDeploymentsFetching,
@@ -121,10 +117,11 @@ export function ServiceCard({
   issueSeverity,
 }: {
   service: Service;
-  summaryData?: components['schemas']['InvocationsSummaryResponse'];
-  byServiceAndStatus: { service: string; status: string; count: number }[];
+  invocationCount: number;
+  stageCounts: { name: string; count: number }[];
   baseUrl: string;
   serviceIssues: ServiceIssue[];
+  onServiceStatusOpen?: () => void;
   isSummaryError: boolean;
   isSummaryLoading: boolean;
   isDeploymentsFetching: boolean;
@@ -136,24 +133,9 @@ export function ServiceCard({
 }) {
   const { OnboardingGuide } = useRestateContext();
   const isOnboarding = useOnboarding();
-  // When the summary is scoped to in-flight invocations (completion-history
-  // feature), make the counts/labels say so.
-  const isInFlightOnly = useIsFeatureFlagEnabled('FEATURE_COMPLETION_HISTORY');
-  const invocationNoun = isInFlightOnly
-    ? { one: 'in-flight', other: 'in-flight' }
-    : { one: 'invocation', other: 'invocations' };
-  const breakdownRangeLabel = isInFlightOnly
-    ? ''
-    : getRangeLabel(summaryData?.range);
-  const serviceStatuses = byServiceAndStatus.filter(
-    (st) => st.service === service.name && st.count > 0,
-  );
-  const serviceTotal = serviceStatuses.reduce((sum, st) => sum + st.count, 0);
-  const hasChart = serviceTotal > 0 || isSummaryLoading || isSummaryError;
-  const breakdownStatuses = buildStatusEntries(serviceStatuses);
-  const breakdownTotal = breakdownStatuses.reduce(
-    (sum, st) => sum + st.count,
-    0,
+  const hasChart = invocationCount > 0 || isSummaryLoading || isSummaryError;
+  const stageEntries = buildStatusEntries(
+    stageCounts.map(({ name, count }) => ({ status: name, count })),
   );
 
   return (
@@ -197,6 +179,9 @@ export function ServiceCard({
                   issues={serviceIssues}
                   serviceName={service.name}
                   baseUrl={baseUrl}
+                  onOpenChange={(isOpen) => {
+                    if (isOpen) onServiceStatusOpen?.();
+                  }}
                 />
               )}
             </div>
@@ -216,36 +201,24 @@ export function ServiceCard({
                   href={toServiceInvocationsHref(baseUrl, service.name, {
                     existingParams: linkParams,
                   })}
-                  count={serviceTotal}
+                  count={invocationCount}
                   isLoading={isSummaryLoading}
                   isError={isSummaryError}
                   size="sm"
                   variant="minimal"
-                  noun={invocationNoun}
-                  breakdownTooltip={
-                    breakdownTotal > 0 ? (
-                      <ServiceBreakdownTooltip
-                        serviceName={service.name}
-                        statuses={breakdownStatuses}
-                        total={breakdownTotal}
-                        rangeLabel={breakdownRangeLabel}
-                        linkParams={linkParams}
-                        serviceIssues={serviceIssues}
-                        noun={invocationNoun}
-                      />
-                    ) : undefined
-                  }
                 />
               </div>
               <div className="min-w-0 flex-1">
                 <ServiceStatusBar
                   serviceName={service.name}
-                  data={summaryData}
+                  statusEntries={stageEntries}
                   serviceIssues={serviceIssues}
                   isLoading={isSummaryLoading}
                   linkParams={linkParams}
-                  noun={invocationNoun}
-                  rangeLabel={breakdownRangeLabel}
+                  rangeLabel="Current invocation stages"
+                  onOpenChange={(isOpen) => {
+                    if (isOpen) onServiceStatusOpen?.();
+                  }}
                 />
               </div>
             </div>

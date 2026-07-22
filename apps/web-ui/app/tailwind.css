@@ -117,6 +117,16 @@
   }
   --animate-moveAndGrow: moveAndGrow 1s linear infinite;
 
+  @keyframes runningFlow {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(16.97px);
+    }
+  }
+  --animate-runningFlow: runningFlow 4s linear infinite;
+
   @keyframes pulseButton {
     0%,
     100% {

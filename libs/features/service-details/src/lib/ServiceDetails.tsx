@@ -7,22 +7,14 @@ import {
 } from '@restate/ui/layout';
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import {
-  isSummaryInvocationsQuery,
+  isInvocationsV2Query,
+  useSummaryInvocationsV2,
   useListDeployments,
   useServiceDetails,
-  useSummaryInvocations,
 } from '@restate/data-access/admin-api-hooks';
 import { useQueryClient } from '@tanstack/react-query';
-import { ServiceStatusBar } from '@restate/features/status-chart';
-import { getRangeLabel, useRange } from '@restate/features/restate-context';
+import { InvocationCountLink } from '@restate/features/service';
 import {
-  HandlerBreakdownTooltip,
-  InvocationCountLink,
-  ServiceBreakdownTooltip,
-} from '@restate/features/service';
-import { buildStatusEntries } from '@restate/features/status-chart';
-import {
-  toFilterParams,
   toServiceAndHandlerInvocationsHref,
   toServiceInvocationsHref,
 } from '@restate/util/invocation-links';
@@ -46,7 +38,7 @@ import { IngressAccessSection } from './IngressAccessSection';
 import { RetryPolicySection } from './RetryPolicy';
 import { useRestateContext } from '@restate/features/restate-context';
 import { AdvancedSection } from './Advanced';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Metadata } from '@restate/features/options';
 import { ServiceHeader } from './ServiceHeader';
 import {
@@ -78,12 +70,9 @@ export function ServiceDetails() {
 
 function ServiceDetailsContent() {
   const service = useParamValue();
-  const { data, queryKey, error, isPending, refetch } = useServiceDetails(
-    String(service),
-    {
-      ...(!service && { enabled: false }),
-    },
-  );
+  const { error, isPending, refetch } = useServiceDetails(String(service), {
+    ...(!service && { enabled: false }),
+  });
   const queryClient = useQueryClient();
 
   if (!service) {
@@ -94,7 +83,7 @@ function ServiceDetailsContent() {
     refetch();
     queryClient.refetchQueries({
       type: 'active',
-      predicate: isSummaryInvocationsQuery,
+      predicate: isInvocationsV2Query,
     });
   };
 
@@ -178,34 +167,34 @@ function ServiceContent({
     (handler) => handler.name === selectedHandler,
   );
 
-  const range = useRange();
   const { data: summaryData, isPending: isSummaryLoading } =
-    useSummaryInvocations([], { sampled: false, range });
-  const byServiceAndStatus = summaryData?.byServiceAndStatus ?? [];
-  const byServiceAndHandlerAndStatus =
-    summaryData?.byServiceAndHandlerAndStatus ?? [];
-  const serviceStatusRows = byServiceAndStatus.filter(
-    (s) => s.service === service,
-  );
-  const handlerStatusRows = byServiceAndHandlerAndStatus.filter(
-    (s) => s.service === service && s.handler === selectedHandler,
-  );
-  const breakdownRows =
-    hasHandler && selectedHandler ? handlerStatusRows : serviceStatusRows;
-  const breakdownStatuses = buildStatusEntries(breakdownRows);
-  const invocationCount = breakdownStatuses.reduce(
-    (sum, s) => sum + s.count,
-    0,
-  );
-  const isInvocationsEmpty = !isSummaryLoading && invocationCount === 0;
-  const appliedFilters = summaryData?.appliedFilters;
-  const linkParams = useMemo(() => {
-    const next = new URLSearchParams(searchParams);
-    for (const [key, value] of toFilterParams(appliedFilters ?? [])) {
-      next.set(key, value);
-    }
-    return next;
-  }, [searchParams, appliedFilters]);
+    useSummaryInvocationsV2(
+      {
+        filters: [
+          {
+            field: 'target_service_name',
+            type: 'STRING_LIST',
+            operation: 'IN',
+            value: [service],
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'stages',
+      },
+      { enabled: Boolean(service) },
+    );
+  const invocationCount = summaryData?.total ?? 0;
+  const isInvocationsEmpty =
+    !hasHandler && !isSummaryLoading && invocationCount === 0;
+  const linkParams = new URLSearchParams(searchParams);
+  const invocationsHref =
+    hasHandler && selectedHandler
+      ? toServiceAndHandlerInvocationsHref(baseUrl, service, selectedHandler, {
+          existingParams: linkParams,
+        })
+      : toServiceInvocationsHref(baseUrl, service, {
+          existingParams: linkParams,
+        });
 
   const resolvedData = {
     ...data,
@@ -358,67 +347,26 @@ function ServiceContent({
 
       <div className="flex flex-col gap-2">
         <Section className="mt-4">
-          <SectionTitle>
-            <span>Invocations</span>
-            <span className="ml-1 text-gray-400 normal-case">
-              · {getRangeLabel(range)}
-            </span>
-          </SectionTitle>
+          <SectionTitle>Invocations</SectionTitle>
           <SectionContent className="px-2 pt-2" raised={false}>
             {isInvocationsEmpty ? (
               <div className="px-2 py-1.5 text-0.5xs text-gray-400">
                 No invocations
               </div>
             ) : (
-              <div className="flex flex-col gap-1.5">
-                <InvocationCountLink
-                  href={
-                    hasHandler && selectedHandler
-                      ? toServiceAndHandlerInvocationsHref(
-                          baseUrl,
-                          service,
-                          selectedHandler,
-                          { existingParams: linkParams },
-                        )
-                      : toServiceInvocationsHref(baseUrl, service, {
-                          existingParams: linkParams,
-                        })
-                  }
-                  count={invocationCount}
-                  isLoading={isSummaryLoading}
-                  size="sm"
-                  breakdownTooltip={
-                    invocationCount > 0 ? (
-                      hasHandler && selectedHandler ? (
-                        <HandlerBreakdownTooltip
-                          serviceName={service}
-                          handlerName={selectedHandler}
-                          statuses={breakdownStatuses}
-                          total={invocationCount}
-                          rangeLabel={getRangeLabel(range)}
-                          linkParams={linkParams}
-                        />
-                      ) : (
-                        <ServiceBreakdownTooltip
-                          serviceName={service}
-                          statuses={breakdownStatuses}
-                          total={invocationCount}
-                          rangeLabel={getRangeLabel(range)}
-                          linkParams={linkParams}
-                        />
-                      )
-                    ) : undefined
-                  }
-                />
-                <ServiceStatusBar
-                  serviceName={service}
-                  handlerName={
-                    hasHandler && selectedHandler ? selectedHandler : undefined
-                  }
-                  data={summaryData}
-                  isLoading={isSummaryLoading}
-                  linkParams={linkParams}
-                />
+              <div className="flex items-center gap-1.5">
+                {hasHandler ? (
+                  <Link href={invocationsHref} variant="secondary-button">
+                    View invocations
+                  </Link>
+                ) : (
+                  <InvocationCountLink
+                    href={invocationsHref}
+                    count={invocationCount}
+                    isLoading={isSummaryLoading}
+                    size="sm"
+                  />
+                )}
               </div>
             )}
           </SectionContent>

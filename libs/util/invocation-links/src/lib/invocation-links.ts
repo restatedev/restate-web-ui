@@ -1,4 +1,8 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import {
+  INBOX_INVOCATION_STATUSES,
+  TERMINAL_INVOCATION_STATUSES,
+  type FilterItem,
+} from '@restate/data-access/admin-api-spec';
 
 export const DEFAULT_INVOCATION_COLUMNS = [
   'id',
@@ -10,7 +14,8 @@ export const DEFAULT_INVOCATION_COLUMNS = [
 ];
 
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
-const COMPLETED_STATUSES = ['succeeded', ...FAILED_SUBSTATES];
+const COMPLETED_STATUSES = TERMINAL_INVOCATION_STATUSES;
+const INBOX_STATUSES = INBOX_INVOCATION_STATUSES;
 // Scheduled invocations haven't started executing yet, so they're neither
 // completed nor in-flight — excluded from the in-flight view too. Keep this in
 // sync with the In-flight preset (INVOCATION_SHORTCUTS / makeShortcuts),
@@ -19,6 +24,11 @@ const NON_IN_FLIGHT_STATUSES = [...COMPLETED_STATUSES, 'scheduled'];
 
 function resolveStatuses(statusName: string, expandFailed = true): string[] {
   if (expandFailed && statusName === 'failed') return FAILED_SUBSTATES;
+  if (statusName === 'inbox') return INBOX_STATUSES;
+  if (statusName === 'finished') return COMPLETED_STATUSES;
+  if (statusName === 'ready-yielded-backing-off') {
+    return ['ready', 'yielded', 'backing-off'];
+  }
   return [statusName];
 }
 
@@ -68,7 +78,13 @@ export function toCompletedInvocationsBucketHref(
   }: {
     start: string | Date;
     end: string | Date;
-    outcome?: 'completed' | 'succeeded' | 'failed';
+    outcome?:
+      | 'completed'
+      | 'succeeded'
+      | 'unsuccessful'
+      | 'failed'
+      | 'cancelled'
+      | 'killed';
     existingParams?: URLSearchParams;
   },
 ) {
@@ -76,9 +92,11 @@ export function toCompletedInvocationsBucketHref(
   const statusValues =
     outcome === 'succeeded'
       ? ['succeeded']
-      : outcome === 'failed'
+      : outcome === 'unsuccessful'
         ? FAILED_SUBSTATES
-        : COMPLETED_STATUSES;
+        : outcome === 'completed'
+          ? COMPLETED_STATUSES
+          : [outcome];
   params.set(
     'filter_status',
     JSON.stringify({ operation: 'IN', value: statusValues }),

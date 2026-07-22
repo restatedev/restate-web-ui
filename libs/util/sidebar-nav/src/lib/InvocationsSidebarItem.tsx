@@ -9,6 +9,8 @@ import { useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useInvocationsRecent } from './useInvocationsMemory';
+import { useFeatures } from '@restate/data-access/admin-api';
+import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access/admin-api-spec';
 
 // ─────────────────────────────────────────────────────────────
 // Preset definitions
@@ -49,6 +51,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
     id: 'processing',
     label: 'Processing',
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       {
         id: 'status',
@@ -56,11 +59,11 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
         value: ['running', 'backing-off'],
       },
     ],
-    sort: SORT_NONE,
   },
   {
     id: 'inflight',
     label: 'In-flight',
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       {
         id: 'status',
@@ -79,39 +82,32 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
         value: ['pending', 'backing-off', 'paused', 'ready'],
       },
     ],
-    sort: { field: 'modified_at', order: 'ASC' },
+    sort: { field: 'created_at', order: 'ASC' },
   },
   {
     id: 'notcompleted',
     label: 'Not completed',
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       {
         id: 'status',
         operation: 'NOT_IN',
         // Mirror of COMPLETED_STATUSES in @restate/util/invocation-links;
         // matches toInFlightPlusScheduledInvocationsHref (in-flight + scheduled).
-        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+        value: TERMINAL_INVOCATION_STATUSES,
       },
     ],
   },
   {
-    id: 'workflow',
-    label: 'Workflow runs',
-    filters: [
-      { id: 'target_service_ty', operation: 'IN', value: ['workflow'] },
-      { id: 'target_handler_name', operation: 'IN', value: ['run'] },
-    ],
-  },
-  {
-    id: 'vo',
-    label: 'Active Virtual Objects',
+    id: 'completed',
+    label: 'Completed',
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       {
         id: 'status',
         operation: 'IN',
-        value: ['running', 'backing-off', 'suspended', 'paused'],
+        value: TERMINAL_INVOCATION_STATUSES,
       },
-      { id: 'target_service_ty', operation: 'IN', value: ['virtual_object'] },
     ],
   },
   // {
@@ -128,26 +124,41 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   //   columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
   // },
   {
-    id: 'restarted',
-    label: 'Restarted',
-    filters: [
-      { id: 'invoked_by', operation: 'EQUALS', value: 'restart_as_new' },
-    ],
-    columns: [...DEFAULT_PRESET_COLUMNS, 'restarted_from'],
-  },
-  {
     id: 'scheduled',
     label: 'Scheduled',
     filters: [{ id: 'status', operation: 'IN', value: ['scheduled'] }],
-    sort: { field: 'scheduled_start_at', order: 'ASC' },
+    sort: { field: 'created_at', order: 'DESC' },
     columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
   },
 ];
+
+function invocationShortcuts(
+  supportsVqueueOnlyFields: boolean,
+): InvocationShortcut[] {
+  return INVOCATION_SHORTCUTS.map((shortcut) => {
+    if (shortcut.id === 'stuck') {
+      return {
+        ...shortcut,
+        filters: shortcut.filters.map((filter) =>
+          filter.id === 'status' && supportsVqueueOnlyFields
+            ? {
+                ...filter,
+                value: [...((filter.value as string[]) ?? []), 'yielded'],
+              }
+            : filter,
+        ),
+        sort: shortcut.sort,
+      };
+    }
+    return shortcut;
+  });
+}
 
 const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
   id: 'all',
   label: 'All',
   filters: [],
+  sort: { field: 'created_at', order: 'DESC' },
   // Carry the default columns so the All link is never a truly-empty URL — the
   // route loader treats only an empty /invocations as a fresh entry to apply
   // the configured default preset to, so this keeps "All" meaning "All".
@@ -184,27 +195,38 @@ function shortcutHref(path: string, s: InvocationShortcut): string {
   return `${path}?${shortcutSearch(s)}`;
 }
 
+const FALLBACK_INVOCATIONS_PRESET = 'processing';
+let configuredDefaultInvocationsPreset: string | undefined =
+  FALLBACK_INVOCATIONS_PRESET;
+let configuredSupportsVqueueOnlyFields = false;
+
 /**
  * Search string (filters + sort + columns) for a preset id, for callers that
  * navigate/redirect to a preset without a path (e.g. the /invocations route
  * loader). Empty for unknown ids.
  */
-export function getInvocationPresetSearch(id: string): string {
+export function getInvocationPresetSearch(
+  id: string,
+  supportsVqueueOnlyFields = configuredSupportsVqueueOnlyFields,
+): string {
   const shortcut =
     id === ALL_INVOCATIONS_SHORTCUT.id
       ? ALL_INVOCATIONS_SHORTCUT
-      : INVOCATION_SHORTCUTS.find((s) => s.id === id);
+      : invocationShortcuts(supportsVqueueOnlyFields).find((s) => s.id === id);
   return shortcut ? shortcutSearch(shortcut) : '';
 }
 
 // Module-level mirror of RestateContext's `defaultInvocationsPreset`, so the
 // /invocations route loader (a plain module function that can't read React
 // context) can apply it. Synced by InvocationsSidebarItem on render. On a cold
-// load it isn't set until the sidebar mounts (after loaders run), so the loader
-// falls back to the All view then — the nav link still points at the preset.
-let configuredDefaultInvocationsPreset: string | undefined;
-export function setDefaultInvocationsPreset(preset: string | undefined) {
-  configuredDefaultInvocationsPreset = preset;
+// load it isn't set until the sidebar mounts (after loaders run), so initialize
+// it to the same Processing fallback used by the nav link.
+export function setDefaultInvocationsPreset(
+  preset: string | undefined,
+  supportsVqueueOnlyFields = false,
+) {
+  configuredDefaultInvocationsPreset = preset ?? FALLBACK_INVOCATIONS_PRESET;
+  configuredSupportsVqueueOnlyFields = supportsVqueueOnlyFields;
 }
 export function getDefaultInvocationsPreset(): string | undefined {
   return configuredDefaultInvocationsPreset;
@@ -224,7 +246,7 @@ export function getDefaultInvocationsPreset(): string | undefined {
 //               scope filter aside) — the baseline "show everything recent"
 //               view. Matches the All sidebar item.
 //   - 'preset': on `/invocations` and the URL's filter set matches one of
-//               the named shortcuts (In-flight, Stuck, Workflow runs, …).
+//               the named shortcuts (In-flight, Stuck, Scheduled, …).
 //               `id` is the shortcut id, used to highlight that sub-item.
 //   - 'custom': on `/invocations` but the URL doesn't match 'all' or any
 //               preset — the user built their own filter combination. This
@@ -300,6 +322,7 @@ function classifyInvocationsUrl(
   path: string,
   pathname: string,
   searchParams: URLSearchParams,
+  supportsVqueueOnlyFields = configuredSupportsVqueueOnlyFields,
 ): InvocationsUrlKind {
   const detail = pathname.match(new RegExp(`^${path}/([^/]+)`));
   if (detail?.[1]) return { kind: 'detail', id: detail[1] };
@@ -307,7 +330,7 @@ function classifyInvocationsUrl(
   if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) {
     return { kind: 'all' };
   }
-  const preset = INVOCATION_SHORTCUTS.find((s) =>
+  const preset = invocationShortcuts(supportsVqueueOnlyFields).find((s) =>
     urlMatchesShortcut(searchParams, s),
   );
   if (preset) return { kind: 'preset', id: preset.id };
@@ -323,7 +346,9 @@ export function matchesAnyInvocationPreset(
   searchParams: URLSearchParams,
 ): boolean {
   if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) return true;
-  return INVOCATION_SHORTCUTS.some((s) => urlMatchesShortcut(searchParams, s));
+  return invocationShortcuts(configuredSupportsVqueueOnlyFields).some((s) =>
+    urlMatchesShortcut(searchParams, s),
+  );
 }
 
 // Keep in sync with ALL_INVOCATIONS_SHORTCUT + INVOCATION_SHORTCUTS ids.
@@ -332,12 +357,10 @@ export type InvocationPreset =
   | 'inflight'
   | 'stuck'
   | 'processing'
-  | 'workflow'
-  | 'vo'
   | 'idempotent'
-  | 'restarted'
   | 'scheduled'
   | 'notcompleted'
+  | 'completed'
   | 'custom';
 
 /**
@@ -350,8 +373,8 @@ export function getInvocationPreset(
   searchParams: URLSearchParams,
 ): InvocationPreset {
   if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) return 'all';
-  const preset = INVOCATION_SHORTCUTS.find((s) =>
-    urlMatchesShortcut(searchParams, s),
+  const preset = invocationShortcuts(configuredSupportsVqueueOnlyFields).find(
+    (s) => urlMatchesShortcut(searchParams, s),
   );
   return (preset?.id as InvocationPreset) ?? 'custom';
 }
@@ -379,30 +402,45 @@ export function InvocationsSidebarItem({
   const path = `${baseUrl}/invocations`;
   const { recent } = useInvocationsRecent();
   const { defaultInvocationsPreset } = useRestateContext();
+  const features = useFeatures();
+  const supportsVqueueOnlyFields = features.has('vqueues');
   const location = useLocation();
+  const shortcuts = invocationShortcuts(supportsVqueueOnlyFields);
+
+  const resolvedDefaultInvocationsPreset =
+    defaultInvocationsPreset ?? FALLBACK_INVOCATIONS_PRESET;
 
   // Mirror the configured default preset to the module store so the route
   // loader can apply it on the next /invocations navigation.
   useEffect(() => {
-    setDefaultInvocationsPreset(defaultInvocationsPreset);
-  }, [defaultInvocationsPreset]);
+    setDefaultInvocationsPreset(
+      resolvedDefaultInvocationsPreset,
+      supportsVqueueOnlyFields,
+    );
+  }, [resolvedDefaultInvocationsPreset, supportsVqueueOnlyFields]);
 
-  // The Invocations nav link lands on the configured preset (All when unset).
+  // The Invocations nav link lands on the configured preset.
   const defaultShortcut =
-    INVOCATION_SHORTCUTS.find((s) => s.id === defaultInvocationsPreset) ??
+    shortcuts.find((s) => s.id === resolvedDefaultInvocationsPreset) ??
     ALL_INVOCATIONS_SHORTCUT;
   const current = classifyInvocationsUrl(
     path,
     location.pathname,
     new URLSearchParams(location.search),
+    supportsVqueueOnlyFields,
   );
 
   // Sub-item match functions all derive from the same classifier — the
   // active preset (if any) wins exactly one highlight.
   const classify = (loc: SidebarLocation) =>
-    classifyInvocationsUrl(path, loc.pathname, loc.searchParams);
+    classifyInvocationsUrl(
+      path,
+      loc.pathname,
+      loc.searchParams,
+      supportsVqueueOnlyFields,
+    );
 
-  const presetSubItems: SidebarSubItem[] = INVOCATION_SHORTCUTS.map((s) => ({
+  const presetSubItems: SidebarSubItem[] = shortcuts.map((s) => ({
     href: shortcutHref(path, s),
     label: s.label,
     match: ((loc) => {
@@ -457,7 +495,7 @@ export function InvocationsSidebarItem({
       preserveSearchParams: false,
     });
   } else if (current?.kind === 'preset' && !FIXED_PRESET_IDS.has(current.id)) {
-    const preset = INVOCATION_SHORTCUTS.find((s) => s.id === current.id);
+    const preset = shortcuts.find((s) => s.id === current.id);
     if (preset) {
       const presetId = preset.id;
       extraSubItems.push({

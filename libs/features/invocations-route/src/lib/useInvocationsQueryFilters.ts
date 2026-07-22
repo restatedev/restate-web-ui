@@ -1,8 +1,4 @@
-import { FilterItem } from '@restate/data-access/admin-api-spec';
-import {
-  components,
-  SortInvocations,
-} from '@restate/data-access/admin-api-spec';
+import { components } from '@restate/data-access/admin-api-spec';
 import {
   QueryClause,
   QueryClauseSchema,
@@ -27,26 +23,20 @@ export function getFilterParamKey(
   return `${FILTER_QUERY_PREFIX}${param.id}`;
 }
 
-export const SORT_COLUMN_KEYS: ColumnKey[] = [
+type InvocationV2Filter = components['schemas']['InvocationV2FilterItem'];
+type InvocationV2Sort = components['schemas']['InvocationV2Sort'];
+
+export const SORT_COLUMN_KEYS = [
   'created_at',
-  'modified_at',
-  'scheduled_at',
-  'scheduled_start_at',
-  'running_at',
-  // 'next_retry_at',
-  'target_service_key',
-  'target_service_name',
-  'target_handler_name',
-  // 'retry_count',
-  'duration',
-] as const;
+] as const satisfies readonly InvocationV2Sort['field'][];
+type InvocationUiSortField = (typeof SORT_COLUMN_KEYS)[number];
 
 // Sentinel sort field meaning "don't sort": the list query then omits its
 // ORDER BY and returns rows in scan order (fastest, but unstable order).
 export const SORT_NONE = 'none';
 export type SortSelection = {
-  field: SortInvocations['field'] | typeof SORT_NONE;
-  order: SortInvocations['order'];
+  field: InvocationUiSortField | typeof SORT_NONE;
+  order: InvocationV2Sort['order'];
 };
 
 export function isNoSort(searchParams: URLSearchParams) {
@@ -54,17 +44,17 @@ export function isNoSort(searchParams: URLSearchParams) {
 }
 
 export function isSortValid(searchParams: URLSearchParams) {
-  const field = searchParams.get(SORT_QUERY_PREFIX + 'field') as ColumnKey;
+  const field = searchParams.get(
+    SORT_QUERY_PREFIX + 'field',
+  ) as InvocationV2Sort['field'];
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order') || '';
   return (
-    SORT_COLUMN_KEYS.includes(field) && ['ASC', 'DESC'].includes(String(order))
+    SORT_COLUMN_KEYS.some((sortField) => sortField === field) &&
+    ['ASC', 'DESC'].includes(String(order))
   );
 }
 
-export function setSort(
-  searchParams: URLSearchParams,
-  sort: { field: ColumnKey; order: 'ASC' | 'DESC' },
-) {
+export function setSort(searchParams: URLSearchParams, sort: InvocationV2Sort) {
   searchParams.set(SORT_QUERY_PREFIX + 'field', sort.field);
   searchParams.set(SORT_QUERY_PREFIX + 'order', sort.order);
 
@@ -72,7 +62,7 @@ export function setSort(
 }
 
 export function setDefaultSort(searchParams: URLSearchParams) {
-  return setSort(searchParams, { field: 'modified_at', order: 'DESC' });
+  return setSort(searchParams, { field: 'created_at', order: 'DESC' });
 }
 
 function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
@@ -84,21 +74,17 @@ function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
   if (isSortValid(searchParams) && field && order) {
     return { field, order } as SortSelection;
   }
-  return { field: 'modified_at', order: 'DESC' };
+  return { field: 'created_at', order: 'DESC' };
 }
 
 function deriveClausesFromUrl(
   searchParams: URLSearchParams,
   schema: QueryClauseSchema<QueryClauseType>[],
 ) {
-  return schema
-    .filter((schemaClause) => searchParams.get(getFilterParamKey(schemaClause)))
-    .map((schemaClause) =>
-      QueryClause.fromJSON(
-        schemaClause,
-        searchParams.get(getFilterParamKey(schemaClause))!,
-      ),
-    );
+  return schema.flatMap((schemaClause) => {
+    const value = searchParams.get(getFilterParamKey(schemaClause));
+    return value ? [QueryClause.fromJSON(schemaClause, value)] : [];
+  });
 }
 
 /**
@@ -112,26 +98,26 @@ export function useListInvocationsParameters() {
   const searchString = searchParams.toString();
 
   const listInvocationsParameters = useMemo<
-    components['schemas']['ListInvocationsRequestBody']
+    Omit<components['schemas']['ListInvocationsV2RequestBody'], 'mode'>
   >(() => {
     const searchParams = new URLSearchParams(searchString);
     const clauses = deriveClausesFromUrl(searchParams, schema);
-    const filters = clauses
-      .filter((clause) => clause.isValid)
-      .map(
-        (clause) =>
-          ({
-            field: clause.fieldValue,
-            operation: clause.value.operation!,
-            type: clause.type,
-            value: clause.value.value,
-          }) as FilterItem,
-      );
+    const filters = clauses.flatMap((clause) => {
+      if (!clause.isValid || !clause.value.operation) return [];
+      return [
+        {
+          field: clause.fieldValue,
+          operation: clause.value.operation,
+          type: clause.type,
+          value: clause.value.value,
+        } as InvocationV2Filter,
+      ];
+    });
     const selection = deriveSortFromUrl(searchParams);
     const sort =
       selection.field === SORT_NONE
         ? undefined
-        : (selection as SortInvocations);
+        : (selection as InvocationV2Sort);
     return { filters, sort };
   }, [searchString, schema, isLoading]);
 
@@ -173,7 +159,6 @@ export function useInvocationsForm({
   // mount are handled by the parent re-mounting via `key`.
   const initialClauses = useMemo(
     () => deriveClausesFromUrl(searchParams, schema),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isLoading, schema],
   );
 
@@ -200,8 +185,8 @@ export function useInvocationsForm({
       newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
       sortManuallyChangedRef.current = false;
     } else {
-      const field = sortParams?.field || 'modified_at';
-      const order = sortParams?.order || 'DESC';
+      const field = sortParams.field;
+      const order = sortParams.order;
       newSearchParams.set(SORT_QUERY_PREFIX + 'field', field);
       newSearchParams.set(SORT_QUERY_PREFIX + 'order', order);
       if (sortManuallyChangedRef.current) {

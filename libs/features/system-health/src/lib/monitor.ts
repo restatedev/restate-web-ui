@@ -1,11 +1,14 @@
 import type { QueryClient, QueryCacheNotifyEvent } from '@tanstack/react-query';
 import {
-  isSummaryInvocationsQuery,
+  getInvocationStatusBreakdownV2,
+  isQueryForPath,
   isQueryHealthCheckQuery,
-  isCompletedBreakdownQuery,
+  mergeInvocationSummaryBreakdowns,
 } from '@restate/data-access/admin-api-hooks';
+import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
+import type { components } from '@restate/data-access/admin-api-spec';
 import { issueQueue } from './issue-queue';
-import { checkSlaThresholds, getGlobalIssues } from './service-issues';
+import { getGlobalIssues } from './service-issues';
 import { RestateError } from '@restate/util/errors';
 
 interface AdditionalObserver {
@@ -20,15 +23,6 @@ interface SystemHealthMonitorOptions {
   additionalObservers?: AdditionalObserver[];
 }
 
-type SummaryData = {
-  byStatus: { name: string; count: number }[];
-  byServiceAndStatus?: { service: string; status: string; count: number }[];
-};
-
-type CompletedBreakdownData = {
-  buckets: { start: string; succeeded: number; failed: number }[];
-};
-
 export interface SystemHealthMonitor {
   reset: () => void;
   cleanup: () => void;
@@ -38,54 +32,33 @@ function closeKeys(keys: string[]) {
   for (const key of keys) issueQueue.close(key);
 }
 
-function statusCountsFromRows(rows: { status: string; count: number }[]) {
-  const statusCounts = new Map<string, number>();
-  for (const entry of rows) {
-    statusCounts.set(
-      entry.status,
-      (statusCounts.get(entry.status) ?? 0) + entry.count,
-    );
-  }
-  return statusCounts;
-}
+type SummaryData = components['schemas']['SummaryInvocationsV2Response'];
 
-function computeGlobalIssues(summaryData: SummaryData): string[] {
-  const globalStatusCounts = new Map<string, number>();
-  for (const entry of summaryData.byStatus) {
-    globalStatusCounts.set(
-      entry.name,
-      (globalStatusCounts.get(entry.name) ?? 0) + entry.count,
-    );
+function globalInvocationIssues(summary: SummaryData | undefined) {
+  if (
+    !summary ||
+    summary.stageBuckets.some((stage) => stage.breakdownCanRefine)
+  ) {
+    return undefined;
   }
-
-  return getGlobalIssues(globalStatusCounts).map((issue) =>
-    issueQueue.add({ severity: issue.severity, label: issue.label }),
+  return getGlobalIssues(
+    new Map(
+      getInvocationStatusBreakdownV2(summary).map(({ name, count }) => [
+        name,
+        count,
+      ]),
+    ),
   );
 }
 
-function computeServiceIssues(summaryData: SummaryData): string[] {
-  const serviceRows = new Map<
-    string,
-    { service: string; status: string; count: number }[]
-  >();
-  for (const entry of summaryData.byServiceAndStatus ?? []) {
-    const rows = serviceRows.get(entry.service) ?? [];
-    rows.push(entry);
-    serviceRows.set(entry.service, rows);
+function getInvocationSummaryView(event: QueryCacheNotifyEvent) {
+  const request = event.query.queryKey[1];
+  if (!request || typeof request !== 'object' || !('body' in request)) {
+    return undefined;
   }
-
-  return Array.from(serviceRows)
-    .flatMap(([serviceName, rows]) =>
-      checkSlaThresholds(statusCountsFromRows(rows)).map((issue) => ({
-        severity: issue.severity,
-        label: `${serviceName}: ${issue.label}`,
-      })),
-    )
-    .sort((a, b) => {
-      if (a.severity !== b.severity) return a.severity === 'high' ? -1 : 1;
-      return a.label.localeCompare(b.label);
-    })
-    .map((issue) => issueQueue.add(issue));
+  const body = request.body;
+  if (!body || typeof body !== 'object' || !('view' in body)) return undefined;
+  return body.view;
 }
 
 function toRestateError(error: unknown): RestateError {
@@ -103,11 +76,14 @@ export function createSystemHealthMonitor(
   { additionalObservers = [] }: SystemHealthMonitorOptions = {},
 ): SystemHealthMonitor {
   const tracked = {
-    sla: [] as string[],
-    completedSla: [] as string[],
+    invocationIssues: [] as string[],
     queryHealth: null as string | null,
     additional: new Map<number, string[]>(),
   };
+  const invocationData: {
+    stages?: SummaryData;
+    breakdowns?: SummaryData;
+  } = {};
 
   const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
     if (!event) return;
@@ -120,8 +96,8 @@ export function createSystemHealthMonitor(
     if (isQueryHealthCheckQuery(event)) {
       const { state } = event.query;
       if (state.status === 'error' && state.error && !tracked.queryHealth) {
-        closeKeys(tracked.sla);
-        tracked.sla = [];
+        closeKeys(tracked.invocationIssues);
+        tracked.invocationIssues = [];
         tracked.queryHealth = issueQueue.add({
           severity: 'high',
           label:
@@ -137,38 +113,32 @@ export function createSystemHealthMonitor(
     if (event.type !== 'updated') return;
 
     if (
-      isSummaryInvocationsQuery(event.query) &&
-      event.query.meta?.['monitor']
+      event.query.state.status === 'success' &&
+      isOverviewRefreshQuery(event.query)
     ) {
-      const data = event.query.state.data as SummaryData | undefined;
-      if (!data) return;
-      closeKeys(tracked.sla);
-      tracked.sla = tracked.queryHealth
-        ? []
-        : [...computeGlobalIssues(data), ...computeServiceIssues(data)];
+      if (
+        isQueryForPath(event.query, '/query/v2/invocations/summary', 'post')
+      ) {
+        const data = event.query.state.data as SummaryData;
+        if (getInvocationSummaryView(event) === 'breakdowns') {
+          invocationData.breakdowns = data;
+        } else {
+          invocationData.stages = data;
+        }
+      }
+      const issues = globalInvocationIssues(
+        mergeInvocationSummaryBreakdowns(
+          invocationData.stages,
+          invocationData.breakdowns,
+        ),
+      );
+      if (issues) {
+        closeKeys(tracked.invocationIssues);
+        tracked.invocationIssues = tracked.queryHealth
+          ? []
+          : issues.map((issue) => issueQueue.add(issue));
+      }
     }
-
-    // The completion breakdown's current-hour bucket carries the live failure
-    // rate (the live query's last bucket is the current hour; the history
-    // query's is an earlier hour, so it's skipped).
-    // if (isCompletedBreakdownQuery(event.query)) {
-    //   const data = event.query.state.data as CompletedBreakdownData | undefined;
-    //   const last = data?.buckets?.at(-1);
-    //   const currentHourStart = Math.floor(Date.now() / 3_600_000) * 3_600_000;
-    //   if (last && Date.parse(last.start) === currentHourStart) {
-    //     closeKeys(tracked.completedSla);
-    //     // Feed the hour's succeeded/failed as status counts so the shared
-    //     // failure-rate check applies (failed / completed, both counted here).
-    //     tracked.completedSla = tracked.queryHealth
-    //       ? []
-    //       : computeGlobalIssues({
-    //           byStatus: [
-    //             { name: 'succeeded', count: last.succeeded },
-    //             { name: 'failed', count: last.failed },
-    //           ],
-    //         });
-    //   }
-    // }
 
     for (let i = 0; i < additionalObservers.length; i++) {
       const observer = additionalObservers[i];
@@ -179,10 +149,10 @@ export function createSystemHealthMonitor(
   });
 
   function clearTracked() {
-    closeKeys(tracked.sla);
-    tracked.sla = [];
-    closeKeys(tracked.completedSla);
-    tracked.completedSla = [];
+    closeKeys(tracked.invocationIssues);
+    tracked.invocationIssues = [];
+    delete invocationData.stages;
+    delete invocationData.breakdowns;
     if (tracked.queryHealth) {
       issueQueue.close(tracked.queryHealth);
       tracked.queryHealth = null;

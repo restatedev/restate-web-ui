@@ -2398,6 +2398,208 @@
         }
       }
     },
+    "/query/v2/invocations": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "List invocations using the v2 query planner",
+        "description": "Uses durable invocation status for statuses represented there and VQueue entries only for running, backing-off, ready, and yielded. Deployment filters always mean the pinned deployment.",
+        "operationId": "list_invocations_v2",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListInvocationsV2RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInvocationsV2Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/v2/invocations/summary": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Return invocation summary",
+        "description": "Returns coarse stages, response-defined status buckets, and service buckets. Filters listed in highlightFields remain visible as highlighted buckets; every other filter is applied to the aggregate population.",
+        "operationId": "summary_invocations_v2",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummaryInvocationsV2RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryInvocationsV2Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/v2/invocations/inbox": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Break down inboxed invocations by due state or status",
+        "operationId": "inbox_invocations_breakdown_v2",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboxInvocationsBreakdownV2RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inbox breakdown selected by groupBy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboxInvocationsBreakdownV2Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/v2/invocations/finished-breakdown": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Break down finished invocations by outcome",
+        "operationId": "finished_invocations_breakdown_v2",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishedInvocationsBreakdownV2RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Finished invocation breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinishedInvocationsBreakdownV2Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/v2/invocations/finished-history": {
+      "post": {
+        "tags": ["query-invocations"],
+        "summary": "Return finished invocation outcomes in date buckets",
+        "operationId": "finished_invocations_history_v2",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinishedInvocationsHistoryV2RequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Finished invocation outcome history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinishedInvocationsHistoryV2Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/invocations/count": {
       "post": {
         "tags": ["count-invocations"],
@@ -4065,7 +4267,7 @@
                   "type": "object",
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/Invocation"
+                      "$ref": "#/components/schemas/InvocationV2"
                     },
                     {
                       "type": "object",
@@ -7729,6 +7931,800 @@
           "type": "string"
         }
       },
+      "InvocationQueryModeV2": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["exact"]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["sampled"]
+              },
+              "sampleSize": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000,
+                "description": "Maximum invocation entries retained in the sample. Defaults to 50000."
+              }
+            }
+          }
+        ]
+      },
+      "FinishedInvocationQueryModeV2": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["exact"]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["sampled"]
+              },
+              "sampleSize": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000,
+                "description": "Maximum finished invocation entries scanned before aggregation. Defaults to 50000."
+              }
+            }
+          }
+        ]
+      },
+      "InvocationV2FilterItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FilterItem"
+          },
+          {
+            "type": "object",
+            "required": ["field"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "status",
+                  "target_service_name",
+                  "target_service_key",
+                  "target_handler_name",
+                  "target_service_ty",
+                  "deployment",
+                  "invoked_by_subscription_id",
+                  "invoked_by",
+                  "invoked_by_service_name",
+                  "invoked_by_id",
+                  "idempotency_key",
+                  "created_at",
+                  "modified_at",
+                  "completed_at",
+                  "scope",
+                  "limit_key"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "InvocationV2Sort": {
+        "type": "object",
+        "required": ["field", "order"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["created_at", "modified_at", "transitioned_at"]
+          },
+          "order": {
+            "type": "string",
+            "enum": ["ASC", "DESC"]
+          }
+        }
+      },
+      "ListInvocationsV2RequestBody": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationV2FilterItem"
+            }
+          },
+          "sort": {
+            "$ref": "#/components/schemas/InvocationV2Sort"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/InvocationQueryModeV2"
+          }
+        }
+      },
+      "InvocationVqueueStateV2": {
+        "type": "object",
+        "required": ["stage", "status"],
+        "properties": {
+          "vqueue_id": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string",
+            "enum": ["inbox", "running", "suspended", "paused", "finished"]
+          },
+          "status": {
+            "type": "string"
+          },
+          "next_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "transitioned_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "first_attempt_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latest_attempt_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "first_runnable_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "retry_attempts": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "num_attempts": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "num_errors": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "deployment": {
+            "type": "string"
+          }
+        }
+      },
+      "InvocationV2": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Invocation"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "vqueue": {
+                "$ref": "#/components/schemas/InvocationVqueueStateV2"
+              }
+            }
+          }
+        ]
+      },
+      "ListInvocationsV2Response": {
+        "type": "object",
+        "required": ["rows", "limit", "mode", "isPartial"],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationV2"
+            }
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["exact", "sampled"]
+          },
+          "isPartial": {
+            "type": "boolean"
+          },
+          "sample": {
+            "type": "object",
+            "required": ["sampleSize"],
+            "properties": {
+              "sampleSize": {
+                "type": "integer"
+              }
+            }
+          },
+          "partial": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["reason", "queueLimit"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": ["vqueue-limit"]
+                  },
+                  "queueLimit": {
+                    "type": "integer"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": ["reason", "candidateLimit"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": ["candidate-limit"]
+                  },
+                  "candidateLimit": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "SummaryInvocationsV2RequestBody": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationV2FilterItem"
+            }
+          },
+          "mode": {
+            "$ref": "#/components/schemas/InvocationQueryModeV2"
+          },
+          "range": {
+            "type": "string",
+            "enum": ["PT1H", "P1D", "ALL"],
+            "description": "Optional rolling created-at window. PT1H and P1D are resolved when the query executes; ALL applies no time filter."
+          },
+          "view": {
+            "type": "string",
+            "enum": ["all", "stages", "live-stages", "breakdowns"],
+            "description": "Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; all returns both complete stages and breakdowns."
+          },
+          "highlightFields": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "Filters on these fields do not restrict the aggregate population. Their matching response buckets are marked with isIncluded instead.",
+            "items": {
+              "type": "string",
+              "enum": ["status", "target_service_name"]
+            }
+          }
+        }
+      },
+      "InvocationStatusSummaryBucketV2": {
+        "type": "object",
+        "required": ["key", "label", "statuses", "count", "isIncluded"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Stable key for this response-defined bucket. It may represent several invocation statuses."
+          },
+          "label": {
+            "type": "string"
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatus"
+            },
+            "description": "Invocation status filter values represented by this bucket."
+          },
+          "count": {
+            "type": "integer"
+          },
+          "isIncluded": {
+            "type": "boolean",
+            "description": "Whether this bucket matches the removed status highlight filters."
+          }
+        }
+      },
+      "InvocationServiceSummaryBucketV2": {
+        "type": "object",
+        "required": ["service", "count", "statusBuckets", "isIncluded"],
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "statusBuckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
+            }
+          },
+          "isIncluded": {
+            "type": "boolean",
+            "description": "Whether this bucket matches the removed target_service_name highlight filters."
+          }
+        }
+      },
+      "InvocationStageSummaryBucketV2": {
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "statuses",
+          "count",
+          "breakdownIsPartial",
+          "breakdownCoverage",
+          "breakdownCanRefine",
+          "isIncluded"
+        ],
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/InvocationSummaryStageV2"
+          },
+          "label": {
+            "type": "string"
+          },
+          "statuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatus"
+            },
+            "description": "Invocation status filter values represented by this stage."
+          },
+          "count": {
+            "type": "integer"
+          },
+          "breakdownIsPartial": {
+            "type": "boolean",
+            "description": "Whether this stage's inner status distribution came from a bounded population."
+          },
+          "breakdownCoverage": {
+            "type": "string",
+            "enum": ["full", "coarse", "missing"],
+            "description": "The status granularity currently available inside this stage."
+          },
+          "breakdownCanRefine": {
+            "type": "boolean",
+            "description": "Whether another breakdown view of this endpoint can safely provide more granular status buckets."
+          },
+          "isIncluded": {
+            "type": "boolean",
+            "description": "Whether this stage contains a status matched by the removed status highlight filters."
+          }
+        }
+      },
+      "SummaryInvocationsV2Response": {
+        "type": "object",
+        "required": [
+          "queryDurationMs",
+          "mode",
+          "isPartial",
+          "stageCountsArePartial",
+          "total",
+          "appliedFilters",
+          "stageBuckets",
+          "statusBuckets",
+          "serviceBuckets"
+        ],
+        "properties": {
+          "queryDurationMs": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Time spent executing and assembling this summary response in the query handler, in milliseconds."
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["exact", "sampled"]
+          },
+          "isPartial": {
+            "type": "boolean"
+          },
+          "stageCountsArePartial": {
+            "type": "boolean",
+            "description": "Whether the coarse stage totals are derived from a bounded population rather than exact metadata counters."
+          },
+          "total": {
+            "type": "integer"
+          },
+          "sample": {
+            "type": "object",
+            "required": ["sampleSize"],
+            "properties": {
+              "sampleSize": {
+                "type": "integer"
+              }
+            }
+          },
+          "appliedFilters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationV2FilterItem"
+            }
+          },
+          "stageBuckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStageSummaryBucketV2"
+            }
+          },
+          "statusBuckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
+            }
+          },
+          "serviceBuckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationServiceSummaryBucketV2"
+            }
+          }
+        }
+      },
+      "InboxInvocationsBreakdownV2RequestBody": {
+        "type": "object",
+        "required": ["groupBy"],
+        "properties": {
+          "groupBy": {
+            "type": "string",
+            "enum": ["due", "status"],
+            "description": "Selects one physical aggregation. Due does not group by status; status does not calculate first-runnable due state."
+          },
+          "mode": {
+            "$ref": "#/components/schemas/InvocationQueryModeV2",
+            "description": "Bounds the global VQueue status breakdown. Due breakdowns and service-filtered requests remain exact within their selected population."
+          },
+          "serviceNames": {
+            "type": "array",
+            "description": "Filter by service. VQueue mode bounds the metadata population to one million queues and conservatively reports the result as partial without a separate population-count query.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "groupByService": {
+            "type": "boolean",
+            "description": "Include service breakdowns. In VQueue mode serviceNames is required because grouping every service would require an unbounded metadata-to-entry join."
+          }
+        }
+      },
+      "InboxInvocationDueServiceBreakdownV2": {
+        "type": "object",
+        "required": ["service", "total", "due", "notDue"],
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "due": {
+            "type": "integer"
+          },
+          "notDue": {
+            "type": "integer"
+          }
+        }
+      },
+      "InboxInvocationsDueBreakdownV2Response": {
+        "type": "object",
+        "required": ["groupBy", "asOf", "total", "due", "notDue", "isPartial"],
+        "properties": {
+          "groupBy": {
+            "type": "string",
+            "enum": ["due"]
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "due": {
+            "type": "integer"
+          },
+          "notDue": {
+            "type": "integer"
+          },
+          "isPartial": {
+            "type": "boolean"
+          },
+          "partial": {
+            "$ref": "#/components/schemas/InboxInvocationsPartialV2"
+          },
+          "byService": {
+            "description": "Present only when groupByService is true.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InboxInvocationDueServiceBreakdownV2"
+            }
+          }
+        }
+      },
+      "InboxInvocationStatusBreakdownV2": {
+        "type": "object",
+        "required": ["status", "count"],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/InvocationStatus"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "InboxInvocationStatusServiceBreakdownV2": {
+        "type": "object",
+        "required": ["service", "count"],
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "InboxInvocationStatusServiceAndStatusBreakdownV2": {
+        "type": "object",
+        "required": ["service", "status", "count"],
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InvocationStatus"
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "InboxInvocationsStatusBreakdownV2Response": {
+        "type": "object",
+        "required": ["groupBy", "total", "byStatus", "isPartial"],
+        "properties": {
+          "groupBy": {
+            "type": "string",
+            "enum": ["status"]
+          },
+          "total": {
+            "type": "integer"
+          },
+          "byStatus": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InboxInvocationStatusBreakdownV2"
+            }
+          },
+          "isPartial": {
+            "type": "boolean"
+          },
+          "partial": {
+            "$ref": "#/components/schemas/InboxInvocationsPartialV2"
+          },
+          "byService": {
+            "description": "Present only when groupByService is true.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InboxInvocationStatusServiceBreakdownV2"
+            }
+          },
+          "byServiceAndStatus": {
+            "description": "Present only when groupByService is true.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InboxInvocationStatusServiceAndStatusBreakdownV2"
+            }
+          }
+        }
+      },
+      "InboxInvocationsPartialV2": {
+        "type": "object",
+        "required": ["reason", "queueLimit"],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": ["vqueue-limit"]
+          },
+          "queueLimit": {
+            "type": "integer"
+          }
+        }
+      },
+      "InboxInvocationsBreakdownV2Response": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/InboxInvocationsDueBreakdownV2Response"
+          },
+          {
+            "$ref": "#/components/schemas/InboxInvocationsStatusBreakdownV2Response"
+          }
+        ]
+      },
+      "InvocationSummaryStageV2": {
+        "type": "string",
+        "enum": ["inbox", "running", "suspended", "paused", "finished"]
+      },
+      "FinishedInvocationsBreakdownV2RequestBody": {
+        "type": "object",
+        "description": "Defaults to a bounded sampled breakdown; request exact mode explicitly when a full retained-finished scan is acceptable.",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/FinishedInvocationQueryModeV2"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Inclusive completion-time lower bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode."
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Exclusive completion-time upper bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode."
+          }
+        }
+      },
+      "FinishedInvocationOutcomeBreakdownV2": {
+        "type": "object",
+        "required": ["status", "count"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["succeeded", "failed", "cancelled", "killed"]
+          },
+          "count": {
+            "type": "integer"
+          }
+        }
+      },
+      "FinishedInvocationsBreakdownV2Response": {
+        "type": "object",
+        "required": [
+          "mode",
+          "granularity",
+          "isPartial",
+          "scannedCount",
+          "outcomes"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": ["exact", "sampled"]
+          },
+          "granularity": {
+            "type": "string",
+            "enum": ["exact", "failure-grouped"],
+            "description": "VQueue mode reports all four outcomes exactly. Legacy mode avoids reading completion_failure and groups killed/cancelled into failed."
+          },
+          "isPartial": {
+            "type": "boolean"
+          },
+          "scannedCount": {
+            "type": "integer"
+          },
+          "outcomes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinishedInvocationOutcomeBreakdownV2"
+            }
+          }
+        }
+      },
+      "FinishedInvocationsHistoryV2RequestBody": {
+        "type": "object",
+        "required": ["startTime", "endTime", "interval"],
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Inclusive completion-time lower bound."
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Exclusive completion-time upper bound."
+          },
+          "interval": {
+            "type": "string",
+            "format": "duration",
+            "description": "Fixed-width ISO 8601 bucket interval, for example PT5M, PT1H, or P1D. The requested range may contain at most 10000 buckets."
+          }
+        }
+      },
+      "FinishedInvocationsHistoryBucketV2": {
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "succeeded",
+          "failed",
+          "cancelled",
+          "killed"
+        ],
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "succeeded": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "cancelled": {
+            "type": "integer"
+          },
+          "killed": {
+            "type": "integer"
+          }
+        }
+      },
+      "FinishedInvocationsHistoryV2Response": {
+        "type": "object",
+        "required": [
+          "startTime",
+          "endTime",
+          "interval",
+          "granularity",
+          "buckets"
+        ],
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "interval": {
+            "type": "string",
+            "format": "duration"
+          },
+          "granularity": {
+            "type": "string",
+            "enum": ["exact", "failure-grouped"],
+            "description": "VQueue mode separates all four outcomes. Legacy mode reports every non-success outcome as failed."
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinishedInvocationsHistoryBucketV2"
+            }
+          }
+        }
+      },
       "ListInvocationsRequestBody": {
         "type": "object",
         "properties": {
@@ -7818,6 +8814,7 @@
           "cancelled",
           "killed",
           "running",
+          "yielded",
           "suspended",
           "scheduled",
           "pending",
@@ -11213,6 +12210,18 @@
             "type": "integer",
             "format": "uint64"
           },
+          "first_runnable_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "num_attempts": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "num_errors": {
+            "type": "integer",
+            "format": "uint32"
+          },
           "last_failure_related_entry_index": {
             "type": "integer",
             "format": "uint64"
@@ -11354,6 +12363,7 @@
               "ready",
               "running",
               "backing-off",
+              "yielded",
               "suspended",
               "completed",
               "paused"
@@ -11427,6 +12437,18 @@
           "retry_count": {
             "type": "integer",
             "format": "uint64"
+          },
+          "first_runnable_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "num_attempts": {
+            "type": "integer",
+            "format": "uint32"
+          },
+          "num_errors": {
+            "type": "integer",
+            "format": "uint32"
           },
           "last_failure_related_command_index": {
             "type": "integer",

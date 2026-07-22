@@ -80,13 +80,15 @@ import {
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  isSummaryInvocationsQuery,
   useListDeployments,
-  useListInvocations,
-  useSummaryInvocations,
+  useListInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
+import type { components } from '@restate/data-access/admin-api-spec';
 import { useRestateContext } from '@restate/features/restate-context';
-import { StatusLegend, StatusSummaryBar } from '@restate/features/status-chart';
+import {
+  VQueueStageLegend,
+  VQueueStageSummaryBar,
+} from '@restate/features/status-chart';
 import { useBatchOperations } from '@restate/features/batch-operations';
 import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -115,9 +117,9 @@ import {
 } from './useInvocationsQueryFilters';
 import { FilterShortcuts } from './FilterShortcuts';
 import { RestateMinimumVersion } from '@restate/features/restate-context';
-import { useStatusBarProps } from './useStatusBarProps';
 import { useServiceTabs } from './useServiceTabs';
-import { hasStatusFilter } from './statusFilter';
+import { useInvocationSummary } from './useInvocationSummary';
+import { resolveInvocationPopulationCount } from './invocationSummaryMatchCount';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: 170,
@@ -141,46 +143,15 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 };
 
 const PAGE_SIZE = 30;
+const HERO_BREAKDOWN_SAMPLE_SIZE = 1_000_000;
 
-function SampleModeToggle({
-  mode,
-  onChange,
-}: {
-  mode: CountMode;
-  onChange: (mode: CountMode) => void;
-}) {
-  const label = mode === 'estimate' ? 'estimates' : 'exact counts';
-  return (
-    <div className="inline-flex items-baseline gap-1 text-2xs text-zinc-500">
-      <span>Showing</span>
-      <Dropdown>
-        <DropdownTrigger>
-          <Button
-            variant="secondary"
-            className="inline-flex shrink-0 items-baseline gap-0.5 bg-gray-50 px-1.5 py-0 text-2xs font-medium shadow-none"
-          >
-            {label}
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="h-3 w-3 self-center text-zinc-400"
-            />
-          </Button>
-        </DropdownTrigger>
-        <DropdownPopover>
-          <DropdownMenu
-            selectable
-            selectedItems={[mode]}
-            onSelect={(key) => key && onChange(key as CountMode)}
-            aria-label="Count mode"
-          >
-            <DropdownItem value="estimate">Estimates (sampled)</DropdownItem>
-            <DropdownItem value="exact">Exact counts</DropdownItem>
-          </DropdownMenu>
-        </DropdownPopover>
-      </Dropdown>
-    </div>
-  );
-}
+type InvocationServiceSummary =
+  components['schemas']['InvocationServiceSummaryBucketV2'];
+
+const summaryHeaderStyles = tv({
+  base: 'mx-auto flex w-full max-w-5xl flex-col items-stretch gap-2 px-4',
+});
+
 // Segmented control matching the JournalDetailToggle's inset-container +
 // white "active" pill. Drives the table's own sampling: "Partial" caps the scan
 // for speed; "Complete" counts every invocation.
@@ -209,24 +180,31 @@ const sampleScanToggleStyles = tv({
 });
 
 function SampleScanToggle({
-  sampled,
+  requestedSampled,
+  resultIsPartial,
   onChange,
 }: {
-  sampled: boolean;
+  requestedSampled: boolean;
+  resultIsPartial: boolean;
   onChange: (sampled: boolean) => void;
 }) {
   const { container, segment } = sampleScanToggleStyles();
+  const partial = requestedSampled || resultIsPartial;
   return (
     <div className={container()}>
       <HoverTooltip
-        content="A fast, partial scan — loads quickly, but may leave some results out."
+        content={
+          resultIsPartial && !requestedSampled
+            ? 'A complete scan was requested, but this query returned partial results.'
+            : 'A fast, partial scan — loads quickly, but may leave some results out.'
+        }
         placement="top"
         className="block"
       >
         <Button
           variant="secondary"
           onClick={() => onChange(true)}
-          className={segment({ active: sampled })}
+          className={segment({ active: partial })}
         >
           Partial
         </Button>
@@ -239,7 +217,7 @@ function SampleScanToggle({
         <Button
           variant="secondary"
           onClick={() => onChange(false)}
-          className={segment({ active: !sampled })}
+          className={segment({ active: !partial })}
         >
           Complete
         </Button>
@@ -252,15 +230,12 @@ function SampleScanToggle({
 // unsorted slice, so counts/order can't be trusted as the full picture.
 function SampleNotice() {
   return (
-    <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-2 text-xs text-blue-700">
+    <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600">
       <Icon
         name={IconName.Info}
-        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500"
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400"
       />
-      <span>
-        Showing partial results — some may be missing, and totals and sorting
-        may be misleading.
-      </span>
+      <span>This view may not include every matching invocation.</span>
     </div>
   );
 }
@@ -355,7 +330,7 @@ function SlowQueryOverlay({
 }
 
 function Component() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const {
     OnboardingGuide,
     baseUrl,
@@ -398,7 +373,7 @@ function Component() {
     setUserCountMode(mode);
     setCountModeState(mode);
   }, []);
-  const summarySampled = countMode === 'estimate';
+  const breakdownSampleSize = HERO_BREAKDOWN_SAMPLE_SIZE;
 
   // The table's sampling is its own knob. Until the user picks a mode it
   // follows the per-preset default (invocationsListOptions from the Restate
@@ -420,31 +395,33 @@ function Component() {
 
   const {
     data: summaryData,
-    isPending: isSummaryPending,
-    isPlaceholderData: isSummaryPlaceholder,
-    isFetching: isSummaryFetching,
-  } = useSummaryInvocations(listInvocationsParameters.filters ?? [], {
-    sampled: summarySampled,
-    sampleSize: summarySampled ? sampleSize : undefined,
-    refetchOnWindowFocus: false,
+    focus: vqueueSummaryFocus,
+    byStage,
+    byStatus,
+    isLoading: isStageSummaryLoading,
+    isStageFetching,
+    isError: isSummaryError,
+    refresh: refreshSummary,
+    isBreakdownLoading: isVqueueBreakdownLoading,
+    isBreakdownError: isVqueueBreakdownError,
+    breakdownIsSampled,
+    canSampleBreakdown,
+    stageCountsReflectFilters,
+    matchingCount: summaryMatchingCount,
+    isDimmed: statusDim,
+    getHref: statusHref,
+  } = useInvocationSummary({
+    filters: listInvocationsParameters.filters,
+    countMode,
+    breakdownSampleSize,
   });
-  const isSummaryLoading = isSummaryPending || isSummaryPlaceholder;
   const { data: deploymentsData } = useListDeployments();
-
-  const statusFilter = useMemo(() => {
-    const f = listInvocationsParameters.filters?.find(
-      (item) => item.field === 'status',
-    );
-    return f?.type === 'STRING_LIST' ? f : undefined;
-  }, [listInvocationsParameters.filters]);
-  const { isDimmed: statusDim, getHref: statusHref } =
-    useStatusBarProps(statusFilter);
-  const { tabs: serviceTabs, byStatus } = useServiceTabs(
-    summaryData,
+  const serviceBuckets: InvocationServiceSummary[] =
+    summaryData?.serviceBuckets ?? [];
+  const serviceTabs = useServiceTabs(
+    serviceBuckets,
     deploymentsData,
-    statusFilter,
-    isSummaryLoading,
-    summarySampled,
+    isStageSummaryLoading,
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -457,7 +434,6 @@ function Component() {
   const hasActiveFilters = Array.from(searchParams.keys()).some((key) =>
     key.startsWith(FILTER_QUERY_PREFIX),
   );
-
   const {
     dataUpdatedAt,
     errorUpdatedAt,
@@ -466,17 +442,28 @@ function Component() {
     isFetching,
     isPending,
     queryKey,
-  } = useListInvocations(
+    refetch,
+  } = useListInvocationsV2(
     {
       ...listInvocationsParameters,
-      sampled: listSampled,
-      sampleSize: listSampled ? sampleSize : undefined,
+      mode: listSampled ? { type: 'sampled', sampleSize } : { type: 'exact' },
     },
     {
       refetchOnReconnect: false,
       staleTime: 0,
       refetchOnWindowFocus: false,
+      onFetchStart: refreshSummary,
     },
+  );
+  const changeListMode = useCallback(
+    (sampled: boolean) => {
+      if (sampled === listSampled) {
+        void refetch();
+      } else {
+        setListSampledOverride(sampled);
+      }
+    },
+    [listSampled, refetch],
   );
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
@@ -494,29 +481,19 @@ function Component() {
     return () => clearTimeout(timer);
   }, [isFetching, searchString, listSampled, slowQueryMs]);
 
-  const totalCount = summaryData?.totalCount ?? 0;
-  // The list caps at INVOCATIONS_LIMIT rows. When it comes back under that cap
-  // it holds every matching invocation, so its row count IS the exact total —
-  // trust it over the summary's totalCount, which is a separate (often sampled)
-  // query that can disagree, e.g. a Complete scan showing far more rows than the
-  // sampled estimate. Only a capped list falls back to the summary's total.
   const listRowCount = data?.rows?.length ?? 0;
   const listLimit = data?.limit ?? 0;
-  const listCapped = listLimit > 0 && listRowCount >= listLimit;
-  const hasExactListTotal = data != null && !listCapped;
-  const effectiveTotal = hasExactListTotal ? listRowCount : totalCount;
-  // "~" only when the shown total is a sampled estimate (capped list + sampled
-  // summary). An exact list count or an exact summary count needs no "~".
-  const totalIsEstimate = !hasExactListTotal && summarySampled;
-  const sampledHitCap = totalIsEstimate && effectiveTotal >= sampleSize;
-  const actionsTotalDisplay = totalIsEstimate
-    ? `~${formatNumber(sampledHitCap ? sampleSize : effectiveTotal, true)}${sampledHitCap ? '+' : ''}`
-    : formatNumber(effectiveTotal, true);
-
-  // An empty list only means "genuinely none" when an exact source confirms it:
-  // a Complete list scan (its 0 is authoritative), or an Exact summary counting
-  // 0. Otherwise the 0 may just be a sampling miss, so offer a complete scan.
-  const offerCompleteScan = listSampled && (summarySampled || totalCount > 0);
+  const { count: effectiveTotal, accuracy: totalAccuracy } =
+    resolveInvocationPopulationCount({
+      summaryMatchCount: summaryMatchingCount,
+      listIsAvailable: data != null,
+      listRowCount,
+      listLimit,
+      listIsPartial: Boolean(data?.isPartial),
+    });
+  const actionsTotalDisplay = `${totalAccuracy === 'estimate' ? '~' : ''}${formatNumber(effectiveTotal, true)}${totalAccuracy === 'lower-bound' ? '+' : ''}`;
+  const offerCompleteScan =
+    listSampled && (Boolean(data?.isPartial) || effectiveTotal > 0);
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
@@ -579,6 +556,16 @@ function Component() {
   const navigate = useNavigate();
   const basePath = useHref('/');
   const isModifierPressed = useRef(false);
+  const changeVqueueSummaryFocus = useCallback(
+    (focus: typeof vqueueSummaryFocus) => {
+      navigate(
+        focus === 'all'
+          ? clearStatusFilterHref
+          : statusHref(focus === 'completed' ? 'finished' : 'not-completed'),
+      );
+    },
+    [clearStatusFilterHref, navigate, statusHref],
+  );
 
   useEffect(() => {
     const isMac = navigator.platform.toUpperCase().includes('MAC');
@@ -618,44 +605,50 @@ function Component() {
           setListSampledOverride(true);
         }}
       />
-    ) : !isFetching && listSampled && !error ? (
+    ) : !isFetching && (listSampled || data?.isPartial) && !error ? (
       <SampleNotice />
     ) : undefined;
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex min-h-0 flex-1 flex-col gap-4 pt-20">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch gap-2 px-4">
-          <StatusSummaryBar
+        <div className={summaryHeaderStyles()}>
+          <VQueueStageSummaryBar
+            byStage={byStage}
             byStatus={byStatus}
-            isLoading={isSummaryLoading}
-            isFetching={isSummaryFetching}
+            focus={vqueueSummaryFocus}
+            onFocusChange={changeVqueueSummaryFocus}
+            isLoading={isStageSummaryLoading}
+            isFetching={isStageFetching}
             isDimmed={statusDim}
             getHref={statusHref}
-            isSampled={summarySampled}
+            areStageCountsPartial={summaryData?.stageCountsArePartial}
+            isBreakdownSampled={breakdownIsSampled}
+            countsReflectFilters={stageCountsReflectFilters}
+            isBreakdownLoading={isVqueueBreakdownLoading}
           />
-          <StatusLegend
+          <VQueueStageLegend
+            byStage={byStage}
             byStatus={byStatus}
-            isLoading={isSummaryLoading}
-            linkParams={searchParams}
-            getHref={statusHref}
+            focus={vqueueSummaryFocus}
+            breakdownMode={countMode}
+            isBreakdownSampled={breakdownIsSampled}
+            canSampleBreakdown={canSampleBreakdown}
+            onBreakdownModeChange={setCountMode}
+            isLoading={isStageSummaryLoading}
+            isError={isSummaryError}
             isDimmed={statusDim}
-            allItem={{
-              count: byStatus.reduce((sum, s) => sum + s.count, 0),
-              href: clearStatusFilterHref,
-              dimmed: hasStatusFilter(statusFilter),
-            }}
-            isSampled={summarySampled}
-            leading={
-              <SampleModeToggle mode={countMode} onChange={setCountMode} />
-            }
+            getHref={statusHref}
+            isBreakdownLoading={isVqueueBreakdownLoading}
+            isBreakdownError={isVqueueBreakdownError}
           />
         </div>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">
             <SampleScanToggle
-              sampled={listSampled}
-              onChange={setListSampledOverride}
+              requestedSampled={listSampled}
+              resultIsPartial={Boolean(data?.isPartial)}
+              onChange={changeListMode}
             />
             <Dropdown>
               <DropdownTrigger>
@@ -697,7 +690,7 @@ function Component() {
                   }
                   className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
                 >
-                  Actions
+                  Actions{' '}
                   {Boolean(selectedInvocationIds.size || effectiveTotal) && (
                     <Badge
                       size="xs"
@@ -940,10 +933,9 @@ function Component() {
               />
               <Footnote
                 data={data}
-                totalCount={totalCount}
-                isFetching={isFetching}
-                isCountSampled={summarySampled}
-                sampleSize={sampleSize}
+                totalCount={effectiveTotal}
+                totalAccuracy={totalAccuracy}
+                hasActiveFilters={hasActiveFilters}
                 key={dataUpdate}
               >
                 {!isPending && !error && totalSize > 1 && (
@@ -1003,7 +995,6 @@ function Component() {
           schema={schema}
           isLoading={isLoading}
           selectedColumns={selectedColumns}
-          setSelectedColumns={setSelectedColumns}
           setPageIndex={setPageIndex}
           resetPageIndex={resetPageIndex}
           isFetching={isFetching}
@@ -1019,7 +1010,6 @@ interface InvocationsFormProps {
   schema: ReturnType<typeof useListInvocationsParameters>['schema'];
   isLoading: boolean;
   selectedColumns: ReturnType<typeof useColumns>['selectedColumns'];
-  setSelectedColumns: ReturnType<typeof useColumns>['setSelectedColumns'];
   setPageIndex: (arg: number | ((prev: number) => number)) => void;
   resetPageIndex: () => void;
   isFetching: boolean;
@@ -1031,14 +1021,13 @@ function InvocationsForm({
   schema,
   isLoading,
   selectedColumns,
-  setSelectedColumns,
   setPageIndex,
   resetPageIndex,
   isFetching,
   submitRef,
   queryKey,
 }: InvocationsFormProps) {
-  const queryCLient = useQueryClient();
+  const queryClient = useQueryClient();
   const { query, sortParams, setSortParams, commitQuery } = useInvocationsForm({
     schema,
     isLoading,
@@ -1048,7 +1037,7 @@ function InvocationsForm({
 
   return (
     <Form
-      action="/query/invocations"
+      action="/query/v2/invocations"
       method="POST"
       className="relative flex w-[60rem] flex-col"
       onSubmit={async (event) => {
@@ -1062,15 +1051,10 @@ function InvocationsForm({
           (event.nativeEvent as SubmitEvent).submitter,
         );
         const changed = commitQuery();
-        if (!isExplicitSubmit && !changed) {
+        if (changed || !isExplicitSubmit) {
           return;
         }
-        await Promise.all([
-          queryCLient.invalidateQueries({ queryKey }),
-          queryCLient.invalidateQueries({
-            predicate: (q) => isSummaryInvocationsQuery(q),
-          }),
-        ]);
+        await queryClient.invalidateQueries({ queryKey });
       }}
     >
       <QueryBuilder query={query} schema={schema} multiple>
@@ -1097,7 +1081,7 @@ function InvocationsForm({
       <SubmitButton
         ref={submitRef}
         isPending={isFetching}
-        className="absolute right-1 bottom-1 flex h-7 items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
+        className="absolute right-1 bottom-1 flex h-7 items-center gap-2 rounded-lg py-0 pr-0.5 pl-4"
       >
         Query
         <SubmitShortcutKey />
@@ -1109,16 +1093,14 @@ function InvocationsForm({
 function Footnote({
   data,
   totalCount,
-  isFetching,
-  isCountSampled,
-  sampleSize,
+  totalAccuracy,
+  hasActiveFilters,
   children,
 }: PropsWithChildren<{
-  isFetching: boolean;
-  data?: ReturnType<typeof useListInvocations>['data'];
+  data?: ReturnType<typeof useListInvocationsV2>['data'];
   totalCount: number;
-  isCountSampled?: boolean;
-  sampleSize?: number;
+  totalAccuracy: 'exact' | 'estimate' | 'lower-bound';
+  hasActiveFilters: boolean;
 }>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -1134,24 +1116,14 @@ function Footnote({
     }
 
     return () => {
-      interval && clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
   }, [data]);
 
-  const { isPast, ...parts } = durationSinceLastSnapshot(now);
-  const duration = formatDurations(parts);
+  const duration = formatDurations(durationSinceLastSnapshot(now));
 
   const visibleCount = data?.rows?.length ?? 0;
-  const requestedLimit = data?.limit ?? 0;
-  // The list endpoint echoes back the limit it applied. If it returned fewer
-  // rows than that, the dataset is complete and visibleCount IS the exact
-  // total — even when the summary was sampled. Only when the list saturated
-  // (rows >= limit) do we need a sample-bounded denominator.
-  const listWasCapped = requestedLimit > 0 && visibleCount >= requestedLimit;
   const isTruncated = visibleCount > 0 && visibleCount < totalCount;
-  const sampledCap = sampleSize ?? 0;
-  const sampledHitCap = totalCount >= sampledCap && sampledCap > 0;
-  const sampledDisplayTotal = sampledHitCap ? sampledCap : totalCount;
 
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
@@ -1159,26 +1131,12 @@ function Footnote({
         <div className="ml-auto">
           {visibleCount === 0 && totalCount === 0 ? (
             'No invocations found'
-          ) : isCountSampled && listWasCapped ? (
+          ) : totalAccuracy === 'lower-bound' ? (
             <>
               <span className="font-medium text-gray-500">
-                {formatNumber(visibleCount)}
-              </span>
-              {' of '}
-              <span className="font-medium text-gray-500">
-                ~{formatNumber(sampledDisplayTotal, true)}
-                {sampledHitCap ? '+' : ''}
+                {formatNumber(visibleCount)}+
               </span>{' '}
-              {formatPlurals(sampledDisplayTotal, {
-                one: 'invocation',
-                other: 'invocations',
-              })}
-            </>
-          ) : isCountSampled ? (
-            <>
-              <span className="font-medium text-gray-500">
-                {formatNumber(visibleCount)}
-              </span>{' '}
+              {hasActiveFilters && 'matching '}
               {formatPlurals(visibleCount, {
                 one: 'invocation',
                 other: 'invocations',
@@ -1186,17 +1144,19 @@ function Footnote({
             </>
           ) : (
             <>
-              {isTruncated && (
+              {(isTruncated || totalAccuracy === 'estimate') && (
                 <>
                   <span className="font-medium text-gray-500">
                     {formatNumber(visibleCount)}
                   </span>
-                  {' of '}
+                  {' shown of '}
                 </>
               )}
               <span className="font-medium text-gray-500">
+                {totalAccuracy === 'estimate' && '~'}
                 {formatNumber(totalCount, true)}
               </span>{' '}
+              {hasActiveFilters && 'matching '}
               {formatPlurals(totalCount, {
                 one: 'invocation',
                 other: 'invocations',
@@ -1215,8 +1175,20 @@ function Footnote({
 export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const url = new URL(request.url);
   let params = new URLSearchParams(url.searchParams);
+  const originalParams = new URLSearchParams(url.searchParams);
+  originalParams.sort();
+  const originalSearch = originalParams.toString();
+  // remove: why removing here
+  for (const field of [
+    'scheduled_at',
+    'scheduled_start_at',
+    'restarted_from',
+    'first_runnable_at',
+    'num_errors',
+  ]) {
+    params.delete(`${FILTER_QUERY_PREFIX}${field}`);
+  }
   params.sort();
-  const originalSearch = params.toString();
 
   // Fresh, query-less entry to /invocations (typed URL / app landing): apply the
   // configured default preset. The Invocations nav link and the "All" sub-item
@@ -1281,7 +1253,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     const userSort = getUserLastSort();
     if (userSort) {
       params = setSort(params, {
-        field: userSort.field as ColumnKey,
+        field: userSort.field,
         order: userSort.order,
       });
     } else {

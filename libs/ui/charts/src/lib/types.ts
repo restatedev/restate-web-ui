@@ -120,6 +120,7 @@ export type BarSeriesCfg = BaseSeriesCfg & {
 export type BarTimeSeriesCfg<T extends object = object> = BaseSeriesCfg & {
   type: 'bar-time';
   dataKey: string;
+  stackStartKey?: string;
   startRangeKey: string;
   endRangeKey: string;
   barWidth?: number | string;

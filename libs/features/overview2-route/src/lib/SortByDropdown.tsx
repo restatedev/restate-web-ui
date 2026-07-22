@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   Dropdown,
@@ -27,17 +26,9 @@ const DEPLOYMENT_SORT_OPTIONS = [
 const HANDLER_SORT_OPTIONS = [
   { value: 'service', label: 'Service' },
   { value: 'name', label: 'Name' },
-  { value: 'invocations', label: 'Invocations' },
-  { value: 'health', label: 'Issues' },
 ] as const;
 
-type ServiceSortOption = (typeof SERVICE_SORT_OPTIONS)[number];
-
-function getSortLabel(
-  column: string | undefined,
-  mode: string,
-  formatServiceSortLabel?: (option: ServiceSortOption) => ReactNode,
-) {
+function getSortLabel(column: string | undefined, mode: string) {
   if (mode === 'deployments') {
     return (
       DEPLOYMENT_SORT_OPTIONS.find((o) => o.value === column)?.label ??
@@ -48,25 +39,15 @@ function getSortLabel(
     const option =
       HANDLER_SORT_OPTIONS.find((o) => o.value === column) ??
       HANDLER_SORT_OPTIONS[0];
-    if (option.value === 'health' || option.value === 'invocations') {
-      return (
-        formatServiceSortLabel?.(option as unknown as ServiceSortOption) ??
-        option.label
-      );
-    }
     return option.label;
   }
   const option =
     SERVICE_SORT_OPTIONS.find((o) => o.value === column) ??
     SERVICE_SORT_OPTIONS[0];
-  return formatServiceSortLabel?.(option) ?? option.label;
+  return option.label;
 }
 
-export function SortByDropdown({
-  formatServiceSortLabel,
-}: {
-  formatServiceSortLabel?: (option: ServiceSortOption) => ReactNode;
-}) {
+export function SortByDropdown() {
   const {
     mode,
     resolvedServiceSortDescriptor,
@@ -95,11 +76,7 @@ export function SortByDropdown({
       : mode === 'handlers'
         ? HANDLER_SORT_OPTIONS
         : SERVICE_SORT_OPTIONS;
-  const label = getSortLabel(
-    String(sortDescriptor.column),
-    mode,
-    formatServiceSortLabel,
-  );
+  const label = getSortLabel(String(sortDescriptor.column), mode);
   const currentColumn = String(sortDescriptor.column);
   const currentDirection =
     sortDescriptor.direction === 'descending' ? 'descending' : 'ascending';
@@ -137,7 +114,7 @@ export function SortByDropdown({
             >
               {options.map((option) => (
                 <DropdownItem key={option.value} value={option.value}>
-                  {getSortLabel(option.value, mode, formatServiceSortLabel)}
+                  {getSortLabel(option.value, mode)}
                 </DropdownItem>
               ))}
             </DropdownMenu>
