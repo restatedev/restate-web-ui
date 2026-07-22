@@ -169,6 +169,8 @@ export function convertInvocationV2(
           latest_attempt_at: vqueue.latest_attempt_at,
           first_runnable_at: vqueue.first_runnable_at,
           retry_attempts: vqueue.retry_attempts,
+          retry_count_since_last_stored_command:
+            vqueue.retry_count_since_last_stored_command,
           num_attempts: vqueue.num_attempts,
           num_errors: vqueue.num_errors,
           deployment: vqueue.deployment,

@@ -2,6 +2,7 @@
 
 ## Skill Notes
 
+- 2026-07-22: The admin API generator deliberately runs `redocly lint ... || true`; direct Redocly lint currently reports 196 pre-existing OpenAPI compatibility errors. Treat that lint as informational unless the changed schema adds a new diagnostic.
 - 2026-07-22: `NX_DAEMON=false pnpm nx typecheck query` can hang for about two minutes and fail with `NX Failed to start plugin worker` without reaching TypeScript. For query-library verification, run its Vitest config and fall back to `pnpm exec tsc -p libs/data-access/query/tsconfig.lib.json --noEmit`.
 - 2026-07-22: For VQueue-backed invocation attempts, populate public `retry_count` from `sys_vqueue_entry_status.retry_count_since_last_stored_command`; `retry_attempts` is a different scheduler metric and can severely undercount the attempt ordinal shown in `Status.tsx`.
 - 2026-07-16: Scope filters need `IS NULL` / `IS NOT NULL` in addition to string comparisons. Keep `EQUALS` first for the persistent empty Scope clause so opening the state route does not silently default to unscoped objects.
@@ -18,6 +19,7 @@
 
 | Date       | Source | What Went Wrong                                                                                                                                                                       | What To Do Instead                                                                                                                                                              |
 | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-22 | user | Extended the local `VqueueStatus` alias with `retry_count_since_last_stored_command`, even though that row shape is based on the generated `InvocationVqueueStateV2` API contract. | Add new VQueue state fields to `admin-api-spec/src/lib/query.json`, regenerate the API types, and keep `VqueueStatus` as a plain `Partial<InvocationVqueueStateV2>`. |
 | 2026-07-22 | user | Deployment deletion left the cached `/services` list stale; bulk prune bypassed the shared single-deployment hook entirely. | Centralize `/services` list invalidation across successful registration, deployment update, service modification, single deployment deletion, and bulk deletion; invalidate once after a bulk run with at least one success. |
 | 2026-07-22 | user | Joined Inbox status slices each drew both adjoining borders, producing a visibly doubled separator in the middle. | Keep both outer borders, but suppress the leading border on every non-first visible Inbox slice so each internal boundary is drawn exactly once. |
 | 2026-07-22 | user | Scheduled segments in the status bar and arc charts were slightly too dark. | Keep Scheduled neutral and dashed, but use a subtly lighter shared chart fill so bar and arc surfaces change together without altering Suspended. |

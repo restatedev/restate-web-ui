@@ -4459,6 +4459,10 @@
             "type": "integer",
             "format": "uint32"
           },
+          "retry_count_since_last_stored_command": {
+            "type": "integer",
+            "format": "uint32"
+          },
           "num_attempts": {
             "type": "integer",
             "format": "uint32"
