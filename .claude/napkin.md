@@ -2,6 +2,7 @@
 
 ## Skill Notes
 
+- 2026-07-22: Running/retrying needs dual semantics: keep the outer Running badge and activity dots blue, while rendering the nested retry attempt chip orange with an explicit “Retrying” label. Keep Backing-off fully orange because warning is its primary state.
 - 2026-07-22: A running invocation is orange only when computed `isRetrying` is true; that currently requires `retry_count > 1` plus `last_failure`. VQueue `retry_count_since_last_stored_command` resets to 0 on a new command and increments on retry-worthy errors, so VQueue running should use `> 0` without `last_failure`; keep the last-failure guard for legacy `sys_invocation.retry_count`, which counts starts since the current leader began and can outlive command progress. `Status.tsx` currently fetches the transient error only after `isRetrying` is true, so using `last_failure` for the VQueue decision creates a circular gate.
 - 2026-07-22: The admin API generator deliberately runs `redocly lint ... || true`; direct Redocly lint currently reports 196 pre-existing OpenAPI compatibility errors. Treat that lint as informational unless the changed schema adds a new diagnostic.
 - 2026-07-22: `NX_DAEMON=false pnpm nx typecheck query` can hang for about two minutes and fail with `NX Failed to start plugin worker` without reaching TypeScript. For query-library verification, run its Vitest config and fall back to `pnpm exec tsc -p libs/data-access/query/tsconfig.lib.json --noEmit`.
