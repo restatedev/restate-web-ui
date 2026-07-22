@@ -92,7 +92,7 @@ export function mergeInvocationSummaryBreakdowns(
     ...stages.stageBuckets.filter((stage) => stage.breakdownCanRefine),
     ...supplementalStages,
   ];
-  const missingStageKeys = new Set(
+  const missingStageKeys = new Set<string>(
     supplementalStages.map((stage) => stage.key),
   );
   const refinableStatuses = new Set(
