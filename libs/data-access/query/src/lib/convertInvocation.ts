@@ -31,7 +31,8 @@ function applyVqueueOverlay(
     first_runnable_at: vqueue.first_runnable_at ?? invocation.first_runnable_at,
     num_attempts: vqueue.num_attempts ?? invocation.num_attempts,
     num_errors: vqueue.num_errors ?? invocation.num_errors,
-    retry_count: vqueue.retry_attempts ?? invocation.retry_count,
+    retry_count:
+      vqueue.retry_count_since_last_stored_command ?? invocation.retry_count,
     running_at: vqueue.first_attempt_at ?? invocation.running_at,
     last_start_at: vqueue.latest_attempt_at ?? invocation.last_start_at,
     next_retry_at:
@@ -112,7 +113,10 @@ export function convertInvocation(
     merged.pinned_service_protocol_version !== undefined &&
     merged.pinned_service_protocol_version > 6;
 
-  const computedStatus = getComputedInvocationStatus(merged);
+  const computedStatus = getComputedInvocationStatus(
+    merged,
+    vqueue?.retry_count_since_last_stored_command,
+  );
 
   return {
     ...rest,
@@ -168,6 +172,8 @@ export function convertInvocationV2(
           latest_attempt_at: vqueue.latest_attempt_at,
           first_runnable_at: vqueue.first_runnable_at,
           retry_attempts: vqueue.retry_attempts,
+          retry_count_since_last_stored_command:
+            vqueue.retry_count_since_last_stored_command,
           num_attempts: vqueue.num_attempts,
           num_errors: vqueue.num_errors,
           deployment: vqueue.deployment,

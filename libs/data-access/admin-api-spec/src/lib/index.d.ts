@@ -2982,6 +2982,8 @@ export interface components {
       /** Format: uint32 */
       retry_attempts?: number;
       /** Format: uint32 */
+      retry_count_since_last_stored_command?: number;
+      /** Format: uint32 */
       num_attempts?: number;
       /** Format: uint32 */
       num_errors?: number;

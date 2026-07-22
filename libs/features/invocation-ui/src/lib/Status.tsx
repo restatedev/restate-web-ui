@@ -37,7 +37,7 @@ function getBadgeVariant(
   status: InvocationComputedStatus2,
   isRetrying?: boolean,
 ) {
-  if (isRetrying) {
+  if (isRetrying && status !== 'running') {
     return 'warning';
   }
   switch (status) {
@@ -82,7 +82,7 @@ const styles = tv({
       paused: 'border-dashed',
     },
     isRetrying: {
-      true: 'border border-dashed border-orange-300/80 py-0.5 pr-0.5',
+      true: 'py-0.5 pr-0.5',
       false: '',
     },
     hasPausedError: {
@@ -102,6 +102,13 @@ const styles = tv({
       md: 'max-md:pr-2',
     },
   },
+  compoundVariants: [
+    {
+      status: 'backing-off',
+      isRetrying: true,
+      className: 'border border-dashed border-orange-300/80',
+    },
+  ],
 });
 
 // Secondary status detail (error chip, awaiting-on, duration). `mini="md"`

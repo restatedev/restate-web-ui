@@ -27,7 +27,7 @@ describe('POST /query/invocations/statuses', () => {
       expect(sql).toMatchInlineSnapshot(`
         [
           "SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id FROM sys_invocation WHERE id IN ('inv-a')",
-          "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv-a') AND entry_kind = 'invocation'",
+          "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv-a') AND entry_kind = 'invocation'",
         ]
       `);
       expect(body.invocations['inv-a'].status).toBe('yielded');
@@ -44,7 +44,7 @@ describe('POST /query/invocations/statuses', () => {
       const sqlIds = invocationIds.map((id) => `'${id}'`).join(', ');
       expect(sql).toEqual([
         `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id FROM sys_invocation WHERE id IN (${sqlIds})`,
-        `SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN (${sqlIds}) AND entry_kind = 'invocation'`,
+        `SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN (${sqlIds}) AND entry_kind = 'invocation'`,
       ]);
     });
 
