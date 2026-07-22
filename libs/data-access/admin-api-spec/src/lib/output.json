@@ -8200,6 +8200,11 @@
           "mode": {
             "$ref": "#/components/schemas/InvocationQueryModeV2"
           },
+          "range": {
+            "type": "string",
+            "enum": ["PT1H", "P1D", "ALL"],
+            "description": "Optional rolling created-at window. PT1H and P1D are resolved when the query executes; ALL applies no time filter."
+          },
           "view": {
             "type": "string",
             "enum": ["all", "stages", "live-stages", "breakdowns"],

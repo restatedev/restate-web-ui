@@ -5,7 +5,6 @@ import {
   useContext,
 } from 'react';
 import { useSearchParams } from 'react-router';
-import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 
 export const RANGE_PARAM = 'range';
 
@@ -35,13 +34,7 @@ const RangeContext = createContext<RangeContextValue>({
 
 export function RangeProvider({ children }: PropsWithChildren) {
   const [searchParams, setSearchParams] = useSearchParams();
-  // The completion-history feature pins the overview to the All range.
-  const isCompletionHistoryEnabled = useIsFeatureFlagEnabled(
-    'FEATURE_COMPLETION_HISTORY',
-  );
-  const range = isCompletionHistoryEnabled
-    ? PeriodRange.ALL
-    : (searchParams.get(RANGE_PARAM) ?? DEFAULT_RANGE);
+  const range = searchParams.get(RANGE_PARAM) ?? DEFAULT_RANGE;
 
   const setRange = useCallback(
     (next: string) => {

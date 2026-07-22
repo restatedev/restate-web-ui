@@ -6,6 +6,10 @@ export const cardContainerStyles = tv({
   base: '@container relative cursor-default rounded-xl',
 });
 
+export const cardActionLinkStyles = tv({
+  base: 'relative flex shrink-0 items-center gap-0.5 truncate rounded-md border-none bg-transparent px-1.5 py-0.5 text-xs text-zinc-500/80 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700',
+});
+
 export const cardInnerStyles = tv({
   base: 'relative overflow-hidden rounded-xl border border-gray-200/70 bg-white px-3 py-2.5 shadow-xs shadow-zinc-800/3 transition',
   variants: {

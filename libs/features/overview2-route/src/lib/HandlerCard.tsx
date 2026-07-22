@@ -8,7 +8,11 @@ import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-lin
 import { Revision } from '@restate/features/deployment';
 import { HandlerInputOutput } from '@restate/feature/handler-input-output';
 import { waveAnimationProps } from '@restate/ui/wave-animation';
-import { cardContainerStyles, cardInnerStyles } from './cardShell';
+import {
+  cardActionLinkStyles,
+  cardContainerStyles,
+  cardInnerStyles,
+} from './cardShell';
 
 const layoutStyles = tv({
   base: cx(
@@ -122,9 +126,10 @@ export function HandlerCard({
                   { existingParams: linkParams },
                 )}
                 variant="secondary"
-                className="ml-auto text-3xs text-zinc-400 no-underline hover:text-zinc-600"
+                className={cardActionLinkStyles({ class: 'ml-auto' })}
               >
-                Invocations
+                <div className="min-w-0 truncate">Invocations</div>
+                <Icon name={IconName.ChevronRight} className="h-4 w-4" />
               </Link>
             </div>
           </div>

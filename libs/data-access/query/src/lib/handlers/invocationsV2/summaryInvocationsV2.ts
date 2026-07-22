@@ -13,6 +13,7 @@ import { queryInvocationSummaryFromInvocationStatusAndState } from './summary/qu
 import { queryInvocationSummaryFromVqueues } from './summary/queryInvocationSummaryFromVqueues';
 import type { InvocationSummaryQueryResult } from './summary/types';
 import { createInvocationSummaryQueryPlan } from './summary/createInvocationSummaryQueryPlan';
+import { rangeToCreatedAtFilter } from '../summaryInvocations';
 
 export type SummaryInvocationsV2Args =
   components['schemas']['SummaryInvocationsV2RequestBody'];
@@ -55,25 +56,30 @@ export async function summaryInvocationsV2(
     filters = [],
     highlightFields = [],
     mode: requestedMode,
+    range,
     view = 'all',
   }: SummaryInvocationsV2Args,
 ): Promise<Response> {
   const queryStartedAt = performance.now();
-  const filterError = validateInvocationFiltersV2(filters);
+  const rangeFilter = this.features.has('vqueues')
+    ? undefined
+    : rangeToCreatedAtFilter(range);
+  const requestedFilters = rangeFilter ? [rangeFilter, ...filters] : filters;
+  const filterError = validateInvocationFiltersV2(requestedFilters);
   if (filterError) return badRequest(filterError);
 
   const { mode, error: modeError } = resolveInvocationModeV2(requestedMode);
   if (modeError || !mode) return badRequest(modeError ?? 'Invalid query mode');
 
   const highlightedFields = new Set<string>(highlightFields);
-  const appliedFilters = filters.filter(
+  const appliedFilters = requestedFilters.filter(
     (filter) => !highlightedFields.has(filter.field),
   );
-  const statusHighlightFilters = filters.filter(
+  const statusHighlightFilters = requestedFilters.filter(
     (filter) =>
       filter.field === 'status' && highlightedFields.has(filter.field),
   ) as FilterItem[];
-  const serviceHighlightFilters = filters.filter(
+  const serviceHighlightFilters = requestedFilters.filter(
     (filter) =>
       filter.field === 'target_service_name' &&
       highlightedFields.has(filter.field),

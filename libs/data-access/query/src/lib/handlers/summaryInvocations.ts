@@ -20,9 +20,14 @@ const RANGE_DURATIONS_MS: Record<string, number> = {
   P1D: 24 * 60 * 60 * 1000,
 };
 
-function rangeToCreatedAtFilter(
-  range: string | undefined,
-): FilterItem | undefined {
+export function rangeToCreatedAtFilter(range: string | undefined):
+  | {
+      type: 'DATE';
+      field: 'created_at';
+      operation: 'AFTER';
+      value: string;
+    }
+  | undefined {
   if (!range) return undefined;
   const ms = RANGE_DURATIONS_MS[range];
   if (!ms) return undefined;

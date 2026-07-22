@@ -65,6 +65,7 @@ export const STATUS_STYLE: Record<
     fillLight: '#dddde0',
     fillDark: '#d4d4d8',
     stroke: '#a1a1aa',
+    ...DASHED,
     color: '#a1a1aa',
   },
   yielded: {
@@ -93,7 +94,7 @@ export const STATUS_STYLE: Record<
   },
   scheduled: {
     fill: '#d4d4d8',
-    fillLight: '#dddde0',
+    fillLight: '#e4e4e7',
     fillDark: '#d4d4d8',
     stroke: '#a1a1aa',
     ...DASHED,

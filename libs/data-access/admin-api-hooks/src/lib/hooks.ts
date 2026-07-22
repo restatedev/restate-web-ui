@@ -827,9 +827,7 @@ export function useRegisterDeployment(
             queryKey,
           });
         });
-        queryCLient.invalidateQueries({
-          queryKey: getListServicesAdminApi(baseUrl).queryKey,
-        });
+        invalidateListServices(queryCLient, baseUrl);
       }
       return onSuccess?.(data, variables, context, meta);
     },
@@ -922,9 +920,7 @@ export function useUpdateDeployment(
             queryKey,
           });
         });
-        queryCLient.invalidateQueries({
-          queryKey: getListServicesAdminApi(baseUrl).queryKey,
-        });
+        invalidateListServices(queryCLient, baseUrl);
         queryCLient.invalidateQueries({
           queryKey: adminApi('query', '/deployments', 'get', { baseUrl })
             .queryKey,
@@ -987,6 +983,15 @@ function listServicesSelector(
 function getListServicesAdminApi(baseUrl: string) {
   return adminApi('query', '/services', 'get', {
     baseUrl,
+  });
+}
+
+export function invalidateListServices(
+  queryClient: QueryClient,
+  baseUrl: string,
+) {
+  return queryClient.invalidateQueries({
+    queryKey: getListServicesAdminApi(baseUrl).queryKey,
   });
 }
 
@@ -1508,9 +1513,7 @@ export function useModifyService(
     ...mutationOptions,
     ...options,
     onSettled(data, error, variables, context, meta) {
-      queryClient.invalidateQueries({
-        queryKey: getListServicesAdminApi(baseUrl).queryKey,
-      });
+      invalidateListServices(queryClient, baseUrl);
       queryClient.invalidateQueries({
         queryKey: getServiceAdminApi({
           baseUrl,
@@ -1527,6 +1530,7 @@ export function useDeleteDeployment(
   options?: HookMutationOptions<'/deployments/{deployment}', 'delete'>,
 ) {
   const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
 
   return useMutation({
     ...adminApi('mutate', '/deployments/{deployment}', 'delete', {
@@ -1534,6 +1538,10 @@ export function useDeleteDeployment(
       resolvedPath: `/deployments/${deployment}`,
     }),
     ...options,
+    onSuccess(data, variables, context, meta) {
+      invalidateListServices(queryClient, baseUrl);
+      options?.onSuccess?.(data, variables, context, meta);
+    },
   });
 }
 

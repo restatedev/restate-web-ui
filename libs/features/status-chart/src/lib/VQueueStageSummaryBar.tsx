@@ -313,6 +313,10 @@ export function VQueueStageSummaryBar({
                     ? `${INBOX_PATTERN}, ${backgroundGradient}`
                     : backgroundGradient,
               borderColor: style.stroke,
+              borderLeftWidth:
+                groupPosition === 'middle' || groupPosition === 'last'
+                  ? 0
+                  : undefined,
             }}
             aria-label={getHref ? undefined : ariaLabel}
           >

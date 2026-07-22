@@ -19,7 +19,7 @@ import {
   MIN_TRAFFIC_THRESHOLD,
   type ServiceIssue,
 } from '@restate/features/system-health';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRange, useRestateContext } from '@restate/features/restate-context';
 import {
   getOverviewRefetchInterval,
   INITIAL_OVERVIEW_REFETCH_INTERVAL,
@@ -27,6 +27,8 @@ import {
 
 export function useOverviewData() {
   const hasVqueues = useFeatures().has('vqueues');
+  const range = useRange();
+  const summaryRange = range === 'P1D' || range === 'ALL' ? range : 'PT1H';
   const overviewRefetchIntervalRef = useRef(INITIAL_OVERVIEW_REFETCH_INTERVAL);
   const overviewRefetchInterval = useCallback(
     () => overviewRefetchIntervalRef.current,
@@ -41,7 +43,10 @@ export function useOverviewData() {
   } = useListDeployments();
   const { data: servicesMap } = useListServices();
   const summary = useProgressiveInvocationSummaryV2(
-    { mode: { type: 'sampled', sampleSize: 1_000_000 } },
+    {
+      mode: { type: 'sampled', sampleSize: 1_000_000 },
+      ...(!hasVqueues && { range: summaryRange }),
+    },
     {
       refetchInterval: (query) => {
         const queryDurationMs = query.state.data?.queryDurationMs;
@@ -166,6 +171,7 @@ export function useOverviewData() {
     deploymentsMap,
     byStage,
     byStatus,
+    appliedFilters: summary.data?.appliedFilters ?? [],
     totalCount: summary.data?.total ?? 0,
     invocationCounts,
     serviceStageCounts,
@@ -175,6 +181,7 @@ export function useOverviewData() {
     drainedDeploymentIds,
     isDeploymentStatusLoading,
     isSummaryLoading,
+    hasVqueues,
     isBreakdownSampled: hasVqueues,
     isInboxBreakdownLoading,
     isInboxBreakdownError: summary.isBreakdownError('inbox'),

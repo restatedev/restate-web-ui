@@ -3015,6 +3015,11 @@ export interface components {
       filters?: components['schemas']['InvocationV2FilterItem'][];
       mode?: components['schemas']['InvocationQueryModeV2'];
       /**
+       * @description Optional rolling created-at window. PT1H and P1D are resolved when the query executes; ALL applies no time filter.
+       * @enum {string}
+       */
+      range?: 'PT1H' | 'P1D' | 'ALL';
+      /**
        * @description Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; all returns both complete stages and breakdowns.
        * @enum {string}
        */

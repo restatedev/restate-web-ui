@@ -23,6 +23,7 @@ import { MiniService } from '@restate/features/service';
 import type { OverviewDeployment } from './sortDeployments';
 import { sortDeploymentServices } from './sortDeployments';
 import {
+  cardActionLinkStyles,
   cardContainerStyles,
   cardInnerStyles,
   type IssueSeverity,
@@ -159,7 +160,7 @@ export function DeploymentCard({
                         },
                       )}
                       variant="secondary"
-                      className="relative flex shrink-0 items-center gap-0.5 truncate rounded-md border-none bg-transparent px-1.5 py-0.5 text-xs text-zinc-500/80 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700"
+                      className={cardActionLinkStyles()}
                     >
                       <div className="min-w-0 truncate">In-flight</div>
                       <Icon name={IconName.ChevronRight} className="h-4 w-4" />

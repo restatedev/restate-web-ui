@@ -23,6 +23,7 @@ import {
 import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
 import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
+import { toFilterParams } from '@restate/util/invocation-links';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 import { useOverviewData } from './useOverviewData';
 import {
@@ -101,14 +102,18 @@ export function OverviewProvider({ children }: { children: ReactNode }) {
     useState<SortDescriptor | null>(null);
   const [filter, setFilter] = useState('');
 
+  const appliedFilters = overviewData.appliedFilters;
   const linkParams = useMemo(() => {
     const next = new URLSearchParams();
     for (const key of PRESERVE_PARAMS) {
       const value = searchParams.get(key);
       if (value != null) next.set(key, value);
     }
+    for (const [key, value] of toFilterParams(appliedFilters)) {
+      next.set(key, value);
+    }
     return next;
-  }, [searchParams]);
+  }, [appliedFilters, searchParams]);
 
   const resolvedServiceSortDescriptor =
     serviceSortDescriptor ?? initialSortRef.current ?? DEFAUTL_SORT;

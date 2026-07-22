@@ -60,6 +60,7 @@ import { DeploymentActions } from './DeploymentActions';
 import { ServicesGridList } from './ServicesGridList';
 import { DeploymentsGridList } from './DeploymentsGridList';
 import { HandlersGridList } from './HandlersGridList';
+import { TimeRangeToggle } from './TimeRangeToggle';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
   CompletionHistoryChart,
@@ -460,6 +461,7 @@ function OverviewContent() {
     byStage,
     byStatus,
     totalCount,
+    hasVqueues,
     serviceIssuesMap,
     isSummaryLoading,
     isBreakdownSampled,
@@ -931,28 +933,33 @@ function OverviewContent() {
           data-overview-refresh-bounce=""
           className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
         />
-        {!isCompletionHistoryEnabled && summaryError && (
+        {(!hasVqueues || (!isCompletionHistoryEnabled && summaryError)) && (
           <div
             data-overview-refresh-bounce=""
             className={summaryStackStyles({ metricsVisible })}
           >
-            <Popover>
-              <PopoverTrigger>
-                <Button
-                  aria-label="Could not load invocation data"
-                  variant="secondary"
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
-                >
-                  <Icon
-                    name={IconName.TriangleAlert}
-                    className="h-4 w-4 fill-red-200 text-red-600"
-                  />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="max-w-sm">
-                <ErrorBanner error={summaryError} className="rounded-xl" />
-              </PopoverContent>
-            </Popover>
+            <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
+              {!hasVqueues && <TimeRangeToggle />}
+              {!isCompletionHistoryEnabled && summaryError && (
+                <Popover>
+                  <PopoverTrigger>
+                    <Button
+                      aria-label="Could not load invocation data"
+                      variant="secondary"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+                    >
+                      <Icon
+                        name={IconName.TriangleAlert}
+                        className="h-4 w-4 fill-red-200 text-red-600"
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="max-w-sm">
+                    <ErrorBanner error={summaryError} className="rounded-xl" />
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
           </div>
         )}
       </div>

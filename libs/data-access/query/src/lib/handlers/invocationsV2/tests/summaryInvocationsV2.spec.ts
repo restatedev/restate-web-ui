@@ -132,6 +132,21 @@ describe('POST /query/v2/invocations/summary', () => {
       });
     });
 
+    it('ignores the legacy rolling range for VQueue summaries', async () => {
+      setResponder(() => []);
+
+      const response = await post('/v2/invocations/summary', {
+        mode: { type: 'exact' },
+        range: 'PT1H',
+        view: 'stages',
+      });
+      const body = await response.json();
+
+      expect(sql).toHaveLength(1);
+      expect(sql[0]).not.toContain('created_at');
+      expect(body.appliedFilters).toEqual([]);
+    });
+
     it('returns only the refinable status distributions for the breakdown view', async () => {
       setResponder((statement) =>
         statement.includes("stage = 'inbox'")
@@ -955,6 +970,34 @@ describe('POST /query/v2/invocations/summary', () => {
           expect.objectContaining({ key: 'succeeded', count: 2 }),
         ]),
       );
+    });
+
+    it('limits a legacy summary to the selected rolling range', async () => {
+      setResponder(() => []);
+
+      const response = await post(
+        '/v2/invocations/summary',
+        {
+          mode: { type: 'sampled', sampleSize: 1_000_000 },
+          range: 'PT1H',
+          view: 'stages',
+        },
+        NO_VQUEUE_HEADERS,
+      );
+      const body = await response.json();
+      const rangeFilter = body.appliedFilters[0];
+
+      expect(rangeFilter).toMatchObject({
+        type: 'DATE',
+        field: 'created_at',
+        operation: 'AFTER',
+      });
+      expect(Date.parse(rangeFilter.value)).toBeGreaterThan(
+        Date.now() - 60 * 60 * 1000 - 1_000,
+      );
+      expect(sql).toHaveLength(1);
+      expect(sql[0]).toContain(`WHERE ss.created_at > '${rangeFilter.value}'`);
+      expect(body.mode).toBe('exact');
     });
 
     it('separates legacy ready and backing-off statuses without yielded', async () => {
