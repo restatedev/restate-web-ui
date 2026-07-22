@@ -71,8 +71,8 @@ function sourcePlansToExecute(
       error: [...requestedStatuses].some((status) =>
         STATUSES_RESOLVED_FROM_VQUEUE.has(status),
       )
-        ? 'transitioned_at cannot be combined with invocation-status-owned filters'
-        : 'transitioned_at requires filters and statuses that can be read entirely from VQueues',
+        ? 'transitioned_at cannot be combined with the requested filters'
+        : 'transitioned_at requires filters and statuses that expose transition timestamps',
     };
   }
   return {

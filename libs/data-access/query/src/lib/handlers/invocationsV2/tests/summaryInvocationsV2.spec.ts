@@ -1023,6 +1023,37 @@ describe('POST /query/v2/invocations/summary', () => {
   });
 
   describe('skipped completed VQueue migration', () => {
+    it('returns live stages without waiting for completed invocation status', async () => {
+      setResponder(() => [
+        {
+          service_name: 'Greeter',
+          inbox: 5,
+          running: 2,
+          suspended: 1,
+          paused: 3,
+        },
+      ]);
+
+      const response = await post(
+        '/v2/invocations/summary',
+        { mode: { type: 'exact' }, view: 'live-stages' },
+        VQUEUE_SKIP_COMPLETED_HEADERS,
+      );
+      const body = await response.json();
+
+      expect(sql).toHaveLength(1);
+      expect(sql[0]).toContain('FROM sys_vqueue_meta vm');
+      expect(sql[0]).not.toContain('sys_invocation_status');
+      expect(body.total).toBe(11);
+      expect(
+        body.stageBuckets.map((stage: { key: string }) => stage.key),
+      ).toEqual(['inbox', 'running', 'suspended', 'paused']);
+      expect(body.serviceBuckets[0].statusBuckets).not.toContainEqual(
+        expect.objectContaining({ key: 'finished' }),
+      );
+      expect(body.stageCountsArePartial).toBe(false);
+    });
+
     it('keeps yielded in the coarse live-status bucket', async () => {
       setResponder(() => [
         {

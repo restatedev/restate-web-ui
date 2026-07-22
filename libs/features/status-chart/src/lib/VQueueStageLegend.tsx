@@ -168,7 +168,9 @@ export function VQueueStageLegend({
             statuses: stage?.statuses ?? [],
             breakdownIsPartial: stage?.breakdownIsPartial ?? false,
             expandable: name === 'inbox',
-            loading: Boolean(isLoading),
+            loading: Boolean(
+              isLoading || (!stage && isBreakdownLoading?.(name)),
+            ),
           };
         })
       : byStatus

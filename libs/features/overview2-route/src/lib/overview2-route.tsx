@@ -590,7 +590,11 @@ function OverviewContent() {
     finished === 0 && completedOutcomeTotal > 0
       ? `of ${formatNumber(completedTotal, true)} completed`
       : undefined;
-  const isSummaryEmpty = !isSummaryLoading && !isSummaryError && allTotal === 0;
+  const isSummaryEmpty =
+    !isSummaryLoading &&
+    !isCompletedBreakdownLoading &&
+    !isSummaryError &&
+    allTotal === 0;
 
   const completedHref = toCompletedInvocationsHref(baseUrl, {
     existingParams: linkParams,
@@ -673,7 +677,9 @@ function OverviewContent() {
     heroReady,
   );
   const showHeroLegends =
-    isSummaryLoading || (!isSummaryError && totalCount > 0);
+    isSummaryLoading ||
+    isCompletedBreakdownLoading ||
+    (!isSummaryError && totalCount > 0);
   const filterPlaceholder =
     mode === 'services'
       ? 'Filter services, handlers, or deployments…'

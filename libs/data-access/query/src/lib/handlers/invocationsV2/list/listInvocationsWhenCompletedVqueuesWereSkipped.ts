@@ -38,7 +38,7 @@ function createQueryPlanWhenCompletedVqueuesWereSkipped(
       statusSelection,
       sourcePlans: normalPlan.sourcePlans,
       error:
-        'transitioned_at cannot sort terminal invocations when VQueue migration skipped completed rows',
+        'transitioned_at cannot sort terminal invocations because their transition timestamps are unavailable',
     };
   }
 

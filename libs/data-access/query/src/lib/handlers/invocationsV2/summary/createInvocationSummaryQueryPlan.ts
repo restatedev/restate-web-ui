@@ -27,7 +27,7 @@ function createQueryPlanFromSysVqueueMetaAndSysVqueues(
   context: QueryContext,
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
-  view: 'all' | 'stages' | 'breakdowns',
+  view: 'all' | 'stages' | 'live-stages' | 'breakdowns',
 ): SummaryQueryPlan {
   const source = 'sys_vqueue_meta_and_sys_vqueues' as const;
   if (
@@ -57,7 +57,7 @@ function createQueryPlanFromSysVqueueMetaAndSysVqueues(
     return { source, coverage: 'none' };
   }
 
-  if (view === 'stages') {
+  if (view === 'stages' || view === 'live-stages') {
     return { source, coverage: 'full', filters };
   }
 
@@ -112,7 +112,7 @@ function createQueryPlanFromSysInvocationStatusAndSysInvocationState(
 function createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState(
   context: QueryContext,
   filters: InvocationFilterV2[],
-  view: 'all' | 'stages' | 'breakdowns',
+  view: 'all' | 'stages' | 'live-stages' | 'breakdowns',
 ): SummaryQueryPlan {
   const source =
     'sys_invocation_status_and_sys_invocation_state_exact_summary' as const;
@@ -140,7 +140,7 @@ export function createInvocationSummaryQueryPlan(
   context: QueryContext,
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
-  view: 'all' | 'stages' | 'breakdowns',
+  view: 'all' | 'stages' | 'live-stages' | 'breakdowns',
 ) {
   const sourcePlans = [
     createQueryPlanFromSysVqueueMetaAndSysVqueues(context, filters, mode, view),

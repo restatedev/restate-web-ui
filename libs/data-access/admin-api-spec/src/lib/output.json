@@ -8202,8 +8202,8 @@
           },
           "view": {
             "type": "string",
-            "enum": ["all", "stages", "breakdowns"],
-            "description": "Selects the response sections. Stages returns coarse stage and service totals; breakdowns returns inner status distributions; all returns both."
+            "enum": ["all", "stages", "live-stages", "breakdowns"],
+            "description": "Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; all returns both complete stages and breakdowns."
           },
           "highlightFields": {
             "type": "array",

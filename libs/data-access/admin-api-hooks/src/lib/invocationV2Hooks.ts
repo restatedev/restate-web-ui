@@ -1,6 +1,7 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
   adminApi,
+  hasCompleteVqueueInvocationPopulation,
   useAdminBaseUrl,
   useAPIStatus,
   useFeatures,
@@ -83,8 +84,16 @@ export function mergeInvocationSummaryBreakdowns(
 ) {
   if (!stages || !breakdowns) return stages;
 
-  const refinableStages = stages.stageBuckets.filter(
-    (stage) => stage.breakdownCanRefine,
+  const stageKeys = new Set(stages.stageBuckets.map((stage) => stage.key));
+  const supplementalStages = breakdowns.stageBuckets.filter(
+    (stage) => !stageKeys.has(stage.key),
+  );
+  const refinableStages = [
+    ...stages.stageBuckets.filter((stage) => stage.breakdownCanRefine),
+    ...supplementalStages,
+  ];
+  const missingStageKeys = new Set(
+    supplementalStages.map((stage) => stage.key),
   );
   const refinableStatuses = new Set(
     refinableStages.flatMap((stage) => stage.statuses),
@@ -93,7 +102,10 @@ export function mergeInvocationSummaryBreakdowns(
     breakdowns.stageBuckets.map((stage) => [stage.key, stage]),
   );
   const stageCounts = new Map(
-    stages.stageBuckets.map((stage) => [stage.key, stage.count]),
+    [...stages.stageBuckets, ...supplementalStages].map((stage) => [
+      stage.key,
+      stage.count,
+    ]),
   );
   const refinedStatusBuckets = breakdowns.statusBuckets
     .filter((bucket) =>
@@ -112,11 +124,8 @@ export function mergeInvocationSummaryBreakdowns(
           : 1;
       return { ...bucket, count: Math.round(bucket.count * scale) };
     });
-
-  return {
-    ...stages,
-    isPartial: stages.isPartial || breakdowns.isPartial,
-    stageBuckets: stages.stageBuckets.map((stage) => {
+  const stageBuckets = [
+    ...stages.stageBuckets.map((stage) => {
       if (!stage.breakdownCanRefine) return stage;
       const breakdown = breakdownStages.get(stage.key);
       return breakdown
@@ -128,6 +137,47 @@ export function mergeInvocationSummaryBreakdowns(
           }
         : stage;
     }),
+    ...supplementalStages,
+  ];
+  const serviceBuckets = new Map(
+    stages.serviceBuckets.map((bucket) => [bucket.service, bucket]),
+  );
+  for (const breakdownService of breakdowns.serviceBuckets) {
+    const stageService = serviceBuckets.get(breakdownService.service);
+    const statusBuckets = [...(stageService?.statusBuckets ?? [])];
+    const statusBucketIndexes = new Map(
+      statusBuckets.map((bucket, index) => [bucket.key, index]),
+    );
+    for (const bucket of breakdownService.statusBuckets) {
+      if (!missingStageKeys.has(bucket.key)) continue;
+      const index = statusBucketIndexes.get(bucket.key);
+      if (index === undefined) {
+        statusBucketIndexes.set(bucket.key, statusBuckets.length);
+        statusBuckets.push(bucket);
+      } else {
+        statusBuckets[index] = bucket;
+      }
+    }
+    serviceBuckets.set(breakdownService.service, {
+      ...breakdownService,
+      ...stageService,
+      count: statusBuckets.reduce((total, bucket) => total + bucket.count, 0),
+      statusBuckets,
+    });
+  }
+
+  return {
+    ...stages,
+    queryDurationMs: Math.max(
+      stages.queryDurationMs,
+      breakdowns.queryDurationMs,
+    ),
+    isPartial: stages.isPartial || breakdowns.isPartial,
+    stageCountsArePartial:
+      stages.stageCountsArePartial ||
+      supplementalStages.some((stage) => stage.breakdownIsPartial),
+    total: stageBuckets.reduce((total, stage) => total + stage.count, 0),
+    stageBuckets,
     statusBuckets: [
       ...stages.statusBuckets.filter(
         (bucket) =>
@@ -135,6 +185,11 @@ export function mergeInvocationSummaryBreakdowns(
       ),
       ...refinedStatusBuckets,
     ],
+    serviceBuckets: [...serviceBuckets.values()].sort((left, right) =>
+      right.count !== left.count
+        ? right.count - left.count
+        : left.service.localeCompare(right.service),
+    ),
   };
 }
 
@@ -142,14 +197,25 @@ export function useProgressiveInvocationSummaryV2(
   body: Omit<components['schemas']['SummaryInvocationsV2RequestBody'], 'view'>,
   options?: HookQueryOptions<'/query/v2/invocations/summary', 'post'>,
 ) {
-  const eagerBreakdowns = useFeatures().has('vqueues');
-  const stages = useSummaryInvocationsV2({ ...body, view: 'stages' }, options);
+  const features = useFeatures();
+  const eagerBreakdowns = features.has('vqueues');
+  const splitCompletedStage =
+    eagerBreakdowns && !hasCompleteVqueueInvocationPopulation(features);
+  const stages = useSummaryInvocationsV2(
+    {
+      ...body,
+      view: splitCompletedStage ? 'live-stages' : 'stages',
+    },
+    options,
+  );
   const refinableStageNames = useMemo(
-    () =>
-      stages.data?.stageBuckets
+    () => [
+      ...(stages.data?.stageBuckets
         .filter((stage) => stage.breakdownCanRefine)
-        .map((stage) => stage.key) ?? [],
-    [stages.data?.stageBuckets],
+        .map((stage) => stage.key) ?? []),
+      ...(splitCompletedStage ? (['finished'] as const) : []),
+    ],
+    [splitCompletedStage, stages.data?.stageBuckets],
   );
   const breakdowns = useSummaryInvocationsV2(
     { ...body, view: 'breakdowns' },

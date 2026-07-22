@@ -151,7 +151,7 @@ export async function inboxInvocationsBreakdownV2(
 
   if (useVqueues && groupByService) {
     return badRequest(
-      'groupByService is not supported when VQueues are enabled',
+      'Service grouping is not supported for the current invocation data',
     );
   }
 

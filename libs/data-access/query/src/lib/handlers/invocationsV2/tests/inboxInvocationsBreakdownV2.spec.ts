@@ -68,7 +68,8 @@ describe('POST /query/v2/invocations/inbox', () => {
 
       expect(response.status).toBe(400);
       expect(await response.json()).toEqual({
-        message: 'groupByService is not supported when VQueues are enabled',
+        message:
+          'Service grouping is not supported for the current invocation data',
       });
       expect(sql).toEqual([]);
     });
@@ -164,7 +165,8 @@ describe('POST /query/v2/invocations/inbox', () => {
 
       expect(response.status).toBe(400);
       expect(await response.json()).toEqual({
-        message: 'groupByService is not supported when VQueues are enabled',
+        message:
+          'Service grouping is not supported for the current invocation data',
       });
       expect(sql).toEqual([]);
     });
@@ -179,7 +181,8 @@ describe('POST /query/v2/invocations/inbox', () => {
 
         expect(response.status).toBe(400);
         expect(await response.json()).toEqual({
-          message: 'groupByService is not supported when VQueues are enabled',
+          message:
+            'Service grouping is not supported for the current invocation data',
         });
         expect(sql).toEqual([]);
       },

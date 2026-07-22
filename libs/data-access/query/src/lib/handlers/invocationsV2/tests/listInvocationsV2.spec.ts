@@ -428,7 +428,7 @@ describe('POST /query/v2/invocations', () => {
       expect(response.status).toBe(400);
       expect(await response.json()).toEqual({
         message:
-          'transitioned_at cannot be combined with invocation-status-owned filters',
+          'transitioned_at cannot be combined with the requested filters',
       });
       expect(sql).toEqual([]);
     });
@@ -892,7 +892,7 @@ describe('POST /query/v2/invocations', () => {
       expect(response.status).toBe(400);
       expect(await response.json()).toEqual({
         message:
-          'transitioned_at cannot sort terminal invocations when VQueue migration skipped completed rows',
+          'transitioned_at cannot sort terminal invocations because their transition timestamps are unavailable',
       });
       expect(sql).toEqual([]);
     });

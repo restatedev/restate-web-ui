@@ -347,6 +347,10 @@ export function VQueueStageSummaryBar({
     hasInboxBreakdown;
   const focusedStages =
     selectedFocus === 'all' ? allStages : notCompletedStages;
+  const focusedStageLoading =
+    selectedFocus === 'completed' &&
+    completedBreakdownLoading &&
+    !completedStage;
 
   const summaryRail = (
     <div
@@ -359,7 +363,9 @@ export function VQueueStageSummaryBar({
             : 'Completed invocation outcomes'
       }
     >
-      {focusedCount === 0 ? (
+      {focusedStageLoading ? (
+        <div className={skeletonStyles()} aria-hidden />
+      ) : focusedCount === 0 ? (
         <div className={emptyStyles()} />
       ) : showInboxGroup ? (
         <>

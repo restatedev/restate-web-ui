@@ -215,7 +215,7 @@ export function ServiceCard({
                   serviceIssues={serviceIssues}
                   isLoading={isSummaryLoading}
                   linkParams={linkParams}
-                  rangeLabel="Current VQueue stages"
+                  rangeLabel="Current invocation stages"
                   onOpenChange={(isOpen) => {
                     if (isOpen) onServiceStatusOpen?.();
                   }}

@@ -178,9 +178,7 @@ export function useOverviewData() {
     isBreakdownSampled: hasVqueues,
     isInboxBreakdownLoading,
     isInboxBreakdownError: summary.isBreakdownError('inbox'),
-    isCompletedBreakdownLoading:
-      getInvocationSummaryStageCount(summary.data, 'finished') > 0 &&
-      summary.isBreakdownLoading('finished'),
+    isCompletedBreakdownLoading: summary.isBreakdownLoading('finished'),
     isCompletedBreakdownError: summary.isBreakdownError('finished'),
     isSummaryError,
     summaryError,
