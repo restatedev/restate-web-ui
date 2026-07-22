@@ -76,6 +76,29 @@ describe('GET /query/invocations/:invocationId', () => {
       expect(await response.json()).toMatchObject({ status: 'cancelled' });
     });
 
+    it('marks a running VQueue retry without requiring a legacy last failure', async () => {
+      setResponder((statement) =>
+        statement.includes('FROM sys_vqueue_entry_status')
+          ? [
+              {
+                entry_id: 'inv-a',
+                stage: 'running',
+                status: 'started',
+                retry_count_since_last_stored_command: 1,
+              },
+            ]
+          : [rawInvocation('inv-a', { status: 'ready', last_failure: null })],
+      );
+
+      const response = await get('/invocations/inv-a');
+
+      expect(await response.json()).toMatchObject({
+        status: 'running',
+        retry_count: 1,
+        isRetrying: true,
+      });
+    });
+
     it('uses entry status whenever the VQueue feature is enabled', async () => {
       setResponder((statement) =>
         statement.includes('FROM sys_vqueue_entry_status')

@@ -9,6 +9,7 @@ export type InvocationWithComputedStatus = Omit<RawInvocation, 'status'> & {
 
 export function getComputedInvocationStatus(
   invocation: InvocationWithComputedStatus,
+  retryCountSinceLastStoredCommand?: number,
 ): {
   isRetrying: boolean;
   status: InvocationComputedStatus2;
@@ -31,13 +32,16 @@ export function getComputedInvocationStatus(
   const isCompleted = invocation.status === 'completed';
 
   const hasLastFailure = Boolean(invocation.last_failure);
-  const isRetrying = Boolean(
+  const isRetrying =
     invocation.status === 'backing-off' ||
-    (invocation.retry_count &&
-      invocation.retry_count > 1 &&
-      isRunning &&
-      hasLastFailure),
-  );
+    (isRunning &&
+      (retryCountSinceLastStoredCommand !== undefined
+        ? retryCountSinceLastStoredCommand > 0
+        : Boolean(
+            invocation.retry_count &&
+            invocation.retry_count > 1 &&
+            hasLastFailure,
+          )));
 
   if (isCompleted) {
     if (isSuccessful) {

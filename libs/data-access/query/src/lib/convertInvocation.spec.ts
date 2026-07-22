@@ -114,6 +114,53 @@ describe('convertInvocation VQueue overlay', () => {
     expect(invocation.retry_count).toBe(5);
   });
 
+  it('marks a running VQueue invocation as retrying from its current-command retry count', () => {
+    const invocation = convertInvocation(rawInvocation(), {
+      stage: 'running',
+      status: 'started',
+      retry_count_since_last_stored_command: 1,
+    });
+
+    expect(invocation).toMatchObject({
+      status: 'running',
+      retry_count: 1,
+      isRetrying: true,
+    });
+  });
+
+  it('clears retrying after a running VQueue invocation stores a new command', () => {
+    const invocation = convertInvocation(
+      rawInvocation({ retry_count: 5, last_failure: 'previous failure' }),
+      {
+        stage: 'running',
+        status: 'started',
+        retry_count_since_last_stored_command: 0,
+      },
+    );
+
+    expect(invocation).toMatchObject({
+      status: 'running',
+      retry_count: 0,
+      isRetrying: false,
+    });
+  });
+
+  it('keeps the last-failure guard for legacy running invocations', () => {
+    expect(
+      convertInvocation(
+        rawInvocation({
+          status: 'running',
+          retry_count: 2,
+          last_failure: 'previous failure',
+        }),
+      ).isRetrying,
+    ).toBe(true);
+    expect(
+      convertInvocation(rawInvocation({ status: 'running', retry_count: 2 }))
+        .isRetrying,
+    ).toBe(false);
+  });
+
   it('uses the exact VQueue terminal outcome instead of the raw completion', () => {
     const invocation = convertInvocation(
       rawInvocation({

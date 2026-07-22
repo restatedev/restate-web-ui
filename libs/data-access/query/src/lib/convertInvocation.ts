@@ -113,7 +113,10 @@ export function convertInvocation(
     merged.pinned_service_protocol_version !== undefined &&
     merged.pinned_service_protocol_version > 6;
 
-  const computedStatus = getComputedInvocationStatus(merged);
+  const computedStatus = getComputedInvocationStatus(
+    merged,
+    vqueue?.retry_count_since_last_stored_command,
+  );
 
   return {
     ...rest,
