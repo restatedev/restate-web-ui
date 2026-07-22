@@ -71,7 +71,7 @@ const makeShortcuts: (
     id: 'processing',
     label: 'Processing',
     columns: DEFAULT_PRESET_COLUMNS,
-    sort: { field: 'created_at', order: 'DESC' },
+    sort: SORT_NONE,
     filters: [
       toClause(schema, 'status', {
         operation: 'IN',
