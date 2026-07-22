@@ -2,6 +2,7 @@
 
 ## Skill Notes
 
+- 2026-07-22: A running invocation is orange only when computed `isRetrying` is true; that currently requires `retry_count > 1` plus `last_failure`. VQueue-backed running rows can have the new retry count but no `last_failure`, and `Status.tsx` fetches the transient error only after `isRetrying` is true, so they stay blue. If the VQueue counter should define active retrying, use it explicitly rather than relying on the legacy last-failure guard.
 - 2026-07-22: The admin API generator deliberately runs `redocly lint ... || true`; direct Redocly lint currently reports 196 pre-existing OpenAPI compatibility errors. Treat that lint as informational unless the changed schema adds a new diagnostic.
 - 2026-07-22: `NX_DAEMON=false pnpm nx typecheck query` can hang for about two minutes and fail with `NX Failed to start plugin worker` without reaching TypeScript. For query-library verification, run its Vitest config and fall back to `pnpm exec tsc -p libs/data-access/query/tsconfig.lib.json --noEmit`.
 - 2026-07-22: For VQueue-backed invocation attempts, populate public `retry_count` from `sys_vqueue_entry_status.retry_count_since_last_stored_command`; `retry_attempts` is a different scheduler metric and can severely undercount the attempt ordinal shown in `Status.tsx`.
