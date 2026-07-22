@@ -215,7 +215,6 @@ export function Status({
               isFailed={status === 'failed'}
               error={isRetrying ? transientError : error}
               attemptCount={invocation.retry_count}
-              showRetryingLabel={status === 'running'}
             />
           )}
           {hasPausedError && (
@@ -265,8 +264,7 @@ const lastErrorStyles = tv({
   variants: {
     isRetrying: {
       true: {
-        trigger:
-          'border-orange-200/80 bg-orange-50/80 text-orange-700 hover:bg-orange-100/70 pressed:bg-orange-100',
+        trigger: 'text-orange-700',
         errorIcon: 'text-orange-600',
       },
       false: { trigger: 'text-red-500', errorIcon: 'text-red-500/90' },
@@ -324,7 +322,6 @@ export function LastError({
   attemptCount = 0,
   popoverTitle,
   label,
-  showRetryingLabel = false,
 }: {
   isRetrying: boolean;
   isFailed: boolean;
@@ -332,7 +329,6 @@ export function LastError({
   attemptCount?: number;
   popoverTitle?: string;
   label?: string;
-  showRetryingLabel?: boolean;
 }) {
   const hasStack = error?.message.includes('\n') || !!error?.stack;
   const isLargeError = Boolean(error && error?.message.length > 200);
@@ -359,7 +355,6 @@ export function LastError({
             errorCode
           ) : attemptCount ? (
             <span className="truncate">
-              {showRetryingLabel && <>Retrying · </>}
               {formatOrdinals(attemptCount)}{' '}
               <span className="opacity2-80 font-normal">attempt</span>
             </span>
