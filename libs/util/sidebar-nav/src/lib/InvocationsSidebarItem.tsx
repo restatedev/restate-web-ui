@@ -51,7 +51,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
     id: 'processing',
     label: 'Processing',
-    sort: { field: 'created_at', order: 'DESC' },
+    sort: SORT_NONE,
     filters: [
       {
         id: 'status',
