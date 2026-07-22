@@ -737,7 +737,16 @@ function StateDialogContent({
             {!isPartial && (
               <>
                 <br />
-                The new state will <strong>replace</strong> the previous state.
+                {isDeleting ? (
+                  <>
+                    All state for this key will be <strong>deleted</strong>.
+                  </>
+                ) : (
+                  <>
+                    The new state will <strong>replace</strong> the previous
+                    state.
+                  </>
+                )}
               </>
             )}
           </span>

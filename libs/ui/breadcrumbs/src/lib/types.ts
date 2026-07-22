@@ -12,7 +12,7 @@ export interface PageDefinition {
   pattern: string;
   kind: PageKind;
   resource: string;
-  label: string | ((params: Params) => string);
+  label: string | ((params: Params, search: string) => string);
   icon: IconName;
   Content?: ComponentType<BreadcrumbComponentProps>;
   Popover?: ComponentType<BreadcrumbComponentProps>;

@@ -6,6 +6,7 @@ import { panelHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
 import { Revision } from '@restate/features/deployment';
+import { useSearchParams } from 'react-router';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 p-1',
@@ -21,6 +22,7 @@ export function MiniService({
   showLink?: boolean;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
+  const [searchParams] = useSearchParams();
 
   return (
     <div className={styles({ className })}>
@@ -43,7 +45,10 @@ export function MiniService({
           ref={linkRef}
           aria-label={service.name}
           variant="secondary"
-          href={panelHref({ service: service.name })}
+          href={panelHref(
+            { service: service.name },
+            { existingParams: searchParams },
+          )}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon

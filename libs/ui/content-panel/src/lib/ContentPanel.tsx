@@ -37,6 +37,7 @@ type ContentPanelSlotName = 'toolbar' | 'header';
 export interface ContentPanelTab {
   id: string;
   label: ReactNode;
+  menuLabel?: ReactNode;
   disabled?: boolean;
   href?: string;
 }
@@ -79,7 +80,7 @@ const styles = tv({
     sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
     tabsWrapper:
       'relative flex min-h-16 w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
-    tabList: 'relative flex max-w-full items-end gap-1 px-1',
+    tabList: 'relative flex h-full max-w-full items-end gap-1 px-1',
     tabsToolbarSlot: 'flex flex-1 items-center justify-end self-stretch pb-0',
   },
   variants: {
@@ -450,10 +451,7 @@ function Tabs({
           ref={scrollRef}
           className="-mb-px min-w-0 flex-1 [scrollbar-width:none] overflow-x-auto pb-px [&::-webkit-scrollbar]:hidden"
         >
-          <AriaTabList
-            className={`${tabListClassName} h-full`}
-            aria-label="Tabs"
-          >
+          <AriaTabList className={tabListClassName} aria-label="Tabs">
             {visibleTabs.map((tab) => (
               <AriaTab
                 key={tab.id}
@@ -512,7 +510,7 @@ function Tabs({
               />
             </Button>
           </DropdownTrigger>
-          <DropdownPopover>
+          <DropdownPopover className="lg:max-w-[80vw]">
             <DropdownMenu onSelect={(key) => selectTab(String(key))}>
               {overflowTabs.map((tab) => {
                 const href = tab.href ?? hrefFor(tab.id);
@@ -522,7 +520,7 @@ function Tabs({
                     href={href}
                     isDisabled={tab.disabled}
                   >
-                    {tab.label}
+                    {tab.menuLabel ?? tab.label}
                   </DropdownItem>
                 ) : (
                   <DropdownItem
@@ -530,7 +528,7 @@ function Tabs({
                     value={tab.id}
                     isDisabled={tab.disabled}
                   >
-                    {tab.label}
+                    {tab.menuLabel ?? tab.label}
                   </DropdownItem>
                 );
               })}
@@ -608,7 +606,7 @@ function MobileTabsDropdown({
                   value={item.id}
                   isDisabled={item.disabled}
                 >
-                  {item.label}
+                  {item.menuLabel ?? item.label}
                 </DropdownItem>
               ))}
             </DropdownMenu>

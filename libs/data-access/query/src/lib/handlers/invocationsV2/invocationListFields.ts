@@ -9,6 +9,7 @@ type InvocationSortField = components['schemas']['InvocationV2Sort']['field'];
 export type InvocationListField = InvocationFilterField | InvocationSortField;
 
 export type InvocationListTable =
+  | 'sys_invocation'
   | 'sys_invocation_status'
   | 'sys_invocation_state'
   | 'sys_vqueues'
@@ -19,6 +20,7 @@ type RestateVersion = `${number}.${number}.${number}`;
 type RestateFeature = 'vqueues';
 
 const INVOCATION_LIST_TABLES = {
+  sys_invocation: { since: '0.9.0', feature: null },
   sys_invocation_status: { since: '0.9.0', feature: null },
   sys_invocation_state: { since: '0.9.0', feature: null },
   sys_vqueues: { since: '1.7.0', feature: 'vqueues' },
@@ -47,6 +49,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'id',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'id',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'id',
         since: '0.9.0',
@@ -68,6 +75,15 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'status',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'status',
+        supportingColumns: {
+          completionResult: 'completion_result',
+          completionFailure: 'completion_failure',
+        },
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'status',
         supportingColumns: {
@@ -95,6 +111,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'target_service_name',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'target_service_name',
         since: '0.9.0',
@@ -111,6 +132,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'target_service_key',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'target_service_key',
         since: '0.9.0',
@@ -122,6 +148,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'target_handler_name',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'target_handler_name',
         since: '0.9.0',
@@ -133,6 +164,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'target_service_ty',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'target_service_ty',
         since: '0.9.0',
@@ -144,6 +180,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'pinned_deployment_id',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'pinned_deployment_id',
         since: '0.9.0',
@@ -165,6 +206,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'invoked_by_subscription_id',
+        since: '1.2.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'invoked_by_subscription_id',
         since: '1.2.0',
@@ -176,6 +222,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'invoked_by',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'invoked_by',
         since: '0.9.0',
@@ -187,6 +238,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'invoked_by_service_name',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'invoked_by_service_name',
         since: '0.9.0',
@@ -198,6 +254,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'invoked_by_id',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'invoked_by_id',
         since: '0.9.0',
@@ -209,6 +270,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'idempotency_key',
+        since: '1.2.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'idempotency_key',
         since: '1.2.0',
@@ -220,6 +286,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: true,
     tables: {
+      sys_invocation: {
+        column: 'created_at',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'created_at',
         since: '0.9.0',
@@ -241,6 +312,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: true,
     tables: {
+      sys_invocation: {
+        column: 'modified_at',
+        since: '0.9.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'modified_at',
         since: '0.9.0',
@@ -252,6 +328,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'completed_at',
+        since: '1.1.0',
+        feature: null,
+      },
       sys_invocation_status: {
         column: 'completed_at',
         since: '1.1.0',
@@ -263,6 +344,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'scope',
+        since: '1.7.0',
+        feature: 'vqueues',
+      },
       sys_invocation_status: {
         column: 'scope',
         since: '1.7.0',
@@ -279,6 +365,11 @@ export const INVOCATION_LIST_FIELDS = {
     filter: 'column',
     sort: false,
     tables: {
+      sys_invocation: {
+        column: 'limit_key',
+        since: '1.7.0',
+        feature: 'vqueues',
+      },
       sys_invocation_status: {
         column: 'limit_key',
         since: '1.7.0',

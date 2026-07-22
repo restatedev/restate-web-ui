@@ -58,7 +58,7 @@ export interface PanelTableProps<
   onSelectionChange?: (keys: Set<Key>) => void;
   renderCell: (row: T, col: PanelTableColumn<TColId>) => ReactElement;
   renderChildRows?: (row: T, columns: PanelTableColumn[]) => ReactNode;
-  rowClassName?: string;
+  rowClassName?: string | ((row: T) => string);
   rowDependencies?: unknown[];
   // Optional content rendered inside the scroll area, just below the sticky
   // column header and above the rows (scrolls with the rows). Omit for no effect.
@@ -247,7 +247,9 @@ export function PanelTable<
         id={item.id}
         columns={dataTableColumns}
         dependencies={[...(rowDependencies ?? []), dataTableColumns]}
-        className={rowClassName}
+        className={
+          typeof rowClassName === 'function' ? rowClassName(item) : rowClassName
+        }
         leadingCell={<Cell />}
         childRows={renderChildRows?.(item, dataTableColumns)}
       >

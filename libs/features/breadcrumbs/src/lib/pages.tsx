@@ -5,7 +5,11 @@ import {
   type PageDefinition,
 } from '@restate/ui/breadcrumbs';
 import { Copy } from '@restate/ui/copy';
-import { IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui/icons';
+import {
+  formatVirtualObjectInstanceIdentity,
+  virtualObjectScopeFromSearch,
+} from '@restate/features/virtual-object-instance';
 
 export type CrumbFragment = Omit<PageDefinition, 'pattern'>;
 
@@ -25,6 +29,49 @@ function InvocationCrumbContent({ crumb }: BreadcrumbComponentProps) {
 
 function InvocationCrumbPopover({ crumb }: BreadcrumbComponentProps) {
   return <InvocationPopoverContent id={String(crumb.params['id'] ?? '')} />;
+}
+
+function VirtualObjectInstanceCrumbContent({
+  crumb,
+}: BreadcrumbComponentProps) {
+  const queryIndex = crumb.href.indexOf('?');
+  const scope = virtualObjectScopeFromSearch(
+    queryIndex === -1 ? '' : crumb.href.slice(queryIndex),
+  );
+  return (
+    <>
+      <Icon
+        name={IconName.VirtualObject}
+        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+      />
+      <span
+        data-crumb-label
+        className="flex min-w-0 items-center gap-1.5 truncate"
+      >
+        <span className="min-w-0 truncate">
+          {crumb.params['service'] ?? ''}
+        </span>
+        <span className="shrink-0 text-zinc-400">/</span>
+        <span className="min-w-0 truncate font-mono text-[90%]">
+          {crumb.params['key'] ?? ''}
+        </span>
+        {scope !== undefined && (
+          <>
+            <span className="shrink-0 text-zinc-400">/</span>
+            <span className="min-w-0 truncate font-mono text-[90%]">
+              {scope}
+            </span>
+          </>
+        )}
+      </span>
+      {crumb.isCurrent && (
+        <Copy
+          copyText={crumb.label}
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-700"
+        />
+      )}
+    </>
+  );
 }
 
 export const overviewCrumb: CrumbFragment = {
@@ -48,6 +95,28 @@ export const invocationCrumb: CrumbFragment = {
   icon: IconName.Invocation,
   Content: InvocationCrumbContent,
   Popover: InvocationCrumbPopover,
+};
+
+export const virtualObjectsCrumb: CrumbFragment = {
+  kind: 'list',
+  resource: 'virtual-objects',
+  label: 'Virtual Objects',
+  icon: IconName.VirtualObject,
+};
+
+export const virtualObjectInstanceCrumb: CrumbFragment = {
+  kind: 'detail',
+  resource: 'virtual-objects',
+  label: (params, search) => {
+    const scope = virtualObjectScopeFromSearch(search);
+    return formatVirtualObjectInstanceIdentity({
+      service: params['service'] ?? '',
+      key: params['key'] ?? '',
+      ...(scope !== undefined ? { scope } : {}),
+    });
+  },
+  icon: IconName.VirtualObject,
+  Content: VirtualObjectInstanceCrumbContent,
 };
 
 export const stateCrumb: CrumbFragment = {
@@ -79,6 +148,11 @@ export function createBreadcrumbPages(options?: {
     { pattern: `${prefix}/overview`, ...overviewCrumb },
     { pattern: `${prefix}/invocations`, ...invocationsCrumb },
     { pattern: `${prefix}/invocations/:id`, ...invocationCrumb },
+    { pattern: `${prefix}/virtual-objects`, ...virtualObjectsCrumb },
+    {
+      pattern: `${prefix}/virtual-objects/:service/:key`,
+      ...virtualObjectInstanceCrumb,
+    },
     { pattern: `${prefix}/state`, ...stateCrumb },
     { pattern: `${prefix}/state/:virtualObject`, ...stateObjectCrumb },
     { pattern: `${prefix}/introspection`, ...introspectionCrumb },

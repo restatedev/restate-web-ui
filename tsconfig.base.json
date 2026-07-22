@@ -111,6 +111,13 @@
         "libs/features/user-preference/src/index.ts"
       ],
       "@restate/features/version": ["libs/features/version/src/index.ts"],
+      "@restate/features/virtual-object-instance": [
+        "libs/features/virtual-object-instance/src/index.ts"
+      ],
+      "@restate/features/virtual-objects-route": [
+        "libs/features/virtual-objects-route/src/index.ts"
+      ],
+      "@restate/features/vqueue-ui": ["libs/features/vqueue-ui/src/index.ts"],
       "@restate/ui/action-text": ["libs/ui/action-text/src/index.ts"],
       "@restate/ui/api": ["libs/ui/api/src/index.ts"],
       "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],

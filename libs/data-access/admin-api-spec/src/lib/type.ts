@@ -102,22 +102,83 @@ export type LambdaDeployment = Exclude<Deployment, { uri: string }>;
 export type DeploymentType = 'uri' | 'arn';
 
 export const INVOCATION_STATUS_DEFINITIONS = [
-  { key: 'scheduled', label: 'Scheduled', stage: 'inbox' },
-  { key: 'pending', label: 'Pending', stage: 'inbox' },
-  { key: 'ready', label: 'Ready', stage: 'inbox' },
-  { key: 'yielded', label: 'Yielded', stage: 'inbox' },
-  { key: 'backing-off', label: 'Backing off', stage: 'inbox' },
-  { key: 'running', label: 'Running', stage: 'running' },
-  { key: 'suspended', label: 'Suspended', stage: 'suspended' },
-  { key: 'paused', label: 'Paused', stage: 'paused' },
-  { key: 'succeeded', label: 'Succeeded', stage: 'finished' },
-  { key: 'failed', label: 'Failed', stage: 'finished' },
-  { key: 'cancelled', label: 'Cancelled', stage: 'finished' },
-  { key: 'killed', label: 'Killed', stage: 'finished' },
+  {
+    key: 'scheduled',
+    label: 'Scheduled',
+    stage: 'inbox',
+    vqueueStatuses: ['scheduled'],
+  },
+  {
+    key: 'pending',
+    label: 'Pending',
+    stage: 'inbox',
+    vqueueStatuses: ['new'],
+  },
+  {
+    key: 'ready',
+    label: 'Ready',
+    stage: 'inbox',
+    vqueueStatuses: ['started'],
+  },
+  {
+    key: 'yielded',
+    label: 'Yielded',
+    stage: 'inbox',
+    vqueueStatuses: ['yielded'],
+  },
+  {
+    key: 'backing-off',
+    label: 'Backing off',
+    stage: 'inbox',
+    vqueueStatuses: ['backing-off'],
+  },
+  {
+    key: 'running',
+    label: 'Running',
+    stage: 'running',
+    vqueueStatuses: undefined,
+  },
+  {
+    key: 'suspended',
+    label: 'Suspended',
+    stage: 'suspended',
+    vqueueStatuses: undefined,
+  },
+  {
+    key: 'paused',
+    label: 'Paused',
+    stage: 'paused',
+    vqueueStatuses: undefined,
+  },
+  {
+    key: 'succeeded',
+    label: 'Succeeded',
+    stage: 'finished',
+    vqueueStatuses: ['succeeded'],
+  },
+  {
+    key: 'failed',
+    label: 'Failed',
+    stage: 'finished',
+    vqueueStatuses: ['failed'],
+  },
+  {
+    key: 'cancelled',
+    label: 'Cancelled',
+    stage: 'finished',
+    vqueueStatuses: ['cancelled'],
+  },
+  {
+    key: 'killed',
+    label: 'Killed',
+    stage: 'finished',
+    vqueueStatuses: ['killed'],
+  },
 ] as const satisfies readonly {
   key: InvocationStatus;
   label: string;
   stage: InvocationSummaryStage;
+  vqueueStatuses?: readonly string[];
 }[];
 
 export const INVOCATION_SUMMARY_STAGES = [
@@ -153,6 +214,20 @@ export function getInvocationStatusesForStage(stage: InvocationSummaryStage) {
 
 export function getInvocationStatusLabel(status: string) {
   return INVOCATION_STATUS_DEFINITIONS.find(({ key }) => key === status)?.label;
+}
+
+export function getInvocationStatusFromVqueue(vqueue?: {
+  stage?: string;
+  status?: string;
+}): InvocationStatus | undefined {
+  if (!vqueue?.stage) return undefined;
+
+  return INVOCATION_STATUS_DEFINITIONS.find(
+    ({ stage, vqueueStatuses }) =>
+      stage === vqueue.stage &&
+      (!vqueueStatuses ||
+        vqueueStatuses.some((status) => status === vqueue.status)),
+  )?.key;
 }
 export function isHttpDeployment(
   deployment: Deployment,

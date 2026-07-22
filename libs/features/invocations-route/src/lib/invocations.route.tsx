@@ -120,10 +120,11 @@ import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import { resolveInvocationPopulationCount } from './invocationSummaryMatchCount';
+import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
-  id: 170,
-  created_at: 100,
+  id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
+  created_at: INVOCATION_TABLE_COLUMN_CONFIG.created_at.defaultWidth,
   modified_at: 110,
   duration: 110,
   scheduled_at: 110,
@@ -134,8 +135,8 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   pinned_service_protocol_version: 80,
 };
 const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
-  status: 200,
-  target: 200,
+  status: INVOCATION_TABLE_COLUMN_CONFIG.status.minWidth,
+  target: INVOCATION_TABLE_COLUMN_CONFIG.target.minWidth,
   invoked_by: 100,
 };
 const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {

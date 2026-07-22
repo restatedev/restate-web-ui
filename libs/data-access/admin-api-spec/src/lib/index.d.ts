@@ -951,6 +951,86 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/virtual-objects/{service}/instances': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List virtual object instances
+     * @description Returns a bounded set of virtual object identities discovered from state and pending work. Pending work includes unfinished exclusive and shared invocations, plus state-mutation entries when virtual queues are available. An inactive instance without state cannot be enumerated. By default the candidate sources remain bounded and unordered. The optional backlog sort performs an exact service-wide aggregate before selecting the largest backlogs.
+     */
+    post: operations['list_virtual_object_instances'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/virtual-objects/{service}/instances/{key}/lock': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get the current Virtual Object lock holder
+     * @description Returns the invocation or state mutation that currently holds the exclusive lock for the exact service, key, and scope identity.
+     */
+    get: operations['get_virtual_object_lock'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/virtual-objects/{service}/instances/{key}/inbox': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get the Virtual Object inbox
+     * @description Returns one bounded inbox view for the exact service, key, and scope identity. Scoped exclusive Virtual Objects return VQueue summaries; other modes return entries.
+     */
+    get: operations['get_virtual_object_inbox'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/vqueues/{vqueueId}/inbox': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a VQueue inbox
+     * @description Returns the next bounded set of inbox entries in queue order for one VQueue. State mutations are preserved in the result.
+     */
+    get: operations['get_vqueue_inbox'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/vqueues/{vqueueId}': {
     parameters: {
       query?: never;
@@ -2961,6 +3041,78 @@ export interface components {
       filters?: components['schemas']['InvocationV2FilterItem'][];
       sort?: components['schemas']['InvocationV2Sort'];
       mode?: components['schemas']['InvocationQueryModeV2'];
+    };
+    ListVirtualObjectInstancesRequest: {
+      /** @description Substring matched against the object key and scope. */
+      search?: string;
+      sort?: components['schemas']['VirtualObjectInstanceSort'];
+    };
+    /** @description This opt-in sort scans and aggregates the service's VQueue metadata or legacy inbox before applying the response limit. */
+    VirtualObjectInstanceSort: {
+      /** @enum {string} */
+      field: 'backlog';
+      /** @enum {string} */
+      order: 'DESC';
+    };
+    VirtualObjectInstanceSummary: {
+      key: string;
+      /** @description Part of the virtual object identity. Omitted for an unscoped object. */
+      scope?: string;
+      /** @description Number of exclusive entries waiting for the object lock. The current lock holder and shared invocations are excluded. */
+      backlog: number;
+      lockHolder?: components['schemas']['VirtualObjectLockHolder'];
+    };
+    ListVirtualObjectInstancesResponse: {
+      /** @description Virtual object instances. Unordered unless the request selects descending backlog order. */
+      rows: components['schemas']['VirtualObjectInstanceSummary'][];
+      /** @description True when more matching identities exist than the bounded response contains. */
+      truncated: boolean;
+    };
+    VirtualObjectLockHolder: components['schemas']['VirtualObjectInboxEntry'] & {
+      /** Format: date-time */
+      acquiredAt?: string;
+    };
+    VirtualObjectLockResponse: {
+      supported: boolean;
+      lockHolder?: components['schemas']['VirtualObjectLockHolder'];
+    };
+    VirtualObjectInboxEntry: {
+      id: string;
+      /** @enum {string} */
+      kind: 'invocation' | 'state-mutation' | 'other';
+      invocation?: components['schemas']['Invocation'];
+      stage?: string;
+      status?: string;
+      vqueueId?: string;
+      limitKey?: string;
+      hasLock?: boolean;
+      /** Format: date-time */
+      runAt?: string;
+      sequenceNumber?: number;
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      transitionedAt?: string;
+    };
+    VirtualObjectVqueueSummary: {
+      id: string;
+      limitKey?: string;
+      numInbox: number;
+    };
+    VirtualObjectInboxResponse: {
+      supported: boolean;
+      rows?: components['schemas']['VirtualObjectInboxEntry'][];
+      vqueues?: components['schemas']['VirtualObjectVqueueSummary'][];
+      lock?: components['schemas']['VirtualObjectLockResponse'];
+      /** @description Exact number of entries currently in the inbox for this Virtual Object instance. */
+      inboxCount?: number;
+      limit: number;
+      truncated: boolean;
+    };
+    VirtualObjectInboxSnapshotChangedResponse: {
+      message: string;
+      /** @enum {string} */
+      restate_code: 'snapshot_changed';
     };
     InvocationVqueueStateV2: {
       vqueue_id?: string;
@@ -7644,6 +7796,211 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_virtual_object_instances: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Virtual object service name */
+        service: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListVirtualObjectInstancesRequest'];
+      };
+    };
+    responses: {
+      /** @description Virtual object instances */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListVirtualObjectInstancesResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_virtual_object_lock: {
+    parameters: {
+      query?: {
+        /** @description Virtual Object scope. Omit for an unscoped object. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Virtual Object service name */
+        service: string;
+        /** @description Virtual Object service key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Current exclusive lock holder */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectLockResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_virtual_object_inbox: {
+    parameters: {
+      query: {
+        /** @description Inbox view to load. */
+        mode: 'exclusive' | 'shared';
+        /** @description Virtual Object scope. Omit for an unscoped object. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Virtual Object service name */
+        service: string;
+        /** @description Virtual Object service key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Inbox entries for the Virtual Object identity */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectInboxResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The Virtual Object activity changed while the response was assembled. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectInboxSnapshotChangedResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_vqueue_inbox: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description VQueue id */
+        vqueueId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ordered inbox entries for the VQueue */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectInboxResponse'];
         };
       };
       500: {

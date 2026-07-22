@@ -19,7 +19,7 @@ export function InvocationPopoverContent({
     refetchOnMount: 'always',
   });
   return (
-    <div className="max-w-2xl min-w-72">
+    <div className="min-w-0">
       <DropdownSection
         title={
           <span className="flex min-w-0 items-center gap-1.5">
@@ -35,7 +35,7 @@ export function InvocationPopoverContent({
           </span>
         }
       >
-        <div className="flex flex-wrap items-start gap-3 px-3 py-2.5">
+        <div className="flex flex-wrap items-start gap-x-2 gap-y-3 px-3 py-2.5">
           {isPending ? (
             <div className="flex min-h-6 w-full items-center justify-center gap-1.5 text-xs text-zinc-500">
               <Spinner className="h-4 w-4" />

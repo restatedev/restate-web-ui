@@ -4,6 +4,7 @@ import type { Key } from 'react-aria';
 import { useLocation, useSearchParams } from 'react-router';
 import { useFeatures } from '@restate/data-access/admin-api';
 import { addUserCol, removeUserCol } from './userPreferences';
+import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 
 export const COLUMN_QUERY_PREFIX = 'column';
 
@@ -35,12 +36,14 @@ export const COLUMNS_KEYS = [
   'restarted_from',
   'scope',
   'limit_key',
+  'vqueue_id',
 ] as const;
 export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
 export const COLUMN_NAMES: Record<ColumnKey, string> = {
-  id: 'Id',
-  created_at: 'Created at',
+  id: INVOCATION_TABLE_COLUMN_CONFIG.id.name,
+  vqueue_id: INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id.name,
+  created_at: INVOCATION_TABLE_COLUMN_CONFIG.created_at.name,
   modified_at: 'Modified at',
   duration: 'Duration',
   scheduled_at: 'Scheduled at',
@@ -48,8 +51,8 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   running_at: 'Running since',
   // next_retry_at: 'Next retry',
   completed_at: 'Completed at',
-  target: 'Target',
-  status: 'Status',
+  target: INVOCATION_TABLE_COLUMN_CONFIG.target.name,
+  status: INVOCATION_TABLE_COLUMN_CONFIG.status.name,
   journal_size: 'Journal / Last entry',
   invoked_by: 'Invoked by',
   deployment: 'Deployment',
@@ -58,17 +61,18 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   target_service_ty: 'Service type',
   target_service_name: 'Service name',
   target_service_key: 'Service key',
-  target_handler_name: 'Handler',
+  target_handler_name: INVOCATION_TABLE_COLUMN_CONFIG.target_handler_name.name,
   pinned_service_protocol_version: 'Service Protocol Version',
   actions: 'Actions',
   completion_retention: 'Completion retention',
   journal_retention: 'Journal retention',
   restarted_from: 'Restarted from',
   scope: 'Scope',
-  limit_key: 'Limit key',
+  limit_key: INVOCATION_TABLE_COLUMN_CONFIG.limit_key.name,
 };
 
 const FEATURE_GATED_COLUMNS: Partial<Record<ColumnKey, string>> = {
+  vqueue_id: 'vqueues',
   scope: 'vqueues',
   limit_key: 'vqueues',
 };

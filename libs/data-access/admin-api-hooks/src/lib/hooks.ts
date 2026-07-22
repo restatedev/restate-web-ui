@@ -1751,6 +1751,36 @@ export function useGetVqueue(
   };
 }
 
+export function useGetVqueueInbox(
+  vqueueId?: string,
+  options?: HookQueryOptions<'/query/vqueues/{vqueueId}/inbox', 'get'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/vqueues/{vqueueId}/inbox',
+    'get',
+    {
+      baseUrl,
+      parameters: {
+        path: { vqueueId: vqueueId ?? '' },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: options?.enabled !== false && enabled && Boolean(vqueueId),
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
 export function useGetInvocationJournalEntry(
   invocationId: string,
   entryIndex: number,
@@ -2022,6 +2052,126 @@ export function useGetVirtualObjectQueue(
   return {
     ...results,
     queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListVirtualObjectInstances(
+  serviceName: string,
+  body: components['schemas']['ListVirtualObjectInstancesRequest'],
+  options?: HookQueryOptions<
+    '/query/virtual-objects/{service}/instances',
+    'post'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/virtual-objects/{service}/instances',
+    'post',
+    {
+      baseUrl,
+      resolvedPath: `/query/virtual-objects/${encodeURIComponent(serviceName)}/instances`,
+      parameters: { path: { service: serviceName } },
+      body,
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: Boolean(serviceName) && options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
+  };
+}
+
+export function useGetVirtualObjectLock(
+  serviceName: string,
+  key: string,
+  scope?: string,
+  options?: HookQueryOptions<
+    '/query/virtual-objects/{service}/instances/{key}/lock',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/virtual-objects/{service}/instances/{key}/lock',
+    'get',
+    {
+      baseUrl,
+      resolvedPath: `/query/virtual-objects/${encodeURIComponent(serviceName)}/instances/${encodeURIComponent(key)}/lock`,
+      parameters: {
+        path: { service: serviceName, key },
+        query: { scope },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(serviceName) &&
+      Boolean(key) &&
+      options?.enabled !== false &&
+      enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
+  };
+}
+
+export function useGetVirtualObjectInbox(
+  serviceName: string,
+  key: string,
+  mode: 'exclusive' | 'shared',
+  scope?: string,
+  options?: HookQueryOptions<
+    '/query/virtual-objects/{service}/instances/{key}/inbox',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/virtual-objects/{service}/instances/{key}/inbox',
+    'get',
+    {
+      baseUrl,
+      resolvedPath: `/query/virtual-objects/${encodeURIComponent(serviceName)}/instances/${encodeURIComponent(key)}/inbox`,
+      parameters: {
+        path: { service: serviceName, key },
+        query: { mode, scope },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(serviceName) &&
+      Boolean(key) &&
+      options?.enabled !== false &&
+      enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
   };
 }
 

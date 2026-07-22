@@ -99,6 +99,9 @@ import {
   Layers,
   Blocks,
   LifeBuoy,
+  Component as ComponentIcon,
+  Focus,
+  Scan,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -247,6 +250,9 @@ export const enum IconName {
   LifeBuoy = 'LifeBuoy',
   ScanEye = 'ScanEye',
   HatGlasses = 'HatGlasses',
+  VirtualObject = 'VirtualObject',
+  Scope = 'Scope',
+  ScanBox = 'ScanBox',
 }
 export interface IconsProps {
   name: IconName;
@@ -378,6 +384,9 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.LifeBuoy]: LifeBuoy,
   [IconName.ScanEye]: ScanEye,
   [IconName.HatGlasses]: HatGlasses,
+  [IconName.VirtualObject]: ComponentIcon,
+  [IconName.Scope]: Focus,
+  [IconName.ScanBox]: Scan,
 };
 
 const styles = tv({

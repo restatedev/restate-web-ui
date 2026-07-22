@@ -1,0 +1,8 @@
+{
+  "name": "vqueue-ui",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/vqueue-ui/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {}
+}
