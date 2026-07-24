@@ -22,10 +22,9 @@ import type {
   VQueueStatusSummaryEntry,
   VQueueSummaryFocus,
 } from './VQueueStageSummaryBar';
-import { BreakdownMode } from './BreakdownMode';
 
 const legendStyles = tv({
-  base: 'mx-auto flex w-full max-w-5xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm',
+  base: 'mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm',
 });
 
 const itemStyles = tv({
@@ -77,11 +76,8 @@ export function VQueueStageLegend({
   byStage,
   byStatus,
   focus,
-  breakdownMode,
   isBreakdownSampled,
   areStageCountsPartial,
-  canSampleBreakdown,
-  onBreakdownModeChange,
   isLoading,
   isError,
   className,
@@ -93,11 +89,8 @@ export function VQueueStageLegend({
   byStage: VQueueStageSummaryEntry[];
   byStatus: VQueueStatusSummaryEntry[];
   focus: VQueueSummaryFocus;
-  breakdownMode: 'estimate' | 'exact';
   isBreakdownSampled: boolean;
   areStageCountsPartial?: boolean;
-  canSampleBreakdown: boolean;
-  onBreakdownModeChange: (mode: 'estimate' | 'exact') => void;
   isLoading?: boolean;
   isError?: boolean;
   className?: string;
@@ -160,13 +153,6 @@ export function VQueueStageLegend({
       className={legendStyles({ class: className })}
       aria-label="Invocation stage legend"
     >
-      {canSampleBreakdown && (
-        <BreakdownMode
-          mode={breakdownMode}
-          onChange={onBreakdownModeChange}
-          format="sentence"
-        />
-      )}
       {items.map((item) => {
         const style = STATUS_STYLE[item.name] ?? DEFAULT_STYLE;
         const appearance = isDimmed?.(item.name)

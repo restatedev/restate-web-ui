@@ -13,6 +13,7 @@ import {
   STATUS_LABELS,
   STATUS_STYLE,
 } from './constants';
+import { BreakdownMode } from './BreakdownMode';
 import type { StatusEntry } from './useOrderedStatuses';
 import { useEffect, useState } from 'react';
 
@@ -34,14 +35,20 @@ const INBOX_HIGHLIGHT =
 
 const styles = tv({
   slots: {
-    container: 'flex w-full flex-col items-stretch gap-2',
-    focusRow: 'mx-auto flex items-center gap-1 text-2xs text-zinc-500',
+    container:
+      'grid w-full grid-cols-1 items-center gap-y-2 md:grid-cols-[1fr_auto_1fr]',
+    tabs: 'contents',
+    focusRow:
+      'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-zinc-500 md:col-start-2 md:row-start-1',
+    breakdownControl:
+      'col-start-1 row-start-1 justify-self-center md:justify-self-end md:pr-2',
     focusTabList:
       'gap-0 rounded-xl border-[0.5px] border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.03)]',
     focusTab: 'items-baseline gap-1.5 px-3 py-1.5 font-sans text-xs',
     focusCount: 'font-medium text-gray-500 tabular-nums',
     matches: 'text-3xs leading-none font-medium text-zinc-500',
-    panels: 'w-full overflow-visible',
+    panels:
+      'col-start-1 row-start-3 w-full overflow-visible md:col-span-3 md:row-start-2',
     panel: 'outline-none',
     rail: 'relative flex h-7 w-full items-stretch gap-1',
   },
@@ -118,6 +125,9 @@ export function VQueueStageSummaryBar({
   byStatus,
   focus,
   onFocusChange,
+  breakdownMode,
+  canSampleBreakdown,
+  onBreakdownModeChange,
   isLoading,
   isFetching,
   className,
@@ -132,6 +142,9 @@ export function VQueueStageSummaryBar({
   byStatus: VQueueStatusSummaryEntry[];
   focus: VQueueSummaryFocus;
   onFocusChange: (focus: VQueueSummaryFocus) => void;
+  breakdownMode: 'estimate' | 'exact';
+  canSampleBreakdown: boolean;
+  onBreakdownModeChange: (mode: 'estimate' | 'exact') => void;
   isLoading?: boolean;
   isFetching?: boolean;
   className?: string;
@@ -201,7 +214,9 @@ export function VQueueStageSummaryBar({
         : completedCount;
   const {
     container,
+    tabs,
     focusRow,
+    breakdownControl,
     focusTabList,
     focusTab,
     focusCount,
@@ -242,7 +257,10 @@ export function VQueueStageSummaryBar({
   if (isLoading) {
     return (
       <div className={container({ class: className })}>
-        <div className={skeletonStyles()} aria-hidden />
+        <div
+          className={skeletonStyles({ class: 'col-span-full' })}
+          aria-hidden
+        />
       </div>
     );
   }
@@ -454,53 +472,66 @@ export function VQueueStageSummaryBar({
   );
 
   return (
-    <Tabs
-      selectedTab={selectedFocus}
-      onTabChange={(tab) => {
-        const nextFocus = tab as VQueueSummaryFocus;
-        setPendingFocus(nextFocus);
-        onFocusChange(nextFocus);
-      }}
-      className={container({ class: className })}
-    >
-      <div className={focusRow()}>
-        <TabList aria-label="Invocation breakdown" className={focusTabList()}>
-          <Tab id="all" className={focusTab()}>
-            <span>All</span>
-            {populationCounts.all && (
-              <span className={focusCount()}>{populationCounts.all}</span>
-            )}
-            {selectedFocus === 'all' ? matchesIndicator : null}
-          </Tab>
-          <Tab id="not-completed" className={focusTab()}>
-            <span>Not completed</span>
-            {populationCounts.notCompleted && (
-              <span className={focusCount()}>
-                {populationCounts.notCompleted}
-              </span>
-            )}
-            {selectedFocus === 'not-completed' ? matchesIndicator : null}
-          </Tab>
-          <Tab id="completed" className={focusTab()}>
-            <span>Completed</span>
-            {populationCounts.completed && (
-              <span className={focusCount()}>{populationCounts.completed}</span>
-            )}
-            {selectedFocus === 'completed' ? matchesIndicator : null}
-          </Tab>
-        </TabList>
-      </div>
-      <TabPanels className={panels()}>
-        <TabPanel id="all" className={panel()}>
-          {selectedFocus === 'all' ? summaryRail : null}
-        </TabPanel>
-        <TabPanel id="not-completed" className={panel()}>
-          {selectedFocus === 'not-completed' ? summaryRail : null}
-        </TabPanel>
-        <TabPanel id="completed" className={panel()}>
-          {selectedFocus === 'completed' ? summaryRail : null}
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
+    <div className={container({ class: className })}>
+      {canSampleBreakdown && (
+        <div className={breakdownControl()}>
+          <BreakdownMode
+            mode={breakdownMode}
+            onChange={onBreakdownModeChange}
+            format="sentence"
+          />
+        </div>
+      )}
+      <Tabs
+        selectedTab={selectedFocus}
+        onTabChange={(tab) => {
+          const nextFocus = tab as VQueueSummaryFocus;
+          setPendingFocus(nextFocus);
+          onFocusChange(nextFocus);
+        }}
+        className={tabs()}
+      >
+        <div className={focusRow()}>
+          <TabList aria-label="Invocation breakdown" className={focusTabList()}>
+            <Tab id="all" className={focusTab()}>
+              <span>All</span>
+              {populationCounts.all && (
+                <span className={focusCount()}>{populationCounts.all}</span>
+              )}
+              {selectedFocus === 'all' ? matchesIndicator : null}
+            </Tab>
+            <Tab id="not-completed" className={focusTab()}>
+              <span>Not completed</span>
+              {populationCounts.notCompleted && (
+                <span className={focusCount()}>
+                  {populationCounts.notCompleted}
+                </span>
+              )}
+              {selectedFocus === 'not-completed' ? matchesIndicator : null}
+            </Tab>
+            <Tab id="completed" className={focusTab()}>
+              <span>Completed</span>
+              {populationCounts.completed && (
+                <span className={focusCount()}>
+                  {populationCounts.completed}
+                </span>
+              )}
+              {selectedFocus === 'completed' ? matchesIndicator : null}
+            </Tab>
+          </TabList>
+        </div>
+        <TabPanels className={panels()}>
+          <TabPanel id="all" className={panel()}>
+            {selectedFocus === 'all' ? summaryRail : null}
+          </TabPanel>
+          <TabPanel id="not-completed" className={panel()}>
+            {selectedFocus === 'not-completed' ? summaryRail : null}
+          </TabPanel>
+          <TabPanel id="completed" className={panel()}>
+            {selectedFocus === 'completed' ? summaryRail : null}
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </div>
   );
 }
