@@ -235,14 +235,37 @@ export function buildInboxBreakdownSegments(
   byStatus: StatusEntry[],
   getHref: (statusName: string) => string,
 ): ArcSegment[] {
-  return byStatus
-    .filter((entry) => {
-      const statuses = entry.statuses ?? [entry.name];
-      return (
-        entry.name !== 'inbox' &&
-        statuses.some((status) => GRANULAR_INBOX_STATUSES.has(status))
-      );
-    })
+  const availableEntries = byStatus.filter((entry) => {
+    const statuses = entry.statuses ?? [entry.name];
+    return (
+      entry.name !== 'inbox' &&
+      statuses.some((status) => GRANULAR_INBOX_STATUSES.has(status))
+    );
+  });
+  const usedEntries = new Set<StatusEntry>();
+  const coveredStatuses = new Set<string>();
+  const orderedEntries: StatusEntry[] = [];
+
+  for (const statusName of INBOX_INVOCATION_STATUSES) {
+    if (coveredStatuses.has(statusName)) continue;
+    const entry = availableEntries.find(
+      (candidate) =>
+        !usedEntries.has(candidate) &&
+        (candidate.statuses ?? [candidate.name]).includes(statusName),
+    );
+    if (entry) {
+      usedEntries.add(entry);
+      orderedEntries.push(entry);
+      for (const status of entry.statuses ?? [entry.name]) {
+        coveredStatuses.add(status);
+      }
+    } else if (statusName !== 'ready' && statusName !== 'yielded') {
+      orderedEntries.push({ name: statusName, count: 0 });
+      coveredStatuses.add(statusName);
+    }
+  }
+
+  return orderedEntries
     .filter(
       (entry) => !['ready', 'yielded'].includes(entry.name) || entry.count > 0,
     )
