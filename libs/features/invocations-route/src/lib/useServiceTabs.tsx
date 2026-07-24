@@ -2,7 +2,7 @@ import { useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
 import type { components } from '@restate/data-access/admin-api-spec';
-import { formatNumber } from '@restate/util/intl';
+import { formatApproxPercentage, formatNumber } from '@restate/util/intl';
 import type { ContentPanelTabs } from '@restate/ui/content-panel';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { HoverTooltip } from '@restate/ui/tooltip';
@@ -83,7 +83,19 @@ function selectedServices(
   return { selectedId: ALL_TAB_ID };
 }
 
-function tabLabel(label: string, count: number, isLoading: boolean): ReactNode {
+function tabLabel(
+  label: string,
+  count: number,
+  grandTotal: number,
+  isLoading: boolean,
+  isSampled: boolean,
+): ReactNode {
+  const countLabel = isSampled
+    ? grandTotal > 0 && count !== grandTotal
+      ? formatApproxPercentage(count / grandTotal)
+      : null
+    : formatNumber(count, true);
+
   return (
     <span className="flex items-center gap-1.5">
       <span className="truncate [[role=tab]_&]:max-w-[12ch]" title={label}>
@@ -91,11 +103,11 @@ function tabLabel(label: string, count: number, isLoading: boolean): ReactNode {
       </span>
       {isLoading ? (
         <span className="inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
-      ) : (
+      ) : countLabel ? (
         <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-          {formatNumber(count, true)}
+          {countLabel}
         </span>
-      )}
+      ) : null}
     </span>
   );
 }
@@ -157,8 +169,16 @@ function serviceTabLabel(
   baseUrl: string,
   searchParams: URLSearchParams,
   isLoading: boolean,
+  isSampled: boolean,
+  grandTotal: number,
 ) {
-  const label = tabLabel(service.id, service.count, isLoading);
+  const label = tabLabel(
+    service.id,
+    service.count,
+    grandTotal,
+    isLoading,
+    isSampled,
+  );
   if (isLoading) return label;
 
   const buckets = new Map(
@@ -194,6 +214,7 @@ function serviceTabLabel(
           isStatusDimmed={(statusName) =>
             buckets.get(statusName)?.isIncluded === false
           }
+          isSampled={isSampled}
         />
       }
       size="lg"
@@ -207,6 +228,7 @@ export function useServiceTabs(
   serviceBuckets: ServiceBucket[] | undefined,
   deploymentsData: DeploymentsData | undefined,
   isLoading = false,
+  isSampled = false,
 ): ContentPanelTabs {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
@@ -222,7 +244,7 @@ export function useServiceTabs(
   const items = [
     {
       id: ALL_TAB_ID,
-      label: tabLabel('All services', total, isLoading),
+      label: tabLabel('All services', total, total, isLoading, isSampled),
       href: serviceHref(baseUrl, searchParams),
     },
     ...(selection.services
@@ -235,14 +257,23 @@ export function useServiceTabs(
                 (sum, service) => sum + service.count,
                 0,
               ),
+              total,
               isLoading,
+              isSampled,
             ),
           },
         ]
       : []),
     ...services.map((service) => ({
       id: service.id,
-      label: serviceTabLabel(service, baseUrl, searchParams, isLoading),
+      label: serviceTabLabel(
+        service,
+        baseUrl,
+        searchParams,
+        isLoading,
+        isSampled,
+        total,
+      ),
       href: serviceHref(baseUrl, searchParams, service.id),
     })),
   ];

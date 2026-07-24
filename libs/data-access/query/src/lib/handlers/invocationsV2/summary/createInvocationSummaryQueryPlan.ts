@@ -112,11 +112,13 @@ function createQueryPlanFromSysInvocationStatusAndSysInvocationState(
 function createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState(
   context: QueryContext,
   filters: InvocationFilterV2[],
+  mode: ResolvedInvocationModeV2,
   view: 'all' | 'stages' | 'live-stages' | 'breakdowns',
 ): SummaryQueryPlan {
   const source =
     'sys_invocation_status_and_sys_invocation_state_exact_summary' as const;
   if (
+    mode.type !== 'exact' ||
     view !== 'stages' ||
     filters.some((filter) => filter.field === 'status') ||
     !isInvocationListTableAvailable(context, 'sys_invocation_status') ||
@@ -147,6 +149,7 @@ export function createInvocationSummaryQueryPlan(
     createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState(
       context,
       filters,
+      mode,
       view,
     ),
     createQueryPlanFromSysInvocationStatusAndSysInvocationState(

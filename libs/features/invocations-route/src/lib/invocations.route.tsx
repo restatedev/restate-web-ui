@@ -422,6 +422,7 @@ function Component() {
     serviceBuckets,
     deploymentsData,
     isStageSummaryLoading,
+    Boolean(summaryData?.stageCountsArePartial),
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -633,6 +634,7 @@ function Component() {
             focus={vqueueSummaryFocus}
             breakdownMode={countMode}
             isBreakdownSampled={breakdownIsSampled}
+            areStageCountsPartial={summaryData?.stageCountsArePartial}
             canSampleBreakdown={canSampleBreakdown}
             onBreakdownModeChange={setCountMode}
             isLoading={isStageSummaryLoading}

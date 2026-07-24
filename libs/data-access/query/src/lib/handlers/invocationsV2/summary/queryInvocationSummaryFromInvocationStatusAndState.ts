@@ -10,6 +10,7 @@ import {
   type ResolvedInvocationModeV2,
 } from '../shared';
 import { invocationStatusFilterClauses } from '../list/invocationStatusFilters';
+import { invocationStatusSampleColumns } from '../list/invocationStatusPlan';
 import type {
   InvocationStatusSummaryBucket,
   InvocationSummaryQueryResult,
@@ -51,12 +52,16 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
 ): Promise<InvocationSummaryQueryResult> {
-  const clauses = invocationStatusFilterClauses(filters, 'ss');
-  const exactWhere = clauses.length
-    ? `\n      WHERE ${clauses.join('\n        AND ')}`
+  const exactClauses = invocationStatusFilterClauses(filters, 'ss');
+  const exactWhere = exactClauses.length
+    ? `\n      WHERE ${exactClauses.join('\n        AND ')}`
     : '';
-  const sampledWhere = clauses.length
-    ? `\n        WHERE ${clauses.join('\n          AND ')}`
+  const sampledClauses = invocationStatusFilterClauses(
+    filters,
+    'sampled_invocations',
+  );
+  const sampledWhere = sampledClauses.length
+    ? `\n        WHERE ${sampledClauses.join('\n          AND ')}`
     : '';
   const includesYielded = supportsInvocationV2Vqueues(context);
   const exactStatus = statusExpression('ss', 'sis', includesYielded);
@@ -65,6 +70,12 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
     'sis',
     includesYielded,
   );
+  const sampledColumns = invocationStatusSampleColumns(filters, undefined, [
+    'id',
+    'target_service_name',
+    'status',
+    'completion_result',
+  ]);
 
   const query =
     mode.type === 'sampled'
@@ -75,14 +86,11 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
         COUNT(1) AS count
       FROM (
         SELECT
-          ss.id,
-          ss.target_service_name,
-          ss.status,
-          ss.completion_result
-        FROM sys_invocation_status ss${sampledWhere}
+          ${sampledColumns}
+        FROM sys_invocation_status
         LIMIT ${mode.sampleSize}
       ) sampled_invocations
-      LEFT JOIN sys_invocation_state sis ON sis.id = sampled_invocations.id
+      LEFT JOIN sys_invocation_state sis ON sis.id = sampled_invocations.id${sampledWhere}
       GROUP BY
         sampled_invocations.target_service_name,
         ${sampledStatus}
@@ -160,7 +168,9 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
       }
     }
   }
-  const isPartial = mode.type === 'sampled' && scannedCount >= mode.sampleSize;
+  const isPartial =
+    mode.type === 'sampled' &&
+    (filters.length > 0 || scannedCount >= mode.sampleSize);
   const waitingCount = includesYielded
     ? (statusCounts.get('ready-yielded-backing-off') ?? 0)
     : (statusCounts.get('ready') ?? 0) + (statusCounts.get('backing-off') ?? 0);

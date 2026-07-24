@@ -1,5 +1,4 @@
 import { useProgressiveInvocationSummaryV2 } from '@restate/data-access/admin-api-hooks';
-import { useFeatures } from '@restate/data-access/admin-api';
 import {
   INVOCATION_STATUS_DEFINITIONS,
   type components,
@@ -48,7 +47,6 @@ export function useInvocationSummary({
   countMode: 'estimate' | 'exact';
   breakdownSampleSize: number;
 }) {
-  const hasVqueues = useFeatures().has('vqueues');
   const queryClient = useQueryClient();
   const statusFilter = getStatusFilter(filters);
   const appliedFilters = filters?.filter(({ field }) => field !== 'status');
@@ -116,8 +114,8 @@ export function useInvocationSummary({
     stageCountsReflectFilters: (appliedFilters ?? []).some(
       ({ field }) => field !== 'target_service_name',
     ),
-    breakdownIsSampled: hasVqueues && countMode === 'estimate',
-    canSampleBreakdown: hasVqueues,
+    breakdownIsSampled: countMode === 'estimate',
+    canSampleBreakdown: true,
     byStage: stageBuckets.map((bucket) => ({
       name: bucket.key,
       label: bucket.label,

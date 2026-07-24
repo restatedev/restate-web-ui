@@ -1,11 +1,4 @@
 import { Button } from '@restate/ui/button';
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownPopover,
-  DropdownTrigger,
-} from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
@@ -16,8 +9,9 @@ import {
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import {
+  COMPLETED_STAGE_LEGEND_GRADIENT,
   DEFAULT_STYLE,
-  INBOX_STAGE_GRADIENT,
+  INBOX_STAGE_LEGEND_GRADIENT,
   INVOCATION_SUMMARY_STAGES,
   NOT_COMPLETED_INVOCATION_STAGES,
   STATUS_LABELS,
@@ -28,6 +22,7 @@ import type {
   VQueueStatusSummaryEntry,
   VQueueSummaryFocus,
 } from './VQueueStageSummaryBar';
+import { BreakdownMode } from './BreakdownMode';
 
 const legendStyles = tv({
   base: 'mx-auto flex w-full max-w-5xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm',
@@ -78,51 +73,13 @@ function shouldShowStatus(status: VQueueStatusSummaryEntry) {
   );
 }
 
-function BreakdownMode({
-  mode,
-  onChange,
-}: {
-  mode: 'estimate' | 'exact';
-  onChange: (mode: 'estimate' | 'exact') => void;
-}) {
-  return (
-    <div className="inline-flex items-baseline gap-1 text-2xs text-zinc-500">
-      <span>Breakdown:</span>
-      <Dropdown>
-        <DropdownTrigger>
-          <Button
-            variant="secondary"
-            className="inline-flex shrink-0 items-baseline gap-0.5 bg-gray-50 px-1.5 py-0 text-2xs font-medium shadow-none"
-          >
-            {mode === 'estimate' ? 'estimated' : 'exact'}
-            <Icon
-              name={IconName.ChevronsUpDown}
-              className="h-3 w-3 self-center text-zinc-400"
-            />
-          </Button>
-        </DropdownTrigger>
-        <DropdownPopover>
-          <DropdownMenu
-            selectable
-            selectedItems={[mode]}
-            onSelect={(key) => key && onChange(key as 'estimate' | 'exact')}
-            aria-label="Breakdown count mode"
-          >
-            <DropdownItem value="estimate">Estimated</DropdownItem>
-            <DropdownItem value="exact">Exact</DropdownItem>
-          </DropdownMenu>
-        </DropdownPopover>
-      </Dropdown>
-    </div>
-  );
-}
-
 export function VQueueStageLegend({
   byStage,
   byStatus,
   focus,
   breakdownMode,
   isBreakdownSampled,
+  areStageCountsPartial,
   canSampleBreakdown,
   onBreakdownModeChange,
   isLoading,
@@ -138,6 +95,7 @@ export function VQueueStageLegend({
   focus: VQueueSummaryFocus;
   breakdownMode: 'estimate' | 'exact';
   isBreakdownSampled: boolean;
+  areStageCountsPartial?: boolean;
   canSampleBreakdown: boolean;
   onBreakdownModeChange: (mode: 'estimate' | 'exact') => void;
   isLoading?: boolean;
@@ -152,6 +110,15 @@ export function VQueueStageLegend({
   const completedStage = stageData.get('finished');
   const completedStatusNames = new Set(completedStage?.statuses ?? []);
   const completedCount = completedStage?.count ?? 0;
+  const notCompletedCount = byStage
+    .filter((stage) => stage.name !== 'finished')
+    .reduce((total, stage) => total + stage.count, 0);
+  const focusedCount =
+    focus === 'completed'
+      ? completedCount
+      : focus === 'not-completed'
+        ? notCompletedCount
+        : notCompletedCount + completedCount;
   const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
   const stageNames =
     focus === 'all'
@@ -193,8 +160,12 @@ export function VQueueStageLegend({
       className={legendStyles({ class: className })}
       aria-label="Invocation stage legend"
     >
-      {focus === 'completed' && canSampleBreakdown && (
-        <BreakdownMode mode={breakdownMode} onChange={onBreakdownModeChange} />
+      {canSampleBreakdown && (
+        <BreakdownMode
+          mode={breakdownMode}
+          onChange={onBreakdownModeChange}
+          format="sentence"
+        />
       )}
       {items.map((item) => {
         const style = STATUS_STYLE[item.name] ?? DEFAULT_STYLE;
@@ -217,11 +188,13 @@ export function VQueueStageLegend({
           }));
         const itemBreakdownLoading = isBreakdownLoading?.(item.name) ?? false;
         const itemBreakdownError = isBreakdownError?.(item.name) ?? false;
+        const countIsSampled =
+          areStageCountsPartial ||
+          (focus === 'completed' &&
+            (isBreakdownSampled || item.breakdownIsPartial));
         const count =
-          focus === 'completed' &&
-          (isBreakdownSampled || item.breakdownIsPartial) &&
-          completedCount > 0
-            ? formatApproxPercentage(item.count / completedCount)
+          countIsSampled && focusedCount > 0
+            ? formatApproxPercentage(item.count / focusedCount)
             : formatNumber(item.count, true);
 
         return (
@@ -241,7 +214,11 @@ export function VQueueStageLegend({
                 style={{
                   backgroundColor: style.fillLight,
                   backgroundImage:
-                    item.name === 'inbox' ? INBOX_STAGE_GRADIENT : undefined,
+                    item.name === 'inbox'
+                      ? INBOX_STAGE_LEGEND_GRADIENT
+                      : item.name === 'finished'
+                        ? COMPLETED_STAGE_LEGEND_GRADIENT
+                        : undefined,
                   borderColor: style.stroke,
                 }}
               />
@@ -260,7 +237,7 @@ export function VQueueStageLegend({
                     disabled={Boolean(isLoading || isError)}
                   >
                     <Icon
-                      name={IconName.ChevronDown}
+                      name={IconName.ChevronsUpDown}
                       className="h-3.5 w-3.5 text-gray-400"
                     />
                   </Button>
@@ -273,19 +250,24 @@ export function VQueueStageLegend({
                           {item.label}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {formatNumber(item.count, true)}{' '}
-                          {formatPlurals(item.count, {
-                            one: 'invocation',
-                            other: 'invocations',
-                          })}
+                          {areStageCountsPartial && focusedCount > 0 ? (
+                            <>
+                              {formatApproxPercentage(
+                                item.count / focusedCount,
+                              )}{' '}
+                              of invocations
+                            </>
+                          ) : (
+                            <>
+                              {formatNumber(item.count, true)}{' '}
+                              {formatPlurals(item.count, {
+                                one: 'invocation',
+                                other: 'invocations',
+                              })}
+                            </>
+                          )}
                         </div>
                       </div>
-                      {canSampleBreakdown && (
-                        <BreakdownMode
-                          mode={breakdownMode}
-                          onChange={onBreakdownModeChange}
-                        />
-                      )}
                     </div>
                     {itemBreakdownError ? (
                       <div className="rounded-lg bg-red-50 px-2.5 py-2 text-xs text-red-700">
