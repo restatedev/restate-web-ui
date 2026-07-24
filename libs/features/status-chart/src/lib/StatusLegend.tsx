@@ -23,6 +23,7 @@ import {
 } from './constants';
 import { type StatusEntry } from './useOrderedStatuses';
 import { type ArcSegment } from './heroSegments';
+import { StageBreakdownPopoverContent } from './StageBreakdownPopoverContent';
 
 export const legendStyles = tv({
   base: 'flex items-start outline-none',
@@ -343,60 +344,15 @@ export function StatusLegend({
               </Button>
             </PopoverTrigger>
             <PopoverContent placement="bottom" className="w-72">
-              <div className="p-3">
-                <div className="mb-2">
-                  <div className="text-sm font-medium text-gray-800">
-                    {breakdownRow.label} breakdown
-                  </div>
-                  {breakdown.isSampled && (
-                    <div className="text-xs text-gray-500">
-                      Estimated from a sample
-                    </div>
-                  )}
-                </div>
-                {breakdown.isError ? (
-                  <div className="rounded-lg bg-red-50 px-2.5 py-2 text-xs text-red-700">
-                    Could not load this breakdown.
-                  </div>
-                ) : breakdown.isLoading ? (
-                  <div className="h-16 animate-pulse rounded-lg bg-gray-100" />
-                ) : (
-                  <div className="flex flex-col gap-0.5">
-                    {breakdown.items.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        preserveQueryParams={false}
-                        variant="secondary"
-                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-gray-700 no-underline hover:bg-black/5"
-                      >
-                        <span
-                          className={bulletStyles({
-                            state: 'success',
-                            borderType: item.borderType ? 'dashed' : 'solid',
-                          })}
-                          style={{
-                            backgroundColor: item.fillLight,
-                            borderColor: item.stroke,
-                          }}
-                        />
-                        <span>{item.label}</span>
-                        <span className="ml-auto inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
-                          {breakdown.isSampled && breakdownTotal > 0
-                            ? formatApproxPercentage(
-                                item.count / breakdownTotal,
-                              )
-                            : formatNumber(item.count, true)}
-                        </span>
-                        <Icon
-                          name={IconName.ChevronRight}
-                          className="h-3.5 w-3.5 shrink-0 text-gray-400"
-                        />
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <StageBreakdownPopoverContent
+                label={breakdownRow.label}
+                count={breakdownTotal}
+                populationTotal={total}
+                items={breakdown.items}
+                isLoading={breakdown.isLoading}
+                isError={breakdown.isError}
+                valuesAreSampled={breakdown.isSampled}
+              />
             </PopoverContent>
           </Popover>
         </div>

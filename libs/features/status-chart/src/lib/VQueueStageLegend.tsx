@@ -2,11 +2,7 @@ import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import {
-  formatApproxPercentage,
-  formatNumber,
-  formatPlurals,
-} from '@restate/util/intl';
+import { formatApproxPercentage, formatNumber } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import {
   COMPLETED_STAGE_LEGEND_GRADIENT,
@@ -22,6 +18,7 @@ import type {
   VQueueStatusSummaryEntry,
   VQueueSummaryFocus,
 } from './VQueueStageSummaryBar';
+import { StageBreakdownPopoverContent } from './StageBreakdownPopoverContent';
 
 const legendStyles = tv({
   base: 'mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm',
@@ -229,83 +226,21 @@ export function VQueueStageLegend({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent placement="bottom" className="w-72">
-                  <div className="p-3">
-                    <div className="mb-2 flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-800">
-                          {item.label}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {areStageCountsPartial && focusedCount > 0 ? (
-                            <>
-                              {formatApproxPercentage(
-                                item.count / focusedCount,
-                              )}{' '}
-                              of invocations
-                            </>
-                          ) : (
-                            <>
-                              {formatNumber(item.count, true)}{' '}
-                              {formatPlurals(item.count, {
-                                one: 'invocation',
-                                other: 'invocations',
-                              })}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    {itemBreakdownError ? (
-                      <div className="rounded-lg bg-red-50 px-2.5 py-2 text-xs text-red-700">
-                        Could not load this breakdown.
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-0.5">
-                        {breakdownStatuses.map((status) => (
-                          <Link
-                            key={status.name}
-                            href={getHref(status.name)}
-                            preserveQueryParams={false}
-                            variant="secondary"
-                            className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-gray-700 no-underline hover:bg-black/5"
-                            disabled={itemBreakdownLoading}
-                          >
-                            <span
-                              className={bulletStyles({
-                                borderType: status.borderType
-                                  ? 'dashed'
-                                  : 'solid',
-                                loading: itemBreakdownLoading,
-                              })}
-                              style={{
-                                backgroundColor: status.fillLight,
-                                borderColor: status.stroke,
-                              }}
-                            />
-                            <span>{status.label}</span>
-                            <span
-                              className={countStyles({
-                                loading: itemBreakdownLoading,
-                                class: 'ml-auto',
-                              })}
-                            >
-                              {(isBreakdownSampled ||
-                                item.breakdownIsPartial) &&
-                              item.count > 0
-                                ? formatApproxPercentage(
-                                    status.count / item.count,
-                                  )
-                                : formatNumber(status.count, true)}
-                            </span>
-                            <Icon
-                              name={IconName.ChevronRight}
-                              className="h-3.5 w-3.5 shrink-0 text-gray-400"
-                            />
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <StageBreakdownPopoverContent
+                    label={item.label}
+                    count={item.count}
+                    populationTotal={focusedCount}
+                    countIsPartial={areStageCountsPartial}
+                    items={breakdownStatuses.map((status) => ({
+                      ...status,
+                      href: getHref(status.name),
+                    }))}
+                    isLoading={itemBreakdownLoading}
+                    isError={itemBreakdownError}
+                    valuesAreSampled={
+                      isBreakdownSampled || item.breakdownIsPartial
+                    }
+                  />
                 </PopoverContent>
               </Popover>
             )}
