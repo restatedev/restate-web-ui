@@ -1,11 +1,14 @@
+import {
+  getUserBreakdownCountMode,
+  setUserBreakdownCountMode,
+  type BreakdownCountMode,
+} from '@restate/features/user-preference';
 import { COLUMNS_KEYS, type ColumnKey } from './columns';
 import { SORT_COLUMN_KEYS } from './useInvocationsQueryFilters';
 
 const USER_COLS_KEY = 'invocations-user-cols';
 const USER_SORT_KEY = 'invocations-user-sort';
-const USER_COUNT_MODE_KEY = 'invocations-count-mode';
-
-export type CountMode = 'estimate' | 'exact';
+export type CountMode = BreakdownCountMode;
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -62,12 +65,9 @@ export function setUserLastSort(sort: UserSort) {
 }
 
 export function getUserCountMode(): CountMode {
-  const parsed = safeParse<CountMode>(
-    localStorage.getItem(USER_COUNT_MODE_KEY),
-  );
-  return parsed === 'exact' ? 'exact' : 'estimate';
+  return getUserBreakdownCountMode();
 }
 
 export function setUserCountMode(mode: CountMode) {
-  localStorage.setItem(USER_COUNT_MODE_KEY, JSON.stringify(mode));
+  setUserBreakdownCountMode(mode);
 }

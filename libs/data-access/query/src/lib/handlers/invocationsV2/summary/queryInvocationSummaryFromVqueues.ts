@@ -17,6 +17,7 @@ import {
 } from '../shared';
 import { getInvocationListFieldOnTable } from '../invocationListFields';
 import { invocationStatusFilterClauses } from '../list/invocationStatusFilters';
+import { invocationStatusSampleColumns } from '../list/invocationStatusPlan';
 import type {
   InvocationStatusSummaryBucket,
   InvocationSummaryQueryResult,
@@ -117,8 +118,7 @@ function matchingQueueFilter(
 ) {
   const filtersSql = metadataFilterClauses(filters, 'vm');
   if (filtersSql.length === 0) return '';
-  return `
-        AND ${vqueueAlias}.id IN (
+  return `${vqueueAlias}.id IN (
           SELECT vm.id
           FROM sys_vqueue_meta vm
           WHERE ${filtersSql.join('\n            AND ')}
@@ -175,12 +175,31 @@ export async function queryInvocationSummaryFromVqueues(
       GROUP BY vm.service_name
     `.trim();
 
+  const sampledInboxQueueFilter = matchingQueueFilter(
+    filters,
+    'num_inbox',
+    'sampled_inbox',
+  );
+  const sampledFinishedQueueFilter = matchingQueueFilter(
+    filters,
+    'num_finished',
+    'sampled_finished',
+  );
   const inboxQueueFilter = matchingQueueFilter(filters, 'num_inbox', 'v');
   const finishedQueueFilter = matchingQueueFilter(filters, 'num_finished', 'v');
   const finishedInvocationStatusClauses = [
     "ss.status = 'completed'",
     ...invocationStatusFilterClauses(filters, 'ss'),
   ];
+  const sampledFinishedInvocationStatusClauses = invocationStatusFilterClauses(
+    filters,
+    'sampled_finished',
+  );
+  const sampledFinishedInvocationStatusColumns = invocationStatusSampleColumns(
+    filters,
+    undefined,
+    ['target_service_name', 'completion_result'],
+  );
 
   const inboxQuery =
     mode.type === 'sampled'
@@ -189,12 +208,18 @@ export async function queryInvocationSummaryFromVqueues(
         sampled_inbox.status,
         COUNT(1) AS count
       FROM (
-        SELECT v.status
+        SELECT
+          v.id,
+          v.status
         FROM sys_vqueues v
         WHERE v.stage = 'inbox'
-          AND v.entry_kind = 'invocation'${inboxQueueFilter}
+          AND v.entry_kind = 'invocation'
         LIMIT ${mode.sampleSize}
-      ) sampled_inbox
+      ) sampled_inbox${
+        sampledInboxQueueFilter
+          ? `\n      WHERE ${sampledInboxQueueFilter}`
+          : ''
+      }
       GROUP BY sampled_inbox.status
     `.trim()
       : `
@@ -203,7 +228,9 @@ export async function queryInvocationSummaryFromVqueues(
         COUNT(1) AS count
       FROM sys_vqueues v
       WHERE v.stage = 'inbox'
-        AND v.entry_kind = 'invocation'${inboxQueueFilter}
+        AND v.entry_kind = 'invocation'${
+          inboxQueueFilter ? `\n        AND ${inboxQueueFilter}` : ''
+        }
       GROUP BY v.status
     `.trim();
 
@@ -219,12 +246,15 @@ export async function queryInvocationSummaryFromVqueues(
         COUNT(1) AS count
       FROM (
         SELECT
-          ss.target_service_name,
-          ss.completion_result
+          ${sampledFinishedInvocationStatusColumns}
         FROM sys_invocation_status ss
-        WHERE ${finishedInvocationStatusClauses.join('\n          AND ')}
+        WHERE ss.status = 'completed'
         LIMIT ${mode.sampleSize}
-      ) sampled_finished
+      ) sampled_finished${
+        sampledFinishedInvocationStatusClauses.length > 0
+          ? `\n      WHERE ${sampledFinishedInvocationStatusClauses.join('\n        AND ')}`
+          : ''
+      }
       GROUP BY
         sampled_finished.target_service_name,
         CASE
@@ -256,12 +286,18 @@ export async function queryInvocationSummaryFromVqueues(
         sampled_finished.status,
         COUNT(1) AS count
       FROM (
-        SELECT v.status
+        SELECT
+          v.id,
+          v.status
         FROM sys_vqueues v
         WHERE v.stage = 'finished'
-          AND v.entry_kind = 'invocation'${finishedQueueFilter}
+          AND v.entry_kind = 'invocation'
         LIMIT ${mode.sampleSize}
-      ) sampled_finished
+      ) sampled_finished${
+        sampledFinishedQueueFilter
+          ? `\n      WHERE ${sampledFinishedQueueFilter}`
+          : ''
+      }
       GROUP BY sampled_finished.status
     `.trim();
   } else {
@@ -271,7 +307,9 @@ export async function queryInvocationSummaryFromVqueues(
         COUNT(1) AS count
       FROM sys_vqueues v
       WHERE v.stage = 'finished'
-        AND v.entry_kind = 'invocation'${finishedQueueFilter}
+        AND v.entry_kind = 'invocation'${
+          finishedQueueFilter ? `\n        AND ${finishedQueueFilter}` : ''
+        }
       GROUP BY v.status
     `.trim();
   }

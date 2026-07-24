@@ -36,8 +36,9 @@ export function invocationStateOnlyStatuses(
 export function invocationStatusSampleColumns(
   filters: InvocationFilterV2[],
   sortField: InvocationSortV2['field'] | undefined,
+  requiredColumns: string[] = ['id'],
 ): string {
-  const columns = new Set(['id']);
+  const columns = new Set(requiredColumns);
   for (const filter of filters) {
     const tableField = getInvocationListFieldOnTable(
       filter.field,

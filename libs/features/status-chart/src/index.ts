@@ -6,5 +6,7 @@ export * from './lib/StatusLegend';
 export * from './lib/StatusSummaryBar';
 export * from './lib/VQueueStageSummaryBar';
 export * from './lib/VQueueStageLegend';
+export * from './lib/BreakdownMode';
+export * from './lib/ChartControlTrigger';
 export * from './lib/ServiceStatusBar';
 export * from './lib/InvocationsBreakdownTooltipContent';

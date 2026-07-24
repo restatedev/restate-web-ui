@@ -337,7 +337,7 @@ export function StatusLegend({
                 disabled={state !== 'success'}
               >
                 <Icon
-                  name={IconName.ChevronDown}
+                  name={IconName.ChevronsUpDown}
                   className="h-3.5 w-3.5 shrink-0 text-gray-400"
                 />
               </Button>

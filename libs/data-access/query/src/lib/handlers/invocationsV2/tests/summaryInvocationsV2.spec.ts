@@ -474,7 +474,9 @@ describe('POST /query/v2/invocations/summary', () => {
                 sampled_inbox.status,
                 COUNT(1) AS count
               FROM (
-                SELECT v.status
+                SELECT
+                  v.id,
+                  v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'inbox'
                   AND v.entry_kind = 'invocation'
@@ -485,7 +487,9 @@ describe('POST /query/v2/invocations/summary', () => {
                 sampled_finished.status,
                 COUNT(1) AS count
               FROM (
-                SELECT v.status
+                SELECT
+                  v.id,
+                  v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'finished'
                   AND v.entry_kind = 'invocation'
@@ -573,37 +577,41 @@ describe('POST /query/v2/invocations/summary', () => {
                 sampled_inbox.status,
                 COUNT(1) AS count
               FROM (
-                SELECT v.status
+                SELECT
+                  v.id,
+                  v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'inbox'
                   AND v.entry_kind = 'invocation'
-                AND v.id IN (
+                LIMIT 10
+              ) sampled_inbox
+              WHERE sampled_inbox.id IN (
                   SELECT vm.id
                   FROM sys_vqueue_meta vm
                   WHERE vm.scope = 'susp-10'
                     AND vm.num_inbox > 0
                   LIMIT 100000
                 )
-                LIMIT 10
-              ) sampled_inbox
               GROUP BY sampled_inbox.status",
           "SELECT
                 sampled_finished.status,
                 COUNT(1) AS count
               FROM (
-                SELECT v.status
+                SELECT
+                  v.id,
+                  v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'finished'
                   AND v.entry_kind = 'invocation'
-                AND v.id IN (
+                LIMIT 10
+              ) sampled_finished
+              WHERE sampled_finished.id IN (
                   SELECT vm.id
                   FROM sys_vqueue_meta vm
                   WHERE vm.scope = 'susp-10'
                     AND vm.num_finished > 0
                   LIMIT 100000
                 )
-                LIMIT 10
-              ) sampled_finished
               GROUP BY sampled_finished.status",
         ]
       `);
@@ -831,7 +839,11 @@ describe('POST /query/v2/invocations/summary', () => {
           bucket: 'ready-yielded-backing-off',
           count: 3,
         },
-        { service_name: 'Greeter', bucket: 'running', count: 2 },
+        {
+          service_name: 'Greeter',
+          bucket: 'running',
+          count: 2,
+        },
       ]);
 
       const response = await post('/v2/invocations/summary', {
@@ -862,15 +874,12 @@ describe('POST /query/v2/invocations/summary', () => {
                 COUNT(1) AS count
               FROM (
                 SELECT
-                  ss.id,
-                  ss.target_service_name,
-                  ss.status,
-                  ss.completion_result
-                FROM sys_invocation_status ss
-                WHERE ss.target_handler_name = 'run'
+                  id, target_service_name, status, completion_result, target_handler_name
+                FROM sys_invocation_status
                 LIMIT 5
               ) sampled_invocations
               LEFT JOIN sys_invocation_state sis ON sis.id = sampled_invocations.id
+                WHERE sampled_invocations.target_handler_name = 'run'
               GROUP BY
                 sampled_invocations.target_service_name,
                 CASE
@@ -906,7 +915,7 @@ describe('POST /query/v2/invocations/summary', () => {
               value: ['Checkout'],
             },
           ],
-          mode: { type: 'sampled', sampleSize: 1_000_000 },
+          mode: { type: 'exact' },
           view: 'stages',
         },
         NO_VQUEUE_HEADERS,
@@ -972,13 +981,89 @@ describe('POST /query/v2/invocations/summary', () => {
       );
     });
 
+    it('always marks a filtered legacy sample partial', async () => {
+      setResponder(() => [
+        {
+          service_name: 'Checkout',
+          bucket: 'pending',
+          count: 1,
+        },
+        {
+          service_name: 'Checkout',
+          bucket: 'running',
+          count: 1,
+        },
+      ]);
+
+      const response = await post(
+        '/v2/invocations/summary',
+        {
+          filters: [
+            {
+              type: 'STRING',
+              field: 'target_handler_name',
+              operation: 'EQUALS',
+              value: 'run',
+            },
+          ],
+          mode: { type: 'sampled', sampleSize: 5 },
+          view: 'stages',
+        },
+        NO_VQUEUE_HEADERS,
+      );
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                sampled_invocations.target_service_name AS service_name,
+                CASE
+                  WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
+                  WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN sampled_invocations.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
+                  WHEN sampled_invocations.status = 'invoked' THEN 'ready'
+                  WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'
+                  WHEN sampled_invocations.status = 'completed' THEN 'failed'
+                  ELSE sampled_invocations.status
+                END AS bucket,
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  id, target_service_name, status, completion_result, target_handler_name
+                FROM sys_invocation_status
+                LIMIT 5
+              ) sampled_invocations
+              LEFT JOIN sys_invocation_state sis ON sis.id = sampled_invocations.id
+                WHERE sampled_invocations.target_handler_name = 'run'
+              GROUP BY
+                sampled_invocations.target_service_name,
+                CASE
+                  WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
+                  WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN sampled_invocations.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
+                  WHEN sampled_invocations.status = 'invoked' THEN 'ready'
+                  WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'
+                  WHEN sampled_invocations.status = 'completed' THEN 'failed'
+                  ELSE sampled_invocations.status
+                END",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'sampled',
+        sample: { sampleSize: 5 },
+        total: 2,
+        isPartial: true,
+        stageCountsArePartial: true,
+      });
+    });
+
     it('limits a legacy summary to the selected rolling range', async () => {
       setResponder(() => []);
 
       const response = await post(
         '/v2/invocations/summary',
         {
-          mode: { type: 'sampled', sampleSize: 1_000_000 },
+          mode: { type: 'exact' },
           range: 'PT1H',
           view: 'stages',
         },
@@ -1066,6 +1151,93 @@ describe('POST /query/v2/invocations/summary', () => {
   });
 
   describe('skipped completed VQueue migration', () => {
+    it('samples completed invocations before applying a service filter', async () => {
+      setResponder((statement) =>
+        statement.includes('FROM sys_vqueue_meta')
+          ? [
+              {
+                service_name: 'Checkout',
+                inbox: 0,
+                running: 0,
+                suspended: 0,
+                paused: 0,
+              },
+            ]
+          : [
+              {
+                service_name: 'Checkout',
+                status: 'succeeded',
+                count: 2,
+              },
+            ],
+      );
+
+      const response = await post(
+        '/v2/invocations/summary',
+        {
+          filters: [
+            {
+              type: 'STRING_LIST',
+              field: 'target_service_name',
+              operation: 'IN',
+              value: ['Checkout'],
+            },
+          ],
+          mode: { type: 'sampled', sampleSize: 5 },
+          view: 'stages',
+        },
+        VQUEUE_SKIP_COMPLETED_HEADERS,
+      );
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                vm.service_name,
+                SUM(vm.num_inbox) AS inbox,
+                SUM(vm.num_running) AS running,
+                SUM(vm.num_suspended) AS suspended,
+                SUM(vm.num_paused) AS paused
+              FROM sys_vqueue_meta vm
+              WHERE vm.service_name IN ('Checkout')
+                AND (
+                  vm.num_inbox > 0
+                  OR vm.num_running > 0
+                  OR vm.num_suspended > 0
+                  OR vm.num_paused > 0
+                )
+              GROUP BY vm.service_name",
+          "SELECT
+                sampled_finished.target_service_name AS service_name,
+                CASE
+                  WHEN sampled_finished.completion_result = 'success' THEN 'succeeded'
+                  ELSE 'failed'
+                END AS status,
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  target_service_name, completion_result
+                FROM sys_invocation_status ss
+                WHERE ss.status = 'completed'
+                LIMIT 5
+              ) sampled_finished
+              WHERE sampled_finished.target_service_name IN ('Checkout')
+              GROUP BY
+                sampled_finished.target_service_name,
+                CASE
+                  WHEN sampled_finished.completion_result = 'success' THEN 'succeeded'
+                  ELSE 'failed'
+                END",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'sampled',
+        total: 2,
+        isPartial: true,
+        stageCountsArePartial: true,
+      });
+    });
+
     it('returns live stages without waiting for completed invocation status', async () => {
       setResponder(() => [
         {

@@ -474,12 +474,14 @@ export function EngineCore({
   onPress,
   className,
   aboveServer,
+  belowServer,
 }: {
   serverRef: React.RefObject<HTMLDivElement | null>;
   status: FerrofluidStatus;
   onPress?: () => void;
   className?: string;
   aboveServer?: ReactNode;
+  belowServer?: ReactNode;
 }) {
   return (
     <div className={coreStyles({ class: className })}>
@@ -492,6 +494,11 @@ export function EngineCore({
           <RestateServer status={status} onPress={onPress} appearance="solid" />
         </div>
       </div>
+      {belowServer && (
+        <div className="pointer-events-auto absolute top-full z-40 mt-6 flex justify-center">
+          {belowServer}
+        </div>
+      )}
     </div>
   );
 }

@@ -149,7 +149,7 @@ type InvocationServiceSummary =
   components['schemas']['InvocationServiceSummaryBucketV2'];
 
 const summaryHeaderStyles = tv({
-  base: 'mx-auto flex w-full max-w-5xl flex-col items-stretch gap-2 px-4',
+  base: 'mx-auto flex w-full max-w-7xl flex-col items-stretch gap-2 px-4',
 });
 
 // Segmented control matching the JournalDetailToggle's inset-container +
@@ -422,6 +422,7 @@ function Component() {
     serviceBuckets,
     deploymentsData,
     isStageSummaryLoading,
+    Boolean(summaryData?.stageCountsArePartial),
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -618,6 +619,9 @@ function Component() {
             byStatus={byStatus}
             focus={vqueueSummaryFocus}
             onFocusChange={changeVqueueSummaryFocus}
+            breakdownMode={countMode}
+            canSampleBreakdown={canSampleBreakdown}
+            onBreakdownModeChange={setCountMode}
             isLoading={isStageSummaryLoading}
             isFetching={isStageFetching}
             isDimmed={statusDim}
@@ -631,10 +635,8 @@ function Component() {
             byStage={byStage}
             byStatus={byStatus}
             focus={vqueueSummaryFocus}
-            breakdownMode={countMode}
             isBreakdownSampled={breakdownIsSampled}
-            canSampleBreakdown={canSampleBreakdown}
-            onBreakdownModeChange={setCountMode}
+            areStageCountsPartial={summaryData?.stageCountsArePartial}
             isLoading={isStageSummaryLoading}
             isError={isSummaryError}
             isDimmed={statusDim}

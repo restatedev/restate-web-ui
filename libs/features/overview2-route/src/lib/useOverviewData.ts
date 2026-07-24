@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   getInvocationSummaryStageCount,
   getServiceInvocationStageBreakdownV2,
@@ -12,6 +12,7 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import {
   getOverviewRefreshMeta,
+  hasCompleteVqueueInvocationPopulation,
   useFeatures,
 } from '@restate/data-access/admin-api';
 import {
@@ -21,14 +22,29 @@ import {
 } from '@restate/features/system-health';
 import { useRange, useRestateContext } from '@restate/features/restate-context';
 import {
+  getUserBreakdownCountMode,
+  setUserBreakdownCountMode,
+  type BreakdownCountMode,
+} from '@restate/features/user-preference';
+import {
   getOverviewRefetchInterval,
   INITIAL_OVERVIEW_REFETCH_INTERVAL,
 } from './overviewPolling';
+import { normalizeCompletionTimeRange } from './completionBuckets';
 
 export function useOverviewData() {
-  const hasVqueues = useFeatures().has('vqueues');
-  const range = useRange();
-  const summaryRange = range === 'P1D' || range === 'ALL' ? range : 'PT1H';
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const hasCompleteVqueuePopulation =
+    hasCompleteVqueueInvocationPopulation(features);
+  const timeRange = normalizeCompletionTimeRange(useRange());
+  const [breakdownMode, setBreakdownModeState] = useState<BreakdownCountMode>(
+    getUserBreakdownCountMode,
+  );
+  const setBreakdownMode = useCallback((mode: BreakdownCountMode) => {
+    setUserBreakdownCountMode(mode);
+    setBreakdownModeState(mode);
+  }, []);
   const overviewRefetchIntervalRef = useRef(INITIAL_OVERVIEW_REFETCH_INTERVAL);
   const overviewRefetchInterval = useCallback(
     () => overviewRefetchIntervalRef.current,
@@ -44,8 +60,11 @@ export function useOverviewData() {
   const { data: servicesMap } = useListServices();
   const summary = useProgressiveInvocationSummaryV2(
     {
-      mode: { type: 'sampled', sampleSize: 1_000_000 },
-      ...(!hasVqueues && { range: summaryRange }),
+      mode:
+        hasVqueues && breakdownMode === 'estimate'
+          ? { type: 'sampled', sampleSize: 1_000_000 }
+          : { type: 'exact' },
+      ...(!hasVqueues && { range: timeRange }),
     },
     {
       refetchInterval: (query) => {
@@ -182,7 +201,12 @@ export function useOverviewData() {
     isDeploymentStatusLoading,
     isSummaryLoading,
     hasVqueues,
-    isBreakdownSampled: hasVqueues,
+    hasCompleteVqueuePopulation,
+    timeRange,
+    breakdownMode,
+    setBreakdownMode,
+    canSampleBreakdown: hasVqueues,
+    isBreakdownSampled: hasVqueues && breakdownMode === 'estimate',
     isInboxBreakdownLoading,
     isInboxBreakdownError: summary.isBreakdownError('inbox'),
     isCompletedBreakdownLoading: summary.isBreakdownLoading('finished'),

@@ -329,14 +329,21 @@ async function summaryInvocationsLegacy(
       }),
       excludeCompleted,
     );
-    const statusColumns =
-      'id, status, completion_result, target_service_name, target_handler_name';
+    const statusColumns = new Set([
+      'id',
+      'status',
+      'completion_result',
+      'target_service_name',
+      'target_handler_name',
+      ...statusTableFilters.map((filter) =>
+        filter.field === 'deployment' ? 'pinned_deployment_id' : filter.field,
+      ),
+    ]);
     const source = sampled
-      ? `(SELECT ${statusColumns} FROM sys_invocation_status ${where} LIMIT ${sampleSize})`
+      ? `(SELECT ${[...statusColumns].join(', ')} FROM sys_invocation_status LIMIT ${sampleSize})`
       : 'sys_invocation_status';
-    const outerWhere = sampled ? '' : where;
     const statusCase = `CASE WHEN status = 'invoked' AND vq.vq_status = 'backing-off' THEN 'backing-off' WHEN status = 'invoked' AND vq.vq_status = 'yielded' THEN 'ready' WHEN status = 'invoked' THEN 'running' WHEN status = 'inboxed' THEN 'pending' ELSE status END`;
-    query = `SELECT ${statusCase} AS status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${source} si LEFT JOIN (SELECT entry_id, status AS vq_status FROM sys_vqueues WHERE stage = 'inbox' AND status IN ('backing-off', 'yielded')) vq ON vq.entry_id = si.id ${outerWhere} GROUP BY ${statusCase}, completion_result, target_service_name, target_handler_name`;
+    query = `SELECT ${statusCase} AS status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${source} si LEFT JOIN (SELECT entry_id, status AS vq_status FROM sys_vqueues WHERE stage = 'inbox' AND status IN ('backing-off', 'yielded')) vq ON vq.entry_id = si.id ${where} GROUP BY ${statusCase}, completion_result, target_service_name, target_handler_name`;
   } else {
     const where = withInflightOnly(
       convertInvocationsFilters(baseFilters),
@@ -383,14 +390,20 @@ async function summaryInvocationsSplit(
 ) {
   const baseFilters = filters.filter((f) => !HIGHLIGHT_FIELDS.has(f.field));
   const where = convertInvocationsFilters(baseFilters);
+  const statusColumns = new Set([
+    'status',
+    'completion_result',
+    'target_service_name',
+    'target_handler_name',
+    ...baseFilters.map((filter) => filter.field),
+  ]);
 
   const statusSource = sampled
-    ? `(SELECT status, completion_result, target_service_name, target_handler_name FROM sys_invocation_status ${where} LIMIT ${sampleSize})`
+    ? `(SELECT ${[...statusColumns].join(', ')} FROM sys_invocation_status LIMIT ${sampleSize})`
     : `sys_invocation_status`;
-  const statusWhere = sampled ? '' : where;
 
   const countsPromise = this.query(
-    `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${statusSource} ${statusWhere} GROUP BY status, completion_result, target_service_name, target_handler_name`,
+    `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${statusSource} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`,
   );
 
   const statePromise = this.query(

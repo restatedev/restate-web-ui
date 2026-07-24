@@ -16,6 +16,12 @@ export {
 export const INBOX_STAGE_GRADIENT =
   'linear-gradient(to right, #e4e4e7 0%, #f4f4f5 22%, #fef9c3 65%, #fde68a 100%)';
 
+export const INBOX_STAGE_LEGEND_GRADIENT =
+  'linear-gradient(to right, #e4e4e7 0 50%, #fef9c3 50% 100%)';
+
+export const COMPLETED_STAGE_LEGEND_GRADIENT =
+  'linear-gradient(to right, #86efac 0 50%, #fca5a5 50% 100%)';
+
 export const STATUS_STYLE: Record<
   string,
   {
