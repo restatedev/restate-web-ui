@@ -2,6 +2,8 @@
 
 ## Skill Notes
 
+- 2026-07-27: Standalone `tsc -p libs/features/invocation-ui/tsconfig.spec.json --noEmit` currently fails on pre-existing `globalThis` index-signature errors throughout `admin-api-hooks/src/lib/batchHooks.ts`; use the owning Nx typecheck as the authoritative project check and report the standalone dependency errors separately.
+- 2026-07-27: After adding a regression test in a combined patch, verify the file exists before trusting a focused Vitest run; Vitest may exit successfully under `passWithNoTests` even when the intended test file was never created.
 - 2026-07-27: `Status.tsx` must use an invocation's existing `last_failure` as the retry-popover fallback when no separately fetched transient error exists. The transient-error hook is deliberately disabled when `last_failure` is present; selecting only `transientError` for every retry makes the visible attempt chip disabled despite complete inline error data.
 - 2026-07-24: A filtered sampled invocation summary must cap its source population before applying user filters. Keep only predicates that define a physical population, such as VQueue stage/entry kind or completed/time-window bounds, inside the cap. Treat every filtered sample as partial without separately counting the source population; users can choose exact mode when certainty matters.
 - 2026-07-24: When the Invocations summary is actually truncated, never expose raw sample-row counts in its tabs, stage legend, service tabs, or segment tooltips. Use the sampled population only as the denominator: omit the redundant 100% badge from All/All services and show approximate percentages everywhere else. If a sampled request finishes below its cap, retain exact counts because the response is not partial.
