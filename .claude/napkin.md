@@ -2,6 +2,7 @@
 
 ## Skill Notes
 
+- 2026-07-27: `Status.tsx` must use an invocation's existing `last_failure` as the retry-popover fallback when no separately fetched transient error exists. The transient-error hook is deliberately disabled when `last_failure` is present; selecting only `transientError` for every retry makes the visible attempt chip disabled despite complete inline error data.
 - 2026-07-24: A filtered sampled invocation summary must cap its source population before applying user filters. Keep only predicates that define a physical population, such as VQueue stage/entry kind or completed/time-window bounds, inside the cap. Treat every filtered sample as partial without separately counting the source population; users can choose exact mode when certainty matters.
 - 2026-07-24: When the Invocations summary is actually truncated, never expose raw sample-row counts in its tabs, stage legend, service tabs, or segment tooltips. Use the sampled population only as the denominator: omit the redundant 100% badge from All/All services and show approximate percentages everywhere else. If a sampled request finishes below its cap, retain exact counts because the response is not partial.
 - 2026-07-24: Without VQueues, keep Overview2's selected-range summary exact, but make the Invocations-page summary sampled by default for responsiveness and keep its estimated/exact selector visible so users can opt into the full legacy count. This summary mode is independent from the table's Partial/Complete scan control.

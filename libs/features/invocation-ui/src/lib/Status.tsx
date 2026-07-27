@@ -213,7 +213,7 @@ export function Status({
             <LastError
               isRetrying={isRetrying}
               isFailed={status === 'failed'}
-              error={isRetrying ? transientError : error}
+              error={isRetrying ? (transientError ?? error) : error}
               attemptCount={invocation.retry_count}
             />
           )}
