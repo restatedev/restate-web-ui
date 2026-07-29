@@ -4,17 +4,12 @@ import {
   ServiceType,
 } from '@restate/data-access/admin-api-spec';
 import { Cell } from '@restate/ui/table';
-import {
-  DateTooltip,
-  HoverTooltip,
-  TruncateWithTooltip,
-} from '@restate/ui/tooltip';
+import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { CellProps } from './cells/types';
-import { InvocationIdCell } from './cells/InvocationId';
 import {
   formatDateTime,
   formatDurations,
@@ -24,7 +19,6 @@ import {
   normaliseDuration,
   parseISODuration,
 } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import {
   Actions,
@@ -33,8 +27,6 @@ import {
   InvocationId,
   JournalV2,
   Retention,
-  Status,
-  Target,
 } from '@restate/features/invocation-route';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
@@ -53,6 +45,11 @@ import {
   ENTRY_COMMANDS_NAMES,
   ENTRY_NOTIFICATIONS_NAMES,
   EntryChain,
+  InvocationTableCell,
+  InvocationTableDate,
+  isInvocationTableColumnKey,
+  Target,
+  type InvocationTableColumnKey,
 } from '@restate/features/invocation-ui';
 
 function withDate({
@@ -74,25 +71,12 @@ function withDate({
   >;
 }) {
   return (props: { invocation: Invocation }) => {
-    const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-
     const value = props.invocation[field];
-    if (typeof value !== 'string') {
-      return null;
-    }
-    const { isPast, ...parts } = durationSinceLastSnapshot(value);
-    const duration = formatDurations(parts);
-
     return (
-      <Badge className="w-full border-none bg-transparent pl-0">
-        <span className="w-full truncate">
-          <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
-          <DateTooltip date={new Date(value)} title={tooltipTitle}>
-            {duration}
-          </DateTooltip>
-          <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>
-        </span>
-      </Badge>
+      <InvocationTableDate
+        value={typeof value === 'string' ? value : undefined}
+        tooltipTitle={tooltipTitle}
+      />
     );
   };
 }
@@ -228,10 +212,6 @@ function InvokedBy({ invocation }: CellProps) {
     );
   }
   return null;
-}
-
-function TargetCell({ invocation }: CellProps) {
-  return <Target target={invocation.target} />;
 }
 
 function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
@@ -469,16 +449,12 @@ function DurationCell({ invocation }: CellProps) {
   );
 }
 
-const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
-  id: withCell(InvocationIdCell, 'id'),
-  target: withCell(TargetCell, 'target'),
-  status: withCell(Status, 'status'),
+const CELLS: Record<
+  Exclude<ColumnKey, InvocationTableColumnKey>,
+  ComponentType<CellProps>
+> = {
   target_service_ty: withCell(Type, 'target_service_ty'),
   invoked_by: withCell(InvokedBy, 'invoked_by'),
-  created_at: withCell(
-    withDate({ field: 'created_at', tooltipTitle: 'Created at' }),
-    'created_at',
-  ),
   // next_retry_at: withCell(
   //   withDate({ field: 'next_retry_at', tooltipTitle: 'Next retry at' }),
   //   'next_retry_at',
@@ -521,10 +497,6 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     withField({ field: 'target_service_name' }),
     'target_handler_name',
   ),
-  target_handler_name: withCell(
-    withField({ field: 'target_handler_name' }),
-    'target_handler_name',
-  ),
   pinned_service_protocol_version: withCell(
     withField({ field: 'pinned_service_protocol_version' }),
     'pinned_service_protocol_version',
@@ -552,10 +524,6 @@ const CELLS: Record<ColumnKey, ComponentType<CellProps>> = {
     withField({ field: 'scope', className: 'font-mono' }),
     'scope',
   ),
-  limit_key: withCell(
-    withField({ field: 'limit_key', className: 'font-mono' }),
-    'limit_key',
-  ),
 };
 
 export function InvocationCell({
@@ -563,6 +531,16 @@ export function InvocationCell({
   isVisible,
   column,
 }: CellProps & { column: ColumnKey }) {
+  if (isInvocationTableColumnKey(column)) {
+    return (
+      <InvocationTableCell
+        column={column}
+        row={invocation}
+        invocation={invocation}
+        isVisible={isVisible}
+      />
+    );
+  }
   const Cell = CELLS[column];
   return <Cell invocation={invocation} isVisible={isVisible} />;
 }

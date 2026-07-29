@@ -17,29 +17,23 @@ type InvocationStatusDefinition = {
   sysInvocationStatus?: string;
 };
 
-const STORAGE_STATUS_DEFINITIONS: Record<
+const SYS_INVOCATION_STATUS_DEFINITIONS: Record<
   InvocationStatus,
-  Omit<InvocationStatusDefinition, 'vqueue'> & {
-    vqueueStatuses?: readonly string[];
-  }
+  Omit<InvocationStatusDefinition, 'vqueue'>
 > = {
   pending: {
-    vqueueStatuses: ['new'],
     sysInvocationStatus: 'inboxed',
   },
   scheduled: {
-    vqueueStatuses: ['scheduled'],
     sysInvocationStatus: 'scheduled',
   },
   'backing-off': {
-    vqueueStatuses: ['backing-off'],
     sysInvocationStatus: 'invoked',
   },
   ready: {
-    vqueueStatuses: ['started'],
     sysInvocationStatus: 'invoked',
   },
-  yielded: { vqueueStatuses: ['yielded'] },
+  yielded: {},
   running: {
     sysInvocationStatus: 'invoked',
   },
@@ -50,42 +44,37 @@ const STORAGE_STATUS_DEFINITIONS: Record<
     sysInvocationStatus: 'paused',
   },
   succeeded: {
-    vqueueStatuses: ['succeeded'],
     sysInvocationStatus: 'completed',
   },
   failed: {
-    vqueueStatuses: ['failed'],
     sysInvocationStatus: 'completed',
   },
   cancelled: {
-    vqueueStatuses: ['cancelled'],
     sysInvocationStatus: 'completed',
   },
   killed: {
-    vqueueStatuses: ['killed'],
     sysInvocationStatus: 'completed',
   },
 };
 
 export const INVOCATION_STATUSES = Object.keys(
-  STORAGE_STATUS_DEFINITIONS,
+  SYS_INVOCATION_STATUS_DEFINITIONS,
 ) as InvocationStatus[];
 
-const SHARED_STATUS_STAGES = Object.fromEntries(
-  SHARED_INVOCATION_STATUS_DEFINITIONS.map(({ key, stage }) => [key, stage]),
-) as Record<InvocationStatus, VqueueStage>;
+const SHARED_VQUEUE_STATUS_DEFINITIONS = Object.fromEntries(
+  SHARED_INVOCATION_STATUS_DEFINITIONS.map(({ key, stage, vqueueStatuses }) => [
+    key,
+    { stage, statuses: vqueueStatuses },
+  ]),
+) as Record<InvocationStatus, InvocationStatusDefinition['vqueue']>;
 
 export const INVOCATION_STATUS_DEFINITIONS = Object.fromEntries(
   INVOCATION_STATUSES.map((key) => {
-    const { vqueueStatuses, sysInvocationStatus } =
-      STORAGE_STATUS_DEFINITIONS[key];
+    const { sysInvocationStatus } = SYS_INVOCATION_STATUS_DEFINITIONS[key];
     return [
       key,
       {
-        vqueue: {
-          stage: SHARED_STATUS_STAGES[key],
-          statuses: vqueueStatuses,
-        },
+        vqueue: SHARED_VQUEUE_STATUS_DEFINITIONS[key],
         sysInvocationStatus,
       },
     ];

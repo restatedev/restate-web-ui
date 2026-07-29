@@ -29,12 +29,17 @@ import { Collection, type Key } from 'react-aria-components';
 import {
   ComponentProps,
   Fragment,
+  ReactNode,
   useCallback,
   useId,
   useMemo,
   useState,
 } from 'react';
-import type { StateObjectRecord, StateTableColumnId } from './types';
+import type {
+  StateEntry,
+  StateObjectRecord,
+  StateTableColumnId,
+} from './types';
 
 const COLLAPSED_STATE_PREVIEW_KEYS = 5;
 const STATE_ENTRIES_PAGE_SIZE = 100;
@@ -58,6 +63,10 @@ type StateChildRow =
       kind: 'status';
       status: 'loading' | 'empty' | 'error';
     };
+
+type StateEntriesTableRow =
+  | ({ id: string; kind: 'state' } & StateEntry)
+  | { id: string; kind: 'load_more' };
 
 function EditStateTrigger(props: ComponentProps<typeof Button>) {
   const { close } = usePopover();
@@ -292,6 +301,122 @@ export function StateObjectTable({
           onEditValue={(stateKey) => onEditValue(row, stateKey)}
         />
       )}
+    />
+  );
+}
+
+export function StateEntriesTable({
+  codecOptions,
+  serviceName,
+  serviceKey,
+  scope,
+  serviceType,
+  emptyPlaceholder,
+  onEditValue,
+}: {
+  codecOptions?: RestateCodecOptions;
+  serviceName: string;
+  serviceKey: string;
+  scope?: string;
+  serviceType?: StateServiceType;
+  emptyPlaceholder?: ReactNode;
+  onEditValue: (stateKey: string) => void;
+}) {
+  const columns = useMemo<PanelTableColumn<StateTableColumnId>[]>(
+    () => [
+      {
+        id: 'state_key',
+        name: 'State key',
+        isRowHeader: true,
+        defaultWidth: 280,
+        minWidth: 180,
+      },
+      {
+        id: 'value',
+        name: 'Value',
+        minWidth: 360,
+      },
+      {
+        id: 'size',
+        name: 'Size',
+        width: 96,
+      },
+      {
+        id: 'actions',
+        name: 'Actions',
+        hideLabel: true,
+        width: 72,
+      },
+    ],
+    [],
+  );
+  const row = useMemo<StateObjectRecord>(
+    () => ({
+      id: `${serviceKey}\x00${scope ?? ''}`,
+      key: serviceKey,
+      ...(scope !== undefined ? { scope } : {}),
+      state: [],
+    }),
+    [scope, serviceKey],
+  );
+  const { entriesQuery, loadedEntries } = useStateObjectEntries(
+    serviceName,
+    row,
+    true,
+  );
+  const items = useMemo<StateEntriesTableRow[]>(
+    () => [
+      ...(loadedEntries ?? []).map((entry) => ({
+        id: `${row.id}\x00${entry.name}`,
+        kind: 'state' as const,
+        ...entry,
+      })),
+      ...(entriesQuery.hasNextPage
+        ? [{ id: `${row.id}\x00__load_more__`, kind: 'load_more' as const }]
+        : []),
+    ],
+    [entriesQuery.hasNextPage, loadedEntries, row.id],
+  );
+
+  return (
+    <PanelTable
+      aria-label="State"
+      columns={columns}
+      items={items}
+      isLoading={entriesQuery.isPending}
+      error={entriesQuery.error}
+      numOfRows={5}
+      emptyPlaceholder={emptyPlaceholder}
+      bodyDependencies={[
+        codecOptions,
+        row,
+        serviceName,
+        serviceType,
+        onEditValue,
+        entriesQuery.dataUpdatedAt,
+        entriesQuery.hasNextPage,
+        entriesQuery.isFetchingNextPage,
+      ]}
+      rowDependencies={[codecOptions, row, serviceName, serviceType]}
+      renderCell={(entry, col) =>
+        entry.kind === 'load_more' ? (
+          <StateLoadMoreCell
+            col={col}
+            isFetchingNextPage={entriesQuery.isFetchingNextPage}
+            onLoadMore={() => entriesQuery.fetchNextPage()}
+          />
+        ) : (
+          <StateEntryCell
+            row={row}
+            entry={entry}
+            col={col}
+            codecOptions={codecOptions}
+            serviceName={serviceName}
+            serviceType={serviceType}
+            onEditValue={onEditValue}
+          />
+        )
+      }
     />
   );
 }
@@ -651,16 +776,7 @@ function StateChildCell({
   onRetry: VoidFunction;
   onEditValue: (stateKey: string) => void;
 }) {
-  const {
-    childObjectCell,
-    stateKeyCell,
-    loadMoreCell,
-    childStatus,
-    actionsCell,
-    actions,
-    objectActionButton,
-    sizeText,
-  } = stateObjectStyles();
+  const { childObjectCell, loadMoreCell, childStatus } = stateObjectStyles();
 
   if (child.kind === 'status') {
     if (col.id === 'object_key') {
@@ -707,34 +823,88 @@ function StateChildCell({
   }
 
   if (child.kind === 'load_more') {
-    if (col.id === 'state_key') {
-      return (
-        <Cell className={loadMoreCell()}>
-          <Button
-            variant="secondary"
-            onClick={onLoadMore}
-            disabled={isFetchingNextPage}
-            className="flex w-fit max-w-full items-center gap-1.5 truncate rounded-lg px-2 py-1 text-xs font-normal text-gray-600"
-          >
-            {isFetchingNextPage ? (
-              <>
-                <Spinner className="h-3.5 w-3.5 shrink-0" />
-                Loading more keys…
-              </>
-            ) : (
-              'Load more keys'
-            )}
-          </Button>
-        </Cell>
-      );
-    }
+    return (
+      <StateLoadMoreCell
+        col={col}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={onLoadMore}
+      />
+    );
+  }
+
+  return (
+    <StateEntryCell
+      row={row}
+      entry={child}
+      col={col}
+      codecOptions={codecOptions}
+      serviceName={serviceName}
+      serviceType={serviceType}
+      onEditValue={onEditValue}
+    />
+  );
+}
+
+function StateLoadMoreCell({
+  col,
+  isFetchingNextPage,
+  onLoadMore,
+}: {
+  col: PanelTableColumn;
+  isFetchingNextPage: boolean;
+  onLoadMore: VoidFunction;
+}) {
+  const { loadMoreCell } = stateObjectStyles();
+
+  if (col.id !== 'state_key') {
     return <Cell className={loadMoreCell()} />;
   }
+
+  return (
+    <Cell className={loadMoreCell()}>
+      <Button
+        variant="secondary"
+        onClick={onLoadMore}
+        disabled={isFetchingNextPage}
+        className="flex w-fit max-w-full items-center gap-1.5 truncate rounded-lg px-2 py-1 text-xs font-normal text-gray-600"
+      >
+        {isFetchingNextPage ? (
+          <>
+            <Spinner className="h-3.5 w-3.5 shrink-0" />
+            Loading more keys…
+          </>
+        ) : (
+          'Load more keys'
+        )}
+      </Button>
+    </Cell>
+  );
+}
+
+function StateEntryCell({
+  row,
+  entry,
+  col,
+  codecOptions,
+  serviceName,
+  serviceType,
+  onEditValue,
+}: {
+  row: StateObjectRecord;
+  entry: StateEntry;
+  col: PanelTableColumn;
+  codecOptions?: RestateCodecOptions;
+  serviceName: string;
+  serviceType?: StateServiceType;
+  onEditValue: (stateKey: string) => void;
+}) {
+  const { stateKeyCell, actionsCell, actions, objectActionButton, sizeText } =
+    stateObjectStyles();
 
   if (col.id === 'state_key') {
     return (
       <Cell className={stateKeyCell()}>
-        <KeyCell serviceKey={child.name} className="text-xs font-medium" />
+        <KeyCell serviceKey={entry.name} className="text-xs font-medium" />
       </Cell>
     );
   }
@@ -742,7 +912,7 @@ function StateChildCell({
   if (col.id === 'size') {
     return (
       <Cell>
-        <span className={sizeText()}>{formatBytes(child.size)}</span>
+        <span className={sizeText()}>{formatBytes(entry.size)}</span>
       </Cell>
     );
   }
@@ -751,14 +921,14 @@ function StateChildCell({
     return (
       <Cell>
         <StateValuePreview
-          name={child.name}
-          value={child.value}
-          size={child.size}
+          name={entry.name}
+          value={entry.value}
+          size={entry.size}
           row={row}
           codecOptions={codecOptions}
           serviceName={serviceName}
           serviceType={serviceType}
-          onEdit={() => onEditValue(child.name)}
+          onEdit={() => onEditValue(entry.name)}
         />
       </Cell>
     );
@@ -774,12 +944,12 @@ function StateChildCell({
             splitClassName="rounded-r-lg px-1.5 py-1"
             onSelect={(key) => {
               if (key === 'edit') {
-                onEditValue(child.name);
+                onEditValue(entry.name);
               }
             }}
           >
             <EditStateTrigger
-              onClick={() => onEditValue(child.name)}
+              onClick={() => onEditValue(entry.name)}
               variant="secondary"
               className={objectActionButton()}
             >

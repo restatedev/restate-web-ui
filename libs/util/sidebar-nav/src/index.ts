@@ -15,4 +15,5 @@ export {
   useInvocationsLastQuery,
 } from './lib/useInvocationsMemory';
 export { StateSidebarItem } from './lib/StateSidebarItem';
+export { VirtualObjectsSidebarItem } from './lib/VirtualObjectsSidebarItem';
 export { IntrospectionSidebarItem } from './lib/IntrospectionSidebarItem';

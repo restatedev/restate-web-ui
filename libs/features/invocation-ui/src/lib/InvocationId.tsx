@@ -68,6 +68,7 @@ const styles = tv({
 interface InvocationIdProps {
   id: Invocation['id'];
   className?: string;
+  iconName?: IconName;
   size?: 'sm' | 'default' | 'icon' | 'md';
   isLive?: boolean;
   truncateInMiddle?: boolean;
@@ -78,6 +79,7 @@ interface InvocationIdProps {
 export function InvocationId({
   id,
   className,
+  iconName = IconName.Invocation,
   size = 'default',
   truncateInMiddle = false,
   popover = true,
@@ -122,10 +124,7 @@ export function InvocationId({
     <div className={base({ className })}>
       <div className={container({})}>
         <div className={icon()}>
-          <Icon
-            name={IconName.Invocation}
-            className="h-full w-full p-1 text-zinc-500"
-          />
+          <Icon name={iconName} className="h-full w-full p-1 text-zinc-500" />
         </div>
 
         {!isIcon &&
@@ -157,7 +156,11 @@ export function InvocationId({
     return (
       <Popover>
         <PopoverHoverTrigger>{element}</PopoverHoverTrigger>
-        <PopoverContent placement="bottom" isNonModal>
+        <PopoverContent
+          placement="bottom"
+          isNonModal
+          className="w-[min(42rem,calc(100vw-1.5rem))]"
+        >
           <InvocationPopoverContent id={id} title={title} />
         </PopoverContent>
       </Popover>

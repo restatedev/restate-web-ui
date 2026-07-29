@@ -3,12 +3,20 @@ import type {
   RawInvocation,
 } from '@restate/data-access/admin-api-spec';
 
+export type InvocationStatusSource = {
+  status: RawInvocation['status'] | InvocationComputedStatus2;
+  completion_result?: RawInvocation['completion_result'];
+  completion_failure?: RawInvocation['completion_failure'];
+  last_failure?: RawInvocation['last_failure'];
+  retry_count?: RawInvocation['retry_count'];
+};
+
 export type InvocationWithComputedStatus = Omit<RawInvocation, 'status'> & {
   status: RawInvocation['status'] | InvocationComputedStatus2;
 };
 
 export function getComputedInvocationStatus(
-  invocation: InvocationWithComputedStatus,
+  invocation: InvocationStatusSource,
   retryCountSinceLastStoredCommand?: number,
 ): {
   isRetrying: boolean;

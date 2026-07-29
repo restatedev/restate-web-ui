@@ -48,7 +48,10 @@ function createCrumb(
     // Crumb hrefs are restored later, so one-shot params (open confirmation
     // dialogs) must not be part of them.
     href: `${pathname}${stripTransientSearch(search)}`,
-    label: typeof page.label === 'function' ? page.label(params) : page.label,
+    label:
+      typeof page.label === 'function'
+        ? page.label(params, search)
+        : page.label,
     icon: page.icon,
     params,
   };

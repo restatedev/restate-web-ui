@@ -18,6 +18,7 @@ import { formatOrdinals } from '@restate/util/intl';
 import { Ellipsis } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';
 import { AwaitingOn } from './journal/entries/AwaitingOn';
+import type { PropsWithChildren } from 'react';
 
 export function getRestateError(invocation?: Invocation) {
   if (!invocation) {
@@ -138,6 +139,42 @@ const STATUS_LABEL: Record<InvocationComputedStatus2, string> = {
   paused: 'Paused',
 };
 
+export function InvocationStatusBadge({
+  status,
+  className,
+  isRetrying = false,
+  hasPausedError = false,
+  hasAwaitingOn = false,
+  mini = false,
+  children,
+}: PropsWithChildren<{
+  status: InvocationComputedStatus2;
+  className?: string;
+  isRetrying?: boolean;
+  hasPausedError?: boolean;
+  hasAwaitingOn?: boolean;
+  mini?: boolean | 'md';
+}>) {
+  const variant = getBadgeVariant(status, isRetrying);
+  return (
+    <Badge
+      variant={variant}
+      className={styles({
+        className,
+        status,
+        isRetrying,
+        hasPausedError,
+        variant,
+        mini,
+        hasAwaitingOn,
+      })}
+    >
+      <Ellipsis visible={status === 'running'}>{STATUS_LABEL[status]}</Ellipsis>
+      {children}
+    </Badge>
+  );
+}
+
 export function Status({
   invocation,
   className,
@@ -182,28 +219,20 @@ export function Status({
           transientErrorData.stack,
         )
       : undefined;
-  const variant = getBadgeVariant(status, invocation.isRetrying);
   const error = getRestateError(invocation);
   return (
     <div className="flex flex-row flex-wrap items-baseline gap-0.5">
-      <Badge
-        variant={variant}
-        className={styles({
-          className,
-          status,
-          isRetrying: Boolean(invocation.isRetrying),
-          hasPausedError,
-          variant,
-          mini,
-          hasAwaitingOn: Boolean(
-            invocation?.last_awaiting_on_future_json ||
-            invocation?.suspended_waiting_future_json,
-          ),
-        })}
+      <InvocationStatusBadge
+        status={status}
+        className={className}
+        isRetrying={Boolean(invocation.isRetrying)}
+        hasPausedError={hasPausedError}
+        mini={mini}
+        hasAwaitingOn={Boolean(
+          invocation?.last_awaiting_on_future_json ||
+          invocation?.suspended_waiting_future_json,
+        )}
       >
-        <Ellipsis visible={status === 'running'}>
-          {STATUS_LABEL[status]}
-        </Ellipsis>
         {/* Secondary detail (error chip, awaiting-on, duration) — hidden
             below `md` so the status stays a single compact pill where space
             is tight (e.g. the invocation header). md:contents keeps these as
@@ -244,7 +273,7 @@ export function Status({
             />
           )}
         </span>
-      </Badge>
+      </InvocationStatusBadge>
       <span className={secondaryStyles({ mini })}>
         <StatusTimeline invocation={invocation} />
       </span>

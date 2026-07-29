@@ -115,26 +115,43 @@ export type PanelHrefOpts =
   | { state: string }
   | { playground: string; handler?: string };
 
-export function panelHref(opts: PanelHrefOpts): string {
+function preserveSearchParams(
+  href: string,
+  existingParams?: URLSearchParams,
+): string {
+  if (!existingParams) return href;
+  const hashIndex = href.indexOf('#');
+  const search = hashIndex === -1 ? href : href.slice(0, hashIndex);
+  const hash = hashIndex === -1 ? '' : href.slice(hashIndex);
+  const next = new URLSearchParams(existingParams);
+  new URLSearchParams(search.slice(1)).forEach((value, name) => {
+    next.set(name, value);
+  });
+  return `?${next}${hash}`;
+}
+
+export function panelHref(
+  opts: PanelHrefOpts,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+): string {
+  let href: string;
   if ('service' in opts) {
     const handler =
       opts.handler !== undefined
         ? `&${HANDLER_QUERY_PARAM}=${opts.handler}`
         : `&${HANDLER_QUERY_PARAM}=`;
-    return `?${SERVICE_QUERY_PARAM}=${opts.service}&${PANEL_QUERY_PARAM}=${SERVICE_QUERY_PARAM}${handler}`;
-  }
-  if ('invocation' in opts) {
-    return `?${INVOCATION_QUERY_NAME}=${opts.invocation}&${PANEL_QUERY_PARAM}=${INVOCATION_QUERY_NAME}`;
-  }
-  if ('deployment' in opts) {
-    return `?${DEPLOYMENT_QUERY_PARAM}=${opts.deployment}&${PANEL_QUERY_PARAM}=${DEPLOYMENT_QUERY_PARAM}`;
-  }
-  if ('state' in opts) {
-    return `?${STATE_QUERY_NAME}=${opts.state}&${PANEL_QUERY_PARAM}=${STATE_QUERY_NAME}`;
-  }
-  if ('playground' in opts) {
+    href = `?${SERVICE_QUERY_PARAM}=${opts.service}&${PANEL_QUERY_PARAM}=${SERVICE_QUERY_PARAM}${handler}`;
+  } else if ('invocation' in opts) {
+    href = `?${INVOCATION_QUERY_NAME}=${opts.invocation}&${PANEL_QUERY_PARAM}=${INVOCATION_QUERY_NAME}`;
+  } else if ('deployment' in opts) {
+    href = `?${DEPLOYMENT_QUERY_PARAM}=${opts.deployment}&${PANEL_QUERY_PARAM}=${DEPLOYMENT_QUERY_PARAM}`;
+  } else if ('state' in opts) {
+    href = `?${STATE_QUERY_NAME}=${opts.state}&${PANEL_QUERY_PARAM}=${STATE_QUERY_NAME}`;
+  } else if ('playground' in opts) {
     const hash = opts.handler ? `#/operations/${opts.handler}` : '';
-    return `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${opts.playground}${hash}`;
+    href = `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${opts.playground}${hash}`;
+  } else {
+    throw new Error('panelHref: unknown panel options');
   }
-  throw new Error('panelHref: unknown panel options');
+  return preserveSearchParams(href, existingParams);
 }

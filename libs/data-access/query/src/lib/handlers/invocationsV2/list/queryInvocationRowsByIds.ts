@@ -36,7 +36,7 @@ export function queryInvocationRowsByIds(
     ? `\n        AND ${clauses.join('\n        AND ')}`
     : '';
   const sortColumn = sort
-    ? getInvocationListFieldOnTable(sort.field, 'sys_invocation_status')?.column
+    ? getInvocationListFieldOnTable(sort.field, 'sys_invocation')?.column
     : undefined;
   const orderBy =
     sort && sortColumn

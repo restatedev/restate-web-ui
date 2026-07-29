@@ -10,6 +10,10 @@ export default [
   route('overview', 'routes/overview.tsx'),
   route('overview2', 'routes/overview2.tsx'),
   route('introspection', 'routes/introspection.tsx'),
+  ...prefix('virtual-objects', [
+    index('routes/virtual-objects.tsx'),
+    route(':service/:key', 'routes/virtual-object-instance.tsx'),
+  ]),
   ...prefix('state', [
     index('routes/state.tsx'),
     route(':virtualObject', 'routes/virtual-object.tsx'),

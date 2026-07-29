@@ -63,6 +63,12 @@ import {
   type ListStateArgs,
   type ListStateItem,
   type StateServiceType,
+  listVirtualObjectInstances,
+  type ListVirtualObjectInstancesArgs,
+  getVirtualObjectLock,
+  getVirtualObjectInbox,
+  type VirtualObjectInboxMode,
+  getVqueueInbox,
 } from './handlers';
 import { getVersion } from './getVersion';
 import { getFeatures } from './getFeatures';
@@ -181,7 +187,23 @@ type BoundHandlers = {
   getPausedError: (invocationId: string) => Promise<Response>;
   getTransientError: (invocationId: string) => Promise<Response>;
   getVqueue: (vqueueId: string, invocationId?: string) => Promise<Response>;
+  getVqueueInbox: (vqueueId: string) => Promise<Response>;
   listDrainedDeployments: () => Promise<Response>;
+  listVirtualObjectInstances: (
+    service: string,
+    args: ListVirtualObjectInstancesArgs,
+  ) => Promise<Response>;
+  getVirtualObjectLock: (
+    service: string,
+    key: string,
+    scope?: string,
+  ) => Promise<Response>;
+  getVirtualObjectInbox: (
+    service: string,
+    key: string,
+    mode: VirtualObjectInboxMode,
+    scope?: string,
+  ) => Promise<Response>;
 };
 
 function bindHandlers(context: QueryContext): BoundHandlers {
@@ -230,7 +252,11 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getPausedError: getPausedError.bind(context),
     getTransientError: getTransientError.bind(context),
     getVqueue: getVqueue.bind(context),
+    getVqueueInbox: getVqueueInbox.bind(context),
     listDrainedDeployments: listDrainedDeployments.bind(context),
+    listVirtualObjectInstances: listVirtualObjectInstances.bind(context),
+    getVirtualObjectLock: getVirtualObjectLock.bind(context),
+    getVirtualObjectInbox: getVirtualObjectInbox.bind(context),
   };
 }
 
@@ -350,6 +376,10 @@ export const routes = createRoutes('/query', {
       method: 'GET',
       pattern: '/vqueues/:vqueueId',
     },
+    vqueueInbox: {
+      method: 'GET',
+      pattern: '/vqueues/:vqueueId/inbox',
+    },
   },
   invocationsV2: {
     list: { method: 'POST', pattern: '/v2/invocations' },
@@ -369,6 +399,18 @@ export const routes = createRoutes('/query', {
     get: { method: 'GET', pattern: '/v2/invocations/:invocationId' },
   },
   virtualObjects: {
+    instances: {
+      method: 'POST',
+      pattern: '/virtual-objects/:service/instances',
+    },
+    lock: {
+      method: 'GET',
+      pattern: '/virtual-objects/:service/instances/:key/lock',
+    },
+    inbox: {
+      method: 'GET',
+      pattern: '/virtual-objects/:service/instances/:key/inbox',
+    },
     queue: {
       method: 'GET',
       pattern: '/virtualObjects/:name/keys/:key/queue',
@@ -546,6 +588,10 @@ router.map(routes, {
           ctx.url.searchParams.get('invocationId') ?? undefined;
         return getVqueue(ctx.params.vqueueId, invocationId);
       },
+      async vqueueInbox(ctx) {
+        const { getVqueueInbox } = ctx.storage.get(handlersKey);
+        return getVqueueInbox(ctx.params.vqueueId);
+      },
     },
     invocationsV2: {
       async list(ctx) {
@@ -584,6 +630,33 @@ router.map(routes, {
       },
     },
     virtualObjects: {
+      async instances(ctx) {
+        const { listVirtualObjectInstances } = ctx.storage.get(handlersKey);
+        const body =
+          (await ctx.request.json()) as ListVirtualObjectInstancesArgs;
+        return listVirtualObjectInstances(ctx.params.service, body);
+      },
+      async lock(ctx) {
+        const { getVirtualObjectLock } = ctx.storage.get(handlersKey);
+        return getVirtualObjectLock(
+          ctx.params.service,
+          ctx.params.key,
+          ctx.url.searchParams.has('scope')
+            ? String(ctx.url.searchParams.get('scope'))
+            : undefined,
+        );
+      },
+      async inbox(ctx) {
+        const { getVirtualObjectInbox } = ctx.storage.get(handlersKey);
+        return getVirtualObjectInbox(
+          ctx.params.service,
+          ctx.params.key,
+          ctx.url.searchParams.get('mode') as VirtualObjectInboxMode,
+          ctx.url.searchParams.has('scope')
+            ? String(ctx.url.searchParams.get('scope'))
+            : undefined,
+        );
+      },
       async queue(ctx) {
         const { getInbox } = ctx.storage.get(handlersKey);
         return getInbox(

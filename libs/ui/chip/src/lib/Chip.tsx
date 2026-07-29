@@ -4,6 +4,8 @@ import { tv } from '@restate/util/styles';
 
 type ChipEdge = 'straight' | 'angled';
 
+export type ChipGroupVariant = 'default' | 'header';
+
 const BORDER_FILTER =
   '[filter:drop-shadow(1px_0_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(-1px_0_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(0_1px_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(0_-1px_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(var(--chip-shadow,0_1px_1.5px_rgb(0_0_0/0.07)))]';
 
@@ -12,12 +14,12 @@ const CLIP_LINK = 'before:[clip-path:var(--chip-clip)]';
 
 const CLIP_LEFT_SHARP = '[--chip-clip:polygon(7px_0,100%_0,100%_100%,0_100%)]';
 const CLIP_LEFT_ROUNDED =
-  'supports-[clip-path:shape(from_0_0,close)]:[--chip-clip:shape(from_10px_0,line_to_100%_0,line_to_100%_100%,line_to_3px_100%,curve_to_0.84px_calc(100%-2.88px)_with_0_100%,line_to_6.16px_2.88px,curve_to_10px_0_with_7px_0,close)]!';
+  'supports-[clip-path:shape(from_0_0,close)]:[--chip-clip:shape(from_10px_0,line_to_calc(100%-var(--chip-radius))_0,curve_to_100%_var(--chip-radius)_with_100%_0,line_to_100%_calc(100%-var(--chip-radius)),curve_to_calc(100%-var(--chip-radius))_100%_with_100%_100%,line_to_3px_100%,curve_to_0.84px_calc(100%-2.88px)_with_0_100%,line_to_6.16px_2.88px,curve_to_10px_0_with_7px_0,close)]!';
 
 const CLIP_RIGHT_SHARP =
   '[--chip-clip:polygon(0_0,100%_0,calc(100%-7px)_100%,0_100%)]';
 const CLIP_RIGHT_ROUNDED =
-  'supports-[clip-path:shape(from_0_0,close)]:[--chip-clip:shape(from_0_0,line_to_calc(100%-3px)_0,curve_to_calc(100%-0.84px)_2.88px_with_100%_0,line_to_calc(100%-6.16px)_calc(100%-2.88px),curve_to_calc(100%-10px)_100%_with_calc(100%-7px)_100%,line_to_0_100%,close)]!';
+  'supports-[clip-path:shape(from_0_0,close)]:[--chip-clip:shape(from_var(--chip-radius)_0,line_to_calc(100%-3px)_0,curve_to_calc(100%-0.84px)_2.88px_with_100%_0,line_to_calc(100%-6.16px)_calc(100%-2.88px),curve_to_calc(100%-10px)_100%_with_calc(100%-7px)_100%,line_to_var(--chip-radius)_100%,curve_to_0_calc(100%-var(--chip-radius))_with_0_100%,line_to_0_var(--chip-radius),curve_to_var(--chip-radius)_0_with_0_0,close)]!';
 
 const CLIP_BOTH_SHARP =
   '[--chip-clip:polygon(7px_0,100%_0,calc(100%-7px)_100%,0_100%)]';
@@ -27,7 +29,7 @@ const CLIP_BOTH_ROUNDED =
 const styles = tv({
   slots: {
     outer:
-      'group/chip relative inline-flex max-w-full min-w-0 [--chip-radius:0.5rem]',
+      'group/chip relative inline-flex max-w-full min-w-0 [--chip-inset:1px] [--chip-radius:0.5rem]',
     root: [
       'inline-flex h-6 max-w-full min-w-0 items-stretch bg-white text-xs font-medium text-zinc-600 transition-all',
       '[&>[data-chip-segment]:not(:first-child)]:-ml-1 [&>[data-chip-segment]:not(:first-child)]:filter-[drop-shadow(-1px_0px_0px_var(--chip-seam-color,var(--color-zinc-200)))]',
@@ -40,7 +42,7 @@ const styles = tv({
   variants: {
     left: {
       straight: {
-        root: 'rounded-l-(--chip-radius) [&>[data-chip-segment]:first-child]:ml-px [&>[data-chip-segment]:first-child>[data-chip-segment-inner]]:rounded-l-[calc(var(--chip-radius)-1px)]',
+        root: 'rounded-l-(--chip-radius) [&>[data-chip-segment]:first-child]:ml-(--chip-inset) [&>[data-chip-segment]:first-child>[data-chip-segment-inner]]:rounded-l-[calc(var(--chip-radius)-var(--chip-inset))]',
         link: 'rounded-l-(--chip-radius) before:rounded-l-(--chip-radius)',
       },
       angled: {
@@ -50,7 +52,7 @@ const styles = tv({
     },
     right: {
       straight: {
-        root: 'rounded-r-(--chip-radius) [&>[data-chip-segment]:last-child]:mr-px [&>[data-chip-segment]:last-child>[data-chip-segment-inner]]:rounded-r-[calc(var(--chip-radius)-1px)]',
+        root: 'rounded-r-(--chip-radius) [&>[data-chip-segment]:last-child]:mr-(--chip-inset) [&>[data-chip-segment]:last-child>[data-chip-segment-inner]]:rounded-r-[calc(var(--chip-radius)-var(--chip-inset))]',
         link: 'rounded-r-(--chip-radius) before:rounded-r-(--chip-radius)',
       },
       angled: {
@@ -103,10 +105,67 @@ const styles = tv({
 
 const segmentStyles = tv({
   slots: {
-    wrap: 'my-px flex max-w-full min-w-0 items-stretch',
+    wrap: 'my-(--chip-inset) flex max-w-full min-w-0 items-stretch',
     inner: 'flex min-w-0 flex-auto items-center gap-1 truncate px-2.5',
   },
 });
+
+const groupStyles = tv({
+  base: 'inline-flex max-w-full min-w-0 gap-x-0 rounded-lg',
+  variants: {
+    variant: {
+      default: '',
+      header: [
+        'mix-blend-luminosity [--chip-border-color:white]',
+        '[&_[data-chip]]:[--chip-inset:2px] [&_[data-chip]]:[--chip-radius:0.75rem]',
+        '[&_[data-chip-root]]:h-7 [&_[data-chip-root]]:text-sm',
+      ],
+    },
+    isLink: {
+      true: 'no-underline transition-[filter] hover:brightness-[0.98] pressed:brightness-[0.96]',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
+
+export interface ChipGroupProps extends PropsWithChildren {
+  className?: string;
+  variant?: ChipGroupVariant;
+  href?: string;
+  'aria-label'?: string;
+}
+
+export function ChipGroup({
+  children,
+  className,
+  variant,
+  href,
+  'aria-label': ariaLabel,
+}: ChipGroupProps) {
+  const groupClassName = groupStyles({
+    variant,
+    isLink: Boolean(href),
+    className,
+  });
+
+  return href ? (
+    <Link
+      href={href}
+      aria-label={ariaLabel}
+      variant="secondary"
+      className={groupClassName}
+      data-chip-group
+    >
+      {children}
+    </Link>
+  ) : (
+    <span className={groupClassName} data-chip-group>
+      {children}
+    </span>
+  );
+}
 
 export function ChipSegment({
   className,
@@ -144,8 +203,10 @@ export function Chip({
 }>) {
   const { outer, root, link } = styles({ left, right });
   return (
-    <div className={outer()}>
-      <div className={root({ className })}>{children}</div>
+    <div className={outer()} data-chip>
+      <div className={root({ className })} data-chip-root>
+        {children}
+      </div>
       {href && (
         <Link
           href={href}

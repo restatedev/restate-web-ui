@@ -15,12 +15,25 @@ import { Copy } from '@restate/ui/copy';
 import { useTooltipWithHover } from './useTooltipWithHover';
 import { tv } from '@restate/util/styles';
 
+const triggerStyles = tv({
+  base: 'block max-w-full text-ellipsis whitespace-nowrap',
+  variants: {
+    overflowVisible: {
+      true: 'overflow-visible',
+      false: 'overflow-hidden',
+    },
+  },
+  defaultVariants: {
+    overflowVisible: false,
+  },
+});
+
 export const TruncateTooltipTrigger = forwardRef<
   HTMLElement,
-  PropsWithChildren<unknown>
->(({ children }, ref) => {
+  PropsWithChildren<{ overflowVisible?: boolean }>
+>(({ children, overflowVisible }, ref) => {
   return (
-    <span className="block max-w-full truncate">
+    <span className={triggerStyles({ overflowVisible })}>
       <span data-truncate-tooltip="true" ref={ref}>
         {children}
       </span>
@@ -54,6 +67,7 @@ export function TruncateWithTooltip({
   size = 'sm',
   className,
   alwaysShow,
+  overflowVisible,
 }: PropsWithChildren<{
   copyText?: string;
   triggerRef?: RefObject<HTMLElement | null>;
@@ -65,6 +79,7 @@ export function TruncateWithTooltip({
   // visible text is already shortened by the caller (so the CSS clip never
   // fires) but the tooltip should still appear.
   alwaysShow?: boolean;
+  overflowVisible?: boolean;
 }>) {
   const triggerRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLElement>(null);
@@ -104,8 +119,11 @@ export function TruncateWithTooltip({
   return (
     <Tooltip delay={250}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
-        <span className="block max-w-full truncate" ref={containerRef}>
-          <TruncateTooltipTrigger ref={triggerRef}>
+        <span className={triggerStyles({ overflowVisible })} ref={containerRef}>
+          <TruncateTooltipTrigger
+            ref={triggerRef}
+            overflowVisible={overflowVisible}
+          >
             {children}
           </TruncateTooltipTrigger>
         </span>

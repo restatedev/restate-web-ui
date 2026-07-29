@@ -19,6 +19,8 @@ type InvocationFilterSource =
       stateAlias: string;
     };
 
+type InvocationColumnSource = Pick<InvocationFilterSource, 'type' | 'alias'>;
+
 const KILLED_FAILURES = ['[409] killed'];
 const CANCELLED_FAILURES = ['[409] canceled', '[409] cancelled'];
 
@@ -150,12 +152,11 @@ function rawStatusPrefilter(
 
 export function fieldFilterClause(
   filter: FilterItem,
-  source: { alias: string },
+  source: InvocationColumnSource,
 ): string | undefined {
-  const tableField = getInvocationListFieldOnTable(
-    filter.field,
-    'sys_invocation_status',
-  );
+  const table =
+    source.type === 'invocation' ? 'sys_invocation' : 'sys_invocation_status';
+  const tableField = getInvocationListFieldOnTable(filter.field, table);
   if (!tableField) return undefined;
   const column = `${source.alias}.${tableField.column}`;
   const clause = filterToSql(filter, column);
@@ -190,7 +191,7 @@ export function invocationStatusFilterClauses(
   filters: InvocationFilterV2[],
   alias: string,
 ) {
-  const source = { alias };
+  const source = { type: 'invocation-status', alias } as const;
   return (filters as FilterItem[])
     .filter((filter) => filter.field !== 'status')
     .map((filter) => fieldFilterClause(filter, source))

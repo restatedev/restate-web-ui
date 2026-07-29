@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
 import { MiniGithubMetadata } from '@restate/features/options';
 import { MiniSDK } from './SDK';
+import { useSearchParams } from 'react-router';
 
 const styles = tv({
   base: 'group/deployment relative flex flex-row items-center border text-0.5xs transition-all ease-in-out',
@@ -129,6 +130,7 @@ export function Deployment({
   const activeDeploymentInSidebar = useActiveSidebarParam(
     DEPLOYMENT_QUERY_PARAM,
   );
+  const [searchParams] = useSearchParams();
 
   const isSelected =
     activeDeploymentInSidebar === deploymentId && highlightSelection;
@@ -160,7 +162,10 @@ export function Deployment({
               ref={linkRef}
               aria-label={deploymentId}
               variant="secondary"
-              href={panelHref({ deployment: deploymentId })}
+              href={panelHref(
+                { deployment: deploymentId },
+                { existingParams: searchParams },
+              )}
               className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
             >
               <Icon
@@ -289,7 +294,10 @@ export function Deployment({
           ref={linkRef}
           aria-label={deploymentEndpoint}
           variant="secondary"
-          href={panelHref({ deployment: deployment.id })}
+          href={panelHref(
+            { deployment: deployment.id },
+            { existingParams: searchParams },
+          )}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon

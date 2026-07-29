@@ -30,7 +30,7 @@ export async function loadVqueueInvocationsByIds(
     (filter) => filter.field !== 'status',
   );
   const invocationSort =
-    sort && getInvocationListFieldOnTable(sort.field, 'sys_invocation_status')
+    sort && getInvocationListFieldOnTable(sort.field, 'sys_invocation')
       ? sort
       : undefined;
   const vqueueSort = sort && !invocationSort ? sort : undefined;

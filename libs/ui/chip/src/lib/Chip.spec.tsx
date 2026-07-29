@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { Chip, ChipSegment } from './Chip';
+import { Chip, ChipGroup, ChipSegment } from './Chip';
 
 describe('Chip', () => {
   it('should render segment content', () => {
@@ -45,5 +45,36 @@ describe('Chip', () => {
       </Chip>,
     );
     expect(screen.queryByRole('link')).toBeNull();
+  });
+
+  it('should render a reusable header chip group', () => {
+    const { container } = render(
+      <ChipGroup variant="header">
+        <Chip left="straight" right="angled">
+          <ChipSegment>service</ChipSegment>
+        </Chip>
+        <Chip left="angled" right="straight">
+          <ChipSegment>key</ChipSegment>
+        </Chip>
+      </ChipGroup>,
+    );
+    const group = container.querySelector('[data-chip-group]');
+    expect(group?.className).toContain('mix-blend-luminosity');
+    expect(group?.className).toContain('[--chip-radius:0.75rem]');
+  });
+
+  it('should render the whole chip group as a link when href is provided', () => {
+    render(
+      <MemoryRouter>
+        <ChipGroup href="/objects" aria-label="object target">
+          <Chip>
+            <ChipSegment>object</ChipSegment>
+          </Chip>
+        </ChipGroup>
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByRole('link', { name: 'object target' }).getAttribute('href'),
+    ).toBe('/objects');
   });
 });

@@ -17,6 +17,12 @@ export {
   type FinishedInvocationsHistoryV2Args,
 } from './invocationsV2';
 export { getInvocation } from './getInvocation';
+export { getVirtualObjectLock } from './getVirtualObjectLock';
+export {
+  getVirtualObjectInbox,
+  getVqueueInbox,
+  type VirtualObjectInboxMode,
+} from './getVirtualObjectInbox';
 export { getJournalEntryV2 } from './getJournalEntryV2';
 export { getInvocationJournalV2 } from './getInvocationJournalV2';
 export { getInbox } from './getInbox';
@@ -56,6 +62,10 @@ export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';
 export { getVqueue } from './getVqueue';
 export { listDrainedDeployments } from './listDrainedDeployments';
+export {
+  listVirtualObjectInstances,
+  type ListVirtualObjectInstancesArgs,
+} from './listVirtualObjectInstances';
 export {
   QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL,
   QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS,

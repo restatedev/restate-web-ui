@@ -1749,6 +1749,294 @@
         }
       }
     },
+    "/query/virtual-objects/{service}/instances": {
+      "post": {
+        "tags": ["query-virtual-objects"],
+        "summary": "List virtual object instances",
+        "description": "Returns a bounded set of virtual object identities discovered from state and pending work. Pending work includes unfinished exclusive and shared invocations, plus state-mutation entries when virtual queues are available. An inactive instance without state cannot be enumerated. By default the candidate sources remain bounded and unordered. The optional backlog sort performs an exact service-wide aggregate before selecting the largest backlogs.",
+        "operationId": "list_virtual_object_instances",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Virtual object service name",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListVirtualObjectInstancesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Virtual object instances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListVirtualObjectInstancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/virtual-objects/{service}/instances/{key}/lock": {
+      "get": {
+        "tags": ["query-virtual-objects"],
+        "summary": "Get the current Virtual Object lock holder",
+        "description": "Returns the invocation or state mutation that currently holds the exclusive lock for the exact service, key, and scope identity.",
+        "operationId": "get_virtual_object_lock",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Virtual Object service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Virtual Object service key",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Virtual Object scope. Omit for an unscoped object.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current exclusive lock holder",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectLockResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/virtual-objects/{service}/instances/{key}/inbox": {
+      "get": {
+        "tags": ["query-virtual-objects"],
+        "summary": "Get the Virtual Object inbox",
+        "description": "Returns one bounded inbox view for the exact service, key, and scope identity. Scoped exclusive Virtual Objects return VQueue summaries; other modes return entries.",
+        "operationId": "get_virtual_object_inbox",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Virtual Object service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Virtual Object service key",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "description": "Inbox view to load.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["exclusive", "shared"]
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Virtual Object scope. Omit for an unscoped object.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inbox entries for the Virtual Object identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectInboxResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Virtual Object activity changed while the response was assembled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectInboxSnapshotChangedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/vqueues/{vqueueId}/inbox": {
+      "get": {
+        "tags": ["query-virtual-objects"],
+        "summary": "Get a VQueue inbox",
+        "description": "Returns the next bounded set of inbox entries in queue order for one VQueue. State mutations are preserved in the result.",
+        "operationId": "get_vqueue_inbox",
+        "security": [],
+        "parameters": [
+          {
+            "name": "vqueueId",
+            "in": "path",
+            "description": "VQueue id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ordered inbox entries for the VQueue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectInboxResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/vqueues/{vqueueId}": {
       "get": {
         "tags": ["query-invocations"],
@@ -4414,6 +4702,160 @@
           },
           "mode": {
             "$ref": "#/components/schemas/InvocationQueryModeV2"
+          }
+        }
+      },
+      "ListVirtualObjectInstancesRequest": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "maxLength": 256,
+            "description": "Substring matched against the object key and scope."
+          },
+          "sort": {
+            "$ref": "#/components/schemas/VirtualObjectInstanceSort"
+          }
+        }
+      },
+      "VirtualObjectInstanceSort": {
+        "type": "object",
+        "required": ["field", "order"],
+        "description": "This opt-in sort scans and aggregates the service's VQueue metadata or legacy inbox before applying the response limit.",
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["backlog"]
+          },
+          "order": {
+            "type": "string",
+            "enum": ["DESC"]
+          }
+        }
+      },
+      "VirtualObjectInstanceSummary": {
+        "type": "object",
+        "required": ["key", "backlog"],
+        "properties": {
+          "key": { "type": "string" },
+          "scope": {
+            "type": "string",
+            "description": "Part of the virtual object identity. Omitted for an unscoped object."
+          },
+          "backlog": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of exclusive entries waiting for the object lock. The current lock holder and shared invocations are excluded."
+          },
+          "lockHolder": {
+            "$ref": "#/components/schemas/VirtualObjectLockHolder"
+          }
+        }
+      },
+      "ListVirtualObjectInstancesResponse": {
+        "type": "object",
+        "required": ["rows", "truncated"],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "description": "Virtual object instances. Unordered unless the request selects descending backlog order.",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectInstanceSummary"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True when more matching identities exist than the bounded response contains."
+          }
+        }
+      },
+      "VirtualObjectLockHolder": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VirtualObjectInboxEntry" },
+          {
+            "type": "object",
+            "properties": {
+              "acquiredAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
+      },
+      "VirtualObjectLockResponse": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": { "type": "boolean" },
+          "lockHolder": {
+            "$ref": "#/components/schemas/VirtualObjectLockHolder"
+          }
+        }
+      },
+      "VirtualObjectInboxEntry": {
+        "type": "object",
+        "required": ["id", "kind"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["invocation", "state-mutation", "other"]
+          },
+          "invocation": { "$ref": "#/components/schemas/Invocation" },
+          "stage": { "type": "string" },
+          "status": { "type": "string" },
+          "vqueueId": { "type": "string" },
+          "limitKey": { "type": "string" },
+          "hasLock": { "type": "boolean" },
+          "runAt": { "type": "string", "format": "date-time" },
+          "sequenceNumber": { "type": "integer" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "transitionedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "VirtualObjectVqueueSummary": {
+        "type": "object",
+        "required": ["id", "numInbox"],
+        "properties": {
+          "id": { "type": "string" },
+          "limitKey": { "type": "string" },
+          "numInbox": { "type": "integer" }
+        }
+      },
+      "VirtualObjectInboxResponse": {
+        "type": "object",
+        "required": ["supported", "limit", "truncated"],
+        "properties": {
+          "supported": { "type": "boolean" },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectInboxEntry"
+            }
+          },
+          "vqueues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectVqueueSummary"
+            }
+          },
+          "lock": {
+            "$ref": "#/components/schemas/VirtualObjectLockResponse"
+          },
+          "inboxCount": {
+            "type": "integer",
+            "description": "Exact number of entries currently in the inbox for this Virtual Object instance."
+          },
+          "limit": { "type": "integer" },
+          "truncated": { "type": "boolean" }
+        }
+      },
+      "VirtualObjectInboxSnapshotChangedResponse": {
+        "type": "object",
+        "required": ["message", "restate_code"],
+        "properties": {
+          "message": { "type": "string" },
+          "restate_code": {
+            "type": "string",
+            "enum": ["snapshot_changed"]
           }
         }
       },
