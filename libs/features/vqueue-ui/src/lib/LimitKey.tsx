@@ -13,7 +13,7 @@ const styles = tv({
     chip: 'max-w-full bg-white font-mono text-zinc-600',
     segment: 'max-w-full px-1.5',
     nestedSegment: 'bg-zinc-50 text-zinc-500',
-    icon: 'h-3.5 w-3.5 shrink-0 rotate-90 text-zinc-400',
+    icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
     copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
   },
   variants: {
@@ -23,6 +23,11 @@ const styles = tv({
       },
       table: {
         root: 'w-full',
+      },
+    },
+    hasNestedSegment: {
+      true: {
+        segment: 'pr-2.5',
       },
     },
   },
@@ -51,6 +56,7 @@ export function LimitKey({
     separatorIndex === -1 ? undefined : value.slice(separatorIndex + 1);
   const { root, chip, segment, nestedSegment, icon, copy } = styles({
     variant,
+    hasNestedSegment: secondLevel !== undefined,
   });
   const copyButton =
     variant !== 'table' ? <Copy copyText={value} className={copy()} /> : null;
@@ -65,7 +71,7 @@ export function LimitKey({
       >
         <Chip className={chip()}>
           <ChipSegment className={segment()}>
-            <Icon name={IconName.Split} className={icon()} />
+            <Icon name={IconName.ListTree} className={icon()} />
             <TruncateTooltipTrigger>{firstLevel}</TruncateTooltipTrigger>
             {secondLevel === undefined && copyButton}
           </ChipSegment>
