@@ -74,6 +74,7 @@ function WorkflowRunSidebarLabel({
             className="max-w-16"
             presentation="inline"
             relationship="target"
+            labelVariant="compact"
           />
         )}
         <span className="min-w-0 flex-1 truncate">{identity.service}</span>

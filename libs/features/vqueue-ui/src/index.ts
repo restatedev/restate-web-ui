@@ -1,6 +1,7 @@
 export { LimitKey, type LimitKeyProps } from './lib/LimitKey';
 export {
   Scope,
+  type ScopeLabelVariant,
   type ScopePresentation,
   type ScopeProps,
   type ScopeRelationship,

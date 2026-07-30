@@ -34,7 +34,22 @@ const targetStyles = tv({
         key: 'bg-white pl-1.5 font-sans text-xs font-medium text-zinc-600',
       },
     },
+    hasLeadingScope: {
+      true: {
+        service: 'pl-2',
+      },
+      false: {},
+    },
   },
+  compoundVariants: [
+    {
+      showService: false,
+      hasLeadingScope: true,
+      class: {
+        key: 'pl-2',
+      },
+    },
+  ],
 });
 
 export interface VirtualObjectInstanceTargetProps {
@@ -65,7 +80,10 @@ export function VirtualObjectInstanceTarget({
     key: keyStyle,
     serviceIcon,
     instanceIcon,
-  } = targetStyles({ showService });
+  } = targetStyles({
+    showService,
+    hasLeadingScope: scope !== undefined,
+  });
 
   const serviceChip = (
     <Chip

@@ -7,6 +7,14 @@ describe('Scope', () => {
 
     expect(screen.getByText('SCOPE')).toBeTruthy();
     expect(screen.getByText('scope-41')).toBeTruthy();
+    expect(screen.getByText('SCOPE').getAttribute('class')).toContain(
+      'translate-y-px',
+    );
+    expect(
+      container
+        .querySelector('[data-chip-segment-inner]')
+        ?.getAttribute('class'),
+    ).toContain('pl-1.5');
     expect(
       container.querySelector('[data-chip-root]')?.getAttribute('class'),
     ).toContain('rounded-l-(--chip-radius)');
@@ -33,6 +41,14 @@ describe('Scope', () => {
       container.querySelector('[data-chip-root]')?.getAttribute('class'),
     ).toContain('rounded-r-[3px]');
     expect(container.querySelector('[data-scope-connector]')).toBeNull();
+  });
+
+  it('renders a compact accessible label', () => {
+    render(<Scope value="scope-41" labelVariant="compact" />);
+
+    expect(screen.getByText('S')).toBeTruthy();
+    expect(screen.getByText('Scope')).toBeTruthy();
+    expect(screen.queryByText('SCOPE')).toBeNull();
   });
 
   it('associates an inline scope with the following target', () => {

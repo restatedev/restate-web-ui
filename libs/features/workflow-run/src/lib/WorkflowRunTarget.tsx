@@ -34,7 +34,22 @@ const targetStyles = tv({
           'bg-white pl-1.5 font-sans text-xs font-medium text-zinc-600',
       },
     },
+    hasLeadingScope: {
+      true: {
+        service: 'pl-2',
+      },
+      false: {},
+    },
   },
+  compoundVariants: [
+    {
+      showService: false,
+      hasLeadingScope: true,
+      class: {
+        workflowId: 'pl-2',
+      },
+    },
+  ],
 });
 
 export interface WorkflowRunTargetProps {
@@ -64,7 +79,10 @@ export function WorkflowRunTarget({
     service: serviceStyle,
     workflowId,
     icon,
-  } = targetStyles({ showService });
+  } = targetStyles({
+    showService,
+    hasLeadingScope: scope !== undefined,
+  });
   const serviceChip = (
     <Chip
       left={scope !== undefined ? 'angled' : 'straight'}

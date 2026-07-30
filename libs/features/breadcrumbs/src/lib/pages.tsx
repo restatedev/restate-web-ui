@@ -45,10 +45,6 @@ function VirtualObjectInstanceCrumbContent({
   );
   return (
     <>
-      <Icon
-        name={IconName.VirtualObject}
-        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-      />
       <span
         data-crumb-label
         className="flex min-w-0 items-center gap-1.5 truncate"
@@ -61,6 +57,10 @@ function VirtualObjectInstanceCrumbContent({
             relationship="target"
           />
         )}
+        <Icon
+          name={IconName.VirtualObject}
+          className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+        />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
@@ -86,10 +86,6 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
   );
   return (
     <>
-      <Icon
-        name={IconName.Workflow}
-        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-      />
       <span
         data-crumb-label
         className="flex min-w-0 items-center gap-1.5 truncate"
@@ -102,6 +98,10 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
             relationship="target"
           />
         )}
+        <Icon
+          name={IconName.Workflow}
+          className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+        />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
