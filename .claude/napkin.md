@@ -2,6 +2,8 @@
 
 ## Skill Notes
 
+- 2026-07-30 shared Limit key UI: keep `LimitKey` in `@restate/features/vqueue-ui` beside `VQueueId`. The `table` presentation flows through `InvocationTableCell`, which covers Invocations, VO inboxes, Workflow lists, and Workflow Shared tables; the default compact presentation serves invocation Details and exposes a visible copy action.
+- 2026-07-30 Workflow/VO navigation context: detail hrefs must preserve exactly `PRESERVED_QUERY_PARAMS` while retaining destination-owned `scope`; apply the same resolved href to row activation and the identity chip. Pass preservation arrays through unchanged—coercing them with `Boolean(...)` silently disables allowlist behavior for full-path links.
 - 2026-07-30 inline snapshot formatting: Vitest `-u` inserted complete Workflow SQL snapshots correctly but left the enclosing multiline `expect(...)` calls outside this repo's Prettier form. Always run Prettier after snapshot update, then rerun Vitest without `-u`.
 - 2026-07-30 Workflow SQL tests: every SQL-shape assertion in `workflows.spec.ts` must snapshot the complete ordered query list. Do not use `.slice(...)`, `.toContain(...)`, or individual clause checks; these hide hydration queries, VQueue lookups, query reordering, and unexpected extra queries.
 - 2026-07-29 self: A combined napkin-and-source patch failed because another active change had inserted new napkin entries above the context I expected. Re-read the live napkin header immediately before patching and keep napkin/source edits in separate patches when the shared file is moving.

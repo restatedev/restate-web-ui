@@ -27,9 +27,10 @@ import {
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
 import {
@@ -100,6 +101,18 @@ function workflowIdentity(
     id: run.workflowId,
     ...(run.scope !== undefined ? { scope: run.scope } : {}),
   };
+}
+
+function workflowRunRouteHref(
+  baseUrl: string,
+  identity: WorkflowRunIdentity,
+  searchParams: URLSearchParams,
+) {
+  return getHrefWithQueryParams({
+    href: workflowRunHref(baseUrl, identity),
+    preserveQueryParams: PRESERVED_QUERY_PARAMS,
+    searchParams,
+  });
 }
 
 function WorkflowsHero() {
@@ -265,9 +278,10 @@ function Component() {
                   const item = items.find(({ id }) => id === String(rowId));
                   if (item) {
                     navigate(
-                      workflowRunHref(
+                      workflowRunRouteHref(
                         baseUrl,
                         workflowIdentity(selectedService, item),
+                        searchParams,
                       ),
                     );
                   }
@@ -375,7 +389,11 @@ function Component() {
                     <Cell className="overflow-visible">
                       <WorkflowRunTarget
                         identity={identity}
-                        href={workflowRunHref(baseUrl, identity)}
+                        href={workflowRunRouteHref(
+                          baseUrl,
+                          identity,
+                          searchParams,
+                        )}
                         showService={false}
                       />
                     </Cell>

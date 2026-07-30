@@ -24,10 +24,11 @@ import {
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
+import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { useMemo } from 'react';
@@ -64,6 +65,18 @@ function virtualObjectIdentity(
     key: instance.key,
     ...(instance.scope !== undefined ? { scope: instance.scope } : {}),
   };
+}
+
+function virtualObjectInstanceRouteHref(
+  baseUrl: string,
+  identity: VirtualObjectInstanceIdentity,
+  searchParams: URLSearchParams,
+) {
+  return getHrefWithQueryParams({
+    href: virtualObjectInstanceHref(baseUrl, identity),
+    preserveQueryParams: PRESERVED_QUERY_PARAMS,
+    searchParams,
+  });
 }
 
 const columns: PanelTableColumn<ColumnId>[] = [
@@ -395,9 +408,10 @@ function Component() {
                   const item = items.find(({ id }) => id === String(rowId));
                   if (item) {
                     navigate(
-                      virtualObjectInstanceHref(
+                      virtualObjectInstanceRouteHref(
                         baseUrl,
                         virtualObjectIdentity(selectedService, item),
+                        searchParams,
                       ),
                     );
                   }
@@ -474,7 +488,11 @@ function Component() {
                     <Cell className="overflow-visible">
                       <VirtualObjectInstanceTarget
                         identity={identity}
-                        href={virtualObjectInstanceHref(baseUrl, identity)}
+                        href={virtualObjectInstanceRouteHref(
+                          baseUrl,
+                          identity,
+                          searchParams,
+                        )}
                         showService={false}
                       />
                     </Cell>

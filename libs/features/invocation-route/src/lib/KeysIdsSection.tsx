@@ -3,15 +3,14 @@ import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { Badge } from '@restate/ui/badge';
+import { LimitKey } from '@restate/features/vqueue-ui';
 
 const styles = tv({ base: '' });
 export function KeysIdsSection({
   invocation,
-  isPending,
   className,
 }: {
   invocation?: Invocation;
-  isPending?: boolean;
   className?: string;
 }) {
   const idempotencyId = invocation?.idempotency_key;
@@ -95,16 +94,7 @@ export function KeysIdsSection({
             <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
               Limit Key
             </span>
-            <Badge
-              size="sm"
-              className="ml-1 min-w-0 py-0 pr-0 align-middle font-mono"
-            >
-              <div className="truncate">{limitKey}</div>
-              <Copy
-                copyText={limitKey}
-                className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
-              />
-            </Badge>
+            <LimitKey value={limitKey} className="ml-1" />
           </div>
         )}
 

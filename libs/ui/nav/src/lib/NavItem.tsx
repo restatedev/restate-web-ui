@@ -40,7 +40,7 @@ export function NavItem({
   const isActive = location.pathname.startsWith(href);
   const { value } = useContext(NavContext);
   const resolvedHref = useHrefWithQueryParams({
-    preserveQueryParams: Boolean(preserveSearchParams),
+    preserveQueryParams: preserveSearchParams,
     href,
   });
   return (

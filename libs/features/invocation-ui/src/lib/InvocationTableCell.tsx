@@ -18,7 +18,7 @@ import { useOnboarding } from '@restate/util/feature-flag';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { panelHref } from '@restate/util/panel';
-import { VQueueId } from '@restate/features/vqueue-ui';
+import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { InvocationId } from './InvocationId';
 import { InvocationStatusBadge, Status } from './Status';
 import { Target } from './Target';
@@ -156,16 +156,6 @@ function InvocationTableHandler({
   );
 }
 
-function InvocationTableLimitKey({ value }: { value?: string }) {
-  if (!value) return null;
-
-  return (
-    <Badge className="w-full border-none bg-transparent pl-0 font-mono">
-      <TruncateWithTooltip copyText={value}>{value}</TruncateWithTooltip>
-    </Badge>
-  );
-}
-
 export function InvocationTableDate({
   value,
   tooltipTitle = 'Created at',
@@ -219,7 +209,7 @@ function visibleCellContent(
         />
       );
     case 'limit_key':
-      return <InvocationTableLimitKey value={row.limit_key} />;
+      return <LimitKey value={row.limit_key} variant="table" />;
     case 'status':
       return <InvocationTableStatus row={row} invocation={invocation} />;
     case 'created_at':
