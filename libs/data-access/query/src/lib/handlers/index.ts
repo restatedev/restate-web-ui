@@ -67,6 +67,11 @@ export {
   type ListVirtualObjectInstancesArgs,
 } from './listVirtualObjectInstances';
 export {
+  getWorkflowRun,
+  listWorkflowRuns,
+  type ListWorkflowRunsArgs,
+} from './workflows';
+export {
   QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL,
   QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS,
   type QueryContext,
