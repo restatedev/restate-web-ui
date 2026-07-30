@@ -1,3 +1,4 @@
+import { Scope } from '@restate/features/vqueue-ui';
 import {
   Chip,
   ChipGroup,
@@ -23,10 +24,7 @@ const targetStyles = tv({
     chip: 'h-6.5 max-w-full text-xs font-medium text-zinc-600',
     service: 'max-w-[18rem] bg-white pl-1.5 font-medium text-zinc-600',
     workflowId: 'max-w-[28rem] bg-zinc-50 font-mono text-[90%] text-zinc-500',
-    scope: 'max-w-[22rem] bg-zinc-100 font-mono text-[90%] text-zinc-600',
     icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
-    scopeBadge:
-      'inline-flex h-4 shrink-0 items-center rounded border border-zinc-300/80 bg-white/80 px-1 font-sans text-[0.5625rem] leading-none font-semibold tracking-[0.02em] text-zinc-500',
   },
   variants: {
     showService: {
@@ -65,9 +63,7 @@ export function WorkflowRunTarget({
     chip,
     service: serviceStyle,
     workflowId,
-    scope: scopeStyle,
     icon,
-    scopeBadge,
   } = targetStyles({ showService });
   const serviceChip = (
     <Chip left="straight" right="angled" className={chip({ className })}>
@@ -105,7 +101,7 @@ export function WorkflowRunTarget({
           ))}
         <Chip
           left={showService ? 'angled' : 'straight'}
-          right={scope === undefined ? 'straight' : 'angled'}
+          right="straight"
           className={chip({ className })}
         >
           <ChipSegment className={workflowId()}>
@@ -114,14 +110,11 @@ export function WorkflowRunTarget({
           </ChipSegment>
         </Chip>
         {scope !== undefined && (
-          <Chip left="angled" right="straight" className={chip({ className })}>
-            <ChipSegment className={scopeStyle()}>
-              <span className={scopeBadge()}>SCOPE</span>
-              <TruncateTooltipTrigger>
-                {scope || <>&nbsp;</>}
-              </TruncateTooltipTrigger>
-            </ChipSegment>
-          </Chip>
+          <Scope
+            value={scope}
+            className={className}
+            containerClassName="ml-1"
+          />
         )}
       </ChipGroup>
     </TruncateWithTooltip>

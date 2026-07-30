@@ -102,6 +102,7 @@ import {
   Component as ComponentIcon,
   Focus,
   Scan,
+  Split,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -253,6 +254,7 @@ export const enum IconName {
   VirtualObject = 'VirtualObject',
   Scope = 'Scope',
   ScanBox = 'ScanBox',
+  Split = 'Split',
 }
 export interface IconsProps {
   name: IconName;
@@ -387,6 +389,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.VirtualObject]: ComponentIcon,
   [IconName.Scope]: Focus,
   [IconName.ScanBox]: Scan,
+  [IconName.Split]: Split,
 };
 
 const styles = tv({

@@ -1,21 +1,28 @@
-import { Badge } from '@restate/ui/badge';
+import { Chip, ChipSegment } from '@restate/ui/chip';
 import { Copy } from '@restate/ui/copy';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { Icon, IconName } from '@restate/ui/icons';
+import {
+  TruncateTooltipTrigger,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
   slots: {
-    root: 'min-w-0 font-mono',
-    value: 'min-w-0 truncate',
-    copy: 'ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
+    root: 'inline-flex w-fit max-w-full min-w-0 align-middle',
+    chip: 'max-w-full bg-white font-mono text-zinc-600',
+    segment: 'max-w-full px-1.5',
+    nestedSegment: 'bg-zinc-50 text-zinc-500',
+    icon: 'h-3.5 w-3.5 shrink-0 rotate-90 text-zinc-400',
+    copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
   },
   variants: {
     variant: {
       default: {
-        root: 'py-0 pr-0 align-middle',
+        segment: 'pr-1',
       },
       table: {
-        root: 'w-full border-none bg-transparent pl-0',
+        root: 'w-full',
       },
     },
   },
@@ -37,22 +44,39 @@ export function LimitKey({
 }: LimitKeyProps) {
   if (!value) return null;
 
-  const { root, value: valueStyle, copy } = styles({ variant });
+  const separatorIndex = value.indexOf('/');
+  const firstLevel =
+    separatorIndex === -1 ? value : value.slice(0, separatorIndex);
+  const secondLevel =
+    separatorIndex === -1 ? undefined : value.slice(separatorIndex + 1);
+  const { root, chip, segment, nestedSegment, icon, copy } = styles({
+    variant,
+  });
+  const copyButton =
+    variant !== 'table' ? <Copy copyText={value} className={copy()} /> : null;
 
   return (
-    <Badge
-      size={variant === 'table' ? 'base' : 'sm'}
-      className={root({ className })}
-      data-limit-key={value}
-    >
-      {variant === 'table' ? (
-        <TruncateWithTooltip copyText={value}>{value}</TruncateWithTooltip>
-      ) : (
-        <>
-          <span className={valueStyle()}>{value}</span>
-          <Copy copyText={value} className={copy()} />
-        </>
-      )}
-    </Badge>
+    <span className={root({ className })} data-limit-key={value}>
+      <TruncateWithTooltip
+        tooltipContent={value}
+        copyText={value}
+        hideCopy={variant !== 'table'}
+        overflowVisible
+      >
+        <Chip className={chip()}>
+          <ChipSegment className={segment()}>
+            <Icon name={IconName.Split} className={icon()} />
+            <TruncateTooltipTrigger>{firstLevel}</TruncateTooltipTrigger>
+            {secondLevel === undefined && copyButton}
+          </ChipSegment>
+          {secondLevel !== undefined && (
+            <ChipSegment className={nestedSegment()}>
+              <TruncateTooltipTrigger>{secondLevel}</TruncateTooltipTrigger>
+              {copyButton}
+            </ChipSegment>
+          )}
+        </Chip>
+      </TruncateWithTooltip>
+    </span>
   );
 }
