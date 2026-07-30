@@ -971,6 +971,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/workflows/{service}/runs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List Workflow runs
+     * @description Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's Workflow handler are included; Shared handler invocations are excluded.
+     */
+    post: operations['list_workflow_runs'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/workflows/{service}/runs/{workflowId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get a Workflow run
+     * @description Returns the main run invocation and a bounded, newest-first set of retained Shared handler invocations for the exact service, Workflow id, and optional scope identity.
+     */
+    get: operations['get_workflow_run'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/virtual-objects/{service}/instances/{key}/lock': {
     parameters: {
       query?: never;
@@ -3067,6 +3107,31 @@ export interface components {
       rows: components['schemas']['VirtualObjectInstanceSummary'][];
       /** @description True when more matching identities exist than the bounded response contains. */
       truncated: boolean;
+    };
+    ListWorkflowRunsRequest: {
+      /** @description Substring matched against the Workflow id and scope. */
+      search?: string;
+    };
+    WorkflowRunSummary: {
+      /** @description Workflow id. */
+      id: string;
+      /** @description Part of the Workflow identity. Omitted for an unscoped run. */
+      scope?: string;
+      runInvocation: components['schemas']['InvocationV2'];
+    };
+    ListWorkflowRunsResponse: {
+      /** @description Workflow runs ordered newest first. */
+      rows: components['schemas']['WorkflowRunSummary'][];
+      limit: number;
+      /** @description True when more matching Workflow runs exist than the bounded response contains. */
+      truncated: boolean;
+    };
+    WorkflowRunDetailsResponse: {
+      runInvocation: components['schemas']['InvocationV2'];
+      /** @description Retained Shared handler invocations ordered newest first. */
+      sharedInvocations: components['schemas']['InvocationV2'][];
+      sharedInvocationsLimit: number;
+      sharedInvocationsTruncated: boolean;
     };
     VirtualObjectLockHolder: components['schemas']['VirtualObjectInboxEntry'] & {
       /** Format: date-time */
@@ -7842,6 +7907,127 @@ export interface operations {
         };
       };
       400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  list_workflow_runs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Workflow service name */
+        service: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListWorkflowRunsRequest'];
+      };
+    };
+    responses: {
+      /** @description Workflow runs */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListWorkflowRunsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The service is not a Workflow service. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_workflow_run: {
+    parameters: {
+      query?: {
+        /** @description Workflow scope. Omit for an unscoped run. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Workflow service name */
+        service: string;
+        /** @description Workflow id */
+        workflowId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Workflow run details */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['WorkflowRunDetailsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The Workflow service or run was not found. */
+      404: {
         headers: {
           [name: string]: unknown;
         };

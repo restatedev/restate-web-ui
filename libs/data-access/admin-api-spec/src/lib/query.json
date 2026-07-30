@@ -1819,6 +1819,170 @@
         }
       }
     },
+    "/query/workflows/{service}/runs": {
+      "post": {
+        "tags": ["query-workflows"],
+        "summary": "List Workflow runs",
+        "description": "Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's Workflow handler are included; Shared handler invocations are excluded.",
+        "operationId": "list_workflow_runs",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Workflow service name",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListWorkflowRunsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow runs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListWorkflowRunsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The service is not a Workflow service.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/workflows/{service}/runs/{workflowId}": {
+      "get": {
+        "tags": ["query-workflows"],
+        "summary": "Get a Workflow run",
+        "description": "Returns the main run invocation and a bounded, newest-first set of retained Shared handler invocations for the exact service, Workflow id, and optional scope identity.",
+        "operationId": "get_workflow_run",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Workflow service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "workflowId",
+            "in": "path",
+            "description": "Workflow id",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Workflow scope. Omit for an unscoped run.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflow run details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowRunDetailsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Workflow service or run was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/virtual-objects/{service}/instances/{key}/lock": {
       "get": {
         "tags": ["query-virtual-objects"],
@@ -4767,6 +4931,74 @@
             "type": "boolean",
             "description": "True when more matching identities exist than the bounded response contains."
           }
+        }
+      },
+      "ListWorkflowRunsRequest": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "maxLength": 256,
+            "description": "Substring matched against the Workflow id and scope."
+          }
+        }
+      },
+      "WorkflowRunSummary": {
+        "type": "object",
+        "required": ["id", "runInvocation"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Workflow id."
+          },
+          "scope": {
+            "type": "string",
+            "description": "Part of the Workflow identity. Omitted for an unscoped run."
+          },
+          "runInvocation": {
+            "$ref": "#/components/schemas/InvocationV2"
+          }
+        }
+      },
+      "ListWorkflowRunsResponse": {
+        "type": "object",
+        "required": ["rows", "limit", "truncated"],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "description": "Workflow runs ordered newest first.",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowRunSummary"
+            }
+          },
+          "limit": { "type": "integer" },
+          "truncated": {
+            "type": "boolean",
+            "description": "True when more matching Workflow runs exist than the bounded response contains."
+          }
+        }
+      },
+      "WorkflowRunDetailsResponse": {
+        "type": "object",
+        "required": [
+          "runInvocation",
+          "sharedInvocations",
+          "sharedInvocationsLimit",
+          "sharedInvocationsTruncated"
+        ],
+        "properties": {
+          "runInvocation": {
+            "$ref": "#/components/schemas/InvocationV2"
+          },
+          "sharedInvocations": {
+            "type": "array",
+            "description": "Retained Shared handler invocations ordered newest first.",
+            "items": {
+              "$ref": "#/components/schemas/InvocationV2"
+            }
+          },
+          "sharedInvocationsLimit": { "type": "integer" },
+          "sharedInvocationsTruncated": { "type": "boolean" }
         }
       },
       "VirtualObjectLockHolder": {

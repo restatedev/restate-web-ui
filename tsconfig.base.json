@@ -117,6 +117,12 @@
       "@restate/features/virtual-objects-route": [
         "libs/features/virtual-objects-route/src/index.ts"
       ],
+      "@restate/features/workflow-run": [
+        "libs/features/workflow-run/src/index.ts"
+      ],
+      "@restate/features/workflows-route": [
+        "libs/features/workflows-route/src/index.ts"
+      ],
       "@restate/features/vqueue-ui": ["libs/features/vqueue-ui/src/index.ts"],
       "@restate/ui/action-text": ["libs/ui/action-text/src/index.ts"],
       "@restate/ui/api": ["libs/ui/api/src/index.ts"],

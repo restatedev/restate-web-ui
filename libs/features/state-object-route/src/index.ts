@@ -3,6 +3,10 @@ export { StatePanel } from './lib/StatePanel';
 export { STATE_QUERY_NAME } from './lib/constants';
 export { StateEntriesTable } from './lib/StateObjectTable';
 export {
+  KeyedServiceState,
+  type KeyedServiceStateIdentity,
+} from './lib/KeyedServiceState';
+export {
   getDefaultStateService,
   useStateServiceCatalog,
 } from './lib/ServiceSelector';

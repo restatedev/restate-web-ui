@@ -25,6 +25,7 @@ import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   OverviewSidebarItem,
   InvocationsSidebarItem,
+  WorkflowsSidebarItem,
   VirtualObjectsSidebarItem,
   StateSidebarItem,
   IntrospectionSidebarItem,
@@ -364,6 +365,7 @@ function SidebarPanels() {
       <SidebarNav>
         <OverviewSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
         <InvocationsSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
+        <WorkflowsSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
         <VirtualObjectsSidebarItem
           preserveSearchParams={PRESERVED_QUERY_PARAMS}
         />
@@ -413,6 +415,12 @@ function TopbarPanels() {
                 href={'/invocations'}
               >
                 Invocations
+              </NavItem>
+              <NavItem
+                preserveSearchParams={PRESERVED_QUERY_PARAMS}
+                href={'/workflows'}
+              >
+                Workflows
               </NavItem>
               <NavItem
                 preserveSearchParams={PRESERVED_QUERY_PARAMS}

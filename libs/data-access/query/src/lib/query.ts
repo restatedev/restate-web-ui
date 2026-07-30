@@ -69,6 +69,9 @@ import {
   getVirtualObjectInbox,
   type VirtualObjectInboxMode,
   getVqueueInbox,
+  listWorkflowRuns,
+  type ListWorkflowRunsArgs,
+  getWorkflowRun,
 } from './handlers';
 import { getVersion } from './getVersion';
 import { getFeatures } from './getFeatures';
@@ -204,6 +207,15 @@ type BoundHandlers = {
     mode: VirtualObjectInboxMode,
     scope?: string,
   ) => Promise<Response>;
+  listWorkflowRuns: (
+    service: string,
+    args: ListWorkflowRunsArgs,
+  ) => Promise<Response>;
+  getWorkflowRun: (
+    service: string,
+    workflowId: string,
+    scope?: string,
+  ) => Promise<Response>;
 };
 
 function bindHandlers(context: QueryContext): BoundHandlers {
@@ -257,6 +269,8 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     listVirtualObjectInstances: listVirtualObjectInstances.bind(context),
     getVirtualObjectLock: getVirtualObjectLock.bind(context),
     getVirtualObjectInbox: getVirtualObjectInbox.bind(context),
+    listWorkflowRuns: listWorkflowRuns.bind(context),
+    getWorkflowRun: getWorkflowRun.bind(context),
   };
 }
 
@@ -414,6 +428,15 @@ export const routes = createRoutes('/query', {
     queue: {
       method: 'GET',
       pattern: '/virtualObjects/:name/keys/:key/queue',
+    },
+  },
+  workflows: {
+    runs: {
+      list: { method: 'POST', pattern: '/workflows/:service/runs' },
+      get: {
+        method: 'GET',
+        pattern: '/workflows/:service/runs/:workflowId',
+      },
     },
   },
   services: {
@@ -667,6 +690,25 @@ router.map(routes, {
             : undefined,
           ctx.url.searchParams.get('scope') ?? undefined,
         );
+      },
+    },
+    workflows: {
+      runs: {
+        async list(ctx) {
+          const { listWorkflowRuns } = ctx.storage.get(handlersKey);
+          const body = (await ctx.request.json()) as ListWorkflowRunsArgs;
+          return listWorkflowRuns(ctx.params.service, body);
+        },
+        async get(ctx) {
+          const { getWorkflowRun } = ctx.storage.get(handlersKey);
+          return getWorkflowRun(
+            ctx.params.service,
+            ctx.params.workflowId,
+            ctx.url.searchParams.has('scope')
+              ? String(ctx.url.searchParams.get('scope'))
+              : undefined,
+          );
+        },
       },
     },
     services: {

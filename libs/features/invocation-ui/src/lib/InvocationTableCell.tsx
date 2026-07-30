@@ -65,6 +65,10 @@ const invocationIdStyles = tv({
   },
 });
 
+const invocationTableCellStyles = tv({
+  base: 'align-top',
+});
+
 function InvocationTableId({ id }: { id: string }) {
   const isOnboarding = useOnboarding();
   return (
@@ -228,15 +232,17 @@ export function InvocationTableCell({
   row,
   invocation,
   isVisible = true,
+  className,
 }: {
   column: InvocationTableColumnKey;
   row: InvocationTableRow;
   invocation?: Invocation;
   isVisible?: boolean;
+  className?: string;
 }) {
   const value = row[column];
   return (
-    <Cell className="align-top">
+    <Cell className={invocationTableCellStyles({ className })}>
       {isVisible ? (
         visibleCellContent(column, row, invocation)
       ) : (
