@@ -51,6 +51,27 @@ describe('Scope', () => {
     expect(screen.queryByText('SCOPE')).toBeNull();
   });
 
+  it('renders a visible copy action when requested', () => {
+    const { container } = render(<Scope value="scope-41" showCopy />);
+
+    expect(screen.getByRole('button')).toBeTruthy();
+    expect(
+      container.querySelector('[data-chip-segment-inner]')?.classList,
+    ).toContain('pr-1');
+  });
+
+  it('renders the table presentation without a visible copy action', () => {
+    const { container } = render(<Scope value="scope-41" variant="table" />);
+
+    expect(
+      container.querySelector('[data-scope]')?.getAttribute('class'),
+    ).toContain('w-full');
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(
+      container.querySelector('[data-chip-segment-inner]')?.classList,
+    ).not.toContain('pr-1');
+  });
+
   it('associates an inline scope with the following target', () => {
     const { container } = render(
       <Scope value="scope-41" presentation="inline" relationship="target" />,

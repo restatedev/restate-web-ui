@@ -1,5 +1,9 @@
 import { Chip, ChipSegment } from '@restate/ui/chip';
-import { TruncateTooltipTrigger } from '@restate/ui/tooltip';
+import { Copy } from '@restate/ui/copy';
+import {
+  TruncateTooltipTrigger,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
@@ -14,12 +18,30 @@ const styles = tv({
       'inline-flex h-4 shrink-0 items-center rounded border border-zinc-300/80 bg-white/80 px-1 font-sans text-[0.5625rem] leading-none font-semibold tracking-[0.02em] text-zinc-500',
     labelText: 'translate-y-px',
     relationship: 'h-px w-3 shrink-0 bg-zinc-300',
+    copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
+  },
+  variants: {
+    variant: {
+      default: {},
+      table: {
+        root: 'w-full',
+      },
+    },
+    hasCopy: {
+      true: {
+        segment: 'pr-1',
+      },
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
   },
 });
 
 export type ScopePresentation = 'chip' | 'inline';
 export type ScopeRelationship = 'target';
 export type ScopeLabelVariant = 'full' | 'compact';
+export type ScopeVariant = 'default' | 'table';
 
 export interface ScopeProps {
   value?: string;
@@ -28,6 +50,8 @@ export interface ScopeProps {
   presentation?: ScopePresentation;
   relationship?: ScopeRelationship;
   labelVariant?: ScopeLabelVariant;
+  variant?: ScopeVariant;
+  showCopy?: boolean;
 }
 
 export function Scope({
@@ -37,6 +61,8 @@ export function Scope({
   presentation = 'chip',
   relationship,
   labelVariant = 'full',
+  variant = 'default',
+  showCopy = false,
 }: ScopeProps) {
   if (value === undefined) return null;
 
@@ -48,7 +74,8 @@ export function Scope({
     label,
     labelText,
     relationship: relationshipStyle,
-  } = styles();
+    copy,
+  } = styles({ variant, hasCopy: showCopy });
   const content = (
     <>
       <span className={label()}>
@@ -61,7 +88,16 @@ export function Scope({
         {labelVariant === 'compact' && <span className="sr-only">Scope</span>}
       </span>
       <TruncateTooltipTrigger>{value || <>&nbsp;</>}</TruncateTooltipTrigger>
+      {showCopy && <Copy copyText={value} className={copy()} />}
     </>
+  );
+  const chipContent = (
+    <Chip
+      right={relationship === 'target' ? 'angled' : 'straight'}
+      className={chip({ className })}
+    >
+      <ChipSegment className={segment()}>{content}</ChipSegment>
+    </Chip>
   );
 
   return (
@@ -71,12 +107,17 @@ export function Scope({
       data-scope-relationship={relationship}
     >
       {presentation === 'chip' ? (
-        <Chip
-          right={relationship === 'target' ? 'angled' : 'straight'}
-          className={chip({ className })}
-        >
-          <ChipSegment className={segment()}>{content}</ChipSegment>
-        </Chip>
+        variant === 'table' ? (
+          <TruncateWithTooltip
+            tooltipContent={value}
+            copyText={value}
+            overflowVisible
+          >
+            {chipContent}
+          </TruncateWithTooltip>
+        ) : (
+          chipContent
+        )
       ) : (
         <span className={inline({ className })}>{content}</span>
       )}
