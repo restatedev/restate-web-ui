@@ -1,4 +1,5 @@
 import { InvocationPopoverContent } from '@restate/features/invocation-ui';
+import { Scope } from '@restate/features/vqueue-ui';
 import {
   CrumbContent,
   type BreadcrumbComponentProps,
@@ -52,6 +53,14 @@ function VirtualObjectInstanceCrumbContent({
         data-crumb-label
         className="flex min-w-0 items-center gap-1.5 truncate"
       >
+        {scope !== undefined && (
+          <Scope
+            value={scope}
+            className="max-w-24"
+            presentation="inline"
+            relationship="target"
+          />
+        )}
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
@@ -59,14 +68,6 @@ function VirtualObjectInstanceCrumbContent({
         <span className="min-w-0 truncate font-mono text-[90%]">
           {crumb.params['key'] ?? ''}
         </span>
-        {scope !== undefined && (
-          <>
-            <span className="shrink-0 text-zinc-400">/</span>
-            <span className="min-w-0 truncate font-mono text-[90%]">
-              {scope}
-            </span>
-          </>
-        )}
       </span>
       {crumb.isCurrent && (
         <Copy
@@ -93,6 +94,14 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
         data-crumb-label
         className="flex min-w-0 items-center gap-1.5 truncate"
       >
+        {scope !== undefined && (
+          <Scope
+            value={scope}
+            className="max-w-24"
+            presentation="inline"
+            relationship="target"
+          />
+        )}
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
@@ -100,14 +109,6 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
         <span className="min-w-0 truncate font-mono text-[90%]">
           {crumb.params['workflowId'] ?? ''}
         </span>
-        {scope !== undefined && (
-          <>
-            <span className="shrink-0 text-zinc-400">/</span>
-            <span className="min-w-0 truncate font-mono text-[90%]">
-              {scope}
-            </span>
-          </>
-        )}
       </span>
       {crumb.isCurrent && (
         <Copy

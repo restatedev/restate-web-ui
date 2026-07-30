@@ -66,7 +66,11 @@ export function WorkflowRunTarget({
     icon,
   } = targetStyles({ showService });
   const serviceChip = (
-    <Chip left="straight" right="angled" className={chip({ className })}>
+    <Chip
+      left={scope !== undefined ? 'angled' : 'straight'}
+      right="angled"
+      className={chip({ className })}
+    >
       <ChipSegment className={serviceStyle()}>
         <Icon name={IconName.Box} className={icon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
@@ -86,6 +90,9 @@ export function WorkflowRunTarget({
         aria-label={href ? `Workflow run ${copyText}` : undefined}
         className={containerClassName}
       >
+        {scope !== undefined && (
+          <Scope value={scope} className={className} relationship="target" />
+        )}
         {showService &&
           (serviceHref ? (
             <Link
@@ -100,7 +107,7 @@ export function WorkflowRunTarget({
             serviceChip
           ))}
         <Chip
-          left={showService ? 'angled' : 'straight'}
+          left={showService || scope !== undefined ? 'angled' : 'straight'}
           right="straight"
           className={chip({ className })}
         >
@@ -109,13 +116,6 @@ export function WorkflowRunTarget({
             <TruncateTooltipTrigger>{id || <>&nbsp;</>}</TruncateTooltipTrigger>
           </ChipSegment>
         </Chip>
-        {scope !== undefined && (
-          <Scope
-            value={scope}
-            className={className}
-            containerClassName="ml-1"
-          />
-        )}
       </ChipGroup>
     </TruncateWithTooltip>
   );

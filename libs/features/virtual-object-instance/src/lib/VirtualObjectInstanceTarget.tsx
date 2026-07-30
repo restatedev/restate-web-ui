@@ -68,7 +68,11 @@ export function VirtualObjectInstanceTarget({
   } = targetStyles({ showService });
 
   const serviceChip = (
-    <Chip left="straight" right="angled" className={chip({ className })}>
+    <Chip
+      left={scope !== undefined ? 'angled' : 'straight'}
+      right="angled"
+      className={chip({ className })}
+    >
       <ChipSegment className={serviceStyle()}>
         <Icon name={IconName.Box} className={serviceIcon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
@@ -78,6 +82,9 @@ export function VirtualObjectInstanceTarget({
 
   const chips = (
     <>
+      {scope !== undefined && (
+        <Scope value={scope} className={className} relationship="target" />
+      )}
       {showService &&
         (serviceHref ? (
           <Link
@@ -92,7 +99,7 @@ export function VirtualObjectInstanceTarget({
           serviceChip
         ))}
       <Chip
-        left={showService ? 'angled' : 'straight'}
+        left={showService || scope !== undefined ? 'angled' : 'straight'}
         right="straight"
         className={chip({ className })}
       >
@@ -101,9 +108,6 @@ export function VirtualObjectInstanceTarget({
           <TruncateTooltipTrigger>{key || <>&nbsp;</>}</TruncateTooltipTrigger>
         </ChipSegment>
       </Chip>
-      {scope !== undefined && (
-        <Scope value={scope} className={className} containerClassName="ml-1" />
-      )}
     </>
   );
 

@@ -1,5 +1,6 @@
 import type { SidebarLocation, SidebarSubItem } from '@restate/ui/layout';
 import { SidebarNavItem } from '@restate/ui/layout';
+import { Scope } from '@restate/features/vqueue-ui';
 import { IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import {
@@ -66,20 +67,20 @@ function WorkflowRunSidebarLabel({
       offset={10}
       className="min-w-0 flex-auto"
     >
-      <span className="flex min-w-0 flex-auto items-baseline gap-1">
+      <span className="flex min-w-0 flex-auto items-center gap-1">
+        {identity.scope !== undefined && (
+          <Scope
+            value={identity.scope}
+            className="max-w-16"
+            presentation="inline"
+            relationship="target"
+          />
+        )}
         <span className="min-w-0 flex-1 truncate">{identity.service}</span>
         <span className="shrink-0 text-zinc-400">/</span>
         <span className="max-w-24 shrink-0 truncate font-mono">
           {identity.id}
         </span>
-        {identity.scope !== undefined && (
-          <>
-            <span className="shrink-0 text-zinc-400">/</span>
-            <span className="max-w-16 shrink-0 truncate font-mono">
-              {identity.scope}
-            </span>
-          </>
-        )}
       </span>
     </HoverTooltip>
   );

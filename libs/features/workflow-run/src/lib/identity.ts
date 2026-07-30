@@ -37,5 +37,5 @@ export function formatWorkflowRunIdentity({
 }: WorkflowRunIdentity): string {
   return scope === undefined
     ? `${service} / ${id}`
-    : `${service} / ${id} / ${scope}`;
+    : `Scope ${scope} · ${service} / ${id}`;
 }
