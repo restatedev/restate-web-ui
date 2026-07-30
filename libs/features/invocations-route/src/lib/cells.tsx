@@ -51,6 +51,7 @@ import {
   Target,
   type InvocationTableColumnKey,
 } from '@restate/features/invocation-ui';
+import { Scope } from '@restate/features/vqueue-ui';
 
 function withDate({
   tooltipTitle,
@@ -241,6 +242,10 @@ function RestartedFromCell({ invocation }: CellProps) {
     return null;
   }
   return <InvocationId id={invocation.restarted_from} />;
+}
+
+function ScopeCell({ invocation }: CellProps) {
+  return <Scope value={invocation.scope} variant="table" />;
 }
 
 const lastEntryIconStyles = tv({
@@ -520,10 +525,7 @@ const CELLS: Record<
   ),
   restarted_from: withCell(RestartedFromCell, 'restarted_from'),
   duration: withCell(DurationCell, 'duration'),
-  scope: withCell(
-    withField({ field: 'scope', className: 'font-mono' }),
-    'scope',
-  ),
+  scope: withCell(ScopeCell, 'scope'),
 };
 
 export function InvocationCell({

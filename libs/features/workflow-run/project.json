@@ -1,0 +1,8 @@
+{
+  "name": "workflow-run",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/workflow-run/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {}
+}

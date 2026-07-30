@@ -1,4 +1,5 @@
 import { InvocationPopoverContent } from '@restate/features/invocation-ui';
+import { Scope } from '@restate/features/vqueue-ui';
 import {
   CrumbContent,
   type BreadcrumbComponentProps,
@@ -10,6 +11,10 @@ import {
   formatVirtualObjectInstanceIdentity,
   virtualObjectScopeFromSearch,
 } from '@restate/features/virtual-object-instance';
+import {
+  formatWorkflowRunIdentity,
+  workflowScopeFromSearch,
+} from '@restate/features/workflow-run';
 
 export type CrumbFragment = Omit<PageDefinition, 'pattern'>;
 
@@ -40,14 +45,22 @@ function VirtualObjectInstanceCrumbContent({
   );
   return (
     <>
-      <Icon
-        name={IconName.VirtualObject}
-        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-      />
       <span
         data-crumb-label
         className="flex min-w-0 items-center gap-1.5 truncate"
       >
+        {scope !== undefined && (
+          <Scope
+            value={scope}
+            className="max-w-24"
+            presentation="inline"
+            relationship="target"
+          />
+        )}
+        <Icon
+          name={IconName.VirtualObject}
+          className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+        />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
@@ -55,14 +68,47 @@ function VirtualObjectInstanceCrumbContent({
         <span className="min-w-0 truncate font-mono text-[90%]">
           {crumb.params['key'] ?? ''}
         </span>
+      </span>
+      {crumb.isCurrent && (
+        <Copy
+          copyText={crumb.label}
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-700"
+        />
+      )}
+    </>
+  );
+}
+
+function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
+  const queryIndex = crumb.href.indexOf('?');
+  const scope = workflowScopeFromSearch(
+    queryIndex === -1 ? '' : crumb.href.slice(queryIndex),
+  );
+  return (
+    <>
+      <span
+        data-crumb-label
+        className="flex min-w-0 items-center gap-1.5 truncate"
+      >
         {scope !== undefined && (
-          <>
-            <span className="shrink-0 text-zinc-400">/</span>
-            <span className="min-w-0 truncate font-mono text-[90%]">
-              {scope}
-            </span>
-          </>
+          <Scope
+            value={scope}
+            className="max-w-24"
+            presentation="inline"
+            relationship="target"
+          />
         )}
+        <Icon
+          name={IconName.Workflow}
+          className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+        />
+        <span className="min-w-0 truncate">
+          {crumb.params['service'] ?? ''}
+        </span>
+        <span className="shrink-0 text-zinc-400">/</span>
+        <span className="min-w-0 truncate font-mono text-[90%]">
+          {crumb.params['workflowId'] ?? ''}
+        </span>
       </span>
       {crumb.isCurrent && (
         <Copy
@@ -119,6 +165,28 @@ export const virtualObjectInstanceCrumb: CrumbFragment = {
   Content: VirtualObjectInstanceCrumbContent,
 };
 
+export const workflowsCrumb: CrumbFragment = {
+  kind: 'list',
+  resource: 'workflows',
+  label: 'Workflows',
+  icon: IconName.Workflow,
+};
+
+export const workflowRunCrumb: CrumbFragment = {
+  kind: 'detail',
+  resource: 'workflows',
+  label: (params, search) => {
+    const scope = workflowScopeFromSearch(search);
+    return formatWorkflowRunIdentity({
+      service: params['service'] ?? '',
+      id: params['workflowId'] ?? '',
+      ...(scope !== undefined ? { scope } : {}),
+    });
+  },
+  icon: IconName.Workflow,
+  Content: WorkflowRunCrumbContent,
+};
+
 export const stateCrumb: CrumbFragment = {
   kind: 'list',
   resource: 'state',
@@ -152,6 +220,11 @@ export function createBreadcrumbPages(options?: {
     {
       pattern: `${prefix}/virtual-objects/:service/:key`,
       ...virtualObjectInstanceCrumb,
+    },
+    { pattern: `${prefix}/workflows`, ...workflowsCrumb },
+    {
+      pattern: `${prefix}/workflows/:service/:workflowId`,
+      ...workflowRunCrumb,
     },
     { pattern: `${prefix}/state`, ...stateCrumb },
     { pattern: `${prefix}/state/:virtualObject`, ...stateObjectCrumb },

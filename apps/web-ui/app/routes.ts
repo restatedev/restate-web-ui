@@ -14,6 +14,10 @@ export default [
     index('routes/virtual-objects.tsx'),
     route(':service/:key', 'routes/virtual-object-instance.tsx'),
   ]),
+  ...prefix('workflows', [
+    index('routes/workflows.tsx'),
+    route(':service/:workflowId', 'routes/workflow-run.tsx'),
+  ]),
   ...prefix('state', [
     index('routes/state.tsx'),
     route(':virtualObject', 'routes/virtual-object.tsx'),

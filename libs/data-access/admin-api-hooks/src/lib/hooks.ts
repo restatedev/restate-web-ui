@@ -2090,6 +2090,80 @@ export function useListVirtualObjectInstances(
   };
 }
 
+export function useListWorkflowRuns(
+  serviceName: string,
+  body: components['schemas']['ListWorkflowRunsRequest'],
+  options?: HookQueryOptions<'/query/workflows/{service}/runs', 'post'>,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/workflows/{service}/runs',
+    'post',
+    {
+      baseUrl,
+      resolvedPath: `/query/workflows/${encodeURIComponent(serviceName)}/runs`,
+      parameters: { path: { service: serviceName } },
+      body,
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled: Boolean(serviceName) && options?.enabled !== false && enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
+  };
+}
+
+export function useGetWorkflowRun(
+  serviceName: string,
+  workflowId: string,
+  scope?: string,
+  options?: HookQueryOptions<
+    '/query/workflows/{service}/runs/{workflowId}',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/workflows/{service}/runs/{workflowId}',
+    'get',
+    {
+      baseUrl,
+      resolvedPath: `/query/workflows/${encodeURIComponent(serviceName)}/runs/${encodeURIComponent(workflowId)}`,
+      parameters: {
+        path: { service: serviceName, workflowId },
+        query: { scope },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(serviceName) &&
+      Boolean(workflowId) &&
+      options?.enabled !== false &&
+      enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
+  };
+}
+
 export function useGetVirtualObjectLock(
   serviceName: string,
   key: string,

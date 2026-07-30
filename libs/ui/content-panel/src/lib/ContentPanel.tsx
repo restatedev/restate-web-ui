@@ -262,10 +262,10 @@ function Tabs({
   const disabledTabs = tabs.filter((tab) => tab.disabled).map((tab) => tab.id);
   const requestedTab = queryParam ? searchParams.get(queryParam) : null;
   const fallbackTab =
-    tabs.find((tab) => tab.id === defaultTab && !tab.disabled)?.id ??
-    tabs.find((tab) => !tab.disabled)?.id;
+    tabs.find((tab) => tab.id === defaultTab && !tab.disabled && !tab.href)
+      ?.id ?? tabs.find((tab) => !tab.disabled && !tab.href)?.id;
   const selectableTab = tabs.some(
-    (tab) => tab.id === requestedTab && !tab.disabled,
+    (tab) => tab.id === requestedTab && !tab.disabled && !tab.href,
   );
   const isControlled = controlledSelectedTab !== undefined;
   const selectedTab = isControlled
@@ -302,6 +302,7 @@ function Tabs({
 
   const selectTab = useCallback(
     (next: string) => {
+      if (tabs.some((tab) => tab.id === next && tab.href)) return;
       if (next === selectedTab) return;
       if (isControlled) {
         onSelect?.(next);
@@ -327,6 +328,7 @@ function Tabs({
       queryParam,
       fallbackTab,
       setSearchParams,
+      tabs,
     ],
   );
 
@@ -600,15 +602,25 @@ function MobileTabsDropdown({
           </DropdownTrigger>
           <DropdownPopover>
             <DropdownMenu onSelect={(key) => onSelect(String(key))}>
-              {items.map((item) => (
-                <DropdownItem
-                  key={item.id}
-                  value={item.id}
-                  isDisabled={item.disabled}
-                >
-                  {item.menuLabel ?? item.label}
-                </DropdownItem>
-              ))}
+              {items.map((item) =>
+                item.href ? (
+                  <DropdownItem
+                    key={item.id}
+                    href={item.href}
+                    isDisabled={item.disabled}
+                  >
+                    {item.menuLabel ?? item.label}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    key={item.id}
+                    value={item.id}
+                    isDisabled={item.disabled}
+                  >
+                    {item.menuLabel ?? item.label}
+                  </DropdownItem>
+                ),
+              )}
             </DropdownMenu>
           </DropdownPopover>
         </Dropdown>

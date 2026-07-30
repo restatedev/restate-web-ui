@@ -16,4 +16,5 @@ export {
 } from './lib/useInvocationsMemory';
 export { StateSidebarItem } from './lib/StateSidebarItem';
 export { VirtualObjectsSidebarItem } from './lib/VirtualObjectsSidebarItem';
+export { WorkflowsSidebarItem } from './lib/WorkflowsSidebarItem';
 export { IntrospectionSidebarItem } from './lib/IntrospectionSidebarItem';

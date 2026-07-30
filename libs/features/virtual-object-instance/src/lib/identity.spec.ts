@@ -1,4 +1,7 @@
-import { virtualObjectInstanceHref } from './identity';
+import {
+  formatVirtualObjectInstanceIdentity,
+  virtualObjectInstanceHref,
+} from './identity';
 
 describe('virtualObjectInstanceHref', () => {
   it('includes the application base URL and encodes the identity', () => {
@@ -25,5 +28,17 @@ describe('virtualObjectInstanceHref', () => {
         scope: '',
       }),
     ).toBe('/virtual-objects/Cart/customer-123?scope=');
+  });
+});
+
+describe('formatVirtualObjectInstanceIdentity', () => {
+  it('keeps scope separate and before the service and key', () => {
+    expect(
+      formatVirtualObjectInstanceIdentity({
+        service: 'Cart',
+        key: 'customer-123',
+        scope: 'tenant-a',
+      }),
+    ).toBe('Scope tenant-a · Cart / customer-123');
   });
 });

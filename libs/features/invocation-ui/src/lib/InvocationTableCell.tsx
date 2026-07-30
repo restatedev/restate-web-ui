@@ -18,7 +18,7 @@ import { useOnboarding } from '@restate/util/feature-flag';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { panelHref } from '@restate/util/panel';
-import { VQueueId } from '@restate/features/vqueue-ui';
+import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { InvocationId } from './InvocationId';
 import { InvocationStatusBadge, Status } from './Status';
 import { Target } from './Target';
@@ -63,6 +63,10 @@ const invocationIdStyles = tv({
   variants: {
     isOnboarding: { true: 'animate-pulseButton', false: '' },
   },
+});
+
+const invocationTableCellStyles = tv({
+  base: 'align-top',
 });
 
 function InvocationTableId({ id }: { id: string }) {
@@ -152,16 +156,6 @@ function InvocationTableHandler({
   );
 }
 
-function InvocationTableLimitKey({ value }: { value?: string }) {
-  if (!value) return null;
-
-  return (
-    <Badge className="w-full border-none bg-transparent pl-0 font-mono">
-      <TruncateWithTooltip copyText={value}>{value}</TruncateWithTooltip>
-    </Badge>
-  );
-}
-
 export function InvocationTableDate({
   value,
   tooltipTitle = 'Created at',
@@ -215,7 +209,7 @@ function visibleCellContent(
         />
       );
     case 'limit_key':
-      return <InvocationTableLimitKey value={row.limit_key} />;
+      return <LimitKey value={row.limit_key} variant="table" />;
     case 'status':
       return <InvocationTableStatus row={row} invocation={invocation} />;
     case 'created_at':
@@ -228,15 +222,17 @@ export function InvocationTableCell({
   row,
   invocation,
   isVisible = true,
+  className,
 }: {
   column: InvocationTableColumnKey;
   row: InvocationTableRow;
   invocation?: Invocation;
   isVisible?: boolean;
+  className?: string;
 }) {
   const value = row[column];
   return (
-    <Cell className="align-top">
+    <Cell className={invocationTableCellStyles({ className })}>
       {isVisible ? (
         visibleCellContent(column, row, invocation)
       ) : (
