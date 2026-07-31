@@ -22,10 +22,18 @@ const styles = tv({
   defaultVariants: { intent: 'default' },
 });
 
-function getIntent(
+export type InvocationStatusIntent =
+  | 'success'
+  | 'danger'
+  | 'warning'
+  | 'info'
+  | 'default'
+  | 'pending';
+
+export function getInvocationStatusIntent(
   invocation?: Invocation,
   status?: string,
-): 'success' | 'danger' | 'warning' | 'info' | 'default' | 'pending' {
+): InvocationStatusIntent {
   if (!invocation && !status) return 'default';
   if (invocation?.isRetrying) return 'warning';
   switch (invocation?.status ?? status) {
@@ -58,7 +66,10 @@ export function InvocationStatusHeader({
 }>) {
   return (
     <div
-      className={styles({ intent: getIntent(invocation, status), className })}
+      className={styles({
+        intent: getInvocationStatusIntent(invocation, status),
+        className,
+      })}
     >
       {children}
     </div>

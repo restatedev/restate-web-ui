@@ -120,7 +120,7 @@ function InvocationTableStatus({
   return <Badge>{fallbackStatusLabel(row.status)}</Badge>;
 }
 
-function InvocationTableHandler({
+export function InvocationHandler({
   service,
   handler,
 }: {
@@ -203,7 +203,7 @@ function visibleCellContent(
       return row.target ? <Target target={row.target} /> : null;
     case 'target_handler_name':
       return (
-        <InvocationTableHandler
+        <InvocationHandler
           service={row.target_service_name}
           handler={row.target_handler_name}
         />
