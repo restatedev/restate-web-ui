@@ -179,10 +179,12 @@ export function Status({
   invocation,
   className,
   mini = false,
+  timeline = true,
 }: {
   invocation: Invocation;
   className?: string;
   mini?: boolean | 'md';
+  timeline?: boolean;
 }) {
   const { status } = invocation;
   const isPaused = status === 'paused';
@@ -274,9 +276,11 @@ export function Status({
           )}
         </span>
       </InvocationStatusBadge>
-      <span className={secondaryStyles({ mini })}>
-        <StatusTimeline invocation={invocation} />
-      </span>
+      {timeline && (
+        <span className={secondaryStyles({ mini })}>
+          <StatusTimeline invocation={invocation} />
+        </span>
+      )}
     </div>
   );
 }
