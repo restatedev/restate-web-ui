@@ -45,6 +45,22 @@ describe('LimitKey', () => {
     expect(screen.getByRole('button')).toBeTruthy();
   });
 
+  it('renders a plain row presentation', () => {
+    const { container } = render(
+      <LimitKey value="team/customer-1" variant="row" />,
+    );
+
+    expect(container.querySelector('[data-chip]')).toBeNull();
+    expect(screen.getByText('team/customer-1')).toBeTruthy();
+    expect(screen.getByRole('button')).toBeTruthy();
+    expect(container.querySelector('.lucide-list-tree')).toBeTruthy();
+    expect(
+      container
+        .querySelector('[data-limit-key]')
+        ?.getAttribute('data-limit-key-variant'),
+    ).toBe('row');
+  });
+
   it('renders nothing without a limit key', () => {
     const { container } = render(<LimitKey />);
 

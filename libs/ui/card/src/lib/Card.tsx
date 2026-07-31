@@ -20,7 +20,7 @@ export type CardIntent =
 const CardIntentContext = createContext<CardIntent>('none');
 
 const cardStyles = tv({
-  base: "relative isolate flex max-w-full min-w-0 flex-col divide-y divide-gray-100 overflow-hidden rounded-xl border bg-white shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/5%),0_12px_28px_-14px_--theme(--color-zinc-800/14%)] before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1",
+  base: "relative isolate flex max-w-full min-w-0 flex-col divide-y divide-gray-200 overflow-hidden rounded-xl border bg-gray-50 shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1",
   variants: {
     intent: {
       success: 'border-green-200/70 before:from-green-400/20',
@@ -29,7 +29,7 @@ const cardStyles = tv({
       pending: 'border-amber-200/70 before:from-amber-400/20',
       info: 'border-blue-200/70 before:from-blue-400/20',
       default: 'border-gray-200/70 before:from-gray-400/15',
-      none: 'border-gray-200/70 shadow-xs before:hidden',
+      none: 'border-gray-200 ring-1 ring-white/50 ring-inset before:hidden',
     } satisfies Record<CardIntent, string>,
     span: {
       default: '',
@@ -101,12 +101,14 @@ const cardHeaderStyles = tv({
 export function CardHeader({
   title,
   icon,
+  iconClassName,
   action,
   className,
   children,
 }: PropsWithChildren<{
   title: string;
   icon?: IconName;
+  iconClassName?: string;
   action?: ReactNode;
   className?: string;
 }>) {
@@ -116,7 +118,10 @@ export function CardHeader({
     <div className={styles.base({ className })}>
       {icon && (
         <span className={styles.iconChip()}>
-          <Icon name={icon} className="h-3.5 w-3.5" />
+          <Icon
+            name={icon}
+            className={['h-3.5 w-3.5', iconClassName].filter(Boolean).join(' ')}
+          />
         </span>
       )}
       <h3 className={styles.title()}>{title}</h3>

@@ -2,7 +2,7 @@ import { tv } from '@restate/util/styles';
 import type { PropsWithChildren } from 'react';
 
 const cardGridStyles = tv({
-  base: 'grid grid-cols-1 items-start gap-2',
+  base: 'grid grid-cols-1 items-stretch gap-2',
   variants: {
     columns: {
       1: 'md:grid-cols-[minmax(0,42rem)]',
