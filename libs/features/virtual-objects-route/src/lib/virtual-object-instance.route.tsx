@@ -2,9 +2,9 @@ import {
   useGetVirtualObjectInbox,
   useGetVirtualObjectInvocations,
   useGetVirtualObjectLock,
+  useGetVirtualObjectStats,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
-import { InvocationStatusHeader } from '@restate/features/invocation-ui';
 import {
   virtualObjectScopeFromSearch,
   VirtualObjectInstanceTarget,
@@ -13,6 +13,7 @@ import {
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
+import { Header } from '@restate/ui/header';
 import { IconName } from '@restate/ui/icons';
 import { RestateError } from '@restate/util/errors';
 import { panelHref } from '@restate/util/panel';
@@ -25,6 +26,7 @@ import {
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
 import { VirtualObjectLockHero } from './VirtualObjectLockHero';
+import { VirtualObjectStatsCard } from './VirtualObjectStatsCard';
 
 function Component() {
   const { service = '', key = '' } = useParams<{
@@ -88,20 +90,34 @@ function Component() {
       refetchOnWindowFocus: false,
       staleTime: 0,
     });
+  const { data: statsData } = useGetVirtualObjectStats(service, key, scope, {
+    enabled: Boolean(service) && Boolean(key),
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  });
   return (
     <SnapshotTimeProvider lastSnapshot={lockDataUpdatedAt}>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
-        <InvocationStatusHeader className="min-w-0">
+        <Header
+          icon={IconName.VirtualObject}
+          iconLabel="Virtual Object instance"
+          className="min-w-0"
+        >
           <VirtualObjectInstanceTarget
             identity={identity}
             serviceHref={panelHref({ service })}
             variant="header"
+            containerClassName="min-w-0"
           />
-        </InvocationStatusHeader>
-        {lockData?.lockHolder && (
+        </Header>
+        {(lockData?.lockHolder || statsData?.supported) && (
           <CardGrid className="relative z-40 mx-5 mt-3">
-            <VirtualObjectLockHero lockHolder={lockData.lockHolder} />
+            <VirtualObjectLockHero lockHolder={lockData?.lockHolder} />
+            {statsData?.supported && (
+              <VirtualObjectStatsCard stats={statsData} />
+            )}
           </CardGrid>
         )}
 

@@ -92,7 +92,12 @@ function Component() {
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
-        <InvocationStatusHeader invocation={runInvocation} className="min-w-0">
+        <InvocationStatusHeader
+          invocation={runInvocation}
+          icon={IconName.Workflow}
+          iconLabel="Workflow"
+          className="min-w-0"
+        >
           <WorkflowRunTarget
             identity={identity}
             serviceHref={panelHref({ service })}

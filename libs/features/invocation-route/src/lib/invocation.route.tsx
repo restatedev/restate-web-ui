@@ -178,7 +178,11 @@ function Component() {
         {/* Sticky floating header: target + status stay visible while the
             page scrolls. Status-tinted gradient telegraphs invocation state
             without coloring the whole card. */}
-        <InvocationStatusHeader invocation={journalAndInvocationData}>
+        <InvocationStatusHeader
+          invocation={journalAndInvocationData}
+          icon={IconName.Invocation}
+          iconLabel="Invocation"
+        >
           {journalAndInvocationData?.target && (
             <Target
               target={journalAndInvocationData.target}
