@@ -2290,6 +2290,48 @@ export function useGetVirtualObjectInvocations(
   };
 }
 
+export function useGetVirtualObjectStats(
+  serviceName: string,
+  key: string,
+  scope?: string,
+  options?: HookQueryOptions<
+    '/query/virtual-objects/{service}/instances/{key}/stats',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/virtual-objects/{service}/instances/{key}/stats',
+    'get',
+    {
+      baseUrl,
+      resolvedPath: `/query/virtual-objects/${encodeURIComponent(serviceName)}/instances/${encodeURIComponent(key)}/stats`,
+      parameters: {
+        path: { service: serviceName, key },
+        query: { scope },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(serviceName) &&
+      Boolean(key) &&
+      options?.enabled !== false &&
+      enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
+  };
+}
+
 export function useGetVirtualObjectState(
   serviceName: string,
   key: string,

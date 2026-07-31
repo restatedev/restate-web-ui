@@ -68,6 +68,7 @@ import {
   getVirtualObjectLock,
   getVirtualObjectInbox,
   getVirtualObjectInvocations,
+  getVirtualObjectStats,
   getVqueueInbox,
   listWorkflowRuns,
   type ListWorkflowRunsArgs,
@@ -211,6 +212,11 @@ type BoundHandlers = {
     key: string,
     scope?: string,
   ) => Promise<Response>;
+  getVirtualObjectStats: (
+    service: string,
+    key: string,
+    scope?: string,
+  ) => Promise<Response>;
   listWorkflowRuns: (
     service: string,
     args: ListWorkflowRunsArgs,
@@ -274,6 +280,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getVirtualObjectLock: getVirtualObjectLock.bind(context),
     getVirtualObjectInbox: getVirtualObjectInbox.bind(context),
     getVirtualObjectInvocations: getVirtualObjectInvocations.bind(context),
+    getVirtualObjectStats: getVirtualObjectStats.bind(context),
     listWorkflowRuns: listWorkflowRuns.bind(context),
     getWorkflowRun: getWorkflowRun.bind(context),
   };
@@ -433,6 +440,10 @@ export const routes = createRoutes('/query', {
     invocations: {
       method: 'GET',
       pattern: '/virtual-objects/:service/instances/:key/invocations',
+    },
+    stats: {
+      method: 'GET',
+      pattern: '/virtual-objects/:service/instances/:key/stats',
     },
     queue: {
       method: 'GET',
@@ -691,6 +702,16 @@ router.map(routes, {
       async invocations(ctx) {
         const { getVirtualObjectInvocations } = ctx.storage.get(handlersKey);
         return getVirtualObjectInvocations(
+          ctx.params.service,
+          ctx.params.key,
+          ctx.url.searchParams.has('scope')
+            ? String(ctx.url.searchParams.get('scope'))
+            : undefined,
+        );
+      },
+      async stats(ctx) {
+        const { getVirtualObjectStats } = ctx.storage.get(handlersKey);
+        return getVirtualObjectStats(
           ctx.params.service,
           ctx.params.key,
           ctx.url.searchParams.has('scope')

@@ -20,6 +20,7 @@ export { getInvocation } from './getInvocation';
 export { getVirtualObjectLock } from './getVirtualObjectLock';
 export { getVirtualObjectInbox, getVqueueInbox } from './getVirtualObjectInbox';
 export { getVirtualObjectInvocations } from './getVirtualObjectInvocations';
+export { getVirtualObjectStats } from './getVirtualObjectStats';
 export { getJournalEntryV2 } from './getJournalEntryV2';
 export { getInvocationJournalV2 } from './getInvocationJournalV2';
 export { getInbox } from './getInbox';

@@ -4258,6 +4258,86 @@
         }
       }
     },
+    "/query/virtual-objects/{service}/instances/{key}/stats": {
+      "get": {
+        "tags": ["query-virtual-objects"],
+        "summary": "Get Virtual Object instance statistics",
+        "description": "Returns object-level VQueue duration ranges, latest activity timestamps, and state storage totals for the exact service, key, and scope identity. Duration ranges use every matching VQueue that has recorded the corresponding average; current queue activity does not filter the population.",
+        "operationId": "get_virtual_object_stats",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Virtual Object service name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Virtual Object service key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Virtual Object scope. Omit for an unscoped object.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistics for the Virtual Object identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectStatsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/virtual-objects/{service}/instances/{key}/invocations": {
       "get": {
         "tags": ["query-virtual-objects"],
@@ -8881,6 +8961,133 @@
           },
           "truncated": {
             "type": "boolean"
+          }
+        }
+      },
+      "VirtualObjectStatsDurationRange": {
+        "type": "object",
+        "required": ["min", "max", "vqueueCount"],
+        "properties": {
+          "min": {
+            "type": "string",
+            "description": "Minimum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "max": {
+            "type": "string",
+            "description": "Maximum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "vqueueCount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of VQueues with a recorded sample contributing to the range."
+          },
+          "oldestUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Oldest latest-sample timestamp among the contributing VQueues."
+          },
+          "latestUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Newest latest-sample timestamp among the contributing VQueues."
+          }
+        }
+      },
+      "VirtualObjectStatsBlockedDurationRange": {
+        "type": "object",
+        "required": ["gate", "min", "max", "vqueueCount"],
+        "properties": {
+          "gate": {
+            "type": "string",
+            "enum": [
+              "concurrency_rules",
+              "invoker_concurrency",
+              "invoker_throttling",
+              "lock"
+            ]
+          },
+          "min": {
+            "type": "string",
+            "description": "Minimum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "max": {
+            "type": "string",
+            "description": "Maximum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "vqueueCount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of VQueues with a recorded attempt contributing to the range."
+          },
+          "oldestUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latestUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "VirtualObjectStatsActivity": {
+        "type": "object",
+        "properties": {
+          "lastEnqueuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastStartedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastAttemptAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastFinishedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "VirtualObjectStatsState": {
+        "type": "object",
+        "required": ["numKeys", "totalSize"],
+        "properties": {
+          "numKeys": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of state keys stored by this Virtual Object instance."
+          },
+          "totalSize": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total state value size in bytes. State-key bytes and storage overhead are excluded."
+          }
+        }
+      },
+      "VirtualObjectStatsResponse": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "False when the server does not expose VQueues."
+          },
+          "averageQueueDuration": {
+            "$ref": "#/components/schemas/VirtualObjectStatsDurationRange"
+          },
+          "averageBlockedDurations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectStatsBlockedDurationRange"
+            }
+          },
+          "activity": {
+            "$ref": "#/components/schemas/VirtualObjectStatsActivity"
+          },
+          "state": {
+            "$ref": "#/components/schemas/VirtualObjectStatsState"
           }
         }
       },

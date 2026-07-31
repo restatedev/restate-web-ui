@@ -1051,6 +1051,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/virtual-objects/{service}/instances/{key}/stats': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Virtual Object instance statistics
+     * @description Returns object-level VQueue duration ranges, latest activity timestamps, and state storage totals for the exact service, key, and scope identity. Duration ranges use every matching VQueue that has recorded the corresponding average; current queue activity does not filter the population.
+     */
+    get: operations['get_virtual_object_stats'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/virtual-objects/{service}/instances/{key}/invocations': {
     parameters: {
       query?: never;
@@ -3198,6 +3218,66 @@ export interface components {
       rows: components['schemas']['Invocation'][];
       limit: number;
       truncated: boolean;
+    };
+    VirtualObjectStatsDurationRange: {
+      /** @description Minimum per-VQueue exponential moving average as an ISO 8601 duration. */
+      min: string;
+      /** @description Maximum per-VQueue exponential moving average as an ISO 8601 duration. */
+      max: string;
+      /** @description Number of VQueues with a recorded sample contributing to the range. */
+      vqueueCount: number;
+      /**
+       * Format: date-time
+       * @description Oldest latest-sample timestamp among the contributing VQueues.
+       */
+      oldestUpdatedAt?: string;
+      /**
+       * Format: date-time
+       * @description Newest latest-sample timestamp among the contributing VQueues.
+       */
+      latestUpdatedAt?: string;
+    };
+    VirtualObjectStatsBlockedDurationRange: {
+      /** @enum {string} */
+      gate:
+        | 'concurrency_rules'
+        | 'invoker_concurrency'
+        | 'invoker_throttling'
+        | 'lock';
+      /** @description Minimum per-VQueue exponential moving average as an ISO 8601 duration. */
+      min: string;
+      /** @description Maximum per-VQueue exponential moving average as an ISO 8601 duration. */
+      max: string;
+      /** @description Number of VQueues with a recorded attempt contributing to the range. */
+      vqueueCount: number;
+      /** Format: date-time */
+      oldestUpdatedAt?: string;
+      /** Format: date-time */
+      latestUpdatedAt?: string;
+    };
+    VirtualObjectStatsActivity: {
+      /** Format: date-time */
+      lastEnqueuedAt?: string;
+      /** Format: date-time */
+      lastStartedAt?: string;
+      /** Format: date-time */
+      lastAttemptAt?: string;
+      /** Format: date-time */
+      lastFinishedAt?: string;
+    };
+    VirtualObjectStatsState: {
+      /** @description Number of state keys stored by this Virtual Object instance. */
+      numKeys: number;
+      /** @description Total state value size in bytes. State-key bytes and storage overhead are excluded. */
+      totalSize: number;
+    };
+    VirtualObjectStatsResponse: {
+      /** @description False when the server does not expose VQueues. */
+      supported: boolean;
+      averageQueueDuration?: components['schemas']['VirtualObjectStatsDurationRange'];
+      averageBlockedDurations?: components['schemas']['VirtualObjectStatsBlockedDurationRange'][];
+      activity?: components['schemas']['VirtualObjectStatsActivity'];
+      state?: components['schemas']['VirtualObjectStatsState'];
     };
     VirtualObjectInboxSnapshotChangedResponse: {
       message: string;
@@ -8171,6 +8251,58 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['VirtualObjectInboxSnapshotChangedResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_virtual_object_stats: {
+    parameters: {
+      query?: {
+        /** @description Virtual Object scope. Omit for an unscoped object. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Virtual Object service name */
+        service: string;
+        /** @description Virtual Object service key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Statistics for the Virtual Object identity */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectStatsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
       500: {
