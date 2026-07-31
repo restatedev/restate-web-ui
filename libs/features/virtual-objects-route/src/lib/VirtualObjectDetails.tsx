@@ -86,13 +86,13 @@ export function VirtualObjectDetails({
   const tabs = useMemo<ContentPanelTabs>(
     () => ({
       items: [
+        { id: 'recent', label: 'Recent invocations' },
         {
           id: 'exclusive',
           label: (
             <InboxTabLabel count={inboxCount} isPending={isInboxPending} />
           ),
         },
-        { id: 'recent', label: 'Recent invocations' },
         { id: 'state', label: 'State' },
       ],
       defaultId: 'recent',
