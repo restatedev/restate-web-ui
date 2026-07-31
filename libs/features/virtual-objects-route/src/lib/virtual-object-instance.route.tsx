@@ -115,7 +115,14 @@ function Component() {
           />
         </Header>
         {(lockData?.lockHolder || statsData?.supported) && (
-          <CardGrid className="relative z-40 mx-5 mt-3">
+          <CardGrid
+            distribution={
+              lockData?.lockHolder && statsData?.supported && statsData.state
+                ? '5-4-2'
+                : 'equal'
+            }
+            className="relative z-40 mx-5 mt-3"
+          >
             <VirtualObjectLockHero lockHolder={lockData?.lockHolder} />
             {statsData?.supported && (
               <>

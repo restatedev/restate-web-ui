@@ -2,6 +2,8 @@
 
 ## Skill Notes
 
+- 2026-07-31 lock-card body icon rail: Normalize Invocation, VQueue, Handler, and Limit Key body glyphs to `text-zinc-400`. `InvocationId` and `VQueueId` default to zinc-500, so override their descendant SVGs only in `VirtualObjectLockHero`; do not mute the intent-colored Lock icon in `CardHeader`.
+- 2026-07-31 VO card-row distribution: When Lock, Statistics, and State are all present, use a route-selected `CardGrid` distribution of `5-4-2` at `xl`: Lock gets 5fr, Statistics 4fr, State 2fr. Keep the normal two-column/stacked behavior below `xl`, retain equal tracks when fewer than three cards render, and cap the weighted row at the existing three-track total of 126rem.
 - 2026-07-31 user correction on breadcrumb scope line: A visible `SCOPE` badge with the connector crossing its edge does not mean the scope is empty; the inline Scope flex item can be squeezed until its value collapses. Make the shared inline Scope root `shrink-0` so its capped value/connector remain intact and service/key text truncates first.
 - 2026-07-31 user empty-scope presentation: Preserve `?scope=` as distinct identity data in href generation, but treat the empty string as visually absent. Do not render the `SCOPE` badge/connector, leading-scope chip geometry, or “Scope ·” in formatted copy/tooltip labels unless the scope value is non-empty.
 - 2026-07-31 header entity-tile overhang: Use a 60px (`h-15 w-15`) tile at `-left-2`. Compared with the former 56px/`-left-1` geometry, its right edge stays fixed while it extends an extra 4px left and 2px each above/below the centered header, adding overhang without moving content.

@@ -74,7 +74,7 @@ export function VirtualObjectLockHero({
             id={lockHolder.id}
             truncateInMiddle
             popover={false}
-            className="w-fit max-w-full min-w-0 text-sm"
+            className="w-fit max-w-full min-w-0 text-sm [&_svg]:text-zinc-400"
           />
         ) : (
           <div className="flex min-w-0 items-center gap-2">
@@ -116,7 +116,7 @@ export function VirtualObjectLockHero({
             id={vqueueId}
             size="md"
             truncateInMiddle
-            className="w-fit max-w-full min-w-0"
+            className="w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
           />
         </CardRow>
       )}
