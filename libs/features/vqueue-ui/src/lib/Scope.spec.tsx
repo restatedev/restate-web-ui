@@ -14,7 +14,7 @@ describe('Scope', () => {
       container
         .querySelector('[data-chip-segment-inner]')
         ?.getAttribute('class'),
-    ).toContain('pl-1.5');
+    ).toContain('pl-1');
     expect(
       container.querySelector('[data-chip-root]')?.getAttribute('class'),
     ).toContain('rounded-l-(--chip-radius)');
@@ -27,7 +27,11 @@ describe('Scope', () => {
   });
 
   it('renders nothing without a scope', () => {
-    const { container } = render(<Scope />);
+    const { container, rerender } = render(<Scope />);
+
+    expect(container.firstChild).toBeNull();
+
+    rerender(<Scope value="" />);
 
     expect(container.firstChild).toBeNull();
   });
@@ -84,5 +88,8 @@ describe('Scope', () => {
         ?.getAttribute('data-scope-relationship'),
     ).toBe('target');
     expect(container.querySelector('[data-scope-connector]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-scope]')?.getAttribute('class'),
+    ).toContain('shrink-0');
   });
 });

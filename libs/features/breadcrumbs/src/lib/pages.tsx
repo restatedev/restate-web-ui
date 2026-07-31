@@ -47,9 +47,9 @@ function VirtualObjectInstanceCrumbContent({
     <>
       <span
         data-crumb-label
-        className="flex min-w-0 items-center gap-1.5 truncate"
+        className="flex min-w-0 items-center gap-1 truncate"
       >
-        {scope !== undefined && (
+        {scope && (
           <Scope
             value={scope}
             className="max-w-24"
@@ -84,9 +84,9 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
     <>
       <span
         data-crumb-label
-        className="flex min-w-0 items-center gap-1.5 truncate"
+        className="flex min-w-0 items-center gap-1 truncate"
       >
-        {scope !== undefined && (
+        {scope && (
           <Scope
             value={scope}
             className="max-w-24"
@@ -96,7 +96,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
         )}
         <Icon
           name={IconName.Workflow}
-          className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+          className="h-3 w-3 shrink-0 text-zinc-400"
         />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
@@ -154,7 +154,7 @@ export const virtualObjectInstanceCrumb: CrumbFragment = {
     return formatVirtualObjectInstanceIdentity({
       service: params['service'] ?? '',
       key: params['key'] ?? '',
-      ...(scope !== undefined ? { scope } : {}),
+      ...(scope ? { scope } : {}),
     });
   },
   icon: IconName.VirtualObject,
@@ -176,7 +176,7 @@ export const workflowRunCrumb: CrumbFragment = {
     return formatWorkflowRunIdentity({
       service: params['service'] ?? '',
       id: params['workflowId'] ?? '',
-      ...(scope !== undefined ? { scope } : {}),
+      ...(scope ? { scope } : {}),
     });
   },
   icon: IconName.Workflow,

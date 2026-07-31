@@ -9,7 +9,7 @@ import { tv } from '@restate/util/styles';
 const styles = tv({
   slots: {
     root: 'inline-flex max-w-full min-w-0 items-center align-middle',
-    chip: 'h-6.5 max-w-full text-xs font-medium text-zinc-600',
+    chip: 'max-w-full text-xs font-medium text-zinc-600',
     segment:
       'max-w-[22rem] bg-zinc-100 pl-1 font-mono text-[90%] text-zinc-600',
     inline:
@@ -21,6 +21,12 @@ const styles = tv({
     copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
   },
   variants: {
+    presentation: {
+      chip: {},
+      inline: {
+        root: 'shrink-0',
+      },
+    },
     variant: {
       default: {},
       table: {
@@ -64,7 +70,7 @@ export function Scope({
   variant = 'default',
   showCopy = false,
 }: ScopeProps) {
-  if (value === undefined) return null;
+  if (!value) return null;
 
   const {
     root,
@@ -75,7 +81,7 @@ export function Scope({
     labelText,
     relationship: relationshipStyle,
     copy,
-  } = styles({ variant, hasCopy: showCopy });
+  } = styles({ presentation, variant, hasCopy: showCopy });
   const content = (
     <>
       <span className={label()}>
@@ -94,6 +100,7 @@ export function Scope({
   const chipContent = (
     <Chip
       right={relationship === 'target' ? 'angled' : 'straight'}
+      size="lg"
       className={chip({ className })}
     >
       <ChipSegment className={segment()}>{content}</ChipSegment>

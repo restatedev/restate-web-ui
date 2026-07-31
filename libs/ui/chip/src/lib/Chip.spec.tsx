@@ -61,6 +61,30 @@ describe('Chip', () => {
     const group = container.querySelector('[data-chip-group]');
     expect(group?.className).toContain('mix-blend-luminosity');
     expect(group?.className).toContain('[--chip-radius:0.75rem]');
+    expect(group?.className).toContain('[--chip-slope:7px]');
+  });
+
+  it('should preserve the angled-edge slope across sizes', () => {
+    const { container } = render(
+      <>
+        <Chip size="sm" right="angled">
+          <ChipSegment>small</ChipSegment>
+        </Chip>
+        <Chip size="md" right="angled">
+          <ChipSegment>medium</ChipSegment>
+        </Chip>
+        <Chip size="lg" right="angled">
+          <ChipSegment>large</ChipSegment>
+        </Chip>
+      </>,
+    );
+    const chips = container.querySelectorAll('[data-chip]');
+    expect(chips[0]?.className).toContain('[--chip-height:1.25rem]');
+    expect(chips[0]?.className).toContain('[--chip-slope:5px]');
+    expect(chips[1]?.className).toContain('[--chip-height:1.5rem]');
+    expect(chips[1]?.className).toContain('[--chip-slope:6px]');
+    expect(chips[2]?.className).toContain('[--chip-height:1.625rem]');
+    expect(chips[2]?.className).toContain('[--chip-slope:6.5px]');
   });
 
   it('should render the whole chip group as a link when href is provided', () => {

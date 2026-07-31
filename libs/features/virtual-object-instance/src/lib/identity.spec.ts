@@ -41,4 +41,14 @@ describe('formatVirtualObjectInstanceIdentity', () => {
       }),
     ).toBe('Scope tenant-a · Cart / customer-123');
   });
+
+  it('omits an empty scope from the visible identity', () => {
+    expect(
+      formatVirtualObjectInstanceIdentity({
+        service: 'Cart',
+        key: 'customer-123',
+        scope: '',
+      }),
+    ).toBe('Cart / customer-123');
+  });
 });

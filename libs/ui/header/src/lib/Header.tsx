@@ -30,7 +30,7 @@ export type HeaderProps = PropsWithChildren<
 const headerStyles = tv({
   slots: {
     base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-3 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/3%),0_12px_28px_-10px_--theme(--color-zinc-800/6%),inset_0_2px_0_0_--theme(--color-white/47.5%)] backdrop-blur-xl backdrop-saturate-200 transition-colors sm:top-6',
-    icon: 'absolute top-1/2 -left-1 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-2xl border border-gray-200/90 bg-linear-to-br from-white via-white to-zinc-50 text-indigo-500/80 shadow-[0_2px_4px_-1px_--theme(--color-zinc-800/5%),0_14px_26px_-12px_--theme(--color-zinc-800/12.5%),inset_0_2px_0_0_--theme(--color-white/50%)]',
+    icon: 'absolute top-1/2 -left-2 flex h-15 w-15 -translate-y-1/2 items-center justify-center rounded-2xl border border-gray-200/90 bg-linear-to-br from-white via-white to-zinc-50 text-indigo-500/80 shadow-[0_2px_4px_-1px_--theme(--color-zinc-800/5%),0_14px_26px_-12px_--theme(--color-zinc-800/12.5%),inset_0_2px_0_0_--theme(--color-white/50%)]',
     iconBadge:
       'flex h-8 w-8 rotate-3 items-center justify-center rounded-lg bg-indigo-50/80 shadow-[0_2px_6px_-5px_--theme(--color-indigo-900/17.5%),inset_0_1px_0_0_--theme(--color-white/40%)] ring-1 ring-indigo-200/60',
     iconGlyph: 'h-4.5 w-4.5 -rotate-3',
