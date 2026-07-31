@@ -139,7 +139,7 @@ describe('Workflow query handlers', () => {
     });
   });
 
-  it('loads one unscoped legacy run and its Shared invocations', async () => {
+  it('loads one unscoped legacy run and its recent invocations', async () => {
     const { context, query } = createContext((sql) => {
       if (
         sql.includes('FROM sys_invocation_status') &&
@@ -148,7 +148,11 @@ describe('Workflow query handlers', () => {
         return [{ id: 'inv_run' }];
       }
       if (sql.includes('FROM sys_invocation_status')) {
-        return [{ id: 'inv_shared-2' }, { id: 'inv_shared-1' }];
+        return [
+          { id: 'inv_shared-2' },
+          { id: 'inv_run' },
+          { id: 'inv_shared-1' },
+        ];
       }
       return [
         invocation('inv_shared-1', 'approve'),
@@ -177,9 +181,8 @@ describe('Workflow query handlers', () => {
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
             AND SUBSTR(target_service_key, 1) = 'order-1'
-            AND target_handler_name IN ('approve', 'status')
           ORDER BY created_at DESC NULLS LAST
-          LIMIT 26",
+          LIMIT 51",
         "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure
           FROM sys_invocation
           WHERE id IN ('inv_run', 'inv_shared-2', 'inv_shared-1')",
@@ -187,9 +190,13 @@ describe('Workflow query handlers', () => {
     `);
     expect(await response.json()).toMatchObject({
       runInvocation: { id: 'inv_run' },
-      sharedInvocations: [{ id: 'inv_shared-2' }, { id: 'inv_shared-1' }],
-      sharedInvocationsLimit: 25,
-      sharedInvocationsTruncated: false,
+      recentInvocations: [
+        { id: 'inv_shared-2' },
+        { id: 'inv_run' },
+        { id: 'inv_shared-1' },
+      ],
+      recentInvocationsLimit: 50,
+      recentInvocationsTruncated: false,
     });
   });
 
@@ -236,10 +243,9 @@ describe('Workflow query handlers', () => {
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
             AND SUBSTR(target_service_key, 1) = 'order-1'
-            AND target_handler_name IN ('approve', 'status')
             AND scope = 'tenant-a'
           ORDER BY created_at DESC NULLS LAST
-          LIMIT 26",
+          LIMIT 51",
         "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
           FROM sys_invocation
           WHERE id IN ('inv_run')",
@@ -290,10 +296,9 @@ describe('Workflow query handlers', () => {
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
             AND SUBSTR(target_service_key, 1) = 'order-1'
-            AND target_handler_name IN ('approve', 'status')
             AND scope IS NULL
           ORDER BY created_at DESC NULLS LAST
-          LIMIT 26",
+          LIMIT 51",
         "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
           FROM sys_invocation
           WHERE id IN ('inv_run')",
@@ -317,7 +322,7 @@ describe('Workflow query handlers', () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it('does not promote a Shared invocation when the run disappears', async () => {
+  it('does not promote a recent invocation when the run disappears', async () => {
     const { context } = createContext((sql) => {
       if (
         sql.includes('FROM sys_invocation_status') &&

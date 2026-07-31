@@ -1903,7 +1903,7 @@
       "get": {
         "tags": ["query-workflows"],
         "summary": "Get a Workflow run",
-        "description": "Returns the main run invocation and a bounded, newest-first set of retained Shared handler invocations for the exact service, Workflow id, and optional scope identity.",
+        "description": "Returns the main run invocation and the 50 most recent retained invocations for the exact service, Workflow id, and optional scope identity.",
         "operationId": "get_workflow_run",
         "security": [],
         "parameters": [
@@ -2061,7 +2061,7 @@
       "get": {
         "tags": ["query-virtual-objects"],
         "summary": "Get the Virtual Object inbox",
-        "description": "Returns one bounded inbox view for the exact service, key, and scope identity. Scoped exclusive Virtual Objects return VQueue summaries; other modes return entries.",
+        "description": "Returns either the current inbox or the 50 most recent retained invocations for the exact service, key, and scope identity.",
         "operationId": "get_virtual_object_inbox",
         "security": [],
         "parameters": [
@@ -2086,7 +2086,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": ["exclusive", "shared"]
+              "enum": ["exclusive", "recent"]
             }
           },
           {
@@ -4982,23 +4982,23 @@
         "type": "object",
         "required": [
           "runInvocation",
-          "sharedInvocations",
-          "sharedInvocationsLimit",
-          "sharedInvocationsTruncated"
+          "recentInvocations",
+          "recentInvocationsLimit",
+          "recentInvocationsTruncated"
         ],
         "properties": {
           "runInvocation": {
             "$ref": "#/components/schemas/InvocationV2"
           },
-          "sharedInvocations": {
+          "recentInvocations": {
             "type": "array",
-            "description": "Retained Shared handler invocations ordered newest first.",
+            "description": "Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls.",
             "items": {
               "$ref": "#/components/schemas/InvocationV2"
             }
           },
-          "sharedInvocationsLimit": { "type": "integer" },
-          "sharedInvocationsTruncated": { "type": "boolean" }
+          "recentInvocationsLimit": { "type": "integer" },
+          "recentInvocationsTruncated": { "type": "boolean" }
         }
       },
       "VirtualObjectLockHolder": {

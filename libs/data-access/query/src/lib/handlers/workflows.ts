@@ -13,8 +13,8 @@ import {
 
 const WORKFLOW_RUN_LIMIT = 50;
 const WORKFLOW_RUN_QUERY_LIMIT = WORKFLOW_RUN_LIMIT + 1;
-const SHARED_INVOCATION_LIMIT = 25;
-const SHARED_INVOCATION_QUERY_LIMIT = SHARED_INVOCATION_LIMIT + 1;
+const RECENT_INVOCATION_LIMIT = 50;
+const RECENT_INVOCATION_QUERY_LIMIT = RECENT_INVOCATION_LIMIT + 1;
 const MAX_SEARCH_LENGTH = 256;
 
 export type ListWorkflowRunsArgs =
@@ -28,7 +28,6 @@ type WorkflowRunDetailsResponse =
 
 interface WorkflowHandlers {
   run: string;
-  shared: string[];
 }
 
 function notFound(message: string) {
@@ -51,12 +50,7 @@ async function getWorkflowHandlers(
     (handler) => handler.ty === 'Workflow',
   )?.name;
   if (!run) return undefined;
-  return {
-    run,
-    shared: serviceMetadata.handlers
-      .filter((handler) => handler.ty === 'Shared')
-      .map((handler) => handler.name),
-  };
+  return { run };
 }
 
 function searchPattern(search: string | undefined) {
@@ -189,7 +183,6 @@ export async function getWorkflowRun(
   }
 
   const scopeClause = workflowScopeClause(this, scope);
-  const sharedHandlerClause = handlers.shared.map(quoteSqlString).join(', ');
   const runPromise = this.query(
     `SELECT id
     FROM sys_invocation_status
@@ -199,50 +192,46 @@ export async function getWorkflowRun(
       AND target_handler_name = ${quoteSqlString(handlers.run)}${scopeClause}
     LIMIT 1`,
   );
-  const sharedPromise =
-    handlers.shared.length > 0
-      ? this.query(
-          `SELECT id
+  const recentPromise = this.query(
+    `SELECT id
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND ${workflowKeyClause(workflowId)}
-      AND target_handler_name IN (${sharedHandlerClause})${scopeClause}
+      AND ${workflowKeyClause(workflowId)}${scopeClause}
     ORDER BY created_at DESC NULLS LAST
-    LIMIT ${SHARED_INVOCATION_QUERY_LIMIT}`,
-        )
-      : Promise.resolve({ rows: [] });
-  const [runResult, sharedResult] = await Promise.all([
+    LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
+  );
+  const [runResult, recentResult] = await Promise.all([
     runPromise,
-    sharedPromise,
+    recentPromise,
   ]);
   const runId = runResult.rows.at(0)?.['id'];
   if (runId == null) {
     return notFound(`Workflow run ${service}/${workflowId} was not found.`);
   }
-  const sharedInvocationsTruncated =
-    sharedResult.rows.length > SHARED_INVOCATION_LIMIT;
-  const sharedIds = sharedResult.rows
-    .slice(0, SHARED_INVOCATION_LIMIT)
+  const recentInvocationsTruncated =
+    recentResult.rows.length > RECENT_INVOCATION_LIMIT;
+  const recentIds = recentResult.rows
+    .slice(0, RECENT_INVOCATION_LIMIT)
     .map((row) => String(row['id']));
   const invocationsById = await hydrateInvocations(
     this,
-    [String(runId), ...sharedIds],
+    [String(runId), ...recentIds],
     new Date().toISOString(),
   );
   const runInvocation = invocationsById.get(String(runId));
   if (!runInvocation) {
     return notFound(`Workflow run ${service}/${workflowId} was not found.`);
   }
-  const sharedInvocations = sharedIds.flatMap((id) => {
+  const recentInvocations = recentIds.flatMap((id) => {
     const invocation = invocationsById.get(id);
     return invocation ? [invocation] : [];
   });
 
   return Response.json({
     runInvocation,
-    sharedInvocations,
-    sharedInvocationsLimit: SHARED_INVOCATION_LIMIT,
-    sharedInvocationsTruncated,
+    recentInvocations,
+    recentInvocationsLimit: RECENT_INVOCATION_LIMIT,
+    recentInvocationsTruncated,
   } satisfies WorkflowRunDetailsResponse);
 }

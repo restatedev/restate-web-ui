@@ -159,7 +159,7 @@ export function InvocationId({
         <PopoverContent
           placement="bottom"
           isNonModal
-          className="w-[min(42rem,calc(100vw-1.5rem))]"
+          className="w-[min(48rem,calc(100vw-1.5rem))]"
         >
           <InvocationPopoverContent id={id} title={title} />
         </PopoverContent>

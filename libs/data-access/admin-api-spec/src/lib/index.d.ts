@@ -1000,7 +1000,7 @@ export interface paths {
     };
     /**
      * Get a Workflow run
-     * @description Returns the main run invocation and a bounded, newest-first set of retained Shared handler invocations for the exact service, Workflow id, and optional scope identity.
+     * @description Returns the main run invocation and the 50 most recent retained invocations for the exact service, Workflow id, and optional scope identity.
      */
     get: operations['get_workflow_run'];
     put?: never;
@@ -1040,7 +1040,7 @@ export interface paths {
     };
     /**
      * Get the Virtual Object inbox
-     * @description Returns one bounded inbox view for the exact service, key, and scope identity. Scoped exclusive Virtual Objects return VQueue summaries; other modes return entries.
+     * @description Returns either the current inbox or the 50 most recent retained invocations for the exact service, key, and scope identity.
      */
     get: operations['get_virtual_object_inbox'];
     put?: never;
@@ -3128,10 +3128,10 @@ export interface components {
     };
     WorkflowRunDetailsResponse: {
       runInvocation: components['schemas']['InvocationV2'];
-      /** @description Retained Shared handler invocations ordered newest first. */
-      sharedInvocations: components['schemas']['InvocationV2'][];
-      sharedInvocationsLimit: number;
-      sharedInvocationsTruncated: boolean;
+      /** @description Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls. */
+      recentInvocations: components['schemas']['InvocationV2'][];
+      recentInvocationsLimit: number;
+      recentInvocationsTruncated: boolean;
     };
     VirtualObjectLockHolder: components['schemas']['VirtualObjectInboxEntry'] & {
       /** Format: date-time */
@@ -8109,7 +8109,7 @@ export interface operations {
     parameters: {
       query: {
         /** @description Inbox view to load. */
-        mode: 'exclusive' | 'shared';
+        mode: 'exclusive' | 'recent';
         /** @description Virtual Object scope. Omit for an unscoped object. */
         scope?: string;
       };

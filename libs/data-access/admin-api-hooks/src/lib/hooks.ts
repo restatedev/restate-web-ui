@@ -2209,7 +2209,7 @@ export function useGetVirtualObjectLock(
 export function useGetVirtualObjectInbox(
   serviceName: string,
   key: string,
-  mode: 'exclusive' | 'shared',
+  mode: 'exclusive' | 'recent',
   scope?: string,
   options?: HookQueryOptions<
     '/query/virtual-objects/{service}/instances/{key}/inbox',
