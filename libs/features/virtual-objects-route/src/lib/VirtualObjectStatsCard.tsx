@@ -1,0 +1,143 @@
+import type { components } from '@restate/data-access/admin-api-spec';
+import { Badge } from '@restate/ui/badge';
+import { Card, CardHeader, CardRow } from '@restate/ui/card';
+import { IconName } from '@restate/ui/icons';
+import { DateTooltip } from '@restate/ui/tooltip';
+import {
+  formatDurations,
+  formatNumber,
+  normaliseDuration,
+} from '@restate/util/intl';
+import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
+
+type VirtualObjectStatsResponse =
+  components['schemas']['VirtualObjectStatsResponse'];
+type VirtualObjectStatsDurationRange =
+  components['schemas']['VirtualObjectStatsDurationRange'];
+type VirtualObjectStatsBlockedDurationRange =
+  components['schemas']['VirtualObjectStatsBlockedDurationRange'];
+
+const BLOCKED_GATE_LABELS: Record<
+  VirtualObjectStatsBlockedDurationRange['gate'],
+  string
+> = {
+  concurrency_rules: 'Concurrency rules',
+  invoker_concurrency: 'Invoker capacity',
+  invoker_throttling: 'Invoker throttling',
+  lock: 'Object lock',
+};
+
+function formatDuration(value: string) {
+  const match = value.match(
+    /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/,
+  );
+  if (!match) return value;
+
+  return formatDurations(
+    normaliseDuration({
+      days: Number(match[1] ?? 0),
+      hours: Number(match[2] ?? 0),
+      minutes: Number(match[3] ?? 0),
+      seconds: Number(match[4] ?? 0),
+    }),
+  );
+}
+
+function formatDurationRange(range: VirtualObjectStatsDurationRange) {
+  const min = formatDuration(range.min);
+  const max = formatDuration(range.max);
+  return min === max ? min : `${min}–${max}`;
+}
+
+function isZeroDuration(value: string) {
+  return formatDuration(value) === '0ms';
+}
+
+function RelativeDate({ date, title }: { date: string; title: string }) {
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const duration = formatDurations(durationSinceLastSnapshot(date));
+  return (
+    <DateTooltip date={new Date(date)} title={title}>
+      <time dateTime={date} className="text-xs text-zinc-600 tabular-nums">
+        {duration} ago
+      </time>
+    </DateTooltip>
+  );
+}
+
+export function VirtualObjectStatsCard({
+  stats,
+}: {
+  stats: VirtualObjectStatsResponse;
+}) {
+  if (!stats.supported) return null;
+
+  const inboxDuration = stats.averageInboxDuration;
+  const blockedDurations = stats.averageBlockedDurations ?? [];
+  const observedBlockedDurations = blockedDurations.filter(
+    ({ max }) => !isZeroDuration(max),
+  );
+  const oldestInboxedAt = stats.activity?.oldestInboxedAt;
+  const lastEnqueuedAt = stats.activity?.lastEnqueuedAt;
+
+  return (
+    <Card intent="none">
+      <CardHeader
+        title="Statistics"
+        icon={IconName.Layers}
+        iconClassName="rotate-90"
+      />
+      <CardRow variant="hero">
+        <div className="min-w-0 flex-auto">
+          <div className="text-0.5xs font-medium text-gray-500">
+            Average time inboxed
+          </div>
+          <div className="mt-0.5 text-2xs text-gray-400">
+            {inboxDuration
+              ? `Across ${formatNumber(inboxDuration.vqueueCount)} ${inboxDuration.vqueueCount === 1 ? 'VQueue' : 'VQueues'} · includes retries`
+              : 'No sampled VQueues'}
+          </div>
+        </div>
+        <span className="shrink-0 text-lg font-semibold text-zinc-700 tabular-nums">
+          {inboxDuration ? formatDurationRange(inboxDuration) : '—'}
+        </span>
+      </CardRow>
+      <CardRow label="Inbox">
+        <span className="text-xs text-zinc-600 tabular-nums">
+          {formatNumber(stats.numInbox ?? 0)} entries
+        </span>
+      </CardRow>
+      {oldestInboxedAt && (stats.numInbox ?? 0) > 0 && (
+        <CardRow label="Oldest inboxed">
+          <RelativeDate
+            date={oldestInboxedAt}
+            title="Oldest entry entered Inbox at"
+          />
+        </CardRow>
+      )}
+      {observedBlockedDurations.length > 0 && (
+        <CardRow label="Blocking" className="flex-wrap gap-y-1.5">
+          <div className="flex min-w-0 flex-wrap justify-end gap-1">
+            {observedBlockedDurations.map((range) => (
+              <Badge
+                key={range.gate}
+                size="xs"
+                title={`Average blocked time across ${formatNumber(range.vqueueCount)} ${range.vqueueCount === 1 ? 'VQueue' : 'VQueues'}`}
+              >
+                {BLOCKED_GATE_LABELS[range.gate]}
+                <Badge size="xs">{formatDurationRange(range)}</Badge>
+              </Badge>
+            ))}
+          </div>
+        </CardRow>
+      )}
+      <CardRow label="Last enqueued">
+        {lastEnqueuedAt ? (
+          <RelativeDate date={lastEnqueuedAt} title="Last enqueued at" />
+        ) : (
+          <span className="text-xs text-zinc-600">Never</span>
+        )}
+      </CardRow>
+    </Card>
+  );
+}

@@ -138,7 +138,7 @@ export function VirtualObjectLockHero({
         ))}
       {limitKey && (
         <CardRow>
-          <LimitKey value={limitKey} />
+          <LimitKey value={limitKey} variant="row" />
         </CardRow>
       )}
     </Card>

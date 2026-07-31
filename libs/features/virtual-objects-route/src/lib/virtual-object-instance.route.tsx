@@ -26,6 +26,7 @@ import {
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
 import { VirtualObjectLockHero } from './VirtualObjectLockHero';
+import { VirtualObjectStateStatsCard } from './VirtualObjectStateStatsCard';
 import { VirtualObjectStatsCard } from './VirtualObjectStatsCard';
 
 function Component() {
@@ -110,13 +111,19 @@ function Component() {
             serviceHref={panelHref({ service })}
             variant="header"
             containerClassName="min-w-0"
+            showKeyIcon={false}
           />
         </Header>
         {(lockData?.lockHolder || statsData?.supported) && (
           <CardGrid className="relative z-40 mx-5 mt-3">
             <VirtualObjectLockHero lockHolder={lockData?.lockHolder} />
             {statsData?.supported && (
-              <VirtualObjectStatsCard stats={statsData} />
+              <>
+                <VirtualObjectStatsCard stats={statsData} />
+                {statsData.state && (
+                  <VirtualObjectStateStatsCard state={statsData.state} />
+                )}
+              </>
             )}
           </CardGrid>
         )}

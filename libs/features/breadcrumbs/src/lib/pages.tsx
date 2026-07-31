@@ -57,10 +57,6 @@ function VirtualObjectInstanceCrumbContent({
             relationship="target"
           />
         )}
-        <Icon
-          name={IconName.VirtualObject}
-          className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-        />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>

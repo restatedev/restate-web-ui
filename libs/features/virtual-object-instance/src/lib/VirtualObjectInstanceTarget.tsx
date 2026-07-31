@@ -60,6 +60,7 @@ export interface VirtualObjectInstanceTargetProps {
   href?: string;
   serviceHref?: string;
   showService?: boolean;
+  showKeyIcon?: boolean;
 }
 
 export function VirtualObjectInstanceTarget({
@@ -70,6 +71,7 @@ export function VirtualObjectInstanceTarget({
   href,
   serviceHref,
   showService = true,
+  showKeyIcon = true,
 }: VirtualObjectInstanceTargetProps) {
   const { service, key, scope } = identity;
   const copyText = formatVirtualObjectInstanceIdentity(identity);
@@ -122,7 +124,9 @@ export function VirtualObjectInstanceTarget({
         className={chip({ className })}
       >
         <ChipSegment className={keyStyle()}>
-          <Icon name={IconName.VirtualObject} className={instanceIcon()} />
+          {showKeyIcon && (
+            <Icon name={IconName.VirtualObject} className={instanceIcon()} />
+          )}
           <TruncateTooltipTrigger>{key || <>&nbsp;</>}</TruncateTooltipTrigger>
         </ChipSegment>
       </Chip>
