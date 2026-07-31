@@ -5,10 +5,10 @@ const cardGridStyles = tv({
   base: 'grid grid-cols-1 items-start gap-2',
   variants: {
     columns: {
-      1: '',
-      2: 'md:grid-cols-2',
-      3: 'md:grid-cols-2 xl:grid-cols-3',
-      4: 'md:grid-cols-2 xl:grid-cols-4',
+      1: 'md:grid-cols-[minmax(0,42rem)]',
+      2: 'md:grid-cols-[repeat(2,minmax(0,42rem))]',
+      3: 'md:grid-cols-[repeat(2,minmax(0,42rem))] xl:grid-cols-[repeat(3,minmax(0,42rem))]',
+      4: 'md:grid-cols-[repeat(2,minmax(0,42rem))] xl:grid-cols-[repeat(4,minmax(0,42rem))]',
     },
   },
   defaultVariants: { columns: 3 },
