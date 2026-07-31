@@ -50,7 +50,7 @@ export function virtualObjectInstanceTabFromSearch(
 ): VirtualObjectInstanceTab {
   const tab = searchParams.get(TAB_QUERY_PARAM);
   if (tab === 'state') return 'state';
-  return tab === 'recent' || tab === 'shared' ? 'recent' : 'exclusive';
+  return tab === 'exclusive' ? 'exclusive' : 'recent';
 }
 
 export function VirtualObjectDetails({
@@ -95,7 +95,7 @@ export function VirtualObjectDetails({
         { id: 'recent', label: 'Recent invocations' },
         { id: 'state', label: 'State' },
       ],
-      defaultId: 'exclusive',
+      defaultId: 'recent',
       queryParam: TAB_QUERY_PARAM,
     }),
     [inboxCount, isInboxPending],

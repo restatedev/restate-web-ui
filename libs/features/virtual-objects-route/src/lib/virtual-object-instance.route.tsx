@@ -63,7 +63,7 @@ function Component() {
     error: inboxError,
     isPending: isInboxPending,
   } = useGetVirtualObjectInbox(service, key, scope, {
-    enabled: Boolean(service) && Boolean(key),
+    enabled: Boolean(service) && Boolean(key) && tab === 'exclusive',
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     retry: (failureCount, retryError) =>
@@ -157,7 +157,7 @@ function Component() {
             inboxData={inboxData}
             inboxDataUpdatedAt={inboxDataUpdatedAt}
             inboxError={inboxError}
-            isInboxPending={isInboxPending}
+            isInboxPending={tab === 'exclusive' && isInboxPending}
             invocationsData={invocationsData}
             invocationsDataUpdatedAt={invocationsDataUpdatedAt}
             invocationsError={invocationsError}

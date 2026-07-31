@@ -20,7 +20,7 @@ export type CardIntent =
 const CardIntentContext = createContext<CardIntent>('none');
 
 const cardStyles = tv({
-  base: "relative isolate flex max-w-full min-w-0 flex-col divide-y divide-gray-200 overflow-hidden rounded-xl border bg-gray-50 shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1",
+  base: "relative isolate flex max-w-full min-w-0 flex-col divide-y divide-gray-200 overflow-hidden rounded-xl border bg-gray-50 shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_white]",
   variants: {
     intent: {
       success: 'border-green-200/70 before:from-green-400/20',
