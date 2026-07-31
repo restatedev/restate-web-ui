@@ -127,6 +127,7 @@ import { Python } from './custom-icons/Python';
 import { Tunnel } from './custom-icons/Tunnel';
 import { CloudRun } from './custom-icons/CloudRun';
 import { RestateCloud } from './custom-icons/RestateCloud';
+import { LimitKey } from './custom-icons/LimitKey';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -228,6 +229,7 @@ export const enum IconName {
   ListChevronsDownUp = 'ListChevronsDownUp',
   ListChevronsUpDown = 'ListChevronsUpDown',
   ListTree = 'ListTree',
+  LimitKey = 'LimitKey',
   CirclePlay = 'CirclePlay',
   CirclePause = 'CirclePause',
   CircleStop = 'CircleStop',
@@ -363,6 +365,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.ListChevronsDownUp]: ListChevronsDownUp,
   [IconName.ListChevronsUpDown]: ListChevronsUpDown,
   [IconName.ListTree]: ListTree,
+  [IconName.LimitKey]: LimitKey,
   [IconName.CirclePause]: CirclePause,
   [IconName.CirclePlay]: CirclePlay,
   [IconName.CircleStop]: CircleStop,
