@@ -19,7 +19,7 @@ export type VirtualObjectInstanceTab = VirtualObjectInboxMode | 'state';
 
 const TAB_QUERY_PARAM = 'tab';
 
-function LockAndInboxTabLabel({
+function InboxTabLabel({
   count,
   isPending,
 }: {
@@ -28,7 +28,7 @@ function LockAndInboxTabLabel({
 }) {
   return (
     <span className="flex items-center gap-1.5">
-      Lock / inbox
+      Inbox
       {count !== undefined ? (
         <span
           title={`${formatNumber(count)} inbox entries`}
@@ -47,13 +47,14 @@ export function virtualObjectInstanceTabFromSearch(
   searchParams: URLSearchParams,
 ): VirtualObjectInstanceTab {
   const tab = searchParams.get(TAB_QUERY_PARAM);
-  return tab === 'shared' || tab === 'state' ? tab : 'exclusive';
+  if (tab === 'state') return 'state';
+  return tab === 'recent' || tab === 'shared' ? 'recent' : 'exclusive';
 }
 
 export function virtualObjectInboxModeForTab(
   tab: VirtualObjectInstanceTab,
 ): VirtualObjectInboxMode {
-  return tab === 'shared' ? 'shared' : 'exclusive';
+  return tab === 'recent' ? 'recent' : 'exclusive';
 }
 
 export function VirtualObjectDetails({
@@ -85,13 +86,10 @@ export function VirtualObjectDetails({
         {
           id: 'exclusive',
           label: (
-            <LockAndInboxTabLabel
-              count={inboxCount}
-              isPending={isInboxPending}
-            />
+            <InboxTabLabel count={inboxCount} isPending={isInboxPending} />
           ),
         },
-        { id: 'shared', label: 'Shared' },
+        { id: 'recent', label: 'Recent invocations' },
         { id: 'state', label: 'State' },
       ],
       defaultId: 'exclusive',
@@ -112,6 +110,7 @@ export function VirtualObjectDetails({
             />
           ) : (
             <VirtualObjectInbox
+              identity={identity}
               mode={inboxMode}
               data={inboxData}
               dataUpdatedAt={inboxDataUpdatedAt}

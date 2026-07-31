@@ -1,20 +1,34 @@
 import { useFeatures } from '@restate/data-access/admin-api';
-import type { components } from '@restate/data-access/admin-api-spec';
+import type {
+  components,
+  FilterItem,
+} from '@restate/data-access/admin-api-spec';
+import { useBatchOperations } from '@restate/features/batch-operations';
+import { Actions } from '@restate/features/invocation-route';
 import {
-  Duration,
   INVOCATION_TABLE_COLUMN_CONFIG,
-  InvocationId,
   InvocationTableCell,
   isInvocationTableColumnKey,
-  Status,
   type InvocationTableColumnKey,
 } from '@restate/features/invocation-ui';
 import { useRestateContext } from '@restate/features/restate-context';
+import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
 import { Badge } from '@restate/ui/badge';
+import { Button } from '@restate/ui/button';
+import { ContentPanelToolbar } from '@restate/ui/content-panel';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownTrigger,
+} from '@restate/ui/dropdown';
 import { EmptyState } from '@restate/ui/empty-state';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { formatNumber } from '@restate/util/intl';
 import { getSearchParams } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
 import { useMemo } from 'react';
@@ -22,53 +36,74 @@ import { useLocation, useNavigate } from 'react-router';
 
 type InboxEntry = components['schemas']['VirtualObjectInboxEntry'];
 type InboxResponse = components['schemas']['VirtualObjectInboxResponse'];
-type InboxTableRow = InboxEntry & {
-  isLockHolder?: boolean;
-  acquiredAt?: string;
-};
-type InboxColumnId = InvocationTableColumnKey;
-export type VirtualObjectInboxMode = 'exclusive' | 'shared';
-type LockRowTone = 'success' | 'danger' | 'info' | 'warning' | 'default';
+type InboxColumnId = InvocationTableColumnKey | 'actions';
+export type VirtualObjectInboxMode = 'exclusive' | 'recent';
+
+function getInboxInvocationFilters(
+  identity: VirtualObjectInstanceIdentity,
+  hasVqueues: boolean,
+): FilterItem[] {
+  return [
+    {
+      field: 'target_service_ty',
+      type: 'STRING',
+      operation: 'EQUALS',
+      value: 'virtual_object',
+    },
+    {
+      field: 'target_service_name',
+      type: 'STRING',
+      operation: 'EQUALS',
+      value: identity.service,
+    },
+    {
+      field: 'target_service_key',
+      type: 'STRING',
+      operation: 'EQUALS',
+      value: identity.key,
+    },
+    ...(hasVqueues
+      ? identity.scope === undefined
+        ? ([
+            {
+              field: 'scope',
+              type: 'NULL',
+              operation: 'IS',
+            },
+          ] satisfies FilterItem[])
+        : ([
+            {
+              field: 'scope',
+              type: 'STRING',
+              operation: 'EQUALS',
+              value: identity.scope,
+            },
+          ] satisfies FilterItem[])
+      : []),
+    {
+      field: 'status',
+      type: 'STRING_LIST',
+      operation: 'IN',
+      value: [
+        'scheduled',
+        'pending',
+        'ready',
+        ...(hasVqueues ? ['yielded'] : []),
+        'backing-off',
+      ],
+    },
+  ];
+}
 
 const inboxRowStyles = tv({
   base: "bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50",
   variants: {
-    lockTone: {
-      success: 'bg-green-50/80 hover:bg-green-100/70 [&>td]:border-b-green-200',
-      danger: 'bg-red-50/80 hover:bg-red-100/70 [&>td]:border-b-red-200',
-      info: 'bg-blue-50/80 hover:bg-blue-100/70 [&>td]:border-b-blue-200',
-      warning:
-        'bg-orange-50/80 hover:bg-orange-100/70 [&>td]:border-b-orange-200',
-      default: 'bg-zinc-50/90 hover:bg-zinc-100/80 [&>td]:border-b-zinc-300',
-    },
     isClickable: {
       true: 'cursor-pointer',
       false: 'cursor-default',
     },
   },
 });
-
-function getLockRowTone(row: InboxTableRow): LockRowTone | undefined {
-  if (!row.isLockHolder) return undefined;
-  if (row.invocation?.isRetrying) return 'warning';
-
-  const status = row.invocation?.status ?? row.status ?? row.stage;
-  switch (status) {
-    case 'succeeded':
-      return 'success';
-    case 'failed':
-      return 'danger';
-    case 'running':
-    case 'started':
-      return 'info';
-    case 'pending':
-    case 'paused':
-    case 'backing-off':
-      return 'warning';
-    default:
-      return 'default';
-  }
-}
 
 function getInboxColumns(showVqueueColumns: boolean) {
   return [
@@ -101,6 +136,12 @@ function getInboxColumns(showVqueueColumns: boolean) {
         ]
       : []),
     { ...INVOCATION_TABLE_COLUMN_CONFIG.status, id: 'status' },
+    {
+      id: 'actions',
+      name: 'Actions',
+      width: 40,
+      hideLabel: true,
+    },
   ] satisfies PanelTableColumn<InboxColumnId>[];
 }
 
@@ -135,67 +176,16 @@ function NonInvocationIdentity({
   );
 }
 
-function LockHolderIdentity({ entry }: { entry: InboxTableRow }) {
-  return (
-    <div className="min-w-0">
-      <span className="sr-only">Lock holder: </span>
-      {entry.kind === 'invocation' ? (
-        <InvocationId
-          id={entry.id}
-          iconName={IconName.Security}
-          truncateInMiddle
-          popover={false}
-          className="mr-1 w-fit max-w-full min-w-0 rounded-md [--pulse-size:2px]"
-        />
-      ) : (
-        <NonInvocationIdentity entry={entry} iconName={IconName.Security} />
-      )}
-    </div>
-  );
-}
-
-function LockHolderStatus({ entry }: { entry: InboxTableRow }) {
-  const status = entry.status ?? entry.stage;
-  const fallbackLabel = status
-    ? status
-        .replaceAll('-', ' ')
-        .replace(/^./, (character) => character.toUpperCase())
-    : undefined;
-
-  return (
-    <div className="flex flex-row flex-wrap items-baseline gap-2">
-      {entry.invocation ? (
-        <Status invocation={entry.invocation} />
-      ) : fallbackLabel ? (
-        <Badge>{fallbackLabel}</Badge>
-      ) : null}
-      {entry.acquiredAt && (
-        <Duration
-          prefix="Lock held for"
-          date={entry.acquiredAt}
-          tooltipTitle="Lock acquired at"
-          className="shrink-0"
-        />
-      )}
-    </div>
-  );
-}
-
 function renderInboxCell(
-  entry: InboxTableRow,
+  entry: InboxEntry,
   column: PanelTableColumn<InboxColumnId>,
 ) {
-  if (column.id === 'id' && entry.isLockHolder) {
+  if (column.id === 'actions') {
     return (
-      <Cell className="overflow-visible align-top">
-        <LockHolderIdentity entry={entry} />
-      </Cell>
-    );
-  }
-  if (column.id === 'status' && entry.isLockHolder && entry.acquiredAt) {
-    return (
-      <Cell className="align-top">
-        <LockHolderStatus entry={entry} />
+      <Cell className="align-top [&&&]:overflow-visible">
+        {entry.kind === 'invocation' && (
+          <Actions invocation={entry.invocation} />
+        )}
       </Cell>
     );
   }
@@ -233,6 +223,75 @@ function renderInboxCell(
   return <Cell />;
 }
 
+function InboxBatchActions({
+  inboxFilters,
+  inboxCount,
+}: {
+  inboxFilters: FilterItem[];
+  inboxCount?: number;
+}) {
+  const { batchCancel, batchKill } = useBatchOperations();
+  const isDisabled = inboxCount === undefined || inboxCount === 0;
+  const title =
+    inboxCount === undefined
+      ? 'Actions on the whole inbox'
+      : `Actions on all ${formatNumber(inboxCount)} inbox ${inboxCount === 1 ? 'entry' : 'entries'}`;
+
+  return (
+    <ContentPanelToolbar className="h-full min-h-0 justify-end gap-1.5 pr-1 pb-1 pl-2">
+      <Dropdown>
+        <DropdownTrigger>
+          <Button
+            variant="secondary"
+            disabled={isDisabled}
+            className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
+          >
+            Actions
+            {inboxCount !== undefined && inboxCount > 0 && (
+              <Badge size="xs" variant="info">
+                {formatNumber(inboxCount, true)}
+              </Badge>
+            )}
+            <Icon
+              name={IconName.ChevronsUpDown}
+              className="h-3.5 w-3.5 opacity-80"
+            />
+          </Button>
+        </DropdownTrigger>
+        <DropdownPopover>
+          <DropdownSection title={title}>
+            <DropdownMenu
+              onSelect={(action) => {
+                if (action === 'cancel') {
+                  batchCancel({ filters: inboxFilters });
+                }
+                if (action === 'kill') {
+                  batchKill({ filters: inboxFilters });
+                }
+              }}
+            >
+              <DropdownItem value="cancel" destructive>
+                <Icon
+                  name={IconName.Cancel}
+                  className="h-3.5 w-3.5 shrink-0 opacity-80"
+                />
+                Cancel…
+              </DropdownItem>
+              <DropdownItem value="kill" destructive>
+                <Icon
+                  name={IconName.Kill}
+                  className="h-3.5 w-3.5 shrink-0 opacity-80"
+                />
+                Kill…
+              </DropdownItem>
+            </DropdownMenu>
+          </DropdownSection>
+        </DropdownPopover>
+      </Dropdown>
+    </ContentPanelToolbar>
+  );
+}
+
 function InboxEntriesTable({
   ariaLabel,
   columns,
@@ -244,10 +303,13 @@ function InboxEntriesTable({
   emptyTitle,
   emptyDescription,
   recent = false,
+  batchActions = false,
+  inboxFilters = [],
+  inboxCount,
 }: {
   ariaLabel: string;
   columns: PanelTableColumn<InboxColumnId>[];
-  rows: InboxTableRow[];
+  rows: InboxEntry[];
   isPending: boolean;
   error: Error | null;
   truncated?: boolean;
@@ -255,6 +317,9 @@ function InboxEntriesTable({
   emptyTitle: string;
   emptyDescription: string;
   recent?: boolean;
+  batchActions?: boolean;
+  inboxFilters?: FilterItem[];
+  inboxCount?: number;
 }) {
   const { baseUrl } = useRestateContext();
   const location = useLocation();
@@ -262,6 +327,12 @@ function InboxEntriesTable({
 
   return (
     <>
+      {batchActions && (
+        <InboxBatchActions
+          inboxFilters={inboxFilters}
+          inboxCount={inboxCount}
+        />
+      )}
       <PanelTable
         aria-label={ariaLabel}
         columns={columns}
@@ -280,7 +351,6 @@ function InboxEntriesTable({
         }}
         rowClassName={(row) =>
           inboxRowStyles({
-            lockTone: getLockRowTone(row),
             isClickable: row.kind === 'invocation',
           })
         }
@@ -296,7 +366,7 @@ function InboxEntriesTable({
       {truncated && (
         <div className="px-4 pt-3 text-xs text-zinc-500">
           {recent
-            ? `Showing the ${limit} most recent entries.`
+            ? `Showing the ${limit} most recent invocations.`
             : `Showing ${limit} inbox entries.`}
         </div>
       )}
@@ -306,6 +376,7 @@ function InboxEntriesTable({
 
 function InboxTable({
   ariaLabel,
+  identity,
   mode,
   data,
   dataUpdatedAt,
@@ -313,6 +384,7 @@ function InboxTable({
   isPending,
 }: {
   ariaLabel: string;
+  identity: VirtualObjectInstanceIdentity;
   mode: VirtualObjectInboxMode;
   data?: InboxResponse;
   dataUpdatedAt?: number;
@@ -322,17 +394,13 @@ function InboxTable({
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const columns = useMemo(() => getInboxColumns(hasVqueues), [hasVqueues]);
-  const rows = useMemo<InboxTableRow[]>(() => {
-    const inboxRows = data?.rows ?? [];
-    const lockHolder =
-      mode === 'exclusive' ? data?.lock?.lockHolder : undefined;
-    return lockHolder
-      ? [
-          { ...lockHolder, isLockHolder: true },
-          ...inboxRows.filter((entry) => entry.id !== lockHolder.id),
-        ]
-      : inboxRows;
-  }, [data?.lock?.lockHolder, data?.rows, mode]);
+  const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
+  const inboxFilters = useMemo(
+    () => getInboxInvocationFilters(identity, hasVqueues),
+    [hasVqueues, identity],
+  );
+  const inboxCount =
+    data?.inboxCount ?? (!data?.truncated ? rows.length : undefined);
 
   if (!isPending && data?.supported === false) {
     return (
@@ -341,8 +409,8 @@ function InboxTable({
           icon={IconName.History}
           title={
             mode === 'exclusive'
-              ? 'Lock and inbox unavailable'
-              : 'Shared invocations unavailable'
+              ? 'Inbox unavailable'
+              : 'Recent invocations unavailable'
           }
           description="This view is not available with this Restate version."
         />
@@ -350,7 +418,7 @@ function InboxTable({
     );
   }
 
-  const isShared = mode === 'shared';
+  const isRecent = mode === 'recent';
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <InboxEntriesTable
@@ -361,37 +429,41 @@ function InboxTable({
         error={error}
         truncated={data?.truncated}
         limit={data?.limit}
-        emptyTitle={
-          isShared ? 'No recent shared invocations' : 'No lock or inbox entries'
-        }
+        emptyTitle={isRecent ? 'No recent invocations' : 'No inbox entries'}
         emptyDescription={
-          isShared
-            ? 'Shared invocations will appear here.'
-            : 'Lock holders, invocations, and state mutations will appear here.'
+          isRecent
+            ? 'Invocations for this Virtual Object will appear here while they are retained.'
+            : 'Queued invocations and state mutations will appear here.'
         }
-        recent={isShared}
+        recent={isRecent}
+        batchActions={!isRecent}
+        inboxFilters={inboxFilters}
+        inboxCount={inboxCount}
       />
     </SnapshotTimeProvider>
   );
 }
 
 export function VirtualObjectInbox({
+  identity,
   mode,
   data,
   dataUpdatedAt,
   error,
   isPending,
 }: {
+  identity: VirtualObjectInstanceIdentity;
   mode: VirtualObjectInboxMode;
   data?: InboxResponse;
   dataUpdatedAt?: number;
   error: Error | null;
   isPending: boolean;
 }) {
-  return mode === 'shared' ? (
+  return mode === 'recent' ? (
     <InboxTable
-      ariaLabel="Recent shared invocations"
-      mode="shared"
+      ariaLabel="Recent Virtual Object invocations"
+      identity={identity}
+      mode="recent"
       data={data}
       dataUpdatedAt={dataUpdatedAt}
       error={error}
@@ -399,7 +471,8 @@ export function VirtualObjectInbox({
     />
   ) : (
     <InboxTable
-      ariaLabel="Lock and inbox entries"
+      ariaLabel="Virtual Object inbox entries"
+      identity={identity}
       mode="exclusive"
       data={data}
       dataUpdatedAt={dataUpdatedAt}

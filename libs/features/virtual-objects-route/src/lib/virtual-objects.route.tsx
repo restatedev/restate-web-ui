@@ -88,7 +88,7 @@ const columns: PanelTableColumn<ColumnId>[] = [
   },
   {
     id: 'backlog',
-    name: 'Backlog',
+    name: 'Inbox',
     allowsSorting: true,
     defaultWidth: 220,
     minWidth: 180,
