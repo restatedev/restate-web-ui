@@ -25,7 +25,7 @@ function InvocationCrumbContent({ crumb }: BreadcrumbComponentProps) {
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-700"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
         />
       )}
     </>
@@ -68,7 +68,7 @@ function VirtualObjectInstanceCrumbContent({
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-700"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
         />
       )}
     </>
@@ -109,7 +109,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-700"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
         />
       )}
     </>
