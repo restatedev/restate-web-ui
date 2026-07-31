@@ -3257,6 +3257,8 @@ export interface components {
     };
     VirtualObjectStatsActivity: {
       /** Format: date-time */
+      oldestInboxedAt?: string;
+      /** Format: date-time */
       lastEnqueuedAt?: string;
       /** Format: date-time */
       lastStartedAt?: string;
@@ -3274,7 +3276,9 @@ export interface components {
     VirtualObjectStatsResponse: {
       /** @description False when the server does not expose VQueues. */
       supported: boolean;
-      averageQueueDuration?: components['schemas']['VirtualObjectStatsDurationRange'];
+      averageInboxDuration?: components['schemas']['VirtualObjectStatsDurationRange'];
+      /** @description Number of entries currently inboxed across this Virtual Object instance's Virtual Queues. */
+      numInbox?: number;
       averageBlockedDurations?: components['schemas']['VirtualObjectStatsBlockedDurationRange'][];
       activity?: components['schemas']['VirtualObjectStatsActivity'];
       state?: components['schemas']['VirtualObjectStatsState'];

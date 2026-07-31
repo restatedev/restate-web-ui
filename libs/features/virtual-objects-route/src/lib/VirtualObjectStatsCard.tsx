@@ -7,6 +7,7 @@ import {
   formatDurations,
   formatNumber,
   normaliseDuration,
+  parseISODuration,
 } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 
@@ -28,19 +29,7 @@ const BLOCKED_GATE_LABELS: Record<
 };
 
 function formatDuration(value: string) {
-  const match = value.match(
-    /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/,
-  );
-  if (!match) return value;
-
-  return formatDurations(
-    normaliseDuration({
-      days: Number(match[1] ?? 0),
-      hours: Number(match[2] ?? 0),
-      minutes: Number(match[3] ?? 0),
-      seconds: Number(match[4] ?? 0),
-    }),
-  );
+  return formatDurations(normaliseDuration(parseISODuration(value)));
 }
 
 function formatDurationRange(range: VirtualObjectStatsDurationRange) {

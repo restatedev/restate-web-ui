@@ -5298,6 +5298,7 @@
       "VirtualObjectStatsActivity": {
         "type": "object",
         "properties": {
+          "oldestInboxedAt": { "type": "string", "format": "date-time" },
           "lastEnqueuedAt": { "type": "string", "format": "date-time" },
           "lastStartedAt": { "type": "string", "format": "date-time" },
           "lastAttemptAt": { "type": "string", "format": "date-time" },
@@ -5328,8 +5329,13 @@
             "type": "boolean",
             "description": "False when the server does not expose VQueues."
           },
-          "averageQueueDuration": {
+          "averageInboxDuration": {
             "$ref": "#/components/schemas/VirtualObjectStatsDurationRange"
+          },
+          "numInbox": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of entries currently inboxed across this Virtual Object instance's Virtual Queues."
           },
           "averageBlockedDurations": {
             "type": "array",

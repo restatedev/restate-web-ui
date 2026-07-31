@@ -50,7 +50,7 @@ function durationRange(
 function blockedDurationRanges(
   row: Row,
 ): VirtualObjectStatsBlockedDurationRange[] {
-  const vqueueCount = nonNegativeInteger(row['blocked_duration_vqueue_count']);
+  const vqueueCount = nonNegativeInteger(row['attempted_vqueue_count']);
   const oldestUpdatedAt = stringValue(row['oldest_attempt_at']);
   const latestUpdatedAt = stringValue(row['latest_attempt_at']);
   return BLOCKED_GATES.flatMap((gate) => {
@@ -77,17 +77,20 @@ export async function getVirtualObjectStats(
     } satisfies VirtualObjectStatsResponse);
   }
 
-  const vqueueScopeClause =
-    scope === undefined ? 'scope IS NULL' : `scope = ${quoteSqlString(scope)}`;
-  const [vqueueResult, stateResult] = await Promise.all([
+  const vqueueScopePredicate = (alias?: string) => {
+    const column = alias ? `${alias}.scope` : 'scope';
+    return scope === undefined
+      ? `${column} IS NULL`
+      : `${column} = ${quoteSqlString(scope)}`;
+  };
+  const [vqueueResult, inboxResult, stateResult] = await Promise.all([
     this.query(
       `SELECT
-      COUNT(last_start_at) AS queue_duration_vqueue_count,
-      MIN(CASE WHEN last_start_at IS NOT NULL THEN avg_queue_duration END) AS min_avg_queue_duration,
-      MAX(CASE WHEN last_start_at IS NOT NULL THEN avg_queue_duration END) AS max_avg_queue_duration,
-      MIN(last_start_at) AS oldest_start_at,
-      MAX(last_start_at) AS latest_start_at,
-      COUNT(last_attempt_at) AS blocked_duration_vqueue_count,
+      COUNT(last_attempt_at) AS attempted_vqueue_count,
+      MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS min_avg_inbox_duration,
+      MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS max_avg_inbox_duration,
+      MIN(last_attempt_at) AS oldest_attempt_at,
+      MAX(last_attempt_at) AS latest_attempt_at,
       MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_concurrency_rules END) AS min_avg_blocked_on_concurrency_rules,
       MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_concurrency_rules END) AS max_avg_blocked_on_concurrency_rules,
       MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_concurrency END) AS min_avg_blocked_on_invoker_concurrency,
@@ -96,14 +99,27 @@ export async function getVirtualObjectStats(
       MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_throttling END) AS max_avg_blocked_on_invoker_throttling,
       MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_lock END) AS min_avg_blocked_on_lock,
       MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_lock END) AS max_avg_blocked_on_lock,
-      MIN(last_attempt_at) AS oldest_attempt_at,
-      MAX(last_attempt_at) AS latest_attempt_at,
+      COALESCE(SUM(num_inbox), 0) AS num_inbox,
       MAX(last_enqueued_at) AS last_enqueued_at,
+      MAX(last_start_at) AS latest_start_at,
       MAX(last_finish_at) AS last_finish_at
     FROM sys_vqueue_meta
     WHERE service_name = ${quoteSqlString(service)}
       AND lock_name = ${quoteSqlString(`${service}/${key}`)}
-      AND ${vqueueScopeClause}`,
+      AND ${vqueueScopePredicate()}`,
+    ),
+    this.query(
+      `SELECT MIN(v.transitioned_at) AS oldest_inboxed_at
+    FROM sys_vqueues v
+    WHERE v.id IN (
+      SELECT vm.id
+      FROM sys_vqueue_meta vm
+      WHERE vm.service_name = ${quoteSqlString(service)}
+        AND vm.lock_name = ${quoteSqlString(`${service}/${key}`)}
+        AND ${vqueueScopePredicate('vm')}
+        AND vm.num_inbox > 0
+    )
+      AND v.stage = 'inbox'`,
     ),
     this.query(
       `SELECT
@@ -116,30 +132,35 @@ export async function getVirtualObjectStats(
   ]);
 
   const vqueueRow = (vqueueResult.rows.at(0) ?? {}) as Row;
+  const inboxRow = (inboxResult.rows.at(0) ?? {}) as Row;
   const stateRow = (stateResult.rows.at(0) ?? {}) as Row;
-  const queueDurationVqueueCount = nonNegativeInteger(
-    vqueueRow['queue_duration_vqueue_count'],
+  const attemptedVqueueCount = nonNegativeInteger(
+    vqueueRow['attempted_vqueue_count'],
   );
-  const averageQueueDuration = durationRange(
+  const oldestAttemptAt = stringValue(vqueueRow['oldest_attempt_at']);
+  const latestAttemptAt = stringValue(vqueueRow['latest_attempt_at']);
+  const averageInboxDuration = durationRange(
     vqueueRow,
-    'avg_queue_duration',
-    queueDurationVqueueCount,
-    stringValue(vqueueRow['oldest_start_at']),
-    stringValue(vqueueRow['latest_start_at']),
+    'avg_inbox_duration',
+    attemptedVqueueCount,
+    oldestAttemptAt,
+    latestAttemptAt,
   );
   const lastEnqueuedAt = stringValue(vqueueRow['last_enqueued_at']);
+  const oldestInboxedAt = stringValue(inboxRow['oldest_inboxed_at']);
   const lastStartedAt = stringValue(vqueueRow['latest_start_at']);
-  const lastAttemptAt = stringValue(vqueueRow['latest_attempt_at']);
   const lastFinishedAt = stringValue(vqueueRow['last_finish_at']);
 
   return Response.json({
     supported: true,
-    ...(averageQueueDuration ? { averageQueueDuration } : {}),
+    ...(averageInboxDuration ? { averageInboxDuration } : {}),
+    numInbox: nonNegativeInteger(vqueueRow['num_inbox']),
     averageBlockedDurations: blockedDurationRanges(vqueueRow),
     activity: {
+      ...(oldestInboxedAt ? { oldestInboxedAt } : {}),
       ...(lastEnqueuedAt ? { lastEnqueuedAt } : {}),
       ...(lastStartedAt ? { lastStartedAt } : {}),
-      ...(lastAttemptAt ? { lastAttemptAt } : {}),
+      ...(latestAttemptAt ? { lastAttemptAt: latestAttemptAt } : {}),
       ...(lastFinishedAt ? { lastFinishedAt } : {}),
     },
     state: {
