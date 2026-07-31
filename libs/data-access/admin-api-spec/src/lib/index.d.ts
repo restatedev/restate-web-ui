@@ -1040,9 +1040,29 @@ export interface paths {
     };
     /**
      * Get the Virtual Object inbox
-     * @description Returns either the current inbox or the 50 most recent retained invocations for the exact service, key, and scope identity.
+     * @description Returns the current inbox for the exact service, key, and scope identity.
      */
     get: operations['get_virtual_object_inbox'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/virtual-objects/{service}/instances/{key}/invocations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get recent Virtual Object invocations
+     * @description Returns the 50 most recent retained invocations for the exact service, key, and scope identity.
+     */
+    get: operations['get_virtual_object_invocations'];
     put?: never;
     post?: never;
     delete?: never;
@@ -3168,9 +3188,14 @@ export interface components {
       supported: boolean;
       rows?: components['schemas']['VirtualObjectInboxEntry'][];
       vqueues?: components['schemas']['VirtualObjectVqueueSummary'][];
-      lock?: components['schemas']['VirtualObjectLockResponse'];
       /** @description Exact number of entries currently in the inbox for this Virtual Object instance. */
       inboxCount?: number;
+      limit: number;
+      truncated: boolean;
+    };
+    VirtualObjectInvocationsResponse: {
+      supported: boolean;
+      rows: components['schemas']['Invocation'][];
       limit: number;
       truncated: boolean;
     };
@@ -8107,9 +8132,7 @@ export interface operations {
   };
   get_virtual_object_inbox: {
     parameters: {
-      query: {
-        /** @description Inbox view to load. */
-        mode: 'exclusive' | 'recent';
+      query?: {
         /** @description Virtual Object scope. Omit for an unscoped object. */
         scope?: string;
       };
@@ -8148,6 +8171,58 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['VirtualObjectInboxSnapshotChangedResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_virtual_object_invocations: {
+    parameters: {
+      query?: {
+        /** @description Virtual Object scope. Omit for an unscoped object. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Virtual Object service name */
+        service: string;
+        /** @description Virtual Object service key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Recent invocations for the Virtual Object identity */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectInvocationsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
       500: {

@@ -2209,7 +2209,6 @@ export function useGetVirtualObjectLock(
 export function useGetVirtualObjectInbox(
   serviceName: string,
   key: string,
-  mode: 'exclusive' | 'recent',
   scope?: string,
   options?: HookQueryOptions<
     '/query/virtual-objects/{service}/instances/{key}/inbox',
@@ -2227,7 +2226,49 @@ export function useGetVirtualObjectInbox(
       resolvedPath: `/query/virtual-objects/${encodeURIComponent(serviceName)}/instances/${encodeURIComponent(key)}/inbox`,
       parameters: {
         path: { service: serviceName, key },
-        query: { mode, scope },
+        query: { scope },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(serviceName) &&
+      Boolean(key) &&
+      options?.enabled !== false &&
+      enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
+  };
+}
+
+export function useGetVirtualObjectInvocations(
+  serviceName: string,
+  key: string,
+  scope?: string,
+  options?: HookQueryOptions<
+    '/query/virtual-objects/{service}/instances/{key}/invocations',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/virtual-objects/{service}/instances/{key}/invocations',
+    'get',
+    {
+      baseUrl,
+      resolvedPath: `/query/virtual-objects/${encodeURIComponent(serviceName)}/instances/${encodeURIComponent(key)}/invocations`,
+      parameters: {
+        path: { service: serviceName, key },
+        query: { scope },
       },
     },
   );

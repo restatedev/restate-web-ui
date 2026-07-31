@@ -67,7 +67,7 @@ import {
   type ListVirtualObjectInstancesArgs,
   getVirtualObjectLock,
   getVirtualObjectInbox,
-  type VirtualObjectInboxMode,
+  getVirtualObjectInvocations,
   getVqueueInbox,
   listWorkflowRuns,
   type ListWorkflowRunsArgs,
@@ -204,7 +204,11 @@ type BoundHandlers = {
   getVirtualObjectInbox: (
     service: string,
     key: string,
-    mode: VirtualObjectInboxMode,
+    scope?: string,
+  ) => Promise<Response>;
+  getVirtualObjectInvocations: (
+    service: string,
+    key: string,
     scope?: string,
   ) => Promise<Response>;
   listWorkflowRuns: (
@@ -269,6 +273,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     listVirtualObjectInstances: listVirtualObjectInstances.bind(context),
     getVirtualObjectLock: getVirtualObjectLock.bind(context),
     getVirtualObjectInbox: getVirtualObjectInbox.bind(context),
+    getVirtualObjectInvocations: getVirtualObjectInvocations.bind(context),
     listWorkflowRuns: listWorkflowRuns.bind(context),
     getWorkflowRun: getWorkflowRun.bind(context),
   };
@@ -424,6 +429,10 @@ export const routes = createRoutes('/query', {
     inbox: {
       method: 'GET',
       pattern: '/virtual-objects/:service/instances/:key/inbox',
+    },
+    invocations: {
+      method: 'GET',
+      pattern: '/virtual-objects/:service/instances/:key/invocations',
     },
     queue: {
       method: 'GET',
@@ -674,7 +683,16 @@ router.map(routes, {
         return getVirtualObjectInbox(
           ctx.params.service,
           ctx.params.key,
-          ctx.url.searchParams.get('mode') as VirtualObjectInboxMode,
+          ctx.url.searchParams.has('scope')
+            ? String(ctx.url.searchParams.get('scope'))
+            : undefined,
+        );
+      },
+      async invocations(ctx) {
+        const { getVirtualObjectInvocations } = ctx.storage.get(handlersKey);
+        return getVirtualObjectInvocations(
+          ctx.params.service,
+          ctx.params.key,
           ctx.url.searchParams.has('scope')
             ? String(ctx.url.searchParams.get('scope'))
             : undefined,

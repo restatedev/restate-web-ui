@@ -1,5 +1,7 @@
 import {
   useGetVirtualObjectInbox,
+  useGetVirtualObjectInvocations,
+  useGetVirtualObjectLock,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
 import { InvocationStatusHeader } from '@restate/features/invocation-ui';
@@ -19,7 +21,6 @@ import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { CardGrid } from '@restate/ui/card';
 import {
-  virtualObjectInboxModeForTab,
   virtualObjectInstanceTabFromSearch,
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
@@ -33,7 +34,6 @@ function Component() {
   const [searchParams] = useSearchParams();
   const scope = virtualObjectScopeFromSearch(searchParams);
   const tab = virtualObjectInstanceTabFromSearch(searchParams);
-  const inboxMode = virtualObjectInboxModeForTab(tab);
   const identity = useMemo<VirtualObjectInstanceIdentity>(
     () => ({
       service,
@@ -59,7 +59,7 @@ function Component() {
     dataUpdatedAt: inboxDataUpdatedAt,
     error: inboxError,
     isPending: isInboxPending,
-  } = useGetVirtualObjectInbox(service, key, inboxMode, scope, {
+  } = useGetVirtualObjectInbox(service, key, scope, {
     enabled: Boolean(service) && Boolean(key),
     refetchOnMount: true,
     refetchOnWindowFocus: false,
@@ -70,8 +70,26 @@ function Component() {
       retryError.restateCode === 'snapshot_changed',
     staleTime: 0,
   });
+  const {
+    data: invocationsData,
+    dataUpdatedAt: invocationsDataUpdatedAt,
+    error: invocationsError,
+    isPending: areInvocationsPending,
+  } = useGetVirtualObjectInvocations(service, key, scope, {
+    enabled: Boolean(service) && Boolean(key) && tab === 'recent',
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  });
+  const { data: lockData, dataUpdatedAt: lockDataUpdatedAt } =
+    useGetVirtualObjectLock(service, key, scope, {
+      enabled: Boolean(service) && Boolean(key),
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      staleTime: 0,
+    });
   return (
-    <SnapshotTimeProvider lastSnapshot={inboxDataUpdatedAt}>
+    <SnapshotTimeProvider lastSnapshot={lockDataUpdatedAt}>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
         <InvocationStatusHeader className="min-w-0">
@@ -81,9 +99,9 @@ function Component() {
             variant="header"
           />
         </InvocationStatusHeader>
-        {inboxData?.lock?.lockHolder && (
+        {lockData?.lockHolder && (
           <CardGrid className="relative z-40 mx-5 mt-3">
-            <VirtualObjectLockHero lockHolder={inboxData.lock.lockHolder} />
+            <VirtualObjectLockHero lockHolder={lockData.lockHolder} />
           </CardGrid>
         )}
 
@@ -117,6 +135,10 @@ function Component() {
             inboxDataUpdatedAt={inboxDataUpdatedAt}
             inboxError={inboxError}
             isInboxPending={isInboxPending}
+            invocationsData={invocationsData}
+            invocationsDataUpdatedAt={invocationsDataUpdatedAt}
+            invocationsError={invocationsError}
+            areInvocationsPending={areInvocationsPending}
           />
         )}
       </div>

@@ -36,8 +36,9 @@ import { useLocation, useNavigate } from 'react-router';
 
 type InboxEntry = components['schemas']['VirtualObjectInboxEntry'];
 type InboxResponse = components['schemas']['VirtualObjectInboxResponse'];
+type InvocationsResponse =
+  components['schemas']['VirtualObjectInvocationsResponse'];
 type InboxColumnId = InvocationTableColumnKey | 'actions';
-export type VirtualObjectInboxMode = 'exclusive' | 'recent';
 
 function getInboxInvocationFilters(
   identity: VirtualObjectInstanceIdentity,
@@ -374,18 +375,14 @@ function InboxEntriesTable({
   );
 }
 
-function InboxTable({
-  ariaLabel,
+export function VirtualObjectInbox({
   identity,
-  mode,
   data,
   dataUpdatedAt,
   error,
   isPending,
 }: {
-  ariaLabel: string;
   identity: VirtualObjectInstanceIdentity;
-  mode: VirtualObjectInboxMode;
   data?: InboxResponse;
   dataUpdatedAt?: number;
   error: Error | null;
@@ -407,36 +404,26 @@ function InboxTable({
       <div className="px-5 py-12">
         <EmptyState
           icon={IconName.History}
-          title={
-            mode === 'exclusive'
-              ? 'Inbox unavailable'
-              : 'Recent invocations unavailable'
-          }
+          title="Inbox unavailable"
           description="This view is not available with this Restate version."
         />
       </div>
     );
   }
 
-  const isRecent = mode === 'recent';
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <InboxEntriesTable
-        ariaLabel={ariaLabel}
+        ariaLabel="Virtual Object inbox entries"
         columns={columns}
         rows={rows}
         isPending={isPending}
         error={error}
         truncated={data?.truncated}
         limit={data?.limit}
-        emptyTitle={isRecent ? 'No recent invocations' : 'No inbox entries'}
-        emptyDescription={
-          isRecent
-            ? 'Invocations for this Virtual Object will appear here while they are retained.'
-            : 'Queued invocations and state mutations will appear here.'
-        }
-        recent={isRecent}
-        batchActions={!isRecent}
+        emptyTitle="No inbox entries"
+        emptyDescription="Queued invocations and state mutations will appear here."
+        batchActions
         inboxFilters={inboxFilters}
         inboxCount={inboxCount}
       />
@@ -444,40 +431,56 @@ function InboxTable({
   );
 }
 
-export function VirtualObjectInbox({
-  identity,
-  mode,
+export function VirtualObjectInvocations({
   data,
   dataUpdatedAt,
   error,
   isPending,
 }: {
-  identity: VirtualObjectInstanceIdentity;
-  mode: VirtualObjectInboxMode;
-  data?: InboxResponse;
+  data?: InvocationsResponse;
   dataUpdatedAt?: number;
   error: Error | null;
   isPending: boolean;
 }) {
-  return mode === 'recent' ? (
-    <InboxTable
-      ariaLabel="Recent Virtual Object invocations"
-      identity={identity}
-      mode="recent"
-      data={data}
-      dataUpdatedAt={dataUpdatedAt}
-      error={error}
-      isPending={isPending}
-    />
-  ) : (
-    <InboxTable
-      ariaLabel="Virtual Object inbox entries"
-      identity={identity}
-      mode="exclusive"
-      data={data}
-      dataUpdatedAt={dataUpdatedAt}
-      error={error}
-      isPending={isPending}
-    />
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const columns = useMemo(() => getInboxColumns(hasVqueues), [hasVqueues]);
+  const rows = useMemo<InboxEntry[]>(
+    () =>
+      data?.rows.map((invocation) => ({
+        id: invocation.id,
+        kind: 'invocation',
+        invocation,
+      })) ?? [],
+    [data?.rows],
+  );
+
+  if (!isPending && data?.supported === false) {
+    return (
+      <div className="px-5 py-12">
+        <EmptyState
+          icon={IconName.History}
+          title="Recent invocations unavailable"
+          description="This view is not available with this Restate version."
+        />
+      </div>
+    );
+  }
+
+  return (
+    <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
+      <InboxEntriesTable
+        ariaLabel="Recent Virtual Object invocations"
+        columns={columns}
+        rows={rows}
+        isPending={isPending}
+        error={error}
+        truncated={data?.truncated}
+        limit={data?.limit}
+        emptyTitle="No recent invocations"
+        emptyDescription="Invocations for this Virtual Object will appear here while they are retained."
+        recent
+      />
+    </SnapshotTimeProvider>
   );
 }

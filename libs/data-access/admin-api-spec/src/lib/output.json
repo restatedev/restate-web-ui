@@ -4172,7 +4172,7 @@
       "get": {
         "tags": ["query-virtual-objects"],
         "summary": "Get the Virtual Object inbox",
-        "description": "Returns either the current inbox or the 50 most recent retained invocations for the exact service, key, and scope identity.",
+        "description": "Returns the current inbox for the exact service, key, and scope identity.",
         "operationId": "get_virtual_object_inbox",
         "security": [],
         "parameters": [
@@ -4192,16 +4192,6 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "mode",
-            "in": "query",
-            "description": "Inbox view to load.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": ["exclusive", "recent"]
             }
           },
           {
@@ -4241,6 +4231,86 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VirtualObjectInboxSnapshotChangedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/virtual-objects/{service}/instances/{key}/invocations": {
+      "get": {
+        "tags": ["query-virtual-objects"],
+        "summary": "Get recent Virtual Object invocations",
+        "description": "Returns the 50 most recent retained invocations for the exact service, key, and scope identity.",
+        "operationId": "get_virtual_object_invocations",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Virtual Object service name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Virtual Object service key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Virtual Object scope. Omit for an unscoped object.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent invocations for the Virtual Object identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectInvocationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
                 }
               }
             }
@@ -8781,12 +8851,30 @@
               "$ref": "#/components/schemas/VirtualObjectVqueueSummary"
             }
           },
-          "lock": {
-            "$ref": "#/components/schemas/VirtualObjectLockResponse"
-          },
           "inboxCount": {
             "type": "integer",
             "description": "Exact number of entries currently in the inbox for this Virtual Object instance."
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VirtualObjectInvocationsResponse": {
+        "type": "object",
+        "required": ["supported", "rows", "limit", "truncated"],
+        "properties": {
+          "supported": {
+            "type": "boolean"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invocation"
+            }
           },
           "limit": {
             "type": "integer"

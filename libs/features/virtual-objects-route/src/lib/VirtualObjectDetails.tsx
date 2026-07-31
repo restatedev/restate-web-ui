@@ -10,12 +10,14 @@ import {
 import { formatNumber } from '@restate/util/intl';
 import {
   VirtualObjectInbox,
-  type VirtualObjectInboxMode,
+  VirtualObjectInvocations,
 } from './VirtualObjectInbox';
 import { useMemo } from 'react';
 
 type InboxResponse = components['schemas']['VirtualObjectInboxResponse'];
-export type VirtualObjectInstanceTab = VirtualObjectInboxMode | 'state';
+type InvocationsResponse =
+  components['schemas']['VirtualObjectInvocationsResponse'];
+export type VirtualObjectInstanceTab = 'exclusive' | 'recent' | 'state';
 
 const TAB_QUERY_PARAM = 'tab';
 
@@ -51,12 +53,6 @@ export function virtualObjectInstanceTabFromSearch(
   return tab === 'recent' || tab === 'shared' ? 'recent' : 'exclusive';
 }
 
-export function virtualObjectInboxModeForTab(
-  tab: VirtualObjectInstanceTab,
-): VirtualObjectInboxMode {
-  return tab === 'recent' ? 'recent' : 'exclusive';
-}
-
 export function VirtualObjectDetails({
   identity,
   tab,
@@ -65,6 +61,10 @@ export function VirtualObjectDetails({
   inboxDataUpdatedAt,
   inboxError,
   isInboxPending,
+  invocationsData,
+  invocationsDataUpdatedAt,
+  invocationsError,
+  areInvocationsPending,
 }: {
   identity: VirtualObjectInstanceIdentity;
   tab: VirtualObjectInstanceTab;
@@ -73,11 +73,14 @@ export function VirtualObjectDetails({
   inboxDataUpdatedAt?: number;
   inboxError: Error | null;
   isInboxPending: boolean;
+  invocationsData?: InvocationsResponse;
+  invocationsDataUpdatedAt?: number;
+  invocationsError: Error | null;
+  areInvocationsPending: boolean;
 }) {
-  const inboxMode = virtualObjectInboxModeForTab(tab);
   const inboxCount =
     inboxData?.inboxCount ??
-    (inboxMode === 'exclusive' && inboxData && !inboxData.truncated
+    (inboxData && !inboxData.truncated
       ? (inboxData.rows?.length ?? 0)
       : undefined);
   const tabs = useMemo<ContentPanelTabs>(
@@ -108,10 +111,16 @@ export function VirtualObjectDetails({
               deploymentId={deploymentId}
               serviceType="virtual_object"
             />
+          ) : tab === 'recent' ? (
+            <VirtualObjectInvocations
+              data={invocationsData}
+              dataUpdatedAt={invocationsDataUpdatedAt}
+              error={invocationsError}
+              isPending={areInvocationsPending}
+            />
           ) : (
             <VirtualObjectInbox
               identity={identity}
-              mode={inboxMode}
               data={inboxData}
               dataUpdatedAt={inboxDataUpdatedAt}
               error={inboxError}
