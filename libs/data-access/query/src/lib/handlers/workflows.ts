@@ -8,6 +8,7 @@ import { fetchVqueueStatuses } from './vqueue';
 import {
   getSysInvocationListColumns,
   quoteSqlString,
+  targetServiceKeyClause,
   type QueryContext,
 } from './shared';
 
@@ -67,14 +68,6 @@ function workflowScopeClause(context: QueryContext, scope?: string) {
   return scope === undefined
     ? '\n      AND scope IS NULL'
     : `\n      AND scope = ${quoteSqlString(scope)}`;
-}
-
-// TODO: Remove this workaround once Restate Server makes
-// sys_invocation_status target_service_key predicate pushdown scope-aware.
-// Direct equality prunes by the service-key hash, but scoped invocations are
-// partitioned by scope and can be skipped. SUBSTR prevents that pruning.
-function workflowKeyClause(workflowId: string) {
-  return `SUBSTR(target_service_key, 1) = ${quoteSqlString(workflowId)}`;
 }
 
 async function hydrateInvocations(
@@ -188,7 +181,7 @@ export async function getWorkflowRun(
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND ${workflowKeyClause(workflowId)}
+      AND ${targetServiceKeyClause(this, workflowId)}
       AND target_handler_name = ${quoteSqlString(handlers.run)}${scopeClause}
     LIMIT 1`,
   );
@@ -197,7 +190,7 @@ export async function getWorkflowRun(
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND ${workflowKeyClause(workflowId)}${scopeClause}
+      AND ${targetServiceKeyClause(this, workflowId)}${scopeClause}
     ORDER BY created_at DESC NULLS LAST
     LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
   );

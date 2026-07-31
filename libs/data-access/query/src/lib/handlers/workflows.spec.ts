@@ -40,6 +40,7 @@ function invocation(
 function createContext(
   responder: (sql: string) => Record<string, unknown>[],
   features = new Set(['vqueues']),
+  restateVersion = '1.7.3',
 ) {
   const query = vi.fn(async (sql: string) => ({ rows: responder(sql) }));
   const adminApiOwner: Pick<QueryContext, 'adminApi'> = {
@@ -51,7 +52,7 @@ function createContext(
     adminApi: adminApiOwner.adminApi,
     features,
     baseUrl: '',
-    restateVersion: '1.7.3',
+    restateVersion,
   };
   return { adminApi, context, query };
 }
@@ -139,27 +140,31 @@ describe('Workflow query handlers', () => {
     });
   });
 
-  it('loads one unscoped legacy run and its recent invocations', async () => {
-    const { context, query } = createContext((sql) => {
-      if (
-        sql.includes('FROM sys_invocation_status') &&
-        sql.includes("target_handler_name = 'run'")
-      ) {
-        return [{ id: 'inv_run' }];
-      }
-      if (sql.includes('FROM sys_invocation_status')) {
+  it('uses direct key equality without VQueues before Restate 1.7.3', async () => {
+    const { context, query } = createContext(
+      (sql) => {
+        if (
+          sql.includes('FROM sys_invocation_status') &&
+          sql.includes("target_handler_name = 'run'")
+        ) {
+          return [{ id: 'inv_run' }];
+        }
+        if (sql.includes('FROM sys_invocation_status')) {
+          return [
+            { id: 'inv_shared-2' },
+            { id: 'inv_run' },
+            { id: 'inv_shared-1' },
+          ];
+        }
         return [
-          { id: 'inv_shared-2' },
-          { id: 'inv_run' },
-          { id: 'inv_shared-1' },
+          invocation('inv_shared-1', 'approve'),
+          invocation('inv_run', 'run'),
+          invocation('inv_shared-2', 'status'),
         ];
-      }
-      return [
-        invocation('inv_shared-1', 'approve'),
-        invocation('inv_run', 'run'),
-        invocation('inv_shared-2', 'status'),
-      ];
-    }, new Set());
+      },
+      new Set(),
+      '1.7.2',
+    );
 
     const response = await getWorkflowRun.call(
       context,
@@ -173,14 +178,14 @@ describe('Workflow query handlers', () => {
           FROM sys_invocation_status
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
-            AND SUBSTR(target_service_key, 1) = 'order-1'
+            AND target_service_key = 'order-1'
             AND target_handler_name = 'run'
           LIMIT 1",
         "SELECT id
           FROM sys_invocation_status
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
-            AND SUBSTR(target_service_key, 1) = 'order-1'
+            AND target_service_key = 'order-1'
           ORDER BY created_at DESC NULLS LAST
           LIMIT 51",
         "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure
@@ -200,7 +205,7 @@ describe('Workflow query handlers', () => {
     });
   });
 
-  it('loads a completed scoped run and pins scope in both invocation queries', async () => {
+  it('uses direct key equality for a scoped run on Restate 1.7.3', async () => {
     const { context, query } = createContext((sql) => {
       if (sql.includes('FROM sys_invocation_status')) {
         return sql.includes("target_handler_name = 'run'")
@@ -234,7 +239,7 @@ describe('Workflow query handlers', () => {
           FROM sys_invocation_status
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
-            AND SUBSTR(target_service_key, 1) = 'order-1'
+            AND target_service_key = 'order-1'
             AND target_handler_name = 'run'
             AND scope = 'tenant-a'
           LIMIT 1",
@@ -242,7 +247,7 @@ describe('Workflow query handlers', () => {
           FROM sys_invocation_status
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
-            AND SUBSTR(target_service_key, 1) = 'order-1'
+            AND target_service_key = 'order-1'
             AND scope = 'tenant-a'
           ORDER BY created_at DESC NULLS LAST
           LIMIT 51",
@@ -261,18 +266,22 @@ describe('Workflow query handlers', () => {
     });
   });
 
-  it('pins an unscoped VQueue identity instead of mixing scoped runs', async () => {
-    const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM sys_invocation_status')) {
-        return sql.includes("target_handler_name = 'run'")
-          ? [{ id: 'inv_run' }]
-          : [];
-      }
-      if (sql.includes('FROM sys_invocation\n')) {
-        return [invocation('inv_run', 'run')];
-      }
-      return [];
-    });
+  it('uses the key workaround with VQueues before Restate 1.7.3', async () => {
+    const { context, query } = createContext(
+      (sql) => {
+        if (sql.includes('FROM sys_invocation_status')) {
+          return sql.includes("target_handler_name = 'run'")
+            ? [{ id: 'inv_run' }]
+            : [];
+        }
+        if (sql.includes('FROM sys_invocation\n')) {
+          return [invocation('inv_run', 'run')];
+        }
+        return [];
+      },
+      new Set(['vqueues']),
+      '1.7.2',
+    );
 
     const response = await getWorkflowRun.call(
       context,

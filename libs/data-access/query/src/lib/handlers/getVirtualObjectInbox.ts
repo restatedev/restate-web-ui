@@ -1,22 +1,24 @@
 import type {
   components,
   RawInvocation,
-  Service,
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocation, type VqueueStatus } from '../convertInvocation';
 import { TERMINAL_INVOCATION_STATUSES } from '../invocationStatuses';
 import {
   getSysInvocationListColumns,
   quoteSqlString,
+  targetServiceKeyClause,
   type QueryContext,
 } from './shared';
 import { queryVirtualObjectLock } from './getVirtualObjectLock';
 
 const INBOX_LIMIT = 25;
-const QUERY_LIMIT = INBOX_LIMIT + 1;
+const INBOX_QUERY_LIMIT = INBOX_LIMIT + 1;
+const RECENT_INVOCATION_LIMIT = 50;
+const RECENT_INVOCATION_QUERY_LIMIT = RECENT_INVOCATION_LIMIT + 1;
 const SCOPED_VQUEUE_QUERY_LIMIT = 250;
 
-export type VirtualObjectInboxMode = 'exclusive' | 'shared';
+export type VirtualObjectInboxMode = 'exclusive' | 'recent';
 type VirtualObjectInboxEntry = components['schemas']['VirtualObjectInboxEntry'];
 type VirtualObjectInboxResponse =
   components['schemas']['VirtualObjectInboxResponse'];
@@ -85,14 +87,12 @@ interface InboxResponseOptions {
   lock?: VirtualObjectLock;
   requireVqueueInboxStage?: boolean;
   inboxCount?: number;
+  limit?: number;
+  excludeLockHolder?: boolean;
 }
 
 function entryKind(value: unknown) {
   return value === 'invocation' || value === 'state-mutation' ? value : 'other';
-}
-
-function handlerClause(handlerNames: string[]) {
-  return handlerNames.map(quoteSqlString).join(', ');
 }
 
 async function queryVirtualObjectInboxCount(
@@ -149,17 +149,12 @@ function queryInboxCount(
       );
 }
 
-// Called for every `mode=shared` request after resolving the service's shared
-// handlers; it returns without querying when that handler set is empty.
-async function findSharedInboxEntries(
+async function findRecentInvocations(
   context: QueryContext,
   service: string,
   key: string,
-  handlerNames: string[],
   scope?: string,
 ) {
-  if (handlerNames.length === 0) return [];
-
   const scopeClause = context.features.has('vqueues')
     ? scope === undefined
       ? '\n      AND si.scope IS NULL'
@@ -170,10 +165,9 @@ async function findSharedInboxEntries(
     FROM sys_invocation_status si
     WHERE si.target_service_ty = 'virtual_object'
       AND si.target_service_name = ${quoteSqlString(service)}
-      AND si.target_service_key = ${quoteSqlString(key)}${scopeClause}
-      AND si.target_handler_name IN (${handlerClause(handlerNames)})
+      AND ${targetServiceKeyClause(context, key, 'si.target_service_key')}${scopeClause}
     ORDER BY si.created_at DESC NULLS LAST
-    LIMIT ${QUERY_LIMIT}`,
+    LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
   );
   return rows.map((row) => ({ id: row['id'], kind: 'invocation' }));
 }
@@ -226,7 +220,7 @@ async function findVqueueInboxEntriesById(
     FROM sys_vqueues
     WHERE id = ${quoteSqlString(vqueueId)}
       AND stage = 'inbox'
-    LIMIT ${QUERY_LIMIT}`,
+    LIMIT ${INBOX_QUERY_LIMIT}`,
   );
   return rows as InboxEntryRow[];
 }
@@ -261,7 +255,7 @@ async function findScopedVirtualObjectInboxEntries(
     )
       AND v.stage = 'inbox'
     ORDER BY v.run_at ASC NULLS LAST
-    LIMIT ${QUERY_LIMIT}`,
+    LIMIT ${INBOX_QUERY_LIMIT}`,
   );
   return rows as InboxEntryRow[];
 }
@@ -277,7 +271,7 @@ async function findLegacyInboxEntries(
     FROM sys_inbox
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(key)}
-    LIMIT ${QUERY_LIMIT}`,
+    LIMIT ${INBOX_QUERY_LIMIT}`,
   );
   return rows.map((row) => ({ id: row['id'], kind: 'invocation' }));
 }
@@ -319,8 +313,8 @@ async function getVqueueEntryDetailsByIds(
 }
 
 // Called while loading inbox entries when at least one entry is an invocation;
-// exclusive requests retain only active invocations while shared requests keep
-// recent invocations in every status.
+// exclusive requests retain only active invocations while recent requests keep
+// invocations in every status.
 async function getInvocationsByIds(
   context: QueryContext,
   invocationIds: string[],
@@ -603,6 +597,8 @@ function buildInboxResponse(
     lock,
     requireVqueueInboxStage = false,
     inboxCount,
+    limit = INBOX_LIMIT,
+    excludeLockHolder = false,
   }: InboxResponseOptions = {},
 ): VirtualObjectInboxResponse {
   const visibleEntries = foundEntries.flatMap((entryRow) => {
@@ -613,14 +609,40 @@ function buildInboxResponse(
     );
     return entry ? [entry] : [];
   });
+  const actualLockHolderId = lock?.lockHolder?.id;
+  const lockHolderDetails = actualLockHolderId
+    ? entryDetails.entriesById.get(actualLockHolderId)
+    : undefined;
+  const lockHolderIsInInbox = Boolean(
+    actualLockHolderId &&
+    (entryDetails.vqueueEntryIds.has(actualLockHolderId)
+      ? lockHolderDetails?.stage === 'inbox'
+      : excludeLockHolder &&
+        foundEntries.some((entry) => entry.id === actualLockHolderId)),
+  );
+  const lockHolderId = excludeLockHolder ? actualLockHolderId : undefined;
+  const rows = lockHolderId
+    ? visibleEntries.filter((entry) => entry.id !== lockHolderId)
+    : visibleEntries;
+  const visibleInboxCount =
+    inboxCount !== undefined
+      ? Math.max(0, inboxCount - (lockHolderIsInInbox ? 1 : 0))
+      : undefined;
+  const candidateCount =
+    foundEntries.length -
+    (lockHolderId && foundEntries.some((entry) => entry.id === lockHolderId)
+      ? 1
+      : 0);
 
   return {
     supported: true,
-    rows: visibleEntries.slice(0, INBOX_LIMIT),
+    rows: rows.slice(0, limit),
     ...(lock ? { lock } : {}),
-    ...(inboxCount !== undefined ? { inboxCount } : {}),
-    limit: INBOX_LIMIT,
-    truncated: foundEntries.length > INBOX_LIMIT,
+    ...(visibleInboxCount !== undefined
+      ? { inboxCount: visibleInboxCount }
+      : {}),
+    limit,
+    truncated: candidateCount > limit,
   };
 }
 
@@ -654,6 +676,11 @@ async function getInboxEntriesAndLockDetails(
           lock: reconciledLockDetails.lock,
           requireVqueueInboxStage,
           inboxCount,
+          excludeLockHolder: invocationSelection === 'active',
+          limit:
+            invocationSelection === 'all'
+              ? RECENT_INVOCATION_LIMIT
+              : INBOX_LIMIT,
         }),
       )
     : snapshotChangedResponse();
@@ -711,6 +738,7 @@ async function getScopedInboxEntriesAndLockDetails(
       lock,
       requireVqueueInboxStage: true,
       inboxCount,
+      excludeLockHolder: true,
     }),
   );
 }
@@ -722,25 +750,6 @@ function unsupportedInbox(): VirtualObjectInboxResponse {
     limit: INBOX_LIMIT,
     truncated: false,
   };
-}
-
-async function findSharedVirtualObjectInboxEntries(
-  context: QueryContext,
-  virtualObjectIdentity: VirtualObjectIdentity,
-) {
-  const serviceMetadata = await context.adminApi<Service>(
-    `/services/${encodeURIComponent(virtualObjectIdentity.service)}`,
-  );
-  const handlerNames = serviceMetadata.handlers
-    .filter((handler) => handler.ty === 'Shared')
-    .map((handler) => handler.name);
-  return findSharedInboxEntries(
-    context,
-    virtualObjectIdentity.service,
-    virtualObjectIdentity.key,
-    handlerNames,
-    virtualObjectIdentity.scope,
-  );
 }
 
 async function findScopedInboxEntriesAndGetLockDetails(
@@ -812,11 +821,11 @@ export async function getVirtualObjectInbox(
 
   const virtualObjectIdentity = { service, key, scope };
 
-  if (mode === 'shared') {
+  if (mode === 'recent') {
     return findInboxEntriesAndGetLockDetails(
       this,
       virtualObjectIdentity,
-      () => findSharedVirtualObjectInboxEntries(this, virtualObjectIdentity),
+      () => findRecentInvocations(this, service, key, scope),
       { invocationSelection: 'all' },
     );
   }
