@@ -1,7 +1,21 @@
-import { type QueryContext, quoteSqlString } from './shared';
+import type {
+  RawInvocation,
+  VqueueEntryStage,
+  VqueueEntryStatus,
+  VqueueGateDuration,
+  VqueueSnapshot,
+} from '@restate/data-access/admin-api-spec';
+import { convertInvocationV2, type VqueueStatus } from '../convertInvocation';
+import {
+  getSysInvocationColumns,
+  type QueryContext,
+  quoteSqlString,
+} from './shared';
+import {
+  parseVqueueBlockedResource,
+  parseVqueueSchedulingStatus,
+} from './vqueueScheduler';
 
-// Scheduling gates, in the order they're shown in the UI legend / breakdown.
-// (Rendered as "Flow" in the UI, but everything here stays in vqueue terms.)
 const GATES = [
   'concurrency_rules',
   'throttling_rules',
@@ -12,8 +26,6 @@ const GATES = [
   'deployment_concurrency',
 ] as const;
 
-// The subset of gates sys_vqueue_meta keeps an EMA for (the "usually" ghost
-// bar). The live scheduler breakdown carries all 7; the average only these 4.
 const AVG_GATES = [
   'concurrency_rules',
   'invoker_concurrency',
@@ -21,29 +33,116 @@ const AVG_GATES = [
   'lock',
 ] as const;
 
-// Table names per flow-spec.md / the Restate storage-query schema files.
-const META_TABLE = 'sys_vqueue_meta';
-const SCHEDULER_TABLE = 'sys_scheduler';
-const ENTRY_TABLE = 'sys_vqueue_entry_status';
+const VQUEUE_ENTRY_STAGES = [
+  'inbox',
+  'running',
+  'suspended',
+  'paused',
+  'finished',
+] as const satisfies readonly VqueueEntryStage[];
+
+const VQUEUE_ENTRY_STATUSES = [
+  'new',
+  'scheduled',
+  'backing-off',
+  'yielded',
+  'started',
+  'succeeded',
+  'failed',
+  'cancelled',
+  'killed',
+] as const satisfies readonly VqueueEntryStatus[];
+
+function enumValue<T extends string>(values: readonly T[], value?: string) {
+  return values.find((item) => item === value);
+}
+
+function metaQuery(vqueueId: string) {
+  return `SELECT
+  service_name,
+  scope,
+  lock_name,
+  limit_key,
+  queue_is_paused,
+  num_inbox,
+  num_running,
+  num_suspended,
+  num_paused,
+  num_finished,
+  avg_inbox_duration,
+  avg_run_duration,
+  avg_suspension_duration,
+  avg_queue_duration,
+  avg_end_to_end_duration,
+  avg_blocked_on_concurrency_rules,
+  avg_blocked_on_invoker_concurrency,
+  avg_blocked_on_invoker_throttling,
+  avg_blocked_on_lock,
+  last_enqueued_at,
+  last_start_at,
+  last_attempt_at,
+  last_finish_at
+FROM sys_vqueue_meta
+WHERE id = ${quoteSqlString(vqueueId)} LIMIT 1`;
+}
+
+function schedulerWithHeadQuery(vqueueId: string) {
+  return `SELECT
+  s.status,
+  s.blocked_on,
+  s.blocked_on_json,
+  s.head_entry_id,
+  s.scheduled_at,
+  s.invoker_concurrency_block_duration,
+  s.throttling_rules_block_duration,
+  s.invoker_throttling_block_duration,
+  s.invoker_memory_block_duration,
+  s.concurrency_rules_block_duration,
+  s.lock_block_duration,
+  s.deployment_concurrency_block_duration,
+  h.entry_id AS head_status_entry_id,
+  h.stage AS head_stage,
+  h.status AS head_status,
+  h.entry_kind AS head_kind,
+  h.transitioned_at AS head_transitioned_at,
+  h.next_at AS head_next_at,
+  h.created_at AS head_created_at,
+  h.sequence_number AS head_sequence_number,
+  h.retry_attempts AS head_retry_attempts,
+  h.num_attempts AS head_num_attempts,
+  h.num_errors AS head_num_errors,
+  h.num_suspensions AS head_num_suspensions,
+  h.num_pauses AS head_num_pauses,
+  h.num_yields AS head_num_yields,
+  h.deployment AS head_deployment,
+  h.has_lock AS head_has_lock,
+  h.total_blocked_on_invoker_concurrency AS head_total_blocked_on_invoker_concurrency,
+  h.total_blocked_on_throttling_rules AS head_total_blocked_on_throttling_rules,
+  h.total_blocked_on_invoker_throttling AS head_total_blocked_on_invoker_throttling,
+  h.total_blocked_on_invoker_memory AS head_total_blocked_on_invoker_memory,
+  h.total_blocked_on_concurrency_rules AS head_total_blocked_on_concurrency_rules,
+  h.total_blocked_on_lock AS head_total_blocked_on_lock,
+  h.total_blocked_on_deployment_concurrency AS head_total_blocked_on_deployment_concurrency
+FROM sys_scheduler s
+LEFT JOIN sys_vqueue_entry_status h
+  ON h.vqueue_id = s.id AND h.entry_id = s.head_entry_id
+WHERE s.id = ${quoteSqlString(vqueueId)}
+LIMIT 1`;
+}
 
 type Row = Record<string, unknown>;
 
-// Each row is a `SELECT *` over a table that varies by server version, so every
-// column is optional. The `[column: string]: unknown` index signature carries the
-// dynamically-named gate columns gateDurations reads (avg_blocked_on_<gate>,
-// <gate>_block_duration, …); the named columns stay dot-accessible and typed.
-interface VqueueMetaRow {
-  [column: string]: unknown;
-  service_name?: string;
+interface MetaRow extends Row {
+  service_name: string;
   scope?: string;
   lock_name?: string;
   limit_key?: string;
-  queue_is_paused?: boolean;
-  num_inbox?: number;
-  num_running?: number;
-  num_suspended?: number;
-  num_paused?: number;
-  num_finished?: number;
+  queue_is_paused: boolean;
+  num_inbox: number;
+  num_running: number;
+  num_suspended: number;
+  num_paused: number;
+  num_finished: number;
   avg_inbox_duration?: string;
   avg_run_duration?: string;
   avg_suspension_duration?: string;
@@ -55,198 +154,215 @@ interface VqueueMetaRow {
   last_finish_at?: string;
 }
 
-interface SchedulerRow {
-  [column: string]: unknown;
+interface SchedulerRow extends Row {
   status?: string;
   blocked_on?: string;
   blocked_on_json?: unknown;
   head_entry_id?: string;
   scheduled_at?: string;
+  head_status_entry_id?: string;
+  head_stage?: string;
+  head_status?: string;
+  head_kind?: string;
+  head_transitioned_at?: string;
+  head_next_at?: string;
+  head_created_at?: string;
+  head_sequence_number?: number;
+  head_retry_attempts?: number;
+  head_num_attempts?: number;
+  head_num_errors?: number;
+  head_num_suspensions?: number;
+  head_num_pauses?: number;
+  head_num_yields?: number;
+  head_deployment?: string;
+  head_has_lock?: boolean;
 }
 
-interface VqueueEntryRow {
-  [column: string]: unknown;
+interface EntryRow extends Row {
   entry_id?: string;
+  vqueue_id?: string;
   stage?: string;
   status?: string;
-  entry_kind?: string;
+  sequence_number?: number;
   transitioned_at?: string;
   next_at?: string;
   created_at?: string;
   first_runnable_at?: string;
   first_attempt_at?: string;
-  sequence_number?: number;
+  latest_attempt_at?: string;
   retry_attempts?: number;
+  retry_count_since_last_stored_command?: number;
   num_attempts?: number;
   num_errors?: number;
   num_suspensions?: number;
   num_pauses?: number;
   num_yields?: number;
   deployment?: string;
-  has_lock?: boolean;
 }
 
-interface PositionRow {
-  [column: string]: unknown;
-  ahead?: number;
-  total?: number;
+interface PositionRow extends Row {
+  position?: number;
 }
 
-// Run a query, swallowing errors to `undefined`. A missing table or column
-// (these vqueue tables vary by server version) then degrades just that section
-// of the card rather than failing the whole request.
-async function safeRows<T extends Row>(
-  ctx: QueryContext,
-  sql: string,
-): Promise<T[] | undefined> {
-  try {
-    const { rows } = await ctx.query(sql);
-    return rows as T[];
-  } catch {
-    return undefined;
-  }
-}
-
-function numOrUndefined(value: unknown): number | undefined {
+function numberValue(value: unknown): number | undefined {
   if (value === null || value === undefined) {
     return undefined;
   }
-  const n = Number(value);
-  return Number.isFinite(n) ? n : undefined;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
 }
 
-function strOrUndefined(value: unknown): string | undefined {
-  return value === null || value === undefined || value === ''
-    ? undefined
-    : String(value);
-}
-
-// Build the {gate, duration}[] breakdown from one row, reading each gate's
-// column by name (a dynamic key, hence the index access). Skips null / empty /
-// zero so the UI only renders real waits.
 function gateDurations(
   row: Row | undefined,
   columnFor: (gate: string) => string,
   gates: readonly string[],
-): { gate: string; duration: string }[] {
+): VqueueGateDuration[] {
   if (!row) {
     return [];
   }
-  const out: { gate: string; duration: string }[] = [];
-  for (const gate of gates) {
+  return gates.flatMap((gate) => {
     const value = row[columnFor(gate)];
     if (value === null || value === undefined || value === '' || value === 0) {
-      continue;
+      return [];
     }
     const duration = String(value);
-    if (duration === '0' || duration === 'PT0S') {
-      continue;
-    }
-    out.push({ gate, duration });
-  }
-  return out;
+    return duration === '0' || duration === 'PT0S' ? [] : [{ gate, duration }];
+  });
 }
 
-// Parse sys_scheduler.blocked_on_json (a serialised BlockedResource — all
-// variants in worker-api/scheduler_status.rs) into the structured shape the UI
-// renders. This is genuinely untyped external JSON, so each field is coerced /
-// validated (unlike the typed table rows above). Accepts either a JSON string or
-// an already-parsed object; unknown shapes degrade to just the `resource` tag.
-// epoch-ms timestamps become ISO so the front-end treats them like every other
-// date.
-function parseBlockedResource(value: unknown):
-  | {
-      resource: string;
-      scope?: string;
-      lockName?: string;
-      estimatedRetryAt?: string;
-      limitKey?: string;
-      blockedLevel?: string;
-      blockedRule?: string;
-    }
-  | undefined {
-  let obj: Row | undefined;
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (trimmed === '') {
-      return undefined;
-    }
-    try {
-      obj = JSON.parse(trimmed) as Row;
-    } catch {
-      return undefined;
-    }
-  } else if (value && typeof value === 'object') {
-    obj = value as Row;
-  }
-  if (!obj) {
-    return undefined;
-  }
-  const resource = strOrUndefined(obj['resource']);
-  if (!resource) {
-    return undefined;
-  }
+function headSnapshot(
+  meta: MetaRow,
+  scheduler: SchedulerRow | undefined,
+): VqueueSnapshot['head'] {
+  const stage = enumValue(VQUEUE_ENTRY_STAGES, scheduler?.head_stage);
+  const status = enumValue(VQUEUE_ENTRY_STATUSES, scheduler?.head_status);
 
-  const out: {
-    resource: string;
-    scope?: string;
-    lockName?: string;
-    estimatedRetryAt?: string;
-    limitKey?: string;
-    blockedLevel?: string;
-    blockedRule?: string;
-  } = { resource };
-
-  const scope = strOrUndefined(obj['scope']);
-  if (scope) {
-    out.scope = scope;
-  }
-  const lockName = strOrUndefined(obj['lock_name']);
-  if (lockName) {
-    out.lockName = lockName;
-  }
-  const limitKey = strOrUndefined(obj['limit_key']);
-  if (limitKey) {
-    out.limitKey = limitKey;
-  }
-  const blockedLevel = strOrUndefined(obj['blocked_level']);
-  if (blockedLevel) {
-    out.blockedLevel = blockedLevel;
-  }
-  const blockedRule = strOrUndefined(obj['blocked_rule']);
-  if (blockedRule) {
-    out.blockedRule = blockedRule;
-  }
-  const retryMs = numOrUndefined(obj['estimated_retry_at']);
-  if (retryMs !== undefined) {
-    out.estimatedRetryAt = new Date(retryMs).toISOString();
-  }
-  return out;
-}
-
-// Shape the UI's EntryStatus needs from a sys_vqueue_entry_status row: the
-// lifecycle (stage + status) plus the counters/timestamps the status pill
-// annotates itself with.
-function buildEntryStatus(row: VqueueEntryRow) {
   return {
-    stage: row.stage,
-    status: row.status,
-    kind: row.entry_kind,
+    ...(scheduler?.head_entry_id && { entryId: scheduler.head_entry_id }),
+    ...(scheduler?.head_status_entry_id && {
+      stage,
+      status,
+      kind: scheduler.head_kind,
+      transitionedAt: scheduler.head_transitioned_at,
+      nextAt: scheduler.head_next_at,
+      createdAt: scheduler.head_created_at,
+      sequenceNumber: scheduler.head_sequence_number,
+      retryAttempts: scheduler.head_retry_attempts,
+      numAttempts: scheduler.head_num_attempts,
+      numErrors: scheduler.head_num_errors,
+      numSuspensions: scheduler.head_num_suspensions,
+      numPauses: scheduler.head_num_pauses,
+      numYields: scheduler.head_num_yields,
+      deployment: scheduler.head_deployment,
+      hasLock: scheduler.head_has_lock,
+    }),
+    totalBlocks: gateDurations(
+      scheduler,
+      (gate) => `head_total_blocked_on_${gate}`,
+      GATES,
+    ),
+    nowBlocks: gateDurations(
+      scheduler,
+      (gate) => `${gate}_block_duration`,
+      GATES,
+    ),
+    avgBlocks: gateDurations(
+      meta,
+      (gate) => `avg_blocked_on_${gate}`,
+      AVG_GATES,
+    ),
+  };
+}
+
+function focusEntryQuery(focusEntryId: string) {
+  return `SELECT
+  e.entry_id,
+  e.vqueue_id,
+  e.stage,
+  e.status,
+  e.sequence_number,
+  e.created_at,
+  e.first_runnable_at,
+  e.first_attempt_at,
+  e.latest_attempt_at,
+  e.transitioned_at,
+  e.next_at,
+  e.retry_attempts,
+  e.retry_count_since_last_stored_command,
+  e.num_attempts,
+  e.num_errors,
+  e.num_suspensions,
+  e.num_pauses,
+  e.num_yields,
+  e.deployment,
+  e.total_blocked_on_invoker_concurrency,
+  e.total_blocked_on_throttling_rules,
+  e.total_blocked_on_invoker_throttling,
+  e.total_blocked_on_invoker_memory,
+  e.total_blocked_on_concurrency_rules,
+  e.total_blocked_on_lock,
+  e.total_blocked_on_deployment_concurrency,
+  e.latest_attempt_blocked_on_invoker_concurrency,
+  e.latest_attempt_blocked_on_throttling_rules,
+  e.latest_attempt_blocked_on_invoker_throttling,
+  e.latest_attempt_blocked_on_invoker_memory,
+  e.latest_attempt_blocked_on_concurrency_rules,
+  e.latest_attempt_blocked_on_lock,
+  e.latest_attempt_blocked_on_deployment_concurrency
+FROM sys_vqueue_entry_status e
+WHERE e.entry_id = ${quoteSqlString(focusEntryId)}
+  AND e.entry_kind = 'invocation'
+LIMIT 1`;
+}
+
+function focusedInvocationQuery(context: QueryContext, focusEntryId: string) {
+  return `SELECT ${getSysInvocationColumns(context.features).join(', ')} FROM sys_invocation WHERE id = ${quoteSqlString(focusEntryId)}`;
+}
+
+function focusEntryPositionQuery(vqueueId: string, focusEntryId: string) {
+  return `SELECT position
+FROM (
+  SELECT
+    entry_id,
+    ROW_NUMBER() OVER (
+      ORDER BY has_lock DESC, run_at ASC, sequence_number ASC, entry_id ASC
+    ) AS position
+  FROM sys_vqueues
+  WHERE id = ${quoteSqlString(vqueueId)}
+    AND stage = 'inbox'
+) ranked
+WHERE entry_id = ${quoteSqlString(focusEntryId)}
+LIMIT 1`;
+}
+
+function toFocusEntry(
+  row: EntryRow,
+  focusEntryId: string,
+  position: PositionRow | undefined,
+) {
+  return {
+    id: row.entry_id ?? focusEntryId,
+    status: enumValue(VQUEUE_ENTRY_STATUSES, row.status),
+    stage: enumValue(VQUEUE_ENTRY_STAGES, row.stage),
+    position: numberValue(position?.position),
+    attempts: row.num_attempts,
+    suspensions: row.num_suspensions,
+    pauses: row.num_pauses,
+    yields: row.num_yields,
+    errors: row.num_errors,
+    createdAt: row.created_at,
+    firstRunnableAt: row.first_runnable_at,
+    firstAttemptAt: row.first_attempt_at,
     transitionedAt: row.transitioned_at,
     nextAt: row.next_at,
-    createdAt: row.created_at,
-    sequenceNumber: row.sequence_number,
-    retryAttempts: row.retry_attempts,
-    numAttempts: row.num_attempts,
-    numErrors: row.num_errors,
-    numSuspensions: row.num_suspensions,
-    numPauses: row.num_pauses,
-    numYields: row.num_yields,
-    deployment: row.deployment,
-    hasLock: row.has_lock,
     totalBlocks: gateDurations(
       row,
       (gate) => `total_blocked_on_${gate}`,
+      GATES,
+    ),
+    latestBlocks: gateDurations(
+      row,
+      (gate) => `latest_attempt_blocked_on_${gate}`,
       GATES,
     ),
   };
@@ -255,196 +371,116 @@ function buildEntryStatus(row: VqueueEntryRow) {
 export async function getVqueue(
   this: QueryContext,
   vqueueId: string,
-  invocationId?: string,
+  focusEntryId?: string,
 ) {
-  const unsupported = () => Response.json({ supported: false });
-
   if (!this.features.has('vqueues') || !vqueueId) {
-    return unsupported();
+    return new Response(null, { status: 204 });
   }
 
-  // One wave — every read fires together (none feeds another). meta / scheduler /
-  // head are keyed by the vqueue id and always run; entry / position run only with
-  // an invocation in context. The two formerly-dependent reads are now
-  // self-contained: `position` inlines the entry's sequence_number as a
-  // (non-correlated) subquery and returns the live inbox total in the same shot
-  // (ahead + total from one snapshot); `head` JOINs sys_scheduler so the head
-  // verdict and the head's row come from one read. meta no longer gates — we fire
-  // everything, then discard if the vqueue doesn't exist (a rare wasted batch).
-  const [metaRows, schedulerRows, headRows, entryRows, positionRows] =
-    await Promise.all([
-      safeRows<VqueueMetaRow>(
-        this,
-        `SELECT * FROM ${META_TABLE} WHERE id = ${quoteSqlString(vqueueId)}`,
-      ),
-      safeRows<SchedulerRow>(
-        this,
-        `SELECT * FROM ${SCHEDULER_TABLE} WHERE id = ${quoteSqlString(vqueueId)}`,
-      ),
-      safeRows<VqueueEntryRow>(
-        this,
-        `SELECT e.* FROM ${ENTRY_TABLE} e JOIN ${SCHEDULER_TABLE} s ON e.entry_id = s.head_entry_id WHERE s.id = ${quoteSqlString(
-          vqueueId,
-        )}`,
-      ),
-      invocationId
-        ? safeRows<VqueueEntryRow>(
-            this,
-            `SELECT * FROM ${ENTRY_TABLE} WHERE entry_id = ${quoteSqlString(
-              invocationId,
-            )}`,
-          )
-        : Promise.resolve(undefined),
-      invocationId
-        ? safeRows<PositionRow>(
-            this,
-            `SELECT SUM(CASE WHEN sequence_number < (SELECT sequence_number FROM ${ENTRY_TABLE} WHERE entry_id = ${quoteSqlString(
-              invocationId,
-            )}) THEN 1 ELSE 0 END) AS ahead, COUNT(*) AS total FROM ${ENTRY_TABLE} WHERE vqueue_id = ${quoteSqlString(
-              vqueueId,
-            )} AND stage = 'inbox'`,
-          )
-        : Promise.resolve(undefined),
-    ]);
+  const requestTime = new Date().toISOString();
+  const [
+    metaResult,
+    schedulerResult,
+    focusEntryResult,
+    focusedInvocationResult,
+  ] = await Promise.all([
+    this.query(metaQuery(vqueueId)),
+    this.query(schedulerWithHeadQuery(vqueueId)),
+    focusEntryId
+      ? this.query(focusEntryQuery(focusEntryId))
+      : Promise.resolve(undefined),
+    focusEntryId
+      ? this.query(focusedInvocationQuery(this, focusEntryId))
+      : Promise.resolve(undefined),
+  ]);
 
-  const meta = metaRows?.at(0);
+  const meta = metaResult.rows.at(0) as MetaRow | undefined;
   if (!meta) {
-    return unsupported();
+    return new Response(null, { status: 204 });
   }
-  const scheduler = schedulerRows?.at(0);
-  const entryRow = entryRows?.at(0);
-  const headRow = headRows?.at(0);
-  const positionRow = positionRows?.at(0);
 
-  // Queue identity comes from the meta row: service_name, scope, and lock_name
-  // (which encodes the object key for keyed services as "<service>/<key>").
-  const service = meta.service_name;
-  const scope = meta.scope;
-  const lockName = meta.lock_name;
-  const objectKey =
-    service && lockName && lockName.startsWith(`${service}/`)
-      ? lockName.slice(service.length + 1)
+  const scheduler = schedulerResult.rows.at(0) as SchedulerRow | undefined;
+  const focusEntryRow = focusEntryResult?.rows.at(0) as EntryRow | undefined;
+  const focusEntryBelongs = focusEntryRow?.vqueue_id === vqueueId;
+  const focusedInvocationRow = focusedInvocationResult?.rows.at(0) as
+    | RawInvocation
+    | undefined;
+  const focusedInvocation = focusedInvocationRow
+    ? convertInvocationV2(
+        focusedInvocationRow,
+        focusEntryRow as VqueueStatus | undefined,
+        requestTime,
+      )
+    : undefined;
+  const focusPositionResult =
+    focusEntryId && focusEntryBelongs && focusEntryRow?.stage === 'inbox'
+      ? await this.query(focusEntryPositionQuery(vqueueId, focusEntryId))
       : undefined;
+  const focusPosition = focusPositionResult?.rows.at(0) as
+    | PositionRow
+    | undefined;
 
-  // The vqueue's own limit key, straight from the meta row — the queue's identity
-  // (the chip), e.g. scope "mike" / key "r/1". A DIFFERENT thing from the counter
-  // that's currently biting (from blocked_on_json), which can sit at a shallower
-  // level and say nothing about r/1.
-  // TODO: biting-limit detail — the counter actually holding the head (usage /
-  // cap / available / waiters), read from sys_user_limits (+ sys_rules) keyed off
-  // blocked_on_json (scope + blocked_level + blocked_rule). Deferred for now; the
-  // UI renders a placeholder. status.blockedResource already carries the rule /
-  // key / level such a lookup would need.
-  const limitKey = meta.limit_key;
-
-  // Head verdict (scheduling + the blocked reason).
-  const scheduling = scheduler?.status;
-  const blockedOn = scheduler?.blocked_on;
-  const blockedResource = parseBlockedResource(scheduler?.blocked_on_json);
-  const blocked =
-    Boolean(blockedOn) || scheduling === 'blocked' || Boolean(blockedResource);
-
-  // The head id comes from the JOINed head row, so it's always consistent with the
-  // status we render for it. If the head's row is mid-dispatch (gone), there's no
-  // head box — better than an id with no detail.
-  const headEntryId = headRow?.entry_id;
-
-  // Entry position: 1-based rank among the queue's INBOX entries. The inbox is the
-  // only ordered line, so we set it only when THIS entry is in the inbox (a
-  // running / suspended / paused entry has no meaningful rank — the UI highlights
-  // a representative tick). ahead + total come from one snapshot; total falls back
-  // to the meta count.
-  const inboxTotal = positionRow?.total ?? meta.num_inbox;
-  const position =
-    entryRow?.stage === 'inbox' ? (positionRow?.ahead ?? 0) + 1 : undefined;
-
-  return Response.json({
-    supported: true,
+  const objectKey =
+    meta.lock_name && meta.lock_name.startsWith(`${meta.service_name}/`)
+      ? meta.lock_name.slice(meta.service_name.length + 1)
+      : undefined;
+  const blockedResource = parseVqueueBlockedResource(
+    scheduler?.blocked_on_json,
+  );
+  const scheduling = parseVqueueSchedulingStatus(scheduler?.status);
+  const snapshot: VqueueSnapshot = {
     identity: {
-      service,
-      objectKey,
-      scope,
-      limitKey,
+      service: meta.service_name,
+      ...(objectKey && { objectKey }),
+      ...(meta.scope && { scope: meta.scope }),
+      ...(meta.limit_key && { limitKey: meta.limit_key }),
       isPaused: Boolean(meta.queue_is_paused),
       vqueueId,
     },
     status: {
-      blocked,
-      blockedOn,
-      // The scheduler's own verdict for the head (SchedulingStatus name):
-      // dormant | empty | ready | scheduled | blocked. Absent when there's no
-      // scheduler row (the UI then derives empty/dormant from the counts).
-      scheduling,
-      // When the head becomes visible/runnable — only meaningful for 'scheduled'.
-      scheduledAt: scheduler?.scheduled_at,
-      // The parsed reason behind a 'blocked' head (which resource, which rule).
+      blocked:
+        Boolean(scheduler?.blocked_on) ||
+        scheduler?.status === 'blocked' ||
+        Boolean(blockedResource),
+      ...(scheduler?.blocked_on && { blockedOn: scheduler.blocked_on }),
+      ...(scheduling && { scheduling }),
+      ...(scheduler?.scheduled_at && {
+        scheduledAt: scheduler.scheduled_at,
+      }),
       ...(blockedResource && { blockedResource }),
     },
     counts: {
-      inbox: meta.num_inbox ?? 0,
-      running: meta.num_running ?? 0,
-      suspended: meta.num_suspended ?? 0,
-      paused: meta.num_paused ?? 0,
-      finished: meta.num_finished ?? 0,
+      inbox: meta.num_inbox,
+      running: meta.num_running,
+      suspended: meta.num_suspended,
+      paused: meta.num_paused,
+      finished: meta.num_finished,
     },
     stageAvg: {
-      inbox: meta.avg_inbox_duration,
-      running: meta.avg_run_duration,
-      suspended: meta.avg_suspension_duration,
-      // Avg time an entry spends queued before dispatch — distinct from the
-      // end-to-end total.
-      queue: meta.avg_queue_duration,
-      endToEnd: meta.avg_end_to_end_duration,
+      ...(meta.avg_inbox_duration && { inbox: meta.avg_inbox_duration }),
+      ...(meta.avg_run_duration && { running: meta.avg_run_duration }),
+      ...(meta.avg_suspension_duration && {
+        suspended: meta.avg_suspension_duration,
+      }),
+      ...(meta.avg_queue_duration && { queue: meta.avg_queue_duration }),
+      ...(meta.avg_end_to_end_duration && {
+        endToEnd: meta.avg_end_to_end_duration,
+      }),
     },
     events: {
-      enqueuedAt: meta.last_enqueued_at,
-      startAt: meta.last_start_at,
-      attemptAt: meta.last_attempt_at,
-      finishAt: meta.last_finish_at,
+      ...(meta.last_enqueued_at && { enqueuedAt: meta.last_enqueued_at }),
+      ...(meta.last_start_at && { startAt: meta.last_start_at }),
+      ...(meta.last_attempt_at && { attemptAt: meta.last_attempt_at }),
+      ...(meta.last_finish_at && { finishAt: meta.last_finish_at }),
     },
-    head: {
-      entryId: headEntryId,
-      // The head entry's own lifecycle (stage + status) and annotations.
-      ...(headRow && buildEntryStatus(headRow)),
-      nowBlocks: gateDurations(
-        scheduler,
-        (gate) => `${gate}_block_duration`,
-        GATES,
-      ),
-      avgBlocks: gateDurations(
-        meta,
-        (gate) => `avg_blocked_on_${gate}`,
-        AVG_GATES,
-      ),
-    },
-    ...(entryRow && {
-      entry: {
-        id: entryRow.entry_id ?? invocationId,
-        status: entryRow.status,
-        stage: entryRow.stage,
-        position,
-        total: inboxTotal,
-        attempts: entryRow.num_attempts,
-        suspensions: entryRow.num_suspensions,
-        pauses: entryRow.num_pauses,
-        yields: entryRow.num_yields,
-        errors: entryRow.num_errors,
-        createdAt: entryRow.created_at,
-        firstRunnableAt: entryRow.first_runnable_at,
-        firstAttemptAt: entryRow.first_attempt_at,
-        transitionedAt: entryRow.transitioned_at,
-        nextAt: entryRow.next_at,
-        totalBlocks: gateDurations(
-          entryRow,
-          (gate) => `total_blocked_on_${gate}`,
-          GATES,
-        ),
-        latestBlocks: gateDurations(
-          entryRow,
-          (gate) => `latest_attempt_blocked_on_${gate}`,
-          GATES,
-        ),
-      },
-    }),
-  });
+    head: headSnapshot(meta, scheduler),
+    ...(focusedInvocation && { focusedInvocation }),
+    ...(focusEntryId &&
+      focusEntryBelongs &&
+      focusEntryRow && {
+        focusEntry: toFocusEntry(focusEntryRow, focusEntryId, focusPosition),
+      }),
+  };
+
+  return Response.json(snapshot);
 }

@@ -16,7 +16,7 @@ const styles = tv({
       'inline-flex max-w-full min-w-0 items-center gap-1 font-mono text-[90%] text-zinc-600',
     label:
       'inline-flex h-4 shrink-0 items-center rounded border border-zinc-300/80 bg-white/80 px-1 font-sans text-[0.5625rem] leading-none font-semibold tracking-[0.02em] text-zinc-500',
-    labelText: 'translate-y-px',
+    labelText: 'inline-flex h-full items-center',
     relationship: 'h-px w-3 shrink-0 bg-zinc-300',
     copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
   },

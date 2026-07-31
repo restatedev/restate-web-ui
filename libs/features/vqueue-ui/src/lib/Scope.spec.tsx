@@ -8,6 +8,9 @@ describe('Scope', () => {
     expect(screen.getByText('SCOPE')).toBeTruthy();
     expect(screen.getByText('scope-41')).toBeTruthy();
     expect(screen.getByText('SCOPE').getAttribute('class')).toContain(
+      'items-center',
+    );
+    expect(screen.getByText('SCOPE').getAttribute('class')).not.toContain(
       'translate-y-px',
     );
     expect(

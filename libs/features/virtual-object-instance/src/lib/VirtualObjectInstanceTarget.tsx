@@ -3,6 +3,7 @@ import {
   Chip,
   ChipGroup,
   ChipSegment,
+  type ChipGroupDensity,
   type ChipGroupVariant,
 } from '@restate/ui/chip';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -57,6 +58,7 @@ export interface VirtualObjectInstanceTargetProps {
   className?: string;
   containerClassName?: string;
   variant?: ChipGroupVariant;
+  density?: ChipGroupDensity;
   href?: string;
   serviceHref?: string;
   showService?: boolean;
@@ -68,6 +70,7 @@ export function VirtualObjectInstanceTarget({
   className,
   containerClassName,
   variant,
+  density,
   href,
   serviceHref,
   showService = true,
@@ -75,6 +78,8 @@ export function VirtualObjectInstanceTarget({
 }: VirtualObjectInstanceTargetProps) {
   const { service, key, scope } = identity;
   const hasVisibleScope = Boolean(scope);
+  const resolvedDensity =
+    density ?? (variant === 'header' ? 'default' : 'compact');
   const copyText = formatVirtualObjectInstanceIdentity(identity);
   const {
     serviceLink,
@@ -144,6 +149,7 @@ export function VirtualObjectInstanceTarget({
     >
       <ChipGroup
         variant={variant}
+        density={resolvedDensity}
         href={!showService || !serviceHref ? href : undefined}
         aria-label={href ? `Virtual object instance ${copyText}` : undefined}
         className={containerClassName}

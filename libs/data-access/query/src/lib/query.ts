@@ -191,7 +191,7 @@ type BoundHandlers = {
   ) => Promise<Response>;
   getPausedError: (invocationId: string) => Promise<Response>;
   getTransientError: (invocationId: string) => Promise<Response>;
-  getVqueue: (vqueueId: string, invocationId?: string) => Promise<Response>;
+  getVqueue: (vqueueId: string, focusEntryId?: string) => Promise<Response>;
   getVqueueInbox: (vqueueId: string) => Promise<Response>;
   listDrainedDeployments: () => Promise<Response>;
   listVirtualObjectInstances: (
@@ -639,9 +639,9 @@ router.map(routes, {
       },
       async vqueue(ctx) {
         const { getVqueue } = ctx.storage.get(handlersKey);
-        const invocationId =
-          ctx.url.searchParams.get('invocationId') ?? undefined;
-        return getVqueue(ctx.params.vqueueId, invocationId);
+        const focusEntryId =
+          ctx.url.searchParams.get('focusEntryId') ?? undefined;
+        return getVqueue(ctx.params.vqueueId, focusEntryId);
       },
       async vqueueInbox(ctx) {
         const { getVqueueInbox } = ctx.storage.get(handlersKey);

@@ -2424,7 +2424,7 @@
       "get": {
         "tags": ["query-invocations"],
         "summary": "Get vqueue",
-        "description": "Get the virtual-queue (vqueue) snapshot keyed by the vqueue id: queue counts, per-stage averages, the head's live wait breakdown, and the biting limit. Reads sys_vqueue_meta and sys_scheduler (joined on the vqueue id) and — separately keyed on (scope, limit_key) — sys_user_limits and sys_rules. When the optional invocationId is supplied, the response also carries that invocation's own entry position and wait history (read from the vqueue entry-status table) so the UI can highlight it in the queue.",
+        "description": "Get a virtual-queue snapshot by VQueue ID, including queue identity, counts, per-stage averages, scheduler and head state, and an optional focused entry. Returns no content when virtual queues are unavailable or the queue is no longer present.",
         "operationId": "get_vqueue",
         "parameters": [
           {
@@ -2437,9 +2437,9 @@
             }
           },
           {
-            "name": "invocationId",
+            "name": "focusEntryId",
             "in": "query",
-            "description": "Optional invocation id to highlight within the queue",
+            "description": "Optional VQueue entry ID to include with its queue position and wait history.",
             "required": false,
             "schema": {
               "type": "string"
@@ -2448,26 +2448,19 @@
         ],
         "responses": {
           "200": {
-            "description": "Flow snapshot",
+            "description": "VQueue snapshot",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InvocationVqueueResponse"
+                  "$ref": "#/components/schemas/VqueueSnapshotResponse"
                 }
               }
             }
+          },
+          "204": {
+            "description": "Virtual queues are unavailable or the queue is no longer present."
           },
           "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
             "description": "",
             "content": {
               "application/json": {
@@ -5085,6 +5078,10 @@
           },
           "mode": {
             "$ref": "#/components/schemas/InvocationQueryModeV2"
+          },
+          "includeFlowControl": {
+            "type": "boolean",
+            "description": "When true, enriches VQueue-backed rows with batched queue and scheduler context for flow-control presentation. Omitted is equivalent to false."
           }
         }
       },
@@ -5537,6 +5534,10 @@
           },
           "deployment": {
             "type": "string"
+          },
+          "flowControl": {
+            "$ref": "#/components/schemas/InvocationVqueueFlowControlV2",
+            "description": "Present only when includeFlowControl was requested and queue metadata was available."
           }
         }
       },
@@ -7477,13 +7478,116 @@
         },
         "required": ["gate", "duration"]
       },
-      "InvocationVqueueResponse": {
+      "VqueueEntryStage": {
+        "type": "string",
+        "enum": ["inbox", "running", "suspended", "paused", "finished"]
+      },
+      "VqueueEntryStatus": {
+        "type": "string",
+        "enum": [
+          "new",
+          "scheduled",
+          "backing-off",
+          "yielded",
+          "started",
+          "succeeded",
+          "failed",
+          "cancelled",
+          "killed"
+        ]
+      },
+      "VqueueSchedulingStatus": {
+        "type": "string",
+        "enum": ["dormant", "empty", "ready", "scheduled", "blocked"]
+      },
+      "VqueueBlockedResource": {
         "type": "object",
-        "description": "Virtual-queue flow snapshot for the target an invocation belongs to. `supported` is false when the server exposes no virtual queues or the invocation has no resolvable queue.",
+        "description": "Parsed BlockedResource from sys_scheduler.blocked_on_json. The fields present depend on resource.",
         "properties": {
-          "supported": {
-            "type": "boolean"
+          "resource": {
+            "type": "string",
+            "enum": [
+              "lock",
+              "invoker-concurrency",
+              "invoker-throttling",
+              "invoker-memory",
+              "deployment-concurrency",
+              "limit-key-concurrency"
+            ]
           },
+          "scope": { "type": "string" },
+          "lockName": { "type": "string" },
+          "estimatedRetryAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "limitKey": { "type": "string" },
+          "blockedLevel": {
+            "type": "string",
+            "enum": ["scope", "level1", "level2"]
+          },
+          "blockedRule": { "type": "string" }
+        }
+      },
+      "InvocationVqueueFlowControlV2": {
+        "type": "object",
+        "description": "Flow-control context for this invocation and the VQueue that contains it. Queue-level scheduler fields describe the current head, which may be a different entry.",
+        "required": ["queuePaused", "inboxCount", "counts"],
+        "properties": {
+          "queuePaused": {
+            "type": "boolean",
+            "description": "Whether dispatch from the VQueue is paused."
+          },
+          "inboxCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Current number of entries waiting in the VQueue Inbox."
+          },
+          "counts": {
+            "type": "object",
+            "description": "Current VQueue population in each active stage.",
+            "properties": {
+              "inbox": { "type": "integer", "minimum": 0 },
+              "running": { "type": "integer", "minimum": 0 },
+              "suspended": { "type": "integer", "minimum": 0 },
+              "paused": { "type": "integer", "minimum": 0 }
+            },
+            "required": ["inbox", "running", "suspended", "paused"]
+          },
+          "timeInStage": {
+            "type": "string",
+            "format": "duration",
+            "description": "Elapsed time in the invocation's current active stage, computed at request time. Omitted for Finished."
+          },
+          "averageTimeInStage": {
+            "type": "string",
+            "format": "duration",
+            "description": "VQueue exponential moving average for the invocation's current stage. Available for Inbox, Running, and Suspended."
+          },
+          "headEntryId": {
+            "type": "string",
+            "description": "Current queue-head entry ID. Compare with the invocation ID before describing this invocation itself as blocked."
+          },
+          "scheduling": {
+            "$ref": "#/components/schemas/VqueueSchedulingStatus"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "blockedOn": {
+            "type": "string",
+            "description": "Gate currently blocking the queue head."
+          },
+          "blockedResource": {
+            "$ref": "#/components/schemas/VqueueBlockedResource"
+          }
+        }
+      },
+      "VqueueSnapshotResponse": {
+        "type": "object",
+        "description": "Live snapshot of one virtual queue.",
+        "properties": {
           "identity": {
             "type": "object",
             "properties": {
@@ -7496,7 +7600,8 @@
               "limitKey": { "type": "string" },
               "isPaused": { "type": "boolean" },
               "vqueueId": { "type": "string" }
-            }
+            },
+            "required": ["service", "isPaused", "vqueueId"]
           },
           "status": {
             "type": "object",
@@ -7507,8 +7612,7 @@
                 "description": "Gate the head is currently blocked on, e.g. concurrency_rules."
               },
               "scheduling": {
-                "type": "string",
-                "enum": ["dormant", "empty", "ready", "scheduled", "blocked"],
+                "$ref": "#/components/schemas/VqueueSchedulingStatus",
                 "description": "Scheduler verdict for the queue head (SchedulingStatus name): dormant (untracked / nothing runnable), empty, ready (head runnable now), scheduled (head waits for a future run_at), blocked (head can't run — see blockedOn). Absent on older servers."
               },
               "scheduledAt": {
@@ -7517,50 +7621,10 @@
                 "description": "When the head becomes visible / runnable; set only for the 'scheduled' status."
               },
               "blockedResource": {
-                "type": "object",
-                "description": "Parsed BlockedResource (sys_scheduler.blocked_on_json) — the specific reason a 'blocked' head can't run. Field set depends on `resource`.",
-                "properties": {
-                  "resource": {
-                    "type": "string",
-                    "enum": [
-                      "lock",
-                      "invoker-concurrency",
-                      "invoker-throttling",
-                      "invoker-memory",
-                      "deployment-concurrency",
-                      "limit-key-concurrency"
-                    ],
-                    "description": "Which resource the head is blocked on."
-                  },
-                  "scope": {
-                    "type": "string",
-                    "description": "Limit/lock scope; absent for an unscoped lock."
-                  },
-                  "lockName": {
-                    "type": "string",
-                    "description": "service/key of the contended virtual-object lock (resource=lock)."
-                  },
-                  "estimatedRetryAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "When the invoker is expected to retry (resource=invoker-throttling)."
-                  },
-                  "limitKey": {
-                    "type": "string",
-                    "description": "Contended limit key (resource=limit-key-concurrency)."
-                  },
-                  "blockedLevel": {
-                    "type": "string",
-                    "enum": ["scope", "level1", "level2"],
-                    "description": "Which level of the rule hierarchy is at its limit (resource=limit-key-concurrency)."
-                  },
-                  "blockedRule": {
-                    "type": "string",
-                    "description": "Governing rule pattern (resource=limit-key-concurrency); absent if the rule was removed."
-                  }
-                }
+                "$ref": "#/components/schemas/VqueueBlockedResource"
               }
-            }
+            },
+            "required": ["blocked"]
           },
           "counts": {
             "type": "object",
@@ -7570,7 +7634,8 @@
               "suspended": { "type": "integer" },
               "paused": { "type": "integer" },
               "finished": { "type": "integer" }
-            }
+            },
+            "required": ["inbox", "running", "suspended", "paused", "finished"]
           },
           "stageAvg": {
             "type": "object",
@@ -7598,11 +7663,11 @@
             "properties": {
               "entryId": { "type": "string" },
               "stage": {
-                "type": "string",
+                "$ref": "#/components/schemas/VqueueEntryStage",
                 "description": "Head entry's queue stage: inbox | running | suspended | paused | finished."
               },
               "status": {
-                "type": "string",
+                "$ref": "#/components/schemas/VqueueEntryStatus",
                 "description": "Head entry's lifecycle status: new | scheduled | backing-off | yielded | started | succeeded | failed | cancelled | killed."
               },
               "kind": {
@@ -7648,25 +7713,28 @@
                 "description": "EMA per-gate wait (subset of 4 gates) for the 'usually' ghost bar.",
                 "items": { "$ref": "#/components/schemas/VqueueGateDuration" }
               }
-            }
+            },
+            "required": ["totalBlocks", "nowBlocks", "avgBlocks"]
           },
-          "entry": {
+          "focusedInvocation": {
+            "$ref": "#/components/schemas/InvocationV2",
+            "description": "Fresh list-compatible invocation snapshot for focusEntryId. Omitted when no focusEntryId was supplied or the invocation no longer exists."
+          },
+          "focusEntry": {
             "type": "object",
-            "description": "This invocation's own entry in the queue. Null when it is no longer queued.",
+            "description": "The requested focused entry. Omitted when no focusEntryId was supplied or the entry does not belong to this queue.",
             "properties": {
               "id": { "type": "string" },
-              "status": { "type": "string" },
+              "status": {
+                "$ref": "#/components/schemas/VqueueEntryStatus"
+              },
               "stage": {
-                "type": "string",
-                "description": "Queue stage bucket (inbox/running/suspended/paused) — the authoritative column the counts are grouped by, distinct from the lifecycle status."
+                "$ref": "#/components/schemas/VqueueEntryStage",
+                "description": "Queue stage bucket — the authoritative column the counts are grouped by, distinct from the lifecycle status."
               },
               "position": {
                 "type": "integer",
-                "description": "1-based rank among the target's inbox entries."
-              },
-              "total": {
-                "type": "integer",
-                "description": "Total inbox entries (num_inbox)."
+                "description": "1-based rank in the scheduler's current Inbox order: lock ownership, run_at, sequence number, then entry ID."
               },
               "attempts": { "type": "integer" },
               "suspensions": { "type": "integer" },
@@ -7688,10 +7756,18 @@
                 "description": "Per-gate wait of this entry's most recent attempt.",
                 "items": { "$ref": "#/components/schemas/VqueueGateDuration" }
               }
-            }
+            },
+            "required": ["id", "totalBlocks", "latestBlocks"]
           }
         },
-        "required": ["supported"]
+        "required": [
+          "identity",
+          "status",
+          "counts",
+          "stageAvg",
+          "events",
+          "head"
+        ]
       },
       "TransientErrorResponse": {
         "type": "object",

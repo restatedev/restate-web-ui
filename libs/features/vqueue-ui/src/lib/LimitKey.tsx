@@ -27,7 +27,7 @@ const styles = tv({
     },
     hasNestedSegment: {
       true: {
-        segment: 'pr-2.5',
+        segment: 'min-w-20 pr-2.5',
       },
     },
   },

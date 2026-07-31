@@ -9,7 +9,7 @@ import {
   formatApproxPercentage,
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
-import { STATUS_LABELS } from './constants';
+import { getStatusFillStyle, STATUS_LABELS } from './constants';
 import { getOrderedStatuses, type StatusEntry } from './useOrderedStatuses';
 
 type Entry = {
@@ -126,8 +126,7 @@ function Segment({
             dimmed,
           })}
           style={{
-            backgroundColor: entry.fillLight,
-            backgroundImage: `linear-gradient(to bottom, color-mix(in srgb, white 22%, ${entry.fillLight}), ${entry.fillLight})`,
+            ...getStatusFillStyle(entry),
             borderColor: entry.stroke,
           }}
         >

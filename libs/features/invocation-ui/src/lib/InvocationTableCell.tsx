@@ -1,8 +1,11 @@
 import {
   getInvocationStatusFromVqueue,
   getInvocationStatusLabel,
+  INVOCATION_STATUS_DEFINITIONS,
+  type components,
   type Invocation,
   type InvocationComputedStatus2,
+  type InvocationSummaryStage,
 } from '@restate/data-access/admin-api-spec';
 import { Badge } from '@restate/ui/badge';
 import { Chip, ChipSegment } from '@restate/ui/chip';
@@ -51,6 +54,10 @@ export interface InvocationTableRow {
   created_at?: string;
 }
 
+type InvocationTableInvocation = Invocation & {
+  vqueue?: components['schemas']['InvocationVqueueStateV2'];
+};
+
 const invocationTableColumnKeys = new Set<string>(
   Object.keys(INVOCATION_TABLE_COLUMN_CONFIG),
 );
@@ -78,13 +85,20 @@ const invocationTableCellStyles = tv({
   },
 });
 
-function InvocationTableId({ id }: { id: string }) {
+function InvocationTableId({
+  id,
+  size = 'default',
+}: {
+  id: string;
+  size?: 'sm' | 'md' | 'default';
+}) {
   const isOnboarding = useOnboarding();
   return (
     <InvocationId
       id={id}
       className={invocationIdStyles({ isOnboarding })}
       isLive={isOnboarding}
+      size={size}
       truncateInMiddle
       popover={false}
     />
@@ -100,7 +114,7 @@ function canonicalInvocationStatus(
   row: InvocationTableRow,
 ): InvocationComputedStatus2 | undefined {
   const vqueueStatus = getInvocationStatusFromVqueue({
-    stage: row.stage,
+    stage: row.stage as InvocationSummaryStage | undefined,
     status: row.status,
   });
   if (vqueueStatus) return vqueueStatus;
@@ -195,7 +209,7 @@ export function InvocationTableDate({
 function visibleCellContent(
   column: InvocationTableColumnKey,
   row: InvocationTableRow,
-  invocation?: Invocation,
+  invocation?: InvocationTableInvocation,
 ) {
   switch (column) {
     case 'id':
@@ -204,6 +218,15 @@ function visibleCellContent(
       return row.vqueue_id ? (
         <VQueueId
           id={row.vqueue_id}
+          focusEntryId={row.id}
+          focusStage={
+            invocation?.vqueue?.stage ??
+            (row.stage as InvocationSummaryStage | undefined) ??
+            INVOCATION_STATUS_DEFINITIONS.find(
+              (definition) => definition.key === row.status,
+            )?.stage
+          }
+          renderEntryId={(id) => <InvocationTableId id={id} size="md" />}
           truncateInMiddle
           className="mr-1 w-fit max-w-full min-w-0 rounded-md"
         />
@@ -246,7 +269,7 @@ export function InvocationTableCell({
 }: {
   column: InvocationTableColumnKey;
   row: InvocationTableRow;
-  invocation?: Invocation;
+  invocation?: InvocationTableInvocation;
   isVisible?: boolean;
   className?: string;
 }) {

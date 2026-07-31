@@ -173,6 +173,13 @@ export const DEFAULT_STYLE: (typeof STATUS_STYLE)[string] = {
   color: '#a1a1aa',
 };
 
+export function getStatusFillStyle(style: { fillLight: string }) {
+  return {
+    backgroundColor: style.fillLight,
+    backgroundImage: `linear-gradient(to bottom, color-mix(in srgb, white 22%, ${style.fillLight}), ${style.fillLight})`,
+  };
+}
+
 export const STATUS_LABELS: Record<string, string> = {
   inbox: 'Inbox',
   running: 'Running',

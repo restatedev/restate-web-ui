@@ -1,5 +1,4 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardRow } from '@restate/ui/card';
 import { IconName } from '@restate/ui/icons';
 import { DateTooltip } from '@restate/ui/tooltip';
@@ -15,18 +14,6 @@ type VirtualObjectStatsResponse =
   components['schemas']['VirtualObjectStatsResponse'];
 type VirtualObjectStatsDurationRange =
   components['schemas']['VirtualObjectStatsDurationRange'];
-type VirtualObjectStatsBlockedDurationRange =
-  components['schemas']['VirtualObjectStatsBlockedDurationRange'];
-
-const BLOCKED_GATE_LABELS: Record<
-  VirtualObjectStatsBlockedDurationRange['gate'],
-  string
-> = {
-  concurrency_rules: 'Concurrency rules',
-  invoker_concurrency: 'Invoker capacity',
-  invoker_throttling: 'Invoker throttling',
-  lock: 'Object lock',
-};
 
 function formatDuration(value: string) {
   return formatDurations(normaliseDuration(parseISODuration(value)));
@@ -36,10 +23,6 @@ function formatDurationRange(range: VirtualObjectStatsDurationRange) {
   const min = formatDuration(range.min);
   const max = formatDuration(range.max);
   return min === max ? min : `${min}–${max}`;
-}
-
-function isZeroDuration(value: string) {
-  return formatDuration(value) === '0ms';
 }
 
 function RelativeDate({ date, title }: { date: string; title: string }) {
@@ -62,10 +45,6 @@ export function VirtualObjectStatsCard({
   if (!stats.supported) return null;
 
   const inboxDuration = stats.averageInboxDuration;
-  const blockedDurations = stats.averageBlockedDurations ?? [];
-  const observedBlockedDurations = blockedDurations.filter(
-    ({ max }) => !isZeroDuration(max),
-  );
   const oldestInboxedAt = stats.activity?.oldestInboxedAt;
   const lastEnqueuedAt = stats.activity?.lastEnqueuedAt;
 
@@ -102,22 +81,6 @@ export function VirtualObjectStatsCard({
             date={oldestInboxedAt}
             title="Oldest entry entered Inbox at"
           />
-        </CardRow>
-      )}
-      {observedBlockedDurations.length > 0 && (
-        <CardRow label="Blocking" className="flex-wrap gap-y-1.5">
-          <div className="flex min-w-0 flex-wrap justify-end gap-1">
-            {observedBlockedDurations.map((range) => (
-              <Badge
-                key={range.gate}
-                size="xs"
-                title={`Average blocked time across ${formatNumber(range.vqueueCount)} ${range.vqueueCount === 1 ? 'VQueue' : 'VQueues'}`}
-              >
-                {BLOCKED_GATE_LABELS[range.gate]}
-                <Badge size="xs">{formatDurationRange(range)}</Badge>
-              </Badge>
-            ))}
-          </div>
         </CardRow>
       )}
       <CardRow label="Last enqueued">

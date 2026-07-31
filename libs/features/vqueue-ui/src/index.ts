@@ -8,3 +8,8 @@ export {
   type ScopeVariant,
 } from './lib/Scope';
 export { VQueueId, type VQueueIdProps } from './lib/VQueueId';
+export {
+  VQueuePopoverContent,
+  type VQueueEntryIdRenderer,
+  type VQueuePopoverContentProps,
+} from './lib/VQueuePopoverContent';

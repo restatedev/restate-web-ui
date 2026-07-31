@@ -60,8 +60,30 @@ describe('Chip', () => {
     );
     const group = container.querySelector('[data-chip-group]');
     expect(group?.className).toContain('mix-blend-luminosity');
-    expect(group?.className).toContain('[--chip-radius:0.75rem]');
-    expect(group?.className).toContain('[--chip-slope:7px]');
+    expect(group?.className).toContain('[--chip-radius:0.625rem]');
+    expect(group?.className).toContain('[--chip-slope:5px]');
+    expect(group?.className).toContain(
+      '[&>[data-chip]:not(:first-child)]:-ml-px',
+    );
+  });
+
+  it('should render compact connected chip groups', () => {
+    const { container } = render(
+      <ChipGroup density="compact">
+        <Chip left="straight" right="angled">
+          <ChipSegment>scope</ChipSegment>
+        </Chip>
+        <Chip left="angled" right="straight">
+          <ChipSegment>identity</ChipSegment>
+        </Chip>
+      </ChipGroup>,
+    );
+    const group = container.querySelector('[data-chip-group]');
+    expect(group?.className).toContain('[--chip-height:1.5rem]');
+    expect(group?.className).toContain('[--chip-slope:5px]');
+    expect(group?.className).toContain(
+      '[&>[data-chip]:not(:first-child)]:-ml-0.5',
+    );
   });
 
   it('should preserve the angled-edge slope across sizes', () => {

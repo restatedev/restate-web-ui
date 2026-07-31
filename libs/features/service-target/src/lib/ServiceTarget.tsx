@@ -40,17 +40,6 @@ const styles = tv({
     handlerIcon: '-mr-1 h-5 w-5 shrink-0 text-zinc-400',
   },
   variants: {
-    density: {
-      default: {},
-      compact: {
-        root: 'h-6',
-        chip: 'h-6',
-      },
-    },
-    hasJoins: {
-      true: {},
-      false: {},
-    },
     isHeader: {
       true: {
         group:
@@ -58,18 +47,6 @@ const styles = tv({
       },
       false: {},
     },
-  },
-  compoundVariants: [
-    {
-      density: 'compact',
-      hasJoins: true,
-      class: {
-        chip: 'h-5.5',
-      },
-    },
-  ],
-  defaultVariants: {
-    density: 'default',
   },
 });
 
@@ -200,12 +177,12 @@ function ServiceTargetContent({
 }: PropsWithChildren<ServiceTargetProps>) {
   const { baseUrl } = useRestateContext();
   const resolvedServiceType = resolveServiceType(serviceType);
+  const resolvedDensity =
+    density ?? (variant === 'header' ? 'default' : 'compact');
   const hasServiceKey = typeof serviceKey === 'string';
   const hasVisibleScope = Boolean(scope);
   const hasVisibleHandler = showHandler && Boolean(handler);
   const hasTrailingContent = Boolean(children);
-  const hasJoins =
-    hasVisibleScope || hasServiceKey || hasVisibleHandler || hasTrailingContent;
   const target = [
     service,
     ...(hasServiceKey ? [serviceKey] : []),
@@ -276,8 +253,6 @@ function ServiceTargetContent({
     icon,
     handlerIcon,
   } = styles({
-    density,
-    hasJoins,
     isHeader: variant === 'header',
   });
   const { root: tooltip, term, description } = tooltipStyles();
@@ -386,7 +361,11 @@ function ServiceTargetContent({
         containerClassName="min-w-0 flex-auto"
         overflowVisible
       >
-        <ChipGroup variant={variant} className={group()}>
+        <ChipGroup
+          variant={variant}
+          density={resolvedDensity}
+          className={group()}
+        >
           {hasVisibleScope && (
             <Scope
               value={scope}

@@ -87,7 +87,16 @@ describe('ServiceTarget', () => {
     expect(scopeGroup?.getAttribute('class')).toContain(
       '[&>[data-chip]]:mix-blend-luminosity',
     );
+    expect(scopeGroup?.getAttribute('class')).toContain(
+      '[&>[data-chip]:not(:first-child)]:-ml-px',
+    );
     expect(scopeGroup?.children).toHaveLength(4);
+    expect(scopeGroup?.getAttribute('class')).toContain(
+      '[&_[data-chip]]:[--chip-height:1.75rem]',
+    );
+    expect(scopeGroup?.getAttribute('class')).not.toContain(
+      '[&_[data-chip]]:[--chip-height:1.5rem]',
+    );
     expect(
       container.querySelector('[data-scope]')?.getAttribute('class'),
     ).toContain('flex-[0_1_auto]');
@@ -147,6 +156,12 @@ describe('ServiceTarget', () => {
       ),
     );
     expect(container.querySelectorAll('[data-chip-group]')).toHaveLength(1);
+    expect(
+      container.querySelector('[data-chip-group]')?.getAttribute('class'),
+    ).toContain('[&>[data-chip]:not(:first-child)]:-ml-0.5');
+    expect(
+      container.querySelector('[data-chip-group]')?.getAttribute('class'),
+    ).toContain('[&_[data-chip]]:[--chip-slope:5px]');
     expect(
       screen.queryByRole('link', { name: /virtual object instance/i }),
     ).toBeNull();
@@ -256,7 +271,7 @@ describe('ServiceTarget', () => {
     expect(screen.queryByRole('link', { name: /handler/i })).toBeNull();
   });
 
-  it('balances compact joined targets without shrinking a standalone chip', () => {
+  it('keeps non-header targets compact without shrinking a standalone chip', () => {
     const { container, rerender } = renderTarget(
       <ServiceTarget
         scope="tenant-a"
@@ -264,15 +279,12 @@ describe('ServiceTarget', () => {
         handler="greet"
         showHandler={false}
         serviceType="Service"
-        density="compact"
       />,
     );
 
     expect(
-      Array.from(container.querySelectorAll('[data-chip-root]')).every((chip) =>
-        chip.getAttribute('class')?.includes('h-5.5'),
-      ),
-    ).toBe(true);
+      container.querySelector('[data-chip-group]')?.getAttribute('class'),
+    ).toContain('[&_[data-chip]]:[--chip-height:1.5rem]');
 
     rerender(
       <MemoryRouter>
@@ -281,17 +293,13 @@ describe('ServiceTarget', () => {
           handler="greet"
           showHandler={false}
           serviceType="Service"
-          density="compact"
         />
       </MemoryRouter>,
     );
 
     expect(
-      container.querySelector('[data-chip-root]')?.getAttribute('class'),
-    ).toContain('h-6');
-    expect(
-      container.querySelector('[data-chip-root]')?.getAttribute('class'),
-    ).not.toContain('h-5.5');
+      container.querySelector('[data-chip-group]')?.getAttribute('class'),
+    ).toContain('[&_[data-chip]]:[--chip-height:1.5rem]');
   });
 
   it('renders trailing compatibility content in its own chip', () => {
@@ -347,5 +355,15 @@ describe('Target', () => {
   it('renders nothing for an empty legacy target', () => {
     const { container } = renderTarget(<Target />);
     expect(container.firstChild).toBeNull();
+  });
+
+  it('forwards compact density to a parsed legacy target', () => {
+    const { container } = renderTarget(
+      <Target target="Counter/customer-1/add" density="compact" />,
+    );
+
+    expect(
+      container.querySelector('[data-chip-group]')?.getAttribute('class'),
+    ).toContain('[&_[data-chip]]:[--chip-height:1.5rem]');
   });
 });
