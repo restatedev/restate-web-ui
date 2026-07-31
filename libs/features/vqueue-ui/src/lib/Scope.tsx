@@ -11,7 +11,7 @@ const styles = tv({
     root: 'inline-flex max-w-full min-w-0 items-center align-middle',
     chip: 'h-6.5 max-w-full text-xs font-medium text-zinc-600',
     segment:
-      'max-w-[22rem] bg-zinc-100 pl-1.5 font-mono text-[90%] text-zinc-600',
+      'max-w-[22rem] bg-zinc-100 pl-1 font-mono text-[90%] text-zinc-600',
     inline:
       'inline-flex max-w-full min-w-0 items-center gap-1 font-mono text-[90%] text-zinc-600',
     label:

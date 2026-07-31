@@ -17,7 +17,7 @@ import { WorkflowInvocationsTable } from './WorkflowInvocationsTable';
 
 type WorkflowRunDetailsResponse =
   components['schemas']['WorkflowRunDetailsResponse'];
-export type WorkflowRunTab = 'shared' | 'state';
+export type WorkflowRunTab = 'recent' | 'state';
 
 const TAB_QUERY_PARAM = 'tab';
 
@@ -25,27 +25,27 @@ export function workflowRunTabFromSearch(
   searchParams: URLSearchParams,
 ): WorkflowRunTab {
   const tab = searchParams.get(TAB_QUERY_PARAM);
-  return tab === 'shared' ? tab : 'state';
+  return tab === 'recent' || tab === 'shared' ? 'recent' : 'state';
 }
 
-function SharedTabLabel({
+function RecentInvocationsTabLabel({
   data,
   isPending,
 }: {
   data?: WorkflowRunDetailsResponse;
   isPending: boolean;
 }) {
-  const count = data?.sharedInvocations.length;
-  const isTruncated = data?.sharedInvocationsTruncated ?? false;
+  const count = data?.recentInvocations.length;
+  const isTruncated = data?.recentInvocationsTruncated ?? false;
   return (
     <span className="flex items-center gap-1.5">
-      Shared
+      Recent invocations
       {count !== undefined ? (
         <span
           title={
             isTruncated
-              ? `At least ${formatNumber(count)} retained Shared invocations`
-              : `${formatNumber(count)} retained Shared invocations`
+              ? `At least ${formatNumber(count)} retained invocations`
+              : `${formatNumber(count)} retained invocations`
           }
           className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums"
         >
@@ -97,8 +97,10 @@ export function WorkflowDetails({
       items: [
         { id: 'state', label: 'State' },
         {
-          id: 'shared',
-          label: <SharedTabLabel data={data} isPending={isPending} />,
+          id: 'recent',
+          label: (
+            <RecentInvocationsTabLabel data={data} isPending={isPending} />
+          ),
         },
         {
           id: 'run',
@@ -118,16 +120,16 @@ export function WorkflowDetails({
     <ContentPanel className="-mt-14" tabs={tabs}>
       <ContentPanelBody className="pb-32">
         <ContentPanelSection flush>
-          {tab === 'shared' ? (
+          {tab === 'recent' ? (
             <WorkflowInvocationsTable
-              ariaLabel="Shared Workflow invocations"
-              rows={data?.sharedInvocations ?? []}
+              ariaLabel="Recent Workflow invocations"
+              rows={data?.recentInvocations ?? []}
               isPending={isPending}
               error={error}
-              truncated={data?.sharedInvocationsTruncated}
-              limit={data?.sharedInvocationsLimit}
-              emptyTitle="No Shared invocations found"
-              emptyDescription="Calls to this Workflow's Shared handlers will appear here while they are retained."
+              truncated={data?.recentInvocationsTruncated}
+              limit={data?.recentInvocationsLimit}
+              emptyTitle="No recent invocations found"
+              emptyDescription="Invocations for this Workflow will appear here while they are retained."
             />
           ) : (
             <KeyedServiceState
