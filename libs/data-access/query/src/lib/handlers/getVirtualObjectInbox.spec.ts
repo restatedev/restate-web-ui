@@ -4,6 +4,7 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { describe, expect, it, vi } from 'vitest';
 import { getVirtualObjectInbox, getVqueueInbox } from './getVirtualObjectInbox';
+import { getVirtualObjectInvocations } from './getVirtualObjectInvocations';
 import type { QueryContext } from './shared';
 
 const serviceMetadata = {
@@ -63,7 +64,7 @@ function withoutInboxCountQuery(query: ReturnType<typeof vi.fn>) {
     .filter((statement) => !statement.includes(' AS inbox_count'));
 }
 
-describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
+describe('Virtual Object inbox and invocation query handlers', () => {
   it('returns the exact legacy sys_inbox count', async () => {
     const query = vi.fn(async (statement: string) => {
       if (statement.includes('COUNT(*) AS inbox_count')) {
@@ -77,7 +78,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
     );
 
     expect(await response.json()).toMatchObject({
@@ -105,7 +105,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
       'tenant-a',
     );
 
@@ -127,23 +126,19 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     const adminApi = createAdminApiMock();
     const context = contextWith(query, [], adminApi);
 
-    for (const mode of ['exclusive', 'recent'] as const) {
-      const response = await getVirtualObjectInbox.call(
-        context,
-        'Counter',
-        'customer-1',
-        mode,
-        'tenant-a',
-      );
+    const response = await getVirtualObjectInbox.call(
+      context,
+      'Counter',
+      'customer-1',
+      'tenant-a',
+    );
 
-      expect(await response.json()).toEqual({
-        supported: false,
-        rows: [],
-        lock: { supported: false },
-        limit: 25,
-        truncated: false,
-      });
-    }
+    expect(await response.json()).toEqual({
+      supported: false,
+      rows: [],
+      limit: 25,
+      truncated: false,
+    });
 
     expect(query).not.toHaveBeenCalled();
     expect(adminApi).not.toHaveBeenCalled();
@@ -222,7 +217,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
     );
 
     expect(adminApi).not.toHaveBeenCalled();
@@ -310,22 +304,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     expect(await response.json()).toEqual({
       supported: true,
       rows: [],
-      lock: {
-        supported: true,
-        lockHolder: {
-          id: 'mut_next',
-          kind: 'state-mutation',
-          vqueueId: 'vq_counter_customer_1',
-          hasLock: true,
-          runAt: '2026-07-23T09:00:00.000Z',
-          sequenceNumber: 7,
-          stage: 'running',
-          status: 'running',
-          createdAt: '2026-07-23T08:00:00.000Z',
-          transitionedAt: '2026-07-23T08:05:00.000Z',
-          acquiredAt: '2026-07-23T09:00:00.000Z',
-        },
-      },
       limit: 25,
       truncated: false,
     });
@@ -416,7 +394,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
       'tenant-a',
     );
 
@@ -507,22 +484,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
           runAt: '2026-07-23T09:01:00.000Z',
         }),
       ],
-      lock: {
-        supported: true,
-        lockHolder: {
-          id: 'inv_lock',
-          kind: 'invocation',
-          vqueueId: 'vq_lock',
-          stage: 'running',
-          status: 'started',
-          hasLock: true,
-          invocation: expect.objectContaining({
-            id: 'inv_lock',
-            target_handler_name: 'add',
-          }),
-          acquiredAt: '2026-07-23T09:00:00.000Z',
-        },
-      },
       limit: 25,
       truncated: false,
     });
@@ -605,7 +566,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
       'tenant-a',
     );
 
@@ -701,18 +661,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     expect(await response.json()).toEqual({
       supported: true,
       rows: [],
-      lock: {
-        supported: true,
-        lockHolder: {
-          id: 'mut_next_lock',
-          kind: 'state-mutation',
-          vqueueId: nextLockVqueue.id,
-          stage: 'running',
-          status: 'started',
-          hasLock: true,
-          acquiredAt: '2026-07-23T09:01:00.000Z',
-        },
-      },
       limit: 25,
       truncated: false,
     });
@@ -764,7 +712,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
       'tenant-a',
     );
 
@@ -834,18 +781,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     expect(await response.json()).toEqual({
       supported: true,
       rows: [],
-      lock: {
-        supported: true,
-        lockHolder: {
-          id: 'mut_next_lock',
-          kind: 'state-mutation',
-          vqueueId: nextLockVqueue.id,
-          stage: 'running',
-          status: 'started',
-          hasLock: true,
-          acquiredAt: '2026-07-23T09:01:00.000Z',
-        },
-      },
       limit: 25,
       truncated: false,
     });
@@ -901,7 +836,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
       'tenant-a',
     );
 
@@ -1013,22 +947,15 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     const context = contextWith(query, ['vqueues']);
     context.restateVersion = '1.7.3';
 
-    const response = await getVirtualObjectInbox.call(
+    const response = await getVirtualObjectInvocations.call(
       context,
       'Counter',
       'customer-1',
-      'recent',
       'tenant-a',
     );
 
     expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
         [
-          "SELECT acquired_by, acquired_at
-            FROM sys_locks
-            WHERE lock_name = 'Counter/customer-1'
-              AND scope = 'tenant-a'
-              AND acquired_by IS NOT NULL
-            LIMIT 1",
           "SELECT si.id
             FROM sys_invocation_status si
             WHERE si.target_service_ty = 'virtual_object'
@@ -1037,67 +964,48 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
               AND si.scope = 'tenant-a'
             ORDER BY si.created_at DESC NULLS LAST
             LIMIT 51",
-          "SELECT
-              entry_id AS id,
-              entry_kind AS kind,
-              vqueue_id,
-              stage,
-              status,
-              has_lock,
-              next_at AS run_at,
-              sequence_number,
-              created_at,
-              transitioned_at,
-              first_attempt_at,
-              latest_attempt_at,
-              first_runnable_at,
-              retry_attempts,
-              retry_count_since_last_stored_command,
-              num_attempts,
-              num_errors,
-              deployment
-            FROM sys_vqueue_entry_status
-            WHERE entry_id IN ('inv_1shared')
-              AND stage <> 'finished'",
           "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
             FROM sys_invocation
             WHERE id IN ('inv_1shared')",
+          "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv_1shared') AND entry_kind = 'invocation'",
         ]
       `);
     expect(await response.json()).toEqual({
       supported: true,
       rows: [
-        {
+        expect.objectContaining({
           id: 'inv_1shared',
-          kind: 'invocation',
-          invocation: expect.objectContaining({
-            id: 'inv_1shared',
-            status: 'succeeded',
-            target_handler_name: 'read',
-          }),
-        },
+          status: 'succeeded',
+          target_handler_name: 'read',
+        }),
       ],
-      lock: { supported: true },
       limit: 50,
       truncated: false,
     });
   });
 
-  it('keeps an inbox-stage lock holder in recent invocations but excludes it from the inbox count', async () => {
+  it('does not query unscoped invocation tables for a scoped identity without VQueues', async () => {
+    const query = vi.fn();
+    const context = contextWith(query, []);
+
+    const response = await getVirtualObjectInvocations.call(
+      context,
+      'Counter',
+      'customer-1',
+      'tenant-a',
+    );
+
+    expect(query).not.toHaveBeenCalled();
+    expect(await response.json()).toEqual({
+      supported: false,
+      rows: [],
+      limit: 50,
+      truncated: false,
+    });
+  });
+
+  it('returns lock holders among recent invocations without loading lock or inbox data', async () => {
     const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_locks')) {
-        return {
-          rows: [
-            {
-              acquired_by: 'inv_1exclusive',
-              acquired_at: '2026-07-23T08:10:00.000Z',
-            },
-          ],
-        };
-      }
-      if (statement.includes('SUM(num_inbox) AS inbox_count')) {
-        return { rows: [{ inbox_count: 2 }] };
-      }
       if (statement.includes('FROM sys_invocation_status')) {
         return {
           rows: [{ id: 'inv_1exclusive' }, { id: 'inv_1waiting' }],
@@ -1107,20 +1015,16 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
         return {
           rows: [
             {
-              id: 'inv_1exclusive',
-              kind: 'invocation',
+              entry_id: 'inv_1exclusive',
               vqueue_id: 'vq_1exclusive',
               stage: 'inbox',
               status: 'backing-off',
-              has_lock: true,
             },
             {
-              id: 'inv_1waiting',
-              kind: 'invocation',
+              entry_id: 'inv_1waiting',
               vqueue_id: 'vq_1waiting',
               stage: 'inbox',
               status: 'pending',
-              has_lock: false,
             },
           ],
         };
@@ -1144,50 +1048,40 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     });
     const context = contextWith(query, ['vqueues']);
 
-    const response = await getVirtualObjectInbox.call(
+    const response = await getVirtualObjectInvocations.call(
       context,
       'Counter',
       'customer-1',
-      'recent',
     );
 
+    expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT si.id
+          FROM sys_invocation_status si
+          WHERE si.target_service_ty = 'virtual_object'
+            AND si.target_service_name = 'Counter'
+            AND SUBSTR(si.target_service_key, 1) = 'customer-1'
+            AND si.scope IS NULL
+          ORDER BY si.created_at DESC NULLS LAST
+          LIMIT 51",
+        "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
+          FROM sys_invocation
+          WHERE id IN ('inv_1exclusive', 'inv_1waiting')",
+        "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv_1exclusive', 'inv_1waiting') AND entry_kind = 'invocation'",
+      ]
+    `);
     expect(await response.json()).toEqual({
       supported: true,
       rows: [
         expect.objectContaining({
           id: 'inv_1exclusive',
-          kind: 'invocation',
-          invocation: expect.objectContaining({
-            id: 'inv_1exclusive',
-            status: 'backing-off',
-          }),
+          status: 'backing-off',
         }),
         expect.objectContaining({
           id: 'inv_1waiting',
-          kind: 'invocation',
-          invocation: expect.objectContaining({
-            id: 'inv_1waiting',
-            status: 'pending',
-          }),
+          status: 'pending',
         }),
       ],
-      inboxCount: 1,
-      lock: {
-        supported: true,
-        lockHolder: {
-          id: 'inv_1exclusive',
-          kind: 'invocation',
-          acquiredAt: '2026-07-23T08:10:00.000Z',
-          invocation: expect.objectContaining({
-            id: 'inv_1exclusive',
-            status: 'backing-off',
-          }),
-          vqueueId: 'vq_1exclusive',
-          stage: 'inbox',
-          status: 'backing-off',
-          hasLock: true,
-        },
-      },
       limit: 50,
       truncated: false,
     });
@@ -1229,7 +1123,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
     );
 
     expect(lockReadCount).toBe(2);
@@ -1238,18 +1131,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       supported: true,
       rows: [],
       inboxCount: 0,
-      lock: {
-        supported: true,
-        lockHolder: {
-          id: 'inv_1exclusive',
-          kind: 'invocation',
-          acquiredAt: '2026-07-23T08:10:00.000Z',
-          invocation: expect.objectContaining({
-            id: 'inv_1exclusive',
-            status: 'running',
-          }),
-        },
-      },
       limit: 25,
       truncated: false,
     });
@@ -1278,7 +1159,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
     );
 
     expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
@@ -1303,14 +1183,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     expect(await response.json()).toEqual({
       supported: true,
       rows: [],
-      lock: {
-        supported: true,
-        lockHolder: {
-          id: 'inv_1exclusive',
-          kind: 'invocation',
-          invocation: expect.objectContaining({ id: 'inv_1exclusive' }),
-        },
-      },
       limit: 25,
       truncated: false,
     });
@@ -1336,7 +1208,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
     );
 
     expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
@@ -1367,7 +1238,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
     expect(await response.json()).toEqual({
       supported: true,
       rows: [],
-      lock: { supported: true },
       limit: 25,
       truncated: false,
     });
@@ -1389,7 +1259,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/inbox', () => {
       context,
       'Counter',
       'customer-1',
-      'exclusive',
     );
 
     expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
