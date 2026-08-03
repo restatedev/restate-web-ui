@@ -231,6 +231,7 @@ type BoundHandlers = {
     service: string,
     workflowId: string,
     scope?: string,
+    invocationId?: string,
   ) => Promise<Response>;
 };
 
@@ -767,6 +768,7 @@ router.map(routes, {
             ctx.url.searchParams.has('scope')
               ? String(ctx.url.searchParams.get('scope'))
               : undefined,
+            ctx.url.searchParams.get('invocationId') || undefined,
           );
         },
       },

@@ -8214,6 +8214,8 @@ export interface operations {
       query?: {
         /** @description Workflow scope. Omit for an unscoped run. */
         scope?: string;
+        /** @description Run invocation id belonging to this Workflow identity. When omitted, the server resolves it before querying statistics. */
+        invocationId?: string;
       };
       header?: never;
       path: {

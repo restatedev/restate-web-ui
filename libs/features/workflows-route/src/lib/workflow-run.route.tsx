@@ -59,9 +59,11 @@ function Component() {
     refetchOnWindowFocus: false,
     staleTime: 0,
   });
+  const runInvocation = data?.runInvocation;
   const { data: statsData, dataUpdatedAt: statsDataUpdatedAt } =
-    useGetWorkflowRunStats(service, workflowId, scope, {
-      enabled: Boolean(service) && Boolean(workflowId),
+    useGetWorkflowRunStats(service, workflowId, scope, runInvocation?.id, {
+      enabled:
+        Boolean(service) && Boolean(workflowId) && Boolean(runInvocation?.id),
       refetchOnMount: true,
       refetchOnWindowFocus: false,
       staleTime: 0,
@@ -69,7 +71,6 @@ function Component() {
   const isWorkflow = serviceMetadata?.ty === 'Workflow';
   const isUnavailable = !isServicePending && (!serviceMetadata || !isWorkflow);
   const error = serviceError ?? runError;
-  const runInvocation = data?.runInvocation;
 
   return (
     <SnapshotTimeProvider

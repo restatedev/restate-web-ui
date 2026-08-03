@@ -2,9 +2,14 @@ import type {
   RawInvocation,
   Service,
 } from '@restate/data-access/admin-api-spec';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { query as queryRouter } from '../query';
 import type { QueryContext } from './shared';
-import { getWorkflowRun, listWorkflowRuns } from './workflows';
+import {
+  getWorkflowRun,
+  getWorkflowRunStats,
+  listWorkflowRuns,
+} from './workflows';
 
 const workflowService = {
   name: 'OrderWorkflow',
@@ -58,6 +63,8 @@ function createContext(
 }
 
 describe('Workflow query handlers', () => {
+  afterEach(() => vi.useRealTimers());
+
   it('lists only Workflow handler runs and overlays VQueue status', async () => {
     const { adminApi, context, query } = createContext((sql) => {
       if (sql.includes('FROM sys_invocation_status')) {
@@ -355,5 +362,212 @@ describe('Workflow query handlers', () => {
     );
 
     expect(response.status).toBe(404);
+  });
+
+  it('returns statistics for a scoped run', async () => {
+    const { context, query } = createContext((sql) => {
+      if (sql.includes('FROM sys_vqueue_entry_status')) {
+        return [
+          {
+            stage: 'finished',
+            transitioned_at: '2026-07-31T16:00:00.000Z',
+            first_attempt_at: '2026-07-31T14:00:00.000Z',
+            first_runnable_at: '2026-07-31T13:59:56.500Z',
+          },
+        ];
+      }
+      if (sql.includes('FROM sys_promise')) {
+        return [{ pending_promise_count: 2 }];
+      }
+      if (sql.includes('FROM state')) {
+        return [{ num_keys: 4, total_size: 2048 }];
+      }
+      return [
+        {
+          last_interaction_at: '2026-07-31T14:00:00.000Z',
+        },
+      ];
+    });
+
+    const response = await getWorkflowRunStats.call(
+      context,
+      'OrderWorkflow',
+      'order-1',
+      'tenant-a',
+      'inv_run',
+    );
+
+    expect(query.mock.calls.map(([sql]) => sql)).toMatchInlineSnapshot(`
+      [
+        "SELECT
+            stage,
+            transitioned_at,
+            first_attempt_at,
+            first_runnable_at
+          FROM sys_vqueue_entry_status
+          WHERE entry_id = 'inv_run'
+            AND entry_kind = 'invocation'
+          LIMIT 1",
+        "SELECT COUNT(*) AS pending_promise_count
+          FROM sys_promise
+          WHERE service_name = 'OrderWorkflow'
+            AND service_key = 'order-1'
+            AND scope = 'tenant-a'
+            AND completed = false",
+        "SELECT MAX(si.created_at) AS last_interaction_at
+          FROM sys_invocation_status si
+          WHERE si.target_service_name = 'OrderWorkflow'
+            AND si.target_service_ty = 'workflow'
+            AND si.target_service_key = 'order-1'
+            AND si.target_handler_name <> 'run'
+            AND si.scope = 'tenant-a'",
+        "SELECT
+            COUNT(*) AS num_keys,
+            COALESCE(SUM(value_length), 0) AS total_size
+          FROM state
+          WHERE service_name = 'OrderWorkflow'
+            AND service_key = 'order-1'
+            AND scope = 'tenant-a'",
+      ]
+    `);
+    expect(await response.json()).toEqual({
+      supported: true,
+      duration: 'PT7200S',
+      queueDuration: 'PT3.5S',
+      pendingPromiseCount: 2,
+      lastInteractionAt: '2026-07-31T14:00:00.000Z',
+      state: { numKeys: 4, totalSize: 2048 },
+    });
+  });
+
+  it('returns statistics for an unscoped run without interactions', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-31T14:00:30.000Z'));
+    const { context, query } = createContext((sql) => {
+      if (
+        sql.includes('SELECT id\n') &&
+        sql.includes("target_handler_name = 'run'")
+      ) {
+        return [{ id: 'inv_run' }];
+      }
+      if (sql.includes('FROM sys_vqueue_entry_status')) {
+        return [
+          {
+            stage: 'inbox',
+            transitioned_at: '2026-07-31T13:59:55.000Z',
+            first_attempt_at: null,
+            first_runnable_at: '2026-07-31T14:00:00.000Z',
+          },
+        ];
+      }
+      if (sql.includes('FROM sys_promise')) {
+        return [{ pending_promise_count: 0 }];
+      }
+      if (sql.includes('FROM state')) {
+        return [{ num_keys: 0, total_size: 0 }];
+      }
+      return [{ last_interaction_at: null }];
+    });
+
+    const response = await getWorkflowRunStats.call(
+      context,
+      'OrderWorkflow',
+      'order-1',
+    );
+
+    expect(query.mock.calls.map(([sql]) => sql)).toMatchInlineSnapshot(`
+      [
+        "SELECT id
+          FROM sys_invocation_status
+          WHERE target_service_name = 'OrderWorkflow'
+            AND target_service_ty = 'workflow'
+            AND target_service_key = 'order-1'
+            AND target_handler_name = 'run'
+            AND scope IS NULL
+          LIMIT 1",
+        "SELECT
+            stage,
+            transitioned_at,
+            first_attempt_at,
+            first_runnable_at
+          FROM sys_vqueue_entry_status
+          WHERE entry_id = 'inv_run'
+            AND entry_kind = 'invocation'
+          LIMIT 1",
+        "SELECT COUNT(*) AS pending_promise_count
+          FROM sys_promise
+          WHERE service_name = 'OrderWorkflow'
+            AND service_key = 'order-1'
+            AND scope IS NULL
+            AND completed = false",
+        "SELECT MAX(si.created_at) AS last_interaction_at
+          FROM sys_invocation_status si
+          WHERE si.target_service_name = 'OrderWorkflow'
+            AND si.target_service_ty = 'workflow'
+            AND si.target_service_key = 'order-1'
+            AND si.target_handler_name <> 'run'
+            AND si.scope IS NULL",
+        "SELECT
+            COUNT(*) AS num_keys,
+            COALESCE(SUM(value_length), 0) AS total_size
+          FROM state
+          WHERE service_name = 'OrderWorkflow'
+            AND service_key = 'order-1'
+            AND scope IS NULL",
+      ]
+    `);
+    expect(await response.json()).toEqual({
+      supported: true,
+      waitingToStartDuration: 'PT30S',
+      pendingPromiseCount: 0,
+      state: { numKeys: 0, totalSize: 0 },
+    });
+  });
+
+  it('returns not found statistics when the run does not exist', async () => {
+    const { context, query } = createContext(() => []);
+
+    const response = await getWorkflowRunStats.call(
+      context,
+      'OrderWorkflow',
+      'missing',
+    );
+
+    expect(response.status).toBe(404);
+    expect(query).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports Workflow statistics as unsupported without Virtual Queues', async () => {
+    const { adminApi, context, query } = createContext(() => [], new Set());
+
+    const response = await getWorkflowRunStats.call(
+      context,
+      'OrderWorkflow',
+      'order-1',
+    );
+
+    expect(await response.json()).toEqual({ supported: false });
+    expect(adminApi).not.toHaveBeenCalled();
+    expect(query).not.toHaveBeenCalled();
+  });
+
+  it('routes the Workflow statistics endpoint', async () => {
+    const fetch = vi.spyOn(globalThis, 'fetch');
+
+    const response = await queryRouter(
+      new Request(
+        'http://query.test/query/workflows/OrderWorkflow/runs/order-1/stats',
+        {
+          headers: {
+            'x-restate-version': '1.7.2',
+            'x-restate-features': 'protocol_v7',
+          },
+        },
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ supported: false });
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

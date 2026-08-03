@@ -2168,6 +2168,7 @@ export function useGetWorkflowRunStats(
   serviceName: string,
   workflowId: string,
   scope?: string,
+  invocationId?: string,
   options?: HookQueryOptions<
     '/query/workflows/{service}/runs/{workflowId}/stats',
     'get'
@@ -2184,7 +2185,7 @@ export function useGetWorkflowRunStats(
       resolvedPath: `/query/workflows/${encodeURIComponent(serviceName)}/runs/${encodeURIComponent(workflowId)}/stats`,
       parameters: {
         path: { service: serviceName, workflowId },
-        query: { scope },
+        query: { scope, invocationId },
       },
     },
   );

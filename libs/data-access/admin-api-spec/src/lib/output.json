@@ -4122,6 +4122,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "invocationId",
+            "in": "query",
+            "description": "Run invocation id belonging to this Workflow identity. When omitted, the server resolves it before querying statistics.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
