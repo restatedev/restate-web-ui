@@ -88,6 +88,9 @@
         "libs/features/restate-context/src/index.ts"
       ],
       "@restate/features/service": ["libs/features/service/src/index.ts"],
+      "@restate/features/service-target": [
+        "libs/features/service-target/src/index.ts"
+      ],
       "@restate/features/service-details": [
         "libs/features/service-details/src/index.ts"
       ],

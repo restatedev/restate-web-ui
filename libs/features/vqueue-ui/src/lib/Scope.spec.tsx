@@ -55,6 +55,23 @@ describe('Scope', () => {
     expect(screen.queryByText('SCOPE')).toBeNull();
   });
 
+  it('allows a target to remove the standalone scope width cap', () => {
+    const { container } = render(
+      <Scope value="scope-41" segmentClassName="max-w-none" />,
+    );
+
+    expect(
+      container
+        .querySelector('[data-chip-segment-inner]')
+        ?.getAttribute('class'),
+    ).toContain('max-w-none');
+    expect(
+      container
+        .querySelector('[data-chip-segment-inner]')
+        ?.getAttribute('class'),
+    ).not.toContain('max-w-[22rem]');
+  });
+
   it('renders a visible copy action when requested', () => {
     const { container } = render(<Scope value="scope-41" showCopy />);
 

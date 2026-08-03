@@ -3,8 +3,8 @@ import { useGetInvocation } from '@restate/data-access/admin-api-hooks';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Spinner } from '@restate/ui/loading';
+import { ServiceTarget } from '@restate/features/service-target';
 import { Status } from './Status';
-import { Target } from './Target';
 
 interface InvocationPopoverContentProps {
   id: string;
@@ -43,8 +43,12 @@ export function InvocationPopoverContent({
             </div>
           ) : invocation ? (
             <>
-              <Target
-                target={invocation.target}
+              <ServiceTarget
+                scope={invocation.scope}
+                service={invocation.target_service_name}
+                serviceKey={invocation.target_service_key}
+                handler={invocation.target_handler_name}
+                serviceType={invocation.target_service_ty}
                 className="max-w-full flex-none"
               />
               <Status invocation={invocation} />

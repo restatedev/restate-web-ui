@@ -53,24 +53,32 @@ export interface ScopeProps {
   value?: string;
   className?: string;
   containerClassName?: string;
+  segmentClassName?: string;
   presentation?: ScopePresentation;
   relationship?: ScopeRelationship;
   labelVariant?: ScopeLabelVariant;
   variant?: ScopeVariant;
   showCopy?: boolean;
   showLabel?: boolean;
+  href?: string;
+  'aria-label'?: string;
+  isolateInteraction?: boolean;
 }
 
 export function Scope({
   value,
   className,
   containerClassName,
+  segmentClassName,
   presentation = 'chip',
   relationship,
   labelVariant = 'full',
   variant = 'default',
   showCopy = false,
   showLabel = true,
+  href,
+  'aria-label': ariaLabel,
+  isolateInteraction,
 }: ScopeProps) {
   if (!value) return null;
 
@@ -106,8 +114,13 @@ export function Scope({
       right={relationship === 'target' ? 'angled' : 'straight'}
       size="lg"
       className={chip({ className })}
+      href={href}
+      aria-label={ariaLabel}
+      isolateInteraction={isolateInteraction}
     >
-      <ChipSegment className={segment()}>{content}</ChipSegment>
+      <ChipSegment className={segment({ className: segmentClassName })}>
+        {content}
+      </ChipSegment>
     </Chip>
   );
 

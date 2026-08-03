@@ -174,12 +174,14 @@ export function CardRow({
 export function CardLinkRow({
   href,
   'aria-label': ariaLabel,
+  label,
   variant,
   className,
   children,
 }: PropsWithChildren<{
   href: string;
   'aria-label'?: string;
+  label?: ReactNode;
   variant?: 'hero' | 'default';
   className?: string;
 }>) {
@@ -198,8 +200,13 @@ export function CardLinkRow({
           .join(' '),
       })}
     >
+      {label && <span className={styles.label()}>{label}</span>}
       {children}
-      <span className="min-w-2 flex-auto" />
+      {label ? (
+        <span className="min-w-2" />
+      ) : (
+        <span className="min-w-2 flex-auto" />
+      )}
       <Icon
         name={IconName.ChevronRight}
         className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 group-hover:translate-x-0.5"

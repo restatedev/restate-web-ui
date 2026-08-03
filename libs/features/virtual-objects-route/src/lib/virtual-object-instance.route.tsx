@@ -7,9 +7,9 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import {
   virtualObjectScopeFromSearch,
-  VirtualObjectInstanceTarget,
   type VirtualObjectInstanceIdentity,
 } from '@restate/features/virtual-object-instance';
+import { ServiceTarget } from '@restate/features/service-target';
 import { StateStatsCard } from '@restate/features/state-object-route';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { EmptyState } from '@restate/ui/empty-state';
@@ -17,7 +17,6 @@ import { ErrorBanner } from '@restate/ui/error';
 import { Header } from '@restate/ui/header';
 import { IconName } from '@restate/ui/icons';
 import { RestateError } from '@restate/util/errors';
-import { panelHref } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
@@ -106,12 +105,14 @@ function Component() {
           iconLabel="Virtual Object instance"
           className="min-w-0"
         >
-          <VirtualObjectInstanceTarget
-            identity={identity}
-            serviceHref={panelHref({ service })}
+          <ServiceTarget
+            scope={scope}
+            service={service}
+            serviceKey={key}
+            serviceType="VirtualObject"
+            showHandler={false}
             variant="header"
-            containerClassName="min-w-0"
-            showKeyIcon={false}
+            className="min-w-0"
           />
         </Header>
         {(lockData?.lockHolder || statsData?.supported) && (

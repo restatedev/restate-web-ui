@@ -3,10 +3,10 @@ import {
   useGetWorkflowRunStats,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
+import { ServiceTarget } from '@restate/features/service-target';
 import { StateStatsCard } from '@restate/features/state-object-route';
 import {
   workflowScopeFromSearch,
-  WorkflowRunTarget,
   type WorkflowRunIdentity,
 } from '@restate/features/workflow-run';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
@@ -15,12 +15,14 @@ import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
 import { Header } from '@restate/ui/header';
 import { IconName } from '@restate/ui/icons';
-import { panelHref } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { WorkflowDetails, workflowRunTabFromSearch } from './WorkflowDetails';
-import { WorkflowRunCard } from './WorkflowRunCard';
+import {
+  WorkflowRunCard,
+  WorkflowRunUnavailableBanner,
+} from './WorkflowRunCard';
 import { WorkflowStatsCard } from './WorkflowStatsCard';
 
 function Component() {
@@ -83,12 +85,17 @@ function Component() {
           iconLabel="Workflow"
           className="min-w-0"
         >
-          <WorkflowRunTarget
-            identity={identity}
-            serviceHref={panelHref({ service })}
+          <ServiceTarget
+            scope={scope}
+            service={service}
+            serviceKey={workflowId}
+            serviceType="Workflow"
+            showHandler={false}
             variant="header"
+            className="min-w-0"
           />
         </Header>
+        {data && !runInvocation && <WorkflowRunUnavailableBanner />}
         {(runInvocation || statsData?.supported) && (
           <CardGrid
             distribution={

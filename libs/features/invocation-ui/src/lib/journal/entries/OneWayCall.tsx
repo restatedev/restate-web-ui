@@ -1,7 +1,7 @@
 import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import { ServiceTarget } from '@restate/features/service-target';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
-import { Target } from '../../Target';
 import { InvocationId } from '../../InvocationId';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { formatDurations } from '@restate/util/intl';
@@ -52,13 +52,18 @@ export function OneWayCall({
               />
             )}
             {entry.name && ', '}
-            <Target
-              showHandler={false}
-              target={[entry.serviceName, entry.serviceKey, entry.handlerName]
-                .filter((v) => typeof v === 'string')
-                .join('/')}
-              className="mx-0.5 h-6 font-sans text-2xs not-italic **:data-target:h-6 [&_a]:my-0"
-            />
+            {entry.serviceName && entry.handlerName && (
+              <ServiceTarget
+                scope={entry.scope}
+                service={entry.serviceName}
+                serviceKey={entry.serviceKey}
+                handler={entry.handlerName}
+                showHandler={false}
+                density="compact"
+                className="mx-0.5"
+                chipClassName="font-sans text-2xs not-italic"
+              />
+            )}
           </>
         }
         chain={
