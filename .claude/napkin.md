@@ -2,6 +2,13 @@
 
 ## Skill Notes
 
+- 2026-08-03 responsive 5-4-2 card layout: At `md`, make the primary 5fr card span both grid columns and place the 4fr and 2fr cards side by side on the second row. At `xl`, restore the primary card to one column and retain the 5fr/4fr/2fr row.
+
+- 2026-08-03 Workflow VQueue table visibility: Hide VQueue ID from Workflow details → Recent invocations too. Keep Limit key visible and retain VQueue ID in the run card and response data.
+- 2026-08-03 self: I repeated the repo's prohibited `rg --files | rg` discovery pipeline while locating Workflow tests. Use a single `rg --files` with `-g` filters or a direct content `rg -l` search.
+
+- 2026-08-03 self: I passed an `rg` pattern beginning with `--` without the option terminator, then put `--glob` after the terminator on retry. Put every option before `--`, then the leading-hyphen pattern and paths: `rg --glob '*.css' -- '<pattern>' <path>`.
+
 - 2026-07-31 user correction on Workflow list Invocation width: Use a 180px maximum/default with a 160px minimum; the earlier 220px cap was still too wide.
 
 - 2026-07-31 Workflow list Invocation width: Cap the Invocation column at 220px (down from 260px) so invocation IDs stay compact and surplus width remains available to Workflow run and Status.

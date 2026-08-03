@@ -32,10 +32,6 @@ function getColumns(hasVqueues: boolean) {
     ...(hasVqueues
       ? [
           {
-            ...INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id,
-            id: 'vqueue_id' as const,
-          },
-          {
             ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
             id: 'limit_key' as const,
           },
