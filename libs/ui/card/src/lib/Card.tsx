@@ -28,8 +28,8 @@ const cardStyles = tv({
       warning: 'border-orange-200/70 before:from-orange-400/20',
       pending: 'border-amber-200/70 before:from-amber-400/20',
       info: 'border-blue-200/70 before:from-blue-400/20',
-      default: 'border-gray-200/70 before:from-gray-400/15',
-      none: 'border-gray-200 ring-1 ring-white/50 ring-inset before:hidden',
+      default: 'border-gray-200/70 before:from-white',
+      none: 'border-gray-200 ring-1 ring-white/50 ring-inset before:from-white',
     } satisfies Record<CardIntent, string>,
     span: {
       default: '',
@@ -193,7 +193,7 @@ export function CardLinkRow({
       aria-label={ariaLabel}
       className={styles.base({
         className: [
-          'group rounded-none no-underline -outline-offset-2 hover:bg-gray-50 pressed:bg-gray-100/70',
+          'group rounded-none no-underline -outline-offset-2 transition-colors hover:bg-gray-100/70 pressed:bg-gray-200/70',
           className,
         ]
           .filter(Boolean)
@@ -202,11 +202,7 @@ export function CardLinkRow({
     >
       {label && <span className={styles.label()}>{label}</span>}
       {children}
-      {label ? (
-        <span className="min-w-2" />
-      ) : (
-        <span className="min-w-2 flex-auto" />
-      )}
+      {!label && <span className="min-w-2 flex-auto" />}
       <Icon
         name={IconName.ChevronRight}
         className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 group-hover:translate-x-0.5"

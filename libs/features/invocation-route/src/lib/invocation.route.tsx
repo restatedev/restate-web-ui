@@ -169,7 +169,7 @@ function Component() {
               handler={journalAndInvocationData.target_handler_name}
               serviceType={journalAndInvocationData.target_service_ty}
               variant="header"
-              className="min-w-0 flex-[1_1_auto]"
+              className="min-w-0 flex-[0_1_auto]"
             />
           )}
           {journalAndInvocationData && (

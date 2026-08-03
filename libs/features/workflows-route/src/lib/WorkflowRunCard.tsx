@@ -55,18 +55,18 @@ export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
         </div>
       </CardRow>
       {vqueueId && (
-        <CardRow>
+        <CardRow label="VQueue ID">
           <VQueueId
             id={vqueueId}
             size="md"
             truncateInMiddle
-            className="w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
+            className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
           />
         </CardRow>
       )}
       {invocation.limit_key && (
-        <CardRow>
-          <LimitKey value={invocation.limit_key} variant="row" />
+        <CardRow label="Limit key">
+          <LimitKey value={invocation.limit_key} className="ml-1" />
         </CardRow>
       )}
     </Card>

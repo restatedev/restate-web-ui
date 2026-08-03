@@ -2,13 +2,76 @@ import type { Invocation } from '@restate/data-access/admin-api-spec';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment, SDK } from '@restate/features/deployment';
 import { GithubMetadata, hasGithubMetadata } from '@restate/features/options';
+import { Badge } from '@restate/ui/badge';
 import { CardRow } from '@restate/ui/card';
+import { Copy } from '@restate/ui/copy';
+import { Icon, IconName } from '@restate/ui/icons';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
   base: 'flex flex-col items-start text-xs',
 });
+
+function DeploymentId({ deploymentId }: { deploymentId: string }) {
+  return (
+    <Badge
+      size="sm"
+      className="ml-1 max-w-48 min-w-0 py-0 pr-0 align-middle font-mono"
+    >
+      <TruncateWithTooltip
+        tooltipContent={deploymentId}
+        copyText={deploymentId}
+        hideCopy
+      >
+        <span className="block truncate">{deploymentId}</span>
+      </TruncateWithTooltip>
+      <Copy
+        copyText={deploymentId}
+        className="ml-1 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5"
+      />
+    </Badge>
+  );
+}
+
+function MissingDeployment({
+  deploymentId,
+  variant,
+}: {
+  deploymentId: string;
+  variant: 'section' | 'card';
+}) {
+  if (variant === 'card') {
+    return (
+      <CardRow variant="hero" className="flex-wrap gap-y-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+            <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5" />
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-zinc-600">
+              Deployment not found
+            </div>
+            <div className="text-2xs text-zinc-400">
+              It may have been removed.
+            </div>
+          </div>
+        </div>
+        <span className="min-w-2 flex-auto" />
+        <DeploymentId deploymentId={deploymentId} />
+      </CardRow>
+    );
+  }
+
+  return (
+    <div className="flex h-9 w-full min-w-0 items-center px-1.5 py-1">
+      <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+        Deployment not found
+      </span>
+      <DeploymentId deploymentId={deploymentId} />
+    </div>
+  );
+}
 
 export function InvocationDeploymentCell({
   invocation,
@@ -85,7 +148,7 @@ export function InvocationDeployment({
                     deployment.sdk_version ??
                     undefined
                   }
-                  className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-[85%] font-medium text-zinc-600"
+                  className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-xs font-medium text-zinc-600"
                 />
               </CardRow>
             )}
@@ -102,18 +165,7 @@ export function InvocationDeployment({
     }
 
     if (!revision && variant === 'card') {
-      return (
-        <CardRow variant="hero">
-          <div className="flex min-w-0 items-center gap-[0.5ch] truncate font-sans text-xs text-zinc-500">
-            <div className="min-w-[5ch] flex-auto basis-[5ch] font-mono">
-              <TruncateWithTooltip copyText={deploymentId}>
-                {deploymentId}
-              </TruncateWithTooltip>
-            </div>
-            <div className="flex-auto truncate">no longer exists.</div>
-          </div>
-        </CardRow>
-      );
+      return <MissingDeployment deploymentId={deploymentId} variant="card" />;
     }
 
     return revision ? (
@@ -135,7 +187,7 @@ export function InvocationDeployment({
                   deployment.sdk_version ??
                   undefined
                 }
-                className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-[85%] font-medium text-zinc-600"
+                className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-xs font-medium text-zinc-600"
               />
             </div>
           )}
@@ -149,16 +201,7 @@ export function InvocationDeployment({
         )}
       </div>
     ) : (
-      <div className="gap-1.5 truncate px-1.5 font-mono text-xs text-zinc-600">
-        <div className="flex h-9 min-w-0 items-center gap-[0.5ch] truncate py-0.5 font-sans text-xs text-zinc-500">
-          <div className="min-w-[5ch] flex-auto basis-[5ch]">
-            <TruncateWithTooltip copyText={deploymentId}>
-              {deploymentId}
-            </TruncateWithTooltip>
-          </div>
-          <div className="flex-auto truncate">no longer exists.</div>
-        </div>
-      </div>
+      <MissingDeployment deploymentId={deploymentId} variant="section" />
     );
   }
   return null;

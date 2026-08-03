@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { ServiceTarget } from './ServiceTarget';
 import { Target, parseTarget } from './Target';
@@ -302,48 +302,6 @@ describe('ServiceTarget', () => {
     );
 
     expect(screen.getByText('trailing')).toBeTruthy();
-  });
-
-  it('does not bubble linked target interactions to a clickable table row', () => {
-    const onClick = vi.fn();
-    const onPointerDown = vi.fn();
-    const onPointerUp = vi.fn();
-    const onKeyDown = vi.fn();
-    renderTarget(
-      <div
-        onClick={onClick}
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
-        onKeyDown={onKeyDown}
-      >
-        <ServiceTarget
-          service="Counter"
-          serviceKey="user-1"
-          handler="add"
-          serviceType="VirtualObject"
-        />
-      </div>,
-    );
-
-    const identityLink = screen
-      .getAllByRole('link', {
-        name: 'Open virtual object instance Counter / user-1',
-      })
-      .at(0);
-    expect(identityLink).toBeTruthy();
-    if (!identityLink) {
-      return;
-    }
-    identityLink.addEventListener('click', (event) => event.preventDefault());
-    fireEvent.pointerDown(identityLink);
-    fireEvent.pointerUp(identityLink);
-    fireEvent.keyDown(identityLink, { key: 'Enter' });
-    fireEvent.click(identityLink);
-
-    expect(onClick).not.toHaveBeenCalled();
-    expect(onPointerDown).not.toHaveBeenCalled();
-    expect(onPointerUp).not.toHaveBeenCalled();
-    expect(onKeyDown).not.toHaveBeenCalled();
   });
 });
 

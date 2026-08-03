@@ -111,12 +111,12 @@ export function VirtualObjectLockHero({
         </div>
       </CardRow>
       {vqueueId && (
-        <CardRow>
+        <CardRow label="VQueue ID">
           <VQueueId
             id={vqueueId}
             size="md"
             truncateInMiddle
-            className="w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
+            className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
           />
         </CardRow>
       )}
@@ -128,17 +128,18 @@ export function VirtualObjectLockHero({
               handler,
             })}
             aria-label={`Open handler ${handler}`}
+            label="Handler"
           >
             <LockHandler handler={handler} />
           </CardLinkRow>
         ) : (
-          <CardRow>
+          <CardRow label="Handler">
             <LockHandler handler={handler} />
           </CardRow>
         ))}
       {limitKey && (
-        <CardRow>
-          <LimitKey value={limitKey} variant="row" />
+        <CardRow label="Limit key">
+          <LimitKey value={limitKey} className="ml-1" />
         </CardRow>
       )}
     </Card>

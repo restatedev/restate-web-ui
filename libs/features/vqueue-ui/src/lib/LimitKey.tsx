@@ -36,20 +36,9 @@ const styles = tv({
   },
 });
 
-const rowStyles = tv({
-  slots: {
-    root: 'inline-flex w-fit max-w-full min-w-0 items-center gap-1.5 align-middle font-mono text-zinc-600',
-    iconContainer:
-      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs',
-    icon: 'h-4 w-4 text-zinc-400',
-    value: 'block max-w-72 truncate text-2xs',
-    copy: '-ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
-  },
-});
-
 export interface LimitKeyProps {
   value?: string;
-  variant?: 'default' | 'table' | 'row';
+  variant?: 'default' | 'table';
   className?: string;
 }
 
@@ -59,25 +48,6 @@ export function LimitKey({
   className,
 }: LimitKeyProps) {
   if (!value) return null;
-
-  if (variant === 'row') {
-    const { root, iconContainer, icon, value: valueStyle, copy } = rowStyles();
-    return (
-      <span
-        className={root({ className })}
-        data-limit-key={value}
-        data-limit-key-variant="row"
-      >
-        <span className={iconContainer()}>
-          <Icon name={IconName.LimitKey} className={icon()} />
-        </span>
-        <TruncateWithTooltip tooltipContent={value} copyText={value} hideCopy>
-          <code className={valueStyle()}>{value}</code>
-        </TruncateWithTooltip>
-        <Copy copyText={value} className={copy()} />
-      </span>
-    );
-  }
 
   const separatorIndex = value.indexOf('/');
   const firstLevel =
