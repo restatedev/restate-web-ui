@@ -12503,6 +12503,9 @@
           "serviceKey": {
             "type": "string"
           },
+          "scope": {
+            "type": "string"
+          },
           "serviceName": {
             "type": "string"
           },
@@ -12610,6 +12613,9 @@
             "type": "string"
           },
           "serviceKey": {
+            "type": "string"
+          },
+          "scope": {
             "type": "string"
           },
           "serviceName": {

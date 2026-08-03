@@ -67,7 +67,7 @@ function oneWayCallV2(
     entryJSON?.Command?.OneWayCall?.invocation_id_completion_id;
 
   const invocationId = request?.invocation_id;
-  const { name, key, handler } = getTarget(request?.invocation_target);
+  const { name, key, handler, scope } = getTarget(request?.invocation_target);
   const headers = request?.headers;
   const parameters = request?.parameter;
 
@@ -112,6 +112,7 @@ function oneWayCallV2(
     handlerName: handler,
     serviceKey: key,
     serviceName: name,
+    scope: scope ?? undefined,
     invokeTime: entryJSON?.Command?.OneWayCall?.invoke_time
       ? new Date(entryJSON?.Command?.OneWayCall?.invoke_time).toISOString()
       : undefined,

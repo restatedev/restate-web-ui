@@ -4634,6 +4634,7 @@ export interface components {
     OneWayCallJournalEntryTypeV2: {
       invocationId?: string;
       serviceKey?: string;
+      scope?: string;
       serviceName?: string;
       handlerName?: string;
       parameters?: string;
@@ -4669,6 +4670,7 @@ export interface components {
     CallJournalEntryV2: {
       invocationId?: string;
       serviceKey?: string;
+      scope?: string;
       serviceName?: string;
       handlerName?: string;
       parameters?: string;

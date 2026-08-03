@@ -2,6 +2,30 @@
 
 ## Skill Notes
 
+- 2026-08-03 scoped journal targets: Protocol-v7 `Command: Call` and `Command: OneWayCall` rows already carry target `scope` inside both `entry_json` and `entry_lite_json` at `invocation_target.<target-kind>.scope`; `getInvocationJournalV2` already selects one of those JSON columns. Expose the field through shared `getTarget` and the two V2 converters, add optional `scope` to both V2 journal entry schemas, and normalize the server's unscoped `null` to omitted `undefined`. The shared converter automatically covers full journal, single-entry, and journal-metadata endpoints.
+
+- 2026-08-03 admin-api-spec generation: Even through Node 24, `nx create admin-api-spec` stayed silent in project-graph/plugin-worker startup for nearly two minutes while two long-running Nx dev servers owned plugin workers, then reported `Failed to start plugin worker` after interruption. When this workspace is serving concurrently, run the target's declared merge, Redocly, openapi-typescript, and formatting steps directly and separately instead of waiting on another Nx graph startup.
+
+- 2026-08-03 Invocation Details scope: Do not render Scope as a standalone row in the Invocation Details card. Continue preserving the exact optional scope, including the empty string, in Workflow run and Virtual Object instance destination links.
+
+- 2026-08-03 user correction on ServiceTarget header composition: With no service key, service and handler must have no space and read as one connected two-chip group. Scope must match the other chip height. On status-tinted headers, keep the handler distinct with a white shape border and a lighter surface instead of letting luminosity blending wash it out.
+
+- 2026-08-03 self: I passed an unquoted optional `*.spec.ts` path while locating service-protocol tests, so zsh rejected the search before `rg` ran; my first napkin patch also anchored to a moving first note despite the existing warning. Keep optional test discovery inside quoted `rg -g` filters, and anchor napkin additions only to the stable section heading.
+
+- 2026-08-03 service-target migration lint: A strict `--max-warnings=0` lint across every touched consumer surfaced six pre-existing warnings in IntrospectionCell, InvokedBySection, ServiceHandlerSection, and Call (unused values and existing non-null assertions), but no migration errors. Keep strict lint on the new library; use the repo's normal warning policy for legacy consumer files unless warning cleanup is part of the task.
+
+- 2026-08-03 self: After fixing the service-target spec declarations, I put Prettier and `tsc` in one multi-command shell request. Run formatting and every verification target as separate tool commands even when both are fast and sequential.
+
+- 2026-08-03 self: I repeated the just-recorded `rg | sed` mistake while checking target icons. For every repository search, use a single bounded `rg` command; do not add a formatting/filtering pipeline even when the output is expected to be short.
+
+- 2026-08-03 Nx generator runtime: The `pnpm` launcher is hardcoded to Node 22 even though `/Users/nik/Library/pnpm/node` is Node 24, so both normal and `NX_DAEMON=false` generator runs exited after only the engine warning and created nothing. Invoke pnpm's Corepack JS entrypoint with the Node 24 binary for Nx commands that require the repo's `node >=24` engine.
+
+- 2026-08-03 self: While checking service-type discovery for the new target component, I again piped `rg` into `head` despite repeated repo notes. Use `rg -m <count>` or tool output limits directly; reject discovery commands containing `|` before execution.
+
+- 2026-08-03 local browser QA: The in-app browser selected for `http://localhost:4300` returned `ERR_BLOCKED_BY_CLIENT` before loading the local invocations page, despite the existing IPv6 listener being healthy. Do not treat that as an application failure or switch to an undocumented browser mechanism; rely on static checks unless a supported browser session can reach the server.
+
+- 2026-08-03 self: Even with bundled Node 24, `nx lint invocation-route` remained silent for over a minute during plugin-worker startup and had to be interrupted. Prefer the direct library TypeScript check plus a directly configured ESLint invocation for focused invocation-route verification when Nx does not initialize promptly.
+
 - 2026-08-03 angled chip outline balance: The shared angled `Chip` border is simulated by directional `drop-shadow()` filters. Full 1px negative-x/negative-y offsets made the left and top read heavier at breadcrumb scale; keep right/bottom at 1px for definition and use 0.5px left/top offsets for an optically even outline while retaining the separate downward elevation shadow.
 - 2026-08-03 self: I again anchored a napkin insertion to the formerly first note even though concurrent work can prepend entries and the napkin already records this failure mode. Anchor additions only to the stable `## Skill Notes` heading.
 

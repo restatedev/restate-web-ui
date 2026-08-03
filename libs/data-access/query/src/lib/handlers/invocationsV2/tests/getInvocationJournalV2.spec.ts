@@ -4,6 +4,83 @@ import { createInvocationV2QueryTestHarness, rawInvocation } from './testUtils';
 describe('GET /query/v2/invocations/:invocationId', () => {
   const { sql, get, setResponder } = createInvocationV2QueryTestHarness();
 
+  it('includes scopes from V2 call targets in journal entries', async () => {
+    setResponder((statement) => {
+      if (statement.includes('FROM sys_invocation WHERE')) {
+        return [rawInvocation('inv-a')];
+      }
+      if (statement.includes('FROM sys_journal WHERE')) {
+        return [
+          {
+            id: 'inv-a',
+            index: 1,
+            appended_at: '2026-01-01T00:00:01.000Z',
+            entry_type: 'Command: Call',
+            version: 2,
+            entry_lite_json: JSON.stringify({
+              Command: {
+                Call: {
+                  invocation_id: 'inv-b',
+                  invocation_target: {
+                    Service: {
+                      name: 'ScopedTarget',
+                      handler: 'handle',
+                      scope: 'tenant-a',
+                    },
+                  },
+                  result_completion_id: 1,
+                },
+              },
+            }),
+          },
+          {
+            id: 'inv-a',
+            index: 2,
+            appended_at: '2026-01-01T00:00:02.000Z',
+            entry_type: 'Command: OneWayCall',
+            version: 2,
+            entry_lite_json: JSON.stringify({
+              Command: {
+                OneWayCall: {
+                  invocation_id: 'inv-c',
+                  invocation_target: {
+                    VirtualObject: {
+                      name: 'ScopedObject',
+                      key: 'object-1',
+                      handler: 'handle',
+                      scope: 'tenant-b',
+                    },
+                  },
+                },
+              },
+            }),
+          },
+        ];
+      }
+      return [];
+    });
+
+    const response = await get('/v2/invocations/inv-a');
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.journal.entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'Call',
+          serviceName: 'ScopedTarget',
+          scope: 'tenant-a',
+        }),
+        expect.objectContaining({
+          type: 'OneWayCall',
+          serviceName: 'ScopedObject',
+          serviceKey: 'object-1',
+          scope: 'tenant-b',
+        }),
+      ]),
+    );
+  });
+
   describe('VQueue', () => {
     it('looks up entry status by invocation id without a VQueue-id hint', async () => {
       vi.useFakeTimers();

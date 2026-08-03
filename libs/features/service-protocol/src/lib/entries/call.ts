@@ -89,7 +89,7 @@ function callV2(
     ? entryJSON?.Command?.Call?.request
     : entryJSON?.Command?.Call;
   const invocationId = request?.invocation_id;
-  const { name, key, handler } = getTarget(request?.invocation_target);
+  const { name, key, handler, scope } = getTarget(request?.invocation_target);
 
   const headers = request?.headers;
   const parameters = request?.parameter;
@@ -137,6 +137,7 @@ function callV2(
     handlerName: handler,
     serviceKey: key,
     serviceName: name,
+    scope: scope ?? undefined,
     value: completionEntry?.value,
   };
 }
