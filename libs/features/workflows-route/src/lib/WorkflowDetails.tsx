@@ -1,5 +1,4 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
 import { KeyedServiceState } from '@restate/features/state-object-route';
 import type { WorkflowRunIdentity } from '@restate/features/workflow-run';
 import {
@@ -8,11 +7,8 @@ import {
   ContentPanelSection,
   type ContentPanelTabs,
 } from '@restate/ui/content-panel';
-import { Icon, IconName } from '@restate/ui/icons';
 import { formatNumber } from '@restate/util/intl';
-import { getSearchParams } from '@restate/util/panel';
 import { useMemo } from 'react';
-import { useLocation } from 'react-router';
 import { WorkflowInvocationsTable } from './WorkflowInvocationsTable';
 
 type WorkflowRunDetailsResponse =
@@ -25,7 +21,7 @@ export function workflowRunTabFromSearch(
   searchParams: URLSearchParams,
 ): WorkflowRunTab {
   const tab = searchParams.get(TAB_QUERY_PARAM);
-  return tab === 'recent' || tab === 'shared' ? 'recent' : 'state';
+  return tab === 'state' ? 'state' : 'recent';
 }
 
 function RecentInvocationsTabLabel({
@@ -59,18 +55,6 @@ function RecentInvocationsTabLabel({
   );
 }
 
-function InvocationTabLabel() {
-  return (
-    <span className="flex items-center gap-1.5">
-      Invocation
-      <Icon
-        name={IconName.ChevronRight}
-        className="h-3.5 w-3.5 text-zinc-400"
-      />
-    </span>
-  );
-}
-
 export function WorkflowDetails({
   identity,
   tab,
@@ -86,34 +70,21 @@ export function WorkflowDetails({
   error: Error | null;
   isPending: boolean;
 }) {
-  const { baseUrl } = useRestateContext();
-  const location = useLocation();
-  const runInvocationId = data?.runInvocation.id;
-  const runInvocationHref = runInvocationId
-    ? `${baseUrl}/invocations/${runInvocationId}${getSearchParams(location.search)}`
-    : undefined;
   const tabs = useMemo<ContentPanelTabs>(
     () => ({
       items: [
-        { id: 'state', label: 'State' },
         {
           id: 'recent',
           label: (
             <RecentInvocationsTabLabel data={data} isPending={isPending} />
           ),
         },
-        {
-          id: 'run',
-          label: <InvocationTabLabel />,
-          menuLabel: 'Invocation',
-          href: runInvocationHref,
-          disabled: !runInvocationHref,
-        },
+        { id: 'state', label: 'State' },
       ],
-      defaultId: 'state',
+      defaultId: 'recent',
       queryParam: TAB_QUERY_PARAM,
     }),
-    [data, isPending, runInvocationHref],
+    [data, isPending],
   );
 
   return (

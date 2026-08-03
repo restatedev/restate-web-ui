@@ -158,7 +158,7 @@ export function CardRow({
   className,
   children,
 }: PropsWithChildren<{
-  label?: string;
+  label?: ReactNode;
   variant?: 'hero' | 'default';
   className?: string;
 }>) {
