@@ -8,7 +8,7 @@ export type ChipGroupVariant = 'default' | 'header';
 export type ChipSize = 'sm' | 'md' | 'lg';
 
 const BORDER_FILTER =
-  '[filter:drop-shadow(1px_0_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(-1px_0_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(0_1px_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(0_-1px_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(var(--chip-shadow,0_1px_1.5px_rgb(0_0_0/0.07)))]';
+  '[filter:drop-shadow(1px_0_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(-0.5px_0_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(0_1px_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(0_-0.5px_0_var(--chip-border-color,var(--color-zinc-200)))_drop-shadow(var(--chip-shadow,0_1px_1.5px_rgb(0_0_0/0.07)))]';
 
 const CLIP_ROOT = '[clip-path:var(--chip-clip)]';
 const CLIP_LINK = 'before:[clip-path:var(--chip-clip)]';

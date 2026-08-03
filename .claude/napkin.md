@@ -2,6 +2,11 @@
 
 ## Skill Notes
 
+- 2026-08-03 angled chip outline balance: The shared angled `Chip` border is simulated by directional `drop-shadow()` filters. Full 1px negative-x/negative-y offsets made the left and top read heavier at breadcrumb scale; keep right/bottom at 1px for definition and use 0.5px left/top offsets for an optically even outline while retaining the separate downward elevation shadow.
+- 2026-08-03 self: I again anchored a napkin insertion to the formerly first note even though concurrent work can prepend entries and the napkin already records this failure mode. Anchor additions only to the stable `## Skill Notes` heading.
+
+- 2026-08-03 Invocation metadata cards direction: replace the route's styled `Section` metadata grid with shared `Card`/`CardGrid`. Remove the embedded Virtual Object and Workflow cards, including their state/queue reads; provide a prominent exact-scope link from invocation details to the dedicated Virtual Object instance or Workflow run page instead.
+
 - 2026-08-03 responsive 5-4-2 card layout: At `md`, make the primary 5fr card span both grid columns and place the 4fr and 2fr cards side by side on the second row. At `xl`, restore the primary card to one column and retain the 5fr/4fr/2fr row.
 
 - 2026-08-03 Workflow VQueue table visibility: Hide VQueue ID from Workflow details → Recent invocations too. Keep Limit key visible and retain VQueue ID in the run card and response data.
