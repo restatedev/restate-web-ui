@@ -220,9 +220,6 @@ export async function getWorkflowRun(
     LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
   );
   const [runId, recentResult] = await Promise.all([runPromise, recentPromise]);
-  if (!runId) {
-    return notFound(`Workflow run ${service}/${workflowId} was not found.`);
-  }
   const recentInvocationsTruncated =
     recentResult.rows.length > RECENT_INVOCATION_LIMIT;
   const recentIds = recentResult.rows
@@ -230,20 +227,20 @@ export async function getWorkflowRun(
     .map((row) => String(row['id']));
   const invocationsById = await hydrateInvocations(
     this,
-    [runId, ...recentIds],
+    [...(runId ? [runId] : []), ...recentIds],
     new Date().toISOString(),
   );
-  const runInvocation = invocationsById.get(runId);
-  if (!runInvocation) {
-    return notFound(`Workflow run ${service}/${workflowId} was not found.`);
-  }
+  const runInvocation = runId ? invocationsById.get(runId) : undefined;
   const recentInvocations = recentIds.flatMap((id) => {
     const invocation = invocationsById.get(id);
     return invocation ? [invocation] : [];
   });
+  if (!runInvocation && recentInvocations.length === 0) {
+    return notFound(`Workflow run ${service}/${workflowId} was not found.`);
+  }
 
   return Response.json({
-    runInvocation,
+    ...(runInvocation ? { runInvocation } : {}),
     recentInvocations,
     recentInvocationsLimit: RECENT_INVOCATION_LIMIT,
     recentInvocationsTruncated,

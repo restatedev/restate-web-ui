@@ -2,13 +2,79 @@
 
 ## Skill Notes
 
+- 2026-08-03 missing Workflow run presentation: A missing retained run invocation is contextual page-level information, not an entity card. Render a compact full-width amber banner between the Workflow header and content tabs; reserve `WorkflowRunCard` for a real canonical run invocation.
+
+- 2026-08-03 admin-api-spec validation: Direct `redocly lint output.json` exits nonzero on the repository's existing OpenAPI 3.0/3.1 incompatibilities (196 errors, 19 warnings); the declared Nx generation target intentionally appends `|| true`. Treat the output as advisory and continue to `openapi-typescript` when the changed schema itself is structurally valid.
+
+- 2026-08-03 self: I hardcoded a stale pnpm store path (`pnpm@10.20.0/.../pnpm.cjs`) while regenerating admin API types and combined it with an unrelated source read. Resolve the installed launcher path first (or use the known project command directly), then run generation as its own command; never guess the `.pnpm` package version.
+
+- 2026-08-03 Workflow run lookup and fallback: `getWorkflowRun` intentionally runs two identity queries in parallel: one restricted to the metadata-designated Workflow handler to find the canonical `runInvocation`, and one unrestricted query for recent interactions. A shared-handler row proves the Workflow identity has activity but is not a substitute for the run invocation. If the broad query finds `sharedPaused` and the run query is empty, the run was never invoked or is no longer retained/present—not a key/scope mismatch. Keep the identity page usable by returning retained interactions with optional `runInvocation`; only 404 when neither a retained run nor any retained interaction exists.
+
+- 2026-08-03 ServiceTarget flex-boundary correction: `ServiceTarget` shrink classes were applied inside `TruncateWithTooltip`, so the tooltip's outer span—not the target root—was the actual header flex item and retained intrinsic width. Put the `data-service-target` root outside the tooltip and give the tooltip trigger container `min-w-0 flex-auto`; header callers can then use `min-w-0 flex-[1_1_auto]` and yield space before fixed status/retention/actions.
+
+- 2026-08-03 self: Feature-route spec TypeScript configs (confirmed in `invocation-route` and `workflows-route`) surface existing `globalThis` augmentation errors in `admin-api-hooks/batchHooks.ts` as soon as a new route spec imports the production dependency graph. Treat focused Vitest plus the route library typecheck as the relevant verification unless fixing that shared spec-config/global declaration is explicitly in scope; do not misattribute those errors to the new card tests.
+
+- 2026-08-03 ServiceTarget link configuration: Make link ownership explicit per visible segment (`scope`, `service`, `serviceKey`, `handler`), with automatic links retained as the default and `links={false}` available for a containing full-row link. Invocation Details Workflow/VO entity rows should be a single non-wrapping `CardLinkRow` to the run/instance, with every inner ServiceTarget segment inert so the markup never nests links.
+
+- 2026-08-03 ServiceTarget table clipping: Keep shadow/angled-edge clearance at the clipping table-cell boundary, not globally on `ServiceTarget`, because global padding changes headers, cards, and journal targets. The shared invocation target cell already uses `pr-2`; apply the same right inset to Invoked-by target content and introspection service-target cells, covering every current table placement.
+
+- 2026-08-03 ServiceTarget intrinsic sizing correction: Do not let target chips grow into unused width; the zero-basis grow weights created visibly empty Scope/service/handler surfaces in tables and headers. Use intrinsic `auto` bases with no growth. When constrained, let Scope/service/handler shrink normally and make the service key shrink twice as aggressively, preserving the intended priority without stretching any chip beyond its content.
+
+- 2026-08-03 Chip link isolation: React Aria owns the inner link's press callback, but React bubbling can be isolated reliably on the chip's existing outer `div`. Attach click, pointer-down/up, and key-down `stopPropagation` handlers to that layout-neutral chip boundary only when requested; focused Chip tests confirm the parent action stays untouched.
+
+- 2026-08-03 self: Passing a React `SyntheticEvent` handler to the shared React Aria `Link`'s `onClick` is incorrect: React Aria invokes it through press handling with a `PressEvent`, which has no `stopPropagation()` and already stops propagation by default. For row isolation around per-chip links, inspect the shared Link/RAC event contract and use a layout-neutral DOM boundary for native/React bubbling rather than assuming anchor callback event types.
+
+- 2026-08-03 ServiceTarget flattened layout correction: The nested scope/identity/link wrappers plus `flex-basis:auto` let a long service key retain most of the table width despite growth weights. Render one `ChipGroup` whose visible scope, service, key, and handler are direct flex participants with zero-basis weights 2:2:1:2. Put links on individual chips and isolate their events in shared `Chip`, so navigation remains separate without layout wrappers. In header mode, keep the group at normal blend and blend only direct non-scope chips.
+
+- 2026-08-03 self: The first flattening patch failed because Prettier had collapsed and reordered the exact class strings used as patch context. Reread the current formatted region and replace the style/function blocks in focused hunks rather than anchoring a large structural refactor to pre-format text.
+
+- 2026-08-03 ServiceTarget service icon: Keep the service cube quieter than entity and handler glyphs. Use 12px (`h-3 w-3`) for the service icon, retain 14px for Workflow/Virtual Object key icons, and retain 20px for the handler function icon.
+
+- 2026-08-03 ServiceTarget tooltip: Replace the wrapped slash-delimited target string with a compact labeled definition list. Show visible Scope, a type-aware service label (`Service`, `Virtual Object`, or `Workflow`), a type-aware key label (`Service key`, `Object key`, or `Workflow ID`), and visible Handler with `()`. Keep the copy action on the canonical raw target string.
+
+- 2026-08-03 ServiceTarget leading icon spacing: Angled left edges made service and service-key icons feel cramped. Increase only their left segment padding from 6px to 8px (`pl-2`); retain the key's 6px right padding.
+
+- 2026-08-03 ServiceTarget weighted flex allocation: Do not cap scope, service, key, or handler widths inside `ServiceTarget`. Start from each segment's intrinsic width (`flex-basis:auto`), keep all segments shrinkable, and distribute spare width with growth weights Scope 2, service 2, key 1, handler 2. Because service/key share one link wrapper, give nested wrapper/group totals matching the sum of their child weights. Fill the Target table cell width so those weights can operate; keep text truncation and fixed icons/badges.
+
+- 2026-08-03 ServiceTarget table inset: Target table cells clip overflow, while angled/right-edge shadows extend beyond the target's layout box. Give the `target` cell `pr-2` so the final chip stays inside that clipping boundary. Keep icons and the Scope badge `shrink-0`, while text truncates.
+
+- 2026-08-03 ServiceTarget handler label: Render handler names as calls with a visible `()` suffix, but keep raw handler names in panel URLs, aria labels, and copied target identities. Give the handler segment slightly more breathing room on the right (`pr-2`).
+
+- 2026-08-03 self: The first compact-height test failed because ServiceTarget applied its resolved `chip()` slot to service/key/handler chips but passed only the caller's raw `chipClassName` into nested `Scope`. Always pass the resolved shared chip class into `Scope` so density and future sizing variants affect every segment equally.
+
+- 2026-08-03 compact ServiceTarget height: Angled chip outlines use external drop shadows and can look taller than a straight standalone chip even when both layout boxes are 24px. For compact journal targets, keep the outer target at 24px, use 22px chip bodies whenever visible joins require angled outlines, and retain a 24px body for a standalone straight chip. Do not change header/card sizing.
+
+- 2026-08-03 self: I attempted screenshot pixel inspection with the system Python assuming Pillow was available; it is not installed. Use the bundled workspace runtime or existing image tools only when pixel measurements are truly needed, and do not add a dependency for a small CSS diagnosis.
+
+- 2026-08-03 ServiceTarget outer-edge rule: The leftmost and rightmost visible chip edges must always be straight; angled edges are only connectors between visible segments. In particular, a keyed target with `showHandler={false}` ends the key chip with a straight right edge. If trailing content follows, angle the preceding key or handler because it is then internal.
+
+- 2026-08-03 ServiceTarget handler icon refinement: The 16px function glyph was still too small. Use a 20px icon (`h-5 w-5`) with `-mr-1` so it reads clearly without increasing the visual gap before the handler name.
+
+- 2026-08-03 ServiceTarget entity-only reuse: Dedicated Workflow/Virtual Object headers and invocation-detail entity rows should call `ServiceTarget` directly with explicit `serviceType` and `showHandler={false}`. Allow omitted `handler` in that mode, build tooltip/copy text from visible segments only, preserve empty scope in entity URLs, and do not wrap its generated link in another clickable card row.
+
+- 2026-08-03 self: A broad multi-file migration patch failed atomically because its final ServiceTarget context did not exactly match the current JSX. Apply focused patches per file after rereading the immediate edit region; do not couple independent route migrations to a large component refactor hunk.
+
+- 2026-08-03 self: Follow-up discovery guessed a nonexistent `admin-api-spec/src/lib/generated` directory and used an unescaped literal `{false}` in an `rg` regex. Confirm generated-file paths with `rg --files`, and use fixed-string search (`rg -F`) for JSX snippets containing braces.
+
+- 2026-08-03 self: A combined napkin/skill read exceeded the tool output budget, and SDK detection included a nonexistent `packages` path. Read long required sources in explicitly sized chunks and limit discovery paths to roots confirmed by `rg --files`.
+
+- 2026-08-03 ServiceTarget adoption direction: Use the structured `ServiceTarget` API (`scope`, `service`, optional `serviceKey`, `handler`, and `serviceType`) directly in Workflow/Virtual Object headers and invocation-detail cards. Keep the string-parsing `Target` wrapper only as temporary compatibility for unmigrated call sites.
+
+- 2026-08-03 ServiceTarget table interaction: The invocations table owns a React Aria row action, so linked target groups must stop pointer, click, and keyboard propagation before it reaches the row. Keep the actual `ChipGroup` link and href intact; isolate only the bubbling interaction at a layout-neutral wrapper.
+
+- 2026-08-03 ServiceTarget handler icon: Use the former target's compact handler treatment—a 16px Function icon with `-mr-0.5`—so the glyph is more legible while sitting closer to the italic handler name.
+
+- 2026-08-03 ServiceTarget handler spacing: Do not add an outer layout gap before the keyed handler. The adjacent right-angled key and left-angled handler silhouettes already create the intended visual separation; `gap-x-1.5` makes the handler visibly farther away than Scope/service/key.
+
+- 2026-08-03 ServiceTarget header direction: Match the established Workflow/Virtual Object header geometry, but keep visible Scope in its own adjacent header-sized group with normal blending so its zinc surface stays neutral on status backgrounds. Keep service/key in the blended identity group, use an angled right edge on the key before the separate handler, and keep unkeyed service/handler connected.
+
+- 2026-08-03 ServiceTarget delimiters: The angled chip geometry expresses target segmentation; do not render visible `/` characters in the service-key or handler chips.
+
 - 2026-08-03 scoped journal targets: Protocol-v7 `Command: Call` and `Command: OneWayCall` rows already carry target `scope` inside both `entry_json` and `entry_lite_json` at `invocation_target.<target-kind>.scope`; `getInvocationJournalV2` already selects one of those JSON columns. Expose the field through shared `getTarget` and the two V2 converters, add optional `scope` to both V2 journal entry schemas, and normalize the server's unscoped `null` to omitted `undefined`. The shared converter automatically covers full journal, single-entry, and journal-metadata endpoints.
 
 - 2026-08-03 admin-api-spec generation: Even through Node 24, `nx create admin-api-spec` stayed silent in project-graph/plugin-worker startup for nearly two minutes while two long-running Nx dev servers owned plugin workers, then reported `Failed to start plugin worker` after interruption. When this workspace is serving concurrently, run the target's declared merge, Redocly, openapi-typescript, and formatting steps directly and separately instead of waiting on another Nx graph startup.
 
 - 2026-08-03 Invocation Details scope: Do not render Scope as a standalone row in the Invocation Details card. Continue preserving the exact optional scope, including the empty string, in Workflow run and Virtual Object instance destination links.
-
-- 2026-08-03 user correction on ServiceTarget header composition: With no service key, service and handler must have no space and read as one connected two-chip group. Scope must match the other chip height. On status-tinted headers, keep the handler distinct with a white shape border and a lighter surface instead of letting luminosity blending wash it out.
 
 - 2026-08-03 self: I passed an unquoted optional `*.spec.ts` path while locating service-protocol tests, so zsh rejected the search before `rg` ran; my first napkin patch also anchored to a moving first note despite the existing warning. Keep optional test discovery inside quoted `rg -g` filters, and anchor napkin additions only to the stable section heading.
 
@@ -1496,3 +1562,5 @@
 - 2026-07-31 | self | I piped `rg --files` into a second `rg` while inspecting query-library configs, despite the repo rule against chained shell commands. | Use one `rg --files` glob invocation or separate tool calls; do not compose independent repository reads with a pipe.
 - 2026-08-03 | user correction | I first put Workflow timing arithmetic in SQL, then moved it to the client by changing the stats API. | Keep the existing stats response and UI simple. Let `/stats` accept the known run invocation ID and point-read `sys_vqueue_entry_status`; when omitted, resolve the invocation ID from the Workflow identity first, then run the stats queries. Calculate durations in the TypeScript handler.
 - 2026-08-03 | self | A broad patch context placed the new Workflow `invocationId` parameter on the details route and schema instead of `/stats`. | After editing adjacent near-identical route/schema blocks, inspect both endpoints immediately and anchor patches on the full path or handler name.
+- 2026-08-03 | user correction | I interpreted the requested target-chip refinement incorrectly and changed its composition and header API. | When the user rejects a visual direction and asks for a revert, restore the exact prior implementation before discussing or attempting another interpretation.
+- 2026-08-03 | user visual preference | A missing retained Workflow run was rendered as an entity card, leaving most of the card grid empty and giving contextual information too much structural weight. | Render the unavailable-run explanation as a compact full-width page banner between the Workflow header and tabs; reserve `WorkflowRunCard` for a real canonical run invocation.

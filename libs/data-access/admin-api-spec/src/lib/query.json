@@ -5200,14 +5200,14 @@
       "WorkflowRunDetailsResponse": {
         "type": "object",
         "required": [
-          "runInvocation",
           "recentInvocations",
           "recentInvocationsLimit",
           "recentInvocationsTruncated"
         ],
         "properties": {
           "runInvocation": {
-            "$ref": "#/components/schemas/InvocationV2"
+            "allOf": [{ "$ref": "#/components/schemas/InvocationV2" }],
+            "description": "The retained canonical run invocation. Omitted when the Workflow identity has retained interactions but its run invocation is unavailable."
           },
           "recentInvocations": {
             "type": "array",

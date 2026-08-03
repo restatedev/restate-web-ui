@@ -338,13 +338,13 @@ describe('Workflow query handlers', () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it('does not promote a recent invocation when the run disappears', async () => {
+  it('loads retained interactions when the run invocation is unavailable', async () => {
     const { context } = createContext((sql) => {
       if (
         sql.includes('FROM sys_invocation_status') &&
         sql.includes("target_handler_name = 'run'")
       ) {
-        return [{ id: 'inv_run' }];
+        return [];
       }
       if (sql.includes('FROM sys_invocation_status')) {
         return [{ id: 'inv_shared' }];
@@ -354,6 +354,25 @@ describe('Workflow query handlers', () => {
       }
       return [];
     }, new Set());
+
+    const response = await getWorkflowRun.call(
+      context,
+      'OrderWorkflow',
+      'order-1',
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).not.toHaveProperty('runInvocation');
+    expect(body).toMatchObject({
+      recentInvocations: [{ id: 'inv_shared' }],
+      recentInvocationsLimit: 50,
+      recentInvocationsTruncated: false,
+    });
+  });
+
+  it('returns not found when the Workflow has no retained invocations', async () => {
+    const { context } = createContext(() => [], new Set());
 
     const response = await getWorkflowRun.call(
       context,

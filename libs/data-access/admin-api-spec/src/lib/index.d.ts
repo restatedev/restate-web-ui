@@ -3187,7 +3187,8 @@ export interface components {
       truncated: boolean;
     };
     WorkflowRunDetailsResponse: {
-      runInvocation: components['schemas']['InvocationV2'];
+      /** @description The retained canonical run invocation. Omitted when the Workflow identity has retained interactions but its run invocation is unavailable. */
+      runInvocation?: components['schemas']['InvocationV2'];
       /** @description Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls. */
       recentInvocations: components['schemas']['InvocationV2'][];
       recentInvocationsLimit: number;
