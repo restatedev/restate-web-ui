@@ -5,7 +5,7 @@ import {
   InvocationId,
   Status,
 } from '@restate/features/invocation-ui';
-import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
+import { LimitKey } from '@restate/features/vqueue-ui';
 import { Card, CardHeader, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
 
@@ -33,8 +33,6 @@ export function WorkflowRunUnavailableBanner() {
 }
 
 export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
-  const vqueueId = invocation.vqueue?.vqueue_id ?? invocation.vqueue_id;
-
   return (
     <Card intent={getInvocationStatusIntent(invocation)}>
       <CardHeader
@@ -54,16 +52,17 @@ export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
           <Status invocation={invocation} mini="md" timeline={false} />
         </div>
       </CardRow>
-      {vqueueId && (
+      {/* TODO: Bring the VQueue ID row back when it is useful on Workflow run cards.
+      {(invocation.vqueue?.vqueue_id ?? invocation.vqueue_id) && (
         <CardRow label="VQueue ID">
           <VQueueId
-            id={vqueueId}
+            id={invocation.vqueue?.vqueue_id ?? invocation.vqueue_id}
             size="md"
             truncateInMiddle
             className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
           />
         </CardRow>
-      )}
+      )} */}
       {invocation.limit_key && (
         <CardRow label="Limit key">
           <LimitKey value={invocation.limit_key} className="ml-1" />

@@ -31,7 +31,7 @@ const styles = tv({
     trailingChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
     chip: 'max-w-full text-xs font-medium text-zinc-600',
     service: 'min-w-0 bg-white pl-2 font-medium text-zinc-600',
-    key: 'min-w-0 bg-zinc-50 pr-1.5 pl-2 font-mono text-[90%] text-zinc-500',
+    key: 'min-w-0 bg-zinc-50 pr-2.5 pl-2 font-mono text-[90%] text-zinc-500',
     handler:
       'min-w-0 bg-zinc-100 pr-2 pl-1 font-medium text-zinc-600/80 italic',
     trailing: 'min-w-0 bg-zinc-100 px-1.5 text-zinc-600/80',

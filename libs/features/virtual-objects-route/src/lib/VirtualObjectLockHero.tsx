@@ -6,7 +6,7 @@ import {
   InvocationId,
   Status,
 } from '@restate/features/invocation-ui';
-import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
+import { LimitKey } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -49,7 +49,6 @@ export function VirtualObjectLockHero({
   const status = lockHolder.status ?? lockHolder.stage;
   const intent = getInvocationStatusIntent(lockHolder.invocation, status);
   const invocation = lockHolder.invocation;
-  const vqueueId = lockHolder.vqueueId ?? invocation?.vqueue_id;
   const handler = invocation?.target_handler_name;
   const limitKey = lockHolder.limitKey ?? invocation?.limit_key;
   return (
@@ -110,16 +109,17 @@ export function VirtualObjectLockHero({
           ) : null}
         </div>
       </CardRow>
-      {vqueueId && (
+      {/* TODO: Bring the VQueue ID row back when it is useful on Virtual Object lock cards.
+      {(lockHolder.vqueueId ?? invocation?.vqueue_id) && (
         <CardRow label="VQueue ID">
           <VQueueId
-            id={vqueueId}
+            id={lockHolder.vqueueId ?? invocation?.vqueue_id}
             size="md"
             truncateInMiddle
             className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
           />
         </CardRow>
-      )}
+      )} */}
       {handler &&
         (invocation?.target_service_name ? (
           <CardLinkRow
