@@ -1983,6 +1983,80 @@
         }
       }
     },
+    "/query/workflows/{service}/runs/{workflowId}/stats": {
+      "get": {
+        "tags": ["query-workflows"],
+        "summary": "Get Workflow run statistics",
+        "description": "Returns exact run timing, pending promise count, and latest interaction activity for the exact service, Workflow id, and optional scope identity. Statistics require Virtual Queues.",
+        "operationId": "get_workflow_run_stats",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Workflow service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "workflowId",
+            "in": "path",
+            "description": "Workflow id",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Workflow scope. Omit for an unscoped run.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistics for the Workflow run identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowRunStatsResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Workflow service or run was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/virtual-objects/{service}/instances/{key}/lock": {
       "get": {
         "tags": ["query-virtual-objects"],
@@ -5139,6 +5213,44 @@
           "recentInvocationsTruncated": { "type": "boolean" }
         }
       },
+      "WorkflowRunStatsResponse": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "False when the Restate server does not support Virtual Queues."
+          },
+          "duration": {
+            "type": "string",
+            "format": "duration",
+            "description": "Elapsed time from the run's first start until completion, or until now while it is still running."
+          },
+          "queueDuration": {
+            "type": "string",
+            "format": "duration",
+            "description": "Final time between first becoming runnable and the first start. Present after the run has started."
+          },
+          "waitingToStartDuration": {
+            "type": "string",
+            "format": "duration",
+            "description": "Live time spent runnable but not yet started. Present only before the first start."
+          },
+          "pendingPromiseCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of unresolved durable promises belonging to this Workflow run."
+          },
+          "lastInteractionAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation time of the most recent invocation of a non-run Workflow handler."
+          },
+          "state": {
+            "$ref": "#/components/schemas/KeyedServiceStatsState"
+          }
+        }
+      },
       "VirtualObjectLockHolder": {
         "allOf": [
           { "$ref": "#/components/schemas/VirtualObjectInboxEntry" },
@@ -5305,14 +5417,14 @@
           "lastFinishedAt": { "type": "string", "format": "date-time" }
         }
       },
-      "VirtualObjectStatsState": {
+      "KeyedServiceStatsState": {
         "type": "object",
         "required": ["numKeys", "totalSize"],
         "properties": {
           "numKeys": {
             "type": "integer",
             "minimum": 0,
-            "description": "Number of state keys stored by this Virtual Object instance."
+            "description": "Number of state keys stored by this keyed service instance."
           },
           "totalSize": {
             "type": "integer",
@@ -5347,7 +5459,7 @@
             "$ref": "#/components/schemas/VirtualObjectStatsActivity"
           },
           "state": {
-            "$ref": "#/components/schemas/VirtualObjectStatsState"
+            "$ref": "#/components/schemas/KeyedServiceStatsState"
           }
         }
       },

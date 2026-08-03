@@ -1011,6 +1011,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/workflows/{service}/runs/{workflowId}/stats': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Workflow run statistics
+     * @description Returns exact run timing, pending promise count, and latest interaction activity for the exact service, Workflow id, and optional scope identity. Statistics require Virtual Queues.
+     */
+    get: operations['get_workflow_run_stats'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/virtual-objects/{service}/instances/{key}/lock': {
     parameters: {
       query?: never;
@@ -3173,6 +3193,33 @@ export interface components {
       recentInvocationsLimit: number;
       recentInvocationsTruncated: boolean;
     };
+    WorkflowRunStatsResponse: {
+      /** @description False when the Restate server does not support Virtual Queues. */
+      supported: boolean;
+      /**
+       * Format: duration
+       * @description Elapsed time from the run's first start until completion, or until now while it is still running.
+       */
+      duration?: string;
+      /**
+       * Format: duration
+       * @description Final time between first becoming runnable and the first start. Present after the run has started.
+       */
+      queueDuration?: string;
+      /**
+       * Format: duration
+       * @description Live time spent runnable but not yet started. Present only before the first start.
+       */
+      waitingToStartDuration?: string;
+      /** @description Number of unresolved durable promises belonging to this Workflow run. */
+      pendingPromiseCount?: number;
+      /**
+       * Format: date-time
+       * @description Creation time of the most recent invocation of a non-run Workflow handler.
+       */
+      lastInteractionAt?: string;
+      state?: components['schemas']['KeyedServiceStatsState'];
+    };
     VirtualObjectLockHolder: components['schemas']['VirtualObjectInboxEntry'] & {
       /** Format: date-time */
       acquiredAt?: string;
@@ -3267,8 +3314,8 @@ export interface components {
       /** Format: date-time */
       lastFinishedAt?: string;
     };
-    VirtualObjectStatsState: {
-      /** @description Number of state keys stored by this Virtual Object instance. */
+    KeyedServiceStatsState: {
+      /** @description Number of state keys stored by this keyed service instance. */
       numKeys: number;
       /** @description Total state value size in bytes. State-key bytes and storage overhead are excluded. */
       totalSize: number;
@@ -3281,7 +3328,7 @@ export interface components {
       numInbox?: number;
       averageBlockedDurations?: components['schemas']['VirtualObjectStatsBlockedDurationRange'][];
       activity?: components['schemas']['VirtualObjectStatsActivity'];
-      state?: components['schemas']['VirtualObjectStatsState'];
+      state?: components['schemas']['KeyedServiceStatsState'];
     };
     VirtualObjectInboxSnapshotChangedResponse: {
       message: string;
@@ -8133,6 +8180,59 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description The Workflow service or run was not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_workflow_run_stats: {
+    parameters: {
+      query?: {
+        /** @description Workflow scope. Omit for an unscoped run. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Workflow service name */
+        service: string;
+        /** @description Workflow id */
+        workflowId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Statistics for the Workflow run identity */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['WorkflowRunStatsResponse'];
         };
       };
       /** @description The Workflow service or run was not found. */

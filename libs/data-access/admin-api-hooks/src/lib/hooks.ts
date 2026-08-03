@@ -2164,6 +2164,48 @@ export function useGetWorkflowRun(
   };
 }
 
+export function useGetWorkflowRunStats(
+  serviceName: string,
+  workflowId: string,
+  scope?: string,
+  options?: HookQueryOptions<
+    '/query/workflows/{service}/runs/{workflowId}/stats',
+    'get'
+  >,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi(
+    'query',
+    '/query/workflows/{service}/runs/{workflowId}/stats',
+    'get',
+    {
+      baseUrl,
+      resolvedPath: `/query/workflows/${encodeURIComponent(serviceName)}/runs/${encodeURIComponent(workflowId)}/stats`,
+      parameters: {
+        path: { service: serviceName, workflowId },
+        query: { scope },
+      },
+    },
+  );
+
+  const results = useQuery({
+    ...queryOptions,
+    ...options,
+    enabled:
+      Boolean(serviceName) &&
+      Boolean(workflowId) &&
+      options?.enabled !== false &&
+      enabled,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+    isPending: results.isPending || !enabled,
+  };
+}
+
 export function useGetVirtualObjectLock(
   serviceName: string,
   key: string,

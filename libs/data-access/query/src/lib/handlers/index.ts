@@ -66,6 +66,7 @@ export {
 } from './listVirtualObjectInstances';
 export {
   getWorkflowRun,
+  getWorkflowRunStats,
   listWorkflowRuns,
   type ListWorkflowRunsArgs,
 } from './workflows';
