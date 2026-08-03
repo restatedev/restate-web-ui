@@ -349,12 +349,14 @@ export function getTarget(object: any): {
   name?: string;
   key?: string;
   handler?: string;
+  scope?: string | null;
 } {
   if (typeof object === 'object' && object) {
     return Object.values(object)[0] as {
       name?: string;
       key?: string;
       handler?: string;
+      scope?: string | null;
     };
   }
   return {};

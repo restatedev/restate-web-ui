@@ -71,7 +71,7 @@ export function LimitKey({
       >
         <Chip className={chip()}>
           <ChipSegment className={segment()}>
-            <Icon name={IconName.ListTree} className={icon()} />
+            <Icon name={IconName.LimitKey} className={icon()} />
             <TruncateTooltipTrigger>{firstLevel}</TruncateTooltipTrigger>
             {secondLevel === undefined && copyButton}
           </ChipSegment>

@@ -130,7 +130,10 @@ export function convertInvocation(
   };
 }
 
-function durationBetween(start: string, end: string): string | undefined {
+export function durationBetween(
+  start: string,
+  end: string,
+): string | undefined {
   const startMs = Date.parse(start);
   const endMs = Date.parse(end);
   if (Number.isNaN(startMs) || Number.isNaN(endMs)) return undefined;

@@ -94,6 +94,9 @@
       "@restate/features/service-protocol": [
         "libs/features/service-protocol/src/index.ts"
       ],
+      "@restate/features/service-target": [
+        "libs/features/service-target/src/index.ts"
+      ],
       "@restate/features/state-object-route": [
         "libs/features/state-object-route/src/index.ts"
       ],
@@ -129,6 +132,7 @@
       "@restate/ui/badge": ["libs/ui/badge/src/index.ts"],
       "@restate/ui/breadcrumbs": ["libs/ui/breadcrumbs/src/index.ts"],
       "@restate/ui/button": ["libs/ui/button/src/index.ts"],
+      "@restate/ui/card": ["libs/ui/card/src/index.ts"],
       "@restate/ui/charts": ["libs/ui/charts/src/index.ts"],
       "@restate/ui/chip": ["libs/ui/chip/src/index.ts"],
       "@restate/ui/code": ["libs/ui/code/src/index.ts"],
@@ -143,6 +147,7 @@
       "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
       "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
       "@restate/ui/grid-list": ["libs/ui/grid-list/src/index.ts"],
+      "@restate/ui/header": ["libs/ui/header/src/index.ts"],
       "@restate/ui/icons": ["libs/ui/icons/src/index.ts"],
       "@restate/ui/issue-banner": ["libs/ui/issue-banner/src/index.ts"],
       "@restate/ui/keyboard": ["libs/ui/keyboard/src/index.ts"],

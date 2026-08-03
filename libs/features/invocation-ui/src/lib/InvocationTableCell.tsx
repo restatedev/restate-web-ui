@@ -19,9 +19,9 @@ import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { panelHref } from '@restate/util/panel';
 import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
+import { ServiceTarget, Target } from '@restate/features/service-target';
 import { InvocationId } from './InvocationId';
 import { InvocationStatusBadge, Status } from './Status';
-import { Target } from './Target';
 
 export const INVOCATION_TABLE_COLUMN_CONFIG = {
   id: { name: 'Id', defaultWidth: 170 },
@@ -41,7 +41,10 @@ export interface InvocationTableRow {
   vqueue_id?: string;
   target?: string;
   target_service_name?: string;
+  target_service_key?: string;
   target_handler_name?: string;
+  target_service_ty?: Invocation['target_service_ty'];
+  scope?: string;
   limit_key?: string;
   stage?: string;
   status?: string;
@@ -67,6 +70,12 @@ const invocationIdStyles = tv({
 
 const invocationTableCellStyles = tv({
   base: 'align-top',
+  variants: {
+    isTarget: {
+      true: 'pr-2',
+      false: '',
+    },
+  },
 });
 
 function InvocationTableId({ id }: { id: string }) {
@@ -120,7 +129,7 @@ function InvocationTableStatus({
   return <Badge>{fallbackStatusLabel(row.status)}</Badge>;
 }
 
-function InvocationTableHandler({
+export function InvocationHandler({
   service,
   handler,
 }: {
@@ -200,10 +209,21 @@ function visibleCellContent(
         />
       ) : null;
     case 'target':
-      return row.target ? <Target target={row.target} /> : null;
+      return row.target_service_name && row.target_handler_name ? (
+        <ServiceTarget
+          scope={row.scope}
+          service={row.target_service_name}
+          serviceKey={row.target_service_key}
+          handler={row.target_handler_name}
+          serviceType={row.target_service_ty}
+          className="w-full"
+        />
+      ) : row.target ? (
+        <Target target={row.target} className="w-full" />
+      ) : null;
     case 'target_handler_name':
       return (
-        <InvocationTableHandler
+        <InvocationHandler
           service={row.target_service_name}
           handler={row.target_handler_name}
         />
@@ -232,7 +252,12 @@ export function InvocationTableCell({
 }) {
   const value = row[column];
   return (
-    <Cell className={invocationTableCellStyles({ className })}>
+    <Cell
+      className={invocationTableCellStyles({
+        isTarget: column === 'target',
+        className,
+      })}
+    >
       {isVisible ? (
         visibleCellContent(column, row, invocation)
       ) : (

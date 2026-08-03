@@ -20,14 +20,14 @@ import type { BreadcrumbComponentProps, TrailCrumb } from './types';
 
 const styles = tv({
   slots: {
-    nav: 'flex max-w-full min-w-0 flex-wrap items-center gap-x-0 gap-y-1 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
-    chip: 'max-w-44 bg-gray-50 text-zinc-500',
+    nav: 'ml-[4.25rem] flex max-w-full min-w-0 flex-wrap items-center gap-x-0 gap-y-1 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
+    chip: 'max-w-44 bg-gray-50 text-xs font-normal text-zinc-600',
     current:
-      'flex max-w-full min-w-0 items-center gap-1 pl-1 text-xs font-medium text-zinc-700 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
-    icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+      'flex max-w-full min-w-0 items-center gap-0.5 pl-1 text-xs font-normal text-zinc-500 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
+    icon: 'h-3 w-3 shrink-0 text-zinc-400',
     label: 'min-w-0 truncate',
-    ellipsisButton: 'h-full rounded-none px-1.5 py-0 text-zinc-500',
-    menuItem: 'flex max-w-60 min-w-0 items-center gap-1.5 text-xs',
+    ellipsisButton: 'h-full rounded-none px-1 py-0 text-zinc-500',
+    menuItem: 'flex max-w-60 min-w-0 items-center gap-1 text-xs font-normal',
   },
   variants: {
     hiddenOnMobile: {
@@ -50,7 +50,7 @@ const styles = tv({
 });
 
 const chipStyles = tv({
-  base: '',
+  base: 'px-2',
   variants: {
     isList: {
       true: 'pl-1',
@@ -85,7 +85,12 @@ function CollapsedCrumbs({
   return (
     <Dropdown>
       <DropdownTrigger>
-        <Chip left="angled" right="angled" className={chip({ className })}>
+        <Chip
+          left="angled"
+          right="angled"
+          size="sm"
+          className={chip({ className })}
+        >
           <ChipSegment className="p-0">
             <Button
               variant="icon"
@@ -146,6 +151,7 @@ export function Breadcrumbs({ className }: { className?: string }) {
           <Chip
             left={index === 0 ? 'straight' : 'angled'}
             right="angled"
+            size="sm"
             href={crumb.href}
             aria-label={crumb.label}
             className={chip({

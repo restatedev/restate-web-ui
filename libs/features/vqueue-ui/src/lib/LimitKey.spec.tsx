@@ -14,7 +14,7 @@ describe('LimitKey', () => {
       ),
     ).toEqual(['team', 'customer-1']);
     expect(container.querySelectorAll('[data-chip]')).toHaveLength(1);
-    expect(container.querySelector('.lucide-list-tree')).toBeTruthy();
+    expect(container.querySelector('[data-limit-key-icon]')).toBeTruthy();
     expect(
       container
         .querySelector('[data-chip-segment-inner]')

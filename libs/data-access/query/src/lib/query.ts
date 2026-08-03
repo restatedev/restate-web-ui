@@ -67,11 +67,13 @@ import {
   type ListVirtualObjectInstancesArgs,
   getVirtualObjectLock,
   getVirtualObjectInbox,
-  type VirtualObjectInboxMode,
+  getVirtualObjectInvocations,
+  getVirtualObjectStats,
   getVqueueInbox,
   listWorkflowRuns,
   type ListWorkflowRunsArgs,
   getWorkflowRun,
+  getWorkflowRunStats,
 } from './handlers';
 import { getVersion } from './getVersion';
 import { getFeatures } from './getFeatures';
@@ -204,7 +206,16 @@ type BoundHandlers = {
   getVirtualObjectInbox: (
     service: string,
     key: string,
-    mode: VirtualObjectInboxMode,
+    scope?: string,
+  ) => Promise<Response>;
+  getVirtualObjectInvocations: (
+    service: string,
+    key: string,
+    scope?: string,
+  ) => Promise<Response>;
+  getVirtualObjectStats: (
+    service: string,
+    key: string,
     scope?: string,
   ) => Promise<Response>;
   listWorkflowRuns: (
@@ -215,6 +226,12 @@ type BoundHandlers = {
     service: string,
     workflowId: string,
     scope?: string,
+  ) => Promise<Response>;
+  getWorkflowRunStats: (
+    service: string,
+    workflowId: string,
+    scope?: string,
+    invocationId?: string,
   ) => Promise<Response>;
 };
 
@@ -269,8 +286,11 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     listVirtualObjectInstances: listVirtualObjectInstances.bind(context),
     getVirtualObjectLock: getVirtualObjectLock.bind(context),
     getVirtualObjectInbox: getVirtualObjectInbox.bind(context),
+    getVirtualObjectInvocations: getVirtualObjectInvocations.bind(context),
+    getVirtualObjectStats: getVirtualObjectStats.bind(context),
     listWorkflowRuns: listWorkflowRuns.bind(context),
     getWorkflowRun: getWorkflowRun.bind(context),
+    getWorkflowRunStats: getWorkflowRunStats.bind(context),
   };
 }
 
@@ -425,6 +445,14 @@ export const routes = createRoutes('/query', {
       method: 'GET',
       pattern: '/virtual-objects/:service/instances/:key/inbox',
     },
+    invocations: {
+      method: 'GET',
+      pattern: '/virtual-objects/:service/instances/:key/invocations',
+    },
+    stats: {
+      method: 'GET',
+      pattern: '/virtual-objects/:service/instances/:key/stats',
+    },
     queue: {
       method: 'GET',
       pattern: '/virtualObjects/:name/keys/:key/queue',
@@ -436,6 +464,10 @@ export const routes = createRoutes('/query', {
       get: {
         method: 'GET',
         pattern: '/workflows/:service/runs/:workflowId',
+      },
+      stats: {
+        method: 'GET',
+        pattern: '/workflows/:service/runs/:workflowId/stats',
       },
     },
   },
@@ -674,7 +706,26 @@ router.map(routes, {
         return getVirtualObjectInbox(
           ctx.params.service,
           ctx.params.key,
-          ctx.url.searchParams.get('mode') as VirtualObjectInboxMode,
+          ctx.url.searchParams.has('scope')
+            ? String(ctx.url.searchParams.get('scope'))
+            : undefined,
+        );
+      },
+      async invocations(ctx) {
+        const { getVirtualObjectInvocations } = ctx.storage.get(handlersKey);
+        return getVirtualObjectInvocations(
+          ctx.params.service,
+          ctx.params.key,
+          ctx.url.searchParams.has('scope')
+            ? String(ctx.url.searchParams.get('scope'))
+            : undefined,
+        );
+      },
+      async stats(ctx) {
+        const { getVirtualObjectStats } = ctx.storage.get(handlersKey);
+        return getVirtualObjectStats(
+          ctx.params.service,
+          ctx.params.key,
           ctx.url.searchParams.has('scope')
             ? String(ctx.url.searchParams.get('scope'))
             : undefined,
@@ -707,6 +758,17 @@ router.map(routes, {
             ctx.url.searchParams.has('scope')
               ? String(ctx.url.searchParams.get('scope'))
               : undefined,
+          );
+        },
+        async stats(ctx) {
+          const { getWorkflowRunStats } = ctx.storage.get(handlersKey);
+          return getWorkflowRunStats(
+            ctx.params.service,
+            ctx.params.workflowId,
+            ctx.url.searchParams.has('scope')
+              ? String(ctx.url.searchParams.get('scope'))
+              : undefined,
+            ctx.url.searchParams.get('invocationId') || undefined,
           );
         },
       },

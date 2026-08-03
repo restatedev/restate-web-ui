@@ -48,9 +48,9 @@ import {
   InvocationTableCell,
   InvocationTableDate,
   isInvocationTableColumnKey,
-  Target,
   type InvocationTableColumnKey,
 } from '@restate/features/invocation-ui';
+import { Target } from '@restate/features/service-target';
 import { Scope } from '@restate/features/vqueue-ui';
 
 function withDate({
@@ -200,7 +200,7 @@ function InvokedBy({ invocation }: CellProps) {
     );
   } else if (invocation.invoked_by_target) {
     return (
-      <div className="flex w-full flex-col items-start gap-0.5">
+      <div className="flex w-full flex-col items-start gap-0.5 pr-2">
         <Target target={invocation.invoked_by_target} />
         {invocation.invoked_by_id && (
           <InvocationId

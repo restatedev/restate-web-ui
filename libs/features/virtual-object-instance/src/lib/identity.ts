@@ -37,7 +37,5 @@ export function formatVirtualObjectInstanceIdentity({
   key,
   scope,
 }: VirtualObjectInstanceIdentity): string {
-  return scope === undefined
-    ? `${service} / ${key}`
-    : `Scope ${scope} · ${service} / ${key}`;
+  return scope ? `Scope ${scope} · ${service} / ${key}` : `${service} / ${key}`;
 }

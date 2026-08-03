@@ -15,6 +15,21 @@ export function quoteSqlString(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;
 }
 
+export function targetServiceKeyClause(
+  context: Pick<QueryContext, 'features' | 'restateVersion'>,
+  key: string,
+  column = 'target_service_key',
+): string {
+  const version = semverCoerce(context.restateVersion);
+  const requiresVqueueWorkaround =
+    context.features.has('vqueues') &&
+    (!version || !semverGte(version, '1.7.3'));
+  const keyExpression = requiresVqueueWorkaround
+    ? `SUBSTR(${column}, 1)`
+    : column;
+  return `${keyExpression} = ${quoteSqlString(key)}`;
+}
+
 export const SYS_INVOCATION_LIST_COLUMNS = [
   'id',
   'target',

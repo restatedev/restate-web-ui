@@ -1,5 +1,11 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { quoteSqlString, type QueryContext } from './shared';
+import {
+  addEntryDetailsToLock,
+  getVirtualObjectEntryDetails,
+  isLockConsistent,
+  lockEntryRows,
+} from './virtualObjectEntries';
 
 interface LockHolderRow {
   acquired_by?: string;
@@ -81,5 +87,21 @@ export async function getVirtualObjectLock(
   key: string,
   scope?: string,
 ) {
-  return Response.json(await queryVirtualObjectLock(this, service, key, scope));
+  const lock = await queryVirtualObjectLock(this, service, key, scope);
+  if (!lock.lockHolder || lock.lockHolder.kind === 'other') {
+    return Response.json(lock);
+  }
+  const lockDetails = await getVirtualObjectEntryDetails(
+    this,
+    lockEntryRows(lock),
+    'all',
+  );
+  const hydratedLock = addEntryDetailsToLock(
+    lock,
+    lockDetails,
+    !this.features.has('vqueues'),
+  );
+  return Response.json(
+    isLockConsistent(this, hydratedLock, lockDetails) ? hydratedLock : lock,
+  );
 }

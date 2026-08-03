@@ -10,16 +10,18 @@ import {
 import { formatNumber } from '@restate/util/intl';
 import {
   VirtualObjectInbox,
-  type VirtualObjectInboxMode,
+  VirtualObjectInvocations,
 } from './VirtualObjectInbox';
 import { useMemo } from 'react';
 
 type InboxResponse = components['schemas']['VirtualObjectInboxResponse'];
-export type VirtualObjectInstanceTab = VirtualObjectInboxMode | 'state';
+type InvocationsResponse =
+  components['schemas']['VirtualObjectInvocationsResponse'];
+export type VirtualObjectInstanceTab = 'exclusive' | 'recent' | 'state';
 
 const TAB_QUERY_PARAM = 'tab';
 
-function LockAndInboxTabLabel({
+function InboxTabLabel({
   count,
   isPending,
 }: {
@@ -28,7 +30,7 @@ function LockAndInboxTabLabel({
 }) {
   return (
     <span className="flex items-center gap-1.5">
-      Lock / inbox
+      Inbox
       {count !== undefined ? (
         <span
           title={`${formatNumber(count)} inbox entries`}
@@ -47,13 +49,8 @@ export function virtualObjectInstanceTabFromSearch(
   searchParams: URLSearchParams,
 ): VirtualObjectInstanceTab {
   const tab = searchParams.get(TAB_QUERY_PARAM);
-  return tab === 'shared' || tab === 'state' ? tab : 'exclusive';
-}
-
-export function virtualObjectInboxModeForTab(
-  tab: VirtualObjectInstanceTab,
-): VirtualObjectInboxMode {
-  return tab === 'shared' ? 'shared' : 'exclusive';
+  if (tab === 'state') return 'state';
+  return tab === 'exclusive' ? 'exclusive' : 'recent';
 }
 
 export function VirtualObjectDetails({
@@ -64,6 +61,10 @@ export function VirtualObjectDetails({
   inboxDataUpdatedAt,
   inboxError,
   isInboxPending,
+  invocationsData,
+  invocationsDataUpdatedAt,
+  invocationsError,
+  areInvocationsPending,
 }: {
   identity: VirtualObjectInstanceIdentity;
   tab: VirtualObjectInstanceTab;
@@ -72,29 +73,29 @@ export function VirtualObjectDetails({
   inboxDataUpdatedAt?: number;
   inboxError: Error | null;
   isInboxPending: boolean;
+  invocationsData?: InvocationsResponse;
+  invocationsDataUpdatedAt?: number;
+  invocationsError: Error | null;
+  areInvocationsPending: boolean;
 }) {
-  const inboxMode = virtualObjectInboxModeForTab(tab);
   const inboxCount =
     inboxData?.inboxCount ??
-    (inboxMode === 'exclusive' && inboxData && !inboxData.truncated
+    (inboxData && !inboxData.truncated
       ? (inboxData.rows?.length ?? 0)
       : undefined);
   const tabs = useMemo<ContentPanelTabs>(
     () => ({
       items: [
+        { id: 'recent', label: 'Recent invocations' },
         {
           id: 'exclusive',
           label: (
-            <LockAndInboxTabLabel
-              count={inboxCount}
-              isPending={isInboxPending}
-            />
+            <InboxTabLabel count={inboxCount} isPending={isInboxPending} />
           ),
         },
-        { id: 'shared', label: 'Shared' },
         { id: 'state', label: 'State' },
       ],
-      defaultId: 'exclusive',
+      defaultId: 'recent',
       queryParam: TAB_QUERY_PARAM,
     }),
     [inboxCount, isInboxPending],
@@ -110,9 +111,16 @@ export function VirtualObjectDetails({
               deploymentId={deploymentId}
               serviceType="virtual_object"
             />
+          ) : tab === 'recent' ? (
+            <VirtualObjectInvocations
+              data={invocationsData}
+              dataUpdatedAt={invocationsDataUpdatedAt}
+              error={invocationsError}
+              isPending={areInvocationsPending}
+            />
           ) : (
             <VirtualObjectInbox
-              mode={inboxMode}
+              identity={identity}
               data={inboxData}
               dataUpdatedAt={inboxDataUpdatedAt}
               error={inboxError}

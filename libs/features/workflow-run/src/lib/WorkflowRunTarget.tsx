@@ -21,7 +21,7 @@ const targetStyles = tv({
   slots: {
     serviceLink:
       'inline-flex max-w-full min-w-0 no-underline transition-[filter] hover:brightness-[0.98] pressed:brightness-[0.96]',
-    chip: 'h-6.5 max-w-full text-xs font-medium text-zinc-600',
+    chip: 'max-w-full text-xs font-medium text-zinc-600',
     service: 'max-w-[18rem] bg-white pl-1.5 font-medium text-zinc-600',
     workflowId: 'max-w-[28rem] bg-zinc-50 font-mono text-[90%] text-zinc-500',
     icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
@@ -72,6 +72,7 @@ export function WorkflowRunTarget({
   showService = true,
 }: WorkflowRunTargetProps) {
   const { service, id, scope } = identity;
+  const hasVisibleScope = Boolean(scope);
   const copyText = formatWorkflowRunIdentity(identity);
   const {
     serviceLink,
@@ -81,12 +82,13 @@ export function WorkflowRunTarget({
     icon,
   } = targetStyles({
     showService,
-    hasLeadingScope: scope !== undefined,
+    hasLeadingScope: hasVisibleScope,
   });
   const serviceChip = (
     <Chip
-      left={scope !== undefined ? 'angled' : 'straight'}
+      left={hasVisibleScope ? 'angled' : 'straight'}
       right="angled"
+      size="lg"
       className={chip({ className })}
     >
       <ChipSegment className={serviceStyle()}>
@@ -108,7 +110,7 @@ export function WorkflowRunTarget({
         aria-label={href ? `Workflow run ${copyText}` : undefined}
         className={containerClassName}
       >
-        {scope !== undefined && (
+        {hasVisibleScope && (
           <Scope value={scope} className={className} relationship="target" />
         )}
         {showService &&
@@ -125,8 +127,9 @@ export function WorkflowRunTarget({
             serviceChip
           ))}
         <Chip
-          left={showService || scope !== undefined ? 'angled' : 'straight'}
+          left={showService || hasVisibleScope ? 'angled' : 'straight'}
           right="straight"
+          size="lg"
           className={chip({ className })}
         >
           <ChipSegment className={workflowId()}>

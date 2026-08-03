@@ -1000,9 +1000,29 @@ export interface paths {
     };
     /**
      * Get a Workflow run
-     * @description Returns the main run invocation and a bounded, newest-first set of retained Shared handler invocations for the exact service, Workflow id, and optional scope identity.
+     * @description Returns the main run invocation and the 50 most recent retained invocations for the exact service, Workflow id, and optional scope identity.
      */
     get: operations['get_workflow_run'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/workflows/{service}/runs/{workflowId}/stats': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Workflow run statistics
+     * @description Returns exact run timing, pending promise count, and latest interaction activity for the exact service, Workflow id, and optional scope identity. Statistics require Virtual Queues.
+     */
+    get: operations['get_workflow_run_stats'];
     put?: never;
     post?: never;
     delete?: never;
@@ -1040,9 +1060,49 @@ export interface paths {
     };
     /**
      * Get the Virtual Object inbox
-     * @description Returns one bounded inbox view for the exact service, key, and scope identity. Scoped exclusive Virtual Objects return VQueue summaries; other modes return entries.
+     * @description Returns the current inbox for the exact service, key, and scope identity.
      */
     get: operations['get_virtual_object_inbox'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/virtual-objects/{service}/instances/{key}/stats': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Virtual Object instance statistics
+     * @description Returns object-level VQueue duration ranges, latest activity timestamps, and state storage totals for the exact service, key, and scope identity. Duration ranges use every matching VQueue that has recorded the corresponding average; current queue activity does not filter the population.
+     */
+    get: operations['get_virtual_object_stats'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/virtual-objects/{service}/instances/{key}/invocations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get recent Virtual Object invocations
+     * @description Returns the 50 most recent retained invocations for the exact service, key, and scope identity.
+     */
+    get: operations['get_virtual_object_invocations'];
     put?: never;
     post?: never;
     delete?: never;
@@ -3127,11 +3187,39 @@ export interface components {
       truncated: boolean;
     };
     WorkflowRunDetailsResponse: {
-      runInvocation: components['schemas']['InvocationV2'];
-      /** @description Retained Shared handler invocations ordered newest first. */
-      sharedInvocations: components['schemas']['InvocationV2'][];
-      sharedInvocationsLimit: number;
-      sharedInvocationsTruncated: boolean;
+      /** @description The retained canonical run invocation. Omitted when the Workflow identity has retained interactions but its run invocation is unavailable. */
+      runInvocation?: components['schemas']['InvocationV2'];
+      /** @description Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls. */
+      recentInvocations: components['schemas']['InvocationV2'][];
+      recentInvocationsLimit: number;
+      recentInvocationsTruncated: boolean;
+    };
+    WorkflowRunStatsResponse: {
+      /** @description False when the Restate server does not support Virtual Queues. */
+      supported: boolean;
+      /**
+       * Format: duration
+       * @description Elapsed time from the run's first start until completion, or until now while it is still running.
+       */
+      duration?: string;
+      /**
+       * Format: duration
+       * @description Final time between first becoming runnable and the first start. Present after the run has started.
+       */
+      queueDuration?: string;
+      /**
+       * Format: duration
+       * @description Live time spent runnable but not yet started. Present only before the first start.
+       */
+      waitingToStartDuration?: string;
+      /** @description Number of unresolved durable promises belonging to this Workflow run. */
+      pendingPromiseCount?: number;
+      /**
+       * Format: date-time
+       * @description Creation time of the most recent invocation of a non-run Workflow handler.
+       */
+      lastInteractionAt?: string;
+      state?: components['schemas']['KeyedServiceStatsState'];
     };
     VirtualObjectLockHolder: components['schemas']['VirtualObjectInboxEntry'] & {
       /** Format: date-time */
@@ -3168,11 +3256,80 @@ export interface components {
       supported: boolean;
       rows?: components['schemas']['VirtualObjectInboxEntry'][];
       vqueues?: components['schemas']['VirtualObjectVqueueSummary'][];
-      lock?: components['schemas']['VirtualObjectLockResponse'];
       /** @description Exact number of entries currently in the inbox for this Virtual Object instance. */
       inboxCount?: number;
       limit: number;
       truncated: boolean;
+    };
+    VirtualObjectInvocationsResponse: {
+      supported: boolean;
+      rows: components['schemas']['Invocation'][];
+      limit: number;
+      truncated: boolean;
+    };
+    VirtualObjectStatsDurationRange: {
+      /** @description Minimum per-VQueue exponential moving average as an ISO 8601 duration. */
+      min: string;
+      /** @description Maximum per-VQueue exponential moving average as an ISO 8601 duration. */
+      max: string;
+      /** @description Number of VQueues with a recorded sample contributing to the range. */
+      vqueueCount: number;
+      /**
+       * Format: date-time
+       * @description Oldest latest-sample timestamp among the contributing VQueues.
+       */
+      oldestUpdatedAt?: string;
+      /**
+       * Format: date-time
+       * @description Newest latest-sample timestamp among the contributing VQueues.
+       */
+      latestUpdatedAt?: string;
+    };
+    VirtualObjectStatsBlockedDurationRange: {
+      /** @enum {string} */
+      gate:
+        | 'concurrency_rules'
+        | 'invoker_concurrency'
+        | 'invoker_throttling'
+        | 'lock';
+      /** @description Minimum per-VQueue exponential moving average as an ISO 8601 duration. */
+      min: string;
+      /** @description Maximum per-VQueue exponential moving average as an ISO 8601 duration. */
+      max: string;
+      /** @description Number of VQueues with a recorded attempt contributing to the range. */
+      vqueueCount: number;
+      /** Format: date-time */
+      oldestUpdatedAt?: string;
+      /** Format: date-time */
+      latestUpdatedAt?: string;
+    };
+    VirtualObjectStatsActivity: {
+      /** Format: date-time */
+      oldestInboxedAt?: string;
+      /** Format: date-time */
+      lastEnqueuedAt?: string;
+      /** Format: date-time */
+      lastStartedAt?: string;
+      /** Format: date-time */
+      lastAttemptAt?: string;
+      /** Format: date-time */
+      lastFinishedAt?: string;
+    };
+    KeyedServiceStatsState: {
+      /** @description Number of state keys stored by this keyed service instance. */
+      numKeys: number;
+      /** @description Total state value size in bytes. State-key bytes and storage overhead are excluded. */
+      totalSize: number;
+    };
+    VirtualObjectStatsResponse: {
+      /** @description False when the server does not expose VQueues. */
+      supported: boolean;
+      averageInboxDuration?: components['schemas']['VirtualObjectStatsDurationRange'];
+      /** @description Number of entries currently inboxed across this Virtual Object instance's Virtual Queues. */
+      numInbox?: number;
+      averageBlockedDurations?: components['schemas']['VirtualObjectStatsBlockedDurationRange'][];
+      activity?: components['schemas']['VirtualObjectStatsActivity'];
+      state?: components['schemas']['KeyedServiceStatsState'];
     };
     VirtualObjectInboxSnapshotChangedResponse: {
       message: string;
@@ -4478,6 +4635,7 @@ export interface components {
     OneWayCallJournalEntryTypeV2: {
       invocationId?: string;
       serviceKey?: string;
+      scope?: string;
       serviceName?: string;
       handlerName?: string;
       parameters?: string;
@@ -4513,6 +4671,7 @@ export interface components {
     CallJournalEntryV2: {
       invocationId?: string;
       serviceKey?: string;
+      scope?: string;
       serviceName?: string;
       handlerName?: string;
       parameters?: string;
@@ -8053,6 +8212,61 @@ export interface operations {
       };
     };
   };
+  get_workflow_run_stats: {
+    parameters: {
+      query?: {
+        /** @description Workflow scope. Omit for an unscoped run. */
+        scope?: string;
+        /** @description Run invocation id belonging to this Workflow identity. When omitted, the server resolves it before querying statistics. */
+        invocationId?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Workflow service name */
+        service: string;
+        /** @description Workflow id */
+        workflowId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Statistics for the Workflow run identity */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['WorkflowRunStatsResponse'];
+        };
+      };
+      /** @description The Workflow service or run was not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
   get_virtual_object_lock: {
     parameters: {
       query?: {
@@ -8107,9 +8321,7 @@ export interface operations {
   };
   get_virtual_object_inbox: {
     parameters: {
-      query: {
-        /** @description Inbox view to load. */
-        mode: 'exclusive' | 'shared';
+      query?: {
         /** @description Virtual Object scope. Omit for an unscoped object. */
         scope?: string;
       };
@@ -8148,6 +8360,110 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['VirtualObjectInboxSnapshotChangedResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_virtual_object_stats: {
+    parameters: {
+      query?: {
+        /** @description Virtual Object scope. Omit for an unscoped object. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Virtual Object service name */
+        service: string;
+        /** @description Virtual Object service key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Statistics for the Virtual Object identity */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectStatsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_virtual_object_invocations: {
+    parameters: {
+      query?: {
+        /** @description Virtual Object scope. Omit for an unscoped object. */
+        scope?: string;
+      };
+      header?: never;
+      path: {
+        /** @description Virtual Object service name */
+        service: string;
+        /** @description Virtual Object service key */
+        key: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Recent invocations for the Virtual Object identity */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectInvocationsResponse'];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
       500: {

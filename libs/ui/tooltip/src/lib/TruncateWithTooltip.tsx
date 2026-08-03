@@ -66,6 +66,7 @@ export function TruncateWithTooltip({
   hideCopy,
   size = 'sm',
   className,
+  containerClassName,
   alwaysShow,
   overflowVisible,
 }: PropsWithChildren<{
@@ -75,6 +76,7 @@ export function TruncateWithTooltip({
   hideCopy?: boolean;
   size?: ComponentProps<typeof TooltipContent>['size'];
   className?: string;
+  containerClassName?: string;
   // Bypass the truncation check and always open on hover. Use when the
   // visible text is already shortened by the caller (so the CSS clip never
   // fires) but the tooltip should still appear.
@@ -119,7 +121,13 @@ export function TruncateWithTooltip({
   return (
     <Tooltip delay={250}>
       <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
-        <span className={triggerStyles({ overflowVisible })} ref={containerRef}>
+        <span
+          className={triggerStyles({
+            overflowVisible,
+            className: containerClassName,
+          })}
+          ref={containerRef}
+        >
           <TruncateTooltipTrigger
             ref={triggerRef}
             overflowVisible={overflowVisible}

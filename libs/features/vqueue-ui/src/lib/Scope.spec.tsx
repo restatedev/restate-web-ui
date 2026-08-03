@@ -14,7 +14,7 @@ describe('Scope', () => {
       container
         .querySelector('[data-chip-segment-inner]')
         ?.getAttribute('class'),
-    ).toContain('pl-1.5');
+    ).toContain('pl-1');
     expect(
       container.querySelector('[data-chip-root]')?.getAttribute('class'),
     ).toContain('rounded-l-(--chip-radius)');
@@ -27,7 +27,11 @@ describe('Scope', () => {
   });
 
   it('renders nothing without a scope', () => {
-    const { container } = render(<Scope />);
+    const { container, rerender } = render(<Scope />);
+
+    expect(container.firstChild).toBeNull();
+
+    rerender(<Scope value="" />);
 
     expect(container.firstChild).toBeNull();
   });
@@ -49,6 +53,23 @@ describe('Scope', () => {
     expect(screen.getByText('S')).toBeTruthy();
     expect(screen.getByText('Scope')).toBeTruthy();
     expect(screen.queryByText('SCOPE')).toBeNull();
+  });
+
+  it('allows a target to remove the standalone scope width cap', () => {
+    const { container } = render(
+      <Scope value="scope-41" segmentClassName="max-w-none" />,
+    );
+
+    expect(
+      container
+        .querySelector('[data-chip-segment-inner]')
+        ?.getAttribute('class'),
+    ).toContain('max-w-none');
+    expect(
+      container
+        .querySelector('[data-chip-segment-inner]')
+        ?.getAttribute('class'),
+    ).not.toContain('max-w-[22rem]');
   });
 
   it('renders a visible copy action when requested', () => {
@@ -83,6 +104,24 @@ describe('Scope', () => {
         .querySelector('[data-scope]')
         ?.getAttribute('data-scope-relationship'),
     ).toBe('target');
+    expect(container.querySelector('[data-scope-connector]')).toBeTruthy();
+    expect(
+      container.querySelector('[data-scope]')?.getAttribute('class'),
+    ).toContain('shrink-0');
+  });
+
+  it('renders an inline scope without its label', () => {
+    const { container } = render(
+      <Scope
+        value="scope-41"
+        presentation="inline"
+        relationship="target"
+        showLabel={false}
+      />,
+    );
+
+    expect(screen.getByText('scope-41')).toBeTruthy();
+    expect(screen.queryByText('SCOPE')).toBeNull();
     expect(container.querySelector('[data-scope-connector]')).toBeTruthy();
   });
 });

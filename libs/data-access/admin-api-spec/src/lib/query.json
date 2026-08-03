@@ -1903,7 +1903,7 @@
       "get": {
         "tags": ["query-workflows"],
         "summary": "Get a Workflow run",
-        "description": "Returns the main run invocation and a bounded, newest-first set of retained Shared handler invocations for the exact service, Workflow id, and optional scope identity.",
+        "description": "Returns the main run invocation and the 50 most recent retained invocations for the exact service, Workflow id, and optional scope identity.",
         "operationId": "get_workflow_run",
         "security": [],
         "parameters": [
@@ -1946,6 +1946,87 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The Workflow service or run was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/workflows/{service}/runs/{workflowId}/stats": {
+      "get": {
+        "tags": ["query-workflows"],
+        "summary": "Get Workflow run statistics",
+        "description": "Returns exact run timing, pending promise count, and latest interaction activity for the exact service, Workflow id, and optional scope identity. Statistics require Virtual Queues.",
+        "operationId": "get_workflow_run_stats",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Workflow service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "workflowId",
+            "in": "path",
+            "description": "Workflow id",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Workflow scope. Omit for an unscoped run.",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "invocationId",
+            "in": "query",
+            "description": "Run invocation id belonging to this Workflow identity. When omitted, the server resolves it before querying statistics.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistics for the Workflow run identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowRunStatsResponse"
                 }
               }
             }
@@ -2061,7 +2142,7 @@
       "get": {
         "tags": ["query-virtual-objects"],
         "summary": "Get the Virtual Object inbox",
-        "description": "Returns one bounded inbox view for the exact service, key, and scope identity. Scoped exclusive Virtual Objects return VQueue summaries; other modes return entries.",
+        "description": "Returns the current inbox for the exact service, key, and scope identity.",
         "operationId": "get_virtual_object_inbox",
         "security": [],
         "parameters": [
@@ -2078,16 +2159,6 @@
             "description": "Virtual Object service key",
             "required": true,
             "schema": { "type": "string" }
-          },
-          {
-            "name": "mode",
-            "in": "query",
-            "description": "Inbox view to load.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": ["exclusive", "shared"]
-            }
           },
           {
             "name": "scope",
@@ -2124,6 +2195,154 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VirtualObjectInboxSnapshotChangedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/virtual-objects/{service}/instances/{key}/stats": {
+      "get": {
+        "tags": ["query-virtual-objects"],
+        "summary": "Get Virtual Object instance statistics",
+        "description": "Returns object-level VQueue duration ranges, latest activity timestamps, and state storage totals for the exact service, key, and scope identity. Duration ranges use every matching VQueue that has recorded the corresponding average; current queue activity does not filter the population.",
+        "operationId": "get_virtual_object_stats",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Virtual Object service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Virtual Object service key",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Virtual Object scope. Omit for an unscoped object.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistics for the Virtual Object identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectStatsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/virtual-objects/{service}/instances/{key}/invocations": {
+      "get": {
+        "tags": ["query-virtual-objects"],
+        "summary": "Get recent Virtual Object invocations",
+        "description": "Returns the 50 most recent retained invocations for the exact service, key, and scope identity.",
+        "operationId": "get_virtual_object_invocations",
+        "security": [],
+        "parameters": [
+          {
+            "name": "service",
+            "in": "path",
+            "description": "Virtual Object service name",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Virtual Object service key",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "Virtual Object scope. Omit for an unscoped object.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent invocations for the Virtual Object identity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectInvocationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
                 }
               }
             }
@@ -4981,24 +5200,62 @@
       "WorkflowRunDetailsResponse": {
         "type": "object",
         "required": [
-          "runInvocation",
-          "sharedInvocations",
-          "sharedInvocationsLimit",
-          "sharedInvocationsTruncated"
+          "recentInvocations",
+          "recentInvocationsLimit",
+          "recentInvocationsTruncated"
         ],
         "properties": {
           "runInvocation": {
-            "$ref": "#/components/schemas/InvocationV2"
+            "allOf": [{ "$ref": "#/components/schemas/InvocationV2" }],
+            "description": "The retained canonical run invocation. Omitted when the Workflow identity has retained interactions but its run invocation is unavailable."
           },
-          "sharedInvocations": {
+          "recentInvocations": {
             "type": "array",
-            "description": "Retained Shared handler invocations ordered newest first.",
+            "description": "Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls.",
             "items": {
               "$ref": "#/components/schemas/InvocationV2"
             }
           },
-          "sharedInvocationsLimit": { "type": "integer" },
-          "sharedInvocationsTruncated": { "type": "boolean" }
+          "recentInvocationsLimit": { "type": "integer" },
+          "recentInvocationsTruncated": { "type": "boolean" }
+        }
+      },
+      "WorkflowRunStatsResponse": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "False when the Restate server does not support Virtual Queues."
+          },
+          "duration": {
+            "type": "string",
+            "format": "duration",
+            "description": "Elapsed time from the run's first start until completion, or until now while it is still running."
+          },
+          "queueDuration": {
+            "type": "string",
+            "format": "duration",
+            "description": "Final time between first becoming runnable and the first start. Present after the run has started."
+          },
+          "waitingToStartDuration": {
+            "type": "string",
+            "format": "duration",
+            "description": "Live time spent runnable but not yet started. Present only before the first start."
+          },
+          "pendingPromiseCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of unresolved durable promises belonging to this Workflow run."
+          },
+          "lastInteractionAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation time of the most recent invocation of a non-run Workflow handler."
+          },
+          "state": {
+            "$ref": "#/components/schemas/KeyedServiceStatsState"
+          }
         }
       },
       "VirtualObjectLockHolder": {
@@ -5069,15 +5326,148 @@
               "$ref": "#/components/schemas/VirtualObjectVqueueSummary"
             }
           },
-          "lock": {
-            "$ref": "#/components/schemas/VirtualObjectLockResponse"
-          },
           "inboxCount": {
             "type": "integer",
             "description": "Exact number of entries currently in the inbox for this Virtual Object instance."
           },
           "limit": { "type": "integer" },
           "truncated": { "type": "boolean" }
+        }
+      },
+      "VirtualObjectInvocationsResponse": {
+        "type": "object",
+        "required": ["supported", "rows", "limit", "truncated"],
+        "properties": {
+          "supported": { "type": "boolean" },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Invocation"
+            }
+          },
+          "limit": { "type": "integer" },
+          "truncated": { "type": "boolean" }
+        }
+      },
+      "VirtualObjectStatsDurationRange": {
+        "type": "object",
+        "required": ["min", "max", "vqueueCount"],
+        "properties": {
+          "min": {
+            "type": "string",
+            "description": "Minimum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "max": {
+            "type": "string",
+            "description": "Maximum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "vqueueCount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of VQueues with a recorded sample contributing to the range."
+          },
+          "oldestUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Oldest latest-sample timestamp among the contributing VQueues."
+          },
+          "latestUpdatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Newest latest-sample timestamp among the contributing VQueues."
+          }
+        }
+      },
+      "VirtualObjectStatsBlockedDurationRange": {
+        "type": "object",
+        "required": ["gate", "min", "max", "vqueueCount"],
+        "properties": {
+          "gate": {
+            "type": "string",
+            "enum": [
+              "concurrency_rules",
+              "invoker_concurrency",
+              "invoker_throttling",
+              "lock"
+            ]
+          },
+          "min": {
+            "type": "string",
+            "description": "Minimum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "max": {
+            "type": "string",
+            "description": "Maximum per-VQueue exponential moving average as an ISO 8601 duration."
+          },
+          "vqueueCount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of VQueues with a recorded attempt contributing to the range."
+          },
+          "oldestUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latestUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "VirtualObjectStatsActivity": {
+        "type": "object",
+        "properties": {
+          "oldestInboxedAt": { "type": "string", "format": "date-time" },
+          "lastEnqueuedAt": { "type": "string", "format": "date-time" },
+          "lastStartedAt": { "type": "string", "format": "date-time" },
+          "lastAttemptAt": { "type": "string", "format": "date-time" },
+          "lastFinishedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "KeyedServiceStatsState": {
+        "type": "object",
+        "required": ["numKeys", "totalSize"],
+        "properties": {
+          "numKeys": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of state keys stored by this keyed service instance."
+          },
+          "totalSize": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total state value size in bytes. State-key bytes and storage overhead are excluded."
+          }
+        }
+      },
+      "VirtualObjectStatsResponse": {
+        "type": "object",
+        "required": ["supported"],
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "False when the server does not expose VQueues."
+          },
+          "averageInboxDuration": {
+            "$ref": "#/components/schemas/VirtualObjectStatsDurationRange"
+          },
+          "numInbox": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of entries currently inboxed across this Virtual Object instance's Virtual Queues."
+          },
+          "averageBlockedDurations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectStatsBlockedDurationRange"
+            }
+          },
+          "activity": {
+            "$ref": "#/components/schemas/VirtualObjectStatsActivity"
+          },
+          "state": {
+            "$ref": "#/components/schemas/KeyedServiceStatsState"
+          }
         }
       },
       "VirtualObjectInboxSnapshotChangedResponse": {
@@ -7979,6 +8369,9 @@
           "serviceKey": {
             "type": "string"
           },
+          "scope": {
+            "type": "string"
+          },
           "serviceName": {
             "type": "string"
           },
@@ -8065,6 +8458,9 @@
             "type": "string"
           },
           "serviceKey": {
+            "type": "string"
+          },
+          "scope": {
             "type": "string"
           },
           "serviceName": {

@@ -4,6 +4,7 @@ import {
   useListWorkflowRuns,
 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
+import { Actions } from '@restate/features/invocation-route';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationId,
@@ -50,10 +51,9 @@ type ColumnId =
   | 'identity'
   | 'status'
   | 'createdAt'
-  | 'completedAt'
   | 'limit_key'
-  | 'vqueue_id'
-  | 'invocation';
+  | 'invocation'
+  | 'actions';
 
 interface WorkflowRunRow extends Omit<WorkflowRunSummary, 'id'> {
   id: string;
@@ -69,25 +69,33 @@ function getColumns(hasVqueues: boolean) {
       minWidth: 320,
     },
     { id: 'status', name: 'Status', minWidth: 190 },
-    { id: 'createdAt', name: 'Created', defaultWidth: 140, minWidth: 110 },
-    { id: 'completedAt', name: 'Completed', defaultWidth: 140, minWidth: 110 },
+    {
+      id: 'createdAt',
+      name: 'Created',
+      defaultWidth: 140,
+      minWidth: 110,
+      maxWidth: 160,
+    },
     ...(hasVqueues
       ? [
           {
             ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
             id: 'limit_key' as const,
           },
-          {
-            ...INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id,
-            id: 'vqueue_id' as const,
-          },
         ]
       : []),
     {
       id: 'invocation',
       name: 'Invocation',
-      defaultWidth: 230,
-      minWidth: 190,
+      defaultWidth: 180,
+      minWidth: 160,
+      maxWidth: 180,
+    },
+    {
+      id: 'actions',
+      name: 'Actions',
+      width: 40,
+      hideLabel: true,
     },
   ] satisfies PanelTableColumn<ColumnId>[];
 }
@@ -342,20 +350,6 @@ function Component() {
                       </Cell>
                     );
                   }
-                  if (column.id === 'completedAt') {
-                    return (
-                      <Cell>
-                        {invocation.completed_at ? (
-                          <InvocationTableDate
-                            value={invocation.completed_at}
-                            tooltipTitle="Run completed at"
-                          />
-                        ) : (
-                          <span className="text-zinc-400">—</span>
-                        )}
-                      </Cell>
-                    );
-                  }
                   if (column.id === 'invocation') {
                     return (
                       <Cell className="overflow-visible">
@@ -367,21 +361,21 @@ function Component() {
                       </Cell>
                     );
                   }
-                  if (column.id === 'limit_key' || column.id === 'vqueue_id') {
+                  if (column.id === 'limit_key') {
                     return (
                       <InvocationTableCell
                         column={column.id}
-                        className={
-                          column.id === 'vqueue_id' ? 'align-middle' : undefined
-                        }
-                        row={{
-                          ...invocation,
-                          vqueue_id:
-                            invocation.vqueue?.vqueue_id ??
-                            invocation.vqueue_id,
-                        }}
+                        className="align-middle"
+                        row={invocation}
                         invocation={invocation}
                       />
+                    );
+                  }
+                  if (column.id === 'actions') {
+                    return (
+                      <Cell className="align-top [&&&]:overflow-visible">
+                        <Actions invocation={invocation} />
+                      </Cell>
                     );
                   }
                   const identity = workflowIdentity(selectedService, item);

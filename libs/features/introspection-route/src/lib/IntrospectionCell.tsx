@@ -1,5 +1,6 @@
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
-import { InvocationId, Target } from '@restate/features/invocation-route';
+import { InvocationId } from '@restate/features/invocation-route';
+import { Target } from '@restate/features/service-target';
 import { Deployment } from '@restate/features/deployment';
 import { Cell } from '@restate/ui/table';
 import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
@@ -56,7 +57,7 @@ export function IntrospectionCell({
     services.includes(value)
   ) {
     return (
-      <Cell>
+      <Cell className="pr-2">
         <Target target={value} showHandler={false} />
       </Cell>
     );

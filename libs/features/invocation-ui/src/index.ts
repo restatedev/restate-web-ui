@@ -1,8 +1,12 @@
 export { InvocationId } from './lib/InvocationId';
-export { InvocationStatusHeader } from './lib/InvocationStatusHeader';
+export {
+  getInvocationStatusIntent,
+  InvocationStatusHeader,
+  type InvocationStatusIntent,
+} from './lib/InvocationStatusHeader';
 export * from './lib/InvocationTableCell';
 export { getSearchParams } from '@restate/util/panel';
-export { Target } from './lib/Target';
+export { Target } from '@restate/features/service-target';
 export * from './lib/Status';
 export * from './lib/StatusTimeline';
 export { Retention } from './lib/Retention';

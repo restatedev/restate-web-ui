@@ -11,11 +11,11 @@ export * from './lib/InvocationPanel';
 export {
   InvocationId,
   getSearchParams,
-  Target,
   Status,
   Value,
   DecodedValue,
   Retention,
   InvocationPopoverContent,
 } from '@restate/features/invocation-ui';
+export { Target } from '@restate/features/service-target';
 export * from './lib/invocation.route';

@@ -28,20 +28,21 @@ function convertFilterNumberToSqlClause(
 
 function convertFilterStringToSqlClause(
   filter: FilterStringItem & Pick<FilterItem, 'field'>,
+  field = `"${filter.field}"`,
 ) {
   switch (filter.operation) {
     case 'EQUALS':
-      return `"${filter.field}" = '${filter.value}'`;
+      return `${field} = '${filter.value}'`;
     case 'NOT_EQUALS':
-      return `"${filter.field}" != '${filter.value}'`;
+      return `${field} != '${filter.value}'`;
     case 'CONTAINS':
-      return `"${filter.field}" LIKE '%${filter.value}%'`;
+      return `${field} LIKE '%${filter.value}%'`;
     case 'NOT_CONTAINS':
-      return `"${filter.field}" NOT LIKE '%${filter.value}%'`;
+      return `${field} NOT LIKE '%${filter.value}%'`;
     case 'IS NULL':
-      return `"${filter.field}" IS NULL`;
+      return `${field} IS NULL`;
     case 'IS NOT NULL':
-      return `"${filter.field}" IS NOT NULL`;
+      return `${field} IS NOT NULL`;
   }
 }
 
@@ -74,14 +75,15 @@ function convertFilterDateToSqlClause(
 
 function convertFilterStringListToSqlClause(
   filter: FilterStringListItem & Pick<FilterItem, 'field'>,
+  field = filter.field,
 ) {
   switch (filter.operation) {
     case 'IN':
-      return `${filter.field} IN (${filter.value
+      return `${field} IN (${filter.value
         .map((value) => `'${value}'`)
         .join(', ')})`;
     case 'NOT_IN':
-      return `${filter.field} NOT IN (${filter.value
+      return `${field} NOT IN (${filter.value
         .map((value) => `'${value}'`)
         .join(', ')})`;
   }
@@ -147,6 +149,22 @@ function convertFilterToSqlClause(filter: FilterItem) {
     case 'NULL':
       return convertFilterNullToSqlClause(filter);
   }
+}
+
+function convertInvocationFilterToSqlClause(
+  filter: FilterItem,
+  useScopeSafeServiceKey: boolean,
+) {
+  if (useScopeSafeServiceKey && filter.field === 'target_service_key') {
+    const field = 'SUBSTR(target_service_key, 1)';
+    if (filter.type === 'STRING') {
+      return convertFilterStringToSqlClause(filter, field);
+    }
+    if (filter.type === 'STRING_LIST') {
+      return convertFilterStringListToSqlClause(filter, field);
+    }
+  }
+  return convertFilterToSqlClause(filter);
 }
 
 interface FilterGroup {
@@ -404,12 +422,17 @@ function invocationsFilterClauses(
   const deploymentFilter = filters.find(
     (filter) => filter.field === 'deployment',
   );
+  const useScopeSafeServiceKey = filters.some(
+    (filter) => filter.field === 'scope',
+  );
 
   const mappedFilters = filters
     .filter(
       (filter) => filter.field !== 'status' && filter.field !== 'deployment',
     )
-    .map(convertFilterToSqlClause)
+    .map((filter) =>
+      convertInvocationFilterToSqlClause(filter, useScopeSafeServiceKey),
+    )
     .filter((clause): clause is string => Boolean(clause));
 
   if (deploymentFilter) {

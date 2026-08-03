@@ -32,10 +32,6 @@ function getColumns(hasVqueues: boolean) {
     ...(hasVqueues
       ? [
           {
-            ...INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id,
-            id: 'vqueue_id' as const,
-          },
-          {
             ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
             id: 'limit_key' as const,
           },
@@ -112,7 +108,7 @@ export function WorkflowInvocationsTable({
       />
       {truncated && (
         <div className="px-4 pt-3 text-xs text-zinc-500">
-          Showing the {limit} most recent Shared invocations.
+          Showing the {limit} most recent invocations.
         </div>
       )}
     </>

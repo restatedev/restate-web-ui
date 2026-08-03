@@ -1,79 +1,32 @@
 import {
   useGetVirtualObjectInbox,
+  useGetVirtualObjectInvocations,
+  useGetVirtualObjectLock,
+  useGetVirtualObjectStats,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
-import {
-  Duration,
-  InvocationId,
-  InvocationStatusHeader,
-} from '@restate/features/invocation-ui';
 import {
   virtualObjectScopeFromSearch,
-  VirtualObjectInstanceTarget,
   type VirtualObjectInstanceIdentity,
 } from '@restate/features/virtual-object-instance';
+import { ServiceTarget } from '@restate/features/service-target';
+import { StateStatsCard } from '@restate/features/state-object-route';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
-import { Icon, IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { Header } from '@restate/ui/header';
+import { IconName } from '@restate/ui/icons';
 import { RestateError } from '@restate/util/errors';
-import { panelHref } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
+import { CardGrid } from '@restate/ui/card';
 import {
-  virtualObjectInboxModeForTab,
   virtualObjectInstanceTabFromSearch,
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
-
-type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
-
-function VirtualObjectLockSummary({
-  lockHolder,
-}: {
-  lockHolder?: VirtualObjectLockHolder;
-}) {
-  if (!lockHolder) return null;
-
-  return (
-    <div className="ml-auto hidden min-w-0 items-center gap-1.5 pr-1 text-xs text-zinc-500 mix-blend-luminosity lg:flex">
-      <Icon
-        name={IconName.Security}
-        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-      />
-      <span className="shrink-0 font-medium">Locked by</span>
-      {lockHolder.kind === 'invocation' ? (
-        <InvocationId
-          id={lockHolder.id}
-          size="md"
-          truncateInMiddle
-          popover={false}
-          className="max-w-[14rem] min-w-0 rounded-lg"
-        />
-      ) : (
-        <TruncateWithTooltip
-          tooltipContent={lockHolder.id}
-          copyText={lockHolder.id}
-        >
-          <code className="max-w-[14rem] truncate rounded-lg bg-white/70 px-2 py-1 text-2xs shadow-xs ring-1 ring-zinc-900/5">
-            {lockHolder.id}
-          </code>
-        </TruncateWithTooltip>
-      )}
-      {lockHolder.acquiredAt && (
-        <Duration
-          prefix="for"
-          date={lockHolder.acquiredAt}
-          tooltipTitle="Lock acquired at"
-          className="shrink-0 text-zinc-500"
-        />
-      )}
-    </div>
-  );
-}
+import { VirtualObjectLockHero } from './VirtualObjectLockHero';
+import { VirtualObjectStatsCard } from './VirtualObjectStatsCard';
 
 function Component() {
   const { service = '', key = '' } = useParams<{
@@ -83,7 +36,6 @@ function Component() {
   const [searchParams] = useSearchParams();
   const scope = virtualObjectScopeFromSearch(searchParams);
   const tab = virtualObjectInstanceTabFromSearch(searchParams);
-  const inboxMode = virtualObjectInboxModeForTab(tab);
   const identity = useMemo<VirtualObjectInstanceIdentity>(
     () => ({
       service,
@@ -109,8 +61,8 @@ function Component() {
     dataUpdatedAt: inboxDataUpdatedAt,
     error: inboxError,
     isPending: isInboxPending,
-  } = useGetVirtualObjectInbox(service, key, inboxMode, scope, {
-    enabled: Boolean(service) && Boolean(key),
+  } = useGetVirtualObjectInbox(service, key, scope, {
+    enabled: Boolean(service) && Boolean(key) && tab === 'exclusive',
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     retry: (failureCount, retryError) =>
@@ -120,23 +72,72 @@ function Component() {
       retryError.restateCode === 'snapshot_changed',
     staleTime: 0,
   });
-  const lockHolder = inboxData?.lock?.lockHolder;
+  const {
+    data: invocationsData,
+    dataUpdatedAt: invocationsDataUpdatedAt,
+    error: invocationsError,
+    isPending: areInvocationsPending,
+  } = useGetVirtualObjectInvocations(service, key, scope, {
+    enabled: Boolean(service) && Boolean(key) && tab === 'recent',
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  });
+  const { data: lockData, dataUpdatedAt: lockDataUpdatedAt } =
+    useGetVirtualObjectLock(service, key, scope, {
+      enabled: Boolean(service) && Boolean(key),
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      staleTime: 0,
+    });
+  const { data: statsData } = useGetVirtualObjectStats(service, key, scope, {
+    enabled: Boolean(service) && Boolean(key),
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  });
   return (
-    <SnapshotTimeProvider lastSnapshot={inboxDataUpdatedAt}>
+    <SnapshotTimeProvider lastSnapshot={lockDataUpdatedAt}>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
-        <InvocationStatusHeader
-          invocation={lockHolder?.invocation}
-          status={lockHolder?.status ?? lockHolder?.stage}
+        <Header
+          icon={IconName.VirtualObject}
+          iconLabel="Virtual Object instance"
           className="min-w-0"
         >
-          <VirtualObjectInstanceTarget
-            identity={identity}
-            serviceHref={panelHref({ service })}
+          <ServiceTarget
+            scope={scope}
+            service={service}
+            serviceKey={key}
+            serviceType="VirtualObject"
+            showHandler={false}
             variant="header"
+            className="min-w-0"
           />
-          <VirtualObjectLockSummary lockHolder={lockHolder} />
-        </InvocationStatusHeader>
+        </Header>
+        {(lockData?.lockHolder || statsData?.supported) && (
+          <CardGrid
+            distribution={
+              lockData?.lockHolder && statsData?.supported && statsData.state
+                ? '5-4-2'
+                : 'equal'
+            }
+            className="relative z-40 mx-5 mt-3"
+          >
+            <VirtualObjectLockHero lockHolder={lockData?.lockHolder} />
+            {statsData?.supported && (
+              <>
+                <VirtualObjectStatsCard stats={statsData} />
+                {statsData.state && (
+                  <StateStatsCard
+                    numKeys={statsData.state.numKeys}
+                    totalSize={statsData.state.totalSize}
+                  />
+                )}
+              </>
+            )}
+          </CardGrid>
+        )}
 
         {error ? (
           <div className="px-5 py-20">
@@ -167,7 +168,11 @@ function Component() {
             inboxData={inboxData}
             inboxDataUpdatedAt={inboxDataUpdatedAt}
             inboxError={inboxError}
-            isInboxPending={isInboxPending}
+            isInboxPending={tab === 'exclusive' && isInboxPending}
+            invocationsData={invocationsData}
+            invocationsDataUpdatedAt={invocationsDataUpdatedAt}
+            invocationsError={invocationsError}
+            areInvocationsPending={areInvocationsPending}
           />
         )}
       </div>
