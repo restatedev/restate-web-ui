@@ -58,6 +58,7 @@ export interface ScopeProps {
   labelVariant?: ScopeLabelVariant;
   variant?: ScopeVariant;
   showCopy?: boolean;
+  showLabel?: boolean;
 }
 
 export function Scope({
@@ -69,6 +70,7 @@ export function Scope({
   labelVariant = 'full',
   variant = 'default',
   showCopy = false,
+  showLabel = true,
 }: ScopeProps) {
   if (!value) return null;
 
@@ -84,15 +86,17 @@ export function Scope({
   } = styles({ presentation, variant, hasCopy: showCopy });
   const content = (
     <>
-      <span className={label()}>
-        <span
-          aria-hidden={labelVariant === 'compact' ? true : undefined}
-          className={labelText()}
-        >
-          {labelVariant === 'compact' ? 'S' : 'SCOPE'}
+      {showLabel && (
+        <span className={label()}>
+          <span
+            aria-hidden={labelVariant === 'compact' ? true : undefined}
+            className={labelText()}
+          >
+            {labelVariant === 'compact' ? 'S' : 'SCOPE'}
+          </span>
+          {labelVariant === 'compact' && <span className="sr-only">Scope</span>}
         </span>
-        {labelVariant === 'compact' && <span className="sr-only">Scope</span>}
-      </span>
+      )}
       <TruncateTooltipTrigger>{value || <>&nbsp;</>}</TruncateTooltipTrigger>
       {showCopy && <Copy copyText={value} className={copy()} />}
     </>

@@ -55,6 +55,7 @@ function VirtualObjectInstanceCrumbContent({
             className="max-w-24"
             presentation="inline"
             relationship="target"
+            showLabel={false}
           />
         )}
         <span className="min-w-0 truncate">
@@ -92,6 +93,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
             className="max-w-24"
             presentation="inline"
             relationship="target"
+            showLabel={false}
           />
         )}
         <Icon

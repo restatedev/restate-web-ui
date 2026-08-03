@@ -92,4 +92,19 @@ describe('Scope', () => {
       container.querySelector('[data-scope]')?.getAttribute('class'),
     ).toContain('shrink-0');
   });
+
+  it('renders an inline scope without its label', () => {
+    const { container } = render(
+      <Scope
+        value="scope-41"
+        presentation="inline"
+        relationship="target"
+        showLabel={false}
+      />,
+    );
+
+    expect(screen.getByText('scope-41')).toBeTruthy();
+    expect(screen.queryByText('SCOPE')).toBeNull();
+    expect(container.querySelector('[data-scope-connector]')).toBeTruthy();
+  });
 });

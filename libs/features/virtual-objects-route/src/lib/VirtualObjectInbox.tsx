@@ -106,7 +106,7 @@ const inboxRowStyles = tv({
   },
 });
 
-function getInboxColumns(showVqueueColumns: boolean) {
+function getInboxColumns(showLimitKey: boolean) {
   return [
     {
       ...INVOCATION_TABLE_COLUMN_CONFIG.id,
@@ -115,20 +115,12 @@ function getInboxColumns(showVqueueColumns: boolean) {
       isRowHeader: true,
       minWidth: 250,
     },
-    ...(showVqueueColumns
-      ? [
-          {
-            ...INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id,
-            id: 'vqueue_id' as const,
-          },
-        ]
-      : []),
     { ...INVOCATION_TABLE_COLUMN_CONFIG.created_at, id: 'created_at' },
     {
       ...INVOCATION_TABLE_COLUMN_CONFIG.target_handler_name,
       id: 'target_handler_name',
     },
-    ...(showVqueueColumns
+    ...(showLimitKey
       ? [
           {
             ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,

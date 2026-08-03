@@ -10,6 +10,7 @@ import {
   VirtualObjectInstanceTarget,
   type VirtualObjectInstanceIdentity,
 } from '@restate/features/virtual-object-instance';
+import { StateStatsCard } from '@restate/features/state-object-route';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
@@ -26,7 +27,6 @@ import {
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
 import { VirtualObjectLockHero } from './VirtualObjectLockHero';
-import { VirtualObjectStateStatsCard } from './VirtualObjectStateStatsCard';
 import { VirtualObjectStatsCard } from './VirtualObjectStatsCard';
 
 function Component() {
@@ -128,7 +128,10 @@ function Component() {
               <>
                 <VirtualObjectStatsCard stats={statsData} />
                 {statsData.state && (
-                  <VirtualObjectStateStatsCard state={statsData.state} />
+                  <StateStatsCard
+                    numKeys={statsData.state.numKeys}
+                    totalSize={statsData.state.totalSize}
+                  />
                 )}
               </>
             )}

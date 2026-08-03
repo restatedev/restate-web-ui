@@ -73,6 +73,7 @@ import {
   listWorkflowRuns,
   type ListWorkflowRunsArgs,
   getWorkflowRun,
+  getWorkflowRunStats,
 } from './handlers';
 import { getVersion } from './getVersion';
 import { getFeatures } from './getFeatures';
@@ -226,6 +227,11 @@ type BoundHandlers = {
     workflowId: string,
     scope?: string,
   ) => Promise<Response>;
+  getWorkflowRunStats: (
+    service: string,
+    workflowId: string,
+    scope?: string,
+  ) => Promise<Response>;
 };
 
 function bindHandlers(context: QueryContext): BoundHandlers {
@@ -283,6 +289,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getVirtualObjectStats: getVirtualObjectStats.bind(context),
     listWorkflowRuns: listWorkflowRuns.bind(context),
     getWorkflowRun: getWorkflowRun.bind(context),
+    getWorkflowRunStats: getWorkflowRunStats.bind(context),
   };
 }
 
@@ -456,6 +463,10 @@ export const routes = createRoutes('/query', {
       get: {
         method: 'GET',
         pattern: '/workflows/:service/runs/:workflowId',
+      },
+      stats: {
+        method: 'GET',
+        pattern: '/workflows/:service/runs/:workflowId/stats',
       },
     },
   },
@@ -741,6 +752,16 @@ router.map(routes, {
         async get(ctx) {
           const { getWorkflowRun } = ctx.storage.get(handlersKey);
           return getWorkflowRun(
+            ctx.params.service,
+            ctx.params.workflowId,
+            ctx.url.searchParams.has('scope')
+              ? String(ctx.url.searchParams.get('scope'))
+              : undefined,
+          );
+        },
+        async stats(ctx) {
+          const { getWorkflowRunStats } = ctx.storage.get(handlersKey);
+          return getWorkflowRunStats(
             ctx.params.service,
             ctx.params.workflowId,
             ctx.url.searchParams.has('scope')
