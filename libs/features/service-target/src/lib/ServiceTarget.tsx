@@ -104,7 +104,6 @@ export type ServiceTargetSegment =
 export interface ServiceTargetLink {
   href: string;
   ariaLabel?: string;
-  isolateInteraction?: boolean;
 }
 
 export type ServiceTargetLinks =
@@ -331,7 +330,6 @@ function ServiceTargetContent({
       containerClassName={serviceChipContainer()}
       href={serviceLink?.href}
       aria-label={serviceLink?.ariaLabel}
-      isolateInteraction={serviceLink?.isolateInteraction ?? true}
     >
       <ChipSegment className={serviceStyle()}>
         <Icon name={IconName.Box} className={serviceIcon()} />
@@ -348,7 +346,6 @@ function ServiceTargetContent({
       containerClassName={handlerChipContainer()}
       href={handlerLink?.href}
       aria-label={handlerLink?.ariaLabel}
-      isolateInteraction={handlerLink?.isolateInteraction ?? true}
     >
       <ChipSegment className={handlerStyle()}>
         <Icon name={IconName.Function} className={handlerIcon()} />
@@ -371,7 +368,6 @@ function ServiceTargetContent({
       containerClassName={keyChipContainer()}
       href={serviceKeyLink?.href}
       aria-label={serviceKeyLink?.ariaLabel}
-      isolateInteraction={serviceKeyLink?.isolateInteraction ?? true}
     >
       <ChipSegment className={key()}>
         {keyIcon && <Icon name={keyIcon} className={icon()} />}
@@ -400,7 +396,6 @@ function ServiceTargetContent({
               relationship="target"
               href={scopeLink?.href}
               aria-label={scopeLink?.ariaLabel}
-              isolateInteraction={scopeLink?.isolateInteraction ?? true}
             />
           )}
           {serviceChip}

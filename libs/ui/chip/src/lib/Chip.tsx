@@ -204,6 +204,7 @@ export function ChipSegment({
 export function Chip({
   children,
   className,
+  containerClassName,
   left,
   right,
   size,
@@ -211,6 +212,7 @@ export function Chip({
   'aria-label': ariaLabel,
 }: PropsWithChildren<{
   className?: string;
+  containerClassName?: string;
   left?: ChipEdge;
   right?: ChipEdge;
   size?: ChipSize;
@@ -219,7 +221,7 @@ export function Chip({
 }>) {
   const { outer, root, link } = styles({ left, right, size });
   return (
-    <div className={outer()} data-chip>
+    <div className={outer({ className: containerClassName })} data-chip>
       <div className={root({ className })} data-chip-root>
         {children}
       </div>

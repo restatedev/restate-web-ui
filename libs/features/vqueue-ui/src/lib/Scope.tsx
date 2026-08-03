@@ -62,7 +62,6 @@ export interface ScopeProps {
   showLabel?: boolean;
   href?: string;
   'aria-label'?: string;
-  isolateInteraction?: boolean;
 }
 
 export function Scope({
@@ -78,7 +77,6 @@ export function Scope({
   showLabel = true,
   href,
   'aria-label': ariaLabel,
-  isolateInteraction,
 }: ScopeProps) {
   if (!value) return null;
 
@@ -116,7 +114,6 @@ export function Scope({
       className={chip({ className })}
       href={href}
       aria-label={ariaLabel}
-      isolateInteraction={isolateInteraction}
     >
       <ChipSegment className={segment({ className: segmentClassName })}>
         {content}

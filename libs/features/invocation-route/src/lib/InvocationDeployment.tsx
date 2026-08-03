@@ -2,6 +2,7 @@ import type { Invocation } from '@restate/data-access/admin-api-spec';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment, SDK } from '@restate/features/deployment';
 import { GithubMetadata, hasGithubMetadata } from '@restate/features/options';
+import { CardRow } from '@restate/ui/card';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
 
@@ -28,7 +29,12 @@ export function InvocationDeploymentCell({
       <Deployment
         deploymentId={deploymentId}
         revision={revision}
-        className="m-0 w-full max-w-full p-0 pr-0.5 font-normal text-inherit [&_a:before]:rounded-md"
+        className={[
+          'm-0 w-full max-w-full p-0 pr-0.5 font-normal text-inherit [&_a:before]:rounded-md',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
         highlightSelection={false}
       />
     );
@@ -42,11 +48,13 @@ export function InvocationDeployment({
   className,
   showSdk = false,
   showGithub = false,
+  variant = 'section',
 }: {
   invocation: Invocation;
   className?: string;
   showSdk?: boolean;
   showGithub?: boolean;
+  variant?: 'section' | 'card';
 }) {
   const { data } = useListDeployments();
   const deploymentId =
@@ -56,6 +64,57 @@ export function InvocationDeployment({
     const revision = deployment?.services.find(
       ({ name }) => name === invocation.target_service_name,
     )?.revision;
+
+    if (revision && variant === 'card') {
+      return (
+        <>
+          <CardRow variant="hero" className="items-stretch">
+            <Deployment
+              deploymentId={deploymentId}
+              revision={revision}
+              className="m-0 w-full max-w-full p-0 pr-0.5 font-normal text-inherit [&_a:before]:rounded-md"
+              highlightSelection={false}
+            />
+          </CardRow>
+          {showSdk &&
+            (invocation.last_attempt_server || deployment.sdk_version) && (
+              <CardRow>
+                <SDK
+                  lastAttemptServer={
+                    invocation.last_attempt_server ??
+                    deployment.sdk_version ??
+                    undefined
+                  }
+                  className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-[85%] font-medium text-zinc-600"
+                />
+              </CardRow>
+            )}
+          {hasGithubMetadata(deployment.metadata) && showGithub && (
+            <CardRow>
+              <GithubMetadata
+                metadata={deployment.metadata}
+                className="w-full pl-0.5"
+              />
+            </CardRow>
+          )}
+        </>
+      );
+    }
+
+    if (!revision && variant === 'card') {
+      return (
+        <CardRow variant="hero">
+          <div className="flex min-w-0 items-center gap-[0.5ch] truncate font-sans text-xs text-zinc-500">
+            <div className="min-w-[5ch] flex-auto basis-[5ch] font-mono">
+              <TruncateWithTooltip copyText={deploymentId}>
+                {deploymentId}
+              </TruncateWithTooltip>
+            </div>
+            <div className="flex-auto truncate">no longer exists.</div>
+          </div>
+        </CardRow>
+      );
+    }
 
     return revision ? (
       <div className={styles({ className })}>

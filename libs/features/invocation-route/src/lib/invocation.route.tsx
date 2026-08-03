@@ -9,17 +9,15 @@ import {
   InvocationStatusHeader,
   Status,
 } from '@restate/features/invocation-ui';
-import { DeploymentSection } from './DeploymentSection';
-import { VirtualObjectSection } from './VirtualObjectSection';
-import { KeysIdsSection } from './KeysIdsSection';
+import { InvocationDeploymentCard } from './InvocationDeploymentCard';
+import { InvocationDetailsCard } from './InvocationDetailsCard';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Section } from '@restate/ui/section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
-import { Target } from '@restate/features/invocation-ui';
 import { useRestateContext } from '@restate/features/restate-context';
-import { WorkflowKeySection } from './WorkflowKeySection';
+import { ServiceTarget } from '@restate/features/service-target';
 import { tv } from '@restate/util/styles';
 import { Copy } from '@restate/ui/copy';
 import { useEffect, useMemo, useRef } from 'react';
@@ -37,24 +35,8 @@ import {
 } from '@restate/util/errors';
 import { useInvocationsRecent } from '@restate/util/sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { CardGrid } from '@restate/ui/card';
 
-const metadataContainerStyles = tv({
-  base: 'mt-6 mb-6 hidden grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2 gap-y-4 rounded-xl md:mb-0 [&:has(*)]:grid',
-  variants: {
-    isVirtualObject: {
-      true: '',
-      false: '',
-    },
-    isWorkflow: {
-      true: '',
-      false: '',
-    },
-    isPending: {
-      true: '',
-      false: '',
-    },
-  },
-});
 const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
 });
@@ -130,10 +112,6 @@ function Component() {
 
   const isFailed = !!journalAndInvocationData?.completion_failure;
 
-  const isVirtualObject =
-    journalAndInvocationData?.target_service_ty === 'virtual_object';
-  const isWorkflow = journalAndInvocationData?.target_service_ty === 'workflow';
-
   const { OnboardingGuide } = useRestateContext();
   // `?restore=1` is the invocations route's opt-in marker for restoring the
   // last filter/sort/column state from lastQuery — done via URL flag rather
@@ -184,9 +162,14 @@ function Component() {
           iconLabel="Invocation"
         >
           {journalAndInvocationData?.target && (
-            <Target
-              target={journalAndInvocationData.target}
-              className="max-w-fit shrink rounded-lg p-0.5 pl-2 text-sm font-medium text-zinc-700 mix-blend-luminosity md:min-w-0"
+            <ServiceTarget
+              scope={journalAndInvocationData.scope}
+              service={journalAndInvocationData.target_service_name}
+              serviceKey={journalAndInvocationData.target_service_key}
+              handler={journalAndInvocationData.target_handler_name}
+              serviceType={journalAndInvocationData.target_service_ty}
+              variant="header"
+              className="min-w-0 flex-[1_1_auto]"
             />
           )}
           {journalAndInvocationData && (
@@ -207,46 +190,23 @@ function Component() {
             />
           </div>
         </InvocationStatusHeader>
+        <CardGrid columns={2} className="relative z-40 mx-5 mt-3 empty:hidden">
+          {isPending ? (
+            <>
+              <div className="min-h-28 w-full animate-pulse rounded-xl bg-slate-200" />
+              <div className="min-h-28 w-full animate-pulse rounded-xl bg-slate-200" />
+            </>
+          ) : (
+            <>
+              <InvocationDetailsCard invocation={journalAndInvocationData} />
+              <InvocationDeploymentCard invocation={journalAndInvocationData} />
+            </>
+          )}
+        </CardGrid>
         <div
           className="relative z-10 flex flex-col gap-4 px-5"
           data-failure-anchor-root
         >
-          <div
-            className={metadataContainerStyles({
-              isVirtualObject,
-              isPending,
-              isWorkflow,
-            })}
-          >
-            {isPending && (
-              <>
-                <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-                <div className="min-h-24 w-full animate-pulse rounded-xl bg-slate-200" />
-                <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-                <div className="hidden min-h-24 w-full animate-pulse rounded-xl bg-slate-200 lg:block" />
-              </>
-            )}
-            <KeysIdsSection
-              invocation={journalAndInvocationData}
-              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-            />
-            <DeploymentSection
-              invocation={journalAndInvocationData}
-              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-              raised
-            />
-            <VirtualObjectSection
-              invocation={journalAndInvocationData}
-              raised
-              key={journalAndInvocationData?.status}
-              className="contents *:h-fit *:rounded-xl *:border *:bg-gray-200/50 [&>*:last-child>h3]:mt-0 [&>*>*:last-child]:rounded-xl [&>*>*:last-child]:border-white/50 [&>*>*:last-child]:bg-linear-to-b [&>*>*:last-child]:from-gray-50 [&>*>*:last-child]:to-gray-50/80 [&>*>*:last-child]:shadow-zinc-800/3"
-            />
-            <WorkflowKeySection
-              invocation={journalAndInvocationData}
-              raised
-              className="h-fit rounded-xl border bg-gray-200/50 p-0 [&>*:last-child]:rounded-xl [&>*:last-child]:border-white/50 [&>*:last-child]:bg-linear-to-b [&>*:last-child]:from-gray-50 [&>*:last-child]:to-gray-50/80 [&>*:last-child]:shadow-zinc-800/3"
-            />
-          </div>
           {shouldShowFailure && !error && (
             // No timeline below `md` (the journal panel/divider are
             // display:none there) → nothing to anchor to, so hide the whole
@@ -319,7 +279,7 @@ function Component() {
         </div>
 
         <ContentPanel
-          className="-mt-20"
+          className="-mt-14"
           tabs={{
             items: [
               {
