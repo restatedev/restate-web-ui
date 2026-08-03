@@ -21,13 +21,13 @@ import type { BreadcrumbComponentProps, TrailCrumb } from './types';
 const styles = tv({
   slots: {
     nav: 'ml-[4.25rem] flex max-w-full min-w-0 flex-wrap items-center gap-x-0 gap-y-1 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
-    chip: 'max-w-44 bg-gray-50 text-2xs font-normal text-zinc-500',
+    chip: 'max-w-44 bg-gray-50 text-xs font-normal text-zinc-600',
     current:
-      'flex max-w-full min-w-0 items-center gap-0.5 pl-1 text-2xs font-normal text-zinc-600 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
+      'flex max-w-full min-w-0 items-center gap-0.5 pl-1 text-xs font-normal text-zinc-500 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
     icon: 'h-3 w-3 shrink-0 text-zinc-400',
     label: 'min-w-0 truncate',
     ellipsisButton: 'h-full rounded-none px-1 py-0 text-zinc-500',
-    menuItem: 'flex max-w-60 min-w-0 items-center gap-1 text-2xs font-normal',
+    menuItem: 'flex max-w-60 min-w-0 items-center gap-1 text-xs font-normal',
   },
   variants: {
     hiddenOnMobile: {

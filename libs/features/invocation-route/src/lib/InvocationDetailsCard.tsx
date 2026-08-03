@@ -101,7 +101,7 @@ export function InvocationDetailsCard({
       <CardHeader title="Details" icon={IconName.Info} />
       {isVirtualObject && entityLink && (
         <RelatedEntityRow
-          label="Virtual Object instance"
+          label="Virtual Object"
           href={entityLink.href}
           ariaLabel={entityLink.ariaLabel}
         >
@@ -119,7 +119,7 @@ export function InvocationDetailsCard({
       )}
       {isWorkflow && entityLink && (
         <RelatedEntityRow
-          label="Workflow run"
+          label="Workflow"
           href={entityLink.href}
           ariaLabel={entityLink.ariaLabel}
         >
