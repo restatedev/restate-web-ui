@@ -19,7 +19,10 @@ describe('LimitKey', () => {
       container
         .querySelector('[data-chip-segment-inner]')
         ?.getAttribute('class'),
-    ).toContain('min-w-20');
+    ).not.toContain('min-w-20');
+    expect(
+      container.querySelector('[data-chip-root]')?.getAttribute('class'),
+    ).toContain('[&>[data-chip-segment]:last-child]:shrink-[2]');
     expect(
       container
         .querySelector('[data-limit-key]')
