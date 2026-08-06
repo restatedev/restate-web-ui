@@ -42,7 +42,6 @@ export type ColumnKey = (typeof COLUMNS_KEYS)[number];
 
 export const COLUMN_NAMES: Record<ColumnKey, string> = {
   id: INVOCATION_TABLE_COLUMN_CONFIG.id.name,
-  vqueue_id: INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id.name,
   created_at: INVOCATION_TABLE_COLUMN_CONFIG.created_at.name,
   modified_at: 'Modified at',
   duration: 'Duration',
@@ -69,6 +68,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   restarted_from: 'Restarted from',
   scope: 'Scope',
   limit_key: INVOCATION_TABLE_COLUMN_CONFIG.limit_key.name,
+  vqueue_id: INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id.name,
 };
 
 const FEATURE_GATED_COLUMNS: Partial<Record<ColumnKey, string>> = {

@@ -2,6 +2,10 @@
 
 ## Skill Notes
 
+- 2026-08-07 self on search-result filtering: I again used a shell pipeline to filter `rg --files` while locating tests. Use `rg --files -g '*.spec.*' <path>` directly; the repeated convenience shortcut is still a control-operator violation.
+
+- 2026-08-07 self on repeated repository-search pipelines: While tracing the invocation deployment card, I again piped `rg` into another filter despite the established no-pipeline rule. Use one scoped expression or separate searches, and do not include guessed nonexistent directories in the same command.
+
 - 2026-08-07 VQueue Limit Key intrinsic width: Do not preserve a nested Limit Key prefix with an unconditional `min-width`; short values such as `g1` then reserve a visibly empty 5rem segment. Keep segments intrinsically sized and give the nested segment a higher flex-shrink factor under real width pressure.
 
 - 2026-08-06 VQueue omitted-entry contrast: The top/bottom `⋮ +N` omission markers should stay secondary but remain readable; use gray-400 rather than the near-placeholder gray-300 used by the empty lane.
