@@ -22,6 +22,7 @@ export function Copy({
   return (
     <Button
       variant="icon"
+      aria-label={isCopied ? 'Copied' : 'Copy'}
       className={copyStyles({ className })}
       onClick={() => {
         navigator.clipboard.writeText(copyText);

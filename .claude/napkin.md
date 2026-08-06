@@ -2,6 +2,10 @@
 
 ## Skill Notes
 
+- 2026-08-07 self on command-output limiting relapse: I used `rg | head` while tracing Copy usages, repeating the no-pipeline mistake. Narrow `rg` with paths/globs and rely on the tool output token limit instead of shell truncation.
+
+- 2026-08-07 shared icon-button accessibility: A Copy control made only from an `aria-hidden` icon has no accessible name. Give the shared Copy button a state-aware `aria-label` (`Copy`/`Copied`) rather than naming individual call sites or weakening feature tests.
+
 - 2026-08-07 self on search-result filtering: I again used a shell pipeline to filter `rg --files` while locating tests. Use `rg --files -g '*.spec.*' <path>` directly; the repeated convenience shortcut is still a control-operator violation.
 
 - 2026-08-07 self on repeated repository-search pipelines: While tracing the invocation deployment card, I again piped `rg` into another filter despite the established no-pipeline rule. Use one scoped expression or separate searches, and do not include guessed nonexistent directories in the same command.
