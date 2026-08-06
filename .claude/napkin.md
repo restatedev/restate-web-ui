@@ -2,6 +2,8 @@
 
 ## Skill Notes
 
+- 2026-08-07 transitive global types in spec configs: Feature spec tsconfigs override `compilerOptions.types`, so importing source that reaches `admin-api-hooks/batchHooks.ts` loses the `globalThis.batchOperationPromises` declaration even when the feature's lib tsconfig includes `@types/global-env.d.ts`. Add the global declaration to each affected spec tsconfig; verify with direct `pnpm tsc -p <spec-config>` rather than relying only on Vitest transpilation.
+
 - 2026-08-07 self on command-output limiting relapse: I used `rg | head` while tracing Copy usages, repeating the no-pipeline mistake. Narrow `rg` with paths/globs and rely on the tool output token limit instead of shell truncation.
 
 - 2026-08-07 shared icon-button accessibility: A Copy control made only from an `aria-hidden` icon has no accessible name. Give the shared Copy button a state-aware `aria-label` (`Copy`/`Copied`) rather than naming individual call sites or weakening feature tests.
