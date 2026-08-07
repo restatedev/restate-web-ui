@@ -1,5 +1,9 @@
 import type { PropsWithChildren } from 'react';
-import { ServiceTarget, type ServiceTargetLinks } from './ServiceTarget';
+import {
+  ServiceTarget,
+  type ServiceTargetLinks,
+  type ServiceTargetProps,
+} from './ServiceTarget';
 
 export interface ParsedTarget {
   service: string;
@@ -25,6 +29,7 @@ export type TargetProps = PropsWithChildren<{
   className?: string;
   showHandler?: boolean;
   links?: ServiceTargetLinks;
+  density?: ServiceTargetProps['density'];
 }>;
 
 export function Target({
@@ -32,6 +37,7 @@ export function Target({
   className,
   showHandler = true,
   links,
+  density,
   children,
 }: TargetProps) {
   const parsedTarget = parseTarget(target);
@@ -42,6 +48,7 @@ export function Target({
       showHandler={showHandler}
       links={links}
       className={className}
+      density={density}
     >
       {children}
     </ServiceTarget>

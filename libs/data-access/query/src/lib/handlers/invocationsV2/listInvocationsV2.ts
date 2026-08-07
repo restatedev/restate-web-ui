@@ -1,6 +1,7 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from '../shared';
 import { listInvocationsFromInvocationStatusAndState } from './list/listInvocationsFromInvocationStatusAndState';
+import { enrichInvocationFlowControl } from './list/enrichInvocationFlowControl';
 import { listInvocationsFromVqueues } from './list/listInvocationsFromVqueues';
 import { listInvocationsWhenCompletedVqueuesWereSkipped } from './list/listInvocationsWhenCompletedVqueuesWereSkipped';
 import {
@@ -24,7 +25,12 @@ type ListInvocationsV2Response =
  */
 export async function listInvocationsV2(
   this: QueryContext,
-  { filters = [], sort, mode: requestedMode }: ListInvocationsV2Args,
+  {
+    filters = [],
+    sort,
+    mode: requestedMode,
+    includeFlowControl = false,
+  }: ListInvocationsV2Args,
 ): Promise<Response> {
   const filterError = validateInvocationFiltersV2(filters);
   if (filterError) return badRequest(filterError);
@@ -78,9 +84,13 @@ export async function listInvocationsV2(
 
   if ('error' in result) return badRequest(result.error);
   const isPartial = mode.type === 'sampled' || Boolean(result.partial);
+  const rows =
+    includeFlowControl && useVqueues
+      ? await enrichInvocationFlowControl(this, result.rows, requestTime)
+      : result.rows;
 
   return Response.json({
-    rows: result.rows,
+    rows,
     limit: INVOCATIONS_V2_LIMIT,
     mode: mode.type,
     isPartial,

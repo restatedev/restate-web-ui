@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   NO_VQUEUE_HEADERS,
   VQUEUE_SKIP_COMPLETED_HEADERS,
@@ -1254,6 +1254,182 @@ describe('POST /query/v2/invocations', () => {
               FROM sys_vqueue_entry_status v
               WHERE v.entry_id IN ('inv-b')
                 AND v.entry_kind = 'invocation'",
+        ]
+      `);
+    });
+
+    it('optionally enriches a bounded page with batched flow-control context', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime('2026-01-01T00:00:10.000Z');
+      const responses: Record<string, unknown>[][] = [
+        [rawInvocation('inv-live', { vqueue_id: 'vq-live' })],
+        [
+          {
+            entry_id: 'inv-live',
+            vqueue_id: 'vq-live',
+            stage: 'inbox',
+            status: 'new',
+            transitioned_at: '2026-01-01T00:00:04.000Z',
+          },
+        ],
+        [
+          {
+            id: 'vq-live',
+            queue_is_paused: false,
+            num_inbox: 24,
+            num_running: 3,
+            num_suspended: 2,
+            num_paused: 1,
+            avg_inbox_duration: 'PT1.2S',
+          },
+        ],
+        [
+          {
+            id: 'vq-live',
+            status: 'blocked',
+            blocked_on: 'lock',
+            blocked_on_json: JSON.stringify({
+              resource: 'lock',
+              scope: 'global',
+              lock_name: 'Greeter/key',
+            }),
+            head_entry_id: 'inv-live',
+          },
+        ],
+      ];
+      let responseIndex = 0;
+      setResponder(() => responses[responseIndex++] ?? []);
+
+      const response = await post('/v2/invocations', {
+        filters: [
+          {
+            field: 'id',
+            type: 'STRING',
+            operation: 'EQUALS',
+            value: 'inv-live',
+          },
+        ],
+        includeFlowControl: true,
+      });
+
+      expect(await response.json()).toMatchObject({
+        rows: [
+          {
+            id: 'inv-live',
+            vqueue: {
+              vqueue_id: 'vq-live',
+              stage: 'inbox',
+              flowControl: {
+                queuePaused: false,
+                inboxCount: 24,
+                counts: {
+                  inbox: 24,
+                  running: 3,
+                  suspended: 2,
+                  paused: 1,
+                },
+                timeInStage: 'PT6S',
+                averageTimeInStage: 'PT1.2S',
+                headEntryId: 'inv-live',
+                scheduling: 'blocked',
+                blockedOn: 'lock',
+                blockedResource: {
+                  resource: 'lock',
+                  scope: 'global',
+                  lockName: 'Greeter/key',
+                },
+              },
+            },
+          },
+        ],
+      });
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                id,
+        target,
+        target_service_name,
+        target_service_key,
+        target_handler_name,
+        target_service_ty,
+        idempotency_key,
+        invoked_by,
+        invoked_by_id,
+        invoked_by_subscription_id,
+        invoked_by_target,
+        restarted_from,
+        pinned_deployment_id,
+        pinned_service_protocol_version,
+        journal_size,
+        journal_commands_size,
+        created_at,
+        modified_at,
+        inboxed_at,
+        scheduled_at,
+        scheduled_start_at,
+        running_at,
+        completed_at,
+        completion_retention,
+        journal_retention,
+        retry_count,
+        last_start_at,
+        next_retry_at,
+        last_attempt_deployment_id,
+        last_attempt_server,
+        last_failure,
+        last_failure_error_code,
+        status,
+        completion_result,
+        completion_failure,
+        last_awaiting_on_future_json,
+        suspended_waiting_for_completions,
+        suspended_waiting_for_signals,
+        suspended_waiting_future_json,
+        scope,
+        vqueue_id,
+        limit_key
+              FROM sys_invocation i
+              WHERE i.id IN ('inv-live')",
+          "SELECT
+                v.entry_id,
+                v.vqueue_id,
+                v.stage,
+                v.status,
+                v.next_at,
+                v.created_at,
+                v.transitioned_at,
+                v.first_attempt_at,
+                v.latest_attempt_at,
+                v.first_runnable_at,
+                v.retry_attempts,
+                v.retry_count_since_last_stored_command,
+                v.num_attempts,
+                v.num_errors,
+                v.deployment
+              FROM sys_vqueue_entry_status v
+              WHERE v.entry_id IN ('inv-live')
+                AND v.entry_kind = 'invocation'",
+          "SELECT
+          id,
+          queue_is_paused,
+          num_inbox,
+          num_running,
+          num_suspended,
+          num_paused,
+          avg_inbox_duration,
+          avg_run_duration,
+          avg_suspension_duration
+        FROM sys_vqueue_meta
+        WHERE id IN ('vq-live')",
+          "SELECT
+          id,
+          status,
+          blocked_on,
+          blocked_on_json,
+          head_entry_id,
+          scheduled_at
+        FROM sys_scheduler
+        WHERE id IN ('vq-live')",
         ]
       `);
     });

@@ -124,6 +124,7 @@ import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui'
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
+  vqueue_id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
   created_at: INVOCATION_TABLE_COLUMN_CONFIG.created_at.defaultWidth,
   modified_at: 110,
   duration: 110,

@@ -5,6 +5,7 @@ import { tv } from '@restate/util/styles';
 type ChipEdge = 'straight' | 'angled';
 
 export type ChipGroupVariant = 'default' | 'header';
+export type ChipGroupDensity = 'default' | 'compact';
 export type ChipSize = 'sm' | 'md' | 'lg';
 
 const BORDER_FILTER =
@@ -131,8 +132,16 @@ const groupStyles = tv({
       default: '',
       header: [
         'mix-blend-luminosity [--chip-border-color:white]',
-        '[&_[data-chip]]:[--chip-height:1.75rem] [&_[data-chip]]:[--chip-inset:2px] [&_[data-chip]]:[--chip-radius:0.75rem] [&_[data-chip]]:[--chip-slope:7px]',
+        '[&_[data-chip]]:[--chip-height:1.75rem] [&_[data-chip]]:[--chip-inset:2px] [&_[data-chip]]:[--chip-radius:0.625rem] [&_[data-chip]]:[--chip-slope:5px]',
         '[&_[data-chip-root]]:text-sm',
+        '[&>[data-chip]:not(:first-child)]:-ml-px [&>a:not(:first-child)]:-ml-px',
+      ],
+    },
+    density: {
+      default: '',
+      compact: [
+        '[&_[data-chip]]:[--chip-height:1.5rem] [&_[data-chip]]:[--chip-slope:5px]',
+        '[&>[data-chip]:not(:first-child)]:-ml-0.5 [&>a:not(:first-child)]:-ml-0.5',
       ],
     },
     isLink: {
@@ -141,12 +150,14 @@ const groupStyles = tv({
   },
   defaultVariants: {
     variant: 'default',
+    density: 'default',
   },
 });
 
 export interface ChipGroupProps extends PropsWithChildren {
   className?: string;
   variant?: ChipGroupVariant;
+  density?: ChipGroupDensity;
   href?: string;
   'aria-label'?: string;
 }
@@ -155,11 +166,13 @@ export function ChipGroup({
   children,
   className,
   variant,
+  density,
   href,
   'aria-label': ariaLabel,
 }: ChipGroupProps) {
   const groupClassName = groupStyles({
     variant,
+    density,
     isLink: Boolean(href),
     className,
   });

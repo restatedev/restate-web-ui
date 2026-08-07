@@ -3,6 +3,7 @@ import {
   Chip,
   ChipGroup,
   ChipSegment,
+  type ChipGroupDensity,
   type ChipGroupVariant,
 } from '@restate/ui/chip';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -57,6 +58,7 @@ export interface WorkflowRunTargetProps {
   className?: string;
   containerClassName?: string;
   variant?: ChipGroupVariant;
+  density?: ChipGroupDensity;
   href?: string;
   serviceHref?: string;
   showService?: boolean;
@@ -67,12 +69,15 @@ export function WorkflowRunTarget({
   className,
   containerClassName,
   variant,
+  density,
   href,
   serviceHref,
   showService = true,
 }: WorkflowRunTargetProps) {
   const { service, id, scope } = identity;
   const hasVisibleScope = Boolean(scope);
+  const resolvedDensity =
+    density ?? (variant === 'header' ? 'default' : 'compact');
   const copyText = formatWorkflowRunIdentity(identity);
   const {
     serviceLink,
@@ -106,6 +111,7 @@ export function WorkflowRunTarget({
     >
       <ChipGroup
         variant={variant}
+        density={resolvedDensity}
         href={!showService || !serviceHref ? href : undefined}
         aria-label={href ? `Workflow run ${copyText}` : undefined}
         className={containerClassName}

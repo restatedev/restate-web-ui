@@ -5,6 +5,7 @@ import type {
 import { Query, QueryClient } from '@tanstack/react-query';
 import {
   isGetInvocationJournalWithInvocationV2,
+  isGetVqueue,
   isListInvocationsV2,
 } from './hooks';
 import { useListInvocationsV2 } from './invocationV2Hooks';
@@ -19,30 +20,36 @@ function toListInvocation(detail: InvocationDetail): InvocationV2 {
   return invocation;
 }
 
-export function queryCacheOnSuccess(
+export function queryCacheOnSuccess<TError>(
   queryClient: QueryClient,
   data: unknown,
-  query: Query<unknown, unknown, unknown, readonly unknown[]>,
+  query: Query<unknown, TError, unknown, readonly unknown[]>,
 ) {
+  let newInvocation: InvocationV2 | undefined;
   if (isGetInvocationJournalWithInvocationV2(data, query)) {
-    queryClient.setQueriesData(
-      {
-        predicate: (query) => {
-          return isListInvocationsV2({}, query);
-        },
-      },
-      (oldData: ReturnType<typeof useListInvocationsV2>['data']) => {
-        if (!data || !oldData) return oldData;
-        const newInvocation = toListInvocation(data);
-        return {
-          ...oldData,
-          rows: oldData.rows.map((oldInvocation) =>
-            oldInvocation.id === newInvocation.id
-              ? newInvocation
-              : oldInvocation,
-          ),
-        };
-      },
-    );
+    newInvocation = toListInvocation(data);
+  } else if (isGetVqueue(data, query)) {
+    newInvocation = data.focusedInvocation;
   }
+  if (!newInvocation) return;
+  const focusedInvocation = newInvocation;
+
+  queryClient.setQueriesData(
+    {
+      predicate: (query) => {
+        return isListInvocationsV2({}, query);
+      },
+    },
+    (oldData: ReturnType<typeof useListInvocationsV2>['data']) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        rows: oldData.rows.map((oldInvocation) =>
+          oldInvocation.id === focusedInvocation.id
+            ? focusedInvocation
+            : oldInvocation,
+        ),
+      };
+    },
+  );
 }

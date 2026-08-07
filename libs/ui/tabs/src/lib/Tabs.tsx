@@ -23,6 +23,7 @@ export type TabId = string;
 export interface TabsProps {
   className?: string;
   defaultTab?: TabId;
+  orientation?: 'horizontal' | 'vertical';
   queryParam?: string;
   onTabChange?: (tab: TabId) => void;
   selectedTab?: TabId;
@@ -35,10 +36,12 @@ export interface TabListProps {
 }
 
 export interface TabProps {
+  'aria-label'?: string;
   id: TabId;
   children: ReactNode;
   className?: string;
   disabled?: boolean;
+  selectionIndicatorClassName?: string;
 }
 
 export interface TabPanelsProps {
@@ -156,6 +159,7 @@ function BaseTabs({
   defaultTab,
   disabledTabs,
   onTabChange,
+  orientation,
   selectedTab,
 }: PropsWithChildren<BaseTabsProps>) {
   return (
@@ -164,6 +168,7 @@ function BaseTabs({
       defaultSelectedKey={selectedTab ? undefined : defaultTab}
       disabledKeys={disabledTabs}
       onSelectionChange={(tab) => onTabChange?.(String(tab))}
+      orientation={orientation}
       className={composeRenderProps(className, (className) =>
         tabsStyles({ className }),
       )}
@@ -271,9 +276,17 @@ export function TabList({
   );
 }
 
-export function Tab({ children, className, disabled, id }: TabProps) {
+export function Tab({
+  'aria-label': ariaLabel,
+  children,
+  className,
+  disabled,
+  id,
+  selectionIndicatorClassName,
+}: TabProps) {
   return (
     <AriaTab
+      aria-label={ariaLabel}
       id={id}
       isDisabled={disabled}
       className={composeRenderProps(className, (className, renderProps) =>
@@ -284,7 +297,11 @@ export function Tab({ children, className, disabled, id }: TabProps) {
       )}
     >
       {children}
-      <SelectionIndicator className={selectionIndicatorStyles()} />
+      <SelectionIndicator
+        className={selectionIndicatorStyles({
+          className: selectionIndicatorClassName,
+        })}
+      />
     </AriaTab>
   );
 }

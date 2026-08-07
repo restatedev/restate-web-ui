@@ -48,6 +48,7 @@ overrides:
   undici@>=7.0.0 <7.28.0: ^7.28.0
   undici@>=7.23.0 <7.28.0: ^7.28.0
   postcss@<=8.5.17: ^8.5.18
+  undici@>=7.0.0 <7.29.0: ^7.29.0
 
 peerDependencyRules:
   allowAny:
@@ -64,6 +65,7 @@ minimumReleaseAgeExclude:
   - js-cookie@3.0.6
   - undici@7.28.0
   - postcss@8.5.18
+  - undici@7.29.0
 
 auditConfig:
   ignoreGhsas:

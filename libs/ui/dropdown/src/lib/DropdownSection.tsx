@@ -5,6 +5,7 @@ import { tv } from '@restate/util/styles';
 export interface DropdownSectionProps extends PropsWithChildren<object> {
   title?: ReactNode;
   className?: string;
+  headerClassName?: string;
 }
 
 const styles = tv({
@@ -18,12 +19,17 @@ export function DropdownSection({
   children,
   title,
   className,
+  headerClassName,
 }: DropdownSectionProps) {
   const { container, menu, header } = styles();
   // TODO: fix accessibility of header and section
   return (
     <div className={container()}>
-      {title && <Header className={header()}>{title}</Header>}
+      {title && (
+        <Header className={header({ className: headerClassName })}>
+          {title}
+        </Header>
+      )}
       <div className={menu({ className })}>{children}</div>
     </div>
   );

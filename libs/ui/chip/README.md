@@ -3,12 +3,20 @@
 Use `Chip` for one outlined target and `ChipGroup` for a sequence of separate
 targets whose edges visually connect.
 
+## Compact target pattern
+
+`ChipGroup density="compact"` owns the shared non-header target geometry: 24px
+height, a gentler 5px angled edge, and a 2px overlap between adjacent chips.
+Target components should default to compact density outside headers and retain
+an explicit density override for exceptional surfaces.
+
 ## Header identity pattern
 
-`ChipGroup variant="header"` owns the shared header geometry: 28px height,
-12px outer radius, 2px inner border inset, shadow clearance, white border, and
-luminosity blending with the status header behind it. Pages should only choose
-the content, depth color, and edge shape of each chip.
+`ChipGroup variant="header"` keeps the compact target's soft 5px angled edge,
+uses a roomier 1px overlap, then scales the surrounding treatment: 28px height,
+10px outer radius, 2px inner border inset, larger type, shadow clearance, white
+border, and luminosity blending with the status header behind it. Pages should
+only choose the content, depth color, and edge shape of each chip.
 
 ```tsx
 <ChipGroup variant="header">

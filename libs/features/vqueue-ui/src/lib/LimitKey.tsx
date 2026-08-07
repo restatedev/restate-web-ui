@@ -27,6 +27,10 @@ const styles = tv({
     },
     hasNestedSegment: {
       true: {
+        chip: [
+          '[&>[data-chip-segment]:first-child]:shrink',
+          '[&>[data-chip-segment]:last-child]:shrink-[2]',
+        ],
         segment: 'pr-2.5',
       },
     },
