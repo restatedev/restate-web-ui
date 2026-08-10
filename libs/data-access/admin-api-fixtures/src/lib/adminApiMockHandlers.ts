@@ -90,17 +90,26 @@ function getSqlStringFilter(sql: string, column: string) {
   return match ? unquoteSqlString(match[1] ?? '') : undefined;
 }
 
-function ruleRows(pattern?: string) {
+function ruleRows(pattern?: string, includeLastModified = false) {
   return Array.from(limitRules.values())
     .filter((rule) => pattern === undefined || rule.pattern === pattern)
-    .map((rule) => ({
-      pattern: rule.pattern,
-      concurrency: rule.limits.concurrency ?? null,
-      description: rule.description,
-      disabled: rule.disabled,
-      version: rule.version,
-      last_modified_millis_since_epoch: rule.last_modified_millis_since_epoch,
-    }));
+    .map((rule) => {
+      const row = {
+        pattern: rule.pattern,
+        concurrency: rule.limits.concurrency ?? null,
+        description: rule.description,
+        disabled: rule.disabled,
+        version: rule.version,
+      };
+      return includeLastModified
+        ? {
+            ...row,
+            last_modified: new Date(
+              rule.last_modified_millis_since_epoch,
+            ).toISOString(),
+          }
+        : row;
+    });
 }
 
 type UserLimitRowMock = {
@@ -172,6 +181,30 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
       }
     });
   return rows;
+}
+
+function userLimitCounterSummaryRows() {
+  const summaries = new Map<
+    string,
+    {
+      rule_pattern: string;
+      num_counters: number;
+      num_counters_with_waiters: number;
+    }
+  >();
+
+  for (const counter of userLimitRows()) {
+    const summary = summaries.get(counter.rule_pattern) ?? {
+      rule_pattern: counter.rule_pattern,
+      num_counters: 0,
+      num_counters_with_waiters: 0,
+    };
+    summary.num_counters += 1;
+    summary.num_counters_with_waiters += Number(counter.num_waiters > 0);
+    summaries.set(counter.rule_pattern, summary);
+  }
+
+  return Array.from(summaries.values());
 }
 
 const listDeploymentsHandler = http.get<
@@ -369,13 +402,18 @@ const queryHandler = http.post<
 
   if (/\bFROM\s+sys_rules\b/i.test(sql)) {
     return HttpResponse.json({
-      rows: ruleRows(getSqlStringFilter(sql, 'pattern')),
+      rows: ruleRows(
+        getSqlStringFilter(sql, 'pattern'),
+        /\blast_modified\b/i.test(sql),
+      ),
     } as any);
   }
 
   if (/\bFROM\s+sys_user_limits\b/i.test(sql)) {
     return HttpResponse.json({
-      rows: userLimitRows(getSqlStringFilter(sql, 'rule_pattern')),
+      rows: /\bCOUNT\s*\(\s*\*\s*\)/i.test(sql)
+        ? userLimitCounterSummaryRows()
+        : userLimitRows(getSqlStringFilter(sql, 'rule_pattern')),
     } as any);
   }
 

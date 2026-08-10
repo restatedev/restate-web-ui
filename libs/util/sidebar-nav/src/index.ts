@@ -17,4 +17,5 @@ export {
 export { StateSidebarItem } from './lib/StateSidebarItem';
 export { VirtualObjectsSidebarItem } from './lib/VirtualObjectsSidebarItem';
 export { WorkflowsSidebarItem } from './lib/WorkflowsSidebarItem';
+export { LimitsSidebarItem } from './lib/LimitsSidebarItem';
 export { IntrospectionSidebarItem } from './lib/IntrospectionSidebarItem';

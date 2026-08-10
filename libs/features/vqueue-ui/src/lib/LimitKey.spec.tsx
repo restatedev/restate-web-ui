@@ -48,6 +48,26 @@ describe('LimitKey', () => {
     expect(screen.getByRole('button')).toBeTruthy();
   });
 
+  it('angles the left edge when it follows a scope', () => {
+    const { container } = render(
+      <LimitKey
+        value="team/customer-1"
+        relationship="scope"
+        showCopy={false}
+      />,
+    );
+
+    expect(
+      container.querySelector('[data-chip-root]')?.getAttribute('class'),
+    ).toContain('rounded-l-[3px]');
+    expect(
+      container
+        .querySelector('[data-limit-key]')
+        ?.getAttribute('data-limit-key-relationship'),
+    ).toBe('scope');
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   it('renders nothing without a limit key', () => {
     const { container } = render(<LimitKey />);
 

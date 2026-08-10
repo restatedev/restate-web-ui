@@ -1,5 +1,12 @@
 export { LimitKey, type LimitKeyProps } from './lib/LimitKey';
 export {
+  getLimitRuleLevel,
+  LimitRuleTarget,
+  type LimitRuleLevel,
+  type LimitRuleTargetProps,
+  type LimitRuleTargetVariant,
+} from './lib/LimitRuleTarget';
+export {
   Scope,
   type ScopeLabelVariant,
   type ScopePresentation,

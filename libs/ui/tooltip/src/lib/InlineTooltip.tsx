@@ -14,6 +14,7 @@ interface InlineTooltipProps {
   className?: string;
   variant?: 'inline-help' | 'indicator-button';
   visible?: boolean;
+  ariaLabel?: string;
 }
 
 export function InlineTooltip({
@@ -24,6 +25,7 @@ export function InlineTooltip({
   className,
   variant = 'inline-help',
   visible = true,
+  ariaLabel,
 }: PropsWithChildren<InlineTooltipProps>) {
   const triggerRef = useRef<HTMLDivElement>(null);
   const Trigger =
@@ -35,7 +37,14 @@ export function InlineTooltip({
 
   return (
     <AriaTooltip delay={500}>
-      <Trigger ref={triggerRef} className={className}>
+      <Trigger
+        ref={triggerRef}
+        className={className}
+        ariaLabel={
+          ariaLabel ??
+          (typeof title === 'string' ? `Explain ${title}` : 'More information')
+        }
+      >
         {children}
       </Trigger>
       <InternalTooltipContent
@@ -71,8 +80,8 @@ const helpStyles = tv({
 
 const HelpTooltipTrigger = forwardRef<
   HTMLElement,
-  PropsWithChildren<{ className?: string }>
->(({ children, className }, ref) => {
+  PropsWithChildren<{ className?: string; ariaLabel: string }>
+>(({ children, className, ariaLabel }, ref) => {
   const refObject = useObjectRef(ref);
   const { focusableProps } = useFocusable({}, refObject);
 
@@ -88,6 +97,7 @@ const HelpTooltipTrigger = forwardRef<
       <sup className="-mr-[0.4em] -ml-[0.1em]">
         <Button
           variant="icon"
+          aria-label={ariaLabel}
           className="-mb-[0.4em] inline p-0 [font-size:inherit] text-current opacity-80 -outline-offset-2 [&_svg]:h-[1em] [&_svg]:w-[1em] [&_svg]:stroke-[0.18em]"
         >
           <Icon name={IconName.Help} />
@@ -103,8 +113,8 @@ const infoStyles = tv({
 
 const InfoTooltipTrigger = forwardRef<
   HTMLElement,
-  PropsWithChildren<{ className?: string }>
->(({ children, className }, ref) => {
+  PropsWithChildren<{ className?: string; ariaLabel: string }>
+>(({ children, className, ariaLabel }, ref) => {
   const refObject = useObjectRef(ref);
   const { focusableProps } = useFocusable({}, refObject);
 
@@ -117,6 +127,7 @@ const InfoTooltipTrigger = forwardRef<
       {children}
       <Button
         variant="icon"
+        aria-label={ariaLabel}
         className="inline p-0 [font-size:inherit] text-current opacity-70 [&_svg]:h-[1em] [&_svg]:w-[1em] [&_svg]:stroke-[0.18em]"
       >
         <Icon name={IconName.Info} />

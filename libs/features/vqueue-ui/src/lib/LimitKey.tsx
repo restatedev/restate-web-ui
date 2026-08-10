@@ -44,12 +44,16 @@ export interface LimitKeyProps {
   value?: string;
   variant?: 'default' | 'table';
   className?: string;
+  relationship?: 'scope';
+  showCopy?: boolean;
 }
 
 export function LimitKey({
   value,
   variant = 'default',
   className,
+  relationship,
+  showCopy = variant !== 'table',
 }: LimitKeyProps) {
   if (!value) return null;
 
@@ -62,18 +66,26 @@ export function LimitKey({
     variant,
     hasNestedSegment: secondLevel !== undefined,
   });
-  const copyButton =
-    variant !== 'table' ? <Copy copyText={value} className={copy()} /> : null;
+  const copyButton = showCopy ? (
+    <Copy copyText={value} className={copy()} />
+  ) : null;
 
   return (
-    <span className={root({ className })} data-limit-key={value}>
+    <span
+      className={root({ className })}
+      data-limit-key={value}
+      data-limit-key-relationship={relationship}
+    >
       <TruncateWithTooltip
         tooltipContent={value}
         copyText={value}
-        hideCopy={variant !== 'table'}
+        hideCopy={!showCopy && variant !== 'table'}
         overflowVisible
       >
-        <Chip className={chip()}>
+        <Chip
+          left={relationship === 'scope' ? 'angled' : 'straight'}
+          className={chip()}
+        >
           <ChipSegment className={segment()}>
             <Icon name={IconName.LimitKey} className={icon()} />
             <TruncateTooltipTrigger>{firstLevel}</TruncateTooltipTrigger>
