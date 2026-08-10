@@ -3045,9 +3045,24 @@ export interface components {
         size: number;
       }[];
     };
-    /** @description Configured limit rules from the sys_rules table. */
+    /** @description Configured limit rules from the sys_rules table with concrete counter summaries from sys_user_limits. */
     ListLimitRulesResponse: {
-      rules: components['schemas']['RuleResponse'][];
+      rules: components['schemas']['LimitRuleWithStats'][];
+    };
+    LimitRuleWithStats: {
+      description?: string | null;
+      disabled: boolean;
+      limits: components['schemas']['UserLimits'];
+      pattern: string;
+      /**
+       * Format: int32
+       * @description Per-rule version: bumped on runtime-relevant changes.
+       */
+      version: number;
+      /** @description Concrete counters currently governed by this rule. */
+      num_counters: number;
+      /** @description Concrete counters governed by this rule that currently have waiting VQueues. */
+      num_counters_with_waiters: number;
     };
     /** @description Effective limit rows and usage from the sys_user_limits table. */
     ListUserLimitsResponse: {

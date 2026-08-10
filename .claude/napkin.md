@@ -2,6 +2,102 @@
 
 ## Skill Notes
 
+- 2026-08-10 Flow Control counter-ratio label: A bare `1 / 2` is not self-explanatory, and `Affected` is too vague. Keep rows compact but label the single-line column `Backlogged / total counters`; define a backlogged counter in the dark tooltip as one with at least one VQueue waiting for capacity. Give the column enough minimum width that this explanatory header remains visible.
+
+- 2026-08-10 Flow Control delete form: The rule deletion confirmation already uses shared React Router `Form` and `SubmitButton`; provide `formAction="/limits/rules/bulk-delete"` and `formMethod="POST"` so automatic mutation-pending detection matches `useDeleteLimitRule`. Keep `isPending` only to prevent cancellation during the mutation, and label the destructive action `Delete`, not `Delete rule`.
+
+- 2026-08-10 Flow Control refresh styling: Use the shared `icon` button variant for the rules-table refresh action; keep it unboxed with no white background rather than styling it as a secondary button.
+
+- 2026-08-10 Flow Control form and tests: Keep focused coverage on rule-pattern matching semantics and the interactive `RulePatternBuilder` hierarchy. `KeyPill` must use the shared React Aria-backed `Button`, not a native button. Mutation dialogs should use React Router `Form` with an action equal to the React Query mutation path (create/update rules: `/limits/rules`) and the shared `SubmitButton`, allowing it to detect mutation pending state automatically instead of receiving manual pending state.
+
+- 2026-08-10 Flow Control rule timestamps: The rules-list UI does not consume `last_modified_millis_since_epoch`, so `LimitRuleWithStats` is an explicit list-item schema without that field and the list SQL must not select `last_modified`. Keep the timestamp in the server `RuleResponse` contract for single-rule/create/update responses; select the native ISO `last_modified` for the single-rule query and convert it with `Date.parse` in the TypeScript adapter instead of casting in SQL.
+
+- 2026-08-10 Flow Control rule-list queries: Fetch configured `sys_rules` rows and aggregated live `sys_user_limits` counter summaries as two backend queries started with `Promise.all`, then merge by `rule_pattern` with zero defaults. Keep this behind one browser request so live statistics do not cause a second table update or reorder. Mock `/query` must recognize the grouped counter SQL and return aggregate rows rather than raw counters.
+
+- 2026-08-10 Flow Control rules refresh: Put a compact secondary icon-only refresh action immediately before the primary `New rule` toolbar button. Refetch only the rules query, prevent duplicate fetches while it is active, rotate the refresh glyph as feedback, and retain a tooltip plus accessible state-aware label.
+
+- 2026-08-10 self on multiline `rg` search: I embedded `\n` in a normal ripgrep pattern while looking for accessible icon buttons, which ripgrep rejects without multiline mode. Search the single-line attribute directly or run separate scoped searches; do not introduce multiline mode for simple JSX discovery.
+
+- 2026-08-10 Flow control rule pressure summary: On the rules list, do not expose the aggregate number of waiting VQueues. Show a `Counters` ratio instead: concrete counters with at least one waiting VQueue divided by all concrete counters governed by the rule. Normalize the amber bar per row to that ratio, keep the exact `affected / total` values visible, and explain the encoding through the shared dark inline tooltip. Reserve raw VQueue counts for a future concrete-counter detail surface.
+
+- 2026-08-10 self on local mock startup: After the focused Nx query test stalled, I still tried `NX_DAEMON=false pnpm nx serve web-ui -c mock`; it also remained silent during graph construction and needed interruption. Inspect existing Nx processes/locks or run the declared Vite command directly before retrying another Nx wrapper.
+
+- 2026-08-10 self on query test validation: I invoked the Nx test wrapper for the focused `query` handler test even though the napkin records silent Nx graph stalls. It yielded only a live session and needed interruption; use the project's direct Vitest config for focused query tests.
+
+- 2026-08-10 self on project discovery relapse: I included nonexistent root `project.json` in a scoped `rg` path list while locating the admin API generator, despite the existing note. Search only confirmed paths such as `package.json`, `nx.json`, and `libs/**/project.json`.
+
+- 2026-08-10 self on visualization renderer path: I resolved `scripts/render.py` against the plugin package root instead of the directory containing `skills/visualize/SKILL.md`. Skill-relative assets live under `skills/visualize/`; resolve referenced paths from the selected SKILL file as instructed.
+
+- 2026-08-10 `sys_rules.last_modified` conversion: The query JSON renders the raw `TimestampMillisecond` as an ISO string, while `RuleResponse` requires numeric `last_modified_millis_since_epoch`. In the current DataFusion query engine, `to_unixtime(timestamp) * 1000` truncates the millisecond fraction (`...46.553Z` becomes `...46000`); use `CAST(last_modified AS BIGINT)` to preserve the underlying epoch milliseconds. A `LEFT JOIN` to aggregated rule waiters still needs `COALESCE(..., 0)` because unmatched rules otherwise produce a null/omitted `num_waiters` despite the response contract requiring a number.
+
+- 2026-08-10 self on direct `/query` probing: Posting SQL with only `content-type: application/json` returns Arrow IPC bytes. Include `accept: application/json` when inspecting query rows in the terminal.
+
+- 2026-08-10 Flow control URL: The UI route prefix is `/flow-control`, with the rules page at `/flow-control/rules`. Keep the Restate Admin API endpoints under `/limits`; those are server contracts, not web navigation paths.
+
+- 2026-08-07 self on repeated file-discovery pipeline: I piped `rg --files` into `rg` while locating icon/sidebar project configs despite the established no-pipeline rule. Use direct `rg --files -g 'tsconfig.lib.json' -g 'project.json' <roots>` instead.
+
+- 2026-08-07 Flow control navigation identity: Use the shared `Filters` icon name mapped to Lucide `SlidersHorizontal` for Flow control across sidebar, page, dialog, and empty states. Treat Flow control as a sidebar parent and show `Rules` as its nested navigation item.
+
+- 2026-08-07 rules table toolbar simplification: Remove search/key filtering from the rules list entirely. Always show the full, stably sorted rules table and keep only the compact `New rule` action in the toolbar.
+
+- 2026-08-07 rules table key filter: The toolbar is not a generic rule-text search and not a separate test workflow. Use compact structured Scope, Level 1, and Level 2 inputs; progressively enable deeper values and filter the table itself to every configured parent/wildcard/specific rule that applies to the concrete key. Never require `scope/l1/l2` syntax.
+
+- 2026-08-07 create-rule primary action: Label the create dialog's submit button `Create`, not `Create rule`.
+
+- 2026-08-07 activation checkbox copy nuance: When the user asks for copy "like make the rule active," preserve the sentiment rather than reproducing the phrase literally. Use the concise operational wording `Enforce this rule.` beneath `Enabled`.
+
+- 2026-08-07 activation checkbox register-deployment pattern: Match `register-deployment/UseHTTP11.tsx`: standalone `Enabled` title above, then the shared `FormFieldCheckbox` on its own line with `Make this rule active.` as the description. Do not use custom checkbox sizing or describe invocation behavior/save timing here.
+
+- 2026-08-07 self on napkin patch anchoring: I coupled a valid source edit to a napkin hunk that assumed `scope input icon` was still the first note; a newer shared entry had moved above it, so the atomic patch failed. Keep napkin changes separate from source edits and anchor only on the stable section heading.
+
+- 2026-08-07 scope input icon: Do not render the gauge icon inside the hierarchy Scope input; align its value and placeholder with the other text fields.
+
+- 2026-08-07 activation description wording: Under the form's `Enabled` checkbox, explain the live semantics (`Limits matching invocations while enabled.`), not the persistence event. Avoid `Apply this rule immediately after saving.`
+
+- 2026-08-07 activation checkbox hierarchy: Keep the form activation control unboxed but structured: a smaller checkbox, `Enabled` as a concise medium-weight label, and `Apply this rule immediately after saving.` as quiet secondary text. Do not put the entire explanation in one primary checkbox label.
+
+- 2026-08-07 flow-control enabled status color: Render the table's `Enabled` rule-status badge with the blue info treatment, not green success. Keep `Disabled` neutral.
+
+- 2026-08-07 flow-control activation controls: Do not use switches for rule activation in either the table or form. In the table, render a scan-friendly Enabled/Disabled status badge and put the deliberate Enable/Disable mutation in the existing row actions menu. In the form, use one quiet checkbox beneath Limit and Description.
+
+- 2026-08-07 self on formatting-sensitive patch context: I built a large replacement hunk from the pre-Prettier conditional layout, so the whole patch failed when the ternary had since wrapped across lines. Split broad UI transformations into stable component-level hunks and re-read the exact formatted block before replacing it.
+
+- 2026-08-07 flow-control form density: Use one consistent blue treatment for derived rule-level badges so they read as computed state. Hide Preview until Scope has content. Enabled is rule activation, not hierarchy, so keep it outside the hierarchy container but render it as a compact peer setting beside Limit and Description rather than a full-width banner.
+
+- 2026-08-07 self on hierarchy ComboBox QA: I tried to locate Level 1 while the Scope ComboBox suggestion popover was still expanded; the live accessibility snapshot temporarily exposed only Scope as a named combobox, so the locator timed out. Close the active suggestion popup before addressing the next hierarchical field by accessible name.
+
+- 2026-08-07 self on cross-file patch context: I included a context line from `RuleLevel.tsx` under the `RulePatternBuilder.tsx` hunk, causing the otherwise small multi-file patch to fail atomically. Keep each file hunk anchored only to text in that file, even for tightly related cleanup.
+
+- 2026-08-07 hierarchy form grouping: Present hierarchy as one bordered container that owns its title, concise description, small icon-only tooltip, and the three fields. Keep a small visual gap between Scope and the connected L1/L2 key group. Derive a single `Rule level` badge in the container header only after Scope is populated; do not add a separate instructional/result card such as `Choose a scope` beneath the fields.
+
+- 2026-08-07 hierarchy copy density: Keep the form hierarchy explanation to one instruction (`Fill from left to right…`) and one compact current-level summary. Do not repeat deepest-field/wildcard rules in a second bold paragraph. In the dark explainer comparison, keep a visibly generous gutter between the level/pattern column and its description.
+
+- 2026-08-07 form hierarchy explainer trigger: In the create/edit rule dialog, keep level help as one icon-only dark tooltip immediately beside `Limit hierarchy`. Do not render `How levels work` as right-aligned text; it competes with the section title and reads as a secondary action.
+
+- 2026-08-07 hierarchy input focus: The combined Scope -> L1 -> L2 input must use the exact `FormFieldInput` focus grammar: retain the gray border, remove the ambient shadow, keep the subtle inset shadow, and use a crisp 2px blue-600 outline. Do not use a blue border plus pale ring halo.
+
+- 2026-08-07 Flow Control toolbar action: Size `New rule` like Overview 2's `+ Deployment` toolbar action: compact `py-0.5`, asymmetric `pl-1.5 pr-2`, `text-0.5xs`, 3.5 icon, and rounded-lg treatment.
+
+- 2026-08-07 flow-control level explainer: Explanatory help must use the shared `@restate/features/explainers` / `InlineTooltip` dark hover-and-focus treatment. Do not invent a light click popover for the rule-level explanation; keep its richer three-level content inside the established dark tooltip grammar.
+
+- 2026-08-07 self on explainer discovery: I used `rg ... | head` despite repeated napkin rules against shell pipelines. Scope `rg` by directory and glob, then rely on the command output limit rather than piping to truncate.
+
+- 2026-08-07 self on repository file listing: I used `rg --files | sort` after the napkin already recorded avoiding search pipelines. `rg --files` is sufficient for discovery; do any ordering mentally or in orchestration code instead of adding a shell control operator.
+
+- 2026-08-07 shared limit-rule identity: Whenever UI refers to a flow-control rule, use one shared reference component. Render Scope with an angled right edge, a very tight visible seam, then Limit Key with an angled left edge; keep L1/L2 fused inside the single Limit Key chip. Do not attach the derived level to that identity: show `Scope`, `L1`, or `L2` as neutral metadata in a narrow table column with an explainer. A Scope-only rule remains visually closed.
+
+- 2026-08-07 Flow-control rules UI: Scope and limit key form a strict hierarchy: Scope -> L1 -> L2. The deepest populated field determines which counter the rule creates; wildcard values change matching, never level, and a child-level rule does not create parent rules. Use a compact rule preview, stable scope/pattern ordering, label the operational count `VQueues waiting for capacity`, and reuse the Virtual Objects submitted-search treatment.
+
+- 2026-08-07 self on multi-file patch context: The first route scaffold patch assumed an `invocation-ui` alias existed next to `overview-route`, so the whole atomic patch failed verification. Inspect the exact insertion context before a broad multi-file patch and split integration edits from new-file creation.
+
+- 2026-08-07 self on handler-test discovery: I guessed `listStateServices.spec.ts` instead of first locating confirmed query-handler specs. Search with `rg --files -g '*.spec.ts' libs/data-access/query/src/lib/handlers` before reading or adding a sibling test.
+
+- 2026-08-07 `sys_user_limits.num_waiters` terminology: It is the number of VQueue handles registered on a concrete counter's waiter deque after a permit check failed, with each VQueue queued only at its single narrowest blocked level. This means the next dispatch is waiting for concurrency capacity; the VQueue may still have running invocations and capacity at other levels, and waiter membership can briefly await re-evaluation after capacity changes. Keep `Waiting queues` or say `Queues waiting for capacity`; do not broadly rename it `Blocked queues`.
+
+- 2026-08-07 VQueue rules reference branch: the useful prototype is `origin/NN_vqueque` at `9f86e521`; the local `NN_vqueque` branch is stale at `0dbd86ae` and has no unique commits over its old main base. Current `main` retained the bounded `sys_rules` list/get query handlers plus strict create/versioned update/delete hooks, but not the old limits route/sidebar or its unbounded operational-stat surfaces. Compare the remote ref, not the local branch, and treat the CRUD list as a separate slice from counters/VQueue analytics.
+
+- 2026-08-07 self on required-read command discipline: I combined the napkin skill and napkin with `&&` at session start, later piped an `rg --files` result to `sort`, and guessed a nonexistent sibling `crates/util` path during server inspection. Read each required file in its own call, use orchestration-side sorting/filtering, and search only confirmed repository roots.
+
 - 2026-08-07 transitive global types in spec configs: Feature spec tsconfigs override `compilerOptions.types`, so importing source that reaches `admin-api-hooks/batchHooks.ts` loses the `globalThis.batchOperationPromises` declaration even when the feature's lib tsconfig includes `@types/global-env.d.ts`. Add the global declaration to each affected spec tsconfig; verify with direct `pnpm tsc -p <spec-config>` rather than relying only on Vitest transpilation.
 
 - 2026-08-07 self on command-output limiting relapse: I used `rg | head` while tracing Copy usages, repeating the no-pipeline mistake. Narrow `rg` with paths/globs and rely on the tool output token limit instead of shell truncation.
@@ -2096,3 +2192,11 @@
 - 2026-08-05 | self focused-stage data correction | I typed and forwarded `InvocationTableRow.stage`, but the invocation list response does not expose a coarse stage field; it exposes the computed `status`, so the new prop was normally `undefined` and focus still disappeared. | Derive the popover's stable focus stage from the exact row status via `INVOCATION_STATUS_DEFINITIONS`, using a supplied row stage only as an optional shortcut. Do not assume a field exists merely because internal VQueue query rows have it.
 - 2026-08-06 | self browser verification | A broad browser loop sampled many invocation rows with fixed waits, exceeded the tool timeout, and reset the browser kernel. | Filter to one known populated VQueue, count exact matches once, then inspect only the non-head and head cases with targeted locators and screenshots.
 - 2026-08-06 | user focused-stage correction | Falling back to the invocation row's stale stage kept a white selected stage pill even when the fresh VQueue snapshot no longer contained that focused entry. | Use the row stage only to choose the compact summary-only layout. Highlight a stage only when the fresh point response still contains the focused entry; otherwise render all stage summaries neutrally.
+- 2026-08-07 self on focused test config: I passed guessed `.mts` Vitest config paths even though both projects use `vite.config.ts`, and earlier chained status/source inspection with `&&`. Confirm config filenames with `rg --files` before running focused tests, and keep shell inspections as independent commands.
+- 2026-08-07 self on restoring original table treatments: I copied the original rule limit cell's `IconName.Infinity`, but that icon was introduced only in the old WIP commit and is absent from the current icon set. When borrowing UI from historical code, confirm every supporting primitive still exists; use the typographic infinity symbol when the dedicated icon is unavailable.
+- 2026-08-07 user Scope consistency correction: The rules table technically reused the shared `Scope` component but passed `showLabel={false}`, hiding the defining `SCOPE` segment and making it look like a generic chip. When the user asks to reuse an identity component for visual consistency, preserve its standard presentation unless the context explicitly calls for a compact variant.
+- 2026-08-07 user actions-cell consistency request: The rules table used a bespoke icon-only ellipsis while invocation tables use the shared mini `SplitButton` pattern with a hover-revealed primary action and dropdown chevron. Reuse the established mini split-action composition and its 40px action column for dense tables.
+- 2026-08-07 self on browser hover verification: I assumed the in-app browser locator exposed `hover()`, repeating the known mistake of treating the wrapper as full Playwright. Verify hover-driven UI through its copied established CSS pattern and resting screenshot unless the browser skill explicitly documents a supported hover operation.
+- 2026-08-07 user rule-form correction: A one-line pattern/concurrency summary was labeled “Preview,” but it did not let operators verify matching behavior; separate Scope and limit-key fields also lost the original connected hierarchy and label alignment. Use the original three-segment pattern builder and a functional sky Helper-style preview with test-key results and expandable examples.
+2026-08-07 hierarchy semantics: Limiter rule depth selects a separate counter level: `scope` is Scope, `scope/l1` is Level 1, and `scope/l1/l2` is Level 2. `*` affects matching but never changes the level. L1/L2 rules do not create their parent rules, though an invocation also consumes applicable parent counters when separate parent rules exist. Make the selected level explicit in both forms and tables.
+2026-08-07 own UI mistake: I initially described Scope → L1 → L2 as hierarchical while leaving L1 editable before Scope. A hierarchy builder must enforce the dependency order, clear descendants when a parent is cleared, and avoid collapsing an incomplete child value into a shallower pattern.

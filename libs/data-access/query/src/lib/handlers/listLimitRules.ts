@@ -1,22 +1,61 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { quoteSqlString, type QueryContext } from './shared';
 
-const LIMIT_RULE_COLUMNS = `pattern,
+const LIMIT_RULE_LIST_COLUMNS = `pattern,
   concurrency,
   description,
   disabled,
-  version,
-  CAST(to_unixtime(last_modified) * 1000 AS BIGINT) AS last_modified_millis_since_epoch`;
+  version`;
+
+const LIMIT_RULE_COLUMNS = `${LIMIT_RULE_LIST_COLUMNS},
+  last_modified`;
 
 type LimitRule = components['schemas']['RuleResponse'];
-type LimitRuleRow = Omit<LimitRule, 'limits'> & {
+type LimitRuleRow = Omit<
+  LimitRule,
+  'limits' | 'last_modified_millis_since_epoch'
+> & {
   concurrency: LimitRule['limits']['concurrency'];
+  last_modified: string;
+};
+type LimitRuleWithStats = components['schemas']['LimitRuleWithStats'];
+type LimitRuleListRow = Pick<
+  LimitRuleWithStats,
+  'pattern' | 'description' | 'disabled' | 'version'
+> & {
+  concurrency: LimitRuleWithStats['limits']['concurrency'];
+};
+type LimitRuleCounterStatsRow = Pick<
+  LimitRuleWithStats,
+  'num_counters' | 'num_counters_with_waiters'
+> & {
+  rule_pattern: string;
 };
 type ListLimitRulesResponse = components['schemas']['ListLimitRulesResponse'];
 
-function toLimitRule({ concurrency, ...rule }: LimitRuleRow): LimitRule {
+function toLimitRule({
+  concurrency,
+  last_modified,
+  ...rule
+}: LimitRuleRow): LimitRule {
   return {
     ...rule,
+    last_modified_millis_since_epoch: Date.parse(last_modified),
+    limits: { concurrency },
+  };
+}
+
+function toLimitRuleWithStats(
+  { pattern, concurrency, description, disabled, version }: LimitRuleListRow,
+  stats?: LimitRuleCounterStatsRow,
+): LimitRuleWithStats {
+  return {
+    pattern,
+    description,
+    disabled,
+    version,
+    num_counters: stats?.num_counters ?? 0,
+    num_counters_with_waiters: stats?.num_counters_with_waiters ?? 0,
     limits: { concurrency },
   };
 }
@@ -35,12 +74,29 @@ async function getLimitRuleRow(
 }
 
 export async function listLimitRules(this: QueryContext) {
-  const { rows } = await this.query(`SELECT ${LIMIT_RULE_COLUMNS}
+  const [rulesResult, countersResult] = await Promise.all([
+    this.query(`SELECT ${LIMIT_RULE_LIST_COLUMNS}
     FROM sys_rules
-    ORDER BY pattern`);
+    ORDER BY pattern ASC`),
+    this.query(`SELECT rule_pattern,
+      COUNT(*) AS num_counters,
+      SUM(CASE WHEN num_waiters > 0 THEN 1 ELSE 0 END) AS num_counters_with_waiters
+    FROM sys_user_limits
+    WHERE rule_pattern IS NOT NULL
+    GROUP BY rule_pattern`),
+  ]);
+
+  const countersByPattern = new Map(
+    (countersResult.rows as LimitRuleCounterStatsRow[]).map((stats) => [
+      stats.rule_pattern,
+      stats,
+    ]),
+  );
 
   const response: ListLimitRulesResponse = {
-    rules: (rows as LimitRuleRow[]).map(toLimitRule),
+    rules: (rulesResult.rows as LimitRuleListRow[]).map((rule) =>
+      toLimitRuleWithStats(rule, countersByPattern.get(rule.pattern)),
+    ),
   };
 
   return Response.json(response);

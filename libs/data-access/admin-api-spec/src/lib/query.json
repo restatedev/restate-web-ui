@@ -4815,14 +4815,47 @@
       },
       "ListLimitRulesResponse": {
         "type": "object",
-        "description": "Configured limit rules from the sys_rules table.",
+        "description": "Configured limit rules from the sys_rules table with concrete counter summaries from sys_user_limits.",
         "required": ["rules"],
         "properties": {
           "rules": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/RuleResponse"
+              "$ref": "#/components/schemas/LimitRuleWithStats"
             }
+          }
+        }
+      },
+      "LimitRuleWithStats": {
+        "type": "object",
+        "required": [
+          "pattern",
+          "limits",
+          "disabled",
+          "version",
+          "num_counters",
+          "num_counters_with_waiters"
+        ],
+        "properties": {
+          "description": { "type": ["string", "null"] },
+          "disabled": { "type": "boolean" },
+          "limits": { "$ref": "#/components/schemas/UserLimits" },
+          "pattern": { "type": "string" },
+          "version": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Per-rule version: bumped on runtime-relevant changes.",
+            "minimum": 0
+          },
+          "num_counters": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Concrete counters currently governed by this rule."
+          },
+          "num_counters_with_waiters": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Concrete counters governed by this rule that currently have waiting VQueues."
           }
         }
       },

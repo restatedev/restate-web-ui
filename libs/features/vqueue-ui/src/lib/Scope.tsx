@@ -45,7 +45,7 @@ const styles = tv({
 });
 
 export type ScopePresentation = 'chip' | 'inline';
-export type ScopeRelationship = 'target';
+export type ScopeRelationship = 'target' | 'rule';
 export type ScopeLabelVariant = 'full' | 'compact';
 export type ScopeVariant = 'default' | 'table';
 
@@ -109,7 +109,7 @@ export function Scope({
   );
   const chipContent = (
     <Chip
-      right={relationship === 'target' ? 'angled' : 'straight'}
+      right={relationship ? 'angled' : 'straight'}
       size="lg"
       className={chip({ className })}
       href={href}
@@ -142,7 +142,7 @@ export function Scope({
       ) : (
         <span className={inline({ className })}>{content}</span>
       )}
-      {presentation === 'inline' && relationship === 'target' && (
+      {presentation === 'inline' && relationship && (
         <span
           aria-hidden="true"
           className={relationshipStyle()}

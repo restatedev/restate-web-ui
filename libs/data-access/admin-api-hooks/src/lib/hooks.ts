@@ -51,6 +51,7 @@ const unsupportedMetricsBaseUrls = new Set<string>();
 const EMPTY_SERVICES_MAP = new Map<string, Service>();
 
 export type LimitRule = components['schemas']['RuleResponse'];
+export type LimitRuleWithStats = components['schemas']['LimitRuleWithStats'];
 export type UserLimitRow = components['schemas']['UserLimitRow'];
 export type UpsertLimitRuleRequest = components['schemas']['UpsertRuleRequest'];
 export type DeleteLimitRuleRequest = components['schemas']['DeleteRuleRequest'];

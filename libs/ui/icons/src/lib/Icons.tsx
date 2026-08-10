@@ -103,6 +103,7 @@ import {
   Component as ComponentIcon,
   Focus,
   Scan,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util/styles';
@@ -211,6 +212,7 @@ export const enum IconName {
   RetryNow = 'RetryNow',
   Upgrade = 'Upgrade',
   Gauge = 'Gauge',
+  Filters = 'Filters',
   TrendingUp = 'TrendingUp',
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
@@ -346,6 +348,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Resume]: Play,
   [IconName.RetryNow]: RotateCcw,
   [IconName.Gauge]: Gauge,
+  [IconName.Filters]: SlidersHorizontal,
   [IconName.Upgrade]: ChevronsUp,
   [IconName.TrendingUp]: TrendingUp,
   [IconName.TrendingDown]: TrendingDown,

@@ -28,6 +28,7 @@ import {
   WorkflowsSidebarItem,
   VirtualObjectsSidebarItem,
   StateSidebarItem,
+  LimitsSidebarItem,
   IntrospectionSidebarItem,
 } from '@restate/util/sidebar-nav';
 import { RouterProvider } from 'react-aria-components';
@@ -370,6 +371,7 @@ function SidebarPanels() {
           preserveSearchParams={PRESERVED_QUERY_PARAMS}
         />
         <StateSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
+        <LimitsSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
         <IntrospectionSidebarItem
           preserveSearchParams={PRESERVED_QUERY_PARAMS}
         />
@@ -433,6 +435,12 @@ function TopbarPanels() {
                 href={'/state'}
               >
                 State
+              </NavItem>
+              <NavItem
+                preserveSearchParams={PRESERVED_QUERY_PARAMS}
+                href={'/flow-control/rules'}
+              >
+                Flow control
               </NavItem>
               <NavItem
                 preserveSearchParams={PRESERVED_QUERY_PARAMS}
