@@ -5,7 +5,7 @@ import { tv } from '@restate/util/styles';
 type ChipEdge = 'straight' | 'angled';
 
 export type ChipGroupVariant = 'default' | 'header';
-export type ChipGroupDensity = 'default' | 'compact';
+export type ChipGroupDensity = 'default' | 'compact' | 'tight';
 export type ChipSize = 'sm' | 'md' | 'lg';
 
 const SHAPED_BORDER = [
@@ -169,6 +169,10 @@ const groupStyles = tv({
     },
     density: {
       default: '',
+      tight: [
+        '[&_[data-chip]]:[--chip-height:1.25rem] [&_[data-chip]]:[--chip-slope:5px]',
+        '[&>[data-chip]:not(:first-child)]:-ml-0.5 [&>a:not(:first-child)]:-ml-0.5',
+      ],
       compact: [
         '[&_[data-chip]]:[--chip-height:1.5rem] [&_[data-chip]]:[--chip-slope:5px]',
         '[&>[data-chip]:not(:first-child)]:-ml-0.5 [&>a:not(:first-child)]:-ml-0.5',

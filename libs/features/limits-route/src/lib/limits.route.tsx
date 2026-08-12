@@ -31,7 +31,6 @@ import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldCheckbox } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
 import { SplitButton } from '@restate/ui/split-button';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import {
@@ -76,6 +75,7 @@ import {
   LimitListPagination,
   useLimitListPagination,
 } from './LimitListPagination';
+import { FlowControlHero, flowControlTabs } from './FlowControlPage';
 
 type RuleColumn =
   | 'pattern'
@@ -242,36 +242,6 @@ function RuleStatusBadge({ disabled }: { disabled: boolean }) {
     <Badge size="sm" variant={disabled ? 'default' : 'info'}>
       {disabled ? 'Disabled' : 'Enabled'}
     </Badge>
-  );
-}
-
-export function FlowControlHero({
-  title,
-  description,
-  icon,
-}: {
-  title: string;
-  description: string;
-  icon: IconName;
-}) {
-  return (
-    <section className="flex w-full flex-col gap-3 px-5 pt-14 pb-4 md:px-8 md:pt-16 md:pb-6">
-      <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-zinc-950">
-        <Icon name={icon} className="h-6 w-6 text-zinc-400" />
-        {title}
-      </h1>
-      <p className="max-w-4xl text-base leading-7 text-zinc-500">
-        {description}{' '}
-        <Link
-          href="https://docs.restate.dev/services/flow-control"
-          variant="secondary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn more
-        </Link>
-      </p>
-    </section>
   );
 }
 
@@ -851,17 +821,13 @@ function Component() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <FlowControlHero
-        title="Rules"
-        description="Configure flow-control policies for matching scopes and limit keys at any level of the hierarchy."
-        icon={IconName.Filters}
-      />
-      <ContentPanel>
+      <FlowControlHero />
+      <ContentPanel tabs={flowControlTabs(baseUrl, 'rules')}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
           <Button
             type="button"
             variant="secondary"
-            className="mr-auto ml-2 flex shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
+            className="flex shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
             onClick={() => setCreateOpen(true)}
             disabled={!hasVqueues}
           >

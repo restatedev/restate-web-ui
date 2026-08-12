@@ -124,6 +124,17 @@ describe('Chip', () => {
     expect(chips[2]?.className).toContain('[--chip-slope:6.5px]');
   });
 
+  it('should use the small chip height for tight groups', () => {
+    const { container } = render(
+      <ChipGroup density="tight">
+        <Chip>tight</Chip>
+      </ChipGroup>,
+    );
+    expect(container.querySelector('[data-chip-group]')?.className).toContain(
+      '[&_[data-chip]]:[--chip-height:1.25rem]',
+    );
+  });
+
   it('should render angled borders without CSS filters', () => {
     const { container } = render(
       <Chip right="angled">

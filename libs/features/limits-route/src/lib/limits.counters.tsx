@@ -6,7 +6,6 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import { LimitRuleTarget } from '@restate/features/vqueue-ui';
 import { Button } from '@restate/ui/button';
-import { Chip, ChipGroup, ChipSegment } from '@restate/ui/chip';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -35,7 +34,7 @@ import {
 } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { CounterTable } from './CounterTable';
-import { FlowControlHero } from './limits.route';
+import { FlowControlHero, flowControlTabs } from './FlowControlPage';
 import { LIMIT_LIST_QUERY_SIZE } from './limits.constants';
 import { LimitValue } from './LimitValue';
 import {
@@ -56,8 +55,17 @@ const refreshIconStyles = tv({
   variants: { isFetching: { true: 'animate-spin' } },
 });
 
+const ruleFilterGroupStyles = tv({
+  base: 'order-first flex h-7 max-w-44 min-w-28 items-stretch rounded-lg border border-black/10 bg-white shadow-xs sm:max-w-[22rem]',
+});
+
 const ruleFilterButtonStyles = tv({
-  base: 'flex h-7 max-w-80 shrink-0 items-center gap-1 overflow-visible rounded-lg px-1 py-0.5 text-xs font-medium text-zinc-600',
+  base: 'flex h-full min-w-0 flex-1 items-center gap-1 rounded-[calc(0.5rem-1px)] border-0 bg-transparent px-1.5 py-0 text-xs font-medium text-zinc-600 shadow-none',
+  variants: {
+    hasClear: {
+      true: 'rounded-r-none',
+    },
+  },
 });
 
 const RULE_OPTIONS_REQUEST = {
@@ -152,19 +160,15 @@ function CountersComponent() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <FlowControlHero
-        title="Limit counters"
-        description="Inspect limit counters across scopes and hierarchical limit keys, including their current usage and capacity."
-        icon={IconName.Gauge}
-      />
-      <ContentPanel>
+      <FlowControlHero />
+      <ContentPanel tabs={flowControlTabs(baseUrl, 'counters')}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
           <SearchField
             aria-label="Filter limit counters"
             onSubmit={(value) => setSubmittedSearch(value.trim())}
             onClear={() => setSubmittedSearch('')}
             isDisabled={!hasVqueues}
-            className="group min-w-0 flex-auto outline-none sm:max-w-[38ch]"
+            className="group hidden min-w-0 flex-auto outline-none sm:block sm:max-w-[38ch]"
           >
             <Label className="sr-only">Filter limit counters</Label>
             <div className="relative min-h-7">
@@ -184,37 +188,38 @@ function CountersComponent() {
               </AriaButton>
             </div>
           </SearchField>
-          <div className="order-first mr-auto flex min-w-0 items-center gap-0.5">
+          <div className={ruleFilterGroupStyles()}>
             <Dropdown>
               <DropdownTrigger>
                 <Button
                   variant="icon"
                   disabled={!hasVqueues}
                   aria-label={`Filter by rule: ${ruleFilterLabel}`}
-                  className={ruleFilterButtonStyles()}
+                  className={ruleFilterButtonStyles({
+                    hasClear: Boolean(selectedRule),
+                  })}
                 >
-                  <span className="shrink-0 pl-1 text-zinc-500">Rule is</span>
+                  <Icon
+                    name={IconName.Filters}
+                    className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+                  />
+                  <span className="shrink-0 text-zinc-500">Rule is</span>
                   {selectedRule ? (
                     <LimitRuleTarget
                       pattern={selectedRule}
+                      density="tight"
+                      className="min-w-0"
+                      showIcon={false}
                       showTooltip={false}
                     />
                   ) : (
-                    <ChipGroup density="compact">
-                      <Chip>
-                        <ChipSegment className="bg-zinc-100 pl-1">
-                          <Icon
-                            name={IconName.Filters}
-                            className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-                          />
-                          {ruleFilterValue}
-                        </ChipSegment>
-                      </Chip>
-                    </ChipGroup>
+                    <span className="truncate font-semibold text-zinc-700">
+                      {ruleFilterValue}
+                    </span>
                   )}
                   <Icon
                     name={IconName.ChevronsUpDown}
-                    className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+                    className="ml-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400"
                   />
                 </Button>
               </DropdownTrigger>
@@ -275,10 +280,10 @@ function CountersComponent() {
                     type="button"
                     variant="icon"
                     aria-label="Clear rule filter"
-                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md p-0 text-zinc-400 hover:bg-zinc-200/60 hover:text-zinc-700"
+                    className="flex h-full w-7 shrink-0 items-center justify-center rounded-l-none rounded-r-[calc(0.5rem-1px)] border-0 border-l border-black/10 bg-transparent p-0 text-zinc-400 shadow-none hover:bg-zinc-100 hover:text-zinc-700"
                     onClick={clearRuleFilter}
                   >
-                    <Icon name={IconName.X} className="h-3.5 w-3.5" />
+                    <Icon name={IconName.X} className="h-3 w-3" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent size="sm">Clear rule filter</TooltipContent>
