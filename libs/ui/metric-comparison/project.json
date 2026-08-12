@@ -1,0 +1,8 @@
+{
+  "name": "metric-comparison",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ui/metric-comparison/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {}
+}
