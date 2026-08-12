@@ -147,7 +147,7 @@ function CountersComponent() {
     : selectedRule
       ? 'No active limit counters for this rule'
       : ruleSelection === ANY_RULE_LIMIT_COUNTERS
-        ? 'No governed limit counters'
+        ? 'No matching limit counters'
         : 'No active limit counters';
   const emptyDescription = submittedSearch
     ? 'Try a different scope or limit key.'

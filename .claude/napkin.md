@@ -1,5 +1,6 @@
 # Napkin
 
+- 2026-08-12 limit-counter empty-state wording: Avoid “governed” in user-facing counter copy. For the “Rule is any” empty state, use `No matching limit counters`; the description can clarify that none currently match a configured rule.
 - 2026-08-12 counter ordering: Counter list SQL uses the requested field/direction first, then remaining useful defaults (`waiting DESC`, `usage DESC`, `rule pattern ASC`), and finally scope/l1/l2 identity. This makes each page deterministic and meaningfully ordered within primary-sort ties.
 - 2026-08-12 playground match styling: Do not put the matching concrete-key examples inside a green container. Keep every Scope/Limit key target neutral and add the result glyph to the leading Scope chip: green check for Applies, neutral X for Doesn't apply.
 - 2026-08-12 rule playground semantics: Playground examples are synthetic concrete scope/limit-key identities used to test a pattern, not observed runtime limit counters and not rules. Compose shared `Scope` + `LimitKey` chips without gauge/slider icons.
