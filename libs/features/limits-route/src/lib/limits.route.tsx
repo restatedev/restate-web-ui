@@ -149,7 +149,7 @@ function CounterSummaryExplainer() {
         </p>
       }
     >
-      Backlogged / total limit counters
+      Backlogged / total
     </InlineTooltip>
   );
 }

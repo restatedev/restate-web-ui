@@ -409,6 +409,9 @@ export function useListLimitRules(
 
   const results = useQuery({
     ...queryOptions,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
     enabled: options?.enabled !== false && enabled && hasVqueues,
   });
 
