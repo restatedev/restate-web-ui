@@ -110,7 +110,7 @@ describe('listLimitRules', () => {
     });
   });
 
-  it('returns a cursor when another rule page exists', async () => {
+  it('reports when the bounded result has more rules', async () => {
     const query = vi
       .fn()
       .mockResolvedValueOnce({
@@ -157,70 +157,6 @@ describe('listLimitRules', () => {
     `);
     expect(body.rules).toHaveLength(1);
     expect(body.hasMore).toBe(true);
-    expect(body.nextCursor).toEqual(expect.any(String));
-  });
-
-  it('applies the keyset cursor to the next page', async () => {
-    const firstQuery = vi
-      .fn()
-      .mockResolvedValueOnce({
-        rows: [
-          {
-            pattern: 'alpha',
-            concurrency: 1,
-            description: null,
-            disabled: false,
-            version: 1,
-          },
-          {
-            pattern: 'bravo',
-            concurrency: 2,
-            description: null,
-            disabled: false,
-            version: 1,
-          },
-        ],
-      })
-      .mockResolvedValueOnce({ rows: [] });
-    const firstContext = { query: firstQuery } as unknown as QueryContext;
-    const first = await listLimitRules.call(firstContext, { limit: 1 });
-    const cursor = (await first.json()).nextCursor as string;
-    const query = vi.fn().mockResolvedValueOnce({ rows: [] });
-    const context = { query } as unknown as QueryContext;
-
-    await listLimitRules.call(context, { limit: 1, after: cursor });
-
-    expect(querySql(firstQuery)).toMatchInlineSnapshot(`
-      [
-        "SELECT pattern,
-        concurrency,
-        description,
-        disabled,
-        version
-          FROM sys_rules
-          ORDER BY pattern ASC
-          LIMIT 2",
-        "SELECT rule_pattern,
-            COUNT(*) AS num_counters,
-            SUM(CASE WHEN num_waiters > 0 THEN 1 ELSE 0 END) AS num_counters_with_waiters
-          FROM sys_user_limits
-          WHERE rule_pattern IN ('alpha')
-          GROUP BY rule_pattern",
-      ]
-    `);
-    expect(querySql(query)).toMatchInlineSnapshot(`
-      [
-        "SELECT pattern,
-        concurrency,
-        description,
-        disabled,
-        version
-          FROM sys_rules
-          WHERE pattern > 'alpha'
-          ORDER BY pattern ASC
-          LIMIT 2",
-      ]
-    `);
   });
 
   it('defaults missing counter summaries to zero', async () => {

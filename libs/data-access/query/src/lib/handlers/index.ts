@@ -49,11 +49,7 @@ export { getMetrics } from './getMetrics';
 export { getStateStorageSize } from './getStateStorageSize';
 export { listStateServices } from './listStateServices';
 export { getLimitRule, listLimitRules } from './listLimitRules';
-export {
-  listUserLimits,
-  listLimitCountersForRule,
-  getUserLimit,
-} from './listUserLimits';
+export { listUserLimits, listLimitCountersForRule } from './listUserLimits';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getJournalEntryMetadata } from './getJournalEntryMetadata';
 export { getPausedError } from './getPausedError';

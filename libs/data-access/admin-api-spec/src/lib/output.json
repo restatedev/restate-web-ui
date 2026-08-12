@@ -6333,39 +6333,6 @@
         }
       }
     },
-    "/query/limits/counter": {
-      "post": {
-        "tags": ["query-limits"],
-        "summary": "Get an effective user limit",
-        "description": "One effective limit row identified by its concrete scope and limit key.",
-        "operationId": "get_user_limit",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LimitCounterIdentity"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserLimitRow"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Limit counter not found"
-          }
-        }
-      }
-    },
     "/query/limits/rules/{pattern}/counters": {
       "post": {
         "tags": ["query-limits"],
@@ -10127,21 +10094,6 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 1000
-          }
-        }
-      },
-      "LimitCounterIdentity": {
-        "type": "object",
-        "required": ["scope"],
-        "properties": {
-          "scope": {
-            "type": "string"
-          },
-          "l1": {
-            "type": "string"
-          },
-          "l2": {
-            "type": "string"
           }
         }
       },

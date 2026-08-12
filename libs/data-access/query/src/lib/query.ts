@@ -50,7 +50,6 @@ import {
   getStateStorageSize,
   listStateServices,
   getLimitRule,
-  getUserLimit,
   listLimitCountersForRule,
   listLimitRules,
   listUserLimits,
@@ -118,9 +117,6 @@ type BoundHandlers = {
   getLimitRule: (pattern: string) => Promise<Response>;
   listUserLimits: (
     args: components['schemas']['ListLimitCountersRequestBody'],
-  ) => Promise<Response>;
-  getUserLimit: (
-    identity: components['schemas']['LimitCounterIdentity'],
   ) => Promise<Response>;
   listLimitCountersForRule: (
     pattern: string,
@@ -260,7 +256,6 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     listLimitRules: listLimitRules.bind(context),
     getLimitRule: getLimitRule.bind(context),
     listUserLimits: listUserLimits.bind(context),
-    getUserLimit: getUserLimit.bind(context),
     listLimitCountersForRule: listLimitCountersForRule.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
@@ -517,7 +512,6 @@ export const routes = createRoutes('/query', {
       },
     },
     userLimits: { method: 'POST', pattern: '/limits/user-limits' },
-    counter: { method: 'POST', pattern: '/limits/counter' },
   },
 });
 
@@ -889,12 +883,6 @@ router.map(routes, {
         const args: components['schemas']['ListLimitCountersRequestBody'] =
           await ctx.request.json();
         return listUserLimits(args);
-      },
-      async counter(ctx) {
-        const { getUserLimit } = ctx.storage.get(handlersKey);
-        const identity: components['schemas']['LimitCounterIdentity'] =
-          await ctx.request.json();
-        return getUserLimit(identity);
       },
     },
   },

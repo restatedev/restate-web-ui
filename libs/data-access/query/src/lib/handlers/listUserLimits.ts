@@ -11,7 +11,6 @@ type UserLimitRow = components['schemas']['UserLimitRow'];
 type ListUserLimitsResponse = components['schemas']['ListUserLimitsResponse'];
 type ListLimitCountersRequestBody =
   components['schemas']['ListLimitCountersRequestBody'];
-type LimitCounterIdentity = components['schemas']['LimitCounterIdentity'];
 
 const COUNTER_SORT_FIELDS = new Set<LimitCounterSort['field']>([
   'usage',
@@ -64,14 +63,6 @@ function searchClause(search?: string) {
   )`;
 }
 
-function identityClause({ scope, l1, l2 }: LimitCounterIdentity) {
-  return [
-    `scope = ${quoteSqlString(scope)}`,
-    l1 === undefined ? 'l1 IS NULL' : `l1 = ${quoteSqlString(l1)}`,
-    l2 === undefined ? 'l2 IS NULL' : `l2 = ${quoteSqlString(l2)}`,
-  ].join(' AND ');
-}
-
 async function counterPage(
   context: QueryContext,
   args: ListLimitCountersRequestBody,
@@ -119,18 +110,4 @@ export async function listLimitCountersForRule(
   args: ListLimitCountersRequestBody = {},
 ) {
   return counterPage(this, args, pattern);
-}
-
-export async function getUserLimit(
-  this: QueryContext,
-  identity: LimitCounterIdentity,
-) {
-  const { rows } = await this.query(`SELECT ${USER_LIMITS_COLUMNS}
-    FROM sys_user_limits
-    WHERE ${identityClause(identity)}
-    LIMIT 1`);
-  const counter = rows[0];
-  return counter
-    ? Response.json(counter as UserLimitRow)
-    : new Response('Not found', { status: 404 });
 }

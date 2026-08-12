@@ -1491,26 +1491,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/limits/counter': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Get an effective user limit
-     * @description One effective limit row identified by its concrete scope and limit key.
-     */
-    post: operations['get_user_limit'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/limits/rules/{pattern}/counters': {
     parameters: {
       query?: never;
@@ -3685,11 +3665,6 @@ export interface components {
       sort?: components['schemas']['LimitCounterSort'];
       search?: string;
       limit?: number;
-    };
-    LimitCounterIdentity: {
-      scope: string;
-      l1?: string;
-      l2?: string;
     };
     GetInvocationsStatusRequestBody: {
       invocationIds: string[];
@@ -9805,36 +9780,6 @@ export interface operations {
         content: {
           'application/json': components['schemas']['ListUserLimitsResponse'];
         };
-      };
-    };
-  };
-  get_user_limit: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['LimitCounterIdentity'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['UserLimitRow'];
-        };
-      };
-      /** @description Limit counter not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
     };
   };
