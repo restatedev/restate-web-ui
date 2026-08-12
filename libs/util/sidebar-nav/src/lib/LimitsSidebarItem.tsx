@@ -13,6 +13,7 @@ export function LimitsSidebarItem({
   preserveSearchParams = true,
 }: LimitsSidebarItemProps) {
   const rulesPath = `${baseUrl}/flow-control/rules`;
+  const countersPath = `${baseUrl}/flow-control/counters`;
   return (
     <SidebarNavItem
       href={rulesPath}
@@ -24,6 +25,11 @@ export function LimitsSidebarItem({
         {
           href: rulesPath,
           label: 'Rules',
+          preserveSearchParams,
+        },
+        {
+          href: countersPath,
+          label: 'Limit counters',
           preserveSearchParams,
         },
       ]}
