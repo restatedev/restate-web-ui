@@ -1,12 +1,5 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import {
-  decodeLimitCursor,
-  keysetOrderBy,
-  keysetWhere,
-  limitPage,
-  limitPageSize,
-  type KeysetColumn,
-} from './limitPagination';
+import { limitPage, limitPageSize } from './limitPagination';
 import { quoteSqlString, type QueryContext } from './shared';
 
 const LIMIT_RULE_LIST_COLUMNS = `pattern,
@@ -70,18 +63,8 @@ function toLimitRuleWithStats(
   };
 }
 
-function ruleSortColumns(
-  sort?: components['schemas']['LimitRuleSort'],
-): KeysetColumn<LimitRuleListRow>[] {
-  const direction =
-    sort?.field === 'pattern' && sort.order === 'DESC' ? 'DESC' : 'ASC';
-  return [
-    {
-      expression: 'pattern',
-      direction,
-      value: (row) => row.pattern,
-    },
-  ];
+function ruleSortDirection(sort?: components['schemas']['LimitRuleSort']) {
+  return sort?.field === 'pattern' && sort.order === 'DESC' ? 'DESC' : 'ASC';
 }
 
 async function getLimitRuleRow(
@@ -101,23 +84,11 @@ export async function listLimitRules(
   args: ListLimitRulesRequestBody = {},
 ) {
   const limit = limitPageSize(args.limit);
-  const columns = ruleSortColumns(args.sort);
-  const signature = JSON.stringify({
-    type: 'rules',
-    sort: args.sort ?? { field: 'pattern', order: 'ASC' },
-  });
-  const cursor = decodeLimitCursor(args.after, signature, columns.length);
-  if (cursor === null) {
-    return new Response('Invalid cursor', { status: 400 });
-  }
-  const cursorClause = cursor
-    ? `\n    WHERE ${keysetWhere(columns, cursor)}`
-    : '';
   const { rows } = await this.query(`SELECT ${LIMIT_RULE_LIST_COLUMNS}
-    FROM sys_rules${cursorClause}
-    ORDER BY ${keysetOrderBy(columns)}
+    FROM sys_rules
+    ORDER BY pattern ${ruleSortDirection(args.sort)}
     LIMIT ${limit + 1}`);
-  const page = limitPage(rows as LimitRuleListRow[], limit, signature, columns);
+  const page = limitPage(rows as LimitRuleListRow[], limit);
   const patterns = page.items.map((rule) => rule.pattern);
   const countersResult =
     patterns.length === 0
@@ -139,7 +110,6 @@ export async function listLimitRules(
       toLimitRuleWithStats(rule, countersByPattern.get(rule.pattern)),
     ),
     hasMore: page.hasMore,
-    ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}),
   };
 
   return Response.json(response);

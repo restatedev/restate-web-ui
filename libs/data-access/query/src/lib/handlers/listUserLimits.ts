@@ -1,16 +1,6 @@
-import type {
-  components,
-  FilterItem,
-} from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access/admin-api-spec';
 import { filtersToClause } from '../convertFilters';
-import {
-  decodeLimitCursor,
-  keysetOrderBy,
-  keysetWhere,
-  limitPage,
-  limitPageSize,
-  type KeysetColumn,
-} from './limitPagination';
+import { limitPage, limitPageSize } from './limitPagination';
 import { quoteSqlString, type QueryContext } from './shared';
 
 const USER_LIMITS_COLUMNS =
@@ -35,70 +25,19 @@ const unlimitedExpression = '(concurrency_limit IS NULL)';
 const utilizationExpression =
   'COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0)';
 
-function identityColumns(): KeysetColumn<UserLimitRow>[] {
-  return [
-    {
-      expression: 'scope',
-      direction: 'ASC',
-      value: (row) => row.scope ?? '',
-    },
-    {
-      expression: stringColumn('l1'),
-      direction: 'ASC',
-      value: (row) => row.l1 ?? '',
-    },
-    {
-      expression: stringColumn('l2'),
-      direction: 'ASC',
-      value: (row) => row.l2 ?? '',
-    },
-  ];
-}
-
-function counterSortColumns(
-  sort?: LimitCounterSort,
-): KeysetColumn<UserLimitRow>[] {
+function counterOrderBy(sort?: LimitCounterSort) {
   const direction = sort?.order === 'ASC' ? 'ASC' : 'DESC';
   const field = sort?.field ?? 'waiting';
-  const identity = identityColumns();
+  const identity = `scope ASC, ${stringColumn('l1')} ASC, ${stringColumn('l2')} ASC`;
 
   if (field === 'usage') {
-    return [
-      {
-        expression: unlimitedExpression,
-        direction: 'ASC',
-        value: (row) => row.concurrency_limit == null,
-      },
-      {
-        expression: utilizationExpression,
-        direction,
-        value: (row) => {
-          if (row.concurrency_limit == null) return 0;
-          return (row.usage ?? 0) / row.concurrency_limit;
-        },
-      },
-      ...identity,
-    ];
+    return `${unlimitedExpression} ASC, ${utilizationExpression} ${direction}, ${identity}`;
   }
   if (field === 'pattern') {
-    return [
-      {
-        expression: stringColumn('rule_pattern'),
-        direction,
-        value: (row) => row.rule_pattern ?? '',
-      },
-      ...identity,
-    ];
+    return `${stringColumn('rule_pattern')} ${direction}, ${identity}`;
   }
 
-  return [
-    {
-      expression: numberColumn('num_waiters'),
-      direction,
-      value: (row) => row.num_waiters ?? 0,
-    },
-    ...identity,
-  ];
+  return `${numberColumn('num_waiters')} ${direction}, ${identity}`;
 }
 
 function searchClause(search?: string) {
@@ -142,20 +81,6 @@ async function counterPage(
     return new Response('Unsupported sort field', { status: 400 });
   }
   const limit = limitPageSize(args.limit);
-  const columns = counterSortColumns(args.sort);
-  const signature = JSON.stringify({
-    type: pattern ? 'rule-counters' : 'counters',
-    pattern,
-    rulePattern: args.rulePattern,
-    includeUnlimited: args.includeUnlimited ?? false,
-    filters: args.filters ?? [],
-    search: args.search?.trim() ?? '',
-    sort: args.sort ?? { field: 'waiting', order: 'DESC' },
-  });
-  const cursor = decodeLimitCursor(args.after, signature, columns.length);
-  if (cursor === null) {
-    return new Response('Invalid cursor', { status: 400 });
-  }
   const where = [
     pattern || args.rulePattern
       ? `rule_pattern = ${quoteSqlString(pattern ?? args.rulePattern ?? '')}`
@@ -165,20 +90,18 @@ async function counterPage(
       : '',
     filtersToClause(args.filters ?? []),
     searchClause(args.search),
-    cursor ? keysetWhere(columns, cursor) : '',
   ]
     .filter(Boolean)
     .join(' AND ');
   const whereClause = where ? `\n    WHERE ${where}` : '';
   const { rows } = await context.query(`SELECT ${USER_LIMITS_COLUMNS}
     FROM sys_user_limits${whereClause}
-    ORDER BY ${keysetOrderBy(columns)}
+    ORDER BY ${counterOrderBy(args.sort)}
     LIMIT ${limit + 1}`);
-  const page = limitPage(rows as UserLimitRow[], limit, signature, columns);
+  const page = limitPage(rows as UserLimitRow[], limit);
   const response: ListUserLimitsResponse = {
     limits: page.items,
     hasMore: page.hasMore,
-    ...(page.nextCursor ? { nextCursor: page.nextCursor } : {}),
   };
   return Response.json(response);
 }

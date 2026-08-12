@@ -8563,9 +8563,6 @@
           },
           "hasMore": {
             "type": "boolean"
-          },
-          "nextCursor": {
-            "type": "string"
           }
         }
       },
@@ -8623,9 +8620,6 @@
           },
           "hasMore": {
             "type": "boolean"
-          },
-          "nextCursor": {
-            "type": "string"
           }
         }
       },
@@ -10096,9 +10090,6 @@
       "ListLimitRulesRequestBody": {
         "type": "object",
         "properties": {
-          "after": {
-            "type": "string"
-          },
           "limit": {
             "type": "integer",
             "minimum": 1,
@@ -10112,9 +10103,6 @@
       "ListLimitCountersRequestBody": {
         "type": "object",
         "properties": {
-          "after": {
-            "type": "string"
-          },
           "includeUnlimited": {
             "type": "boolean",
             "description": "Include runtime counters without a matching rule. Defaults to false."

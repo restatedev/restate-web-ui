@@ -720,7 +720,6 @@ export function DeleteRuleDialog({
 type LimitRulesQueryData = {
   rules: LimitRuleWithStats[];
   hasMore: boolean;
-  nextCursor?: string;
 } | null;
 
 function setRuleDisabled(

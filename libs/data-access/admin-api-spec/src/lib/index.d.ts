@@ -3069,7 +3069,6 @@ export interface components {
     ListLimitRulesResponse: {
       rules: components['schemas']['LimitRuleWithStats'][];
       hasMore: boolean;
-      nextCursor?: string;
     };
     LimitRuleWithStats: {
       description?: string | null;
@@ -3090,7 +3089,6 @@ export interface components {
     ListUserLimitsResponse: {
       limits: components['schemas']['UserLimitRow'][];
       hasMore: boolean;
-      nextCursor?: string;
     };
     UserLimitRow: {
       scope: string | null;
@@ -3675,12 +3673,10 @@ export interface components {
       order: 'ASC' | 'DESC';
     };
     ListLimitRulesRequestBody: {
-      after?: string;
       limit?: number;
       sort?: components['schemas']['LimitRuleSort'];
     };
     ListLimitCountersRequestBody: {
-      after?: string;
       /** @description Include runtime counters without a matching rule. Defaults to false. */
       includeUnlimited?: boolean;
       /** @description Return only counters governed by this exact rule pattern. */
