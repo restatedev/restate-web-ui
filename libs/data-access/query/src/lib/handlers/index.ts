@@ -54,7 +54,6 @@ export {
   listLimitCountersForRule,
   getUserLimit,
 } from './listUserLimits';
-export { listLimitTargets } from './listLimitTargets';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getJournalEntryMetadata } from './getJournalEntryMetadata';
 export { getPausedError } from './getPausedError';

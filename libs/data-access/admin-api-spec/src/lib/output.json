@@ -6407,36 +6407,6 @@
         }
       }
     },
-    "/query/limits/targets": {
-      "post": {
-        "tags": ["query-limits"],
-        "summary": "List VQueues for a counter",
-        "description": "Virtual queues governed by one concrete concurrency counter, with their current scheduler state.",
-        "operationId": "list_limit_targets",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ListLimitTargetsRequestBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListLimitTargetsResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/query/metrics": {
       "get": {
         "tags": ["query-metrics"],
@@ -8711,97 +8681,6 @@
           }
         }
       },
-      "ListLimitTargetsResponse": {
-        "type": "object",
-        "description": "Virtual queues governed by a concrete concurrency counter.",
-        "required": ["targets", "hasMore"],
-        "properties": {
-          "targets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LimitTargetRow"
-            }
-          },
-          "hasMore": {
-            "type": "boolean"
-          },
-          "nextCursor": {
-            "type": "string"
-          }
-        }
-      },
-      "LimitTargetRow": {
-        "type": "object",
-        "required": ["id", "service_name"],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "service_name": {
-            "type": "string"
-          },
-          "scope": {
-            "type": "string",
-            "nullable": true
-          },
-          "limit_key": {
-            "type": "string",
-            "nullable": true
-          },
-          "queue_is_paused": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "num_running": {
-            "type": "integer",
-            "nullable": true
-          },
-          "num_inbox": {
-            "type": "integer",
-            "nullable": true
-          },
-          "num_suspended": {
-            "type": "integer",
-            "nullable": true
-          },
-          "num_paused": {
-            "type": "integer",
-            "nullable": true
-          },
-          "last_finish_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "last_attempt_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "last_enqueued_at": {
-            "type": "string",
-            "nullable": true
-          },
-          "head_entry_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "blocked_on": {
-            "type": "string",
-            "nullable": true
-          },
-          "blocked_rule": {
-            "type": "string",
-            "nullable": true
-          },
-          "blocked_level": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
       "MetricsResponse": {
         "type": "object",
         "description": "Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log).",
@@ -10275,29 +10154,6 @@
           },
           "l2": {
             "type": "string"
-          }
-        }
-      },
-      "ListLimitTargetsRequestBody": {
-        "type": "object",
-        "required": ["scope"],
-        "properties": {
-          "scope": {
-            "type": "string"
-          },
-          "l1": {
-            "type": "string"
-          },
-          "l2": {
-            "type": "string"
-          },
-          "after": {
-            "type": "string"
-          },
-          "limit": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 500
           }
         }
       },

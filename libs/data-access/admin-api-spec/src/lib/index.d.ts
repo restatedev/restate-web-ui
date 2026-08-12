@@ -1531,26 +1531,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/limits/targets': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * List VQueues for a counter
-     * @description Virtual queues governed by one concrete concurrency counter, with their current scheduler state.
-     */
-    post: operations['list_limit_targets'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/metrics': {
     parameters: {
       query?: never;
@@ -3123,31 +3103,6 @@ export interface components {
       available: number | null;
       num_waiters: number | null;
     };
-    /** @description Virtual queues governed by a concrete concurrency counter. */
-    ListLimitTargetsResponse: {
-      targets: components['schemas']['LimitTargetRow'][];
-      hasMore: boolean;
-      nextCursor?: string;
-    };
-    LimitTargetRow: {
-      id: string;
-      service_name: string;
-      scope?: string | null;
-      limit_key?: string | null;
-      queue_is_paused?: boolean | null;
-      num_running?: number | null;
-      num_inbox?: number | null;
-      num_suspended?: number | null;
-      num_paused?: number | null;
-      last_finish_at?: string | null;
-      last_attempt_at?: string | null;
-      last_enqueued_at?: string | null;
-      head_entry_id?: string | null;
-      status?: string | null;
-      blocked_on?: string | null;
-      blocked_rule?: string | null;
-      blocked_level?: string | null;
-    };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
       /** @description PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders. */
@@ -3739,13 +3694,6 @@ export interface components {
       scope: string;
       l1?: string;
       l2?: string;
-    };
-    ListLimitTargetsRequestBody: {
-      scope: string;
-      l1?: string;
-      l2?: string;
-      after?: string;
-      limit?: number;
     };
     GetInvocationsStatusRequestBody: {
       invocationIds: string[];
@@ -9916,29 +9864,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListUserLimitsResponse'];
-        };
-      };
-    };
-  };
-  list_limit_targets: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ListLimitTargetsRequestBody'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ListLimitTargetsResponse'];
         };
       };
     };
