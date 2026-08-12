@@ -9043,6 +9043,8 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['InvocationV2'] & {
+            /** @description Live focused VQueue snapshot captured with this invocation and journal response. */
+            vqueueSnapshot?: components['schemas']['VqueueSnapshotResponse'];
             journal?: {
               version?: number;
               entries?: components['schemas']['JournalEntryV2'][];
