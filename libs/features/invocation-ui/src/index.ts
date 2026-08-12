@@ -25,3 +25,4 @@ export * from './lib/journal/entries/Input';
 export * from './lib/journal/entries/isEntryCompletionAmbiguous';
 export * from './lib/journal/entries/types';
 export * from './lib/journal/entries/AwaitingOn';
+export * from './lib/journal/entries/RelativeTime';

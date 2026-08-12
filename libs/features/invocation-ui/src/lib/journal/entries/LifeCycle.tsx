@@ -189,6 +189,7 @@ export function LifeCycle({
         <AwaitingOn
           future={awaitingOn}
           invocationId={String(invocation.id)}
+          invocation={invocation}
           state={awaitingState}
           isPending={Boolean(entry.isPending)}
         />

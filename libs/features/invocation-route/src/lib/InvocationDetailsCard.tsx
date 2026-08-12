@@ -1,10 +1,13 @@
-import type { Invocation } from '@restate/data-access/admin-api-spec';
+import type {
+  Invocation,
+  VqueueSnapshot,
+} from '@restate/data-access/admin-api-spec';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   getServiceTargetEntityLink,
   ServiceTarget,
 } from '@restate/features/service-target';
-import { LimitKey } from '@restate/features/vqueue-ui';
+import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Copy } from '@restate/ui/copy';
@@ -48,8 +51,10 @@ function RelatedEntityRow({
 
 export function InvocationDetailsCard({
   invocation,
+  vqueueSnapshot,
 }: {
   invocation?: Invocation;
+  vqueueSnapshot?: VqueueSnapshot;
 }) {
   const { baseUrl } = useRestateContext();
   if (!invocation) return null;
@@ -62,7 +67,8 @@ export function InvocationDetailsCard({
       ? createdRestateVersion
       : undefined;
   const scope = invocation.scope;
-  const limitKey = invocation.limit_key;
+  const vqueueId = vqueueSnapshot?.identity.vqueueId ?? invocation.vqueue_id;
+  const limitKey = vqueueSnapshot?.identity.limitKey ?? invocation.limit_key;
   const service = invocation.target_service_name;
   const serviceKey = invocation.target_service_key;
   const handler = invocation.target_handler_name;
@@ -89,6 +95,7 @@ export function InvocationDetailsCard({
       isWorkflow ||
       restateVersion ||
       idempotencyId ||
+      vqueueId ||
       limitKey ||
       traceId
     )
@@ -134,6 +141,17 @@ export function InvocationDetailsCard({
             className="min-w-0 flex-[0_1_auto]"
           />
         </RelatedEntityRow>
+      )}
+      {vqueueId && (
+        <CardRow label="VQueue">
+          <VQueueId
+            id={vqueueId}
+            focusEntryId={invocation.id}
+            focusStage={vqueueSnapshot?.focusEntry?.stage}
+            truncateInMiddle
+            className="ml-1 max-w-48 min-w-0"
+          />
+        </CardRow>
       )}
       {limitKey && (
         <CardRow label="Limit key">

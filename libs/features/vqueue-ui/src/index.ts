@@ -20,8 +20,23 @@ export {
 } from './lib/Scope';
 export { VQueueId, type VQueueIdProps } from './lib/VQueueId';
 export {
+  inboxOrderItems,
+  VQueueInboxPopoverContent,
   VQueuePopoverContent,
   vqueueBlockedResourceLabel,
+  type InboxOrderItem,
   type VQueueEntryIdRenderer,
+  type VQueueInboxPopoverContentProps,
   type VQueuePopoverContentProps,
 } from './lib/VQueuePopoverContent';
+export {
+  formatVqueueDuration,
+  getVqueueBlockedReason,
+  getVqueueGateLabel,
+  getVqueueHeadBlockSummary,
+  matchingVqueueBlockedDuration,
+  positiveVqueueDurationMilliseconds,
+  vqueueDurationMilliseconds,
+  vqueueDurationPartsMilliseconds,
+  vqueueDurationRatio,
+} from './lib/metrics';
