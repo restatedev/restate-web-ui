@@ -82,15 +82,14 @@ type SingleDeleteLimitRuleOptions = Omit<
 
 function isLimitsQuery(query: Query) {
   return (
-    isQueryForPath(query, '/query/limits/rules', 'get') ||
-    isQueryForPath(query, '/query/limits/rules/{pattern}', 'get') ||
-    isQueryForPath(query, '/query/limits/rules/{pattern}/counters', 'post') ||
-    isQueryForPath(query, '/query/limits/user-limits', 'get')
+    isQueryForPath(query, '/query/limits/rules', 'post') ||
+    isQueryForPath(query, '/query/limits/user-limits', 'post')
   );
 }
 
 function invalidateLimitsQueries(queryClient: QueryClient) {
-  queryClient.invalidateQueries({
+  return queryClient.invalidateQueries({
+    refetchType: 'active',
     predicate: isLimitsQuery,
   });
 }
@@ -391,20 +390,25 @@ export function useListStateServices(
   };
 }
 
+interface LimitPageOptions {
+  enabled?: boolean;
+}
+
 export function useListLimitRules(
-  options?: HookQueryOptions<'/query/limits/rules', 'get'>,
+  body: components['schemas']['ListLimitRulesRequestBody'],
+  options?: LimitPageOptions,
 ) {
   const enabled = useAPIStatus();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/query/limits/rules', 'get', {
+  const queryOptions = adminApi('query', '/query/limits/rules', 'post', {
     baseUrl,
+    body,
   });
 
   const results = useQuery({
     ...queryOptions,
-    ...options,
     enabled: options?.enabled !== false && enabled && hasVqueues,
   });
 
@@ -415,88 +419,24 @@ export function useListLimitRules(
 }
 
 export function useListUserLimits(
-  options?: HookQueryOptions<'/query/limits/user-limits', 'get'>,
-) {
-  const enabled = useAPIStatus();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi('query', '/query/limits/user-limits', 'get', {
-    baseUrl,
-  });
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-    enabled: options?.enabled !== false && enabled && hasVqueues,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
-export function useListLimitCounters(
-  pattern: string | undefined,
   body: components['schemas']['ListLimitCountersRequestBody'],
-  options?: HookQueryOptions<'/query/limits/rules/{pattern}/counters', 'post'>,
+  options?: LimitPageOptions,
 ) {
   const enabled = useAPIStatus();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const baseUrl = useAdminBaseUrl();
-  const resolvedPattern = pattern ?? '';
-  const queryOptions = adminApi(
-    'query',
-    '/query/limits/rules/{pattern}/counters',
-    'post',
-    {
-      baseUrl,
-      resolvedPath: `/query/limits/rules/${encodeURIComponent(resolvedPattern)}/counters`,
-      parameters: { path: { pattern: resolvedPattern } },
-      body,
-    },
-  );
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-    enabled:
-      Boolean(pattern) && options?.enabled !== false && enabled && hasVqueues,
+  const queryOptions = adminApi('query', '/query/limits/user-limits', 'post', {
+    baseUrl,
+    body,
   });
 
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
-export function useGetLimitRule(
-  pattern: string | undefined,
-  options?: HookQueryOptions<'/query/limits/rules/{pattern}', 'get'>,
-) {
-  const enabled = useAPIStatus();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
-  const baseUrl = useAdminBaseUrl();
-  const resolvedPattern = pattern ?? '';
-  const queryOptions = adminApi(
-    'query',
-    '/query/limits/rules/{pattern}',
-    'get',
-    {
-      baseUrl,
-      resolvedPath: `/query/limits/rules/${encodeURIComponent(resolvedPattern)}`,
-      parameters: { path: { pattern: resolvedPattern } },
-    },
-  );
-
   const results = useQuery({
     ...queryOptions,
-    ...options,
-    enabled:
-      Boolean(pattern) && options?.enabled !== false && enabled && hasVqueues,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    enabled: options?.enabled !== false && enabled && hasVqueues,
   });
 
   return {
@@ -527,9 +467,9 @@ export function useUpsertLimitRules(
       }
       return data;
     },
-    onSuccess(data, variables, context, meta) {
-      invalidateLimitsQueries(queryClient);
-      onSuccess?.(data, variables, context, meta);
+    async onSuccess(data, variables, context, meta) {
+      await invalidateLimitsQueries(queryClient);
+      await onSuccess?.(data, variables, context, meta);
     },
   });
 }
@@ -562,9 +502,9 @@ export function useUpsertLimitRule(
       );
       return data?.[0];
     },
-    onSuccess(data, variables, context, meta) {
-      invalidateLimitsQueries(queryClient);
-      onSuccess?.(data, variables, context, meta);
+    async onSuccess(data, variables, context, meta) {
+      await invalidateLimitsQueries(queryClient);
+      await onSuccess?.(data, variables, context, meta);
     },
   });
 }
@@ -602,9 +542,9 @@ export function useCreateLimitRule(
       );
       return data?.[0];
     },
-    onSuccess(data, variables, context, meta) {
-      invalidateLimitsQueries(queryClient);
-      onSuccess?.(data, variables, context, meta);
+    async onSuccess(data, variables, context, meta) {
+      await invalidateLimitsQueries(queryClient);
+      await onSuccess?.(data, variables, context, meta);
     },
   });
 }
@@ -642,9 +582,9 @@ export function useUpdateLimitRule(
       );
       return data?.[0];
     },
-    onSuccess(data, variables, context, meta) {
-      invalidateLimitsQueries(queryClient);
-      onSuccess?.(data, variables, context, meta);
+    async onSuccess(data, variables, context, meta) {
+      await invalidateLimitsQueries(queryClient);
+      await onSuccess?.(data, variables, context, meta);
     },
   });
 }
@@ -676,9 +616,9 @@ export function useDeleteLimitRules(
       }
       return data;
     },
-    onSuccess(data, variables, context, meta) {
-      invalidateLimitsQueries(queryClient);
-      onSuccess?.(data, variables, context, meta);
+    async onSuccess(data, variables, context, meta) {
+      await invalidateLimitsQueries(queryClient);
+      await onSuccess?.(data, variables, context, meta);
     },
   });
 }
@@ -714,9 +654,9 @@ export function useDeleteLimitRule(options?: SingleDeleteLimitRuleOptions) {
       );
       return data?.[0];
     },
-    onSuccess(data, variables, context, meta) {
-      invalidateLimitsQueries(queryClient);
-      onSuccess?.(data, variables, context, meta);
+    async onSuccess(data, variables, context, meta) {
+      await invalidateLimitsQueries(queryClient);
+      await onSuccess?.(data, variables, context, meta);
     },
   });
 }

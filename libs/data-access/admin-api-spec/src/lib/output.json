@@ -6243,11 +6243,21 @@
       }
     },
     "/query/limits/rules": {
-      "get": {
+      "post": {
         "tags": ["query-limits"],
         "summary": "List limit rules",
         "description": "Configured limit rules from the sys_rules table.",
         "operationId": "list_limit_rules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitRulesRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -6294,11 +6304,21 @@
       }
     },
     "/query/limits/user-limits": {
-      "get": {
+      "post": {
         "tags": ["query-limits"],
         "summary": "List effective user limits",
         "description": "Effective limit rows and usage from the sys_user_limits table.",
         "operationId": "list_user_limits",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitCountersRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -6309,6 +6329,39 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/query/limits/counter": {
+      "post": {
+        "tags": ["query-limits"],
+        "summary": "Get an effective user limit",
+        "description": "One effective limit row identified by its concrete scope and limit key.",
+        "operationId": "get_user_limit",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LimitCounterIdentity"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLimitRow"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Limit counter not found"
           }
         }
       }
@@ -6347,6 +6400,36 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListUserLimitsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/limits/targets": {
+      "post": {
+        "tags": ["query-limits"],
+        "summary": "List VQueues for a counter",
+        "description": "Virtual queues governed by one concrete concurrency counter, with their current scheduler state.",
+        "operationId": "list_limit_targets",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitTargetsRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListLimitTargetsResponse"
                 }
               }
             }
@@ -8500,13 +8583,19 @@
       "ListLimitRulesResponse": {
         "type": "object",
         "description": "Configured limit rules from the sys_rules table with concrete counter summaries from sys_user_limits.",
-        "required": ["rules"],
+        "required": ["rules", "hasMore"],
         "properties": {
           "rules": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LimitRuleWithStats"
             }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "type": "string"
           }
         }
       },
@@ -8554,13 +8643,19 @@
       "ListUserLimitsResponse": {
         "type": "object",
         "description": "Effective limit rows and usage from the sys_user_limits table.",
-        "required": ["limits"],
+        "required": ["limits", "hasMore"],
         "properties": {
           "limits": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/UserLimitRow"
             }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "type": "string"
           }
         }
       },
@@ -8612,6 +8707,97 @@
           },
           "num_waiters": {
             "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "ListLimitTargetsResponse": {
+        "type": "object",
+        "description": "Virtual queues governed by a concrete concurrency counter.",
+        "required": ["targets", "hasMore"],
+        "properties": {
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LimitTargetRow"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        }
+      },
+      "LimitTargetRow": {
+        "type": "object",
+        "required": ["id", "service_name"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "nullable": true
+          },
+          "limit_key": {
+            "type": "string",
+            "nullable": true
+          },
+          "queue_is_paused": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "num_running": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_inbox": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_suspended": {
+            "type": "integer",
+            "nullable": true
+          },
+          "num_paused": {
+            "type": "integer",
+            "nullable": true
+          },
+          "last_finish_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_attempt_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_enqueued_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "head_entry_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_on": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_rule": {
+            "type": "string",
+            "nullable": true
+          },
+          "blocked_level": {
+            "type": "string",
             "nullable": true
           }
         }
@@ -10013,9 +10199,36 @@
           }
         }
       },
+      "ListLimitRulesRequestBody": {
+        "type": "object",
+        "properties": {
+          "after": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "sort": {
+            "$ref": "#/components/schemas/LimitSort"
+          }
+        }
+      },
       "ListLimitCountersRequestBody": {
         "type": "object",
         "properties": {
+          "after": {
+            "type": "string"
+          },
+          "includeUnlimited": {
+            "type": "boolean",
+            "description": "Include runtime counters without a matching rule. Defaults to false."
+          },
+          "rulePattern": {
+            "type": "string",
+            "description": "Return only counters governed by this exact rule pattern."
+          },
           "filters": {
             "type": "array",
             "items": {
@@ -10024,6 +10237,52 @@
           },
           "sort": {
             "$ref": "#/components/schemas/LimitSort"
+          },
+          "search": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        }
+      },
+      "LimitCounterIdentity": {
+        "type": "object",
+        "required": ["scope"],
+        "properties": {
+          "scope": {
+            "type": "string"
+          },
+          "l1": {
+            "type": "string"
+          },
+          "l2": {
+            "type": "string"
+          }
+        }
+      },
+      "ListLimitTargetsRequestBody": {
+        "type": "object",
+        "required": ["scope"],
+        "properties": {
+          "scope": {
+            "type": "string"
+          },
+          "l1": {
+            "type": "string"
+          },
+          "l2": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
           }
         }
       },

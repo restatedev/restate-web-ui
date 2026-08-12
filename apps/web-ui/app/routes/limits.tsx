@@ -1,7 +1,7 @@
 import { limits } from '@restate/features/limits-route';
 
 export function meta() {
-  return [{ title: 'Restate - Flow control' }];
+  return [{ title: 'Restate - Rules' }];
 }
 
 export default limits.Component;

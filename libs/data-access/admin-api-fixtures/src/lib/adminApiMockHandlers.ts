@@ -124,28 +124,75 @@ type UserLimitRowMock = {
   num_waiters: number;
 };
 
-// Explicit per-rule matches (sys_user_limits rows) tuned to span the depth
-// gradient: pale-amber shallow backlogs up to a deep-red 6x match, plus
-// no-queue rows. Demonstrates the Pending bar, Depth (x limit) and the
-// no-queue/backed-up split in mock mode.
 const MOCK_RULE_MATCHES: Record<
   string,
-  Array<{ l1: string; usage: number; limit: number | null; waiters: number }>
+  Array<{
+    scope: string;
+    l1?: string;
+    l2?: string;
+    level: string;
+    usage: number;
+    limit: number | null;
+    waiters: number;
+  }>
 > = {
   '*': [
-    { l1: 'orders', usage: 100, limit: 100, waiters: 120 },
-    { l1: 'webhooks', usage: 100, limit: 100, waiters: 30 },
-    { l1: 'emails', usage: 40, limit: 100, waiters: 0 },
-    { l1: 'exports', usage: 12, limit: 100, waiters: 0 },
+    {
+      scope: 'orders',
+      level: 'scope',
+      usage: 100,
+      limit: 100,
+      waiters: 120,
+    },
+    {
+      scope: 'webhooks',
+      level: 'scope',
+      usage: 100,
+      limit: 100,
+      waiters: 30,
+    },
+    {
+      scope: 'emails',
+      level: 'scope',
+      usage: 40,
+      limit: 100,
+      waiters: 0,
+    },
+    {
+      scope: 'exports',
+      level: 'scope',
+      usage: 12,
+      limit: 100,
+      waiters: 0,
+    },
   ],
   'checkout/*': [
-    { l1: 'cart', usage: 25, limit: 25, waiters: 60 },
-    { l1: 'session', usage: 10, limit: 25, waiters: 0 },
+    {
+      scope: 'checkout',
+      l1: 'cart',
+      level: 'level1',
+      usage: 25,
+      limit: 25,
+      waiters: 60,
+    },
+    {
+      scope: 'checkout',
+      l1: 'session',
+      level: 'level1',
+      usage: 10,
+      limit: 25,
+      waiters: 0,
+    },
   ],
   'payments/charge': [
-    { l1: 'visa', usage: 8, limit: 8, waiters: 48 },
-    { l1: 'amex', usage: 8, limit: 8, waiters: 6 },
-    { l1: 'paypal', usage: 3, limit: 8, waiters: 0 },
+    {
+      scope: 'payments',
+      l1: 'charge',
+      level: 'level1',
+      usage: 8,
+      limit: 8,
+      waiters: 48,
+    },
   ],
 };
 
@@ -155,11 +202,11 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
     .filter((rule) => !rule.disabled)
     .filter((rule) => pattern === undefined || rule.pattern === pattern)
     .forEach((rule) => {
-      const [scope = null] = rule.pattern.split('/');
       const concurrency = rule.limits.concurrency ?? null;
       const matches = MOCK_RULE_MATCHES[rule.pattern] ?? [
         {
-          l1: 'key-1',
+          scope: rule.pattern.split('/')[0] ?? 'default',
+          level: 'scope',
           usage: concurrency ?? 6,
           limit: concurrency,
           waiters: 0,
@@ -168,10 +215,10 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
       for (const match of matches) {
         const limit = match.limit ?? concurrency;
         rows.push({
-          scope,
-          l1: match.l1,
-          l2: null,
-          level: 'level1',
+          scope: match.scope,
+          l1: match.l1 ?? null,
+          l2: match.l2 ?? null,
+          level: match.level,
           usage: match.usage,
           concurrency_limit: limit,
           rule_pattern: rule.pattern,
@@ -181,6 +228,186 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
       }
     });
   return rows;
+}
+
+function filteredUserLimitRows(sql: string) {
+  const scope = getSqlStringFilter(sql, 'scope');
+  const l1 = getSqlStringFilter(sql, 'l1');
+  const l2 = getSqlStringFilter(sql, 'l2');
+  const requiresNullL1 = /\bl1\s+IS\s+NULL\b/i.test(sql);
+  const requiresNullL2 = /\bl2\s+IS\s+NULL\b/i.test(sql);
+  return userLimitRows(getSqlStringFilter(sql, 'rule_pattern')).filter(
+    (row) =>
+      (scope === undefined || row.scope === scope) &&
+      (l1 === undefined || row.l1 === l1) &&
+      (l2 === undefined || row.l2 === l2) &&
+      (!requiresNullL1 || row.l1 === null) &&
+      (!requiresNullL2 || row.l2 === null),
+  );
+}
+
+type LimitTargetRowMock = {
+  id: string;
+  service_name: string;
+  scope: string;
+  limit_key: string | null;
+  queue_is_paused: boolean;
+  num_running: number;
+  num_inbox: number;
+  num_suspended: number;
+  num_paused: number;
+  last_finish_at: string | null;
+  last_attempt_at: string | null;
+  last_enqueued_at: string | null;
+  head_entry_id: string | null;
+  status: string;
+  blocked_on: string | null;
+  blocked_rule: string | null;
+  blocked_level: string | null;
+};
+
+const now = Date.now();
+const MOCK_LIMIT_TARGETS: LimitTargetRowMock[] = [
+  {
+    id: 'vq_orders_priority',
+    service_name: 'OrderProcessor',
+    scope: 'orders',
+    limit_key: 'priority',
+    queue_is_paused: false,
+    num_running: 42,
+    num_inbox: 860,
+    num_suspended: 4,
+    num_paused: 0,
+    last_finish_at: new Date(now - 210).toISOString(),
+    last_attempt_at: new Date(now - 120).toISOString(),
+    last_enqueued_at: new Date(now - 80).toISOString(),
+    head_entry_id: 'inv_orders_priority_head',
+    status: 'blocked',
+    blocked_on: 'concurrency_rules',
+    blocked_rule: '*',
+    blocked_level: 'scope',
+  },
+  {
+    id: 'vq_orders_standard',
+    service_name: 'OrderProcessor',
+    scope: 'orders',
+    limit_key: 'standard',
+    queue_is_paused: false,
+    num_running: 36,
+    num_inbox: 574,
+    num_suspended: 2,
+    num_paused: 0,
+    last_finish_at: new Date(now - 460).toISOString(),
+    last_attempt_at: new Date(now - 260).toISOString(),
+    last_enqueued_at: new Date(now - 140).toISOString(),
+    head_entry_id: 'inv_orders_standard_head',
+    status: 'blocked',
+    blocked_on: 'concurrency_rules',
+    blocked_rule: '*',
+    blocked_level: 'scope',
+  },
+  {
+    id: 'vq_orders_reconciliation',
+    service_name: 'OrderReconciliation',
+    scope: 'orders',
+    limit_key: null,
+    queue_is_paused: false,
+    num_running: 22,
+    num_inbox: 138,
+    num_suspended: 7,
+    num_paused: 0,
+    last_finish_at: new Date(now - 920).toISOString(),
+    last_attempt_at: new Date(now - 710).toISOString(),
+    last_enqueued_at: new Date(now - 340).toISOString(),
+    head_entry_id: 'inv_orders_reconciliation_head',
+    status: 'ready',
+    blocked_on: null,
+    blocked_rule: null,
+    blocked_level: null,
+  },
+  {
+    id: 'vq_checkout_cart_guest',
+    service_name: 'Checkout',
+    scope: 'checkout',
+    limit_key: 'cart/guest',
+    queue_is_paused: false,
+    num_running: 14,
+    num_inbox: 420,
+    num_suspended: 0,
+    num_paused: 0,
+    last_finish_at: new Date(now - 330).toISOString(),
+    last_attempt_at: new Date(now - 190).toISOString(),
+    last_enqueued_at: new Date(now - 100).toISOString(),
+    head_entry_id: 'inv_checkout_cart_guest_head',
+    status: 'blocked',
+    blocked_on: 'concurrency_rules',
+    blocked_rule: 'checkout/*',
+    blocked_level: 'level1',
+  },
+  {
+    id: 'vq_checkout_cart_member',
+    service_name: 'Checkout',
+    scope: 'checkout',
+    limit_key: 'cart/member',
+    queue_is_paused: false,
+    num_running: 11,
+    num_inbox: 198,
+    num_suspended: 3,
+    num_paused: 0,
+    last_finish_at: new Date(now - 680).toISOString(),
+    last_attempt_at: new Date(now - 440).toISOString(),
+    last_enqueued_at: new Date(now - 230).toISOString(),
+    head_entry_id: 'inv_checkout_cart_member_head',
+    status: 'scheduled',
+    blocked_on: null,
+    blocked_rule: null,
+    blocked_level: null,
+  },
+  {
+    id: 'vq_payments_charge',
+    service_name: 'PaymentProcessor',
+    scope: 'payments',
+    limit_key: 'charge',
+    queue_is_paused: false,
+    num_running: 8,
+    num_inbox: 48,
+    num_suspended: 1,
+    num_paused: 0,
+    last_finish_at: new Date(now - 240).toISOString(),
+    last_attempt_at: new Date(now - 150).toISOString(),
+    last_enqueued_at: new Date(now - 60).toISOString(),
+    head_entry_id: 'inv_payments_charge_head',
+    status: 'blocked',
+    blocked_on: 'concurrency_rules',
+    blocked_rule: 'payments/charge',
+    blocked_level: 'level1',
+  },
+];
+
+function getSqlLikeFilter(sql: string, column: string) {
+  const match = new RegExp(`${column}\\s+LIKE\\s+'((?:''|[^'])*)'`, 'i').exec(
+    sql,
+  );
+  return match ? unquoteSqlString(match[1] ?? '') : undefined;
+}
+
+function limitTargetRows(sql: string) {
+  const scope = getSqlStringFilter(sql, 'm.scope');
+  const limitKey = getSqlStringFilter(sql, 'm.limit_key');
+  const limitKeyPrefix = getSqlLikeFilter(sql, 'm.limit_key')?.replace(
+    /\/%$/,
+    '',
+  );
+  return MOCK_LIMIT_TARGETS.filter((target) => {
+    if (target.scope !== scope) return false;
+    if (limitKeyPrefix) {
+      return (
+        target.limit_key === limitKey ||
+        target.limit_key?.startsWith(`${limitKeyPrefix}/`)
+      );
+    }
+    return limitKey === undefined || target.limit_key === limitKey;
+  });
 }
 
 function userLimitCounterSummaryRows() {
@@ -413,8 +640,12 @@ const queryHandler = http.post<
     return HttpResponse.json({
       rows: /\bCOUNT\s*\(\s*\*\s*\)/i.test(sql)
         ? userLimitCounterSummaryRows()
-        : userLimitRows(getSqlStringFilter(sql, 'rule_pattern')),
+        : filteredUserLimitRows(sql),
     } as any);
+  }
+
+  if (/\bFROM\s+sys_vqueue_meta\s+m\b/i.test(sql)) {
+    return HttpResponse.json({ rows: limitTargetRows(sql) } as any);
   }
 
   return HttpResponse.json({ message: 'Query is not mocked' } as any, {

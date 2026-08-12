@@ -1438,13 +1438,13 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    get?: never;
+    put?: never;
     /**
      * List limit rules
      * @description Configured limit rules from the sys_rules table.
      */
-    get: operations['list_limit_rules'];
-    put?: never;
-    post?: never;
+    post: operations['list_limit_rules'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1478,13 +1478,33 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    get?: never;
+    put?: never;
     /**
      * List effective user limits
      * @description Effective limit rows and usage from the sys_user_limits table.
      */
-    get: operations['list_user_limits'];
+    post: operations['list_user_limits'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/counter': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
     put?: never;
-    post?: never;
+    /**
+     * Get an effective user limit
+     * @description One effective limit row identified by its concrete scope and limit key.
+     */
+    post: operations['get_user_limit'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1505,6 +1525,26 @@ export interface paths {
      * @description Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.
      */
     post: operations['list_limit_counters'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/query/limits/targets': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List VQueues for a counter
+     * @description Virtual queues governed by one concrete concurrency counter, with their current scheduler state.
+     */
+    post: operations['list_limit_targets'];
     delete?: never;
     options?: never;
     head?: never;
@@ -3048,6 +3088,8 @@ export interface components {
     /** @description Configured limit rules from the sys_rules table with concrete counter summaries from sys_user_limits. */
     ListLimitRulesResponse: {
       rules: components['schemas']['LimitRuleWithStats'][];
+      hasMore: boolean;
+      nextCursor?: string;
     };
     LimitRuleWithStats: {
       description?: string | null;
@@ -3067,6 +3109,8 @@ export interface components {
     /** @description Effective limit rows and usage from the sys_user_limits table. */
     ListUserLimitsResponse: {
       limits: components['schemas']['UserLimitRow'][];
+      hasMore: boolean;
+      nextCursor?: string;
     };
     UserLimitRow: {
       scope: string | null;
@@ -3078,6 +3122,31 @@ export interface components {
       rule_pattern: string | null;
       available: number | null;
       num_waiters: number | null;
+    };
+    /** @description Virtual queues governed by a concrete concurrency counter. */
+    ListLimitTargetsResponse: {
+      targets: components['schemas']['LimitTargetRow'][];
+      hasMore: boolean;
+      nextCursor?: string;
+    };
+    LimitTargetRow: {
+      id: string;
+      service_name: string;
+      scope?: string | null;
+      limit_key?: string | null;
+      queue_is_paused?: boolean | null;
+      num_running?: number | null;
+      num_inbox?: number | null;
+      num_suspended?: number | null;
+      num_paused?: number | null;
+      last_finish_at?: string | null;
+      last_attempt_at?: string | null;
+      last_enqueued_at?: string | null;
+      head_entry_id?: string | null;
+      status?: string | null;
+      blocked_on?: string | null;
+      blocked_rule?: string | null;
+      blocked_level?: string | null;
     };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
@@ -3643,9 +3712,33 @@ export interface components {
       /** @enum {string} */
       order: 'ASC' | 'DESC';
     };
+    ListLimitRulesRequestBody: {
+      after?: string;
+      limit?: number;
+      sort?: components['schemas']['LimitSort'];
+    };
     ListLimitCountersRequestBody: {
+      after?: string;
+      /** @description Include runtime counters without a matching rule. Defaults to false. */
+      includeUnlimited?: boolean;
+      /** @description Return only counters governed by this exact rule pattern. */
+      rulePattern?: string;
       filters?: components['schemas']['FilterItem'][];
       sort?: components['schemas']['LimitSort'];
+      search?: string;
+      limit?: number;
+    };
+    LimitCounterIdentity: {
+      scope: string;
+      l1?: string;
+      l2?: string;
+    };
+    ListLimitTargetsRequestBody: {
+      scope: string;
+      l1?: string;
+      l2?: string;
+      after?: string;
+      limit?: number;
     };
     GetInvocationsStatusRequestBody: {
       invocationIds: string[];
@@ -9703,7 +9796,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitRulesRequestBody'];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -9744,7 +9841,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitCountersRequestBody'];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -9753,6 +9854,36 @@ export interface operations {
         content: {
           'application/json': components['schemas']['ListUserLimitsResponse'];
         };
+      };
+    };
+  };
+  get_user_limit: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LimitCounterIdentity'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['UserLimitRow'];
+        };
+      };
+      /** @description Limit counter not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -9778,6 +9909,29 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_limit_targets: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitTargetsRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListLimitTargetsResponse'];
         };
       };
     };
