@@ -10,6 +10,7 @@ import {
   useUpdateLimitRule,
 } from '@restate/data-access/admin-api-hooks';
 import { LimitRuleTarget } from '@restate/features/vqueue-ui';
+import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
@@ -42,8 +43,9 @@ import {
 } from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
+import { type QueryKey, useQueryClient } from '@tanstack/react-query';
 import { type FormEvent, useId, useMemo, useState } from 'react';
-import { Form } from 'react-router';
+import { Form, useNavigate } from 'react-router';
 import {
   FieldError,
   Input,
@@ -61,14 +63,22 @@ import {
   type RuleLevel,
 } from './pattern';
 import { RuleMatchPreview, RulePatternBuilder } from './RulePatternBuilder';
+import { LimitValue } from './LimitValue';
 import {
+  RULE_LEVEL_COLUMN_WIDTH,
   RuleLevelBadge,
   RuleLevelExplainer,
   RuleLevelValue,
 } from './RuleLevel';
+import { limitCountersForRuleHref } from './navigation';
+import { LIMIT_LIST_QUERY_SIZE } from './limits.constants';
+import {
+  LimitListPagination,
+  useLimitListPagination,
+} from './LimitListPagination';
 
 type RuleColumn =
-  | 'rule'
+  | 'pattern'
   | 'level'
   | 'limit'
   | 'counters'
@@ -78,143 +88,68 @@ type RuleColumn =
 
 interface RuleRow extends LimitRuleWithStats {
   id: string;
+  href: string;
   level: RuleLevel;
 }
 
-type EditableLimitRule = Pick<
+export type EditableLimitRule = Pick<
   LimitRule,
   'pattern' | 'description' | 'disabled' | 'limits' | 'version'
 >;
 
 const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
   {
-    id: 'rule',
-    name: 'Rule',
+    id: 'pattern',
+    name: 'Pattern',
     isRowHeader: true,
     allowsSorting: true,
-    defaultWidth: 350,
-    minWidth: 270,
+    defaultWidth: '4fr',
   },
   {
     id: 'level',
     name: <RuleLevelExplainer />,
-    width: 72,
+    width: RULE_LEVEL_COLUMN_WIDTH,
   },
   {
     id: 'limit',
     name: 'Limit',
-    allowsSorting: true,
-    defaultWidth: 160,
-    minWidth: 150,
+    defaultWidth: '2fr',
+    maxWidth: 160,
   },
   {
     id: 'counters',
     name: <CounterSummaryExplainer />,
-    allowsSorting: true,
-    defaultWidth: 250,
-    minWidth: 220,
+    defaultWidth: '3fr',
+    maxWidth: 250,
   },
   {
     id: 'description',
     name: 'Description',
-    allowsSorting: true,
-    minWidth: 160,
+    defaultWidth: '4fr',
   },
   {
     id: 'enabled',
     name: 'Status',
-    allowsSorting: true,
     width: 100,
   },
   { id: 'actions', name: 'Actions', hideLabel: true, width: 40 },
 ];
 
-function compareText(a: string, b: string) {
-  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-}
-
-function compareRuleRows(a: RuleRow, b: RuleRow, column: RuleColumn) {
-  switch (column) {
-    case 'rule':
-      return compareText(a.pattern, b.pattern);
-    case 'level':
-      return (
-        ['scope', 'level1', 'level2'].indexOf(a.level) -
-        ['scope', 'level1', 'level2'].indexOf(b.level)
-      );
-    case 'limit':
-      return (
-        (a.limits.concurrency ?? Number.POSITIVE_INFINITY) -
-        (b.limits.concurrency ?? Number.POSITIVE_INFINITY)
-      );
-    case 'counters': {
-      const aRatio =
-        a.num_counters > 0 ? a.num_counters_with_waiters / a.num_counters : 0;
-      const bRatio =
-        b.num_counters > 0 ? b.num_counters_with_waiters / b.num_counters : 0;
-      return (
-        aRatio - bRatio ||
-        a.num_counters_with_waiters - b.num_counters_with_waiters ||
-        a.num_counters - b.num_counters
-      );
-    }
-    case 'description':
-      return compareText(a.description ?? '', b.description ?? '');
-    case 'enabled':
-      return Number(a.disabled) - Number(b.disabled);
-    case 'actions':
-      return 0;
-  }
-}
-
-const limitValueStyles = tv({
-  base: 'font-normal',
-  variants: {
-    disabled: {
-      true: 'opacity-60',
-    },
-  },
-});
-
-function LimitValue({
-  value,
-  disabled,
-}: {
-  value: number | null | undefined;
-  disabled?: boolean;
-}) {
-  return (
-    <Badge variant="default" className={limitValueStyles({ disabled })}>
-      concurrency =
-      <Badge
-        variant="default"
-        className="-ml-0.5 leading-3.5 font-semibold tabular-nums"
-      >
-        {value != null ? (
-          formatNumber(value)
-        ) : (
-          <span aria-label="Unlimited">∞</span>
-        )}
-      </Badge>
-    </Badge>
-  );
-}
-
 function CounterSummaryExplainer() {
   return (
     <InlineTooltip
       variant="indicator-button"
-      title="Counters"
-      ariaLabel="Explain backlogged counters"
+      title="Limit counters"
+      ariaLabel="Explain backlogged limit counters"
       description={
         <p className="max-w-72 text-xs leading-4 text-zinc-300">
-          A backlogged counter currently has at least one VQueue waiting for
-          capacity. The ratio compares backlogged counters with all concrete
-          counters governed by this rule.
+          A backlogged limit counter currently has at least one VQueue waiting
+          for capacity. The ratio compares backlogged limit counters with all
+          concrete limit counters governed by this rule.
         </p>
       }
     >
-      Backlogged / total counters
+      Backlogged / total limit counters
     </InlineTooltip>
   );
 }
@@ -237,6 +172,36 @@ const refreshIconStyles = tv({
   },
 });
 
+const ruleActionButtonStyles = tv({
+  base: 'flex translate-x-px items-center gap-1 rounded-r-none whitespace-nowrap text-gray-600',
+  variants: {
+    alwaysVisible: {
+      true: 'rounded-l-lg px-2 py-0.5 [font-size:inherit] [line-height:inherit] max-md:hidden',
+      false:
+        'invisible absolute right-full z-2 rounded-l-md px-2.5 py-0.5 text-0.5xs drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
+    },
+  },
+  defaultVariants: { alwaysVisible: false },
+});
+
+const ruleActionGroupStyles = tv({
+  variants: {
+    inline: {
+      true: 'rounded-l-lg text-[0.9375rem]',
+      false: '',
+    },
+  },
+});
+
+const ruleActionSplitStyles = tv({
+  variants: {
+    inline: {
+      true: 'rounded-lg md:rounded-l-none',
+      false: '',
+    },
+  },
+});
+
 function CounterSummaryCell({
   total,
   withWaiters,
@@ -246,7 +211,7 @@ function CounterSummaryCell({
 }) {
   const affected = Math.min(withWaiters, total);
   const percentage = total > 0 ? (affected / total) * 100 : 0;
-  const label = `${formatNumber(affected)} of ${formatNumber(total)} counters have waiting VQueues`;
+  const label = `${formatNumber(affected)} of ${formatNumber(total)} limit counters have waiting VQueues`;
 
   return (
     <div aria-label={label} className="flex w-full max-w-48 items-center gap-2">
@@ -280,17 +245,23 @@ function RuleStatusBadge({ disabled }: { disabled: boolean }) {
   );
 }
 
-function FlowControlHero() {
+export function FlowControlHero({
+  title,
+  description,
+  icon,
+}: {
+  title: string;
+  description: string;
+  icon: IconName;
+}) {
   return (
-    <section className="flex w-full flex-col gap-3 px-5 pt-14 pb-12 md:px-8 md:pt-16 md:pb-16">
+    <section className="flex w-full flex-col gap-3 px-5 pt-14 pb-4 md:px-8 md:pt-16 md:pb-6">
       <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-zinc-950">
-        <Icon name={IconName.Filters} className="h-6 w-6 text-zinc-400" />
-        Flow control
+        <Icon name={icon} className="h-6 w-6 text-zinc-400" />
+        {title}
       </h1>
       <p className="max-w-4xl text-base leading-7 text-zinc-500">
-        Limit concurrent invocations by scope and an optional hierarchical limit
-        key. Each rule defines capacity at one level; invocations can consume
-        capacity at every configured level in their hierarchy.{' '}
+        {description}{' '}
         <Link
           href="https://docs.restate.dev/services/flow-control"
           variant="secondary"
@@ -304,40 +275,35 @@ function FlowControlHero() {
   );
 }
 
-function RuleActions({
+export function RuleActions({
   rule,
+  onToggle,
   onEdit,
   onDelete,
+  alwaysShowPrimary,
 }: {
-  rule: RuleRow;
+  rule: EditableLimitRule;
+  onToggle: (rule: EditableLimitRule) => void;
   onEdit: (rule: EditableLimitRule) => void;
   onDelete: (rule: EditableLimitRule) => void;
+  alwaysShowPrimary?: boolean;
 }) {
-  const update = useUpdateLimitRule();
   const enabled = !rule.disabled;
   return (
     <div className="flex justify-end">
       <SplitButton
-        mini
+        mini={alwaysShowPrimary ? 'md' : true}
+        className={ruleActionGroupStyles({ inline: alwaysShowPrimary })}
+        splitClassName={ruleActionSplitStyles({ inline: alwaysShowPrimary })}
         onSelect={(action) => {
           if (action === 'toggle') {
-            update.mutate({
-              pattern: rule.pattern,
-              description: rule.description ?? null,
-              disabled: enabled,
-              limits: rule.limits,
-              version: rule.version,
-            });
+            onToggle(rule);
           }
           if (action === 'edit') onEdit(rule);
           if (action === 'delete') onDelete(rule);
         }}
         menus={[
-          <DropdownItem
-            key="toggle"
-            value="toggle"
-            isDisabled={update.isPending}
-          >
+          <DropdownItem key="toggle" value="toggle">
             <Icon
               name={enabled ? IconName.Pause : IconName.Play}
               className="h-3.5 w-3.5 shrink-0 opacity-80"
@@ -363,7 +329,9 @@ function RuleActions({
         <Button
           variant="secondary"
           onClick={() => onEdit(rule)}
-          className="invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2.5 py-0.5 text-0.5xs whitespace-nowrap text-gray-600 drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible"
+          className={ruleActionButtonStyles({
+            alwaysVisible: alwaysShowPrimary,
+          })}
         >
           Edit
         </Button>
@@ -375,14 +343,19 @@ function RuleActions({
 function renderRuleCell(
   row: RuleRow,
   column: PanelTableColumn<RuleColumn>,
+  onToggle: (rule: EditableLimitRule) => void,
   onEdit: (rule: EditableLimitRule) => void,
   onDelete: (rule: EditableLimitRule) => void,
 ) {
   switch (column.id) {
-    case 'rule':
+    case 'pattern':
       return (
         <Cell className="overflow-visible">
-          <LimitRuleTarget pattern={row.pattern} variant="table" />
+          <LimitRuleTarget
+            pattern={row.pattern}
+            href={row.href}
+            variant="table"
+          />
         </Cell>
       );
     case 'level':
@@ -427,7 +400,12 @@ function renderRuleCell(
     case 'actions':
       return (
         <Cell className="align-top [&&&]:overflow-visible">
-          <RuleActions rule={row} onEdit={onEdit} onDelete={onDelete} />
+          <RuleActions
+            rule={row}
+            onToggle={onToggle}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         </Cell>
       );
   }
@@ -494,7 +472,7 @@ function RuleTextField({
   );
 }
 
-function RuleFormDialog({
+export function RuleFormDialog({
   rule,
   onOpenChange,
 }: {
@@ -567,12 +545,12 @@ function RuleFormDialog({
             </span>
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-semibold text-gray-900">
-                {isEditing ? 'Edit limit rule' : 'Create limit rule'}
+                {isEditing ? 'Edit rule' : 'Create rule'}
               </h2>
               <p className="text-sm leading-5 text-gray-500">
                 {isEditing
-                  ? 'Update this rule’s capacity and settings. Its counter level cannot be changed.'
-                  : 'Choose the counter level to limit, then define which values it matches.'}
+                  ? 'Update this rule’s capacity and settings. Its limit counter level cannot be changed.'
+                  : 'Choose the limit counter level, then define which values it matches.'}
               </p>
             </div>
           </div>
@@ -582,7 +560,7 @@ function RuleFormDialog({
               <div className="min-w-0">
                 <div className="flex items-center gap-1">
                   <h3 className="text-sm font-semibold text-zinc-800">
-                    Limit hierarchy
+                    Rule pattern
                   </h3>
                   <RuleLevelExplainer
                     label=""
@@ -688,12 +666,14 @@ function RuleFormDialog({
   );
 }
 
-function DeleteRuleDialog({
+export function DeleteRuleDialog({
   rule,
   onOpenChange,
+  onDeleted,
 }: {
   rule: EditableLimitRule;
   onOpenChange: (open: boolean) => void;
+  onDeleted?: () => void;
 }) {
   const mutation = useDeleteLimitRule();
   return (
@@ -725,7 +705,97 @@ function DeleteRuleDialog({
             pattern: rule.pattern,
             expected_version: rule.version,
           },
-          { onSuccess: () => onOpenChange(false) },
+          {
+            onSuccess: () => {
+              onOpenChange(false);
+              onDeleted?.();
+            },
+          },
+        );
+      }}
+    />
+  );
+}
+
+type LimitRulesQueryData = {
+  rules: LimitRuleWithStats[];
+  hasMore: boolean;
+  nextCursor?: string;
+} | null;
+
+function setRuleDisabled(
+  data: LimitRulesQueryData | undefined,
+  pattern: string,
+  disabled: boolean,
+) {
+  if (!data) return data;
+  return {
+    ...data,
+    rules: data.rules.map((rule) =>
+      rule.pattern === pattern ? { ...rule, disabled } : rule,
+    ),
+  };
+}
+
+function ToggleRuleDialog({
+  rule,
+  queryKey,
+  onOpenChange,
+}: {
+  rule: EditableLimitRule;
+  queryKey: QueryKey;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const queryClient = useQueryClient();
+  const mutation = useUpdateLimitRule();
+  const nextDisabled = !rule.disabled;
+  const action = nextDisabled ? 'Disable' : 'Enable';
+
+  return (
+    <ConfirmationDialog
+      open
+      onOpenChange={onOpenChange}
+      title={`${action} limit rule`}
+      icon={nextDisabled ? IconName.Pause : IconName.Play}
+      description={
+        <span className="flex flex-col items-start gap-1.5">
+          <span className="flex items-center gap-1.5">
+            {action} <LimitRuleTarget pattern={rule.pattern} />?
+          </span>
+          <span>
+            {nextDisabled
+              ? 'Matching invocations will no longer be constrained by this rule.'
+              : 'Matching invocations will be constrained by this rule.'}
+          </span>
+        </span>
+      }
+      submitText={action}
+      closeText="Cancel"
+      formMethod="PUT"
+      formAction="/limits/rules"
+      isPending={mutation.isPending}
+      isSubmitDisabled={mutation.isPending}
+      error={mutation.error as Error | null}
+      onSubmit={async (event) => {
+        event.preventDefault();
+        await queryClient.cancelQueries({ queryKey, exact: true });
+        const previous =
+          queryClient.getQueryData<LimitRulesQueryData>(queryKey);
+        queryClient.setQueryData<LimitRulesQueryData>(queryKey, (data) =>
+          setRuleDisabled(data, rule.pattern, nextDisabled),
+        );
+        mutation.mutate(
+          {
+            pattern: rule.pattern,
+            description: rule.description ?? null,
+            disabled: nextDisabled,
+            limits: rule.limits,
+            version: rule.version,
+          },
+          {
+            onError: () => queryClient.setQueryData(queryKey, previous),
+            onSuccess: () => onOpenChange(false),
+          },
         );
       }}
     />
@@ -733,15 +803,30 @@ function DeleteRuleDialog({
 }
 
 function Component() {
+  const { baseUrl } = useRestateContext();
+  const navigate = useNavigate();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
-  const rules = useListLimitRules();
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: 'rule',
+    column: 'pattern',
     direction: 'ascending',
   });
+  const ruleRequest = useMemo(
+    () => ({
+      sort: {
+        field: String(sortDescriptor.column),
+        order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
+      } as const,
+      limit: LIMIT_LIST_QUERY_SIZE,
+    }),
+    [sortDescriptor],
+  );
+  const rules = useListLimitRules(ruleRequest, { enabled: hasVqueues });
   const [isCreateOpen, setCreateOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<EditableLimitRule | null>(
+    null,
+  );
+  const [togglingRule, setTogglingRule] = useState<EditableLimitRule | null>(
     null,
   );
   const [deletingRule, setDeletingRule] = useState<EditableLimitRule | null>(
@@ -753,28 +838,40 @@ function Component() {
       return {
         ...rule,
         id: rule.pattern,
+        href: limitCountersForRuleHref(baseUrl, rule.pattern),
         level: getRuleLevel(rule.pattern),
       };
     });
-  }, [rules.data?.rules]);
-
-  const visibleRows = useMemo(() => {
-    const column = sortDescriptor.column as RuleColumn;
-    const direction = sortDescriptor.direction === 'descending' ? -1 : 1;
-    return [...rows].sort((a, b) => {
-      const primary = compareRuleRows(a, b, column);
-      if (primary !== 0) return primary * direction;
-      return compareText(a.pattern, b.pattern);
-    });
-  }, [rows, sortDescriptor]);
+  }, [baseUrl, rules.data?.rules]);
+  const rulePagination = useLimitListPagination(
+    rows,
+    `${String(sortDescriptor.column)}\u0000${sortDescriptor.direction}`,
+  );
+  const ruleTableBodyKey = `${rules.isFetching ? 'loading' : 'ready'}:${rulePagination.pageItems
+    .map((row) => row.id)
+    .join(':')}`;
 
   const error = rules.error;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <FlowControlHero />
+      <FlowControlHero
+        title="Rules"
+        description="Configure flow-control policies for matching scopes and limit keys at any level of the hierarchy."
+        icon={IconName.Filters}
+      />
       <ContentPanel>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
+          <Button
+            type="button"
+            variant="secondary"
+            className="mr-auto ml-2 flex shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
+            onClick={() => setCreateOpen(true)}
+            disabled={!hasVqueues}
+          >
+            <Icon name={IconName.Plus} />
+            New rule
+          </Button>
           <Tooltip>
             <TooltipTrigger>
               <Button
@@ -797,16 +894,6 @@ function Component() {
             </TooltipTrigger>
             <TooltipContent size="sm">Refresh rules</TooltipContent>
           </Tooltip>
-          <Button
-            type="button"
-            variant="primary"
-            className="flex shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
-            onClick={() => setCreateOpen(true)}
-            disabled={!hasVqueues}
-          >
-            <Icon name={IconName.Plus} />
-            New rule
-          </Button>
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
@@ -819,12 +906,13 @@ function Component() {
             ) : (
               <PanelTable
                 aria-label="Limit rules"
+                bodyKey={ruleTableBodyKey}
                 columns={RULE_COLUMNS}
-                items={visibleRows}
-                isLoading={rules.isPending}
+                items={rulePagination.pageItems}
+                isLoading={rules.isFetching}
                 error={error as Error | null}
-                numOfRows={Math.max(visibleRows.length, 6)}
-                bodyDependencies={[error]}
+                numOfRows={Math.max(rulePagination.pageItems.length, 6)}
+                bodyDependencies={[error, rules.isFetching]}
                 sortDescriptor={sortDescriptor}
                 onSortChange={setSortDescriptor}
                 emptyPlaceholder={
@@ -835,8 +923,31 @@ function Component() {
                   />
                 }
                 renderCell={(row, column) =>
-                  renderRuleCell(row, column, setEditingRule, setDeletingRule)
+                  renderRuleCell(
+                    row,
+                    column,
+                    setTogglingRule,
+                    setEditingRule,
+                    setDeletingRule,
+                  )
                 }
+                onRowAction={(key) => {
+                  const row = rulePagination.pageItems.find(
+                    (item) => item.id === String(key),
+                  );
+                  if (row) navigate(row.href);
+                }}
+                rowClassName="transition-none [content-visibility:auto]"
+              />
+            )}
+            {!rules.isFetching && (
+              <LimitListPagination
+                hasMore={Boolean(rules.data?.hasMore)}
+                totalItems={rows.length}
+                pageIndex={rulePagination.pageIndex}
+                pageCount={rulePagination.pageCount}
+                onPageChange={rulePagination.setPageIndex}
+                label="rules"
               />
             )}
           </ContentPanelSection>
@@ -849,6 +960,15 @@ function Component() {
           rule={editingRule}
           onOpenChange={(open) => {
             if (!open) setEditingRule(null);
+          }}
+        />
+      )}
+      {togglingRule && (
+        <ToggleRuleDialog
+          rule={togglingRule}
+          queryKey={rules.queryKey}
+          onOpenChange={(open) => {
+            if (!open) setTogglingRule(null);
           }}
         />
       )}

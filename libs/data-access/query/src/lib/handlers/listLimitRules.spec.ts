@@ -2,66 +2,69 @@ import { describe, expect, it, vi } from 'vitest';
 import { getLimitRule, listLimitRules } from './listLimitRules';
 import type { QueryContext } from './shared';
 
-const RULES_QUERY = `SELECT pattern,
-  concurrency,
-  description,
-  disabled,
-  version
-    FROM sys_rules
-    ORDER BY pattern ASC`;
-
-const COUNTERS_QUERY = `SELECT rule_pattern,
-      COUNT(*) AS num_counters,
-      SUM(CASE WHEN num_waiters > 0 THEN 1 ELSE 0 END) AS num_counters_with_waiters
-    FROM sys_user_limits
-    WHERE rule_pattern IS NOT NULL
-    GROUP BY rule_pattern`;
+function querySql(query: ReturnType<typeof vi.fn>) {
+  return query.mock.calls.map(([sql]) => sql);
+}
 
 describe('listLimitRules', () => {
-  it('requests rules and counter summaries in parallel', async () => {
-    let resolveRules: (value: { rows: never[] }) => void = () => undefined;
-    let resolveCounters: (value: { rows: never[] }) => void = () => undefined;
-    const rulesResult = new Promise<{ rows: never[] }>((resolve) => {
-      resolveRules = resolve;
-    });
-    const countersResult = new Promise<{ rows: never[] }>((resolve) => {
-      resolveCounters = resolve;
-    });
-    const query = vi
-      .fn()
-      .mockReturnValueOnce(rulesResult)
-      .mockReturnValueOnce(countersResult);
+  it('bounds the rule page and skips statistics for an empty page', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
     const context = { query } as unknown as QueryContext;
 
-    const responsePromise = listLimitRules.call(context);
+    const response = await listLimitRules.call(context);
 
-    expect(query).toHaveBeenCalledTimes(2);
-    expect(query).toHaveBeenNthCalledWith(1, RULES_QUERY);
-    expect(query).toHaveBeenNthCalledWith(2, COUNTERS_QUERY);
-
-    resolveRules({ rows: [] });
-    resolveCounters({ rows: [] });
-
-    const response = await responsePromise;
-    expect(await response.json()).toEqual({ rules: [] });
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          ORDER BY pattern ASC
+          LIMIT 1001",
+      ]
+    `);
+    expect(await response.json()).toEqual({ rules: [], hasMore: false });
   });
 
-  it('returns the concrete counter summary with each rule', async () => {
-    const query = vi.fn(async (sql: string) => {
-      if (sql === RULES_QUERY) {
-        return {
-          rows: [
-            {
-              pattern: 'checkout/*',
-              concurrency: 25,
-              description: 'Checkout services',
-              disabled: false,
-              version: 2,
-            },
-          ],
-        };
-      }
-      return {
+  it('sorts rules by pattern', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    const context = { query } as unknown as QueryContext;
+
+    await listLimitRules.call(context, {
+      sort: { field: 'pattern', order: 'DESC' },
+    });
+
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          ORDER BY pattern DESC
+          LIMIT 1001",
+      ]
+    `);
+  });
+
+  it('aggregates statistics only for patterns in the bounded page', async () => {
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            pattern: 'checkout/*',
+            concurrency: 25,
+            description: 'Checkout services',
+            disabled: false,
+            version: 2,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
         rows: [
           {
             rule_pattern: 'checkout/*',
@@ -69,12 +72,28 @@ describe('listLimitRules', () => {
             num_counters_with_waiters: 3,
           },
         ],
-      };
-    });
+      });
     const context = { query } as unknown as QueryContext;
 
     const response = await listLimitRules.call(context);
-
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          ORDER BY pattern ASC
+          LIMIT 1001",
+        "SELECT rule_pattern,
+            COUNT(*) AS num_counters,
+            SUM(CASE WHEN num_waiters > 0 THEN 1 ELSE 0 END) AS num_counters_with_waiters
+          FROM sys_user_limits
+          WHERE rule_pattern IN ('checkout/*')
+          GROUP BY rule_pattern",
+      ]
+    `);
     expect(await response.json()).toEqual({
       rules: [
         {
@@ -87,7 +106,121 @@ describe('listLimitRules', () => {
           limits: { concurrency: 25 },
         },
       ],
+      hasMore: false,
     });
+  });
+
+  it('returns a cursor when another rule page exists', async () => {
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            pattern: 'alpha',
+            concurrency: 1,
+            description: null,
+            disabled: false,
+            version: 1,
+          },
+          {
+            pattern: 'bravo',
+            concurrency: 2,
+            description: null,
+            disabled: false,
+            version: 1,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [] });
+    const context = { query } as unknown as QueryContext;
+
+    const response = await listLimitRules.call(context, { limit: 1 });
+    const body = await response.json();
+
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          ORDER BY pattern ASC
+          LIMIT 2",
+        "SELECT rule_pattern,
+            COUNT(*) AS num_counters,
+            SUM(CASE WHEN num_waiters > 0 THEN 1 ELSE 0 END) AS num_counters_with_waiters
+          FROM sys_user_limits
+          WHERE rule_pattern IN ('alpha')
+          GROUP BY rule_pattern",
+      ]
+    `);
+    expect(body.rules).toHaveLength(1);
+    expect(body.hasMore).toBe(true);
+    expect(body.nextCursor).toEqual(expect.any(String));
+  });
+
+  it('applies the keyset cursor to the next page', async () => {
+    const firstQuery = vi
+      .fn()
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            pattern: 'alpha',
+            concurrency: 1,
+            description: null,
+            disabled: false,
+            version: 1,
+          },
+          {
+            pattern: 'bravo',
+            concurrency: 2,
+            description: null,
+            disabled: false,
+            version: 1,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [] });
+    const firstContext = { query: firstQuery } as unknown as QueryContext;
+    const first = await listLimitRules.call(firstContext, { limit: 1 });
+    const cursor = (await first.json()).nextCursor as string;
+    const query = vi.fn().mockResolvedValueOnce({ rows: [] });
+    const context = { query } as unknown as QueryContext;
+
+    await listLimitRules.call(context, { limit: 1, after: cursor });
+
+    expect(querySql(firstQuery)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          ORDER BY pattern ASC
+          LIMIT 2",
+        "SELECT rule_pattern,
+            COUNT(*) AS num_counters,
+            SUM(CASE WHEN num_waiters > 0 THEN 1 ELSE 0 END) AS num_counters_with_waiters
+          FROM sys_user_limits
+          WHERE rule_pattern IN ('alpha')
+          GROUP BY rule_pattern",
+      ]
+    `);
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          WHERE pattern > 'alpha'
+          ORDER BY pattern ASC
+          LIMIT 2",
+      ]
+    `);
   });
 
   it('defaults missing counter summaries to zero', async () => {
@@ -109,6 +242,24 @@ describe('listLimitRules', () => {
 
     const response = await listLimitRules.call(context);
 
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          ORDER BY pattern ASC
+          LIMIT 1001",
+        "SELECT rule_pattern,
+            COUNT(*) AS num_counters,
+            SUM(CASE WHEN num_waiters > 0 THEN 1 ELSE 0 END) AS num_counters_with_waiters
+          FROM sys_user_limits
+          WHERE rule_pattern IN ('checkout')
+          GROUP BY rule_pattern",
+      ]
+    `);
     expect(await response.json()).toEqual({
       rules: [
         {
@@ -121,6 +272,7 @@ describe('listLimitRules', () => {
           limits: { concurrency: 10 },
         },
       ],
+      hasMore: false,
     });
   });
 
@@ -141,15 +293,18 @@ describe('listLimitRules', () => {
 
     const response = await getLimitRule.call(context, 'checkout');
 
-    expect(query).toHaveBeenCalledWith(`SELECT pattern,
-  concurrency,
-  description,
-  disabled,
-  version,
-  last_modified
-    FROM sys_rules
-    WHERE pattern = 'checkout'
-    LIMIT 1`);
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version,
+        last_modified
+          FROM sys_rules
+          WHERE pattern = 'checkout'",
+      ]
+    `);
     expect(await response.json()).toEqual({
       pattern: 'checkout',
       description: null,

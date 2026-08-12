@@ -71,7 +71,7 @@ export function FlowControlRuleLevelExplainer({
       description={
         <div className="w-80">
           <p className="text-xs leading-4 text-zinc-400">
-            Pattern depth chooses the counter this rule limits.
+            Pattern depth chooses the limit counter this rule limits.
           </p>
           <div className="mt-2 overflow-hidden rounded-lg border border-zinc-600/70">
             {RULE_LEVELS.map((level) => {
