@@ -7,6 +7,7 @@ import { tv } from '@restate/util/styles';
 import type { RuleLevel } from './pattern';
 
 export const RULE_LEVEL_META = FLOW_CONTROL_RULE_LEVEL_META;
+export const RULE_LEVEL_COLUMN_WIDTH = 96;
 
 const explainerStyles = tv({ base: 'whitespace-nowrap' });
 

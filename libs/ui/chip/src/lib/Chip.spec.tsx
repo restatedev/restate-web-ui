@@ -86,6 +86,21 @@ describe('Chip', () => {
     );
   });
 
+  it('should render chip groups without transition or brightness effects', () => {
+    const { container } = render(
+      <ChipGroup>
+        <Chip right="angled">
+          <ChipSegment>scope</ChipSegment>
+        </Chip>
+      </ChipGroup>,
+    );
+    const group = container.querySelector('[data-chip-group]');
+    expect(group?.className).toContain('transition-none');
+    expect(group?.className).toContain('hover:brightness-100');
+    expect(group?.className).toContain('[&_[data-chip]]:transition-none');
+    expect(group?.className).toContain('[&_[data-chip-root]]:transition-none');
+  });
+
   it('should preserve the angled-edge slope across sizes', () => {
     const { container } = render(
       <>
@@ -107,6 +122,25 @@ describe('Chip', () => {
     expect(chips[1]?.className).toContain('[--chip-slope:6px]');
     expect(chips[2]?.className).toContain('[--chip-height:1.625rem]');
     expect(chips[2]?.className).toContain('[--chip-slope:6.5px]');
+  });
+
+  it('should render angled borders without CSS filters', () => {
+    const { container } = render(
+      <Chip right="angled">
+        <ChipSegment>scope</ChipSegment>
+      </Chip>,
+    );
+    const chip = container.querySelector('[data-chip]');
+    const root = container.querySelector('[data-chip-root]');
+    expect(chip?.className).toContain('p-px');
+    expect(chip?.className).toContain('[clip-path:var(--chip-clip)]');
+    expect(chip?.className).toContain(
+      '[--chip-inner-radius:calc(var(--chip-radius)-1px)]',
+    );
+    expect(root?.className).toContain('h-full');
+    expect(root?.className).toContain('[clip-path:var(--chip-inner-clip)]');
+    expect(chip?.className).not.toContain('filter:drop-shadow');
+    expect(root?.className).not.toContain('drop-shadow');
   });
 
   it('should render the whole chip group as a link when href is provided', () => {

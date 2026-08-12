@@ -20,10 +20,10 @@ describe('Scope', () => {
     ).toContain('pl-1');
     expect(
       container.querySelector('[data-chip-root]')?.getAttribute('class'),
-    ).toContain('rounded-l-(--chip-radius)');
+    ).toContain('rounded-l-[var(--chip-inner-radius)]');
     expect(
       container.querySelector('[data-chip-root]')?.getAttribute('class'),
-    ).toContain('rounded-r-(--chip-radius)');
+    ).toContain('rounded-r-[var(--chip-inner-radius)]');
     expect(
       container.querySelector('[data-scope]')?.getAttribute('data-scope'),
     ).toBe('scope-41');
@@ -48,6 +48,16 @@ describe('Scope', () => {
       container.querySelector('[data-chip-root]')?.getAttribute('class'),
     ).toContain('rounded-r-[3px]');
     expect(container.querySelector('[data-scope-connector]')).toBeNull();
+  });
+
+  it('adds room after an angled leading edge', () => {
+    const { container } = render(<Scope value="scope-41" left="angled" />);
+
+    expect(
+      container
+        .querySelector('[data-chip-segment-inner]')
+        ?.getAttribute('class'),
+    ).toContain('pl-2');
   });
 
   it('renders a compact accessible label', () => {
@@ -81,6 +91,17 @@ describe('Scope', () => {
     expect(screen.getByRole('button')).toBeTruthy();
     expect(
       container.querySelector('[data-chip-segment-inner]')?.classList,
+    ).toContain('pr-1');
+  });
+
+  it('uses compact right padding after a trailing chevron', () => {
+    const { container } = render(<Scope value="scope-41" showChevron />);
+
+    expect(container.querySelector('.lucide-chevron-right')).toBeTruthy();
+    expect(
+      container
+        .querySelector('[data-chip-segment-inner]')
+        ?.getAttribute('class'),
     ).toContain('pr-1');
   });
 

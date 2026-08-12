@@ -192,7 +192,7 @@ export function RulePatternBuilder({
         <span className={labelStyles()}>
           <span>Scope</span>
           <span className="text-2xs font-normal text-gray-400">
-            Top-level counter · required
+            Top-level limit counter · required
           </span>
         </span>
         <div className="grid min-w-0 grid-cols-2">

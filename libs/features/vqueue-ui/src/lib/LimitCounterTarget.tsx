@@ -9,86 +9,85 @@ import { tv } from '@restate/util/styles';
 import { LimitKey } from './LimitKey';
 import { Scope } from './Scope';
 
-export type LimitRuleLevel = 'scope' | 'level1' | 'level2';
-export type LimitRuleTargetVariant = ChipGroupVariant | 'table';
-
 const styles = tv({
   slots: {
     root: 'inline-flex max-w-full min-w-0 items-center align-middle',
     identity: 'min-w-0',
-    identityIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+    identityIcon:
+      'h-3.5 w-3.5 shrink-0 [&_path:first-child]:origin-[12px_14px] [&_path:first-child]:transition-transform',
   },
   variants: {
     variant: {
       default: {},
       header: {},
-      table: {
-        root: 'w-full',
-        identity: 'w-full',
+      table: { root: 'w-full' },
+    },
+    atCapacity: {
+      false: {
+        identityIcon: 'text-zinc-400 [&_path:first-child]:rotate-[-75deg]',
+      },
+      true: {
+        identityIcon:
+          'text-amber-600 [&_path:first-child]:rotate-[75deg] [&_path:first-child]:animate-gaugePressure motion-reduce:[&_path:first-child]:animate-none',
       },
     },
   },
-  defaultVariants: {
-    variant: 'default',
-  },
+  defaultVariants: { variant: 'default', atCapacity: false },
 });
 
-export interface LimitRuleTargetProps {
-  pattern: string;
+export interface LimitCounterTargetProps {
+  scope: string;
+  l1?: string;
+  l2?: string;
   href?: string;
   className?: string;
-  variant?: LimitRuleTargetVariant;
+  variant?: ChipGroupVariant | 'table';
   density?: ChipGroupDensity;
   showIcon?: boolean;
-  showTooltip?: boolean;
+  usage?: number | null;
+  limit?: number | null;
 }
 
-export function getLimitRuleLevel(pattern: string): LimitRuleLevel {
-  const components = pattern.split('/');
-  if (components.length >= 3) return 'level2';
-  if (components.length === 2) return 'level1';
-  return 'scope';
-}
-
-export function LimitRuleTarget({
-  pattern,
+export function LimitCounterTarget({
+  scope,
+  l1,
+  l2,
   href,
   className,
   variant = 'default',
   density,
   showIcon,
-  showTooltip = true,
-}: LimitRuleTargetProps) {
-  const [scope = '', level1, level2] = pattern.split('/');
-  if (!scope) return null;
-
-  const limitKey = [level1, level2].filter(Boolean).join('/');
-  const level = getLimitRuleLevel(pattern);
+  usage,
+  limit,
+}: LimitCounterTargetProps) {
+  const limitKey = [l1, l2].filter(Boolean).join('/');
+  const identity = [scope, limitKey].filter(Boolean).join('/');
   const resolvedDensity =
     density ?? (variant === 'header' ? 'default' : 'compact');
   const chipVariant = variant === 'header' ? 'header' : 'default';
   const resolvedShowIcon = showIcon ?? variant !== 'header';
+  const atCapacity = usage != null && limit != null && usage >= limit;
   const showChevron = variant === 'table' && Boolean(href);
-  const { root, identity, identityIcon } = styles({ variant });
+  const {
+    root,
+    identity: identityStyles,
+    identityIcon,
+  } = styles({ variant, atCapacity });
 
   const target = (
-    <span
-      className={root({ className })}
-      data-limit-rule={pattern}
-      data-limit-rule-level={level}
-    >
+    <span className={root({ className })} data-limit-counter={identity}>
       <ChipGroup
         variant={chipVariant}
         density={resolvedDensity}
         href={href}
-        aria-label={`Limit rule ${pattern}`}
-        className={identity()}
+        aria-label={`Limit counter ${identity}`}
+        className={identityStyles()}
       >
         <Scope
           value={scope}
-          icon={resolvedShowIcon ? IconName.Filters : undefined}
+          icon={resolvedShowIcon ? IconName.Gauge : undefined}
           iconClassName={identityIcon()}
-          relationship={limitKey ? 'rule' : undefined}
+          relationship={limitKey ? 'target' : undefined}
           showChevron={showChevron && !limitKey}
         />
         {limitKey && (
@@ -97,19 +96,16 @@ export function LimitRuleTarget({
             relationship="scope"
             showCopy={false}
             showChevron={showChevron}
-            showTooltip={showTooltip}
           />
         )}
       </ChipGroup>
     </span>
   );
 
-  if (!showTooltip) return target;
-
   return (
     <TruncateWithTooltip
-      tooltipContent={pattern}
-      copyText={pattern}
+      tooltipContent={identity}
+      copyText={identity}
       hideCopy={variant !== 'table'}
       overflowVisible
     >
