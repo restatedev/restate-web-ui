@@ -30,7 +30,7 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern IS NOT NULL
-          ORDER BY COALESCE(num_waiters, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
     `);
@@ -50,7 +50,7 @@ describe('listUserLimits', () => {
       [
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
-          ORDER BY COALESCE(num_waiters, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
     `);
@@ -70,7 +70,7 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern = 'tenant''s/*'
-          ORDER BY COALESCE(num_waiters, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
     `);
@@ -89,7 +89,26 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern IS NOT NULL
-          ORDER BY (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(num_waiters, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          LIMIT 1001",
+      ]
+    `);
+  });
+
+  it('sorts waiting first, then usage and rule pattern', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    const context = { query } as unknown as QueryContext;
+
+    await listUserLimits.call(context, {
+      sort: { field: 'waiting', order: 'ASC' },
+    });
+
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
+          FROM sys_user_limits
+          WHERE rule_pattern IS NOT NULL
+          ORDER BY COALESCE(num_waiters, 0) ASC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
     `);
@@ -108,7 +127,7 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern IS NOT NULL
-          ORDER BY COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(rule_pattern, '') ASC, COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
     `);
@@ -141,7 +160,7 @@ describe('listUserLimits', () => {
           OR LOWER(COALESCE(l1, '')) LIKE '%tenant''s checkout%'
           OR LOWER(COALESCE(l2, '')) LIKE '%tenant''s checkout%'
         )
-          ORDER BY COALESCE(num_waiters, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
     `);
@@ -164,7 +183,7 @@ describe('listUserLimits', () => {
           AND LOWER(COALESCE(l1, '')) LIKE '%checkout%'
           AND LOWER(COALESCE(l2, '')) LIKE '%priority%'
         )
-          ORDER BY COALESCE(num_waiters, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
     `);
@@ -184,7 +203,7 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern IS NOT NULL
-          ORDER BY COALESCE(num_waiters, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 2",
       ]
     `);
@@ -205,7 +224,7 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern = 'tenant/*'
-          ORDER BY COALESCE(num_waiters, 0) DESC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
+          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 2",
       ]
     `);

@@ -28,15 +28,24 @@ function counterOrderBy(sort?: LimitCounterSort) {
   const direction = sort?.order === 'ASC' ? 'ASC' : 'DESC';
   const field = sort?.field ?? 'waiting';
   const identity = `scope ASC, ${stringColumn('l1')} ASC, ${stringColumn('l2')} ASC`;
-
-  if (field === 'usage') {
-    return `${unlimitedExpression} ASC, ${utilizationExpression} ${direction}, ${identity}`;
-  }
-  if (field === 'pattern') {
-    return `${stringColumn('rule_pattern')} ${direction}, ${identity}`;
-  }
-
-  return `${numberColumn('num_waiters')} ${direction}, ${identity}`;
+  const fieldOrder = (
+    sortField: LimitCounterSort['field'],
+    sortDirection: 'ASC' | 'DESC',
+  ) => {
+    if (sortField === 'usage') {
+      return `${unlimitedExpression} ASC, ${utilizationExpression} ${sortDirection}`;
+    }
+    if (sortField === 'pattern') {
+      return `${stringColumn('rule_pattern')} ${sortDirection}`;
+    }
+    return `${numberColumn('num_waiters')} ${sortDirection}`;
+  };
+  const order = [fieldOrder(field, direction)];
+  if (field !== 'waiting') order.push(fieldOrder('waiting', 'DESC'));
+  if (field !== 'usage') order.push(fieldOrder('usage', 'DESC'));
+  if (field !== 'pattern') order.push(fieldOrder('pattern', 'ASC'));
+  order.push(identity);
+  return order.join(', ');
 }
 
 function searchClause(search?: string) {
