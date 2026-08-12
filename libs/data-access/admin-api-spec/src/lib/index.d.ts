@@ -3707,15 +3707,22 @@ export interface components {
         order: 'ASC' | 'DESC';
       };
     };
-    LimitSort: {
-      field: string;
+    LimitRuleSort: {
+      /** @enum {string} */
+      field: 'pattern';
+      /** @enum {string} */
+      order: 'ASC' | 'DESC';
+    };
+    LimitCounterSort: {
+      /** @enum {string} */
+      field: 'usage' | 'pattern' | 'waiting';
       /** @enum {string} */
       order: 'ASC' | 'DESC';
     };
     ListLimitRulesRequestBody: {
       after?: string;
       limit?: number;
-      sort?: components['schemas']['LimitSort'];
+      sort?: components['schemas']['LimitRuleSort'];
     };
     ListLimitCountersRequestBody: {
       after?: string;
@@ -3724,7 +3731,7 @@ export interface components {
       /** @description Return only counters governed by this exact rule pattern. */
       rulePattern?: string;
       filters?: components['schemas']['FilterItem'][];
-      sort?: components['schemas']['LimitSort'];
+      sort?: components['schemas']['LimitCounterSort'];
       search?: string;
       limit?: number;
     };

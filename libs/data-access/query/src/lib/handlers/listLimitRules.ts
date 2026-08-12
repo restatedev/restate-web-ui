@@ -71,7 +71,7 @@ function toLimitRuleWithStats(
 }
 
 function ruleSortColumns(
-  sort?: components['schemas']['LimitSort'],
+  sort?: components['schemas']['LimitRuleSort'],
 ): KeysetColumn<LimitRuleListRow>[] {
   const direction =
     sort?.field === 'pattern' && sort.order === 'DESC' ? 'DESC' : 'ASC';

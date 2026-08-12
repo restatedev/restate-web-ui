@@ -10186,12 +10186,27 @@
           }
         }
       },
-      "LimitSort": {
+      "LimitRuleSort": {
         "type": "object",
         "required": ["field", "order"],
         "properties": {
           "field": {
-            "type": "string"
+            "type": "string",
+            "enum": ["pattern"]
+          },
+          "order": {
+            "type": "string",
+            "enum": ["ASC", "DESC"]
+          }
+        }
+      },
+      "LimitCounterSort": {
+        "type": "object",
+        "required": ["field", "order"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["usage", "pattern", "waiting"]
           },
           "order": {
             "type": "string",
@@ -10211,7 +10226,7 @@
             "maximum": 1000
           },
           "sort": {
-            "$ref": "#/components/schemas/LimitSort"
+            "$ref": "#/components/schemas/LimitRuleSort"
           }
         }
       },
@@ -10236,7 +10251,7 @@
             }
           },
           "sort": {
-            "$ref": "#/components/schemas/LimitSort"
+            "$ref": "#/components/schemas/LimitCounterSort"
           },
           "search": {
             "type": "string"

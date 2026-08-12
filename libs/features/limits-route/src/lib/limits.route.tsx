@@ -814,7 +814,7 @@ function Component() {
   const ruleRequest = useMemo(
     () => ({
       sort: {
-        field: String(sortDescriptor.column),
+        field: 'pattern' as const,
         order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
       } as const,
       limit: LIMIT_LIST_QUERY_SIZE,
@@ -843,10 +843,7 @@ function Component() {
       };
     });
   }, [baseUrl, rules.data?.rules]);
-  const rulePagination = useLimitListPagination(
-    rows,
-    `${String(sortDescriptor.column)}\u0000${sortDescriptor.direction}`,
-  );
+  const rulePagination = useLimitListPagination(rows, ruleRequest);
   const ruleTableBodyKey = `${rules.isFetching ? 'loading' : 'ready'}:${rulePagination.pageItems
     .map((row) => row.id)
     .join(':')}`;
