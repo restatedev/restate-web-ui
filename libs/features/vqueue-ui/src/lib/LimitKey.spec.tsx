@@ -48,6 +48,16 @@ describe('LimitKey', () => {
     expect(screen.getByRole('button')).toBeTruthy();
   });
 
+  it('uses compact right padding after a nested trailing chevron', () => {
+    const { container } = render(
+      <LimitKey value="team/customer-1" showChevron showCopy={false} />,
+    );
+    const segments = container.querySelectorAll('[data-chip-segment-inner]');
+
+    expect(container.querySelector('.lucide-chevron-right')).toBeTruthy();
+    expect(segments.item(1).getAttribute('class')).toContain('pr-1');
+  });
+
   it('angles the left edge when it follows a scope', () => {
     const { container } = render(
       <LimitKey

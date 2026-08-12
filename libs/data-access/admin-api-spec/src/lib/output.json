@@ -6243,11 +6243,21 @@
       }
     },
     "/query/limits/rules": {
-      "get": {
+      "post": {
         "tags": ["query-limits"],
         "summary": "List limit rules",
         "description": "Configured limit rules from the sys_rules table.",
         "operationId": "list_limit_rules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitRulesRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -6294,11 +6304,21 @@
       }
     },
     "/query/limits/user-limits": {
-      "get": {
+      "post": {
         "tags": ["query-limits"],
         "summary": "List effective user limits",
         "description": "Effective limit rows and usage from the sys_user_limits table.",
         "operationId": "list_user_limits",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListLimitCountersRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "",
@@ -8500,13 +8520,16 @@
       "ListLimitRulesResponse": {
         "type": "object",
         "description": "Configured limit rules from the sys_rules table with concrete counter summaries from sys_user_limits.",
-        "required": ["rules"],
+        "required": ["rules", "hasMore"],
         "properties": {
           "rules": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LimitRuleWithStats"
             }
+          },
+          "hasMore": {
+            "type": "boolean"
           }
         }
       },
@@ -8554,13 +8577,16 @@
       "ListUserLimitsResponse": {
         "type": "object",
         "description": "Effective limit rows and usage from the sys_user_limits table.",
-        "required": ["limits"],
+        "required": ["limits", "hasMore"],
         "properties": {
           "limits": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/UserLimitRow"
             }
+          },
+          "hasMore": {
+            "type": "boolean"
           }
         }
       },
@@ -10000,12 +10026,13 @@
           }
         }
       },
-      "LimitSort": {
+      "LimitRuleSort": {
         "type": "object",
         "required": ["field", "order"],
         "properties": {
           "field": {
-            "type": "string"
+            "type": "string",
+            "enum": ["pattern"]
           },
           "order": {
             "type": "string",
@@ -10013,9 +10040,44 @@
           }
         }
       },
+      "LimitCounterSort": {
+        "type": "object",
+        "required": ["field", "order"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["usage", "pattern", "waiting"]
+          },
+          "order": {
+            "type": "string",
+            "enum": ["ASC", "DESC"]
+          }
+        }
+      },
+      "ListLimitRulesRequestBody": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "sort": {
+            "$ref": "#/components/schemas/LimitRuleSort"
+          }
+        }
+      },
       "ListLimitCountersRequestBody": {
         "type": "object",
         "properties": {
+          "includeUnlimited": {
+            "type": "boolean",
+            "description": "Include runtime counters without a matching rule. Defaults to false."
+          },
+          "rulePattern": {
+            "type": "string",
+            "description": "Return only counters governed by this exact rule pattern."
+          },
           "filters": {
             "type": "array",
             "items": {
@@ -10023,7 +10085,15 @@
             }
           },
           "sort": {
-            "$ref": "#/components/schemas/LimitSort"
+            "$ref": "#/components/schemas/LimitCounterSort"
+          },
+          "search": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
           }
         }
       },

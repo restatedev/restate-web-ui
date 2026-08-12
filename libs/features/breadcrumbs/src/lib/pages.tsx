@@ -206,6 +206,20 @@ export const introspectionCrumb: CrumbFragment = {
   icon: IconName.ScanSearch,
 };
 
+export const limitRulesCrumb: CrumbFragment = {
+  kind: 'list',
+  resource: 'limit-rules',
+  label: 'Rules',
+  icon: IconName.Filters,
+};
+
+export const limitCountersCrumb: CrumbFragment = {
+  kind: 'list',
+  resource: 'limit-counters',
+  label: 'Limit counters',
+  icon: IconName.Gauge,
+};
+
 export function createBreadcrumbPages(options?: {
   patternPrefix?: string;
 }): PageDefinition[] {
@@ -227,6 +241,11 @@ export function createBreadcrumbPages(options?: {
     { pattern: `${prefix}/state`, ...stateCrumb },
     { pattern: `${prefix}/state/:virtualObject`, ...stateObjectCrumb },
     { pattern: `${prefix}/introspection`, ...introspectionCrumb },
+    { pattern: `${prefix}/flow-control/rules`, ...limitRulesCrumb },
+    {
+      pattern: `${prefix}/flow-control/counters`,
+      ...limitCountersCrumb,
+    },
   ];
 }
 

@@ -24,7 +24,7 @@ export interface PanelTableColumn<TId extends string = string> {
   name: ReactNode;
   isRowHeader?: boolean;
   allowsSorting?: boolean;
-  defaultWidth?: number;
+  defaultWidth?: AriaColumnProps['defaultWidth'];
   width?: number;
   minWidth?: number;
   maxWidth?: number;

@@ -1,90 +1,122 @@
-import type {
-  components,
-  FilterItem,
-} from '@restate/data-access/admin-api-spec';
-import { quoteSqlString, type QueryContext } from './shared';
+import type { components } from '@restate/data-access/admin-api-spec';
 import { filtersToClause } from '../convertFilters';
+import { limitPage, limitPageSize } from './limitPagination';
+import { quoteSqlString, type QueryContext } from './shared';
 
 const USER_LIMITS_COLUMNS =
   'scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters';
 
-const COUNTERS_LIMIT = 100;
-
-// Columns the counters table is allowed to sort by (guards the ORDER BY against
-// arbitrary field names coming from the URL). All map to real sys_user_limits
-// columns, so the field doubles as the SQL expression.
-const COUNTER_SORT_FIELDS = new Set([
-  'num_waiters',
-  'usage',
-  'available',
-  'scope',
-  'l1',
-  'l2',
-  'level',
-  'concurrency_limit',
-]);
-
-type LimitSort = components['schemas']['LimitSort'];
+type LimitCounterSort = components['schemas']['LimitCounterSort'];
 type UserLimitRow = components['schemas']['UserLimitRow'];
 type ListUserLimitsResponse = components['schemas']['ListUserLimitsResponse'];
+type ListLimitCountersRequestBody =
+  components['schemas']['ListLimitCountersRequestBody'];
 
-function buildCounterOrderBy(sort?: LimitSort): string {
-  if (sort && COUNTER_SORT_FIELDS.has(sort.field)) {
-    const dir = sort.order === 'ASC' ? 'ASC' : 'DESC';
-    return `ORDER BY ${sort.field} ${dir} NULLS LAST, scope, l1, l2, level`;
-  }
-  return 'ORDER BY scope, l1, l2, level, rule_pattern';
-}
+const COUNTER_SORT_FIELDS = new Set<LimitCounterSort['field']>([
+  'usage',
+  'pattern',
+  'waiting',
+]);
 
-export async function getUserLimitsRows(
-  context: QueryContext,
-): Promise<UserLimitRow[]> {
-  const { rows } = await context.query(`SELECT ${USER_LIMITS_COLUMNS}
-    FROM sys_user_limits
-    ORDER BY scope, l1, l2, level, rule_pattern`);
+const stringColumn = (column: string) => `COALESCE(${column}, '')`;
+const numberColumn = (column: string) => `COALESCE(${column}, 0)`;
+const unlimitedExpression = '(concurrency_limit IS NULL)';
+const utilizationExpression =
+  'COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0)';
 
-  return rows as UserLimitRow[];
-}
-
-export async function listUserLimits(this: QueryContext) {
-  const response: ListUserLimitsResponse = {
-    limits: await getUserLimitsRows(this),
+function counterOrderBy(sort?: LimitCounterSort) {
+  const direction = sort?.order === 'ASC' ? 'ASC' : 'DESC';
+  const field = sort?.field ?? 'waiting';
+  const identity = `scope ASC, ${stringColumn('l1')} ASC, ${stringColumn('l2')} ASC`;
+  const fieldOrder = (
+    sortField: LimitCounterSort['field'],
+    sortDirection: 'ASC' | 'DESC',
+  ) => {
+    if (sortField === 'usage') {
+      return `${unlimitedExpression} ASC, ${utilizationExpression} ${sortDirection}`;
+    }
+    if (sortField === 'pattern') {
+      return `${stringColumn('rule_pattern')} ${sortDirection}`;
+    }
+    return `${numberColumn('num_waiters')} ${sortDirection}`;
   };
-
-  return Response.json(response);
+  const order = [fieldOrder(field, direction)];
+  if (field !== 'waiting') order.push(fieldOrder('waiting', 'DESC'));
+  if (field !== 'usage') order.push(fieldOrder('usage', 'DESC'));
+  if (field !== 'pattern') order.push(fieldOrder('pattern', 'ASC'));
+  order.push(identity);
+  return order.join(', ');
 }
 
-// The detail page's "Active matches" tab: counters resolving to one rule, with
-// server-side filtering + sorting fed from the query bar, capped at 100 rows.
-export async function getLimitCountersRows(
+function searchClause(search?: string) {
+  const value = search?.trim().toLocaleLowerCase();
+  if (!value) return '';
+  const parts = value.split('/').map((part) => part.trim());
+  const columns = ['scope', 'l1', 'l2'];
+  if (parts.length > 3) return 'FALSE';
+  if (parts.length > 1) {
+    return `(
+    ${parts
+      .map(
+        (part, index) =>
+          `LOWER(${stringColumn(columns[index] ?? 'l2')}) LIKE ${quoteSqlString(`%${part}%`)}`,
+      )
+      .join('\n    AND ')}
+  )`;
+  }
+  const pattern = quoteSqlString(`%${parts[0]}%`);
+  return `(
+    LOWER(${stringColumn('scope')}) LIKE ${pattern}
+    OR LOWER(${stringColumn('l1')}) LIKE ${pattern}
+    OR LOWER(${stringColumn('l2')}) LIKE ${pattern}
+  )`;
+}
+
+async function counterPage(
   context: QueryContext,
-  pattern: string,
-  { filters = [], sort }: { filters?: FilterItem[]; sort?: LimitSort },
-): Promise<UserLimitRow[]> {
+  args: ListLimitCountersRequestBody,
+  pattern?: string,
+) {
+  if (args.sort && !COUNTER_SORT_FIELDS.has(args.sort.field)) {
+    return new Response('Unsupported sort field', { status: 400 });
+  }
+  const limit = limitPageSize(args.limit);
   const where = [
-    `rule_pattern = ${quoteSqlString(pattern)}`,
-    filtersToClause(filters),
+    pattern || args.rulePattern
+      ? `rule_pattern = ${quoteSqlString(pattern ?? args.rulePattern ?? '')}`
+      : '',
+    !pattern && !args.rulePattern && !args.includeUnlimited
+      ? 'rule_pattern IS NOT NULL'
+      : '',
+    filtersToClause(args.filters ?? []),
+    searchClause(args.search),
   ]
     .filter(Boolean)
     .join(' AND ');
+  const whereClause = where ? `\n    WHERE ${where}` : '';
   const { rows } = await context.query(`SELECT ${USER_LIMITS_COLUMNS}
-    FROM sys_user_limits
-    WHERE ${where}
-    ${buildCounterOrderBy(sort)}
-    LIMIT ${COUNTERS_LIMIT}`);
+    FROM sys_user_limits${whereClause}
+    ORDER BY ${counterOrderBy(args.sort)}
+    LIMIT ${limit + 1}`);
+  const page = limitPage(rows as UserLimitRow[], limit);
+  const response: ListUserLimitsResponse = {
+    limits: page.items,
+    hasMore: page.hasMore,
+  };
+  return Response.json(response);
+}
 
-  return rows as UserLimitRow[];
+export async function listUserLimits(
+  this: QueryContext,
+  args: ListLimitCountersRequestBody = {},
+) {
+  return counterPage(this, args);
 }
 
 export async function listLimitCountersForRule(
   this: QueryContext,
   pattern: string,
-  filters: FilterItem[] = [],
-  sort?: LimitSort,
+  args: ListLimitCountersRequestBody = {},
 ) {
-  const response: ListUserLimitsResponse = {
-    limits: await getLimitCountersRows(this, pattern, { filters, sort }),
-  };
-
-  return Response.json(response);
+  return counterPage(this, args, pattern);
 }

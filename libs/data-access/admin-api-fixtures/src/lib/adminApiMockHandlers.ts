@@ -124,28 +124,75 @@ type UserLimitRowMock = {
   num_waiters: number;
 };
 
-// Explicit per-rule matches (sys_user_limits rows) tuned to span the depth
-// gradient: pale-amber shallow backlogs up to a deep-red 6x match, plus
-// no-queue rows. Demonstrates the Pending bar, Depth (x limit) and the
-// no-queue/backed-up split in mock mode.
 const MOCK_RULE_MATCHES: Record<
   string,
-  Array<{ l1: string; usage: number; limit: number | null; waiters: number }>
+  Array<{
+    scope: string;
+    l1?: string;
+    l2?: string;
+    level: string;
+    usage: number;
+    limit: number | null;
+    waiters: number;
+  }>
 > = {
   '*': [
-    { l1: 'orders', usage: 100, limit: 100, waiters: 120 },
-    { l1: 'webhooks', usage: 100, limit: 100, waiters: 30 },
-    { l1: 'emails', usage: 40, limit: 100, waiters: 0 },
-    { l1: 'exports', usage: 12, limit: 100, waiters: 0 },
+    {
+      scope: 'orders',
+      level: 'scope',
+      usage: 100,
+      limit: 100,
+      waiters: 120,
+    },
+    {
+      scope: 'webhooks',
+      level: 'scope',
+      usage: 100,
+      limit: 100,
+      waiters: 30,
+    },
+    {
+      scope: 'emails',
+      level: 'scope',
+      usage: 40,
+      limit: 100,
+      waiters: 0,
+    },
+    {
+      scope: 'exports',
+      level: 'scope',
+      usage: 12,
+      limit: 100,
+      waiters: 0,
+    },
   ],
   'checkout/*': [
-    { l1: 'cart', usage: 25, limit: 25, waiters: 60 },
-    { l1: 'session', usage: 10, limit: 25, waiters: 0 },
+    {
+      scope: 'checkout',
+      l1: 'cart',
+      level: 'level1',
+      usage: 25,
+      limit: 25,
+      waiters: 60,
+    },
+    {
+      scope: 'checkout',
+      l1: 'session',
+      level: 'level1',
+      usage: 10,
+      limit: 25,
+      waiters: 0,
+    },
   ],
   'payments/charge': [
-    { l1: 'visa', usage: 8, limit: 8, waiters: 48 },
-    { l1: 'amex', usage: 8, limit: 8, waiters: 6 },
-    { l1: 'paypal', usage: 3, limit: 8, waiters: 0 },
+    {
+      scope: 'payments',
+      l1: 'charge',
+      level: 'level1',
+      usage: 8,
+      limit: 8,
+      waiters: 48,
+    },
   ],
 };
 
@@ -155,11 +202,11 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
     .filter((rule) => !rule.disabled)
     .filter((rule) => pattern === undefined || rule.pattern === pattern)
     .forEach((rule) => {
-      const [scope = null] = rule.pattern.split('/');
       const concurrency = rule.limits.concurrency ?? null;
       const matches = MOCK_RULE_MATCHES[rule.pattern] ?? [
         {
-          l1: 'key-1',
+          scope: rule.pattern.split('/')[0] ?? 'default',
+          level: 'scope',
           usage: concurrency ?? 6,
           limit: concurrency,
           waiters: 0,
@@ -168,10 +215,10 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
       for (const match of matches) {
         const limit = match.limit ?? concurrency;
         rows.push({
-          scope,
-          l1: match.l1,
-          l2: null,
-          level: 'level1',
+          scope: match.scope,
+          l1: match.l1 ?? null,
+          l2: match.l2 ?? null,
+          level: match.level,
           usage: match.usage,
           concurrency_limit: limit,
           rule_pattern: rule.pattern,
@@ -181,6 +228,22 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
       }
     });
   return rows;
+}
+
+function filteredUserLimitRows(sql: string) {
+  const scope = getSqlStringFilter(sql, 'scope');
+  const l1 = getSqlStringFilter(sql, 'l1');
+  const l2 = getSqlStringFilter(sql, 'l2');
+  const requiresNullL1 = /\bl1\s+IS\s+NULL\b/i.test(sql);
+  const requiresNullL2 = /\bl2\s+IS\s+NULL\b/i.test(sql);
+  return userLimitRows(getSqlStringFilter(sql, 'rule_pattern')).filter(
+    (row) =>
+      (scope === undefined || row.scope === scope) &&
+      (l1 === undefined || row.l1 === l1) &&
+      (l2 === undefined || row.l2 === l2) &&
+      (!requiresNullL1 || row.l1 === null) &&
+      (!requiresNullL2 || row.l2 === null),
+  );
 }
 
 function userLimitCounterSummaryRows() {
@@ -413,7 +476,7 @@ const queryHandler = http.post<
     return HttpResponse.json({
       rows: /\bCOUNT\s*\(\s*\*\s*\)/i.test(sql)
         ? userLimitCounterSummaryRows()
-        : userLimitRows(getSqlStringFilter(sql, 'rule_pattern')),
+        : filteredUserLimitRows(sql),
     } as any);
   }
 

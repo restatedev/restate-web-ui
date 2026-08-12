@@ -111,13 +111,16 @@ type BoundHandlers = {
   getMetrics: () => Promise<Response>;
   getStateStorageSize: () => Promise<Response>;
   listStateServices: () => Promise<Response>;
-  listLimitRules: () => Promise<Response>;
+  listLimitRules: (
+    args: components['schemas']['ListLimitRulesRequestBody'],
+  ) => Promise<Response>;
   getLimitRule: (pattern: string) => Promise<Response>;
-  listUserLimits: () => Promise<Response>;
+  listUserLimits: (
+    args: components['schemas']['ListLimitCountersRequestBody'],
+  ) => Promise<Response>;
   listLimitCountersForRule: (
     pattern: string,
-    filters: FilterItem[],
-    sort?: components['schemas']['LimitSort'],
+    args: components['schemas']['ListLimitCountersRequestBody'],
   ) => Promise<Response>;
   getInvocation: (invocationId: string) => Promise<Response>;
   getJournalEntryV2: (
@@ -501,14 +504,14 @@ export const routes = createRoutes('/query', {
   },
   limits: {
     rules: {
-      list: { method: 'GET', pattern: '/limits/rules' },
+      list: { method: 'POST', pattern: '/limits/rules' },
       get: { method: 'GET', pattern: '/limits/rules/:pattern' },
       counters: {
         method: 'POST',
         pattern: '/limits/rules/:pattern/counters',
       },
     },
-    userLimits: { method: 'GET', pattern: '/limits/user-limits' },
+    userLimits: { method: 'POST', pattern: '/limits/user-limits' },
   },
 });
 
@@ -860,7 +863,9 @@ router.map(routes, {
       rules: {
         async list(ctx) {
           const { listLimitRules } = ctx.storage.get(handlersKey);
-          return listLimitRules();
+          const args: components['schemas']['ListLimitRulesRequestBody'] =
+            await ctx.request.json();
+          return listLimitRules(args);
         },
         async get(ctx) {
           const { getLimitRule } = ctx.storage.get(handlersKey);
@@ -868,17 +873,16 @@ router.map(routes, {
         },
         async counters(ctx) {
           const { listLimitCountersForRule } = ctx.storage.get(handlersKey);
-          const {
-            filters = [],
-            sort,
-          }: components['schemas']['ListLimitCountersRequestBody'] =
+          const args: components['schemas']['ListLimitCountersRequestBody'] =
             await ctx.request.json();
-          return listLimitCountersForRule(ctx.params.pattern, filters, sort);
+          return listLimitCountersForRule(ctx.params.pattern, args);
         },
       },
       async userLimits(ctx) {
         const { listUserLimits } = ctx.storage.get(handlersKey);
-        return listUserLimits();
+        const args: components['schemas']['ListLimitCountersRequestBody'] =
+          await ctx.request.json();
+        return listUserLimits(args);
       },
     },
   },

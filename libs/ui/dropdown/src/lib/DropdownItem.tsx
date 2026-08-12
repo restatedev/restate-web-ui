@@ -34,13 +34,19 @@ const destructiveStyles = tv({
   },
 });
 
+const contentStyles = tv({
+  base: 'flex flex-1 items-center gap-2 truncate font-normal group-selected:font-semibold',
+});
+
 function StyledDropdownItem({
   destructive,
   className,
+  contentClassName,
   ...props
 }: Omit<AriaMenuItemProps, 'className'> & {
   destructive?: boolean;
   className?: string;
+  contentClassName?: string;
 }) {
   return (
     <AriaMenuItem
@@ -55,7 +61,7 @@ function StyledDropdownItem({
         props.children,
         (children, { selectionMode, isSelected }) => (
           <>
-            <span className="flex flex-1 items-center gap-2 truncate font-normal group-selected:font-semibold">
+            <span className={contentStyles({ className: contentClassName })}>
               {children}
             </span>
             {selectionMode !== 'none' && (
@@ -70,26 +76,27 @@ function StyledDropdownItem({
   );
 }
 
-interface BaseDropdownItemProps
-  extends PropsWithChildren<{
-    value?: never;
-    href?: never;
-  }> {
+interface BaseDropdownItemProps extends PropsWithChildren<{
+  value?: never;
+  href?: never;
+}> {
   destructive?: boolean;
   className?: string;
+  contentClassName?: string;
   isDisabled?: boolean;
 }
 
-interface DropdownCustomItemProps
-  extends PropsWithChildren<
-    Omit<BaseDropdownItemProps, 'children' | 'href' | 'value'>
-  > {
+interface DropdownCustomItemProps extends PropsWithChildren<
+  Omit<BaseDropdownItemProps, 'children' | 'href' | 'value'>
+> {
   value: string;
   href?: never;
 }
 
-interface DropdownNavItemProps
-  extends Omit<DropdownCustomItemProps, 'value' | 'href'> {
+interface DropdownNavItemProps extends Omit<
+  DropdownCustomItemProps,
+  'value' | 'href'
+> {
   href: string;
   value?: string;
 }

@@ -1438,13 +1438,13 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    get?: never;
+    put?: never;
     /**
      * List limit rules
      * @description Configured limit rules from the sys_rules table.
      */
-    get: operations['list_limit_rules'];
-    put?: never;
-    post?: never;
+    post: operations['list_limit_rules'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1478,13 +1478,13 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    get?: never;
+    put?: never;
     /**
      * List effective user limits
      * @description Effective limit rows and usage from the sys_user_limits table.
      */
-    get: operations['list_user_limits'];
-    put?: never;
-    post?: never;
+    post: operations['list_user_limits'];
     delete?: never;
     options?: never;
     head?: never;
@@ -3048,6 +3048,7 @@ export interface components {
     /** @description Configured limit rules from the sys_rules table with concrete counter summaries from sys_user_limits. */
     ListLimitRulesResponse: {
       rules: components['schemas']['LimitRuleWithStats'][];
+      hasMore: boolean;
     };
     LimitRuleWithStats: {
       description?: string | null;
@@ -3067,6 +3068,7 @@ export interface components {
     /** @description Effective limit rows and usage from the sys_user_limits table. */
     ListUserLimitsResponse: {
       limits: components['schemas']['UserLimitRow'][];
+      hasMore: boolean;
     };
     UserLimitRow: {
       scope: string | null;
@@ -3638,14 +3640,31 @@ export interface components {
         order: 'ASC' | 'DESC';
       };
     };
-    LimitSort: {
-      field: string;
+    LimitRuleSort: {
+      /** @enum {string} */
+      field: 'pattern';
       /** @enum {string} */
       order: 'ASC' | 'DESC';
     };
+    LimitCounterSort: {
+      /** @enum {string} */
+      field: 'usage' | 'pattern' | 'waiting';
+      /** @enum {string} */
+      order: 'ASC' | 'DESC';
+    };
+    ListLimitRulesRequestBody: {
+      limit?: number;
+      sort?: components['schemas']['LimitRuleSort'];
+    };
     ListLimitCountersRequestBody: {
+      /** @description Include runtime counters without a matching rule. Defaults to false. */
+      includeUnlimited?: boolean;
+      /** @description Return only counters governed by this exact rule pattern. */
+      rulePattern?: string;
       filters?: components['schemas']['FilterItem'][];
-      sort?: components['schemas']['LimitSort'];
+      sort?: components['schemas']['LimitCounterSort'];
+      search?: string;
+      limit?: number;
     };
     GetInvocationsStatusRequestBody: {
       invocationIds: string[];
@@ -9703,7 +9722,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitRulesRequestBody'];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -9744,7 +9767,11 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListLimitCountersRequestBody'];
+      };
+    };
     responses: {
       200: {
         headers: {

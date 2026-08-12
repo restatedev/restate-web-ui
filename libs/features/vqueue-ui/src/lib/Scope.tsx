@@ -1,5 +1,6 @@
 import { Chip, ChipSegment } from '@restate/ui/chip';
 import { Copy } from '@restate/ui/copy';
+import { Icon, IconName } from '@restate/ui/icons';
 import {
   TruncateTooltipTrigger,
   TruncateWithTooltip,
@@ -19,6 +20,7 @@ const styles = tv({
     labelText: 'inline-flex h-full items-center',
     relationship: 'h-px w-3 shrink-0 bg-zinc-300',
     copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
+    chevron: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
   },
   variants: {
     presentation: {
@@ -38,6 +40,16 @@ const styles = tv({
         segment: 'pr-1',
       },
     },
+    hasChevron: {
+      true: {
+        segment: 'pr-1',
+      },
+    },
+    angledLeft: {
+      true: {
+        segment: 'pl-2',
+      },
+    },
   },
   defaultVariants: {
     variant: 'default',
@@ -51,6 +63,8 @@ export type ScopeVariant = 'default' | 'table';
 
 export interface ScopeProps {
   value?: string;
+  icon?: IconName;
+  iconClassName?: string;
   className?: string;
   containerClassName?: string;
   segmentClassName?: string;
@@ -60,12 +74,16 @@ export interface ScopeProps {
   variant?: ScopeVariant;
   showCopy?: boolean;
   showLabel?: boolean;
+  showChevron?: boolean;
+  left?: 'straight' | 'angled';
   href?: string;
   'aria-label'?: string;
 }
 
 export function Scope({
   value,
+  icon,
+  iconClassName,
   className,
   containerClassName,
   segmentClassName,
@@ -75,6 +93,8 @@ export function Scope({
   variant = 'default',
   showCopy = false,
   showLabel = true,
+  showChevron = false,
+  left,
   href,
   'aria-label': ariaLabel,
 }: ScopeProps) {
@@ -89,9 +109,17 @@ export function Scope({
     labelText,
     relationship: relationshipStyle,
     copy,
-  } = styles({ presentation, variant, hasCopy: showCopy });
+    chevron,
+  } = styles({
+    presentation,
+    variant,
+    hasCopy: showCopy,
+    hasChevron: showChevron,
+    angledLeft: left === 'angled',
+  });
   const content = (
     <>
+      {icon && <Icon aria-hidden name={icon} className={iconClassName} />}
       {showLabel && (
         <span className={label()}>
           <span
@@ -105,10 +133,14 @@ export function Scope({
       )}
       <TruncateTooltipTrigger>{value || <>&nbsp;</>}</TruncateTooltipTrigger>
       {showCopy && <Copy copyText={value} className={copy()} />}
+      {showChevron && (
+        <Icon name={IconName.ChevronRight} className={chevron()} />
+      )}
     </>
   );
   const chipContent = (
     <Chip
+      left={left}
       right={relationship ? 'angled' : 'straight'}
       size="lg"
       className={chip({ className })}

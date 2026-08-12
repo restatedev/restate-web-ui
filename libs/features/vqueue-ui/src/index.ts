@@ -1,5 +1,9 @@
 export { LimitKey, type LimitKeyProps } from './lib/LimitKey';
 export {
+  LimitCounterTarget,
+  type LimitCounterTargetProps,
+} from './lib/LimitCounterTarget';
+export {
   getLimitRuleLevel,
   LimitRuleTarget,
   type LimitRuleLevel,

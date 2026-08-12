@@ -1,7 +1,12 @@
 import { Label, CheckboxGroup } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 import { FormFieldError } from './FormFieldError';
-import { ComponentProps, PropsWithChildren, forwardRef } from 'react';
+import {
+  ComponentProps,
+  PropsWithChildren,
+  ReactNode,
+  forwardRef,
+} from 'react';
 import {
   Checkbox as AriaCheckbox,
   CheckboxProps as AriaCheckboxProps,
@@ -11,8 +16,10 @@ import { focusRing } from '@restate/ui/focus';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useObjectRef } from 'react-aria';
 
-interface FormFieldCheckboxProps
-  extends Pick<AriaCheckboxProps, 'name' | 'value' | 'autoFocus'> {
+interface FormFieldCheckboxProps extends Pick<
+  AriaCheckboxProps,
+  'name' | 'value' | 'autoFocus'
+> {
   className?: string;
   required?: boolean;
   disabled?: boolean;
@@ -146,8 +153,8 @@ const iconStyles =
 
 export const Checkbox = forwardRef<
   HTMLInputElement,
-  Omit<AriaCheckboxProps, 'children'>
->((props, ref) => {
+  Omit<AriaCheckboxProps, 'children'> & { children?: ReactNode }
+>(({ children, ...props }, ref) => {
   const inputRef = useObjectRef(ref);
 
   return (
@@ -159,18 +166,21 @@ export const Checkbox = forwardRef<
       )}
     >
       {({ isSelected, isIndeterminate, ...renderProps }) => (
-        <div
-          className={boxStyles({
-            isSelected: isSelected || isIndeterminate,
-            ...renderProps,
-          })}
-        >
-          {isIndeterminate ? (
-            <Icon aria-hidden className={iconStyles} name={IconName.Minus} />
-          ) : isSelected ? (
-            <Icon aria-hidden className={iconStyles} name={IconName.Check} />
-          ) : null}
-        </div>
+        <>
+          <div
+            className={boxStyles({
+              isSelected: isSelected || isIndeterminate,
+              ...renderProps,
+            })}
+          >
+            {isIndeterminate ? (
+              <Icon aria-hidden className={iconStyles} name={IconName.Minus} />
+            ) : isSelected ? (
+              <Icon aria-hidden className={iconStyles} name={IconName.Check} />
+            ) : null}
+          </div>
+          {children}
+        </>
       )}
     </AriaCheckbox>
   );

@@ -81,7 +81,7 @@ const styles = tv({
     tabsWrapper:
       'relative flex min-h-16 w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
     tabList: 'relative flex h-full max-w-full items-end gap-1 px-1',
-    tabsToolbarSlot: 'flex flex-1 items-center justify-end self-stretch pb-0',
+    tabsToolbarSlot: 'flex flex-1 items-end justify-end self-stretch pb-0',
   },
   variants: {
     flush: {
@@ -109,7 +109,7 @@ const headerContentStyles = tv({
 });
 
 const mobileTabStyles = tv({
-  base: 'relative z-10 flex w-full min-w-0 items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-gray-200 bg-linear-to-b from-white to-gray-50 px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-950 shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)]',
+  base: 'relative z-10 flex w-full min-w-0 flex-row items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-gray-200 bg-linear-to-b from-white to-gray-50 px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-950 shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)]',
   variants: {
     interactive: {
       true: 'hover:!bg-linear-to-b hover:from-white hover:to-gray-50',
@@ -437,7 +437,7 @@ function Tabs({
         // scroll. Intentionally no `flex-1`: when tabs fit naturally we want
         // AriaTabs to size to its content so the More button sits right next
         // to the last tab (no dead space).
-        className="relative hidden min-w-0 self-stretch sm:flex"
+        className="relative hidden min-w-0 self-stretch md:flex"
         selectedKey={selectedTab}
         disabledKeys={disabledTabs}
         onSelectionChange={(tab) => selectTab(String(tab))}
@@ -580,10 +580,12 @@ function MobileTabsDropdown({
   }
   const current = selectedItem ?? items[0];
   const label = (
-    <span className="min-w-0 flex-1 truncate text-left">{current?.label}</span>
+    <span className="flex min-w-0 flex-1 flex-row items-center gap-1.5 truncate text-left [&_svg]:shrink-0">
+      {current?.label}
+    </span>
   );
   return (
-    <div className="relative -mb-px flex min-w-0 flex-1 self-end sm:hidden">
+    <div className="relative -mb-px flex min-w-0 flex-1 self-end md:hidden">
       {items.length === 1 ? (
         <div className={mobileTabStyles({ interactive: false })}>{label}</div>
       ) : (

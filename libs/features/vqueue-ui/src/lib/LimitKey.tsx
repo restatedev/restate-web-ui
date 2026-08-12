@@ -34,6 +34,11 @@ const styles = tv({
         segment: 'pr-2.5',
       },
     },
+    hasChevron: {
+      true: {
+        nestedSegment: 'pr-1',
+      },
+    },
   },
   defaultVariants: {
     variant: 'default',
@@ -46,6 +51,8 @@ export interface LimitKeyProps {
   className?: string;
   relationship?: 'scope';
   showCopy?: boolean;
+  showChevron?: boolean;
+  showTooltip?: boolean;
 }
 
 export function LimitKey({
@@ -54,6 +61,8 @@ export function LimitKey({
   className,
   relationship,
   showCopy = variant !== 'table',
+  showChevron = false,
+  showTooltip = true,
 }: LimitKeyProps) {
   if (!value) return null;
 
@@ -65,10 +74,36 @@ export function LimitKey({
   const { root, chip, segment, nestedSegment, icon, copy } = styles({
     variant,
     hasNestedSegment: secondLevel !== undefined,
+    hasChevron: showChevron,
   });
   const copyButton = showCopy ? (
     <Copy copyText={value} className={copy()} />
   ) : null;
+
+  const chipContent = (
+    <Chip
+      left={relationship === 'scope' ? 'angled' : 'straight'}
+      className={chip()}
+    >
+      <ChipSegment className={segment()}>
+        <Icon name={IconName.LimitKey} className={icon()} />
+        <TruncateTooltipTrigger>{firstLevel}</TruncateTooltipTrigger>
+        {secondLevel === undefined && copyButton}
+        {secondLevel === undefined && showChevron && (
+          <Icon name={IconName.ChevronRight} className={icon()} />
+        )}
+      </ChipSegment>
+      {secondLevel !== undefined && (
+        <ChipSegment className={nestedSegment()}>
+          <TruncateTooltipTrigger>{secondLevel}</TruncateTooltipTrigger>
+          {copyButton}
+          {showChevron && (
+            <Icon name={IconName.ChevronRight} className={icon()} />
+          )}
+        </ChipSegment>
+      )}
+    </Chip>
+  );
 
   return (
     <span
@@ -76,29 +111,18 @@ export function LimitKey({
       data-limit-key={value}
       data-limit-key-relationship={relationship}
     >
-      <TruncateWithTooltip
-        tooltipContent={value}
-        copyText={value}
-        hideCopy={!showCopy && variant !== 'table'}
-        overflowVisible
-      >
-        <Chip
-          left={relationship === 'scope' ? 'angled' : 'straight'}
-          className={chip()}
+      {showTooltip ? (
+        <TruncateWithTooltip
+          tooltipContent={value}
+          copyText={value}
+          hideCopy={!showCopy && variant !== 'table'}
+          overflowVisible
         >
-          <ChipSegment className={segment()}>
-            <Icon name={IconName.LimitKey} className={icon()} />
-            <TruncateTooltipTrigger>{firstLevel}</TruncateTooltipTrigger>
-            {secondLevel === undefined && copyButton}
-          </ChipSegment>
-          {secondLevel !== undefined && (
-            <ChipSegment className={nestedSegment()}>
-              <TruncateTooltipTrigger>{secondLevel}</TruncateTooltipTrigger>
-              {copyButton}
-            </ChipSegment>
-          )}
-        </Chip>
-      </TruncateWithTooltip>
+          {chipContent}
+        </TruncateWithTooltip>
+      ) : (
+        chipContent
+      )}
     </span>
   );
 }

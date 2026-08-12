@@ -1,5 +1,7 @@
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
+import { LimitKey, Scope } from '@restate/features/vqueue-ui';
+import { ChipGroup } from '@restate/ui/chip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { ListBox, ListBoxItem } from '@restate/ui/listbox';
 import { PopoverOverlay } from '@restate/ui/popover';
@@ -192,7 +194,7 @@ export function RulePatternBuilder({
         <span className={labelStyles()}>
           <span>Scope</span>
           <span className="text-2xs font-normal text-gray-400">
-            Top-level counter · required
+            Top-level limit counter · required
           </span>
         </span>
         <div className="grid min-w-0 grid-cols-2">
@@ -314,16 +316,52 @@ function generateExamples(pattern: string) {
   };
 }
 
-const keyPillStyles = tv({
-  base: 'inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-2xs transition',
+const keyButtonStyles = tv({
+  base: 'max-w-full rounded-lg p-0 hover:bg-transparent pressed:bg-transparent',
+});
+
+const exampleGroupStyles = tv({
+  base: 'flex min-w-0 flex-1 flex-wrap items-center gap-1.5',
+});
+
+const exampleIconStyles = tv({
   variants: {
     tone: {
-      match:
-        'border-green-600/20 bg-green-50 text-green-700 hover:bg-green-100',
-      no: 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50',
+      match: 'h-3.5 w-3.5 shrink-0 text-green-600',
+      no: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
     },
   },
 });
+
+function ConcreteKeyTarget({
+  value,
+  tone,
+}: {
+  value: string;
+  tone: 'match' | 'no';
+}) {
+  const [scope = '', l1, l2] = parseConcreteKey(value) ?? [];
+  const limitKey = [l1, l2].filter(Boolean).join('/');
+
+  return (
+    <ChipGroup density="tight" aria-label={`Concrete limit key ${value}`}>
+      <Scope
+        value={scope}
+        icon={tone === 'match' ? IconName.Check : IconName.X}
+        iconClassName={exampleIconStyles({ tone })}
+        relationship={limitKey ? 'target' : undefined}
+      />
+      {limitKey && (
+        <LimitKey
+          value={limitKey}
+          relationship="scope"
+          showCopy={false}
+          showTooltip={false}
+        />
+      )}
+    </ChipGroup>
+  );
+}
 
 function KeyPill({
   value,
@@ -337,15 +375,11 @@ function KeyPill({
   return (
     <Button
       type="button"
-      variant="secondary"
+      variant="icon"
       onClick={onClick}
-      className={keyPillStyles({ tone })}
+      className={keyButtonStyles()}
     >
-      <Icon
-        name={tone === 'match' ? IconName.Check : IconName.Cancel}
-        className="h-3 w-3 shrink-0"
-      />
-      {value}
+      <ConcreteKeyTarget value={value} tone={tone} />
     </Button>
   );
 }
@@ -430,14 +464,16 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
                 <span className="w-20 shrink-0 text-2xs font-medium text-sky-700/80">
                   Applies
                 </span>
-                {examples.matching.map((value) => (
-                  <KeyPill
-                    key={value}
-                    value={value}
-                    tone="match"
-                    onClick={() => setTest(value)}
-                  />
-                ))}
+                <div className={exampleGroupStyles()}>
+                  {examples.matching.map((value) => (
+                    <KeyPill
+                      key={value}
+                      value={value}
+                      tone="match"
+                      onClick={() => setTest(value)}
+                    />
+                  ))}
+                </div>
               </div>
             )}
             {examples.notMatching.length > 0 && (
@@ -445,14 +481,16 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
                 <span className="w-20 shrink-0 text-2xs font-medium text-sky-700/80">
                   Doesn't apply
                 </span>
-                {examples.notMatching.map((value) => (
-                  <KeyPill
-                    key={value}
-                    value={value}
-                    tone="no"
-                    onClick={() => setTest(value)}
-                  />
-                ))}
+                <div className={exampleGroupStyles()}>
+                  {examples.notMatching.map((value) => (
+                    <KeyPill
+                      key={value}
+                      value={value}
+                      tone="no"
+                      onClick={() => setTest(value)}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

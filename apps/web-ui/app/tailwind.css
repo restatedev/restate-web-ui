@@ -175,4 +175,15 @@
     }
   }
   --animate-memoryScan: memoryScan 1.6s ease-in-out infinite;
+
+  @keyframes gaugePressure {
+    0%,
+    100% {
+      rotate: 30deg;
+    }
+    50% {
+      rotate: 75deg;
+    }
+  }
+  --animate-gaugePressure: gaugePressure 1.8s ease-in-out infinite;
 }
