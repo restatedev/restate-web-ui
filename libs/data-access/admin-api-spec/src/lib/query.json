@@ -6480,6 +6480,9 @@
                 "$ref": "#/components/schemas/FilterStringItem"
               },
               {
+                "$ref": "#/components/schemas/VQueuePathPrefixFilterItem"
+              },
+              {
                 "$ref": "#/components/schemas/FilterStringListItem"
               },
               {
@@ -6498,6 +6501,25 @@
             }
           }
         ]
+      },
+      "VQueuePathPrefixFilterItem": {
+        "type": "object",
+        "required": ["type", "operation", "value"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["STRING"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["PATH_PREFIX"]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Match this exact limit-key path or a descendant path. Supported only for the limitKey field."
+          }
+        }
       },
       "ListLimitRulesRequestBody": {
         "type": "object",
@@ -6545,7 +6567,7 @@
         "properties": {
           "filters": {
             "type": "array",
-            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, and lockName. String comparisons are case-insensitive.",
+            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, and lockName. String comparisons are case-insensitive. limitKey additionally supports PATH_PREFIX to match an exact path and its descendants.",
             "items": {
               "$ref": "#/components/schemas/VQueueFilterItem"
             }

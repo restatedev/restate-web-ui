@@ -175,6 +175,38 @@ describe('listVqueues', () => {
     `);
   });
 
+  it('matches an exact limit-key path and its descendants', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    const context = { query } as unknown as QueryContext;
+
+    await listVqueues.call(context, {
+      filters: [
+        {
+          field: 'scope',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'Acme',
+        },
+        {
+          field: 'limitKey',
+          type: 'STRING',
+          operation: 'PATH_PREFIX',
+          value: 'Team_A',
+        },
+      ],
+    });
+
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
+          FROM sys_vqueue_meta
+          WHERE LOWER(COALESCE(scope, '')) = 'acme' AND (LOWER(COALESCE(limit_key, '')) = 'team_a' OR starts_with(LOWER(COALESCE(limit_key, '')), 'team_a/'))
+          ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
+          LIMIT 251",
+      ]
+    `);
+  });
+
   it('sorts scope and limit key together', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
     const context = { query } as unknown as QueryContext;
@@ -314,12 +346,23 @@ describe('listVqueues', () => {
         },
       ],
     } as never);
+    const pathPrefixFieldResponse = await listVqueues.call(context, {
+      filters: [
+        {
+          field: 'service',
+          type: 'STRING',
+          operation: 'PATH_PREFIX',
+          value: 'CheckoutService',
+        },
+      ],
+    } as never);
 
     expect(sortFieldResponse.status).toBe(400);
     expect(sortOrderResponse.status).toBe(400);
     expect(filtersShapeResponse.status).toBe(400);
     expect(filterFieldResponse.status).toBe(400);
     expect(filterOperationResponse.status).toBe(400);
+    expect(pathPrefixFieldResponse.status).toBe(400);
     expect(query).not.toHaveBeenCalled();
   });
 });

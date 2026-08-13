@@ -1,7 +1,4 @@
-import type {
-  FilterItem,
-  components,
-} from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access/admin-api-spec';
 import { limitPage, limitPageSize } from './limitPagination';
 import { quoteSqlString, type QueryContext } from './shared';
 import {
@@ -18,6 +15,7 @@ type ListVQueuesResponse = components['schemas']['ListVQueuesResponse'];
 type VQueueMetaRow = components['schemas']['VQueueMetaRow'];
 type VQueueSchedulerState = components['schemas']['VQueueSchedulerState'];
 type VQueueSort = components['schemas']['VQueueSort'];
+type VQueueFilterItem = components['schemas']['VQueueFilterItem'];
 
 interface SchedulerRow {
   id?: unknown;
@@ -121,17 +119,17 @@ function orderBy(sort?: VQueueSort) {
   return order.join(', ');
 }
 
-function filterError(filter: FilterItem, reason: string): never {
+function filterError(filter: VQueueFilterItem, reason: string): never {
   throw new Error(`Unsupported filter for ${filter.field}: ${reason}`);
 }
 
-function stringValue(filter: FilterItem, value: unknown) {
+function stringValue(filter: VQueueFilterItem, value: unknown) {
   if (typeof value !== 'string') filterError(filter, 'expected a string value');
   return value.toLowerCase();
 }
 
 function stringPredicate(
-  filter: FilterItem,
+  filter: VQueueFilterItem,
   expression: string,
   operation: unknown,
   value: unknown,
@@ -149,13 +147,29 @@ function stringPredicate(
       return `${column} LIKE ${quoteSqlString(`%${normalized}%`)}`;
     case 'NOT_CONTAINS':
       return `${column} NOT LIKE ${quoteSqlString(`%${normalized}%`)}`;
+    case 'PATH_PREFIX': {
+      if (filter.field !== 'limitKey') {
+        return filterError(
+          filter,
+          'PATH_PREFIX is supported only for limitKey',
+        );
+      }
+      const segments = normalized.split('/');
+      if (
+        segments.length > 2 ||
+        segments.some((segment) => segment.length === 0)
+      ) {
+        return filterError(filter, 'expected a valid limit-key path');
+      }
+      return `(${column} = ${quoteSqlString(normalized)} OR starts_with(${column}, ${quoteSqlString(`${normalized}/`)}))`;
+    }
     default:
       return filterError(filter, `unsupported STRING operation ${operation}`);
   }
 }
 
 function stringListPredicate(
-  filter: FilterItem,
+  filter: VQueueFilterItem,
   operation: unknown,
   value: unknown,
 ) {
@@ -177,7 +191,7 @@ function stringListPredicate(
   return `LOWER(${stringColumn(expression)}) ${operation === 'IN' ? 'IN' : 'NOT IN'} (${values})`;
 }
 
-function nullPredicate(filter: FilterItem, operation: unknown) {
+function nullPredicate(filter: VQueueFilterItem, operation: unknown) {
   const expression = STRING_FIELDS[filter.field];
   if (!expression) filterError(filter, 'unsupported NULL field');
   if (operation !== 'IS' && operation !== 'IS_NOT') {
@@ -186,8 +200,8 @@ function nullPredicate(filter: FilterItem, operation: unknown) {
   return `${expression} IS${operation === 'IS_NOT' ? ' NOT' : ''} NULL`;
 }
 
-function filterPredicate(filter: FilterItem) {
-  const { operation, value } = filter as FilterItem & {
+function filterPredicate(filter: VQueueFilterItem) {
+  const { operation, value } = filter as VQueueFilterItem & {
     operation?: unknown;
     value?: unknown;
   };
@@ -214,7 +228,7 @@ function whereClause(filters: unknown) {
   if (!filters.length) return { clause: '' };
   try {
     const predicates = filters.map((filter) =>
-      filterPredicate(filter as FilterItem),
+      filterPredicate(filter as VQueueFilterItem),
     );
     return { clause: `\n    WHERE ${predicates.join(' AND ')}` };
   } catch (error) {
