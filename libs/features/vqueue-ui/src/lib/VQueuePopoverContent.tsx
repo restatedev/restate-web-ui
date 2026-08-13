@@ -8,30 +8,32 @@ import {
   STATUS_STYLE,
 } from '@restate/features/status-chart';
 import { Badge } from '@restate/ui/badge';
-import { Button } from '@restate/ui/button';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { MetricComparison } from '@restate/ui/metric-comparison';
 import {
   formatCompactISODuration,
   formatDurations,
   formatNumber,
-  normaliseDuration,
-  parseISODuration,
 } from '@restate/util/intl';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import type { ReactNode } from 'react';
+import { BlockedStatus } from './BlockedStatus';
 import { LimitKey } from './LimitKey';
+import {
+  formatVqueueDuration,
+  getVqueueHeadBlockSummary,
+  getVqueueInboxWaitingStartedAt,
+  positiveVqueueDurationMilliseconds,
+  vqueueDurationPartsMilliseconds,
+  vqueueDurationRatio,
+} from './metrics';
 import { VQueueIdDisplay } from './VQueueIdDisplay';
 
 const INBOX_SLOT_LIMIT = 6;
 const FOCUSED_INBOX_SLOT_LIMIT = 5;
 const EMPTY_INBOX_SLOT_COUNT = 3;
-const MAX_AVERAGE_RATIO = 100;
-const MIN_COMPARABLE_AVERAGE_MILLISECONDS = 1;
-
 type VQueueStage = 'inbox' | 'running' | 'suspended' | 'paused';
 
 const STAGES: Array<{ stage: VQueueStage; label: string }> = [
@@ -40,25 +42,6 @@ const STAGES: Array<{ stage: VQueueStage; label: string }> = [
   { stage: 'suspended', label: 'Suspended' },
   { stage: 'paused', label: 'Paused' },
 ];
-
-const RESOURCE_LABELS: Record<string, string> = {
-  lock: 'object lock',
-  'invoker-concurrency': 'invoker concurrency',
-  'invoker-throttling': 'invoker throttling',
-  'invoker-memory': 'invoker memory',
-  'deployment-concurrency': 'deployment concurrency',
-  'limit-key-concurrency': 'concurrency rule',
-  concurrency_rules: 'concurrency rule',
-  throttling_rules: 'throttling rule',
-  invoker_concurrency: 'invoker concurrency',
-  invoker_throttling: 'invoker throttling',
-  invoker_memory: 'invoker memory',
-  deployment_concurrency: 'deployment concurrency',
-};
-
-export function vqueueBlockedResourceLabel(resource?: string) {
-  return (resource && RESOURCE_LABELS[resource]) || 'resource';
-}
 
 const styles = tv({
   slots: {
@@ -79,21 +62,24 @@ const styles = tv({
     entryId: 'max-w-32 min-w-0 truncate font-mono text-2xs text-zinc-600',
     headStatus:
       'flex min-w-0 flex-1 flex-nowrap items-center gap-x-1.5 text-2xs',
-    blockedChip:
-      'flex h-5 min-w-0 items-center gap-1 rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs text-orange-700 shadow-none',
     statusTime:
       'inline-flex shrink-0 items-baseline gap-1 text-2xs font-normal whitespace-nowrap text-zinc-500/80',
     blockComparison:
       'inline-flex shrink-0 items-baseline gap-1 text-3xs whitespace-nowrap text-zinc-500',
-    blockComparisonValue:
-      'inline-flex items-baseline gap-0.5 rounded-sm bg-zinc-200/60 px-1 py-px leading-none font-semibold text-zinc-700 tabular-nums',
-    comparisonSymbol:
-      'relative -top-px text-[0.9em] font-semibold text-zinc-500',
   },
 });
 
 const inboxPanelStyles = tv({
-  base: 'flex w-max max-w-[min(34rem,calc(100vw-16rem))] min-w-0 flex-col items-start justify-center self-stretch',
+  base: 'flex w-max min-w-0 flex-col items-start justify-center self-stretch',
+  variants: {
+    standalone: {
+      true: 'max-w-[min(34rem,calc(100vw-3rem))]',
+      false: 'max-w-[min(34rem,calc(100vw-16rem))]',
+    },
+  },
+  defaultVariants: {
+    standalone: false,
+  },
 });
 
 const orderStyles = tv({
@@ -245,21 +231,11 @@ const headStatusBadgeStyles = tv({
   base: 'relative inline-flex max-w-full items-center gap-1.5',
   variants: {
     status: {
-      blocked: 'border-dashed py-0.5 pr-0.5',
       scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
       ready: 'border-dashed',
     },
   },
 });
-
-function formatIsoDuration(duration?: string) {
-  if (!duration) return undefined;
-  try {
-    return formatDurations(normaliseDuration(parseISODuration(duration)));
-  } catch {
-    return duration;
-  }
-}
 
 function formatIdentifier(id: string) {
   return id.length > 22 ? `${id.slice(0, 10)}…${id.slice(-5)}` : id;
@@ -280,112 +256,7 @@ function getStageVisual(stage: VQueueStage) {
   return STATUS_STYLE[stage] ?? DEFAULT_STYLE;
 }
 
-function blockedReason(data: VqueueSnapshot) {
-  const resource = data.status.blockedResource;
-  const key = resource?.resource ?? data.status.blockedOn;
-  return vqueueBlockedResourceLabel(key);
-}
-
-function blockedDuration(data: VqueueSnapshot) {
-  const block = matchingBlockedDuration(data, data.head.nowBlocks, true);
-  return formatIsoDuration(block?.duration);
-}
-
-const BLOCKED_GATE_ALIASES: Record<string, string> = {
-  'limit-key-concurrency': 'concurrency_rules',
-  'invoker-concurrency': 'invoker_concurrency',
-  'invoker-throttling': 'invoker_throttling',
-  'invoker-memory': 'invoker_memory',
-  'deployment-concurrency': 'deployment_concurrency',
-};
-
-function matchingBlockedDuration(
-  data: VqueueSnapshot,
-  durations: VqueueSnapshot['head']['nowBlocks'],
-  fallbackToFirst = false,
-) {
-  const gates = [
-    data.status.blockedOn,
-    data.status.blockedResource?.resource,
-  ].flatMap((gate) => (gate ? [gate, BLOCKED_GATE_ALIASES[gate] ?? gate] : []));
-  return (
-    durations.find((duration) => gates.includes(duration.gate)) ??
-    (fallbackToFirst ? durations.at(0) : undefined)
-  );
-}
-
-function blockedAverage(data: VqueueSnapshot) {
-  const block = matchingBlockedDuration(data, data.head.avgBlocks);
-  if (!positiveDurationMilliseconds(block?.duration)) return undefined;
-  return formatIsoDuration(block?.duration);
-}
-
-function durationPartsMilliseconds(
-  duration: Parameters<typeof normaliseDuration>[0],
-) {
-  const value = normaliseDuration(duration);
-  return (
-    ((((value.days ?? 0) * 24 + (value.hours ?? 0)) * 60 +
-      (value.minutes ?? 0)) *
-      60 +
-      (value.seconds ?? 0)) *
-      1000 +
-    (value.milliseconds ?? 0)
-  );
-}
-
-function durationMilliseconds(duration?: string) {
-  if (!duration) return undefined;
-  try {
-    return durationPartsMilliseconds(parseISODuration(duration));
-  } catch {
-    return undefined;
-  }
-}
-
-function positiveDurationMilliseconds(duration?: string) {
-  const milliseconds = durationMilliseconds(duration);
-  return milliseconds !== undefined &&
-    milliseconds >= MIN_COMPARABLE_AVERAGE_MILLISECONDS
-    ? milliseconds
-    : undefined;
-}
-
-function durationRatio(
-  currentMilliseconds: number | undefined,
-  averageMilliseconds: number | undefined,
-) {
-  if (
-    currentMilliseconds === undefined ||
-    averageMilliseconds === undefined ||
-    averageMilliseconds <= 0
-  ) {
-    return undefined;
-  }
-  const ratio = currentMilliseconds / averageMilliseconds;
-  const roundedRatio = Math.round(ratio * 10) / 10;
-  if (roundedRatio >= MAX_AVERAGE_RATIO) return `≥${MAX_AVERAGE_RATIO}`;
-  return ratio < 0.1 ? '<0.1' : formatNumber(roundedRatio);
-}
-
-function blockedAverageRatio(data: VqueueSnapshot) {
-  const current = matchingBlockedDuration(data, data.head.nowBlocks);
-  const average = matchingBlockedDuration(data, data.head.avgBlocks);
-  const currentMilliseconds = durationMilliseconds(current?.duration);
-  const averageMilliseconds = positiveDurationMilliseconds(average?.duration);
-  return durationRatio(currentMilliseconds, averageMilliseconds);
-}
-
-function AverageRatio({ value }: { value: string }) {
-  return (
-    <span className={styles().blockComparisonValue()}>
-      <span>{value}</span>
-      <span className={styles().comparisonSymbol()}>×</span>
-    </span>
-  );
-}
-
-type InboxOrderItem =
+export type InboxOrderItem =
   | { type: 'entry'; index: number }
   | { type: 'gap'; count: number; position: 'before' | 'after' };
 
@@ -496,16 +367,16 @@ function SelectedEntryMarker({
                 </span>
                 {queueDuration ? (
                   <span className={orderFocusAverageStyles()}>
-                    <span aria-hidden="true">·</span> in queue{' '}
-                    <span className="font-semibold text-zinc-600">
-                      {queueDuration}
-                    </span>
-                    {queueAverageRatio && (
-                      <>
-                        <AverageRatio value={queueAverageRatio} />
-                        <span>avg</span>
-                      </>
-                    )}
+                    <span aria-hidden="true">·</span>
+                    <span>in queue</span>
+                    <MetricComparison
+                      value={queueDuration}
+                      ratio={queueAverageRatio}
+                      average={queueAverage}
+                      label="Current queue time"
+                      size="xs"
+                      decorative
+                    />
                   </span>
                 ) : (
                   queueAverage && (
@@ -531,67 +402,38 @@ function SelectedEntryMarker({
   );
 }
 
-function BlockedResourceChip({ data }: { data: VqueueSnapshot }) {
-  const reason = blockedReason(data);
-  return (
-    <Popover>
-      <PopoverTrigger>
-        <Button variant="secondary" className={styles().blockedChip()}>
-          <Icon
-            name={IconName.TriangleAlert}
-            className="h-3 w-3 shrink-0 text-orange-600"
-          />
-          <span className="truncate">on {reason}</span>
-          <Icon
-            name={IconName.ChevronsUpDown}
-            className="h-3 w-3 shrink-0 text-gray-500"
-          />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent>
-        {/* TODO: Add blocked-resource details. */}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 function HeadVerdict({ data }: { data: VqueueSnapshot }) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const { scheduling } = data.status;
   if (data.identity.isPaused) return null;
   if (data.status.blocked || scheduling === 'blocked') {
-    const duration = blockedDuration(data);
-    const average = blockedAverage(data);
-    const averageRatio = blockedAverageRatio(data);
+    const {
+      reason,
+      duration,
+      average,
+      ratio: averageRatio,
+    } = getVqueueHeadBlockSummary(data);
     return (
       <div className={styles().headStatus()}>
-        <Badge
-          variant="warning"
-          className={headStatusBadgeStyles({ status: 'blocked' })}
-        >
-          <span>Blocked</span>
-          <BlockedResourceChip data={data} />
-        </Badge>
+        <BlockedStatus reason={reason} />
         {duration && (
           <span className={styles().statusTime()}>
-            for <span className="font-medium text-zinc-600">{duration}</span>
+            <span>for</span>
+            <MetricComparison
+              value={duration}
+              ratio={averageRatio}
+              average={average}
+              label="Blocked duration"
+              size="xs"
+            />
           </span>
         )}
-        {(averageRatio || average) && (
+        {!duration && average && (
           <span className={styles().blockComparison()}>
-            {averageRatio ? (
-              <>
-                <AverageRatio value={averageRatio} />
-                <span>avg</span>
-              </>
-            ) : (
-              <>
-                <span>avg block</span>
-                <span className={styles().blockComparisonValue()}>
-                  {average}
-                </span>
-              </>
-            )}
+            <span>Typical block</span>
+            <span className="font-medium text-zinc-600 tabular-nums">
+              {average}
+            </span>
           </span>
         )}
       </div>
@@ -648,7 +490,7 @@ function StageSummary({
   const count = getStageCount(data, stage);
   const averageDuration = getStageAverage(data, stage);
   const showAverage = stage !== 'paused' && !(stage === 'inbox' && connected);
-  const average = formatIsoDuration(averageDuration);
+  const average = formatVqueueDuration(averageDuration);
   const compactAverage = averageDuration
     ? formatCompactISODuration(averageDuration)
     : undefined;
@@ -688,7 +530,7 @@ function InboxOrder({ data }: { data: VqueueSnapshot }) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const headIsInbox = data.head.stage === 'inbox';
   const count = Math.max(0, data.counts.inbox - (headIsInbox ? 1 : 0));
-  const queueAverageMilliseconds = positiveDurationMilliseconds(
+  const queueAverageMilliseconds = positiveVqueueDurationMilliseconds(
     data.stageAvg.queue,
   );
   const queueAverage =
@@ -708,20 +550,24 @@ function InboxOrder({ data }: { data: VqueueSnapshot }) {
     focusTiming && focusTiming.isPast !== true
       ? `in ${formatDurations(focusTiming)}`
       : undefined;
-  const focusQueueTiming = focus?.firstRunnableAt
-    ? durationSinceLastSnapshot(focus.firstRunnableAt)
+  const focusQueueStartedAt = getVqueueInboxWaitingStartedAt(
+    focus,
+    focusTiming?.isPast,
+  );
+  const focusQueueTiming = focusQueueStartedAt
+    ? durationSinceLastSnapshot(focusQueueStartedAt)
     : undefined;
   const focusQueueDuration =
     focusIsWaiting &&
-    focus?.firstRunnableAt &&
+    focusQueueStartedAt &&
     focusQueueTiming &&
     focusQueueTiming.isPast !== false
       ? formatDurations(focusQueueTiming)
       : undefined;
   const focusQueueMilliseconds = focusQueueDuration
-    ? durationPartsMilliseconds(focusQueueTiming ?? {})
+    ? vqueueDurationPartsMilliseconds(focusQueueTiming ?? {})
     : undefined;
-  const queueAverageRatio = durationRatio(
+  const queueAverageRatio = vqueueDurationRatio(
     focusQueueMilliseconds,
     queueAverageMilliseconds,
   );
@@ -874,9 +720,11 @@ function Head({
 function InboxOverview({
   data,
   renderEntryId,
+  standalone = false,
 }: {
   data: VqueueSnapshot;
   renderEntryId?: VQueueEntryIdRenderer;
+  standalone?: boolean;
 }) {
   const headEntryId = data.head.entryId;
   const hasInbox = data.counts.inbox > 0;
@@ -895,7 +743,7 @@ function InboxOverview({
 
   return (
     <div className={styles().panelBody()}>
-      <div className={inboxPanelStyles()}>
+      <div className={inboxPanelStyles({ standalone })}>
         {showEmptyOrder ? (
           <div className={headOnlyGroupStyles()}>
             {head}
@@ -927,6 +775,84 @@ export interface VQueuePopoverContentProps {
   renderEntryId?: VQueueEntryIdRenderer;
 }
 
+export interface VQueueInboxPopoverContentProps {
+  data: VqueueSnapshot;
+  className?: string;
+  renderEntryId?: VQueueEntryIdRenderer;
+}
+
+function VQueuePopoverHeader({ data }: { data: VqueueSnapshot }) {
+  const contentStyles = styles();
+
+  return (
+    <div className={contentStyles.header()}>
+      <div className={contentStyles.identity()}>
+        <VQueueIdDisplay
+          id={data.identity.vqueueId}
+          size="md"
+          className="min-w-0 shrink font-normal"
+        />
+        <Copy
+          copyText={data.identity.vqueueId}
+          className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+        />
+        {data.identity.isPaused && (
+          <Badge variant="warning" size="xs">
+            Paused
+          </Badge>
+        )}
+      </div>
+      <LimitKey
+        value={data.identity.limitKey}
+        className="ml-auto max-w-[45%] min-w-0 shrink"
+      />
+    </div>
+  );
+}
+
+function VQueueInboxPopoverHeader({ data }: { data: VqueueSnapshot }) {
+  const visual = getStageVisual('inbox');
+
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <span
+        aria-hidden
+        className={stageMarkStyles({ stage: 'inbox' })}
+        style={{
+          backgroundColor: visual.fillLight,
+          borderColor: visual.stroke,
+        }}
+      />
+      <span>Inbox</span>
+      <span className="font-medium text-zinc-700 tabular-nums">
+        {formatNumber(data.counts.inbox, true)}
+      </span>
+    </div>
+  );
+}
+
+export function VQueueInboxPopoverContent({
+  data,
+  className,
+  renderEntryId,
+}: VQueueInboxPopoverContentProps) {
+  const contentStyles = styles();
+
+  return (
+    <div className={contentStyles.root({ className })}>
+      <DropdownSection
+        className="overflow-hidden"
+        headerClassName="px-3"
+        title={<VQueueInboxPopoverHeader data={data} />}
+      >
+        <div className="w-max max-w-[min(34rem,calc(100vw-3rem))] bg-white">
+          <InboxOverview data={data} renderEntryId={renderEntryId} standalone />
+        </div>
+      </DropdownSection>
+    </div>
+  );
+}
+
 export function VQueuePopoverContent({
   data,
   className,
@@ -944,30 +870,7 @@ export function VQueuePopoverContent({
       <DropdownSection
         className="overflow-hidden"
         headerClassName="pr-1 pl-2"
-        title={
-          <div className={contentStyles.header()}>
-            <div className={contentStyles.identity()}>
-              <VQueueIdDisplay
-                id={data.identity.vqueueId}
-                size="md"
-                className="min-w-0 shrink font-normal"
-              />
-              <Copy
-                copyText={data.identity.vqueueId}
-                className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
-              />
-              {data.identity.isPaused && (
-                <Badge variant="warning" size="xs">
-                  Paused
-                </Badge>
-              )}
-            </div>
-            <LimitKey
-              value={data.identity.limitKey}
-              className="ml-auto max-w-[45%] min-w-0 shrink"
-            />
-          </div>
-        }
+        title={<VQueuePopoverHeader data={data} />}
       >
         <div
           className={stageLayoutStyles({

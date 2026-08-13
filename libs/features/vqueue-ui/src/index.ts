@@ -1,4 +1,5 @@
 export { LimitKey, type LimitKeyProps } from './lib/LimitKey';
+export { BlockedStatus, type BlockedStatusProps } from './lib/BlockedStatus';
 export {
   LimitCounterTarget,
   type LimitCounterTargetProps,
@@ -23,7 +24,6 @@ export {
   inboxOrderItems,
   VQueueInboxPopoverContent,
   VQueuePopoverContent,
-  vqueueBlockedResourceLabel,
   type InboxOrderItem,
   type VQueueEntryIdRenderer,
   type VQueueInboxPopoverContentProps,
@@ -34,6 +34,7 @@ export {
   getVqueueBlockedReason,
   getVqueueGateLabel,
   getVqueueHeadBlockSummary,
+  getVqueueInboxWaitingStartedAt,
   matchingVqueueBlockedDuration,
   positiveVqueueDurationMilliseconds,
   vqueueDurationMilliseconds,
