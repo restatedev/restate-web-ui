@@ -517,9 +517,7 @@ export function useInvocationJourneyModel({
     ? vqueueDurationPartsMilliseconds(currentInboxDuration)
     : undefined;
   const inbox =
-    stage === 'inbox' &&
-    currentStatus === 'pending' &&
-    currentInboxDuration
+    stage === 'inbox' && currentStatus === 'pending' && currentInboxDuration
       ? {
           position: data?.focusEntry?.position,
           total: data?.counts.inbox ?? 0,

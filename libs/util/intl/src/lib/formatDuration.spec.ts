@@ -1,7 +1,4 @@
-import {
-  formatCompactISODuration,
-  formatMilliseconds,
-} from './formatDuration';
+import { formatCompactISODuration, formatMilliseconds } from './formatDuration';
 
 describe('formatCompactISODuration', () => {
   it.each([
