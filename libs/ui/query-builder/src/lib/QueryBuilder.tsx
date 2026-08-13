@@ -147,7 +147,7 @@ export function AddQueryTrigger({
   maxVisibleChips?: number | 'auto';
   chipOverflowStrategy?: 'partial' | 'all';
 }) {
-  const { query, schema, setNewId, multiple, canRemoveItem } =
+  const { query, schema, newId, setNewId, multiple, canRemoveItem } =
     use(QueryBuilderContext);
   const items = useMemo(() => {
     return schema.map((clauseSchema) => new QueryClause(clauseSchema));
@@ -196,7 +196,6 @@ export function AddQueryTrigger({
       ref={inputRef}
       onItemAdd={onAdd}
       onItemRemove={onRemove}
-      onItemUpdated={onRemove}
       prefix={prefix}
       canRemoveItem={canRemoveItem}
       multiple={multiple}
@@ -212,7 +211,7 @@ export function AddQueryTrigger({
       showSectionTitle={showSectionTitle}
       tagsPlacement={tagsPlacement}
       maxVisibleTags={maxVisibleChips}
-      tagOverflowStrategy={chipOverflowStrategy}
+      tagOverflowStrategy={newId ? 'partial' : chipOverflowStrategy}
       overflowItemLabel="filter"
     />
   );
@@ -221,4 +220,9 @@ export function AddQueryTrigger({
 export function useNewQueryId() {
   const { newId } = use(QueryBuilderContext);
   return newId;
+}
+
+export function useFinishNewQuery() {
+  const { setNewId } = use(QueryBuilderContext);
+  return useCallback(() => setNewId?.(undefined), [setNewId]);
 }

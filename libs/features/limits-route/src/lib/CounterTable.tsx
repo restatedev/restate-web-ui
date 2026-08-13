@@ -127,13 +127,7 @@ const capacityStyles = tv({
 });
 
 const rowStyles = tv({
-  base: 'transition-none [content-visibility:auto]',
-  variants: {
-    clickable: {
-      true: 'cursor-pointer',
-      false: 'cursor-default',
-    },
-  },
+  base: 'cursor-default transition-none [content-visibility:auto]',
 });
 
 function WaitingQueuesExplainer() {
@@ -393,7 +387,7 @@ export function CounterTable({
           navigate(vqueuesForLimitCounterHref(baseUrl, row.identity));
         }
       }}
-      rowClassName={(row) => rowStyles({ clickable: Boolean(row.identity) })}
+      rowClassName={rowStyles()}
       caption={caption}
       emptyPlaceholder={emptyPlaceholder}
       renderCell={(row, column) => renderCounterCell(row, column, variant)}

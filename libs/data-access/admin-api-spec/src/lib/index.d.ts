@@ -3772,6 +3772,27 @@ export interface components {
         /** @enum {string} */
         field: 'lockName';
       };
+    LimitCounterFilterItem:
+      | components['schemas']['LimitCounterExactStringFilterItem']
+      | components['schemas']['LimitCounterSearchStringFilterItem'];
+    LimitCounterExactStringFilterItem: {
+      /** @enum {string} */
+      field: 'l1' | 'l2';
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS';
+      value: string;
+    };
+    LimitCounterSearchStringFilterItem: {
+      /** @enum {string} */
+      field: 'scope' | 'limitKey';
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS' | 'CONTAINS';
+      value: string;
+    };
     ListLimitRulesRequestBody: {
       limit?: number;
       sort?: components['schemas']['LimitRuleSort'];
@@ -3781,7 +3802,8 @@ export interface components {
       includeUnlimited?: boolean;
       /** @description Return only counters governed by this exact rule pattern. */
       rulePattern?: string;
-      filters?: components['schemas']['FilterItem'][];
+      /** @description Structured limit-counter filters combined with AND. Scope and whole limit key support case-insensitive exact equality and literal substring matching. L1 and L2 support case-insensitive exact equality. */
+      filters?: components['schemas']['LimitCounterFilterItem'][];
       sort?: components['schemas']['LimitCounterSort'];
       search?: string;
       limit?: number;

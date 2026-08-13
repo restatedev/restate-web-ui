@@ -18,13 +18,16 @@ import {
   QueryClause,
   QueryClauseDateRangeValue,
   QueryClauseOperationId,
+  QueryClauseOption,
   QueryClauseType,
   queryClauseOperationRequiresValue,
+  useFinishNewQuery,
   useNewQueryId,
 } from '@restate/ui/query-builder';
 import { tv } from '@restate/util/styles';
 import {
   PropsWithChildren,
+  ReactNode,
   RefObject,
   useEffect,
   useMemo,
@@ -73,6 +76,10 @@ const chipValueStyles = tv({
   },
 });
 
+const chipPopoverStyles = tv({
+  base: 'min-w-xs!',
+});
+
 export interface FilterChipProps {
   item: QueryClause<QueryClauseType>;
   onRemove?: VoidFunction;
@@ -82,6 +89,16 @@ export interface FilterChipProps {
   appearance?: 'dark' | 'light';
   showRemove?: boolean;
   popoverPlacement?: 'top' | 'bottom';
+  disabled?: boolean;
+  className?: string;
+  buttonClassName?: string;
+  valueClassName?: string;
+  popoverClassName?: string;
+  renderValue?: (item: QueryClause<QueryClauseType>) => ReactNode;
+  renderOption?: (
+    option: QueryClauseOption,
+    item: QueryClause<QueryClauseType>,
+  ) => ReactNode;
 }
 
 export function FilterChip({
@@ -93,25 +110,44 @@ export function FilterChip({
   appearance = 'dark',
   showRemove = false,
   popoverPlacement = 'top',
+  disabled = false,
+  className,
+  buttonClassName,
+  valueClassName,
+  popoverClassName,
+  renderValue,
+  renderOption,
 }: FilterChipProps) {
   const isNew = useNewQueryId() === item.id;
+  const finishNew = useFinishNewQuery();
   const submit = () => setTimeout(() => formRef?.current?.requestSubmit(), 0);
+  const close = () => {
+    finishNew();
+    submit();
+  };
 
   return (
-    <div className={chipStyles({ appearance })}>
+    <div className={chipStyles({ appearance, className })}>
       <EditFilterTrigger
         clause={item}
         onRemove={onRemove}
         onUpdate={onUpdate}
-        onClose={submit}
+        onClose={close}
         isNew={isNew}
         popoverPlacement={popoverPlacement}
+        popoverClassName={popoverClassName}
+        renderOption={renderOption}
       >
         <Button
           autoFocus={isNew}
           data-filter-id={item.id}
           variant="secondary"
-          className={chipButtonStyles({ appearance, hasRemove: showRemove })}
+          disabled={disabled}
+          className={chipButtonStyles({
+            appearance,
+            hasRemove: showRemove,
+            className: buttonClassName,
+          })}
         >
           <span className="shrink-0 whitespace-nowrap">{item.label}</span>
           {item.operationLabel?.split(' ').map((segment) => (
@@ -119,15 +155,22 @@ export function FilterChip({
               {segment}
             </span>
           ))}
-          <span className={chipValueStyles({ appearance })}>
-            {item.type === 'STRING_LIST' &&
-            (!item.value.operation || item.value.operation === 'IN') &&
-            (item.isAllSelected || item.isNothingSelected)
-              ? 'Any'
-              : item.valueLabel ||
-                (queryClauseOperationRequiresValue(item.value.operation)
-                  ? (emptyValueLabel ?? '?')
-                  : '')}
+          <span
+            className={chipValueStyles({
+              appearance,
+              className: valueClassName,
+            })}
+          >
+            {renderValue
+              ? renderValue(item)
+              : item.type === 'STRING_LIST' &&
+                  (!item.value.operation || item.value.operation === 'IN') &&
+                  (item.isAllSelected || item.isNothingSelected)
+                ? 'Any'
+                : item.valueLabel ||
+                  (queryClauseOperationRequiresValue(item.value.operation)
+                    ? (emptyValueLabel ?? '?')
+                    : '')}
           </span>
           <Icon
             name={
@@ -165,6 +208,8 @@ function EditFilterTrigger({
   isNew,
   onClose,
   popoverPlacement,
+  popoverClassName,
+  renderOption,
 }: PropsWithChildren<{
   clause: QueryClause<QueryClauseType>;
   onRemove?: VoidFunction;
@@ -172,6 +217,11 @@ function EditFilterTrigger({
   isNew?: boolean;
   onClose?: VoidFunction;
   popoverPlacement: 'top' | 'bottom';
+  popoverClassName?: string;
+  renderOption?: (
+    option: QueryClauseOption,
+    item: QueryClause<QueryClauseType>,
+  ) => ReactNode;
 }>) {
   const selectedOperations = useMemo(
     () => (clause.value.operation ? [clause.value.operation] : []),
@@ -184,6 +234,21 @@ function EditFilterTrigger({
       setIsOpen(true);
     }
   }, [isNew]);
+
+  const finish = () => {
+    onClose?.();
+    setIsOpen(false);
+  };
+
+  const close = () => {
+    const isEmptyAnySelection =
+      clause.type === 'STRING_LIST' &&
+      (clause.value.operation === 'IN' || clause.value.operation === 'NOT_IN');
+    if (!clause.isValid && !isEmptyAnySelection) {
+      onRemove?.();
+    }
+    finish();
+  };
 
   const canChangeOperation = clause.operations.length > 1;
   const title = canChangeOperation ? (
@@ -199,24 +264,21 @@ function EditFilterTrigger({
       isOpen={isOpen}
       onOpenChange={(open) => {
         if (!open && isOpen) {
-          const isEmptyAnySelection =
-            clause.type === 'STRING_LIST' &&
-            (clause.value.operation === 'IN' ||
-              clause.value.operation === 'NOT_IN');
-          if (!clause.isValid && !isEmptyAnySelection) {
-            onRemove?.();
-          }
-          onClose?.();
+          close();
+        } else {
+          setIsOpen(open);
         }
-        setIsOpen(open);
       }}
     >
       <DropdownTrigger>{children}</DropdownTrigger>
-      <DropdownPopover placement={popoverPlacement} className="min-w-xs!">
+      <DropdownPopover
+        placement={popoverPlacement}
+        className={chipPopoverStyles({ className: popoverClassName })}
+      >
         <Form
           onSubmit={(event) => {
             event.preventDefault();
-            setIsOpen(false);
+            close();
           }}
           onKeyDown={(event) => {
             if (event.key === 'Backspace') {
@@ -281,7 +343,11 @@ function EditFilterTrigger({
               </Button>
             )}
           <DropdownSection>
-            <ValueSelector clause={clause} onUpdate={onUpdate} />
+            <ValueSelector
+              clause={clause}
+              onUpdate={onUpdate}
+              renderOption={renderOption}
+            />
           </DropdownSection>
           <div className="mt-1 flex items-center justify-between gap-2 px-2 pb-2">
             {onRemove ? (
@@ -290,8 +356,7 @@ function EditFilterTrigger({
                 className="border-transparent bg-transparent bg-none px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
                 onClick={() => {
                   onRemove();
-                  setIsOpen(false);
-                  onClose?.();
+                  finish();
                 }}
               >
                 Remove
@@ -337,9 +402,14 @@ function getValueForOperation(
 function ValueSelector({
   clause,
   onUpdate,
+  renderOption,
 }: {
   clause: QueryClause<QueryClauseType>;
   onUpdate?: (item: QueryClause<QueryClauseType>) => void;
+  renderOption?: (
+    option: QueryClauseOption,
+    item: QueryClause<QueryClauseType>,
+  ) => ReactNode;
 }) {
   if (clause.type === 'STRING_LIST' && clause.options) {
     return (
@@ -360,10 +430,14 @@ function ValueSelector({
       >
         {clause.options.map((option) => (
           <DropdownItem value={option.value} key={option.value}>
-            <div className="flex flex-col gap-0.5">
-              {option.label}
-              <div className="text-xs opacity-80">{option.description}</div>
-            </div>
+            {renderOption ? (
+              renderOption(option, clause)
+            ) : (
+              <div className="flex flex-col gap-0.5">
+                {option.label}
+                <div className="text-xs opacity-80">{option.description}</div>
+              </div>
+            )}
           </DropdownItem>
         ))}
       </DropdownMenu>
@@ -391,10 +465,14 @@ function ValueSelector({
         >
           {clause.options.map((option) => (
             <DropdownItem value={option.value} key={option.value}>
-              <div className="flex flex-col gap-0.5">
-                {option.label}
-                <div className="text-xs opacity-80">{option.description}</div>
-              </div>
+              {renderOption ? (
+                renderOption(option, clause)
+              ) : (
+                <div className="flex flex-col gap-0.5">
+                  {option.label}
+                  <div className="text-xs opacity-80">{option.description}</div>
+                </div>
+              )}
             </DropdownItem>
           ))}
         </DropdownMenu>
