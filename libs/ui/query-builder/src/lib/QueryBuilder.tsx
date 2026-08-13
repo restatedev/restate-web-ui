@@ -106,6 +106,20 @@ export function AddQueryTrigger({
   className,
   MenuTrigger,
   prefix,
+  onInputSubmit,
+  onItemRemove,
+  renderOption,
+  disabled,
+  inputClassName,
+  tagGroupClassName,
+  inputPrefix,
+  optionClassName,
+  popoverClassName,
+  popoverPlacement,
+  showSectionTitle,
+  tagsPlacement,
+  maxVisibleChips,
+  chipOverflowStrategy,
 }: {
   placeholder: string;
   title: string;
@@ -118,6 +132,20 @@ export function AddQueryTrigger({
   className?: string;
   prefix?: ReactNode;
   MenuTrigger?: ComponentType<unknown>;
+  onInputSubmit?: (value: string) => boolean;
+  onItemRemove?: (key: Key) => void;
+  renderOption?: (item: QueryClause<QueryClauseType>) => ReactNode;
+  disabled?: boolean;
+  inputClassName?: string;
+  tagGroupClassName?: string;
+  inputPrefix?: ReactNode;
+  optionClassName?: string;
+  popoverClassName?: string;
+  popoverPlacement?: 'bottom' | 'bottom start' | 'bottom end';
+  showSectionTitle?: boolean;
+  tagsPlacement?: 'inside' | 'outside';
+  maxVisibleChips?: number | 'auto';
+  chipOverflowStrategy?: 'partial' | 'all';
 }) {
   const { query, schema, setNewId, multiple, canRemoveItem } =
     use(QueryBuilderContext);
@@ -147,8 +175,9 @@ export function AddQueryTrigger({
   const onRemove = useCallback(
     (key: Key) => {
       setNewId?.(undefined);
+      onItemRemove?.(key);
     },
-    [setNewId],
+    [onItemRemove, setNewId],
   );
 
   if (!query) {
@@ -171,6 +200,20 @@ export function AddQueryTrigger({
       prefix={prefix}
       canRemoveItem={canRemoveItem}
       multiple={multiple}
+      onInputSubmit={onInputSubmit}
+      renderOption={renderOption}
+      disabled={disabled}
+      inputClassName={inputClassName}
+      tagGroupClassName={tagGroupClassName}
+      inputPrefix={inputPrefix}
+      optionClassName={optionClassName}
+      popoverClassName={popoverClassName}
+      popoverPlacement={popoverPlacement}
+      showSectionTitle={showSectionTitle}
+      tagsPlacement={tagsPlacement}
+      maxVisibleTags={maxVisibleChips}
+      tagOverflowStrategy={chipOverflowStrategy}
+      overflowItemLabel="filter"
     />
   );
 }

@@ -10,6 +10,7 @@ import {
   PropsWithChildren,
   ComponentProps,
   useRef,
+  useLayoutEffect,
 } from 'react';
 import {
   ComboBox,
@@ -20,13 +21,23 @@ import {
   InputProps,
 } from 'react-aria-components';
 import { useListData, ListData } from 'react-stately';
-import { FocusScope, useFilter, useFocusManager } from 'react-aria';
+import {
+  FocusScope,
+  type Placement,
+  useFilter,
+  useFocusManager,
+} from 'react-aria';
 import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
 import { LabeledGroup } from './LabeledGroup';
 import { tv } from '@restate/util/styles';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { PopoverOverlay } from '@restate/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverOverlay,
+  PopoverTrigger,
+} from '@restate/ui/popover';
 import { focusRing } from '@restate/ui/focus';
 import { mergeRefs, useObjectRef } from '@react-aria/utils';
 
@@ -70,9 +81,15 @@ export interface MultiSelectProps<T extends object> extends Omit<
   items: Array<T>;
   selectedList: ListData<T>;
   className?: string;
+  inputClassName?: string;
+  tagGroupClassName?: string;
+  popoverClassName?: string;
+  optionClassName?: string;
   onItemAdd?: (key: Key, value?: string) => void;
   onItemRemove?: (key: Key) => void;
   onItemUpdated?: (key: Key) => void;
+  onInputSubmit?: (value: string) => boolean;
+  renderOption?: (item: T) => ReactNode;
   renderEmptyState?: (inputValue: string) => React.ReactNode;
   children?: (props: {
     item: T;
@@ -85,13 +102,56 @@ export interface MultiSelectProps<T extends object> extends Omit<
   placeholder?: string;
   ref?: RefObject<HTMLInputElement | null>;
   prefix?: ReactNode;
+  inputPrefix?: ReactNode;
   disabled?: boolean;
   multiple?: boolean;
   canRemoveItem?: (key: Key) => boolean;
+  tagsPlacement?: 'inside' | 'outside';
+  maxVisibleTags?: number | 'auto';
+  tagOverflowStrategy?: 'partial' | 'all';
+  overflowItemLabel?: string;
+  popoverPlacement?: Placement;
+  showSectionTitle?: boolean;
 }
 
 const multiSelectStyles = tv({
-  base: 'has-[input[data-invalid=true]]:border-destructive relative flex flex-row flex-wrap items-center rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500',
+  base: 'relative flex flex-row flex-wrap items-center',
+  variants: {
+    tagsPlacement: {
+      inside:
+        'has-[input[data-invalid=true]]:border-destructive rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500',
+      outside: 'flex-nowrap gap-1.5',
+    },
+  },
+});
+
+const comboBoxStyles = tv({
+  base: 'group flex flex-1',
+  variants: {
+    tagsPlacement: {
+      inside: '',
+      outside:
+        'has-[input[data-invalid=true]]:border-destructive min-w-48 rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500',
+    },
+  },
+});
+
+const tagGroupStyles = tv({
+  base: 'hidden max-w-full flex-wrap gap-1.5 has-[>*]:flex',
+  variants: {
+    tagsPlacement: {
+      inside: 'px-1 py-1',
+      outside: 'flex-nowrap',
+    },
+    adaptive: {
+      true: 'shrink-0',
+      false: '',
+    },
+  },
+});
+
+const popoverStyles = tv({
+  base: 'w-(--trigger-width) min-w-fit bg-gray-100/90 p-0',
 });
 
 const inputStyles = tv({
@@ -111,7 +171,13 @@ export function FormFieldMultiCombobox<
   onItemRemove,
   onItemAdd,
   onItemUpdated,
+  onInputSubmit,
+  renderOption,
   className,
+  inputClassName,
+  tagGroupClassName,
+  popoverClassName,
+  optionClassName,
   name,
   renderEmptyState,
   children = DefaultTag,
@@ -119,9 +185,16 @@ export function FormFieldMultiCombobox<
   placeholder,
   ref,
   prefix,
+  inputPrefix,
   disabled,
   multiple,
   canRemoveItem,
+  tagsPlacement = 'inside',
+  maxVisibleTags,
+  tagOverflowStrategy = 'partial',
+  overflowItemLabel = 'item',
+  popoverPlacement,
+  showSectionTitle = true,
   ...props
 }: MultiSelectProps<T>) {
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -135,6 +208,14 @@ export function FormFieldMultiCombobox<
     formRef.current = inputRef.current?.closest('form') ?? null;
   }, []);
   const listBoxRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const tagGroupRef = useRef<HTMLDivElement | null>(null);
+  const comboBoxRef = useRef<HTMLDivElement | null>(null);
+  const overflowMeasureRef = useRef<HTMLSpanElement | null>(null);
+  const tagWidthCacheRef = useRef(new Map<string, number>());
+  const [automaticMaxVisibleTags, setAutomaticMaxVisibleTags] = useState(
+    selectedList.items.length,
+  );
   const inputRefObject = useObjectRef(mergeRefs(inputRef, ref));
 
   const filter = useCallback(
@@ -260,6 +341,12 @@ export function FormFieldMultiCombobox<
         deleteLast();
       }
       if (e.key === 'Enter' && !(e.metaKey || e.ctrlKey)) {
+        if (fieldState.inputValue && onInputSubmit?.(fieldState.inputValue)) {
+          setFieldState({ inputValue: '', selectedKey: null });
+          availableList.setFilterText('');
+          e.preventDefault();
+          return;
+        }
         const id = availableList.items.at(0)?.id;
         const focusedOption = listBoxRef.current?.querySelector(
           '[role=option][data-focused=true]',
@@ -275,25 +362,150 @@ export function FormFieldMultiCombobox<
         }
       }
     },
-    [availableList.items, deleteLast, fieldState.inputValue, onSelectionChange],
+    [
+      availableList,
+      deleteLast,
+      fieldState.inputValue,
+      onInputSubmit,
+      onSelectionChange,
+    ],
   );
 
   const tagGroupId = useId();
   const labelId = useId();
+  const updateAutomaticMaxVisibleTags = useCallback(() => {
+    if (maxVisibleTags !== 'auto') {
+      return;
+    }
+
+    const root = rootRef.current;
+    const tagGroup = tagGroupRef.current;
+    const comboBox = comboBoxRef.current;
+    const overflowMeasure = overflowMeasureRef.current;
+    const view = root?.ownerDocument.defaultView;
+    if (!root || !tagGroup || !comboBox || !overflowMeasure || !view) {
+      return;
+    }
+
+    tagGroup
+      .querySelectorAll<HTMLElement>('[data-multi-combobox-tag]')
+      .forEach((element) => {
+        const key = element.dataset.multiComboboxTag;
+        if (key) {
+          tagWidthCacheRef.current.set(
+            key,
+            element.getBoundingClientRect().width,
+          );
+        }
+      });
+
+    const widths = selectedList.items.map((item) =>
+      tagWidthCacheRef.current.get(String(item.id)),
+    );
+    if (widths.some((width) => width === undefined)) {
+      setAutomaticMaxVisibleTags(selectedList.items.length);
+      return;
+    }
+
+    const rootStyle = view.getComputedStyle(root);
+    const tagGroupStyle = view.getComputedStyle(tagGroup);
+    const comboBoxStyle = view.getComputedStyle(comboBox);
+    const outerGap = parseCssPixels(rootStyle.columnGap);
+    const tagGap = parseCssPixels(tagGroupStyle.columnGap);
+    const inputMinimumWidth = parseCssPixels(comboBoxStyle.minWidth);
+    const availableWidth = Math.max(
+      root.clientWidth - inputMinimumWidth - outerGap,
+      0,
+    );
+    const nextMaxVisibleTags = getAdaptiveVisibleTagCount(
+      widths as number[],
+      availableWidth,
+      overflowMeasure.getBoundingClientRect().width,
+      tagGap,
+      tagOverflowStrategy,
+    );
+
+    setAutomaticMaxVisibleTags((current) =>
+      current === nextMaxVisibleTags ? current : nextMaxVisibleTags,
+    );
+  }, [maxVisibleTags, selectedList.items, tagOverflowStrategy]);
+
+  useLayoutEffect(() => {
+    updateAutomaticMaxVisibleTags();
+  }, [automaticMaxVisibleTags, updateAutomaticMaxVisibleTags]);
+
+  useEffect(() => {
+    if (maxVisibleTags !== 'auto') {
+      return;
+    }
+
+    const root = rootRef.current;
+    const tagGroup = tagGroupRef.current;
+    const ResizeObserverConstructor =
+      root?.ownerDocument.defaultView?.ResizeObserver;
+    if (!root || !tagGroup || !ResizeObserverConstructor) {
+      return;
+    }
+
+    const observer = new ResizeObserverConstructor(
+      updateAutomaticMaxVisibleTags,
+    );
+    observer.observe(root);
+    observer.observe(tagGroup);
+    tagGroup
+      .querySelectorAll<HTMLElement>('[data-multi-combobox-tag]')
+      .forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [automaticMaxVisibleTags, maxVisibleTags, updateAutomaticMaxVisibleTags]);
+
+  const resolvedMaxVisibleTags =
+    maxVisibleTags === 'auto' ? automaticMaxVisibleTags : maxVisibleTags;
+  const { visibleItems, hiddenItems } = partitionVisibleTags(
+    selectedList.items,
+    resolvedMaxVisibleTags,
+  );
+  const areAllTagsCollapsed =
+    hiddenItems.length > 0 && visibleItems.length === 0;
+  const optionItems = availableList.items
+    .filter(
+      (item) => !item.allowCustomValue || availableList.items.length === 1,
+    )
+    .map((item) => (
+      <ListBoxItem
+        value={String(item.id)}
+        key={item.id}
+        disabled={item.disabled}
+        className={optionClassName}
+      >
+        {item.allowCustomValue
+          ? fieldState.inputValue
+          : (renderOption?.(item) ?? item.textValue)}
+      </ListBoxItem>
+    ));
 
   return (
     <FocusScope>
-      <LabeledGroup id={labelId} className={multiSelectStyles({ className })}>
+      <LabeledGroup
+        ref={rootRef}
+        id={labelId}
+        className={multiSelectStyles({ tagsPlacement, className })}
+      >
         <Label className="sr-only">{label}</Label>
 
         <TagFocusManager
-          className="hidden max-w-full flex-wrap gap-1.5 px-1 py-1 has-[>*]:flex"
+          ref={tagGroupRef}
+          className={tagGroupStyles({
+            tagsPlacement,
+            adaptive: maxVisibleTags === 'auto',
+            className: tagGroupClassName,
+          })}
           id={tagGroupId}
         >
           {prefix}
-          {selectedList.items.map((item) => (
+          {visibleItems.map((item) => (
             <RemoveTagWithKeyboard
               key={item.id}
+              tagKey={item.id}
               onRemove={onRemove.bind(null, item.id)}
             >
               {children({
@@ -304,13 +516,71 @@ export function FormFieldMultiCombobox<
               })}
             </RemoveTagWithKeyboard>
           ))}
+          {maxVisibleTags === 'auto' && selectedList.items.length > 0 && (
+            <span
+              ref={overflowMeasureRef}
+              aria-hidden="true"
+              className="pointer-events-none invisible absolute flex h-7 items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-xs"
+            >
+              {tagOverflowStrategy === 'partial' ? '+' : ''}
+              {selectedList.items.length} {overflowItemLabel}
+              {selectedList.items.length === 1 ? '' : 's'}
+              <Icon name={IconName.ChevronDown} className="h-3.5 w-3.5" />
+            </span>
+          )}
+          {hiddenItems.length > 0 && (
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  aria-label={
+                    areAllTagsCollapsed
+                      ? `${hiddenItems.length} active ${overflowItemLabel}${hiddenItems.length === 1 ? '' : 's'}`
+                      : `${hiddenItems.length} more ${overflowItemLabel}${hiddenItems.length === 1 ? '' : 's'}`
+                  }
+                  className="flex h-7 shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-600"
+                >
+                  {areAllTagsCollapsed ? '' : '+'}
+                  {hiddenItems.length} {overflowItemLabel}
+                  {hiddenItems.length === 1 ? '' : 's'}
+                  <Icon name={IconName.ChevronDown} className="h-3.5 w-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                placement="bottom end"
+                className="w-fit max-w-[calc(100vw-2rem)] p-1"
+              >
+                <div className="flex flex-col items-start gap-1.5 p-1">
+                  {hiddenItems.map((item) => (
+                    <RemoveTagWithKeyboard
+                      key={item.id}
+                      tagKey={item.id}
+                      onRemove={onRemove.bind(null, item.id)}
+                    >
+                      {children({
+                        item,
+                        onRemove: onRemove.bind(null, item.id),
+                        onUpdate,
+                        formRef,
+                      })}
+                    </RemoveTagWithKeyboard>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </TagFocusManager>
 
         <ComboBox
+          ref={comboBoxRef}
           {...props}
           allowsEmptyCollection
           menuTrigger={menuTrigger}
-          className="group flex flex-1"
+          className={comboBoxStyles({
+            tagsPlacement,
+            className: inputClassName,
+          })}
           items={availableList.items}
           selectedKey={fieldState.selectedKey}
           inputValue={fieldState.inputValue}
@@ -320,6 +590,7 @@ export function FormFieldMultiCombobox<
           isDisabled={disabled}
         >
           <div className={'inline-flex flex-1 items-center gap-1 px-0 pl-1'}>
+            {inputPrefix}
             <MenuTrigger />
             <InputWithFocusManager
               ref={inputRefObject}
@@ -339,7 +610,10 @@ export function FormFieldMultiCombobox<
           </div>
 
           {availableList.items.length > 0 && (
-            <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90 p-0">
+            <PopoverOverlay
+              placement={popoverPlacement}
+              className={popoverStyles({ className: popoverClassName })}
+            >
               {multiple || selectedKeys.length === 0 ? (
                 <ListBox
                   multiple
@@ -347,24 +621,11 @@ export function FormFieldMultiCombobox<
                   className="max-h-[inherit] overflow-auto border-none p-1 outline-0"
                   ref={listBoxRef}
                 >
-                  <ListBoxSection title={label}>
-                    {availableList.items
-                      .filter(
-                        (item, i, arr) =>
-                          !item.allowCustomValue || arr.length === 1,
-                      )
-                      .map((item) => (
-                        <ListBoxItem
-                          value={String(item.id)}
-                          key={item.id}
-                          disabled={item.disabled}
-                        >
-                          {item.allowCustomValue
-                            ? fieldState.inputValue
-                            : item.textValue}
-                        </ListBoxItem>
-                      ))}
-                  </ListBoxSection>
+                  {showSectionTitle ? (
+                    <ListBoxSection title={label}>{optionItems}</ListBoxSection>
+                  ) : (
+                    optionItems
+                  )}
                 </ListBox>
               ) : (
                 <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
@@ -392,11 +653,66 @@ export function FormFieldMultiCombobox<
   );
 }
 
+export function partitionVisibleTags<T>(items: T[], maxVisibleTags?: number) {
+  if (maxVisibleTags === undefined || items.length <= maxVisibleTags) {
+    return { visibleItems: items, hiddenItems: [] as T[] };
+  }
+  const splitIndex = Math.max(items.length - Math.max(maxVisibleTags, 0), 0);
+  return {
+    visibleItems: items.slice(splitIndex),
+    hiddenItems: items.slice(0, splitIndex),
+  };
+}
+
+export function getAdaptiveVisibleTagCount(
+  tagWidths: number[],
+  availableWidth: number,
+  overflowWidth: number,
+  gap: number,
+  overflowStrategy: 'partial' | 'all' = 'partial',
+) {
+  if (tagWidths.length === 0) {
+    return 0;
+  }
+
+  const allTagsWidth =
+    tagWidths.reduce((total, width) => total + width, 0) +
+    gap * Math.max(tagWidths.length - 1, 0);
+  if (allTagsWidth <= availableWidth) {
+    return tagWidths.length;
+  }
+  if (overflowStrategy === 'all') {
+    return 0;
+  }
+
+  let visibleCount = 0;
+  let usedWidth = overflowWidth;
+  for (let index = tagWidths.length - 1; index >= 0; index -= 1) {
+    const width = tagWidths[index];
+    if (width === undefined || usedWidth + gap + width > availableWidth) {
+      break;
+    }
+    usedWidth += gap + width;
+    visibleCount += 1;
+  }
+  return Math.max(visibleCount, 1);
+}
+
+function parseCssPixels(value: string) {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function TagFocusManager({
   children,
   id,
   className,
-}: PropsWithChildren<{ className?: string; id?: string }>) {
+  ref,
+}: PropsWithChildren<{
+  className?: string;
+  id?: string;
+  ref?: RefObject<HTMLDivElement | null>;
+}>) {
   const focusManager = useFocusManager();
   const onKeyDown = (e: KeyboardEvent) => {
     switch (e.key) {
@@ -410,7 +726,7 @@ function TagFocusManager({
   };
 
   return (
-    <div onKeyDown={onKeyDown} id={id} className={className}>
+    <div ref={ref} onKeyDown={onKeyDown} id={id} className={className}>
       {children}
     </div>
   );
@@ -419,7 +735,8 @@ function TagFocusManager({
 function RemoveTagWithKeyboard({
   children,
   onRemove,
-}: PropsWithChildren<{ onRemove?: VoidFunction }>) {
+  tagKey,
+}: PropsWithChildren<{ onRemove?: VoidFunction; tagKey: Key }>) {
   const onKeyDown = (e: KeyboardEvent) => {
     switch (e.key) {
       case 'Backspace':
@@ -429,7 +746,11 @@ function RemoveTagWithKeyboard({
   };
 
   return (
-    <div className="contents" onKeyDown={onKeyDown}>
+    <div
+      data-multi-combobox-tag={String(tagKey)}
+      className="inline-flex min-w-0 shrink-0"
+      onKeyDown={onKeyDown}
+    >
       {children}
     </div>
   );
