@@ -424,24 +424,26 @@ function RelativeActivity({ activity }: { activity: Activity }) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const duration = formatDurations(durationSinceLastSnapshot(activity.value));
   return (
-    <DateTooltip
-      date={new Date(activity.value)}
-      title={activity.title}
-      className="block w-full"
-    >
-      <span className="flex min-w-0 items-baseline gap-1.5 text-xs">
+    <span className="flex min-w-0 items-baseline gap-1.5 text-xs">
+      <DateTooltip
+        date={new Date(activity.value)}
+        title={activity.title}
+        className="shrink-0"
+      >
         <time
           dateTime={activity.value}
-          className="shrink-0 font-medium text-zinc-600 tabular-nums"
+          className="font-medium text-zinc-600 tabular-nums"
         >
           {duration} ago
         </time>
-        <span aria-hidden className="text-zinc-300">
-          ·
-        </span>
-        <span className="min-w-0 truncate text-zinc-400">{activity.label}</span>
+      </DateTooltip>
+      <span aria-hidden className="text-zinc-300">
+        ·
       </span>
-    </DateTooltip>
+      <span className="min-w-0 truncate font-normal text-zinc-500/80">
+        {activity.label}
+      </span>
+    </span>
   );
 }
 
@@ -558,7 +560,7 @@ export function VQueueTable({
   error?: Error | null;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
-  sortDescriptor: SortDescriptor;
+  sortDescriptor?: SortDescriptor;
   onSortChange: (descriptor: SortDescriptor) => void;
 }) {
   const rows = useMemo(

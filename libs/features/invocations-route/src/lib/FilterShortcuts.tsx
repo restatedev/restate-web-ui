@@ -7,6 +7,7 @@ import {
   QueryClauseType,
   QueryClauseValue,
 } from '@restate/ui/query-builder';
+import { writeFilterClauses } from '@restate/ui/filter-builder';
 import {
   Dropdown,
   DropdownItem,
@@ -23,12 +24,7 @@ import {
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useSearchParams } from 'react-router';
-import {
-  FILTER_QUERY_PREFIX,
-  SORT_QUERY_PREFIX,
-  SORT_NONE,
-  getFilterParamKey,
-} from './useInvocationsQueryFilters';
+import { SORT_QUERY_PREFIX, SORT_NONE } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 import { useFeatures } from '@restate/data-access/admin-api';
 
@@ -207,15 +203,7 @@ export function FilterShortcuts({
   const setFilter = (item: FilterShortcut) => {
     setPageIndex(0);
 
-    const newSearchParams = new URLSearchParams(searchParams);
-    Array.from(newSearchParams.keys())
-      .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
-      .forEach((key) => newSearchParams.delete(key));
-    item.filters
-      .filter((clause) => clause.isValid)
-      .forEach((clause) => {
-        newSearchParams.set(getFilterParamKey(clause), String(clause));
-      });
+    const newSearchParams = writeFilterClauses(searchParams, item.filters);
 
     newSearchParams.delete(COLUMN_QUERY_PREFIX);
     item.columns.forEach((col) => {

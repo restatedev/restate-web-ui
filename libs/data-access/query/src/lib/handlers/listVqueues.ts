@@ -70,6 +70,15 @@ const STRING_FIELDS: Record<string, string> = {
   lockName: 'lock_name',
 };
 
+const STRING_OPERATIONS: Record<string, ReadonlySet<string>> = {
+  id: new Set(['EQUALS']),
+  service: new Set(['EQUALS']),
+  scope: new Set(['EQUALS', 'CONTAINS']),
+  limitKey: new Set(['EQUALS', 'CONTAINS']),
+  l1: new Set(['EQUALS']),
+  l2: new Set(['EQUALS']),
+};
+
 function sortExpression(field: VQueueSort['field']) {
   switch (field) {
     case 'id':
@@ -99,9 +108,9 @@ function sortExpression(field: VQueueSort['field']) {
   }
 }
 
-function orderBy(sort?: VQueueSort) {
-  const field = sort?.field ?? 'lastActivity';
-  const direction = sort?.order ?? 'DESC';
+function orderBy(sort: VQueueSort) {
+  const field = sort.field;
+  const direction = sort.order;
   const order = [
     `${sortExpression(field)} ${direction}${
       field === 'lastActivity' ? ' NULLS LAST' : ''
@@ -134,6 +143,13 @@ function stringPredicate(
   operation: unknown,
   value: unknown,
 ) {
+  const supportedOperations = STRING_OPERATIONS[filter.field];
+  if (supportedOperations && !supportedOperations.has(String(operation))) {
+    return filterError(
+      filter,
+      `unsupported STRING operation ${String(operation)}`,
+    );
+  }
   if (operation === 'IS NULL') return `${expression} IS NULL`;
   if (operation === 'IS NOT NULL') return `${expression} IS NOT NULL`;
   const normalized = stringValue(filter, value);
@@ -144,28 +160,34 @@ function stringPredicate(
     case 'NOT_EQUALS':
       return `${column} <> ${quoteSqlString(normalized)}`;
     case 'CONTAINS':
-      return `${column} LIKE ${quoteSqlString(`%${normalized}%`)}`;
+      return `strpos(${column}, ${quoteSqlString(normalized)}) > 0`;
     case 'NOT_CONTAINS':
-      return `${column} NOT LIKE ${quoteSqlString(`%${normalized}%`)}`;
-    case 'PATH_PREFIX': {
-      if (filter.field !== 'limitKey') {
-        return filterError(
-          filter,
-          'PATH_PREFIX is supported only for limitKey',
-        );
-      }
-      const segments = normalized.split('/');
-      if (
-        segments.length > 2 ||
-        segments.some((segment) => segment.length === 0)
-      ) {
-        return filterError(filter, 'expected a valid limit-key path');
-      }
-      return `(${column} = ${quoteSqlString(normalized)} OR starts_with(${column}, ${quoteSqlString(`${normalized}/`)}))`;
-    }
+      return `strpos(${column}, ${quoteSqlString(normalized)}) = 0`;
     default:
       return filterError(filter, `unsupported STRING operation ${operation}`);
   }
+}
+
+function limitKeySegmentPredicate(
+  filter: VQueueFilterItem,
+  operation: unknown,
+  value: unknown,
+) {
+  if (operation !== 'EQUALS') {
+    return filterError(
+      filter,
+      `unsupported STRING operation ${String(operation)}`,
+    );
+  }
+  const normalized = stringValue(filter, value);
+  if (!normalized || normalized.includes('/')) {
+    return filterError(filter, 'expected one limit-key segment');
+  }
+  const column = `LOWER(${stringColumn('limit_key')})`;
+  if (filter.field === 'l1') {
+    return `(${column} = ${quoteSqlString(normalized)} OR starts_with(${column}, ${quoteSqlString(`${normalized}/`)}))`;
+  }
+  return `ends_with(${column}, ${quoteSqlString(`/${normalized}`)})`;
 }
 
 function stringListPredicate(
@@ -205,8 +227,14 @@ function filterPredicate(filter: VQueueFilterItem) {
     operation?: unknown;
     value?: unknown;
   };
+  if (filter.field !== 'lockName' && filter.type !== 'STRING') {
+    return filterError(filter, 'expected a STRING filter');
+  }
   switch (filter.type) {
     case 'STRING': {
+      if (filter.field === 'l1' || filter.field === 'l2') {
+        return limitKeySegmentPredicate(filter, operation, value);
+      }
       const expression = STRING_FIELDS[filter.field];
       if (!expression) filterError(filter, 'unsupported STRING field');
       return stringPredicate(filter, expression, operation, value);
@@ -317,9 +345,9 @@ export async function listVqueues(
     return new Response(filters.error, { status: 400 });
   }
   const limit = Math.min(limitPageSize(args.limit), VQUEUE_LIST_LIMIT);
+  const order = args.sort ? `\n    ORDER BY ${orderBy(args.sort)}` : '';
   const { rows } = await this.query(`SELECT ${VQUEUE_COLUMNS}
-    FROM sys_vqueue_meta${filters.clause}
-    ORDER BY ${orderBy(args.sort)}
+    FROM sys_vqueue_meta${filters.clause}${order}
     LIMIT ${limit + 1}`);
   const page = limitPage(rows as VQueueMetaRow[], limit);
   if (page.items.length === 0) {

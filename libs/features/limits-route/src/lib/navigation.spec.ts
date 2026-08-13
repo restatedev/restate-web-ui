@@ -1,0 +1,34 @@
+import { readFilterClauses } from '@restate/ui/filter-builder';
+import { VQUEUE_FILTER_SCHEMA } from './limits.vqueueFilters';
+import { vqueuesForLimitCounterHref } from './navigation';
+
+describe('counter VQueue navigation', () => {
+  it('filters a scope counter by exact scope', () => {
+    expect(readFilters({ scope: 'acme' })).toEqual([
+      ['scope', 'EQUALS', 'acme'],
+    ]);
+  });
+
+  it('filters an L1 counter by exact scope and L1 segment', () => {
+    expect(readFilters({ scope: 'acme', l1: 'team' })).toEqual([
+      ['scope', 'EQUALS', 'acme'],
+      ['l1', 'EQUALS', 'team'],
+    ]);
+  });
+
+  it('filters an L2 counter by exact scope and whole limit key', () => {
+    expect(readFilters({ scope: 'acme', l1: 'team', l2: 'eu' })).toEqual([
+      ['scope', 'EQUALS', 'acme'],
+      ['limitKey', 'EQUALS', 'team/eu'],
+    ]);
+  });
+});
+
+function readFilters(identity: { scope: string; l1?: string; l2?: string }) {
+  const href = vqueuesForLimitCounterHref('/ui', identity);
+  const url = new URL(href, 'https://example.com');
+  expect(url.pathname).toBe('/ui/flow-control/vqueues');
+  return readFilterClauses(url.searchParams, VQUEUE_FILTER_SCHEMA).map(
+    (clause) => [clause.id, clause.value.operation, clause.value.value],
+  );
+}

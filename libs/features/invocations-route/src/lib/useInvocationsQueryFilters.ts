@@ -1,10 +1,12 @@
 import { components } from '@restate/data-access/admin-api-spec';
 import {
-  QueryClause,
+  FILTER_QUERY_PREFIX,
   QueryClauseSchema,
   QueryClauseType,
-  useQueryBuilder,
-} from '@restate/ui/query-builder';
+  readFilterClauses,
+  useFilterBuilder,
+  writeFilterClauses,
+} from '@restate/ui/filter-builder';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useSchema } from './useSchema';
@@ -12,16 +14,7 @@ import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 
-export const FILTER_QUERY_PREFIX = 'filter_';
 export const SORT_QUERY_PREFIX = 'sort_';
-export function getFilterParamKey(
-  param: QueryClauseSchema<QueryClauseType> | QueryClause<QueryClauseType>,
-) {
-  if ('fieldValue' in param) {
-    return `${FILTER_QUERY_PREFIX}${param.fieldValue}`;
-  }
-  return `${FILTER_QUERY_PREFIX}${param.id}`;
-}
 
 type InvocationV2Filter = components['schemas']['InvocationV2FilterItem'];
 type InvocationV2Sort = components['schemas']['InvocationV2Sort'];
@@ -77,16 +70,6 @@ function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
   return { field: 'created_at', order: 'DESC' };
 }
 
-function deriveClausesFromUrl(
-  searchParams: URLSearchParams,
-  schema: QueryClauseSchema<QueryClauseType>[],
-) {
-  return schema.flatMap((schemaClause) => {
-    const value = searchParams.get(getFilterParamKey(schemaClause));
-    return value ? [QueryClause.fromJSON(schemaClause, value)] : [];
-  });
-}
-
 /**
  * URL-derived list parameters for the data fetch. Pure: re-runs whenever
  * the URL or schema change. The data fetch (and its query key) tracks the
@@ -101,7 +84,7 @@ export function useListInvocationsParameters() {
     Omit<components['schemas']['ListInvocationsV2RequestBody'], 'mode'>
   >(() => {
     const searchParams = new URLSearchParams(searchString);
-    const clauses = deriveClausesFromUrl(searchParams, schema);
+    const clauses = readFilterClauses(searchParams, schema);
     const filters = clauses.flatMap((clause) => {
       if (!clause.isValid || !clause.value.operation) return [];
       return [
@@ -158,22 +141,14 @@ export function useInvocationsForm({
   // the schema is ready (chips depend on schema options). URL changes after
   // mount are handled by the parent re-mounting via `key`.
   const initialClauses = useMemo(
-    () => deriveClausesFromUrl(searchParams, schema),
+    () => readFilterClauses(searchParams, schema),
     [isLoading, schema],
   );
 
-  const query = useQueryBuilder(initialClauses, isLoading);
+  const query = useFilterBuilder(initialClauses, isLoading);
 
   const commitQuery = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    Array.from(newSearchParams.keys())
-      .filter((key) => key.startsWith(FILTER_QUERY_PREFIX))
-      .forEach((key) => newSearchParams.delete(key));
-    query.items
-      .filter((clause) => clause.isValid)
-      .forEach((item) => {
-        newSearchParams.set(getFilterParamKey(item), String(item));
-      });
+    const newSearchParams = writeFilterClauses(searchParams, query.items);
 
     newSearchParams.delete(COLUMN_QUERY_PREFIX);
     selectedColumns.forEach((col) => {

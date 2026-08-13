@@ -13,9 +13,11 @@ import {
 import { tv } from '@restate/util/styles';
 import { useMemo, type ReactNode } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
+import { useNavigate } from 'react-router';
 import {
   limitCountersForRuleHref,
   type LimitCounterIdentity,
+  vqueuesForLimitCounterHref,
 } from './navigation';
 import type { RuleLevel } from './pattern';
 import { getCounterUsageRatio } from './counterUsage';
@@ -362,6 +364,7 @@ export function CounterTable({
   sortDescriptor,
   onSortChange,
 }: CounterTableProps) {
+  const navigate = useNavigate();
   const columns =
     variant === 'all' ? ALL_COUNTER_COLUMNS : RULE_COUNTER_COLUMNS;
   const rows = useMemo(
@@ -384,7 +387,13 @@ export function CounterTable({
       sortDescriptor={sortDescriptor}
       onSortChange={onSortChange}
       bodyDependencies={[...(dependencies ?? []), error]}
-      rowClassName={rowStyles()}
+      onRowAction={(key) => {
+        const row = rows.find((candidate) => candidate.id === String(key));
+        if (row?.identity) {
+          navigate(vqueuesForLimitCounterHref(baseUrl, row.identity));
+        }
+      }}
+      rowClassName={(row) => rowStyles({ clickable: Boolean(row.identity) })}
       caption={caption}
       emptyPlaceholder={emptyPlaceholder}
       renderCell={(row, column) => renderCounterCell(row, column, variant)}
