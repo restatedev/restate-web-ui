@@ -53,6 +53,7 @@ const EMPTY_SERVICES_MAP = new Map<string, Service>();
 export type LimitRule = components['schemas']['RuleResponse'];
 export type LimitRuleWithStats = components['schemas']['LimitRuleWithStats'];
 export type UserLimitRow = components['schemas']['UserLimitRow'];
+export type VQueueMetaRow = components['schemas']['VQueueMetaRow'];
 export type UpsertLimitRuleRequest = components['schemas']['UpsertRuleRequest'];
 export type DeleteLimitRuleRequest = components['schemas']['DeleteRuleRequest'];
 export type CreateLimitRuleRequest = Omit<
@@ -430,6 +431,33 @@ export function useListUserLimits(
   const hasVqueues = features.has('vqueues');
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/limits/user-limits', 'post', {
+    baseUrl,
+    body,
+  });
+
+  const results = useQuery({
+    ...queryOptions,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    enabled: options?.enabled !== false && enabled && hasVqueues,
+  });
+
+  return {
+    ...results,
+    queryKey: queryOptions.queryKey,
+  };
+}
+
+export function useListVqueues(
+  body: components['schemas']['ListVQueuesRequestBody'],
+  options?: LimitPageOptions,
+) {
+  const enabled = useAPIStatus();
+  const features = useFeatures();
+  const hasVqueues = features.has('vqueues');
+  const baseUrl = useAdminBaseUrl();
+  const queryOptions = adminApi('query', '/query/limits/vqueues', 'post', {
     baseUrl,
     body,
   });

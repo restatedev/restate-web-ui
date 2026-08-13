@@ -6333,6 +6333,36 @@
         }
       }
     },
+    "/query/limits/vqueues": {
+      "post": {
+        "tags": ["query-limits"],
+        "summary": "List VQueues",
+        "description": "VQueue metadata from the sys_vqueue_meta table, filtered and sorted server-side.",
+        "operationId": "list_vqueues",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListVQueuesRequestBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListVQueuesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/limits/rules/{pattern}/counters": {
       "post": {
         "tags": ["query-limits"],
@@ -8642,6 +8672,151 @@
           }
         }
       },
+      "ListVQueuesResponse": {
+        "type": "object",
+        "description": "Bounded VQueue metadata from the sys_vqueue_meta table.",
+        "required": ["vqueues", "hasMore"],
+        "properties": {
+          "vqueues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VQueueMetaRow"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VQueueMetaRow": {
+        "type": "object",
+        "required": [
+          "id",
+          "queue_is_paused",
+          "service_name",
+          "scope",
+          "limit_key",
+          "lock_name",
+          "last_enqueued_at",
+          "last_start_at",
+          "last_attempt_at",
+          "last_finish_at",
+          "avg_queue_duration",
+          "avg_inbox_duration",
+          "avg_run_duration",
+          "avg_suspension_duration",
+          "avg_end_to_end_duration",
+          "avg_blocked_on_concurrency_rules",
+          "avg_blocked_on_invoker_concurrency",
+          "avg_blocked_on_invoker_throttling",
+          "avg_blocked_on_lock",
+          "num_inbox",
+          "num_running",
+          "num_suspended",
+          "num_paused",
+          "num_finished"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "queue_is_paused": {
+            "type": "boolean"
+          },
+          "service_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "scope": {
+            "type": "string",
+            "nullable": true
+          },
+          "limit_key": {
+            "type": "string",
+            "nullable": true
+          },
+          "lock_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_enqueued_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "last_start_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "last_attempt_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "last_finish_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "avg_queue_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_inbox_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_run_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_suspension_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_end_to_end_duration": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_blocked_on_concurrency_rules": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_blocked_on_invoker_concurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_blocked_on_invoker_throttling": {
+            "type": "string",
+            "nullable": true
+          },
+          "avg_blocked_on_lock": {
+            "type": "string",
+            "nullable": true
+          },
+          "num_inbox": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "num_running": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "num_suspended": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "num_paused": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "num_finished": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
       "MetricsResponse": {
         "type": "object",
         "description": "Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log).",
@@ -10054,6 +10229,63 @@
           }
         }
       },
+      "VQueueSort": {
+        "type": "object",
+        "required": ["field", "order"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "id",
+              "service",
+              "scope",
+              "limitKey",
+              "lockName",
+              "inbox",
+              "running",
+              "suspended",
+              "paused",
+              "finished",
+              "unfinished",
+              "lastActivity"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "enum": ["ASC", "DESC"]
+          }
+        }
+      },
+      "VQueueFilterItem": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FilterBaseItem"
+          },
+          {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FilterStringItem"
+              },
+              {
+                "$ref": "#/components/schemas/FilterStringListItem"
+              },
+              {
+                "$ref": "#/components/schemas/FilterNullItem"
+              }
+            ]
+          },
+          {
+            "type": "object",
+            "required": ["field"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "enum": ["id", "service", "scope", "limitKey", "lockName"]
+              }
+            }
+          }
+        ]
+      },
       "ListLimitRulesRequestBody": {
         "type": "object",
         "properties": {
@@ -10089,6 +10321,26 @@
           },
           "search": {
             "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        }
+      },
+      "ListVQueuesRequestBody": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "array",
+            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, and lockName. String comparisons are case-insensitive.",
+            "items": {
+              "$ref": "#/components/schemas/VQueueFilterItem"
+            }
+          },
+          "sort": {
+            "$ref": "#/components/schemas/VQueueSort"
           },
           "limit": {
             "type": "integer",

@@ -50,6 +50,7 @@ export { getStateStorageSize } from './getStateStorageSize';
 export { listStateServices } from './listStateServices';
 export { getLimitRule, listLimitRules } from './listLimitRules';
 export { listUserLimits, listLimitCountersForRule } from './listUserLimits';
+export { listVqueues } from './listVqueues';
 export { getJournalEntryPayloads } from './getJournalEntryPayloads';
 export { getJournalEntryMetadata } from './getJournalEntryMetadata';
 export { getPausedError } from './getPausedError';

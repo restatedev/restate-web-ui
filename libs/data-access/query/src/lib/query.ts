@@ -53,6 +53,7 @@ import {
   listLimitCountersForRule,
   listLimitRules,
   listUserLimits,
+  listVqueues,
   summaryInvocations,
   completedInvocationsBreakdown,
   type CompletedInvocationsBreakdownArgs,
@@ -117,6 +118,9 @@ type BoundHandlers = {
   getLimitRule: (pattern: string) => Promise<Response>;
   listUserLimits: (
     args: components['schemas']['ListLimitCountersRequestBody'],
+  ) => Promise<Response>;
+  listVqueues: (
+    args: components['schemas']['ListVQueuesRequestBody'],
   ) => Promise<Response>;
   listLimitCountersForRule: (
     pattern: string,
@@ -256,6 +260,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     listLimitRules: listLimitRules.bind(context),
     getLimitRule: getLimitRule.bind(context),
     listUserLimits: listUserLimits.bind(context),
+    listVqueues: listVqueues.bind(context),
     listLimitCountersForRule: listLimitCountersForRule.bind(context),
     listInvocations: listInvocations.bind(context),
     getInvocation: getInvocation.bind(context),
@@ -512,6 +517,7 @@ export const routes = createRoutes('/query', {
       },
     },
     userLimits: { method: 'POST', pattern: '/limits/user-limits' },
+    vqueues: { method: 'POST', pattern: '/limits/vqueues' },
   },
 });
 
@@ -883,6 +889,12 @@ router.map(routes, {
         const args: components['schemas']['ListLimitCountersRequestBody'] =
           await ctx.request.json();
         return listUserLimits(args);
+      },
+      async vqueues(ctx) {
+        const { listVqueues } = ctx.storage.get(handlersKey);
+        const args: components['schemas']['ListVQueuesRequestBody'] =
+          await ctx.request.json();
+        return listVqueues(args);
       },
     },
   },
