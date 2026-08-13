@@ -7,19 +7,26 @@ import type {
 import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access/admin-api-spec';
 import {
   getVqueueHeadBlockSummary,
+  getVqueueGateLabel,
   getVqueueInboxWaitingStartedAt,
   positiveVqueueDurationMilliseconds,
+  vqueueDurationMilliseconds,
   vqueueDurationPartsMilliseconds,
   vqueueDurationRatio,
 } from '@restate/features/vqueue-ui';
 import {
   addDurationToDate,
+  formatCompactDateTime,
+  formatCompactTime,
   formatDurations,
   formatMilliseconds,
   normaliseDuration,
   parseISODuration,
 } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
+import {
+  useDurationSinceLastSnapshot,
+  useSnapshotTime,
+} from '@restate/util/snapshot-time';
 import {
   getJourneyActivityDetails,
   journalEntriesOfType,
@@ -28,6 +35,7 @@ import type {
   InvocationJourneyModel,
   JourneyCurrentStatus,
   JourneyJournalInvocation,
+  JourneyNodeTiming,
   JourneyTerminalStatus,
 } from './InvocationJourneyModel';
 
@@ -57,6 +65,14 @@ function durationBetweenMilliseconds(start?: string, end?: string) {
     return undefined;
   }
   return endMilliseconds - startMilliseconds;
+}
+
+function isSameCalendarDay(left: Date, right: Date) {
+  return (
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  );
 }
 
 function completionRetentionEnd(
@@ -134,6 +150,94 @@ function completedActivityCount(total: number, isCurrent: boolean) {
   return Math.max(0, total - (isCurrent ? 1 : 0));
 }
 
+type VqueueGateDuration = VqueueSnapshot['head']['totalBlocks'][number];
+
+function millisecondsByGate(durations: VqueueGateDuration[]) {
+  const millisecondsByGate = new Map<string, number>();
+
+  durations.forEach(({ gate, duration }) => {
+    const milliseconds = vqueueDurationMilliseconds(duration);
+    if (milliseconds === undefined || milliseconds <= 0) return;
+    millisecondsByGate.set(
+      gate,
+      (millisecondsByGate.get(gate) ?? 0) + milliseconds,
+    );
+  });
+
+  return millisecondsByGate;
+}
+
+function getBlockedTimeFromMillisecondsByGate(
+  millisecondsByGate: Map<string, number>,
+  averageMillisecondsByGate: Map<string, number>,
+) {
+  const breakdown = [...millisecondsByGate.entries()]
+    .map(([gate, milliseconds]) => {
+      const averageMilliseconds = averageMillisecondsByGate.get(gate);
+      return {
+        gate,
+        label: getVqueueGateLabel(gate),
+        duration: formatMilliseconds(milliseconds),
+        milliseconds,
+        average:
+          averageMilliseconds === undefined
+            ? undefined
+            : formatMilliseconds(averageMilliseconds),
+        ratio: vqueueDurationRatio(milliseconds, averageMilliseconds),
+        averageMilliseconds,
+      };
+    })
+    .sort((a, b) => b.milliseconds - a.milliseconds);
+  const totalMilliseconds = breakdown.reduce(
+    (total, item) => total + item.milliseconds,
+    0,
+  );
+  const hasCompleteAverage = breakdown.every(
+    (item) => item.averageMilliseconds !== undefined,
+  );
+  const averageMilliseconds = hasCompleteAverage
+    ? breakdown.reduce(
+        (total, item) => total + (item.averageMilliseconds ?? 0),
+        0,
+      )
+    : undefined;
+
+  return totalMilliseconds > 0
+    ? {
+        duration: formatMilliseconds(totalMilliseconds),
+        average:
+          averageMilliseconds === undefined
+            ? undefined
+            : formatMilliseconds(averageMilliseconds),
+        ratio: vqueueDurationRatio(totalMilliseconds, averageMilliseconds),
+        breakdown: breakdown.map((item) => ({
+          gate: item.gate,
+          label: item.label,
+          duration: item.duration,
+          average: item.average,
+          ratio: item.ratio,
+        })),
+      }
+    : undefined;
+}
+
+function getBlockedTime(
+  durations: VqueueGateDuration[],
+  averageDurations: VqueueGateDuration[],
+) {
+  return getBlockedTimeFromMillisecondsByGate(
+    millisecondsByGate(durations),
+    millisecondsByGate(averageDurations),
+  );
+}
+
+function getBlockedMilliseconds(durations: VqueueGateDuration[]) {
+  return [...millisecondsByGate(durations).values()].reduce(
+    (total, milliseconds) => total + milliseconds,
+    0,
+  );
+}
+
 export function useInvocationJourneyModel({
   invocation,
   data,
@@ -144,6 +248,7 @@ export function useInvocationJourneyModel({
   journalEntries?: JournalEntryV2[];
 }): InvocationJourneyModel | undefined {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const snapshotTime = useSnapshotTime();
   const focusedInvocation = data?.focusedInvocation;
   const effectiveInvocation = focusedInvocation
     ? { ...invocation, ...focusedInvocation }
@@ -248,14 +353,32 @@ export function useInvocationJourneyModel({
     ? undefined
     : durationBetweenMilliseconds(createdAt, firstRunnableAt);
   const firstRunnableAfter =
-    firstRunnableMilliseconds === undefined
+    firstRunnableMilliseconds === undefined || firstRunnableMilliseconds === 0
       ? undefined
       : formatMilliseconds(firstRunnableMilliseconds);
+  const isCurrentHead =
+    stage !== 'finished' && data?.head.entryId === effectiveInvocation.id;
+  const isBlocked = Boolean(
+    !isWaitingForBackoff &&
+    isCurrentHead &&
+    data &&
+    (data.status.blocked || data.status.scheduling === 'blocked'),
+  );
+  const liveBlockedMilliseconds = isBlocked
+    ? (data?.head.nowBlocks ?? []).reduce(
+        (total, item) =>
+          total + (vqueueDurationMilliseconds(item.duration) ?? 0),
+        0,
+      )
+    : 0;
   const firstQueueMilliseconds = isFutureScheduled
     ? undefined
     : firstRunnableAt && attempts === 0
-      ? vqueueDurationPartsMilliseconds(
-          durationSinceLastSnapshot(firstRunnableAt),
+      ? Math.max(
+          0,
+          vqueueDurationPartsMilliseconds(
+            durationSinceLastSnapshot(firstRunnableAt),
+          ) - liveBlockedMilliseconds,
         )
       : durationBetweenMilliseconds(firstRunnableAt, firstAttemptAt);
   const queueAverageMilliseconds = positiveVqueueDurationMilliseconds(
@@ -277,9 +400,30 @@ export function useInvocationJourneyModel({
     effectiveInvocation.completed_at ??
     (stage === 'finished' ? vqueue.transitioned_at : undefined);
   const terminalStatus = getTerminalStatus(effectiveInvocation.status);
-  const terminalAgo = completedAt
-    ? formatDurations(durationSinceLastSnapshot(completedAt))
-    : undefined;
+  const snapshotDate = new Date(snapshotTime);
+  const createdDate = new Date(createdAt);
+  const completedDate = completedAt ? new Date(completedAt) : undefined;
+  const createdTiming: JourneyNodeTiming = {
+    value: isFinished
+      ? formatCompactDateTime(createdDate, snapshotDate)
+      : `${createdAgo} ago`,
+    date: createdAt,
+    tooltipTitle: 'Created at',
+  };
+  const terminalTiming =
+    completedAt && completedDate && Number.isFinite(completedDate.getTime())
+      ? {
+          value:
+            Number.isFinite(createdDate.getTime()) &&
+            isSameCalendarDay(createdDate, completedDate)
+              ? `at ${formatCompactTime(completedDate)}`
+              : formatCompactDateTime(completedDate, snapshotDate),
+          date: completedAt,
+          tooltipTitle: terminalStatus
+            ? `${terminalStatus[0]?.toUpperCase()}${terminalStatus.slice(1)} at`
+            : 'Completed at',
+        }
+      : undefined;
   const retentionEnd = completionRetentionEnd(
     completedAt,
     effectiveInvocation.completion_retention,
@@ -312,20 +456,6 @@ export function useInvocationJourneyModel({
     elapsedMilliseconds,
     endToEndAverageMilliseconds,
   );
-  const latestAttemptAgo = latestAttemptAt
-    ? formatDurations(durationSinceLastSnapshot(latestAttemptAt))
-    : undefined;
-  const firstAttemptAgo = firstAttemptAt
-    ? formatDurations(durationSinceLastSnapshot(firstAttemptAt))
-    : undefined;
-  const latestAttemptMilliseconds = durationBetweenMilliseconds(
-    firstAttemptAt,
-    latestAttemptAt,
-  );
-  const latestAttemptAfter =
-    latestAttemptMilliseconds === undefined
-      ? undefined
-      : formatMilliseconds(latestAttemptMilliseconds);
   const attemptsDurationMilliseconds =
     attempts === 0
       ? undefined
@@ -350,15 +480,18 @@ export function useInvocationJourneyModel({
             transitionedAt
           ? formatDurations(durationSinceLastSnapshot(transitionedAt))
           : undefined;
-  const isCurrentHead =
-    stage !== 'finished' && data?.head.entryId === effectiveInvocation.id;
-  const isBlocked = Boolean(
-    !isWaitingForBackoff &&
-    isCurrentHead &&
-    data &&
-    (data.status.blocked || data.status.scheduling === 'blocked'),
-  );
   const block = isBlocked && data ? getVqueueHeadBlockSummary(data) : undefined;
+  const totalBlocks = data?.focusEntry?.totalBlocks ?? [];
+  const latestBlocks = data?.focusEntry?.latestBlocks ?? [];
+  const averageBlocks = data?.head.avgBlocks ?? [];
+  const blockedTime = isBlocked
+    ? undefined
+    : getBlockedTime(totalBlocks, averageBlocks);
+  const latestAttemptBlockedTime =
+    isBlocked ||
+    getBlockedMilliseconds(latestBlocks) === getBlockedMilliseconds(totalBlocks)
+      ? undefined
+      : getBlockedTime(latestBlocks, averageBlocks);
   const pendingAttempt = block
     ? {
         reason: block.reason,
@@ -386,11 +519,10 @@ export function useInvocationJourneyModel({
   const inbox =
     stage === 'inbox' &&
     currentStatus === 'pending' &&
-    data?.focusEntry?.position &&
     currentInboxDuration
       ? {
-          position: data.focusEntry.position,
-          total: data.counts.inbox,
+          position: data?.focusEntry?.position,
+          total: data?.counts.inbox ?? 0,
           waiting: formatDurations(currentInboxDuration),
           ratio: vqueueDurationRatio(
             currentInboxMilliseconds,
@@ -401,14 +533,11 @@ export function useInvocationJourneyModel({
 
   return {
     key: effectiveInvocation.id,
-    createdAgo,
+    createdTiming,
     firstRunnableAfter,
     runnableIn,
     attempts,
     retryAttempts,
-    firstAttemptAgo,
-    latestAttemptAgo,
-    latestAttemptAfter,
     attemptsDuration,
     activity: { errorBackoffs, yields, pauses, suspensions },
     activityDetails: getJourneyActivityDetails(
@@ -419,6 +548,8 @@ export function useInvocationJourneyModel({
       journalInvocation,
     ),
     firstQueueWait,
+    blockedTime,
+    latestAttemptBlockedTime,
     currentStatus,
     currentStatusInvocation: currentStatus
       ? {
@@ -439,7 +570,7 @@ export function useInvocationJourneyModel({
     terminal: terminalStatus
       ? {
           status: terminalStatus,
-          timing: terminalAgo ? `${terminalAgo} ago` : undefined,
+          timing: terminalTiming,
         }
       : undefined,
     purge: purgeTiming ? { timing: purgeTiming } : undefined,

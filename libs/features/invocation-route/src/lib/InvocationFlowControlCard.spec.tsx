@@ -164,15 +164,18 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByText('Created').parentElement?.textContent).toContain(
       '1m ago',
     );
+    expect(screen.getByText('Became runnable').parentElement?.textContent).toBe(
+      'Became runnable',
+    );
     expect(
-      screen.getByText('Became runnable').parentElement?.textContent,
-    ).toContain('+5ms');
+      screen.getByText('Scheduled for').parentElement?.textContent,
+    ).toContain('5ms');
     expect(
       screen.getByTitle('Queue wait: 19.995s; 2× historical average'),
     ).toBeTruthy();
-    expect(
-      screen.getByText('1st attempt').parentElement?.textContent,
-    ).toContain('40s ago');
+    expect(screen.getByText('1st attempt').parentElement?.textContent).toBe(
+      '1st attempt',
+    );
     const attemptGroup = screen.getByRole('group', { name: '9 attempts' });
     const attemptToggle = screen.getByRole('button', {
       name: 'Toggle 9 attempts',
@@ -182,9 +185,9 @@ describe('InvocationFlowControlCard', () => {
     expect(attemptGroup.textContent).not.toContain('started');
     fireEvent.click(attemptToggle);
     expect(attemptToggle.getAttribute('aria-expanded')).toBe('true');
-    expect(
-      screen.getByText('9th attempt').parentElement?.textContent,
-    ).toContain('+25s');
+    expect(screen.getByText('9th attempt').parentElement?.textContent).toBe(
+      '9th attempt',
+    );
     expect(
       screen.getByRole('listitem', {
         name: 'Retry activity: 1,000 retries, 5 back-offs',
@@ -207,7 +210,6 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.getByRole('button', { name: 'Suspensions: 10' }),
     ).toBeTruthy();
-    expect(screen.getByText('Blocked')).toBeTruthy();
     expect(screen.getByText('on concurrency rule')).toBeTruthy();
     expect(
       screen.getByTitle('Blocked duration: 18s; 3× historical average'),
@@ -529,6 +531,55 @@ describe('InvocationFlowControlCard', () => {
     ).toBeTruthy();
   });
 
+  it('shows the eligible Inbox duration when queue position is unavailable', () => {
+    renderCard(
+      invocation(
+        {
+          vqueue_id: 'vq-example',
+          stage: 'inbox',
+          status: 'backing-off',
+          next_at: '2026-01-01T00:00:55.000Z',
+          created_at: '2026-01-01T00:00:00.000Z',
+          first_runnable_at: '2026-01-01T00:00:00.000Z',
+          first_attempt_at: '2026-01-01T00:00:10.000Z',
+          latest_attempt_at: '2026-01-01T00:00:40.000Z',
+          transitioned_at: '2026-01-01T00:00:45.000Z',
+          num_attempts: 2,
+        },
+        { status: 'backing-off' },
+      ),
+      snapshot({
+        counts: {
+          inbox: 6,
+          running: 0,
+          suspended: 0,
+          paused: 0,
+          finished: 0,
+        },
+        stageAvg: { queue: 'PT10S' },
+        focusEntry: {
+          id: 'inv-focus',
+          stage: 'inbox',
+          status: 'backing-off',
+          attempts: 2,
+          transitionedAt: '2026-01-01T00:00:45.000Z',
+          nextAt: '2026-01-01T00:00:55.000Z',
+          totalBlocks: [],
+          latestBlocks: [],
+        },
+      }),
+    );
+
+    const nextAttempt = screen.getByText('Next attempt').parentElement;
+    expect(nextAttempt?.textContent).toContain('in queue5s');
+    expect(nextAttempt?.textContent).not.toContain('behind');
+    expect(screen.queryByText('Backing-off')).toBeNull();
+    expect(screen.queryByText('Pending')).toBeNull();
+    expect(
+      screen.getByRole('img', { name: '0.5× historical average' }),
+    ).toBeTruthy();
+  });
+
   it('shows the scheduler block after a backing-off attempt becomes eligible', () => {
     renderCard(
       invocation(
@@ -556,7 +607,7 @@ describe('InvocationFlowControlCard', () => {
           entryId: 'inv-focus',
           stage: 'inbox',
           status: 'backing-off',
-          totalBlocks: [],
+          totalBlocks: [{ gate: 'lock', duration: 'PT2S' }],
           nowBlocks: [{ gate: 'concurrency_rules', duration: 'PT5S' }],
           avgBlocks: [{ gate: 'concurrency_rules', duration: 'PT2S' }],
         },
@@ -568,17 +619,194 @@ describe('InvocationFlowControlCard', () => {
           attempts: 2,
           transitionedAt: '2026-01-01T00:00:45.000Z',
           nextAt: '2026-01-01T00:00:55.000Z',
+          totalBlocks: [{ gate: 'lock', duration: 'PT2S' }],
+          latestBlocks: [{ gate: 'lock', duration: 'PT1S' }],
+        },
+      }),
+    );
+
+    expect(screen.getByText('on concurrency rule')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Blocked time:/ })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /Last attempt blocked time:/ }),
+    ).toBeNull();
+    expect(screen.getByText('Queued for')).toBeTruthy();
+    expect(screen.queryByText('Became runnable')).toBeNull();
+    expect(screen.queryByText('Backing-off')).toBeNull();
+    expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText(/entries/)).toBeNull();
+  });
+
+  it('shows the live block only on the current attempt', () => {
+    renderCard(
+      invocation({
+        vqueue_id: 'vq-example',
+        stage: 'inbox',
+        status: 'new',
+        created_at: '2026-01-01T00:00:00.000Z',
+        first_runnable_at: '2026-01-01T00:00:00.000Z',
+        num_attempts: 0,
+      }),
+      snapshot({
+        status: {
+          blocked: true,
+          scheduling: 'blocked',
+          blockedOn: 'concurrency_rules',
+        },
+        stageAvg: { queue: 'PT30S' },
+        head: {
+          entryId: 'inv-focus',
+          stage: 'inbox',
+          status: 'new',
+          totalBlocks: [],
+          nowBlocks: [
+            { gate: 'lock', duration: 'PT2S' },
+            { gate: 'concurrency_rules', duration: 'PT5S' },
+          ],
+          avgBlocks: [{ gate: 'concurrency_rules', duration: 'PT2S' }],
+        },
+        focusEntry: {
+          id: 'inv-focus',
+          stage: 'inbox',
+          status: 'new',
+          attempts: 0,
+          firstRunnableAt: '2026-01-01T00:00:00.000Z',
           totalBlocks: [],
           latestBlocks: [],
         },
       }),
     );
 
-    expect(screen.getByText('Blocked')).toBeTruthy();
+    expect(screen.queryByText('Became runnable')).toBeNull();
+    expect(screen.queryByText('Queueing')).toBeNull();
+    expect(screen.getByText('Queued for')).toBeTruthy();
+    expect(screen.getByTitle(/Queued time: 53s/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Blocked time:/ })).toBeNull();
     expect(screen.getByText('on concurrency rule')).toBeTruthy();
-    expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Pending')).toBeNull();
-    expect(screen.queryByText(/entries/)).toBeNull();
+  });
+
+  it('separates blocks from earlier attempts and the latest attempt by gate', () => {
+    renderCard(
+      invocation({
+        vqueue_id: 'vq-example',
+        stage: 'finished',
+        status: 'finished',
+        created_at: '2026-01-01T00:00:00.000Z',
+        first_runnable_at: '2026-01-01T00:00:01.000Z',
+        first_attempt_at: '2026-01-01T00:00:20.000Z',
+        latest_attempt_at: '2026-01-01T00:00:40.000Z',
+        transitioned_at: '2026-01-01T00:00:50.000Z',
+        num_attempts: 2,
+      }),
+      snapshot({
+        head: {
+          totalBlocks: [],
+          nowBlocks: [],
+          avgBlocks: [
+            { gate: 'lock', duration: 'PT2S' },
+            { gate: 'concurrency_rules', duration: 'PT2S' },
+          ],
+        },
+        focusEntry: {
+          id: 'inv-focus',
+          stage: 'finished',
+          status: 'finished',
+          attempts: 2,
+          firstRunnableAt: '2026-01-01T00:00:01.000Z',
+          firstAttemptAt: '2026-01-01T00:00:20.000Z',
+          transitionedAt: '2026-01-01T00:00:50.000Z',
+          totalBlocks: [
+            { gate: 'lock', duration: 'PT5S' },
+            { gate: 'concurrency_rules', duration: 'PT4S' },
+          ],
+          latestBlocks: [
+            { gate: 'lock', duration: 'PT2S' },
+            { gate: 'concurrency_rules', duration: 'PT4S' },
+          ],
+        },
+      }),
+    );
+
+    expect(
+      screen.getByRole('button', {
+        name: 'Blocked time: 9s; 2.3 times historical average',
+      }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle 2 attempts' }));
+    expect(
+      screen.getByRole('button', {
+        name: 'Last attempt blocked time: 6s; 1.5 times historical average',
+      }),
+    ).toBeTruthy();
+  });
+
+  it('shows single-attempt block time on the run duration with per-gate comparisons', () => {
+    renderCard(
+      invocation(
+        {
+          vqueue_id: 'vq-example',
+          stage: 'finished',
+          status: 'succeeded',
+          created_at: '2026-01-01T00:00:00.000Z',
+          first_runnable_at: '2026-01-01T00:00:00.000Z',
+          first_attempt_at: '2026-01-01T00:00:10.000Z',
+          latest_attempt_at: '2026-01-01T00:00:10.000Z',
+          transitioned_at: '2026-01-01T00:00:20.000Z',
+          num_attempts: 1,
+        },
+        {
+          status: 'succeeded',
+          completed_at: '2026-01-01T00:00:20.000Z',
+        },
+      ),
+      snapshot({
+        head: {
+          totalBlocks: [],
+          nowBlocks: [],
+          avgBlocks: [
+            { gate: 'lock', duration: 'PT1S' },
+            { gate: 'concurrency_rules', duration: 'PT2S' },
+          ],
+        },
+        focusEntry: {
+          id: 'inv-focus',
+          stage: 'finished',
+          status: 'finished',
+          attempts: 1,
+          firstRunnableAt: '2026-01-01T00:00:00.000Z',
+          firstAttemptAt: '2026-01-01T00:00:10.000Z',
+          transitionedAt: '2026-01-01T00:00:20.000Z',
+          totalBlocks: [
+            { gate: 'lock', duration: 'PT2S' },
+            { gate: 'concurrency_rules', duration: 'PT6S' },
+          ],
+          latestBlocks: [
+            { gate: 'lock', duration: 'PT2S' },
+            { gate: 'concurrency_rules', duration: 'PT6S' },
+          ],
+        },
+      }),
+    );
+
+    const runDuration = screen.getByText('Lasted').parentElement;
+    expect(runDuration?.textContent).toContain('10s');
+    expect(runDuration?.textContent).toContain('blocked for');
+    const blockedTime = screen.getByRole('button', {
+      name: 'Blocked time: 8s; 2.7 times historical average',
+    });
+    expect(blockedTime).toBeTruthy();
+
+    fireEvent.click(blockedTime);
+    expect(
+      screen.getByTitle(
+        'object lock blocked time: 2s; 2× historical average (1s)',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByTitle(
+        'concurrency rule blocked time: 6s; 3× historical average (2s)',
+      ),
+    ).toBeTruthy();
   });
 
   it('keeps a running VQueue attempt Running when other status sources report backing-off', () => {
@@ -1073,8 +1301,89 @@ describe('InvocationFlowControlCard', () => {
     ).not.toContain('so far');
     expect(screen.getByText('Attempt')).toBeTruthy();
     expect(screen.getByText('Succeeded')).toBeTruthy();
-    expect(screen.getByText(/30s ago/)).toBeTruthy();
+    expect(screen.getByText('Succeeded').parentElement?.textContent).toContain(
+      'at 00:00:30',
+    );
+    expect(screen.getByText('Lasted').parentElement?.textContent).toContain(
+      '29.99s',
+    );
     expect(screen.queryByText('Blocked')).toBeNull();
+  });
+
+  it('uses completed node timestamps and connector durations that sum to the journey', () => {
+    renderCard(
+      invocation(
+        {
+          vqueue_id: 'vq-example',
+          stage: 'finished',
+          status: 'succeeded',
+          created_at: '2026-01-01T00:00:00.000Z',
+          first_runnable_at: '2026-01-01T00:00:05.000Z',
+          first_attempt_at: '2026-01-01T00:00:10.000Z',
+          latest_attempt_at: '2026-01-01T00:00:10.000Z',
+          transitioned_at: '2026-01-01T00:00:30.000Z',
+          num_attempts: 1,
+        },
+        {
+          status: 'succeeded',
+          completed_at: '2026-01-01T00:00:30.000Z',
+        },
+      ),
+      snapshot({ stageAvg: { queue: 'PT5S', endToEnd: 'PT30S' } }),
+    );
+
+    expect(screen.getByText('Created').parentElement?.textContent).toContain(
+      'Jan 1 at 00:00:00',
+    );
+    expect(screen.getByText('Scheduled for')).toBeTruthy();
+    expect(
+      screen.getByText('Scheduled for').parentElement?.textContent,
+    ).toContain('5s');
+    expect(screen.getByText('Became runnable').parentElement?.textContent).toBe(
+      'Became runnable',
+    );
+    expect(screen.getByText('Queued for').parentElement?.textContent).toContain(
+      '5s',
+    );
+    expect(screen.getByText('Attempt').parentElement?.textContent).toBe(
+      'Attempt',
+    );
+    expect(screen.getByText('Lasted').parentElement?.textContent).toContain(
+      '20s',
+    );
+    expect(screen.getByText('Succeeded').parentElement?.textContent).toContain(
+      'at 00:00:30',
+    );
+  });
+
+  it('includes the date on both terminal anchors when the journey crosses a day', () => {
+    renderCard(
+      invocation(
+        {
+          vqueue_id: 'vq-example',
+          stage: 'finished',
+          status: 'succeeded',
+          created_at: '2025-12-31T23:59:50.000Z',
+          first_runnable_at: '2025-12-31T23:59:50.000Z',
+          first_attempt_at: '2025-12-31T23:59:55.000Z',
+          latest_attempt_at: '2025-12-31T23:59:55.000Z',
+          transitioned_at: '2026-01-01T00:00:30.000Z',
+          num_attempts: 1,
+        },
+        {
+          status: 'succeeded',
+          created_at: '2025-12-31T23:59:50.000Z',
+          completed_at: '2026-01-01T00:00:30.000Z',
+        },
+      ),
+    );
+
+    expect(screen.getByText('Created').parentElement?.textContent).toContain(
+      'Dec 31, 2025 at 23:59:50',
+    );
+    expect(screen.getByText('Succeeded').parentElement?.textContent).toContain(
+      'Jan 1 at 00:00:30',
+    );
   });
 
   it.each([
@@ -1114,7 +1423,7 @@ describe('InvocationFlowControlCard', () => {
         latestAttempt.compareDocumentPosition(terminalStatus) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
-      expect(terminalStatus.parentElement?.textContent).toContain('30s ago');
+      expect(terminalStatus.parentElement?.textContent).toContain('00:00:30');
       expect(
         terminalStatus.compareDocumentPosition(purgeStatus) &
           Node.DOCUMENT_POSITION_FOLLOWING,

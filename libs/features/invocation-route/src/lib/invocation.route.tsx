@@ -184,6 +184,7 @@ function Component() {
                 invocation={journalAndInvocationData}
                 className=""
                 mini="md"
+                timeline={false}
               />
             </div>
           )}

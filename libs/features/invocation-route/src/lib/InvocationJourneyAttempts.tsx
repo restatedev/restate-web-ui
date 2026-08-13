@@ -9,8 +9,10 @@ import {
   JourneyActivityRows,
   journeyCountLabel,
 } from './InvocationJourneyActivity';
+import { JourneyBlockedTimeSummary } from './InvocationJourneyBlockedTime';
 import type {
   InvocationJourneyModel,
+  JourneyBlockedTime,
   JourneyCurrentStatus,
   JourneyStatusInvocation,
 } from './InvocationJourneyModel';
@@ -18,15 +20,17 @@ import type {
 export function JourneyAttemptEndpoint({
   number,
   label,
-  timing,
   status,
   statusInvocation,
+  blockedTime,
+  blockedTimeContext = 'attempt',
 }: {
   number: number;
   label?: string;
-  timing?: string;
   status?: Extract<JourneyCurrentStatus, 'running'>;
   statusInvocation?: JourneyStatusInvocation;
+  blockedTime?: JourneyBlockedTime;
+  blockedTimeContext?: 'latest-attempt' | 'attempt';
 }) {
   return (
     <div className="relative z-10 flex min-w-0 items-center gap-2">
@@ -41,8 +45,11 @@ export function JourneyAttemptEndpoint({
         {status && statusInvocation && (
           <Status invocation={statusInvocation} timeline={false} />
         )}
-        {timing && (
-          <span className="text-gray-400 tabular-nums">· {timing}</span>
+        {blockedTime && (
+          <JourneyBlockedTimeSummary
+            value={blockedTime}
+            context={blockedTimeContext}
+          />
         )}
       </div>
     </div>
@@ -54,7 +61,7 @@ const attemptGroupStyles = tv({
 });
 
 const attemptGroupHeaderStyles = tv({
-  base: 'relative flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-gray-100 py-1.5 pl-2.5 text-2xs',
+  base: 'relative flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-gray-100 py-1.5 pl-2.5 text-xs',
   variants: {
     isCollapsible: {
       true: 'pr-8',
@@ -79,12 +86,14 @@ function AttemptGroupHeader({
   isActive,
   isCollapsible,
   activitySummary,
+  blockedTime,
 }: {
   attemptLabel: string;
   attemptsDuration?: string;
   isActive: boolean;
   isCollapsible: boolean;
   activitySummary?: ReactNode;
+  blockedTime?: JourneyBlockedTime;
 }) {
   return (
     <div className={attemptGroupHeaderStyles({ isCollapsible })}>
@@ -104,7 +113,7 @@ function AttemptGroupHeader({
         </Heading>
       )}
       <div className={attemptGroupSummaryStyles({ isCollapsible })}>
-        <span className="shrink-0 font-medium text-gray-500">
+        <span className="shrink-0 font-medium text-zinc-600">
           {attemptLabel}
         </span>
         {attemptsDuration && (
@@ -139,6 +148,11 @@ function AttemptGroupHeader({
           <div className="relative z-10">{activitySummary}</div>
         </>
       )}
+      {blockedTime && (
+        <div className="relative z-10">
+          <JourneyBlockedTimeSummary value={blockedTime} />
+        </div>
+      )}
       <span className="pointer-events-none relative z-10 min-w-2 flex-1" />
     </div>
   );
@@ -151,29 +165,11 @@ function AttemptGroupContent({
   scenario: InvocationJourneyModel;
   latestAttemptStatus?: Extract<JourneyCurrentStatus, 'running'>;
 }) {
-  const firstAttemptTiming =
-    scenario.attempts === 1 &&
-    latestAttemptStatus &&
-    scenario.currentStatusDuration
-      ? `for ${scenario.currentStatusDuration}`
-      : scenario.firstAttemptAgo
-        ? `${scenario.firstAttemptAgo} ago`
-        : undefined;
-  const latestAttemptTiming =
-    latestAttemptStatus && scenario.currentStatusDuration
-      ? `for ${scenario.currentStatusDuration}`
-      : scenario.latestAttemptAfter
-        ? `+${scenario.latestAttemptAfter}`
-        : scenario.latestAttemptAgo
-          ? `${scenario.latestAttemptAgo} ago`
-          : 'just now';
-
   return (
     <div className="min-w-0 px-2.5 py-2">
       <JourneyAttemptEndpoint
         number={1}
         label={scenario.attempts === 1 ? 'Attempt' : undefined}
-        timing={firstAttemptTiming}
         status={scenario.attempts === 1 ? latestAttemptStatus : undefined}
         statusInvocation={scenario.currentStatusInvocation}
       />
@@ -191,9 +187,10 @@ function AttemptGroupContent({
           </div>
           <JourneyAttemptEndpoint
             number={scenario.attempts}
-            timing={latestAttemptTiming}
             status={latestAttemptStatus}
             statusInvocation={scenario.currentStatusInvocation}
+            blockedTime={scenario.latestAttemptBlockedTime}
+            blockedTimeContext="latest-attempt"
           />
         </>
       )}
@@ -223,6 +220,7 @@ export function JourneyAttemptGroup({
       isActive={isActive}
       isCollapsible={!isActive}
       activitySummary={activitySummary}
+      blockedTime={scenario.blockedTime}
     />
   );
   const content = (

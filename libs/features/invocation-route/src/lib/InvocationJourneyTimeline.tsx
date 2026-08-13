@@ -7,6 +7,7 @@ import {
 import {
   CurrentStateTail,
   JourneyContinuation,
+  JourneyPhaseDuration,
   JourneyStart,
   PendingTail,
   PurgeEndpoint,
@@ -39,7 +40,7 @@ export function InvocationJourneyTimeline({
       <div className="flex min-h-0 min-w-0 flex-1 flex-col px-3 py-3">
         <JourneyStart
           scenario={scenario}
-          liveQueueWait
+          liveQueueWait={!scenario.pendingAttempt}
           showQueueWait={!scenario.inboxState || !scenario.inbox}
         />
         <PendingTail
@@ -65,15 +66,7 @@ export function InvocationJourneyTimeline({
     return (
       <div className="flex min-h-0 min-w-0 flex-1 flex-col px-3 py-3">
         <JourneyStart scenario={scenario} />
-        <JourneyAttemptEndpoint
-          number={1}
-          label="Attempt"
-          timing={
-            scenario.firstAttemptAgo
-              ? `${scenario.firstAttemptAgo} ago`
-              : undefined
-          }
-        />
+        <JourneyAttemptEndpoint number={1} label="Attempt" />
         <JourneyContinuation active={false} />
       </div>
     );
@@ -96,20 +89,22 @@ export function InvocationJourneyTimeline({
         <JourneyAttemptEndpoint
           number={1}
           label="Attempt"
-          timing={
-            latestAttemptStatus && scenario.currentStatusDuration
-              ? `for ${scenario.currentStatusDuration}`
-              : scenario.firstAttemptAgo
-                ? `${scenario.firstAttemptAgo} ago`
-                : undefined
-          }
           status={latestAttemptStatus}
           statusInvocation={scenario.currentStatusInvocation}
         />
       )}
+      {!useAttemptGroup && scenario.attemptsDuration && (
+        <JourneyPhaseDuration
+          label={latestAttemptStatus ? 'Active for' : 'Lasted'}
+          value={scenario.attemptsDuration}
+          blockedTime={scenario.blockedTime}
+        />
+      )}
       {scenario.terminal && (
         <>
-          <div className="ml-1.5 h-3 border-l border-gray-200" />
+          {(useAttemptGroup || !scenario.attemptsDuration) && (
+            <div className="ml-1.5 h-3 border-l border-gray-200" />
+          )}
           <TerminalEndpoint {...scenario.terminal} />
           {scenario.purge && (
             <>

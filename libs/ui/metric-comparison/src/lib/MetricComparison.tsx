@@ -14,6 +14,7 @@ export interface MetricComparisonProps extends Omit<
   label: string;
   size?: 'xs' | 'sm';
   decorative?: boolean;
+  showValue?: boolean;
 }
 
 const styles = tv({
@@ -95,6 +96,7 @@ export function MetricComparison({
   label,
   size,
   decorative = false,
+  showValue = true,
   className,
   ...props
 }: MetricComparisonProps) {
@@ -111,15 +113,17 @@ export function MetricComparison({
 
   return (
     <span {...props} className={style.root({ className })}>
-      <span className={style.valueGroup()}>
-        <span className={style.value()}>{value}</span>
-        {qualifier && (
-          <>
-            {' '}
-            <span className={style.qualifier()}>{qualifier}</span>
-          </>
-        )}
-      </span>
+      {showValue && (
+        <span className={style.valueGroup()}>
+          <span className={style.value()}>{value}</span>
+          {qualifier && (
+            <>
+              {' '}
+              <span className={style.qualifier()}>{qualifier}</span>
+            </>
+          )}
+        </span>
+      )}
       {ratio !== undefined &&
         tone !== undefined &&
         comparison !== undefined && (

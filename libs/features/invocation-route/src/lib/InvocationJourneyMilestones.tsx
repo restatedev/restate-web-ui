@@ -1,25 +1,30 @@
 import { InvocationStatusBadge, Status } from '@restate/features/invocation-ui';
 import { BlockedStatus } from '@restate/features/vqueue-ui';
+import { Icon, IconName } from '@restate/ui/icons';
 import { MetricComparison } from '@restate/ui/metric-comparison';
 import { tv } from '@restate/util/styles';
 import { JourneyInboxPosition } from './InvocationJourneyInbox';
+import { JourneyBlockedTimeSummary } from './InvocationJourneyBlockedTime';
 import type {
+  JourneyBlockedTime,
   InvocationJourneyModel,
   JourneyComparison,
   JourneyCurrentStatus,
   JourneyInboxContext,
+  JourneyNodeTiming,
   JourneyPendingAttempt,
   JourneyQueueWait,
   JourneyStatusInvocation,
   JourneyTerminalStatus,
 } from './InvocationJourneyModel';
+import { JourneyNodeTime } from './InvocationJourneyTime';
 
 function JourneyMilestone({
   label,
   timing,
 }: {
   label: string;
-  timing: string;
+  timing?: JourneyNodeTiming;
 }) {
   return (
     <div className="relative z-10 flex min-w-0 items-center gap-2">
@@ -29,7 +34,37 @@ function JourneyMilestone({
       />
       <div className="flex min-w-0 flex-1 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
         <span className="font-medium text-zinc-600">{label}</span>
-        <span className="text-gray-400 tabular-nums">· {timing}</span>
+        {timing && <JourneyNodeTime timing={timing} />}
+      </div>
+    </div>
+  );
+}
+
+export function JourneyPhaseDuration({
+  value,
+  label,
+  live = false,
+  blockedTime,
+}: {
+  value: string;
+  label?: string;
+  live?: boolean;
+  blockedTime?: JourneyBlockedTime;
+}) {
+  return (
+    <div className={queueWaitLeadStyles({ live })}>
+      <div className="flex min-w-0 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
+        {label && <span className="font-normal text-gray-400">{label}</span>}
+        <span className="inline-flex items-baseline gap-1 font-medium text-zinc-600 tabular-nums">
+          {!label && (
+            <Icon name={IconName.Timer} className="h-2.5 w-2.5 text-gray-400" />
+          )}
+          {value}
+          {live && <span className="font-normal text-gray-400">so far</span>}
+        </span>
+        {blockedTime && (
+          <JourneyBlockedTimeSummary value={blockedTime} context="duration" />
+        )}
       </div>
     </div>
   );
@@ -38,20 +73,24 @@ function JourneyMilestone({
 function QueueWaitSummary({
   value,
   live = false,
+  completed = false,
 }: {
   value: JourneyQueueWait;
   live?: boolean;
+  completed?: boolean;
 }) {
+  const label = live ? 'Queueing for' : 'Queued for';
+
   return (
     <div className="flex min-w-0 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
-      <span className="font-medium text-gray-400">
-        {live ? 'Queueing' : 'Queue wait'}
-      </span>
+      <span className="font-medium text-gray-400">{label}</span>
       <MetricComparison
         value={value.duration}
         qualifier={live ? 'so far' : undefined}
         ratio={value.ratio}
-        label={live ? 'Current queue time' : 'Queue wait'}
+        label={
+          live ? 'Current queue time' : completed ? 'Queued time' : 'Queue wait'
+        }
       />
     </div>
   );
@@ -70,13 +109,15 @@ const queueWaitLeadStyles = tv({
 function QueueWaitLead({
   value,
   live = false,
+  completed = false,
 }: {
   value: JourneyQueueWait;
   live?: boolean;
+  completed?: boolean;
 }) {
   return (
     <div className={queueWaitLeadStyles({ live })}>
-      <QueueWaitSummary value={value} live={live} />
+      <QueueWaitSummary value={value} live={live} completed={completed} />
     </div>
   );
 }
@@ -92,14 +133,14 @@ export function JourneyStart({
 }) {
   return (
     <>
-      <JourneyMilestone label="Created" timing={`${scenario.createdAgo} ago`} />
+      <JourneyMilestone label="Created" timing={scenario.createdTiming} />
       {scenario.firstRunnableAfter !== undefined && (
         <>
-          <div className="ml-1.5 h-3 border-l border-gray-200" />
-          <JourneyMilestone
-            label="Became runnable"
-            timing={`+${scenario.firstRunnableAfter}`}
+          <JourneyPhaseDuration
+            label="Scheduled for"
+            value={scenario.firstRunnableAfter}
           />
+          <JourneyMilestone label="Became runnable" />
         </>
       )}
       {scenario.runnableIn !== undefined && (
@@ -107,12 +148,18 @@ export function JourneyStart({
           <div className="ml-1.5 h-3 border-l border-dashed border-gray-300" />
           <JourneyMilestone
             label="Scheduled to run"
-            timing={`in ${scenario.runnableIn}`}
+            timing={{ value: `in ${scenario.runnableIn}` }}
           />
         </>
       )}
       {showQueueWait && scenario.firstQueueWait && (
-        <QueueWaitLead value={scenario.firstQueueWait} live={liveQueueWait} />
+        <QueueWaitLead
+          value={scenario.firstQueueWait}
+          live={liveQueueWait}
+          completed={Boolean(
+            scenario.pendingAttempt && scenario.attempts === 0,
+          )}
+        />
       )}
     </>
   );
@@ -236,7 +283,7 @@ export function TerminalEndpoint({
   timing,
 }: {
   status: JourneyTerminalStatus;
-  timing?: string;
+  timing?: JourneyNodeTiming;
 }) {
   return (
     <div className="relative z-10 flex min-w-0 items-center gap-2">
@@ -246,9 +293,7 @@ export function TerminalEndpoint({
       />
       <div className="flex min-w-0 flex-1 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
         <InvocationStatusBadge status={status} />
-        {timing && (
-          <span className="text-gray-400 tabular-nums">· {timing}</span>
-        )}
+        {timing && <JourneyNodeTime timing={timing} />}
       </div>
     </div>
   );

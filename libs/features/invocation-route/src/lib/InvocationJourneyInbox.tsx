@@ -78,9 +78,23 @@ export function JourneyInboxPosition({
   scenario: InvocationJourneyModel;
   inbox: JourneyInboxContext;
 }) {
+  const position = inbox.position;
+  if (position === undefined) {
+    return (
+      <span className="inline-flex min-w-0 items-center gap-1 text-2xs whitespace-nowrap text-gray-400">
+        <span>in queue</span>
+        <MetricComparison
+          value={inbox.waiting}
+          ratio={inbox.ratio}
+          label="Current queue time"
+        />
+      </span>
+    );
+  }
+
   const snapshot =
     scenario.inboxSnapshot ?? createInboxSnapshot(scenario, inbox);
-  const entriesAhead = Math.max(0, inbox.position - 1);
+  const entriesAhead = Math.max(0, position - 1);
   const entriesLabel = entriesAhead === 1 ? 'entry' : 'entries';
 
   return (

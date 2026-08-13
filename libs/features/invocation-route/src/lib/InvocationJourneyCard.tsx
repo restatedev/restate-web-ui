@@ -10,6 +10,7 @@ export type {
   JourneyActivityDetail,
   JourneyActivityDetailGroup,
   JourneyActivityKind as ActivityKind,
+  JourneyBlockedTime,
   JourneyCurrentStatus,
   JourneyInboxContext,
   JourneyJournalInvocation,

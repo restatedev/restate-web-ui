@@ -53,6 +53,12 @@ export type JourneyActivityDetailGroup = {
 
 export type JourneyAverageRatio = number | string;
 
+export type JourneyNodeTiming = {
+  value: string;
+  date?: string;
+  tooltipTitle?: string;
+};
+
 export type JourneyPendingAttempt = {
   reason: string;
   duration?: string;
@@ -70,8 +76,21 @@ export type JourneyQueueWait = {
   ratio?: JourneyAverageRatio;
 };
 
+export type JourneyBlockedTime = {
+  duration: string;
+  average?: string;
+  ratio?: JourneyAverageRatio;
+  breakdown: Array<{
+    gate: string;
+    label: string;
+    duration: string;
+    average?: string;
+    ratio?: JourneyAverageRatio;
+  }>;
+};
+
 export type JourneyInboxContext = {
-  position: number;
+  position?: number;
   total: number;
   waiting: string;
   ratio?: JourneyAverageRatio;
@@ -79,27 +98,26 @@ export type JourneyInboxContext = {
 
 export type InvocationJourneyModel = {
   key: string;
-  createdAgo: string;
+  createdTiming: JourneyNodeTiming;
   firstRunnableAfter?: string;
   runnableIn?: string;
   attempts: number;
   retryAttempts?: number;
-  firstAttemptAgo?: string;
-  latestAttemptAgo?: string;
-  latestAttemptAfter?: string;
   attemptsDuration?: string;
   activity: JourneyActivityCounts;
   activityDetails?: Partial<
     Record<JourneyActivityKind, JourneyActivityDetailGroup>
   >;
   firstQueueWait?: JourneyQueueWait;
+  blockedTime?: JourneyBlockedTime;
+  latestAttemptBlockedTime?: JourneyBlockedTime;
   currentStatus?: JourneyCurrentStatus;
   currentStatusInvocation?: JourneyStatusInvocation;
   currentAttemptActive?: boolean;
   currentStatusDuration?: string;
   terminal?: {
     status: JourneyTerminalStatus;
-    timing?: string;
+    timing?: JourneyNodeTiming;
   };
   purge?: {
     timing: string;
