@@ -147,6 +147,7 @@
       "@restate/ui/editor": ["libs/ui/editor/src/index.ts"],
       "@restate/ui/empty-state": ["libs/ui/empty-state/src/index.ts"],
       "@restate/ui/error": ["libs/ui/error/src/index.ts"],
+      "@restate/ui/filter-builder": ["libs/ui/filter-builder/src/index.ts"],
       "@restate/ui/focus": ["libs/ui/focus/src/index.ts"],
       "@restate/ui/form-field": ["libs/ui/form-field/src/index.ts"],
       "@restate/ui/grid-list": ["libs/ui/grid-list/src/index.ts"],

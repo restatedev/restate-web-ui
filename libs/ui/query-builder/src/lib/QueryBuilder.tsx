@@ -106,6 +106,20 @@ export function AddQueryTrigger({
   className,
   MenuTrigger,
   prefix,
+  onInputSubmit,
+  onItemRemove,
+  renderOption,
+  disabled,
+  inputClassName,
+  tagGroupClassName,
+  inputPrefix,
+  optionClassName,
+  popoverClassName,
+  popoverPlacement,
+  showSectionTitle,
+  tagsPlacement,
+  maxVisibleChips,
+  chipOverflowStrategy,
 }: {
   placeholder: string;
   title: string;
@@ -118,8 +132,22 @@ export function AddQueryTrigger({
   className?: string;
   prefix?: ReactNode;
   MenuTrigger?: ComponentType<unknown>;
+  onInputSubmit?: (value: string) => boolean;
+  onItemRemove?: (key: Key) => void;
+  renderOption?: (item: QueryClause<QueryClauseType>) => ReactNode;
+  disabled?: boolean;
+  inputClassName?: string;
+  tagGroupClassName?: string;
+  inputPrefix?: ReactNode;
+  optionClassName?: string;
+  popoverClassName?: string;
+  popoverPlacement?: 'bottom' | 'bottom start' | 'bottom end';
+  showSectionTitle?: boolean;
+  tagsPlacement?: 'inside' | 'outside';
+  maxVisibleChips?: number | 'auto';
+  chipOverflowStrategy?: 'partial' | 'all';
 }) {
-  const { query, schema, setNewId, multiple, canRemoveItem } =
+  const { query, schema, newId, setNewId, multiple, canRemoveItem } =
     use(QueryBuilderContext);
   const items = useMemo(() => {
     return schema.map((clauseSchema) => new QueryClause(clauseSchema));
@@ -147,8 +175,9 @@ export function AddQueryTrigger({
   const onRemove = useCallback(
     (key: Key) => {
       setNewId?.(undefined);
+      onItemRemove?.(key);
     },
-    [setNewId],
+    [onItemRemove, setNewId],
   );
 
   if (!query) {
@@ -167,10 +196,23 @@ export function AddQueryTrigger({
       ref={inputRef}
       onItemAdd={onAdd}
       onItemRemove={onRemove}
-      onItemUpdated={onRemove}
       prefix={prefix}
       canRemoveItem={canRemoveItem}
       multiple={multiple}
+      onInputSubmit={onInputSubmit}
+      renderOption={renderOption}
+      disabled={disabled}
+      inputClassName={inputClassName}
+      tagGroupClassName={tagGroupClassName}
+      inputPrefix={inputPrefix}
+      optionClassName={optionClassName}
+      popoverClassName={popoverClassName}
+      popoverPlacement={popoverPlacement}
+      showSectionTitle={showSectionTitle}
+      tagsPlacement={tagsPlacement}
+      maxVisibleTags={maxVisibleChips}
+      tagOverflowStrategy={newId ? 'partial' : chipOverflowStrategy}
+      overflowItemLabel="filter"
     />
   );
 }
@@ -178,4 +220,9 @@ export function AddQueryTrigger({
 export function useNewQueryId() {
   const { newId } = use(QueryBuilderContext);
   return newId;
+}
+
+export function useFinishNewQuery() {
+  const { setNewId } = use(QueryBuilderContext);
+  return useCallback(() => setNewId?.(undefined), [setNewId]);
 }

@@ -10289,6 +10289,63 @@
         }
       },
       "VQueueFilterItem": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/VQueueExactStringFilterItem"
+          },
+          {
+            "$ref": "#/components/schemas/VQueueSearchStringFilterItem"
+          },
+          {
+            "$ref": "#/components/schemas/VQueueLockNameFilterItem"
+          }
+        ]
+      },
+      "VQueueExactStringFilterItem": {
+        "type": "object",
+        "required": ["field", "type", "operation", "value"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["id", "service", "l1", "l2"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["STRING"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["EQUALS"]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "VQueueSearchStringFilterItem": {
+        "type": "object",
+        "required": ["field", "type", "operation", "value"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["scope", "limitKey"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["STRING"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["EQUALS", "CONTAINS"]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "VQueueLockNameFilterItem": {
         "allOf": [
           {
             "$ref": "#/components/schemas/FilterBaseItem"
@@ -10297,9 +10354,6 @@
             "oneOf": [
               {
                 "$ref": "#/components/schemas/FilterStringItem"
-              },
-              {
-                "$ref": "#/components/schemas/VQueuePathPrefixFilterItem"
               },
               {
                 "$ref": "#/components/schemas/FilterStringListItem"
@@ -10315,28 +10369,63 @@
             "properties": {
               "field": {
                 "type": "string",
-                "enum": ["id", "service", "scope", "limitKey", "lockName"]
+                "enum": ["lockName"]
               }
             }
           }
         ]
       },
-      "VQueuePathPrefixFilterItem": {
+      "LimitCounterFilterItem": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/LimitCounterExactStringFilterItem"
+          },
+          {
+            "$ref": "#/components/schemas/LimitCounterSearchStringFilterItem"
+          }
+        ]
+      },
+      "LimitCounterExactStringFilterItem": {
         "type": "object",
-        "required": ["type", "operation", "value"],
+        "required": ["field", "type", "operation", "value"],
         "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["l1", "l2"]
+          },
           "type": {
             "type": "string",
             "enum": ["STRING"]
           },
           "operation": {
             "type": "string",
-            "enum": ["PATH_PREFIX"]
+            "enum": ["EQUALS"]
           },
           "value": {
             "type": "string",
-            "minLength": 1,
-            "description": "Match this exact limit-key path or a descendant path. Supported only for the limitKey field."
+            "minLength": 1
+          }
+        }
+      },
+      "LimitCounterSearchStringFilterItem": {
+        "type": "object",
+        "required": ["field", "type", "operation", "value"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["scope", "limitKey"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["STRING"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["EQUALS", "CONTAINS"]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
           }
         }
       },
@@ -10366,8 +10455,9 @@
           },
           "filters": {
             "type": "array",
+            "description": "Structured limit-counter filters combined with AND. Scope and whole limit key support case-insensitive exact equality and literal substring matching. L1 and L2 support case-insensitive exact equality.",
             "items": {
-              "$ref": "#/components/schemas/FilterItem"
+              "$ref": "#/components/schemas/LimitCounterFilterItem"
             }
           },
           "sort": {
@@ -10388,7 +10478,7 @@
         "properties": {
           "filters": {
             "type": "array",
-            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, and lockName. String comparisons are case-insensitive. limitKey additionally supports PATH_PREFIX to match an exact path and its descendants.",
+            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching.",
             "items": {
               "$ref": "#/components/schemas/VQueueFilterItem"
             }

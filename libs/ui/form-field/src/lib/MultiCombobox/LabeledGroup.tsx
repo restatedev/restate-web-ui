@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, Ref } from 'react';
 import { LabelContext, GroupContext } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 
@@ -10,15 +10,19 @@ export function LabeledGroup({
   className,
   children,
   id,
+  ref,
 }: {
   className?: string;
   children: ReactNode;
   id: string;
+  ref?: Ref<HTMLDivElement>;
 }) {
   return (
     <LabelContext.Provider value={{ id, elementType: 'span' }}>
       <GroupContext.Provider value={{ 'aria-labelledby': id }}>
-        <div className={styles({ className })}>{children}</div>
+        <div ref={ref} className={styles({ className })}>
+          {children}
+        </div>
       </GroupContext.Provider>
     </LabelContext.Provider>
   );

@@ -90,6 +90,22 @@ function getSqlStringFilter(sql: string, column: string) {
   return match ? unquoteSqlString(match[1] ?? '') : undefined;
 }
 
+function getSqlLowerStringFilter(sql: string, column: string) {
+  const match = new RegExp(
+    `LOWER\\(COALESCE\\(${column},\\s*''\\)\\)\\s*=\\s*'((?:''|[^'])*)'`,
+    'i',
+  ).exec(sql);
+  return match ? unquoteSqlString(match[1] ?? '') : undefined;
+}
+
+function getSqlLiteralContainsFilter(sql: string, expression: string) {
+  const match = new RegExp(
+    `strpos\\(LOWER\\(${expression}\\),\\s*'((?:''|[^'])*)'\\)\\s*>\\s*0`,
+    'i',
+  ).exec(sql);
+  return match ? unquoteSqlString(match[1] ?? '') : undefined;
+}
+
 function getSqlLikeFilter(sql: string, column: string) {
   const match = new RegExp(
     `LOWER\\((?:${column}|COALESCE\\(${column},\\s*''\\))\\)\\s+LIKE\\s+'%((?:''|[^'])*)%'`,
@@ -393,18 +409,37 @@ function userLimitRows(pattern?: string): UserLimitRowMock[] {
 }
 
 function filteredUserLimitRows(sql: string) {
-  const scope = getSqlStringFilter(sql, 'scope');
-  const l1 = getSqlStringFilter(sql, 'l1');
-  const l2 = getSqlStringFilter(sql, 'l2');
+  const scope = getSqlLowerStringFilter(sql, 'scope');
+  const scopeContains = getSqlLiteralContainsFilter(
+    sql,
+    "COALESCE\\(scope,\\s*''\\)",
+  );
+  const l1 = getSqlLowerStringFilter(sql, 'l1');
+  const l2 = getSqlLowerStringFilter(sql, 'l2');
+  const limitKeyContains = getSqlLiteralContainsFilter(
+    sql,
+    "CONCAT_WS\\('/',\\s*l1,\\s*l2\\)",
+  );
   const requiresNullL1 = /\bl1\s+IS\s+NULL\b/i.test(sql);
   const requiresNullL2 = /\bl2\s+IS\s+NULL\b/i.test(sql);
   return userLimitRows(getSqlStringFilter(sql, 'rule_pattern')).filter(
-    (row) =>
-      (scope === undefined || row.scope === scope) &&
-      (l1 === undefined || row.l1 === l1) &&
-      (l2 === undefined || row.l2 === l2) &&
-      (!requiresNullL1 || row.l1 === null) &&
-      (!requiresNullL2 || row.l2 === null),
+    (row) => {
+      const normalizedScope = row.scope?.toLocaleLowerCase() ?? '';
+      const normalizedL1 = row.l1?.toLocaleLowerCase();
+      const normalizedL2 = row.l2?.toLocaleLowerCase();
+      const limitKey = [normalizedL1, normalizedL2].filter(Boolean).join('/');
+      return (
+        (scope === undefined || normalizedScope === scope) &&
+        (scopeContains === undefined ||
+          normalizedScope.includes(scopeContains)) &&
+        (l1 === undefined || normalizedL1 === l1) &&
+        (l2 === undefined || normalizedL2 === l2) &&
+        (limitKeyContains === undefined ||
+          limitKey.includes(limitKeyContains)) &&
+        (!requiresNullL1 || row.l1 === null) &&
+        (!requiresNullL2 || row.l2 === null)
+      );
+    },
   );
 }
 

@@ -13,9 +13,11 @@ import {
 import { tv } from '@restate/util/styles';
 import { useMemo, type ReactNode } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
+import { useNavigate } from 'react-router';
 import {
   limitCountersForRuleHref,
   type LimitCounterIdentity,
+  vqueuesForLimitCounterHref,
 } from './navigation';
 import type { RuleLevel } from './pattern';
 import { getCounterUsageRatio } from './counterUsage';
@@ -125,13 +127,7 @@ const capacityStyles = tv({
 });
 
 const rowStyles = tv({
-  base: 'transition-none [content-visibility:auto]',
-  variants: {
-    clickable: {
-      true: 'cursor-pointer',
-      false: 'cursor-default',
-    },
-  },
+  base: 'cursor-default transition-none [content-visibility:auto]',
 });
 
 function WaitingQueuesExplainer() {
@@ -362,6 +358,7 @@ export function CounterTable({
   sortDescriptor,
   onSortChange,
 }: CounterTableProps) {
+  const navigate = useNavigate();
   const columns =
     variant === 'all' ? ALL_COUNTER_COLUMNS : RULE_COUNTER_COLUMNS;
   const rows = useMemo(
@@ -384,6 +381,12 @@ export function CounterTable({
       sortDescriptor={sortDescriptor}
       onSortChange={onSortChange}
       bodyDependencies={[...(dependencies ?? []), error]}
+      onRowAction={(key) => {
+        const row = rows.find((candidate) => candidate.id === String(key));
+        if (row?.identity) {
+          navigate(vqueuesForLimitCounterHref(baseUrl, row.identity));
+        }
+      }}
       rowClassName={rowStyles()}
       caption={caption}
       emptyPlaceholder={emptyPlaceholder}

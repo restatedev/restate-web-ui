@@ -66,8 +66,13 @@ import {
 } from '@restate/ui/content-panel';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
-import { AddQueryTrigger, QueryBuilder } from '@restate/ui/query-builder';
-import { ClauseChip, FiltersTrigger } from './Filters';
+import {
+  AddFilterTrigger,
+  FilterBuilder,
+  FilterChip,
+  FILTER_QUERY_PREFIX,
+  FilterShortcutTrigger,
+} from '@restate/ui/filter-builder';
 import {
   ClientLoaderFunctionArgs,
   Form,
@@ -105,7 +110,6 @@ import {
 import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
-  FILTER_QUERY_PREFIX,
   getFormUrlSignature,
   isNoSort,
   isSortValid,
@@ -1061,9 +1065,9 @@ function InvocationsForm({
         await queryClient.invalidateQueries({ queryKey });
       }}
     >
-      <QueryBuilder query={query} schema={schema} multiple>
-        <AddQueryTrigger
-          MenuTrigger={FiltersTrigger}
+      <FilterBuilder query={query} schema={schema} multiple>
+        <AddFilterTrigger
+          MenuTrigger={FilterShortcutTrigger}
           placeholder="Filter invocations…"
           prefix={
             <Sort setSortParams={setSortParams} sortParams={sortParams} />
@@ -1071,9 +1075,9 @@ function InvocationsForm({
           title="Filters"
           className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
         >
-          {ClauseChip}
-        </AddQueryTrigger>
-      </QueryBuilder>
+          {FilterChip}
+        </AddFilterTrigger>
+      </FilterBuilder>
       <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
         <div className="flex [scrollbar-width:thin] items-center gap-2 overflow-auto pb-0.5 pl-1.5">
           <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">

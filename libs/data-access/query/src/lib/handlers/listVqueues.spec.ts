@@ -56,7 +56,7 @@ function querySql(query: ReturnType<typeof vi.fn>) {
 }
 
 describe('listVqueues', () => {
-  it('returns a bounded VQueue snapshot ordered by recent activity', async () => {
+  it('returns a bounded VQueue snapshot without default ordering', async () => {
     const query = vi
       .fn()
       .mockResolvedValueOnce({ rows: [vqueue] })
@@ -69,7 +69,6 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
           LIMIT 251",
         "SELECT
         id,
@@ -112,7 +111,7 @@ describe('listVqueues', () => {
     });
   });
 
-  it('filters VQueue IDs with one structured filter', async () => {
+  it('filters VQueue IDs by exact identity', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
     const context = { query } as unknown as QueryContext;
 
@@ -121,8 +120,8 @@ describe('listVqueues', () => {
         {
           field: 'id',
           type: 'STRING',
-          operation: 'CONTAINS',
-          value: "Tenant's checkout",
+          operation: 'EQUALS',
+          value: 'vq_checkout',
         },
       ],
     });
@@ -131,8 +130,7 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          WHERE LOWER(COALESCE(id, '')) LIKE '%tenant''s checkout%'
-          ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
+          WHERE LOWER(COALESCE(id, '')) = 'vq_checkout'
           LIMIT 251",
       ]
     `);
@@ -154,7 +152,7 @@ describe('listVqueues', () => {
           field: 'limitKey',
           type: 'STRING',
           operation: 'CONTAINS',
-          value: 'priority',
+          value: 'priority_%',
         },
         {
           field: 'lockName',
@@ -168,14 +166,44 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          WHERE LOWER(COALESCE(service_name, '')) = 'checkoutservice' AND LOWER(COALESCE(limit_key, '')) LIKE '%priority%' AND lock_name IS NOT NULL
-          ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
+          WHERE LOWER(COALESCE(service_name, '')) = 'checkoutservice' AND strpos(LOWER(COALESCE(limit_key, '')), 'priority_%') > 0 AND lock_name IS NOT NULL
           LIMIT 251",
       ]
     `);
   });
 
-  it('matches an exact limit-key path and its descendants', async () => {
+  it('matches a literal scope substring and an exact whole limit key', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    const context = { query } as unknown as QueryContext;
+
+    await listVqueues.call(context, {
+      filters: [
+        {
+          field: 'scope',
+          type: 'STRING',
+          operation: 'CONTAINS',
+          value: 'Ac_me%',
+        },
+        {
+          field: 'limitKey',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'Team/EU',
+        },
+      ],
+    });
+
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
+          FROM sys_vqueue_meta
+          WHERE strpos(LOWER(COALESCE(scope, '')), 'ac_me%') > 0 AND LOWER(COALESCE(limit_key, '')) = 'team/eu'
+          LIMIT 251",
+      ]
+    `);
+  });
+
+  it('matches exact L1 and L2 limit-key segments', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
     const context = { query } as unknown as QueryContext;
 
@@ -188,10 +216,16 @@ describe('listVqueues', () => {
           value: 'Acme',
         },
         {
-          field: 'limitKey',
+          field: 'l1',
           type: 'STRING',
-          operation: 'PATH_PREFIX',
+          operation: 'EQUALS',
           value: 'Team_A',
+        },
+        {
+          field: 'l2',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'Priority_%',
         },
       ],
     });
@@ -200,8 +234,7 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          WHERE LOWER(COALESCE(scope, '')) = 'acme' AND (LOWER(COALESCE(limit_key, '')) = 'team_a' OR starts_with(LOWER(COALESCE(limit_key, '')), 'team_a/'))
-          ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
+          WHERE LOWER(COALESCE(scope, '')) = 'acme' AND (LOWER(COALESCE(limit_key, '')) = 'team_a' OR starts_with(LOWER(COALESCE(limit_key, '')), 'team_a/')) AND ends_with(LOWER(COALESCE(limit_key, '')), '/priority_%')
           LIMIT 251",
       ]
     `);
@@ -291,7 +324,6 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
           LIMIT 2",
         "SELECT
         id,
@@ -346,13 +378,32 @@ describe('listVqueues', () => {
         },
       ],
     } as never);
-    const pathPrefixFieldResponse = await listVqueues.call(context, {
+    const idContainsResponse = await listVqueues.call(context, {
       filters: [
         {
-          field: 'service',
+          field: 'id',
           type: 'STRING',
-          operation: 'PATH_PREFIX',
-          value: 'CheckoutService',
+          operation: 'CONTAINS',
+          value: 'checkout',
+        },
+      ],
+    } as never);
+    const idNullResponse = await listVqueues.call(context, {
+      filters: [
+        {
+          field: 'id',
+          type: 'NULL',
+          operation: 'IS',
+        },
+      ],
+    } as never);
+    const l1ContainsResponse = await listVqueues.call(context, {
+      filters: [
+        {
+          field: 'l1',
+          type: 'STRING',
+          operation: 'CONTAINS',
+          value: 'team',
         },
       ],
     } as never);
@@ -362,7 +413,9 @@ describe('listVqueues', () => {
     expect(filtersShapeResponse.status).toBe(400);
     expect(filterFieldResponse.status).toBe(400);
     expect(filterOperationResponse.status).toBe(400);
-    expect(pathPrefixFieldResponse.status).toBe(400);
+    expect(idContainsResponse.status).toBe(400);
+    expect(idNullResponse.status).toBe(400);
+    expect(l1ContainsResponse.status).toBe(400);
     expect(query).not.toHaveBeenCalled();
   });
 });

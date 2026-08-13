@@ -3741,22 +3741,56 @@ export interface components {
       /** @enum {string} */
       order: 'ASC' | 'DESC';
     };
-    VQueueFilterItem: components['schemas']['FilterBaseItem'] &
+    VQueueFilterItem:
+      | components['schemas']['VQueueExactStringFilterItem']
+      | components['schemas']['VQueueSearchStringFilterItem']
+      | components['schemas']['VQueueLockNameFilterItem'];
+    VQueueExactStringFilterItem: {
+      /** @enum {string} */
+      field: 'id' | 'service' | 'l1' | 'l2';
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS';
+      value: string;
+    };
+    VQueueSearchStringFilterItem: {
+      /** @enum {string} */
+      field: 'scope' | 'limitKey';
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS' | 'CONTAINS';
+      value: string;
+    };
+    VQueueLockNameFilterItem: components['schemas']['FilterBaseItem'] &
       (
         | components['schemas']['FilterStringItem']
-        | components['schemas']['VQueuePathPrefixFilterItem']
         | components['schemas']['FilterStringListItem']
         | components['schemas']['FilterNullItem']
       ) & {
         /** @enum {string} */
-        field: 'id' | 'service' | 'scope' | 'limitKey' | 'lockName';
+        field: 'lockName';
       };
-    VQueuePathPrefixFilterItem: {
+    LimitCounterFilterItem:
+      | components['schemas']['LimitCounterExactStringFilterItem']
+      | components['schemas']['LimitCounterSearchStringFilterItem'];
+    LimitCounterExactStringFilterItem: {
+      /** @enum {string} */
+      field: 'l1' | 'l2';
       /** @enum {string} */
       type: 'STRING';
       /** @enum {string} */
-      operation: 'PATH_PREFIX';
-      /** @description Match this exact limit-key path or a descendant path. Supported only for the limitKey field. */
+      operation: 'EQUALS';
+      value: string;
+    };
+    LimitCounterSearchStringFilterItem: {
+      /** @enum {string} */
+      field: 'scope' | 'limitKey';
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS' | 'CONTAINS';
       value: string;
     };
     ListLimitRulesRequestBody: {
@@ -3768,13 +3802,14 @@ export interface components {
       includeUnlimited?: boolean;
       /** @description Return only counters governed by this exact rule pattern. */
       rulePattern?: string;
-      filters?: components['schemas']['FilterItem'][];
+      /** @description Structured limit-counter filters combined with AND. Scope and whole limit key support case-insensitive exact equality and literal substring matching. L1 and L2 support case-insensitive exact equality. */
+      filters?: components['schemas']['LimitCounterFilterItem'][];
       sort?: components['schemas']['LimitCounterSort'];
       search?: string;
       limit?: number;
     };
     ListVQueuesRequestBody: {
-      /** @description Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, and lockName. String comparisons are case-insensitive. limitKey additionally supports PATH_PREFIX to match an exact path and its descendants. */
+      /** @description Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching. */
       filters?: components['schemas']['VQueueFilterItem'][];
       sort?: components['schemas']['VQueueSort'];
       limit?: number;

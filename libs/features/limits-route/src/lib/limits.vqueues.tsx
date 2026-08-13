@@ -10,17 +10,22 @@ import {
   ContentPanelToolbar,
 } from '@restate/ui/content-panel';
 import { EmptyState } from '@restate/ui/empty-state';
+import {
+  AddFilterTrigger,
+  FilterBuilder,
+  FilterChip,
+  QueryClause,
+  QueryClauseType,
+  readFilterClauses,
+  useFilterBuilder,
+  writeFilterClauses,
+} from '@restate/ui/filter-builder';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
-import { useMemo, useState } from 'react';
-import {
-  Button as AriaButton,
-  Input,
-  Label,
-  SearchField,
-  type SortDescriptor,
-} from 'react-aria-components';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { type SortDescriptor } from 'react-aria-components';
+import { Form, useSearchParams } from 'react-router';
 import { FlowControlHero, flowControlTabs } from './FlowControlPage';
 import { VQUEUE_LIST_QUERY_SIZE } from './limits.constants';
 import {
@@ -28,6 +33,12 @@ import {
   useLimitListPagination,
 } from './LimitListPagination';
 import { VQueueTable } from './VQueueTable';
+import {
+  createVQueueIdFilter,
+  getVQueueIdFilterValue,
+  toVQueueFilters,
+  VQUEUE_FILTER_SCHEMA,
+} from './limits.vqueueFilters';
 
 type ListVQueuesRequestBody = components['schemas']['ListVQueuesRequestBody'];
 type VQueueSortField = components['schemas']['VQueueSort']['field'];
@@ -48,25 +59,39 @@ const refreshIconStyles = tv({
 function VQueuesComponent() {
   const { baseUrl } = useRestateContext();
   const hasVqueues = useFeatures().has('vqueues');
-  const [submittedSearch, setSubmittedSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchString = searchParams.toString();
+  const committedFilters = useMemo(
+    () =>
+      readFilterClauses(
+        new URLSearchParams(searchString),
+        VQUEUE_FILTER_SCHEMA,
+      ),
+    [searchString],
+  );
+  const query = useFilterBuilder(committedFilters);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const submitTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const scheduleSubmit = useCallback(() => {
+    clearTimeout(submitTimerRef.current);
+    submitTimerRef.current = setTimeout(
+      () => formRef.current?.requestSubmit(),
+      0,
+    );
+  }, []);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: 'lastActivity',
+    column: 'stages',
     direction: 'descending',
   });
+  const filters = useMemo(
+    () => toVQueueFilters(committedFilters),
+    [committedFilters],
+  );
   const request = useMemo<ListVQueuesRequestBody>(
     () => ({
-      ...(submittedSearch
-        ? {
-            filters: [
-              {
-                field: 'id',
-                type: 'STRING' as const,
-                operation: 'CONTAINS' as const,
-                value: submittedSearch,
-              },
-            ],
-          }
-        : {}),
+      ...(filters.length > 0 && {
+        filters,
+      }),
       sort: {
         field:
           SORT_FIELDS[sortDescriptor.column as keyof typeof SORT_FIELDS] ??
@@ -75,46 +100,98 @@ function VQueuesComponent() {
       },
       limit: VQUEUE_LIST_QUERY_SIZE,
     }),
-    [sortDescriptor, submittedSearch],
+    [filters, sortDescriptor],
   );
   const vqueues = useListVqueues(request, { enabled: hasVqueues });
   const allVqueues = vqueues.data?.vqueues ?? [];
   const pagination = useLimitListPagination(allVqueues, request);
-  const emptyTitle = submittedSearch ? 'No matching VQueues' : 'No VQueues';
-  const emptyDescription = submittedSearch
-    ? 'Try a different VQueue ID.'
+  const hasFilters = filters.length > 0;
+  const emptyTitle = hasFilters ? 'No matching VQueues' : 'No VQueues';
+  const emptyDescription = hasFilters
+    ? 'Try adjusting the active filters.'
     : 'VQueues appear as invocations enter service queues.';
+
+  const applyVQueueId = useCallback(
+    (input: string) => {
+      const value = getVQueueIdFilterValue(input);
+      if (!value) {
+        return false;
+      }
+      const clause = createVQueueIdFilter(value);
+      if (query.getItem(clause.id)) {
+        query.update(clause.id, clause);
+      } else {
+        query.append(clause);
+      }
+      scheduleSubmit();
+      return true;
+    },
+    [query, scheduleSubmit],
+  );
+
+  const renderFilterOption = useCallback(
+    (item: QueryClause<QueryClauseType>) => (
+      <div className="flex items-baseline gap-2">
+        <span>{item.label}</span>
+        <span className="font-mono text-xs opacity-60">
+          {item.operations.map((operation) => operation.label).join(' / ')}
+        </span>
+      </div>
+    ),
+    [],
+  );
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <FlowControlHero />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'vqueues')}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
-          <SearchField
-            aria-label="Filter VQueues"
-            onSubmit={(value) => setSubmittedSearch(value.trim())}
-            onClear={() => setSubmittedSearch('')}
-            isDisabled={!hasVqueues}
-            className="group hidden min-w-0 flex-auto outline-none sm:block sm:max-w-[38ch]"
+          <Form
+            ref={formRef}
+            className="hidden min-w-0 flex-auto sm:block"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setSearchParams(writeFilterClauses(searchParams, query.items), {
+                preventScrollReset: true,
+              });
+            }}
           >
-            <Label className="sr-only">Filter VQueues</Label>
-            <div className="relative min-h-7">
-              <Input
-                placeholder="Search VQueue ID…"
-                className="mt-0 h-7 w-full min-w-0 rounded-lg border border-gray-200 bg-white/70 px-2 py-0.5 pr-8 pl-7 text-sm text-gray-800 shadow-xs outline-offset-2 placeholder:text-gray-500/75 hover:bg-white focus:border-blue-500/30 focus:bg-white focus:ring-0 focus:outline-2 focus:outline-blue-600 disabled:text-zinc-400 [&::-webkit-search-cancel-button]:hidden"
-              />
-              <Icon
-                name={IconName.Search}
-                className="pointer-events-none absolute top-0 bottom-0 left-1.5 aspect-square h-full p-1 text-gray-400"
-              />
-              <AriaButton
-                aria-label="Clear filter"
-                className="absolute top-1/2 right-1 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 outline-offset-1 group-empty:hidden hover:bg-zinc-200/60 hover:text-zinc-700 focus-visible:outline-2 focus-visible:outline-blue-600"
+            <FilterBuilder query={query} schema={VQUEUE_FILTER_SCHEMA} multiple>
+              <AddFilterTrigger
+                placeholder="Filter VQueues…"
+                title="VQueue filters"
+                disabled={!hasVqueues}
+                onInputSubmit={applyVQueueId}
+                onItemRemove={scheduleSubmit}
+                renderOption={renderFilterOption}
+                inputPrefix={
+                  <Icon
+                    name={IconName.Search}
+                    className="h-4 w-4 shrink-0 text-gray-400"
+                  />
+                }
+                tagsPlacement="outside"
+                maxVisibleChips="auto"
+                chipOverflowStrategy="all"
+                tagGroupClassName="min-w-0 flex-nowrap"
+                showSectionTitle={false}
+                popoverPlacement="bottom start"
+                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
+                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
+                className="min-h-7 w-full justify-end text-gray-800"
+                inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
               >
-                <Icon name={IconName.X} className="h-3.5 w-3.5" />
-              </AriaButton>
-            </div>
-          </SearchField>
+                {(props) => (
+                  <FilterChip
+                    {...props}
+                    appearance="light"
+                    showRemove
+                    popoverPlacement="bottom"
+                  />
+                )}
+              </AddFilterTrigger>
+            </FilterBuilder>
+          </Form>
           <Tooltip>
             <TooltipTrigger>
               <Button
@@ -152,12 +229,12 @@ function VQueuesComponent() {
                 vqueues={pagination.pageItems}
                 isLoading={vqueues.isFetching}
                 error={vqueues.error as Error | null}
-                dependencies={[submittedSearch, vqueues.isFetching]}
+                dependencies={[searchString, vqueues.isFetching]}
                 sortDescriptor={sortDescriptor}
                 onSortChange={setSortDescriptor}
                 emptyPlaceholder={
                   <EmptyState
-                    icon={submittedSearch ? IconName.Search : IconName.Layers}
+                    icon={hasFilters ? IconName.Search : IconName.Layers}
                     title={emptyTitle}
                     description={emptyDescription}
                   />

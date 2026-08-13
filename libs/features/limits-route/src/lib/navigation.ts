@@ -1,3 +1,6 @@
+import { writeFilterClauses } from '@restate/ui/filter-builder';
+import { createVQueueFiltersForCounter } from './limits.vqueueFilters';
+
 export interface LimitCounterIdentity {
   scope: string;
   l1?: string;
@@ -52,4 +55,15 @@ export function limitCountersHref(
 
 export function limitCountersForRuleHref(baseUrl: string, pattern: string) {
   return limitCountersHref(baseUrl, limitCounterRuleSelection(pattern));
+}
+
+export function vqueuesForLimitCounterHref(
+  baseUrl: string,
+  identity: LimitCounterIdentity,
+) {
+  const search = writeFilterClauses(
+    new URLSearchParams(),
+    createVQueueFiltersForCounter(identity),
+  );
+  return `${baseUrl}/flow-control/vqueues?${search}`;
 }
