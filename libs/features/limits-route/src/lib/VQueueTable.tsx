@@ -560,7 +560,7 @@ export function VQueueTable({
   error?: Error | null;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
-  sortDescriptor?: SortDescriptor;
+  sortDescriptor: SortDescriptor;
   onSortChange: (descriptor: SortDescriptor) => void;
 }) {
   const rows = useMemo(

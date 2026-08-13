@@ -79,7 +79,10 @@ function VQueuesComponent() {
       0,
     );
   }, []);
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>();
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: 'stages',
+    direction: 'descending',
+  });
   const filters = useMemo(
     () => toVQueueFilters(committedFilters),
     [committedFilters],
@@ -89,14 +92,12 @@ function VQueuesComponent() {
       ...(filters.length > 0 && {
         filters,
       }),
-      ...(sortDescriptor && {
-        sort: {
-          field:
-            SORT_FIELDS[sortDescriptor.column as keyof typeof SORT_FIELDS] ??
-            'lastActivity',
-          order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
-        },
-      }),
+      sort: {
+        field:
+          SORT_FIELDS[sortDescriptor.column as keyof typeof SORT_FIELDS] ??
+          'lastActivity',
+        order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
+      },
       limit: VQUEUE_LIST_QUERY_SIZE,
     }),
     [filters, sortDescriptor],
