@@ -27,7 +27,7 @@ const targetStyles = tv({
     key: 'max-w-[28rem] bg-zinc-50 font-mono text-[90%] text-zinc-500',
     serviceIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
     instanceIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
-    chevron: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+    chevron: '-mr-1.5 h-3.5 w-3.5 shrink-0 text-zinc-400',
   },
   variants: {
     showService: {
