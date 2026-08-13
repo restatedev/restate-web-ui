@@ -1491,6 +1491,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/limits/vqueues': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * List VQueues
+     * @description VQueue metadata from the sys_vqueue_meta table, filtered and sorted server-side.
+     */
+    post: operations['list_vqueues'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/limits/rules/{pattern}/counters': {
     parameters: {
       query?: never;
@@ -3081,6 +3101,57 @@ export interface components {
       available: number | null;
       num_waiters: number | null;
     };
+    /** @description Bounded VQueue metadata enriched with the current sys_scheduler snapshot when available. */
+    ListVQueuesResponse: {
+      vqueues: components['schemas']['VQueueMetaRow'][];
+      hasMore: boolean;
+    };
+    VQueueMetaRow: {
+      id: string;
+      queue_is_paused: boolean;
+      service_name: string | null;
+      scope: string | null;
+      limit_key: string | null;
+      lock_name: string | null;
+      /** Format: date-time */
+      last_enqueued_at: string | null;
+      /** Format: date-time */
+      last_start_at: string | null;
+      /** Format: date-time */
+      last_attempt_at: string | null;
+      /** Format: date-time */
+      last_finish_at: string | null;
+      avg_queue_duration: string | null;
+      avg_inbox_duration: string | null;
+      avg_run_duration: string | null;
+      avg_suspension_duration: string | null;
+      avg_end_to_end_duration: string | null;
+      avg_blocked_on_concurrency_rules: string | null;
+      avg_blocked_on_invoker_concurrency: string | null;
+      avg_blocked_on_invoker_throttling: string | null;
+      avg_blocked_on_lock: string | null;
+      num_inbox: number;
+      num_running: number;
+      num_suspended: number;
+      num_paused: number;
+      num_finished: number;
+      scheduler?: components['schemas']['VQueueSchedulerState'];
+    };
+    /** @description Current scheduler view of the VQueue head. Omitted when sys_scheduler has no snapshot for this VQueue. */
+    VQueueSchedulerState: {
+      status: components['schemas']['VqueueSchedulingStatus'];
+      headEntryId?: string;
+      /** Format: date-time */
+      scheduledAt?: string;
+      /** @description Gate currently blocking the VQueue head. */
+      blockedOn?: string;
+      blockedResource?: components['schemas']['VqueueBlockedResource'];
+      /**
+       * Format: duration
+       * @description Time the current head has spent waiting on its current blocking resource.
+       */
+      blockedDuration?: string;
+    };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {
       /** @description PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders. */
@@ -3652,6 +3723,42 @@ export interface components {
       /** @enum {string} */
       order: 'ASC' | 'DESC';
     };
+    VQueueSort: {
+      /** @enum {string} */
+      field:
+        | 'id'
+        | 'service'
+        | 'scope'
+        | 'limitKey'
+        | 'lockName'
+        | 'inbox'
+        | 'running'
+        | 'suspended'
+        | 'paused'
+        | 'finished'
+        | 'unfinished'
+        | 'lastActivity';
+      /** @enum {string} */
+      order: 'ASC' | 'DESC';
+    };
+    VQueueFilterItem: components['schemas']['FilterBaseItem'] &
+      (
+        | components['schemas']['FilterStringItem']
+        | components['schemas']['VQueuePathPrefixFilterItem']
+        | components['schemas']['FilterStringListItem']
+        | components['schemas']['FilterNullItem']
+      ) & {
+        /** @enum {string} */
+        field: 'id' | 'service' | 'scope' | 'limitKey' | 'lockName';
+      };
+    VQueuePathPrefixFilterItem: {
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'PATH_PREFIX';
+      /** @description Match this exact limit-key path or a descendant path. Supported only for the limitKey field. */
+      value: string;
+    };
     ListLimitRulesRequestBody: {
       limit?: number;
       sort?: components['schemas']['LimitRuleSort'];
@@ -3664,6 +3771,12 @@ export interface components {
       filters?: components['schemas']['FilterItem'][];
       sort?: components['schemas']['LimitCounterSort'];
       search?: string;
+      limit?: number;
+    };
+    ListVQueuesRequestBody: {
+      /** @description Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, and lockName. String comparisons are case-insensitive. limitKey additionally supports PATH_PREFIX to match an exact path and its descendants. */
+      filters?: components['schemas']['VQueueFilterItem'][];
+      sort?: components['schemas']['VQueueSort'];
       limit?: number;
     };
     GetInvocationsStatusRequestBody: {
@@ -9779,6 +9892,29 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListUserLimitsResponse'];
+        };
+      };
+    };
+  };
+  list_vqueues: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ListVQueuesRequestBody'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ListVQueuesResponse'];
         };
       };
     };

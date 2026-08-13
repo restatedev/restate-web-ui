@@ -45,6 +45,60 @@ const styles = tv({
   },
 });
 
+export function StackedStatusBar({
+  total,
+  statuses,
+  tooltipContent,
+  ariaLabel,
+  isLoading,
+  className,
+  onOpenChange,
+}: {
+  total: number;
+  statuses: {
+    name: string;
+    count: number;
+    fillLight: string;
+    stroke: string;
+    borderType?: StatusBarEntry['borderType'];
+  }[];
+  tooltipContent: ReactNode;
+  ariaLabel?: string;
+  isLoading?: boolean;
+  className?: string;
+  onOpenChange?: (isOpen: boolean) => void;
+}) {
+  if (!total) return <div className="h-3" />;
+
+  return (
+    <HoverTooltip
+      content={tooltipContent}
+      size="lg"
+      className={className}
+      onOpenChange={onOpenChange}
+    >
+      <div
+        role={ariaLabel ? 'img' : undefined}
+        aria-label={ariaLabel}
+        className={styles({ isLoading })}
+      >
+        {statuses.map((status) => (
+          <div
+            key={status.name}
+            className="h-full rounded-[1px] transition-all first:rounded-l-full last:rounded-r-full"
+            style={{
+              width: `${(status.count / total) * 100}%`,
+              backgroundColor: `color-mix(in srgb, ${status.fillLight} 60%, white)`,
+              outline: `1px ${status.borderType ? 'dashed' : 'solid'} ${status.stroke}`,
+              minWidth: status.count > 0 ? 4 : 0,
+            }}
+          />
+        ))}
+      </div>
+    </HoverTooltip>
+  );
+}
+
 function StatusBar({
   title,
   total,
@@ -66,8 +120,6 @@ function StatusBar({
   noun?: { one: string; other: string };
   onOpenChange?: (isOpen: boolean) => void;
 }) {
-  if (!total) return <div className="h-3" />;
-
   const tooltipContent = (
     <InvocationsBreakdownTooltipContent
       title={title}
@@ -81,26 +133,13 @@ function StatusBar({
   );
 
   return (
-    <HoverTooltip
-      content={tooltipContent}
-      size="lg"
+    <StackedStatusBar
+      total={total}
+      statuses={statuses}
+      tooltipContent={tooltipContent}
+      isLoading={isLoading}
       onOpenChange={onOpenChange}
-    >
-      <div className={styles({ isLoading })}>
-        {statuses.map((s) => (
-          <div
-            key={s.name}
-            className="h-full rounded-[1px] transition-all first:rounded-l-full last:rounded-r-full"
-            style={{
-              width: `${(s.count / total) * 100}%`,
-              backgroundColor: `color-mix(in srgb, ${s.fillLight} 60%, white)`,
-              outline: `1px ${s.borderType ? 'dashed' : 'solid'} ${s.stroke}`,
-              minWidth: s.count > 0 ? 4 : 0,
-            }}
-          />
-        ))}
-      </div>
-    </HoverTooltip>
+    />
   );
 }
 

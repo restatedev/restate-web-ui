@@ -56,6 +56,10 @@ const RESOURCE_LABELS: Record<string, string> = {
   deployment_concurrency: 'deployment concurrency',
 };
 
+export function vqueueBlockedResourceLabel(resource?: string) {
+  return (resource && RESOURCE_LABELS[resource]) || 'resource';
+}
+
 const styles = tv({
   slots: {
     root: 'w-full min-w-0 bg-gray-100 px-0.5 pt-0.5 text-zinc-700',
@@ -279,7 +283,7 @@ function getStageVisual(stage: VQueueStage) {
 function blockedReason(data: VqueueSnapshot) {
   const resource = data.status.blockedResource;
   const key = resource?.resource ?? data.status.blockedOn;
-  return (key && RESOURCE_LABELS[key]) || 'resource';
+  return vqueueBlockedResourceLabel(key);
 }
 
 function blockedDuration(data: VqueueSnapshot) {

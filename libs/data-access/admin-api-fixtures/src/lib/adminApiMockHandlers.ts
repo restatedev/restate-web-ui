@@ -90,6 +90,22 @@ function getSqlStringFilter(sql: string, column: string) {
   return match ? unquoteSqlString(match[1] ?? '') : undefined;
 }
 
+function getSqlLikeFilter(sql: string, column: string) {
+  const match = new RegExp(
+    `LOWER\\((?:${column}|COALESCE\\(${column},\\s*''\\))\\)\\s+LIKE\\s+'%((?:''|[^'])*)%'`,
+    'i',
+  ).exec(sql);
+  return match ? unquoteSqlString(match[1] ?? '') : undefined;
+}
+
+function getSqlStringListFilter(sql: string, column: string) {
+  const match = new RegExp(`${column}\\s+IN\\s*\\(([^)]*)\\)`, 'i').exec(sql);
+  if (!match?.[1]) return [];
+  return Array.from(match[1].matchAll(/'((?:''|[^'])*)'/g), (value) =>
+    unquoteSqlString(value[1] ?? ''),
+  );
+}
+
 function ruleRows(pattern?: string, includeLastModified = false) {
   return Array.from(limitRules.values())
     .filter((rule) => pattern === undefined || rule.pattern === pattern)
@@ -123,6 +139,152 @@ type UserLimitRowMock = {
   available: number | null;
   num_waiters: number;
 };
+
+type VQueueMetaRowMock = {
+  id: string;
+  queue_is_paused: boolean;
+  service_name: string;
+  scope: string;
+  limit_key: string;
+  lock_name: string | null;
+  last_enqueued_at: string;
+  last_start_at: string;
+  last_attempt_at: string;
+  last_finish_at: string | null;
+  avg_queue_duration: string;
+  avg_inbox_duration: string;
+  avg_run_duration: string;
+  avg_suspension_duration: string | null;
+  avg_end_to_end_duration: string;
+  avg_blocked_on_concurrency_rules: string;
+  avg_blocked_on_invoker_concurrency: string;
+  avg_blocked_on_invoker_throttling: string;
+  avg_blocked_on_lock: string;
+  num_inbox: number;
+  num_running: number;
+  num_suspended: number;
+  num_paused: number;
+  num_finished: number;
+};
+
+const VQUEUE_SERVICES = [
+  'CheckoutService',
+  'PaymentWorkflow',
+  'InventoryObject',
+  'EmailService',
+];
+const VQUEUE_SCOPES = ['checkout', 'payments', 'inventory', 'notifications'];
+
+function vqueueMetaRows(): VQueueMetaRowMock[] {
+  return Array.from({ length: 64 }, (_, index) => {
+    const active = index % 4 !== 0;
+    const paused = index % 17 === 0;
+    const inbox = active ? (index * 3) % 8 : 0;
+    const serviceName = VQUEUE_SERVICES[index % VQUEUE_SERVICES.length] ?? '';
+    const latestActivity = Date.now() - index * 37_000;
+    const queueDuration = ((index % 12) + 1) / 10;
+    const duration = (multiplier: number) =>
+      `PT${Number((queueDuration * multiplier).toFixed(3))}S`;
+    return {
+      id: `vq_mock_${String(index + 1).padStart(3, '0')}`,
+      queue_is_paused: paused,
+      service_name: serviceName,
+      scope: VQUEUE_SCOPES[index % VQUEUE_SCOPES.length] ?? '',
+      limit_key: `tenant-${(index % 8) + 1}/priority-${(index % 3) + 1}`,
+      lock_name:
+        serviceName.endsWith('Object') || serviceName.endsWith('Workflow')
+          ? `${serviceName}/${serviceName.endsWith('Object') ? 'item' : 'run'}-${(index % 12) + 1}`
+          : null,
+      last_enqueued_at: new Date(latestActivity - 8_000).toISOString(),
+      last_start_at: new Date(latestActivity - 5_000).toISOString(),
+      last_attempt_at: new Date(latestActivity - 2_000).toISOString(),
+      last_finish_at:
+        index % 3 === 0 ? new Date(latestActivity).toISOString() : null,
+      avg_queue_duration: duration(1),
+      avg_inbox_duration: duration(0.5),
+      avg_run_duration: duration(2.5),
+      avg_suspension_duration: index % 5 === 0 ? duration(4) : null,
+      avg_end_to_end_duration: duration(3.5),
+      avg_blocked_on_concurrency_rules: duration(index % 3 === 0 ? 0.8 : 0),
+      avg_blocked_on_invoker_concurrency: duration(index % 7 === 0 ? 0.3 : 0),
+      avg_blocked_on_invoker_throttling: duration(index % 11 === 0 ? 0.2 : 0),
+      avg_blocked_on_lock: duration(
+        serviceName.endsWith('Object') || serviceName.endsWith('Workflow')
+          ? 0.15
+          : 0,
+      ),
+      num_inbox: inbox,
+      num_running: active && inbox === 0 ? 1 : 0,
+      num_suspended: active && index % 9 === 0 ? 1 : 0,
+      num_paused: paused ? 1 : 0,
+      num_finished: (index * 7) % 41,
+    };
+  });
+}
+
+function vqueueSchedulerRows(ids: string[]) {
+  const metaById = new Map(vqueueMetaRows().map((row) => [row.id, row]));
+  return ids.flatMap((id) => {
+    const meta = metaById.get(id);
+    if (!meta) return [];
+    const ordinal = Number(id.slice(-3));
+    const mode = ordinal % 5;
+    const status =
+      mode === 1
+        ? 'blocked'
+        : mode === 2
+          ? 'scheduled'
+          : mode === 3
+            ? 'ready'
+            : mode === 4
+              ? 'empty'
+              : 'dormant';
+    const isBlocked = status === 'blocked';
+    const isLockBlocked = isBlocked && Boolean(meta.lock_name);
+    const blockedDuration = `PT${((ordinal % 7) + 1) / 2}S`;
+    const blockedResource = isBlocked
+      ? isLockBlocked
+        ? {
+            resource: 'lock',
+            scope: meta.scope,
+            lock_name: meta.lock_name,
+          }
+        : {
+            resource: 'limit-key-concurrency',
+            scope: meta.scope,
+            limit_key: meta.limit_key,
+            blocked_level: 'level2',
+            blocked_rule: `${meta.scope}/*/*`,
+          }
+      : undefined;
+    return [
+      {
+        id,
+        status,
+        blocked_on: blockedResource?.resource ?? null,
+        blocked_on_json: blockedResource
+          ? JSON.stringify(blockedResource)
+          : null,
+        head_entry_id:
+          status === 'empty' || status === 'dormant'
+            ? null
+            : `${ordinal % 6 === 0 ? 'mut' : 'inv'}_mock_${String(ordinal).padStart(3, '0')}`,
+        scheduled_at:
+          status === 'scheduled'
+            ? new Date(Date.now() + ((ordinal % 6) + 1) * 5_000).toISOString()
+            : null,
+        invoker_concurrency_block_duration: 'PT0S',
+        throttling_rules_block_duration: 'PT0S',
+        invoker_throttling_block_duration: 'PT0S',
+        invoker_memory_block_duration: 'PT0S',
+        concurrency_rules_block_duration:
+          isBlocked && !isLockBlocked ? blockedDuration : 'PT0S',
+        lock_block_duration: isLockBlocked ? blockedDuration : 'PT0S',
+        deployment_concurrency_block_duration: 'PT0S',
+      },
+    ];
+  });
+}
 
 const MOCK_RULE_MATCHES: Record<
   string,
@@ -478,6 +640,29 @@ const queryHandler = http.post<
         ? userLimitCounterSummaryRows()
         : filteredUserLimitRows(sql),
     } as any);
+  }
+
+  if (/\bFROM\s+sys_scheduler\b/i.test(sql)) {
+    return HttpResponse.json({
+      rows: vqueueSchedulerRows(getSqlStringListFilter(sql, 'id')),
+    } as any);
+  }
+
+  if (/\bFROM\s+sys_vqueue_meta\b/i.test(sql)) {
+    const search = getSqlLikeFilter(sql, 'id');
+    const rows = vqueueMetaRows().filter(
+      (row) =>
+        (!/\bqueue_is_paused\s*=\s*TRUE\b/i.test(sql) || row.queue_is_paused) &&
+        (search === undefined ||
+          [
+            row.id,
+            row.service_name,
+            row.scope,
+            row.limit_key,
+            row.lock_name,
+          ].some((value) => value?.toLocaleLowerCase().includes(search))),
+    );
+    return HttpResponse.json({ rows } as any);
   }
 
   return HttpResponse.json({ message: 'Query is not mocked' } as any, {

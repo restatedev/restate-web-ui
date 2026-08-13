@@ -9,6 +9,7 @@ import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import type { IssueSeverity } from '@restate/features/system-health';
 import { issueAlertIconStyles } from '@restate/ui/issue-banner';
+import { tv } from '@restate/util/styles';
 import {
   STATUS_ORDER,
   STATUS_STYLE,
@@ -21,6 +22,39 @@ export type StatusBarEntry = {
   label?: string;
   count: number;
 } & (typeof STATUS_STYLE)[string];
+
+const totalItemStyles = tv({
+  base: '-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none',
+  variants: {
+    linked: { true: 'hover:bg-white/10' },
+  },
+});
+
+const statusItemStyles = tv({
+  base: '-mx-2 flex items-center gap-2.5 rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none transition',
+  variants: {
+    linked: { true: 'hover:bg-white/10' },
+    dimmed: { true: 'opacity-40 saturate-50' },
+  },
+});
+
+function TooltipItem({
+  href,
+  className,
+  children,
+}: {
+  href?: string;
+  className: string;
+  children: ReactNode;
+}) {
+  return href ? (
+    <Link href={href} variant="secondary" className={className}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className}>{children}</div>
+  );
+}
 
 export function buildStatusEntries(
   rows: { status: string; label?: string; count: number }[],
@@ -61,9 +95,9 @@ export function InvocationsBreakdownTooltipContent({
   // `filtered/total`.
   total: number;
   filteredTotal?: number;
-  totalLink: string;
+  totalLink?: string;
   statuses: StatusBarEntry[];
-  getStatusLink: (statusName: string) => string;
+  getStatusLink?: (statusName: string) => string | undefined;
   issuesByStatus?: Map<string, IssueSeverity>;
   // Fade rows whose status doesn't pass the current status filter — mirrors
   // the bar's dimming so the tooltip stays in sync.
@@ -81,10 +115,9 @@ export function InvocationsBreakdownTooltipContent({
     <div className="flex flex-col">
       <div className="mb-2">
         <div className="">{title}</div>
-        <Link
+        <TooltipItem
           href={totalLink}
-          variant="secondary"
-          className="-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none hover:bg-white/10"
+          className={totalItemStyles({ linked: Boolean(totalLink) })}
         >
           {isSampled ? (
             total === 0 ? (
@@ -117,11 +150,13 @@ export function InvocationsBreakdownTooltipContent({
               </span>
             </>
           )}
-          <Icon
-            name={IconName.ChevronRight}
-            className="ml-auto h-3.5 w-3.5 shrink-0 !text-zinc-500"
-          />
-        </Link>
+          {totalLink && (
+            <Icon
+              name={IconName.ChevronRight}
+              className="ml-auto h-3.5 w-3.5 shrink-0 !text-zinc-500"
+            />
+          )}
+        </TooltipItem>
       </div>
       {statuses.length > 0 && (
         <div className="-mx-3 border-t border-white/10" />
@@ -132,12 +167,15 @@ export function InvocationsBreakdownTooltipContent({
           const dimmed = isStatusDimmed?.(s.name) ?? false;
           const percentage =
             total > 0 ? formatPercentageWithoutFraction(s.count / total) : '0%';
+          const statusLink = getStatusLink?.(s.name);
           return (
-            <Link
+            <TooltipItem
               key={s.name}
-              href={getStatusLink(s.name)}
-              variant="secondary"
-              className={`-mx-2 flex items-center gap-2.5 rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none transition hover:bg-white/10 ${dimmed ? 'opacity-40 saturate-50' : ''}`}
+              href={statusLink}
+              className={statusItemStyles({
+                linked: Boolean(statusLink),
+                dimmed,
+              })}
             >
               <div
                 className="h-3.5 w-3.5 shrink-0 rounded-full"
@@ -172,11 +210,13 @@ export function InvocationsBreakdownTooltipContent({
                   </span>
                 </>
               )}
-              <Icon
-                name={IconName.ChevronRight}
-                className="h-3 w-3 shrink-0 !text-zinc-500"
-              />
-            </Link>
+              {statusLink && (
+                <Icon
+                  name={IconName.ChevronRight}
+                  className="h-3 w-3 shrink-0 !text-zinc-500"
+                />
+              )}
+            </TooltipItem>
           );
         })}
       </div>

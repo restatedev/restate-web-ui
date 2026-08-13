@@ -27,6 +27,7 @@ const targetStyles = tv({
     key: 'max-w-[28rem] bg-zinc-50 font-mono text-[90%] text-zinc-500',
     serviceIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
     instanceIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+    chevron: '-mr-1.5 h-3.5 w-3.5 shrink-0 text-zinc-400',
   },
   variants: {
     showService: {
@@ -88,6 +89,7 @@ export function VirtualObjectInstanceTarget({
     key: keyStyle,
     serviceIcon,
     instanceIcon,
+    chevron,
   } = targetStyles({
     showService,
     hasLeadingScope: hasVisibleScope,
@@ -103,6 +105,9 @@ export function VirtualObjectInstanceTarget({
       <ChipSegment className={serviceStyle()}>
         <Icon name={IconName.Box} className={serviceIcon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
+        {serviceHref && (
+          <Icon name={IconName.ChevronRight} className={chevron()} />
+        )}
       </ChipSegment>
     </Chip>
   );
@@ -130,12 +135,19 @@ export function VirtualObjectInstanceTarget({
         right="straight"
         size="lg"
         className={chip({ className })}
+        href={showService && serviceHref ? href : undefined}
+        aria-label={
+          showService && serviceHref && href
+            ? `Virtual object instance ${copyText}`
+            : undefined
+        }
       >
         <ChipSegment className={keyStyle()}>
           {showKeyIcon && (
             <Icon name={IconName.VirtualObject} className={instanceIcon()} />
           )}
           <TruncateTooltipTrigger>{key || <>&nbsp;</>}</TruncateTooltipTrigger>
+          {href && <Icon name={IconName.ChevronRight} className={chevron()} />}
         </ChipSegment>
       </Chip>
     </>

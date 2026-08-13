@@ -2,7 +2,7 @@ import type { ContentPanelTabs } from '@restate/ui/content-panel';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 
-export type FlowControlTabId = 'rules' | 'counters';
+export type FlowControlTabId = 'rules' | 'counters' | 'vqueues';
 
 export function flowControlTabs(
   baseUrl: string,
@@ -31,6 +31,16 @@ export function flowControlTabs(
         ),
         href: `${baseUrl}/flow-control/counters`,
       },
+      {
+        id: 'vqueues',
+        label: (
+          <>
+            <Icon name={IconName.Layers} className="h-3.5 w-3.5 rotate-90" />
+            VQueues
+          </>
+        ),
+        href: `${baseUrl}/flow-control/vqueues`,
+      },
     ],
   };
 }
@@ -43,8 +53,8 @@ export function FlowControlHero() {
         Flow control
       </h1>
       <p className="max-w-4xl text-base leading-7 text-zinc-500">
-        Configure flow-control policies and inspect limit usage and capacity
-        across scopes and limit keys.{' '}
+        Configure flow-control policies and inspect limit usage, capacity, and
+        VQueue activity across scopes and limit keys.{' '}
         <Link
           href="https://docs.restate.dev/services/flow-control"
           variant="secondary"
