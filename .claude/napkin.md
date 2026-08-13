@@ -1,5 +1,6 @@
 # Napkin
 
+- 2026-08-13 VQueue snapshot test fixtures: `focusEntry.stage` uses the queue lifecycle value `finished`, but `focusEntry.status` must use the invocation terminal status (`succeeded`, `failed`, `cancelled`, or `killed`). Do not use the stage value as a status after regenerating API types.
 - 2026-08-13 self on filter-chip inspection: I piped a scoped `rg` into `head` while checking class-name helpers, repeating the explicit no-pipeline mistake. Use only the scoped `rg` with `max_output_tokens`; never add a truncation pipe even for a one-line lookup.
 - 2026-08-13 VQueue default ordering: The scheduler-backed active-first experiment still exposed too many old VQueues and was reverted. Default the page explicitly to **Workload descending**, where Workload is Inbox + Running + Suspended + Paused; show the active sort arrow and send `sort: { field: 'unfinished', order: 'DESC' }`, accepting the full-table ordering cost for useful results.
 - 2026-08-13 self on repeated bounded-search mistake: While checking the filter popover I again piped `rg` into `head`, despite the explicit no-pipeline rule and multiple existing reminders. Use a narrowly scoped `rg` with `max_output_tokens`; never add a truncation pipeline.

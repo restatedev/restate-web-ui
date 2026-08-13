@@ -766,7 +766,7 @@ describe('InvocationFlowControlCard', () => {
         focusEntry: {
           id: 'inv-focus',
           stage: 'finished',
-          status: 'finished',
+          status: 'succeeded',
           attempts: 2,
           firstRunnableAt: '2026-01-01T00:00:01.000Z',
           firstAttemptAt: '2026-01-01T00:00:20.000Z',
@@ -827,7 +827,7 @@ describe('InvocationFlowControlCard', () => {
         focusEntry: {
           id: 'inv-focus',
           stage: 'finished',
-          status: 'finished',
+          status: 'succeeded',
           attempts: 1,
           firstRunnableAt: '2026-01-01T00:00:00.000Z',
           firstAttemptAt: '2026-01-01T00:00:10.000Z',
@@ -1093,7 +1093,7 @@ describe('InvocationFlowControlCard', () => {
         focusEntry: {
           id: 'inv-focus',
           stage: 'finished',
-          status: 'finished',
+          status: 'killed',
           attempts: 13,
           errors: 12,
           pauses: 12,
