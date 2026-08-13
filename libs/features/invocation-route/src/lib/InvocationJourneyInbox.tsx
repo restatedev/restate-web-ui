@@ -79,15 +79,22 @@ export function JourneyInboxPosition({
   inbox: JourneyInboxContext;
 }) {
   const position = inbox.position;
+  const isInitialWait = scenario.attempts === 0;
   if (position === undefined) {
     return (
-      <span className="inline-flex min-w-0 items-center gap-1 text-2xs whitespace-nowrap text-gray-400">
-        <span>in queue</span>
-        <MetricComparison
-          value={inbox.waiting}
-          ratio={inbox.ratio}
-          label="Current queue time"
-        />
+      <span className="inline-flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-gray-400">
+        <span>is waiting for</span>
+        {isInitialWait ? (
+          <MetricComparison
+            value={inbox.waiting}
+            ratio={inbox.ratio}
+            label="Current queue time"
+          />
+        ) : (
+          <span className="font-medium text-zinc-600 tabular-nums">
+            {inbox.waiting}
+          </span>
+        )}
       </span>
     );
   }
@@ -98,13 +105,13 @@ export function JourneyInboxPosition({
   const entriesLabel = entriesAhead === 1 ? 'entry' : 'entries';
 
   return (
-    <span className="inline-flex min-w-0 items-center gap-1 text-2xs whitespace-nowrap text-gray-400">
-      <span>behind</span>
+    <span className="inline-flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-gray-400">
+      <span>is waiting behind</span>
       <Popover>
         <PopoverTrigger>
           <Button
             variant="secondary"
-            aria-label={`Open Inbox order: ${formatNumber(entriesAhead)} ${entriesLabel} ahead, in queue ${inbox.waiting}`}
+            aria-label={`Open Inbox order: ${formatNumber(entriesAhead)} ${entriesLabel} ahead, waiting for ${inbox.waiting}`}
             className="inline-flex h-5 min-w-0 items-center gap-1 rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs font-medium text-zinc-700 shadow-none"
           >
             <span className="tabular-nums">
@@ -120,12 +127,18 @@ export function JourneyInboxPosition({
           <VQueueInboxPopoverContent data={snapshot} />
         </PopoverContent>
       </Popover>
-      <span>· in queue</span>
-      <MetricComparison
-        value={inbox.waiting}
-        ratio={inbox.ratio}
-        label="Current queue time"
-      />
+      <span>for</span>
+      {isInitialWait ? (
+        <MetricComparison
+          value={inbox.waiting}
+          ratio={inbox.ratio}
+          label="Current queue time"
+        />
+      ) : (
+        <span className="font-medium text-zinc-600 tabular-nums">
+          {inbox.waiting}
+        </span>
+      )}
     </span>
   );
 }

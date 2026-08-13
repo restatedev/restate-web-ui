@@ -165,11 +165,9 @@ describe('InvocationFlowControlCard', () => {
       '1m ago',
     );
     expect(screen.getByText('Became runnable').parentElement?.textContent).toBe(
-      'Became runnable',
+      'Became runnable after 5ms',
     );
-    expect(
-      screen.getByText('Scheduled for').parentElement?.textContent,
-    ).toContain('5ms');
+    expect(screen.queryByText('Scheduled for')).toBeNull();
     expect(
       screen.getByTitle('Queue wait: 19.995s; 2× historical average'),
     ).toBeTruthy();
@@ -180,8 +178,11 @@ describe('InvocationFlowControlCard', () => {
     const attemptToggle = screen.getByRole('button', {
       name: 'Toggle 9 attempts',
     });
+    expect(attemptToggle.parentElement?.parentElement?.className).toContain(
+      'pl-5.5',
+    );
     expect(attemptToggle.getAttribute('aria-expanded')).toBe('false');
-    expect(attemptGroup.textContent).toContain('9 attempts over 30s with');
+    expect(attemptGroup.textContent).toContain('9 attemptsover30swith');
     expect(attemptGroup.textContent).not.toContain('started');
     fireEvent.click(attemptToggle);
     expect(attemptToggle.getAttribute('aria-expanded')).toBe('true');
@@ -327,7 +328,9 @@ describe('InvocationFlowControlCard', () => {
       }),
     );
 
-    expect(screen.getByText('Became runnable')).toBeTruthy();
+    expect(screen.getByText('Became runnable').parentElement?.textContent).toBe(
+      'Became runnable after 10s',
+    );
     expect(screen.queryByText('Queueing')).toBeNull();
     expect(screen.getByText('Next attempt')).toBeTruthy();
     expect(screen.queryByText('Pending')).toBeNull();
@@ -372,12 +375,60 @@ describe('InvocationFlowControlCard', () => {
     );
 
     const pendingAttempt = screen.getByText('Next attempt').parentElement;
-    expect(pendingAttempt?.textContent).toContain('5 entries');
-    expect(pendingAttempt?.textContent).toContain('in queue10s');
+    expect(pendingAttempt?.textContent).toContain(
+      'is waiting behind5 entriesfor10s',
+    );
+    expect(pendingAttempt?.className).toContain('whitespace-nowrap');
+    const pendingMarker = pendingAttempt?.parentElement?.querySelector(
+      '[aria-hidden="true"]',
+    );
+    expect(pendingMarker?.className).toContain('top-1/2');
+    expect(pendingMarker?.className).toContain('-translate-y-1/2');
     expect(
       screen.getByRole('img', { name: '1× historical average' }),
     ).toBeTruthy();
     expect(screen.queryByText('Queueing')).toBeNull();
+  });
+
+  it('keeps the initial queue comparison when Inbox position is unavailable', () => {
+    renderCard(
+      invocation({
+        vqueue_id: 'vq-example',
+        stage: 'inbox',
+        status: 'new',
+        created_at: '2026-01-01T00:00:00.000Z',
+        first_runnable_at: '2026-01-01T00:00:50.000Z',
+        transitioned_at: '2026-01-01T00:00:50.000Z',
+        num_attempts: 0,
+      }),
+      snapshot({
+        counts: {
+          inbox: 8,
+          running: 0,
+          suspended: 0,
+          paused: 0,
+          finished: 0,
+        },
+        stageAvg: { queue: 'PT10S' },
+        focusEntry: {
+          id: 'inv-focus',
+          stage: 'inbox',
+          status: 'new',
+          attempts: 0,
+          firstRunnableAt: '2026-01-01T00:00:50.000Z',
+          transitionedAt: '2026-01-01T00:00:50.000Z',
+          totalBlocks: [],
+          latestBlocks: [],
+        },
+      }),
+    );
+
+    const pendingAttempt = screen.getByText('Next attempt').parentElement;
+    expect(pendingAttempt?.textContent).toContain('is waiting for10s');
+    expect(pendingAttempt?.textContent).not.toContain('behind');
+    expect(
+      screen.getByRole('img', { name: '1× historical average' }),
+    ).toBeTruthy();
   });
 
   it('moves an Inbox backing-off state onto the next attempt', () => {
@@ -524,14 +575,17 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.queryByText('Backing-off')).toBeNull();
     expect(screen.queryByText('Pending')).toBeNull();
     expect(screen.getByText('2 entries')).toBeTruthy();
-    expect(screen.getByText('· in queue')).toBeTruthy();
-    expect(screen.getByText('5s')).toBeTruthy();
+    const nextAttempt = screen.getByText('Next attempt').parentElement;
+    expect(nextAttempt?.textContent).toContain(
+      'is waiting behind2 entriesfor5s',
+    );
+    expect(screen.queryByText('queued for')).toBeNull();
     expect(
-      screen.getByRole('img', { name: '0.5× historical average' }),
-    ).toBeTruthy();
+      screen.queryByRole('img', { name: '0.5× historical average' }),
+    ).toBeNull();
   });
 
-  it('shows the eligible Inbox duration when queue position is unavailable', () => {
+  it('shows a neutral wait without comparison when Inbox position is unavailable', () => {
     renderCard(
       invocation(
         {
@@ -571,13 +625,15 @@ describe('InvocationFlowControlCard', () => {
     );
 
     const nextAttempt = screen.getByText('Next attempt').parentElement;
-    expect(nextAttempt?.textContent).toContain('in queue5s');
+    expect(nextAttempt?.textContent).toContain('is waiting for5s');
     expect(nextAttempt?.textContent).not.toContain('behind');
+    expect(nextAttempt?.className).toContain('whitespace-nowrap');
     expect(screen.queryByText('Backing-off')).toBeNull();
     expect(screen.queryByText('Pending')).toBeNull();
+    expect(screen.queryByText('queued for')).toBeNull();
     expect(
-      screen.getByRole('img', { name: '0.5× historical average' }),
-    ).toBeTruthy();
+      screen.queryByRole('img', { name: '0.5× historical average' }),
+    ).toBeNull();
   });
 
   it('shows the scheduler block after a backing-off attempt becomes eligible', () => {
@@ -630,7 +686,7 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.queryByRole('button', { name: /Last attempt blocked time:/ }),
     ).toBeNull();
-    expect(screen.getByText('Queued for')).toBeTruthy();
+    expect(screen.getByText('Queued')).toBeTruthy();
     expect(screen.queryByText('Became runnable')).toBeNull();
     expect(screen.queryByText('Backing-off')).toBeNull();
     expect(screen.queryByText('Pending')).toBeNull();
@@ -679,7 +735,7 @@ describe('InvocationFlowControlCard', () => {
 
     expect(screen.queryByText('Became runnable')).toBeNull();
     expect(screen.queryByText('Queueing')).toBeNull();
-    expect(screen.getByText('Queued for')).toBeTruthy();
+    expect(screen.getByText('Queued')).toBeTruthy();
     expect(screen.getByTitle(/Queued time: 53s/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Blocked time:/ })).toBeNull();
     expect(screen.getByText('on concurrency rule')).toBeTruthy();
@@ -740,7 +796,7 @@ describe('InvocationFlowControlCard', () => {
     ).toBeTruthy();
   });
 
-  it('shows single-attempt block time on the run duration with per-gate comparisons', () => {
+  it('shows historical block time after queueing with per-gate comparisons', () => {
     renderCard(
       invocation(
         {
@@ -788,9 +844,22 @@ describe('InvocationFlowControlCard', () => {
       }),
     );
 
-    const runDuration = screen.getByText('Lasted').parentElement;
-    expect(runDuration?.textContent).toContain('10s');
-    expect(runDuration?.textContent).toContain('blocked for');
+    const queued = screen.getByText('Queued');
+    const blocked = screen.getByText('Blocked');
+    const queuePhase = queued.parentElement?.parentElement;
+    const blockedPhase = blocked.parentElement?.parentElement;
+    const attempt = screen.getByText('Attempt').parentElement;
+    expect(queuePhase?.nextElementSibling).toBe(blockedPhase);
+    expect(queuePhase?.className).toContain('pl-5.5');
+    expect(blockedPhase?.className).toContain('pl-5.5');
+    expect(blockedPhase?.className).toContain('-mt-1');
+    expect(queued.nextElementSibling?.textContent).toBe('for');
+    expect(queued.nextElementSibling?.className).toContain('text-gray-400');
+    expect(blocked.nextElementSibling?.textContent).toBe('for');
+    expect(blocked.nextElementSibling?.className).toContain('text-gray-400');
+    expect(blocked.parentElement?.className).toContain('text-xs');
+    expect(attempt?.textContent).toContain('Lasted10s');
+    expect(attempt?.textContent).not.toContain('blocked for');
     const blockedTime = screen.getByRole('button', {
       name: 'Blocked time: 8s; 2.7 times historical average',
     });
@@ -840,6 +909,8 @@ describe('InvocationFlowControlCard', () => {
 
     expect(screen.getByText('2nd attempt')).toBeTruthy();
     expect(screen.getByText('Running')).toBeTruthy();
+    expect(screen.getByText('Running for')).toBeTruthy();
+    expect(screen.getByText('Running for').closest('.min-h-8')).toBeTruthy();
     expect(screen.getByRole('button', { name: '2nd attempt' })).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: 'Toggle 2 attempts' }),
@@ -881,6 +952,7 @@ describe('InvocationFlowControlCard', () => {
 
     expect(screen.getByText('3rd attempt')).toBeTruthy();
     expect(screen.getByText('Running')).toBeTruthy();
+    expect(screen.getByText('Running for')).toBeTruthy();
     expect(screen.getByRole('button', { name: '2nd attempt' })).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'awaiting 1 entry' }),
@@ -1108,6 +1180,10 @@ describe('InvocationFlowControlCard', () => {
 
     expect(screen.getByText('Attempt')).toBeTruthy();
     expect(screen.getByText('Running')).toBeTruthy();
+    expect(screen.queryByRole('group', { name: '1 attempt' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Toggle 1 attempt' }),
+    ).toBeNull();
     expect(screen.queryByText('Back-offs')).toBeNull();
     expect(screen.getByRole('button', { name: 'Pauses: 1' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Suspensions: 1' })).toBeTruthy();
@@ -1160,6 +1236,7 @@ describe('InvocationFlowControlCard', () => {
     );
 
     expect(screen.getByText('Paused')).toBeTruthy();
+    expect(screen.getByText('Paused').closest('.min-h-8')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'after…' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Pauses: 1' })).toBeNull();
   });
@@ -1310,7 +1387,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.queryByText('Blocked')).toBeNull();
   });
 
-  it('uses completed node timestamps and connector durations that sum to the journey', () => {
+  it('uses completed node timestamps and phase durations that sum to the journey', () => {
     renderCard(
       invocation(
         {
@@ -1335,21 +1412,15 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByText('Created').parentElement?.textContent).toContain(
       'Jan 1 at 00:00:00',
     );
-    expect(screen.getByText('Scheduled for')).toBeTruthy();
-    expect(
-      screen.getByText('Scheduled for').parentElement?.textContent,
-    ).toContain('5s');
+    expect(screen.queryByText('Scheduled for')).toBeNull();
     expect(screen.getByText('Became runnable').parentElement?.textContent).toBe(
-      'Became runnable',
+      'Became runnable after 5s',
     );
-    expect(screen.getByText('Queued for').parentElement?.textContent).toContain(
+    expect(screen.getByText('Queued').parentElement?.textContent).toContain(
       '5s',
     );
-    expect(screen.getByText('Attempt').parentElement?.textContent).toBe(
-      'Attempt',
-    );
-    expect(screen.getByText('Lasted').parentElement?.textContent).toContain(
-      '20s',
+    expect(screen.getByText('Attempt').parentElement?.textContent).toContain(
+      'AttemptLasted20s',
     );
     expect(screen.getByText('Succeeded').parentElement?.textContent).toContain(
       'at 00:00:30',
@@ -1418,7 +1489,24 @@ describe('InvocationFlowControlCard', () => {
       const latestAttempt = screen.getByText('2nd attempt');
       const terminalStatus = screen.getByText(expectedLabel);
       const purgeStatus = screen.getByText('Will be purged from storage');
+      const terminalConnector = terminalStatus
+        .closest('.min-h-8')
+        ?.querySelector('span.absolute');
+      const purgeConnector = purgeStatus
+        .closest('.min-h-8')
+        ?.querySelector('span.absolute');
 
+      expect(terminalStatus.closest('.min-h-8')).toBeTruthy();
+      expect(purgeStatus.closest('.min-h-8')).toBeTruthy();
+      expect(terminalConnector?.className).toContain('top-0');
+      expect(terminalConnector?.className).toContain(
+        'bottom-[calc(50%+0.375rem)]',
+      );
+      expect(terminalConnector?.className).not.toContain('-z-10');
+      expect(purgeConnector?.className).toContain('-top-2.5');
+      expect(purgeConnector?.className).toContain(
+        'bottom-[calc(50%+0.375rem)]',
+      );
       expect(
         latestAttempt.compareDocumentPosition(terminalStatus) &
           Node.DOCUMENT_POSITION_FOLLOWING,

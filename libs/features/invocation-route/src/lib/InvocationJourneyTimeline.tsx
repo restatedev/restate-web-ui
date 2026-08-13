@@ -7,7 +7,6 @@ import {
 import {
   CurrentStateTail,
   JourneyContinuation,
-  JourneyPhaseDuration,
   JourneyStart,
   PendingTail,
   PurgeEndpoint,
@@ -33,7 +32,10 @@ export function InvocationJourneyTimeline({
     scenario.currentStatus === 'paused'
       ? scenario.currentStatus
       : undefined;
-  const useAttemptGroup = scenario.attempts > 1 || visibleActivity;
+  const useAttemptGroup = scenario.attempts > 1;
+  const activitySummary = visibleActivity ? (
+    <JourneyAttemptActivitySummary scenario={scenario} />
+  ) : undefined;
 
   if (scenario.attempts === 0) {
     return (
@@ -79,11 +81,7 @@ export function InvocationJourneyTimeline({
         <JourneyAttemptGroup
           scenario={scenario}
           latestAttemptStatus={latestAttemptStatus}
-          activitySummary={
-            visibleActivity ? (
-              <JourneyAttemptActivitySummary scenario={scenario} />
-            ) : undefined
-          }
+          activitySummary={activitySummary}
         />
       ) : (
         <JourneyAttemptEndpoint
@@ -91,27 +89,22 @@ export function InvocationJourneyTimeline({
           label="Attempt"
           status={latestAttemptStatus}
           statusInvocation={scenario.currentStatusInvocation}
-        />
-      )}
-      {!useAttemptGroup && scenario.attemptsDuration && (
-        <JourneyPhaseDuration
-          label={latestAttemptStatus ? 'Active for' : 'Lasted'}
-          value={scenario.attemptsDuration}
-          blockedTime={scenario.blockedTime}
+          duration={
+            latestAttemptStatus
+              ? scenario.currentStatusDuration
+              : scenario.attemptsDuration
+          }
+          durationLabel={latestAttemptStatus ? 'Running for' : 'Lasted'}
+          activitySummary={activitySummary}
         />
       )}
       {scenario.terminal && (
         <>
-          {(useAttemptGroup || !scenario.attemptsDuration) && (
-            <div className="ml-1.5 h-3 border-l border-gray-200" />
-          )}
-          <TerminalEndpoint {...scenario.terminal} />
-          {scenario.purge && (
-            <>
-              <div className="ml-1.5 h-3 border-l border-dashed border-gray-300" />
-              <PurgeEndpoint {...scenario.purge} />
-            </>
-          )}
+          <TerminalEndpoint
+            {...scenario.terminal}
+            connectionSource={useAttemptGroup ? 'attempt-group' : 'milestone'}
+          />
+          {scenario.purge && <PurgeEndpoint {...scenario.purge} />}
         </>
       )}
       {currentTransitionStatus && scenario.currentStatusInvocation && (

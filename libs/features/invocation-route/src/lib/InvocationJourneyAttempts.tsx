@@ -22,56 +22,69 @@ export function JourneyAttemptEndpoint({
   label,
   status,
   statusInvocation,
+  duration,
+  durationLabel,
   blockedTime,
-  blockedTimeContext = 'attempt',
+  activitySummary,
 }: {
   number: number;
   label?: string;
   status?: Extract<JourneyCurrentStatus, 'running'>;
   statusInvocation?: JourneyStatusInvocation;
+  duration?: string;
+  durationLabel?: 'Running for' | 'Lasted';
   blockedTime?: JourneyBlockedTime;
-  blockedTimeContext?: 'latest-attempt' | 'attempt';
+  activitySummary?: ReactNode;
 }) {
   return (
-    <div className="relative z-10 flex min-w-0 items-center gap-2">
+    <div className="relative z-10 flex min-h-8 min-w-0 items-center gap-2">
       <span
         aria-hidden="true"
         className="h-3 w-3 shrink-0 rounded-full border border-zinc-300 bg-white shadow-xs"
       />
-      <div className="flex min-w-0 flex-1 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
+      <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5 gap-y-1 text-xs">
         <span className="font-medium text-zinc-700 tabular-nums">
           {label ?? `${formatOrdinals(number)} attempt`}
         </span>
         {status && statusInvocation && (
           <Status invocation={statusInvocation} timeline={false} />
         )}
+        {duration && durationLabel && (
+          <span className="inline-flex shrink-0 items-baseline gap-1.5">
+            <span className="text-gray-400">{durationLabel}</span>
+            <span className="font-medium text-zinc-600 tabular-nums">
+              {duration}
+            </span>
+          </span>
+        )}
         {blockedTime && (
           <JourneyBlockedTimeSummary
             value={blockedTime}
-            context={blockedTimeContext}
+            context="latest-attempt"
           />
         )}
+        {activitySummary}
       </div>
     </div>
   );
 }
 
 const attemptGroupStyles = tv({
-  base: 'mt-1.5 -ml-2.5 min-w-0 overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-[0_1px_3px_rgba(24,24,27,0.04)]',
+  base: '-ml-2.5 min-w-0 overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-[0_1px_3px_rgba(24,24,27,0.04)]',
 });
 
 const attemptGroupHeaderStyles = tv({
-  base: 'relative flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 border-b border-gray-100 py-1.5 pl-2.5 text-xs',
+  base: 'relative flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-gray-100 py-2 text-xs',
   variants: {
     isCollapsible: {
-      true: 'pr-8',
-      false: 'pr-2.5',
+      true: 'pr-8 pl-5.5',
+      false: 'pr-2.5 pl-7.5',
     },
   },
 });
 
 const attemptGroupSummaryStyles = tv({
-  base: 'relative z-10 flex min-w-0 flex-wrap items-center gap-1.5',
+  base: 'relative z-10 flex min-w-0 flex-wrap items-baseline gap-1.5',
   variants: {
     isCollapsible: {
       true: 'pointer-events-none',
@@ -86,14 +99,12 @@ function AttemptGroupHeader({
   isActive,
   isCollapsible,
   activitySummary,
-  blockedTime,
 }: {
   attemptLabel: string;
   attemptsDuration?: string;
   isActive: boolean;
   isCollapsible: boolean;
   activitySummary?: ReactNode;
-  blockedTime?: JourneyBlockedTime;
 }) {
   return (
     <div className={attemptGroupHeaderStyles({ isCollapsible })}>
@@ -118,42 +129,25 @@ function AttemptGroupHeader({
         </span>
         {attemptsDuration && (
           <>
-            {' '}
-            <span className="shrink-0 text-gray-400">over</span>{' '}
+            <span className="shrink-0 text-gray-400">over</span>
             <span
               aria-label={`Attempts duration: ${attemptsDuration}${isActive ? ' so far' : ''}`}
-              className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-zinc-100 px-1 py-px font-medium text-gray-500 tabular-nums"
+              className="shrink-0 font-medium text-zinc-600 tabular-nums"
             >
-              <Icon
-                name={IconName.Timer}
-                className="h-2.5 w-2.5 text-gray-400"
-              />
               {attemptsDuration}
             </span>
-            {isActive && (
-              <>
-                {' '}
-                <span className="shrink-0 text-gray-400">so far</span>
-              </>
-            )}
+            {isActive && <span className="shrink-0 text-gray-400">so far</span>}
           </>
         )}
       </div>
       {activitySummary && (
         <>
-          {' '}
           <span className="pointer-events-none relative z-10 text-gray-400">
             with
-          </span>{' '}
+          </span>
           <div className="relative z-10">{activitySummary}</div>
         </>
       )}
-      {blockedTime && (
-        <div className="relative z-10">
-          <JourneyBlockedTimeSummary value={blockedTime} />
-        </div>
-      )}
-      <span className="pointer-events-none relative z-10 min-w-2 flex-1" />
     </div>
   );
 }
@@ -172,6 +166,16 @@ function AttemptGroupContent({
         label={scenario.attempts === 1 ? 'Attempt' : undefined}
         status={scenario.attempts === 1 ? latestAttemptStatus : undefined}
         statusInvocation={scenario.currentStatusInvocation}
+        duration={
+          scenario.attempts === 1 && latestAttemptStatus
+            ? scenario.currentStatusDuration
+            : undefined
+        }
+        durationLabel={
+          scenario.attempts === 1 && latestAttemptStatus
+            ? 'Running for'
+            : undefined
+        }
       />
       {scenario.attempts > 1 && (
         <>
@@ -189,8 +193,11 @@ function AttemptGroupContent({
             number={scenario.attempts}
             status={latestAttemptStatus}
             statusInvocation={scenario.currentStatusInvocation}
+            duration={
+              latestAttemptStatus ? scenario.currentStatusDuration : undefined
+            }
+            durationLabel={latestAttemptStatus ? 'Running for' : undefined}
             blockedTime={scenario.latestAttemptBlockedTime}
-            blockedTimeContext="latest-attempt"
           />
         </>
       )}
@@ -220,7 +227,6 @@ export function JourneyAttemptGroup({
       isActive={isActive}
       isCollapsible={!isActive}
       activitySummary={activitySummary}
-      blockedTime={scenario.blockedTime}
     />
   );
   const content = (

@@ -8,8 +8,9 @@ import type { JourneyBlockedTime } from './InvocationJourneyModel';
 
 const styles = tv({
   slots: {
-    root: 'inline-flex min-w-0 items-baseline gap-1 whitespace-nowrap',
+    root: 'inline-flex min-w-0 items-baseline gap-1.5 text-xs leading-4 whitespace-nowrap',
     phrase: 'font-normal text-gray-400',
+    phaseLabel: 'font-medium text-zinc-500',
     button:
       'inline-flex h-4 items-center gap-0.5 self-baseline rounded-md px-0.5 py-0 text-xs leading-4 shadow-none hover:bg-zinc-100 pressed:bg-zinc-100',
     chevrons: 'h-3 w-3 shrink-0 text-gray-400',
@@ -21,18 +22,13 @@ const styles = tv({
 
 export function JourneyBlockedTimeSummary({
   value,
-  context = 'attempt',
+  context,
 }: {
   value: JourneyBlockedTime;
-  context?: 'duration' | 'latest-attempt' | 'attempt';
+  context: 'phase' | 'latest-attempt';
 }) {
-  const { root, phrase, button, chevrons, popover, row, gate } = styles();
-  const before =
-    context === 'duration'
-      ? 'after being blocked for'
-      : context === 'latest-attempt'
-        ? 'last attempt blocked for'
-        : 'blocked for';
+  const { root, phrase, phaseLabel, button, chevrons, popover, row, gate } =
+    styles();
   const ariaLabel =
     context === 'latest-attempt'
       ? `Last attempt blocked time: ${value.duration}${value.ratio === undefined ? '' : `; ${value.ratio} times historical average`}`
@@ -42,7 +38,14 @@ export function JourneyBlockedTimeSummary({
 
   return (
     <span className={root()}>
-      <span className={phrase()}>{before}</span>{' '}
+      {context === 'phase' ? (
+        <>
+          <span className={phaseLabel()}>Blocked</span>
+          <span className={phrase()}>for</span>
+        </>
+      ) : (
+        <span className={phrase()}>last attempt blocked for</span>
+      )}
       <Popover>
         <PopoverTrigger>
           <Button variant="icon" aria-label={ariaLabel} className={button()}>
