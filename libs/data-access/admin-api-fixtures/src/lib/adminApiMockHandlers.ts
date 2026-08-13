@@ -98,6 +98,14 @@ function getSqlLikeFilter(sql: string, column: string) {
   return match ? unquoteSqlString(match[1] ?? '') : undefined;
 }
 
+function getSqlStringListFilter(sql: string, column: string) {
+  const match = new RegExp(`${column}\\s+IN\\s*\\(([^)]*)\\)`, 'i').exec(sql);
+  if (!match?.[1]) return [];
+  return Array.from(match[1].matchAll(/'((?:''|[^'])*)'/g), (value) =>
+    unquoteSqlString(value[1] ?? ''),
+  );
+}
+
 function ruleRows(pattern?: string, includeLastModified = false) {
   return Array.from(limitRules.values())
     .filter((rule) => pattern === undefined || rule.pattern === pattern)
@@ -211,6 +219,70 @@ function vqueueMetaRows(): VQueueMetaRowMock[] {
       num_paused: paused ? 1 : 0,
       num_finished: (index * 7) % 41,
     };
+  });
+}
+
+function vqueueSchedulerRows(ids: string[]) {
+  const metaById = new Map(vqueueMetaRows().map((row) => [row.id, row]));
+  return ids.flatMap((id) => {
+    const meta = metaById.get(id);
+    if (!meta) return [];
+    const ordinal = Number(id.slice(-3));
+    const mode = ordinal % 5;
+    const status =
+      mode === 1
+        ? 'blocked'
+        : mode === 2
+          ? 'scheduled'
+          : mode === 3
+            ? 'ready'
+            : mode === 4
+              ? 'empty'
+              : 'dormant';
+    const isBlocked = status === 'blocked';
+    const isLockBlocked = isBlocked && Boolean(meta.lock_name);
+    const blockedDuration = `PT${((ordinal % 7) + 1) / 2}S`;
+    const blockedResource = isBlocked
+      ? isLockBlocked
+        ? {
+            resource: 'lock',
+            scope: meta.scope,
+            lock_name: meta.lock_name,
+          }
+        : {
+            resource: 'limit-key-concurrency',
+            scope: meta.scope,
+            limit_key: meta.limit_key,
+            blocked_level: 'level2',
+            blocked_rule: `${meta.scope}/*/*`,
+          }
+      : undefined;
+    return [
+      {
+        id,
+        status,
+        blocked_on: blockedResource?.resource ?? null,
+        blocked_on_json: blockedResource
+          ? JSON.stringify(blockedResource)
+          : null,
+        head_entry_id:
+          status === 'empty' || status === 'dormant'
+            ? null
+            : `${ordinal % 6 === 0 ? 'mut' : 'inv'}_mock_${String(ordinal).padStart(3, '0')}`,
+        scheduled_at:
+          status === 'scheduled'
+            ? new Date(Date.now() + ((ordinal % 6) + 1) * 5_000).toISOString()
+            : null,
+        invoker_concurrency_block_duration: 'PT0S',
+        throttling_rules_block_duration: 'PT0S',
+        invoker_throttling_block_duration: 'PT0S',
+        invoker_memory_block_duration: 'PT0S',
+        concurrency_rules_block_duration:
+          isBlocked && !isLockBlocked ? blockedDuration : 'PT0S',
+        lock_block_duration: isLockBlocked ? blockedDuration : 'PT0S',
+        deployment_concurrency_block_duration: 'PT0S',
+      },
+    ];
   });
 }
 
@@ -567,6 +639,12 @@ const queryHandler = http.post<
       rows: /\bCOUNT\s*\(\s*\*\s*\)/i.test(sql)
         ? userLimitCounterSummaryRows()
         : filteredUserLimitRows(sql),
+    } as any);
+  }
+
+  if (/\bFROM\s+sys_scheduler\b/i.test(sql)) {
+    return HttpResponse.json({
+      rows: vqueueSchedulerRows(getSqlStringListFilter(sql, 'id')),
     } as any);
   }
 

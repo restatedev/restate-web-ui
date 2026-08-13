@@ -21,6 +21,7 @@ export {
 export { VQueueId, type VQueueIdProps } from './lib/VQueueId';
 export {
   VQueuePopoverContent,
+  vqueueBlockedResourceLabel,
   type VQueueEntryIdRenderer,
   type VQueuePopoverContentProps,
 } from './lib/VQueuePopoverContent';

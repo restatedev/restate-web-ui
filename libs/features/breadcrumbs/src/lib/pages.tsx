@@ -220,6 +220,13 @@ export const limitCountersCrumb: CrumbFragment = {
   icon: IconName.Gauge,
 };
 
+export const vqueuesCrumb: CrumbFragment = {
+  kind: 'list',
+  resource: 'vqueues',
+  label: 'VQueues',
+  icon: IconName.Layers,
+};
+
 export function createBreadcrumbPages(options?: {
   patternPrefix?: string;
 }): PageDefinition[] {
@@ -245,6 +252,10 @@ export function createBreadcrumbPages(options?: {
     {
       pattern: `${prefix}/flow-control/counters`,
       ...limitCountersCrumb,
+    },
+    {
+      pattern: `${prefix}/flow-control/vqueues`,
+      ...vqueuesCrumb,
     },
   ];
 }

@@ -22,7 +22,7 @@ import {
   type SortDescriptor,
 } from 'react-aria-components';
 import { FlowControlHero, flowControlTabs } from './FlowControlPage';
-import { LIMIT_LIST_QUERY_SIZE } from './limits.constants';
+import { VQUEUE_LIST_QUERY_SIZE } from './limits.constants';
 import {
   LimitListPagination,
   useLimitListPagination,
@@ -34,9 +34,8 @@ type VQueueSortField = components['schemas']['VQueueSort']['field'];
 
 const SORT_FIELDS = {
   vqueue: 'id',
-  service: 'service',
+  serviceLock: 'service',
   scope: 'scope',
-  virtualObject: 'lockName',
   stages: 'unfinished',
   lastActivity: 'lastActivity',
 } as const satisfies Record<string, VQueueSortField>;
@@ -74,7 +73,7 @@ function VQueuesComponent() {
           'lastActivity',
         order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
       },
-      limit: LIMIT_LIST_QUERY_SIZE,
+      limit: VQUEUE_LIST_QUERY_SIZE,
     }),
     [sortDescriptor, submittedSearch],
   );

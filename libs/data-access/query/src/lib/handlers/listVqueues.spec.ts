@@ -29,13 +29,38 @@ const vqueue = {
   num_finished: 12,
 };
 
+const scheduler = {
+  id: 'vq_checkout',
+  status: 'blocked',
+  blocked_on: 'limit-key-concurrency',
+  blocked_on_json: JSON.stringify({
+    resource: 'limit-key-concurrency',
+    scope: 'checkout',
+    limit_key: 'tenant/priority',
+    blocked_level: 'level2',
+    blocked_rule: 'checkout/*/*',
+  }),
+  head_entry_id: 'inv_checkout',
+  scheduled_at: null,
+  invoker_concurrency_block_duration: 'PT0S',
+  throttling_rules_block_duration: 'PT0S',
+  invoker_throttling_block_duration: 'PT0S',
+  invoker_memory_block_duration: 'PT0S',
+  concurrency_rules_block_duration: 'PT1.2S',
+  lock_block_duration: 'PT0S',
+  deployment_concurrency_block_duration: 'PT0S',
+};
+
 function querySql(query: ReturnType<typeof vi.fn>) {
   return query.mock.calls.map(([sql]) => sql);
 }
 
 describe('listVqueues', () => {
   it('returns a bounded VQueue snapshot ordered by recent activity', async () => {
-    const query = vi.fn().mockResolvedValue({ rows: [vqueue] });
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({ rows: [vqueue] })
+      .mockResolvedValueOnce({ rows: [scheduler] });
     const context = { query } as unknown as QueryContext;
 
     const response = await listVqueues.call(context);
@@ -45,11 +70,44 @@ describe('listVqueues', () => {
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
+        "SELECT
+        id,
+        status,
+        blocked_on,
+        blocked_on_json,
+        head_entry_id,
+        scheduled_at,
+        invoker_concurrency_block_duration,
+        throttling_rules_block_duration,
+        invoker_throttling_block_duration,
+        invoker_memory_block_duration,
+        concurrency_rules_block_duration,
+        lock_block_duration,
+        deployment_concurrency_block_duration
+      FROM sys_scheduler
+      WHERE id IN ('vq_checkout')",
       ]
     `);
     expect(await response.json()).toEqual({
-      vqueues: [vqueue],
+      vqueues: [
+        {
+          ...vqueue,
+          scheduler: {
+            status: 'blocked',
+            headEntryId: 'inv_checkout',
+            blockedOn: 'limit-key-concurrency',
+            blockedResource: {
+              resource: 'limit-key-concurrency',
+              scope: 'checkout',
+              limitKey: 'tenant/priority',
+              blockedLevel: 'level2',
+              blockedRule: 'checkout/*/*',
+            },
+            blockedDuration: 'PT1.2S',
+          },
+        },
+      ],
       hasMore: false,
     });
   });
@@ -75,7 +133,7 @@ describe('listVqueues', () => {
           FROM sys_vqueue_meta
           WHERE LOWER(COALESCE(id, '')) LIKE '%tenant''s checkout%'
           ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
       ]
     `);
   });
@@ -112,7 +170,7 @@ describe('listVqueues', () => {
           FROM sys_vqueue_meta
           WHERE LOWER(COALESCE(service_name, '')) = 'checkoutservice' AND LOWER(COALESCE(limit_key, '')) LIKE '%priority%' AND lock_name IS NOT NULL
           ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
       ]
     `);
   });
@@ -130,7 +188,7 @@ describe('listVqueues', () => {
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY COALESCE(scope, '') ASC, COALESCE(limit_key, '') ASC, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
       ]
     `);
   });
@@ -157,35 +215,38 @@ describe('listVqueues', () => {
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY COALESCE(num_inbox, 0) DESC, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY COALESCE(num_running, 0) DESC, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY COALESCE(num_suspended, 0) DESC, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY COALESCE(num_paused, 0) DESC, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY COALESCE(num_finished, 0) DESC, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
           ORDER BY (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC
-          LIMIT 1001",
+          LIMIT 251",
       ]
     `);
   });
 
   it('reports a truncated bounded result', async () => {
-    const query = vi.fn().mockResolvedValue({
-      rows: [vqueue, { ...vqueue, id: 'vq_payments' }],
-    });
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        rows: [vqueue, { ...vqueue, id: 'vq_payments' }],
+      })
+      .mockResolvedValueOnce({ rows: [] });
     const context = { query } as unknown as QueryContext;
 
     const response = await listVqueues.call(context, { limit: 1 });
@@ -200,6 +261,22 @@ describe('listVqueues', () => {
           FROM sys_vqueue_meta
           ORDER BY GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, COALESCE(service_name, '') ASC, id ASC
           LIMIT 2",
+        "SELECT
+        id,
+        status,
+        blocked_on,
+        blocked_on_json,
+        head_entry_id,
+        scheduled_at,
+        invoker_concurrency_block_duration,
+        throttling_rules_block_duration,
+        invoker_throttling_block_duration,
+        invoker_memory_block_duration,
+        concurrency_rules_block_duration,
+        lock_block_duration,
+        deployment_concurrency_block_duration
+      FROM sys_scheduler
+      WHERE id IN ('vq_checkout')",
       ]
     `);
   });

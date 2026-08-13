@@ -3101,7 +3101,7 @@ export interface components {
       available: number | null;
       num_waiters: number | null;
     };
-    /** @description Bounded VQueue metadata from the sys_vqueue_meta table. */
+    /** @description Bounded VQueue metadata enriched with the current sys_scheduler snapshot when available. */
     ListVQueuesResponse: {
       vqueues: components['schemas']['VQueueMetaRow'][];
       hasMore: boolean;
@@ -3135,6 +3135,22 @@ export interface components {
       num_suspended: number;
       num_paused: number;
       num_finished: number;
+      scheduler?: components['schemas']['VQueueSchedulerState'];
+    };
+    /** @description Current scheduler view of the VQueue head. Omitted when sys_scheduler has no snapshot for this VQueue. */
+    VQueueSchedulerState: {
+      status: components['schemas']['VqueueSchedulingStatus'];
+      headEntryId?: string;
+      /** Format: date-time */
+      scheduledAt?: string;
+      /** @description Gate currently blocking the VQueue head. */
+      blockedOn?: string;
+      blockedResource?: components['schemas']['VqueueBlockedResource'];
+      /**
+       * Format: duration
+       * @description Time the current head has spent waiting on its current blocking resource.
+       */
+      blockedDuration?: string;
     };
     /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
     MetricsResponse: {

@@ -8674,7 +8674,7 @@
       },
       "ListVQueuesResponse": {
         "type": "object",
-        "description": "Bounded VQueue metadata from the sys_vqueue_meta table.",
+        "description": "Bounded VQueue metadata enriched with the current sys_scheduler snapshot when available.",
         "required": ["vqueues", "hasMore"],
         "properties": {
           "vqueues": {
@@ -8814,6 +8814,38 @@
           "num_finished": {
             "type": "integer",
             "minimum": 0
+          },
+          "scheduler": {
+            "$ref": "#/components/schemas/VQueueSchedulerState"
+          }
+        }
+      },
+      "VQueueSchedulerState": {
+        "type": "object",
+        "description": "Current scheduler view of the VQueue head. Omitted when sys_scheduler has no snapshot for this VQueue.",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/VqueueSchedulingStatus"
+          },
+          "headEntryId": {
+            "type": "string"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "blockedOn": {
+            "type": "string",
+            "description": "Gate currently blocking the VQueue head."
+          },
+          "blockedResource": {
+            "$ref": "#/components/schemas/VqueueBlockedResource"
+          },
+          "blockedDuration": {
+            "type": "string",
+            "format": "duration",
+            "description": "Time the current head has spent waiting on its current blocking resource."
           }
         }
       },
@@ -10345,7 +10377,7 @@
           "limit": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 1000
+            "maximum": 250
           }
         }
       },

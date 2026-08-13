@@ -12,12 +12,22 @@ import {
   type StatusBarEntry,
 } from '@restate/features/status-chart';
 import { ServiceTarget } from '@restate/features/service-target';
-import { LimitKey, Scope, VQueueId } from '@restate/features/vqueue-ui';
+import { VQueueEntryId } from '@restate/features/invocation-ui';
+import {
+  LimitKey,
+  Scope,
+  VQueueId,
+  vqueueBlockedResourceLabel,
+} from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { ChipGroup } from '@restate/ui/chip';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { DateTooltip } from '@restate/ui/tooltip';
-import { formatDurations, formatNumber } from '@restate/util/intl';
+import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
+import {
+  formatCompactISODuration,
+  formatDurations,
+  formatNumber,
+} from '@restate/util/intl';
 import { panelHref } from '@restate/util/panel';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
@@ -26,9 +36,9 @@ import type { SortDescriptor } from 'react-aria-components';
 
 type VQueueColumn =
   | 'vqueue'
-  | 'service'
+  | 'serviceLock'
   | 'scope'
-  | 'virtualObject'
+  | 'head'
   | 'stages'
   | 'lastActivity';
 
@@ -51,43 +61,42 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
     name: 'VQueue',
     isRowHeader: true,
     allowsSorting: true,
-    defaultWidth: '2.5fr',
-    minWidth: 190,
+    defaultWidth: '1.25fr',
+    minWidth: 0,
   },
   {
-    id: 'service',
-    name: 'Service',
+    id: 'serviceLock',
+    name: 'Service / lock',
     allowsSorting: true,
-    defaultWidth: '2fr',
-    minWidth: 125,
+    defaultWidth: '3fr',
+    minWidth: 0,
   },
   {
     id: 'scope',
     name: 'Scope / limit key',
     allowsSorting: true,
     defaultWidth: '3.5fr',
-    minWidth: 200,
+    minWidth: 0,
   },
   {
-    id: 'virtualObject',
-    name: 'VO instance',
-    allowsSorting: true,
-    defaultWidth: '2.5fr',
-    minWidth: 140,
+    id: 'head',
+    name: 'Head entry',
+    defaultWidth: '3fr',
+    minWidth: 0,
   },
   {
     id: 'stages',
-    name: 'Unfinished',
+    name: 'Workload',
     allowsSorting: true,
     defaultWidth: '2fr',
-    minWidth: 160,
+    minWidth: 0,
   },
   {
     id: 'lastActivity',
     name: 'Last activity',
     allowsSorting: true,
     defaultWidth: '2fr',
-    minWidth: 160,
+    minWidth: 0,
   },
 ];
 
@@ -95,12 +104,37 @@ const rowStyles = tv({
   base: 'cursor-default transition-none [content-visibility:auto]',
 });
 
+const headStateStyles = tv({
+  slots: {
+    root: 'flex min-w-0 items-center gap-1.5 text-xs',
+    dot: 'h-1.5 w-1.5 shrink-0 rounded-full',
+    status: 'shrink-0 font-medium',
+    separator: 'text-zinc-300',
+    detail: 'min-w-0 truncate text-zinc-400 tabular-nums',
+  },
+  variants: {
+    tone: {
+      blocked: {
+        dot: 'bg-orange-500',
+        status: 'text-orange-700',
+      },
+      scheduled: {
+        dot: 'bg-zinc-400',
+        status: 'text-zinc-600',
+      },
+      ready: {
+        dot: 'bg-blue-500',
+        status: 'text-blue-700',
+      },
+    },
+  },
+});
+
 const metricCellStyles = tv({
   slots: {
-    root: 'grid w-full max-w-48 grid-cols-[minmax(0,1fr)_auto] items-center gap-2',
-    bar: 'w-full min-w-0 justify-self-start',
-    value:
-      'justify-self-end text-right text-xs font-medium text-zinc-600 tabular-nums',
+    root: 'grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2',
+    bar: 'w-full max-w-40 min-w-0 justify-self-end',
+    value: 'justify-self-start tabular-nums',
   },
 });
 
@@ -119,13 +153,21 @@ const STAGES = [
 
 const ACTIVITIES = [
   {
-    label: 'Enqueued',
+    label: 'entry enqueued',
     title: 'Last enqueued at',
     key: 'last_enqueued_at',
   },
-  { label: 'Started', title: 'Last started at', key: 'last_start_at' },
-  { label: 'Attempted', title: 'Last attempted at', key: 'last_attempt_at' },
-  { label: 'Finished', title: 'Last finished at', key: 'last_finish_at' },
+  { label: 'entry started', title: 'Last started at', key: 'last_start_at' },
+  {
+    label: 'entry attempted',
+    title: 'Last attempted at',
+    key: 'last_attempt_at',
+  },
+  {
+    label: 'entry finished',
+    title: 'Last finished at',
+    key: 'last_finish_at',
+  },
 ] as const satisfies readonly {
   label: string;
   title: string;
@@ -191,6 +233,9 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
     .join(', ');
   return (
     <div className={metricCell.root({ className: 'pr-3' })}>
+      <Badge size="sm" className={metricCell.value()}>
+        {formatNumber(total, true)}
+      </Badge>
       <StackedStatusBar
         total={total}
         statuses={statuses.filter((status) => status.count > 0)}
@@ -198,18 +243,179 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
           <InvocationsBreakdownTooltipContent
             title={
               <div className="text-base! leading-7 font-medium text-gray-300!">
-                Unfinished entries
+                Workload
               </div>
             }
             total={total}
             statuses={statuses}
-            noun={{ one: 'unfinished entry', other: 'unfinished entries' }}
+            noun={{ one: 'entry', other: 'entries' }}
           />
         }
         className={metricCell.bar()}
-        aria-label={`Unfinished entries: ${description}, total ${formatNumber(total)}`}
+        aria-label={`Workload: ${description}, total ${formatNumber(total)}`}
       />
-      <span className={metricCell.value()}>{formatNumber(total, true)}</span>
+    </div>
+  );
+}
+
+type SchedulerState = NonNullable<VQueueMetaRow['scheduler']>;
+
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'medium',
+});
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  return Number.isFinite(date.getTime())
+    ? dateTimeFormatter.format(date)
+    : value;
+}
+
+function HeadStateTooltip({
+  scheduler,
+  reason,
+}: {
+  scheduler: SchedulerState;
+  reason?: string;
+}) {
+  const resource = scheduler.blockedResource;
+  const details = [
+    { label: 'Reason', value: reason },
+    {
+      label: 'Blocked for',
+      value: scheduler.blockedDuration
+        ? formatCompactISODuration(scheduler.blockedDuration)
+        : undefined,
+    },
+    { label: 'Rule', value: resource?.blockedRule },
+    { label: 'Scope', value: resource?.scope },
+    { label: 'Limit key', value: resource?.limitKey },
+    { label: 'Lock', value: resource?.lockName },
+    {
+      label: 'Retry at',
+      value: resource?.estimatedRetryAt
+        ? formatDateTime(resource.estimatedRetryAt)
+        : undefined,
+    },
+    {
+      label: 'Run at',
+      value: scheduler.scheduledAt
+        ? formatDateTime(scheduler.scheduledAt)
+        : undefined,
+    },
+    { label: 'Head entry', value: scheduler.headEntryId },
+  ].filter(
+    (detail): detail is { label: string; value: string } =>
+      detail.value !== undefined,
+  );
+  const title = {
+    blocked: 'Head entry blocked',
+    scheduled: 'Head entry scheduled',
+    ready: 'Head entry ready',
+    dormant: 'Queue dormant',
+    empty: 'Queue empty',
+  }[scheduler.status];
+  return (
+    <div className="max-w-80 min-w-56">
+      <div className="text-sm font-medium text-gray-100">{title}</div>
+      {details.length > 0 && (
+        <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-xs">
+          {details.map((detail) => (
+            <div key={detail.label} className="contents">
+              <dt className="text-gray-400">{detail.label}</dt>
+              <dd className="min-w-0 text-right break-all text-gray-200 tabular-nums">
+                {detail.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  );
+}
+
+function HeadState({ row }: { row: VQueueMetaRow }) {
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const scheduler = row.scheduler;
+  if (
+    !scheduler ||
+    scheduler.status === 'empty' ||
+    scheduler.status === 'dormant'
+  ) {
+    return null;
+  }
+
+  const reason =
+    scheduler.status === 'blocked'
+      ? vqueueBlockedResourceLabel(
+          scheduler.blockedResource?.resource ?? scheduler.blockedOn,
+        )
+      : undefined;
+  const scheduledTiming = scheduler.scheduledAt
+    ? durationSinceLastSnapshot(scheduler.scheduledAt)
+    : undefined;
+  const scheduledLabel = scheduledTiming
+    ? scheduledTiming.isPast
+      ? 'due now'
+      : `in ${formatDurations(scheduledTiming)}`
+    : undefined;
+  const presentation =
+    scheduler.status === 'blocked'
+      ? {
+          tone: 'blocked' as const,
+          status: 'Blocked',
+          detail: reason,
+        }
+      : scheduler.status === 'scheduled'
+        ? {
+            tone: 'scheduled' as const,
+            status: 'Scheduled',
+            detail: scheduledLabel,
+          }
+        : { tone: 'ready' as const, status: 'Ready', detail: undefined };
+  const ariaLabel = [presentation.status, presentation.detail]
+    .filter(Boolean)
+    .join(', ');
+  const styles = headStateStyles({ tone: presentation.tone });
+
+  return (
+    <HoverTooltip
+      size="default"
+      className="min-w-0 flex-1"
+      content={<HeadStateTooltip scheduler={scheduler} reason={reason} />}
+    >
+      <span className={styles.root()} aria-label={`Head entry: ${ariaLabel}`}>
+        <span aria-hidden className={styles.dot()} />
+        <span className={styles.status()}>{presentation.status}</span>
+        {presentation.detail && (
+          <>
+            <span aria-hidden className={styles.separator()}>
+              ·
+            </span>
+            <span className={styles.detail()}>{presentation.detail}</span>
+          </>
+        )}
+      </span>
+    </HoverTooltip>
+  );
+}
+
+function HeadEntry({ row }: { row: VQueueMetaRow }) {
+  const scheduler = row.scheduler;
+  if (!scheduler) return null;
+  return (
+    <div className="flex w-full min-w-0 items-center gap-2">
+      {scheduler.headEntryId && (
+        <div className="min-w-0 flex-1">
+          <VQueueEntryId
+            id={scheduler.headEntryId}
+            size="md"
+            className="max-w-full min-w-0"
+          />
+        </div>
+      )}
+      <HeadState row={row} />
     </div>
   );
 }
@@ -230,7 +436,10 @@ function RelativeActivity({ activity }: { activity: Activity }) {
         >
           {duration} ago
         </time>
-        <span className="truncate text-zinc-400">{activity.label}</span>
+        <span aria-hidden className="text-zinc-300">
+          ·
+        </span>
+        <span className="min-w-0 truncate text-zinc-400">{activity.label}</span>
       </span>
     </DateTooltip>
   );
@@ -244,17 +453,33 @@ function renderCell(
   switch (column.id) {
     case 'vqueue':
       return (
-        <Cell className="overflow-visible">
-          <span className="flex min-w-0 items-center gap-2">
-            <VQueueId id={row.id} popover={false} truncateInMiddle />
+        <Cell className="min-w-0 overflow-hidden">
+          <span className="flex min-w-0 items-center gap-2 overflow-hidden">
+            <VQueueId
+              id={row.id}
+              popover={false}
+              truncateInMiddle
+              className="max-w-full min-w-0 shrink overflow-hidden"
+            />
             <QueueStatus row={row} />
           </span>
         </Cell>
       );
-    case 'service':
+    case 'serviceLock': {
+      const identity = lockIdentity(row);
       return (
-        <Cell className="overflow-visible">
-          {row.service_name ? (
+        <Cell className="min-w-0 overflow-hidden">
+          {identity ? (
+            <VirtualObjectInstanceTarget
+              identity={identity}
+              serviceHref={panelHref({ service: identity.service })}
+              href={virtualObjectInstanceHref(baseUrl, {
+                ...identity,
+                ...(row.scope ? { scope: row.scope } : {}),
+              })}
+              containerClassName="w-full min-w-0 overflow-hidden"
+            />
+          ) : row.service_name ? (
             <ServiceTarget
               service={row.service_name}
               links={{
@@ -270,9 +495,10 @@ function renderCell(
           )}
         </Cell>
       );
+    }
     case 'scope':
       return (
-        <Cell className="overflow-visible">
+        <Cell className="min-w-0 overflow-hidden">
           {row.scope || row.limit_key ? (
             <ChipGroup density="compact" className="min-w-0">
               <Scope
@@ -291,25 +517,12 @@ function renderCell(
           )}
         </Cell>
       );
-    case 'virtualObject': {
-      const identity = lockIdentity(row);
+    case 'head':
       return (
-        <Cell className="overflow-visible">
-          {identity ? (
-            <VirtualObjectInstanceTarget
-              identity={identity}
-              href={virtualObjectInstanceHref(baseUrl, {
-                ...identity,
-                ...(row.scope ? { scope: row.scope } : {}),
-              })}
-              showService={false}
-            />
-          ) : (
-            <span className="text-zinc-300">—</span>
-          )}
+        <Cell className="min-w-0 overflow-hidden">
+          <HeadEntry row={row} />
         </Cell>
       );
-    }
     case 'stages':
       return (
         <Cell>

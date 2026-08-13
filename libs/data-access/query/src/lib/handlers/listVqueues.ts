@@ -4,14 +4,36 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { limitPage, limitPageSize } from './limitPagination';
 import { quoteSqlString, type QueryContext } from './shared';
+import {
+  parseVqueueBlockedResource,
+  parseVqueueSchedulingStatus,
+} from './vqueueScheduler';
 
 const VQUEUE_COLUMNS =
   'id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished';
+const VQUEUE_LIST_LIMIT = 250;
 
 type ListVQueuesRequestBody = components['schemas']['ListVQueuesRequestBody'];
 type ListVQueuesResponse = components['schemas']['ListVQueuesResponse'];
 type VQueueMetaRow = components['schemas']['VQueueMetaRow'];
+type VQueueSchedulerState = components['schemas']['VQueueSchedulerState'];
 type VQueueSort = components['schemas']['VQueueSort'];
+
+interface SchedulerRow {
+  id?: unknown;
+  status?: unknown;
+  blocked_on?: unknown;
+  blocked_on_json?: unknown;
+  head_entry_id?: unknown;
+  scheduled_at?: unknown;
+  invoker_concurrency_block_duration?: unknown;
+  throttling_rules_block_duration?: unknown;
+  invoker_throttling_block_duration?: unknown;
+  invoker_memory_block_duration?: unknown;
+  concurrency_rules_block_duration?: unknown;
+  lock_block_duration?: unknown;
+  deployment_concurrency_block_duration?: unknown;
+}
 
 const SORT_FIELDS = new Set<VQueueSort['field']>([
   'id',
@@ -203,6 +225,69 @@ function whereClause(filters: unknown) {
   }
 }
 
+function schedulerQuery(vqueueIds: string[]) {
+  return `SELECT
+  id,
+  status,
+  blocked_on,
+  blocked_on_json,
+  head_entry_id,
+  scheduled_at,
+  invoker_concurrency_block_duration,
+  throttling_rules_block_duration,
+  invoker_throttling_block_duration,
+  invoker_memory_block_duration,
+  concurrency_rules_block_duration,
+  lock_block_duration,
+  deployment_concurrency_block_duration
+FROM sys_scheduler
+WHERE id IN (${vqueueIds.map(quoteSqlString).join(', ')})`;
+}
+
+function optionalString(value: unknown) {
+  return value === null || value === undefined || value === ''
+    ? undefined
+    : String(value);
+}
+
+const BLOCK_DURATION_FIELDS: Record<string, keyof SchedulerRow> = {
+  lock: 'lock_block_duration',
+  'invoker-concurrency': 'invoker_concurrency_block_duration',
+  invoker_concurrency: 'invoker_concurrency_block_duration',
+  'invoker-throttling': 'invoker_throttling_block_duration',
+  invoker_throttling: 'invoker_throttling_block_duration',
+  'invoker-memory': 'invoker_memory_block_duration',
+  invoker_memory: 'invoker_memory_block_duration',
+  'deployment-concurrency': 'deployment_concurrency_block_duration',
+  deployment_concurrency: 'deployment_concurrency_block_duration',
+  'limit-key-concurrency': 'concurrency_rules_block_duration',
+  concurrency_rules: 'concurrency_rules_block_duration',
+  throttling_rules: 'throttling_rules_block_duration',
+};
+
+function schedulerState(row: SchedulerRow): VQueueSchedulerState | undefined {
+  const status = parseVqueueSchedulingStatus(optionalString(row.status));
+  if (!status) return undefined;
+  const headEntryId = optionalString(row.head_entry_id);
+  const scheduledAt = optionalString(row.scheduled_at);
+  const blockedOn = optionalString(row.blocked_on);
+  const blockedResource = parseVqueueBlockedResource(row.blocked_on_json);
+  const durationField =
+    BLOCK_DURATION_FIELDS[blockedResource?.resource ?? ''] ??
+    BLOCK_DURATION_FIELDS[blockedOn ?? ''];
+  const blockedDuration = durationField
+    ? optionalString(row[durationField])
+    : undefined;
+  return {
+    status,
+    ...(headEntryId && { headEntryId }),
+    ...(scheduledAt && { scheduledAt }),
+    ...(blockedOn && { blockedOn }),
+    ...(blockedResource && { blockedResource }),
+    ...(blockedDuration && { blockedDuration }),
+  };
+}
+
 export async function listVqueues(
   this: QueryContext,
   args: ListVQueuesRequestBody = {},
@@ -217,14 +302,34 @@ export async function listVqueues(
   if (filters.error) {
     return new Response(filters.error, { status: 400 });
   }
-  const limit = limitPageSize(args.limit);
+  const limit = Math.min(limitPageSize(args.limit), VQUEUE_LIST_LIMIT);
   const { rows } = await this.query(`SELECT ${VQUEUE_COLUMNS}
     FROM sys_vqueue_meta${filters.clause}
     ORDER BY ${orderBy(args.sort)}
     LIMIT ${limit + 1}`);
   const page = limitPage(rows as VQueueMetaRow[], limit);
+  if (page.items.length === 0) {
+    const response: ListVQueuesResponse = {
+      vqueues: [],
+      hasMore: page.hasMore,
+    };
+    return Response.json(response);
+  }
+  const schedulerRows = await this.query(
+    schedulerQuery(page.items.map((row) => row.id)),
+  );
+  const schedulerById = new Map(
+    (schedulerRows.rows as SchedulerRow[]).flatMap((row) => {
+      const id = optionalString(row.id);
+      const scheduler = schedulerState(row);
+      return id && scheduler ? [[id, scheduler] as const] : [];
+    }),
+  );
   const response: ListVQueuesResponse = {
-    vqueues: page.items,
+    vqueues: page.items.map((row) => {
+      const scheduler = schedulerById.get(row.id);
+      return scheduler ? { ...row, scheduler } : row;
+    }),
     hasMore: page.hasMore,
   };
   return Response.json(response);

@@ -24,6 +24,7 @@ import { panelHref } from '@restate/util/panel';
 import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { ServiceTarget, Target } from '@restate/features/service-target';
 import { InvocationId } from './InvocationId';
+import { VQueueEntryId } from './VQueueEntryId';
 import { InvocationStatusBadge, Status } from './Status';
 
 export const INVOCATION_TABLE_COLUMN_CONFIG = {
@@ -226,7 +227,7 @@ function visibleCellContent(
               (definition) => definition.key === row.status,
             )?.stage
           }
-          renderEntryId={(id) => <InvocationTableId id={id} size="md" />}
+          renderEntryId={(id) => <VQueueEntryId id={id} size="md" />}
           truncateInMiddle
           className="mr-1 w-fit max-w-full min-w-0 rounded-md"
         />
