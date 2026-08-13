@@ -101,7 +101,7 @@ const tabStyles = tv({
 });
 
 const toolbarContentStyles = tv({
-  base: 'flex min-h-9 w-full items-center justify-end',
+  base: 'flex min-h-9 w-full items-end justify-end gap-1.5 pr-1 pb-1 pl-2',
 });
 
 const headerContentStyles = tv({

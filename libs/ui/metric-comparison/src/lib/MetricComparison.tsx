@@ -25,9 +25,9 @@ const styles = tv({
     visual:
       'inline-flex shrink-0 items-baseline gap-[0.28em] rounded-[0.35em] border px-[0.3em] py-[0.12em] text-[1em] leading-none outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/30',
     icon: 'h-[0.88em] w-[0.88em] shrink-0 self-center stroke-2',
-    approximation: 'self-center text-[0.82em] font-medium leading-none',
+    approximation: 'self-center text-[0.82em] leading-none font-medium',
     measure: 'inline-flex items-baseline gap-[0.04em]',
-    ratio: 'font-medium',
+    ratio: 'text-[0.94em] font-medium',
     multiplier: 'text-[1.08em] font-medium opacity-80',
     reference: 'ml-[0.08em] text-[0.8em] font-medium opacity-70',
   },

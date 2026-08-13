@@ -55,6 +55,13 @@ export function formatDurations(
   return formatted;
 }
 
+export function formatMilliseconds(milliseconds: number) {
+  if (milliseconds < 1000) {
+    return `${formatNumber(milliseconds)}ms`;
+  }
+  return formatDurations(normaliseDuration({ milliseconds }));
+}
+
 export function parseISODuration(iso: string) {
   return parseDuration(iso);
 }
