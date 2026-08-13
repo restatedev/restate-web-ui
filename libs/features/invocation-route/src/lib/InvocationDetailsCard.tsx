@@ -148,6 +148,7 @@ export function InvocationDetailsCard({
             id={vqueueId}
             focusEntryId={invocation.id}
             focusStage={vqueueSnapshot?.focusEntry?.stage}
+            snapshot={vqueueSnapshot}
             truncateInMiddle
             className="ml-1 max-w-48 min-w-0"
           />

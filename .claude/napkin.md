@@ -42,6 +42,8 @@
 - 2026-08-12 self on post-format multi-file QA patch: I coupled the VQueue table density change to a fixture hunk built from pre-Prettier context, so the atomic patch failed. Re-read exact formatted blocks and keep independent presentation and fixture changes in separate patches.
 - 2026-08-12 self on required API generation via Nx: I followed the repository instruction to run `pnpm nx create admin-api` even though the napkin records that Nx graph construction stalls in this checkout; it produced only the engine warning and had to be interrupted. Run the target's declared merge, lint, type-generation, and formatting commands directly when Nx is stuck.
 - 2026-08-12 self on VQueue inspection pipeline: I piped an `rg` result into `sed` while locating VQueue identity rendering, despite the repository's established no-pipeline rule. Use a single bounded `rg` command or a separate direct file read.
+- 2026-08-13 ContentPanel toolbar geometry: Treat the Invocations-list toolbar as the shared reference. `ContentPanelToolbar` owns bottom alignment plus `gap-1.5 pr-1 pb-1 pl-2`; routes must not select their own `items-*`, gap, or inset. Journal must not add another nested `pb-1`.
+
 - 2026-08-13 collapsed attempt start time: Do not repeat `started T ago` in the compact attempt-group header. Created/runnable/queue wait already determine the first-attempt start; retain the timestamp on the expanded first-attempt endpoint and summarize the collapsed group as `N attempts over D with …`.
 
 - 2026-08-13 metric-comparison ratio refinement: Keep the trend icon, `x`, and `avg` proportions stable, but render only the ratio value a touch smaller (`0.94em`) so it does not overpower the observed metric.
