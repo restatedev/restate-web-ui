@@ -14,10 +14,10 @@ import {
 import { ServiceTarget } from '@restate/features/service-target';
 import { VQueueEntryId } from '@restate/features/invocation-ui';
 import {
+  getVqueueGateLabel,
   LimitKey,
   Scope,
   VQueueId,
-  vqueueBlockedResourceLabel,
 } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { ChipGroup } from '@restate/ui/chip';
@@ -346,11 +346,13 @@ function HeadState({ row }: { row: VQueueMetaRow }) {
     return null;
   }
 
+  const blockedResource =
+    scheduler.blockedResource?.resource ?? scheduler.blockedOn;
   const reason =
     scheduler.status === 'blocked'
-      ? vqueueBlockedResourceLabel(
-          scheduler.blockedResource?.resource ?? scheduler.blockedOn,
-        )
+      ? blockedResource
+        ? getVqueueGateLabel(blockedResource)
+        : 'resource'
       : undefined;
   const scheduledTiming = scheduler.scheduledAt
     ? durationSinceLastSnapshot(scheduler.scheduledAt)
