@@ -48,7 +48,7 @@ export function KeyedServiceState({
 
   return (
     <>
-      <ContentPanelToolbar className="h-full min-h-0 justify-end gap-1.5 pr-1 pb-1 pl-2">
+      <ContentPanelToolbar>
         <SplitButton
           mini={false}
           variant="secondary"

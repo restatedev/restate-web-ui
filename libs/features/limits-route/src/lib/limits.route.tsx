@@ -823,7 +823,7 @@ function Component() {
     <div className="relative flex min-h-0 flex-1 flex-col">
       <FlowControlHero />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'rules')}>
-        <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
+        <ContentPanelToolbar>
           <Button
             type="button"
             variant="secondary"

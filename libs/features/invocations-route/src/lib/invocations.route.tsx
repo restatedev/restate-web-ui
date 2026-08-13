@@ -652,7 +652,7 @@ function Component() {
           />
         </div>
         <ContentPanel tabs={serviceTabs}>
-          <ContentPanelToolbar className="justify-end gap-1.5 pr-1 pl-2">
+          <ContentPanelToolbar>
             <SampleScanToggle
               requestedSampled={listSampled}
               resultIsPartial={Boolean(data?.isPartial)}

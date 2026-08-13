@@ -231,7 +231,7 @@ function InboxBatchActions({
       : `Actions on all ${formatNumber(inboxCount)} inbox ${inboxCount === 1 ? 'entry' : 'entries'}`;
 
   return (
-    <ContentPanelToolbar className="h-full min-h-0 justify-end gap-1.5 pr-1 pb-1 pl-2">
+    <ContentPanelToolbar>
       <Dropdown>
         <DropdownTrigger>
           <Button
