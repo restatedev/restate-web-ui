@@ -1,19 +1,21 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { FormEvent } from 'react';
 import { useKillInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { IconName } from '@restate/ui/icons';
-import { useSearchParams } from 'react-router';
+import {
+  getInvocationActionFormData,
+  getInvocationActionId,
+  getInvocationActionSubmitData,
+  InvocationActionHiddenInput,
+  InvocationActionId,
+} from './invocationActionHelpers';
 
 const KILL_INVOCATION_QUERY_PARAM = 'kill-invocation';
 
 function KillInvocationContent() {
-  const [searchParams] = useSearchParams();
-  const invocationId = searchParams.get(KILL_INVOCATION_QUERY_PARAM);
-
   return (
-    <input type="hidden" name="invocation-id" value={invocationId || ''} />
+    <InvocationActionHiddenInput queryParam={KILL_INVOCATION_QUERY_PARAM} />
   );
 }
 
@@ -27,10 +29,7 @@ export const KillInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Killing{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Killing <InvocationActionId value={id} />
       </>
     );
   },
@@ -38,43 +37,18 @@ export const KillInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Failed to kill{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Failed to kill <InvocationActionId value={id} />
       </>
     );
   },
-  getFormData: function (...args: string[]) {
-    const [invocationId] = args;
-    const formData = new FormData();
-    formData.append('invocation-id', String(invocationId));
-    return formData;
-  },
-  getQueryParamValue: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(KILL_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
-  getUseMutationInput: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(KILL_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
+  getFormData: getInvocationActionFormData,
+  getQueryParamValue: (input) =>
+    getInvocationActionId(input, KILL_INVOCATION_QUERY_PARAM),
+  getUseMutationInput: (input) =>
+    getInvocationActionId(input, KILL_INVOCATION_QUERY_PARAM),
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
-    let formData: FormData;
-
-    if (event instanceof FormData) {
-      formData = event;
-    } else {
-      event.preventDefault();
-      formData = new FormData(event.currentTarget);
-    }
+  onSubmit: (mutate, event) => {
+    const formData = getInvocationActionSubmitData(event);
     const invocationId = formData.get('invocation-id');
 
     mutate({
@@ -117,10 +91,7 @@ export const KillInvocation = withConfirmation({
     const id = String(variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>{' '}
-        has been successfully killed.
+        <InvocationActionId value={id} /> has been successfully killed.
       </>,
     );
   },

@@ -8,7 +8,7 @@ import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { InvocationFlowControlCardView } from './InvocationFlowControlCard';
+import { InvocationFlowControlCard } from './InvocationFlowControlCard';
 
 type InvocationV2 = components['schemas']['InvocationV2'];
 
@@ -86,7 +86,7 @@ function renderCard(
 ) {
   return renderWithQueryClient(
     <SnapshotTimeProvider lastSnapshot={snapshotTime}>
-      <InvocationFlowControlCardView
+      <InvocationFlowControlCard
         invocation={invocationData}
         data={data}
         journalEntries={journalEntries}
@@ -96,7 +96,7 @@ function renderCard(
   );
 }
 
-describe('InvocationFlowControlCardView', () => {
+describe('InvocationFlowControlCard', () => {
   it('renders the live journey, aggregate activity, and only the focused head blocker', () => {
     renderCard(
       invocation(

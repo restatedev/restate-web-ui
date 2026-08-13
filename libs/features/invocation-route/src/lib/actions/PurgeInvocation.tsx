@@ -1,19 +1,21 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { FormEvent } from 'react';
 import { usePurgeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
-import { useSearchParams } from 'react-router';
 import { IconName } from '@restate/ui/icons';
+import {
+  getInvocationActionFormData,
+  getInvocationActionId,
+  getInvocationActionSubmitData,
+  InvocationActionHiddenInput,
+  InvocationActionId,
+} from './invocationActionHelpers';
 
 const PURGE_INVOCATION_QUERY_PARAM = 'purge-invocation';
 
 function PurgeInvocationContent() {
-  const [searchParams] = useSearchParams();
-  const invocationId = searchParams.get(PURGE_INVOCATION_QUERY_PARAM);
-
   return (
-    <input type="hidden" name="invocation-id" value={invocationId || ''} />
+    <InvocationActionHiddenInput queryParam={PURGE_INVOCATION_QUERY_PARAM} />
   );
 }
 
@@ -27,10 +29,7 @@ export const PurgeInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Purging{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Purging <InvocationActionId value={id} />
       </>
     );
   },
@@ -38,44 +37,18 @@ export const PurgeInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Failed to purge{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Failed to purge <InvocationActionId value={id} />
       </>
     );
   },
-  getFormData: function (...args: string[]) {
-    const [invocationId] = args;
-    const formData = new FormData();
-    formData.append('invocation-id', String(invocationId));
-    return formData;
-  },
+  getFormData: getInvocationActionFormData,
+  getQueryParamValue: (input) =>
+    getInvocationActionId(input, PURGE_INVOCATION_QUERY_PARAM),
+  getUseMutationInput: (input) =>
+    getInvocationActionId(input, PURGE_INVOCATION_QUERY_PARAM),
 
-  getQueryParamValue: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(PURGE_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
-  getUseMutationInput: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(PURGE_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
-
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
-    let formData: FormData;
-
-    if (event instanceof FormData) {
-      formData = event;
-    } else {
-      event.preventDefault();
-      formData = new FormData(event.currentTarget);
-    }
+  onSubmit: (mutate, event) => {
+    const formData = getInvocationActionSubmitData(event);
     const invocationId = formData.get('invocation-id');
 
     mutate({
@@ -117,10 +90,7 @@ export const PurgeInvocation = withConfirmation({
     const id = String(variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>{' '}
-        has been successfully purged.
+        <InvocationActionId value={id} /> has been successfully purged.
       </>,
     );
   },
