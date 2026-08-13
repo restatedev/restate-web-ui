@@ -1,18 +1,20 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { FormEvent } from 'react';
 import { usePauseInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { IconName } from '@restate/ui/icons';
-import { useSearchParams } from 'react-router';
+import {
+  getInvocationActionFormData,
+  getInvocationActionId,
+  getInvocationActionSubmitData,
+  InvocationActionHiddenInput,
+  InvocationActionId,
+} from './invocationActionHelpers';
 
 const PAUSE_INVOCATION_QUERY_PARAM = 'pause-invocation';
 
 function PauseInvocationContent() {
-  const [searchParams] = useSearchParams();
-  const invocationId = searchParams.get(PAUSE_INVOCATION_QUERY_PARAM);
-
   return (
-    <input type="hidden" name="invocation-id" value={invocationId || ''} />
+    <InvocationActionHiddenInput queryParam={PAUSE_INVOCATION_QUERY_PARAM} />
   );
 }
 
@@ -22,36 +24,14 @@ export const PauseInvocation = withConfirmation({
   userPreferenceId: 'skip-pause-action-dialog',
   useMutation: usePauseInvocation,
 
-  getFormData: function (...args: string[]) {
-    const [invocationId] = args;
-    const formData = new FormData();
-    formData.append('invocation-id', String(invocationId));
-    return formData;
-  },
-  getQueryParamValue: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(PAUSE_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
-  getUseMutationInput: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(PAUSE_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
+  getFormData: getInvocationActionFormData,
+  getQueryParamValue: (input) =>
+    getInvocationActionId(input, PAUSE_INVOCATION_QUERY_PARAM),
+  getUseMutationInput: (input) =>
+    getInvocationActionId(input, PAUSE_INVOCATION_QUERY_PARAM),
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
-    let formData: FormData;
-
-    if (event instanceof FormData) {
-      formData = event;
-    } else {
-      event.preventDefault();
-      formData = new FormData(event.currentTarget);
-    }
+  onSubmit: (mutate, event) => {
+    const formData = getInvocationActionSubmitData(event);
     const invocationId = formData.get('invocation-id');
 
     mutate({
@@ -64,10 +44,7 @@ export const PauseInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Pausing{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Pausing <InvocationActionId value={id} />
       </>
     );
   },
@@ -75,10 +52,7 @@ export const PauseInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Failed to pause{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Failed to pause <InvocationActionId value={id} />
       </>
     );
   },
@@ -104,10 +78,8 @@ export const PauseInvocation = withConfirmation({
 
     showSuccessNotification(
       <>
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>{' '}
-        has been successfully registered to be paused.
+        <InvocationActionId value={id} /> has been successfully registered to be
+        paused.
       </>,
     );
   },

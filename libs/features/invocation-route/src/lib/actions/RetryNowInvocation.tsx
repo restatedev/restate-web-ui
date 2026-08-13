@@ -1,18 +1,22 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { FormEvent } from 'react';
 import { useResumeInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { IconName } from '@restate/ui/icons';
-import { useSearchParams } from 'react-router';
+import {
+  getInvocationActionFormData,
+  getInvocationActionId,
+  getInvocationActionSubmitData,
+  InvocationActionHiddenInput,
+  InvocationActionId,
+} from './invocationActionHelpers';
 
 const RETRY_NOW_INVOCATION_QUERY_PARAM = 'retry-now-invocation';
 
 function RetryNowInvocationContent() {
-  const [searchParams] = useSearchParams();
-  const invocationId = searchParams.get(RETRY_NOW_INVOCATION_QUERY_PARAM);
-
   return (
-    <input type="hidden" name="invocation-id" value={invocationId || ''} />
+    <InvocationActionHiddenInput
+      queryParam={RETRY_NOW_INVOCATION_QUERY_PARAM}
+    />
   );
 }
 
@@ -26,10 +30,7 @@ export const RetryNowInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Retrying{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Retrying <InvocationActionId value={id} />
       </>
     );
   },
@@ -37,43 +38,18 @@ export const RetryNowInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Failed to retry{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Failed to retry <InvocationActionId value={id} />
       </>
     );
   },
-  getFormData: function (...args: string[]) {
-    const [invocationId] = args;
-    const formData = new FormData();
-    formData.append('invocation-id', String(invocationId));
-    return formData;
-  },
-  getQueryParamValue: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(RETRY_NOW_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
-  getUseMutationInput: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(RETRY_NOW_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
+  getFormData: getInvocationActionFormData,
+  getQueryParamValue: (input) =>
+    getInvocationActionId(input, RETRY_NOW_INVOCATION_QUERY_PARAM),
+  getUseMutationInput: (input) =>
+    getInvocationActionId(input, RETRY_NOW_INVOCATION_QUERY_PARAM),
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
-    let formData: FormData;
-
-    if (event instanceof FormData) {
-      formData = event;
-    } else {
-      event.preventDefault();
-      formData = new FormData(event.currentTarget);
-    }
+  onSubmit: (mutate, event) => {
+    const formData = getInvocationActionSubmitData(event);
     const invocationId = formData.get('invocation-id');
 
     mutate({
@@ -101,10 +77,7 @@ export const RetryNowInvocation = withConfirmation({
     const id = String(variables.parameters?.path.invocation_id);
     showSuccessNotification(
       <>
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>{' '}
-        is retrying.
+        <InvocationActionId value={id} /> is retrying.
       </>,
     );
   },

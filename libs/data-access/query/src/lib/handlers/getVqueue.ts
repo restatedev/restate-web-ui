@@ -1,4 +1,5 @@
 import type {
+  components,
   RawInvocation,
   VqueueEntryStage,
   VqueueEntryStatus,
@@ -83,7 +84,7 @@ function metaQuery(vqueueId: string) {
   last_attempt_at,
   last_finish_at
 FROM sys_vqueue_meta
-WHERE id = ${quoteSqlString(vqueueId)} LIMIT 1`;
+WHERE id = ${quoteSqlString(vqueueId)}`;
 }
 
 function schedulerWithHeadQuery(vqueueId: string) {
@@ -126,8 +127,7 @@ function schedulerWithHeadQuery(vqueueId: string) {
 FROM sys_scheduler s
 LEFT JOIN sys_vqueue_entry_status h
   ON h.vqueue_id = s.id AND h.entry_id = s.head_entry_id
-WHERE s.id = ${quoteSqlString(vqueueId)}
-LIMIT 1`;
+WHERE s.id = ${quoteSqlString(vqueueId)}`;
 }
 
 type Row = Record<string, unknown>;
@@ -311,8 +311,7 @@ function focusEntryQuery(focusEntryId: string) {
   e.latest_attempt_blocked_on_deployment_concurrency
 FROM sys_vqueue_entry_status e
 WHERE e.entry_id = ${quoteSqlString(focusEntryId)}
-  AND e.entry_kind = 'invocation'
-LIMIT 1`;
+  AND e.entry_kind = 'invocation'`;
 }
 
 function focusedInvocationQuery(context: QueryContext, focusEntryId: string) {
@@ -331,8 +330,7 @@ FROM (
   WHERE id = ${quoteSqlString(vqueueId)}
     AND stage = 'inbox'
 ) ranked
-WHERE entry_id = ${quoteSqlString(focusEntryId)}
-LIMIT 1`;
+WHERE entry_id = ${quoteSqlString(focusEntryId)}`;
 }
 
 function toFocusEntry(
@@ -377,7 +375,27 @@ export async function getVqueue(
     return new Response(null, { status: 204 });
   }
 
-  const requestTime = new Date().toISOString();
+  const snapshot = await getVqueueSnapshot.call(this, vqueueId, focusEntryId);
+
+  return snapshot
+    ? Response.json(snapshot)
+    : new Response(null, { status: 204 });
+}
+
+export async function getVqueueSnapshot(
+  this: QueryContext,
+  vqueueId: string,
+  focusEntryId?: string,
+  options?: {
+    focusedInvocation?: components['schemas']['InvocationV2'];
+    requestTime?: string;
+  },
+): Promise<VqueueSnapshot | undefined> {
+  if (!this.features.has('vqueues') || !vqueueId) {
+    return undefined;
+  }
+
+  const requestTime = options?.requestTime ?? new Date().toISOString();
   const [
     metaResult,
     schedulerResult,
@@ -389,14 +407,14 @@ export async function getVqueue(
     focusEntryId
       ? this.query(focusEntryQuery(focusEntryId))
       : Promise.resolve(undefined),
-    focusEntryId
+    focusEntryId && !options?.focusedInvocation
       ? this.query(focusedInvocationQuery(this, focusEntryId))
       : Promise.resolve(undefined),
   ]);
 
   const meta = metaResult.rows.at(0) as MetaRow | undefined;
   if (!meta) {
-    return new Response(null, { status: 204 });
+    return undefined;
   }
 
   const scheduler = schedulerResult.rows.at(0) as SchedulerRow | undefined;
@@ -405,13 +423,15 @@ export async function getVqueue(
   const focusedInvocationRow = focusedInvocationResult?.rows.at(0) as
     | RawInvocation
     | undefined;
-  const focusedInvocation = focusedInvocationRow
-    ? convertInvocationV2(
-        focusedInvocationRow,
-        focusEntryRow as VqueueStatus | undefined,
-        requestTime,
-      )
-    : undefined;
+  const focusedInvocation =
+    options?.focusedInvocation ??
+    (focusedInvocationRow
+      ? convertInvocationV2(
+          focusedInvocationRow,
+          focusEntryRow as VqueueStatus | undefined,
+          requestTime,
+        )
+      : undefined);
   const focusPositionResult =
     focusEntryId && focusEntryBelongs && focusEntryRow?.stage === 'inbox'
       ? await this.query(focusEntryPositionQuery(vqueueId, focusEntryId))
@@ -428,7 +448,7 @@ export async function getVqueue(
     scheduler?.blocked_on_json,
   );
   const scheduling = parseVqueueSchedulingStatus(scheduler?.status);
-  const snapshot: VqueueSnapshot = {
+  return {
     identity: {
       service: meta.service_name,
       ...(objectKey && { objectKey }),
@@ -481,6 +501,4 @@ export async function getVqueue(
         focusEntry: toFocusEntry(focusEntryRow, focusEntryId, focusPosition),
       }),
   };
-
-  return Response.json(snapshot);
 }

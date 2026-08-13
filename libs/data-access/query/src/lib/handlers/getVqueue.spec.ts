@@ -46,7 +46,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
         last_attempt_at,
         last_finish_at
       FROM sys_vqueue_meta
-      WHERE id = 'vq_orders' LIMIT 1",
+      WHERE id = 'vq_orders'",
         "SELECT
         s.status,
         s.blocked_on,
@@ -86,8 +86,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
       FROM sys_scheduler s
       LEFT JOIN sys_vqueue_entry_status h
         ON h.vqueue_id = s.id AND h.entry_id = s.head_entry_id
-      WHERE s.id = 'vq_orders'
-      LIMIT 1",
+      WHERE s.id = 'vq_orders'",
       ]
     `);
   });
@@ -127,7 +126,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
         last_attempt_at,
         last_finish_at
       FROM sys_vqueue_meta
-      WHERE id = 'vq_orders' LIMIT 1",
+      WHERE id = 'vq_orders'",
         "SELECT
         s.status,
         s.blocked_on,
@@ -167,8 +166,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
       FROM sys_scheduler s
       LEFT JOIN sys_vqueue_entry_status h
         ON h.vqueue_id = s.id AND h.entry_id = s.head_entry_id
-      WHERE s.id = 'vq_orders'
-      LIMIT 1",
+      WHERE s.id = 'vq_orders'",
       ]
     `);
   });
@@ -373,7 +371,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
         last_attempt_at,
         last_finish_at
       FROM sys_vqueue_meta
-      WHERE id = 'vq_orders' LIMIT 1",
+      WHERE id = 'vq_orders'",
         "SELECT
         s.status,
         s.blocked_on,
@@ -413,8 +411,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
       FROM sys_scheduler s
       LEFT JOIN sys_vqueue_entry_status h
         ON h.vqueue_id = s.id AND h.entry_id = s.head_entry_id
-      WHERE s.id = 'vq_orders'
-      LIMIT 1",
+      WHERE s.id = 'vq_orders'",
         "SELECT
         e.entry_id,
         e.vqueue_id,
@@ -451,8 +448,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
         e.latest_attempt_blocked_on_deployment_concurrency
       FROM sys_vqueue_entry_status e
       WHERE e.entry_id = 'inv_focus'
-        AND e.entry_kind = 'invocation'
-      LIMIT 1",
+        AND e.entry_kind = 'invocation'",
         "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json, scope, vqueue_id, limit_key, invoked_by_service_name, trace_id, created_using_restate_version, last_failure_related_entry_index, last_failure_related_entry_name, last_failure_related_entry_type, last_failure_related_command_index, last_failure_related_command_name, last_failure_related_command_type FROM sys_invocation WHERE id = 'inv_focus'",
         "SELECT position
       FROM (
@@ -465,8 +461,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
         WHERE id = 'vq_orders'
           AND stage = 'inbox'
       ) ranked
-      WHERE entry_id = 'inv_focus'
-      LIMIT 1",
+      WHERE entry_id = 'inv_focus'",
       ]
     `);
   });
@@ -522,7 +517,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
         last_attempt_at,
         last_finish_at
       FROM sys_vqueue_meta
-      WHERE id = 'vq_orders' LIMIT 1",
+      WHERE id = 'vq_orders'",
         "SELECT
         s.status,
         s.blocked_on,
@@ -562,8 +557,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
       FROM sys_scheduler s
       LEFT JOIN sys_vqueue_entry_status h
         ON h.vqueue_id = s.id AND h.entry_id = s.head_entry_id
-      WHERE s.id = 'vq_orders'
-      LIMIT 1",
+      WHERE s.id = 'vq_orders'",
         "SELECT
         e.entry_id,
         e.vqueue_id,
@@ -600,8 +594,7 @@ describe('GET /query/vqueues/:vqueueId', () => {
         e.latest_attempt_blocked_on_deployment_concurrency
       FROM sys_vqueue_entry_status e
       WHERE e.entry_id = 'inv_other_queue'
-        AND e.entry_kind = 'invocation'
-      LIMIT 1",
+        AND e.entry_kind = 'invocation'",
         "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json, scope, vqueue_id, limit_key, invoked_by_service_name, trace_id, created_using_restate_version, last_failure_related_entry_index, last_failure_related_entry_name, last_failure_related_entry_type, last_failure_related_command_index, last_failure_related_command_name, last_failure_related_command_type FROM sys_invocation WHERE id = 'inv_other_queue'",
       ]
     `);

@@ -1,5 +1,8 @@
 import { useGetVqueue } from '@restate/data-access/admin-api-hooks';
-import type { InvocationSummaryStage } from '@restate/data-access/admin-api-spec';
+import type {
+  InvocationSummaryStage,
+  VqueueSnapshot,
+} from '@restate/data-access/admin-api-spec';
 import { Button } from '@restate/ui/button';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
@@ -44,6 +47,7 @@ const popoverContentStyles = tv({
 export interface VQueueIdProps extends VQueueIdDisplayProps {
   focusEntryId?: string;
   focusStage?: InvocationSummaryStage;
+  snapshot?: VqueueSnapshot;
   popover?: boolean;
   placement?: Placement;
   renderEntryId?: VQueueEntryIdRenderer;
@@ -95,6 +99,7 @@ function VQueueIdWithPopover({
   id,
   focusEntryId,
   focusStage,
+  snapshot,
   className,
   size = 'default',
   truncateInMiddle,
@@ -103,10 +108,10 @@ function VQueueIdWithPopover({
 }: VQueueIdProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { data, error, isFetching } = useGetVqueue(id, focusEntryId, {
-    enabled: isOpen,
+    enabled: isOpen && !snapshot,
     staleTime: 0,
   });
-  const freshData = !isFetching && !error ? data : undefined;
+  const freshData = snapshot ?? (!isFetching && !error ? data : undefined);
   const selectedStage = freshData?.focusEntry?.stage ?? focusStage;
   const compact = Boolean(selectedStage && selectedStage !== 'inbox');
 
@@ -141,7 +146,7 @@ function VQueueIdWithPopover({
         ) : (
           <VQueueFallbackContent
             id={id}
-            loading={isFetching}
+            loading={!snapshot && isFetching}
             message={
               isFetching
                 ? 'Loading VQueue…'
@@ -159,10 +164,15 @@ function VQueueIdWithPopover({
 export function VQueueId({
   popover = true,
   renderEntryId,
+  snapshot,
   ...props
 }: VQueueIdProps) {
   return popover ? (
-    <VQueueIdWithPopover {...props} renderEntryId={renderEntryId} />
+    <VQueueIdWithPopover
+      {...props}
+      snapshot={snapshot}
+      renderEntryId={renderEntryId}
+    />
   ) : (
     <VQueueIdDisplay {...props} />
   );

@@ -19,3 +19,4 @@ export {
 } from '@restate/features/invocation-ui';
 export { Target } from '@restate/features/service-target';
 export * from './lib/invocation.route';
+export * from './lib/InvocationJourneyCard';

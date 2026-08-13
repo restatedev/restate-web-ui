@@ -1,19 +1,21 @@
 import { withConfirmation } from '@restate/ui/dialog';
-import { FormEvent } from 'react';
 import { useCancelInvocation } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Link } from '@restate/ui/link';
 import { IconName } from '@restate/ui/icons';
-import { useSearchParams } from 'react-router';
+import {
+  getInvocationActionFormData,
+  getInvocationActionId,
+  getInvocationActionSubmitData,
+  InvocationActionHiddenInput,
+  InvocationActionId,
+} from './invocationActionHelpers';
 
 const CANCEL_INVOCATION_QUERY_PARAM = 'cancel-invocation';
 
 function CancelInvocationContent() {
-  const [searchParams] = useSearchParams();
-  const invocationId = searchParams.get(CANCEL_INVOCATION_QUERY_PARAM);
-
   return (
-    <input type="hidden" name="invocation-id" value={invocationId || ''} />
+    <InvocationActionHiddenInput queryParam={CANCEL_INVOCATION_QUERY_PARAM} />
   );
 }
 
@@ -23,36 +25,14 @@ export const CancelInvocation = withConfirmation({
   userPreferenceId: 'skip-cancel-action-dialog',
   useMutation: useCancelInvocation,
 
-  getFormData: function (...args: string[]) {
-    const [invocationId] = args;
-    const formData = new FormData();
-    formData.append('invocation-id', String(invocationId));
-    return formData;
-  },
-  getQueryParamValue: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(CANCEL_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
-  getUseMutationInput: function (input) {
-    if (input instanceof URLSearchParams) {
-      return input.get(CANCEL_INVOCATION_QUERY_PARAM);
-    } else {
-      return input.get('invocation-id') as string;
-    }
-  },
+  getFormData: getInvocationActionFormData,
+  getQueryParamValue: (input) =>
+    getInvocationActionId(input, CANCEL_INVOCATION_QUERY_PARAM),
+  getUseMutationInput: (input) =>
+    getInvocationActionId(input, CANCEL_INVOCATION_QUERY_PARAM),
 
-  onSubmit: (mutate, event: FormEvent<HTMLFormElement> | FormData) => {
-    let formData: FormData;
-
-    if (event instanceof FormData) {
-      formData = event;
-    } else {
-      event.preventDefault();
-      formData = new FormData(event.currentTarget);
-    }
+  onSubmit: (mutate, event) => {
+    const formData = getInvocationActionSubmitData(event);
     const invocationId = formData.get('invocation-id');
 
     mutate({
@@ -65,10 +45,7 @@ export const CancelInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Cancelling{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Cancelling <InvocationActionId value={id} />
       </>
     );
   },
@@ -76,10 +53,7 @@ export const CancelInvocation = withConfirmation({
     const id = String(formData.get('invocation-id'));
     return (
       <>
-        Failed to cancel{' '}
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>
+        Failed to cancel <InvocationActionId value={id} />
       </>
     );
   },
@@ -118,10 +92,8 @@ export const CancelInvocation = withConfirmation({
 
     showSuccessNotification(
       <>
-        <code className="font-semibold">
-          {id.substring(0, 8)}…{id.slice(-5)}
-        </code>{' '}
-        has been successfully registered for cancellation.
+        <InvocationActionId value={id} /> has been successfully registered for
+        cancellation.
       </>,
     );
   },

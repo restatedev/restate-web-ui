@@ -42,6 +42,7 @@ import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalEntriesContext } from './JournalContext';
 import { tv } from '@restate/util/styles';
 import { EntryCodecProvider } from './entries/EntryCodecProvider';
+import { RelativeTime } from './entries/RelativeTime';
 
 export const ENTRY_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]:
@@ -143,6 +144,16 @@ const styles = tv({
   },
 });
 
+const entryContentStyles = tv({
+  base: 'flex max-w-fit min-w-0 flex-auto items-baseline gap-1 [&>*]:min-w-0',
+  variants: {
+    compact: {
+      true: 'text-xs',
+      false: '',
+    },
+  },
+});
+
 function isEntriesEqual(a?: JournalEntryV2, b?: JournalEntryV2) {
   return (
     a?.index === b?.index &&
@@ -157,6 +168,8 @@ export const Entry = memo(function Entry({
   entry,
   depth,
   parentCommand,
+  compact = false,
+  showEventTime = false,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -164,6 +177,8 @@ export const Entry = memo(function Entry({
   entry?: JournalEntryV2;
   depth: number;
   parentCommand?: JournalEntryV2;
+  compact?: boolean;
+  showEventTime?: boolean;
 }) {
   const length =
     invocation?.journal_commands_size ?? invocation?.journal_size ?? 1;
@@ -265,7 +280,7 @@ export const Entry = memo(function Entry({
         })}
       >
         <div
-          style={{ width: `${numOfDigits + 2}ch` }}
+          style={{ width: compact ? '2ch' : `${numOfDigits + 2}ch` }}
           className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70"
         >
           <div
@@ -279,10 +294,7 @@ export const Entry = memo(function Entry({
           )}
         </div>
 
-        <div
-          className="flex max-w-fit min-w-0 flex-auto gap-1 [&>*]:min-w-0"
-          data-entry
-        >
+        <div className={entryContentStyles({ compact })} data-entry>
           {entry.category === 'notification' && parentCommand ? (
             <CompletionNotification
               entry={entry}
@@ -302,6 +314,13 @@ export const Entry = memo(function Entry({
           ) : EntrySpecificComponent ? (
             <EntrySpecificComponent entry={entry} invocation={invocation} />
           ) : null}
+          {showEventTime && entry.type === 'Event: TransientError' && (
+            <RelativeTime
+              date={entry.start}
+              tooltipTitle="Transient error"
+              connector="at"
+            />
+          )}
         </div>
         <div className="relative min-w-20 flex-auto">
           <div className="absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-gray-300/70" />

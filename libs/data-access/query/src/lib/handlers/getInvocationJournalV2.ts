@@ -22,6 +22,7 @@ import {
   supportsJournalRawLength,
 } from './shared';
 import { fetchVqueueStatuses } from './vqueue';
+import { getVqueueSnapshot } from './getVqueue';
 
 type InvocationJournalV2Response =
   operations['get_invocation_journal_v2']['responses']['200']['content']['application/json'];
@@ -170,6 +171,14 @@ export async function getInvocationJournalV2(
     );
   }
 
+  const vqueueId = invocation.vqueue?.vqueue_id ?? invocation.vqueue_id;
+  const vqueueSnapshot = vqueueId
+    ? await getVqueueSnapshot.call(this, vqueueId, invocation.id, {
+        focusedInvocation: invocation,
+        requestTime,
+      })
+    : undefined;
+
   const version = journalQuery.rows.at(0)?.version;
   const journalRows = journalQuery.rows as JournalRawEntry[];
   const futureEntriesRegistry = createFutureEntriesRegistry(invocation);
@@ -249,6 +258,7 @@ export async function getInvocationJournalV2(
   return new Response(
     JSON.stringify({
       ...invocation,
+      ...(vqueueSnapshot && { vqueueSnapshot }),
       journal: {
         entries: entriesWithLifeCycleEvents,
         version,

@@ -2,6 +2,7 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetPausedError,
 } from '@restate/data-access/admin-api-hooks';
+import { useFeatures } from '@restate/data-access/admin-api';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@restate/features/invocation-ui';
 import { InvocationDeploymentCard } from './InvocationDeploymentCard';
 import { InvocationDetailsCard } from './InvocationDetailsCard';
+import { InvocationFlowControlCard } from './InvocationFlowControlCard';
 import { Link } from '@restate/ui/link';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Section } from '@restate/ui/section';
@@ -88,6 +90,10 @@ function Component() {
   });
 
   const { baseUrl } = useRestateContext();
+  const features = useFeatures();
+  const showFlowControl = Boolean(
+    features.has('vqueues') && journalAndInvocationData?.vqueue,
+  );
 
   const isPaused = journalAndInvocationData?.status === 'paused';
   const { data: pausedErrorData } = useGetPausedError(String(id), {
@@ -178,6 +184,7 @@ function Component() {
                 invocation={journalAndInvocationData}
                 className=""
                 mini="md"
+                timeline={false}
               />
             </div>
           )}
@@ -190,7 +197,11 @@ function Component() {
             />
           </div>
         </InvocationStatusHeader>
-        <CardGrid columns={2} className="relative z-40 mx-5 mt-3 empty:hidden">
+        <CardGrid
+          columns={showFlowControl ? 3 : 2}
+          distribution={showFlowControl ? '5-4-2' : 'equal'}
+          className="relative z-40 mx-5 mt-3 empty:hidden"
+        >
           {isPending ? (
             <>
               <div className="min-h-28 w-full animate-pulse rounded-xl bg-slate-200" />
@@ -198,7 +209,17 @@ function Component() {
             </>
           ) : (
             <>
-              <InvocationDetailsCard invocation={journalAndInvocationData} />
+              {showFlowControl && journalAndInvocationData && (
+                <InvocationFlowControlCard
+                  invocation={journalAndInvocationData}
+                  data={journalAndInvocationData.vqueueSnapshot}
+                  journalEntries={journalAndInvocationData.journal?.entries}
+                />
+              )}
+              <InvocationDetailsCard
+                invocation={journalAndInvocationData}
+                vqueueSnapshot={journalAndInvocationData?.vqueueSnapshot}
+              />
               <InvocationDeploymentCard invocation={journalAndInvocationData} />
             </>
           )}

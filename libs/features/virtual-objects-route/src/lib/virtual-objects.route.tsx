@@ -357,7 +357,7 @@ function Component() {
     <div className="relative flex min-h-0 flex-1 flex-col">
       <VirtualObjectsHero hasScopedVirtualObjects={hasScopedVirtualObjects} />
       <ContentPanel tabs={tabs}>
-        <ContentPanelToolbar className="justify-end px-1 pb-1">
+        <ContentPanelToolbar>
           <SearchField
             key={submittedSearch}
             aria-label="Filter Virtual Object instances"

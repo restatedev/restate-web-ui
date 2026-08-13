@@ -4980,6 +4980,10 @@
                     {
                       "type": "object",
                       "properties": {
+                        "vqueueSnapshot": {
+                          "$ref": "#/components/schemas/VqueueSnapshotResponse",
+                          "description": "Live focused VQueue snapshot captured with this invocation and journal response."
+                        },
                         "journal": {
                           "type": "object",
                           "properties": {

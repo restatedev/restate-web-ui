@@ -218,11 +218,11 @@ export type AwaitingOnState = 'suspended' | 'running';
 // `refetchOnMount: false` it just reads from the shared cache when the parent
 // timeline has already loaded the journal.
 function AwaitingOnContent({
-  roots,
+  future,
   invocationId,
   isPending,
 }: {
-  roots: InvocationFuture[];
+  future: InvocationFuture;
   invocationId: string;
   isPending: boolean;
 }) {
@@ -230,6 +230,37 @@ function AwaitingOnContent({
     useGetInvocationJournalWithInvocationV2(invocationId, {
       refetchOnMount: true,
     });
+
+  if (isLoading && !data) {
+    return (
+      <div className="flex items-center gap-1.5 p-2 text-2xs text-zinc-500">
+        <Spinner className="h-3 w-3" />
+        Loading…
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  return (
+    <AwaitingOnEntries
+      future={future}
+      invocation={data}
+      isPending={isPending}
+    />
+  );
+}
+
+export function AwaitingOnEntries({
+  future,
+  invocation,
+  isPending,
+}: {
+  future: InvocationFuture;
+  invocation: NonNullable<Invocation>;
+  isPending: boolean;
+}) {
+  const roots = unwrapCancelWrapper(future);
   const parentContext = useJournalEntriesContext();
   const readOnlyContext = useMemo(
     () => ({
@@ -241,15 +272,6 @@ function AwaitingOnContent({
     [parentContext],
   );
 
-  if (isLoading && !data) {
-    return (
-      <div className="flex items-center gap-1.5 p-2 text-2xs text-zinc-500">
-        <Spinner className="h-3 w-3" />
-        Loading…
-      </div>
-    );
-  }
-
   return (
     <JournalEntriesContext.Provider value={readOnlyContext}>
       <div className="flex flex-col gap-0.5 p-2">
@@ -257,7 +279,7 @@ function AwaitingOnContent({
           <FutureNode
             key={i}
             future={root}
-            invocation={data}
+            invocation={invocation}
             isPending={isPending}
           />
         ))}
@@ -269,12 +291,14 @@ function AwaitingOnContent({
 export function AwaitingOn({
   future,
   invocationId,
+  invocation,
   state = 'running',
   isPending,
   className,
 }: {
   future?: InvocationFuture;
   invocationId: string;
+  invocation?: NonNullable<Invocation>;
   state?: AwaitingOnState;
   isPending: boolean;
   className?: string;
@@ -304,11 +328,19 @@ export function AwaitingOn({
           title={title}
           className="overflow-hidden rounded-2xl bg-gray-50 *:text-xs"
         >
-          <AwaitingOnContent
-            roots={roots}
-            invocationId={invocationId}
-            isPending={isPending}
-          />
+          {invocation ? (
+            <AwaitingOnEntries
+              future={future}
+              invocation={invocation}
+              isPending={isPending}
+            />
+          ) : (
+            <AwaitingOnContent
+              future={future}
+              invocationId={invocationId}
+              isPending={isPending}
+            />
+          )}
         </DropdownSection>
       </PopoverContent>
     </Popover>

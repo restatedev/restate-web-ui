@@ -47,6 +47,10 @@ export function useDurationSinceLastSnapshot() {
   return durationSinceLastSnapshot;
 }
 
+export function useSnapshotTime() {
+  return useContext(SnapshotTimeContext).lastSnapshot;
+}
+
 export function getDuration(duration?: number) {
   if (duration === undefined) {
     return {};
