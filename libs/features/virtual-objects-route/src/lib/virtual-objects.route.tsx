@@ -14,6 +14,7 @@ import {
   VirtualObjectInstanceTarget,
 } from '@restate/features/virtual-object-instance';
 import { useRestateContext } from '@restate/features/restate-context';
+import { Button } from '@restate/ui/button';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -34,7 +35,12 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
@@ -54,6 +60,11 @@ const SERVICE_QUERY_PARAM = 'service';
 const SORT_QUERY_PARAM = 'sort';
 const BACKLOG_SORT = 'backlog';
 const MAX_VISIBLE_SERVICE_TABS = 5;
+
+const refreshIconStyles = tv({
+  base: 'h-3.5 w-3.5',
+  variants: { isFetching: { true: 'animate-spin' } },
+});
 
 type ColumnId = 'identity' | 'backlog' | 'lockHolder' | 'lockAcquired';
 type VirtualObjectInstanceSummary =
@@ -332,6 +343,7 @@ function Component() {
     dataUpdatedAt,
     error: instancesError,
     isFetching: isInstancesFetching,
+    refetch: refetchInstances,
   } = useListVirtualObjectInstances(
     selectedService,
     {
@@ -387,8 +399,7 @@ function Component() {
     [services],
   );
   const isLoading =
-    isServicesPending ||
-    (Boolean(selectedService) && isInstancesFetching && !data);
+    isServicesPending || (Boolean(selectedService) && isInstancesFetching);
   const error = servicesError ?? instancesError;
 
   return (
@@ -444,6 +455,30 @@ function Component() {
               </AddFilterTrigger>
             </FilterBuilder>
           </Form>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                type="button"
+                variant="icon"
+                aria-label={
+                  isInstancesFetching
+                    ? 'Refreshing Virtual Objects'
+                    : 'Refresh Virtual Objects'
+                }
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+                onClick={() => void refetchInstances()}
+                disabled={!selectedService || isInstancesFetching}
+              >
+                <Icon
+                  name={IconName.Retry}
+                  className={refreshIconStyles({
+                    isFetching: isInstancesFetching,
+                  })}
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent size="sm">Refresh Virtual Objects</TooltipContent>
+          </Tooltip>
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
@@ -459,6 +494,7 @@ function Component() {
                   searchString,
                   sortByBacklog,
                   maxBacklog,
+                  isInstancesFetching,
                   error,
                 ]}
                 sortDescriptor={sortDescriptor}

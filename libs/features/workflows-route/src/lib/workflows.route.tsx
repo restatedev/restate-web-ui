@@ -18,6 +18,7 @@ import {
   WorkflowRunTarget,
   type WorkflowRunIdentity,
 } from '@restate/features/workflow-run';
+import { Button } from '@restate/ui/button';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -38,9 +39,15 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { tv } from '@restate/util/styles';
 import { useCallback, useMemo, useRef } from 'react';
 import { Form, useNavigate, useSearchParams } from 'react-router';
 import {
@@ -53,6 +60,11 @@ import {
 
 const SERVICE_QUERY_PARAM = 'service';
 const MAX_VISIBLE_SERVICE_TABS = 5;
+
+const refreshIconStyles = tv({
+  base: 'h-3.5 w-3.5',
+  variants: { isFetching: { true: 'animate-spin' } },
+});
 
 type WorkflowRunSummary = components['schemas']['WorkflowRunSummary'];
 type ColumnId =
@@ -234,6 +246,7 @@ function Component() {
     dataUpdatedAt,
     error: runsError,
     isFetching: isRunsFetching,
+    refetch: refetchRuns,
   } = useListWorkflowRuns(
     selectedService,
     filters.length > 0 ? { filters } : {},
@@ -277,7 +290,7 @@ function Component() {
     [services],
   );
   const isLoading =
-    isServicesPending || (Boolean(selectedService) && isRunsFetching && !data);
+    isServicesPending || (Boolean(selectedService) && isRunsFetching);
   const error = servicesError ?? runsError;
 
   return (
@@ -333,6 +346,28 @@ function Component() {
               </AddFilterTrigger>
             </FilterBuilder>
           </Form>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                type="button"
+                variant="icon"
+                aria-label={
+                  isRunsFetching ? 'Refreshing Workflows' : 'Refresh Workflows'
+                }
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+                onClick={() => void refetchRuns()}
+                disabled={!selectedService || isRunsFetching}
+              >
+                <Icon
+                  name={IconName.Retry}
+                  className={refreshIconStyles({
+                    isFetching: isRunsFetching,
+                  })}
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent size="sm">Refresh Workflows</TooltipContent>
+          </Tooltip>
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
@@ -343,7 +378,12 @@ function Component() {
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
-                bodyDependencies={[selectedService, searchString, error]}
+                bodyDependencies={[
+                  selectedService,
+                  searchString,
+                  isRunsFetching,
+                  error,
+                ]}
                 onRowAction={(rowId) => {
                   const item = items.find(({ id }) => id === String(rowId));
                   if (item) {
