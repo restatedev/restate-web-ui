@@ -130,7 +130,7 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          WHERE LOWER(COALESCE(id, '')) = 'vq_checkout'
+          WHERE id = 'vq_checkout'
           LIMIT 251",
       ]
     `);
@@ -166,7 +166,7 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          WHERE LOWER(COALESCE(service_name, '')) = 'checkoutservice' AND strpos(LOWER(COALESCE(limit_key, '')), 'priority_%') > 0 AND lock_name IS NOT NULL
+          WHERE service_name = 'CheckoutService' AND limit_key ILIKE '%priority\\_\\%%' AND lock_name IS NOT NULL
           LIMIT 251",
       ]
     `);
@@ -197,7 +197,7 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          WHERE strpos(LOWER(COALESCE(scope, '')), 'ac_me%') > 0 AND LOWER(COALESCE(limit_key, '')) = 'team/eu'
+          WHERE scope ILIKE '%Ac\\_me\\%%' AND limit_key = 'Team/EU'
           LIMIT 251",
       ]
     `);
@@ -234,7 +234,7 @@ describe('listVqueues', () => {
       [
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          WHERE LOWER(COALESCE(scope, '')) = 'acme' AND (LOWER(COALESCE(limit_key, '')) = 'team_a' OR starts_with(LOWER(COALESCE(limit_key, '')), 'team_a/')) AND ends_with(LOWER(COALESCE(limit_key, '')), '/priority_%')
+          WHERE scope = 'Acme' AND (limit_key = 'Team_A' OR starts_with(limit_key, 'Team_A/')) AND ends_with(limit_key, '/Priority_%')
           LIMIT 251",
       ]
     `);

@@ -156,9 +156,9 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern IS NOT NULL AND (
-          LOWER(COALESCE(scope, '')) LIKE '%tenant''s checkout%'
-          OR LOWER(COALESCE(l1, '')) LIKE '%tenant''s checkout%'
-          OR LOWER(COALESCE(l2, '')) LIKE '%tenant''s checkout%'
+          scope ILIKE '%Tenant''s checkout%'
+          OR l1 ILIKE '%Tenant''s checkout%'
+          OR l2 ILIKE '%Tenant''s checkout%'
         )
           ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
@@ -179,9 +179,9 @@ describe('listUserLimits', () => {
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
           WHERE rule_pattern IS NOT NULL AND (
-          LOWER(COALESCE(scope, '')) LIKE '%tenant%'
-          AND LOWER(COALESCE(l1, '')) LIKE '%checkout%'
-          AND LOWER(COALESCE(l2, '')) LIKE '%priority%'
+          scope ILIKE '%Tenant%'
+          AND l1 ILIKE '%Checkout%'
+          AND l2 ILIKE '%Priority%'
         )
           ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
@@ -214,7 +214,7 @@ describe('listUserLimits', () => {
       [
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
-          WHERE rule_pattern IS NOT NULL AND strpos(LOWER(COALESCE(scope, '')), 'tenant''s') > 0 AND (LOWER(COALESCE(l1, '')) = 'checkout' AND LOWER(COALESCE(l2, '')) = 'priority')
+          WHERE rule_pattern IS NOT NULL AND scope ILIKE '%Tenant''s%' AND (l1 = 'Checkout' AND l2 = 'Priority')
           ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
@@ -240,7 +240,7 @@ describe('listUserLimits', () => {
       [
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
-          WHERE rule_pattern IS NOT NULL AND (LOWER(COALESCE(l1, '')) = 'checkout' AND l2 IS NULL)
+          WHERE rule_pattern IS NOT NULL AND (l1 = 'Checkout' AND l2 IS NULL)
           ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]
@@ -266,7 +266,7 @@ describe('listUserLimits', () => {
       [
         "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
           FROM sys_user_limits
-          WHERE rule_pattern IS NOT NULL AND strpos(LOWER(CONCAT_WS('/', l1, l2)), 'out/pri') > 0
+          WHERE rule_pattern IS NOT NULL AND CONCAT_WS('/', l1, l2) ILIKE '%out/pri%'
           ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
           LIMIT 1001",
       ]

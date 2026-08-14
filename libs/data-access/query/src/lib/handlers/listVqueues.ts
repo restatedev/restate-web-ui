@@ -1,6 +1,7 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { limitPage, limitPageSize } from './limitPagination';
 import { quoteSqlString, type QueryContext } from './shared';
+import { quoteSqlContainsPattern } from './structuredStringFilters';
 import {
   parseVqueueBlockedResource,
   parseVqueueSchedulingStatus,
@@ -134,7 +135,7 @@ function filterError(filter: VQueueFilterItem, reason: string): never {
 
 function stringValue(filter: VQueueFilterItem, value: unknown) {
   if (typeof value !== 'string') filterError(filter, 'expected a string value');
-  return value.toLowerCase();
+  return value;
 }
 
 function stringPredicate(
@@ -152,17 +153,16 @@ function stringPredicate(
   }
   if (operation === 'IS NULL') return `${expression} IS NULL`;
   if (operation === 'IS NOT NULL') return `${expression} IS NOT NULL`;
-  const normalized = stringValue(filter, value);
-  const column = `LOWER(${stringColumn(expression)})`;
+  const string = stringValue(filter, value);
   switch (operation) {
     case 'EQUALS':
-      return `${column} = ${quoteSqlString(normalized)}`;
+      return `${expression} = ${quoteSqlString(string)}`;
     case 'NOT_EQUALS':
-      return `${column} <> ${quoteSqlString(normalized)}`;
+      return `${expression} <> ${quoteSqlString(string)}`;
     case 'CONTAINS':
-      return `strpos(${column}, ${quoteSqlString(normalized)}) > 0`;
+      return `${expression} ILIKE ${quoteSqlContainsPattern(string)}`;
     case 'NOT_CONTAINS':
-      return `strpos(${column}, ${quoteSqlString(normalized)}) = 0`;
+      return `${expression} NOT ILIKE ${quoteSqlContainsPattern(string)}`;
     default:
       return filterError(filter, `unsupported STRING operation ${operation}`);
   }
@@ -179,15 +179,14 @@ function limitKeySegmentPredicate(
       `unsupported STRING operation ${String(operation)}`,
     );
   }
-  const normalized = stringValue(filter, value);
-  if (!normalized || normalized.includes('/')) {
+  const string = stringValue(filter, value);
+  if (!string || string.includes('/')) {
     return filterError(filter, 'expected one limit-key segment');
   }
-  const column = `LOWER(${stringColumn('limit_key')})`;
   if (filter.field === 'l1') {
-    return `(${column} = ${quoteSqlString(normalized)} OR starts_with(${column}, ${quoteSqlString(`${normalized}/`)}))`;
+    return `(limit_key = ${quoteSqlString(string)} OR starts_with(limit_key, ${quoteSqlString(`${string}/`)}))`;
   }
-  return `ends_with(${column}, ${quoteSqlString(`/${normalized}`)})`;
+  return `ends_with(limit_key, ${quoteSqlString(`/${string}`)})`;
 }
 
 function stringListPredicate(
@@ -207,10 +206,8 @@ function stringListPredicate(
   ) {
     filterError(filter, 'expected a non-empty string array');
   }
-  const values = value
-    .map((item) => quoteSqlString(item.toLowerCase()))
-    .join(', ');
-  return `LOWER(${stringColumn(expression)}) ${operation === 'IN' ? 'IN' : 'NOT IN'} (${values})`;
+  const values = value.map((item) => quoteSqlString(item)).join(', ');
+  return `${expression} ${operation === 'IN' ? 'IN' : 'NOT IN'} (${values})`;
 }
 
 function nullPredicate(filter: VQueueFilterItem, operation: unknown) {

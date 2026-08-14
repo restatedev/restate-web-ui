@@ -9,6 +9,20 @@ export interface StructuredStringFilter<Field extends string> {
   value: string;
 }
 
+interface StructuredStringFilterExpression {
+  expression: string;
+  equalsExpression?: string;
+  equalsValue?: (value: string) => string;
+}
+
+export function quoteSqlContainsPattern(value: string) {
+  const escaped = value
+    .replaceAll('\\', '\\\\')
+    .replaceAll('%', '\\%')
+    .replaceAll('_', '\\_');
+  return quoteSqlString(`%${escaped}%`);
+}
+
 export function parseStructuredStringFilters<Field extends string>(
   filters: unknown,
   allowedFields: readonly Field[],
@@ -56,7 +70,7 @@ export function parseStructuredStringFilters<Field extends string>(
     parsed.push({
       field: field as Field,
       operation: operation as StructuredStringFilter<Field>['operation'],
-      value: value.toLowerCase(),
+      value,
     });
   }
   return { filters: parsed };
@@ -64,15 +78,27 @@ export function parseStructuredStringFilters<Field extends string>(
 
 export function structuredStringFilterClause<Field extends string>(
   filters: StructuredStringFilter<Field>[],
-  expressions: Record<Field, string>,
+  expressions: Record<Field, string | StructuredStringFilterExpression>,
 ) {
   if (filters.length === 0) return '';
   const predicates = filters.map((filter) => {
-    const column = `LOWER(COALESCE(${expressions[filter.field]}, ''))`;
-    const value = quoteSqlString(filter.value);
-    return filter.operation === 'EQUALS'
-      ? `${column} = ${value}`
-      : `strpos(${column}, ${value}) > 0`;
+    const configuration = expressions[filter.field];
+    const expression =
+      typeof configuration === 'string'
+        ? configuration
+        : configuration.expression;
+    if (filter.operation === 'EQUALS') {
+      const equalsExpression =
+        typeof configuration === 'string'
+          ? configuration
+          : (configuration.equalsExpression ?? configuration.expression);
+      const equalsValue =
+        typeof configuration === 'string'
+          ? filter.value
+          : (configuration.equalsValue?.(filter.value) ?? filter.value);
+      return `${equalsExpression} = ${quoteSqlString(equalsValue)}`;
+    }
+    return `${expression} ILIKE ${quoteSqlContainsPattern(filter.value)}`;
   });
   return `\n      AND ${predicates.join('\n      AND ')}`;
 }

@@ -1,6 +1,10 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { createVirtualObjectLockHolder } from './getVirtualObjectLock';
-import { quoteSqlString, type QueryContext } from './shared';
+import {
+  quoteSqlString,
+  shouldFilterScopeIsNull,
+  type QueryContext,
+} from './shared';
 import {
   parseStructuredStringFilters,
   structuredStringFilterClause,
@@ -52,21 +56,59 @@ function searchPattern(search: string | undefined) {
   return quoteSqlString(`%${escaped}%`);
 }
 
+function exactKeyFilterValue(
+  filters: StructuredStringFilter<VirtualObjectFilterField>[],
+) {
+  return filters.find(
+    ({ field, operation }) => field === 'key' && operation === 'EQUALS',
+  )?.value;
+}
+
+function addKnownObjectKey(rows: Record<string, unknown>[], objectKey: string) {
+  return rows.map((row) => ({ ...row, object_key: objectKey }));
+}
+
+function addObjectKeyFromLockName(
+  rows: Record<string, unknown>[],
+  service: string,
+) {
+  const prefixLength = `${service}/`.length;
+  return rows.map((row) => ({
+    ...row,
+    object_key: String(row['lock_name']).slice(prefixLength),
+  }));
+}
+
 function identityFilterClause(
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
   keyExpression: string,
   includeScope: boolean,
-  searchOnNewLine = true,
+  options: {
+    keyEqualsExpression?: string;
+    keyEqualsValue?: (value: string) => string;
+    searchOnNewLine?: boolean;
+    unscopedOnly?: boolean;
+  } = {},
 ) {
   const pattern = searchPattern(search);
   const searchClause = pattern
-    ? `${searchOnNewLine ? '\n      ' : ' '}AND (${keyExpression} LIKE ${pattern}${includeScope ? ` OR scope LIKE ${pattern}` : ''})`
+    ? `${options.searchOnNewLine !== false ? '\n      ' : ' '}AND (${keyExpression} LIKE ${pattern}${includeScope ? ` OR scope LIKE ${pattern}` : ''})`
     : '';
-  return `${searchClause}${structuredStringFilterClause(filters, {
-    key: keyExpression,
+  const filterClause = structuredStringFilterClause(filters, {
+    key: options.keyEqualsExpression
+      ? {
+          expression: keyExpression,
+          equalsExpression: options.keyEqualsExpression,
+          equalsValue: options.keyEqualsValue,
+        }
+      : keyExpression,
     scope: 'scope',
-  })}`;
+  });
+  const unscopedClause = options.unscopedOnly
+    ? '\n      AND scope IS NULL'
+    : '';
+  return `${searchClause}${filterClause}${unscopedClause}`;
 }
 
 function virtualObjectIdentitiesFromStateQuery(
@@ -76,15 +118,16 @@ function virtualObjectIdentitiesFromStateQuery(
   options: {
     includeScope: boolean;
     includePartitionKey: boolean;
+    unscopedOnly: boolean;
   },
 ) {
-  const { includeScope, includePartitionKey } = options;
+  const { includeScope, includePartitionKey, unscopedOnly } = options;
   const filterClause = identityFilterClause(
     search,
     filters,
     'service_key',
     includeScope,
-    false,
+    { searchOnNewLine: false, unscopedOnly },
   );
   const partitionKeyColumn = includePartitionKey
     ? '      CAST(partition_key AS VARCHAR) AS partition_key,\n'
@@ -102,19 +145,28 @@ function buildVirtualObjectIdentitiesFromVqueueMetaQuery(
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
   includePartitionKey: boolean,
   counterPredicates: string[],
+  unscopedOnly: boolean,
 ) {
   const objectKey = `SUBSTR(lock_name, CHAR_LENGTH(${quoteSqlString(`${service}/`)}) + 1)`;
-  const filterClause = identityFilterClause(search, filters, objectKey, true);
+  const exactKey = exactKeyFilterValue(filters);
+  const hasKeyFilter = filters.some(({ field }) => field === 'key');
+  const filterClause = identityFilterClause(search, filters, objectKey, true, {
+    keyEqualsExpression: 'lock_name',
+    keyEqualsValue: (value) => `${service}/${value}`,
+    unscopedOnly,
+  });
   const counters = counterPredicates.join('\n        OR ');
   const partitionKeyColumn = includePartitionKey
     ? '      CAST(partition_key AS VARCHAR) AS partition_key,\n'
     : '';
+  const lockNameColumn = exactKey === undefined ? '      lock_name,\n' : '';
+  const lockNameClause = hasKeyFilter
+    ? ''
+    : '\n      AND lock_name IS NOT NULL';
   return `SELECT DISTINCT
-${partitionKeyColumn}      ${objectKey} AS object_key,
-      scope
+${partitionKeyColumn}${lockNameColumn}      scope
     FROM sys_vqueue_meta
-    WHERE service_name = ${quoteSqlString(service)}
-      AND lock_name IS NOT NULL
+    WHERE service_name = ${quoteSqlString(service)}${lockNameClause}
       AND (
         ${counters}
       )${filterClause}
@@ -126,6 +178,7 @@ function virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
   includePartitionKey: boolean,
+  unscopedOnly: boolean,
 ) {
   // Without backlog sorting, this bounded query must also discover identities
   // that only have entries in the inbox.
@@ -135,6 +188,7 @@ function virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
     filters,
     includePartitionKey,
     ['num_inbox > 0', 'num_running > 0', 'num_suspended > 0', 'num_paused > 0'],
+    unscopedOnly,
   );
 }
 
@@ -142,6 +196,7 @@ function virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
   service: string,
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
+  unscopedOnly: boolean,
 ) {
   // The backlog aggregate already discovers inbox identities when sorting, so
   // this bounded query only needs running, suspended, and paused entries.
@@ -151,6 +206,7 @@ function virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
     filters,
     false,
     ['num_running > 0', 'num_suspended > 0', 'num_paused > 0'],
+    unscopedOnly,
   );
 }
 
@@ -161,14 +217,20 @@ function virtualObjectIdentitiesFromInvocationStatusQuery(
   options: {
     includeScope: boolean;
     includePartitionKey: boolean;
+    unscopedOnly: boolean;
   },
 ) {
-  const { includeScope, includePartitionKey } = options;
+  const { includeScope, includePartitionKey, unscopedOnly } = options;
+  const hasKeyFilter = filters.some(({ field }) => field === 'key');
+  const nonNullKeyClause = hasKeyFilter
+    ? ''
+    : '\n      AND target_service_key IS NOT NULL';
   const filterClause = identityFilterClause(
     search,
     filters,
     'target_service_key',
     includeScope,
+    { unscopedOnly },
   );
   const partitionKeyColumn = includePartitionKey
     ? '      CAST(partition_key AS VARCHAR) AS partition_key,\n'
@@ -177,8 +239,7 @@ function virtualObjectIdentitiesFromInvocationStatusQuery(
 ${partitionKeyColumn}      target_service_key AS object_key${includeScope ? ',\n      scope' : ''}
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
-      AND target_service_ty = 'virtual_object'
-      AND target_service_key IS NOT NULL
+      AND target_service_ty = 'virtual_object'${nonNullKeyClause}
       AND status <> 'completed'${filterClause}
     LIMIT ${QUERY_LIMIT}`;
 }
@@ -187,22 +248,36 @@ function virtualObjectIdentitiesFromVqueueMetaByBacklogQuery(
   service: string,
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
+  unscopedOnly: boolean,
 ) {
   const servicePrefix = quoteSqlString(`${service}/`);
   const objectKey = `SUBSTR(lock_name, CHAR_LENGTH(${servicePrefix}) + 1)`;
-  const filterClause = identityFilterClause(search, filters, objectKey, true);
+  const exactKey = exactKeyFilterValue(filters);
+  const hasKeyFilter = filters.some(({ field }) => field === 'key');
+  const filterClause = identityFilterClause(search, filters, objectKey, true, {
+    keyEqualsExpression: 'lock_name',
+    keyEqualsValue: (value) => `${service}/${value}`,
+    unscopedOnly,
+  });
   // Zero-inbox rows cannot change the sum or the positive-backlog ordering.
   // Excluding them avoids grouping the much larger non-inbox metadata population.
+  const lockNameColumn = exactKey === undefined ? '      lock_name,\n' : '';
+  const lockNameClause = hasKeyFilter
+    ? ''
+    : '\n      AND lock_name IS NOT NULL';
+  const groupBy = exactKey === undefined ? 'lock_name, scope' : 'scope';
+  const orderBy =
+    exactKey === undefined
+      ? 'backlog DESC, lock_name ASC, scope ASC NULLS FIRST'
+      : 'backlog DESC, scope ASC NULLS FIRST';
   return `SELECT
-      ${objectKey} AS object_key,
-      scope,
+${lockNameColumn}      scope,
       SUM(num_inbox) AS backlog
     FROM sys_vqueue_meta
-    WHERE service_name = ${quoteSqlString(service)}
-      AND lock_name IS NOT NULL
+    WHERE service_name = ${quoteSqlString(service)}${lockNameClause}
       AND num_inbox > 0${filterClause}
-    GROUP BY lock_name, scope
-    ORDER BY backlog DESC, object_key ASC, scope ASC NULLS FIRST
+    GROUP BY ${groupBy}
+    ORDER BY ${orderBy}
     LIMIT ${QUERY_LIMIT}`;
 }
 
@@ -305,19 +380,17 @@ async function getBacklogsForInstances(
     const partitionClause = instances.every(({ partitionKey }) => partitionKey)
       ? `partition_key IN (${partitionKeys})\n      AND `
       : '';
-    const servicePrefix = quoteSqlString(`${service}/`);
-    const objectKey = `SUBSTR(lock_name, CHAR_LENGTH(${servicePrefix}) + 1)`;
     const { rows } = await context.query(`SELECT
-      ${objectKey} AS object_key,
+      lock_name,
       scope,
       SUM(num_inbox) AS backlog
     FROM sys_vqueue_meta
     WHERE ${partitionClause}service_name = ${quoteSqlString(service)}
       AND (
-        ${selectedIdentityClause(instances, objectKey, true)}
+        ${selectedIdentityClause(instances, 'lock_name', true, `${service}/`)}
       )
     GROUP BY lock_name, scope`);
-    return rows;
+    return addObjectKeyFromLockName(rows, service);
   }
 
   const { rows } = await context.query(`SELECT
@@ -339,10 +412,8 @@ async function queryLocksForInstances(
 ) {
   if (instances.length === 0) return [];
   if (context.features.has('vqueues')) {
-    const servicePrefix = quoteSqlString(`${service}/`);
-    const objectKey = `SUBSTR(lock_name, CHAR_LENGTH(${servicePrefix}) + 1)`;
     const { rows } = await context.query(`SELECT
-      ${objectKey} AS object_key,
+      lock_name,
       scope,
       acquired_by,
       acquired_at
@@ -351,7 +422,7 @@ async function queryLocksForInstances(
       AND (
         ${selectedIdentityClause(instances, 'lock_name', true, `${service}/`)}
       )`);
-    return rows;
+    return addObjectKeyFromLockName(rows, service);
   }
 
   const { rows } = await context.query(`SELECT
@@ -402,19 +473,24 @@ export async function listVirtualObjectInstances(
   const sortByBacklog =
     args.sort?.field === 'backlog' && args.sort.order === 'DESC';
   const hasVqueues = this.features.has('vqueues');
+  const hasScopedVirtualObjects =
+    hasVqueues && this.features.has('scoped_virtual_objects');
+  const unscopedOnly = shouldFilterScopeIsNull(this, 'virtual_object');
   const parsedFilters = parseStructuredStringFilters(
     args.filters,
-    hasVqueues ? ['key', 'scope'] : ['key'],
+    hasScopedVirtualObjects ? ['key', 'scope'] : ['key'],
   );
   if (parsedFilters.error) {
     return new Response(parsedFilters.error, { status: 400 });
   }
   const filters = parsedFilters.filters;
+  const exactKey = exactKeyFilterValue(filters);
   const includePartitionKeyForBacklogQuery = hasVqueues && !sortByBacklog;
   const identitiesFromStatePromise = this.query(
     virtualObjectIdentitiesFromStateQuery(service, search, filters, {
       includeScope: hasVqueues,
       includePartitionKey: includePartitionKeyForBacklogQuery,
+      unscopedOnly,
     }),
   ).then(({ rows }) => rows);
   const identitiesFromVqueueMetaPromise = hasVqueues
@@ -424,19 +500,26 @@ export async function listVirtualObjectInstances(
               service,
               search,
               filters,
+              unscopedOnly,
             )
           : virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
               service,
               search,
               filters,
               includePartitionKeyForBacklogQuery,
+              unscopedOnly,
             ),
-      ).then(({ rows }) => rows)
+      ).then(({ rows }) =>
+        exactKey === undefined
+          ? addObjectKeyFromLockName(rows, service)
+          : addKnownObjectKey(rows, exactKey),
+      )
     : Promise.resolve([]);
   const identitiesFromInvocationStatusPromise = this.query(
     virtualObjectIdentitiesFromInvocationStatusQuery(service, search, filters, {
       includeScope: hasVqueues,
       includePartitionKey: includePartitionKeyForBacklogQuery,
+      unscopedOnly,
     }),
   ).then(({ rows }) => rows);
   const identitiesByBacklogPromise = sortByBacklog
@@ -446,13 +529,20 @@ export async function listVirtualObjectInstances(
               service,
               search,
               filters,
+              unscopedOnly,
             )
           : virtualObjectIdentitiesFromInboxByBacklogQuery(
               service,
               search,
               filters,
             ),
-      ).then(({ rows }) => rows)
+      ).then(({ rows }) =>
+        !hasVqueues
+          ? rows
+          : exactKey === undefined
+            ? addObjectKeyFromLockName(rows, service)
+            : addKnownObjectKey(rows, exactKey),
+      )
     : Promise.resolve([]);
   const [
     identitiesFromStateRows,

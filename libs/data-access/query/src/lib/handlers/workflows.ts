@@ -158,6 +158,10 @@ export async function listWorkflowRuns(
   if (parsedFilters.error) {
     return new Response(parsedFilters.error, { status: 400 });
   }
+  const hasIdFilter = parsedFilters.filters.some(({ field }) => field === 'id');
+  const nonNullIdClause = hasIdFilter
+    ? ''
+    : '\n      AND target_service_key IS NOT NULL';
   const filterClause = structuredStringFilterClause(parsedFilters.filters, {
     id: 'target_service_key',
     scope: 'scope',
@@ -167,8 +171,7 @@ export async function listWorkflowRuns(
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND target_handler_name = ${quoteSqlString(handlers.run)}
-      AND target_service_key IS NOT NULL${searchClause}${filterClause}
+      AND target_handler_name = ${quoteSqlString(handlers.run)}${nonNullIdClause}${searchClause}${filterClause}
     ORDER BY created_at DESC NULLS LAST
     LIMIT ${WORKFLOW_RUN_QUERY_LIMIT}`,
   );
