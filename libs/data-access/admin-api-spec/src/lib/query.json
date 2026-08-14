@@ -5307,6 +5307,29 @@
           }
         }
       },
+      "VirtualObjectInstanceFilterItem": {
+        "type": "object",
+        "required": ["field", "type", "operation", "value"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["key", "scope"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["STRING"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["EQUALS", "CONTAINS"]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        }
+      },
       "ListVirtualObjectInstancesRequest": {
         "type": "object",
         "properties": {
@@ -5314,6 +5337,12 @@
             "type": "string",
             "maxLength": 256,
             "description": "Substring matched against the object key and scope."
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectInstanceFilterItem"
+            }
           },
           "sort": {
             "$ref": "#/components/schemas/VirtualObjectInstanceSort"
@@ -5371,6 +5400,29 @@
           }
         }
       },
+      "WorkflowRunFilterItem": {
+        "type": "object",
+        "required": ["field", "type", "operation", "value"],
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": ["id", "scope"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["STRING"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["EQUALS", "CONTAINS"]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        }
+      },
       "ListWorkflowRunsRequest": {
         "type": "object",
         "properties": {
@@ -5378,6 +5430,12 @@
             "type": "string",
             "maxLength": 256,
             "description": "Substring matched against the Workflow id and scope."
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowRunFilterItem"
+            }
           }
         }
       },
