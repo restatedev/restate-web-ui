@@ -147,4 +147,58 @@ describe('VQueuePopoverContent', () => {
 
     expect(await screen.findByText('Blocked on')).toBeTruthy();
   });
+
+  it('uses the shared scheduled status for the queue head', () => {
+    render(
+      <SnapshotTimeProvider lastSnapshot={Date.parse('2026-08-14T09:00:00Z')}>
+        <VQueuePopoverContent
+          data={{
+            ...snapshot,
+            status: {
+              blocked: false,
+              scheduling: 'scheduled',
+              scheduledAt: '2026-08-14T09:04:33Z',
+            },
+            counts: { ...snapshot.counts, inbox: 1 },
+            head: {
+              entryId: 'inv_head',
+              stage: 'inbox',
+              status: 'scheduled',
+              totalBlocks: [],
+              nowBlocks: [],
+              avgBlocks: [],
+            },
+          }}
+        />
+      </SnapshotTimeProvider>,
+    );
+
+    expect(screen.getByText('Scheduled')).toBeTruthy();
+    expect(screen.getByText('4m 33s')).toBeTruthy();
+  });
+
+  it('uses the shared ready status for the queue head', () => {
+    render(
+      <VQueuePopoverContent
+        data={{
+          ...snapshot,
+          status: {
+            blocked: false,
+            scheduling: 'ready',
+          },
+          counts: { ...snapshot.counts, inbox: 1 },
+          head: {
+            entryId: 'inv_head',
+            stage: 'inbox',
+            status: 'new',
+            totalBlocks: [],
+            nowBlocks: [],
+            avgBlocks: [],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Ready').className).toContain('border-dashed');
+  });
 });

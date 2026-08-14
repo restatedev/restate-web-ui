@@ -14,15 +14,18 @@ import {
 import { ServiceTarget } from '@restate/features/service-target';
 import { VQueueEntryId } from '@restate/features/invocation-ui';
 import {
+  BlockedStatus,
   getVqueueGateLabel,
   LimitKey,
+  ReadyStatus,
+  ScheduledStatus,
   Scope,
   VQueueId,
 } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { ChipGroup } from '@restate/ui/chip';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
+import { DateTooltip } from '@restate/ui/tooltip';
 import {
   formatCompactISODuration,
   formatDurations,
@@ -104,29 +107,12 @@ const rowStyles = tv({
   base: 'cursor-default transition-none [content-visibility:auto]',
 });
 
-const headStateStyles = tv({
+const headBlockedDetailsStyles = tv({
   slots: {
-    root: 'flex min-w-0 items-center gap-1.5 text-xs',
-    dot: 'h-1.5 w-1.5 shrink-0 rounded-full',
-    status: 'shrink-0 font-medium',
-    separator: 'text-zinc-300',
-    detail: 'min-w-0 truncate text-zinc-400 tabular-nums',
-  },
-  variants: {
-    tone: {
-      blocked: {
-        dot: 'bg-orange-500',
-        status: 'text-orange-700',
-      },
-      scheduled: {
-        dot: 'bg-zinc-400',
-        status: 'text-zinc-600',
-      },
-      ready: {
-        dot: 'bg-blue-500',
-        status: 'text-blue-700',
-      },
-    },
+    root: 'max-w-80',
+    details: 'grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-xs',
+    term: 'text-zinc-400',
+    value: 'min-w-0 text-right break-all text-zinc-700 tabular-nums',
   },
 });
 
@@ -272,12 +258,12 @@ function formatDateTime(value: string) {
     : value;
 }
 
-function HeadStateTooltip({
+function HeadBlockedDetails({
   scheduler,
   reason,
 }: {
   scheduler: SchedulerState;
-  reason?: string;
+  reason: string;
 }) {
   const resource = scheduler.blockedResource;
   const details = [
@@ -309,24 +295,15 @@ function HeadStateTooltip({
     (detail): detail is { label: string; value: string } =>
       detail.value !== undefined,
   );
-  const title = {
-    blocked: 'Head entry blocked',
-    scheduled: 'Head entry scheduled',
-    ready: 'Head entry ready',
-    dormant: 'Queue dormant',
-    empty: 'Queue empty',
-  }[scheduler.status];
+  const styles = headBlockedDetailsStyles();
   return (
-    <div className="max-w-80 min-w-56">
-      <div className="text-sm font-medium text-gray-100">{title}</div>
+    <div className={styles.root()}>
       {details.length > 0 && (
-        <dl className="mt-2 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-xs">
+        <dl className={styles.details()}>
           {details.map((detail) => (
             <div key={detail.label} className="contents">
-              <dt className="text-gray-400">{detail.label}</dt>
-              <dd className="min-w-0 text-right break-all text-gray-200 tabular-nums">
-                {detail.value}
-              </dd>
+              <dt className={styles.term()}>{detail.label}</dt>
+              <dd className={styles.value()}>{detail.value}</dd>
             </div>
           ))}
         </dl>
@@ -336,7 +313,6 @@ function HeadStateTooltip({
 }
 
 function HeadState({ row }: { row: VQueueMetaRow }) {
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const scheduler = row.scheduler;
   if (
     !scheduler ||
@@ -346,61 +322,23 @@ function HeadState({ row }: { row: VQueueMetaRow }) {
     return null;
   }
 
-  const blockedResource =
-    scheduler.blockedResource?.resource ?? scheduler.blockedOn;
-  const reason =
-    scheduler.status === 'blocked'
-      ? blockedResource
-        ? getVqueueGateLabel(blockedResource)
-        : 'resource'
-      : undefined;
-  const scheduledTiming = scheduler.scheduledAt
-    ? durationSinceLastSnapshot(scheduler.scheduledAt)
-    : undefined;
-  const scheduledLabel = scheduledTiming
-    ? scheduledTiming.isPast
-      ? 'due now'
-      : `in ${formatDurations(scheduledTiming)}`
-    : undefined;
-  const presentation =
-    scheduler.status === 'blocked'
-      ? {
-          tone: 'blocked' as const,
-          status: 'Blocked',
-          detail: reason,
-        }
-      : scheduler.status === 'scheduled'
-        ? {
-            tone: 'scheduled' as const,
-            status: 'Scheduled',
-            detail: scheduledLabel,
-          }
-        : { tone: 'ready' as const, status: 'Ready', detail: undefined };
-  const ariaLabel = [presentation.status, presentation.detail]
-    .filter(Boolean)
-    .join(', ');
-  const styles = headStateStyles({ tone: presentation.tone });
-
-  return (
-    <HoverTooltip
-      size="default"
-      className="min-w-0 flex-1"
-      content={<HeadStateTooltip scheduler={scheduler} reason={reason} />}
-    >
-      <span className={styles.root()} aria-label={`Head entry: ${ariaLabel}`}>
-        <span aria-hidden className={styles.dot()} />
-        <span className={styles.status()}>{presentation.status}</span>
-        {presentation.detail && (
-          <>
-            <span aria-hidden className={styles.separator()}>
-              ·
-            </span>
-            <span className={styles.detail()}>{presentation.detail}</span>
-          </>
-        )}
-      </span>
-    </HoverTooltip>
-  );
+  if (scheduler.status === 'blocked') {
+    const blockedResource =
+      scheduler.blockedResource?.resource ?? scheduler.blockedOn;
+    const reason = blockedResource
+      ? getVqueueGateLabel(blockedResource)
+      : 'resource';
+    return (
+      <BlockedStatus
+        reason={reason}
+        details={<HeadBlockedDetails scheduler={scheduler} reason={reason} />}
+      />
+    );
+  }
+  if (scheduler.status === 'scheduled') {
+    return <ScheduledStatus scheduledAt={scheduler.scheduledAt} />;
+  }
+  return <ReadyStatus />;
 }
 
 function HeadEntry({ row }: { row: VQueueMetaRow }) {
@@ -409,7 +347,7 @@ function HeadEntry({ row }: { row: VQueueMetaRow }) {
   return (
     <div className="flex w-full min-w-0 items-center gap-2">
       {scheduler.headEntryId && (
-        <div className="min-w-0 flex-1">
+        <div className="w-[45%] min-w-0 shrink-0">
           <VQueueEntryId
             id={scheduler.headEntryId}
             size="md"
@@ -417,7 +355,9 @@ function HeadEntry({ row }: { row: VQueueMetaRow }) {
           />
         </div>
       )}
-      <HeadState row={row} />
+      <div className="min-w-0 flex-1">
+        <HeadState row={row} />
+      </div>
     </div>
   );
 }
