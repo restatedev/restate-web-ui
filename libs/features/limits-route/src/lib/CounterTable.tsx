@@ -54,6 +54,7 @@ const RULE_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'usage',
     name: 'Usage',
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '2fr',
     maxWidth: 250,
   },
@@ -61,6 +62,7 @@ const RULE_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'waiting',
     name: <WaitingQueuesExplainer />,
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '1fr',
     maxWidth: 120,
   },
@@ -77,6 +79,7 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'usage',
     name: 'Usage',
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '2fr',
     maxWidth: 150,
   },
@@ -90,6 +93,7 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'waiting',
     name: <WaitingQueuesExplainer />,
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '1fr',
     maxWidth: 120,
   },
@@ -340,8 +344,8 @@ export interface CounterTableProps {
   caption?: ReactNode;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
-  sortDescriptor: SortDescriptor;
-  onSortChange: (descriptor: SortDescriptor) => void;
+  sortDescriptor?: SortDescriptor;
+  onSortChange: (descriptor: SortDescriptor | undefined) => void;
 }
 
 export function CounterTable({

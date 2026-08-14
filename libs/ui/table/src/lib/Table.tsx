@@ -58,13 +58,29 @@ const columnGroupStyles = tv({
   base: 'flex h-5 flex-1 items-center gap-1 overflow-hidden',
 });
 
+const sortArrowStyles = tv({
+  base: '-my-0.5 h-2.5 w-2.5 transition-colors',
+  variants: {
+    isActive: {
+      true: 'text-gray-700 dark:text-zinc-200 forced-colors:text-[ButtonText]',
+      false: 'text-gray-400 dark:text-zinc-500 forced-colors:text-[GrayText]',
+    },
+  },
+});
+
 const resizerStyles = tv({
   extend: focusRing,
   base: 'resizer absolute right-0 box-content h-5 w-px cursor-col-resize rounded-sm bg-gray-400 bg-clip-content px-[8px] py-1 -outline-offset-2 resizing:w-[2px] resizing:bg-blue-600 resizing:pl-[7px]',
 });
 
 const columnStyles = tv({
-  base: 'cursor-default py-2 pl-2 text-start text-sm font-semibold text-gray-700 last:pr-2 focus-within:z-20 [&:hover]:z-20 [&:not(:last-child)_.resizer]:translate-x-[10px]',
+  base: 'py-2 pl-2 text-start text-sm font-semibold text-gray-700 last:pr-2 focus-within:z-20 [&:hover]:z-20 [&:not(:last-child)_.resizer]:translate-x-[10px]',
+  variants: {
+    allowsSorting: {
+      true: 'cursor-pointer',
+      false: 'cursor-default',
+    },
+  },
 });
 
 interface ColumnProps extends Pick<
@@ -85,7 +101,13 @@ export function Column({
   ...props
 }: PropsWithChildren<ColumnProps>) {
   return (
-    <AriaColumn minWidth={0} {...props} className={columnStyles({ className })}>
+    <AriaColumn
+      minWidth={0}
+      {...props}
+      className={({ allowsSorting }) =>
+        columnStyles({ allowsSorting, className })
+      }
+    >
       {composeRenderProps(
         props.children,
         (children, { allowsSorting, sortDirection }) => (
@@ -98,16 +120,21 @@ export function Column({
               <TruncateWithTooltip hideCopy>{children}</TruncateWithTooltip>
               {allowsSorting && (
                 <span
-                  className={`flex h-4 w-4 items-center justify-center transition ${
-                    sortDirection === 'descending' ? 'rotate-180' : ''
-                  }`}
+                  aria-hidden
+                  className="flex h-4 w-3 shrink-0 flex-col items-center justify-center -space-y-1"
                 >
-                  {sortDirection && (
-                    <Icon
-                      name={IconName.ChevronUp}
-                      className="h-4 w-4 text-gray-500 dark:text-zinc-400 forced-colors:text-[ButtonText]"
-                    />
-                  )}
+                  <Icon
+                    name={IconName.ChevronUp}
+                    className={sortArrowStyles({
+                      isActive: sortDirection === 'ascending',
+                    })}
+                  />
+                  <Icon
+                    name={IconName.ChevronDown}
+                    className={sortArrowStyles({
+                      isActive: sortDirection === 'descending',
+                    })}
+                  />
                 </span>
               )}
             </Group>

@@ -109,6 +109,8 @@ const columns: PanelTableColumn<ColumnId>[] = [
     id: 'backlog',
     name: 'Inbox',
     allowsSorting: true,
+    preferredSortDirection: 'descending',
+    sortDirections: ['descending'],
     defaultWidth: 220,
     minWidth: 180,
   },
@@ -323,14 +325,14 @@ function Component() {
     ? { column: 'backlog', direction: 'descending' }
     : undefined;
 
-  const toggleBacklogSort = () => {
+  const handleBacklogSortChange = (descriptor: SortDescriptor | undefined) => {
     setSearchParams(
       (current) => {
         const next = new URLSearchParams(current);
-        if (sortByBacklog) {
-          next.delete(SORT_QUERY_PARAM);
-        } else {
+        if (descriptor) {
           next.set(SORT_QUERY_PARAM, BACKLOG_SORT);
+        } else {
+          next.delete(SORT_QUERY_PARAM);
         }
         return next;
       },
@@ -498,7 +500,7 @@ function Component() {
                   error,
                 ]}
                 sortDescriptor={sortDescriptor}
-                onSortChange={toggleBacklogSort}
+                onSortChange={handleBacklogSortChange}
                 onRowAction={(rowId) => {
                   const item = items.find(({ id }) => id === String(rowId));
                   if (item) {

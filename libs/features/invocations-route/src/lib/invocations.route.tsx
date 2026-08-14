@@ -537,7 +537,6 @@ function Component() {
               id: col.id,
               name: col.name,
               isRowHeader: col.isRowHeader,
-              allowsSorting: true,
               defaultWidth: COLUMN_WIDTH[col.id],
               minWidth: MIN_COLUMN_WIDTH[col.id] ?? 80,
               maxWidth: MAX_COLUMN_WIDTH[col.id],

@@ -91,6 +91,7 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
     id: 'stages',
     name: 'Workload',
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '2fr',
     minWidth: 0,
   },
@@ -98,6 +99,7 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
     id: 'lastActivity',
     name: 'Last activity',
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '2fr',
     minWidth: 0,
   },
@@ -502,8 +504,8 @@ export function VQueueTable({
   error?: Error | null;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
-  sortDescriptor: SortDescriptor;
-  onSortChange: (descriptor: SortDescriptor) => void;
+  sortDescriptor?: SortDescriptor;
+  onSortChange: (descriptor: SortDescriptor | undefined) => void;
 }) {
   const rows = useMemo(
     () =>
