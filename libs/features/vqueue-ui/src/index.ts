@@ -9,6 +9,7 @@ export {
   LimitCounterTarget,
   type LimitCounterTargetProps,
 } from './lib/LimitCounterTarget';
+export { LimitValue, type LimitValueProps } from './lib/LimitValue';
 export {
   getLimitRuleLevel,
   LimitRuleTarget,

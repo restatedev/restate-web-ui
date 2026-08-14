@@ -61,7 +61,6 @@ import {
 } from '@restate/util/feature-flag';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { DeleteDeployment } from '@restate/features/deployment';
-import { PruneDrainedDeploymentsDialog } from '@restate/features/prune-deployments';
 import { ServicePlayground } from '@restate/features/service';
 import { DeploymentDetails } from '@restate/features/deployment-details';
 import { EditService, ServiceDetails } from '@restate/features/service-details';
@@ -490,7 +489,6 @@ function AppContent() {
                 <StatePanel />
                 <EditService />
                 <InvocationActions />
-                <PruneDrainedDeploymentsDialog />
                 <RegisterDeploymentDialog />
                 <UpdateDeploymentDialog />
                 <MonacoWarmup />

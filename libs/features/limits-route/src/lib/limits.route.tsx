@@ -62,7 +62,7 @@ import {
   type RuleLevel,
 } from './pattern';
 import { RuleMatchPreview, RulePatternBuilder } from './RulePatternBuilder';
-import { LimitValue } from './LimitValue';
+import { LimitValue } from '@restate/features/vqueue-ui';
 import {
   RULE_LEVEL_COLUMN_WIDTH,
   RuleLevelBadge,

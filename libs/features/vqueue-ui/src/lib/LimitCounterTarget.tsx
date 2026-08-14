@@ -44,6 +44,7 @@ export interface LimitCounterTargetProps {
   variant?: ChipGroupVariant | 'table';
   density?: ChipGroupDensity;
   showIcon?: boolean;
+  showChevron?: boolean;
   usage?: number | null;
   limit?: number | null;
 }
@@ -57,6 +58,7 @@ export function LimitCounterTarget({
   variant = 'default',
   density,
   showIcon,
+  showChevron,
   usage,
   limit,
 }: LimitCounterTargetProps) {
@@ -67,7 +69,8 @@ export function LimitCounterTarget({
   const chipVariant = variant === 'header' ? 'header' : 'default';
   const resolvedShowIcon = showIcon ?? variant !== 'header';
   const atCapacity = usage != null && limit != null && usage >= limit;
-  const showChevron = variant === 'table' && Boolean(href);
+  const resolvedShowChevron =
+    showChevron ?? (variant === 'table' && Boolean(href));
   const {
     root,
     identity: identityStyles,
@@ -81,21 +84,23 @@ export function LimitCounterTarget({
         density={resolvedDensity}
         href={href}
         aria-label={`Limit counter ${identity}`}
-        className={identityStyles()}
+        className={identityStyles({
+          className: variant === 'table' ? 'w-full' : undefined,
+        })}
       >
         <Scope
           value={scope}
           icon={resolvedShowIcon ? IconName.Gauge : undefined}
           iconClassName={identityIcon()}
           relationship={limitKey ? 'target' : undefined}
-          showChevron={showChevron && !limitKey}
+          showChevron={resolvedShowChevron && !limitKey}
         />
         {limitKey && (
           <LimitKey
             value={limitKey}
             relationship="scope"
             showCopy={false}
-            showChevron={showChevron}
+            showChevron={resolvedShowChevron}
           />
         )}
       </ChipGroup>
@@ -108,6 +113,7 @@ export function LimitCounterTarget({
       copyText={identity}
       hideCopy={variant !== 'table'}
       overflowVisible
+      containerClassName={variant === 'table' ? 'w-full' : undefined}
     >
       {target}
     </TruncateWithTooltip>

@@ -2,6 +2,7 @@ import type { UserLimitRow } from '@restate/data-access/admin-api-hooks';
 import {
   LimitCounterTarget,
   LimitRuleTarget,
+  LimitValue,
 } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
@@ -21,7 +22,6 @@ import {
 } from './navigation';
 import type { RuleLevel } from './pattern';
 import { getCounterUsageRatio } from './counterUsage';
-import { LimitValue } from './LimitValue';
 import {
   RULE_LEVEL_COLUMN_WIDTH,
   RuleLevelExplainer,

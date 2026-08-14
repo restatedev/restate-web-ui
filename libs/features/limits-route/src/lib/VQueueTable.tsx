@@ -1,4 +1,9 @@
-import type { VQueueMetaRow } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetVirtualObjectLock,
+  useListUserLimits,
+  type VQueueMetaRow,
+} from '@restate/data-access/admin-api-hooks';
+import type { components } from '@restate/data-access/admin-api-spec';
 import {
   VirtualObjectInstanceTarget,
   virtualObjectInstanceHref,
@@ -12,7 +17,7 @@ import {
   type StatusBarEntry,
 } from '@restate/features/status-chart';
 import { ServiceTarget } from '@restate/features/service-target';
-import { VQueueEntryId } from '@restate/features/invocation-ui';
+import { InvocationId, VQueueEntryId } from '@restate/features/invocation-ui';
 import {
   BlockedStatus,
   getVqueueGateLabel,
@@ -34,8 +39,17 @@ import {
 import { panelHref } from '@restate/util/panel';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
+import {
+  createLimitCounterFiltersForIdentity,
+  toLimitCounterFilters,
+} from './limits.counterFilters';
+import {
+  limitCountersForIdentityHref,
+  limitCountersForRuleHref,
+  type LimitCounterIdentity,
+} from './navigation';
 
 type VQueueColumn =
   | 'vqueue'
@@ -185,19 +199,19 @@ function latestActivity(row: VQueueMetaRow): Activity | undefined {
   }, undefined);
 }
 
-function lockIdentity(row: VQueueMetaRow) {
-  const separator = row.lock_name?.indexOf('/') ?? -1;
-  if (
-    !row.lock_name ||
-    separator <= 0 ||
-    separator === row.lock_name.length - 1
-  ) {
+function lockIdentityFromName(lockName?: string | null) {
+  const separator = lockName?.indexOf('/') ?? -1;
+  if (!lockName || separator <= 0 || separator === lockName.length - 1) {
     return undefined;
   }
   return {
-    service: row.lock_name.slice(0, separator),
-    key: row.lock_name.slice(separator + 1),
+    service: lockName.slice(0, separator),
+    key: lockName.slice(separator + 1),
   } satisfies VirtualObjectInstanceIdentity;
+}
+
+function lockIdentity(row: VQueueMetaRow) {
+  return lockIdentityFromName(row.lock_name);
 }
 
 function chartVisual(tone: ChartTone) {
@@ -247,17 +261,77 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
 }
 
 type SchedulerState = NonNullable<VQueueMetaRow['scheduler']>;
+type BlockedResource = NonNullable<SchedulerState['blockedResource']>;
+type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
+type ListLimitCountersRequestBody =
+  components['schemas']['ListLimitCountersRequestBody'];
 
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: 'medium',
-  timeStyle: 'medium',
-});
+function blockedObjectIdentity(resource: BlockedResource) {
+  if (resource.resource !== 'lock') return undefined;
+  const identity = lockIdentityFromName(resource.lockName);
+  if (!identity) return undefined;
+  return {
+    ...identity,
+    ...(resource.scope ? { scope: resource.scope } : {}),
+  } satisfies VirtualObjectInstanceIdentity;
+}
 
-function formatDateTime(value: string) {
-  const date = new Date(value);
-  return Number.isFinite(date.getTime())
-    ? dateTimeFormatter.format(date)
-    : value;
+function blockedCounterIdentity(
+  resource: BlockedResource,
+): LimitCounterIdentity | undefined {
+  if (
+    resource.resource !== 'limit-key-concurrency' ||
+    !resource.scope ||
+    !resource.blockedLevel
+  ) {
+    return undefined;
+  }
+  const [l1, l2] = resource.limitKey?.split('/') ?? [];
+  switch (resource.blockedLevel) {
+    case 'scope':
+      return { scope: resource.scope };
+    case 'level1':
+      return l1 ? { scope: resource.scope, l1 } : undefined;
+    case 'level2':
+      return l1 && l2 ? { scope: resource.scope, l1, l2 } : undefined;
+  }
+}
+
+function blockedCounterRequest(
+  resource: BlockedResource,
+): ListLimitCountersRequestBody | undefined {
+  const identity = blockedCounterIdentity(resource);
+  if (!identity) return undefined;
+  return {
+    filters: toLimitCounterFilters(
+      createLimitCounterFiltersForIdentity(identity),
+    ),
+    ...(resource.blockedRule ? { rulePattern: resource.blockedRule } : {}),
+    limit: 1,
+  };
+}
+
+function LockHolderTarget({
+  lockHolder,
+}: {
+  lockHolder: VirtualObjectLockHolder;
+}) {
+  if (lockHolder.kind === 'invocation') {
+    return (
+      <InvocationId
+        id={lockHolder.id}
+        size="md"
+        truncateInMiddle
+        popover={false}
+        className="max-w-full"
+      />
+    );
+  }
+  return (
+    <code className="block max-w-full truncate text-2xs text-zinc-600">
+      {lockHolder.id}
+    </code>
+  );
 }
 
 function HeadBlockedDetails({
@@ -267,29 +341,12 @@ function HeadBlockedDetails({
   scheduler: SchedulerState;
   reason: string;
 }) {
-  const resource = scheduler.blockedResource;
   const details = [
     { label: 'Reason', value: reason },
     {
       label: 'Blocked for',
       value: scheduler.blockedDuration
         ? formatCompactISODuration(scheduler.blockedDuration)
-        : undefined,
-    },
-    { label: 'Rule', value: resource?.blockedRule },
-    { label: 'Scope', value: resource?.scope },
-    { label: 'Limit key', value: resource?.limitKey },
-    { label: 'Lock', value: resource?.lockName },
-    {
-      label: 'Retry at',
-      value: resource?.estimatedRetryAt
-        ? formatDateTime(resource.estimatedRetryAt)
-        : undefined,
-    },
-    {
-      label: 'Run at',
-      value: scheduler.scheduledAt
-        ? formatDateTime(scheduler.scheduledAt)
         : undefined,
     },
     { label: 'Head entry', value: scheduler.headEntryId },
@@ -314,7 +371,83 @@ function HeadBlockedDetails({
   );
 }
 
-function HeadState({ row }: { row: VQueueMetaRow }) {
+function StructuredBlockedHeadState({
+  scheduler,
+  resource,
+  baseUrl,
+}: {
+  scheduler: SchedulerState;
+  resource: BlockedResource;
+  baseUrl: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const objectIdentity = useMemo(
+    () => blockedObjectIdentity(resource),
+    [resource],
+  );
+  const counterIdentity = useMemo(
+    () => blockedCounterIdentity(resource),
+    [resource],
+  );
+  const counterRequest = useMemo(
+    () => blockedCounterRequest(resource),
+    [resource],
+  );
+  const lock = useGetVirtualObjectLock(
+    objectIdentity?.service ?? '',
+    objectIdentity?.key ?? '',
+    objectIdentity?.scope,
+    {
+      enabled: isOpen && Boolean(objectIdentity),
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      staleTime: 0,
+    },
+  );
+  const counter = useListUserLimits(counterRequest ?? { limit: 1 }, {
+    enabled: isOpen && Boolean(counterRequest),
+  });
+  const limit = counter.data?.limits[0];
+  const lockHolder = lock.data?.lockHolder;
+
+  return (
+    <BlockedStatus
+      resource={resource}
+      blockedDuration={scheduler.blockedDuration}
+      objectTarget={
+        objectIdentity ? (
+          <VirtualObjectInstanceTarget
+            identity={objectIdentity}
+            href={virtualObjectInstanceHref(baseUrl, objectIdentity)}
+            containerClassName="w-full"
+          />
+        ) : undefined
+      }
+      lockHolderTarget={
+        lockHolder ? <LockHolderTarget lockHolder={lockHolder} /> : undefined
+      }
+      counterHref={
+        counterIdentity
+          ? limitCountersForIdentityHref(
+              baseUrl,
+              counterIdentity,
+              resource.blockedRule,
+            )
+          : undefined
+      }
+      ruleHref={
+        resource.blockedRule
+          ? limitCountersForRuleHref(baseUrl, resource.blockedRule)
+          : undefined
+      }
+      ruleLimit={limit?.concurrency_limit ?? undefined}
+      counterUsage={limit?.usage ?? undefined}
+      onOpenChange={setIsOpen}
+    />
+  );
+}
+
+function HeadState({ row, baseUrl }: { row: VQueueMetaRow; baseUrl: string }) {
   const scheduler = row.scheduler;
   if (
     !scheduler ||
@@ -325,8 +458,16 @@ function HeadState({ row }: { row: VQueueMetaRow }) {
   }
 
   if (scheduler.status === 'blocked') {
-    const blockedResource =
-      scheduler.blockedResource?.resource ?? scheduler.blockedOn;
+    if (scheduler.blockedResource) {
+      return (
+        <StructuredBlockedHeadState
+          scheduler={scheduler}
+          resource={scheduler.blockedResource}
+          baseUrl={baseUrl}
+        />
+      );
+    }
+    const blockedResource = scheduler.blockedOn;
     const reason = blockedResource
       ? getVqueueGateLabel(blockedResource)
       : 'resource';
@@ -343,7 +484,7 @@ function HeadState({ row }: { row: VQueueMetaRow }) {
   return <ReadyStatus />;
 }
 
-function HeadEntry({ row }: { row: VQueueMetaRow }) {
+function HeadEntry({ row, baseUrl }: { row: VQueueMetaRow; baseUrl: string }) {
   const scheduler = row.scheduler;
   if (!scheduler) return null;
   return (
@@ -358,7 +499,7 @@ function HeadEntry({ row }: { row: VQueueMetaRow }) {
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <HeadState row={row} />
+        <HeadState row={row} baseUrl={baseUrl} />
       </div>
     </div>
   );
@@ -466,7 +607,7 @@ function renderCell(
     case 'head':
       return (
         <Cell className="min-w-0 overflow-hidden">
-          <HeadEntry row={row} />
+          <HeadEntry row={row} baseUrl={baseUrl} />
         </Cell>
       );
     case 'stages':

@@ -39,7 +39,7 @@ import {
   LIMIT_COUNTER_FILTER_SCHEMA,
   toLimitCounterFilters,
 } from './limits.counterFilters';
-import { LimitValue } from './LimitValue';
+import { LimitValue } from '@restate/features/vqueue-ui';
 import {
   LimitListPagination,
   useLimitListPagination,
