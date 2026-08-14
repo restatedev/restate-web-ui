@@ -21,6 +21,7 @@ function openStatus(reason: string) {
 
 describe('BlockedStatus', () => {
   it('explains an object lock and links to the Virtual Object', async () => {
+    const onOpenChange = vi.fn();
     renderStatus({
       resource: {
         resource: 'lock',
@@ -36,10 +37,12 @@ describe('BlockedStatus', () => {
       lockHolderTarget: (
         <a href="/invocations/inv_lock_holder">inv_lock_holder</a>
       ),
+      onOpenChange,
     });
 
     openStatus('object lock');
 
+    expect(onOpenChange).toHaveBeenCalledWith(true);
     expect(await screen.findByText('Virtual Object lock')).toBeTruthy();
     expect(
       screen
