@@ -396,7 +396,6 @@ function Component() {
                     );
                   }
                 }}
-                rowClassName="cursor-pointer"
                 emptyPlaceholder={
                   error ? (
                     <EmptyState
