@@ -9,7 +9,7 @@ import { SplitButton } from '@restate/ui/split-button';
 import { useOverviewContext } from './OverviewContext';
 
 export function DeploymentActions() {
-  const { drainedDeploymentIds } = useOverviewContext();
+  const { drainedDeploymentIds, mode } = useOverviewContext();
 
   return (
     <SplitButton
@@ -23,14 +23,16 @@ export function DeploymentActions() {
             <Icon name={IconName.Plus} className="h-3.5 w-3.5 shrink-0" />
             Register deployment
           </DropdownItem>
-          <DropdownItem
-            href={`?${PRUNE_DRAINED_DEPLOYMENTS_QUERY}=true`}
-            isDisabled={drainedDeploymentIds.size === 0}
-            destructive
-          >
-            <Icon name={IconName.Trash} className="h-3.5 w-3.5 shrink-0" />
-            Prune drained deployments
-          </DropdownItem>
+          {mode === 'deployments' && (
+            <DropdownItem
+              href={`?${PRUNE_DRAINED_DEPLOYMENTS_QUERY}=true`}
+              isDisabled={drainedDeploymentIds.size === 0}
+              destructive
+            >
+              <Icon name={IconName.Trash} className="h-3.5 w-3.5 shrink-0" />
+              Prune drained deployments
+            </DropdownItem>
+          )}
         </>
       }
     >

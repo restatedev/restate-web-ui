@@ -6,6 +6,7 @@ import { tv } from '@restate/util/styles';
 import { Link } from '@restate/ui/link';
 import { RestateServer } from '@restate/ui/restate-server';
 import { useRestateContext } from '@restate/features/restate-context';
+import { PruneDrainedDeploymentsDialog } from '@restate/features/prune-deployments';
 import { useIsMutating } from '@tanstack/react-query';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
@@ -979,8 +980,15 @@ function Component() {
   return (
     <OverviewProvider>
       <OverviewContent />
+      <OverviewDialogs />
     </OverviewProvider>
   );
+}
+
+function OverviewDialogs() {
+  const { mode } = useOverviewContext();
+
+  return mode === 'deployments' ? <PruneDrainedDeploymentsDialog /> : null;
 }
 
 export const overview2 = { Component };

@@ -65,7 +65,9 @@ const DEFAUTL_SORT = {
 export function OverviewProvider({ children }: { children: ReactNode }) {
   const [searchParams] = useSearchParams();
   const mode = getOverviewMode(searchParams.get(OVERVIEW_MODE_PARAM));
-  const overviewData = useOverviewData();
+  const overviewData = useOverviewData({
+    deploymentStatusEnabled: mode === 'deployments',
+  });
   const { baseUrl } = useRestateContext();
   const queryClient = useQueryClient();
   const [isManualRefreshing, startTransition] = useTransition();

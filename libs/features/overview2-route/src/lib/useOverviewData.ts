@@ -32,7 +32,11 @@ import {
 } from './overviewPolling';
 import { normalizeCompletionTimeRange } from './completionBuckets';
 
-export function useOverviewData() {
+export function useOverviewData({
+  deploymentStatusEnabled,
+}: {
+  deploymentStatusEnabled: boolean;
+}) {
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const hasCompleteVqueuePopulation =
@@ -172,7 +176,7 @@ export function useOverviewData() {
   const {
     data: drainedDeploymentIds = new Set(),
     isPending: isDeploymentStatusLoading,
-  } = useListDrainedDeployments();
+  } = useListDrainedDeployments({ enabled: deploymentStatusEnabled });
   const isSummaryLoading = summary.isPending || summary.isPlaceholderData;
   const isInboxBreakdownLoading =
     inboxCount > 0 && summary.isBreakdownLoading('inbox');

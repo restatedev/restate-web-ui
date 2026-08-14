@@ -24,8 +24,9 @@ const VQUEUE_DRAINED_DEPLOYMENTS_QUERY = `WITH active_deployments AS (
 
     SELECT deployment AS id
     FROM sys_vqueues
-    WHERE deployment IS NOT NULL
-      AND stage IN ('inbox', 'running', 'paused', 'suspended')
+    WHERE entry_kind = 'invocation'
+      AND stage != 'finished'
+      AND deployment IS NOT NULL
 )
 SELECT id
 FROM sys_deployment
