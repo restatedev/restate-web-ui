@@ -1,6 +1,6 @@
 import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import {
   VQueueInboxPopoverContent,
   VQueuePopoverContent,
@@ -116,7 +116,7 @@ describe('VQueuePopoverContent', () => {
     ).toBeTruthy();
   });
 
-  it('uses the shared blocked status for the queue head', async () => {
+  it('uses the shared blocked status for the queue head', () => {
     render(
       <VQueuePopoverContent
         data={{
@@ -140,11 +140,63 @@ describe('VQueuePopoverContent', () => {
     );
 
     expect(screen.getByText('Blocked')).toBeTruthy();
+    expect(screen.getByText('on concurrency rule')).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'on concurrency rule' }),
+    ).toBeNull();
+  });
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'on concurrency rule' }),
+  it('uses the shared scheduled status for the queue head', () => {
+    render(
+      <SnapshotTimeProvider lastSnapshot={Date.parse('2026-08-14T09:00:00Z')}>
+        <VQueuePopoverContent
+          data={{
+            ...snapshot,
+            status: {
+              blocked: false,
+              scheduling: 'scheduled',
+              scheduledAt: '2026-08-14T09:04:33Z',
+            },
+            counts: { ...snapshot.counts, inbox: 1 },
+            head: {
+              entryId: 'inv_head',
+              stage: 'inbox',
+              status: 'scheduled',
+              totalBlocks: [],
+              nowBlocks: [],
+              avgBlocks: [],
+            },
+          }}
+        />
+      </SnapshotTimeProvider>,
     );
 
-    expect(await screen.findByText('Blocked on')).toBeTruthy();
+    expect(screen.getByText('Scheduled')).toBeTruthy();
+    expect(screen.getByText('4m 33s')).toBeTruthy();
+  });
+
+  it('uses the shared ready status for the queue head', () => {
+    render(
+      <VQueuePopoverContent
+        data={{
+          ...snapshot,
+          status: {
+            blocked: false,
+            scheduling: 'ready',
+          },
+          counts: { ...snapshot.counts, inbox: 1 },
+          head: {
+            entryId: 'inv_head',
+            stage: 'inbox',
+            status: 'new',
+            totalBlocks: [],
+            nowBlocks: [],
+            avgBlocks: [],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Ready').className).toContain('border-dashed');
   });
 });

@@ -123,10 +123,11 @@ export function PruneDrainedDeploymentsDialog() {
 
   return (
     <QueryDialog query={PRUNE_DRAINED_DEPLOYMENTS_QUERY}>
-      <PruneDrainedDeploymentsDialogContent
-        key={String(isOpen)}
-        onSuccessClose={removeDialogQueryParam}
-      />
+      {isOpen && (
+        <PruneDrainedDeploymentsDialogContent
+          onSuccessClose={removeDialogQueryParam}
+        />
+      )}
     </QueryDialog>
   );
 }

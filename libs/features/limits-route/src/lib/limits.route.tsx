@@ -62,7 +62,7 @@ import {
   type RuleLevel,
 } from './pattern';
 import { RuleMatchPreview, RulePatternBuilder } from './RulePatternBuilder';
-import { LimitValue } from './LimitValue';
+import { LimitValue } from '@restate/features/vqueue-ui';
 import {
   RULE_LEVEL_COLUMN_WIDTH,
   RuleLevelBadge,
@@ -776,16 +776,20 @@ function Component() {
   const navigate = useNavigate();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+  const [sortDescriptor, setSortDescriptor] = useState<
+    SortDescriptor | undefined
+  >({
     column: 'pattern',
     direction: 'ascending',
   });
   const ruleRequest = useMemo(
     () => ({
-      sort: {
-        field: 'pattern' as const,
-        order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
-      } as const,
+      ...(sortDescriptor && {
+        sort: {
+          field: 'pattern' as const,
+          order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
+        } as const,
+      }),
       limit: LIMIT_LIST_QUERY_SIZE,
     }),
     [sortDescriptor],

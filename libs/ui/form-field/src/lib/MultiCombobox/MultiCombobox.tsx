@@ -155,7 +155,7 @@ const popoverStyles = tv({
 });
 
 const inputStyles = tv({
-  base: 'min-h-8.5 w-full min-w-0 border-0 bg-transparent py-1.5 pr-10 pl-0 text-sm text-current focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0',
+  base: 'min-h-8.5 w-full min-w-0 border-0 bg-transparent py-1.5 pr-2 pl-0 text-sm text-current focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0',
 });
 export function FormFieldMultiCombobox<
   T extends {

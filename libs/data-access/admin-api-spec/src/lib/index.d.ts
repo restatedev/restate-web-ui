@@ -3232,9 +3232,19 @@ export interface components {
       /** @description When true, enriches VQueue-backed rows with batched queue and scheduler context for flow-control presentation. Omitted is equivalent to false. */
       includeFlowControl?: boolean;
     };
+    VirtualObjectInstanceFilterItem: {
+      /** @enum {string} */
+      field: 'key' | 'scope';
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS' | 'CONTAINS';
+      value: string;
+    };
     ListVirtualObjectInstancesRequest: {
       /** @description Substring matched against the object key and scope. */
       search?: string;
+      filters?: components['schemas']['VirtualObjectInstanceFilterItem'][];
       sort?: components['schemas']['VirtualObjectInstanceSort'];
     };
     /** @description This opt-in sort scans and aggregates the service's VQueue metadata or legacy inbox before applying the response limit. */
@@ -3258,9 +3268,19 @@ export interface components {
       /** @description True when more matching identities exist than the bounded response contains. */
       truncated: boolean;
     };
+    WorkflowRunFilterItem: {
+      /** @enum {string} */
+      field: 'id' | 'scope';
+      /** @enum {string} */
+      type: 'STRING';
+      /** @enum {string} */
+      operation: 'EQUALS' | 'CONTAINS';
+      value: string;
+    };
     ListWorkflowRunsRequest: {
       /** @description Substring matched against the Workflow id and scope. */
       search?: string;
+      filters?: components['schemas']['WorkflowRunFilterItem'][];
     };
     WorkflowRunSummary: {
       /** @description Workflow id. */

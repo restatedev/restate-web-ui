@@ -11,6 +11,10 @@ import {
   targetServiceKeyClause,
   type QueryContext,
 } from './shared';
+import {
+  parseStructuredStringFilters,
+  structuredStringFilterClause,
+} from './structuredStringFilters';
 
 const WORKFLOW_RUN_LIMIT = 50;
 const WORKFLOW_RUN_QUERY_LIMIT = WORKFLOW_RUN_LIMIT + 1;
@@ -147,13 +151,27 @@ export async function listWorkflowRuns(
   const searchClause = pattern
     ? `\n      AND (target_service_key LIKE ${pattern}${this.features.has('vqueues') ? ` OR scope LIKE ${pattern}` : ''})`
     : '';
+  const parsedFilters = parseStructuredStringFilters(
+    args.filters,
+    this.features.has('vqueues') ? ['id', 'scope'] : ['id'],
+  );
+  if (parsedFilters.error) {
+    return new Response(parsedFilters.error, { status: 400 });
+  }
+  const hasIdFilter = parsedFilters.filters.some(({ field }) => field === 'id');
+  const nonNullIdClause = hasIdFilter
+    ? ''
+    : '\n      AND target_service_key IS NOT NULL';
+  const filterClause = structuredStringFilterClause(parsedFilters.filters, {
+    id: 'target_service_key',
+    scope: 'scope',
+  });
   const { rows: candidateRows } = await this.query(
     `SELECT id
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND target_handler_name = ${quoteSqlString(handlers.run)}
-      AND target_service_key IS NOT NULL${searchClause}
+      AND target_handler_name = ${quoteSqlString(handlers.run)}${nonNullIdClause}${searchClause}${filterClause}
     ORDER BY created_at DESC NULLS LAST
     LIMIT ${WORKFLOW_RUN_QUERY_LIMIT}`,
   );

@@ -15,13 +15,12 @@ const styles = tv({
   },
 });
 
-export function LimitValue({
-  value,
-  disabled,
-}: {
+export interface LimitValueProps {
   value: number | null | undefined;
   disabled?: boolean;
-}) {
+}
+
+export function LimitValue({ value, disabled }: LimitValueProps) {
   const { root, label, value: valueStyles } = styles({ disabled });
 
   return (

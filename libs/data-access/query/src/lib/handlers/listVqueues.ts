@@ -1,6 +1,7 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { limitPage, limitPageSize } from './limitPagination';
 import { quoteSqlString, type QueryContext } from './shared';
+import { quoteSqlContainsPattern } from './structuredStringFilters';
 import {
   parseVqueueBlockedResource,
   parseVqueueSchedulingStatus,
@@ -9,6 +10,7 @@ import {
 const VQUEUE_COLUMNS =
   'id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished';
 const VQUEUE_LIST_LIMIT = 250;
+const RECENT_VQUEUE_INTERVAL = "INTERVAL '24 hours'";
 
 type ListVQueuesRequestBody = components['schemas']['ListVQueuesRequestBody'];
 type ListVQueuesResponse = components['schemas']['ListVQueuesResponse'];
@@ -31,6 +33,10 @@ interface SchedulerRow {
   concurrency_rules_block_duration?: unknown;
   lock_block_duration?: unknown;
   deployment_concurrency_block_duration?: unknown;
+}
+
+interface VQueueWorkloadRow {
+  id?: unknown;
 }
 
 const SORT_FIELDS = new Set<VQueueSort['field']>([
@@ -134,7 +140,7 @@ function filterError(filter: VQueueFilterItem, reason: string): never {
 
 function stringValue(filter: VQueueFilterItem, value: unknown) {
   if (typeof value !== 'string') filterError(filter, 'expected a string value');
-  return value.toLowerCase();
+  return value;
 }
 
 function stringPredicate(
@@ -152,17 +158,16 @@ function stringPredicate(
   }
   if (operation === 'IS NULL') return `${expression} IS NULL`;
   if (operation === 'IS NOT NULL') return `${expression} IS NOT NULL`;
-  const normalized = stringValue(filter, value);
-  const column = `LOWER(${stringColumn(expression)})`;
+  const string = stringValue(filter, value);
   switch (operation) {
     case 'EQUALS':
-      return `${column} = ${quoteSqlString(normalized)}`;
+      return `${expression} = ${quoteSqlString(string)}`;
     case 'NOT_EQUALS':
-      return `${column} <> ${quoteSqlString(normalized)}`;
+      return `${expression} <> ${quoteSqlString(string)}`;
     case 'CONTAINS':
-      return `strpos(${column}, ${quoteSqlString(normalized)}) > 0`;
+      return `${expression} ILIKE ${quoteSqlContainsPattern(string)}`;
     case 'NOT_CONTAINS':
-      return `strpos(${column}, ${quoteSqlString(normalized)}) = 0`;
+      return `${expression} NOT ILIKE ${quoteSqlContainsPattern(string)}`;
     default:
       return filterError(filter, `unsupported STRING operation ${operation}`);
   }
@@ -179,15 +184,14 @@ function limitKeySegmentPredicate(
       `unsupported STRING operation ${String(operation)}`,
     );
   }
-  const normalized = stringValue(filter, value);
-  if (!normalized || normalized.includes('/')) {
+  const string = stringValue(filter, value);
+  if (!string || string.includes('/')) {
     return filterError(filter, 'expected one limit-key segment');
   }
-  const column = `LOWER(${stringColumn('limit_key')})`;
   if (filter.field === 'l1') {
-    return `(${column} = ${quoteSqlString(normalized)} OR starts_with(${column}, ${quoteSqlString(`${normalized}/`)}))`;
+    return `(limit_key = ${quoteSqlString(string)} OR starts_with(limit_key, ${quoteSqlString(`${string}/`)}))`;
   }
-  return `ends_with(${column}, ${quoteSqlString(`/${normalized}`)})`;
+  return `ends_with(limit_key, ${quoteSqlString(`/${string}`)})`;
 }
 
 function stringListPredicate(
@@ -207,10 +211,8 @@ function stringListPredicate(
   ) {
     filterError(filter, 'expected a non-empty string array');
   }
-  const values = value
-    .map((item) => quoteSqlString(item.toLowerCase()))
-    .join(', ');
-  return `LOWER(${stringColumn(expression)}) ${operation === 'IN' ? 'IN' : 'NOT IN'} (${values})`;
+  const values = value.map((item) => quoteSqlString(item)).join(', ');
+  return `${expression} ${operation === 'IN' ? 'IN' : 'NOT IN'} (${values})`;
 }
 
 function nullPredicate(filter: VQueueFilterItem, operation: unknown) {
@@ -265,6 +267,31 @@ function whereClause(filters: unknown) {
       error: error instanceof Error ? error.message : 'Unsupported filter',
     };
   }
+}
+
+function workloadDiscoveryQuery(limit: number) {
+  return `SELECT id, COUNT(*) AS workload
+    FROM sys_vqueues
+    WHERE stage IN ('inbox', 'running', 'suspended', 'paused')
+    GROUP BY id
+    ORDER BY workload DESC
+    LIMIT ${limit}`;
+}
+
+function metadataByIdsQuery(ids: string[]) {
+  return `SELECT ${VQUEUE_COLUMNS}
+    FROM sys_vqueue_meta
+    WHERE id IN (${ids.map(quoteSqlString).join(', ')})
+    ORDER BY ${orderBy({ field: 'unfinished', order: 'DESC' })}`;
+}
+
+function landingTopUpQuery(limit: number) {
+  return `SELECT ${VQUEUE_COLUMNS}
+    FROM sys_vqueue_meta
+    WHERE (${unfinishedExpression}) = 0
+      AND (queue_is_paused = true
+        OR ${lastActivityExpression} > now() - ${RECENT_VQUEUE_INTERVAL})
+    LIMIT ${limit}`;
 }
 
 function schedulerQuery(vqueueIds: string[]) {
@@ -345,11 +372,38 @@ export async function listVqueues(
     return new Response(filters.error, { status: 400 });
   }
   const limit = Math.min(limitPageSize(args.limit), VQUEUE_LIST_LIMIT);
-  const order = args.sort ? `\n    ORDER BY ${orderBy(args.sort)}` : '';
-  const { rows } = await this.query(`SELECT ${VQUEUE_COLUMNS}
+  const hasFilters = Array.isArray(args.filters) && args.filters.length > 0;
+  let rows: VQueueMetaRow[];
+  if (!args.sort && !hasFilters) {
+    const discovery = await this.query(workloadDiscoveryQuery(limit + 1));
+    const ids = (discovery.rows as VQueueWorkloadRow[]).flatMap((row) => {
+      const id = optionalString(row.id);
+      return id ? [id] : [];
+    });
+    const hydrated = ids.length
+      ? ((await this.query(metadataByIdsQuery(ids))).rows as VQueueMetaRow[])
+      : [];
+    if (ids.length < limit + 1) {
+      const topUp = (
+        await this.query(landingTopUpQuery(limit + 1 - ids.length))
+      ).rows as VQueueMetaRow[];
+      const discoveredIds = new Set(ids);
+      rows = [
+        ...hydrated,
+        ...topUp.filter((row) => !discoveredIds.has(row.id)),
+      ];
+    } else {
+      rows = hydrated;
+    }
+  } else {
+    const order = args.sort ? `\n    ORDER BY ${orderBy(args.sort)}` : '';
+    rows = (
+      await this.query(`SELECT ${VQUEUE_COLUMNS}
     FROM sys_vqueue_meta${filters.clause}${order}
-    LIMIT ${limit + 1}`);
-  const page = limitPage(rows as VQueueMetaRow[], limit);
+    LIMIT ${limit + 1}`)
+    ).rows as VQueueMetaRow[];
+  }
+  const page = limitPage(rows, limit);
   if (page.items.length === 0) {
     const response: ListVQueuesResponse = {
       vqueues: [],

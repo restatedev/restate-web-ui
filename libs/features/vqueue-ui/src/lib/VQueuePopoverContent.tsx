@@ -29,6 +29,8 @@ import {
   vqueueDurationPartsMilliseconds,
   vqueueDurationRatio,
 } from './metrics';
+import { ReadyStatus } from './ReadyStatus';
+import { ScheduledStatus } from './ScheduledStatus';
 import { VQueueIdDisplay } from './VQueueIdDisplay';
 
 const INBOX_SLOT_LIMIT = 6;
@@ -227,16 +229,6 @@ const stageMarkStyles = tv({
   },
 });
 
-const headStatusBadgeStyles = tv({
-  base: 'relative inline-flex max-w-full items-center gap-1.5',
-  variants: {
-    status: {
-      scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
-      ready: 'border-dashed',
-    },
-  },
-});
-
 function formatIdentifier(id: string) {
   return id.length > 22 ? `${id.slice(0, 10)}…${id.slice(-5)}` : id;
 }
@@ -403,7 +395,6 @@ function SelectedEntryMarker({
 }
 
 function HeadVerdict({ data }: { data: VqueueSnapshot }) {
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const { scheduling } = data.status;
   if (data.identity.isPaused) return null;
   if (data.status.blocked || scheduling === 'blocked') {
@@ -440,31 +431,10 @@ function HeadVerdict({ data }: { data: VqueueSnapshot }) {
     );
   }
   if (scheduling === 'scheduled') {
-    const duration = data.status.scheduledAt
-      ? formatDurations(durationSinceLastSnapshot(data.status.scheduledAt))
-      : undefined;
-    return (
-      <div className={styles().headStatus()}>
-        <Badge className={headStatusBadgeStyles({ status: 'scheduled' })}>
-          Scheduled
-        </Badge>
-        {duration && (
-          <span className={styles().statusTime()}>
-            in <span className="font-medium text-zinc-600">{duration}</span>
-          </span>
-        )}
-      </div>
-    );
+    return <ScheduledStatus scheduledAt={data.status.scheduledAt} />;
   }
   if (scheduling === 'ready') {
-    return (
-      <Badge
-        variant="info"
-        className={headStatusBadgeStyles({ status: 'ready' })}
-      >
-        Ready
-      </Badge>
-    );
+    return <ReadyStatus />;
   }
   return null;
 }

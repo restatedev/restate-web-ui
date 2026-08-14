@@ -1,6 +1,7 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { limitPage, limitPageSize } from './limitPagination';
 import { quoteSqlString, type QueryContext } from './shared';
+import { quoteSqlContainsPattern } from './structuredStringFilters';
 
 const USER_LIMITS_COLUMNS =
   'scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters';
@@ -57,7 +58,7 @@ function counterOrderBy(sort?: LimitCounterSort) {
 }
 
 function searchClause(search?: string) {
-  const value = search?.trim().toLocaleLowerCase();
+  const value = search?.trim();
   if (!value) return '';
   const parts = value.split('/').map((part) => part.trim());
   const columns = ['scope', 'l1', 'l2'];
@@ -67,16 +68,16 @@ function searchClause(search?: string) {
     ${parts
       .map(
         (part, index) =>
-          `LOWER(${stringColumn(columns[index] ?? 'l2')}) LIKE ${quoteSqlString(`%${part}%`)}`,
+          `${columns[index] ?? 'l2'} ILIKE ${quoteSqlContainsPattern(part)}`,
       )
       .join('\n    AND ')}
   )`;
   }
-  const pattern = quoteSqlString(`%${parts[0]}%`);
+  const pattern = quoteSqlContainsPattern(parts[0] ?? '');
   return `(
-    LOWER(${stringColumn('scope')}) LIKE ${pattern}
-    OR LOWER(${stringColumn('l1')}) LIKE ${pattern}
-    OR LOWER(${stringColumn('l2')}) LIKE ${pattern}
+    scope ILIKE ${pattern}
+    OR l1 ILIKE ${pattern}
+    OR l2 ILIKE ${pattern}
   )`;
 }
 
@@ -88,11 +89,11 @@ function filterStringValue(filter: LimitCounterFilterItem, value: unknown) {
   if (typeof value !== 'string' || value.length === 0) {
     return filterError(filter, 'expected a non-empty string value');
   }
-  return value.toLowerCase();
+  return value;
 }
 
 function exactStringPredicate(column: string, value: string) {
-  return `LOWER(${stringColumn(column)}) = ${quoteSqlString(value)}`;
+  return `${column} = ${quoteSqlString(value)}`;
 }
 
 function limitKeyPredicate(
@@ -100,11 +101,11 @@ function limitKeyPredicate(
   operation: unknown,
   value: unknown,
 ) {
-  const normalized = filterStringValue(filter, value);
+  const string = filterStringValue(filter, value);
   if (operation === 'CONTAINS') {
-    return `strpos(LOWER(${limitKeyExpression}), ${quoteSqlString(normalized)}) > 0`;
+    return `${limitKeyExpression} ILIKE ${quoteSqlContainsPattern(string)}`;
   }
-  const segments = normalized.split('/');
+  const segments = string.split('/');
   if (
     operation !== 'EQUALS' ||
     segments.length > 2 ||
@@ -139,11 +140,10 @@ function filterPredicate(filter: LimitCounterFilterItem) {
   if (filter.field === 'limitKey') {
     return limitKeyPredicate(filter, operation, value);
   }
-  const normalized = filterStringValue(filter, value);
-  const column = `LOWER(${stringColumn(filter.field)})`;
+  const string = filterStringValue(filter, value);
   return operation === 'CONTAINS'
-    ? `strpos(${column}, ${quoteSqlString(normalized)}) > 0`
-    : `${column} = ${quoteSqlString(normalized)}`;
+    ? `${filter.field} ILIKE ${quoteSqlContainsPattern(string)}`
+    : `${filter.field} = ${quoteSqlString(string)}`;
 }
 
 function counterFiltersClause(filters: unknown) {

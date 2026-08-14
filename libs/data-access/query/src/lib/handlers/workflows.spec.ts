@@ -65,6 +65,86 @@ function createContext(
 describe('Workflow query handlers', () => {
   afterEach(() => vi.useRealTimers());
 
+  it('uses an exact Workflow id predicate', async () => {
+    const { context, query } = createContext(() => []);
+
+    const response = await listWorkflowRuns.call(context, 'OrderWorkflow', {
+      filters: [
+        {
+          field: 'id',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: "Order's",
+        },
+      ],
+    });
+
+    expect(response.status).toBe(200);
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT id
+    FROM sys_invocation_status
+    WHERE target_service_name = 'OrderWorkflow'
+      AND target_service_ty = 'workflow'
+      AND target_handler_name = 'run'
+      AND target_service_key = 'Order''s'
+    ORDER BY created_at DESC NULLS LAST
+    LIMIT 51`,
+    ]);
+  });
+
+  it('applies structured Workflow id and scope filters', async () => {
+    const { context, query } = createContext(() => []);
+
+    const response = await listWorkflowRuns.call(context, 'OrderWorkflow', {
+      filters: [
+        {
+          field: 'id',
+          type: 'STRING',
+          operation: 'CONTAINS',
+          value: "Order's",
+        },
+        {
+          field: 'scope',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'Tenant-A',
+        },
+      ],
+    });
+
+    expect(response.status).toBe(200);
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT id
+    FROM sys_invocation_status
+    WHERE target_service_name = 'OrderWorkflow'
+      AND target_service_ty = 'workflow'
+      AND target_handler_name = 'run'
+      AND target_service_key ILIKE '%Order''s%'
+      AND scope = 'Tenant-A'
+    ORDER BY created_at DESC NULLS LAST
+    LIMIT 51`,
+    ]);
+  });
+
+  it('rejects Workflow scope filters without VQueues', async () => {
+    const { context, query } = createContext(() => [], new Set());
+
+    const response = await listWorkflowRuns.call(context, 'OrderWorkflow', {
+      filters: [
+        {
+          field: 'scope',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'tenant-a',
+        },
+      ],
+    });
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe('Unsupported filter field: scope');
+    expect(query).not.toHaveBeenCalled();
+  });
+
   it('lists only Workflow handler runs and overlays VQueue status', async () => {
     const { adminApi, context, query } = createContext((sql) => {
       if (sql.includes('FROM sys_invocation_status')) {

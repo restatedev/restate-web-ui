@@ -40,6 +40,7 @@ export interface LimitRuleTargetProps {
   variant?: LimitRuleTargetVariant;
   density?: ChipGroupDensity;
   showIcon?: boolean;
+  showChevron?: boolean;
   showTooltip?: boolean;
 }
 
@@ -57,6 +58,7 @@ export function LimitRuleTarget({
   variant = 'default',
   density,
   showIcon,
+  showChevron,
   showTooltip = true,
 }: LimitRuleTargetProps) {
   const [scope = '', level1, level2] = pattern.split('/');
@@ -68,7 +70,8 @@ export function LimitRuleTarget({
     density ?? (variant === 'header' ? 'default' : 'compact');
   const chipVariant = variant === 'header' ? 'header' : 'default';
   const resolvedShowIcon = showIcon ?? variant !== 'header';
-  const showChevron = variant === 'table' && Boolean(href);
+  const resolvedShowChevron =
+    showChevron ?? (variant === 'table' && Boolean(href));
   const { root, identity, identityIcon } = styles({ variant });
 
   const target = (
@@ -89,14 +92,14 @@ export function LimitRuleTarget({
           icon={resolvedShowIcon ? IconName.Filters : undefined}
           iconClassName={identityIcon()}
           relationship={limitKey ? 'rule' : undefined}
-          showChevron={showChevron && !limitKey}
+          showChevron={resolvedShowChevron && !limitKey}
         />
         {limitKey && (
           <LimitKey
             value={limitKey}
             relationship="scope"
             showCopy={false}
-            showChevron={showChevron}
+            showChevron={resolvedShowChevron}
             showTooltip={showTooltip}
           />
         )}
@@ -112,6 +115,7 @@ export function LimitRuleTarget({
       copyText={pattern}
       hideCopy={variant !== 'table'}
       overflowVisible
+      containerClassName={variant === 'table' ? 'w-full' : undefined}
     >
       {target}
     </TruncateWithTooltip>

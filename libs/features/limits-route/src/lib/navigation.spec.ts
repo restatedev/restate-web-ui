@@ -1,6 +1,10 @@
 import { readFilterClauses } from '@restate/ui/filter-builder';
+import { LIMIT_COUNTER_FILTER_SCHEMA } from './limits.counterFilters';
 import { VQUEUE_FILTER_SCHEMA } from './limits.vqueueFilters';
-import { vqueuesForLimitCounterHref } from './navigation';
+import {
+  limitCountersForIdentityHref,
+  vqueuesForLimitCounterHref,
+} from './navigation';
 
 describe('counter VQueue navigation', () => {
   it('filters a scope counter by exact scope', () => {
@@ -20,6 +24,30 @@ describe('counter VQueue navigation', () => {
     expect(readFilters({ scope: 'acme', l1: 'team', l2: 'eu' })).toEqual([
       ['scope', 'EQUALS', 'acme'],
       ['limitKey', 'EQUALS', 'team/eu'],
+    ]);
+  });
+});
+
+describe('blocking counter navigation', () => {
+  it('filters the exact L2 counter and its rule', () => {
+    const href = limitCountersForIdentityHref(
+      '/ui',
+      { scope: 'tenant-a', l1: 'payments', l2: 'priority' },
+      'tenant-*/payments/priority',
+    );
+    const url = new URL(href, 'https://example.com');
+
+    expect(url.pathname).toBe('/ui/flow-control/counters');
+    expect(url.searchParams.get('rule')).toBe(
+      'rule:tenant-*/payments/priority',
+    );
+    expect(
+      readFilterClauses(url.searchParams, LIMIT_COUNTER_FILTER_SCHEMA).map(
+        (clause) => [clause.id, clause.value.operation, clause.value.value],
+      ),
+    ).toEqual([
+      ['scope', 'EQUALS', 'tenant-a'],
+      ['limitKey', 'EQUALS', 'payments/priority'],
     ]);
   });
 });

@@ -2,6 +2,7 @@ import type { UserLimitRow } from '@restate/data-access/admin-api-hooks';
 import {
   LimitCounterTarget,
   LimitRuleTarget,
+  LimitValue,
 } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
@@ -21,7 +22,6 @@ import {
 } from './navigation';
 import type { RuleLevel } from './pattern';
 import { getCounterUsageRatio } from './counterUsage';
-import { LimitValue } from './LimitValue';
 import {
   RULE_LEVEL_COLUMN_WIDTH,
   RuleLevelExplainer,
@@ -54,6 +54,7 @@ const RULE_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'usage',
     name: 'Usage',
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '2fr',
     maxWidth: 250,
   },
@@ -61,6 +62,7 @@ const RULE_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'waiting',
     name: <WaitingQueuesExplainer />,
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '1fr',
     maxWidth: 120,
   },
@@ -77,6 +79,7 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'usage',
     name: 'Usage',
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '2fr',
     maxWidth: 150,
   },
@@ -90,6 +93,7 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     id: 'waiting',
     name: <WaitingQueuesExplainer />,
     allowsSorting: true,
+    preferredSortDirection: 'descending',
     defaultWidth: '1fr',
     maxWidth: 120,
   },
@@ -340,8 +344,8 @@ export interface CounterTableProps {
   caption?: ReactNode;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
-  sortDescriptor: SortDescriptor;
-  onSortChange: (descriptor: SortDescriptor) => void;
+  sortDescriptor?: SortDescriptor;
+  onSortChange: (descriptor: SortDescriptor | undefined) => void;
 }
 
 export function CounterTable({

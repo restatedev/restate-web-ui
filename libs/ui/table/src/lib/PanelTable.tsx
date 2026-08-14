@@ -14,16 +14,19 @@ import {
   Column as AriaColumn,
   ResizableTableContainer,
 } from 'react-aria-components';
-import type { Key } from 'react-aria-components';
+import type { Key, SortDescriptor } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
 import { Cell, Row } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
+import { getNextSortDescriptor } from './sort';
 
 export interface PanelTableColumn<TId extends string = string> {
   id: TId;
   name: ReactNode;
   isRowHeader?: boolean;
   allowsSorting?: boolean;
+  preferredSortDirection?: SortDescriptor['direction'];
+  sortDirections?: readonly SortDescriptor['direction'][];
   defaultWidth?: AriaColumnProps['defaultWidth'];
   width?: number;
   minWidth?: number;
@@ -40,13 +43,13 @@ export interface PanelTableProps<
   | 'selectionMode'
   | 'selectedKeys'
   | 'onRowAction'
-  | 'sortDescriptor'
-  | 'onSortChange'
   | 'treeColumn'
   | 'expandedKeys'
   | 'defaultExpandedKeys'
   | 'onExpandedChange'
 > {
+  sortDescriptor?: SortDescriptor;
+  onSortChange?: (descriptor: SortDescriptor | undefined) => void;
   columns: PanelTableColumn<TColId>[];
   items: T[];
   isLoading?: boolean;
@@ -207,6 +210,22 @@ export function PanelTable<
     [onSelectionChange, items],
   );
 
+  const handleSortChange = useCallback(
+    (descriptor: SortDescriptor) => {
+      const column = columns.find(({ id }) => id === descriptor.column);
+      if (!column || !onSortChange) return;
+      onSortChange(
+        getNextSortDescriptor(
+          sortDescriptor,
+          descriptor.column,
+          column.preferredSortDirection,
+          column.sortDirections,
+        ),
+      );
+    },
+    [columns, onSortChange, sortDescriptor],
+  );
+
   const stickyHeaderSelectedKeys = useMemo(() => {
     if (selectedKeys === 'all') return 'all';
     if (!selectedKeys || !items.length) return selectedKeys;
@@ -295,7 +314,11 @@ export function PanelTable<
           key={col.id}
           id={col.id}
           isRowHeader={col.isRowHeader}
-          allowsSorting={variant === 'stickyHeader' && col.allowsSorting}
+          allowsSorting={
+            variant === 'stickyHeader' &&
+            Boolean(onSortChange) &&
+            col.allowsSorting
+          }
           {...widthProps}
           className={col.hideLabel ? 'opacity-0' : undefined}
         >
@@ -324,7 +347,7 @@ export function PanelTable<
                 selectedKeys={stickyHeaderSelectedKeys}
                 onSelectionChange={handleSelectionChange}
                 sortDescriptor={sortDescriptor}
-                onSortChange={onSortChange}
+                onSortChange={handleSortChange}
                 className={stickyHeaderTable()}
               >
                 <TableHeader

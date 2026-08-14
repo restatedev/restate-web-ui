@@ -39,7 +39,7 @@ import {
   LIMIT_COUNTER_FILTER_SCHEMA,
   toLimitCounterFilters,
 } from './limits.counterFilters';
-import { LimitValue } from './LimitValue';
+import { LimitValue } from '@restate/features/vqueue-ui';
 import {
   LimitListPagination,
   useLimitListPagination,
@@ -138,7 +138,9 @@ function CountersComponent() {
       0,
     );
   }, []);
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+  const [sortDescriptor, setSortDescriptor] = useState<
+    SortDescriptor | undefined
+  >({
     column: 'waiting',
     direction: 'descending' as const,
   });
@@ -149,10 +151,12 @@ function CountersComponent() {
   const commonRequest = useMemo<ListLimitCountersRequestBody>(
     () => ({
       ...(filters.length > 0 && { filters }),
-      sort: {
-        field: sortDescriptor.column as CounterSortField,
-        order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
-      } as const,
+      ...(sortDescriptor && {
+        sort: {
+          field: sortDescriptor.column as CounterSortField,
+          order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
+        } as const,
+      }),
       limit: LIMIT_LIST_QUERY_SIZE,
     }),
     [filters, sortDescriptor],

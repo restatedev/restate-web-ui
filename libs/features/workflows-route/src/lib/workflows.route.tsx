@@ -18,6 +18,7 @@ import {
   WorkflowRunTarget,
   type WorkflowRunIdentity,
 } from '@restate/features/workflow-run';
+import { Button } from '@restate/ui/button';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -27,24 +28,43 @@ import {
 } from '@restate/ui/content-panel';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
+import {
+  AddFilterTrigger,
+  FilterBuilder,
+  FilterChip,
+  QueryClause,
+  QueryClauseType,
+  useFilterBuilder,
+} from '@restate/ui/filter-builder';
 import { Icon, IconName } from '@restate/ui/icons';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TruncateWithTooltip,
+} from '@restate/ui/tooltip';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { useMemo } from 'react';
+import { tv } from '@restate/util/styles';
+import { useCallback, useMemo, useRef } from 'react';
+import { Form, useNavigate, useSearchParams } from 'react-router';
 import {
-  Button as AriaButton,
-  Input,
-  Label,
-  SearchField,
-} from 'react-aria-components';
-import { useNavigate, useSearchParams } from 'react-router';
+  createWorkflowIdFilter,
+  readWorkflowFilters,
+  toWorkflowFilters,
+  workflowFilterSchema,
+  writeWorkflowFilters,
+} from './workflows.filters';
 
 const SERVICE_QUERY_PARAM = 'service';
-const SEARCH_QUERY_PARAM = 'q';
 const MAX_VISIBLE_SERVICE_TABS = 5;
+
+const refreshIconStyles = tv({
+  base: 'h-3.5 w-3.5',
+  variants: { isFetching: { true: 'animate-spin' } },
+});
 
 type WorkflowRunSummary = components['schemas']['WorkflowRunSummary'];
 type ColumnId =
@@ -155,9 +175,55 @@ function Component() {
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const columns = useMemo(() => getColumns(hasVqueues), [hasVqueues]);
-  const filterLabel = hasVqueues
-    ? 'Filter by Workflow id or scope'
-    : 'Filter by Workflow id';
+  const filterSchema = useMemo(
+    () => workflowFilterSchema(hasVqueues),
+    [hasVqueues],
+  );
+  const searchString = searchParams.toString();
+  const committedFilters = useMemo(
+    () => readWorkflowFilters(new URLSearchParams(searchString), filterSchema),
+    [filterSchema, searchString],
+  );
+  const filterQuery = useFilterBuilder(committedFilters);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const submitTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const scheduleSubmit = useCallback(() => {
+    clearTimeout(submitTimerRef.current);
+    submitTimerRef.current = setTimeout(
+      () => formRef.current?.requestSubmit(),
+      0,
+    );
+  }, []);
+  const filters = useMemo(
+    () => toWorkflowFilters(committedFilters),
+    [committedFilters],
+  );
+  const hasFilters = filters.length > 0;
+  const applyWorkflowIdFilter = useCallback(
+    (input: string) => {
+      const clause = createWorkflowIdFilter(input);
+      if (!clause) return false;
+      if (filterQuery.getItem(clause.id)) {
+        filterQuery.update(clause.id, clause);
+      } else {
+        filterQuery.append(clause);
+      }
+      scheduleSubmit();
+      return true;
+    },
+    [filterQuery, scheduleSubmit],
+  );
+  const renderFilterOption = useCallback(
+    (item: QueryClause<QueryClauseType>) => (
+      <div className="flex items-baseline gap-2">
+        <span>{item.label}</span>
+        <span className="font-mono text-xs opacity-60">
+          {item.operations.map((operation) => operation.label).join(' / ')}
+        </span>
+      </div>
+    ),
+    [],
+  );
   const {
     data: serviceData,
     isPending: isServicesPending,
@@ -175,27 +241,15 @@ function Component() {
     services.find((service) => service === requestedService) ??
     services.at(0) ??
     '';
-  const submittedSearch = searchParams.get(SEARCH_QUERY_PARAM)?.trim() ?? '';
-  const setSubmittedSearch = (value: string) => {
-    const nextSearch = value.trim();
-    setSearchParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        if (nextSearch) next.set(SEARCH_QUERY_PARAM, nextSearch);
-        else next.delete(SEARCH_QUERY_PARAM);
-        return next;
-      },
-      { preventScrollReset: true },
-    );
-  };
   const {
     data,
     dataUpdatedAt,
     error: runsError,
     isFetching: isRunsFetching,
+    refetch: refetchRuns,
   } = useListWorkflowRuns(
     selectedService,
-    submittedSearch ? { search: submittedSearch } : {},
+    filters.length > 0 ? { filters } : {},
     {
       enabled: Boolean(selectedService),
       refetchOnMount: true,
@@ -236,41 +290,84 @@ function Component() {
     [services],
   );
   const isLoading =
-    isServicesPending || (Boolean(selectedService) && isRunsFetching && !data);
+    isServicesPending || (Boolean(selectedService) && isRunsFetching);
   const error = servicesError ?? runsError;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <WorkflowsHero />
       <ContentPanel tabs={tabs}>
-        <ContentPanelToolbar>
-          <SearchField
-            key={submittedSearch}
-            aria-label="Filter Workflow runs"
-            defaultValue={submittedSearch}
-            onSubmit={setSubmittedSearch}
-            onClear={() => setSubmittedSearch('')}
-            isDisabled={!selectedService}
-            className="group min-w-0 flex-auto outline-none sm:max-w-[38ch]"
+        <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
+          <Form
+            ref={formRef}
+            className="hidden min-w-0 flex-auto sm:block"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const next = writeWorkflowFilters(
+                searchParams,
+                filterQuery.items,
+              );
+              setSearchParams(next, { preventScrollReset: true });
+            }}
           >
-            <Label className="sr-only">{filterLabel}</Label>
-            <div className="relative min-h-7">
-              <Input
-                placeholder={`${filterLabel}…`}
-                className="mt-0 h-7 w-full min-w-0 rounded-lg border border-gray-200 bg-white/70 px-2 py-0.5 pr-8 pl-7 text-sm text-gray-800 shadow-xs outline-offset-2 placeholder:text-gray-500/75 hover:bg-white focus:border-blue-500/30 focus:bg-white focus:ring-0 focus:outline-2 focus:outline-blue-600 disabled:text-zinc-400 [&::-webkit-search-cancel-button]:hidden"
-              />
-              <Icon
-                name={IconName.Search}
-                className="pointer-events-none absolute top-0 bottom-0 left-1.5 aspect-square h-full p-1 text-gray-400"
-              />
-              <AriaButton
-                aria-label="Clear filter"
-                className="absolute top-1/2 right-1 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 outline-offset-1 group-empty:hidden hover:bg-zinc-200/60 hover:text-zinc-700 focus-visible:outline-2 focus-visible:outline-blue-600"
+            <FilterBuilder query={filterQuery} schema={filterSchema} multiple>
+              <AddFilterTrigger
+                placeholder="Filter Workflow runs…"
+                title="Workflow filters"
+                disabled={!selectedService}
+                onInputSubmit={applyWorkflowIdFilter}
+                onItemRemove={scheduleSubmit}
+                renderOption={renderFilterOption}
+                inputPrefix={
+                  <Icon
+                    name={IconName.Search}
+                    className="h-4 w-4 shrink-0 text-gray-400"
+                  />
+                }
+                tagsPlacement="outside"
+                maxVisibleChips="auto"
+                chipOverflowStrategy="all"
+                tagGroupClassName="min-w-0 flex-nowrap"
+                showSectionTitle={false}
+                popoverPlacement="bottom start"
+                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
+                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
+                className="min-h-7 w-full justify-end text-gray-800"
+                inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
               >
-                <Icon name={IconName.X} className="h-3.5 w-3.5" />
-              </AriaButton>
-            </div>
-          </SearchField>
+                {(props) => (
+                  <FilterChip
+                    {...props}
+                    appearance="light"
+                    showRemove
+                    popoverPlacement="bottom"
+                  />
+                )}
+              </AddFilterTrigger>
+            </FilterBuilder>
+          </Form>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                type="button"
+                variant="icon"
+                aria-label={
+                  isRunsFetching ? 'Refreshing Workflows' : 'Refresh Workflows'
+                }
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+                onClick={() => void refetchRuns()}
+                disabled={!selectedService || isRunsFetching}
+              >
+                <Icon
+                  name={IconName.Retry}
+                  className={refreshIconStyles({
+                    isFetching: isRunsFetching,
+                  })}
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent size="sm">Refresh Workflows</TooltipContent>
+          </Tooltip>
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
@@ -281,7 +378,12 @@ function Component() {
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
-                bodyDependencies={[selectedService, submittedSearch, error]}
+                bodyDependencies={[
+                  selectedService,
+                  searchString,
+                  isRunsFetching,
+                  error,
+                ]}
                 onRowAction={(rowId) => {
                   const item = items.find(({ id }) => id === String(rowId));
                   if (item) {
@@ -294,7 +396,6 @@ function Component() {
                     );
                   }
                 }}
-                rowClassName="cursor-pointer"
                 emptyPlaceholder={
                   error ? (
                     <EmptyState
@@ -315,17 +416,15 @@ function Component() {
                     />
                   ) : (
                     <EmptyState
-                      icon={
-                        submittedSearch ? IconName.Search : IconName.Workflow
-                      }
+                      icon={hasFilters ? IconName.Search : IconName.Workflow}
                       title={
-                        submittedSearch
+                        hasFilters
                           ? 'No runs match this filter'
                           : 'No Workflow runs found'
                       }
                       description={
-                        submittedSearch
-                          ? 'Try a different Workflow id or scope.'
+                        hasFilters
+                          ? 'Try adjusting the active filters.'
                           : 'Runs appear after a Workflow has been invoked.'
                       }
                     />
