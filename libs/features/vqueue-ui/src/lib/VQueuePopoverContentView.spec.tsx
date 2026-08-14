@@ -1,6 +1,6 @@
 import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import {
   VQueueInboxPopoverContent,
   VQueuePopoverContent,
@@ -116,7 +116,7 @@ describe('VQueuePopoverContent', () => {
     ).toBeTruthy();
   });
 
-  it('uses the shared blocked status for the queue head', async () => {
+  it('uses the shared blocked status for the queue head', () => {
     render(
       <VQueuePopoverContent
         data={{
@@ -140,12 +140,10 @@ describe('VQueuePopoverContent', () => {
     );
 
     expect(screen.getByText('Blocked')).toBeTruthy();
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'on concurrency rule' }),
-    );
-
-    expect(await screen.findByText('Blocked on')).toBeTruthy();
+    expect(screen.getByText('on concurrency rule')).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'on concurrency rule' }),
+    ).toBeNull();
   });
 
   it('uses the shared scheduled status for the queue head', () => {
