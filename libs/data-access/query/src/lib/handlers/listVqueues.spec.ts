@@ -51,15 +51,27 @@ const scheduler = {
   deployment_concurrency_block_duration: 'PT0S',
 };
 
+const recentVqueue = {
+  ...vqueue,
+  id: 'vq_recent',
+  queue_is_paused: false,
+  num_inbox: 0,
+  num_running: 0,
+  num_suspended: 0,
+  num_paused: 0,
+};
+
 function querySql(query: ReturnType<typeof vi.fn>) {
   return query.mock.calls.map(([sql]) => sql);
 }
 
 describe('listVqueues', () => {
-  it('returns a bounded VQueue snapshot without default ordering', async () => {
+  it('discovers workload-ranked VQueues and tops up from recent empty metadata', async () => {
     const query = vi
       .fn()
+      .mockResolvedValueOnce({ rows: [{ id: vqueue.id, workload: 4 }] })
       .mockResolvedValueOnce({ rows: [vqueue] })
+      .mockResolvedValueOnce({ rows: [recentVqueue] })
       .mockResolvedValueOnce({ rows: [scheduler] });
     const context = { query } as unknown as QueryContext;
 
@@ -67,9 +79,22 @@ describe('listVqueues', () => {
 
     expect(querySql(query)).toMatchInlineSnapshot(`
       [
+        "SELECT id, COUNT(*) AS workload
+          FROM sys_vqueues
+          WHERE stage IN ('inbox', 'running', 'suspended', 'paused')
+          GROUP BY id
+          ORDER BY workload DESC
+          LIMIT 251",
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          LIMIT 251",
+          WHERE id IN ('vq_checkout')
+          ORDER BY (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC",
+        "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
+          FROM sys_vqueue_meta
+          WHERE (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) = 0
+            AND (queue_is_paused = true
+              OR GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) > now() - INTERVAL '24 hours')
+          LIMIT 250",
         "SELECT
         id,
         status,
@@ -85,7 +110,7 @@ describe('listVqueues', () => {
         lock_block_duration,
         deployment_concurrency_block_duration
       FROM sys_scheduler
-      WHERE id IN ('vq_checkout')",
+      WHERE id IN ('vq_checkout', 'vq_recent')",
       ]
     `);
     expect(await response.json()).toEqual({
@@ -106,6 +131,7 @@ describe('listVqueues', () => {
             blockedDuration: 'PT1.2S',
           },
         },
+        recentVqueue,
       ],
       hasMore: false,
     });
@@ -309,6 +335,12 @@ describe('listVqueues', () => {
     const query = vi
       .fn()
       .mockResolvedValueOnce({
+        rows: [
+          { id: vqueue.id, workload: 4 },
+          { id: 'vq_payments', workload: 1 },
+        ],
+      })
+      .mockResolvedValueOnce({
         rows: [vqueue, { ...vqueue, id: 'vq_payments' }],
       })
       .mockResolvedValueOnce({ rows: [] });
@@ -322,9 +354,16 @@ describe('listVqueues', () => {
     });
     expect(querySql(query)).toMatchInlineSnapshot(`
       [
+        "SELECT id, COUNT(*) AS workload
+          FROM sys_vqueues
+          WHERE stage IN ('inbox', 'running', 'suspended', 'paused')
+          GROUP BY id
+          ORDER BY workload DESC
+          LIMIT 2",
         "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
           FROM sys_vqueue_meta
-          LIMIT 2",
+          WHERE id IN ('vq_checkout', 'vq_payments')
+          ORDER BY (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) DESC, GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) DESC NULLS LAST, COALESCE(service_name, '') ASC, id ASC",
         "SELECT
         id,
         status,
