@@ -70,6 +70,7 @@ describe('listVirtualObjectInstances', () => {
     FROM sys_invocation_status
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
+      AND status <> 'completed'
       AND target_service_key = 'Customer''s'
       AND scope = 'Tenant-A'
     LIMIT 51`,
@@ -121,6 +122,7 @@ describe('listVirtualObjectInstances', () => {
     FROM sys_invocation_status
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
+      AND status <> 'completed'
       AND target_service_key ILIKE '%Customer''s%'
     LIMIT 51`,
     ]);
@@ -183,6 +185,7 @@ describe('listVirtualObjectInstances', () => {
     FROM sys_invocation_status
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
+      AND status <> 'completed'
       AND target_service_key = 'hot-object-0'
       AND scope IS NULL
     LIMIT 51`,
@@ -337,6 +340,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter''s'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
       AND (target_service_key LIKE '%o''hare\\%\\_!\\\\path%' OR scope LIKE '%o''hare\\%\\_!\\\\path%')
     LIMIT 51`,
       `SELECT
@@ -447,6 +451,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
     LIMIT 51`,
       `SELECT
       lock_name,
@@ -519,6 +524,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
     LIMIT 51`,
     ]);
   });
@@ -571,6 +577,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
     LIMIT 51`,
       `SELECT
       lock_name,
@@ -640,6 +647,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
       AND (target_service_key LIKE '%customer%')
     LIMIT 51`,
       `SELECT
@@ -732,6 +740,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
     LIMIT 51`,
       `SELECT
       lock_name,
@@ -839,6 +848,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
       AND (target_service_key LIKE '%customer%' OR scope LIKE '%customer%')
     LIMIT 51`,
       `SELECT
@@ -912,6 +922,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE target_service_name = 'Counter'
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
+      AND status <> 'completed'
     LIMIT 51`,
       `SELECT
       service_key AS object_key,

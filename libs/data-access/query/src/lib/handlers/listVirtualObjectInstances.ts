@@ -239,7 +239,8 @@ function virtualObjectIdentitiesFromInvocationStatusQuery(
 ${partitionKeyColumn}      target_service_key AS object_key${includeScope ? ',\n      scope' : ''}
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
-      AND target_service_ty = 'virtual_object'${nonNullKeyClause}${filterClause}
+      AND target_service_ty = 'virtual_object'${nonNullKeyClause}
+      AND status <> 'completed'${filterClause}
     LIMIT ${QUERY_LIMIT}`;
 }
 
