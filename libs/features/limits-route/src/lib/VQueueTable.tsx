@@ -20,6 +20,7 @@ import { ServiceTarget } from '@restate/features/service-target';
 import { InvocationId, VQueueEntryId } from '@restate/features/invocation-ui';
 import {
   BlockedStatus,
+  blockedLimitCounterIdentity,
   getVqueueGateLabel,
   LimitKey,
   ReadyStatus,
@@ -276,31 +277,10 @@ function blockedObjectIdentity(resource: BlockedResource) {
   } satisfies VirtualObjectInstanceIdentity;
 }
 
-function blockedCounterIdentity(
-  resource: BlockedResource,
-): LimitCounterIdentity | undefined {
-  if (
-    resource.resource !== 'limit-key-concurrency' ||
-    !resource.scope ||
-    !resource.blockedLevel
-  ) {
-    return undefined;
-  }
-  const [l1, l2] = resource.limitKey?.split('/') ?? [];
-  switch (resource.blockedLevel) {
-    case 'scope':
-      return { scope: resource.scope };
-    case 'level1':
-      return l1 ? { scope: resource.scope, l1 } : undefined;
-    case 'level2':
-      return l1 && l2 ? { scope: resource.scope, l1, l2 } : undefined;
-  }
-}
-
 function blockedCounterRequest(
   resource: BlockedResource,
 ): ListLimitCountersRequestBody | undefined {
-  const identity = blockedCounterIdentity(resource);
+  const identity = blockedLimitCounterIdentity(resource);
   if (!identity) return undefined;
   return {
     filters: toLimitCounterFilters(
@@ -386,7 +366,7 @@ function StructuredBlockedHeadState({
     [resource],
   );
   const counterIdentity = useMemo(
-    () => blockedCounterIdentity(resource),
+    () => blockedLimitCounterIdentity(resource),
     [resource],
   );
   const counterRequest = useMemo(

@@ -138,7 +138,7 @@ function blockedCounter(
       l2={resource.blockedLevel === 'level2' ? l2 : undefined}
       href={href}
       variant={inline ? 'default' : 'table'}
-      showChevron={inline}
+      showChevron={inline && Boolean(href)}
       usage={usage ?? limit}
       limit={limit}
     />
@@ -222,7 +222,7 @@ function resourceModel(
         <LimitRuleTarget
           pattern={resource.blockedRule}
           href={ruleHref}
-          showChevron
+          showChevron={Boolean(ruleHref)}
         />
       ) : undefined;
       const relationship =

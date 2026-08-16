@@ -142,6 +142,7 @@ export function getVqueueHeadBlockSummary(data: VqueueSnapshot) {
   );
   return {
     reason: getVqueueBlockedReason(data),
+    blockedDuration: current?.duration,
     duration: formatVqueueDuration(current?.duration),
     average: averageMilliseconds
       ? formatVqueueDuration(average?.duration)

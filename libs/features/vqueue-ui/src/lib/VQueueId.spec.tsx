@@ -1,5 +1,6 @@
 import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { VQueueId } from './VQueueId';
 
 const useGetVqueue = vi.hoisted(() => vi.fn());
@@ -96,5 +97,66 @@ describe('VQueueId', () => {
         staleTime: 0,
       },
     );
+  });
+
+  it('opens structured blocking details inside the VQueue popover', async () => {
+    useGetVqueue.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isFetching: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <VQueueId
+          id="vq_snapshot"
+          snapshot={{
+            ...snapshot,
+            status: {
+              blocked: true,
+              scheduling: 'blocked',
+              blockedOn: 'concurrency_rules',
+              blockedResource: {
+                resource: 'limit-key-concurrency',
+                scope: 'tenant-a',
+                limitKey: 'payments/priority',
+                blockedLevel: 'level2',
+                blockedRule: 'tenant-*/payments/priority',
+              },
+            },
+            head: {
+              ...snapshot.head,
+              nowBlocks: [{ gate: 'concurrency_rules', duration: 'PT1.874S' }],
+            },
+          }}
+        />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open VQueue vq_snapshot' }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /on concurrency rule/i }),
+    );
+
+    expect(await screen.findByText('concurrency limit')).toBeTruthy();
+    expect(screen.getByText('1.874s')).toBeTruthy();
+    expect(screen.getByText('is at its limit')).toBeTruthy();
+    expect(screen.getByText('limit set by')).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', {
+          name: 'Limit counter tenant-a/payments/priority',
+        })
+        .getAttribute('href'),
+    ).toContain('/flow-control/counters?');
+    expect(
+      screen
+        .getByRole('link', {
+          name: 'Limit rule tenant-*/payments/priority',
+        })
+        .getAttribute('href'),
+    ).toContain('rule%3Atenant-*%2Fpayments%2Fpriority');
   });
 });

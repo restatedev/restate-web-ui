@@ -7,6 +7,7 @@ import {
   getStatusFillStyle,
   STATUS_STYLE,
 } from '@restate/features/status-chart';
+import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
@@ -21,6 +22,11 @@ import { tv } from '@restate/util/styles';
 import type { ReactNode } from 'react';
 import { BlockedStatus } from './BlockedStatus';
 import { LimitKey } from './LimitKey';
+import {
+  blockedLimitCounterIdentity,
+  limitCountersForIdentityHref,
+  limitCountersForRuleHref,
+} from './limitCounterNavigation';
 import {
   formatVqueueDuration,
   getVqueueHeadBlockSummary,
@@ -395,18 +401,42 @@ function SelectedEntryMarker({
 }
 
 function HeadVerdict({ data }: { data: VqueueSnapshot }) {
+  const { baseUrl } = useRestateContext();
   const { scheduling } = data.status;
   if (data.identity.isPaused) return null;
   if (data.status.blocked || scheduling === 'blocked') {
     const {
       reason,
+      blockedDuration,
       duration,
       average,
       ratio: averageRatio,
     } = getVqueueHeadBlockSummary(data);
+    const resource = data.status.blockedResource;
+    const counterIdentity = resource
+      ? blockedLimitCounterIdentity(resource)
+      : undefined;
     return (
       <div className={styles().headStatus()}>
-        <BlockedStatus reason={reason} />
+        <BlockedStatus
+          reason={reason}
+          resource={resource}
+          blockedDuration={blockedDuration}
+          counterHref={
+            counterIdentity
+              ? limitCountersForIdentityHref(
+                  baseUrl,
+                  counterIdentity,
+                  resource?.blockedRule,
+                )
+              : undefined
+          }
+          ruleHref={
+            resource?.blockedRule
+              ? limitCountersForRuleHref(baseUrl, resource.blockedRule)
+              : undefined
+          }
+        />
         {duration && (
           <span className={styles().statusTime()}>
             <span>for</span>

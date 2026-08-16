@@ -1,5 +1,21 @@
 # Napkin
 
+- 2026-08-16 user correction on nested VQueue block details: I made the `on concurrency rule` status open structured details but passed no `counterHref` or `ruleHref`, while the shared targets still showed chevrons. Treat an interaction fix end to end: wire destination URLs for every displayed navigation affordance, verify the targets have link roles/hrefs inside the nested popover, and suppress chevrons whenever no href exists.
+
+- 2026-08-16 user correction on VQueue details layout: Treat Inbox, Running, Suspended, Paused, and Finished as equal count-bearing tabs, each containing that stage's entries. Do not create a separate workload card or Inbox-centric main section. Exact Inbox scans already emit the encoded scheduler order: lock holder first, then `run_at`, sequence number, and entry ID; `sys_vqueues` calls the eligibility field `run_at`, not `next_at`.
+
+- 2026-08-16 self on Restate source search: I included a guessed top-level `tests` directory in the `sys_vqueues` search, producing a noisy missing-path error. Search confirmed `crates` and `docs` roots first, then use discovered test paths under their owning crate.
+
+- 2026-08-16 VQueue details product direction: Make the page answer identity, progress, blockage, and contents. A strong v1 can use the existing exact snapshot plus bounded ordered-inbox endpoints for a semantic header, head verdict, workload/timing/activity summaries, and Inbox table. Do not expose a queue-level pause/resume action until a real VQueue mutation API exists, and do not combine independent stage EMAs into an additive chart.
+
+- 2026-08-16 self on nested-popover assertion: After successfully opening a modal child popover, I asserted the parent VQueue list was still accessibility-visible. React Aria correctly applies `aria-hidden` to the parent while the child dialog is active. Test the child details themselves (and optionally restoration after dismissal), not simultaneous accessibility visibility of both modal layers.
+
+- 2026-08-16 self on VQueue test/component reads: I guessed `metrics.spec.ts` and `ChipGroup.tsx` paths after a search had already shown no metrics spec, causing avoidable missing-file errors. Use `rg --files` with the known filename/glob before reading files whose exact location is unconfirmed.
+
+- 2026-08-16 self on details-page pattern search: I guessed three feature directories (`service-route`, `workflow-route`, `virtual-object-route`) instead of first resolving their real names, repeating the top napkin warning. Use `rg --files libs/features -g '*route.tsx' -g '*Panel.tsx'` to discover established route patterns before any directory-scoped read.
+- 2026-08-16 self on adjacent component inspection: I combined `LimitCounterTarget.tsx` and `LimitRuleTarget.tsx` reads with `&&`, repeating the repo's one-command-per-check rule. Use two parallel `exec_command` calls even for tightly related adjacent files.
+- 2026-08-16 self on VQueue detail discovery: I piped `rg --files` into `rg` even though the repo napkin repeatedly prohibits inspection pipelines. Use `rg --files` with path/glob constraints, then search confirmed directories in a separate tool call.
+- 2026-08-16 self on VQueue interaction search: I included a guessed `libs/features/vqueue-route` path in a broad `rg` invocation; the directory does not exist and added a noisy error to otherwise useful results. Resolve feature paths with `rg --files` or search only confirmed roots before broad cross-feature inspection.
 - 2026-08-14 spec TypeScript globals: Feature spec configs that compile imports reaching `admin-api-hooks/batchHooks.ts` must include `"../../../@types/global-env.d.ts"` in `compilerOptions.types`; otherwise `globalThis.batchOperationPromises` raises TS7017. Verify with the user's exact `pnpm tsc -p <tsconfig.spec.json>` command.
 - 2026-08-14 self on sortable-table audit: I piped two `rg` searches while checking shared table call sites despite the repo's repeated no-pipeline correction. Use one scoped `rg` command per search and rely on its output limit.
 - 2026-08-14 shared table sort server contract: The shared default cycle is `none -> preferred -> opposite -> none`, but a column may restrict its supported directions when its query API cannot serve both. Virtual Object backlog only accepts descending order, so its honest cycle is `none -> descending -> none`.
