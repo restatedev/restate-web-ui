@@ -6,6 +6,7 @@ import type {
   FilterStringListItem,
   FilterNullItem,
 } from '@restate/data-access/admin-api-spec';
+import { quoteSqlString } from './handlers/shared';
 
 function convertFilterNumberToSqlClause(
   filter: FilterNumberItem & Pick<FilterItem, 'field'>,
@@ -155,6 +156,14 @@ function convertInvocationFilterToSqlClause(
   filter: FilterItem,
   useScopeSafeServiceKey: boolean,
 ) {
+  if (
+    filter.field === 'stage' &&
+    filter.type === 'STRING' &&
+    filter.operation === 'EQUALS' &&
+    filter.value !== undefined
+  ) {
+    return `id IN (SELECT entry_id FROM sys_vqueues WHERE stage = ${quoteSqlString(filter.value)} AND entry_kind = 'invocation')`;
+  }
   if (useScopeSafeServiceKey && filter.field === 'target_service_key') {
     const field = 'SUBSTR(target_service_key, 1)';
     if (filter.type === 'STRING') {

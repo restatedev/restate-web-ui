@@ -64,6 +64,7 @@ function metaQuery(vqueueId: string) {
   scope,
   lock_name,
   limit_key,
+  created_at,
   queue_is_paused,
   num_inbox,
   num_running,
@@ -137,6 +138,7 @@ interface MetaRow extends Row {
   scope?: string;
   lock_name?: string;
   limit_key?: string;
+  created_at?: string;
   queue_is_paused: boolean;
   num_inbox: number;
   num_running: number;
@@ -488,6 +490,7 @@ export async function getVqueueSnapshot(
       }),
     },
     events: {
+      ...(meta.created_at && { createdAt: meta.created_at }),
       ...(meta.last_enqueued_at && { enqueuedAt: meta.last_enqueued_at }),
       ...(meta.last_start_at && { startAt: meta.last_start_at }),
       ...(meta.last_attempt_at && { attemptAt: meta.last_attempt_at }),

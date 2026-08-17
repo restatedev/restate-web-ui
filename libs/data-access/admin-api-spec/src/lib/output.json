@@ -4559,6 +4559,80 @@
         }
       }
     },
+    "/query/vqueues/{vqueueId}/entries": {
+      "get": {
+        "tags": ["query-invocations"],
+        "summary": "Get VQueue entries by stage",
+        "description": "Returns one VQueue snapshot and a bounded set of entries in the selected stage. The metadata, scheduler, and stage-list queries are started together so counts and rows belong to the same refresh.",
+        "operationId": "get_vqueue_entries",
+        "security": [],
+        "parameters": [
+          {
+            "name": "vqueueId",
+            "in": "path",
+            "description": "VQueue id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "description": "VQueue stage to list",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/VqueueEntryStage"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VQueue snapshot and entries in the selected stage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VqueueEntriesResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Virtual queues are unavailable."
+          },
+          "400": {
+            "description": "Invalid or missing VQueue stage",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query/vqueues/{vqueueId}": {
       "get": {
         "tags": ["query-invocations"],
@@ -9348,6 +9422,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "nextAt": {
+            "type": "string",
+            "format": "date-time"
+          },
           "sequenceNumber": {
             "type": "integer"
           },
@@ -9358,6 +9436,41 @@
           "transitionedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "firstRunnableAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "firstAttemptAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latestAttemptAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "numAttempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "numErrors": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "numPauses": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "numSuspensions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "numYields": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "deployment": {
+            "type": "string"
           }
         }
       },
@@ -9398,6 +9511,31 @@
           "inboxCount": {
             "type": "integer",
             "description": "Exact number of entries currently in the inbox for this Virtual Object instance."
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VqueueEntriesResponse": {
+        "type": "object",
+        "required": ["snapshot", "stage", "rows", "limit", "truncated"],
+        "properties": {
+          "snapshot": {
+            "$ref": "#/components/schemas/VqueueSnapshotResponse",
+            "description": "VQueue snapshot fetched together with the selected stage entries."
+          },
+          "stage": {
+            "$ref": "#/components/schemas/VqueueEntryStage"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectInboxEntry"
+            }
           },
           "limit": {
             "type": "integer"
@@ -12117,8 +12255,12 @@
           },
           "events": {
             "type": "object",
-            "description": "Per-target 'last time ANY entry did X' timestamps.",
+            "description": "Queue creation and per-target 'last time ANY entry did X' timestamps.",
             "properties": {
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
               "enqueuedAt": {
                 "type": "string",
                 "format": "date-time"

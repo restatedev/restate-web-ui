@@ -1131,6 +1131,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/query/vqueues/{vqueueId}/entries': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get VQueue entries by stage
+     * @description Returns one VQueue snapshot and a bounded set of entries in the selected stage. The metadata, scheduler, and stage-list queries are started together so counts and rows belong to the same refresh.
+     */
+    get: operations['get_vqueue_entries'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/query/vqueues/{vqueueId}': {
     parameters: {
       query?: never;
@@ -3351,11 +3371,25 @@ export interface components {
       hasLock?: boolean;
       /** Format: date-time */
       runAt?: string;
+      /** Format: date-time */
+      nextAt?: string;
       sequenceNumber?: number;
       /** Format: date-time */
       createdAt?: string;
       /** Format: date-time */
       transitionedAt?: string;
+      /** Format: date-time */
+      firstRunnableAt?: string;
+      /** Format: date-time */
+      firstAttemptAt?: string;
+      /** Format: date-time */
+      latestAttemptAt?: string;
+      numAttempts?: number;
+      numErrors?: number;
+      numPauses?: number;
+      numSuspensions?: number;
+      numYields?: number;
+      deployment?: string;
     };
     VirtualObjectVqueueSummary: {
       id: string;
@@ -3368,6 +3402,14 @@ export interface components {
       vqueues?: components['schemas']['VirtualObjectVqueueSummary'][];
       /** @description Exact number of entries currently in the inbox for this Virtual Object instance. */
       inboxCount?: number;
+      limit: number;
+      truncated: boolean;
+    };
+    VqueueEntriesResponse: {
+      /** @description VQueue snapshot fetched together with the selected stage entries. */
+      snapshot: components['schemas']['VqueueSnapshotResponse'];
+      stage: components['schemas']['VqueueEntryStage'];
+      rows: components['schemas']['VirtualObjectInboxEntry'][];
       limit: number;
       truncated: boolean;
     };
@@ -4479,8 +4521,10 @@ export interface components {
         queue?: string;
         endToEnd?: string;
       };
-      /** @description Per-target 'last time ANY entry did X' timestamps. */
+      /** @description Queue creation and per-target 'last time ANY entry did X' timestamps. */
       events: {
+        /** Format: date-time */
+        createdAt?: string;
         /** Format: date-time */
         enqueuedAt?: string;
         /** Format: date-time */
@@ -8745,6 +8789,64 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['VirtualObjectInboxResponse'];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  get_vqueue_entries: {
+    parameters: {
+      query: {
+        /** @description VQueue stage to list */
+        stage: components['schemas']['VqueueEntryStage'];
+      };
+      header?: never;
+      path: {
+        /** @description VQueue id */
+        vqueueId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description VQueue snapshot and entries in the selected stage */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VqueueEntriesResponse'];
+        };
+      };
+      /** @description Virtual queues are unavailable. */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Invalid or missing VQueue stage */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
       500: {

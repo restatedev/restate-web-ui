@@ -56,6 +56,7 @@ export { getJournalEntryMetadata } from './getJournalEntryMetadata';
 export { getPausedError } from './getPausedError';
 export { getTransientError } from './getTransientError';
 export { getVqueue } from './getVqueue';
+export { getVqueueEntries, isVqueueEntryStage } from './getVqueueEntries';
 export { listDrainedDeployments } from './listDrainedDeployments';
 export {
   listVirtualObjectInstances,
