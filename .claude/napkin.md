@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-17 VQueue metadata SQL snapshots: Adding `created_at` to the shared VQueue metadata projection also changes the three journal endpoint inline SQL snapshots that fetch a focused VQueue. When `query:test` fails only on that added column, update those snapshots rather than changing the production projection.
+
 - 2026-08-17 Overview hero refresh: The Restate server icon refetches only active queries tagged with `getOverviewRefreshMeta()`. The progressive invocation summary already carries that tag; the completion gauge must also tag its finished-breakdown query and the mutable live-hour timeline query. Keep the immutable historical completion scan untagged so a manual refresh does not repeat the expensive history read.
 
 - 2026-08-17 self on overview refresh inspection: I piped a broad `rg` through `head` even though this repo repeatedly records that inspection pipelines make output noisy and less attributable. Use scoped `rg` globs and tool output limits instead.
