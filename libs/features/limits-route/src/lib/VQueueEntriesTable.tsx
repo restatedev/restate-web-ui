@@ -258,11 +258,13 @@ function renderCell(
 export function VQueueEntriesTable({
   stage,
   data,
+  snapshot,
   error,
   isPending,
 }: {
   stage: VqueueEntryStage;
   data?: VqueueEntriesResponse;
+  snapshot?: VqueueSnapshot;
   error: Error | null;
   isPending: boolean;
 }) {
@@ -271,7 +273,6 @@ export function VQueueEntriesTable({
   const navigate = useNavigate();
   const columns = useMemo(() => getColumns(stage), [stage]);
   const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
-  const snapshot = data?.snapshot;
   const label = stageLabel(stage);
 
   return (

@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-08-17 VQueue snapshot/list query split: Keep `sys_vqueue_meta` plus `sys_scheduler` behind the stable VQueue snapshot query keyed only by VQueue ID, and keep selected-stage rows behind the entries query keyed by VQueue ID plus stage. On stage navigation, refresh the stable snapshot while the new list loads and gate the table until both settle; do not mirror successful query data into component state.
+
+- 2026-08-17 self on VQueue type generation: I again used a shell pipeline while locating project files, despite the repo's no-pipeline guidance. Also, the Nx `create` target stalled under the known plugin-worker environment; invoke `merge.mjs` and `openapi-typescript` directly when this happens.
+
 - 2026-08-17 VQueue Inbox pause and blocked details: An Inbox batch Pause must explicitly narrow to backing-off invocations; ordinary pending/scheduled/ready Inbox entries are not pauseable. The VQueue detail blocker must lazily hydrate its exact limit counter when the popover opens so it can show both counter usage and the governing concurrency value, matching the VQueue list treatment.
 
 - 2026-08-17 Retry-now confirmation scope: Although batch-action status predicates are normally implementation details, `Retry now` must visibly show `Status is Backing off`; that restriction materially narrows the selected VQueue/Inbox set and prevents the confirmation count from looking like it covers the whole Inbox.

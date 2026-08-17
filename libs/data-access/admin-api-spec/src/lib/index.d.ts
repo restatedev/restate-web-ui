@@ -1140,7 +1140,7 @@ export interface paths {
     };
     /**
      * Get VQueue entries by stage
-     * @description Returns one VQueue snapshot and a bounded set of entries in the selected stage. The metadata, scheduler, and stage-list queries are started together so counts and rows belong to the same refresh.
+     * @description Returns a bounded set of entries in the selected VQueue stage.
      */
     get: operations['get_vqueue_entries'];
     put?: never;
@@ -3406,8 +3406,6 @@ export interface components {
       truncated: boolean;
     };
     VqueueEntriesResponse: {
-      /** @description VQueue snapshot fetched together with the selected stage entries. */
-      snapshot: components['schemas']['VqueueSnapshotResponse'];
       stage: components['schemas']['VqueueEntryStage'];
       rows: components['schemas']['VirtualObjectInboxEntry'][];
       limit: number;
@@ -8824,7 +8822,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description VQueue snapshot and entries in the selected stage */
+      /** @description Entries in the selected VQueue stage */
       200: {
         headers: {
           [name: string]: unknown;

@@ -7,7 +7,6 @@ import {
   getVirtualObjectEntryDetails,
   type VirtualObjectEntryRow,
 } from './virtualObjectEntries';
-import { getVqueueSnapshot } from './getVqueue';
 
 const ENTRY_LIMIT = 25;
 const ENTRY_QUERY_LIMIT = ENTRY_LIMIT + 1;
@@ -37,9 +36,7 @@ export async function getVqueueEntries(
     return new Response(null, { status: 204 });
   }
 
-  const [snapshot, { rows }] = await Promise.all([
-    getVqueueSnapshot.call(this, vqueueId),
-    this.query(`SELECT
+  const { rows } = await this.query(`SELECT
       id AS vqueue_id,
       entry_id AS id,
       entry_kind AS kind,
@@ -61,11 +58,7 @@ export async function getVqueueEntries(
     FROM sys_vqueues
     WHERE id = ${quoteSqlString(vqueueId)}
       AND stage = ${quoteSqlString(stage)}
-    LIMIT ${ENTRY_QUERY_LIMIT}`),
-  ]);
-  if (!snapshot) {
-    return new Response(null, { status: 204 });
-  }
+    LIMIT ${ENTRY_QUERY_LIMIT}`);
   const foundEntries = rows as VirtualObjectEntryRow[];
   const entryDetails = await getVirtualObjectEntryDetails(
     this,
@@ -85,7 +78,6 @@ export async function getVqueueEntries(
     ];
   });
   const response: VqueueEntriesResponse = {
-    snapshot,
     stage,
     rows: hydratedEntries.slice(0, ENTRY_LIMIT),
     limit: ENTRY_LIMIT,

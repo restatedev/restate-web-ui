@@ -2424,7 +2424,7 @@
       "get": {
         "tags": ["query-invocations"],
         "summary": "Get VQueue entries by stage",
-        "description": "Returns one VQueue snapshot and a bounded set of entries in the selected stage. The metadata, scheduler, and stage-list queries are started together so counts and rows belong to the same refresh.",
+        "description": "Returns a bounded set of entries in the selected VQueue stage.",
         "operationId": "get_vqueue_entries",
         "security": [],
         "parameters": [
@@ -2447,7 +2447,7 @@
         ],
         "responses": {
           "200": {
-            "description": "VQueue snapshot and entries in the selected stage",
+            "description": "Entries in the selected VQueue stage",
             "content": {
               "application/json": {
                 "schema": {
@@ -5695,12 +5695,8 @@
       },
       "VqueueEntriesResponse": {
         "type": "object",
-        "required": ["snapshot", "stage", "rows", "limit", "truncated"],
+        "required": ["stage", "rows", "limit", "truncated"],
         "properties": {
-          "snapshot": {
-            "$ref": "#/components/schemas/VqueueSnapshotResponse",
-            "description": "VQueue snapshot fetched together with the selected stage entries."
-          },
           "stage": {
             "$ref": "#/components/schemas/VqueueEntryStage"
           },

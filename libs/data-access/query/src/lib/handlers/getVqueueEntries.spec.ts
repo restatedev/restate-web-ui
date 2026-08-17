@@ -30,22 +30,6 @@ describe('GET /query/vqueues/:vqueueId/entries', () => {
 
   it('returns hydrated entries with stage metrics in native queue order', async () => {
     setResponder((statement) => {
-      if (statement.includes('FROM sys_vqueue_meta')) {
-        return [
-          {
-            service_name: 'Orders',
-            queue_is_paused: false,
-            num_inbox: 4,
-            num_running: 1,
-            num_suspended: 2,
-            num_paused: 3,
-            num_finished: 10,
-          },
-        ];
-      }
-      if (statement.includes('FROM sys_scheduler')) {
-        return [];
-      }
       if (statement.includes('FROM sys_vqueues')) {
         return [
           {
@@ -122,20 +106,6 @@ describe('GET /query/vqueues/:vqueueId/entries', () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
-      snapshot: {
-        identity: {
-          service: 'Orders',
-          isPaused: false,
-          vqueueId: 'vq_orders',
-        },
-        counts: {
-          inbox: 4,
-          running: 1,
-          suspended: 2,
-          paused: 3,
-          finished: 10,
-        },
-      },
       stage: 'finished',
       limit: 25,
       truncated: false,
@@ -169,32 +139,14 @@ describe('GET /query/vqueues/:vqueueId/entries', () => {
         },
       ],
     });
-    expect(sql).toHaveLength(5);
-    expect(sql[0]).toContain('FROM sys_vqueue_meta');
-    expect(sql[1]).toContain('FROM sys_scheduler');
-    expect(sql[2]).toContain('FROM sys_vqueues');
-    expect(sql[3]).toContain('FROM sys_vqueue_entry_status');
-    expect(sql[4]).toContain('FROM sys_invocation');
+    expect(sql).toHaveLength(3);
+    expect(sql[0]).toContain('FROM sys_vqueues');
+    expect(sql[1]).toContain('FROM sys_vqueue_entry_status');
+    expect(sql[2]).toContain('FROM sys_invocation');
   });
 
   it('omits entries that move out of the requested stage during hydration', async () => {
     setResponder((statement) => {
-      if (statement.includes('FROM sys_vqueue_meta')) {
-        return [
-          {
-            service_name: 'Orders',
-            queue_is_paused: false,
-            num_inbox: 0,
-            num_running: 1,
-            num_suspended: 0,
-            num_paused: 0,
-            num_finished: 0,
-          },
-        ];
-      }
-      if (statement.includes('FROM sys_scheduler')) {
-        return [];
-      }
       if (statement.includes('FROM sys_vqueues')) {
         return [
           {
