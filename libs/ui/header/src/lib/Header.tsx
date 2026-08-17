@@ -24,6 +24,7 @@ export type HeaderProps = PropsWithChildren<
   {
     variant?: HeaderVariant;
     className?: string;
+    iconClassName?: string;
   } & HeaderIconProps
 >;
 
@@ -70,6 +71,7 @@ export function Header({
   variant = 'default',
   icon,
   iconLabel,
+  iconClassName,
   className,
   children,
 }: HeaderProps) {
@@ -79,7 +81,10 @@ export function Header({
       {icon && (
         <span role="img" aria-label={iconLabel} className={styles.icon()}>
           <span className={styles.iconBadge()}>
-            <Icon name={icon} className={styles.iconGlyph()} />
+            <Icon
+              name={icon}
+              className={styles.iconGlyph({ className: iconClassName })}
+            />
           </span>
         </span>
       )}

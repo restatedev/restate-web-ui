@@ -130,9 +130,20 @@ function Filters({
   const hasServiceFilter = paramsWithFilters?.filters.some(
     (filter) => filter.field === 'target_service_name',
   );
+  const hasVqueueFilter = paramsWithFilters?.filters.some(
+    (filter) => filter.field === 'vqueue_id',
+  );
   const hasStatusFilter = paramsWithFilters?.filters.some(
     (filter) => filter.field === 'status' && !filter.isActionImplicitFilter,
   );
+  const hasStageFilter = paramsWithFilters?.filters.some(
+    (filter) => filter.field === 'stage',
+  );
+  const isVisibleActionFilter = (filter: FilterItem) =>
+    state.type === 'retry-now' &&
+    filter.field === 'status' &&
+    filter.type === 'STRING' &&
+    filter.value === 'backing-off';
   const implicitServiceFilter: FilterItem = {
     field: 'target_service_name',
     type: 'STRING_LIST',
@@ -146,10 +157,11 @@ function Filters({
     value: [],
   };
   const paramsWithFiltersWithServiceAndStatus: FilterItem[] = [
-    ...(hasServiceFilter ? [] : [implicitServiceFilter]),
-    ...(hasStatusFilter ? [] : [implicitStatusFilter]),
+    ...(hasServiceFilter || hasVqueueFilter ? [] : [implicitServiceFilter]),
+    ...(hasStatusFilter || hasStageFilter ? [] : [implicitStatusFilter]),
     ...(paramsWithFilters?.filters ?? []).filter(
-      (filter) => !filter.isActionImplicitFilter,
+      (filter) =>
+        !filter.isActionImplicitFilter || isVisibleActionFilter(filter),
     ),
   ];
 

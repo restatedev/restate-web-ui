@@ -13,6 +13,7 @@ export interface EmptyStateProps {
   title: ReactNode;
   description?: ReactNode;
   icon?: IconName;
+  iconClassName?: string;
   intent?: EmptyStateIntent;
   className?: string;
 }
@@ -62,6 +63,7 @@ export function EmptyState({
   title,
   description,
   icon,
+  iconClassName,
   intent,
   className,
   children,
@@ -80,7 +82,10 @@ export function EmptyState({
       <div className={content()}>
         {icon && (
           <div className={badge()}>
-            <Icon name={icon} className={iconSlot()} />
+            <Icon
+              name={icon}
+              className={iconSlot({ className: iconClassName })}
+            />
           </div>
         )}
         <h2 className={titleSlot({ hasIcon: Boolean(icon) })}>{title}</h2>

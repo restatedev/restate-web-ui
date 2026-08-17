@@ -42,7 +42,9 @@ export {
 export { VQueueId, type VQueueIdProps } from './lib/VQueueId';
 export {
   inboxOrderItems,
+  VQueueHeadBlockedStatus,
   VQueueInboxPopoverContent,
+  VQueueHeadVerdict,
   VQueuePopoverContent,
   type InboxOrderItem,
   type VQueueEntryIdRenderer,

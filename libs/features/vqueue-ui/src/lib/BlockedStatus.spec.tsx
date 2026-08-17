@@ -20,6 +20,17 @@ function openStatus(reason: string) {
 }
 
 describe('BlockedStatus', () => {
+  it('can render only the blocked state without its reason', () => {
+    renderStatus({ reason: 'concurrency rule', showReason: false });
+
+    const blocked = screen.getByText('Blocked');
+
+    expect(blocked).toBeTruthy();
+    expect(blocked.parentElement?.classList.contains('pr-0.5')).toBe(false);
+    expect(screen.queryByText('on concurrency rule')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   it('explains an object lock and links to the Virtual Object', async () => {
     const onOpenChange = vi.fn();
     renderStatus({

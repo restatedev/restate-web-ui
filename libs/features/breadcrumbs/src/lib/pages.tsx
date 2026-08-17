@@ -36,6 +36,26 @@ function InvocationCrumbPopover({ crumb }: BreadcrumbComponentProps) {
   return <InvocationPopoverContent id={String(crumb.params['id'] ?? '')} />;
 }
 
+function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
+  return (
+    <>
+      <Icon
+        name={crumb.icon}
+        className="h-3 w-3 shrink-0 rotate-90 text-zinc-400"
+      />
+      <span data-crumb-label className="min-w-0 truncate">
+        {crumb.label}
+      </span>
+      {crumb.isCurrent && (
+        <Copy
+          copyText={crumb.label}
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+        />
+      )}
+    </>
+  );
+}
+
 function VirtualObjectInstanceCrumbContent({
   crumb,
 }: BreadcrumbComponentProps) {
@@ -227,6 +247,14 @@ export const vqueuesCrumb: CrumbFragment = {
   icon: IconName.Layers,
 };
 
+export const vqueueCrumb: CrumbFragment = {
+  kind: 'detail',
+  resource: 'vqueues',
+  label: (params) => params['vqueueId'] ?? '',
+  icon: IconName.Layers,
+  Content: VQueueCrumbContent,
+};
+
 export function createBreadcrumbPages(options?: {
   patternPrefix?: string;
 }): PageDefinition[] {
@@ -256,6 +284,10 @@ export function createBreadcrumbPages(options?: {
     {
       pattern: `${prefix}/flow-control/vqueues`,
       ...vqueuesCrumb,
+    },
+    {
+      pattern: `${prefix}/flow-control/vqueues/:vqueueId`,
+      ...vqueueCrumb,
     },
   ];
 }

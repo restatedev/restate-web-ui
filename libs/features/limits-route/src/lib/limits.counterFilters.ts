@@ -1,8 +1,12 @@
 import type { components } from '@restate/data-access/admin-api-spec';
+import { blockedLimitCounterIdentity } from '@restate/features/vqueue-ui';
 import { QueryClause, QueryClauseType } from '@restate/ui/filter-builder';
 import { LIMIT_IDENTITY_FILTER_SCHEMA } from './limits.identityFilters';
 
 type LimitCounterFilterItem = components['schemas']['LimitCounterFilterItem'];
+type VqueueBlockedResource = components['schemas']['VqueueBlockedResource'];
+type ListLimitCountersRequestBody =
+  components['schemas']['ListLimitCountersRequestBody'];
 
 export const LIMIT_COUNTER_FILTER_SCHEMA = LIMIT_IDENTITY_FILTER_SCHEMA;
 
@@ -25,6 +29,20 @@ export function createLimitCounterFiltersForIdentity(identity: {
     clauses.push(createExactLimitCounterFilter('l1', identity.l1));
   }
   return clauses;
+}
+
+export function getBlockedLimitCounterRequest(
+  resource: VqueueBlockedResource,
+): ListLimitCountersRequestBody | undefined {
+  const identity = blockedLimitCounterIdentity(resource);
+  if (!identity) return undefined;
+  return {
+    filters: toLimitCounterFilters(
+      createLimitCounterFiltersForIdentity(identity),
+    ),
+    ...(resource.blockedRule ? { rulePattern: resource.blockedRule } : {}),
+    limit: 1,
+  };
 }
 
 export function toLimitCounterFilters(clauses: QueryClause<QueryClauseType>[]) {

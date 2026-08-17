@@ -21,4 +21,20 @@ describe('breadcrumb pages', () => {
     ]);
     expect(instance[0]?.href).toBe('/flow-control/vqueues');
   });
+
+  it('keeps the VQueue list above a VQueue details page', () => {
+    const pages = createBreadcrumbPages();
+    const vqueues = computeNextTrail({
+      pages,
+      pathname: '/flow-control/vqueues',
+    });
+    const vqueue = computeNextTrail({
+      pages,
+      prevTrail: vqueues,
+      pathname: '/flow-control/vqueues/vq_orders',
+    });
+
+    expect(vqueue.map(({ label }) => label)).toEqual(['VQueues', 'vq_orders']);
+    expect(vqueue[0]?.href).toBe('/flow-control/vqueues');
+  });
 });
