@@ -400,65 +400,91 @@ function SelectedEntryMarker({
   );
 }
 
-function HeadVerdict({ data }: { data: VqueueSnapshot }) {
+export function VQueueHeadBlockedStatus({
+  data,
+  showComparison = true,
+  ruleLimit,
+  counterUsage,
+  onOpenChange,
+}: {
+  data: VqueueSnapshot;
+  showComparison?: boolean;
+  ruleLimit?: number;
+  counterUsage?: number;
+  onOpenChange?: (isOpen: boolean) => void;
+}) {
   const { baseUrl } = useRestateContext();
+  const { scheduling } = data.status;
+  if (
+    data.identity.isPaused ||
+    (!data.status.blocked && scheduling !== 'blocked')
+  ) {
+    return null;
+  }
+  const {
+    reason,
+    blockedDuration,
+    duration,
+    average,
+    ratio: averageRatio,
+  } = getVqueueHeadBlockSummary(data);
+  const resource = data.status.blockedResource;
+  const counterIdentity = resource
+    ? blockedLimitCounterIdentity(resource)
+    : undefined;
+  return (
+    <div className={styles().headStatus()}>
+      <BlockedStatus
+        reason={reason}
+        resource={resource}
+        blockedDuration={blockedDuration}
+        counterHref={
+          counterIdentity
+            ? limitCountersForIdentityHref(
+                baseUrl,
+                counterIdentity,
+                resource?.blockedRule,
+              )
+            : undefined
+        }
+        ruleHref={
+          resource?.blockedRule
+            ? limitCountersForRuleHref(baseUrl, resource.blockedRule)
+            : undefined
+        }
+        ruleLimit={ruleLimit}
+        counterUsage={counterUsage}
+        onOpenChange={onOpenChange}
+      />
+      {showComparison && duration && (
+        <span className={styles().statusTime()}>
+          <span>for</span>
+          <MetricComparison
+            value={duration}
+            ratio={averageRatio}
+            average={average}
+            label="Blocked duration"
+            size="xs"
+          />
+        </span>
+      )}
+      {showComparison && !duration && average && (
+        <span className={styles().blockComparison()}>
+          <span>Typical block</span>
+          <span className="font-medium text-zinc-600 tabular-nums">
+            {average}
+          </span>
+        </span>
+      )}
+    </div>
+  );
+}
+
+export function VQueueHeadVerdict({ data }: { data: VqueueSnapshot }) {
   const { scheduling } = data.status;
   if (data.identity.isPaused) return null;
   if (data.status.blocked || scheduling === 'blocked') {
-    const {
-      reason,
-      blockedDuration,
-      duration,
-      average,
-      ratio: averageRatio,
-    } = getVqueueHeadBlockSummary(data);
-    const resource = data.status.blockedResource;
-    const counterIdentity = resource
-      ? blockedLimitCounterIdentity(resource)
-      : undefined;
-    return (
-      <div className={styles().headStatus()}>
-        <BlockedStatus
-          reason={reason}
-          resource={resource}
-          blockedDuration={blockedDuration}
-          counterHref={
-            counterIdentity
-              ? limitCountersForIdentityHref(
-                  baseUrl,
-                  counterIdentity,
-                  resource?.blockedRule,
-                )
-              : undefined
-          }
-          ruleHref={
-            resource?.blockedRule
-              ? limitCountersForRuleHref(baseUrl, resource.blockedRule)
-              : undefined
-          }
-        />
-        {duration && (
-          <span className={styles().statusTime()}>
-            <span>for</span>
-            <MetricComparison
-              value={duration}
-              ratio={averageRatio}
-              average={average}
-              label="Blocked duration"
-              size="xs"
-            />
-          </span>
-        )}
-        {!duration && average && (
-          <span className={styles().blockComparison()}>
-            <span>Typical block</span>
-            <span className="font-medium text-zinc-600 tabular-nums">
-              {average}
-            </span>
-          </span>
-        )}
-      </div>
-    );
+    return <VQueueHeadBlockedStatus data={data} />;
   }
   if (scheduling === 'scheduled') {
     return <ScheduledStatus scheduledAt={data.status.scheduledAt} />;
@@ -712,7 +738,7 @@ function Head({
           )}
         </div>
       </div>
-      <HeadVerdict data={data} />
+      <VQueueHeadVerdict data={data} />
     </div>
   );
 }
