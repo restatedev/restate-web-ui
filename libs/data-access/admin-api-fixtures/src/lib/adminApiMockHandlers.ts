@@ -284,7 +284,7 @@ function vqueueSchedulerRows(ids: string[]) {
         head_entry_id:
           status === 'empty' || status === 'dormant'
             ? null
-            : `${ordinal % 6 === 0 ? 'mut' : 'inv'}_mock_${String(ordinal).padStart(3, '0')}`,
+            : `inv_mock_${String(ordinal).padStart(3, '0')}_inbox_001`,
         scheduled_at:
           status === 'scheduled'
             ? new Date(Date.now() + ((ordinal % 6) + 1) * 5_000).toISOString()
@@ -297,6 +297,114 @@ function vqueueSchedulerRows(ids: string[]) {
           isBlocked && !isLockBlocked ? blockedDuration : 'PT0S',
         lock_block_duration: isLockBlocked ? blockedDuration : 'PT0S',
         deployment_concurrency_block_duration: 'PT0S',
+      },
+    ];
+  });
+}
+
+type VqueueStage = 'inbox' | 'running' | 'suspended' | 'paused' | 'finished';
+
+function vqueueStageCount(meta: VQueueMetaRowMock, stage: VqueueStage) {
+  switch (stage) {
+    case 'inbox':
+      return meta.num_inbox;
+    case 'running':
+      return meta.num_running;
+    case 'suspended':
+      return meta.num_suspended;
+    case 'paused':
+      return meta.num_paused;
+    case 'finished':
+      return meta.num_finished;
+  }
+}
+
+function vqueueEntryStatus(stage: VqueueStage, index: number) {
+  switch (stage) {
+    case 'inbox':
+      return index % 2 === 0 ? 'scheduled' : 'new';
+    case 'running':
+      return 'started';
+    case 'suspended':
+      return 'yielded';
+    case 'paused':
+      return 'started';
+    case 'finished':
+      return index % 5 === 0 ? 'failed' : 'succeeded';
+  }
+}
+
+function vqueueEntryRows(sql: string) {
+  const vqueueId = getSqlStringFilter(sql, 'id');
+  const stage = getSqlStringFilter(sql, 'stage') as VqueueStage | undefined;
+  const meta = vqueueMetaRows().find((row) => row.id === vqueueId);
+  if (!vqueueId || !stage || !meta) return [];
+  const count = Math.min(vqueueStageCount(meta, stage), 26);
+  return Array.from({ length: count }, (_, index) => {
+    const ordinal = String(index + 1).padStart(3, '0');
+    const queueOrdinal = vqueueId.slice(-3);
+    const kind = index % 4 === 3 ? 'state-mutation' : 'invocation';
+    const enteredAt = Date.now() - (index + 1) * 7_000;
+    return {
+      vqueue_id: vqueueId,
+      id: `${kind === 'invocation' ? 'inv' : 'mut'}_mock_${queueOrdinal}_${stage}_${ordinal}`,
+      kind,
+      stage,
+      status: vqueueEntryStatus(stage, index),
+      has_lock: stage === 'running' && index === 0,
+      run_at:
+        stage === 'inbox'
+          ? new Date(Date.now() + index * 5_000).toISOString()
+          : null,
+      sequence_number: index + 1,
+      created_at: new Date(enteredAt - 12_000).toISOString(),
+      transitioned_at: new Date(enteredAt).toISOString(),
+      first_runnable_at: new Date(enteredAt - 10_000).toISOString(),
+      first_attempt_at:
+        stage === 'inbox' ? null : new Date(enteredAt - 8_000).toISOString(),
+      latest_attempt_at:
+        stage === 'inbox' ? null : new Date(enteredAt - 2_000).toISOString(),
+      num_attempts: stage === 'inbox' ? 0 : (index % 3) + 1,
+      num_errors: index % 5 === 0 ? 1 : 0,
+      num_pauses: stage === 'paused' ? 1 : 0,
+      num_suspensions: stage === 'suspended' ? 1 : 0,
+      num_yields: stage === 'suspended' ? 1 : 0,
+      deployment: kind === 'invocation' ? `dp_mock_${queueOrdinal}` : null,
+    };
+  });
+}
+
+function vqueueInvocationRows(ids: string[]) {
+  const metaById = new Map(vqueueMetaRows().map((row) => [row.id, row]));
+  return ids.flatMap((id) => {
+    const match =
+      /^inv_mock_(\d{3})_(inbox|running|suspended|paused|finished)_/.exec(id);
+    if (!match) return [];
+    const vqueueId = `vq_mock_${match[1]}`;
+    const stage = match[2] as VqueueStage;
+    const meta = metaById.get(vqueueId);
+    if (!meta) return [];
+    const completed = stage === 'finished';
+    const createdAt = new Date(Date.now() - 20_000).toISOString();
+    return [
+      {
+        id,
+        target: `${meta.service_name}/${id}/run`,
+        target_service_name: meta.service_name,
+        target_service_key: id,
+        target_handler_name: 'run',
+        target_service_ty: 'service',
+        status: completed ? 'completed' : 'running',
+        created_at: createdAt,
+        modified_at: new Date().toISOString(),
+        scheduled_start_at: createdAt,
+        completed_at: completed ? new Date().toISOString() : null,
+        completion_result: completed ? 'success' : null,
+        pinned_service_protocol_version: 7,
+        retry_count: 0,
+        scope: meta.scope,
+        vqueue_id: vqueueId,
+        limit_key: meta.limit_key,
       },
     ];
   });
@@ -678,15 +786,33 @@ const queryHandler = http.post<
   }
 
   if (/\bFROM\s+sys_scheduler\b/i.test(sql)) {
+    const exactId = getSqlStringFilter(sql, 'id');
+    const ids = getSqlStringListFilter(sql, 'id');
     return HttpResponse.json({
-      rows: vqueueSchedulerRows(getSqlStringListFilter(sql, 'id')),
+      rows: vqueueSchedulerRows(exactId ? [exactId] : ids),
+    } as any);
+  }
+
+  if (/\bFROM\s+sys_vqueue_entry_status\b/i.test(sql)) {
+    return HttpResponse.json({ rows: [] } as any);
+  }
+
+  if (/\bFROM\s+sys_vqueues\b/i.test(sql)) {
+    return HttpResponse.json({ rows: vqueueEntryRows(sql) } as any);
+  }
+
+  if (/\bFROM\s+sys_invocation\b/i.test(sql)) {
+    return HttpResponse.json({
+      rows: vqueueInvocationRows(getSqlStringListFilter(sql, 'id')),
     } as any);
   }
 
   if (/\bFROM\s+sys_vqueue_meta\b/i.test(sql)) {
     const search = getSqlLikeFilter(sql, 'id');
+    const exactId = getSqlStringFilter(sql, 'id');
     const rows = vqueueMetaRows().filter(
       (row) =>
+        (exactId === undefined || row.id === exactId) &&
         (!/\bqueue_is_paused\s*=\s*TRUE\b/i.test(sql) || row.queue_is_paused) &&
         (search === undefined ||
           [

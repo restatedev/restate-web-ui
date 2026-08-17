@@ -18,6 +18,20 @@ export {
   type LimitRuleTargetVariant,
 } from './lib/LimitRuleTarget';
 export {
+  ALL_LIMIT_COUNTERS,
+  ANY_RULE_LIMIT_COUNTERS,
+  blockedLimitCounterIdentity,
+  LIMIT_COUNTER_RULE_QUERY_PARAM,
+  limitCounterRuleSelection,
+  limitCountersForIdentityHref,
+  limitCountersForRuleHref,
+  limitCountersHref,
+  parseLimitCounterRuleSelection,
+  selectedLimitCounterRule,
+  type LimitCounterIdentity,
+  type LimitCounterRuleSelection,
+} from './lib/limitCounterNavigation';
+export {
   Scope,
   type ScopeLabelVariant,
   type ScopePresentation,
@@ -28,7 +42,9 @@ export {
 export { VQueueId, type VQueueIdProps } from './lib/VQueueId';
 export {
   inboxOrderItems,
+  VQueueHeadBlockedStatus,
   VQueueInboxPopoverContent,
+  VQueueHeadVerdict,
   VQueuePopoverContent,
   type InboxOrderItem,
   type VQueueEntryIdRenderer,

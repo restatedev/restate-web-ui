@@ -183,9 +183,11 @@ export function InvocationHandler({
 export function InvocationTableDate({
   value,
   tooltipTitle = 'Created at',
+  pastPrefix,
 }: {
   value?: string;
   tooltipTitle?: string;
+  pastPrefix?: string;
 }) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   if (!value) {
@@ -197,7 +199,9 @@ export function InvocationTableDate({
   return (
     <Badge className="w-full border-none bg-transparent pl-0">
       <span className="w-full truncate">
-        <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
+        <span className="font-normal text-zinc-500">
+          {isPast ? pastPrefix : 'in '}
+        </span>
         <DateTooltip date={new Date(value)} title={tooltipTitle}>
           {duration}
         </DateTooltip>

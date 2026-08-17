@@ -44,4 +44,25 @@ describe('convertInvocationsFilters', () => {
       `WHERE "target_service_key" = 'backoff-lock'`,
     );
   });
+
+  it('filters invocations by their VQueue stage membership', () => {
+    const filters: FilterItem[] = [
+      {
+        field: 'vqueue_id',
+        type: 'STRING',
+        operation: 'EQUALS',
+        value: 'vq_orders',
+      },
+      {
+        field: 'stage',
+        type: 'STRING',
+        operation: 'EQUALS',
+        value: 'inbox',
+      },
+    ];
+
+    expect(convertInvocationsFilters(filters)).toBe(
+      `WHERE "vqueue_id" = 'vq_orders' AND id IN (SELECT entry_id FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation')`,
+    );
+  });
 });

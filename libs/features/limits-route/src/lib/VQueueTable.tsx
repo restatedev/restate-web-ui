@@ -20,6 +20,7 @@ import { ServiceTarget } from '@restate/features/service-target';
 import { InvocationId, VQueueEntryId } from '@restate/features/invocation-ui';
 import {
   BlockedStatus,
+  blockedLimitCounterIdentity,
   getVqueueGateLabel,
   LimitKey,
   ReadyStatus,
@@ -41,10 +42,8 @@ import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { useMemo, useState, type ReactNode } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
-import {
-  createLimitCounterFiltersForIdentity,
-  toLimitCounterFilters,
-} from './limits.counterFilters';
+import { useNavigate } from 'react-router';
+import { getBlockedLimitCounterRequest } from './limits.counterFilters';
 import {
   limitCountersForIdentityHref,
   limitCountersForRuleHref,
@@ -83,7 +82,7 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
   },
   {
     id: 'serviceLock',
-    name: 'Service / lock',
+    name: 'Service / key',
     allowsSorting: true,
     defaultWidth: '3fr',
     minWidth: 0,
@@ -103,7 +102,7 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
   },
   {
     id: 'stages',
-    name: 'Workload',
+    name: 'Unfinished entries',
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '2fr',
@@ -134,7 +133,7 @@ const headBlockedDetailsStyles = tv({
 
 const metricCellStyles = tv({
   slots: {
-    root: 'grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2',
+    root: 'grid w-full min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-2',
     bar: 'w-full max-w-40 min-w-0 justify-self-end',
     value: 'justify-self-start tabular-nums',
   },
@@ -245,7 +244,7 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
           <InvocationsBreakdownTooltipContent
             title={
               <div className="text-base! leading-7 font-medium text-gray-300!">
-                Workload
+                Unfinished entries
               </div>
             }
             total={total}
@@ -254,7 +253,7 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
           />
         }
         className={metricCell.bar()}
-        aria-label={`Workload: ${description}, total ${formatNumber(total)}`}
+        aria-label={`Unfinished entries: ${description}, total ${formatNumber(total)}`}
       />
     </div>
   );
@@ -263,8 +262,6 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
 type SchedulerState = NonNullable<VQueueMetaRow['scheduler']>;
 type BlockedResource = NonNullable<SchedulerState['blockedResource']>;
 type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
-type ListLimitCountersRequestBody =
-  components['schemas']['ListLimitCountersRequestBody'];
 
 function blockedObjectIdentity(resource: BlockedResource) {
   if (resource.resource !== 'lock') return undefined;
@@ -274,41 +271,6 @@ function blockedObjectIdentity(resource: BlockedResource) {
     ...identity,
     ...(resource.scope ? { scope: resource.scope } : {}),
   } satisfies VirtualObjectInstanceIdentity;
-}
-
-function blockedCounterIdentity(
-  resource: BlockedResource,
-): LimitCounterIdentity | undefined {
-  if (
-    resource.resource !== 'limit-key-concurrency' ||
-    !resource.scope ||
-    !resource.blockedLevel
-  ) {
-    return undefined;
-  }
-  const [l1, l2] = resource.limitKey?.split('/') ?? [];
-  switch (resource.blockedLevel) {
-    case 'scope':
-      return { scope: resource.scope };
-    case 'level1':
-      return l1 ? { scope: resource.scope, l1 } : undefined;
-    case 'level2':
-      return l1 && l2 ? { scope: resource.scope, l1, l2 } : undefined;
-  }
-}
-
-function blockedCounterRequest(
-  resource: BlockedResource,
-): ListLimitCountersRequestBody | undefined {
-  const identity = blockedCounterIdentity(resource);
-  if (!identity) return undefined;
-  return {
-    filters: toLimitCounterFilters(
-      createLimitCounterFiltersForIdentity(identity),
-    ),
-    ...(resource.blockedRule ? { rulePattern: resource.blockedRule } : {}),
-    limit: 1,
-  };
 }
 
 function LockHolderTarget({
@@ -386,11 +348,11 @@ function StructuredBlockedHeadState({
     [resource],
   );
   const counterIdentity = useMemo(
-    () => blockedCounterIdentity(resource),
+    () => blockedLimitCounterIdentity(resource),
     [resource],
   );
   const counterRequest = useMemo(
-    () => blockedCounterRequest(resource),
+    () => getBlockedLimitCounterRequest(resource),
     [resource],
   );
   const lock = useGetVirtualObjectLock(
@@ -648,6 +610,7 @@ export function VQueueTable({
   sortDescriptor?: SortDescriptor;
   onSortChange: (descriptor: SortDescriptor | undefined) => void;
 }) {
+  const navigate = useNavigate();
   const rows = useMemo(
     () =>
       vqueues.map((row) => ({
@@ -672,6 +635,9 @@ export function VQueueTable({
       sortDescriptor={sortDescriptor}
       onSortChange={onSortChange}
       bodyDependencies={[...(dependencies ?? []), error]}
+      onRowAction={(rowId) => {
+        navigate(`${baseUrl}/flow-control/vqueues/${String(rowId)}`);
+      }}
       rowClassName={rowStyles()}
       emptyPlaceholder={emptyPlaceholder}
       renderCell={(row, column) => renderCell(row, column, baseUrl)}

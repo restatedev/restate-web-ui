@@ -28,6 +28,7 @@ export default [
   ]),
   route('flow-control/counters', 'routes/limit-counters.tsx'),
   route('flow-control/vqueues', 'routes/vqueues.tsx'),
+  route('flow-control/vqueues/:vqueueId', 'routes/vqueue.tsx'),
   route('flow-control/rules', 'routes/limits.tsx'),
   route('features', 'routes/features.tsx'),
   route('feature-flags/:flag', 'routes/feature-flags.tsx'),

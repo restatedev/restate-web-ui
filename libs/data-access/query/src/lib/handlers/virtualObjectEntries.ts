@@ -36,6 +36,9 @@ export interface VirtualObjectEntryRow {
   retry_count_since_last_stored_command?: number;
   num_attempts?: number;
   num_errors?: number;
+  num_pauses?: number;
+  num_suspensions?: number;
+  num_yields?: number;
   deployment?: string;
 }
 
@@ -51,6 +54,7 @@ function entryKind(value: unknown) {
 async function getVqueueEntryDetailsByIds(
   context: QueryContext,
   entryIds: string[],
+  includeFinished: boolean,
 ) {
   if (!context.features.has('vqueues') || entryIds.length === 0) {
     return [];
@@ -76,8 +80,9 @@ async function getVqueueEntryDetailsByIds(
       num_errors,
       deployment
     FROM sys_vqueue_entry_status
-    WHERE entry_id IN (${entryIds.map(quoteSqlString).join(', ')})
-      AND stage <> 'finished'`,
+    WHERE entry_id IN (${entryIds.map(quoteSqlString).join(', ')})${
+      includeFinished ? '' : "\n      AND stage <> 'finished'"
+    }`,
   );
   return rows as VirtualObjectEntryRow[];
 }
@@ -122,6 +127,7 @@ export async function getVirtualObjectEntryDetails(
   context: QueryContext,
   foundEntries: VirtualObjectEntryRow[],
   invocationSelection: InvocationSelection = 'active',
+  includeFinishedEntryStatus = false,
 ) {
   const entryRowsById = new Map<string, VirtualObjectEntryRow>();
   for (const entry of foundEntries) {
@@ -135,7 +141,7 @@ export async function getVirtualObjectEntryDetails(
     return entry?.kind === 'invocation' || id.startsWith('inv_');
   });
   const [statusRows, invocationRows] = await Promise.all([
-    getVqueueEntryDetailsByIds(context, entryIds),
+    getVqueueEntryDetailsByIds(context, entryIds, includeFinishedEntryStatus),
     getInvocationsByIds(context, invocationIds, invocationSelection),
   ]);
   const vqueueEntryIds = new Set<string>();
@@ -181,6 +187,31 @@ export async function getVirtualObjectEntryDetails(
       ...(entryRow.transitioned_at
         ? { transitionedAt: entryRow.transitioned_at }
         : {}),
+      ...(entryRow.first_runnable_at
+        ? { firstRunnableAt: entryRow.first_runnable_at }
+        : {}),
+      ...(entryRow.first_attempt_at
+        ? { firstAttemptAt: entryRow.first_attempt_at }
+        : {}),
+      ...(entryRow.latest_attempt_at
+        ? { latestAttemptAt: entryRow.latest_attempt_at }
+        : {}),
+      ...(entryRow.num_attempts !== undefined
+        ? { numAttempts: entryRow.num_attempts }
+        : {}),
+      ...(entryRow.num_errors !== undefined
+        ? { numErrors: entryRow.num_errors }
+        : {}),
+      ...(entryRow.num_pauses !== undefined
+        ? { numPauses: entryRow.num_pauses }
+        : {}),
+      ...(entryRow.num_suspensions !== undefined
+        ? { numSuspensions: entryRow.num_suspensions }
+        : {}),
+      ...(entryRow.num_yields !== undefined
+        ? { numYields: entryRow.num_yields }
+        : {}),
+      ...(entryRow.deployment ? { deployment: entryRow.deployment } : {}),
     });
   }
 

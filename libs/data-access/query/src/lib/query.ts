@@ -3,6 +3,7 @@ import type {
   FilterItem,
   BatchInvocationsRequestBody,
   components,
+  VqueueEntryStage,
 } from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
 import {
@@ -60,6 +61,8 @@ import {
   getPausedError,
   getTransientError,
   getVqueue,
+  getVqueueEntries,
+  isVqueueEntryStage,
   listDrainedDeployments,
   type ListStateArgs,
   type ListStateItem,
@@ -199,6 +202,10 @@ type BoundHandlers = {
   getPausedError: (invocationId: string) => Promise<Response>;
   getTransientError: (invocationId: string) => Promise<Response>;
   getVqueue: (vqueueId: string, focusEntryId?: string) => Promise<Response>;
+  getVqueueEntries: (
+    vqueueId: string,
+    stage: VqueueEntryStage,
+  ) => Promise<Response>;
   getVqueueInbox: (vqueueId: string) => Promise<Response>;
   listDrainedDeployments: () => Promise<Response>;
   listVirtualObjectInstances: (
@@ -289,6 +296,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getPausedError: getPausedError.bind(context),
     getTransientError: getTransientError.bind(context),
     getVqueue: getVqueue.bind(context),
+    getVqueueEntries: getVqueueEntries.bind(context),
     getVqueueInbox: getVqueueInbox.bind(context),
     listDrainedDeployments: listDrainedDeployments.bind(context),
     listVirtualObjectInstances: listVirtualObjectInstances.bind(context),
@@ -421,6 +429,10 @@ export const routes = createRoutes('/query', {
     vqueueInbox: {
       method: 'GET',
       pattern: '/vqueues/:vqueueId/inbox',
+    },
+    vqueueEntries: {
+      method: 'GET',
+      pattern: '/vqueues/:vqueueId/entries',
     },
   },
   invocationsV2: {
@@ -655,6 +667,17 @@ router.map(routes, {
       async vqueueInbox(ctx) {
         const { getVqueueInbox } = ctx.storage.get(handlersKey);
         return getVqueueInbox(ctx.params.vqueueId);
+      },
+      async vqueueEntries(ctx) {
+        const stage = ctx.url.searchParams.get('stage');
+        if (!isVqueueEntryStage(stage)) {
+          return Response.json(
+            { message: 'A valid VQueue stage is required.' },
+            { status: 400 },
+          );
+        }
+        const { getVqueueEntries } = ctx.storage.get(handlersKey);
+        return getVqueueEntries(ctx.params.vqueueId, stage);
       },
     },
     invocationsV2: {

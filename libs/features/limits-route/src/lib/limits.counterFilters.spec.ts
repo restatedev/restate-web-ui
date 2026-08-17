@@ -1,5 +1,6 @@
 import { QueryClause } from '@restate/ui/filter-builder';
 import {
+  getBlockedLimitCounterRequest,
   LIMIT_COUNTER_FILTER_SCHEMA,
   toLimitCounterFilters,
 } from './limits.counterFilters';
@@ -68,6 +69,35 @@ describe('limit counter filters', () => {
     });
 
     expect(toLimitCounterFilters([clause])).toEqual([]);
+  });
+
+  it('builds an exact request for a blocked limit counter and rule', () => {
+    expect(
+      getBlockedLimitCounterRequest({
+        resource: 'limit-key-concurrency',
+        scope: 'noisy',
+        limitKey: 'batch/acme',
+        blockedLevel: 'level2',
+        blockedRule: 'noisy/*/*',
+      }),
+    ).toEqual({
+      filters: [
+        {
+          field: 'scope',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'noisy',
+        },
+        {
+          field: 'limitKey',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'batch/acme',
+        },
+      ],
+      rulePattern: 'noisy/*/*',
+      limit: 1,
+    });
   });
 });
 

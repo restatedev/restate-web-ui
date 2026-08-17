@@ -19,7 +19,7 @@ type VqueueBlockedResource = components['schemas']['VqueueBlockedResource'];
 const styles = tv({
   slots: {
     status:
-      'relative inline-flex max-w-full min-w-0 shrink items-center gap-1.5 border-dashed py-0.5 pr-0.5',
+      'relative inline-flex max-w-full min-w-0 shrink items-center gap-1.5 border-dashed py-0.5',
     reason:
       'flex h-5 min-w-0 items-center gap-1 rounded-md border border-gray-200/80 bg-white px-1.5 py-0.5 text-2xs text-orange-700 shadow-none',
     alert: 'h-3 w-3 shrink-0 text-orange-600',
@@ -54,10 +54,18 @@ const styles = tv({
       'absolute -bottom-0.5 left-1/2 h-3 w-3 -translate-x-1/2 bg-white text-amber-600',
     fallback: 'px-4 py-3 text-xs text-zinc-600',
   },
+  variants: {
+    showReason: {
+      true: {
+        status: 'pr-0.5',
+      },
+    },
+  },
 });
 
 export interface BlockedStatusProps {
   reason?: string;
+  showReason?: boolean;
   resource?: VqueueBlockedResource;
   blockedDuration?: string;
   objectTarget?: ReactNode;
@@ -138,7 +146,7 @@ function blockedCounter(
       l2={resource.blockedLevel === 'level2' ? l2 : undefined}
       href={href}
       variant={inline ? 'default' : 'table'}
-      showChevron={inline}
+      showChevron={inline && Boolean(href)}
       usage={usage ?? limit}
       limit={limit}
     />
@@ -222,7 +230,7 @@ function resourceModel(
         <LimitRuleTarget
           pattern={resource.blockedRule}
           href={ruleHref}
-          showChevron
+          showChevron={Boolean(ruleHref)}
         />
       ) : undefined;
       const relationship =
@@ -438,6 +446,7 @@ function StructuredDetails({ model }: { model: BlockedResourceModel }) {
 
 export function BlockedStatus({
   reason,
+  showReason = true,
   resource,
   blockedDuration,
   objectTarget,
@@ -457,7 +466,7 @@ export function BlockedStatus({
     chevrons,
     popover,
     fallback,
-  } = styles();
+  } = styles({ showReason });
   const model = resource
     ? resourceModel(
         resource,
@@ -490,7 +499,7 @@ export function BlockedStatus({
     </span>
   ) : undefined;
   const hasPopover = Boolean(
-    model || (resource?.resource === undefined && details),
+    showReason && (model || (resource?.resource === undefined && details)),
   );
 
   const reasonContent = (
@@ -503,7 +512,7 @@ export function BlockedStatus({
   return (
     <Badge variant="warning" className={status()}>
       <span>Blocked</span>
-      {hasPopover ? (
+      {!showReason ? null : hasPopover ? (
         <Popover onOpenChange={onOpenChange}>
           <PopoverTrigger>
             <Button variant="secondary" className={reasonStyle()}>
