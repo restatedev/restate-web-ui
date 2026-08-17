@@ -3,10 +3,12 @@ import type {
   InvocationSummaryStage,
   VqueueSnapshot,
 } from '@restate/data-access/admin-api-spec';
+import { useRestateContext } from '@restate/features/restate-context';
 import { Button } from '@restate/ui/button';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
 import { Spinner } from '@restate/ui/loading';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { tv } from '@restate/util/styles';
@@ -26,6 +28,24 @@ const triggerStyles = tv({
       md: '',
       default: '',
       icon: 'w-fit',
+    },
+  },
+  defaultVariants: {
+    size: 'default',
+  },
+});
+
+const linkStyles = tv({
+  slots: {
+    root: 'inline-flex max-w-full min-w-0 items-center rounded-lg text-zinc-500 outline-offset-0 hover:bg-black/3 pressed:bg-black/5',
+    icon: 'shrink-0 text-current',
+  },
+  variants: {
+    size: {
+      sm: { icon: 'h-3.5 w-3.5' },
+      md: { icon: 'h-3.5 w-3.5' },
+      default: { root: 'm-0.5', icon: 'h-4 w-4' },
+      icon: { icon: 'h-0 w-0' },
     },
   },
   defaultVariants: {
@@ -161,6 +181,28 @@ function VQueueIdWithPopover({
   );
 }
 
+function VQueueIdLink({
+  id,
+  className,
+  size = 'default',
+  ...props
+}: VQueueIdProps) {
+  const { baseUrl } = useRestateContext();
+  const { root, icon } = linkStyles({ size });
+
+  return (
+    <Link
+      href={`${baseUrl}/flow-control/vqueues/${id}`}
+      aria-label={`Open VQueue ${id}`}
+      variant="secondary"
+      className={root({ className })}
+    >
+      <VQueueIdDisplay {...props} id={id} size={size} className="min-w-0" />
+      <Icon name={IconName.ChevronRight} className={icon()} />
+    </Link>
+  );
+}
+
 export function VQueueId({
   popover = true,
   renderEntryId,
@@ -174,6 +216,6 @@ export function VQueueId({
       renderEntryId={renderEntryId}
     />
   ) : (
-    <VQueueIdDisplay {...props} />
+    <VQueueIdLink {...props} />
   );
 }

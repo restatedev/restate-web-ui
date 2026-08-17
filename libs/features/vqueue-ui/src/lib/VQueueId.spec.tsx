@@ -46,6 +46,21 @@ vi.mock('@restate/data-access/admin-api-hooks', () => ({
 }));
 
 describe('VQueueId', () => {
+  it('shows a navigation chevron when rendered as a link', () => {
+    render(
+      <MemoryRouter>
+        <VQueueId id="vq_link" popover={false} />
+      </MemoryRouter>,
+    );
+
+    const link = screen.getByRole('link', {
+      name: 'Open VQueue vq_link',
+    });
+
+    expect(link.getAttribute('href')).toBe('/flow-control/vqueues/vq_link');
+    expect(link.querySelectorAll('svg')).toHaveLength(2);
+  });
+
   it('keeps the VQueue identity visible in a left-aligned loading state', async () => {
     useGetVqueue.mockReturnValue({
       data: undefined,

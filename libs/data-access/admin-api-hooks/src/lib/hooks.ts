@@ -1177,9 +1177,14 @@ const finishedHistoryPersister: any = finishedHistoryPersisterApi.persisterFn;
 export function useFinishedInvocationsTimelineV2({
   refetchInterval = 30_000,
   enabled: callerEnabled,
+  liveQueryMeta,
 }: {
   refetchInterval?: number | (() => number | false);
   enabled?: boolean;
+  liveQueryMeta?: HookQueryOptions<
+    typeof FINISHED_HISTORY_PATH,
+    'post'
+  >['meta'];
 } = {}) {
   const apiEnabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
@@ -1240,6 +1245,7 @@ export function useFinishedInvocationsTimelineV2({
     staleTime: 0,
     refetchInterval,
     enabled,
+    meta: { ...liveApi.meta, ...liveQueryMeta },
   });
 
   // Rollover: each poll, check whether the wall clock has entered a new hour.

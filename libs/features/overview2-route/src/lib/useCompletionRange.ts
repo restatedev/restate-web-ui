@@ -3,6 +3,7 @@ import {
   useFinishedInvocationsBreakdownV2,
   useFinishedInvocationsTimelineV2,
 } from '@restate/data-access/admin-api-hooks';
+import { getOverviewRefreshMeta } from '@restate/data-access/admin-api';
 import type { BreakdownCountMode } from '@restate/features/user-preference';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
@@ -20,6 +21,8 @@ type UseCompletionRangeArgs = {
   enabled?: boolean;
   timeRange?: CompletionTimeRange;
 };
+
+const OVERVIEW_REFRESH_META = getOverviewRefreshMeta();
 
 export function useCompletionRange({
   hasCompletePopulation,
@@ -47,6 +50,7 @@ export function useCompletionRange({
     useFinishedInvocationsTimelineV2({
       refetchInterval,
       enabled: isHistoryEnabled,
+      liveQueryMeta: OVERVIEW_REFRESH_META,
     });
   const breakdown = useFinishedInvocationsBreakdownV2(
     {
@@ -59,6 +63,7 @@ export function useCompletionRange({
     {
       refetchInterval,
       enabled: usesBreakdown,
+      meta: OVERVIEW_REFRESH_META,
     },
   );
 

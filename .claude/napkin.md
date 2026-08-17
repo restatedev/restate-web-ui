@@ -1,5 +1,11 @@
 # Napkin
 
+- 2026-08-17 Overview hero refresh: The Restate server icon refetches only active queries tagged with `getOverviewRefreshMeta()`. The progressive invocation summary already carries that tag; the completion gauge must also tag its finished-breakdown query and the mutable live-hour timeline query. Keep the immutable historical completion scan untagged so a manual refresh does not repeat the expensive history read.
+
+- 2026-08-17 self on overview refresh inspection: I piped a broad `rg` through `head` even though this repo repeatedly records that inspection pipelines make output noisy and less attributable. Use scoped `rg` globs and tool output limits instead.
+
+- 2026-08-17 linked VQueue IDs: Match linked invocation IDs by rendering a right chevron after a non-popover VQueue ID. The popover variant remains a disclosure button with its up/down indicator; only the navigation variant gets the right-chevron affordance.
+
 - 2026-08-17 VQueue tab refresh trigger: The VQueue snapshot is stage-independent, so do not track the selected stage in a ref plus effect solely to refetch it. Refresh the stable snapshot from the tab selection callback, let direct page loads mount both queries normally, and keep cached stage rows hidden while their query refetches.
 
 - 2026-08-17 VQueue snapshot/list query split: Keep `sys_vqueue_meta` plus `sys_scheduler` behind the stable VQueue snapshot query keyed only by VQueue ID, and keep selected-stage rows behind the entries query keyed by VQueue ID plus stage. On stage navigation, refresh the stable snapshot while the new list loads and gate the table until both settle; do not mirror successful query data into component state.
