@@ -1,5 +1,8 @@
 import { useFeatures } from '@restate/data-access/admin-api';
-import { useGetVqueueEntries } from '@restate/data-access/admin-api-hooks';
+import {
+  useGetVqueue,
+  useGetVqueueEntries,
+} from '@restate/data-access/admin-api-hooks';
 import type {
   FilterItem,
   VqueueEntryStage,
@@ -42,7 +45,7 @@ import { formatNumber } from '@restate/util/intl';
 import { panelHref } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { VQueueActivityCard, VQueueDurationsCard } from './VQueueCards';
 import {
@@ -355,35 +358,22 @@ function Component() {
   const [searchParams] = useSearchParams();
   const stage = vqueueStageFromSearch(searchParams);
   const hasVqueues = useFeatures().has('vqueues');
-  const details = useGetVqueueEntries(vqueueId, stage, {
+  const snapshot = useGetVqueue(vqueueId, undefined, {
     enabled: hasVqueues && Boolean(vqueueId),
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     staleTime: 0,
   });
-  const currentSnapshot = details.data?.snapshot;
-  const [retainedSnapshot, setRetainedSnapshot] = useState<{
-    vqueueId: string;
-    data: VqueueSnapshot;
-    dataUpdatedAt: number;
-  }>();
-  useEffect(() => {
-    if (currentSnapshot) {
-      setRetainedSnapshot({
-        vqueueId,
-        data: currentSnapshot,
-        dataUpdatedAt: details.dataUpdatedAt,
-      });
-    }
-  }, [currentSnapshot, details.dataUpdatedAt, vqueueId]);
-  const retainedData =
-    details.isPending && retainedSnapshot?.vqueueId === vqueueId
-      ? retainedSnapshot
-      : undefined;
-  const data = currentSnapshot ?? retainedData?.data;
+  const entries = useGetVqueueEntries(vqueueId, stage, {
+    enabled: hasVqueues && Boolean(vqueueId),
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  });
+  const data = snapshot.data;
   const inboxSchedulingData =
     stage !== 'inbox' ||
-    hasBlockedVqueueHeadInRows(details.data?.rows ?? [], currentSnapshot)
+    hasBlockedVqueueHeadInRows(entries.data?.rows ?? [], data)
       ? data
       : undefined;
   const tabs = useMemo<ContentPanelTabs>(
@@ -394,20 +384,28 @@ function Component() {
           <StageTabLabel
             label={label}
             count={data?.counts[id]}
-            isPending={details.isPending}
+            isPending={snapshot.isPending}
             schedulerData={id === 'inbox' ? inboxSchedulingData : undefined}
           />
         ),
       })),
       defaultId: 'inbox',
       queryParam: STAGE_QUERY_PARAM,
+      onSelect: (id) => {
+        if (id !== stage && isVqueueStage(id)) {
+          void snapshot.refetch();
+        }
+      },
     }),
-    [data, details.isPending, inboxSchedulingData],
+    [data, inboxSchedulingData, snapshot.refetch, snapshot.isPending, stage],
   );
-  const isFetching = details.isFetching;
-  const lastSnapshot = currentSnapshot
-    ? details.dataUpdatedAt
-    : retainedData?.dataUpdatedAt;
+  const isFetching = snapshot.isFetching || entries.isFetching;
+  const isEntriesPending =
+    entries.isPending ||
+    entries.isFetching ||
+    snapshot.isPending ||
+    snapshot.isFetching;
+  const lastSnapshot = snapshot.dataUpdatedAt;
 
   return (
     <SnapshotTimeProvider lastSnapshot={lastSnapshot}>
@@ -432,7 +430,7 @@ function Component() {
               description="Enable VQueues on the Restate server to inspect this queue."
             />
           </div>
-        ) : details.error ? (
+        ) : snapshot.error && !data ? (
           <div className="px-5 py-20">
             <EmptyState
               icon={IconName.TriangleAlert}
@@ -440,12 +438,12 @@ function Component() {
               title="Couldn’t load this VQueue"
             >
               <ErrorBanner
-                error={details.error}
+                error={snapshot.error}
                 className="w-full rounded-xl text-left"
               />
             </EmptyState>
           </div>
-        ) : details.isPending && !data ? (
+        ) : snapshot.isPending && !data ? (
           <div
             role="status"
             className="flex items-center justify-center gap-2 px-5 py-20 text-sm text-zinc-500"
@@ -480,7 +478,7 @@ function Component() {
                     }
                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
                     onClick={() => {
-                      void details.refetch();
+                      void Promise.all([snapshot.refetch(), entries.refetch()]);
                     }}
                     disabled={isFetching}
                   >
@@ -497,9 +495,10 @@ function Component() {
               <ContentPanelSection flush>
                 <VQueueEntriesTable
                   stage={stage}
-                  data={details.data}
-                  error={details.error}
-                  isPending={details.isPending}
+                  data={entries.data}
+                  snapshot={data}
+                  error={entries.error}
+                  isPending={isEntriesPending}
                 />
               </ContentPanelSection>
             </ContentPanelBody>

@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-17 VQueue tab refresh trigger: The VQueue snapshot is stage-independent, so do not track the selected stage in a ref plus effect solely to refetch it. Refresh the stable snapshot from the tab selection callback, let direct page loads mount both queries normally, and keep cached stage rows hidden while their query refetches.
+
 - 2026-08-17 VQueue snapshot/list query split: Keep `sys_vqueue_meta` plus `sys_scheduler` behind the stable VQueue snapshot query keyed only by VQueue ID, and keep selected-stage rows behind the entries query keyed by VQueue ID plus stage. On stage navigation, refresh the stable snapshot while the new list loads and gate the table until both settle; do not mirror successful query data into component state.
 
 - 2026-08-17 self on VQueue type generation: I again used a shell pipeline while locating project files, despite the repo's no-pipeline guidance. Also, the Nx `create` target stalled under the known plugin-worker environment; invoke `merge.mjs` and `openapi-typescript` directly when this happens.
