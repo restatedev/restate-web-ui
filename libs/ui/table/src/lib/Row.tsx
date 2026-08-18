@@ -120,9 +120,9 @@ export function PerformantRow<T extends { id?: string }>({
   return (
     <Row
       ref={(el) => {
-        el && observer?.observe(el);
+        if (el) observer?.observe(el);
         return () => {
-          el && observer?.unobserve(el);
+          if (el) observer?.unobserve(el);
         };
       }}
       {...otherProps}

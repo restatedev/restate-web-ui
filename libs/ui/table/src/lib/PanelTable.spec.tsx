@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import { Cell } from './Row';
 import { PanelTable } from './PanelTable';
 
 class ResizeObserverMock implements ResizeObserver {
-  disconnect() {}
-  observe() {}
-  unobserve() {}
+  disconnect = vi.fn();
+  observe = vi.fn();
+  unobserve = vi.fn();
 }
 
 describe('PanelTable', () => {

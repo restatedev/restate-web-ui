@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-18 table lint tooling: `pnpm nx run table:lint`, daemon-free Nx, and the repository-local Nx binary under Node 24 can all stall before ESLint while the web-ui dev server owns isolated plugin workers. Do not stop the user's dev server; stop only scoped lint processes and run `pnpm exec eslint libs/ui/table` to expose and verify code violations directly.
+
 - 2026-08-18 invocation live-snapshot races: The summary facets and invocation rows are separate live queries and can legitimately observe different lifecycle states. Never issue a second reconciliation query: it can be expensive and still cannot guarantee an atomic match. A complete uncapped list owns current filtered counts, so derive the displayed stage/status context, active service tab, table/footer, and Actions count from its rows while retaining summary totals as population context. A sampled, partial, or capped list cannot be compared row-for-row; retain summary estimates and explicit `shown of ~total` wording.
 
 - 2026-08-18 self on reconciliation cleanup patch: I built a large cleanup hunk against pre-Prettier helper formatting, so the atomic patch failed. Re-read formatted helper blocks and split cross-file cleanup into smaller patches before extending recently changed code.
