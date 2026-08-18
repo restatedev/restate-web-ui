@@ -96,8 +96,12 @@ function tabLabel(
   isFiltered: boolean,
   matchingIsPartial: boolean,
   isLoading: boolean,
+  currentCount?: number,
 ): ReactNode {
-  const countLabel = isFiltered ? matching : total;
+  const summaryCount = isFiltered ? matching : total;
+  const countLabel = currentCount ?? summaryCount;
+  const showsComparison =
+    isFiltered || (currentCount !== undefined && currentCount !== summaryCount);
 
   return (
     <span className="flex items-center gap-1.5">
@@ -110,8 +114,10 @@ function tabLabel(
         <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
           <FacetCount
             count={countLabel}
-            total={isFiltered ? total : undefined}
-            approximate={isFiltered && matchingIsPartial}
+            total={showsComparison ? total : undefined}
+            approximate={
+              currentCount === undefined && isFiltered && matchingIsPartial
+            }
           />
         </span>
       ) : null}
@@ -179,6 +185,7 @@ function serviceTabLabel(
   isFiltered: boolean,
   matchingIsPartial: boolean,
   isLoading: boolean,
+  currentCount?: number,
 ) {
   const label = tabLabel(
     service.id,
@@ -187,6 +194,7 @@ function serviceTabLabel(
     isFiltered,
     matchingIsPartial,
     isLoading,
+    currentCount,
   );
   if (isLoading) return label;
 
@@ -210,7 +218,12 @@ function serviceTabLabel(
             </div>
           }
           total={service.count}
-          filteredTotal={matching}
+          filteredTotal={
+            isFiltered ||
+            (currentCount !== undefined && currentCount !== service.count)
+              ? (currentCount ?? matching)
+              : undefined
+          }
           totalLink={serviceTotalHref(baseUrl, searchParams, service.id)}
           statuses={statuses}
           getStatusLink={(statusName) =>
@@ -239,6 +252,7 @@ export function useServiceTabs(
   deploymentsData: DeploymentsData | undefined,
   statusFilter: StatusFilter,
   isLoading = false,
+  currentCount?: number,
 ): ContentPanelTabs {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
@@ -285,6 +299,7 @@ export function useServiceTabs(
         isFiltered,
         matchingIsPartial,
         isLoading,
+        selection.selectedId === ALL_TAB_ID ? currentCount : undefined,
       ),
       href: serviceHref(baseUrl, searchParams),
     },
@@ -302,6 +317,7 @@ export function useServiceTabs(
               isFiltered,
               matchingIsPartial,
               isLoading,
+              currentCount,
             ),
           },
         ]
@@ -316,6 +332,7 @@ export function useServiceTabs(
         isFiltered,
         matchingIsPartial,
         isLoading,
+        selection.selectedId === service.id ? currentCount : undefined,
       ),
       href: serviceHref(baseUrl, searchParams, service.id),
     })),

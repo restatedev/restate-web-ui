@@ -18,6 +18,13 @@ export type InvocationPopulationCount = {
   accuracy: 'exact' | 'estimate' | 'lower-bound';
 };
 
+type InvocationListSnapshot = {
+  listIsAvailable: boolean;
+  listRowCount: number;
+  listLimit: number;
+  listIsPartial: boolean;
+};
+
 function statusMatches(status: string, filter: StatusFilter) {
   if (!hasStatusFilter(filter)) return true;
   const selected = filter.value.includes(status);
@@ -152,11 +159,12 @@ export function resolveInvocationPopulationCount({
   listIsPartial,
 }: {
   summaryMatchCount: InvocationSummaryMatchCount | undefined;
-  listIsAvailable: boolean;
-  listRowCount: number;
-  listLimit: number;
-  listIsPartial: boolean;
-}): InvocationPopulationCount {
+} & InvocationListSnapshot): InvocationPopulationCount {
+  const listIsCapped = listLimit > 0 && listRowCount >= listLimit;
+  if (listIsAvailable && !listIsPartial && !listIsCapped) {
+    return { count: listRowCount, accuracy: 'exact' };
+  }
+
   if (summaryMatchCount) {
     return {
       count: summaryMatchCount.count,
@@ -164,7 +172,6 @@ export function resolveInvocationPopulationCount({
     };
   }
 
-  const listIsCapped = listLimit > 0 && listRowCount >= listLimit;
   return {
     count: listRowCount,
     accuracy:
@@ -172,4 +179,20 @@ export function resolveInvocationPopulationCount({
         ? 'exact'
         : 'lower-bound',
   };
+}
+
+export function withInvocationStatusCounts<
+  Bucket extends { count: number; statuses: string[] },
+>(buckets: Bucket[], invocationStatuses: string[]) {
+  const statusCounts = new Map<string, number>();
+  for (const status of invocationStatuses) {
+    statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
+  }
+  return buckets.map((bucket) => ({
+    ...bucket,
+    count: bucket.statuses.reduce(
+      (count, status) => count + (statusCounts.get(status) ?? 0),
+      0,
+    ),
+  }));
 }
