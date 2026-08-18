@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-18 deferred filter removal submission: The five compact URL-backed filter lists defer `requestSubmit()` because `onItemRemove` runs before the render exposes the updated `useListData` items. Keep the explanatory TODO at each call site until FilterBuilder provides the next items directly and the timers can be removed.
+
 - 2026-08-18 Retry badges: Render `retry_attempts` as the primary Retries popover badge when non-zero. If it is zero but `num_errors` is non-zero, render `num_errors` as that same Retries popover badge so transient-error history remains accessible. Only render a separate static Backoffs badge when both counters are non-zero; do not combine or sum the overlapping counters.
 
 - 2026-08-18 Invocations Limit key sizing: Keep the newly default-visible Limit key column compact by using `INVOCATION_TABLE_COLUMN_CONFIG.limit_key.defaultWidth` (160px) in the Invocations route instead of leaving it as an unconstrained flexible column. Do not change the shared LimitKey component or other tables.

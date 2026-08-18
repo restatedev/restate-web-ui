@@ -9,7 +9,7 @@ import {
   useListLimitRules,
   useUpdateLimitRule,
 } from '@restate/data-access/admin-api-hooks';
-import { LimitRuleTarget } from '@restate/features/vqueue-ui';
+import { LimitRuleTarget, LimitValue } from '@restate/features/vqueue-ui';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
 import { Button, SubmitButton } from '@restate/ui/button';
@@ -28,9 +28,21 @@ import {
 } from '@restate/ui/dialog';
 import { DropdownItem } from '@restate/ui/dropdown';
 import { EmptyState } from '@restate/ui/empty-state';
+import {
+  AddFilterTrigger,
+  FilterBuilder,
+  FilterChip,
+  QueryClause,
+  QueryClauseOption,
+  QueryClauseType,
+  readFilterClauses,
+  useFilterBuilder,
+  writeFilterClauses,
+} from '@restate/ui/filter-builder';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldCheckbox } from '@restate/ui/form-field';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
 import { SplitButton } from '@restate/ui/split-button';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import {
@@ -43,8 +55,15 @@ import {
 import { formatNumber } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { type QueryKey, useQueryClient } from '@tanstack/react-query';
-import { type FormEvent, useId, useMemo, useState } from 'react';
-import { Form, useNavigate } from 'react-router';
+import {
+  type FormEvent,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { Form, useNavigate, useSearchParams } from 'react-router';
 import {
   FieldError,
   Input,
@@ -62,7 +81,6 @@ import {
   type RuleLevel,
 } from './pattern';
 import { RuleMatchPreview, RulePatternBuilder } from './RulePatternBuilder';
-import { LimitValue } from '@restate/features/vqueue-ui';
 import {
   RULE_LEVEL_COLUMN_WIDTH,
   RuleLevelBadge,
@@ -76,6 +94,14 @@ import {
   useLimitListPagination,
 } from './LimitListPagination';
 import { FlowControlHero, flowControlTabs } from './FlowControlPage';
+import {
+  LimitRuleFilterOption,
+  LimitRuleFilterValue,
+} from './LimitRuleFilterValue';
+import {
+  limitRuleFilterSchema,
+  selectedLimitRulePattern,
+} from './limits.ruleFilters';
 
 type RuleColumn =
   | 'pattern'
@@ -205,16 +231,22 @@ const ruleActionSplitStyles = tv({
 function CounterSummaryCell({
   total,
   withWaiters,
+  href,
 }: {
   total: number;
   withWaiters: number;
+  href: string;
 }) {
   const affected = Math.min(withWaiters, total);
   const percentage = total > 0 ? (affected / total) * 100 : 0;
   const label = `${formatNumber(affected)} of ${formatNumber(total)} limit counters have waiting VQueues`;
 
   return (
-    <div aria-label={label} className="flex w-full max-w-48 items-center gap-2">
+    <Link
+      href={href}
+      aria-label={`${label}. View matching limit counters`}
+      className="flex w-full max-w-48 items-center gap-2 no-underline"
+    >
       <div className="flex h-3 min-w-0 flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5">
         {affected > 0 && (
           <div
@@ -225,7 +257,7 @@ function CounterSummaryCell({
       </div>
       <span
         aria-hidden="true"
-        className="mr-2 flex min-w-12 shrink-0 items-baseline justify-end gap-1 text-xs font-medium tabular-nums"
+        className="flex min-w-12 shrink-0 items-baseline justify-end gap-1 text-xs font-medium tabular-nums"
       >
         <span className={counterValueStyles({ hasWaiters: affected > 0 })}>
           {formatNumber(affected)}
@@ -233,7 +265,11 @@ function CounterSummaryCell({
         <span className="text-zinc-300">/</span>
         <span className="text-zinc-500">{formatNumber(total)}</span>
       </span>
-    </div>
+      <Icon
+        name={IconName.ChevronRight}
+        className="mr-1 h-3 w-3 shrink-0 text-zinc-400"
+      />
+    </Link>
   );
 }
 
@@ -346,6 +382,7 @@ function renderRuleCell(
           <CounterSummaryCell
             total={row.num_counters}
             withWaiters={row.num_counters_with_waiters}
+            href={row.href}
           />
         </Cell>
       );
@@ -771,11 +808,48 @@ function ToggleRuleDialog({
   );
 }
 
+const RULE_OPTIONS_REQUEST = {
+  sort: { field: 'pattern' as const, order: 'ASC' as const },
+  limit: LIMIT_LIST_QUERY_SIZE,
+};
+
 function Component() {
   const { baseUrl } = useRestateContext();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
+  const searchString = searchParams.toString();
+  const ruleOptionsQuery = useListLimitRules(RULE_OPTIONS_REQUEST, {
+    enabled: hasVqueues,
+  });
+  const ruleOptions = ruleOptionsQuery.data?.rules ?? [];
+  const filterSchema = useMemo(
+    () => limitRuleFilterSchema(ruleOptions),
+    [ruleOptions],
+  );
+  const committedFilters = useMemo(
+    () => readFilterClauses(new URLSearchParams(searchString), [filterSchema]),
+    [filterSchema, searchString],
+  );
+  const selectedPattern = selectedLimitRulePattern(committedFilters);
+  const filterQuery = useFilterBuilder(
+    committedFilters,
+    ruleOptionsQuery.isLoading,
+  );
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const submitTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Removing a filter updates the list before this callback runs, but the
+  // current render still exposes the old items. Defer submission until React
+  // commits the removal so the URL is written from the updated list.
+  // TODO: Have FilterBuilder provide the next items and remove this timer.
+  const scheduleSubmit = useCallback(() => {
+    clearTimeout(submitTimerRef.current);
+    submitTimerRef.current = setTimeout(
+      () => formRef.current?.requestSubmit(),
+      0,
+    );
+  }, []);
   const [sortDescriptor, setSortDescriptor] = useState<
     SortDescriptor | undefined
   >({
@@ -790,9 +864,10 @@ function Component() {
           order: sortDescriptor.direction === 'ascending' ? 'ASC' : 'DESC',
         } as const,
       }),
+      ...(selectedPattern ? { rulePattern: selectedPattern } : {}),
       limit: LIMIT_LIST_QUERY_SIZE,
     }),
-    [sortDescriptor],
+    [selectedPattern, sortDescriptor],
   );
   const rules = useListLimitRules(ruleRequest, { enabled: hasVqueues });
   const [isCreateOpen, setCreateOpen] = useState(false);
@@ -822,6 +897,21 @@ function Component() {
     .join(':')}`;
 
   const error = rules.error;
+  const renderRuleValue = useCallback((item: QueryClause<QueryClauseType>) => {
+    const pattern =
+      typeof item.value.value === 'string' ? item.value.value : '';
+    return pattern ? <LimitRuleFilterValue pattern={pattern} /> : null;
+  }, []);
+  const renderRuleOption = useCallback(
+    (option: QueryClauseOption) => {
+      const rule = ruleOptions.find(
+        (candidate) => candidate.pattern === option.value,
+      );
+      return rule ? <LimitRuleFilterOption rule={rule} /> : option.label;
+    },
+    [ruleOptions],
+  );
+  const isFetching = rules.isFetching || ruleOptionsQuery.isFetching;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -831,29 +921,80 @@ function Component() {
           <Button
             type="button"
             variant="secondary"
-            className="flex shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
+            className="ml-2 flex shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
             onClick={() => setCreateOpen(true)}
             disabled={!hasVqueues}
           >
             <Icon name={IconName.Plus} />
             New rule
           </Button>
+          <Form
+            ref={formRef}
+            className="hidden min-w-0 flex-auto sm:block"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setSearchParams(
+                writeFilterClauses(searchParams, filterQuery.items),
+                { preventScrollReset: true },
+              );
+            }}
+          >
+            <FilterBuilder query={filterQuery} schema={[filterSchema]} multiple>
+              <AddFilterTrigger
+                placeholder="Filter rules…"
+                title="Rule filters"
+                disabled={!hasVqueues}
+                onItemRemove={scheduleSubmit}
+                inputPrefix={
+                  <Icon
+                    name={IconName.Search}
+                    className="h-4 w-4 shrink-0 text-gray-400"
+                  />
+                }
+                tagsPlacement="outside"
+                maxVisibleChips="auto"
+                chipOverflowStrategy="all"
+                tagGroupClassName="min-w-0 flex-nowrap"
+                showSectionTitle={false}
+                popoverPlacement="bottom start"
+                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
+                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
+                className="min-h-7 w-full justify-end text-gray-800"
+                inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+              >
+                {(props) => (
+                  <FilterChip
+                    {...props}
+                    appearance="light"
+                    showRemove
+                    popoverPlacement="bottom"
+                    disabled={!hasVqueues}
+                    valueClassName="max-w-56"
+                    popoverClassName="w-[32rem] max-w-[calc(100vw-2rem)]"
+                    renderValue={renderRuleValue}
+                    renderOption={renderRuleOption}
+                  />
+                )}
+              </AddFilterTrigger>
+            </FilterBuilder>
+          </Form>
           <Tooltip>
             <TooltipTrigger>
               <Button
                 type="button"
                 variant="icon"
-                aria-label={
-                  rules.isFetching ? 'Refreshing rules' : 'Refresh rules'
-                }
+                aria-label={isFetching ? 'Refreshing rules' : 'Refresh rules'}
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
-                onClick={() => void rules.refetch()}
-                disabled={!hasVqueues || rules.isFetching}
+                onClick={() => {
+                  void rules.refetch();
+                  void ruleOptionsQuery.refetch();
+                }}
+                disabled={!hasVqueues || isFetching}
               >
                 <Icon
                   name={IconName.Retry}
                   className={refreshIconStyles({
-                    isFetching: rules.isFetching,
+                    isFetching,
                   })}
                 />
               </Button>
@@ -884,8 +1025,14 @@ function Component() {
                 emptyPlaceholder={
                   <EmptyState
                     icon={IconName.Filters}
-                    title="No limit rules"
-                    description="Create a rule to configure concurrency capacity."
+                    title={
+                      selectedPattern ? 'No matching rules' : 'No limit rules'
+                    }
+                    description={
+                      selectedPattern
+                        ? 'No configured rule matches the selected pattern.'
+                        : 'Create a rule to configure concurrency capacity.'
+                    }
                   />
                 }
                 renderCell={(row, column) =>
