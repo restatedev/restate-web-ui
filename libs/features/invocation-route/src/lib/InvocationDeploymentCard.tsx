@@ -15,7 +15,7 @@ export function InvocationDeploymentCard({
 
   return (
     <Card intent="none">
-      <CardHeader title="Deployment" icon={IconName.Box}>
+      <CardHeader title="Deployment" icon={IconName.Http}>
         <span className="text-2xs font-medium text-gray-400">
           {invocation.last_attempt_deployment_id ? 'Last attempt' : 'Pinned'}
         </span>

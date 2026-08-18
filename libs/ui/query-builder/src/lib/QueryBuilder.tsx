@@ -15,6 +15,7 @@ import { QueryClause, QueryClauseSchema, QueryClauseType } from './Query';
 import { FormFieldMultiCombobox } from '@restate/ui/form-field';
 import { Key, ListData, useListData } from 'react-stately';
 import { useFocusShortcut } from '@restate/ui/keyboard';
+import { Icon, IconName } from '@restate/ui/icons';
 
 interface QueryBuilderProps {
   schema: QueryClauseSchema<QueryClauseType>[];
@@ -213,6 +214,13 @@ export function AddQueryTrigger({
       maxVisibleTags={maxVisibleChips}
       tagOverflowStrategy={newId ? 'partial' : chipOverflowStrategy}
       overflowItemLabel="filter"
+      overflowPrefix={
+        <Icon
+          name={IconName.Filter}
+          className="h-3.5 w-3.5 shrink-0 text-blue-600"
+        />
+      }
+      overflowClassName="border-blue-200 bg-blue-50 font-medium text-blue-950 shadow-xs hover:bg-blue-100 pressed:bg-blue-200"
     />
   );
 }

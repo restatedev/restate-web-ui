@@ -84,8 +84,11 @@ export async function listLimitRules(
   args: ListLimitRulesRequestBody = {},
 ) {
   const limit = limitPageSize(args.limit);
+  const patternFilter = args.rulePattern
+    ? `\n    WHERE pattern = ${quoteSqlString(args.rulePattern)}`
+    : '';
   const { rows } = await this.query(`SELECT ${LIMIT_RULE_LIST_COLUMNS}
-    FROM sys_rules
+    FROM sys_rules${patternFilter}
     ORDER BY pattern ${ruleSortDirection(args.sort)}
     LIMIT ${limit + 1}`);
   const page = limitPage(rows as LimitRuleListRow[], limit);

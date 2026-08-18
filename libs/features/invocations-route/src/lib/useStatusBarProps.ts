@@ -8,6 +8,16 @@ import { hasStatusFilter, type StatusFilter } from './statusFilter';
 
 type StatusBucket = components['schemas']['InvocationStatusSummaryBucketV2'];
 
+export function getRepresentedStatuses(
+  statusName: string,
+  representedStatuses: string[] | undefined,
+  bucketStatuses: string[] | undefined,
+) {
+  return statusName === 'not-completed' || statusName === 'finished'
+    ? TERMINAL_INVOCATION_STATUSES
+    : (representedStatuses ?? bucketStatuses);
+}
+
 /**
  * Props for StatusSummaryBar + StatusLegend driven by response-defined
  * buckets and the URL's status filter.
@@ -25,17 +35,31 @@ export function useStatusBarProps(
   const { baseUrl } = useRestateContext();
   const buckets = new Map(statusBuckets.map((bucket) => [bucket.key, bucket]));
 
-  const isDimmed = (statusName: string) =>
-    hasStatusFilter(statusFilter) &&
-    buckets.get(statusName)?.isIncluded === false;
+  const isDimmed = (statusName: string, representedStatuses?: string[]) => {
+    if (!hasStatusFilter(statusFilter)) return false;
+    const statuses =
+      representedStatuses ?? buckets.get(statusName)?.statuses ?? [];
+    if (statuses.length === 0) {
+      return buckets.get(statusName)?.isIncluded === false;
+    }
+    return !statuses.some((status) =>
+      statusFilter.operation === 'IN'
+        ? statusFilter.value.includes(status)
+        : !statusFilter.value.includes(status),
+    );
+  };
 
-  const getHref = (statusName: string) => {
+  const getHref = (statusName: string, representedStatuses?: string[]) => {
     const out = new URLSearchParams(searchParams);
     const isNotCompleted = statusName === 'not-completed';
-    const statuses =
-      isNotCompleted || statusName === 'finished'
-        ? TERMINAL_INVOCATION_STATUSES
-        : (buckets.get(statusName)?.statuses ?? []);
+    const statuses = getRepresentedStatuses(
+      statusName,
+      representedStatuses,
+      buckets.get(statusName)?.statuses,
+    );
+    if (!statuses || statuses.length === 0) {
+      return `${baseUrl}/invocations?${out.toString()}`;
+    }
     const operation = isNotCompleted ? 'NOT_IN' : 'IN';
     const isCurrentSelection =
       statusFilter?.operation === operation &&

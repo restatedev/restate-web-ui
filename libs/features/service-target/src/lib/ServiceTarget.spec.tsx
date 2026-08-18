@@ -133,6 +133,17 @@ describe('ServiceTarget', () => {
       ?.querySelector('svg');
     expect(handlerIcon?.getAttribute('class')).toContain('h-5');
     expect(handlerIcon?.getAttribute('class')).toContain('-mr-1');
+    const keyChip = screen.getByText('user-1').closest('[data-chip]');
+    const handlerChip = screen.getByText('add()').closest('[data-chip]');
+    expect(
+      screen
+        .getByText('Counter')
+        .closest('[data-chip]')
+        ?.querySelector('.lucide-chevron-right'),
+    ).toBeNull();
+    expect(keyChip?.querySelector('.lucide-chevron-right')).toBeTruthy();
+    expect(handlerChip?.querySelector('.lucide-chevron-right')).toBeTruthy();
+    expect(container.querySelectorAll('.lucide-chevron-right')).toHaveLength(2);
     expect(container.querySelectorAll('[data-chip-group]')).toHaveLength(1);
   });
 
@@ -166,6 +177,19 @@ describe('ServiceTarget', () => {
       screen.queryByRole('link', { name: /virtual object instance/i }),
     ).toBeNull();
     expect(screen.queryByRole('link', { name: /workflow run/i })).toBeNull();
+    expect(
+      screen
+        .getByText('Greeter')
+        .closest('[data-chip]')
+        ?.querySelector('.lucide-chevron-right'),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByText('greet()')
+        .closest('[data-chip]')
+        ?.querySelector('.lucide-chevron-right'),
+    ).toBeTruthy();
+    expect(container.querySelectorAll('.lucide-chevron-right')).toHaveLength(2);
   });
 
   it('configures every segment link independently', () => {

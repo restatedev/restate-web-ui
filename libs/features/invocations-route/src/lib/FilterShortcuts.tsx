@@ -1,4 +1,8 @@
-import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
+import {
+  COLUMN_QUERY_PREFIX,
+  ColumnKey,
+  getDefaultInvocationColumns,
+} from './columns';
 import { Dispatch, SetStateAction, useMemo } from 'react';
 import {
   QueryClause,
@@ -50,130 +54,124 @@ function toClause(
   return new QueryClause(clause, value);
 }
 
-const DEFAULT_PRESET_COLUMNS: ColumnKey[] = [
-  'id',
-  'created_at',
-  'modified_at',
-  'duration',
-  'target',
-  'status',
-];
-
 const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
   supportsVqueueOnlyFields: boolean,
-) => FilterShortcut[] = (schema, supportsVqueueOnlyFields) => [
-  {
-    id: 'processing',
-    label: 'Processing',
-    columns: DEFAULT_PRESET_COLUMNS,
-    sort: SORT_NONE,
-    filters: [
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: ['running', 'backing-off'],
-      }),
-    ],
-  },
-  {
-    id: 'inflight',
-    label: 'In-flight',
-    columns: DEFAULT_PRESET_COLUMNS,
-    sort: { field: 'created_at', order: 'DESC' },
-    filters: [
-      toClause(schema, 'status', {
-        operation: 'NOT_IN',
-        value: ['succeeded', 'failed', 'cancelled', 'killed', 'scheduled'],
-      }),
-    ],
-  },
-  {
-    id: 'stuck',
-    label: 'Stuck',
-    columns: DEFAULT_PRESET_COLUMNS,
-    sort: { field: 'created_at', order: 'ASC' },
-    filters: [
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: [
-          'pending',
-          'backing-off',
-          'paused',
-          'ready',
-          ...(supportsVqueueOnlyFields ? (['yielded'] as const) : []),
-        ],
-      }),
-    ],
-  },
-  {
-    id: 'all',
-    label: 'All',
-    columns: DEFAULT_PRESET_COLUMNS,
-    sort: { field: 'created_at', order: 'DESC' },
-    filters: [],
-  },
-  {
-    id: 'notcompleted',
-    label: 'Not completed',
-    columns: DEFAULT_PRESET_COLUMNS,
-    sort: { field: 'created_at', order: 'DESC' },
-    filters: [
-      toClause(schema, 'status', {
-        operation: 'NOT_IN',
-        value: TERMINAL_INVOCATION_STATUSES,
-      }),
-    ],
-  },
-  {
-    id: 'completed',
-    label: 'Completed',
-    columns: DEFAULT_PRESET_COLUMNS,
-    sort: { field: 'created_at', order: 'DESC' },
-    filters: [
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: TERMINAL_INVOCATION_STATUSES,
-      }),
-    ],
-  },
-  // {
-  //   id: 'idempotent',
-  //   label: 'Idempotent',
-  //   columns: [...DEFAULT_PRESET_COLUMNS, 'idempotency_key'],
-  //   filters: [
-  //     toClause(schema, 'idempotency_key', {
-  //       operation: 'IS NOT NULL',
-  //     }),
-  //   ],
-  // },
-  // {
-  //   id: 'retried',
-  //   label: 'Most retried',
-  //   columns: [...DEFAULT_PRESET_COLUMNS, 'retry_count'],
-  //   sort: {
-  //     field: 'retry_count',
-  //     order: 'DESC',
-  //   },
-  //   filters: [
-  //     toClause(schema, 'retry_count', {
-  //       operation: 'GREATER_THAN',
-  //       value: 1,
-  //     }),
-  //   ],
-  // },
-  {
-    id: 'scheduled',
-    label: 'Scheduled',
-    columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
-    sort: { field: 'created_at', order: 'DESC' },
-    filters: [
-      toClause(schema, 'status', {
-        operation: 'IN',
-        value: ['scheduled'],
-      }),
-    ],
-  },
-];
+) => FilterShortcut[] = (schema, supportsVqueueOnlyFields) => {
+  const defaultColumns = getDefaultInvocationColumns();
+  return [
+    {
+      id: 'processing',
+      label: 'Processing',
+      columns: defaultColumns,
+      sort: SORT_NONE,
+      filters: [
+        toClause(schema, 'status', {
+          operation: 'IN',
+          value: ['running', 'backing-off'],
+        }),
+      ],
+    },
+    {
+      id: 'inflight',
+      label: 'In-flight',
+      columns: defaultColumns,
+      sort: { field: 'created_at', order: 'DESC' },
+      filters: [
+        toClause(schema, 'status', {
+          operation: 'NOT_IN',
+          value: ['succeeded', 'failed', 'cancelled', 'killed', 'scheduled'],
+        }),
+      ],
+    },
+    {
+      id: 'stuck',
+      label: 'Stuck',
+      columns: defaultColumns,
+      sort: { field: 'created_at', order: 'ASC' },
+      filters: [
+        toClause(schema, 'status', {
+          operation: 'IN',
+          value: [
+            'pending',
+            'backing-off',
+            'paused',
+            'ready',
+            ...(supportsVqueueOnlyFields ? (['yielded'] as const) : []),
+          ],
+        }),
+      ],
+    },
+    {
+      id: 'all',
+      label: 'All',
+      columns: defaultColumns,
+      sort: { field: 'created_at', order: 'DESC' },
+      filters: [],
+    },
+    {
+      id: 'notcompleted',
+      label: 'Not completed',
+      columns: defaultColumns,
+      sort: { field: 'created_at', order: 'DESC' },
+      filters: [
+        toClause(schema, 'status', {
+          operation: 'NOT_IN',
+          value: TERMINAL_INVOCATION_STATUSES,
+        }),
+      ],
+    },
+    {
+      id: 'completed',
+      label: 'Completed',
+      columns: defaultColumns,
+      sort: { field: 'created_at', order: 'DESC' },
+      filters: [
+        toClause(schema, 'status', {
+          operation: 'IN',
+          value: TERMINAL_INVOCATION_STATUSES,
+        }),
+      ],
+    },
+    // {
+    //   id: 'idempotent',
+    //   label: 'Idempotent',
+    //   columns: [...defaultColumns, 'idempotency_key'],
+    //   filters: [
+    //     toClause(schema, 'idempotency_key', {
+    //       operation: 'IS NOT NULL',
+    //     }),
+    //   ],
+    // },
+    // {
+    //   id: 'retried',
+    //   label: 'Most retried',
+    //   columns: [...defaultColumns, 'retry_count'],
+    //   sort: {
+    //     field: 'retry_count',
+    //     order: 'DESC',
+    //   },
+    //   filters: [
+    //     toClause(schema, 'retry_count', {
+    //       operation: 'GREATER_THAN',
+    //       value: 1,
+    //     }),
+    //   ],
+    // },
+    {
+      id: 'scheduled',
+      label: 'Scheduled',
+      columns: [...defaultColumns, 'scheduled_start_at'],
+      sort: { field: 'created_at', order: 'DESC' },
+      filters: [
+        toClause(schema, 'status', {
+          operation: 'IN',
+          value: ['scheduled'],
+        }),
+      ],
+    },
+  ];
+};
 
 const itemStyles = tv({
   base: 'max-h-5 shrink-0 rounded-full border border-white/20 bg-transparent px-3 py-0.5 text-xs text-white/80 hover:bg-white/15 pressed:bg-white/20',

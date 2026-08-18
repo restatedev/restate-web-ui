@@ -16,7 +16,7 @@ import { useMemo, type ReactNode } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
 import { useNavigate } from 'react-router';
 import {
-  limitCountersForRuleHref,
+  limitRulesForPatternHref,
   type LimitCounterIdentity,
   vqueuesForLimitCounterHref,
 } from './navigation';
@@ -39,6 +39,7 @@ type CounterColumn =
 interface CounterRow extends UserLimitRow {
   id: string;
   identity?: LimitCounterIdentity;
+  counterHref?: string;
   ruleHref?: string;
   resolvedLevel: RuleLevel;
 }
@@ -185,10 +186,15 @@ function toCounterRows(
         counter.level,
       ]),
       resolvedLevel: counterLevel(counter),
-      ...(identity ? { identity } : {}),
+      ...(identity
+        ? {
+            identity,
+            counterHref: vqueuesForLimitCounterHref(baseUrl, identity),
+          }
+        : {}),
       ...(counter.rule_pattern
         ? {
-            ruleHref: limitCountersForRuleHref(baseUrl, counter.rule_pattern),
+            ruleHref: limitRulesForPatternHref(baseUrl, counter.rule_pattern),
           }
         : {}),
     };
@@ -282,6 +288,7 @@ function renderCounterCell(
           {row.identity ? (
             <LimitCounterTarget
               {...row.identity}
+              href={row.counterHref}
               variant="table"
               usage={row.usage}
               limit={row.concurrency_limit}
@@ -341,6 +348,7 @@ export interface CounterTableProps {
   isLoading?: boolean;
   error?: Error | null;
   numOfRows?: number;
+  toolbar?: ReactNode;
   caption?: ReactNode;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
@@ -356,6 +364,7 @@ export function CounterTable({
   isLoading,
   error,
   numOfRows,
+  toolbar,
   caption,
   emptyPlaceholder,
   dependencies,
@@ -387,11 +396,12 @@ export function CounterTable({
       bodyDependencies={[...(dependencies ?? []), error]}
       onRowAction={(key) => {
         const row = rows.find((candidate) => candidate.id === String(key));
-        if (row?.identity) {
-          navigate(vqueuesForLimitCounterHref(baseUrl, row.identity));
+        if (row?.counterHref) {
+          navigate(row.counterHref);
         }
       }}
       rowClassName={rowStyles()}
+      toolbar={toolbar}
       caption={caption}
       emptyPlaceholder={emptyPlaceholder}
       renderCell={(row, column) => renderCounterCell(row, column, variant)}

@@ -6,7 +6,7 @@ import {
   vqueueDurationMilliseconds,
 } from '@restate/features/vqueue-ui';
 import { Card, CardHeader, CardRow } from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui/icons';
 import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
 import {
   formatDurations,
@@ -132,11 +132,16 @@ function RelativeDate({
 }
 
 const DURATION_ROWS = [
-  { key: 'queue', label: 'Queue', color: STATUS_STYLE.waiting! },
   { key: 'inbox', label: 'Inbox', color: STATUS_STYLE.inbox! },
   { key: 'running', label: 'Running', color: STATUS_STYLE.running! },
   { key: 'suspended', label: 'Suspended', color: STATUS_STYLE.suspended! },
 ] as const;
+
+const FIRST_START_WAIT = {
+  key: 'queue',
+  label: 'Queue',
+  color: STATUS_STYLE.waiting!,
+} as const;
 
 const BLOCK_COLORS = [
   { fillLight: '#bfdbfe', stroke: '#3b82f6' },
@@ -173,6 +178,16 @@ const durationBarStyles = tv({
 
 const durationRowStyles = tv({
   base: 'grid w-full min-w-0 grid-cols-[minmax(6rem,0.8fr)_minmax(7rem,1.2fr)_8rem] items-center gap-3',
+});
+
+const durationDiagnosticStyles = tv({
+  slots: {
+    row: 'bg-gray-100/30',
+    label:
+      'flex min-w-0 items-center gap-1.5 pl-2 text-2xs font-normal text-gray-400',
+    icon: 'h-3 w-3 shrink-0 text-gray-300',
+    value: 'text-right text-2xs text-zinc-500 tabular-nums',
+  },
 });
 
 const blockTooltipStyles = tv({
@@ -345,6 +360,11 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
     value: data.stageAvg[row.key],
     milliseconds: vqueueDurationMilliseconds(data.stageAvg[row.key]),
   }));
+  const firstStartWait = {
+    ...FIRST_START_WAIT,
+    value: data.stageAvg.queue,
+    milliseconds: vqueueDurationMilliseconds(data.stageAvg.queue),
+  };
   const blocks = data.head.avgBlocks
     .map((block) => ({
       ...block,
@@ -366,8 +386,10 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
   const maximum = Math.max(
     endToEndMilliseconds ?? 0,
     blockTotal,
+    firstStartWait.milliseconds ?? 0,
     ...rows.map((row) => row.milliseconds ?? 0),
   );
+  const diagnosticStyles = durationDiagnosticStyles();
   return (
     <Card>
       <CardHeader title="Timing" icon={IconName.Timer}>
@@ -413,10 +435,35 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
               </span>
             </div>
           </CardRow>
-          {row.key === 'queue' && blocks.length > 0 && (
-            <CardRow>
+          {row.key === 'inbox' && (
+            <CardRow className={diagnosticStyles.row()}>
               <div className={durationRowStyles()}>
-                <span className="min-w-0 text-2xs font-medium text-gray-400">
+                <span className={diagnosticStyles.label()}>
+                  <Icon
+                    name={IconName.CornerDownRight}
+                    className={diagnosticStyles.icon()}
+                  />
+                  {firstStartWait.label}
+                </span>
+                <DurationBar
+                  milliseconds={firstStartWait.milliseconds}
+                  maximum={maximum}
+                  color={firstStartWait.color}
+                />
+                <span className={diagnosticStyles.value()}>
+                  {formatVqueueDuration(firstStartWait.value) ?? '—'}
+                </span>
+              </div>
+            </CardRow>
+          )}
+          {row.key === 'inbox' && blocks.length > 0 && (
+            <CardRow className={diagnosticStyles.row()}>
+              <div className={durationRowStyles()}>
+                <span className={diagnosticStyles.label()}>
+                  <Icon
+                    name={IconName.CornerDownRight}
+                    className={diagnosticStyles.icon()}
+                  />
                   Blocked
                 </span>
                 <BlockDurationBar
@@ -424,7 +471,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
                   total={blockTotal}
                   maximum={maximum}
                 />
-                <span className="text-right text-xs text-zinc-600 tabular-nums">
+                <span className={diagnosticStyles.value()}>
                   {formatMilliseconds(blockTotal)}
                 </span>
               </div>

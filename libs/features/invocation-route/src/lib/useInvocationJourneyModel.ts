@@ -75,6 +75,25 @@ function isSameCalendarDay(left: Date, right: Date) {
   );
 }
 
+function attemptStartedTiming(
+  timestamp: string | undefined,
+  snapshotDate: Date,
+  tooltipTitle: string,
+): JourneyNodeTiming | undefined {
+  if (!timestamp) return undefined;
+
+  const date = new Date(timestamp);
+  if (!Number.isFinite(date.getTime())) return undefined;
+
+  return {
+    value: isSameCalendarDay(date, snapshotDate)
+      ? `started at ${formatCompactTime(date)}`
+      : `started ${formatCompactDateTime(date, snapshotDate)}`,
+    date: timestamp,
+    tooltipTitle,
+  };
+}
+
 function completionRetentionEnd(
   completedAt?: string,
   completionRetention?: string,
@@ -424,6 +443,16 @@ export function useInvocationJourneyModel({
             : 'Completed at',
         }
       : undefined;
+  const firstAttemptTiming = attemptStartedTiming(
+    firstAttemptAt,
+    snapshotDate,
+    'First attempt started at',
+  );
+  const latestAttemptTiming = attemptStartedTiming(
+    latestAttemptAt,
+    snapshotDate,
+    'Latest attempt started at',
+  );
   const retentionEnd = completionRetentionEnd(
     completedAt,
     effectiveInvocation.completion_retention,
@@ -537,6 +566,8 @@ export function useInvocationJourneyModel({
     attempts,
     retryAttempts,
     attemptsDuration,
+    firstAttemptTiming,
+    latestAttemptTiming,
     activity: { errorBackoffs, yields, pauses, suspensions },
     activityDetails: getJourneyActivityDetails(
       errorBackoffs,

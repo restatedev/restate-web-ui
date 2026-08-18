@@ -46,8 +46,7 @@ import { useNavigate } from 'react-router';
 import { getBlockedLimitCounterRequest } from './limits.counterFilters';
 import {
   limitCountersForIdentityHref,
-  limitCountersForRuleHref,
-  type LimitCounterIdentity,
+  limitRulesForPatternHref,
 } from './navigation';
 
 type VQueueColumn =
@@ -399,7 +398,7 @@ function StructuredBlockedHeadState({
       }
       ruleHref={
         resource.blockedRule
-          ? limitCountersForRuleHref(baseUrl, resource.blockedRule)
+          ? limitRulesForPatternHref(baseUrl, resource.blockedRule)
           : undefined
       }
       ruleLimit={limit?.concurrency_limit ?? undefined}
@@ -596,6 +595,7 @@ export function VQueueTable({
   vqueues,
   isLoading,
   error,
+  caption,
   emptyPlaceholder,
   dependencies,
   sortDescriptor,
@@ -605,6 +605,7 @@ export function VQueueTable({
   vqueues: VQueueMetaRow[];
   isLoading?: boolean;
   error?: Error | null;
+  caption?: ReactNode;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
   sortDescriptor?: SortDescriptor;
@@ -639,6 +640,7 @@ export function VQueueTable({
         navigate(`${baseUrl}/flow-control/vqueues/${String(rowId)}`);
       }}
       rowClassName={rowStyles()}
+      caption={caption}
       emptyPlaceholder={emptyPlaceholder}
       renderCell={(row, column) => renderCell(row, column, baseUrl)}
     />

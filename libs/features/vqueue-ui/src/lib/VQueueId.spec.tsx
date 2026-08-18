@@ -90,11 +90,13 @@ describe('VQueueId', () => {
     });
 
     render(
-      <VQueueId
-        id="vq_snapshot"
-        focusEntryId="inv_snapshot"
-        snapshot={snapshot}
-      />,
+      <MemoryRouter>
+        <VQueueId
+          id="vq_snapshot"
+          focusEntryId="inv_snapshot"
+          snapshot={snapshot}
+        />
+      </MemoryRouter>,
     );
 
     fireEvent.click(
@@ -166,12 +168,19 @@ describe('VQueueId', () => {
         })
         .getAttribute('href'),
     ).toContain('/flow-control/counters?');
-    expect(
-      screen
-        .getByRole('link', {
-          name: 'Limit rule tenant-*/payments/priority',
-        })
-        .getAttribute('href'),
-    ).toContain('rule%3Atenant-*%2Fpayments%2Fpriority');
+    const ruleHref = screen
+      .getByRole('link', {
+        name: 'Limit rule tenant-*/payments/priority',
+      })
+      .getAttribute('href');
+    const ruleFilter = new URL(
+      String(ruleHref),
+      'https://example.test',
+    ).searchParams.get('filter_pattern');
+
+    expect(JSON.parse(String(ruleFilter))).toEqual({
+      operation: 'EQUALS',
+      value: 'tenant-*/payments/priority',
+    });
   });
 });

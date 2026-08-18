@@ -91,12 +91,12 @@ export interface MultiSelectProps<T extends object> extends Omit<
   onInputSubmit?: (value: string) => boolean;
   renderOption?: (item: T) => ReactNode;
   renderEmptyState?: (inputValue: string) => React.ReactNode;
-  children?: (props: {
+  children?: ComponentType<{
     item: T;
     onRemove?: VoidFunction;
     onUpdate?: (newValue: T) => void;
     formRef?: RefObject<HTMLFormElement | null>;
-  }) => ReactNode;
+  }>;
   MenuTrigger?: ComponentType<unknown>;
   label: string;
   placeholder?: string;
@@ -110,6 +110,8 @@ export interface MultiSelectProps<T extends object> extends Omit<
   maxVisibleTags?: number | 'auto';
   tagOverflowStrategy?: 'partial' | 'all';
   overflowItemLabel?: string;
+  overflowPrefix?: ReactNode;
+  overflowClassName?: string;
   popoverPlacement?: Placement;
   showSectionTitle?: boolean;
 }
@@ -157,6 +159,15 @@ const popoverStyles = tv({
 const inputStyles = tv({
   base: 'min-h-8.5 w-full min-w-0 border-0 bg-transparent py-1.5 pr-2 pl-0 text-sm text-current focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0',
 });
+
+const overflowStyles = tv({
+  base: 'flex h-7 shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-600',
+});
+
+const overflowMeasureStyles = tv({
+  base: 'pointer-events-none invisible absolute flex h-7 items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-xs',
+});
+
 export function FormFieldMultiCombobox<
   T extends {
     id: Key;
@@ -193,6 +204,8 @@ export function FormFieldMultiCombobox<
   maxVisibleTags,
   tagOverflowStrategy = 'partial',
   overflowItemLabel = 'item',
+  overflowPrefix,
+  overflowClassName,
   popoverPlacement,
   showSectionTitle = true,
   ...props
@@ -466,6 +479,7 @@ export function FormFieldMultiCombobox<
   );
   const areAllTagsCollapsed =
     hiddenItems.length > 0 && visibleItems.length === 0;
+  const Tag = children;
   const optionItems = availableList.items
     .filter(
       (item) => !item.allowCustomValue || availableList.items.length === 1,
@@ -508,20 +522,23 @@ export function FormFieldMultiCombobox<
               tagKey={item.id}
               onRemove={onRemove.bind(null, item.id)}
             >
-              {children({
-                item,
-                onRemove: onRemove.bind(null, item.id),
-                onUpdate,
-                formRef,
-              })}
+              <Tag
+                item={item}
+                onRemove={onRemove.bind(null, item.id)}
+                onUpdate={onUpdate}
+                formRef={formRef}
+              />
             </RemoveTagWithKeyboard>
           ))}
           {maxVisibleTags === 'auto' && selectedList.items.length > 0 && (
             <span
               ref={overflowMeasureRef}
               aria-hidden="true"
-              className="pointer-events-none invisible absolute flex h-7 items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-xs"
+              className={overflowMeasureStyles({
+                className: overflowClassName,
+              })}
             >
+              {overflowPrefix}
               {tagOverflowStrategy === 'partial' ? '+' : ''}
               {selectedList.items.length} {overflowItemLabel}
               {selectedList.items.length === 1 ? '' : 's'}
@@ -539,8 +556,11 @@ export function FormFieldMultiCombobox<
                       ? `${hiddenItems.length} active ${overflowItemLabel}${hiddenItems.length === 1 ? '' : 's'}`
                       : `${hiddenItems.length} more ${overflowItemLabel}${hiddenItems.length === 1 ? '' : 's'}`
                   }
-                  className="flex h-7 shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-600"
+                  className={overflowStyles({
+                    className: overflowClassName,
+                  })}
                 >
+                  {overflowPrefix}
                   {areAllTagsCollapsed ? '' : '+'}
                   {hiddenItems.length} {overflowItemLabel}
                   {hiddenItems.length === 1 ? '' : 's'}
@@ -558,12 +578,12 @@ export function FormFieldMultiCombobox<
                       tagKey={item.id}
                       onRemove={onRemove.bind(null, item.id)}
                     >
-                      {children({
-                        item,
-                        onRemove: onRemove.bind(null, item.id),
-                        onUpdate,
-                        formRef,
-                      })}
+                      <Tag
+                        item={item}
+                        onRemove={onRemove.bind(null, item.id)}
+                        onUpdate={onUpdate}
+                        formRef={formRef}
+                      />
                     </RemoveTagWithKeyboard>
                   ))}
                 </div>

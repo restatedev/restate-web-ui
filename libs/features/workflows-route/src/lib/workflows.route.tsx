@@ -32,6 +32,7 @@ import {
   AddFilterTrigger,
   FilterBuilder,
   FilterChip,
+  FilteredResultsCaption,
   QueryClause,
   QueryClauseType,
   useFilterBuilder,
@@ -187,6 +188,10 @@ function Component() {
   const filterQuery = useFilterBuilder(committedFilters);
   const formRef = useRef<HTMLFormElement | null>(null);
   const submitTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Removing a filter updates the list before this callback runs, but the
+  // current render still exposes the old items. Defer submission until React
+  // commits the removal so the URL is written from the updated list.
+  // TODO: Have FilterBuilder provide the next items and remove this timer.
   const scheduleSubmit = useCallback(() => {
     clearTimeout(submitTimerRef.current);
     submitTimerRef.current = setTimeout(
@@ -292,6 +297,16 @@ function Component() {
   const isLoading =
     isServicesPending || (Boolean(selectedService) && isRunsFetching);
   const error = servicesError ?? runsError;
+  const filteredResultsCaption = hasFilters ? (
+    <FilteredResultsCaption
+      noun="workflow runs"
+      onClear={() =>
+        setSearchParams(writeWorkflowFilters(searchParams, []), {
+          preventScrollReset: true,
+        })
+      }
+    />
+  ) : undefined;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -374,6 +389,7 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Workflow runs"
+                caption={filteredResultsCaption}
                 columns={columns}
                 items={items}
                 isLoading={isLoading}

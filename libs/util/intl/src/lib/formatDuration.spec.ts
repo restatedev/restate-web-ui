@@ -1,4 +1,20 @@
-import { formatCompactISODuration, formatMilliseconds } from './formatDuration';
+import {
+  formatCompactISODuration,
+  formatDurations,
+  formatMilliseconds,
+} from './formatDuration';
+
+describe('formatDurations', () => {
+  it.each([
+    [{ milliseconds: 331 }, '331ms'],
+    [{ seconds: 0.331 }, '331ms'],
+    [{ milliseconds: 999 }, '999ms'],
+    [{ seconds: 1 }, '1s'],
+    [{ seconds: 1, milliseconds: 31 }, '1.031s'],
+  ])('formats %o as %s', (duration, expected) => {
+    expect(formatDurations(duration)).toBe(expected);
+  });
+});
 
 describe('formatCompactISODuration', () => {
   it.each([

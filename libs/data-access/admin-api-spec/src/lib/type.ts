@@ -114,16 +114,16 @@ export const INVOCATION_STATUS_DEFINITIONS = [
     vqueueStatuses: ['new'],
   },
   {
-    key: 'ready',
-    label: 'Ready',
-    stage: 'inbox',
-    vqueueStatuses: ['started'],
-  },
-  {
     key: 'yielded',
     label: 'Yielded',
     stage: 'inbox',
     vqueueStatuses: ['yielded'],
+  },
+  {
+    key: 'ready',
+    label: 'Ready',
+    stage: 'inbox',
+    vqueueStatuses: ['started'],
   },
   {
     key: 'backing-off',

@@ -3236,6 +3236,7 @@ export interface components {
         | 'created_at'
         | 'modified_at'
         | 'completed_at'
+        | 'vqueue_id'
         | 'scope'
         | 'limit_key';
     };
@@ -3854,6 +3855,8 @@ export interface components {
       value: string;
     };
     ListLimitRulesRequestBody: {
+      /** @description Return only the rule with this exact pattern. */
+      rulePattern?: string;
       limit?: number;
       sort?: components['schemas']['LimitRuleSort'];
     };

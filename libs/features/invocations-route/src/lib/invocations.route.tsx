@@ -72,6 +72,7 @@ import {
   FilterChip,
   FILTER_QUERY_PREFIX,
   FilterShortcutTrigger,
+  writeFilterClauses,
 } from '@restate/ui/filter-builder';
 import {
   ClientLoaderFunctionArgs,
@@ -88,7 +89,6 @@ import {
   useListDeployments,
   useListInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   VQueueStageLegend,
@@ -123,12 +123,16 @@ import { FilterShortcuts } from './FilterShortcuts';
 import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
-import { resolveInvocationPopulationCount } from './invocationSummaryMatchCount';
+import {
+  resolveInvocationPopulationCount,
+  withInvocationStatusCounts,
+} from './invocationSummaryMatchCount';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
   vqueue_id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
+  limit_key: INVOCATION_TABLE_COLUMN_CONFIG.limit_key.defaultWidth,
   created_at: INVOCATION_TABLE_COLUMN_CONFIG.created_at.defaultWidth,
   modified_at: 110,
   duration: 110,
@@ -150,9 +154,6 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 const HERO_BREAKDOWN_SAMPLE_SIZE = 1_000_000;
-
-type InvocationServiceSummary =
-  components['schemas']['InvocationServiceSummaryBucketV2'];
 
 const summaryHeaderStyles = tv({
   base: 'mx-auto flex w-full max-w-7xl flex-col items-stretch gap-2 px-4',
@@ -336,7 +337,7 @@ function SlowQueryOverlay({
 }
 
 function Component() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     OnboardingGuide,
     baseUrl,
@@ -404,6 +405,10 @@ function Component() {
     focus: vqueueSummaryFocus,
     byStage,
     byStatus,
+    populationByStage,
+    populationByStatus,
+    countsAreContextual,
+    statusFilter,
     isLoading: isStageSummaryLoading,
     isStageFetching,
     isError: isSummaryError,
@@ -422,14 +427,6 @@ function Component() {
     breakdownSampleSize,
   });
   const { data: deploymentsData } = useListDeployments();
-  const serviceBuckets: InvocationServiceSummary[] =
-    summaryData?.serviceBuckets ?? [];
-  const serviceTabs = useServiceTabs(
-    serviceBuckets,
-    deploymentsData,
-    isStageSummaryLoading,
-    Boolean(summaryData?.stageCountsArePartial),
-  );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
   // unless ?restore=1 is present.
@@ -490,6 +487,9 @@ function Component() {
 
   const listRowCount = data?.rows?.length ?? 0;
   const listLimit = data?.limit ?? 0;
+  const listIsCapped = listLimit > 0 && listRowCount >= listLimit;
+  const completeListRows =
+    data && !data.isPartial && !listIsCapped ? data.rows : undefined;
   const { count: effectiveTotal, accuracy: totalAccuracy } =
     resolveInvocationPopulationCount({
       summaryMatchCount: summaryMatchingCount,
@@ -501,6 +501,36 @@ function Component() {
   const actionsTotalDisplay = `${totalAccuracy === 'estimate' ? '~' : ''}${formatNumber(effectiveTotal, true)}${totalAccuracy === 'lower-bound' ? '+' : ''}`;
   const offerCompleteScan =
     listSampled && (Boolean(data?.isPartial) || effectiveTotal > 0);
+  const displayedByStage = useMemo(
+    () =>
+      completeListRows
+        ? withInvocationStatusCounts(
+            byStage,
+            completeListRows.map(({ status }) => status),
+          )
+        : byStage,
+    [byStage, completeListRows],
+  );
+  const displayedByStatus = useMemo(
+    () =>
+      completeListRows
+        ? withInvocationStatusCounts(
+            byStatus,
+            completeListRows.map(({ status }) => status),
+          )
+        : byStatus,
+    [byStatus, completeListRows],
+  );
+  const displayedStageCountsArePartial = completeListRows
+    ? false
+    : summaryData?.stageCountsArePartial;
+  const serviceTabs = useServiceTabs(
+    summaryData,
+    deploymentsData,
+    statusFilter,
+    isStageSummaryLoading,
+    completeListRows?.length,
+  );
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
     Set<string>
@@ -620,8 +650,8 @@ function Component() {
       <div className="relative flex min-h-0 flex-1 flex-col gap-4 pt-20">
         <div className={summaryHeaderStyles()}>
           <VQueueStageSummaryBar
-            byStage={byStage}
-            byStatus={byStatus}
+            byStage={displayedByStage}
+            byStatus={displayedByStatus}
             focus={vqueueSummaryFocus}
             onFocusChange={changeVqueueSummaryFocus}
             breakdownMode={countMode}
@@ -631,21 +661,26 @@ function Component() {
             isFetching={isStageFetching}
             isDimmed={statusDim}
             getHref={statusHref}
-            areStageCountsPartial={summaryData?.stageCountsArePartial}
+            areStageCountsPartial={displayedStageCountsArePartial}
             isBreakdownSampled={breakdownIsSampled}
             countsReflectFilters={stageCountsReflectFilters}
+            populationByStage={populationByStage}
+            countsAreContextual={countsAreContextual}
             isBreakdownLoading={isVqueueBreakdownLoading}
           />
           <VQueueStageLegend
-            byStage={byStage}
-            byStatus={byStatus}
+            byStage={displayedByStage}
+            byStatus={displayedByStatus}
             focus={vqueueSummaryFocus}
             isBreakdownSampled={breakdownIsSampled}
-            areStageCountsPartial={summaryData?.stageCountsArePartial}
+            areStageCountsPartial={displayedStageCountsArePartial}
             isLoading={isStageSummaryLoading}
             isError={isSummaryError}
             isDimmed={statusDim}
             getHref={statusHref}
+            populationByStage={populationByStage}
+            populationByStatus={populationByStatus}
+            countsAreContextual={countsAreContextual}
             isBreakdownLoading={isVqueueBreakdownLoading}
             isBreakdownError={isVqueueBreakdownError}
           />

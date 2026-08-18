@@ -108,16 +108,21 @@ export function setColumns(
   return searchParams;
 }
 
+const BASE_DEFAULT_COLUMNS: ColumnKey[] = [
+  'id',
+  'created_at',
+  'modified_at',
+  'duration',
+  'target',
+  'status',
+];
+
+export function getDefaultInvocationColumns(): ColumnKey[] {
+  return [...BASE_DEFAULT_COLUMNS];
+}
+
 export function setDefaultColumns(searchParams: URLSearchParams) {
-  searchParams.delete(COLUMN_QUERY_PREFIX);
-  return setColumns(searchParams, [
-    'id',
-    'created_at',
-    'modified_at',
-    'duration',
-    'target',
-    'status',
-  ]);
+  return setColumns(searchParams, getDefaultInvocationColumns());
 }
 
 export function isColumnValid(searchParams: URLSearchParams) {

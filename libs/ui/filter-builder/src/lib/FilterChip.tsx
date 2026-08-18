@@ -40,18 +40,18 @@ const chipStyles = tv({
   variants: {
     appearance: {
       dark: 'contents',
-      light: 'rounded-lg border border-gray-200 bg-white/90 shadow-xs',
+      light: 'rounded-lg border border-blue-200 bg-blue-50 shadow-xs',
     },
   },
 });
 
 const chipButtonStyles = tv({
-  base: 'flex min-w-0 items-center gap-[0.7ch] px-1.5 py-1 text-xs',
+  base: 'flex min-w-0 items-center text-xs',
   variants: {
     appearance: {
-      dark: 'rounded-lg bg-white/25 text-zinc-50 hover:bg-white/30 pressed:bg-white/30',
+      dark: 'gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-zinc-50 hover:bg-white/30 pressed:bg-white/30',
       light:
-        'rounded-lg border-transparent bg-transparent text-zinc-700 shadow-none hover:bg-zinc-100 pressed:bg-zinc-100',
+        'min-h-[1.625rem] gap-1 rounded-lg border-transparent bg-transparent px-1 py-0 text-blue-950 shadow-none hover:bg-blue-100 pressed:bg-blue-200',
     },
     hasRemove: {
       true: '',
@@ -67,11 +67,70 @@ const chipButtonStyles = tv({
 });
 
 const chipValueStyles = tv({
-  base: 'min-w-0 truncate font-semibold',
+  base: 'min-w-0 truncate',
   variants: {
     appearance: {
-      dark: 'max-w-56',
-      light: 'max-w-28',
+      dark: 'max-w-56 font-semibold',
+      light: [
+        'ml-0.5 max-w-28 font-medium',
+        '[&_[data-chip-group]>*:not(:first-child)]:-ml-1!',
+        '[&_[data-chip]]:[--chip-height:1.25rem]',
+        '[&_[data-chip]]:[--chip-radius:0.375rem]',
+        '[&_[data-chip]_[data-chip-segment]:first-child_[data-chip-segment-inner]]:pl-0.5',
+        '[&_[data-chip]_[data-chip-segment]:first-child_[data-chip-segment-inner]:has(svg)]:pl-1.5',
+      ],
+    },
+    isRichValue: {
+      true: '',
+      false: '',
+    },
+  },
+  compoundVariants: [
+    {
+      appearance: 'light',
+      isRichValue: false,
+      className:
+        'rounded-md border border-blue-200 bg-white px-1 py-0.5 font-mono text-zinc-700 shadow-xs',
+    },
+  ],
+});
+
+const chipLabelStyles = tv({
+  base: 'shrink-0 whitespace-nowrap',
+  variants: {
+    appearance: {
+      dark: '',
+      light: 'font-medium text-blue-950',
+    },
+  },
+});
+
+const chipOperationStyles = tv({
+  base: 'shrink-0 font-mono',
+  variants: {
+    appearance: {
+      dark: '',
+      light: 'font-normal text-blue-600',
+    },
+  },
+});
+
+const filterIconStyles = tv({
+  base: 'h-3.5 w-3.5 shrink-0',
+  variants: {
+    appearance: {
+      dark: 'text-current opacity-70',
+      light: 'text-blue-600',
+    },
+  },
+});
+
+const chevronStyles = tv({
+  base: 'h-3.5 w-3.5 shrink-0',
+  variants: {
+    appearance: {
+      dark: 'ml-1',
+      light: 'ml-0.5',
     },
   },
 });
@@ -149,15 +208,20 @@ export function FilterChip({
             className: buttonClassName,
           })}
         >
-          <span className="shrink-0 whitespace-nowrap">{item.label}</span>
+          <Icon
+            name={IconName.Filter}
+            className={filterIconStyles({ appearance })}
+          />
+          <span className={chipLabelStyles({ appearance })}>{item.label}</span>
           {item.operationLabel?.split(' ').map((segment) => (
-            <span className="font-mono" key={segment}>
+            <span className={chipOperationStyles({ appearance })} key={segment}>
               {segment}
             </span>
           ))}
           <span
             className={chipValueStyles({
               appearance,
+              isRichValue: Boolean(renderValue),
               className: valueClassName,
             })}
           >
@@ -178,7 +242,7 @@ export function FilterChip({
                 ? IconName.ChevronDown
                 : IconName.ChevronsUpDown
             }
-            className="ml-1 h-3.5 w-3.5 shrink-0"
+            className={chevronStyles({ appearance })}
           />
         </Button>
       </EditFilterTrigger>
@@ -187,7 +251,7 @@ export function FilterChip({
           type="button"
           variant="icon"
           aria-label={`Remove ${item.label} filter`}
-          className="h-6 self-stretch rounded-l-none border-l border-gray-200 px-1.5 text-gray-400 hover:bg-zinc-100 hover:text-zinc-700"
+          className="min-h-[1.625rem] self-stretch rounded-l-none rounded-r-lg border-l border-blue-200 px-1 py-0 text-blue-500 hover:bg-blue-100 hover:text-blue-700 pressed:bg-blue-200"
           onClick={() => {
             onRemove();
             submit();

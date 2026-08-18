@@ -141,6 +141,12 @@ export function WorkflowRunTarget({
           <ChipSegment className={workflowId()}>
             <Icon name={IconName.Workflow} className={icon()} />
             <TruncateTooltipTrigger>{id || <>&nbsp;</>}</TruncateTooltipTrigger>
+            {href && (
+              <Icon
+                name={IconName.ChevronRight}
+                className="-mr-1 h-3.5 w-3.5 shrink-0 text-zinc-400"
+              />
+            )}
           </ChipSegment>
         </Chip>
       </ChipGroup>

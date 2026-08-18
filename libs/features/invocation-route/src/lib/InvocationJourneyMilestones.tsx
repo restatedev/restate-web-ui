@@ -176,7 +176,7 @@ export function JourneyComparisonSummary({
         value={elapsed}
         qualifier={comparison.isFinished ? undefined : 'so far'}
         ratio={comparison.ratio}
-        label="Journey duration"
+        label="Lifecycle duration"
       />
     </span>
   );

@@ -16,6 +16,7 @@ import {
   Minus,
   Copy,
   RotateCw,
+  RotateCcwKey,
   SquareCheckBig,
   Terminal,
   Lock,
@@ -103,6 +104,7 @@ import {
   Component as ComponentIcon,
   Focus,
   Scan,
+  Funnel,
   SlidersHorizontal,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -129,6 +131,7 @@ import { Tunnel } from './custom-icons/Tunnel';
 import { CloudRun } from './custom-icons/CloudRun';
 import { RestateCloud } from './custom-icons/RestateCloud';
 import { LimitKey } from './custom-icons/LimitKey';
+import { FlowControl } from './custom-icons/FlowControl';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -152,6 +155,7 @@ export const enum IconName {
   Minus = 'Minus',
   Copy = 'Copy',
   Retry = 'Retry',
+  IdempotencyKey = 'IdempotencyKey',
   SquareCheckBig = 'SquareCheckBig',
   Http = 'Http',
   Security = 'Security',
@@ -212,7 +216,9 @@ export const enum IconName {
   RetryNow = 'RetryNow',
   Upgrade = 'Upgrade',
   Gauge = 'Gauge',
+  Filter = 'Filter',
   Filters = 'Filters',
+  FlowControl = 'FlowControl',
   TrendingUp = 'TrendingUp',
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
@@ -287,6 +293,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Copy]: Copy,
   [IconName.SquareCheckBig]: SquareCheckBig,
   [IconName.Retry]: RotateCw,
+  [IconName.IdempotencyKey]: RotateCcwKey,
   [IconName.Security]: Lock,
   [IconName.Cli]: Terminal,
   [IconName.ApiKey]: FileKey,
@@ -348,7 +355,9 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Resume]: Play,
   [IconName.RetryNow]: RotateCcw,
   [IconName.Gauge]: Gauge,
+  [IconName.Filter]: Funnel,
   [IconName.Filters]: SlidersHorizontal,
+  [IconName.FlowControl]: FlowControl,
   [IconName.Upgrade]: ChevronsUp,
   [IconName.TrendingUp]: TrendingUp,
   [IconName.TrendingDown]: TrendingDown,

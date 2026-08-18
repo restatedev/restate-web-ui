@@ -14,8 +14,10 @@ import type {
   InvocationJourneyModel,
   JourneyBlockedTime,
   JourneyCurrentStatus,
+  JourneyNodeTiming,
   JourneyStatusInvocation,
 } from './InvocationJourneyModel';
+import { JourneyNodeTime } from './InvocationJourneyTime';
 
 export function JourneyAttemptEndpoint({
   number,
@@ -26,6 +28,7 @@ export function JourneyAttemptEndpoint({
   durationLabel,
   blockedTime,
   activitySummary,
+  timing,
 }: {
   number: number;
   label?: string;
@@ -35,6 +38,7 @@ export function JourneyAttemptEndpoint({
   durationLabel?: 'Running for' | 'Lasted';
   blockedTime?: JourneyBlockedTime;
   activitySummary?: ReactNode;
+  timing?: JourneyNodeTiming;
 }) {
   return (
     <div className="relative z-10 flex min-h-8 min-w-0 items-center gap-2">
@@ -46,6 +50,7 @@ export function JourneyAttemptEndpoint({
         <span className="font-medium text-zinc-700 tabular-nums">
           {label ?? `${formatOrdinals(number)} attempt`}
         </span>
+        {timing && <JourneyNodeTime timing={timing} />}
         {status && statusInvocation && (
           <Status invocation={statusInvocation} timeline={false} />
         )}
@@ -176,6 +181,7 @@ function AttemptGroupContent({
             ? 'Running for'
             : undefined
         }
+        timing={scenario.firstAttemptTiming}
       />
       {scenario.attempts > 1 && (
         <>
@@ -198,6 +204,7 @@ function AttemptGroupContent({
             }
             durationLabel={latestAttemptStatus ? 'Running for' : undefined}
             blockedTime={scenario.latestAttemptBlockedTime}
+            timing={scenario.latestAttemptTiming}
           />
         </>
       )}

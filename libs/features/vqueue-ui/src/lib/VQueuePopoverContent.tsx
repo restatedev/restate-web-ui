@@ -11,6 +11,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
 import { Copy } from '@restate/ui/copy';
 import { DropdownSection } from '@restate/ui/dropdown';
+import { Link } from '@restate/ui/link';
 import { MetricComparison } from '@restate/ui/metric-comparison';
 import {
   formatCompactISODuration,
@@ -25,7 +26,7 @@ import { LimitKey } from './LimitKey';
 import {
   blockedLimitCounterIdentity,
   limitCountersForIdentityHref,
-  limitCountersForRuleHref,
+  limitRulesForPatternHref,
 } from './limitCounterNavigation';
 import {
   formatVqueueDuration,
@@ -449,7 +450,7 @@ export function VQueueHeadBlockedStatus({
         }
         ruleHref={
           resource?.blockedRule
-            ? limitCountersForRuleHref(baseUrl, resource.blockedRule)
+            ? limitRulesForPatternHref(baseUrl, resource.blockedRule)
             : undefined
         }
         ruleLimit={ruleLimit}
@@ -719,6 +720,25 @@ function Head({
   entryId: string;
   renderEntryId?: VQueueEntryIdRenderer;
 }) {
+  const { baseUrl } = useRestateContext();
+  const defaultEntryId = entryId.startsWith('inv_') ? (
+    <Link
+      href={`${baseUrl}/invocations/${encodeURIComponent(entryId)}`}
+      aria-label={`Open invocation ${entryId}`}
+      variant="secondary"
+      className={styles().entryId({
+        className:
+          'block rounded no-underline outline-offset-1 hover:bg-black/3',
+      })}
+    >
+      <span title={entryId}>{formatIdentifier(entryId)}</span>
+    </Link>
+  ) : (
+    <span className={styles().entryId()} title={entryId}>
+      {formatIdentifier(entryId)}
+    </span>
+  );
+
   return (
     <div
       role="group"
@@ -732,9 +752,7 @@ function Head({
               {renderEntryId(entryId)}
             </div>
           ) : (
-            <span className={styles().entryId()} title={entryId}>
-              {formatIdentifier(entryId)}
-            </span>
+            defaultEntryId
           )}
         </div>
       </div>

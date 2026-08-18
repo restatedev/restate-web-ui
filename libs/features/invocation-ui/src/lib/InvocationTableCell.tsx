@@ -1,8 +1,6 @@
 import {
   getInvocationStatusFromVqueue,
   getInvocationStatusLabel,
-  INVOCATION_STATUS_DEFINITIONS,
-  type components,
   type Invocation,
   type InvocationComputedStatus2,
   type InvocationSummaryStage,
@@ -24,7 +22,6 @@ import { panelHref } from '@restate/util/panel';
 import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { ServiceTarget, Target } from '@restate/features/service-target';
 import { InvocationId } from './InvocationId';
-import { VQueueEntryId } from './VQueueEntryId';
 import { InvocationStatusBadge, Status } from './Status';
 
 export const INVOCATION_TABLE_COLUMN_CONFIG = {
@@ -54,10 +51,6 @@ export interface InvocationTableRow {
   status?: string;
   created_at?: string;
 }
-
-type InvocationTableInvocation = Invocation & {
-  vqueue?: components['schemas']['InvocationVqueueStateV2'];
-};
 
 const invocationTableColumnKeys = new Set<string>(
   Object.keys(INVOCATION_TABLE_COLUMN_CONFIG),
@@ -214,7 +207,7 @@ export function InvocationTableDate({
 function visibleCellContent(
   column: InvocationTableColumnKey,
   row: InvocationTableRow,
-  invocation?: InvocationTableInvocation,
+  invocation?: Invocation,
 ) {
   switch (column) {
     case 'id':
@@ -223,15 +216,7 @@ function visibleCellContent(
       return row.vqueue_id ? (
         <VQueueId
           id={row.vqueue_id}
-          focusEntryId={row.id}
-          focusStage={
-            invocation?.vqueue?.stage ??
-            (row.stage as InvocationSummaryStage | undefined) ??
-            INVOCATION_STATUS_DEFINITIONS.find(
-              (definition) => definition.key === row.status,
-            )?.stage
-          }
-          renderEntryId={(id) => <VQueueEntryId id={id} size="md" />}
+          popover={false}
           truncateInMiddle
           className="mr-1 w-fit max-w-full min-w-0 rounded-md"
         />
@@ -274,7 +259,7 @@ export function InvocationTableCell({
 }: {
   column: InvocationTableColumnKey;
   row: InvocationTableRow;
-  invocation?: InvocationTableInvocation;
+  invocation?: Invocation;
   isVisible?: boolean;
   className?: string;
 }) {

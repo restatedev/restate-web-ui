@@ -5,7 +5,6 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import { useRestateContext } from '@restate/features/restate-context';
-import { LimitRuleTarget } from '@restate/features/vqueue-ui';
 import { Button } from '@restate/ui/button';
 import {
   ContentPanel,
@@ -18,6 +17,7 @@ import {
   AddFilterTrigger,
   FilterBuilder,
   FilterChip,
+  FilteredResultsCaption,
   QueryClause,
   QueryClauseOption,
   QueryClauseSchema,
@@ -39,11 +39,14 @@ import {
   LIMIT_COUNTER_FILTER_SCHEMA,
   toLimitCounterFilters,
 } from './limits.counterFilters';
-import { LimitValue } from '@restate/features/vqueue-ui';
 import {
   LimitListPagination,
   useLimitListPagination,
 } from './LimitListPagination';
+import {
+  LimitRuleFilterOption,
+  LimitRuleFilterValue,
+} from './LimitRuleFilterValue';
 import {
   ALL_LIMIT_COUNTERS,
   ANY_RULE_LIMIT_COUNTERS,
@@ -131,6 +134,10 @@ function CountersComponent() {
   const query = useFilterBuilder(committedFilters, rules.isLoading);
   const formRef = useRef<HTMLFormElement | null>(null);
   const submitTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Removing a filter updates the list before this callback runs, but the
+  // current render still exposes the old items. Defer submission until React
+  // commits the removal so the URL is written from the updated list.
+  // TODO: Have FilterBuilder provide the next items and remove this timer.
   const scheduleSubmit = useCallback(() => {
     clearTimeout(submitTimerRef.current);
     submitTimerRef.current = setTimeout(
@@ -179,15 +186,7 @@ function CountersComponent() {
         : ANY_RULE_LIMIT_COUNTERS;
     const pattern = selectedLimitCounterRule(value);
     if (pattern) {
-      return (
-        <LimitRuleTarget
-          pattern={pattern}
-          density="tight"
-          className="h-4 min-w-0 [&_[data-chip]]:[--chip-height:1rem] [&_[data-chip]]:[--chip-inset:0px]"
-          showIcon={false}
-          showTooltip={false}
-        />
-      );
+      return <LimitRuleFilterValue pattern={pattern} />;
     }
     return value === ANY_RULE_LIMIT_COUNTERS ? 'any' : 'any or none';
   }, []);
@@ -200,17 +199,7 @@ function CountersComponent() {
         (candidate) => candidate.pattern === rulePattern,
       );
       if (rulePattern && rule) {
-        return (
-          <span className="flex min-w-0 flex-1 items-center justify-between gap-4">
-            <LimitRuleTarget pattern={rulePattern} showTooltip={false} />
-            <span className="shrink-0">
-              <LimitValue
-                value={rule.limits.concurrency}
-                disabled={rule.disabled}
-              />
-            </span>
-          </span>
-        );
+        return <LimitRuleFilterOption rule={rule} />;
       }
       return (
         <span className="flex flex-col gap-0.5">
@@ -233,6 +222,7 @@ function CountersComponent() {
     [],
   );
   const hasFilters = filters.length > 0;
+  const hasFilteredResults = hasFilters || ruleSelection !== ALL_LIMIT_COUNTERS;
   const emptyTitle = hasFilters
     ? 'No matching limit counters'
     : selectedRule
@@ -248,116 +238,128 @@ function CountersComponent() {
         ? 'No active limit counters currently match a configured rule.'
         : 'Limit counters appear while matching invocations are active.';
   const isFetching = counters.isFetching || rules.isFetching;
+  const pageToolbar = (
+    <>
+      <Form
+        ref={formRef}
+        className="hidden min-w-0 flex-auto sm:block"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const ruleFilter = query.getItem(LIMIT_COUNTER_RULE_QUERY_PARAM);
+          const next = writeFilterClauses(
+            searchParams,
+            query.items.filter(
+              (item) => item.id !== LIMIT_COUNTER_RULE_QUERY_PARAM,
+            ),
+          );
+          next.set(
+            LIMIT_COUNTER_RULE_QUERY_PARAM,
+            parseLimitCounterRuleSelection(
+              typeof ruleFilter?.value.value === 'string'
+                ? ruleFilter.value.value
+                : ANY_RULE_LIMIT_COUNTERS,
+            ),
+          );
+          setSearchParams(next, { preventScrollReset: true });
+        }}
+      >
+        <FilterBuilder
+          query={query}
+          schema={filterSchema}
+          multiple
+          canRemoveItem={(key) => key !== LIMIT_COUNTER_RULE_QUERY_PARAM}
+        >
+          <AddFilterTrigger
+            placeholder="Filter limit counters…"
+            title="Limit counter filters"
+            disabled={!hasVqueues}
+            onItemRemove={scheduleSubmit}
+            renderOption={renderFilterOption}
+            inputPrefix={
+              <Icon
+                name={IconName.Search}
+                className="h-4 w-4 shrink-0 text-gray-400"
+              />
+            }
+            tagsPlacement="outside"
+            maxVisibleChips="auto"
+            chipOverflowStrategy="all"
+            tagGroupClassName="min-w-0 flex-nowrap"
+            showSectionTitle={false}
+            popoverPlacement="bottom start"
+            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
+            optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
+            className="min-h-7 w-full justify-end text-gray-800"
+            inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+          >
+            {(props) => {
+              const isRule = props.item.id === LIMIT_COUNTER_RULE_QUERY_PARAM;
+              return (
+                <FilterChip
+                  {...props}
+                  onRemove={isRule ? undefined : props.onRemove}
+                  appearance="light"
+                  showRemove={!isRule}
+                  popoverPlacement="bottom"
+                  disabled={!hasVqueues}
+                  valueClassName={isRule ? 'max-w-56' : undefined}
+                  popoverClassName={
+                    isRule ? 'w-[32rem] max-w-[calc(100vw-2rem)]' : undefined
+                  }
+                  renderValue={isRule ? renderRuleValue : undefined}
+                  renderOption={isRule ? renderRuleOption : undefined}
+                />
+              );
+            }}
+          </AddFilterTrigger>
+        </FilterBuilder>
+      </Form>
+      <Tooltip>
+        <TooltipTrigger>
+          <Button
+            type="button"
+            variant="icon"
+            aria-label={
+              isFetching
+                ? 'Refreshing limit counters'
+                : 'Refresh limit counters'
+            }
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+            onClick={() => {
+              void counters.refetch();
+              void rules.refetch();
+            }}
+            disabled={!hasVqueues || isFetching}
+          >
+            <Icon
+              name={IconName.Retry}
+              className={refreshIconStyles({
+                isFetching,
+              })}
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent size="sm">Refresh limit counters</TooltipContent>
+      </Tooltip>
+    </>
+  );
+  const filteredResultsCaption = hasFilteredResults ? (
+    <FilteredResultsCaption
+      noun="limit counters"
+      onClear={() => {
+        const next = writeFilterClauses(searchParams, []);
+        next.set(LIMIT_COUNTER_RULE_QUERY_PARAM, ALL_LIMIT_COUNTERS);
+        setSearchParams(next, { preventScrollReset: true });
+      }}
+    />
+  ) : undefined;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <FlowControlHero />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'counters')}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
-          <Form
-            ref={formRef}
-            className="hidden min-w-0 flex-auto sm:block"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const ruleFilter = query.getItem(LIMIT_COUNTER_RULE_QUERY_PARAM);
-              const next = writeFilterClauses(
-                searchParams,
-                query.items.filter(
-                  (item) => item.id !== LIMIT_COUNTER_RULE_QUERY_PARAM,
-                ),
-              );
-              next.set(
-                LIMIT_COUNTER_RULE_QUERY_PARAM,
-                parseLimitCounterRuleSelection(
-                  typeof ruleFilter?.value.value === 'string'
-                    ? ruleFilter.value.value
-                    : ANY_RULE_LIMIT_COUNTERS,
-                ),
-              );
-              setSearchParams(next, { preventScrollReset: true });
-            }}
-          >
-            <FilterBuilder
-              query={query}
-              schema={filterSchema}
-              multiple
-              canRemoveItem={(key) => key !== LIMIT_COUNTER_RULE_QUERY_PARAM}
-            >
-              <AddFilterTrigger
-                placeholder="Filter limit counters…"
-                title="Limit counter filters"
-                disabled={!hasVqueues}
-                onItemRemove={scheduleSubmit}
-                renderOption={renderFilterOption}
-                inputPrefix={
-                  <Icon
-                    name={IconName.Search}
-                    className="h-4 w-4 shrink-0 text-gray-400"
-                  />
-                }
-                tagsPlacement="outside"
-                maxVisibleChips="auto"
-                chipOverflowStrategy="all"
-                tagGroupClassName="min-w-0 flex-nowrap"
-                showSectionTitle={false}
-                popoverPlacement="bottom start"
-                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
-                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
-                className="min-h-7 w-full justify-end text-gray-800"
-                inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
-              >
-                {(props) => {
-                  const isRule =
-                    props.item.id === LIMIT_COUNTER_RULE_QUERY_PARAM;
-                  return (
-                    <FilterChip
-                      {...props}
-                      onRemove={isRule ? undefined : props.onRemove}
-                      appearance="light"
-                      showRemove={!isRule}
-                      popoverPlacement="bottom"
-                      disabled={!hasVqueues}
-                      valueClassName={isRule ? 'max-w-56' : undefined}
-                      popoverClassName={
-                        isRule
-                          ? 'w-[32rem] max-w-[calc(100vw-2rem)]'
-                          : undefined
-                      }
-                      renderValue={isRule ? renderRuleValue : undefined}
-                      renderOption={isRule ? renderRuleOption : undefined}
-                    />
-                  );
-                }}
-              </AddFilterTrigger>
-            </FilterBuilder>
-          </Form>
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                type="button"
-                variant="icon"
-                aria-label={
-                  isFetching
-                    ? 'Refreshing limit counters'
-                    : 'Refresh limit counters'
-                }
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
-                onClick={() => {
-                  void counters.refetch();
-                  void rules.refetch();
-                }}
-                disabled={!hasVqueues || isFetching}
-              >
-                <Icon
-                  name={IconName.Retry}
-                  className={refreshIconStyles({
-                    isFetching,
-                  })}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent size="sm">Refresh limit counters</TooltipContent>
-          </Tooltip>
+          {pageToolbar}
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
@@ -375,6 +377,7 @@ function CountersComponent() {
                 variant="all"
                 isLoading={counters.isFetching}
                 error={counters.error as Error | null}
+                caption={filteredResultsCaption}
                 dependencies={[
                   searchString,
                   ruleSelection,

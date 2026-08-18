@@ -50,6 +50,29 @@ describe('listLimitRules', () => {
     `);
   });
 
+  it('filters rules by exact pattern', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [] });
+    const context = { query } as unknown as QueryContext;
+
+    await listLimitRules.call(context, {
+      rulePattern: "tenant's/*",
+    });
+
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT pattern,
+        concurrency,
+        description,
+        disabled,
+        version
+          FROM sys_rules
+          WHERE pattern = 'tenant''s/*'
+          ORDER BY pattern ASC
+          LIMIT 1001",
+      ]
+    `);
+  });
+
   it('aggregates statistics only for patterns in the bounded page', async () => {
     const query = vi
       .fn()

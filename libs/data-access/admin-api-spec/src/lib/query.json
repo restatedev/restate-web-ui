@@ -5336,6 +5336,7 @@
                   "created_at",
                   "modified_at",
                   "completed_at",
+                  "vqueue_id",
                   "scope",
                   "limit_key"
                 ]
@@ -6774,6 +6775,10 @@
       "ListLimitRulesRequestBody": {
         "type": "object",
         "properties": {
+          "rulePattern": {
+            "type": "string",
+            "description": "Return only the rule with this exact pattern."
+          },
           "limit": {
             "type": "integer",
             "minimum": 1,

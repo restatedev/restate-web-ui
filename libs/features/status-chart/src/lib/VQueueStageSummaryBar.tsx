@@ -16,6 +16,7 @@ import {
 import { BreakdownMode } from './BreakdownMode';
 import type { StatusEntry } from './useOrderedStatuses';
 import { useEffect, useState } from 'react';
+import { FacetCount } from './FacetCount';
 
 export type VQueueSummaryFocus = 'all' | 'not-completed' | 'completed';
 
@@ -136,6 +137,8 @@ export function VQueueStageSummaryBar({
   areStageCountsPartial,
   isBreakdownSampled,
   countsReflectFilters,
+  populationByStage,
+  countsAreContextual,
   isBreakdownLoading,
 }: {
   byStage: VQueueStageSummaryEntry[];
@@ -148,11 +151,13 @@ export function VQueueStageSummaryBar({
   isLoading?: boolean;
   isFetching?: boolean;
   className?: string;
-  isDimmed?: (name: string) => boolean;
-  getHref?: (name: string) => string;
+  isDimmed?: (name: string, statuses?: string[]) => boolean;
+  getHref?: (name: string, statuses?: string[]) => string;
   areStageCountsPartial?: boolean;
   isBreakdownSampled: boolean;
   countsReflectFilters?: boolean;
+  populationByStage?: VQueueStageSummaryEntry[];
+  countsAreContextual?: boolean;
   isBreakdownLoading?: (stageName: string) => boolean;
 }) {
   const [pendingFocus, setPendingFocus] = useState<VQueueSummaryFocus>();
@@ -228,9 +233,23 @@ export function VQueueStageSummaryBar({
     pulse: Boolean(isFetching),
   });
   const populationTotal = notCompletedCount + completedCount;
+  const populationStages = populationByStage ?? byStage;
+  const populationCompletedCount =
+    populationStages.find((stage) => stage.name === 'finished')?.count ?? 0;
+  const populationNotCompletedCount = populationStages
+    .filter((stage) => stage.name !== 'finished')
+    .reduce((sum, stage) => sum + stage.count, 0);
+  const unfilteredPopulationTotal =
+    populationNotCompletedCount + populationCompletedCount;
   const populationCounts = areStageCountsPartial
     ? {
-        all: null,
+        all: countsAreContextual ? (
+          <FacetCount
+            count={populationTotal}
+            total={unfilteredPopulationTotal}
+            approximate
+          />
+        ) : null,
         notCompleted:
           populationTotal > 0
             ? formatApproxPercentage(notCompletedCount / populationTotal)
@@ -240,19 +259,41 @@ export function VQueueStageSummaryBar({
             ? formatApproxPercentage(completedCount / populationTotal)
             : null,
       }
-    : {
-        all: formatNumber(populationTotal, true),
-        notCompleted: formatNumber(notCompletedCount, true),
-        completed: formatNumber(completedCount, true),
-      };
-  const matchesIndicator = countsReflectFilters ? (
-    <span
-      className={matches()}
-      title="Count reflects the current invocation filters"
-    >
-      matches
-    </span>
-  ) : null;
+    : countsAreContextual
+      ? {
+          all: (
+            <FacetCount
+              count={populationTotal}
+              total={unfilteredPopulationTotal}
+            />
+          ),
+          notCompleted: (
+            <FacetCount
+              count={notCompletedCount}
+              total={populationNotCompletedCount}
+            />
+          ),
+          completed: (
+            <FacetCount
+              count={completedCount}
+              total={populationCompletedCount}
+            />
+          ),
+        }
+      : {
+          all: formatNumber(populationTotal, true),
+          notCompleted: formatNumber(notCompletedCount, true),
+          completed: formatNumber(completedCount, true),
+        };
+  const matchesIndicator =
+    countsReflectFilters && !countsAreContextual ? (
+      <span
+        className={matches()}
+        title="Count reflects the current invocation filters"
+      >
+        matches
+      </span>
+    ) : null;
 
   if (isLoading) {
     return (
@@ -278,7 +319,7 @@ export function VQueueStageSummaryBar({
     const label = segment.label ?? STATUS_LABELS[segment.name] ?? segment.name;
     const isInboxStatus = inboxBreakdownSegmentNames.has(segment.name);
     const isCompletedStatus = completedBreakdownSegmentNames.has(segment.name);
-    const dimmed = isDimmed?.(segment.name) ?? false;
+    const dimmed = isDimmed?.(segment.name, segment.statuses) ?? false;
     const segmentIsLoading =
       (selectedFocus !== 'completed' &&
         inboxBreakdownLoading &&
@@ -377,7 +418,7 @@ export function VQueueStageSummaryBar({
             )}
             {getHref && (
               <Link
-                href={getHref(segment.name)}
+                href={getHref(segment.name, segment.statuses)}
                 preserveQueryParams={false}
                 variant="secondary"
                 aria-label={ariaLabel}

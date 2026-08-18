@@ -361,6 +361,37 @@ export const INVOCATION_LIST_FIELDS = {
       },
     },
   },
+  vqueue_id: {
+    filter: 'column',
+    sort: false,
+    tables: {
+      sys_invocation: {
+        column: 'vqueue_id',
+        since: '1.7.0',
+        feature: 'vqueues',
+      },
+      sys_invocation_status: {
+        column: 'vqueue_id',
+        since: '1.7.0',
+        feature: 'vqueues',
+      },
+      sys_vqueues: {
+        column: 'id',
+        since: '1.7.0',
+        feature: 'vqueues',
+      },
+      sys_vqueue_meta: {
+        column: 'id',
+        since: '1.7.0',
+        feature: 'vqueues',
+      },
+      sys_vqueue_entry_status: {
+        column: 'vqueue_id',
+        since: '1.7.1',
+        feature: 'vqueues',
+      },
+    },
+  },
   limit_key: {
     filter: 'column',
     sort: false,

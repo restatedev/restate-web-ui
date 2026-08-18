@@ -2,7 +2,7 @@ import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { formatApproxPercentage, formatNumber } from '@restate/util/intl';
+import { formatApproxPercentage } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import {
   COMPLETED_STAGE_LEGEND_GRADIENT,
@@ -19,6 +19,7 @@ import type {
   VQueueSummaryFocus,
 } from './VQueueStageSummaryBar';
 import { StageBreakdownPopoverContent } from './StageBreakdownPopoverContent';
+import { FacetCount } from './FacetCount';
 
 const legendStyles = tv({
   base: 'mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm',
@@ -80,6 +81,9 @@ export function VQueueStageLegend({
   className,
   isDimmed,
   getHref,
+  populationByStage,
+  populationByStatus,
+  countsAreContextual,
   isBreakdownLoading,
   isBreakdownError,
 }: {
@@ -91,12 +95,21 @@ export function VQueueStageLegend({
   isLoading?: boolean;
   isError?: boolean;
   className?: string;
-  isDimmed?: (name: string) => boolean;
-  getHref: (name: string) => string;
+  isDimmed?: (name: string, statuses?: string[]) => boolean;
+  getHref: (name: string, statuses?: string[]) => string;
+  populationByStage?: VQueueStageSummaryEntry[];
+  populationByStatus?: VQueueStatusSummaryEntry[];
+  countsAreContextual?: boolean;
   isBreakdownLoading?: (stageName: string) => boolean;
   isBreakdownError?: (stageName: string) => boolean;
 }) {
   const stageData = new Map(byStage.map((stage) => [stage.name, stage]));
+  const populationStageData = new Map(
+    (populationByStage ?? byStage).map((stage) => [stage.name, stage]),
+  );
+  const populationStatusData = new Map(
+    (populationByStatus ?? byStatus).map((status) => [status.name, status]),
+  );
   const completedStage = stageData.get('finished');
   const completedStatusNames = new Set(completedStage?.statuses ?? []);
   const completedCount = completedStage?.count ?? 0;
@@ -152,7 +165,7 @@ export function VQueueStageLegend({
     >
       {items.map((item) => {
         const style = STATUS_STYLE[item.name] ?? DEFAULT_STYLE;
-        const appearance = isDimmed?.(item.name)
+        const appearance = isDimmed?.(item.name, item.statuses)
           ? 'dimmed'
           : item.count === 0
             ? 'faded'
@@ -167,6 +180,7 @@ export function VQueueStageLegend({
             name: status.name,
             label: status.label ?? STATUS_LABELS[status.name] ?? status.name,
             count: status.count,
+            statuses: status.statuses,
             ...(STATUS_STYLE[status.name] ?? DEFAULT_STYLE),
           }));
         const itemBreakdownLoading = isBreakdownLoading?.(item.name) ?? false;
@@ -176,14 +190,24 @@ export function VQueueStageLegend({
           (focus === 'completed' &&
             (isBreakdownSampled || item.breakdownIsPartial));
         const count =
-          countIsSampled && focusedCount > 0
-            ? formatApproxPercentage(item.count / focusedCount)
-            : formatNumber(item.count, true);
+          countIsSampled && focusedCount > 0 ? (
+            formatApproxPercentage(item.count / focusedCount)
+          ) : (
+            <FacetCount
+              count={item.count}
+              total={
+                countsAreContextual
+                  ? (populationStatusData.get(item.name)?.count ??
+                    populationStageData.get(item.name)?.count)
+                  : undefined
+              }
+            />
+          );
 
         return (
           <div key={item.name} className={itemStyles({ appearance })}>
             <Link
-              href={getHref(item.name)}
+              href={getHref(item.name, item.statuses)}
               preserveQueryParams={false}
               variant="secondary"
               className={linkStyles()}
@@ -233,7 +257,7 @@ export function VQueueStageLegend({
                     countIsPartial={areStageCountsPartial}
                     items={breakdownStatuses.map((status) => ({
                       ...status,
-                      href: getHref(status.name),
+                      href: getHref(status.name, status.statuses),
                     }))}
                     isLoading={itemBreakdownLoading}
                     isError={itemBreakdownError}

@@ -1,10 +1,16 @@
 import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
 import {
   VQueueInboxPopoverContent,
   VQueuePopoverContent,
 } from './VQueuePopoverContent';
+
+function renderPopover(children: ReactNode) {
+  return render(<MemoryRouter>{children}</MemoryRouter>);
+}
 
 const snapshot: VqueueSnapshot = {
   identity: {
@@ -66,7 +72,9 @@ const inboxSnapshot: VqueueSnapshot = {
 
 describe('VQueuePopoverContent', () => {
   it('does not highlight a stale row stage without a fresh focused entry', () => {
-    render(<VQueuePopoverContent data={snapshot} focusStage="running" />);
+    renderPopover(
+      <VQueuePopoverContent data={snapshot} focusStage="running" />,
+    );
 
     const running = screen.getByRole('listitem', { name: /Running/ });
 
@@ -75,7 +83,7 @@ describe('VQueuePopoverContent', () => {
   });
 
   it('renders the Inbox queue without the stage summary rail', () => {
-    render(<VQueueInboxPopoverContent data={inboxSnapshot} />);
+    renderPopover(<VQueueInboxPopoverContent data={inboxSnapshot} />);
 
     const inboxTitle = screen.getByText('Inbox');
     expect(inboxTitle.nextElementSibling?.textContent).toBe('19');
@@ -89,17 +97,43 @@ describe('VQueuePopoverContent', () => {
     expect(screen.getByText('avg')).toBeTruthy();
   });
 
+  it('links an invocation queue head to its invocation page', () => {
+    renderPopover(<VQueueInboxPopoverContent data={inboxSnapshot} />);
+
+    expect(
+      screen
+        .getByRole('link', { name: 'Open invocation inv_head' })
+        .getAttribute('href'),
+    ).toBe('/invocations/inv_head');
+  });
+
+  it('keeps a non-invocation queue head as plain text', () => {
+    renderPopover(
+      <VQueueInboxPopoverContent
+        data={{
+          ...inboxSnapshot,
+          head: { ...inboxSnapshot.head, entryId: 'mut_head' },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('mut_head')).toBeTruthy();
+    expect(screen.queryByRole('link')).toBeNull();
+  });
+
   it('measures an eligible back-off Inbox wait from its retry deadline', () => {
     const lastSnapshot = new Date('2026-01-01T00:01:00.000Z').getTime();
+    const focusEntry = inboxSnapshot.focusEntry;
+    if (!focusEntry) throw new Error('Expected a focused Inbox entry');
 
-    render(
+    renderPopover(
       <SnapshotTimeProvider lastSnapshot={lastSnapshot}>
         <VQueueInboxPopoverContent
           data={{
             ...inboxSnapshot,
             stageAvg: { ...inboxSnapshot.stageAvg, queue: 'PT10S' },
             focusEntry: {
-              ...inboxSnapshot.focusEntry!,
+              ...focusEntry,
               status: 'backing-off',
               transitionedAt: '2026-01-01T00:00:30.000Z',
               nextAt: '2026-01-01T00:00:55.000Z',
@@ -117,7 +151,7 @@ describe('VQueuePopoverContent', () => {
   });
 
   it('uses the shared blocked status for the queue head', () => {
-    render(
+    renderPopover(
       <VQueuePopoverContent
         data={{
           ...snapshot,
@@ -147,7 +181,7 @@ describe('VQueuePopoverContent', () => {
   });
 
   it('uses the shared scheduled status for the queue head', () => {
-    render(
+    renderPopover(
       <SnapshotTimeProvider lastSnapshot={Date.parse('2026-08-14T09:00:00Z')}>
         <VQueuePopoverContent
           data={{
@@ -176,7 +210,7 @@ describe('VQueuePopoverContent', () => {
   });
 
   it('uses the shared ready status for the queue head', () => {
-    render(
+    renderPopover(
       <VQueuePopoverContent
         data={{
           ...snapshot,
