@@ -24,7 +24,7 @@ function statusMatches(status: string, filter: StatusFilter) {
   return filter.operation === 'IN' ? selected : !selected;
 }
 
-function countMatchingBuckets(
+export function countMatchingStatusBuckets(
   buckets: StatusBucket[],
   populationStatuses: string[],
   statusFilter: StatusFilter,
@@ -62,7 +62,7 @@ function countMatchingBuckets(
   return count;
 }
 
-function countMatchingGlobalStatuses(
+export function countMatchingGlobalStatuses(
   summary: InvocationSummary,
   statusFilter: StatusFilter,
 ): InvocationSummaryMatchCount | undefined {
@@ -83,7 +83,7 @@ function countMatchingGlobalStatuses(
     const stageBuckets = summary.statusBuckets.filter((bucket) =>
       bucket.statuses.every((status) => stageStatuses.has(status)),
     );
-    const stageCount = countMatchingBuckets(
+    const stageCount = countMatchingStatusBuckets(
       stageBuckets,
       stage.statuses,
       statusFilter,
@@ -132,7 +132,7 @@ export function getInvocationSummaryMatchCount(
       count += service.count;
       continue;
     }
-    const serviceCount = countMatchingBuckets(
+    const serviceCount = countMatchingStatusBuckets(
       service.statusBuckets,
       populationStatuses,
       statusFilter,

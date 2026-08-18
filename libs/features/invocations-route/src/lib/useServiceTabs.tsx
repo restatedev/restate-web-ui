@@ -2,14 +2,19 @@ import { useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
 import type { components } from '@restate/data-access/admin-api-spec';
-import { formatApproxPercentage, formatNumber } from '@restate/util/intl';
 import type { ContentPanelTabs } from '@restate/ui/content-panel';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   buildStatusEntries,
+  FacetCount,
   InvocationsBreakdownTooltipContent,
 } from '@restate/features/status-chart';
+import {
+  countMatchingGlobalStatuses,
+  countMatchingStatusBuckets,
+} from './invocationSummaryMatchCount';
+import { hasStatusFilter, type StatusFilter } from './statusFilter';
 
 const ALL_TAB_ID = '__all__';
 const MULTI_TAB_ID = '__multi__';
@@ -17,6 +22,7 @@ const MAX_VISIBLE_SERVICE_TABS = 5;
 
 type StatusBucket = components['schemas']['InvocationStatusSummaryBucketV2'];
 type ServiceBucket = components['schemas']['InvocationServiceSummaryBucketV2'];
+type InvocationSummary = components['schemas']['SummaryInvocationsV2Response'];
 type DeploymentsData = NonNullable<
   ReturnType<typeof useListDeployments>['data']
 >;
@@ -85,16 +91,13 @@ function selectedServices(
 
 function tabLabel(
   label: string,
-  count: number,
-  grandTotal: number,
+  total: number,
+  matching: number | undefined,
+  isFiltered: boolean,
+  matchingIsPartial: boolean,
   isLoading: boolean,
-  isSampled: boolean,
 ): ReactNode {
-  const countLabel = isSampled
-    ? grandTotal > 0 && count !== grandTotal
-      ? formatApproxPercentage(count / grandTotal)
-      : null
-    : formatNumber(count, true);
+  const countLabel = isFiltered ? matching : total;
 
   return (
     <span className="flex items-center gap-1.5">
@@ -103,9 +106,13 @@ function tabLabel(
       </span>
       {isLoading ? (
         <span className="inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
-      ) : countLabel ? (
+      ) : countLabel !== undefined ? (
         <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-          {countLabel}
+          <FacetCount
+            count={countLabel}
+            total={isFiltered ? total : undefined}
+            approximate={isFiltered && matchingIsPartial}
+          />
         </span>
       ) : null}
     </span>
@@ -168,16 +175,18 @@ function serviceTabLabel(
   service: ServiceRow,
   baseUrl: string,
   searchParams: URLSearchParams,
+  matching: number | undefined,
+  isFiltered: boolean,
+  matchingIsPartial: boolean,
   isLoading: boolean,
-  isSampled: boolean,
-  grandTotal: number,
 ) {
   const label = tabLabel(
     service.id,
     service.count,
-    grandTotal,
+    matching,
+    isFiltered,
+    matchingIsPartial,
     isLoading,
-    isSampled,
   );
   if (isLoading) return label;
 
@@ -201,6 +210,7 @@ function serviceTabLabel(
             </div>
           }
           total={service.count}
+          filteredTotal={matching}
           totalLink={serviceTotalHref(baseUrl, searchParams, service.id)}
           statuses={statuses}
           getStatusLink={(statusName) =>
@@ -214,7 +224,7 @@ function serviceTabLabel(
           isStatusDimmed={(statusName) =>
             buckets.get(statusName)?.isIncluded === false
           }
-          isSampled={isSampled}
+          isSampled={matchingIsPartial}
         />
       }
       size="lg"
@@ -225,26 +235,57 @@ function serviceTabLabel(
 }
 
 export function useServiceTabs(
-  serviceBuckets: ServiceBucket[] | undefined,
+  summary: InvocationSummary | undefined,
   deploymentsData: DeploymentsData | undefined,
+  statusFilter: StatusFilter,
   isLoading = false,
-  isSampled = false,
 ): ContentPanelTabs {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
   const services = useMemo(
-    () => serviceRows(serviceBuckets, deploymentsData),
-    [serviceBuckets, deploymentsData],
+    () => serviceRows(summary?.serviceBuckets, deploymentsData),
+    [summary?.serviceBuckets, deploymentsData],
   );
   const selection = selectedServices(
     searchParams.get('filter_target_service_name'),
     services,
   );
   const total = services.reduce((sum, service) => sum + service.count, 0);
+  const isFiltered = hasStatusFilter(statusFilter);
+  const populationStatuses =
+    summary?.stageBuckets.flatMap(({ statuses }) => statuses) ?? [];
+  const globalMatch = isFiltered
+    ? summary
+      ? countMatchingGlobalStatuses(summary, statusFilter)
+      : undefined
+    : undefined;
+  const matchingCount = (subset: ServiceRow[]) => {
+    if (!isFiltered) return undefined;
+    let count = 0;
+    for (const service of subset) {
+      if (service.count === 0) continue;
+      const serviceCount = countMatchingStatusBuckets(
+        service.statusBuckets,
+        populationStatuses,
+        statusFilter,
+      );
+      if (serviceCount === undefined) return undefined;
+      count += serviceCount;
+    }
+    return count;
+  };
+  const matchingIsPartial = globalMatch?.isPartial ?? false;
   const items = [
     {
       id: ALL_TAB_ID,
-      label: tabLabel('All services', total, total, isLoading, isSampled),
+      label: tabLabel(
+        'All services',
+        total,
+        globalMatch?.count,
+        isFiltered,
+        matchingIsPartial,
+        isLoading,
+      ),
       href: serviceHref(baseUrl, searchParams),
     },
     ...(selection.services
@@ -257,9 +298,10 @@ export function useServiceTabs(
                 (sum, service) => sum + service.count,
                 0,
               ),
-              total,
+              matchingCount(selection.services),
+              isFiltered,
+              matchingIsPartial,
               isLoading,
-              isSampled,
             ),
           },
         ]
@@ -270,9 +312,10 @@ export function useServiceTabs(
         service,
         baseUrl,
         searchParams,
+        matchingCount([service]),
+        isFiltered,
+        matchingIsPartial,
         isLoading,
-        isSampled,
-        total,
       ),
       href: serviceHref(baseUrl, searchParams, service.id),
     })),

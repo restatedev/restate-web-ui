@@ -91,12 +91,12 @@ export interface MultiSelectProps<T extends object> extends Omit<
   onInputSubmit?: (value: string) => boolean;
   renderOption?: (item: T) => ReactNode;
   renderEmptyState?: (inputValue: string) => React.ReactNode;
-  children?: (props: {
+  children?: ComponentType<{
     item: T;
     onRemove?: VoidFunction;
     onUpdate?: (newValue: T) => void;
     formRef?: RefObject<HTMLFormElement | null>;
-  }) => ReactNode;
+  }>;
   MenuTrigger?: ComponentType<unknown>;
   label: string;
   placeholder?: string;
@@ -479,6 +479,7 @@ export function FormFieldMultiCombobox<
   );
   const areAllTagsCollapsed =
     hiddenItems.length > 0 && visibleItems.length === 0;
+  const Tag = children;
   const optionItems = availableList.items
     .filter(
       (item) => !item.allowCustomValue || availableList.items.length === 1,
@@ -521,12 +522,12 @@ export function FormFieldMultiCombobox<
               tagKey={item.id}
               onRemove={onRemove.bind(null, item.id)}
             >
-              {children({
-                item,
-                onRemove: onRemove.bind(null, item.id),
-                onUpdate,
-                formRef,
-              })}
+              <Tag
+                item={item}
+                onRemove={onRemove.bind(null, item.id)}
+                onUpdate={onUpdate}
+                formRef={formRef}
+              />
             </RemoveTagWithKeyboard>
           ))}
           {maxVisibleTags === 'auto' && selectedList.items.length > 0 && (
@@ -577,12 +578,12 @@ export function FormFieldMultiCombobox<
                       tagKey={item.id}
                       onRemove={onRemove.bind(null, item.id)}
                     >
-                      {children({
-                        item,
-                        onRemove: onRemove.bind(null, item.id),
-                        onUpdate,
-                        formRef,
-                      })}
+                      <Tag
+                        item={item}
+                        onRemove={onRemove.bind(null, item.id)}
+                        onUpdate={onUpdate}
+                        formRef={formRef}
+                      />
                     </RemoveTagWithKeyboard>
                   ))}
                 </div>

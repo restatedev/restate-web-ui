@@ -89,7 +89,6 @@ import {
   useListDeployments,
   useListInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   VQueueStageLegend,
@@ -152,9 +151,6 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
 
 const PAGE_SIZE = 30;
 const HERO_BREAKDOWN_SAMPLE_SIZE = 1_000_000;
-
-type InvocationServiceSummary =
-  components['schemas']['InvocationServiceSummaryBucketV2'];
 
 const summaryHeaderStyles = tv({
   base: 'mx-auto flex w-full max-w-7xl flex-col items-stretch gap-2 px-4',
@@ -406,6 +402,10 @@ function Component() {
     focus: vqueueSummaryFocus,
     byStage,
     byStatus,
+    populationByStage,
+    populationByStatus,
+    countsAreContextual,
+    statusFilter,
     isLoading: isStageSummaryLoading,
     isStageFetching,
     isError: isSummaryError,
@@ -424,13 +424,11 @@ function Component() {
     breakdownSampleSize,
   });
   const { data: deploymentsData } = useListDeployments();
-  const serviceBuckets: InvocationServiceSummary[] =
-    summaryData?.serviceBuckets ?? [];
   const serviceTabs = useServiceTabs(
-    serviceBuckets,
+    summaryData,
     deploymentsData,
+    statusFilter,
     isStageSummaryLoading,
-    Boolean(summaryData?.stageCountsArePartial),
   );
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -636,6 +634,8 @@ function Component() {
             areStageCountsPartial={summaryData?.stageCountsArePartial}
             isBreakdownSampled={breakdownIsSampled}
             countsReflectFilters={stageCountsReflectFilters}
+            populationByStage={populationByStage}
+            countsAreContextual={countsAreContextual}
             isBreakdownLoading={isVqueueBreakdownLoading}
           />
           <VQueueStageLegend
@@ -648,6 +648,9 @@ function Component() {
             isError={isSummaryError}
             isDimmed={statusDim}
             getHref={statusHref}
+            populationByStage={populationByStage}
+            populationByStatus={populationByStatus}
+            countsAreContextual={countsAreContextual}
             isBreakdownLoading={isVqueueBreakdownLoading}
             isBreakdownError={isVqueueBreakdownError}
           />
