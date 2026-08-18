@@ -67,8 +67,24 @@ describe('VQueueDurationsCard', () => {
     expect(screen.getByText('Completed entries')).toBeTruthy();
     expect(screen.queryByText('Exponential moving average')).toBeNull();
     expect(screen.getByText('10s')).toBeTruthy();
+    expect(screen.getByText('Inbox')).toBeTruthy();
     expect(screen.getByText('Queue')).toBeTruthy();
+    expect(screen.getByText('Blocked')).toBeTruthy();
     expect(screen.getByText('8s')).toBeTruthy();
+
+    const orderedRows = [
+      screen.getByText('Inbox'),
+      screen.getByText('Queue'),
+      screen.getByText('Blocked'),
+      screen.getByText('Running'),
+      screen.getByText('Suspended'),
+    ];
+    orderedRows.slice(1).forEach((row, index) => {
+      expect(
+        orderedRows[index]!.compareDocumentPosition(row) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
 
     const blockBar = screen.getByRole('img', {
       name: 'Blocked: Concurrency rule 4s, Throttling rule 2s, total 6s',
