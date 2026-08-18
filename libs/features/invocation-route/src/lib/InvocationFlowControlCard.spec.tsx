@@ -172,7 +172,7 @@ describe('InvocationFlowControlCard', () => {
       screen.getByTitle('Queue wait: 19.995s; 2× historical average'),
     ).toBeTruthy();
     expect(screen.getByText('1st attempt').parentElement?.textContent).toBe(
-      '1st attempt',
+      '1st attempt started at 00:00:20',
     );
     const attemptGroup = screen.getByRole('group', { name: '9 attempts' });
     const attemptToggle = screen.getByRole('button', {
@@ -183,11 +183,10 @@ describe('InvocationFlowControlCard', () => {
     );
     expect(attemptToggle.getAttribute('aria-expanded')).toBe('false');
     expect(attemptGroup.textContent).toContain('9 attemptsover30swith');
-    expect(attemptGroup.textContent).not.toContain('started');
     fireEvent.click(attemptToggle);
     expect(attemptToggle.getAttribute('aria-expanded')).toBe('true');
     expect(screen.getByText('9th attempt').parentElement?.textContent).toBe(
-      '9th attempt',
+      '9th attempt started at 00:00:45',
     );
     expect(
       screen.getByRole('listitem', {

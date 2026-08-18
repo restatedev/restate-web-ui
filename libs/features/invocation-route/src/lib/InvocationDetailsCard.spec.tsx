@@ -29,7 +29,7 @@ describe('InvocationDetailsCard', () => {
             target_service_name: 'StatefulCounter',
             target_service_key: 'hot-account',
             target_service_ty: 'virtual_object',
-            limit_key: ['batch', 'acme'],
+            limit_key: 'batch/acme',
             idempotency_key: 'idempotency-key',
             trace_id: 'trace-id',
             created_using_restate_version: '1.7.3',

@@ -341,8 +341,8 @@ describe('POST /query/v2/invocations/summary', () => {
               statuses: [
                 'scheduled',
                 'pending',
-                'ready',
                 'yielded',
+                'ready',
                 'backing-off',
               ],
               count: 5,
@@ -389,8 +389,8 @@ describe('POST /query/v2/invocations/summary', () => {
               statuses: [
                 'scheduled',
                 'pending',
-                'ready',
                 'yielded',
+                'ready',
                 'backing-off',
               ],
               count: 1,

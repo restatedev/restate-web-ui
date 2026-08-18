@@ -104,6 +104,8 @@ export type InvocationJourneyModel = {
   attempts: number;
   retryAttempts?: number;
   attemptsDuration?: string;
+  firstAttemptTiming?: JourneyNodeTiming;
+  latestAttemptTiming?: JourneyNodeTiming;
   activity: JourneyActivityCounts;
   activityDetails?: Partial<
     Record<JourneyActivityKind, JourneyActivityDetailGroup>
