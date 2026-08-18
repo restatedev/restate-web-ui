@@ -131,6 +131,7 @@ import { Tunnel } from './custom-icons/Tunnel';
 import { CloudRun } from './custom-icons/CloudRun';
 import { RestateCloud } from './custom-icons/RestateCloud';
 import { LimitKey } from './custom-icons/LimitKey';
+import { FlowControl } from './custom-icons/FlowControl';
 
 export const enum IconName {
   Settings = 'Settings',
@@ -217,6 +218,7 @@ export const enum IconName {
   Gauge = 'Gauge',
   Filter = 'Filter',
   Filters = 'Filters',
+  FlowControl = 'FlowControl',
   TrendingUp = 'TrendingUp',
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
@@ -355,6 +357,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Gauge]: Gauge,
   [IconName.Filter]: Funnel,
   [IconName.Filters]: SlidersHorizontal,
+  [IconName.FlowControl]: FlowControl,
   [IconName.Upgrade]: ChevronsUp,
   [IconName.TrendingUp]: TrendingUp,
   [IconName.TrendingDown]: TrendingDown,

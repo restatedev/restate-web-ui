@@ -23,7 +23,7 @@ export function LimitsSidebarItem({
         pathname === flowControlPath ||
         pathname.startsWith(`${flowControlPath}/`)
       }
-      icon={IconName.Filters}
+      icon={IconName.FlowControl}
       label="Flow control"
       preserveSearchParams={preserveSearchParams}
       disabled={disabled}
