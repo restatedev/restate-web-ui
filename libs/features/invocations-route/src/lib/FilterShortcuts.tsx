@@ -58,7 +58,7 @@ const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
   supportsVqueueOnlyFields: boolean,
 ) => FilterShortcut[] = (schema, supportsVqueueOnlyFields) => {
-  const defaultColumns = getDefaultInvocationColumns(supportsVqueueOnlyFields);
+  const defaultColumns = getDefaultInvocationColumns();
   return [
     {
       id: 'processing',

@@ -117,15 +117,12 @@ const BASE_DEFAULT_COLUMNS: ColumnKey[] = [
   'status',
 ];
 
-export function getDefaultInvocationColumns(hasVqueues: boolean): ColumnKey[] {
-  return [
-    ...BASE_DEFAULT_COLUMNS,
-    ...(hasVqueues ? (['limit_key'] as const) : []),
-  ];
+export function getDefaultInvocationColumns(): ColumnKey[] {
+  return [...BASE_DEFAULT_COLUMNS];
 }
 
 export function setDefaultColumns(searchParams: URLSearchParams) {
-  return setColumns(searchParams, getDefaultInvocationColumns(true));
+  return setColumns(searchParams, getDefaultInvocationColumns());
 }
 
 export function isColumnValid(searchParams: URLSearchParams) {
