@@ -32,6 +32,7 @@ import {
   AddFilterTrigger,
   FilterBuilder,
   FilterChip,
+  FilteredResultsCaption,
   QueryClause,
   QueryClauseOption,
   QueryClauseType,
@@ -912,96 +913,108 @@ function Component() {
     [ruleOptions],
   );
   const isFetching = rules.isFetching || ruleOptionsQuery.isFetching;
+  const pageToolbar = (
+    <>
+      <Form
+        ref={formRef}
+        className="hidden min-w-0 flex-auto sm:block"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSearchParams(writeFilterClauses(searchParams, filterQuery.items), {
+            preventScrollReset: true,
+          });
+        }}
+      >
+        <FilterBuilder query={filterQuery} schema={[filterSchema]} multiple>
+          <AddFilterTrigger
+            placeholder="Filter rules…"
+            title="Rule filters"
+            disabled={!hasVqueues}
+            onItemRemove={scheduleSubmit}
+            inputPrefix={
+              <Icon
+                name={IconName.Search}
+                className="h-4 w-4 shrink-0 text-gray-400"
+              />
+            }
+            tagsPlacement="outside"
+            maxVisibleChips="auto"
+            chipOverflowStrategy="all"
+            tagGroupClassName="min-w-0 flex-nowrap"
+            showSectionTitle={false}
+            popoverPlacement="bottom start"
+            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
+            optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
+            className="min-h-7 w-full justify-end text-gray-800"
+            inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+          >
+            {(props) => (
+              <FilterChip
+                {...props}
+                appearance="light"
+                showRemove
+                popoverPlacement="bottom"
+                disabled={!hasVqueues}
+                valueClassName="max-w-56"
+                popoverClassName="w-[32rem] max-w-[calc(100vw-2rem)]"
+                renderValue={renderRuleValue}
+                renderOption={renderRuleOption}
+              />
+            )}
+          </AddFilterTrigger>
+        </FilterBuilder>
+      </Form>
+      <Button
+        type="button"
+        variant="primary"
+        className="mb-px flex h-7 shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
+        onClick={() => setCreateOpen(true)}
+        disabled={!hasVqueues}
+      >
+        <Icon name={IconName.Plus} />
+        New rule
+      </Button>
+      <Tooltip>
+        <TooltipTrigger>
+          <Button
+            type="button"
+            variant="icon"
+            aria-label={isFetching ? 'Refreshing rules' : 'Refresh rules'}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+            onClick={() => {
+              void rules.refetch();
+              void ruleOptionsQuery.refetch();
+            }}
+            disabled={!hasVqueues || isFetching}
+          >
+            <Icon
+              name={IconName.Retry}
+              className={refreshIconStyles({
+                isFetching,
+              })}
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent size="sm">Refresh rules</TooltipContent>
+      </Tooltip>
+    </>
+  );
+  const filteredResultsCaption = selectedPattern ? (
+    <FilteredResultsCaption
+      noun="rules"
+      onClear={() =>
+        setSearchParams(writeFilterClauses(searchParams, []), {
+          preventScrollReset: true,
+        })
+      }
+    />
+  ) : undefined;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <FlowControlHero />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'rules')}>
-        <ContentPanelToolbar>
-          <Button
-            type="button"
-            variant="secondary"
-            className="ml-2 flex shrink-0 items-center justify-center gap-2 rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
-            onClick={() => setCreateOpen(true)}
-            disabled={!hasVqueues}
-          >
-            <Icon name={IconName.Plus} />
-            New rule
-          </Button>
-          <Form
-            ref={formRef}
-            className="hidden min-w-0 flex-auto sm:block"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setSearchParams(
-                writeFilterClauses(searchParams, filterQuery.items),
-                { preventScrollReset: true },
-              );
-            }}
-          >
-            <FilterBuilder query={filterQuery} schema={[filterSchema]} multiple>
-              <AddFilterTrigger
-                placeholder="Filter rules…"
-                title="Rule filters"
-                disabled={!hasVqueues}
-                onItemRemove={scheduleSubmit}
-                inputPrefix={
-                  <Icon
-                    name={IconName.Search}
-                    className="h-4 w-4 shrink-0 text-gray-400"
-                  />
-                }
-                tagsPlacement="outside"
-                maxVisibleChips="auto"
-                chipOverflowStrategy="all"
-                tagGroupClassName="min-w-0 flex-nowrap"
-                showSectionTitle={false}
-                popoverPlacement="bottom start"
-                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
-                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
-                className="min-h-7 w-full justify-end text-gray-800"
-                inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
-              >
-                {(props) => (
-                  <FilterChip
-                    {...props}
-                    appearance="light"
-                    showRemove
-                    popoverPlacement="bottom"
-                    disabled={!hasVqueues}
-                    valueClassName="max-w-56"
-                    popoverClassName="w-[32rem] max-w-[calc(100vw-2rem)]"
-                    renderValue={renderRuleValue}
-                    renderOption={renderRuleOption}
-                  />
-                )}
-              </AddFilterTrigger>
-            </FilterBuilder>
-          </Form>
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                type="button"
-                variant="icon"
-                aria-label={isFetching ? 'Refreshing rules' : 'Refresh rules'}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
-                onClick={() => {
-                  void rules.refetch();
-                  void ruleOptionsQuery.refetch();
-                }}
-                disabled={!hasVqueues || isFetching}
-              >
-                <Icon
-                  name={IconName.Retry}
-                  className={refreshIconStyles({
-                    isFetching,
-                  })}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent size="sm">Refresh rules</TooltipContent>
-          </Tooltip>
-        </ContentPanelToolbar>
+        <ContentPanelToolbar>{pageToolbar}</ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
             {!hasVqueues ? (
@@ -1020,6 +1033,7 @@ function Component() {
                 error={error as Error | null}
                 numOfRows={Math.max(rulePagination.pageItems.length, 6)}
                 bodyDependencies={[error, rules.isFetching]}
+                caption={filteredResultsCaption}
                 sortDescriptor={sortDescriptor}
                 onSortChange={setSortDescriptor}
                 emptyPlaceholder={

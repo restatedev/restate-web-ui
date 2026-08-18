@@ -28,6 +28,7 @@ import {
   AddFilterTrigger,
   FilterBuilder,
   FilterChip,
+  FilteredResultsCaption,
   QueryClause,
   QueryClauseType,
   useFilterBuilder,
@@ -407,6 +408,16 @@ function Component() {
   const isLoading =
     isServicesPending || (Boolean(selectedService) && isInstancesFetching);
   const error = servicesError ?? instancesError;
+  const filteredResultsCaption = hasFilters ? (
+    <FilteredResultsCaption
+      noun="virtual object instances"
+      onClear={() =>
+        setSearchParams(writeVirtualObjectFilters(searchParams, []), {
+          preventScrollReset: true,
+        })
+      }
+    />
+  ) : undefined;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -491,6 +502,7 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Virtual Object instances"
+                caption={filteredResultsCaption}
                 columns={visibleColumns}
                 items={items}
                 isLoading={isLoading}

@@ -13,6 +13,7 @@ import {
   ColumnProps as AriaColumnProps,
   Column as AriaColumn,
   ResizableTableContainer,
+  Toolbar as AriaToolbar,
 } from 'react-aria-components';
 import type { Key, SortDescriptor } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
@@ -63,6 +64,7 @@ export interface PanelTableProps<
   renderChildRows?: (row: T, columns: PanelTableColumn[]) => ReactNode;
   rowClassName?: string | ((row: T) => string);
   rowDependencies?: unknown[];
+  toolbar?: ReactNode;
   // Optional content rendered inside the scroll area, just below the sticky
   // column header and above the rows (scrolls with the rows). Omit for no effect.
   caption?: ReactNode;
@@ -87,6 +89,10 @@ const styles = tv({
       'static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_.checkbox]:border-gray-200! [&_.checkbox]:shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]!',
     stickyHeaderTrailingResizerHidden:
       '[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible',
+    stickyToolbarWrapper:
+      'sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)+3.25rem-var(--cp-toolbar-tuck,0px))] z-30 mx-2 mt-11 -mb-8 h-8',
+    stickyToolbar:
+      'relative flex h-full min-w-0 items-center gap-1.5 border-y border-blue-100 bg-blue-50/90 px-2 text-xs backdrop-blur-3xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-blue-50',
     dataTableScroll: 'relative [scrollbar-width:thin] overflow-auto',
     dataTableInner: 'w-full border-separate border-spacing-0',
     dataTableSpacerHeader:
@@ -120,6 +126,7 @@ export function PanelTable<
   emptyPlaceholder,
   bodyDependencies,
   bodyKey,
+  toolbar,
   caption,
   ...ariaProps
 }: PanelTableProps<T, TColId>) {
@@ -132,6 +139,8 @@ export function PanelTable<
     stickyHeaderTable,
     stickyHeaderInner,
     stickyHeaderTrailingResizerHidden,
+    stickyToolbarWrapper,
+    stickyToolbar,
     dataTableScroll,
     dataTableInner,
     dataTableSpacerHeader,
@@ -377,6 +386,16 @@ export function PanelTable<
           </div>
         </div>
       </div>
+      {toolbar && (
+        <div className={stickyToolbarWrapper()}>
+          <AriaToolbar
+            aria-label={ariaLabel ? `${ariaLabel} tools` : 'Table tools'}
+            className={stickyToolbar()}
+          >
+            {toolbar}
+          </AriaToolbar>
+        </div>
+      )}
       <div ref={setDataTableScrollEl} className={dataTableScroll()}>
         {caption}
         <ResizableTableContainer>

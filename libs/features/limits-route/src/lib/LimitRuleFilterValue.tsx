@@ -6,7 +6,7 @@ export function LimitRuleFilterValue({ pattern }: { pattern: string }) {
     <LimitRuleTarget
       pattern={pattern}
       density="tight"
-      className="h-4 min-w-0 [&_[data-chip]]:[--chip-height:1rem] [&_[data-chip]]:[--chip-inset:0px]"
+      className="min-w-0"
       showIcon={false}
       showTooltip={false}
     />

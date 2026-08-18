@@ -32,6 +32,7 @@ import {
   AddFilterTrigger,
   FilterBuilder,
   FilterChip,
+  FilteredResultsCaption,
   QueryClause,
   QueryClauseType,
   useFilterBuilder,
@@ -296,6 +297,16 @@ function Component() {
   const isLoading =
     isServicesPending || (Boolean(selectedService) && isRunsFetching);
   const error = servicesError ?? runsError;
+  const filteredResultsCaption = hasFilters ? (
+    <FilteredResultsCaption
+      noun="workflow runs"
+      onClear={() =>
+        setSearchParams(writeWorkflowFilters(searchParams, []), {
+          preventScrollReset: true,
+        })
+      }
+    />
+  ) : undefined;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -378,6 +389,7 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Workflow runs"
+                caption={filteredResultsCaption}
                 columns={columns}
                 items={items}
                 isLoading={isLoading}

@@ -72,6 +72,7 @@ import {
   FilterChip,
   FILTER_QUERY_PREFIX,
   FilterShortcutTrigger,
+  writeFilterClauses,
 } from '@restate/ui/filter-builder';
 import {
   ClientLoaderFunctionArgs,
@@ -337,7 +338,7 @@ function SlowQueryOverlay({
 }
 
 function Component() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     OnboardingGuide,
     baseUrl,

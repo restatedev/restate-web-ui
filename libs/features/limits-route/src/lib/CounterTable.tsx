@@ -348,6 +348,7 @@ export interface CounterTableProps {
   isLoading?: boolean;
   error?: Error | null;
   numOfRows?: number;
+  toolbar?: ReactNode;
   caption?: ReactNode;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
@@ -363,6 +364,7 @@ export function CounterTable({
   isLoading,
   error,
   numOfRows,
+  toolbar,
   caption,
   emptyPlaceholder,
   dependencies,
@@ -399,6 +401,7 @@ export function CounterTable({
         }
       }}
       rowClassName={rowStyles()}
+      toolbar={toolbar}
       caption={caption}
       emptyPlaceholder={emptyPlaceholder}
       renderCell={(row, column) => renderCounterCell(row, column, variant)}

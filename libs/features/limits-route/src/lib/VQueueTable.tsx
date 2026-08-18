@@ -595,6 +595,7 @@ export function VQueueTable({
   vqueues,
   isLoading,
   error,
+  caption,
   emptyPlaceholder,
   dependencies,
   sortDescriptor,
@@ -604,6 +605,7 @@ export function VQueueTable({
   vqueues: VQueueMetaRow[];
   isLoading?: boolean;
   error?: Error | null;
+  caption?: ReactNode;
   emptyPlaceholder?: ReactNode;
   dependencies?: unknown[];
   sortDescriptor?: SortDescriptor;
@@ -638,6 +640,7 @@ export function VQueueTable({
         navigate(`${baseUrl}/flow-control/vqueues/${String(rowId)}`);
       }}
       rowClassName={rowStyles()}
+      caption={caption}
       emptyPlaceholder={emptyPlaceholder}
       renderCell={(row, column) => renderCell(row, column, baseUrl)}
     />

@@ -104,6 +104,7 @@ import {
   Component as ComponentIcon,
   Focus,
   Scan,
+  Funnel,
   SlidersHorizontal,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -214,6 +215,7 @@ export const enum IconName {
   RetryNow = 'RetryNow',
   Upgrade = 'Upgrade',
   Gauge = 'Gauge',
+  Filter = 'Filter',
   Filters = 'Filters',
   TrendingUp = 'TrendingUp',
   TrendingDown = 'TrendingDown',
@@ -351,6 +353,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Resume]: Play,
   [IconName.RetryNow]: RotateCcw,
   [IconName.Gauge]: Gauge,
+  [IconName.Filter]: Funnel,
   [IconName.Filters]: SlidersHorizontal,
   [IconName.Upgrade]: ChevronsUp,
   [IconName.TrendingUp]: TrendingUp,

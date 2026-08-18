@@ -14,6 +14,7 @@ import {
   AddFilterTrigger,
   FilterBuilder,
   FilterChip,
+  FilteredResultsCaption,
   QueryClause,
   QueryClauseType,
   readFilterClauses,
@@ -143,80 +144,95 @@ function VQueuesComponent() {
     ),
     [],
   );
+  const pageToolbar = (
+    <>
+      <Form
+        ref={formRef}
+        className="hidden min-w-0 flex-auto sm:block"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSearchParams(writeFilterClauses(searchParams, query.items), {
+            preventScrollReset: true,
+          });
+        }}
+      >
+        <FilterBuilder query={query} schema={VQUEUE_FILTER_SCHEMA} multiple>
+          <AddFilterTrigger
+            placeholder="Filter VQueues…"
+            title="VQueue filters"
+            disabled={!hasVqueues}
+            onInputSubmit={applyVQueueId}
+            onItemRemove={scheduleSubmit}
+            renderOption={renderFilterOption}
+            inputPrefix={
+              <Icon
+                name={IconName.Search}
+                className="h-4 w-4 shrink-0 text-gray-400"
+              />
+            }
+            tagsPlacement="outside"
+            maxVisibleChips="auto"
+            chipOverflowStrategy="all"
+            tagGroupClassName="min-w-0 flex-nowrap"
+            showSectionTitle={false}
+            popoverPlacement="bottom start"
+            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
+            optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
+            className="min-h-7 w-full justify-end text-gray-800"
+            inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+          >
+            {(props) => (
+              <FilterChip
+                {...props}
+                appearance="light"
+                showRemove
+                popoverPlacement="bottom"
+              />
+            )}
+          </AddFilterTrigger>
+        </FilterBuilder>
+      </Form>
+      <Tooltip>
+        <TooltipTrigger>
+          <Button
+            type="button"
+            variant="icon"
+            aria-label={
+              vqueues.isFetching ? 'Refreshing VQueues' : 'Refresh VQueues'
+            }
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+            onClick={() => void vqueues.refetch()}
+            disabled={!hasVqueues || vqueues.isFetching}
+          >
+            <Icon
+              name={IconName.Retry}
+              className={refreshIconStyles({
+                isFetching: vqueues.isFetching,
+              })}
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent size="sm">Refresh VQueues</TooltipContent>
+      </Tooltip>
+    </>
+  );
+  const filteredResultsCaption = hasFilters ? (
+    <FilteredResultsCaption
+      noun="VQueues"
+      onClear={() =>
+        setSearchParams(writeFilterClauses(searchParams, []), {
+          preventScrollReset: true,
+        })
+      }
+    />
+  ) : undefined;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <FlowControlHero />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'vqueues')}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
-          <Form
-            ref={formRef}
-            className="hidden min-w-0 flex-auto sm:block"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setSearchParams(writeFilterClauses(searchParams, query.items), {
-                preventScrollReset: true,
-              });
-            }}
-          >
-            <FilterBuilder query={query} schema={VQUEUE_FILTER_SCHEMA} multiple>
-              <AddFilterTrigger
-                placeholder="Filter VQueues…"
-                title="VQueue filters"
-                disabled={!hasVqueues}
-                onInputSubmit={applyVQueueId}
-                onItemRemove={scheduleSubmit}
-                renderOption={renderFilterOption}
-                inputPrefix={
-                  <Icon
-                    name={IconName.Search}
-                    className="h-4 w-4 shrink-0 text-gray-400"
-                  />
-                }
-                tagsPlacement="outside"
-                maxVisibleChips="auto"
-                chipOverflowStrategy="all"
-                tagGroupClassName="min-w-0 flex-nowrap"
-                showSectionTitle={false}
-                popoverPlacement="bottom start"
-                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
-                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
-                className="min-h-7 w-full justify-end text-gray-800"
-                inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
-              >
-                {(props) => (
-                  <FilterChip
-                    {...props}
-                    appearance="light"
-                    showRemove
-                    popoverPlacement="bottom"
-                  />
-                )}
-              </AddFilterTrigger>
-            </FilterBuilder>
-          </Form>
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                type="button"
-                variant="icon"
-                aria-label={
-                  vqueues.isFetching ? 'Refreshing VQueues' : 'Refresh VQueues'
-                }
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
-                onClick={() => void vqueues.refetch()}
-                disabled={!hasVqueues || vqueues.isFetching}
-              >
-                <Icon
-                  name={IconName.Retry}
-                  className={refreshIconStyles({
-                    isFetching: vqueues.isFetching,
-                  })}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent size="sm">Refresh VQueues</TooltipContent>
-          </Tooltip>
+          {pageToolbar}
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
@@ -232,6 +248,7 @@ function VQueuesComponent() {
                 vqueues={pagination.pageItems}
                 isLoading={vqueues.isFetching}
                 error={vqueues.error as Error | null}
+                caption={filteredResultsCaption}
                 dependencies={[searchString, vqueues.isFetching]}
                 sortDescriptor={sortDescriptor}
                 onSortChange={setSortDescriptor}
