@@ -9,6 +9,7 @@ export interface LimitCounterIdentity {
 }
 
 export const LIMIT_COUNTER_RULE_QUERY_PARAM = 'rule';
+export const LIMIT_RULE_PATTERN_FILTER_ID = 'pattern';
 export const ALL_LIMIT_COUNTERS = 'all';
 export const ANY_RULE_LIMIT_COUNTERS = 'any';
 const RULE_LIMIT_COUNTERS_PREFIX = 'rule:';
@@ -60,6 +61,12 @@ export function limitCountersForRuleHref(baseUrl: string, pattern: string) {
 
 function setExactFilter(search: URLSearchParams, field: string, value: string) {
   search.set(`filter_${field}`, JSON.stringify({ operation: 'EQUALS', value }));
+}
+
+export function limitRulesForPatternHref(baseUrl: string, pattern: string) {
+  const search = new URLSearchParams();
+  setExactFilter(search, LIMIT_RULE_PATTERN_FILTER_ID, pattern);
+  return `${baseUrl}/flow-control/rules?${search}`;
 }
 
 export function limitCountersForIdentityHref(

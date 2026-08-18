@@ -69,8 +69,7 @@ export function LimitCounterTarget({
   const chipVariant = variant === 'header' ? 'header' : 'default';
   const resolvedShowIcon = showIcon ?? variant !== 'header';
   const atCapacity = usage != null && limit != null && usage >= limit;
-  const resolvedShowChevron =
-    showChevron ?? (variant === 'table' && Boolean(href));
+  const resolvedShowChevron = showChevron ?? Boolean(href);
   const {
     root,
     identity: identityStyles,

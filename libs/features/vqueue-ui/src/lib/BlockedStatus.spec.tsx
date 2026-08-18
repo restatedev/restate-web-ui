@@ -81,7 +81,7 @@ describe('BlockedStatus', () => {
       },
       blockedDuration: 'PT37S',
       counterHref: '/flow-control/counters?counter=exact',
-      ruleHref: '/flow-control/counters?rule=exact',
+      ruleHref: '/flow-control/rules?filter_pattern=exact',
       ruleLimit: 10,
       counterUsage: 10,
     });
@@ -108,7 +108,7 @@ describe('BlockedStatus', () => {
           name: 'Limit rule tenant-*/payments/priority',
         })
         .getAttribute('href'),
-    ).toBe('/flow-control/counters?rule=exact');
+    ).toBe('/flow-control/rules?filter_pattern=exact');
     expect(
       screen
         .getByRole('link', {

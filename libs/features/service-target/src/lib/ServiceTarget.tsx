@@ -17,7 +17,7 @@ import {
 } from '@restate/ui/tooltip';
 import { panelHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 const styles = tv({
   slots: {
@@ -35,6 +35,7 @@ const styles = tv({
     handler:
       'min-w-0 bg-zinc-100 pr-2 pl-1 font-medium text-zinc-600/80 italic',
     trailing: 'min-w-0 bg-zinc-100 px-1.5 text-zinc-600/80',
+    endContent: 'ml-1 flex shrink-0 items-center',
     serviceIcon: 'h-3 w-3 shrink-0 text-zinc-400',
     icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
     handlerIcon: '-mr-1 h-5 w-5 shrink-0 text-zinc-400',
@@ -70,6 +71,7 @@ export interface ServiceTargetProps {
   chipClassName?: string;
   variant?: ChipGroupVariant;
   density?: 'default' | 'compact';
+  endContent?: ReactNode;
 }
 
 export type ServiceTargetSegment =
@@ -98,6 +100,15 @@ function resolveServiceType(serviceType?: ServiceTargetServiceType) {
       : serviceType === 'workflow'
         ? 'Workflow'
         : serviceType;
+}
+
+function TargetLinkChevron() {
+  return (
+    <Icon
+      name={IconName.ChevronRight}
+      className="-mr-1 h-3.5 w-3.5 shrink-0 text-zinc-400"
+    />
+  );
 }
 
 export function getServiceTargetEntityLink({
@@ -173,6 +184,7 @@ function ServiceTargetContent({
   chipClassName,
   variant,
   density,
+  endContent,
   children,
 }: PropsWithChildren<ServiceTargetProps>) {
   const { baseUrl } = useRestateContext();
@@ -236,6 +248,12 @@ function ServiceTargetContent({
     automaticLink: automaticHandlerLink,
     fallbackAriaLabel: `Open ${service} / ${handler} handler`,
   });
+  const identityChevronSegment =
+    hasServiceKey && serviceKeyLink
+      ? 'serviceKey'
+      : serviceLink
+        ? 'service'
+        : undefined;
   const {
     root,
     group,
@@ -249,6 +267,7 @@ function ServiceTargetContent({
     key,
     handler: handlerStyle,
     trailing,
+    endContent: endContentStyle,
     serviceIcon,
     icon,
     handlerIcon,
@@ -309,6 +328,15 @@ function ServiceTargetContent({
       <ChipSegment className={serviceStyle()}>
         <Icon name={IconName.Box} className={serviceIcon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
+        {identityChevronSegment === 'service' && <TargetLinkChevron />}
+        {!hasServiceKey &&
+          !hasVisibleHandler &&
+          !hasTrailingContent &&
+          endContent && (
+            <span className={endContentStyle()} data-service-target-end-content>
+              {endContent}
+            </span>
+          )}
       </ChipSegment>
     </Chip>
   );
@@ -325,6 +353,12 @@ function ServiceTargetContent({
       <ChipSegment className={handlerStyle()}>
         <Icon name={IconName.Function} className={handlerIcon()} />
         <TruncateTooltipTrigger>{handler}()</TruncateTooltipTrigger>
+        {handlerLink && <TargetLinkChevron />}
+        {!hasTrailingContent && endContent && (
+          <span className={endContentStyle()} data-service-target-end-content>
+            {endContent}
+          </span>
+        )}
       </ChipSegment>
     </Chip>
   ) : null;
@@ -349,6 +383,12 @@ function ServiceTargetContent({
         <TruncateTooltipTrigger>
           {serviceKey || <>&nbsp;</>}
         </TruncateTooltipTrigger>
+        {identityChevronSegment === 'serviceKey' && <TargetLinkChevron />}
+        {!hasVisibleHandler && !hasTrailingContent && endContent && (
+          <span className={endContentStyle()} data-service-target-end-content>
+            {endContent}
+          </span>
+        )}
       </ChipSegment>
     </Chip>
   ) : null;
@@ -388,7 +428,17 @@ function ServiceTargetContent({
               className={chip({ className: chipClassName })}
               containerClassName={trailingChip()}
             >
-              <ChipSegment className={trailing()}>{children}</ChipSegment>
+              <ChipSegment className={trailing()}>
+                {children}
+                {endContent && (
+                  <span
+                    className={endContentStyle()}
+                    data-service-target-end-content
+                  >
+                    {endContent}
+                  </span>
+                )}
+              </ChipSegment>
             </Chip>
           )}
         </ChipGroup>

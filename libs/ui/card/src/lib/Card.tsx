@@ -176,6 +176,7 @@ export function CardLinkRow({
   'aria-label': ariaLabel,
   label,
   variant,
+  showChevron = true,
   className,
   children,
 }: PropsWithChildren<{
@@ -183,6 +184,7 @@ export function CardLinkRow({
   'aria-label'?: string;
   label?: ReactNode;
   variant?: 'hero' | 'default';
+  showChevron?: boolean;
   className?: string;
 }>) {
   const styles = cardRowStyles({ variant });
@@ -203,10 +205,12 @@ export function CardLinkRow({
       {label && <span className={styles.label()}>{label}</span>}
       {children}
       {!label && <span className="min-w-2 flex-auto" />}
-      <Icon
-        name={IconName.ChevronRight}
-        className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 group-hover:translate-x-0.5"
-      />
+      {showChevron && (
+        <Icon
+          name={IconName.ChevronRight}
+          className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 group-hover:translate-x-0.5"
+        />
+      )}
     </Link>
   );
 }
