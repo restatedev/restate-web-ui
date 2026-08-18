@@ -39,6 +39,23 @@ export function formatDurations(
   if (!isValid) {
     return '';
   }
+
+  const subSecondMilliseconds =
+    (duration.seconds ?? 0) * 1000 +
+    (duration.milliseconds ?? 0) +
+    (duration.microseconds ?? 0) / 1000 +
+    (duration.nanoseconds ?? 0) / 1_000_000;
+  const hasLargerUnit =
+    Boolean(duration.years) ||
+    Boolean(duration.months) ||
+    Boolean(duration.weeks) ||
+    Boolean(duration.days) ||
+    Boolean(duration.hours) ||
+    Boolean(duration.minutes);
+  if (!hasLargerUnit && subSecondMilliseconds < 1000) {
+    return `${formatNumber(subSecondMilliseconds)}ms`;
+  }
+
   const parts = activeFormatter.formatToParts(duration);
   const shouldShowFraction =
     !duration.minutes && !duration.hours && !duration.days;
