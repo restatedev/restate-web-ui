@@ -222,6 +222,12 @@ export function useSchema() {
       ...(hasVqueues
         ? [
             {
+              id: 'vqueue_id',
+              label: 'VQueue',
+              operations: [{ value: 'EQUALS' as const, label: 'is' }],
+              type: 'STRING' as const,
+            },
+            {
               id: 'scope',
               label: 'Scope',
               operations: nullableStringOperations,

@@ -407,6 +407,23 @@ describe('POST /query/v2/invocations', () => {
       `);
     });
 
+    it('filters invocations by VQueue ID', async () => {
+      await post('/v2/invocations', {
+        filters: [
+          {
+            field: 'vqueue_id',
+            type: 'STRING',
+            operation: 'EQUALS',
+            value: 'vq_selected',
+          },
+        ],
+      });
+
+      expect(sql).toHaveLength(1);
+      expect(sql[0]).toContain('FROM sys_vqueues v');
+      expect(sql[0]).toContain("AND v.id = 'vq_selected'");
+    });
+
     it('rejects transitioned_at when invocation filters require status refinement', async () => {
       const response = await post('/v2/invocations', {
         filters: [
