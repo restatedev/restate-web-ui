@@ -46,8 +46,7 @@ import { useNavigate } from 'react-router';
 import { getBlockedLimitCounterRequest } from './limits.counterFilters';
 import {
   limitCountersForIdentityHref,
-  limitCountersForRuleHref,
-  type LimitCounterIdentity,
+  limitRulesForPatternHref,
 } from './navigation';
 
 type VQueueColumn =
@@ -399,7 +398,7 @@ function StructuredBlockedHeadState({
       }
       ruleHref={
         resource.blockedRule
-          ? limitCountersForRuleHref(baseUrl, resource.blockedRule)
+          ? limitRulesForPatternHref(baseUrl, resource.blockedRule)
           : undefined
       }
       ruleLimit={limit?.concurrency_limit ?? undefined}

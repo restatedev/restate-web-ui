@@ -6774,6 +6774,10 @@
       "ListLimitRulesRequestBody": {
         "type": "object",
         "properties": {
+          "rulePattern": {
+            "type": "string",
+            "description": "Return only the rule with this exact pattern."
+          },
           "limit": {
             "type": "integer",
             "minimum": 1,

@@ -11,7 +11,7 @@ import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Copy } from '@restate/ui/copy';
-import { IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui/icons';
 import type { ReactNode } from 'react';
 
 function CopyValue({ value }: { value: string }) {
@@ -26,13 +26,46 @@ function CopyValue({ value }: { value: string }) {
   );
 }
 
+function EntityChevron() {
+  return (
+    <Icon
+      name={IconName.ChevronRight}
+      className="-mr-1 h-3.5 w-3.5 text-zinc-400"
+    />
+  );
+}
+
+function DetailLabel({
+  icon,
+  iconClassName,
+  children,
+}: {
+  icon: IconName;
+  iconClassName?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span className="flex items-center gap-2">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+        <Icon
+          name={icon}
+          className={['h-3.5 w-3.5', iconClassName].filter(Boolean).join(' ')}
+        />
+      </span>
+      {children}
+    </span>
+  );
+}
+
 function RelatedEntityRow({
   label,
+  icon,
   href,
   ariaLabel,
   children,
 }: {
   label: string;
+  icon: IconName;
   href: string;
   ariaLabel?: string;
   children: ReactNode;
@@ -41,8 +74,9 @@ function RelatedEntityRow({
     <CardLinkRow
       href={href}
       aria-label={ariaLabel}
-      label={label}
+      label={<DetailLabel icon={icon}>{label}</DetailLabel>}
       variant="hero"
+      showChevron={false}
     >
       {children}
     </CardLinkRow>
@@ -109,6 +143,7 @@ export function InvocationDetailsCard({
       {isVirtualObject && entityLink && (
         <RelatedEntityRow
           label="Virtual Object"
+          icon={IconName.VirtualObject}
           href={entityLink.href}
           ariaLabel={entityLink.ariaLabel}
         >
@@ -121,12 +156,14 @@ export function InvocationDetailsCard({
             showHandler={false}
             links={false}
             className="min-w-0 flex-[0_1_auto]"
+            endContent={<EntityChevron />}
           />
         </RelatedEntityRow>
       )}
       {isWorkflow && entityLink && (
         <RelatedEntityRow
           label="Workflow"
+          icon={IconName.Workflow}
           href={entityLink.href}
           ariaLabel={entityLink.ariaLabel}
         >
@@ -139,38 +176,59 @@ export function InvocationDetailsCard({
             showHandler={false}
             links={false}
             className="min-w-0 flex-[0_1_auto]"
+            endContent={<EntityChevron />}
           />
         </RelatedEntityRow>
       )}
       {vqueueId && (
-        <CardRow label="VQueue">
+        <CardRow
+          label={
+            <DetailLabel icon={IconName.Layers} iconClassName="rotate-90">
+              VQueue
+            </DetailLabel>
+          }
+        >
           <VQueueId
             id={vqueueId}
-            focusEntryId={invocation.id}
-            focusStage={vqueueSnapshot?.focusEntry?.stage}
-            snapshot={vqueueSnapshot}
+            popover={false}
             truncateInMiddle
-            className="ml-1 max-w-48 min-w-0"
+            className="ml-1 max-w-48 min-w-0 text-xs"
           />
         </CardRow>
       )}
       {limitKey && (
-        <CardRow label="Limit key">
+        <CardRow
+          label={<DetailLabel icon={IconName.LimitKey}>Limit key</DetailLabel>}
+        >
           <LimitKey value={limitKey} className="ml-1" />
         </CardRow>
       )}
       {idempotencyId && (
-        <CardRow label="Idempotency key">
+        <CardRow
+          label={
+            <DetailLabel icon={IconName.IdempotencyKey}>
+              Idempotency key
+            </DetailLabel>
+          }
+        >
           <CopyValue value={idempotencyId} />
         </CardRow>
       )}
       {traceId && (
-        <CardRow label="Trace ID">
+        <CardRow
+          label={<DetailLabel icon={IconName.Binoculars}>Trace ID</DetailLabel>}
+        >
           <CopyValue value={traceId} />
         </CardRow>
       )}
       {restateVersion && (
-        <CardRow label="Created by Restate">
+        <CardRow
+          label={
+            <DetailLabel icon={IconName.Restate}>
+              Created by Restate
+            </DetailLabel>
+          }
+        >
           <CopyValue value={restateVersion} />
         </CardRow>
       )}

@@ -27,7 +27,7 @@ export function InvocationJourneyCard({
 }) {
   return (
     <Card intent="none">
-      <CardHeader title="Journey" icon={IconName.History}>
+      <CardHeader title="Lifecycle" icon={IconName.History}>
         <JourneyComparisonSummary comparison={model.comparison} />
       </CardHeader>
       <InvocationJourneyTimeline scenario={model} />

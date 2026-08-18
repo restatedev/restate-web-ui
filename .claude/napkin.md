@@ -1,5 +1,57 @@
 # Napkin
 
+- 2026-08-18 Retry badges: Render `retry_attempts` as the primary Retries popover badge when non-zero. If it is zero but `num_errors` is non-zero, render `num_errors` as that same Retries popover badge so transient-error history remains accessible. Only render a separate static Backoffs badge when both counters are non-zero; do not combine or sum the overlapping counters.
+
+- 2026-08-18 Invocations Limit key sizing: Keep the newly default-visible Limit key column compact by using `INVOCATION_TABLE_COLUMN_CONFIG.limit_key.defaultWidth` (160px) in the Invocations route instead of leaving it as an unconstrained flexible column. Do not change the shared LimitKey component or other tables.
+
+- 2026-08-18 VQueueId rule-link regression assertion: The structured blocking test still expected the legacy encoded `rule:<pattern>` query after rule navigation moved to JSON `filter_pattern`. Validate the decoded filter object (`EQUALS`, exact value) instead of a brittle encoded substring.
+
+- 2026-08-18 self on shared Link props: I passed `title` directly to `@restate/ui/link`, whose narrowed `LinkProps` does not expose it. Put the hover title on an inner span when linked truncated identity text still needs the full value.
+
+- 2026-08-18 VQueue popover head navigation: When no custom `renderEntryId` is supplied, render `inv_…` head entries as direct invocation links and leave mutations/other queue entry IDs as plain text. Preserve the renderer override so invocation-ui can still provide its richer identity component without creating a dependency cycle.
+
+- 2026-08-18 Limit-counter list affordance: `LimitCounterTarget` already knows how to place a chevron in its final scope/limit-key segment. Default that affordance from any supplied `href`, and make `CounterTable` pass the same VQueue-filter URL to the chip group that its row action uses; this makes the identity itself a link without changing the row destination.
+
+- 2026-08-18 Invocations default Limit key column: The client loader cannot read the React feature cache, so canonical default column URLs include `limit_key`; `useColumns` already hides it when the `vqueues` feature is unavailable. Feature-aware invocation shortcuts use `getDefaultInvocationColumns(hasVqueues)` so VQueue servers retain Limit key when switching presets, while explicit/restored column URLs remain authoritative.
+
+- 2026-08-18 Nx typecheck fallback: `NX_DAEMON=false pnpm nx typecheck web-ui` can hang and end with `Failed to start plugin worker` without reporting a TypeScript error. Run `pnpm exec tsc -p apps/web-ui/tsconfig.app.json --noEmit` to execute the same app config directly when that infrastructure failure occurs.
+
+- 2026-08-18 self on ServiceTarget identity-chevron selection: `resolveSegmentLink` can return an automatic `serviceKeyLink` even when no service-key chip exists. Prefer that segment only when `hasServiceKey`; otherwise the identity chevron for a stateless service must fall back to its service chip.
+
+- 2026-08-18 self on post-format ServiceTarget patch: I again built a hunk against the pre-Prettier one-line condition even though the current `endContent` branch had been wrapped. Re-read each exact changed segment immediately before extending recently formatted JSX.
+
+- 2026-08-18 ServiceTarget link affordances: Put compact, non-animated chevrons directly in linked target chips. Show one identity chevron—prefer the VO/Workflow key chip when linked, otherwise the service chip—and a separate handler chevron when the handler chip is linked. `Target` inherits this through `ServiceTarget`; scope chips do not gain chevrons.
+
+- 2026-08-18 Workflow-run list navigation affordance: A linked `WorkflowRunTarget` shows a compact, non-animated chevron inside its Workflow ID chip. Render it only when the target has an `href`, with the same `-mr-1` spacing used by the Invocation Details entity chip.
+
+- 2026-08-18 Invocation Details entity-chevron polish: Keep the final-chip chevron compact with `-mr-1` at this call site rather than changing padding for every shared `ServiceTarget` chip. Do not animate this chevron independently; chip chevrons should share one behavior if animation is introduced globally.
+
+- 2026-08-18 self on ServiceTarget final-chip slot: After adding `endContent`, I mistakenly passed the Details-card chevron as `ServiceTarget` children, which still means a separate compatibility chip. Wire final-chip affordances through the named `endContent` prop and let a focused DOM test verify its closest `[data-chip]`.
+
+- 2026-08-18 Invocation Details entity-row affordance: Workflow and Virtual Object rows remain whole-row links, but their chevron belongs inside the final `ServiceTarget` identity chip rather than at the card edge. Use `ServiceTarget.endContent` with `CardLinkRow.showChevron={false}` to avoid nested links and preserve the row click target.
+
+- 2026-08-18 Invocation Details VQueue link sizing: `VQueueId` popover triggers supply `text-xs`, but the direct-link variant has no base font size and otherwise inherits the larger card text. Set `text-xs` at the Invocation Details call site to retain the former compact identity size without shrinking its icon footprint.
+
+- 2026-08-18 Invocation Details VQueue navigation: The VQueue identity in `InvocationDetailsCard` is a direct link to the VQueue details page, not a popover trigger. Keep the richer VQueue popover for table and contextual surfaces.
+
+- 2026-08-18 self on focused Vitest invocation: Running `pnpm exec vitest` from the workspace root bypassed the library Vite config and failed to resolve path aliases. For library specs, pass the library's `vite.config.ts`; its configured root means the test path must be relative to that library.
+
+- 2026-08-17 user correction on focused Rules row navigation: A rule link from blocked status should first land on the exact filtered Rules view, but the rule row and its pattern target on that page must still navigate to matching Limit counters. Do not make the focused row link back to its own current Rules URL.
+
+- 2026-08-17 Rules exact-pattern filtering: Rule identity links serialize `filter_pattern` with `EQUALS` and land on a one-row Rules view with a removable `Pattern is …` chip. `ListLimitRulesRequestBody.rulePattern` applies exact filtering before the 1,000-row bound; keep an independent unfiltered rules query for selector options. Rule targets in blocked status and counter rows point here; the Rules row, pattern target, and counter summary navigate to matching counters.
+
+- 2026-08-17 self on dev-server process inspection: After a scoped `pgrep` already found the web-ui server, I ran broad `ps -Ao pid,args`, producing a large truncated process dump. Use `ps -p <known-pid> -o pid,args` and scoped child-process checks when exact server arguments are needed.
+
+- 2026-08-17 self on rule-filter schema typing: I spread `LIMIT_RULE_FILTER_SCHEMA[0]` under `noUncheckedIndexedAccess`, making required schema fields optional in the inferred object. Define the singular pattern schema as a named object, then build the exported schema array from it.
+
+- 2026-08-17 self on post-Prettier navigation spec patch: I built a follow-up hunk from the pre-format multi-line call, so it failed after Prettier collapsed the call. Re-read the exact formatted block before applying any post-format follow-up patch.
+
+- 2026-08-17 self on VQueue popover spec inspection: I guessed `VQueuePopoverContent.spec.tsx` in a multi-path search without first confirming it exists, repeating the established guessed-path mistake. Resolve optional spec filenames with `rg --files` before searching them.
+
+- 2026-08-17 blocked rule navigation UX: In `BlockedStatus`, keep the concrete counter target linked to the exact filtered Limit counters view, but a clicked rule target should land on the Rules tab with that exact rule selected/filtered. Do not use the rule identity as an implicit “show matching counters” action; expose that as a separately labelled action from the rule surface.
+
+- 2026-08-17 self on mandatory napkin read: I combined the skill and 3,000-line napkin in one command even though the napkin already records that long combined reads truncate. Read the skill separately, then page the napkin in bounded direct reads before task inspection.
+
 - 2026-08-17 VQueue metadata SQL snapshots: Adding `created_at` to the shared VQueue metadata projection also changes the three journal endpoint inline SQL snapshots that fetch a focused VQueue. When `query:test` fails only on that added column, update those snapshots rather than changing the production projection.
 
 - 2026-08-17 Overview hero refresh: The Restate server icon refetches only active queries tagged with `getOverviewRefreshMeta()`. The progressive invocation summary already carries that tag; the completion gauge must also tag its finished-breakdown query and the mutable live-hour timeline query. Keep the immutable historical completion scan untagged so a manual refresh does not repeat the expensive history read.
@@ -3094,3 +3146,10 @@
 - 2026-08-17 self on spec search: I chained two `rg` inspections with `&&`, despite the repo guidance to keep inspection commands independent. Use separate or parallel tool calls even when the first search may return no matches.
 - 2026-08-17 VQueue blocked tab/row consistency: The combined details endpoint still reads scheduler/meta and `sys_vqueues` concurrently, so one response can contain a blocked scheduler head that is absent from its hydrated Inbox rows. On the selected Inbox tab, show the tab-level `Blocked` badge only when the same response contains a row whose ID matches the blocked head; inactive Inbox tabs may retain the queue-level blocked signal.
 - 2026-08-17 VQueue overview width: Do not let the Timing and Recent activities pair stretch to the old `126rem` ultrawide cap. The intermediate `96rem`/2:1, `84rem`/5:3, and `74rem`/4:3 layouts all left Timing too wide. Cap the overview at `68rem` with a near-even 9:8 split, making Timing roughly 36rem and Recent activities roughly 32rem.
+- 2026-08-18 self on inspection commands: I again used `&&` and an `rg | head` pipeline in repository inspection despite the standing shell guidance. Run independent reads/searches through parallel tool orchestration and control volume with scoped patterns plus output limits.
+- 2026-08-18 invocation Details icons: `CardRow` and `CardLinkRow` labels already accept `ReactNode`, so add a local shared label treatment rather than changing the card primitive. Use VirtualObject, Workflow, rotated Layers, LimitKey, RotateCcwKey, Binoculars, and Restate for the corresponding labels; keep icons muted through inherited label color.
+- 2026-08-18 Details-label alignment: Raw 14px row icons placed at the row padding align their left edges with the 24px header chip, leaving their centers and text columns too far left. Center every row glyph in a fixed 24px slot and use the header's 8px gap so row icons and labels share the header's axes.
+- 2026-08-18 deployment-card icon semantics: `IconName.Box` is the established service icon. Use `IconName.Http` (the globe used by the Deployments tab and HTTP deployment targets) for the invocation Deployment card header.
+- 2026-08-18 invocation card naming: Use `Lifecycle`, not `Journey`, for the invocation timeline card and its duration label. It precisely covers creation, queueing, blocking, attempts, retries, and completion.
+- 2026-08-18 user correction on lifecycle retry counters: Do not describe divergent `retry_attempts` and `retry_count_since_last_stored_command` values as separate or SDK-specific retry flows; all errors and retries pass through the same state-machine flow. For a missing badge, state the proven mapping only: the UI reads `retry_attempts`, while the captured row has `retry_attempts = 0`, `retry_count_since_last_stored_command = 4`, `num_attempts = 5`, and `num_errors = 4`. Choosing a lifetime retry display requires clarifying counter semantics rather than inventing a cause for the zero.
+- 2026-08-18 proven zero-retry-attempt scenario: `FlowControlUiStateService.backingOff` retries one `ctx.run` by throwing `RetryableError({ retryAfter: 4_000 })`. The error carries `next_retry_delay` through the normal invoker flow. `handle_task_error` selects that delay via `override.or_else(|| retry_iter.next())`, so the service retry iterator is not advanced and persisted `retry_attempts` stays zero. Because 4s exceeds the default 2s yield threshold, each failure yields to the VQueue; `mark_yield(..., is_error=true)` increments `num_errors`, and the next dispatch increments `num_attempts`. Four failures then success therefore produce `retry_attempts=0`, `retry_count_since_last_stored_command=4`, `num_errors=4`, and `num_attempts=5` without any separate execution path.

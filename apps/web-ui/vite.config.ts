@@ -82,7 +82,7 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         '^(?!/ui)': {
-          target: 'http://localhost:9070',
+          target: 'http://127.0.0.1:9070/',
           changeOrigin: true,
         },
       },

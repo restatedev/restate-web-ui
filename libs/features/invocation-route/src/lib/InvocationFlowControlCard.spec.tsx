@@ -160,7 +160,7 @@ describe('InvocationFlowControlCard', () => {
       }),
     );
 
-    expect(screen.getByRole('heading', { name: 'Journey' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Lifecycle' })).toBeTruthy();
     expect(screen.getByText('Created').parentElement?.textContent).toContain(
       '1m ago',
     );
@@ -191,17 +191,17 @@ describe('InvocationFlowControlCard', () => {
     );
     expect(
       screen.getByRole('listitem', {
-        name: 'Retry activity: 1,000 retries, 5 back-offs',
+        name: 'Retries: 1,000 retries, 5 backoffs',
       }),
     ).toBeTruthy();
     const retries = screen.getByRole('button', {
       name: 'Retries: 1,000',
     });
-    const backoffs = screen.getByLabelText('Back-offs: 5');
+    const backoffs = screen.getByLabelText('Backoffs: 5');
     expect(retries.textContent).toContain('1K');
     expect(retries.parentElement?.textContent).toBe('1K retries');
     expect(backoffs.textContent).toContain('5');
-    expect(backoffs.parentElement?.textContent).toBe('5 back-offs');
+    expect(backoffs.parentElement?.textContent).toBe('5 backoffs');
     expect(backoffs.closest('button')).toBeNull();
     expect(
       screen.getByRole('listitem', { name: 'Yields: 1 yield' }),
@@ -509,10 +509,10 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.queryByText(/in queue/)).toBeNull();
     expect(
       screen.getByRole('listitem', {
-        name: 'Retry activity: 1,000 retries, 4 back-offs',
+        name: 'Retries: 1,000 retries, 4 backoffs',
       }),
     ).toBeTruthy();
-    expect(screen.getByLabelText('Back-offs: 4').closest('button')).toBeNull();
+    expect(screen.getByLabelText('Backoffs: 4').closest('button')).toBeNull();
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -520,9 +520,7 @@ describe('InvocationFlowControlCard', () => {
       }),
     );
     expect(screen.getByText('Transient errors')).toBeTruthy();
-    expect(
-      screen.queryByText(/back-offs followed transient errors/),
-    ).toBeNull();
+    expect(screen.queryByText(/backoffs followed transient errors/)).toBeNull();
     expect(
       screen.getByText(
         'Deduplicated transient errors from the invocation journal.',
@@ -916,7 +914,7 @@ describe('InvocationFlowControlCard', () => {
       screen.queryByRole('button', { name: 'Toggle 2 attempts' }),
     ).toBeNull();
     expect(screen.queryByText('Backing-off')).toBeNull();
-    expect(screen.queryByText('Back-offs')).toBeNull();
+    expect(screen.queryByText('Retries')).toBeNull();
   });
 
   it('keeps a running invocation Running when VQueue retry metadata says backing-off', () => {
@@ -960,7 +958,7 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.queryByText('Backing-off')).toBeNull();
   });
 
-  it('compresses retries and error interruptions without labeling attempt endpoints', () => {
+  it('links scheduler-only retries to their transient errors', () => {
     renderCard(
       invocation(
         {
@@ -972,7 +970,7 @@ describe('InvocationFlowControlCard', () => {
           first_attempt_at: '2026-01-01T00:00:10.000Z',
           latest_attempt_at: '2026-01-01T00:00:55.000Z',
           transitioned_at: '2026-01-01T00:00:58.000Z',
-          retry_attempts: 7,
+          retry_attempts: 0,
           num_attempts: 3,
           num_errors: 3,
         },
@@ -1003,15 +1001,16 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByText('Killed')).toBeTruthy();
     expect(
       screen.getByRole('listitem', {
-        name: 'Retry activity: 7 retries, 3 back-offs',
+        name: 'Retries: 3 retries',
       }),
     ).toBeTruthy();
 
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Retries: 7',
+        name: 'Retries: 3',
       }),
     );
+    expect(screen.getByText('Transient errors')).toBeTruthy();
     expect(screen.getByText('Database unavailable')).toBeTruthy();
   });
 
@@ -1108,7 +1107,7 @@ describe('InvocationFlowControlCard', () => {
     const retriesButton = screen.getByRole('button', {
       name: 'Retries: 10,000',
     });
-    expect(screen.getByLabelText('Back-offs: 12').closest('button')).toBeNull();
+    expect(screen.getByLabelText('Backoffs: 12').closest('button')).toBeNull();
     const pausesButton = screen.getByRole('button', { name: 'Pauses: 12' });
     const suspensionsButton = screen.getByRole('button', {
       name: 'Suspensions: 12',
@@ -1184,7 +1183,7 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.queryByRole('button', { name: 'Toggle 1 attempt' }),
     ).toBeNull();
-    expect(screen.queryByText('Back-offs')).toBeNull();
+    expect(screen.queryByText('Retries')).toBeNull();
     expect(screen.getByRole('button', { name: 'Pauses: 1' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Suspensions: 1' })).toBeTruthy();
   });
@@ -1369,11 +1368,11 @@ describe('InvocationFlowControlCard', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: 'Journey' }).parentElement
+      screen.getByRole('heading', { name: 'Lifecycle' }).parentElement
         ?.textContent,
     ).toContain('completed in 30s');
     expect(
-      screen.getByRole('heading', { name: 'Journey' }).parentElement
+      screen.getByRole('heading', { name: 'Lifecycle' }).parentElement
         ?.textContent,
     ).not.toContain('so far');
     expect(screen.getByText('Attempt')).toBeTruthy();

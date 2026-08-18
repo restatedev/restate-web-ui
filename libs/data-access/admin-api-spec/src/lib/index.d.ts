@@ -3854,6 +3854,8 @@ export interface components {
       value: string;
     };
     ListLimitRulesRequestBody: {
+      /** @description Return only the rule with this exact pattern. */
+      rulePattern?: string;
       limit?: number;
       sort?: components['schemas']['LimitRuleSort'];
     };

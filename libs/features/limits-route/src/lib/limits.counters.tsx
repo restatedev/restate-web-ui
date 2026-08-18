@@ -5,7 +5,6 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import { useRestateContext } from '@restate/features/restate-context';
-import { LimitRuleTarget } from '@restate/features/vqueue-ui';
 import { Button } from '@restate/ui/button';
 import {
   ContentPanel,
@@ -39,11 +38,14 @@ import {
   LIMIT_COUNTER_FILTER_SCHEMA,
   toLimitCounterFilters,
 } from './limits.counterFilters';
-import { LimitValue } from '@restate/features/vqueue-ui';
 import {
   LimitListPagination,
   useLimitListPagination,
 } from './LimitListPagination';
+import {
+  LimitRuleFilterOption,
+  LimitRuleFilterValue,
+} from './LimitRuleFilterValue';
 import {
   ALL_LIMIT_COUNTERS,
   ANY_RULE_LIMIT_COUNTERS,
@@ -179,15 +181,7 @@ function CountersComponent() {
         : ANY_RULE_LIMIT_COUNTERS;
     const pattern = selectedLimitCounterRule(value);
     if (pattern) {
-      return (
-        <LimitRuleTarget
-          pattern={pattern}
-          density="tight"
-          className="h-4 min-w-0 [&_[data-chip]]:[--chip-height:1rem] [&_[data-chip]]:[--chip-inset:0px]"
-          showIcon={false}
-          showTooltip={false}
-        />
-      );
+      return <LimitRuleFilterValue pattern={pattern} />;
     }
     return value === ANY_RULE_LIMIT_COUNTERS ? 'any' : 'any or none';
   }, []);
@@ -200,17 +194,7 @@ function CountersComponent() {
         (candidate) => candidate.pattern === rulePattern,
       );
       if (rulePattern && rule) {
-        return (
-          <span className="flex min-w-0 flex-1 items-center justify-between gap-4">
-            <LimitRuleTarget pattern={rulePattern} showTooltip={false} />
-            <span className="shrink-0">
-              <LimitValue
-                value={rule.limits.concurrency}
-                disabled={rule.disabled}
-              />
-            </span>
-          </span>
-        );
+        return <LimitRuleFilterOption rule={rule} />;
       }
       return (
         <span className="flex flex-col gap-0.5">

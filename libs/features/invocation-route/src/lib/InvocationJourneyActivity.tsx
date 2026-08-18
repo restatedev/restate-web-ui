@@ -24,9 +24,9 @@ const ACTIVITY_KINDS: Array<{
 }> = [
   {
     key: 'errorBackoffs',
-    label: 'Back-offs',
-    singular: 'back-off',
-    plural: 'back-offs',
+    label: 'Backoffs',
+    singular: 'backoff',
+    plural: 'backoffs',
   },
   { key: 'yields', label: 'Yields', singular: 'yield', plural: 'yields' },
   { key: 'pauses', label: 'Pauses', singular: 'pause', plural: 'pauses' },
@@ -307,14 +307,16 @@ function RetryActivityBranch({
   details?: JourneyActivityDetailGroup;
   countFirst?: boolean;
 }) {
+  const retryCount = retries || backoffs;
+
   return (
     <div className="flex items-center gap-1.5">
-      {retries > 0 && (
+      {retryCount > 0 && (
         <ActivityHistoryButton
           kind="errorBackoffs"
-          count={retries}
+          count={retryCount}
           label="Retries"
-          visibleLabel={retries === 1 ? 'retry' : 'retries'}
+          visibleLabel={retryCount === 1 ? 'retry' : 'retries'}
           plural="retries"
           details={details}
           countFirst={countFirst}
@@ -326,12 +328,12 @@ function RetryActivityBranch({
           ·
         </span>
       )}
-      {backoffs > 0 && (
+      {retries > 0 && backoffs > 0 && (
         <ActivityCount
           kind="errorBackoffs"
           count={backoffs}
-          label="Back-offs"
-          visibleLabel={backoffs === 1 ? 'back-off' : 'back-offs'}
+          label="Backoffs"
+          visibleLabel={backoffs === 1 ? 'backoff' : 'backoffs'}
           countFirst={countFirst}
         />
       )}
@@ -369,12 +371,10 @@ export function JourneyActivityRows({
     !currentAttemptActive && retryAttempts > 0 ? retryAttempts : 0;
   const hasRetryActivity = visibleRetries > 0 || errorBackoffs > 0;
   if (!hasRetryActivity && visible.length === 0) return null;
-  const retryActivityLabel = [
-    visibleRetries > 0
-      ? journeyCountLabel(visibleRetries, 'retry', 'retries')
-      : undefined,
-    errorBackoffs > 0
-      ? journeyCountLabel(errorBackoffs, 'back-off', 'back-offs')
+  const retryLabel = [
+    journeyCountLabel(visibleRetries || errorBackoffs, 'retry', 'retries'),
+    visibleRetries > 0 && errorBackoffs > 0
+      ? journeyCountLabel(errorBackoffs, 'backoff', 'backoffs')
       : undefined,
   ]
     .filter(Boolean)
@@ -388,10 +388,7 @@ export function JourneyActivityRows({
         className="flex min-w-0 flex-wrap items-center gap-1.5"
       >
         {hasRetryActivity && (
-          <div
-            role="listitem"
-            aria-label={`Retry activity: ${retryActivityLabel}`}
-          >
+          <div role="listitem" aria-label={`Retries: ${retryLabel}`}>
             <RetryActivityBranch
               retries={visibleRetries}
               backoffs={errorBackoffs}
