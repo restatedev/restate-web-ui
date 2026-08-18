@@ -1,3 +1,4 @@
+import { useFeatures } from '@restate/data-access/admin-api';
 import { IconName } from '@restate/ui/icons';
 import { SidebarNavItem } from '@restate/ui/layout';
 
@@ -12,6 +13,12 @@ export function LimitsSidebarItem({
   disabled,
   preserveSearchParams = true,
 }: LimitsSidebarItemProps) {
+  const hasVqueues = useFeatures().has('vqueues');
+
+  if (!hasVqueues) {
+    return null;
+  }
+
   const flowControlPath = `${baseUrl}/flow-control`;
   const rulesPath = `${baseUrl}/flow-control/rules`;
   const countersPath = `${baseUrl}/flow-control/counters`;

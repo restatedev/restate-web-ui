@@ -1,11 +1,13 @@
 import {
   Links,
   Meta,
+  Navigate,
   Outlet,
   Path,
   Scripts,
   ScrollRestoration,
   useHref,
+  useLocation,
   useNavigate,
 } from 'react-router';
 import styles from './tailwind.css?url';
@@ -73,6 +75,8 @@ import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import {
   setMetaFallback,
   setMetaPersister,
+  useFeatures,
+  useVersion,
 } from '@restate/data-access/admin-api';
 import { setQueryClient } from '@restate/util/react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
@@ -383,6 +387,19 @@ function SidebarPanels() {
 }
 
 function TopbarPanels() {
+  const hasVqueues = useFeatures().has('vqueues');
+  const navItems = [
+    { href: '/overview', label: 'Overview' },
+    { href: '/invocations', label: 'Invocations' },
+    { href: '/workflows', label: 'Workflows' },
+    { href: '/virtual-objects', label: 'Virtual Objects' },
+    { href: '/state', label: 'State' },
+    ...(hasVqueues
+      ? [{ href: '/flow-control/rules', label: 'Flow control' }]
+      : []),
+    { href: '/introspection', label: 'Introspection' },
+  ];
+
   return (
     <>
       <LayoutOutlet zone={LayoutZone.AppBar}>
@@ -405,48 +422,15 @@ function TopbarPanels() {
           </Button>
           <LayoutOutlet zone={LayoutZone.Nav}>
             <Nav ariaCurrentValue="page">
-              <NavItem
-                preserveSearchParams={PRESERVED_QUERY_PARAMS}
-                href={'/overview'}
-              >
-                Overview
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_QUERY_PARAMS}
-                href={'/invocations'}
-              >
-                Invocations
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_QUERY_PARAMS}
-                href={'/workflows'}
-              >
-                Workflows
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_QUERY_PARAMS}
-                href={'/virtual-objects'}
-              >
-                Virtual Objects
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_QUERY_PARAMS}
-                href={'/state'}
-              >
-                State
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_QUERY_PARAMS}
-                href={'/flow-control/rules'}
-              >
-                Flow control
-              </NavItem>
-              <NavItem
-                preserveSearchParams={PRESERVED_QUERY_PARAMS}
-                href={'/introspection'}
-              >
-                Introspection
-              </NavItem>
+              {navItems.map(({ href, label }) => (
+                <NavItem
+                  key={href}
+                  preserveSearchParams={PRESERVED_QUERY_PARAMS}
+                  href={href}
+                >
+                  {label}
+                </NavItem>
+              ))}
             </Nav>
           </LayoutOutlet>
         </div>
@@ -454,6 +438,28 @@ function TopbarPanels() {
       {LAYOUT_MODE === 'appbar' && <Support />}
     </>
   );
+}
+
+function RouteContent() {
+  const { pathname } = useLocation();
+  const hasVqueues = useFeatures().has('vqueues');
+  const { data: version, isPending: isVersionPending } = useVersion();
+  const serverHasVqueues = version?.features?.vqueues === true;
+  const isFlowControlRoute =
+    pathname === '/flow-control' || pathname.startsWith('/flow-control/');
+
+  if (
+    isFlowControlRoute &&
+    (isVersionPending || (serverHasVqueues && !hasVqueues))
+  ) {
+    return null;
+  }
+
+  if (isFlowControlRoute && !serverHasVqueues) {
+    return <Navigate to="/overview" replace />;
+  }
+
+  return <Outlet />;
 }
 
 function AppContent() {
@@ -476,7 +482,7 @@ function AppContent() {
               <EditState>
                 <BreadcrumbsProvider>
                   <LayoutOutlet zone={LayoutZone.Content}>
-                    <Outlet />
+                    <RouteContent />
                   </LayoutOutlet>
                 </BreadcrumbsProvider>
                 <SidebarPanels />
