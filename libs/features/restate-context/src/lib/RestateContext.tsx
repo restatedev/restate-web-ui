@@ -18,9 +18,18 @@ import {
   useMemo,
 } from 'react';
 import semverGt from 'semver/functions/gte';
+import {
+  classifyHealthFailure,
+  type HealthFailure,
+} from '@restate/util/errors';
 import { RangeProvider } from './Range';
 
-export type Status = 'HEALTHY' | 'DEGRADED' | 'PENDING' | (string & {});
+export type Status =
+  | 'HEALTHY'
+  | 'DEGRADED'
+  | 'UNREACHABLE'
+  | 'PENDING'
+  | (string & {});
 
 type OnboardingComponent = ComponentType<{
   className?: string;
@@ -72,6 +81,7 @@ const DEFAULT_INVOCATIONS_LIST_OPTIONS: InvocationsListOptions = {
 
 type RestateContext = {
   status: Status;
+  healthFailure?: HealthFailure;
   version?: string;
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
@@ -159,7 +169,7 @@ function InternalRestateContextProvider({
   queryHealthCheckEnabled?: boolean;
   invocationsListOptions?: Partial<InvocationsListOptions>;
 }>) {
-  const { isSuccess, failureCount } = useHealth({
+  const { isSuccess, failureCount, error, failureReason } = useHealth({
     enabled: !isPending,
     retry: true,
     refetchInterval: 1000 * 60,
@@ -173,10 +183,20 @@ function InternalRestateContextProvider({
   const resolvedIngress =
     ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
 
+  // During retries the query's `error` is still null but `failureReason`
+  // already holds the last attempt's error, so classify from either.
+  const healthError = failureCount > 0 ? (failureReason ?? error) : null;
+  const healthFailure = useMemo(
+    () => (healthError ? classifyHealthFailure(healthError) : undefined),
+    [healthError],
+  );
+
   const status: Status | undefined = isPending
     ? 'PENDING'
-    : failureCount > 0
-      ? 'DEGRADED'
+    : healthFailure
+      ? healthFailure.kind === 'unreachable'
+        ? 'UNREACHABLE'
+        : 'DEGRADED'
       : isSuccess
         ? 'HEALTHY'
         : 'HEALTHY';
@@ -216,6 +236,7 @@ function InternalRestateContextProvider({
       value={{
         version,
         status,
+        healthFailure,
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,

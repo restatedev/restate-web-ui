@@ -20,6 +20,10 @@ const miniStyles = tv({
         container: 'text-yellow-500',
         animation: 'animate-ping',
       },
+      UNREACHABLE: {
+        container: 'text-yellow-500',
+        animation: 'animate-ping',
+      },
       HEALTHY: { container: 'text-green-500', animation: 'animate-ping' },
     },
   },
@@ -29,13 +33,14 @@ export const ICON_NAMES: Record<Status, IconName> = {
   PENDING: IconName.Circle,
   HEALTHY: IconName.Circle,
   DEGRADED: IconName.TriangleAlert,
+  UNREACHABLE: IconName.TriangleAlert,
 };
 
 export function StatusIndicator({
   status,
   className,
 }: {
-  status: Extract<Status, 'PENDING' | 'HEALTHY' | 'DEGRADED'>;
+  status: Extract<Status, 'PENDING' | 'HEALTHY' | 'DEGRADED' | 'UNREACHABLE'>;
   className?: string;
 }) {
   const { container, icon, animation } = miniStyles({ status });
