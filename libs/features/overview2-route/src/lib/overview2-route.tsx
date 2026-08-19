@@ -31,6 +31,7 @@ import {
   ContentPanelToolbar,
 } from '@restate/ui/content-panel';
 import { OverviewProvider, useOverviewContext } from './OverviewContext';
+import { ErrorPopoverPill } from './ErrorPopoverPill';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import {
@@ -627,10 +628,21 @@ function OverviewContent() {
   if (isBare) {
     return (
       <div className="flex min-h-full flex-col items-center justify-center p-6">
-        <RestateServer status={ferrofluidStatus} isEmpty onPress={onRefresh}>
+        <RestateServer
+          className="flex h-auto min-h-[132px] flex-col items-center"
+          status={ferrofluidStatus}
+          isEmpty
+          onPress={onRefresh}
+        >
           {isError && !isDeploymentsFetching && (
-            <div className="relative mt-6 flex w-full flex-col items-center gap-2">
-              <ErrorBanner error={error} />
+            <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
+              <ErrorPopoverPill
+                error={error}
+                label="Could not load the overview"
+              />
+              <p className="max-w-md px-4 text-sm text-gray-500">
+                This may be a temporary issue.
+              </p>
             </div>
           )}
         </RestateServer>
