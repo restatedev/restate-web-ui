@@ -170,7 +170,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'No longer issued — part of the previous invocations list implementation. Selected the page’s invocation ids matching filters and sort.',
     shape:
-      'SELECT id FROM sys_invocation [LEFT JOIN sys_invocation_state ON id] WHERE <filters> [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT sampleSize)]',
+      'SELECT id FROM sys_invocation [LEFT JOIN sys_invocation_state ON id] WHERE <filters> [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT 50000)]',
     tables: ['sys_invocation', 'sys_invocation_status', 'sys_invocation_state'],
   },
   'invocations/paused-error': {
@@ -191,7 +191,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'No longer issued — part of the previous invocations summary implementation. Grouped invocation counts by status, service, and handler.',
     shape:
-      "SELECT <status CASE>, completion_result, service, handler, COUNT(1) FROM sys_invocation_status LEFT JOIN (SELECT … FROM sys_vqueues WHERE stage = 'inbox') ON entry_id = id [WHERE <filters>] GROUP BY status, completion_result, service, handler [sampled: FROM (… LIMIT sampleSize)]",
+      "SELECT <status CASE>, completion_result, service, handler, COUNT(1) FROM sys_invocation_status LEFT JOIN (SELECT … FROM sys_vqueues WHERE stage = 'inbox') ON entry_id = id [WHERE <filters>] GROUP BY status, completion_result, service, handler [sampled: FROM (… LIMIT 50000)]",
     tables: ['sys_invocation', 'sys_invocation_status', 'sys_vqueues'],
   },
   'invocations/summary-split-counts': {
@@ -199,7 +199,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Disabled summary experiment; its call site is commented out. Grouped raw invocation status counts.',
     shape:
-      'SELECT status, completion_result, service, handler, COUNT(1) FROM sys_invocation_status [WHERE <filters>] GROUP BY status, completion_result, service, handler [sampled: FROM (… LIMIT sampleSize)]',
+      'SELECT status, completion_result, service, handler, COUNT(1) FROM sys_invocation_status [WHERE <filters>] GROUP BY status, completion_result, service, handler [sampled: FROM (… LIMIT 50000)]',
     tables: ['sys_invocation_status'],
   },
   'invocations/summary-split-services': {
@@ -228,7 +228,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Select coarse invocation candidates for the invocations list when VQueue-owned statuses cannot be resolved from one source.',
     shape:
-      'SELECT id FROM sys_invocation_status WHERE status IN (…) [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 500 [sampled: FROM (… LIMIT sampleSize)]',
+      'SELECT id FROM sys_invocation_status WHERE status IN (…) [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 500 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status'],
   },
   'invocations-v2/candidate-queue-count': {
@@ -249,21 +249,21 @@ export const QUERY_DEFINITIONS = {
     description:
       'Select invocation candidates for the invocations list when the status table satisfies all filters (servers without VQueues).',
     shape:
-      'SELECT id FROM sys_invocation_status [WHERE <filters>] [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT sampleSize)]',
+      'SELECT id FROM sys_invocation_status [WHERE <filters>] [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status'],
   },
   'invocations-v2/candidates-from-status-and-state': {
     description:
       'Select invocation candidates for the invocations list, joining stored status with live state for running/ready predicates (servers without VQueues).',
     shape:
-      'SELECT id FROM sys_invocation_status LEFT JOIN (SELECT id, in_flight, retry_count FROM sys_invocation_state) ON id [WHERE <filters>] [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT sampleSize)]',
+      'SELECT id FROM sys_invocation_status LEFT JOIN (SELECT id, in_flight, retry_count FROM sys_invocation_state) ON id [WHERE <filters>] [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status', 'sys_invocation_state'],
   },
   'invocations-v2/candidates-from-status-planned': {
     description:
       'Select terminal-status invocation candidates from the status table within a VQueue-planned invocations list.',
     shape:
-      'SELECT id FROM sys_invocation_status WHERE <status predicate> [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 250 [sampled: FROM (… LIMIT sampleSize)]',
+      'SELECT id FROM sys_invocation_status WHERE <status predicate> [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status'],
   },
   'invocations-v2/candidates-from-vqueue-meta': {
@@ -277,21 +277,21 @@ export const QUERY_DEFINITIONS = {
     description:
       'Select invocation candidates for the invocations list directly from VQueue entries (preferred source).',
     shape:
-      "SELECT entry_id FROM sys_vqueues WHERE entry_kind = 'invocation' [AND <stage/status>] [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 250 [sampled: FROM (… LIMIT sampleSize)]",
+      "SELECT entry_id FROM sys_vqueues WHERE entry_kind = 'invocation' [AND <stage/status>] [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/finished-breakdown-from-status': {
     description:
       'Break down completed invocations into succeeded/failed for the Completed facet (servers without VQueues).',
     shape:
-      "SELECT <outcome CASE>, COUNT(1) FROM sys_invocation_status WHERE status = 'completed' [AND completed_at >= ? AND < ?] GROUP BY outcome [sampled: FROM (… LIMIT sampleSize)]",
+      "SELECT <outcome CASE>, COUNT(1) FROM sys_invocation_status WHERE status = 'completed' [AND completed_at >= ? AND < ?] GROUP BY outcome [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_invocation_status'],
   },
   'invocations-v2/finished-breakdown-from-vqueues': {
     description:
       'Break down finished invocation outcomes from VQueue entries for the Completed facet.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' [AND transitioned_at >= ? AND < ?] GROUP BY status [sampled: FROM (… LIMIT sampleSize)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' [AND transitioned_at >= ? AND < ?] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/finished-history-from-status': {
@@ -400,7 +400,7 @@ export const QUERY_DEFINITIONS = {
   'invocations-v2/inbox-status-from-vqueues': {
     description: 'Break down overall inbox entry statuses from VQueue entries.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation' GROUP BY status [sampled: FROM (… LIMIT sampleSize)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation' GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/rows-by-ids': {
@@ -414,21 +414,21 @@ export const QUERY_DEFINITIONS = {
     description:
       'Group filtered invocation counts by service and status for the invocations summary.',
     shape:
-      'SELECT service, <status CASE>, COUNT(1) FROM sys_invocation_status LEFT JOIN sys_invocation_state ON id [WHERE <filters>] GROUP BY service, bucket [sampled: FROM (… LIMIT sampleSize)]',
+      'SELECT service, <status CASE>, COUNT(1) FROM sys_invocation_status LEFT JOIN sys_invocation_state ON id [WHERE <filters>] GROUP BY service, bucket [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status', 'sys_invocation_state'],
   },
   'invocations-v2/summary-vqueue-finished': {
     description:
       'Break down finished-entry outcomes for the invocations summary’s Completed stage.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_finished > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT sampleSize)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_finished > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/summary-vqueue-inbox': {
     description:
       'Break down inbox-stage entry statuses for the invocations summary’s Inbox stage.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_inbox > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT sampleSize)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_inbox > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/summary-vqueue-meta': {

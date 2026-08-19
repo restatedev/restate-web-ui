@@ -61,9 +61,9 @@ describe('queryStats route', () => {
     expect(
       screen.getAllByText(/Load a single invocation/).length,
     ).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText('SELECT … FROM sys_invocation WHERE id = ?').length,
-    ).toBeGreaterThan(0);
+    expect(document.body.textContent).toContain(
+      'SELECT … FROM sys_invocation WHERE id = ?',
+    );
     expect(
       screen.getAllByRole('link', { name: 'Invocations' }).length,
     ).toBeGreaterThan(0);

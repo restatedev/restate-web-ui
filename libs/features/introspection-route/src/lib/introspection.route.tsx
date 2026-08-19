@@ -1,4 +1,5 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
+import { useRestateContext } from '@restate/features/restate-context';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PanelTable, PanelTableColumn } from '@restate/ui/table';
@@ -320,6 +321,7 @@ function Footnote({
         </div>
       )}
       <div className="flex items-center gap-1.5">
+        <QueryStatsLink className="block rounded-md bg-zinc-50 px-1.5 py-1.5 text-gray-600" />
         <Download
           data={data}
           query={query}
@@ -328,6 +330,23 @@ function Footnote({
         {children}
       </div>
     </div>
+  );
+}
+
+function QueryStatsLink({ className }: { className?: string }) {
+  const { baseUrl } = useRestateContext();
+
+  return (
+    <HoverTooltip content="Query stats">
+      <Link
+        href={`${baseUrl}/query-stats`}
+        aria-label="Query stats"
+        variant="secondary-button"
+        className={className}
+      >
+        <Icon name={IconName.Gauge} className="h-4 w-4" />
+      </Link>
+    </HoverTooltip>
   );
 }
 

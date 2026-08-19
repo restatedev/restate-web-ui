@@ -48,6 +48,7 @@ import {
 } from 'react';
 import { Input, TextField, type SortDescriptor } from 'react-aria-components';
 import { formatPageLabel } from './pageLabels';
+import { formatSql, SqlText } from './sqlDisplay';
 
 type StatsColumn =
   | 'query'
@@ -134,18 +135,12 @@ function compareStats(a: QueryStat, b: QueryStat, column: StatsColumn): number {
   }
 }
 
-// The full shape is a single line; break it at the clauses so the hover
-// tooltip reads like formatted SQL.
-function formatShapeMultiline(shape: string): string {
-  return shape
-    .replaceAll(
-      / (CROSS JOIN|LEFT JOIN|JOIN|WHERE|GROUP BY|ORDER BY|LIMIT|UNION|EXCEPT) /g,
-      '\n$1 ',
-    )
-    .replaceAll(' [sampled:', '\n[sampled:')
-    .replaceAll(' [AND', '\n[AND')
-    .replaceAll(' AND ', '\n  AND ');
-}
+// The dashed underline marks cells whose hover reveals the full statement,
+// matching the app's inline-tooltip indicator treatment.
+const HOVER_INDICATOR_CLASS =
+  'cursor-help underline decoration-dashed decoration-from-font underline-offset-4';
+
+const MAX_TABLE_ROWS = 50;
 
 // A one-line skeleton of the full shape: the tables plus the clauses that
 // drive performance. Cheap point lookups (id = ?, id IN (…)) are spelled out
@@ -169,9 +164,11 @@ function compactShape(stat: QueryStat): string {
   if (stat.shape.includes('ORDER BY')) {
     clauses.push('ORDER BY …');
   }
-  const limits = [...stat.shape.matchAll(/LIMIT\s+(≤?\s?[\d,]+|sampleSize)/g)];
-  const numericLimits = limits.filter((match) => /\d/.test(match[1] ?? ''));
-  const limit = (numericLimits.at(-1) ?? limits.at(-1))?.[1];
+  // The sampled-mode variant carries its own inner LIMIT; ignore it so the
+  // compact line reports the statement's outer bound.
+  const withoutSampledVariant = stat.shape.replaceAll(/\[sampled:[^\]]*\]/g, '');
+  const limits = [...withoutSampledVariant.matchAll(/LIMIT\s+(≤?\s?[\d,]+)/g)];
+  const limit = limits.at(-1)?.[1];
   if (limit) {
     clauses.push(`LIMIT ${limit}`);
   }
@@ -247,7 +244,7 @@ function explainFileContent(
       : []),
     '',
     '-- SQL',
-    max?.sql ?? '',
+    max ? formatSql(max.sql) : '',
     '',
     '-- Plan',
     ...rows.map((row) => {
@@ -401,7 +398,11 @@ function QueryDetailsDialog({
             <div className="col-span-full flex flex-col">
               <span className="text-2xs text-gray-500">Shape</span>
               <span className="font-mono text-xs break-words whitespace-pre-wrap text-gray-700">
-                {formatShapeMultiline(stat.shape)}
+                <SqlText
+                  sql={formatSql(stat.shape)}
+                  tables={stat.tables}
+                  surface="light"
+                />
               </span>
             </div>
             <div className="col-span-full flex flex-col">
@@ -435,7 +436,11 @@ function QueryDetailsDialog({
                 <Copy copyText={stat.max.sql} className="-my-2" />
               </div>
               <pre className="max-h-72 overflow-auto rounded-xl border border-gray-200 bg-gray-50 p-3 font-mono text-xs whitespace-pre-wrap text-gray-800">
-                {stat.max.sql}
+                <SqlText
+                  sql={formatSql(stat.max.sql)}
+                  tables={stat.tables}
+                  surface="light"
+                />
               </pre>
             </div>
           )}
@@ -485,16 +490,25 @@ function renderStatsCell(
                 alwaysShow
                 size="lg"
                 copyText={stat.shape}
+                containerClassName={HOVER_INDICATOR_CLASS}
                 tooltipContent={
                   <span className="font-mono">
-                    {formatShapeMultiline(stat.shape)}
+                    <SqlText
+                      sql={formatSql(stat.shape)}
+                      tables={stat.tables}
+                      surface="dark"
+                    />
                   </span>
                 }
               >
-                {compactShape(stat)}
+                <SqlText
+                  sql={compactShape(stat)}
+                  tables={stat.tables}
+                  surface="neutral"
+                />
               </TruncateWithTooltip>
             </span>
-            <span className="flex min-w-0 items-center gap-1.5 text-2xs text-gray-500">
+            <span className="flex min-w-0 items-center gap-1.5 text-2xs text-gray-400">
               <TruncateWithTooltip hideCopy tooltipContent={stat.description}>
                 {stat.description}
               </TruncateWithTooltip>
@@ -567,8 +581,15 @@ function renderStatsCell(
                 alwaysShow
                 size="lg"
                 copyText={stat.max.sql}
+                containerClassName={HOVER_INDICATOR_CLASS}
                 tooltipContent={
-                  <span className="font-mono">{stat.max.sql}</span>
+                  <span className="font-mono">
+                    <SqlText
+                      sql={formatSql(stat.max.sql)}
+                      tables={stat.tables}
+                      surface="dark"
+                    />
+                  </span>
                 }
               >
                 {formatMs(stat.max.durationMs)}
@@ -655,6 +676,7 @@ function Component() {
         compareStats(a, b, column) * direction || a.id.localeCompare(b.id),
     );
   }, [stats, search, sortDescriptor]);
+  const visibleRows = useMemo(() => rows.slice(0, MAX_TABLE_ROWS), [rows]);
 
   const exportStats = useCallback(() => {
     downloadTextFile(
@@ -750,8 +772,8 @@ function Component() {
             <PanelTable
               aria-label="Query stats"
               columns={STATS_COLUMNS}
-              items={rows}
-              numOfRows={Math.max(rows.length, 6)}
+              items={visibleRows}
+              numOfRows={Math.max(visibleRows.length, 6)}
               sortDescriptor={sortDescriptor}
               onSortChange={setSortDescriptor}
               bodyDependencies={[now, explain.isPending, explain.variables?.id]}
