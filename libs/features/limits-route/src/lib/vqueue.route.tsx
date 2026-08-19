@@ -326,10 +326,7 @@ function VQueueHeader({ data }: { data?: VqueueSnapshot }) {
         ) : null}
       </div>
       {(identity?.scope || identity?.limitKey) && (
-        <ChipGroup
-          variant="header"
-          className="min-w-0 flex-[0_1_auto]"
-        >
+        <ChipGroup variant="header" className="min-w-0 flex-[0_1_auto]">
           <Scope
             value={identity.scope}
             relationship={identity.limitKey ? 'target' : undefined}
