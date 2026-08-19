@@ -130,7 +130,7 @@ export async function getVirtualObjectStats(
     FROM state
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(key)}${scopeClause(this, scope, 'virtual_object')}`,
-      'virtual-objects/stats-state-size',
+      'state/object-size',
     ),
   ]);
 

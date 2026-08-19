@@ -412,7 +412,7 @@ export async function getVqueueSnapshot(
     focusEntryId && !options?.focusedInvocation
       ? this.query(
           focusedInvocationQuery(this, focusEntryId),
-          'vqueues/focus-invocation',
+          'invocations/get',
         )
       : Promise.resolve(undefined),
   ]);

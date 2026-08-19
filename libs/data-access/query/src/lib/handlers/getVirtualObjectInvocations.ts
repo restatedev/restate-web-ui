@@ -61,7 +61,7 @@ export async function getVirtualObjectInvocations(
           `SELECT ${getSysInvocationListColumns(this.features).join(', ')}
     FROM sys_invocation
     WHERE id IN (${ids.map(quoteSqlString).join(', ')})`,
-          'virtual-objects/recent-invocations',
+          'invocations/by-ids',
         )
       : Promise.resolve({ rows: [] }),
     fetchVqueueStatuses(this, ids),

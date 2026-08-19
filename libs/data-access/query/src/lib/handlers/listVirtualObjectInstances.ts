@@ -551,7 +551,9 @@ export async function listVirtualObjectInstances(
               search,
               filters,
             ),
-        'virtual-objects/identities-by-backlog',
+        hasVqueues
+          ? 'virtual-objects/identities-by-backlog'
+          : 'virtual-objects/identities-by-backlog-legacy',
       ).then(({ rows }) =>
         !hasVqueues
           ? rows

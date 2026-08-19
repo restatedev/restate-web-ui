@@ -1,4 +1,4 @@
-import { useEffect, type PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import {
   Dialog as AriaDialog,
   Modal as AriaModal,
@@ -6,16 +6,7 @@ import {
   composeRenderProps,
 } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
-import { markDialogSurfaceOpen } from '@restate/util/panel';
 import { DialogFooterContainer } from './DialogFooter';
-
-// React Aria mounts the modal content only while the overlay is shown, so
-// mounting/unmounting tracks the dialog being open. The registered surface
-// lets the query-stats recorder attribute queries to the open dialog.
-function DialogSurfaceMarker({ surface }: { surface?: string }) {
-  useEffect(() => markDialogSurfaceOpen(surface), [surface]);
-  return null;
-}
 
 const overlayStyles = tv({
   base: 'fixed top-0 left-0 isolate z-100 flex h-screen min-h-screen w-full bg-gray-800/30 text-center backdrop-blur-[0.5px] transition-opacity',
@@ -100,8 +91,10 @@ interface DialogContentProps {
   className?: string;
   variant?: 'modal' | 'sheet';
   isDismissable?: boolean;
-  // Name reported to the query-stats recorder while this dialog is open.
-  // Unnamed dialogs still register anonymously.
+  // Name shown by the query-stats recorder while this dialog is open. React
+  // Aria keeps modal content in the DOM only while the overlay is shown, so
+  // the recorder detects open dialogs by querying for the stamped
+  // `data-dialog-surface` attribute; unnamed dialogs still count anonymously.
   surface?: string;
 }
 
@@ -129,8 +122,8 @@ export function DialogContent({
         <AriaDialog
           className={dialogStyles({ variant })}
           data-ignore-shortcut="true"
+          data-dialog-surface={surface ?? ''}
         >
-          <DialogSurfaceMarker surface={surface} />
           <DialogFooterContainer>
             <div className={contentStyles({ variant })}>{children}</div>
           </DialogFooterContainer>

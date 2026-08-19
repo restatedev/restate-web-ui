@@ -114,7 +114,7 @@ async function hydrateInvocations(
       `SELECT ${getSysInvocationListColumns(context.features).join(', ')}
     FROM sys_invocation
     WHERE id IN (${uniqueIds.map(quoteSqlString).join(', ')})`,
-      'workflows/invocations-by-ids',
+      'invocations/by-ids',
     ),
     fetchVqueueStatuses(context, uniqueIds),
   ]);
@@ -342,7 +342,7 @@ export async function getWorkflowRunStats(
     FROM state
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(workflowId)}${identityScopeClause}`,
-        'workflows/state-size',
+        'state/object-size',
       ),
     ]);
 

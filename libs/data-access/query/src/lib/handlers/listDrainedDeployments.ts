@@ -37,11 +37,10 @@ SELECT id
 FROM active_deployments`;
 
 export async function listDrainedDeployments(this: QueryContext) {
+  const hasVqueues = this.features.has('vqueues');
   const { rows } = await this.query(
-    this.features.has('vqueues')
-      ? VQUEUE_DRAINED_DEPLOYMENTS_QUERY
-      : DRAINED_DEPLOYMENTS_QUERY,
-    'deployments/drained',
+    hasVqueues ? VQUEUE_DRAINED_DEPLOYMENTS_QUERY : DRAINED_DEPLOYMENTS_QUERY,
+    hasVqueues ? 'deployments/drained' : 'deployments/drained-legacy',
   );
 
   return Response.json({

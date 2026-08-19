@@ -1,7 +1,4 @@
-import {
-  markDialogSurfaceOpen,
-  registerTransientQueryParams,
-} from '@restate/util/panel';
+import { registerTransientQueryParams } from '@restate/util/panel';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearQueryStats,
@@ -171,16 +168,15 @@ describe('describeQueryPage', () => {
   });
 
   it('appends mounted dialog surfaces, unnamed ones as a plain marker', () => {
-    const closeNamed = markDialogSurfaceOpen('edit-state');
-    expect(describeQueryPage('/state/counter', '')).toBe(
+    expect(describeQueryPage('/state/counter', '', ['edit-state'])).toBe(
       '/state/counter · dialog:edit-state',
     );
-    closeNamed();
-    const closeAnonymous = markDialogSurfaceOpen();
-    expect(describeQueryPage('/state/counter', '')).toBe(
+    expect(describeQueryPage('/state/counter', '', ['dialog'])).toBe(
       '/state/counter · dialog',
     );
-    closeAnonymous();
-    expect(describeQueryPage('/state/counter', '')).toBe('/state/counter');
+    expect(
+      describeQueryPage('/state/counter', '', ['dialog', 'edit-state']),
+    ).toBe('/state/counter · dialog:edit-state');
+    expect(describeQueryPage('/state/counter', '', [])).toBe('/state/counter');
   });
 });

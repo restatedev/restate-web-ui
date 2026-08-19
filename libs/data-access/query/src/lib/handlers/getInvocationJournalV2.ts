@@ -123,7 +123,7 @@ export async function getInvocationJournalV2(
     await Promise.all([
       this.query(
         `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
-        'invocations/journal-invocation',
+        'invocations/get',
       ),
       this.query(
         `SELECT id, index, appended_at, entry_type, name, ${rawLengthColumn} ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql} ORDER BY index`,
