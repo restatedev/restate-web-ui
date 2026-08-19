@@ -17,7 +17,7 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/\/state$/, 'State'],
   [/\/overview2?$/, 'Overview'],
   [/\/introspection$/, 'Introspection'],
-  [/\/query-stats$/, 'Query stats'],
+  [/\/query-stats$/, 'Query inspector'],
   [/\/features$/, 'Features'],
   [/^\/$/, 'Overview'],
 ];

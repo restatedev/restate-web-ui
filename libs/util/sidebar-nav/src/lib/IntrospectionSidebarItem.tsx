@@ -23,7 +23,7 @@ export function IntrospectionSidebarItem({
       extraSubItems={[
         {
           href: `${baseUrl}/query-stats`,
-          label: 'Query stats',
+          label: 'Query inspector',
           preserveSearchParams: false,
         },
       ]}
