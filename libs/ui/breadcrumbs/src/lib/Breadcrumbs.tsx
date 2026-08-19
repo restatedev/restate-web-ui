@@ -20,7 +20,7 @@ import type { BreadcrumbComponentProps, TrailCrumb } from './types';
 
 const styles = tv({
   slots: {
-    nav: 'ml-[4.25rem] flex max-w-full min-w-0 flex-wrap items-center gap-x-0 gap-y-1 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
+    nav: 'ml-2 flex max-w-full min-w-0 flex-wrap items-center gap-x-0 gap-y-1 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
     chip: 'max-w-44 bg-gray-50 text-xs font-normal text-zinc-600',
     current:
       'flex max-w-full min-w-0 items-center gap-0.5 pl-1 text-xs font-normal text-zinc-500 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',

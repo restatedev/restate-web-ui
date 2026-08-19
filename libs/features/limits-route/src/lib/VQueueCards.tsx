@@ -5,15 +5,13 @@ import {
   getVqueueGateLabel,
   vqueueDurationMilliseconds,
 } from '@restate/features/vqueue-ui';
-import { Card, CardHeader, CardRow } from '@restate/ui/card';
+import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
-import { DateTooltip, HoverTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip, InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
 import {
-  formatDurations,
   formatMilliseconds,
   formatPercentageWithoutFraction,
 } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { Fragment } from 'react';
 
@@ -52,16 +50,6 @@ const EVENTS = [
 
 type VqueueEventKey = (typeof EVENTS)[number]['key'];
 
-const relativeDateStyles = tv({
-  base: 'text-zinc-600 tabular-nums',
-  variants: {
-    emphasized: {
-      true: 'text-sm font-semibold whitespace-nowrap text-zinc-700',
-      false: 'text-xs',
-    },
-  },
-});
-
 const activityTimelineStyles = tv({
   slots: {
     body: 'relative flex flex-1 flex-col',
@@ -96,39 +84,6 @@ function ActivityDot({
 function titleCase(value: string) {
   const words = value.replaceAll('-', ' ');
   return `${words.charAt(0).toUpperCase()}${words.slice(1)}`;
-}
-
-function RelativeDate({
-  date,
-  title,
-  emphasized = false,
-  showAgo = true,
-  tooltipClassName,
-}: {
-  date: string;
-  title: string;
-  emphasized?: boolean;
-  showAgo?: boolean;
-  tooltipClassName?: string;
-}) {
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const duration = formatDurations(durationSinceLastSnapshot(date));
-  return (
-    <DateTooltip
-      date={new Date(date)}
-      title={title}
-      className={tooltipClassName}
-    >
-      <time
-        dateTime={date}
-        aria-label={showAgo ? undefined : `${duration} ago`}
-        className={relativeDateStyles({ emphasized })}
-      >
-        {duration}
-        {showAgo && ' ago'}
-      </time>
-    </DateTooltip>
-  );
 }
 
 const DURATION_ROWS = [
@@ -392,13 +347,19 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
   const diagnosticStyles = durationDiagnosticStyles();
   return (
     <Card>
-      <CardHeader title="Timing" icon={IconName.Timer}>
-        <HoverTooltip content="Each value is averaged over its own events. End to end measures entries that complete normally; stage durations are measured when that stage exits, so a stage average can be longer than end to end.">
-          <span className="cursor-help text-2xs font-normal text-gray-400 underline decoration-gray-300 decoration-dashed underline-offset-4">
-            (each timing averages its own events)
-          </span>
-        </HoverTooltip>
-      </CardHeader>
+      <CardHeader
+        title="Timing"
+        icon={IconName.Timer}
+        titleAddon={
+          <InlineTooltip
+            variant="indicator-button"
+            title="Each timing averages its own events"
+            description="End to end measures entries that complete normally; stage durations are measured when that stage exits, so a stage average can be longer than end to end."
+            ariaLabel="Explain how timings are averaged"
+            className="ml-0.5 text-xs text-gray-400"
+          />
+        }
+      />
       <CardRow variant="hero">
         <div className={durationRowStyles()}>
           <div className="min-w-0">
@@ -413,9 +374,9 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
             color={STATUS_STYLE.finished!}
             className="h-3"
           />
-          <span className="text-right text-lg font-semibold text-zinc-700 tabular-nums">
+          <CardHeroValue className="text-right">
             {formatVqueueDuration(data.stageAvg.endToEnd) ?? '—'}
-          </span>
+          </CardHeroValue>
         </div>
       </CardRow>
       {rows.map((row) => (
@@ -517,7 +478,7 @@ export function VQueueActivityCard({ data }: { data: VqueueSnapshot }) {
                 <RelativeDate
                   date={created.date}
                   title={`${created.title} at`}
-                  emphasized
+                  className="text-sm font-semibold whitespace-nowrap text-zinc-700"
                   tooltipClassName="max-w-none! overflow-visible!"
                 />
               </div>

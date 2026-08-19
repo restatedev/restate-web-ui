@@ -22,6 +22,7 @@ import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { CardGrid } from '@restate/ui/card';
 import {
+  virtualObjectInstanceStateTabHref,
   virtualObjectInstanceTabFromSearch,
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
@@ -102,7 +103,7 @@ function Component() {
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
         <Header
           icon={IconName.VirtualObject}
-          iconLabel="Virtual Object instance"
+          iconLabel="Virtual Object"
           className="min-w-0"
         >
           <ServiceTarget
@@ -132,6 +133,7 @@ function Component() {
                   <StateStatsCard
                     numKeys={statsData.state.numKeys}
                     totalSize={statsData.state.totalSize}
+                    stateHref={virtualObjectInstanceStateTabHref(searchParams)}
                   />
                 )}
               </>

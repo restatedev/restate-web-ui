@@ -9,16 +9,24 @@ import {
   workflowScopeFromSearch,
   type WorkflowRunIdentity,
 } from '@restate/features/workflow-run';
+import { Actions } from '@restate/features/invocation-route';
+import {
+  InvocationStatusHeader,
+  Status,
+} from '@restate/features/invocation-ui';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { CardGrid } from '@restate/ui/card';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
-import { Header } from '@restate/ui/header';
 import { IconName } from '@restate/ui/icons';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { WorkflowDetails, workflowRunTabFromSearch } from './WorkflowDetails';
+import {
+  WorkflowDetails,
+  workflowRunStateTabHref,
+  workflowRunTabFromSearch,
+} from './WorkflowDetails';
 import {
   WorkflowRunCard,
   WorkflowRunUnavailableBanner,
@@ -80,7 +88,8 @@ function Component() {
     >
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
-        <Header
+        <InvocationStatusHeader
+          invocation={runInvocation}
           icon={IconName.Workflow}
           iconLabel="Workflow"
           className="min-w-0"
@@ -92,9 +101,24 @@ function Component() {
             serviceType="Workflow"
             showHandler={false}
             variant="header"
-            className="min-w-0"
+            className="min-w-0 flex-[0_1_auto]"
           />
-        </Header>
+          {runInvocation && (
+            <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
+              <Status invocation={runInvocation} mini="md" timeline={false} />
+            </div>
+          )}
+          {runInvocation && (
+            <div className="ml-auto shrink-0">
+              <Actions
+                invocation={runInvocation}
+                mini="md"
+                className="rounded-l-lg text-[0.9375rem]"
+                splitClassName="rounded-lg md:rounded-l-none"
+              />
+            </div>
+          )}
+        </InvocationStatusHeader>
         {data && !runInvocation && <WorkflowRunUnavailableBanner />}
         {(runInvocation || statsData?.supported) && (
           <CardGrid
@@ -114,6 +138,7 @@ function Component() {
                     numKeys={statsData.state.numKeys}
                     totalSize={statsData.state.totalSize}
                     description="Stored by this Workflow"
+                    stateHref={workflowRunStateTabHref(searchParams)}
                   />
                 )}
               </>

@@ -43,6 +43,10 @@ export {
 } from './lib/Scope';
 export { VQueueId, type VQueueIdProps } from './lib/VQueueId';
 export {
+  VQueueIdDisplay,
+  type VQueueIdDisplayProps,
+} from './lib/VQueueIdDisplay';
+export {
   inboxOrderItems,
   VQueueHeadBlockedStatus,
   VQueueInboxPopoverContent,

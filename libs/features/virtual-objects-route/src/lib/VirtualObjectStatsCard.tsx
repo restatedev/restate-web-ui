@@ -1,14 +1,13 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import { Card, CardHeader, CardRow } from '@restate/ui/card';
+import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui/card';
 import { IconName } from '@restate/ui/icons';
-import { DateTooltip } from '@restate/ui/tooltip';
+import { RelativeDate } from '@restate/ui/tooltip';
 import {
   formatDurations,
   formatNumber,
   normaliseDuration,
   parseISODuration,
 } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 
 type VirtualObjectStatsResponse =
   components['schemas']['VirtualObjectStatsResponse'];
@@ -23,18 +22,6 @@ function formatDurationRange(range: VirtualObjectStatsDurationRange) {
   const min = formatDuration(range.min);
   const max = formatDuration(range.max);
   return min === max ? min : `${min}–${max}`;
-}
-
-function RelativeDate({ date, title }: { date: string; title: string }) {
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const duration = formatDurations(durationSinceLastSnapshot(date));
-  return (
-    <DateTooltip date={new Date(date)} title={title}>
-      <time dateTime={date} className="text-xs text-zinc-600 tabular-nums">
-        {duration} ago
-      </time>
-    </DateTooltip>
-  );
 }
 
 export function VirtualObjectStatsCard({
@@ -66,9 +53,9 @@ export function VirtualObjectStatsCard({
               : 'No sampled VQueues'}
           </div>
         </div>
-        <span className="shrink-0 text-lg font-semibold text-zinc-700 tabular-nums">
+        <CardHeroValue>
           {inboxDuration ? formatDurationRange(inboxDuration) : '—'}
-        </span>
+        </CardHeroValue>
       </CardRow>
       <CardRow label="Inbox">
         <span className="text-xs text-zinc-600 tabular-nums">

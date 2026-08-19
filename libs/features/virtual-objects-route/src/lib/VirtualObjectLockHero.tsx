@@ -10,7 +10,8 @@ import { LimitKey } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { useRestateContext } from '@restate/features/restate-context';
+import { RelativeDate, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { panelHref } from '@restate/util/panel';
 
 type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
@@ -43,6 +44,7 @@ export function VirtualObjectLockHero({
 }: {
   lockHolder?: VirtualObjectLockHolder;
 }) {
+  const { baseUrl } = useRestateContext();
   if (!lockHolder) return null;
 
   const fallbackStatus = fallbackStatusLabel(lockHolder);
@@ -67,15 +69,32 @@ export function VirtualObjectLockHero({
           />
         )}
       </CardHeader>
-      <CardRow variant="hero" className="flex-wrap gap-y-1">
-        {lockHolder.kind === 'invocation' ? (
-          <InvocationId
-            id={lockHolder.id}
-            truncateInMiddle
-            popover={false}
-            className="w-fit max-w-full min-w-0 text-sm [&_svg]:text-zinc-400"
-          />
-        ) : (
+      {lockHolder.kind === 'invocation' ? (
+        <CardLinkRow
+          variant="hero"
+          href={`${baseUrl}/invocations/${lockHolder.id}`}
+          aria-label={`Open invocation ${lockHolder.id}`}
+          className="flex-wrap gap-y-1"
+          label={
+            <InvocationId
+              id={lockHolder.id}
+              truncateInMiddle
+              popover={false}
+              link={false}
+              className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-zinc-400"
+            />
+          }
+        >
+          <div className="min-w-0">
+            {invocation ? (
+              <Status invocation={invocation} mini="md" timeline={false} />
+            ) : fallbackStatus ? (
+              <Badge>{fallbackStatus}</Badge>
+            ) : null}
+          </div>
+        </CardLinkRow>
+      ) : (
+        <CardRow variant="hero" className="flex-wrap gap-y-1">
           <div className="flex min-w-0 items-center gap-2">
             <Icon
               name={
@@ -99,16 +118,16 @@ export function VirtualObjectLockHero({
               </code>
             </TruncateWithTooltip>
           </div>
-        )}
-        <span className="min-w-2 flex-auto" />
-        <div className="min-w-0">
-          {invocation ? (
-            <Status invocation={invocation} mini="md" timeline={false} />
-          ) : fallbackStatus ? (
-            <Badge>{fallbackStatus}</Badge>
-          ) : null}
-        </div>
-      </CardRow>
+          <span className="min-w-2 flex-auto" />
+          <div className="min-w-0">
+            {invocation ? (
+              <Status invocation={invocation} mini="md" timeline={false} />
+            ) : fallbackStatus ? (
+              <Badge>{fallbackStatus}</Badge>
+            ) : null}
+          </div>
+        </CardRow>
+      )}
       {/* TODO: Bring the VQueue ID row back when it is useful on Virtual Object lock cards.
       {(lockHolder.vqueueId ?? invocation?.vqueue_id) && (
         <CardRow label="VQueue ID">
@@ -137,6 +156,14 @@ export function VirtualObjectLockHero({
             <LockHandler handler={handler} />
           </CardRow>
         ))}
+      {invocation?.created_at && (
+        <CardRow label="Created">
+          <RelativeDate
+            date={invocation.created_at}
+            title="Invocation created at"
+          />
+        </CardRow>
+      )}
       {limitKey && (
         <CardRow label="Limit key">
           <LimitKey value={limitKey} className="ml-1" />

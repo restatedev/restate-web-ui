@@ -30,37 +30,35 @@ export type HeaderProps = PropsWithChildren<
 
 const headerStyles = tv({
   slots: {
-    base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-3 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/3%),0_12px_28px_-10px_--theme(--color-zinc-800/6%),inset_0_2px_0_0_--theme(--color-white/47.5%)] backdrop-blur-xl backdrop-saturate-200 transition-colors sm:top-6',
-    icon: 'absolute top-1/2 -left-2 flex h-15 w-15 -translate-y-1/2 items-center justify-center rounded-2xl border border-gray-200/90 bg-linear-to-br from-white via-white to-zinc-50 text-indigo-500/80 shadow-[0_2px_4px_-1px_--theme(--color-zinc-800/5%),0_14px_26px_-12px_--theme(--color-zinc-800/12.5%),inset_0_2px_0_0_--theme(--color-white/50%)]',
-    iconBadge:
-      'flex h-8 w-8 rotate-3 items-center justify-center rounded-lg bg-indigo-50/80 shadow-[0_2px_6px_-5px_--theme(--color-indigo-900/17.5%),inset_0_1px_0_0_--theme(--color-white/40%)] ring-1 ring-indigo-200/60',
-    iconGlyph: 'h-4.5 w-4.5 -rotate-3',
+    base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-2.5 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/3%),0_12px_28px_-10px_--theme(--color-zinc-800/6%),inset_0_2px_0_0_--theme(--color-white/47.5%)] backdrop-blur-xl backdrop-saturate-150 transition-colors sm:top-6',
+    icon: '-my-1 -ml-5 flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-[0.6875rem] bg-blue-50/90 text-blue-600/90 shadow-xs ring-1 ring-blue-200/60 lg:w-auto lg:px-2.5',
+    iconGlyph: 'h-4.5 w-4.5',
+    iconLabelText:
+      'hidden text-[0.8125rem] leading-none font-semibold tracking-[-0.01em] whitespace-nowrap text-blue-900/75 lg:block',
   },
   variants: {
     variant: {
       success: {
-        base: 'border-green-300/60 from-green-100 from-0% via-white via-50% to-green-50',
+        base: 'border-green-300/60 from-green-100/90 from-0% via-white/75 via-50% to-green-50/60',
       },
       danger: {
-        base: 'border-red-300/60 from-red-100 from-0% via-white via-50% to-red-50',
+        base: 'border-red-300/60 from-red-100/90 from-0% via-white/75 via-50% to-red-50/60',
       },
       warning: {
-        base: 'border-orange-300/60 from-orange-100 from-0% via-white via-50% to-orange-50',
+        base: 'border-orange-300/60 from-orange-100/90 from-0% via-white/75 via-50% to-orange-50/60',
       },
       pending: {
-        base: 'border-amber-300/60 from-amber-100 from-0% via-white via-50% to-amber-50',
+        base: 'border-amber-300/60 from-amber-100/90 from-0% via-white/75 via-50% to-amber-50/60',
       },
       info: {
-        base: 'border-blue-300/60 from-blue-100 from-0% via-white via-50% to-blue-50',
+        base: 'border-blue-300/60 from-blue-100/90 from-0% via-white/75 via-50% to-blue-50/60',
       },
       default: {
-        base: 'border-gray-300/60 from-gray-100/80 from-0% via-gray-50 via-55% to-gray-100/70',
+        base: 'border-gray-300/60 from-gray-100/90 from-0% via-white/75 via-50% to-gray-50/60',
       },
     } satisfies Record<HeaderVariant, { base: string }>,
     hasIcon: {
-      true: {
-        base: 'pl-[4.25rem]',
-      },
+      true: {},
       false: {},
     },
   },
@@ -80,11 +78,12 @@ export function Header({
     <header className={styles.base({ className })}>
       {icon && (
         <span role="img" aria-label={iconLabel} className={styles.icon()}>
-          <span className={styles.iconBadge()}>
-            <Icon
-              name={icon}
-              className={styles.iconGlyph({ className: iconClassName })}
-            />
+          <Icon
+            name={icon}
+            className={styles.iconGlyph({ className: iconClassName })}
+          />
+          <span aria-hidden="true" className={styles.iconLabelText()}>
+            {iconLabel}
           </span>
         </span>
       )}

@@ -324,26 +324,19 @@ function VQueueHeader({ data }: { data?: VqueueSnapshot }) {
             className="min-w-0 flex-[0_1_auto]"
           />
         ) : null}
-        {identity?.service && (identity.scope || identity.limitKey) && (
-          <span
-            aria-hidden="true"
-            className="mx-2 h-px w-4 shrink-0 bg-zinc-300/80"
-          />
-        )}
-        {(identity?.scope || identity?.limitKey) && (
-          <ChipGroup variant="header" className="min-w-0 flex-[0_1_auto]">
-            <Scope
-              value={identity.scope}
-              relationship={identity.limitKey ? 'target' : undefined}
-              labelVariant="compact"
-            />
-            <LimitKey
-              value={identity.limitKey}
-              relationship={identity.scope ? 'scope' : undefined}
-            />
-          </ChipGroup>
-        )}
       </div>
+      {(identity?.scope || identity?.limitKey) && (
+        <ChipGroup variant="header" className="min-w-0 flex-[0_1_auto]">
+          <Scope
+            value={identity.scope}
+            relationship={identity.limitKey ? 'target' : undefined}
+          />
+          <LimitKey
+            value={identity.limitKey}
+            relationship={identity.scope ? 'scope' : undefined}
+          />
+        </ChipGroup>
+      )}
       {identity?.isPaused && (
         <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
           <InvocationStatusBadge status="paused" mini="md" />
