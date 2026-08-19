@@ -19,6 +19,10 @@ const styles = tv({
         container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
         icon: 'text-yellow-500',
       },
+      UNREACHABLE: {
+        container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
+        icon: 'text-yellow-500',
+      },
       HEALTHY: {
         container: 'bg-green-50 text-green-700 ring-green-600/20',
         icon: 'fill-green-500',
@@ -29,8 +33,14 @@ const styles = tv({
 
 function isStatusDefined(
   status?: Status,
-): status is Extract<Status, 'PENDING' | 'HEALTHY' | 'DEGRADED'> {
-  return Boolean(status && ['PENDING', 'HEALTHY', 'DEGRADED'].includes(status));
+): status is Extract<
+  Status,
+  'PENDING' | 'HEALTHY' | 'DEGRADED' | 'UNREACHABLE'
+> {
+  return Boolean(
+    status &&
+    ['PENDING', 'HEALTHY', 'DEGRADED', 'UNREACHABLE'].includes(status),
+  );
 }
 
 export function HealthIndicator({
