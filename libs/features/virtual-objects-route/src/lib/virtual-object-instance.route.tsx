@@ -22,6 +22,7 @@ import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { CardGrid } from '@restate/ui/card';
 import {
+  virtualObjectInstanceStateTabHref,
   virtualObjectInstanceTabFromSearch,
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
@@ -132,6 +133,7 @@ function Component() {
                   <StateStatsCard
                     numKeys={statsData.state.numKeys}
                     totalSize={statsData.state.totalSize}
+                    stateHref={virtualObjectInstanceStateTabHref(searchParams)}
                   />
                 )}
               </>

@@ -8,7 +8,7 @@ import { useTooltipWithHover } from './useTooltipWithHover';
 import { tv } from '@restate/util/styles';
 
 const styles = tv({
-  base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5',
+  base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-300 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5 hover:decoration-zinc-400',
 });
 export function DateTooltip({
   date,

@@ -1,13 +1,12 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import { Actions } from '@restate/features/invocation-route';
 import {
   getInvocationStatusIntent,
   InvocationId,
-  Status,
 } from '@restate/features/invocation-ui';
 import { LimitKey } from '@restate/features/vqueue-ui';
 import { Card, CardHeader, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
+import { RelativeDate } from '@restate/ui/tooltip';
 
 type Invocation = components['schemas']['InvocationV2'];
 
@@ -35,11 +34,7 @@ export function WorkflowRunUnavailableBanner() {
 export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
   return (
     <Card intent={getInvocationStatusIntent(invocation)}>
-      <CardHeader
-        title="Workflow run"
-        icon={IconName.Workflow}
-        action={<Actions invocation={invocation} mini={false} />}
-      />
+      <CardHeader title="Workflow run" icon={IconName.Workflow} />
       <CardRow variant="hero" className="flex-wrap gap-y-1">
         <InvocationId
           id={invocation.id}
@@ -47,10 +42,6 @@ export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
           popover={false}
           className="w-fit max-w-full min-w-0 text-sm [&_svg]:text-zinc-400"
         />
-        <span className="min-w-2 flex-auto" />
-        <div className="min-w-0">
-          <Status invocation={invocation} mini="md" timeline={false} />
-        </div>
       </CardRow>
       {/* TODO: Bring the VQueue ID row back when it is useful on Workflow run cards.
       {(invocation.vqueue?.vqueue_id ?? invocation.vqueue_id) && (
@@ -63,6 +54,22 @@ export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
           />
         </CardRow>
       )} */}
+      {invocation.created_at && (
+        <CardRow label="Created">
+          <RelativeDate
+            date={invocation.created_at}
+            title="Run invocation created at"
+          />
+        </CardRow>
+      )}
+      {invocation.completed_at && (
+        <CardRow label="Completed">
+          <RelativeDate
+            date={invocation.completed_at}
+            title="Run invocation completed at"
+          />
+        </CardRow>
+      )}
       {invocation.limit_key && (
         <CardRow label="Limit key">
           <LimitKey value={invocation.limit_key} className="ml-1" />

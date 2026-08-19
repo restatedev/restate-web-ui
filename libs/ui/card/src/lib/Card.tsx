@@ -60,37 +60,38 @@ export function Card({
 const cardHeaderStyles = tv({
   slots: {
     base: 'flex min-h-11 items-center gap-2 px-3',
-    iconChip: 'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg',
+    iconChip:
+      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border shadow-xs',
     title: 'shrink-0 text-2xs font-semibold tracking-wide uppercase',
   },
   variants: {
     intent: {
       success: {
-        iconChip: 'bg-green-100 text-green-700',
+        iconChip: 'border-green-200/80 bg-green-50 text-green-600',
         title: 'text-green-800/70',
       },
       danger: {
-        iconChip: 'bg-red-100 text-red-700',
+        iconChip: 'border-red-200/80 bg-red-50 text-red-600',
         title: 'text-red-800/70',
       },
       warning: {
-        iconChip: 'bg-orange-100 text-orange-700',
+        iconChip: 'border-orange-200/80 bg-orange-50 text-orange-600',
         title: 'text-orange-800/70',
       },
       pending: {
-        iconChip: 'bg-amber-100 text-amber-700',
+        iconChip: 'border-amber-200/80 bg-amber-50 text-amber-600',
         title: 'text-amber-800/70',
       },
       info: {
-        iconChip: 'bg-blue-100 text-blue-700',
+        iconChip: 'border-blue-200/80 bg-blue-50 text-blue-600',
         title: 'text-blue-800/70',
       },
       default: {
-        iconChip: 'bg-gray-100 text-gray-500',
+        iconChip: 'border-gray-200/80 bg-white text-gray-500',
         title: 'text-gray-500',
       },
       none: {
-        iconChip: 'bg-gray-100 text-gray-500',
+        iconChip: 'border-gray-200/80 bg-white text-gray-500',
         title: 'text-gray-500',
       },
     },
@@ -169,6 +170,17 @@ export function CardRow({
       {children}
     </div>
   );
+}
+
+const cardHeroValueStyles = tv({
+  base: 'shrink-0 text-xl font-semibold tracking-tight text-zinc-800 tabular-nums',
+});
+
+export function CardHeroValue({
+  className,
+  children,
+}: PropsWithChildren<{ className?: string }>) {
+  return <span className={cardHeroValueStyles({ className })}>{children}</span>;
 }
 
 export function CardLinkRow({

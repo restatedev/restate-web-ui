@@ -10,7 +10,7 @@ import { LimitKey } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { RelativeDate, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { panelHref } from '@restate/util/panel';
 
 type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
@@ -137,6 +137,14 @@ export function VirtualObjectLockHero({
             <LockHandler handler={handler} />
           </CardRow>
         ))}
+      {invocation?.created_at && (
+        <CardRow label="Created">
+          <RelativeDate
+            date={invocation.created_at}
+            title="Invocation created at"
+          />
+        </CardRow>
+      )}
       {limitKey && (
         <CardRow label="Limit key">
           <LimitKey value={limitKey} className="ml-1" />

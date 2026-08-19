@@ -5,3 +5,4 @@ export * from './lib/InlineTooltip';
 export * from './lib/TruncateWithTooltip';
 export * from './lib/DateTooltip';
 export * from './lib/HoverTooltip';
+export * from './lib/RelativeDate';

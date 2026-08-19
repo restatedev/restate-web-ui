@@ -1,32 +1,19 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import { Card, CardHeader, CardRow } from '@restate/ui/card';
+import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui/card';
 import { IconName } from '@restate/ui/icons';
-import { DateTooltip, InlineTooltip } from '@restate/ui/tooltip';
+import { InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
 import {
   formatDurations,
   formatNumber,
   normaliseDuration,
   parseISODuration,
 } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 
 type WorkflowRunStatsResponse =
   components['schemas']['WorkflowRunStatsResponse'];
 
 function formatDuration(value: string) {
   return formatDurations(normaliseDuration(parseISODuration(value)));
-}
-
-function RelativeDate({ date }: { date: string }) {
-  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const duration = formatDurations(durationSinceLastSnapshot(date));
-  return (
-    <DateTooltip date={new Date(date)} title="Last interaction at">
-      <time dateTime={date} className="text-xs text-zinc-600 tabular-nums">
-        {duration} ago
-      </time>
-    </DateTooltip>
-  );
 }
 
 export function WorkflowStatsCard({
@@ -50,9 +37,9 @@ export function WorkflowStatsCard({
           </div>
           <div className="mt-0.5 text-2xs text-gray-400">From first start</div>
         </div>
-        <span className="shrink-0 text-lg font-semibold text-zinc-700 tabular-nums">
+        <CardHeroValue>
           {stats.duration ? formatDuration(stats.duration) : '—'}
-        </span>
+        </CardHeroValue>
       </CardRow>
       {stats.waitingToStartDuration && (
         <CardRow label="Waiting to start">
@@ -76,6 +63,7 @@ export function WorkflowStatsCard({
       <CardRow
         label={
           <InlineTooltip
+            variant="indicator-button"
             title="Workflow interaction"
             description="The latest invocation of a shared handler for this Workflow instance. The run handler is not included."
           >
@@ -84,7 +72,10 @@ export function WorkflowStatsCard({
         }
       >
         {stats.lastInteractionAt ? (
-          <RelativeDate date={stats.lastInteractionAt} />
+          <RelativeDate
+            date={stats.lastInteractionAt}
+            title="Last interaction at"
+          />
         ) : (
           <span className="text-xs text-zinc-600">None</span>
         )}
