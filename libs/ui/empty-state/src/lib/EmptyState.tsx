@@ -16,6 +16,7 @@ export interface EmptyStateProps {
   iconClassName?: string;
   intent?: EmptyStateIntent;
   className?: string;
+  contentClassName?: string;
 }
 
 const styles = tv({
@@ -66,6 +67,7 @@ export function EmptyState({
   iconClassName,
   intent,
   className,
+  contentClassName,
   children,
 }: PropsWithChildren<EmptyStateProps>) {
   const {
@@ -79,7 +81,7 @@ export function EmptyState({
   } = styles({ intent });
   return (
     <div className={base({ className })}>
-      <div className={content()}>
+      <div className={content({ className: contentClassName })}>
         {icon && (
           <div className={badge()}>
             <Icon

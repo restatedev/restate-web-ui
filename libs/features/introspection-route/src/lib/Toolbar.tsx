@@ -1,7 +1,15 @@
 import { SubmitButton } from '@restate/ui/button';
 import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
 import { Form } from 'react-router';
-import { lazy, Suspense, useCallback, useEffect, useRef } from 'react';
+import {
+  lazy,
+  RefObject,
+  Suspense,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import {
   useSubmitShortcut,
   SubmitShortcutKey,
@@ -20,10 +28,12 @@ export function Toolbar({
   setQuery: _setQuery,
   isPending,
   initialQuery,
+  selectQueryRef,
 }: {
   isPending: boolean;
   setQuery: (value: string) => void;
   initialQuery?: string;
+  selectQueryRef?: RefObject<((query: string) => void) | null>;
 }) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -63,6 +73,8 @@ export function Toolbar({
       editor.setPosition({ lineNumber: lineCount, column });
     }, 0);
   }, []);
+
+  useImperativeHandle(selectQueryRef, () => selectQuery, [selectQuery]);
 
   return (
     <LayoutOutlet zone={LayoutZone.Toolbar}>
