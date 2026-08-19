@@ -19,7 +19,7 @@ export function useHealthCheckNotification(props?: { message?: string }) {
       (kind === 'unreachable'
         ? isOffline
           ? 'You appear to be offline. Reconnect to access your Restate server.'
-          : 'Cannot reach your Restate server. This could be a network issue on your end — check your connection and that the server is running.'
+          : 'Cannot reach your Restate server. This could be a network issue. Check your connection or browser.'
         : kind === 'unauthorized'
           ? 'Authentication with your Restate server failed.'
           : 'Your Restate server is currently experiencing issues.');
