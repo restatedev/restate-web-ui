@@ -10,6 +10,8 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import {
+  getUnavailableReason,
+  isQueryAvailable,
   predefinedQueries,
   type PredefinedQuery,
   type PredefinedQueryFeature,
@@ -18,39 +20,6 @@ import {
 const predefinedQueryById = new Map<string, PredefinedQuery>(
   predefinedQueries.map((query) => [query.id, query]),
 );
-
-function isFeatureAvailable(
-  feature: PredefinedQueryFeature,
-  availableFeatures: Set<PredefinedQueryFeature>,
-) {
-  return availableFeatures.has(feature);
-}
-
-function isQueryAvailable(
-  query: PredefinedQuery,
-  availableFeatures: Set<PredefinedQueryFeature>,
-) {
-  return (
-    query.requiredFeatures?.every((feature) =>
-      isFeatureAvailable(feature, availableFeatures),
-    ) ?? true
-  );
-}
-
-function getUnavailableReason(
-  query: PredefinedQuery,
-  availableFeatures: Set<PredefinedQueryFeature>,
-) {
-  const missingFeatures = query.requiredFeatures?.filter(
-    (feature) => !isFeatureAvailable(feature, availableFeatures),
-  );
-
-  if (!missingFeatures?.length) {
-    return undefined;
-  }
-
-  return `Requires ${missingFeatures.join(', ')}`;
-}
 
 export function PredefinedQueriesDropdown({
   hasVqueues,

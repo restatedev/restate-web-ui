@@ -12,6 +12,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from 'react';
@@ -30,6 +31,7 @@ import { ErrorBanner } from '@restate/ui/error';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toolbar } from './Toolbar';
 import { addQueryToHistory } from './queryHistory';
+import { UsefulQueries } from './UsefulQueries';
 
 const QUERY_PARAM = 'query';
 const PAGE_SIZE = 30;
@@ -79,6 +81,7 @@ function Component() {
 
   const [, startTransition] = useTransition();
   const [pageIndex, _setPageIndex] = useState(0);
+  const selectQueryRef = useRef<((query: string) => void) | null>(null);
 
   const setPageIndex = useCallback(
     (arg: Parameters<typeof _setPageIndex>[0]) => {
@@ -179,26 +182,33 @@ function Component() {
                     description="Your query ran successfully but returned no rows."
                   />
                 ) : (
-                  <EmptyState
-                    icon={IconName.ScanSearch}
-                    title="Introspection SQL"
-                    description={
-                      <>
-                        Restate exposes information on invocations and
-                        application state via Introspection SQL. You can use
-                        this to gain insight into the status of invocations and
-                        the service state that is stored.{' '}
-                        <Link
-                          href="https://docs.restate.dev/references/sql-introspection"
-                          variant="secondary"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Learn more
-                        </Link>
-                      </>
-                    }
-                  />
+                  <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-5 py-12">
+                    <EmptyState
+                      className="flex-none p-0"
+                      contentClassName="max-w-2xl"
+                      icon={IconName.ScanSearch}
+                      title="Introspection SQL"
+                      description={
+                        <>
+                          Restate exposes information on invocations and
+                          application state via Introspection SQL. You can use
+                          this to gain insight into the status of invocations
+                          and the service state that is stored.{' '}
+                          <Link
+                            href="https://docs.restate.dev/references/sql-introspection"
+                            variant="secondary"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Learn more
+                          </Link>
+                        </>
+                      }
+                    />
+                    <UsefulQueries
+                      onSelect={(query) => selectQueryRef.current?.(query)}
+                    />
+                  </div>
                 )
               }
               rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
@@ -254,6 +264,7 @@ function Component() {
         setQuery={setQuery}
         isPending={isQueryFetching}
         initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
+        selectQueryRef={selectQueryRef}
       />
     </SnapshotTimeProvider>
   );

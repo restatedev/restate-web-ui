@@ -10,6 +10,32 @@ export interface PredefinedQuery {
   requiredFeatures?: readonly PredefinedQueryFeature[];
 }
 
+export function isQueryAvailable(
+  query: PredefinedQuery,
+  availableFeatures: Set<PredefinedQueryFeature>,
+) {
+  return (
+    query.requiredFeatures?.every((feature) =>
+      availableFeatures.has(feature),
+    ) ?? true
+  );
+}
+
+export function getUnavailableReason(
+  query: PredefinedQuery,
+  availableFeatures: Set<PredefinedQueryFeature>,
+) {
+  const missingFeatures = query.requiredFeatures?.filter(
+    (feature) => !availableFeatures.has(feature),
+  );
+
+  if (!missingFeatures?.length) {
+    return undefined;
+  }
+
+  return `Requires ${missingFeatures.join(', ')}`;
+}
+
 export const predefinedQueries = [
   {
     id: 'total-invocations',
@@ -87,6 +113,20 @@ FROM sys_journal_events
 WHERE event_type = 'TransientError'
   AND (event_json ->> 'error_message') LIKE '%my_error_message%'
 ORDER BY appended_at DESC
+LIMIT 100;`,
+  },
+  {
+    id: 'search-by-terminal-error',
+    title: 'Search by terminal error',
+    description:
+      "Find invocations that completed with a terminal failure whose error matches a search term. Replace my_error_message with the text you're looking for. LIKE is case-sensitive; use ILIKE for case-insensitive.",
+    performance: 'caution',
+    query: `SELECT id, target_service_name, target_handler_name, completed_at, completion_failure
+FROM sys_invocation_status
+WHERE status = 'completed'
+  AND completion_result = 'failure'
+  AND completion_failure LIKE '%my_error_message%'
+ORDER BY completed_at DESC
 LIMIT 100;`,
   },
   {
