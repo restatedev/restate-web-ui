@@ -31,10 +31,10 @@ export type HeaderProps = PropsWithChildren<
 const headerStyles = tv({
   slots: {
     base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-2.5 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/3%),0_12px_28px_-10px_--theme(--color-zinc-800/6%),inset_0_2px_0_0_--theme(--color-white/47.5%)] backdrop-blur-xl backdrop-saturate-150 transition-colors sm:top-6',
-    icon: 'absolute top-1/2 -left-2 flex h-15 w-15 -translate-y-1/2 items-center justify-center rounded-[1.125rem] border border-gray-200/90 bg-white text-indigo-500/80 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/6%),0_10px_22px_-10px_--theme(--color-zinc-800/14%),inset_0_2px_0_0_--theme(--color-white/60%)]',
-    iconBadge:
-      'flex h-9 w-9 rotate-3 items-center justify-center rounded-[0.625rem] bg-indigo-50 shadow-[inset_0_1px_0_0_--theme(--color-white/50%)] ring-1 ring-indigo-200/70',
-    iconGlyph: 'h-5 w-5 -rotate-3',
+    icon: '-my-1 -ml-5 flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-[0.6875rem] bg-blue-50/90 text-blue-600/90 shadow-xs ring-1 ring-blue-200/60 lg:w-auto lg:px-2.5',
+    iconGlyph: 'h-4.5 w-4.5',
+    iconLabelText:
+      'hidden text-[0.8125rem] leading-none font-semibold tracking-[-0.01em] whitespace-nowrap text-blue-900/75 lg:block',
   },
   variants: {
     variant: {
@@ -58,9 +58,7 @@ const headerStyles = tv({
       },
     } satisfies Record<HeaderVariant, { base: string }>,
     hasIcon: {
-      true: {
-        base: 'pl-[4.25rem]',
-      },
+      true: {},
       false: {},
     },
   },
@@ -79,17 +77,13 @@ export function Header({
   return (
     <header className={styles.base({ className })}>
       {icon && (
-        <span className="inline-flex h-7 shrink-0 items-center rounded-[0.625rem] border border-zinc-300/60 bg-white/60 px-2 text-[0.5625rem] font-semibold tracking-[0.05em] text-zinc-500 uppercase shadow-xs">
-          {iconLabel}
-        </span>
-      )}
-      {icon && (
         <span role="img" aria-label={iconLabel} className={styles.icon()}>
-          <span className={styles.iconBadge()}>
-            <Icon
-              name={icon}
-              className={styles.iconGlyph({ className: iconClassName })}
-            />
+          <Icon
+            name={icon}
+            className={styles.iconGlyph({ className: iconClassName })}
+          />
+          <span aria-hidden="true" className={styles.iconLabelText()}>
+            {iconLabel}
           </span>
         </span>
       )}

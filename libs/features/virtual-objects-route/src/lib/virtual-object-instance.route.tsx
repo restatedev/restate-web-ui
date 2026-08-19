@@ -103,7 +103,7 @@ function Component() {
         <Breadcrumbs className="mt-8 px-5 md:mt-0" />
         <Header
           icon={IconName.VirtualObject}
-          iconLabel="Virtual Object instance"
+          iconLabel="Virtual Object"
           className="min-w-0"
         >
           <ServiceTarget
