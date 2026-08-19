@@ -90,6 +90,20 @@ ORDER BY appended_at DESC
 LIMIT 100;`,
   },
   {
+    id: 'search-by-terminal-error',
+    title: 'Search by terminal error',
+    description:
+      "Find invocations that completed with a terminal failure whose error matches a search term. Replace my_error_message with the text you're looking for. LIKE is case-sensitive; use ILIKE for case-insensitive.",
+    performance: 'caution',
+    query: `SELECT id, target_service_name, target_handler_name, completed_at, completion_failure
+FROM sys_invocation_status
+WHERE status = 'completed'
+  AND completion_result = 'failure'
+  AND completion_failure LIKE '%my_error_message%'
+ORDER BY completed_at DESC
+LIMIT 100;`,
+  },
+  {
     id: 'big-journal-payloads',
     title: 'Big journal payloads',
     description:
