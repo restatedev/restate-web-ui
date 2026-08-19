@@ -1,4 +1,5 @@
 import { Button } from '@restate/ui/button';
+import { Icon, IconName } from '@restate/ui/icons';
 import { useFeatures } from '@restate/data-access/admin-api';
 import {
   getUnavailableReason,
@@ -18,7 +19,8 @@ export function UsefulQueries({
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3">
-      <div className="pl-1 text-xs font-medium text-gray-500">
+      <div className="flex items-center gap-1.5 pl-1 text-xs font-medium text-gray-500">
+        <Icon name={IconName.HatGlasses} className="h-3.5 w-3.5" />
         Useful queries
       </div>
       <div className="flex w-full flex-col gap-2.5">
