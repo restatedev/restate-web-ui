@@ -324,24 +324,20 @@ function VQueueHeader({ data }: { data?: VqueueSnapshot }) {
             className="min-w-0 flex-[0_1_auto]"
           />
         ) : null}
-        {identity?.service && (identity.scope || identity.limitKey) && (
-          <span
-            aria-hidden="true"
-            className="mx-2 h-px w-4 shrink-0 bg-zinc-300/80"
-          />
-        )}
         {(identity?.scope || identity?.limitKey) && (
-          <ChipGroup variant="header" className="min-w-0 flex-[0_1_auto]">
-            <Scope
-              value={identity.scope}
-              relationship={identity.limitKey ? 'target' : undefined}
-              labelVariant="compact"
-            />
-            <LimitKey
-              value={identity.limitKey}
-              relationship={identity.scope ? 'scope' : undefined}
-            />
-          </ChipGroup>
+          <span className="ml-2 flex min-w-0 flex-[0_1_auto] items-center rounded-[0.8125rem] bg-zinc-500/8 p-[3px] shadow-[inset_0_1px_1px_rgb(0_0_0/0.05)]">
+            <ChipGroup variant="header" className="min-w-0">
+              <Scope
+                value={identity.scope}
+                relationship={identity.limitKey ? 'target' : undefined}
+                labelVariant="compact"
+              />
+              <LimitKey
+                value={identity.limitKey}
+                relationship={identity.scope ? 'scope' : undefined}
+              />
+            </ChipGroup>
+          </span>
         )}
       </div>
       {identity?.isPaused && (
