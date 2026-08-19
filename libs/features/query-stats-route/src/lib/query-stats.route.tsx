@@ -166,7 +166,10 @@ function compactShape(stat: QueryStat): string {
   }
   // The sampled-mode variant carries its own inner LIMIT; ignore it so the
   // compact line reports the statement's outer bound.
-  const withoutSampledVariant = stat.shape.replaceAll(/\[sampled:[^\]]*\]/g, '');
+  const withoutSampledVariant = stat.shape.replaceAll(
+    /\[sampled:[^\]]*\]/g,
+    '',
+  );
   const limits = [...withoutSampledVariant.matchAll(/LIMIT\s+(≤?\s?[\d,]+)/g)];
   const limit = limits.at(-1)?.[1];
   if (limit) {
@@ -798,6 +801,12 @@ function Component() {
               onRowAction={(key) => setDetailsId(String(key))}
               rowClassName="transition-none [content-visibility:auto]"
             />
+            {rows.length > MAX_TABLE_ROWS && (
+              <div className="w-full pt-3 pr-4 pb-2 pl-2 text-xs text-gray-500/80">
+                Showing only the first {MAX_TABLE_ROWS} of{' '}
+                {formatNumber(rows.length)} queries.
+              </div>
+            )}
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>
