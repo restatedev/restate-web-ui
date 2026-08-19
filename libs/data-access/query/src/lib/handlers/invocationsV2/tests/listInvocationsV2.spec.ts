@@ -124,7 +124,7 @@ describe('POST /query/v2/invocations', () => {
       `);
     });
 
-    it('queries the Stuck shortcut entirely from VQueues with transitioned_at', async () => {
+    it('queries the Held shortcut entirely from VQueues with transitioned_at', async () => {
       await post('/v2/invocations', {
         filters: [
           {
