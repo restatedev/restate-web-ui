@@ -51,6 +51,7 @@ export interface SidebarNavItemProps {
   extraSubItems?: SidebarSubItem[];
   visibleSubCount?: number;
   defaultExpanded?: boolean;
+  autoExpandSubItems?: boolean;
   disabled?: boolean;
 }
 
@@ -156,6 +157,7 @@ export function SidebarNavItem({
   extraSubItems,
   visibleSubCount = DEFAULT_VISIBLE_SUB_COUNT,
   defaultExpanded = false,
+  autoExpandSubItems = true,
   disabled,
 }: SidebarNavItemProps) {
   const { isCollapsed } = useSidebar();
@@ -178,6 +180,7 @@ export function SidebarNavItem({
     ? navExpansion.isOpen(
         sectionId,
         defaultExpanded || anyChildActive || anyExtraActive,
+        autoExpandSubItems,
       )
     : true;
   const sectionClosed = hasSubContent && !expanded;

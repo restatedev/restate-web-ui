@@ -8,6 +8,14 @@
 
 - 2026-08-19 user corrections on health-failure presentation: UNREACHABLE must NOT look scarier than DEGRADED — it can be a mere client-side network issue, so it shares DEGRADED's yellow TriangleAlert treatment and warning (not error) notification; the distinction lives in the label and message. Never surface HTTP status codes in user-facing health messages — they are implementation details; keep them on `healthFailure` in context for diagnostic surfaces only. Health toast copy must fit one line in the notification banner: drop instructions, keep the reassurance. In user-facing copy the user dislikes em-dash/hyphen clauses and the phrase "your end"; use short plain sentences.
 
+- 2026-08-19 Introspection sidebar disclosure: Query stats must never auto-expand into view, including when the sidebar has spare vertical room or Query stats is active. `SidebarNavItem.autoExpandSubItems={false}` suppresses both automatic paths while retaining deliberate chevron expansion.
+
+- 2026-08-19 self on sidebar expansion: I initially described Introspection's new extra item as collapsed by default without checking `NavExpansionProvider`; its `fitsAll` behavior automatically opens every section when space permits. Inspect shared state policy before claiming a local `defaultExpanded` value controls actual visibility.
+
+- 2026-08-19 Query stats discovery: do not place its gauge icon among Introspection result-footer actions. Expose it as a quiet `extraSubItems` entry under the shared Introspection sidebar item; it remains collapsed unless deliberately expanded and inherits the standalone/cloud `baseUrl`.
+
+- 2026-08-19 self on multi-file inspection: I joined an optional spec-file search to a source read with `&&`; because the search correctly returned no specs, the source read was skipped. Keep discovery and confirmed-file reads as independent commands.
+
 - 2026-08-19 Query stats layout: omit the page-level hero/header entirely (gauge icon, title, description, and spacing); start with the content panel and its toolbar.
 
 - 2026-08-19 Cloud query-stats SSR: cloud uses React Router SSR on a long-lived worker. Query recording must no-op without `window`, and the server snapshot must stay empty; otherwise module-level scope state could retain one request's stats for another request. Browser hydration then reads the current environment's persisted bucket.

@@ -243,7 +243,11 @@ export function SidebarBackdrop({ children }: PropsWithChildren) {
 }
 
 interface NavExpansionContextValue {
-  isOpen: (id: string, hasActiveDescendant: boolean) => boolean;
+  isOpen: (
+    id: string,
+    hasActiveDescendant: boolean,
+    autoExpand: boolean,
+  ) => boolean;
   toggle: (id: string, currentlyOpen: boolean) => void;
 }
 
@@ -314,12 +318,12 @@ function NavExpansionProvider({ children }: PropsWithChildren) {
 
   const value = useMemo<NavExpansionContextValue>(
     () => ({
-      isOpen: (id, hasActiveDescendant) => {
+      isOpen: (id, hasActiveDescendant, autoExpand) => {
         const override = overrides.get(id);
         if (override !== undefined) {
           return override;
         }
-        return hasActiveDescendant || fitsAll;
+        return autoExpand && (hasActiveDescendant || fitsAll);
       },
       toggle: (id, currentlyOpen) =>
         setOverrides((prev) => {
