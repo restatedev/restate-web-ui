@@ -107,6 +107,7 @@ export async function getVirtualObjectStats(
     WHERE service_name = ${quoteSqlString(service)}
       AND lock_name = ${quoteSqlString(`${service}/${key}`)}
       AND ${vqueueScopePredicate()}`,
+      'virtual-objects/stats-vqueue-meta',
     ),
     this.query(
       `SELECT MIN(v.transitioned_at) AS oldest_inboxed_at
@@ -120,6 +121,7 @@ export async function getVirtualObjectStats(
         AND vm.num_inbox > 0
     )
       AND v.stage = 'inbox'`,
+      'virtual-objects/stats-oldest-inboxed',
     ),
     this.query(
       `SELECT
@@ -128,6 +130,7 @@ export async function getVirtualObjectStats(
     FROM state
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(key)}${scopeClause(this, scope, 'virtual_object')}`,
+      'state/object-size',
     ),
   ]);
 

@@ -32,5 +32,6 @@ export function queryFinishedHistoryFromVqueues(
         AND transitioned_at < ${sqlString(endTime)}
       GROUP BY bucket
     `.trim(),
+    'invocations-v2/finished-history-from-vqueues',
   );
 }

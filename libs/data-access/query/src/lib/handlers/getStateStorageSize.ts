@@ -6,7 +6,10 @@ const STATE_STORAGE_SIZE_QUERY = `SELECT service_name, COALESCE(SUM(value_length
   ORDER BY service_name`;
 
 export async function getStateStorageSize(this: QueryContext) {
-  const { rows } = await this.query(STATE_STORAGE_SIZE_QUERY);
+  const { rows } = await this.query(
+    STATE_STORAGE_SIZE_QUERY,
+    'state/storage-size',
+  );
 
   return Response.json({
     services: rows.map((row) => ({

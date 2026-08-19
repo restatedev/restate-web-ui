@@ -23,6 +23,7 @@ interface JournalEventRow {
 export async function getPausedError(this: QueryContext, invocationId: string) {
   const { rows } = await this.query(
     `SELECT id, appended_at, event_type, event_json FROM sys_journal_events WHERE id = '${invocationId}' AND event_type = 'Paused' ORDER BY appended_at DESC LIMIT 1`,
+    'invocations/paused-error',
   );
 
   const pausedEvent = rows[0] as JournalEventRow | undefined;

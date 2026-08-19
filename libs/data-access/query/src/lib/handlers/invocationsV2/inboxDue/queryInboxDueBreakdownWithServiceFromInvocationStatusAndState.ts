@@ -51,6 +51,7 @@ export async function queryInboxDueBreakdownWithServiceFromInvocationStatusAndSt
         FROM sys_invocation_status
         WHERE status IN ('inboxed', 'scheduled', 'invoked')${statusServiceFilter}${statusGroupBy}
       `.trim(),
+      'invocations-v2/inbox-due-status-by-service',
     ),
     context.query(
       `
@@ -61,6 +62,7 @@ export async function queryInboxDueBreakdownWithServiceFromInvocationStatusAndSt
         WHERE sis.in_flight
           AND ss.status = 'invoked'${runningServiceFilter}${runningGroupBy}
       `.trim(),
+      'invocations-v2/inbox-due-running-by-service',
     ),
   ]);
 

@@ -13,6 +13,7 @@ export async function getStateInterface(
 ) {
   const keys: { name: string }[] = await this.query(
     `SELECT DISTINCT key FROM state WHERE service_name = '${service}' ${serviceKey.length > 0 ? ` AND service_key IN (${serviceKey.map((key) => `'${key}'`).join(', ')})` : ''}${scopeClause(this, scope, serviceType)} GROUP BY key`,
+    'state/keys',
   ).then(({ rows }) => rows.map((row) => ({ name: row.key })));
 
   return new Response(JSON.stringify({ keys }), {

@@ -88,6 +88,7 @@ describe('Virtual Object inbox query handler', () => {
     FROM sys_inbox
     WHERE service_name = 'Counter'
       AND service_key = 'customer-1'`,
+      'virtual-objects/inbox-count-legacy',
     );
   });
 
@@ -117,6 +118,7 @@ describe('Virtual Object inbox query handler', () => {
     WHERE service_name = 'Counter'
       AND lock_name = 'Counter/customer-1'
       AND scope = 'tenant-a'`,
+      'virtual-objects/inbox-count',
     );
   });
 

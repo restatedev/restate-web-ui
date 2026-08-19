@@ -404,13 +404,16 @@ export async function getVqueueSnapshot(
     focusEntryResult,
     focusedInvocationResult,
   ] = await Promise.all([
-    this.query(metaQuery(vqueueId)),
-    this.query(schedulerWithHeadQuery(vqueueId)),
+    this.query(metaQuery(vqueueId), 'vqueues/snapshot-meta'),
+    this.query(schedulerWithHeadQuery(vqueueId), 'vqueues/snapshot-scheduler'),
     focusEntryId
-      ? this.query(focusEntryQuery(focusEntryId))
+      ? this.query(focusEntryQuery(focusEntryId), 'vqueues/focus-entry')
       : Promise.resolve(undefined),
     focusEntryId && !options?.focusedInvocation
-      ? this.query(focusedInvocationQuery(this, focusEntryId))
+      ? this.query(
+          focusedInvocationQuery(this, focusEntryId),
+          'invocations/get',
+        )
       : Promise.resolve(undefined),
   ]);
 
@@ -436,7 +439,10 @@ export async function getVqueueSnapshot(
       : undefined);
   const focusPositionResult =
     focusEntryId && focusEntryBelongs && focusEntryRow?.stage === 'inbox'
-      ? await this.query(focusEntryPositionQuery(vqueueId, focusEntryId))
+      ? await this.query(
+          focusEntryPositionQuery(vqueueId, focusEntryId),
+          'vqueues/focus-entry-position',
+        )
       : undefined;
   const focusPosition = focusPositionResult?.rows.at(0) as
     | PositionRow

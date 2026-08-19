@@ -66,6 +66,7 @@ export interface ConfirmationDialogProps {
   error?: Error | null;
   onClose?: VoidFunction;
   onCloseQueryParam?: (searchParams: URLSearchParams) => URLSearchParams;
+  surface?: string;
 }
 
 const iconStyles = tv({
@@ -123,11 +124,12 @@ function ConfirmationDialogContent({
   footer,
   isSubmitDisabled,
   closeText = 'Close',
+  surface,
 }: PropsWithChildren<Omit<ConfirmationDialogProps, 'queryParam' | 'onClose'>>) {
   const formId = useId();
 
   return (
-    <DialogContent className="max-w-lg">
+    <DialogContent className="max-w-lg" surface={surface}>
       <div className="flex flex-col gap-2">
         <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
           {icon && (

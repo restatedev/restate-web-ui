@@ -64,7 +64,7 @@ export async function queryState(
     FROM state ${convertFilters(filtersWithService)}
     LIMIT ${STATE_OBJECTS_LIMIT + 1}`;
 
-  const { rows: allRows } = await this.query(query);
+  const { rows: allRows } = await this.query(query, 'state/objects');
   const truncated = allRows.length > STATE_OBJECTS_LIMIT;
   const rows = allRows.slice(0, STATE_OBJECTS_LIMIT);
 

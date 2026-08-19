@@ -29,5 +29,6 @@ export function queryOverallInboxDueBreakdownFromVqueues(
       WHERE v.stage = 'inbox'
         AND v.entry_kind = 'invocation'
     `.trim(),
+    'invocations-v2/inbox-due-from-vqueues',
   );
 }

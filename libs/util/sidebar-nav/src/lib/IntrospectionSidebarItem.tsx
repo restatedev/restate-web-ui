@@ -19,6 +19,14 @@ export function IntrospectionSidebarItem({
       label="Introspection"
       preserveSearchParams={preserveSearchParams}
       disabled={disabled}
+      autoExpandSubItems={false}
+      extraSubItems={[
+        {
+          href: `${baseUrl}/query-stats`,
+          label: 'Query inspector',
+          preserveSearchParams: false,
+        },
+      ]}
     />
   );
 }

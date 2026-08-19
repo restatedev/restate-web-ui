@@ -356,7 +356,7 @@ async function summaryInvocationsLegacy(
     query = `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${subquery} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`;
   }
 
-  const { rows } = await this.query(query);
+  const { rows } = await this.query(query, 'invocations/summary');
 
   const matchers = buildInclusionMatcher(filters);
   const buckets = createBuckets();
@@ -404,13 +404,18 @@ async function summaryInvocationsSplit(
 
   const countsPromise = this.query(
     `SELECT status, completion_result, target_service_name, target_handler_name, COUNT(1) as count FROM ${statusSource} ${where} GROUP BY status, completion_result, target_service_name, target_handler_name`,
+    'invocations/summary-split-counts',
   );
 
   const statePromise = this.query(
     `SELECT target_service_name, target_handler_name, CASE WHEN in_flight THEN 'running' WHEN retry_count > 0 THEN 'backing-off' END as derived_status, COUNT(1) as count FROM sys_invocation_state GROUP BY target_service_name, target_handler_name, derived_status`,
+    'invocations/summary-split-state',
   );
 
-  const servicesPromise = this.query(`SELECT name FROM sys_service`);
+  const servicesPromise = this.query(
+    `SELECT name FROM sys_service`,
+    'invocations/summary-split-services',
+  );
 
   const [{ rows }, { rows: stateRows }, { rows: serviceRows }] =
     await Promise.all([countsPromise, statePromise, servicesPromise]);

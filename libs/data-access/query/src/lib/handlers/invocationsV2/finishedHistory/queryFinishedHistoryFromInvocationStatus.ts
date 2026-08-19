@@ -30,5 +30,6 @@ export function queryFinishedHistoryFromInvocationStatus(
         AND completed_at < ${sqlString(endTime)}
       GROUP BY bucket
     `.trim(),
+    'invocations-v2/finished-history-from-status',
   );
 }

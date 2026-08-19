@@ -83,6 +83,7 @@ async function getVqueueEntryDetailsByIds(
     WHERE entry_id IN (${entryIds.map(quoteSqlString).join(', ')})${
       includeFinished ? '' : "\n      AND stage <> 'finished'"
     }`,
+    'vqueues/entry-details',
   );
   return rows as VirtualObjectEntryRow[];
 }
@@ -99,6 +100,7 @@ async function getInvocationsByIds(
     `SELECT ${getSysInvocationListColumns(context.features).join(', ')}
     FROM sys_invocation
     WHERE id IN (${invocationIds.map(quoteSqlString).join(', ')})${statusClause}`,
+    'invocations/by-ids',
   );
   return rows as RawInvocation[];
 }

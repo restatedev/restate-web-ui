@@ -26,6 +26,7 @@ export async function fetchVqueueStatuses(
     `SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN (${ids
       .map(quoteSqlString)
       .join(', ')}) AND entry_kind = 'invocation'`,
+    'vqueues/entry-statuses',
   );
   for (const row of rows) {
     if (row.entry_id) {

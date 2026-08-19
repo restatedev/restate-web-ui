@@ -5,7 +5,10 @@ const LIST_STATE_SERVICES_QUERY = `SELECT DISTINCT service_name
   ORDER BY service_name`;
 
 export async function listStateServices(this: QueryContext) {
-  const { rows } = await this.query(LIST_STATE_SERVICES_QUERY);
+  const { rows } = await this.query(
+    LIST_STATE_SERVICES_QUERY,
+    'state/services',
+  );
 
   return Response.json({
     services: rows.map((row) => String(row.service_name)),

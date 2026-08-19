@@ -67,6 +67,7 @@ async function queryVirtualObjectInboxCount(
     WHERE service_name = ${quoteSqlString(service)}
       AND lock_name = ${quoteSqlString(`${service}/${key}`)}
       AND ${scopeClause}`,
+    'virtual-objects/inbox-count',
   );
   const value = rows.at(0)?.['inbox_count'];
   if (value === null) return 0;
@@ -84,6 +85,7 @@ async function queryLegacyVirtualObjectInboxCount(
     FROM sys_inbox
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(key)}`,
+    'virtual-objects/inbox-count-legacy',
   );
   const count = Number(rows.at(0)?.['inbox_count']);
   return Number.isSafeInteger(count) && count >= 0 ? count : undefined;
@@ -124,6 +126,7 @@ async function findSingleVqueueInboxEntries(
       AND lock_name = ${quoteSqlString(`${service}/${key}`)}
       AND ${scopeClause}
     LIMIT 1`,
+    'virtual-objects/vqueue-id-lookup',
   );
   const queueId = queueResult.rows.at(0)?.['id'] as string | undefined;
   if (!queueId) return [];
@@ -156,6 +159,7 @@ async function findVqueueInboxEntriesById(
     WHERE id = ${quoteSqlString(vqueueId)}
       AND stage = 'inbox'
     LIMIT ${INBOX_QUERY_LIMIT}`,
+    'vqueues/inbox-entries',
   );
   return rows as VirtualObjectEntryRow[];
 }
@@ -191,6 +195,7 @@ async function findScopedVirtualObjectInboxEntries(
       AND v.stage = 'inbox'
     ORDER BY v.run_at ASC NULLS LAST
     LIMIT ${INBOX_QUERY_LIMIT}`,
+    'virtual-objects/scoped-inbox-entries',
   );
   return rows as VirtualObjectEntryRow[];
 }
@@ -207,6 +212,7 @@ async function findLegacyInboxEntries(
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(key)}
     LIMIT ${INBOX_QUERY_LIMIT}`,
+    'virtual-objects/inbox-entries-legacy',
   );
   return rows.map((row) => ({ id: row['id'], kind: 'invocation' }));
 }

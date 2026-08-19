@@ -49,6 +49,7 @@ export async function getVirtualObjectInvocations(
       AND ${targetServiceKeyClause(this, key, 'si.target_service_key')}${scopeClause}
     ORDER BY si.created_at DESC NULLS LAST
     LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
+    'virtual-objects/recent-invocation-ids',
   );
   const truncated = candidateRows.length > RECENT_INVOCATION_LIMIT;
   const ids = candidateRows
@@ -56,10 +57,12 @@ export async function getVirtualObjectInvocations(
     .map((row) => String(row['id']));
   const [invocationResult, vqueueStatuses] = await Promise.all([
     ids.length > 0
-      ? this
-          .query(`SELECT ${getSysInvocationListColumns(this.features).join(', ')}
+      ? this.query(
+          `SELECT ${getSysInvocationListColumns(this.features).join(', ')}
     FROM sys_invocation
-    WHERE id IN (${ids.map(quoteSqlString).join(', ')})`)
+    WHERE id IN (${ids.map(quoteSqlString).join(', ')})`,
+          'invocations/by-ids',
+        )
       : Promise.resolve({ rows: [] }),
     fetchVqueueStatuses(this, ids),
   ]);

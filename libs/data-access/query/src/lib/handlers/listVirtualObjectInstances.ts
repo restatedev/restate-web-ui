@@ -380,7 +380,8 @@ async function getBacklogsForInstances(
     const partitionClause = instances.every(({ partitionKey }) => partitionKey)
       ? `partition_key IN (${partitionKeys})\n      AND `
       : '';
-    const { rows } = await context.query(`SELECT
+    const { rows } = await context.query(
+      `SELECT
       lock_name,
       scope,
       SUM(num_inbox) AS backlog
@@ -389,11 +390,14 @@ async function getBacklogsForInstances(
       AND (
         ${selectedIdentityClause(instances, 'lock_name', true, `${service}/`)}
       )
-    GROUP BY lock_name, scope`);
+    GROUP BY lock_name, scope`,
+      'virtual-objects/backlogs-from-vqueue-meta',
+    );
     return addObjectKeyFromLockName(rows, service);
   }
 
-  const { rows } = await context.query(`SELECT
+  const { rows } = await context.query(
+    `SELECT
       service_key AS object_key,
       COUNT(*) AS backlog
     FROM sys_inbox
@@ -401,7 +405,9 @@ async function getBacklogsForInstances(
       AND (
         ${selectedIdentityClause(instances, 'service_key', false)}
       )
-    GROUP BY service_key`);
+    GROUP BY service_key`,
+    'virtual-objects/backlogs-from-inbox',
+  );
   return rows;
 }
 
@@ -412,7 +418,8 @@ async function queryLocksForInstances(
 ) {
   if (instances.length === 0) return [];
   if (context.features.has('vqueues')) {
-    const { rows } = await context.query(`SELECT
+    const { rows } = await context.query(
+      `SELECT
       lock_name,
       scope,
       acquired_by,
@@ -421,11 +428,14 @@ async function queryLocksForInstances(
     WHERE acquired_by IS NOT NULL
       AND (
         ${selectedIdentityClause(instances, 'lock_name', true, `${service}/`)}
-      )`);
+      )`,
+      'virtual-objects/locks-for-instances',
+    );
     return addObjectKeyFromLockName(rows, service);
   }
 
-  const { rows } = await context.query(`SELECT
+  const { rows } = await context.query(
+    `SELECT
       service_key AS object_key,
       invocation_id AS acquired_by
     FROM sys_keyed_service_status
@@ -433,7 +443,9 @@ async function queryLocksForInstances(
       AND invocation_id IS NOT NULL
       AND (
         ${selectedIdentityClause(instances, 'service_key', false)}
-      )`);
+      )`,
+    'virtual-objects/locks-from-keyed-status',
+  );
   return rows;
 }
 
@@ -492,6 +504,7 @@ export async function listVirtualObjectInstances(
       includePartitionKey: includePartitionKeyForBacklogQuery,
       unscopedOnly,
     }),
+    'virtual-objects/identities-from-state',
   ).then(({ rows }) => rows);
   const identitiesFromVqueueMetaPromise = hasVqueues
     ? this.query(
@@ -509,6 +522,7 @@ export async function listVirtualObjectInstances(
               includePartitionKeyForBacklogQuery,
               unscopedOnly,
             ),
+        'virtual-objects/identities-from-vqueue-meta',
       ).then(({ rows }) =>
         exactKey === undefined
           ? addObjectKeyFromLockName(rows, service)
@@ -521,6 +535,7 @@ export async function listVirtualObjectInstances(
       includePartitionKey: includePartitionKeyForBacklogQuery,
       unscopedOnly,
     }),
+    'virtual-objects/identities-from-invocations',
   ).then(({ rows }) => rows);
   const identitiesByBacklogPromise = sortByBacklog
     ? this.query(
@@ -536,6 +551,9 @@ export async function listVirtualObjectInstances(
               search,
               filters,
             ),
+        hasVqueues
+          ? 'virtual-objects/identities-by-backlog'
+          : 'virtual-objects/identities-by-backlog-legacy',
       ).then(({ rows }) =>
         !hasVqueues
           ? rows

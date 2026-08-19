@@ -29,6 +29,7 @@ export async function queryOverallInboxStatusBreakdownFromInvocationStatusAndSta
         FROM sys_invocation_status
         WHERE status IN ('inboxed', 'scheduled', 'invoked')
       `.trim(),
+      'invocations-v2/inbox-status-counts',
     ),
     context.query(
       `
@@ -42,6 +43,7 @@ export async function queryOverallInboxStatusBreakdownFromInvocationStatusAndSta
           ) AS backing_off
         FROM sys_invocation_state
       `.trim(),
+      'invocations-v2/inbox-state-counts',
     ),
   ]);
 

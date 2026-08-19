@@ -55,7 +55,7 @@ export async function listStateEntries(
     ORDER BY key
     LIMIT ${limit + 1}`;
 
-  const { rows } = await this.query(query);
+  const { rows } = await this.query(query, 'state/entries-page');
   const hasMore = rows.length > limit;
   const entries = rows.slice(0, limit).map((row) => {
     const value =

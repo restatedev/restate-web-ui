@@ -110,7 +110,7 @@ export async function completedInvocationsBreakdown(
       AND completed_at < '${endIso}'${filterClause}
     GROUP BY bucket`;
 
-  const { rows } = await this.query(query);
+  const { rows } = await this.query(query, 'invocations/completed-breakdown');
 
   const counts = new Map<number, { succeeded: number; failed: number }>();
   for (const row of rows) {

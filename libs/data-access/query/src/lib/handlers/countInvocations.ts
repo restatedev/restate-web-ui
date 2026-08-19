@@ -14,9 +14,11 @@ export async function countInvocations(
   const vqueueBackingOff = vqueueStatusEnabled(this);
   const minimumCountEstimatePromise = this.query(
     `SELECT COUNT(1) as total_count FROM (SELECT ${columns} FROM sys_invocation LIMIT ${COUNT_LIMIT}) ${convertInvocationsFilters(filters, { vqueueBackingOff })}`,
+    'invocations/count-estimate',
   ).then(({ rows }) => rows?.at(0)?.total_count as number);
   const limitCountPromise = this.query(
     `SELECT id from sys_invocation ${convertInvocationsFilters(filters, { vqueueBackingOff })} LIMIT ${INVOCATIONS_LIMIT}`,
+    'invocations/count-exact-check',
   ).then(({ rows }) => rows.length);
 
   const [minimumCountEstimate, countWithLimit] = await Promise.all([

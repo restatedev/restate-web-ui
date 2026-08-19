@@ -32,4 +32,5 @@ export default [
   route('flow-control/rules', 'routes/limits.tsx'),
   route('features', 'routes/features.tsx'),
   route('feature-flags/:flag', 'routes/feature-flags.tsx'),
+  route('query-stats', 'routes/query-stats.tsx'),
 ] satisfies RouteConfig;

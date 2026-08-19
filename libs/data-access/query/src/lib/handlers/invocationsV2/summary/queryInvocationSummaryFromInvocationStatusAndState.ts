@@ -107,7 +107,10 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
         ${exactStatus}
     `.trim();
 
-  const { rows } = (await context.query(query)) as { rows: SummaryRow[] };
+  const { rows } = (await context.query(
+    query,
+    'invocations-v2/summary-from-status-and-state',
+  )) as { rows: SummaryRow[] };
   const waitingStatuses: InvocationStatus[] = [
     'ready',
     ...(includesYielded ? (['yielded'] as const) : []),

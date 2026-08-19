@@ -51,6 +51,7 @@ export async function queryVirtualObjectLock(
         AND service_key = ${quoteSqlString(key)}
         AND invocation_id IS NOT NULL
       LIMIT 1`,
+      'virtual-objects/lock-from-keyed-status',
     );
     const id = rows.at(0)?.['invocation_id'] as string | undefined;
     return {
@@ -68,6 +69,7 @@ export async function queryVirtualObjectLock(
       AND ${scopeClause}
       AND acquired_by IS NOT NULL
     LIMIT 1`,
+    'virtual-objects/lock',
   );
   const row = rows.at(0) as LockHolderRow | undefined;
   const id = row?.acquired_by;

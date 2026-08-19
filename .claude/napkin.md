@@ -8,6 +8,60 @@
 
 - 2026-08-19 user corrections on health-failure presentation: UNREACHABLE must NOT look scarier than DEGRADED — it can be a mere client-side network issue, so it shares DEGRADED's yellow TriangleAlert treatment and warning (not error) notification; the distinction lives in the label and message. Never surface HTTP status codes in user-facing health messages — they are implementation details; keep them on `healthFailure` in context for diagnostic surfaces only. Health toast copy must fit one line in the notification banner: drop instructions, keep the reassurance. In user-facing copy the user dislikes em-dash/hyphen clauses and the phrase "your end"; use short plain sentences.
 
+- 2026-08-19 Query inspector naming: use “Query inspector” as the user-facing page/navigation name. Keep implementation identifiers, the `/query-stats` route, storage keys, export filenames, and generic action wording about recorded query stats unchanged.
+
+- 2026-08-19 Introspection sidebar disclosure: Query stats must never auto-expand into view, including when the sidebar has spare vertical room or Query stats is active. `SidebarNavItem.autoExpandSubItems={false}` suppresses both automatic paths while retaining deliberate chevron expansion.
+
+- 2026-08-19 self on sidebar expansion: I initially described Introspection's new extra item as collapsed by default without checking `NavExpansionProvider`; its `fitsAll` behavior automatically opens every section when space permits. Inspect shared state policy before claiming a local `defaultExpanded` value controls actual visibility.
+
+- 2026-08-19 Query stats discovery: do not place its gauge icon among Introspection result-footer actions. Expose it as a quiet `extraSubItems` entry under the shared Introspection sidebar item; it remains collapsed unless deliberately expanded and inherits the standalone/cloud `baseUrl`.
+
+- 2026-08-19 self on multi-file inspection: I joined an optional spec-file search to a source read with `&&`; because the search correctly returned no specs, the source read was skipped. Keep discovery and confirmed-file reads as independent commands.
+
+- 2026-08-19 Query stats layout: omit the page-level hero/header entirely (gauge icon, title, description, and spacing); start with the content panel and its toolbar.
+
+- 2026-08-19 Cloud query-stats SSR: cloud uses React Router SSR on a long-lived worker. Query recording must no-op without `window`, and the server snapshot must stay empty; otherwise module-level scope state could retain one request's stats for another request. Browser hydration then reads the current environment's persisted bucket.
+
+- 2026-08-19 self on PanelTable role counts: I repeated the hidden-clone assumption in a route test and expected exactly two accessible page links; Testing Library excludes the hidden sticky clone, so assert that at least one accessible link exists unless duplicate rendering is the behavior under test.
+
+- 2026-08-19 Cloud-compatible query stats: scope in-memory state and localStorage buckets by the Admin API `baseUrl` plus tab ID, matching cloud's existing meta-cache isolation. The standalone empty base resolves to `window.location.origin`; cloud supplies an environment-specific admin base URL. Page links keep the recorded browser pathname: strip only React Router's real `useHref('/')` basename, so standalone `/ui/...` avoids `/ui/ui/...` while cloud `/accounts/.../environments/...` paths remain intact.
+
+- 2026-08-19 self on shell quoting: a search command containing both quote styles and a raw backtick ended with an unmatched zsh quote. For broad literal path searches, use a plain `rg -e '/query'` expression rather than constructing a quote-heavy alternation.
+
+- 2026-08-19 Query stats page hrefs: the recorder stores the browser pathname including React Router's basename (`/ui/...`). Before passing a recorded href to the shared React Aria `Link`, strip the current `useHref('/')` base so the router does not produce `/ui/ui/...`; doing this at render time also repairs existing persisted 24-hour stats.
+
+- 2026-08-19 self on ripgrep regexes: an unescaped `{` in a grouped alternation caused the page-router search to fail parsing. Use separate `-e` expressions for literal JSX-like fragments instead of combining them into a regex.
+
+- 2026-08-19 Query stats filtering: the toolbar uses the shared `FilterBuilder` pattern from Limit counters, with only multi-select `Tables` and `Pages` fields. Options are derived from recorded stats, page values retain exact keys but display `formatPageLabel` labels, fields combine with AND, and values within a field match with OR. Do not restore the `N of N queries` toolbar count.
+
+- 2026-08-19 self on React Aria filter tests: `fireEvent.focus` did not open the multi-combobox even though its menu trigger is focus-based; use `userEvent.click` and role queries with `/Tables/`/`/Pages/` because the accessible option names contain additional rendered operation text.
+
+- 2026-08-19 Query stats actions: use the Invocations-style narrow split-button cell. The primary action is `EXPLAIN ANALYZE`; the menu offers both it and `EXPLAIN ANALYZE VERBOSE`, and verbose downloads to a distinct `explain-analyze-verbose-*` filename.
+
+- 2026-08-19 Query stats interaction: do not open a details dialog when a row is clicked. The table, shape/SQL tooltips, page links, JSON export, and row-level Explain Analyze action already expose the useful information; keep rows non-interactive.
+
+- 2026-08-19 tooltip components: `HoverTooltip` content styles include `break-all` — never use it for code/SQL content (splits mid-word). For hoverable code with copy, use `TruncateWithTooltip` (`alwaysShow`, `size="lg"` for whitespace-pre, `copyText` — copy button is built in and the tooltip stays open while hovered). PanelTable renders a hidden sticky-header clone of every row — Playwright `.first()` on row-content selectors often hits the invisible clone; target visible text with `.last()` or getByText.
+
+- 2026-08-19 query-stats storage: localStorage buckets are per Admin API base URL and tab (`restate.query-stats.v2.<encoded-baseUrl>.<tabId>`, tabId in sessionStorage), with 2s debounced persist, pagehide flush, lazy per-scope hydration, same-scope cross-tab merge, and 24h TTL. Snapshot caches must start null after hydration or a reloaded page stays empty until another query records. A fresh Playwright browser context has empty localStorage, so record queries before asserting persistence.
+
+- 2026-08-19 surface attribution landmarks: dialogs/panels are attributable to queries via three mechanisms — `?panel=<name>` (PANEL_QUERY_PARAM, all panels), registered transient params (`registerTransientQueryParams`, all QueryDialogs), and a passive `data-dialog-surface` attribute the shared `DialogContent` stamps on its dialog element (React Aria keeps modal content in the DOM only while open, so the recorder detects open dialogs with a `querySelectorAll` at query start — no useEffect/registry; Nik explicitly rejected an effect-based marker). Name dialogs via the `surface` prop — BatchOperationDialog (`batch-<type>`) and EditState are named. Local-state dialogs (ConfirmationDialog open=…, EditState) leave NO trace in the URL — do not assume dialog state is URL-driven without checking.
+
+- 2026-08-19 user corrections on the query catalog: descriptions are user-facing — no v1/v2 tokens, no hook names, no endpoint paths, no editorial prose in shapes ("full table scan", "no LIMIT" — absence of LIMIT in the shape says it); no ×N compressions in shapes (write aggregates out or use <placeholders>); call sites with the same intent/shape share one id (invocations/by-ids, invocations/get, state/object-size are shared); legacy (no-VQueues) variants get their own `-legacy` id, not a [legacy: …] bundle; migration-skip (`vqueues_migration_skip_completed`) variants are ignored in the catalog — no id is exclusive to that flag today.
+
+- 2026-08-19 self on `rg -r` again: I repeated the `-rn` mistake from earlier today ("rg -rn -e pattern" silently replaces matches with 'n'). NEVER type `-rn` with ripgrep; always spell `-n` alone.
+
+- 2026-08-19 generated lib tsconfig drift: `@nx/react:lib` currently emits tsconfig.lib.json without `"../../../@types/global-env.d.ts"` in `types`, so any lib whose import graph reaches a `.css` side-effect import (e.g. @restate/ui/error → ui/code → highlight.js css) fails bare `tsc`. Add that entry to match existing libs (features-route has it).
+
+- 2026-08-19 smoke-testing web-ui: the dev server serves under the `/ui/` base path and falls back to port 4301 when 4300 is taken. Drive it with the repo's `@playwright/test` (the bare `playwright` package is not installed; import by absolute path from scratchpad scripts). The in-memory query-stats store resets on full page loads — land on /query-stats first, navigate elsewhere via sidebar links (client-side), and return with page.goBack(). Mock mode only mocks SQL against sys_rules/sys_user_limits/sys_vqueue_meta — Flow Control pages are the reliable smoke target; most other query pages show "Query is not mocked" (501 from MSW fixtures), which is pre-existing.
+
+- 2026-08-19 query-stats feature landmarks: recorder lives in libs/data-access/query/src/lib/queryStats.ts + queryDefinitions.ts (the per-statement id registry; `context.query(sql, id)` with QueryId = keyof registry so tsc enforces completeness). Strict `toHaveBeenCalledWith` on context.query exists only in getVirtualObjectInbox.spec.ts — include the id argument there when SQL changes.
+
+- 2026-08-19 user correction on query-tracker priorities: I framed failure capture as "the most important rows"; Nik's priority is performance signal (timeouts included), since the UI already surfaces failures. For debug tooling here, prefer aggregate-first designs (one row per stable query id with p50/p90/max + kept worst-case SQL) over flat execution logs, and prefer decoupled recording (window.location at the fetcher) over react-query/header plumbing.
+
+- 2026-08-19 self on ripgrep flags: I passed `-rn` intending `-n`; `-r` is `--replace` and silently consumed `n` as its argument, producing empty output. Spell out `-n` separately and never stack it with unfamiliar short flags.
+
+- 2026-08-19 admin /query capabilities (verified in ../restate + datafusion-54 source): the endpoint passes SQL to DataFusion with only `allow_ddl(false)`/`allow_dml(false)`; `EXPLAIN`/`EXPLAIN ANALYZE` plans pass `verify_plan`, so the UI can run them. The endpoint is rate-limited (429 + Retry-After), streams Arrow or JSON by Accept header, parses with the PostgreSQL dialect, and returns no server-side timing header.
+
 - 2026-08-18 table lint tooling: `pnpm nx run table:lint`, daemon-free Nx, and the repository-local Nx binary under Node 24 can all stall before ESLint while the web-ui dev server owns isolated plugin workers. Do not stop the user's dev server; stop only scoped lint processes and run `pnpm exec eslint libs/ui/table` to expose and verify code violations directly.
 
 - 2026-08-18 invocation live-snapshot races: The summary facets and invocation rows are separate live queries and can legitimately observe different lifecycle states. Never issue a second reconciliation query: it can be expensive and still cannot guarantee an atomic match. A complete uncapped list owns current filtered counts, so derive the displayed stage/status context, active service tab, table/footer, and Actions count from its rows while retaining summary totals as population context. A sampled, partial, or capped list cannot be compared row-for-row; retain summary estimates and explicit `shown of ~total` wording.

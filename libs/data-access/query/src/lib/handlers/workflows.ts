@@ -96,6 +96,7 @@ async function findWorkflowRunInvocationId(
       AND ${targetServiceKeyClause(context, workflowId)}
       AND target_handler_name = ${quoteSqlString(runHandler)}${scopeClause}
     LIMIT 1`,
+    'workflows/run-invocation-lookup',
   );
   const invocationId = rows.at(0)?.['id'];
   return invocationId == null ? undefined : String(invocationId);
@@ -109,9 +110,12 @@ async function hydrateInvocations(
   const uniqueIds = [...new Set(ids.filter(Boolean))];
   if (uniqueIds.length === 0) return new Map<string, InvocationV2>();
   const [invocationResult, vqueueStatuses] = await Promise.all([
-    context.query(`SELECT ${getSysInvocationListColumns(context.features).join(', ')}
+    context.query(
+      `SELECT ${getSysInvocationListColumns(context.features).join(', ')}
     FROM sys_invocation
-    WHERE id IN (${uniqueIds.map(quoteSqlString).join(', ')})`),
+    WHERE id IN (${uniqueIds.map(quoteSqlString).join(', ')})`,
+      'invocations/by-ids',
+    ),
     fetchVqueueStatuses(context, uniqueIds),
   ]);
   const invocationById = new Map(
@@ -174,6 +178,7 @@ export async function listWorkflowRuns(
       AND target_handler_name = ${quoteSqlString(handlers.run)}${nonNullIdClause}${searchClause}${filterClause}
     ORDER BY created_at DESC NULLS LAST
     LIMIT ${WORKFLOW_RUN_QUERY_LIMIT}`,
+    'workflows/runs-page',
   );
   const truncated = candidateRows.length > WORKFLOW_RUN_LIMIT;
   const ids = candidateRows
@@ -236,6 +241,7 @@ export async function getWorkflowRun(
       AND ${targetServiceKeyClause(this, workflowId)}${scopeClause}
     ORDER BY created_at DESC NULLS LAST
     LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
+    'workflows/recent-invocations',
   );
   const [runId, recentResult] = await Promise.all([runPromise, recentPromise]);
   const recentInvocationsTruncated =
@@ -310,6 +316,7 @@ export async function getWorkflowRunStats(
     WHERE entry_id = ${quoteSqlString(runInvocationId)}
       AND entry_kind = 'invocation'
     LIMIT 1`,
+        'workflows/run-stage',
       ),
       this.query(
         `SELECT COUNT(*) AS pending_promise_count
@@ -317,6 +324,7 @@ export async function getWorkflowRunStats(
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(workflowId)}${identityScopeClause}
       AND completed = false`,
+        'workflows/pending-promises',
       ),
       this.query(
         `SELECT MAX(si.created_at) AS last_interaction_at
@@ -325,6 +333,7 @@ export async function getWorkflowRunStats(
       AND si.target_service_ty = 'workflow'
       AND ${targetServiceKeyClause(this, workflowId, 'si.target_service_key')}
       AND si.target_handler_name <> ${quoteSqlString(handlers.run)}${invocationScopeClause}`,
+        'workflows/last-interaction',
       ),
       this.query(
         `SELECT
@@ -333,6 +342,7 @@ export async function getWorkflowRunStats(
     FROM state
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key = ${quoteSqlString(workflowId)}${identityScopeClause}`,
+        'state/object-size',
       ),
     ]);
 

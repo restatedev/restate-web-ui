@@ -36,7 +36,8 @@ export async function getVqueueEntries(
     return new Response(null, { status: 204 });
   }
 
-  const { rows } = await this.query(`SELECT
+  const { rows } = await this.query(
+    `SELECT
       id AS vqueue_id,
       entry_id AS id,
       entry_kind AS kind,
@@ -58,7 +59,9 @@ export async function getVqueueEntries(
     FROM sys_vqueues
     WHERE id = ${quoteSqlString(vqueueId)}
       AND stage = ${quoteSqlString(stage)}
-    LIMIT ${ENTRY_QUERY_LIMIT}`);
+    LIMIT ${ENTRY_QUERY_LIMIT}`,
+    'vqueues/stage-entries',
+  );
   const foundEntries = rows as VirtualObjectEntryRow[];
   const entryDetails = await getVirtualObjectEntryDetails(
     this,

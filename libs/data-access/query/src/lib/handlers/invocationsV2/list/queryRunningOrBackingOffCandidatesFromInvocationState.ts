@@ -24,5 +24,6 @@ export function queryRunningOrBackingOffCandidatesFromInvocationState(
       FROM sys_invocation_state${statusFilter}
       LIMIT ${INVOCATIONS_V2_LIMIT}
     `.trim(),
+    'invocations-v2/candidates-from-state',
   );
 }

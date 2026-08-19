@@ -102,7 +102,7 @@ export async function listInvocations(
           )} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`
         : `SELECT ${idSelectColumns} from ${source} ${convertInvocationsFilters(filters, { vqueueBackingOff })} ${orderBy} LIMIT ${INVOCATIONS_LIMIT}`;
 
-  const { rows: idRows } = await this.query(idQuery);
+  const { rows: idRows } = await this.query(idQuery, 'invocations/list-ids');
 
   let invocations: ReturnType<typeof convertInvocation>[] = [];
   if (idRows.length > 0) {
@@ -124,6 +124,7 @@ export async function listInvocations(
           ],
           { vqueueBackingOff },
         )} ${orderBy}`,
+        'invocations/list-details',
       ),
       fetchVqueueStatuses(this, ids),
     ]);

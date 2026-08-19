@@ -92,6 +92,7 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
         AND ${entryPredicates.join('\n        AND ')}${orderBy}
       LIMIT ${INVOCATIONS_V2_LIMIT}
     `.trim(),
+    'invocations-v2/candidates-from-vqueue-meta',
   ) as Promise<{ rows: InvocationCandidateRow[] }>;
 
   if (mode.type === 'sampled') return candidatesPromise;
@@ -107,6 +108,7 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
         LIMIT ${VQUEUE_SERVICE_QUEUE_LIMIT + 1}
       ) limited_service_queues
     `.trim(),
+    'invocations-v2/candidate-queue-count',
   ) as Promise<{ rows: Array<{ queue_count: number | string }> }>;
 
   const [candidates, queueCount] = await Promise.all([

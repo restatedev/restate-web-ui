@@ -1,6 +1,12 @@
 import ky, { HTTPError, TimeoutError } from 'ky';
 import semverGte from 'semver/functions/gte';
 import semverCoerce from 'semver/functions/coerce';
+import type { QueryId } from '../queryDefinitions';
+import {
+  getCurrentQueryPage,
+  recordQuery,
+  type QueryOutcome,
+} from '../queryStats';
 
 export const DURATION_CALC =
   "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
@@ -116,7 +122,7 @@ export function getSysInvocationColumns(
 }
 
 export type QueryContext = {
-  query: (sql: string) => Promise<{ rows: any[] }>;
+  query: (sql: string, id: QueryId) => Promise<{ rows: any[] }>;
   adminApi: <T>(
     path: string,
     options?: { method?: string; json?: unknown },
@@ -230,6 +236,16 @@ function adminApiFetcher<T>(
     .catch(withRequestContext(method, url));
 }
 
+function classifyQueryError(error: unknown): QueryOutcome {
+  if (error instanceof TimeoutError) {
+    return 'timeout';
+  }
+  if (error instanceof Error && error.name === 'AbortError') {
+    return 'aborted';
+  }
+  return 'error';
+}
+
 export function createQueryContext(
   baseUrl: string,
   headers: Headers,
@@ -238,7 +254,31 @@ export function createQueryContext(
   signal?: AbortSignal,
 ): QueryContext {
   return {
-    query: (sql: string) => queryFetcher(sql, { baseUrl, headers, signal }),
+    query: (sql: string, id: QueryId) => {
+      const page = getCurrentQueryPage();
+      const executedAt = Date.now();
+      const startedAt = performance.now();
+      const record = (outcome: QueryOutcome) =>
+        recordQuery({
+          id,
+          sql,
+          durationMs: performance.now() - startedAt,
+          outcome,
+          executedAt,
+          baseUrl,
+          page,
+        });
+      return queryFetcher(sql, { baseUrl, headers, signal }).then(
+        (result) => {
+          record('success');
+          return result;
+        },
+        (error) => {
+          record(classifyQueryError(error));
+          throw error;
+        },
+      );
+    },
     adminApi: <T>(
       path: string,
       options?: { method?: string; json?: unknown },

@@ -696,7 +696,7 @@ function StateDialogContent({
   const formId = useId();
 
   return (
-    <DialogContent className="max-w-2xl">
+    <DialogContent className="max-w-2xl" surface="edit-state">
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <h3 className="text-lg leading-6 font-medium text-gray-900">

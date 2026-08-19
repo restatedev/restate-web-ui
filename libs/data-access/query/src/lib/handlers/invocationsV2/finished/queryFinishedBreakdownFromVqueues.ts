@@ -50,7 +50,10 @@ export async function queryFinishedBreakdownFromVqueues(
     `.trim();
   }
 
-  const { rows } = await context.query(query);
+  const { rows } = await context.query(
+    query,
+    'invocations-v2/finished-breakdown-from-vqueues',
+  );
   const scannedCount = countRows(rows);
 
   return Response.json({

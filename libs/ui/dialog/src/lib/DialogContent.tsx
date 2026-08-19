@@ -91,6 +91,11 @@ interface DialogContentProps {
   className?: string;
   variant?: 'modal' | 'sheet';
   isDismissable?: boolean;
+  // Name shown by the query-stats recorder while this dialog is open. React
+  // Aria keeps modal content in the DOM only while the overlay is shown, so
+  // the recorder detects open dialogs by querying for the stamped
+  // `data-dialog-surface` attribute; unnamed dialogs still count anonymously.
+  surface?: string;
 }
 
 export function DialogContent({
@@ -98,6 +103,7 @@ export function DialogContent({
   className,
   variant = 'modal',
   isDismissable = true,
+  surface,
 }: PropsWithChildren<DialogContentProps>) {
   return (
     <AriaModalOverlay
@@ -116,6 +122,7 @@ export function DialogContent({
         <AriaDialog
           className={dialogStyles({ variant })}
           data-ignore-shortcut="true"
+          data-dialog-surface={surface ?? ''}
         >
           <DialogFooterContainer>
             <div className={contentStyles({ variant })}>{children}</div>
