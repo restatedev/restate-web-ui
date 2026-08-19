@@ -271,6 +271,7 @@ export function BatchOperationDialog({
     <SnapshotTimeProvider lastSnapshot={countInvocations.dataUpdatedAt}>
       <ConfirmationDialog
         open={state.isDialogOpen}
+        surface={`batch-${state.type}`}
         onOpenChange={(isOpen) => {
           const canClose = !mutation.isPending || mutation.isPaused(state.id);
           if (canClose && !isOpen) {

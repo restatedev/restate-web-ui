@@ -7,6 +7,7 @@ export {
 } from './lib/queryDefinitions';
 export {
   clearQueryStats,
+  describeQueryPage,
   getQueryStatsSnapshot,
   normalizeQueryPage,
   recordQuery,

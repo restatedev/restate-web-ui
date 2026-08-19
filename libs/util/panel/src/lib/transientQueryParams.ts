@@ -10,6 +10,14 @@ export function registerTransientQueryParams(...names: string[]) {
   names.forEach((name) => transientQueryParams.add(name));
 }
 
+export function activeTransientQueryParams(
+  searchParams: URLSearchParams,
+): string[] {
+  return Array.from(transientQueryParams)
+    .filter((name) => searchParams.has(name))
+    .sort();
+}
+
 export function stripTransientQueryParams(
   searchParams: URLSearchParams,
 ): URLSearchParams {
