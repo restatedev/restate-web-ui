@@ -75,15 +75,16 @@ export function VirtualObjectLockHero({
           href={`${baseUrl}/invocations/${lockHolder.id}`}
           aria-label={`Open invocation ${lockHolder.id}`}
           className="flex-wrap gap-y-1"
+          label={
+            <InvocationId
+              id={lockHolder.id}
+              truncateInMiddle
+              popover={false}
+              link={false}
+              className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-zinc-400"
+            />
+          }
         >
-          <InvocationId
-            id={lockHolder.id}
-            truncateInMiddle
-            popover={false}
-            link={false}
-            className="w-fit max-w-full min-w-0 text-sm [&_svg]:text-zinc-400"
-          />
-          <span className="min-w-2 flex-auto" />
           <div className="min-w-0">
             {invocation ? (
               <Status invocation={invocation} mini="md" timeline={false} />
