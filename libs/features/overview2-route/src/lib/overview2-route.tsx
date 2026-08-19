@@ -542,6 +542,26 @@ function OverviewContent() {
       : mode === 'deployments'
         ? 'Filter deployments or services…'
         : 'Filter handlers, services, or types…';
+  const summaryErrorIndicator =
+    !completionChart.isHistoryEnabled && summaryError ? (
+      <Popover>
+        <PopoverTrigger>
+          <Button
+            aria-label="Could not load invocation data"
+            variant="secondary"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+          >
+            <Icon
+              name={IconName.TriangleAlert}
+              className="h-4 w-4 fill-red-200 text-red-600"
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="max-w-sm">
+          <ErrorBanner error={summaryError} className="rounded-xl" />
+        </PopoverContent>
+      </Popover>
+    ) : null;
   const renderCompletionSummary = (
     className: string,
     legendClassName = 'min-w-0 place-items-start',
@@ -702,12 +722,17 @@ function OverviewContent() {
           status={ferrofluidStatus}
           onPress={onRefresh}
           belowServer={
-            canSampleBreakdown ? (
-              <BreakdownMode
-                mode={breakdownMode}
-                onChange={setBreakdownMode}
-                format="sentence"
-              />
+            canSampleBreakdown || summaryErrorIndicator ? (
+              <div className="flex items-center gap-2">
+                {canSampleBreakdown && (
+                  <BreakdownMode
+                    mode={breakdownMode}
+                    onChange={setBreakdownMode}
+                    format="sentence"
+                  />
+                )}
+                {summaryErrorIndicator}
+              </div>
             ) : undefined
           }
           aboveServer={
@@ -837,24 +862,10 @@ function OverviewContent() {
                 />
               </span>
             )}
-            {!completionChart.isHistoryEnabled && summaryError && (
-              <Popover>
-                <PopoverTrigger>
-                  <Button
-                    aria-label="Could not load invocation data"
-                    variant="secondary"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
-                  >
-                    <Icon
-                      name={IconName.TriangleAlert}
-                      className="h-4 w-4 fill-red-200 text-red-600"
-                    />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="max-w-sm">
-                  <ErrorBanner error={summaryError} className="rounded-xl" />
-                </PopoverContent>
-              </Popover>
+            {summaryErrorIndicator && (
+              <span className="@min-[64rem]/hero:hidden">
+                {summaryErrorIndicator}
+              </span>
             )}
           </div>
         </div>
