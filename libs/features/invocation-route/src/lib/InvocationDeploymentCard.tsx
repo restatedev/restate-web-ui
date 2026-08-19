@@ -16,9 +16,11 @@ export function InvocationDeploymentCard({
   return (
     <Card intent="none">
       <CardHeader title="Deployment" icon={IconName.Http}>
-        <span className="text-2xs font-medium text-gray-400">
-          {invocation.last_attempt_deployment_id ? 'Last attempt' : 'Pinned'}
-        </span>
+        {invocation.last_attempt_deployment_id && (
+          <span className="text-2xs font-medium text-gray-400">
+            Last attempt
+          </span>
+        )}
       </CardHeader>
       <InvocationDeployment
         invocation={invocation}

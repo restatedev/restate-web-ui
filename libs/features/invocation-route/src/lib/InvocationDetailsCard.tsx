@@ -7,7 +7,7 @@ import {
   getServiceTargetEntityLink,
   ServiceTarget,
 } from '@restate/features/service-target';
-import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
+import { LimitKey, VQueueIdDisplay } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Copy } from '@restate/ui/copy';
@@ -181,20 +181,21 @@ export function InvocationDetailsCard({
         </RelatedEntityRow>
       )}
       {vqueueId && (
-        <CardRow
+        <CardLinkRow
+          href={`${baseUrl}/flow-control/vqueues/${vqueueId}`}
+          aria-label={`Open VQueue ${vqueueId}`}
           label={
             <DetailLabel icon={IconName.Layers} iconClassName="rotate-90">
               VQueue
             </DetailLabel>
           }
         >
-          <VQueueId
+          <VQueueIdDisplay
             id={vqueueId}
-            popover={false}
             truncateInMiddle
-            className="ml-1 max-w-48 min-w-0 text-xs"
+            className="max-w-48 min-w-0 text-xs"
           />
-        </CardRow>
+        </CardLinkRow>
       )}
       {limitKey && (
         <CardRow

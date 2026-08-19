@@ -347,15 +347,19 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
   const diagnosticStyles = durationDiagnosticStyles();
   return (
     <Card>
-      <CardHeader title="Timing" icon={IconName.Timer}>
-        <InlineTooltip
-          variant="indicator-button"
-          title="Each timing averages its own events"
-          description="End to end measures entries that complete normally; stage durations are measured when that stage exits, so a stage average can be longer than end to end."
-          ariaLabel="Explain how timings are averaged"
-          className="text-xs text-gray-400"
-        />
-      </CardHeader>
+      <CardHeader
+        title="Timing"
+        icon={IconName.Timer}
+        titleAddon={
+          <InlineTooltip
+            variant="indicator-button"
+            title="Each timing averages its own events"
+            description="End to end measures entries that complete normally; stage durations are measured when that stage exits, so a stage average can be longer than end to end."
+            ariaLabel="Explain how timings are averaged"
+            className="ml-0.5 text-xs text-gray-400"
+          />
+        }
+      />
       <CardRow variant="hero">
         <div className={durationRowStyles()}>
           <div className="min-w-0">

@@ -2,7 +2,9 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import {
+  Children,
   createContext,
+  isValidElement,
   useContext,
   type PropsWithChildren,
   type ReactNode,
@@ -20,21 +22,26 @@ export type CardIntent =
 const CardIntentContext = createContext<CardIntent>('none');
 
 const cardStyles = tv({
-  base: "relative isolate flex max-w-full min-w-0 flex-col divide-y divide-gray-200 overflow-hidden rounded-xl border bg-gray-50 shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_white]",
+  slots: {
+    wrapper: 'flex max-w-full min-w-0 flex-col',
+    box: "relative isolate flex max-w-full min-w-0 flex-auto flex-col divide-y divide-gray-200 overflow-hidden rounded-xl border bg-gray-50 shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[800px_400px_at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_white]",
+  },
   variants: {
     intent: {
-      success: 'border-green-200/70 before:from-green-400/20',
-      danger: 'border-red-200/70 before:from-red-400/20',
-      warning: 'border-orange-200/70 before:from-orange-400/20',
-      pending: 'border-amber-200/70 before:from-amber-400/20',
-      info: 'border-blue-200/70 before:from-blue-400/20',
-      default: 'border-gray-200/70 before:from-white',
-      none: 'border-gray-200 ring-1 ring-white/50 ring-inset before:from-white',
-    } satisfies Record<CardIntent, string>,
+      success: { box: 'border-green-200/70 before:from-green-400/20' },
+      danger: { box: 'border-red-200/70 before:from-red-400/20' },
+      warning: { box: 'border-orange-200/70 before:from-orange-400/20' },
+      pending: { box: 'border-amber-200/70 before:from-amber-400/20' },
+      info: { box: 'border-blue-200/70 before:from-blue-400/20' },
+      default: { box: 'border-gray-200/70 before:from-white' },
+      none: {
+        box: 'border-gray-200 ring-1 ring-white/50 ring-inset before:from-white',
+      },
+    } satisfies Record<CardIntent, { box: string }>,
     span: {
-      default: '',
-      wide: 'md:col-span-2',
-      full: 'col-span-full',
+      default: {},
+      wide: { wrapper: 'md:col-span-2' },
+      full: { wrapper: 'col-span-full' },
     },
   },
   defaultVariants: { intent: 'none', span: 'default' },
@@ -50,49 +57,65 @@ export function Card({
   span?: 'default' | 'wide' | 'full';
   className?: string;
 }>) {
+  const styles = cardStyles({ intent, span });
+  const kids = Children.toArray(children);
+  const header = kids.find(
+    (kid) => isValidElement(kid) && kid.type === CardHeader,
+  );
+  const rest = header ? kids.filter((kid) => kid !== header) : kids;
   return (
     <CardIntentContext.Provider value={intent}>
-      <div className={cardStyles({ intent, span, className })}>{children}</div>
+      <div className={styles.wrapper({ className })}>
+        {header}
+        <div className={styles.box()}>{rest}</div>
+      </div>
     </CardIntentContext.Provider>
   );
 }
 
 const cardHeaderStyles = tv({
   slots: {
-    base: 'flex min-h-11 items-center gap-2 px-3',
-    iconChip:
-      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border shadow-xs',
-    title: 'shrink-0 text-2xs font-semibold tracking-wide uppercase',
+    base: 'flex min-w-0 items-center gap-2 pr-2 pl-2.5',
+    tab: 'relative z-1 -mb-px flex h-8 min-w-0 shrink-0 items-center gap-1.5 self-end rounded-t-lg border border-b-0 bg-gray-50 px-2.5',
+    icon: 'h-3.5 w-3.5 shrink-0',
+    title: 'truncate text-xs leading-none font-semibold',
   },
   variants: {
     intent: {
       success: {
-        iconChip: 'border-green-200/80 bg-green-50 text-green-600',
-        title: 'text-green-800/70',
+        tab: 'border-green-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-green-400/20 to-transparent to-50%',
+        icon: 'text-green-600',
+        title: 'text-green-800/80',
       },
       danger: {
-        iconChip: 'border-red-200/80 bg-red-50 text-red-600',
-        title: 'text-red-800/70',
+        tab: 'border-red-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-red-400/20 to-transparent to-50%',
+        icon: 'text-red-600',
+        title: 'text-red-800/80',
       },
       warning: {
-        iconChip: 'border-orange-200/80 bg-orange-50 text-orange-600',
-        title: 'text-orange-800/70',
+        tab: 'border-orange-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-orange-400/20 to-transparent to-50%',
+        icon: 'text-orange-600',
+        title: 'text-orange-800/80',
       },
       pending: {
-        iconChip: 'border-amber-200/80 bg-amber-50 text-amber-600',
-        title: 'text-amber-800/70',
+        tab: 'border-amber-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-amber-400/20 to-transparent to-50%',
+        icon: 'text-amber-600',
+        title: 'text-amber-800/80',
       },
       info: {
-        iconChip: 'border-blue-200/80 bg-blue-50 text-blue-600',
-        title: 'text-blue-800/70',
+        tab: 'border-blue-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-blue-400/20 to-transparent to-50%',
+        icon: 'text-blue-600',
+        title: 'text-blue-800/80',
       },
       default: {
-        iconChip: 'border-gray-200/80 bg-white text-gray-500',
-        title: 'text-gray-500',
+        tab: 'border-gray-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-white to-transparent to-50%',
+        icon: 'text-zinc-500',
+        title: 'text-zinc-600',
       },
       none: {
-        iconChip: 'border-gray-200/80 bg-white text-gray-500',
-        title: 'text-gray-500',
+        tab: 'border-gray-200 bg-radial-[800px_400px_at_-0.625rem_100%] from-white to-transparent to-50%',
+        icon: 'text-zinc-500',
+        title: 'text-zinc-600',
       },
     },
   },
@@ -101,6 +124,7 @@ const cardHeaderStyles = tv({
 
 export function CardHeader({
   title,
+  titleAddon,
   icon,
   iconClassName,
   action,
@@ -108,6 +132,7 @@ export function CardHeader({
   children,
 }: PropsWithChildren<{
   title: string;
+  titleAddon?: ReactNode;
   icon?: IconName;
   iconClassName?: string;
   action?: ReactNode;
@@ -117,15 +142,16 @@ export function CardHeader({
   const styles = cardHeaderStyles({ intent });
   return (
     <div className={styles.base({ className })}>
-      {icon && (
-        <span className={styles.iconChip()}>
+      <span className={styles.tab()}>
+        {icon && (
           <Icon
             name={icon}
-            className={['h-3.5 w-3.5', iconClassName].filter(Boolean).join(' ')}
+            className={styles.icon({ className: iconClassName })}
           />
-        </span>
-      )}
-      <h3 className={styles.title()}>{title}</h3>
+        )}
+        <h3 className={styles.title()}>{title}</h3>
+        {titleAddon}
+      </span>
       {children}
       <span className="min-w-2 flex-auto" />
       {action}

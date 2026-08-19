@@ -1,10 +1,11 @@
 import type { components } from '@restate/data-access/admin-api-spec';
+import { useRestateContext } from '@restate/features/restate-context';
 import {
   getInvocationStatusIntent,
   InvocationId,
 } from '@restate/features/invocation-ui';
 import { LimitKey } from '@restate/features/vqueue-ui';
-import { Card, CardHeader, CardRow } from '@restate/ui/card';
+import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
 import { RelativeDate } from '@restate/ui/tooltip';
 
@@ -32,17 +33,24 @@ export function WorkflowRunUnavailableBanner() {
 }
 
 export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
+  const { baseUrl } = useRestateContext();
   return (
     <Card intent={getInvocationStatusIntent(invocation)}>
       <CardHeader title="Workflow run" icon={IconName.Workflow} />
-      <CardRow variant="hero" className="flex-wrap gap-y-1">
+      <CardLinkRow
+        variant="hero"
+        href={`${baseUrl}/invocations/${invocation.id}`}
+        aria-label={`Open invocation ${invocation.id}`}
+        className="flex-wrap gap-y-1"
+      >
         <InvocationId
           id={invocation.id}
           truncateInMiddle
           popover={false}
+          link={false}
           className="w-fit max-w-full min-w-0 text-sm [&_svg]:text-zinc-400"
         />
-      </CardRow>
+      </CardLinkRow>
       {/* TODO: Bring the VQueue ID row back when it is useful on Workflow run cards.
       {(invocation.vqueue?.vqueue_id ?? invocation.vqueue_id) && (
         <CardRow label="VQueue ID">

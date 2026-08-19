@@ -48,13 +48,6 @@ export function WorkflowStatsCard({
           </span>
         </CardRow>
       )}
-      {stats.queueDuration && (
-        <CardRow label="Queue time">
-          <span className="text-xs text-zinc-600 tabular-nums">
-            {formatDuration(stats.queueDuration)}
-          </span>
-        </CardRow>
-      )}
       <CardRow label="Pending promises">
         <span className="text-xs text-zinc-600 tabular-nums">
           {formatNumber(stats.pendingPromiseCount ?? 0)}

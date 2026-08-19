@@ -73,6 +73,7 @@ interface InvocationIdProps {
   isLive?: boolean;
   truncateInMiddle?: boolean;
   popover?: boolean;
+  link?: boolean;
   title?: ReactNode;
 }
 
@@ -83,10 +84,18 @@ export function InvocationId({
   size = 'default',
   truncateInMiddle = false,
   popover = true,
+  link = true,
   title,
 }: InvocationIdProps) {
   const linkRef = useRef<HTMLAnchorElement>(null);
-  const { base, icon, text, link, container, linkIcon } = styles({ size });
+  const {
+    base,
+    icon,
+    text,
+    link: linkStyle,
+    container,
+    linkIcon,
+  } = styles({ size });
   const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
   const isSelected = invocationInSidebar === id;
 
@@ -101,7 +110,7 @@ export function InvocationId({
       href={`${baseUrl}/invocations/${id}${getSearchParams(location.search)}`}
       aria-label={id}
       variant="secondary"
-      className={link()}
+      className={linkStyle()}
       data-invocation-selected={isSelected}
     >
       <Icon name={IconName.ChevronRight} className={linkIcon()} />
@@ -133,7 +142,7 @@ export function InvocationId({
           ) : (
             <TruncateWithTooltip
               copyText={id}
-              triggerRef={linkRef}
+              triggerRef={link ? linkRef : undefined}
               tooltipContent={id}
               alwaysShow={truncateInMiddle}
             >
@@ -141,13 +150,14 @@ export function InvocationId({
             </TruncateWithTooltip>
           ))}
 
-        {isIcon && !hasPopover ? (
-          <HoverTooltip content={id} offset={20} className="static">
-            {linkElement}
-          </HoverTooltip>
-        ) : (
-          linkElement
-        )}
+        {link &&
+          (isIcon && !hasPopover ? (
+            <HoverTooltip content={id} offset={20} className="static">
+              {linkElement}
+            </HoverTooltip>
+          ) : (
+            linkElement
+          ))}
       </div>
     </div>
   );
