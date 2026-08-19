@@ -42,6 +42,7 @@ export function queryCandidatesFromInvocationStatus(
         ) ss${suffix}
         LIMIT ${INVOCATIONS_V2_LIMIT}
       `.trim(),
+      'invocations-v2/candidates-from-status',
     );
   }
 
@@ -55,5 +56,6 @@ export function queryCandidatesFromInvocationStatus(
       FROM sys_invocation_status ss${suffix}
       LIMIT ${INVOCATIONS_V2_LIMIT}
     `.trim(),
+    'invocations-v2/candidates-from-status',
   );
 }

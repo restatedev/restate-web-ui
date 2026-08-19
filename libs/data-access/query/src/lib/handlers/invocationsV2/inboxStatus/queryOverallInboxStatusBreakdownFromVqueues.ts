@@ -25,6 +25,7 @@ export function queryOverallInboxStatusBreakdownFromVqueues(
         ) sampled_inbox
         GROUP BY sampled_inbox.status
       `.trim(),
+      'invocations-v2/inbox-status-from-vqueues',
     );
   }
   return context.query(
@@ -37,5 +38,6 @@ export function queryOverallInboxStatusBreakdownFromVqueues(
         AND v.entry_kind = 'invocation'
       GROUP BY v.status
     `.trim(),
+    'invocations-v2/inbox-status-from-vqueues',
   );
 }

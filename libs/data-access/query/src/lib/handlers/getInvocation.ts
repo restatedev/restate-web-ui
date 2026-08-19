@@ -11,6 +11,7 @@ export async function getInvocation(this: QueryContext, invocationId: string) {
   const [invocationRows, vqueueStatuses] = await Promise.all([
     this.query(
       `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = ${quoteSqlString(invocationId)}`,
+      'invocations/get',
     ),
     fetchVqueueStatuses(this, [invocationId]),
   ]);

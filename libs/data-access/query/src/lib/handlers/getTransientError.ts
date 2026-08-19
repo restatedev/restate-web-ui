@@ -23,6 +23,7 @@ export async function getTransientError(
 ) {
   const { rows } = await this.query(
     `SELECT id, appended_at, event_type, event_json FROM sys_journal_events WHERE id = '${invocationId}' AND event_type = 'TransientError' ORDER BY appended_at DESC LIMIT 1`,
+    'invocations/transient-error',
   );
 
   const transientEvent = rows[0] as JournalEventRow | undefined;

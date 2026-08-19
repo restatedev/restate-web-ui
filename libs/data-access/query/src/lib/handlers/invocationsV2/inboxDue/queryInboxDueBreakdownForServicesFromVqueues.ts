@@ -55,6 +55,7 @@ export async function queryInboxDueBreakdownForServicesFromVqueues(
         AND v.stage = 'inbox'
         AND v.entry_kind = 'invocation'
     `.trim(),
+    'invocations-v2/inbox-due-for-services',
   )) as { rows: DueRow[] };
 
   return {

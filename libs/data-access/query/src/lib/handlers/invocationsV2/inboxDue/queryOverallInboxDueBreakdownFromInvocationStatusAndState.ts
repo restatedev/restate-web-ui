@@ -24,6 +24,7 @@ export async function queryOverallInboxDueBreakdownFromInvocationStatusAndState(
         FROM sys_invocation_status
         WHERE status IN ('inboxed', 'scheduled', 'invoked')
       `.trim(),
+      'invocations-v2/inbox-due-status-counts',
     ),
     context.query(
       `
@@ -31,6 +32,7 @@ export async function queryOverallInboxDueBreakdownFromInvocationStatusAndState(
         FROM sys_invocation_state
         WHERE in_flight
       `.trim(),
+      'invocations-v2/inbox-due-running-count',
     ),
   ]);
 

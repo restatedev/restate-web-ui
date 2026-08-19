@@ -158,8 +158,11 @@ export async function enrichInvocationFlowControl(
   if (vqueueIds.length === 0) return rows;
 
   const [metaResult, schedulerResult] = await Promise.all([
-    context.query(metaQuery(vqueueIds)),
-    context.query(schedulerQuery(vqueueIds)),
+    context.query(metaQuery(vqueueIds), 'invocations-v2/flow-control-meta'),
+    context.query(
+      schedulerQuery(vqueueIds),
+      'invocations-v2/flow-control-scheduler',
+    ),
   ]);
   const metaById = new Map(
     (metaResult.rows as MetaRow[]).flatMap((row) => {

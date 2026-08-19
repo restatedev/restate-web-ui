@@ -50,5 +50,6 @@ export function queryInvocationRowsByIds(
       FROM sys_invocation i
       WHERE i.id IN (${sqlStringList(ids)})${filterClauses}${orderBy}
     `.trim(),
+    'invocations-v2/rows-by-ids',
   );
 }

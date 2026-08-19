@@ -97,7 +97,7 @@ export async function listState(
       AND value_length <= ${PREVIEW_VALUE_SIZE_LIMIT}
     LIMIT ${PREVIEW_ROW_LIMIT}`;
 
-  const { rows } = await this.query(previewQuery);
+  const { rows } = await this.query(previewQuery, 'state/preview');
   for (const row of rows) {
     const scope =
       hasScopeColumn && row.scope != null ? String(row.scope) : undefined;

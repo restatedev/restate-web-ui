@@ -62,7 +62,10 @@ export async function queryFinishedBreakdownFromInvocationStatus(
     `.trim();
   }
 
-  const { rows } = await context.query(query);
+  const { rows } = await context.query(
+    query,
+    'invocations-v2/finished-breakdown-from-status',
+  );
   const scannedCount = countRows(rows);
 
   return Response.json({

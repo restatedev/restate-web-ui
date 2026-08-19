@@ -63,7 +63,7 @@ export async function getMetrics(this: QueryContext) {
   //   return Response.json({});
   // }
 
-  const { rows } = await this.query(METRICS_QUERY);
+  const { rows } = await this.query(METRICS_QUERY, 'metrics/summary');
   // The cross-joined aggregates always yield exactly one coalesced row, but
   // fall back defensively so a missing row reports zeros rather than throwing.
   const row = (rows.at(0) ?? {}) as Partial<

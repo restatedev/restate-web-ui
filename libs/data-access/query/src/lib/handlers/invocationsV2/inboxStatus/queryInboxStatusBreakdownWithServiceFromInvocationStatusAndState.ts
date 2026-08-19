@@ -52,6 +52,7 @@ export async function queryInboxStatusBreakdownWithServiceFromInvocationStatusAn
         FROM sys_invocation_status
         WHERE status IN ('inboxed', 'scheduled', 'invoked')${statusServiceFilter}${statusGroupBy}
       `.trim(),
+      'invocations-v2/inbox-status-by-service',
     ),
     context.query(
       `
@@ -67,6 +68,7 @@ export async function queryInboxStatusBreakdownWithServiceFromInvocationStatusAn
         JOIN sys_invocation_status ss ON ss.id = sis.id
         WHERE ss.status = 'invoked'${stateServiceFilter}${stateGroupBy}
       `.trim(),
+      'invocations-v2/inbox-state-by-service',
     ),
   ]);
 

@@ -389,6 +389,7 @@ export async function getJournalEntryPayloads(
 ): Promise<Response> {
   const journalQuery = await this.query(
     `SELECT entry_type, entry_json, raw FROM sys_journal WHERE id = '${invocationId}' AND index = ${entryIndex}`,
+    'invocations/journal-entry-payloads',
   );
 
   const entry = journalQuery.rows?.at(0);

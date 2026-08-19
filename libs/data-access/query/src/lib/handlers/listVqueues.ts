@@ -375,17 +375,24 @@ export async function listVqueues(
   const hasFilters = Array.isArray(args.filters) && args.filters.length > 0;
   let rows: VQueueMetaRow[];
   if (!args.sort && !hasFilters) {
-    const discovery = await this.query(workloadDiscoveryQuery(limit + 1));
+    const discovery = await this.query(
+      workloadDiscoveryQuery(limit + 1),
+      'vqueues/workload-discovery',
+    );
     const ids = (discovery.rows as VQueueWorkloadRow[]).flatMap((row) => {
       const id = optionalString(row.id);
       return id ? [id] : [];
     });
     const hydrated = ids.length
-      ? ((await this.query(metadataByIdsQuery(ids))).rows as VQueueMetaRow[])
+      ? ((await this.query(metadataByIdsQuery(ids), 'vqueues/metadata-by-ids'))
+          .rows as VQueueMetaRow[])
       : [];
     if (ids.length < limit + 1) {
       const topUp = (
-        await this.query(landingTopUpQuery(limit + 1 - ids.length))
+        await this.query(
+          landingTopUpQuery(limit + 1 - ids.length),
+          'vqueues/landing-top-up',
+        )
       ).rows as VQueueMetaRow[];
       const discoveredIds = new Set(ids);
       rows = [
@@ -398,9 +405,12 @@ export async function listVqueues(
   } else {
     const order = args.sort ? `\n    ORDER BY ${orderBy(args.sort)}` : '';
     rows = (
-      await this.query(`SELECT ${VQUEUE_COLUMNS}
+      await this.query(
+        `SELECT ${VQUEUE_COLUMNS}
     FROM sys_vqueue_meta${filters.clause}${order}
-    LIMIT ${limit + 1}`)
+    LIMIT ${limit + 1}`,
+        'vqueues/list-page',
+      )
     ).rows as VQueueMetaRow[];
   }
   const page = limitPage(rows, limit);
@@ -413,6 +423,7 @@ export async function listVqueues(
   }
   const schedulerRows = await this.query(
     schedulerQuery(page.items.map((row) => row.id)),
+    'vqueues/scheduler-states',
   );
   const schedulerById = new Map(
     (schedulerRows.rows as SchedulerRow[]).flatMap((row) => {

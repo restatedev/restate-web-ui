@@ -50,6 +50,7 @@ export function queryCandidatesFromInvocationStatusAndState(
           ON sis.state_id = ss.id${suffix}
         LIMIT ${INVOCATIONS_V2_LIMIT}
       `.trim(),
+      'invocations-v2/candidates-from-status-and-state',
     );
   }
 
@@ -71,5 +72,6 @@ export function queryCandidatesFromInvocationStatusAndState(
         ON sis.state_id = ss.id${suffix}
       LIMIT ${INVOCATIONS_V2_LIMIT}
     `.trim(),
+    'invocations-v2/candidates-from-status-and-state',
   );
 }

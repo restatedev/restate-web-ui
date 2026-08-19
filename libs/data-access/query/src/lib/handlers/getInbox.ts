@@ -8,6 +8,7 @@ function scopeClause(scope?: string) {
 function getSizeFromSysInbox(this: QueryContext, key: string, service: string) {
   return this.query(
     `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}'`,
+    'inbox/size-from-inbox',
   ).then(({ rows }) => rows.at(0)?.size);
 }
 
@@ -19,6 +20,7 @@ function getSizeFromSysVqueueMeta(
 ) {
   return this.query(
     `SELECT (num_inbox + num_running + num_suspended + num_paused) AS size FROM sys_vqueue_meta WHERE service_name = '${service}' AND lock_name = '${service}/${key}' AND is_active = true${scopeClause(scope)}`,
+    'inbox/size-from-vqueue-meta',
   ).then(({ rows }) => rows.at(0)?.size ?? 0);
 }
 
@@ -28,6 +30,7 @@ async function getVqueueId(
 ): Promise<{ id?: string; sequence_number?: string }> {
   return this.query(
     `SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = '${invocationId}'`,
+    'inbox/vqueue-entry-lookup',
   ).then(({ rows }) => ({
     id: rows.at(0)?.id,
     sequence_number: rows.at(0)?.sequence_number,
@@ -42,6 +45,7 @@ function getPositionFromSysInbox(
 ) {
   return this.query(
     `SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}'`,
+    'inbox/inbox-sequence-lookup',
   )
     .then(({ rows }) =>
       rows.length === 0
@@ -50,6 +54,7 @@ function getPositionFromSysInbox(
             `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < ${
               rows.at(0).sequence_number
             }`,
+            'inbox/position-from-inbox',
           ),
     )
     .then(({ rows }) => rows.at(0)?.position);
@@ -66,6 +71,7 @@ async function getPositionFromSysVqueues(
 
   return this.query(
     `SELECT COUNT(*) AS position FROM sys_vqueues WHERE id = '${id}' AND sequence_number < ${sequence_number}`,
+    'inbox/position-from-vqueues',
   ).then(({ rows }) => rows.at(0)?.position - 1);
 }
 
@@ -113,6 +119,7 @@ export async function getInbox(
               `SELECT id FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (${handlers.join(
                 ', ',
               )})${headScopeClause}`,
+              'inbox/head',
             )
           : { rows: [] },
       )

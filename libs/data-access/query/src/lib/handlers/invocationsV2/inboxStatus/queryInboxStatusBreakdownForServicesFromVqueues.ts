@@ -38,6 +38,7 @@ export async function queryInboxStatusBreakdownForServicesFromVqueues(
         AND v.entry_kind = 'invocation'
       GROUP BY v.status
     `.trim(),
+    'invocations-v2/inbox-status-for-services',
   )) as { rows: StatusRow[] };
 
   return {

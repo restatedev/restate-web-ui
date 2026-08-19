@@ -27,6 +27,7 @@ export async function getState(
   // entries) are for.
   const state: { name: string; value: string }[] = await this.query(
     `SELECT key, value FROM state WHERE service_name = ${quoteSqlString(service)} AND service_key = ${quoteSqlString(key)}${scopeClause(this, scope, serviceType)}${stateKeyClause}`,
+    'state/get',
   ).then(({ rows }) =>
     rows.map((row) => ({
       name: row.key,

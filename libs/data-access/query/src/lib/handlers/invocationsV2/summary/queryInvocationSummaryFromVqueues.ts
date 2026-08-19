@@ -316,14 +316,25 @@ export async function queryInvocationSummaryFromVqueues(
 
   const [metaResult, inboxResult, finishedResult] = await Promise.all([
     includesStages
-      ? (context.query(metaQuery) as Promise<{ rows: MetaRow[] }>)
+      ? (context.query(
+          metaQuery,
+          'invocations-v2/summary-vqueue-meta',
+        ) as Promise<{
+          rows: MetaRow[];
+        }>)
       : Promise.resolve({ rows: [] as MetaRow[] }),
     includesBreakdowns
-      ? (context.query(inboxQuery) as Promise<{ rows: StatusRow[] }>)
+      ? (context.query(
+          inboxQuery,
+          'invocations-v2/summary-vqueue-inbox',
+        ) as Promise<{ rows: StatusRow[] }>)
       : Promise.resolve({ rows: [] as StatusRow[] }),
     includesBreakdowns ||
     (completedVqueuesWereSkipped && includesStages && includesCompletedStage)
-      ? (context.query(finishedQuery) as Promise<{ rows: StatusRow[] }>)
+      ? (context.query(
+          finishedQuery,
+          'invocations-v2/summary-vqueue-finished',
+        ) as Promise<{ rows: StatusRow[] }>)
       : Promise.resolve({ rows: [] as StatusRow[] }),
   ]);
 

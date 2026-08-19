@@ -41,6 +41,7 @@ export async function listDrainedDeployments(this: QueryContext) {
     this.features.has('vqueues')
       ? VQUEUE_DRAINED_DEPLOYMENTS_QUERY
       : DRAINED_DEPLOYMENTS_QUERY,
+    'deployments/drained',
   );
 
   return Response.json({

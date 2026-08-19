@@ -76,5 +76,6 @@ export function queryBestEffortCandidatesFromSysInvocationStatus(
       FROM ${source}${where}${orderBy}
       LIMIT ${BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT}
     `.trim(),
+    'invocations-v2/best-effort-candidates',
   ) as Promise<{ rows: InvocationCandidateRow[] }>;
 }

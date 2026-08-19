@@ -52,5 +52,6 @@ export function queryVqueueEntryStatusRowsByIds(
       FROM sys_vqueue_entry_status v
       WHERE ${clauses.join('\n        AND ')}${orderBy}
     `.trim(),
+    'invocations-v2/vqueue-status-by-ids',
   );
 }

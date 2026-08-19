@@ -191,10 +191,13 @@ async function counterPage(
     .filter(Boolean)
     .join(' AND ');
   const whereClause = where ? `\n    WHERE ${where}` : '';
-  const { rows } = await context.query(`SELECT ${USER_LIMITS_COLUMNS}
+  const { rows } = await context.query(
+    `SELECT ${USER_LIMITS_COLUMNS}
     FROM sys_user_limits${whereClause}
     ORDER BY ${counterOrderBy(args.sort)}
-    LIMIT ${limit + 1}`);
+    LIMIT ${limit + 1}`,
+    'limits/counters-page',
+  );
   const page = limitPage(rows as UserLimitRow[], limit);
   const response: ListUserLimitsResponse = {
     limits: page.items,

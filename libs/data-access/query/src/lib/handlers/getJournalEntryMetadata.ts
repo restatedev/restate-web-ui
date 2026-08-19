@@ -9,6 +9,7 @@ export async function getJournalEntryMetadata(
 ): Promise<Response> {
   const journalQuery = await this.query(
     `SELECT id, index, appended_at, entry_type, name, entry_lite_json, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = '${invocationId}' AND index = ${entryIndex}`,
+    'invocations/journal-entry-metadata',
   );
 
   const rawEntry = journalQuery.rows?.at(0);

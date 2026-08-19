@@ -18,6 +18,7 @@ export async function getInvocationsStatus(
   const [invocationResult, vqueueStatuses] = await Promise.all([
     this.query(
       `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name${this.features.has('vqueues') ? ', vqueue_id' : ''} FROM sys_invocation WHERE id IN (${uniqueInvocationIds.map(quoteSqlString).join(', ')})`,
+      'invocations/statuses',
     ),
     fetchVqueueStatuses(this, uniqueInvocationIds),
   ]);

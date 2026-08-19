@@ -38,6 +38,7 @@ export async function getInvocationIds(
 
   const invocationData = await this.query(
     `SELECT id, created_at from sys_invocation ${convertInvocationsFilters(allFilters, { vqueueBackingOff })} ORDER BY created_at ASC LIMIT ${pageSize}`,
+    'invocations/ids-page',
   ).then(({ rows }) => rows as Pick<RawInvocation, 'id' | 'created_at'>[]);
 
   const invocationIds = invocationData.map(({ id }) => id);
