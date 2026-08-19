@@ -82,7 +82,8 @@ describe('InvocationDetailsCard', () => {
     });
 
     expect(link.getAttribute('href')).toBe('/flow-control/vqueues/vq-details');
-    expect(link.className).toContain('text-xs');
+    expect(link.textContent).toContain('VQueue');
+    expect(link.textContent).toContain('vq-details');
     expect(
       screen.queryByRole('button', { name: 'Open VQueue vq-details' }),
     ).toBeNull();

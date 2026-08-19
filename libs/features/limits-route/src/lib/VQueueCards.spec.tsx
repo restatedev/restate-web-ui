@@ -61,7 +61,9 @@ describe('VQueueDurationsCard', () => {
 
     expect(screen.getByText('Timing')).toBeTruthy();
     expect(
-      screen.getByText('(each timing averages its own events)'),
+      screen.getByRole('button', {
+        name: 'Explain how timings are averaged',
+      }),
     ).toBeTruthy();
     expect(screen.getByText('End to end')).toBeTruthy();
     expect(screen.getByText('Completed entries')).toBeTruthy();

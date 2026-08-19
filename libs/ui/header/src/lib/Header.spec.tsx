@@ -13,17 +13,17 @@ describe('Header', () => {
     expect(screen.getByText('Identity')).toBeTruthy();
   });
 
-  it('renders a raised entity icon', () => {
+  it('renders the type nameplate', () => {
     render(
-      <Header icon={IconName.VirtualObject} iconLabel="Virtual Object instance">
+      <Header icon={IconName.VirtualObject} iconLabel="Virtual Object">
         Identity
       </Header>,
     );
 
-    expect(
-      screen.getByRole('img', { name: 'Virtual Object instance' }),
-    ).toBeTruthy();
-    expect(screen.getByRole('banner').className).toContain('pl-[4.25rem]');
+    const nameplate = screen.getByRole('img', { name: 'Virtual Object' });
+    expect(nameplate).toBeTruthy();
+    expect(nameplate.className).toContain('bg-blue-50/90');
+    expect(nameplate.textContent).toContain('Virtual Object');
   });
 
   it('renders a status-aware background', () => {

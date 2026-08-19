@@ -1368,11 +1368,11 @@ describe('InvocationFlowControlCard', () => {
 
     expect(
       screen.getByRole('heading', { name: 'Lifecycle' }).parentElement
-        ?.textContent,
+        ?.parentElement?.textContent,
     ).toContain('completed in 30s');
     expect(
       screen.getByRole('heading', { name: 'Lifecycle' }).parentElement
-        ?.textContent,
+        ?.parentElement?.textContent,
     ).not.toContain('so far');
     expect(screen.getByText('Attempt')).toBeTruthy();
     expect(screen.getByText('Succeeded')).toBeTruthy();
