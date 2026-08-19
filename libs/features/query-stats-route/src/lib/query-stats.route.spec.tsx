@@ -1,6 +1,7 @@
 import { clearQueryStats, recordQuery } from '@restate/data-access/query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { queryStats } from './query-stats.route';
 
@@ -18,9 +19,11 @@ class ResizeObserverStub {
 
 function renderRoute() {
   return render(
-    <QueryClientProvider client={new QueryClient()}>
-      <queryStats.Component />
-    </QueryClientProvider>,
+    <MemoryRouter>
+      <QueryClientProvider client={new QueryClient()}>
+        <queryStats.Component />
+      </QueryClientProvider>
+    </MemoryRouter>,
   );
 }
 
@@ -42,7 +45,7 @@ describe('queryStats route', () => {
       durationMs: 120,
       outcome: 'success',
       executedAt: Date.now(),
-      page: '/invocations',
+      page: { key: '/ui/invocations', href: '/ui/invocations' },
     });
     recordQuery({
       id: 'invocations/get',
@@ -50,12 +53,20 @@ describe('queryStats route', () => {
       durationMs: 400,
       outcome: 'success',
       executedAt: Date.now(),
-      page: '/invocations',
+      page: { key: '/ui/invocations', href: '/ui/invocations' },
     });
 
     renderRoute();
 
-    expect(screen.getAllByText('invocations/get').length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Load a single invocation/).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText('SELECT … FROM sys_invocation WHERE id = ?').length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole('link', { name: 'Invocations' }).length,
+    ).toBeGreaterThan(0);
     expect(screen.getAllByText('2').length).toBeGreaterThan(0);
     expect(
       screen.getAllByRole('button', { name: 'Explain analyze' }).length,

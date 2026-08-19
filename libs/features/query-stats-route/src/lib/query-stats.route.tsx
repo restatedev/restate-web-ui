@@ -3,6 +3,7 @@ import {
   clearQueryStats,
   getQueryStatsSnapshot,
   subscribeToQueryStats,
+  type QueryPageStat,
   type QueryStat,
 } from '@restate/data-access/query';
 import { Badge } from '@restate/ui/badge';
@@ -23,8 +24,10 @@ import {
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import {
+  HoverTooltip,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -44,10 +47,10 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { Input, TextField, type SortDescriptor } from 'react-aria-components';
+import { formatPageLabel } from './pageLabels';
 
 type StatsColumn =
   | 'query'
-  | 'tables'
   | 'pages'
   | 'count'
   | 'p50'
@@ -63,11 +66,10 @@ const STATS_COLUMNS: PanelTableColumn<StatsColumn>[] = [
     name: 'Query',
     isRowHeader: true,
     allowsSorting: true,
-    defaultWidth: '4fr',
-    minWidth: 220,
+    defaultWidth: '5fr',
+    minWidth: 280,
   },
-  { id: 'tables', name: 'Source tables', defaultWidth: '2fr', minWidth: 140 },
-  { id: 'pages', name: 'Pages', defaultWidth: '2fr', minWidth: 120 },
+  { id: 'pages', name: 'Pages', defaultWidth: '2fr', minWidth: 160 },
   {
     id: 'count',
     name: 'Count',
@@ -128,8 +130,54 @@ function compareStats(a: QueryStat, b: QueryStat, column: StatsColumn): number {
     case 'lastExecuted':
       return a.lastExecutedAt - b.lastExecutedAt;
     default:
-      return a.id.localeCompare(b.id);
+      return a.description.localeCompare(b.description);
   }
+}
+
+// The full shape is a single line; break it at the clauses so the hover
+// tooltip reads like formatted SQL.
+function formatShapeMultiline(shape: string): string {
+  return shape
+    .replaceAll(
+      / (CROSS JOIN|LEFT JOIN|JOIN|WHERE|GROUP BY|ORDER BY|LIMIT|UNION|EXCEPT) /g,
+      '\n$1 ',
+    )
+    .replaceAll(' [sampled:', '\n[sampled:')
+    .replaceAll(' [AND', '\n[AND')
+    .replaceAll(' AND ', '\n  AND ');
+}
+
+// A one-line skeleton of the full shape: the tables plus the clauses that
+// drive performance. Cheap point lookups (id = ?, id IN (…)) are spelled out
+// so they are recognizable at a glance; the full shape is shown on hover.
+function compactShape(stat: QueryStat): string {
+  const clauses: string[] = [];
+  const pointLookup = stat.shape.match(
+    /WHERE\s+(?:\w+\.)?(\w+)\s+(?:(=)\s*\?|(IN)\s*\((?:…|≤\d[^)]*)\))/,
+  );
+  if (pointLookup) {
+    const [, column, equals] = pointLookup;
+    const predicate = equals ? `${column} = ?` : `${column} IN (…)`;
+    const hasMoreConditions = stat.shape.includes(' AND ');
+    clauses.push(`WHERE ${predicate}${hasMoreConditions ? ' …' : ''}`);
+  } else if (stat.shape.includes('WHERE')) {
+    clauses.push('WHERE …');
+  }
+  if (stat.shape.includes('GROUP BY')) {
+    clauses.push('GROUP BY …');
+  }
+  if (stat.shape.includes('ORDER BY')) {
+    clauses.push('ORDER BY …');
+  }
+  const limits = [...stat.shape.matchAll(/LIMIT\s+(≤?\s?[\d,]+|sampleSize)/g)];
+  const numericLimits = limits.filter((match) => /\d/.test(match[1] ?? ''));
+  const limit = (numericLimits.at(-1) ?? limits.at(-1))?.[1];
+  if (limit) {
+    clauses.push(`LIMIT ${limit}`);
+  }
+  return `SELECT … FROM ${stat.tables.join(', ')}${
+    clauses.length > 0 ? ` ${clauses.join(' ')}` : ''
+  }`;
 }
 
 function matchesSearch(stat: QueryStat, search: string): boolean {
@@ -139,7 +187,7 @@ function matchesSearch(stat: QueryStat, search: string): boolean {
     stat.description,
     stat.shape,
     stat.tables.join(' '),
-    stat.pages.map(({ page }) => page).join(' '),
+    stat.pages.map(({ page }) => `${page} ${formatPageLabel(page)}`).join(' '),
     stat.max?.sql ?? '',
   ]
     .join('\n')
@@ -272,6 +320,26 @@ function ExplainAnalyzeButton({
   );
 }
 
+function PageLink({
+  page,
+  className,
+}: {
+  page: Pick<QueryPageStat, 'page' | 'href'> & { count?: number };
+  className?: string;
+}) {
+  const label = `${formatPageLabel(page.page)}${
+    page.count !== undefined ? ` (${formatNumber(page.count)})` : ''
+  }`;
+  if (!page.href) {
+    return <span className={className}>{label}</span>;
+  }
+  return (
+    <Link href={page.href} variant="secondary" className={className}>
+      {label}
+    </Link>
+  );
+}
+
 function QueryDetailsDialog({
   stat,
   explain,
@@ -290,17 +358,14 @@ function QueryDetailsDialog({
               <Icon name={IconName.Gauge} className="h-5 w-5 text-blue-500" />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
                 {stat.description}
-              </h2>
-              <p className="flex items-center gap-1.5 font-mono text-xs text-gray-500">
-                {stat.id}
                 {stat.deprecated && (
                   <Badge size="sm" variant="warning">
                     Deprecated
                   </Badge>
                 )}
-              </p>
+              </h2>
             </div>
           </div>
 
@@ -335,16 +400,16 @@ function QueryDetailsDialog({
             </div>
             <div className="col-span-full flex flex-col">
               <span className="text-2xs text-gray-500">Shape</span>
-              <span className="font-mono text-xs break-words text-gray-700">
-                {stat.shape}
+              <span className="font-mono text-xs break-words whitespace-pre-wrap text-gray-700">
+                {formatShapeMultiline(stat.shape)}
               </span>
             </div>
             <div className="col-span-full flex flex-col">
               <span className="text-2xs text-gray-500">Pages</span>
-              <span className="font-mono text-xs text-gray-700">
-                {stat.pages
-                  .map(({ page, count }) => `${page} (${formatNumber(count)})`)
-                  .join(', ')}
+              <span className="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-xs">
+                {stat.pages.map((page) => (
+                  <PageLink key={page.page} page={page} />
+                ))}
               </span>
             </div>
           </div>
@@ -355,11 +420,17 @@ function QueryDetailsDialog({
                 <span className="text-sm font-medium text-gray-700">
                   Slowest execution
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="flex items-center gap-1 text-xs text-gray-500">
                   {formatMs(stat.max.durationMs)}
                   {stat.max.timedOut ? ' · timed out' : ''} ·{' '}
-                  {stat.max.page ?? 'unknown page'} ·{' '}
-                  {new Date(stat.max.executedAt).toLocaleString()}
+                  {stat.max.page ? (
+                    <PageLink
+                      page={{ page: stat.max.page, href: stat.max.pageHref }}
+                    />
+                  ) : (
+                    'unknown page'
+                  )}{' '}
+                  · {new Date(stat.max.executedAt).toLocaleString()}
                 </span>
                 <Copy copyText={stat.max.sql} className="-my-2" />
               </div>
@@ -409,13 +480,24 @@ function renderStatsCell(
       return (
         <Cell>
           <div className="flex min-w-0 flex-col">
-            <TruncateWithTooltip hideCopy tooltipContent={stat.description}>
-              {stat.description}
-            </TruncateWithTooltip>
-            <span className="flex min-w-0 items-center gap-1.5">
-              <span className="truncate font-mono text-2xs text-gray-400">
-                {stat.id}
-              </span>
+            <span className="min-w-0 font-mono text-xs text-gray-700">
+              <TruncateWithTooltip
+                alwaysShow
+                size="lg"
+                copyText={stat.shape}
+                tooltipContent={
+                  <span className="font-mono">
+                    {formatShapeMultiline(stat.shape)}
+                  </span>
+                }
+              >
+                {compactShape(stat)}
+              </TruncateWithTooltip>
+            </span>
+            <span className="flex min-w-0 items-center gap-1.5 text-2xs text-gray-500">
+              <TruncateWithTooltip hideCopy tooltipContent={stat.description}>
+                {stat.description}
+              </TruncateWithTooltip>
               {stat.deprecated && (
                 <Badge size="sm" variant="warning" className="shrink-0">
                   Deprecated
@@ -425,31 +507,39 @@ function renderStatsCell(
           </div>
         </Cell>
       );
-    case 'tables':
+    case 'pages': {
+      const visible = stat.pages.slice(0, 2);
+      const rest = stat.pages.slice(2);
       return (
         <Cell>
-          <TruncateWithTooltip hideCopy tooltipContent={stat.tables.join(', ')}>
-            <span className="font-mono text-xs text-gray-500">
-              {stat.tables.join(', ')}
-            </span>
-          </TruncateWithTooltip>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+            {visible.map((page) => (
+              <PageLink
+                key={page.page}
+                page={{ page: page.page, href: page.href }}
+                className="whitespace-nowrap"
+              />
+            ))}
+            {rest.length > 0 && (
+              <HoverTooltip
+                content={
+                  <span className="block max-w-md text-xs">
+                    {rest
+                      .map(
+                        (page) =>
+                          `${formatPageLabel(page.page)} (${formatNumber(page.count)})`,
+                      )
+                      .join(', ')}
+                  </span>
+                }
+              >
+                <span className="shrink-0 text-gray-400">+{rest.length}</span>
+              </HoverTooltip>
+            )}
+          </div>
         </Cell>
       );
-    case 'pages':
-      return (
-        <Cell>
-          <TruncateWithTooltip
-            hideCopy
-            tooltipContent={stat.pages
-              .map(({ page, count }) => `${page} (${formatNumber(count)})`)
-              .join(', ')}
-          >
-            <span className="font-mono text-xs text-gray-500">
-              {stat.pages.map(({ page }) => page).join(', ')}
-            </span>
-          </TruncateWithTooltip>
-        </Cell>
-      );
+    }
     case 'count':
       return (
         <Cell>
@@ -471,8 +561,21 @@ function renderStatsCell(
     case 'max':
       return (
         <Cell>
-          <span className="flex items-center gap-1 tabular-nums">
-            {formatMs(stat.max?.durationMs)}
+          <span className="flex min-w-0 items-center gap-1 tabular-nums">
+            {stat.max ? (
+              <TruncateWithTooltip
+                alwaysShow
+                size="lg"
+                copyText={stat.max.sql}
+                tooltipContent={
+                  <span className="font-mono">{stat.max.sql}</span>
+                }
+              >
+                {formatMs(stat.max.durationMs)}
+              </TruncateWithTooltip>
+            ) : (
+              formatMs(stat.max)
+            )}
             {stat.max?.timedOut && (
               <Icon
                 name={IconName.TriangleAlert}
@@ -578,8 +681,9 @@ function Component() {
         <div className="flex flex-col">
           <h1 className="text-xl font-semibold text-gray-800">Query stats</h1>
           <p className="text-sm text-gray-500">
-            Every SQL query the UI ran this session, aggregated per statement.
-            Recording is in-memory and resets on reload.
+            Every SQL query the UI ran, aggregated per statement. Stats are
+            stored in this browser for a day, survive reloads, and merge across
+            open tabs.
           </p>
         </div>
       </div>

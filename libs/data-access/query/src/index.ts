@@ -8,6 +8,7 @@ export {
 export {
   clearQueryStats,
   describeQueryPage,
+  flushQueryStats,
   getQueryStatsSnapshot,
   normalizeQueryPage,
   recordQuery,
@@ -15,5 +16,7 @@ export {
   type QueryExecutionEvent,
   type QueryMaxExecution,
   type QueryOutcome,
+  type QueryPageRef,
+  type QueryPageStat,
   type QueryStat,
 } from './lib/queryStats';

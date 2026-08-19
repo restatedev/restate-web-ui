@@ -18,7 +18,7 @@ function record(
     durationMs: 100,
     outcome: 'success',
     executedAt: 1_000,
-    page: '/invocations',
+    page: { key: '/invocations', href: '/ui/invocations' },
     ...overrides,
   });
 }
@@ -47,12 +47,17 @@ describe('queryStats', () => {
     });
     expect(stat?.max).toMatchObject({ durationMs: 1000, timedOut: false });
     expect(stat?.description).toBeTruthy();
+    expect(stat?.shape).toContain('FROM sys_invocation');
     expect(stat?.tables).toContain('sys_invocation');
   });
 
-  it('keeps the SQL of the slowest execution', () => {
+  it('keeps the SQL and page of the slowest execution', () => {
     record({ sql: 'SELECT fast', durationMs: 10 });
-    record({ sql: 'SELECT slow', durationMs: 5_000, page: '/overview' });
+    record({
+      sql: 'SELECT slow',
+      durationMs: 5_000,
+      page: { key: '/overview', href: '/ui/overview' },
+    });
     record({ sql: 'SELECT medium', durationMs: 300 });
 
     const [stat] = getQueryStatsSnapshot();
@@ -61,6 +66,7 @@ describe('queryStats', () => {
       durationMs: 5_000,
       executedAt: 1_000,
       page: '/overview',
+      pageHref: '/ui/overview',
       timedOut: false,
     });
   });
@@ -94,16 +100,16 @@ describe('queryStats', () => {
     expect(stat?.max?.durationMs).toBe(100);
   });
 
-  it('counts executions per page, most frequent first', () => {
-    record({ page: '/invocations' });
-    record({ page: '/overview' });
-    record({ page: '/overview' });
+  it('counts executions per page with a linkable example URL', () => {
+    record({ page: { key: '/invocations', href: '/ui/invocations?a=1' } });
+    record({ page: { key: '/overview', href: '/ui/overview' } });
+    record({ page: { key: '/overview', href: '/ui/overview?b=2' } });
     record({ page: undefined });
 
     const [stat] = getQueryStatsSnapshot();
     expect(stat?.pages).toEqual([
-      { page: '/overview', count: 2 },
-      { page: '/invocations', count: 1 },
+      { page: '/overview', count: 2, href: '/ui/overview?b=2' },
+      { page: '/invocations', count: 1, href: '/ui/invocations?a=1' },
       { page: 'unknown', count: 1 },
     ]);
   });
@@ -178,5 +184,86 @@ describe('describeQueryPage', () => {
       describeQueryPage('/state/counter', '', ['dialog', 'edit-state']),
     ).toBe('/state/counter · dialog:edit-state');
     expect(describeQueryPage('/state/counter', '', [])).toBe('/state/counter');
+  });
+});
+
+describe('persistence', () => {
+  function createStorageStub(): Storage {
+    const store = new Map<string, string>();
+    return {
+      get length() {
+        return store.size;
+      },
+      key: (index: number) => [...store.keys()][index] ?? null,
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+      removeItem: (key: string) => void store.delete(key),
+      clear: () => store.clear(),
+    };
+  }
+
+  async function importFreshModule(local: Storage, session: Storage) {
+    vi.stubGlobal('localStorage', local);
+    vi.stubGlobal('sessionStorage', session);
+    vi.resetModules();
+    return import('./queryStats');
+  }
+
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('rehydrates the tab bucket after a reload', async () => {
+    const local = createStorageStub();
+    const session = createStorageStub();
+
+    const first = await importFreshModule(local, session);
+    first.recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT 1',
+      durationMs: 100,
+      outcome: 'success',
+      executedAt: 1_000,
+      page: { key: '/invocations', href: '/ui/invocations' },
+    });
+    first.flushQueryStats();
+
+    const reloaded = await importFreshModule(local, session);
+    const [stat] = reloaded.getQueryStatsSnapshot();
+    expect(stat).toMatchObject({
+      id: 'invocations/get',
+      count: 1,
+      p50: 100,
+    });
+  });
+
+  it('merges buckets written by other tabs into the snapshot', async () => {
+    const local = createStorageStub();
+
+    const otherTab = await importFreshModule(local, createStorageStub());
+    otherTab.recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT other',
+      durationMs: 900,
+      outcome: 'success',
+      executedAt: 2_000,
+      page: { key: '/overview', href: '/ui/overview' },
+    });
+    otherTab.flushQueryStats();
+
+    const thisTab = await importFreshModule(local, createStorageStub());
+    thisTab.recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT mine',
+      durationMs: 100,
+      outcome: 'success',
+      executedAt: 3_000,
+      page: { key: '/invocations', href: '/ui/invocations' },
+    });
+
+    const [stat] = thisTab.getQueryStatsSnapshot();
+    expect(stat).toMatchObject({ count: 2, lastExecutedAt: 3_000 });
+    expect(stat?.max).toMatchObject({ sql: 'SELECT other', durationMs: 900 });
+    expect(stat?.pages).toHaveLength(2);
   });
 });
