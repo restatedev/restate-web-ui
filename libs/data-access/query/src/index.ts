@@ -12,6 +12,7 @@ export {
   getQueryStatsSnapshot,
   normalizeQueryPage,
   recordQuery,
+  resolveQueryStatsBaseUrl,
   subscribeToQueryStats,
   type QueryExecutionEvent,
   type QueryMaxExecution,

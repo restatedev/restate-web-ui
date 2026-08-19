@@ -265,6 +265,7 @@ export function createQueryContext(
           durationMs: performance.now() - startedAt,
           outcome,
           executedAt,
+          baseUrl,
           page,
         });
       return queryFetcher(sql, { baseUrl, headers, signal }).then(

@@ -14,17 +14,21 @@ import {
   ContentPanelSection,
   ContentPanelToolbar,
 } from '@restate/ui/content-panel';
-import { Copy } from '@restate/ui/copy';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-} from '@restate/ui/dialog';
+import { DropdownItem } from '@restate/ui/dropdown';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
+import {
+  AddFilterTrigger,
+  FilterBuilder,
+  FilterChip,
+  type QueryClause,
+  type QueryClauseSchema,
+  type QueryClauseType,
+  useFilterBuilder,
+} from '@restate/ui/filter-builder';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
+import { SplitButton } from '@restate/ui/split-button';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import {
   HoverTooltip,
@@ -46,7 +50,8 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { Input, TextField, type SortDescriptor } from 'react-aria-components';
+import { type SortDescriptor } from 'react-aria-components';
+import { useHref } from 'react-router';
 import { formatPageLabel } from './pageLabels';
 import { formatSql, SqlText } from './sqlDisplay';
 
@@ -113,7 +118,7 @@ const STATS_COLUMNS: PanelTableColumn<StatsColumn>[] = [
     preferredSortDirection: 'descending',
     width: 100,
   },
-  { id: 'actions', name: 'Actions', hideLabel: true, width: 130 },
+  { id: 'actions', name: 'Actions', hideLabel: true, width: 40 },
 ];
 
 function compareStats(a: QueryStat, b: QueryStat, column: StatsColumn): number {
@@ -180,22 +185,23 @@ function compactShape(stat: QueryStat): string {
   }`;
 }
 
-function matchesSearch(stat: QueryStat, search: string): boolean {
-  if (!search) return true;
-  const haystack = [
-    stat.id,
-    stat.description,
-    stat.shape,
-    stat.tables.join(' '),
-    stat.pages.map(({ page }) => `${page} ${formatPageLabel(page)}`).join(' '),
-    stat.max?.sql ?? '',
-  ]
-    .join('\n')
-    .toLowerCase();
-  return search
-    .toLowerCase()
-    .split(/\s+/)
-    .every((term) => haystack.includes(term));
+function matchesFilters(
+  stat: QueryStat,
+  filters: QueryClause<QueryClauseType>[],
+): boolean {
+  return filters.every((filter) => {
+    if (!filter.isValid || !Array.isArray(filter.value.value)) return true;
+    const values = filter.value.value;
+    if (filter.id === 'tables') {
+      return values.some((value) => stat.tables.includes(value));
+    }
+    if (filter.id === 'pages') {
+      return values.some((value) =>
+        stat.pages.some(({ page }) => page === value),
+      );
+    }
+    return true;
+  });
 }
 
 function formatMs(value: number | null | undefined): string {
@@ -228,13 +234,19 @@ function fileTimestamp() {
   return new Date().toISOString().replaceAll(':', '-');
 }
 
+function explainAnalyzeCommand(verbose: boolean) {
+  return verbose ? 'EXPLAIN ANALYZE VERBOSE' : 'EXPLAIN ANALYZE';
+}
+
 function explainFileContent(
   stat: QueryStat,
   rows: Record<string, unknown>[],
+  verbose: boolean,
 ): string {
   const { max } = stat;
+  const command = explainAnalyzeCommand(verbose);
   return [
-    `-- EXPLAIN ANALYZE: ${stat.id}`,
+    `-- ${command}: ${stat.id}`,
     `-- ${stat.description}`,
     ...(max
       ? [
@@ -266,58 +278,120 @@ function explainFileContent(
 function useExplainAnalyze() {
   const baseUrl = useAdminBaseUrl();
   return useMutation({
-    mutationFn: async (stat: QueryStat) => {
+    mutationFn: async ({
+      stat,
+      verbose,
+    }: {
+      stat: QueryStat;
+      verbose: boolean;
+    }) => {
       if (!stat.max) {
         throw new Error('No recorded execution to explain.');
       }
+      const command = explainAnalyzeCommand(verbose);
       const { data } = await client.POST('/query', {
         baseUrl,
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: { query: `EXPLAIN ANALYZE ${stat.max.sql}` },
+        body: { query: `${command} ${stat.max.sql}` },
       });
       return (data ?? { rows: [] }) as { rows?: Record<string, unknown>[] };
     },
-    onSuccess: (data, stat) => {
+    onSuccess: (data, { stat, verbose }) => {
       downloadTextFile(
-        `explain-analyze-${stat.id.replaceAll('/', '-')}-${fileTimestamp()}.txt`,
-        explainFileContent(stat, data.rows ?? []),
+        `explain-analyze${verbose ? '-verbose' : ''}-${stat.id.replaceAll('/', '-')}-${fileTimestamp()}.txt`,
+        explainFileContent(stat, data.rows ?? [], verbose),
         'text/plain',
       );
     },
   });
 }
 
-function ExplainAnalyzeButton({
+function QueryActions({
   stat,
   explain,
-  className,
 }: {
   stat: QueryStat;
   explain: ReturnType<typeof useExplainAnalyze>;
-  className?: string;
 }) {
-  const isRunning = explain.isPending && explain.variables?.id === stat.id;
+  const isRunning = explain.isPending && explain.variables?.stat.id === stat.id;
+  const isDisabled = !stat.max || explain.isPending;
+  const run = (verbose: boolean) => explain.mutate({ stat, verbose });
+
   return (
-    <Tooltip>
-      <TooltipTrigger>
-        <Button
-          variant="secondary"
-          disabled={!stat.max || explain.isPending}
-          onClick={() => explain.mutate(stat)}
-          className={className}
-        >
-          {isRunning ? 'Running…' : 'Explain analyze'}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent size="sm">
-        Re-runs the slowest recorded execution with EXPLAIN ANALYZE and
-        downloads the plan.
-      </TooltipContent>
-    </Tooltip>
+    <SplitButton
+      mini
+      className="text-0.5xs"
+      onSelect={(action) => {
+        if (isDisabled) return;
+        run(action === 'verbose');
+      }}
+      menus={[
+        <DropdownItem key="standard" value="standard" isDisabled={isDisabled}>
+          <Icon
+            name={IconName.ScanSearch}
+            className="h-3.5 w-3.5 shrink-0 opacity-80"
+          />
+          Explain analyze
+        </DropdownItem>,
+        <DropdownItem key="verbose" value="verbose" isDisabled={isDisabled}>
+          <Icon
+            name={IconName.Code}
+            className="h-3.5 w-3.5 shrink-0 opacity-80"
+          />
+          Explain analyze verbose
+        </DropdownItem>,
+      ]}
+    >
+      <Tooltip>
+        <TooltipTrigger>
+          <Button
+            variant="secondary"
+            disabled={isDisabled}
+            onClick={() => run(false)}
+            className="invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 text-0.5xs whitespace-nowrap text-gray-600 drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible"
+          >
+            <Icon
+              name={IconName.ScanSearch}
+              className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+            />
+            {isRunning ? 'Running…' : 'Explain analyze'}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent size="sm">
+          Re-runs the slowest recorded execution with EXPLAIN ANALYZE and
+          downloads the plan.
+        </TooltipContent>
+      </Tooltip>
+    </SplitButton>
   );
+}
+
+export function stripRouterBaseFromHref(
+  href: string,
+  routerRoot: string,
+): string {
+  const suffixIndex = routerRoot.search(/[?#]/);
+  const routerPath =
+    suffixIndex === -1 ? routerRoot : routerRoot.slice(0, suffixIndex);
+  const routerBase = routerPath.replace(/\/+$/, '');
+  if (!routerBase || !href.startsWith(routerBase)) {
+    return href;
+  }
+  const suffix = href.slice(routerBase.length);
+  if (suffix === '') {
+    return '/';
+  }
+  if (
+    suffix.startsWith('/') ||
+    suffix.startsWith('?') ||
+    suffix.startsWith('#')
+  ) {
+    return suffix.startsWith('/') ? suffix : `/${suffix}`;
+  }
+  return href;
 }
 
 function PageLink({
@@ -327,6 +401,7 @@ function PageLink({
   page: Pick<QueryPageStat, 'page' | 'href'> & { count?: number };
   className?: string;
 }) {
+  const routerRoot = useHref('/');
   const label = `${formatPageLabel(page.page)}${
     page.count !== undefined ? ` (${formatNumber(page.count)})` : ''
   }`;
@@ -334,146 +409,13 @@ function PageLink({
     return <span className={className}>{label}</span>;
   }
   return (
-    <Link href={page.href} variant="secondary" className={className}>
+    <Link
+      href={stripRouterBaseFromHref(page.href, routerRoot)}
+      variant="secondary"
+      className={className}
+    >
       {label}
     </Link>
-  );
-}
-
-function QueryDetailsDialog({
-  stat,
-  explain,
-  onOpenChange,
-}: {
-  stat: QueryStat;
-  explain: ReturnType<typeof useExplainAnalyze>;
-  onOpenChange: (open: boolean) => void;
-}) {
-  return (
-    <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-xs">
-              <Icon name={IconName.Gauge} className="h-5 w-5 text-blue-500" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                {stat.description}
-                {stat.deprecated && (
-                  <Badge size="sm" variant="warning">
-                    Deprecated
-                  </Badge>
-                )}
-              </h2>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2 rounded-xl border border-gray-200 bg-gray-50/50 p-3.5 text-sm sm:grid-cols-3">
-            {[
-              { label: 'Count', value: formatNumber(stat.count) },
-              { label: 'p50', value: formatMs(stat.p50) },
-              { label: 'p90', value: formatMs(stat.p90) },
-              { label: 'Max', value: formatMs(stat.max?.durationMs) },
-              { label: 'Timeouts', value: formatNumber(stat.timeouts) },
-              {
-                label: 'Errors / aborted',
-                value: `${formatNumber(stat.errors)} / ${formatNumber(stat.aborted)}`,
-              },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex flex-col">
-                <span className="text-2xs text-gray-500">{label}</span>
-                <span className="font-medium text-gray-800 tabular-nums">
-                  {value}
-                </span>
-              </div>
-            ))}
-            <div className="col-span-full flex flex-col">
-              <span className="text-2xs text-gray-500">Source tables</span>
-              <span className="flex flex-wrap gap-1 pt-0.5">
-                {stat.tables.map((table) => (
-                  <Badge key={table} size="sm" className="font-mono">
-                    {table}
-                  </Badge>
-                ))}
-              </span>
-            </div>
-            <div className="col-span-full flex flex-col">
-              <span className="text-2xs text-gray-500">Shape</span>
-              <span className="font-mono text-xs break-words whitespace-pre-wrap text-gray-700">
-                <SqlText
-                  sql={formatSql(stat.shape)}
-                  tables={stat.tables}
-                  surface="light"
-                />
-              </span>
-            </div>
-            <div className="col-span-full flex flex-col">
-              <span className="text-2xs text-gray-500">Pages</span>
-              <span className="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-xs">
-                {stat.pages.map((page) => (
-                  <PageLink key={page.page} page={page} />
-                ))}
-              </span>
-            </div>
-          </div>
-
-          {stat.max && (
-            <div className="flex min-h-0 flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">
-                  Slowest execution
-                </span>
-                <span className="flex items-center gap-1 text-xs text-gray-500">
-                  {formatMs(stat.max.durationMs)}
-                  {stat.max.timedOut ? ' · timed out' : ''} ·{' '}
-                  {stat.max.page ? (
-                    <PageLink
-                      page={{ page: stat.max.page, href: stat.max.pageHref }}
-                    />
-                  ) : (
-                    'unknown page'
-                  )}{' '}
-                  · {new Date(stat.max.executedAt).toLocaleString()}
-                </span>
-                <Copy copyText={stat.max.sql} className="-my-2" />
-              </div>
-              <pre className="max-h-72 overflow-auto rounded-xl border border-gray-200 bg-gray-50 p-3 font-mono text-xs whitespace-pre-wrap text-gray-800">
-                <SqlText
-                  sql={formatSql(stat.max.sql)}
-                  tables={stat.tables}
-                  surface="light"
-                />
-              </pre>
-            </div>
-          )}
-
-          <DialogFooter>
-            <div className="flex flex-col gap-2">
-              {explain.error ? (
-                <ErrorBanner error={explain.error as Error} />
-              ) : null}
-              <div className="grid grid-cols-2 gap-2">
-                <DialogClose>
-                  <Button type="button" variant="secondary">
-                    Close
-                  </Button>
-                </DialogClose>
-                <Button
-                  variant="primary"
-                  disabled={!stat.max || explain.isPending}
-                  onClick={() => explain.mutate(stat)}
-                >
-                  {explain.isPending && explain.variables?.id === stat.id
-                    ? 'Running…'
-                    : 'Explain analyze'}
-                </Button>
-              </div>
-            </div>
-          </DialogFooter>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -638,11 +580,7 @@ function renderStatsCell(
       return (
         <Cell className="[&&&]:overflow-visible">
           <div className="flex justify-end">
-            <ExplainAnalyzeButton
-              stat={stat}
-              explain={explain}
-              className="flex items-center rounded-lg px-2 py-0.5 text-0.5xs whitespace-nowrap text-gray-600"
-            />
+            <QueryActions stat={stat} explain={explain} />
           </div>
         </Cell>
       );
@@ -650,16 +588,51 @@ function renderStatsCell(
 }
 
 function Component() {
+  const baseUrl = useAdminBaseUrl();
+  const getSnapshot = useCallback(
+    () => getQueryStatsSnapshot(baseUrl),
+    [baseUrl],
+  );
   const stats = useSyncExternalStore(
     subscribeToQueryStats,
-    getQueryStatsSnapshot,
-    getQueryStatsSnapshot,
+    getSnapshot,
+    getSnapshot,
   );
-  const [search, setSearch] = useState('');
+  const filterSchema = useMemo(() => {
+    const tables = [...new Set(stats.flatMap((stat) => stat.tables))]
+      .sort((a, b) => a.localeCompare(b))
+      .map((value) => ({ value, label: value }));
+    const pages = new Map<string, string>();
+    stats.forEach((stat) =>
+      stat.pages.forEach(({ page }) => pages.set(page, formatPageLabel(page))),
+    );
+    const pageOptions = [...pages]
+      .map(([value, label]) => ({ value, label }))
+      .sort(
+        (a, b) =>
+          a.label.localeCompare(b.label) || a.value.localeCompare(b.value),
+      );
+    return [
+      {
+        id: 'tables',
+        label: 'Tables',
+        operations: [{ value: 'IN', label: 'is any of' }],
+        type: 'STRING_LIST',
+        options: tables,
+      } satisfies QueryClauseSchema<'STRING_LIST'>,
+      {
+        id: 'pages',
+        label: 'Pages',
+        operations: [{ value: 'IN', label: 'is any of' }],
+        type: 'STRING_LIST',
+        options: pageOptions,
+      } satisfies QueryClauseSchema<'STRING_LIST'>,
+    ];
+  }, [stats]);
+  const filters = useFilterBuilder();
   const [sortDescriptor, setSortDescriptor] = useState<
     SortDescriptor | undefined
   >({ column: 'max', direction: 'descending' });
-  const [detailsId, setDetailsId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const explain = useExplainAnalyze();
 
@@ -670,7 +643,9 @@ function Component() {
   }, [stats.length]);
 
   const rows = useMemo(() => {
-    const filtered = stats.filter((stat) => matchesSearch(stat, search));
+    const filtered = stats.filter((stat) =>
+      matchesFilters(stat, filters.items),
+    );
     if (!sortDescriptor) return filtered;
     const column = sortDescriptor.column as StatsColumn;
     const direction = sortDescriptor.direction === 'ascending' ? 1 : -1;
@@ -678,7 +653,7 @@ function Component() {
       (a, b) =>
         compareStats(a, b, column) * direction || a.id.localeCompare(b.id),
     );
-  }, [stats, search, sortDescriptor]);
+  }, [filters.items, stats, sortDescriptor]);
   const visibleRows = useMemo(() => rows.slice(0, MAX_TABLE_ROWS), [rows]);
 
   const exportStats = useCallback(() => {
@@ -693,47 +668,54 @@ function Component() {
     );
   }, [stats]);
 
-  const detailsStat = detailsId
-    ? stats.find((stat) => stat.id === detailsId)
-    : undefined;
-
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-3 px-1 pt-2 pb-5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-white shadow-xs">
-          <Icon name={IconName.Gauge} className="h-5 w-5 text-gray-500" />
-        </div>
-        <div className="flex flex-col">
-          <h1 className="text-xl font-semibold text-gray-800">Query stats</h1>
-          <p className="text-sm text-gray-500">
-            Every SQL query the UI ran, aggregated per statement. Stats are
-            stored in this browser for a day, survive reloads, and merge across
-            open tabs.
-          </p>
-        </div>
-      </div>
       <ContentPanel>
         <ContentPanelToolbar>
-          <TextField
-            aria-label="Search queries"
-            value={search}
-            onChange={setSearch}
-            className="hidden min-w-0 flex-auto justify-end sm:flex"
-          >
-            <div className="flex h-7 w-full max-w-[38ch] items-center gap-1.5 rounded-lg border bg-white/70 px-2 shadow-xs hover:bg-white">
-              <Icon
-                name={IconName.Search}
-                className="h-4 w-4 shrink-0 text-gray-400"
-              />
-              <Input
-                placeholder="Search queries…"
-                className="min-w-0 flex-1 bg-transparent text-0.5xs outline-none placeholder:text-gray-500/75"
-              />
-            </div>
-          </TextField>
-          <span className="shrink-0 text-0.5xs text-gray-500 tabular-nums">
-            {formatNumber(rows.length)} of {formatNumber(stats.length)} queries
-          </span>
+          <div className="hidden min-w-0 flex-auto sm:block">
+            <FilterBuilder query={filters} schema={filterSchema} multiple>
+              <AddFilterTrigger
+                placeholder="Filter queries…"
+                title="Query filters"
+                renderOption={(item) => (
+                  <div className="flex items-baseline gap-2">
+                    <span>{item.label}</span>
+                    <span className="font-mono text-xs opacity-60">
+                      {item.operations
+                        .map((operation) => operation.label)
+                        .join(' / ')}
+                    </span>
+                  </div>
+                )}
+                inputPrefix={
+                  <Icon
+                    name={IconName.Search}
+                    className="h-4 w-4 shrink-0 text-gray-400"
+                  />
+                }
+                tagsPlacement="outside"
+                maxVisibleChips="auto"
+                chipOverflowStrategy="all"
+                tagGroupClassName="min-w-0 flex-nowrap"
+                showSectionTitle={false}
+                popoverPlacement="bottom start"
+                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
+                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
+                className="min-h-7 w-full justify-end text-gray-800"
+                inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+              >
+                {(props) => (
+                  <FilterChip
+                    {...props}
+                    appearance="light"
+                    showRemove
+                    popoverPlacement="bottom"
+                    valueClassName="max-w-56"
+                  />
+                )}
+              </AddFilterTrigger>
+            </FilterBuilder>
+          </div>
           <Tooltip>
             <TooltipTrigger>
               <Button
@@ -756,7 +738,7 @@ function Component() {
                 variant="icon"
                 aria-label="Clear recorded query stats"
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
-                onClick={() => clearQueryStats()}
+                onClick={() => clearQueryStats(baseUrl)}
                 disabled={stats.length === 0}
               >
                 <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
@@ -779,7 +761,11 @@ function Component() {
               numOfRows={Math.max(visibleRows.length, 6)}
               sortDescriptor={sortDescriptor}
               onSortChange={setSortDescriptor}
-              bodyDependencies={[now, explain.isPending, explain.variables?.id]}
+              bodyDependencies={[
+                now,
+                explain.isPending,
+                explain.variables?.stat.id,
+              ]}
               emptyPlaceholder={
                 <EmptyState
                   icon={IconName.Gauge}
@@ -791,14 +777,13 @@ function Component() {
                   description={
                     stats.length === 0
                       ? 'Browse the UI and every SQL query it runs will show up here with duration percentiles.'
-                      : 'No recorded query matches the current search.'
+                      : 'No recorded query matches the current filters.'
                   }
                 />
               }
               renderCell={(stat, column) =>
                 renderStatsCell(stat, column, now, explain)
               }
-              onRowAction={(key) => setDetailsId(String(key))}
               rowClassName="transition-none [content-visibility:auto]"
             />
             {rows.length > MAX_TABLE_ROWS && (
@@ -810,15 +795,6 @@ function Component() {
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>
-      {detailsStat && (
-        <QueryDetailsDialog
-          stat={detailsStat}
-          explain={explain}
-          onOpenChange={(open) => {
-            if (!open) setDetailsId(null);
-          }}
-        />
-      )}
     </div>
   );
 }

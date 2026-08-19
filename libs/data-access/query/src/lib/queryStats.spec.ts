@@ -25,6 +25,10 @@ function record(
 
 describe('queryStats', () => {
   beforeEach(() => {
+    vi.stubGlobal('window', {
+      location: { origin: 'http://query-stats.test' },
+      addEventListener: vi.fn(),
+    });
     clearQueryStats();
   });
 
@@ -133,6 +137,33 @@ describe('queryStats', () => {
     record();
     expect(listener).toHaveBeenCalledTimes(2);
   });
+
+  it('isolates in-memory stats by admin base URL', () => {
+    const firstBaseUrl = 'https://admin.first.example';
+    const secondBaseUrl = 'https://admin.second.example';
+    record({ baseUrl: firstBaseUrl, sql: 'SELECT first', durationMs: 100 });
+    record({ baseUrl: secondBaseUrl, sql: 'SELECT second', durationMs: 900 });
+
+    expect(getQueryStatsSnapshot(firstBaseUrl)[0]?.max).toMatchObject({
+      sql: 'SELECT first',
+      durationMs: 100,
+    });
+    expect(getQueryStatsSnapshot(secondBaseUrl)[0]?.max).toMatchObject({
+      sql: 'SELECT second',
+      durationMs: 900,
+    });
+
+    clearQueryStats(firstBaseUrl);
+    expect(getQueryStatsSnapshot(firstBaseUrl)).toEqual([]);
+    expect(getQueryStatsSnapshot(secondBaseUrl)).toHaveLength(1);
+    clearQueryStats(secondBaseUrl);
+  });
+
+  it('does not retain query stats during server rendering', () => {
+    vi.stubGlobal('window', undefined);
+    record({ baseUrl: 'https://admin.server.example' });
+    expect(getQueryStatsSnapshot('https://admin.server.example')).toEqual([]);
+  });
 });
 
 describe('normalizeQueryPage', () => {
@@ -205,6 +236,10 @@ describe('persistence', () => {
   async function importFreshModule(local: Storage, session: Storage) {
     vi.stubGlobal('localStorage', local);
     vi.stubGlobal('sessionStorage', session);
+    vi.stubGlobal('window', {
+      location: { origin: 'http://query-stats.test' },
+      addEventListener: vi.fn(),
+    });
     vi.resetModules();
     return import('./queryStats');
   }
@@ -265,5 +300,43 @@ describe('persistence', () => {
     expect(stat).toMatchObject({ count: 2, lastExecutedAt: 3_000 });
     expect(stat?.max).toMatchObject({ sql: 'SELECT other', durationMs: 900 });
     expect(stat?.pages).toHaveLength(2);
+  });
+
+  it('keeps persisted buckets isolated by admin base URL', async () => {
+    const local = createStorageStub();
+    const session = createStorageStub();
+    const firstBaseUrl = 'https://admin.first.example';
+    const secondBaseUrl = 'https://admin.second.example';
+
+    const first = await importFreshModule(local, session);
+    first.recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT first',
+      durationMs: 100,
+      outcome: 'success',
+      executedAt: 1_000,
+      baseUrl: firstBaseUrl,
+    });
+    first.recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT second',
+      durationMs: 900,
+      outcome: 'success',
+      executedAt: 2_000,
+      baseUrl: secondBaseUrl,
+    });
+    first.flushQueryStats();
+
+    const reloaded = await importFreshModule(local, session);
+    expect(reloaded.getQueryStatsSnapshot(firstBaseUrl)[0]?.max).toMatchObject({
+      sql: 'SELECT first',
+      durationMs: 100,
+    });
+    expect(reloaded.getQueryStatsSnapshot(secondBaseUrl)[0]?.max).toMatchObject(
+      {
+        sql: 'SELECT second',
+        durationMs: 900,
+      },
+    );
   });
 });

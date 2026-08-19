@@ -8,9 +8,31 @@
 
 - 2026-08-19 user corrections on health-failure presentation: UNREACHABLE must NOT look scarier than DEGRADED — it can be a mere client-side network issue, so it shares DEGRADED's yellow TriangleAlert treatment and warning (not error) notification; the distinction lives in the label and message. Never surface HTTP status codes in user-facing health messages — they are implementation details; keep them on `healthFailure` in context for diagnostic surfaces only. Health toast copy must fit one line in the notification banner: drop instructions, keep the reassurance. In user-facing copy the user dislikes em-dash/hyphen clauses and the phrase "your end"; use short plain sentences.
 
+- 2026-08-19 Query stats layout: omit the page-level hero/header entirely (gauge icon, title, description, and spacing); start with the content panel and its toolbar.
+
+- 2026-08-19 Cloud query-stats SSR: cloud uses React Router SSR on a long-lived worker. Query recording must no-op without `window`, and the server snapshot must stay empty; otherwise module-level scope state could retain one request's stats for another request. Browser hydration then reads the current environment's persisted bucket.
+
+- 2026-08-19 self on PanelTable role counts: I repeated the hidden-clone assumption in a route test and expected exactly two accessible page links; Testing Library excludes the hidden sticky clone, so assert that at least one accessible link exists unless duplicate rendering is the behavior under test.
+
+- 2026-08-19 Cloud-compatible query stats: scope in-memory state and localStorage buckets by the Admin API `baseUrl` plus tab ID, matching cloud's existing meta-cache isolation. The standalone empty base resolves to `window.location.origin`; cloud supplies an environment-specific admin base URL. Page links keep the recorded browser pathname: strip only React Router's real `useHref('/')` basename, so standalone `/ui/...` avoids `/ui/ui/...` while cloud `/accounts/.../environments/...` paths remain intact.
+
+- 2026-08-19 self on shell quoting: a search command containing both quote styles and a raw backtick ended with an unmatched zsh quote. For broad literal path searches, use a plain `rg -e '/query'` expression rather than constructing a quote-heavy alternation.
+
+- 2026-08-19 Query stats page hrefs: the recorder stores the browser pathname including React Router's basename (`/ui/...`). Before passing a recorded href to the shared React Aria `Link`, strip the current `useHref('/')` base so the router does not produce `/ui/ui/...`; doing this at render time also repairs existing persisted 24-hour stats.
+
+- 2026-08-19 self on ripgrep regexes: an unescaped `{` in a grouped alternation caused the page-router search to fail parsing. Use separate `-e` expressions for literal JSX-like fragments instead of combining them into a regex.
+
+- 2026-08-19 Query stats filtering: the toolbar uses the shared `FilterBuilder` pattern from Limit counters, with only multi-select `Tables` and `Pages` fields. Options are derived from recorded stats, page values retain exact keys but display `formatPageLabel` labels, fields combine with AND, and values within a field match with OR. Do not restore the `N of N queries` toolbar count.
+
+- 2026-08-19 self on React Aria filter tests: `fireEvent.focus` did not open the multi-combobox even though its menu trigger is focus-based; use `userEvent.click` and role queries with `/Tables/`/`/Pages/` because the accessible option names contain additional rendered operation text.
+
+- 2026-08-19 Query stats actions: use the Invocations-style narrow split-button cell. The primary action is `EXPLAIN ANALYZE`; the menu offers both it and `EXPLAIN ANALYZE VERBOSE`, and verbose downloads to a distinct `explain-analyze-verbose-*` filename.
+
+- 2026-08-19 Query stats interaction: do not open a details dialog when a row is clicked. The table, shape/SQL tooltips, page links, JSON export, and row-level Explain Analyze action already expose the useful information; keep rows non-interactive.
+
 - 2026-08-19 tooltip components: `HoverTooltip` content styles include `break-all` — never use it for code/SQL content (splits mid-word). For hoverable code with copy, use `TruncateWithTooltip` (`alwaysShow`, `size="lg"` for whitespace-pre, `copyText` — copy button is built in and the tooltip stays open while hovered). PanelTable renders a hidden sticky-header clone of every row — Playwright `.first()` on row-content selectors often hits the invisible clone; target visible text with `.last()` or getByText.
 
-- 2026-08-19 query-stats storage: localStorage per-tab buckets (`restate.query-stats.v1.<tabId>`, tabId in sessionStorage), 2s debounced persist + pagehide flush, hydrate own bucket at module load, merge every bucket at snapshot read, 24h TTL. Gotcha fixed once already: after hydration the snapshot cache must start as null (lazy first build), or a reloaded page shows empty until the next query records. Playwright note: a fresh browser context has empty localStorage — record queries before asserting persistence.
+- 2026-08-19 query-stats storage: localStorage buckets are per Admin API base URL and tab (`restate.query-stats.v2.<encoded-baseUrl>.<tabId>`, tabId in sessionStorage), with 2s debounced persist, pagehide flush, lazy per-scope hydration, same-scope cross-tab merge, and 24h TTL. Snapshot caches must start null after hydration or a reloaded page stays empty until another query records. A fresh Playwright browser context has empty localStorage, so record queries before asserting persistence.
 
 - 2026-08-19 surface attribution landmarks: dialogs/panels are attributable to queries via three mechanisms — `?panel=<name>` (PANEL_QUERY_PARAM, all panels), registered transient params (`registerTransientQueryParams`, all QueryDialogs), and a passive `data-dialog-surface` attribute the shared `DialogContent` stamps on its dialog element (React Aria keeps modal content in the DOM only while open, so the recorder detects open dialogs with a `querySelectorAll` at query start — no useEffect/registry; Nik explicitly rejected an effect-based marker). Name dialogs via the `surface` prop — BatchOperationDialog (`batch-<type>`) and EditState are named. Local-state dialogs (ConfirmationDialog open=…, EditState) leave NO trace in the URL — do not assume dialog state is URL-driven without checking.
 
