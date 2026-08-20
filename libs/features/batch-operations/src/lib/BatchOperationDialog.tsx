@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useCountInvocations } from '@restate/data-access/admin-api-hooks';
+import { useSummaryInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import { useFeatures } from '@restate/data-access/admin-api';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
+  components,
   FilterItem,
 } from '@restate/data-access/admin-api-spec';
 import { ConfirmationDialog } from '@restate/ui/dialog';
@@ -31,6 +32,7 @@ import { tv } from '@restate/util/styles';
 import {
   deduplicateFilters,
   friendlyOperationLabel,
+  toInvocationV2SummaryFilter,
 } from './deduplicateFilters';
 
 function toQueryClauseValue(
@@ -60,13 +62,11 @@ function formatFilterValue(filter: FilterItem) {
 function BatchOperationContent({
   count,
   isLowerBound,
-  isCountLoading,
   config,
   state,
 }: {
   count: number | undefined;
   isLowerBound: boolean | undefined;
-  isCountLoading: boolean;
   config: OperationConfig;
   state: BatchState;
 }) {
@@ -74,20 +74,10 @@ function BatchOperationContent({
   const hasVqueues = useFeatures().has('vqueues');
 
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
-  const { isPast, ...parts } = durationSinceLastSnapshot(now);
-  const duration = formatDurations(parts);
+  const duration = formatDurations(durationSinceLastSnapshot(now));
   const hasInvocationIds = state.params && 'invocationIds' in state.params;
 
-  if (isCountLoading || count === undefined) {
-    return (
-      <div className="space-y-2">
-        <div className="h-4 w-3/4 animate-pulse rounded bg-gray-300" />
-        <div className="h-4 w-1/2 animate-pulse rounded bg-gray-300" />
-      </div>
-    );
-  }
-
-  if (count === 0) {
+  if (count === 0 && hasInvocationIds) {
     return (
       <div className="flex flex-col gap-2">
         <p>No invocations match your criteria.</p>
@@ -245,39 +235,46 @@ export function BatchOperationDialog({
     };
   }, [reset]);
 
-  const countInvocations = useCountInvocations(
-    state.params && 'filters' in state.params ? state.params.filters : [],
+  const paramsWithFilters =
+    state.params && 'filters' in state.params ? state.params : undefined;
+  const summaryFilters = paramsWithFilters
+    ? deduplicateFilters(
+        paramsWithFilters.filters.map(toInvocationV2SummaryFilter),
+      )
+    : [];
+  const invocationSummary = useSummaryInvocationsV2(
     {
-      enabled: state.params && 'filters' in state.params,
+      filters:
+        summaryFilters as components['schemas']['InvocationV2FilterItem'][],
+      mode: { type: 'sampled', sampleSize: 1_000_000 },
+      view: 'count',
+    },
+    {
+      enabled: paramsWithFilters !== undefined,
       staleTime: 0,
       refetchOnMount: true,
-      ...(state.params &&
-        'invocationIds' in state.params && {
-          initialData: {
-            count: state.params.invocationIds.length,
-            isLowerBound: false,
-          },
-        }),
     },
   );
-
-  useEffect(() => {
-    if (countInvocations.data?.count) {
-      state.progressStore.update({ total: countInvocations.data?.count });
-    }
-  }, [countInvocations.data?.count, state.progressStore]);
 
   const config = OPERATION_CONFIG[state.type];
   const { count, isLowerBound } =
     'invocationIds' in state.params
       ? { count: state.params.invocationIds.length, isLowerBound: false }
       : {
-          count: countInvocations.data?.count,
-          isLowerBound: countInvocations.data?.isLowerBound,
+          count: invocationSummary.data?.total,
+          isLowerBound: invocationSummary.data?.isPartial,
         };
+  const showOperationDetails =
+    paramsWithFilters !== undefined || (count !== undefined && count > 0);
+
+  useEffect(() => {
+    if (count) {
+      state.progressStore.update({ total: count });
+    }
+  }, [count, state.progressStore]);
 
   return (
-    <SnapshotTimeProvider lastSnapshot={countInvocations.dataUpdatedAt}>
+    <SnapshotTimeProvider lastSnapshot={invocationSummary.dataUpdatedAt}>
       <ConfirmationDialog
         open={state.isDialogOpen}
         surface={`batch-${state.type}`}
@@ -295,7 +292,6 @@ export function BatchOperationDialog({
           <BatchOperationContent
             count={count}
             isLowerBound={isLowerBound}
-            isCountLoading={countInvocations.isPending}
             config={config}
             state={state}
           />
@@ -305,14 +301,17 @@ export function BatchOperationDialog({
             ? 'Continue in background'
             : 'Close'
         }
-        alertType={count && count > 0 ? config.alertType : undefined}
-        alertContent={count && count > 0 ? config.alertContent : undefined}
+        alertType={showOperationDetails ? config.alertType : undefined}
+        alertContent={showOperationDetails ? config.alertContent : undefined}
         submitText={config.submitText}
         submitVariant={config.submitVariant}
         formMethod={config.formMethod}
         formAction={config.formAction}
-        error={countInvocations.error ?? mutation.error}
-        isSubmitDisabled={count === 0 || progress?.isFinished}
+        error={invocationSummary.error ?? mutation.error}
+        isSubmitDisabled={
+          ('invocationIds' in state.params && count === 0) ||
+          progress?.isFinished
+        }
         onSubmit={(e) => {
           e.preventDefault();
           const formData = new FormData(e.currentTarget);
@@ -379,7 +378,7 @@ export function BatchOperationDialog({
           )
         }
       >
-        {state.type === 'resume' && count !== undefined && count > 0 && (
+        {state.type === 'resume' && showOperationDetails && (
           <div className="mt-4">
             <FormFieldSelect
               label={

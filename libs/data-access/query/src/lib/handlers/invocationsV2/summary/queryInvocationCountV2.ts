@@ -4,7 +4,6 @@ import {
   supportsInvocationV2Vqueues,
   type InvocationFilterV2,
   type ResolvedInvocationModeV2,
-  VQUEUE_SERVICE_QUEUE_LIMIT,
 } from '../shared';
 import { createVqueueListQueryPlan } from '../list/createVqueueListQueryPlan';
 import { createQueryPlanWhenCompletedVqueuesWereSkipped } from '../list/createQueryPlanWhenCompletedVqueuesWereSkipped';
@@ -30,7 +29,6 @@ import { queryInvocationCountFromInvocationStatusAndState } from './queryInvocat
 
 type CountRow = {
   count?: number | string;
-  queue_count?: number | string;
 };
 
 type InvocationCountResult = {
@@ -100,7 +98,7 @@ async function queryCountFromSysVqueueMetaAndSysVqueues(
     mode.type === 'sampled'
       ? `(\n        SELECT\n          ${vqueueSampleColumns(query.filters, query.statuses, undefined, ['id', 'entry_kind']).join(',\n          ')}\n        FROM sys_vqueues\n        LIMIT ${mode.sampleSize}\n      ) v`
       : 'sys_vqueues v';
-  const countPromise = context.query(
+  const { rows } = (await context.query(
     `
       SELECT
         COUNT(1) AS count
@@ -109,38 +107,14 @@ async function queryCountFromSysVqueueMetaAndSysVqueues(
         SELECT vm.id
         FROM sys_vqueue_meta vm
         WHERE ${queuePredicates.join('\n          AND ')}
-        LIMIT ${VQUEUE_SERVICE_QUEUE_LIMIT}
       )
         AND ${entryPredicates.join('\n        AND ')}
     `.trim(),
     'invocations-v2/count-from-vqueue-meta',
-  ) as Promise<{ rows: CountRow[] }>;
-  if (mode.type === 'sampled') {
-    const { rows } = await countPromise;
-    return { count: Number(rows[0]?.count ?? 0), isPartial: true };
-  }
-
-  const queueCountPromise = context.query(
-    `
-      SELECT
-        COUNT(1) AS queue_count
-      FROM (
-        SELECT vm.id
-        FROM sys_vqueue_meta vm
-        WHERE ${queuePredicates.join('\n          AND ')}
-        LIMIT ${VQUEUE_SERVICE_QUEUE_LIMIT + 1}
-      ) limited_service_queues
-    `.trim(),
-    'invocations-v2/count-vqueue-meta-queues',
-  ) as Promise<{ rows: CountRow[] }>;
-  const [count, queueCount] = await Promise.all([
-    countPromise,
-    queueCountPromise,
-  ]);
+  )) as { rows: CountRow[] };
   return {
-    count: Number(count.rows[0]?.count ?? 0),
-    isPartial:
-      Number(queueCount.rows[0]?.queue_count ?? 0) > VQUEUE_SERVICE_QUEUE_LIMIT,
+    count: Number(rows[0]?.count ?? 0),
+    isPartial: mode.type === 'sampled',
   };
 }
 

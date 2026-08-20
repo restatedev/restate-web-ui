@@ -11,7 +11,7 @@ export interface OperationConfig {
   iconClassName: string;
   submitVariant: 'primary' | 'destructive';
   description: (
-    count: number,
+    count: number | undefined,
     isLowerBound: boolean,
     duration: string,
     params:
@@ -32,6 +32,51 @@ export interface OperationConfig {
   emptyMessage: (hasVqueues: boolean) => string;
 }
 
+function invocationCount(
+  count: number | undefined,
+  isLowerBound: boolean,
+  duration: string,
+  params: Parameters<OperationConfig['description']>[3],
+) {
+  const label = (
+    <span className="font-medium text-gray-700">
+      {count === undefined ? (
+        <span
+          role="status"
+          aria-label="Loading invocation count"
+          className="inline-block h-[0.8em] w-[3.5em] animate-pulse rounded-sm bg-gray-300 align-[-0.05em]"
+        />
+      ) : (
+        <>
+          {formatNumber(count, true)}
+          {isLowerBound ? '+' : ''}
+        </>
+      )}{' '}
+      {count === undefined
+        ? 'invocations'
+        : formatPlurals(count, {
+            one: 'invocation',
+            other: 'invocations',
+          })}
+    </span>
+  );
+  if (count === undefined) return label;
+  return (
+    <InlineTooltip
+      description={
+        isLowerBound
+          ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
+          : `This count was calculated ${duration} and may have changed.`
+      }
+      variant="inline-help"
+      className="[&_button]:invisible"
+      visible={'filters' in params}
+    >
+      {label}
+    </InlineTooltip>
+  );
+}
+
 export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   cancel: {
     title: 'Cancel Invocations',
@@ -44,22 +89,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to cancel{' '}
-        <InlineTooltip
-          description={
-            isLowerBound
-              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-              : `This count was calculated ${duration} and may have changed.`
-          }
-          variant="inline-help"
-          className="[&_button]:invisible"
-          visible={'filters' in params}
-        >
-          <span className="font-medium text-gray-700">
-            {formatNumber(count, true)}
-            {isLowerBound ? '+' : ''}{' '}
-            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
-          </span>
-        </InlineTooltip>
+        {invocationCount(count, isLowerBound, duration, params)}{' '}
         {'filters' in params && params.filters?.length > 0
           ? 'matching the following criteria?'
           : '?'}
@@ -83,22 +113,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to pause{' '}
-        <InlineTooltip
-          description={
-            isLowerBound
-              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-              : `This count was calculated ${duration} and may have changed.`
-          }
-          variant="inline-help"
-          className="[&_button]:invisible"
-          visible={'filters' in params}
-        >
-          <span className="font-medium text-gray-700">
-            {formatNumber(count, true)}
-            {isLowerBound ? '+' : ''}{' '}
-            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
-          </span>
-        </InlineTooltip>
+        {invocationCount(count, isLowerBound, duration, params)}{' '}
         {'filters' in params && params.filters?.length > 0
           ? 'matching the following criteria?'
           : '?'}{' '}
@@ -126,22 +141,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to restart{' '}
-        <InlineTooltip
-          description={
-            isLowerBound
-              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-              : `This count was calculated ${duration} and may have changed.`
-          }
-          variant="inline-help"
-          className="[&_button]:invisible"
-          visible={'filters' in params}
-        >
-          <span className="font-medium text-gray-700">
-            {formatNumber(count, true)}
-            {isLowerBound ? '+' : ''}{' '}
-            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
-          </span>
-        </InlineTooltip>
+        {invocationCount(count, isLowerBound, duration, params)}{' '}
         {'filters' in params && params.filters?.length > 0
           ? 'as new matching the following criteria?'
           : ' as new?'}
@@ -165,22 +165,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     description: (count, isLowerBound, duration, params) => (
       <p>
         You're about to resume{' '}
-        <InlineTooltip
-          description={
-            isLowerBound
-              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-              : `This count was calculated ${duration} and may have changed.`
-          }
-          variant="inline-help"
-          className="[&_button]:invisible"
-          visible={'filters' in params}
-        >
-          <span className="font-medium text-gray-700">
-            {formatNumber(count, true)}
-            {isLowerBound ? '+' : ''}{' '}
-            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
-          </span>
-        </InlineTooltip>
+        {invocationCount(count, isLowerBound, duration, params)}{' '}
         {'filters' in params && params.filters?.length > 0
           ? 'matching the following criteria.'
           : '.'}
@@ -201,22 +186,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to retry{' '}
-        <InlineTooltip
-          description={
-            isLowerBound
-              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-              : `This count was calculated ${duration} and may have changed.`
-          }
-          variant="inline-help"
-          className="[&_button]:invisible"
-          visible={'filters' in params}
-        >
-          <span className="font-medium text-gray-700">
-            {formatNumber(count, true)}
-            {isLowerBound ? '+' : ''}{' '}
-            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
-          </span>
-        </InlineTooltip>
+        {invocationCount(count, isLowerBound, duration, params)}{' '}
         {'filters' in params && params.filters?.length > 0
           ? 'matching the following criteria now?'
           : ' now?'}
@@ -240,22 +210,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to kill{' '}
-        <InlineTooltip
-          description={
-            isLowerBound
-              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-              : `This count was calculated ${duration} and may have changed.`
-          }
-          variant="inline-help"
-          className="[&_button]:invisible"
-          visible={'filters' in params}
-        >
-          <span className="font-medium text-gray-700">
-            {formatNumber(count, true)}
-            {isLowerBound ? '+' : ''}{' '}
-            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
-          </span>
-        </InlineTooltip>
+        {invocationCount(count, isLowerBound, duration, params)}{' '}
         {'filters' in params && params.filters?.length > 0
           ? 'matching the following criteria?'
           : '?'}
@@ -279,22 +234,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     description: (count, isLowerBound, duration, params) => (
       <p>
         Are you sure you want to purge{' '}
-        <InlineTooltip
-          description={
-            isLowerBound
-              ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-              : `This count was calculated ${duration} and may have changed.`
-          }
-          variant="inline-help"
-          className="[&_button]:invisible"
-          visible={'filters' in params}
-        >
-          <span className="font-medium text-gray-700">
-            {formatNumber(count, true)}
-            {isLowerBound ? '+' : ''}{' '}
-            {formatPlurals(count, { one: 'invocation', other: 'invocations' })}
-          </span>
-        </InlineTooltip>
+        {invocationCount(count, isLowerBound, duration, params)}{' '}
         {'filters' in params && params.filters?.length > 0
           ? 'matching the following criteria?'
           : '?'}

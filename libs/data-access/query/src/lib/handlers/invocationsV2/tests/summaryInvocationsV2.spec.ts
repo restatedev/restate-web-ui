@@ -326,6 +326,104 @@ describe('POST /query/v2/invocations/summary', () => {
       });
     });
 
+    it('samples VQueue entries before applying service and status filters', async () => {
+      setResponder(() => [{ count: 8_340 }]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'sampled', sampleSize: 1_000_000 },
+        view: 'count',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  id,
+                  entry_kind,
+                  stage,
+                  status
+                FROM sys_vqueues
+                LIMIT 1000000
+              ) v
+              WHERE v.id IN (
+                SELECT vm.id
+                FROM sys_vqueue_meta vm
+                WHERE vm.service_name IN ('FlowControlUiStateService')
+                  AND (vm.num_inbox > 0)
+              )
+                AND v.entry_kind = 'invocation'
+                AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'sampled',
+        total: 8_340,
+        isPartial: true,
+      });
+    });
+
+    it('uses one unbounded query for an exact metadata-filtered count', async () => {
+      setResponder(() => [{ count: 8_340 }]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'count',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM sys_vqueues v
+              WHERE v.id IN (
+                SELECT vm.id
+                FROM sys_vqueue_meta vm
+                WHERE vm.service_name IN ('FlowControlUiStateService')
+                  AND (vm.num_inbox > 0)
+              )
+                AND v.entry_kind = 'invocation'
+                AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'exact',
+        total: 8_340,
+        isPartial: false,
+      });
+    });
+
     it('passes an unsupported stage filter through to DataFusion', async () => {
       setResponder(() => [
         {

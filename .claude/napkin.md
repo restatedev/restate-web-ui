@@ -22,6 +22,16 @@
 
 - 2026-08-20 self on filter-schema inspection: I piped a scoped `rg` into `sed` even though the repository notes repeatedly require focused commands without inspection pipelines. Use `rg` alone with narrow paths and the tool output limit.
 
+- 2026-08-20 user correction on count sampling: A filtered `sys_vqueue_meta` subquery capped at 100001 is a truncation check, not a sample. Sampled invocation counts must cap the raw invocation-entry source before applying the requested filters. Do not cap the metadata filter or issue the separate 100001-queue sentinel for this count flow; exact mode should use one unbounded count query instead.
+
+- 2026-08-20 virtual-object stats MIN/MAX usage: `useGetVirtualObjectStats` runs when a Virtual Object instance detail page mounts (any tab), only when service/key and the Query API are available; it has no interval and does not refetch on window focus. The Inbox card renders only the `averageInboxDuration` min–max range, its contributing VQueue count, current inbox count, oldest inboxed time, and last enqueued time. The four blocked-duration ranges, oldest/latest attempt timestamps, and last-start/attempt/finish fields returned by the handler currently have no UI consumer, so their aggregates are removable dead query work if the API is narrowed.
+
+- 2026-08-20 Restate #5214 MIN/MAX wrong-results audit: no built-in Web UI query has the vulnerable exact shape `SELECT MIN(x), MAX(x)` and no other aggregate. The only runtime query with paired MIN/MAX is `virtual-objects/stats-vqueue-meta`; it also selects COUNT, SUM, and many additional aggregates, so it is outside the issue's reproduced trigger (which becomes correct with any third aggregate). Other runtime/predefined SQL uses only MIN or only MAX. Arbitrary SQL entered in Introspection can still reproduce the server bug.
+
+- 2026-08-20 user correction on query definitions: `description` is displayed to users, so describe the query's UI purpose and avoid implementation-version language such as “V2” or internal planner terminology. Keep new `shape` strings structurally faithful and use the same optional-fragment notation so the derived compact shape behaves like existing entries.
+
+- 2026-08-20 user correction on batch count loading: The summary is advisory and must not put the confirmation dialog into a whole-content loading state. Render the title, confirmation copy, filters, operation warning/options, and enabled action immediately; replace only the inline numeric count with a skeleton until the summary resolves.
+
 - 2026-08-20 user correction on batch summary count: Highlighted status buckets only identify a containing stage, so summing included stages overcounts (backing-off became the entire Inbox). Batch dialogs need a count-only V2 summary view that applies every filter and executes a scalar `COUNT(1)` without `GROUP BY`; use VQueue entries when they can satisfy the filters and fall back to status/state only when needed.
 
 - 2026-08-20 self on inspection commands: I used output pipes twice despite the repo napkin explicitly calling this noisy. Scope `rg` directly and inspect named files in separate tool calls; do not pipe inspection output through `head` or another command.
