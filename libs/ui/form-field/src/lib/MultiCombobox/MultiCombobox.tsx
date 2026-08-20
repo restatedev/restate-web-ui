@@ -161,11 +161,11 @@ const inputStyles = tv({
 });
 
 const overflowStyles = tv({
-  base: 'flex h-7 shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-600',
+  base: 'flex h-6.5 shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-600',
 });
 
 const overflowMeasureStyles = tv({
-  base: 'pointer-events-none invisible absolute flex h-7 items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-xs',
+  base: 'pointer-events-none invisible absolute flex h-6.5 items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-xs',
 });
 
 export function FormFieldMultiCombobox<

@@ -45,7 +45,7 @@ import { formatNumber } from '@restate/util/intl';
 import { panelHref } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { VQueueActivityCard, VQueueDurationsCard } from './VQueueCards';
 import {
@@ -297,7 +297,13 @@ function InboxSchedulingStatus({ data }: { data: VqueueSnapshot }) {
   return null;
 }
 
-function VQueueHeader({ data }: { data?: VqueueSnapshot }) {
+function VQueueHeader({
+  data,
+  trail,
+}: {
+  data?: VqueueSnapshot;
+  trail?: ReactNode;
+}) {
   const identity = data?.identity;
 
   return (
@@ -307,6 +313,7 @@ function VQueueHeader({ data }: { data?: VqueueSnapshot }) {
       iconClassName="rotate-[87deg]"
       variant={identity?.isPaused ? 'warning' : 'default'}
       className="min-w-0"
+      trail={trail}
     >
       <div className="flex min-w-0 flex-1 items-center overflow-hidden whitespace-nowrap">
         {identity?.service ? (
@@ -403,8 +410,7 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={lastSnapshot}>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-        <Breadcrumbs className="mt-8 px-5 md:mt-0" />
-        <VQueueHeader data={data} />
+        <VQueueHeader data={data} trail={<Breadcrumbs variant="flat" />} />
         {data && (
           <CardGrid
             columns={2}
@@ -469,7 +475,7 @@ function Component() {
                     aria-label={
                       isFetching ? 'Refreshing VQueue' : 'Refresh VQueue'
                     }
-                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+                    className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
                     onClick={() => {
                       void Promise.all([snapshot.refetch(), entries.refetch()]);
                     }}

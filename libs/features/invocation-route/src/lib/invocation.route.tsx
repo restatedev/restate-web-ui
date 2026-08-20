@@ -158,14 +158,15 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-        <Breadcrumbs className="mt-8 px-5 md:mt-0" />
         {/* Sticky floating header: target + status stay visible while the
             page scrolls. Status-tinted gradient telegraphs invocation state
-            without coloring the whole card. */}
+            without coloring the whole card. The breadcrumb trail docks onto
+            it as a flat ledge tucked under the bar's top edge. */}
         <InvocationStatusHeader
           invocation={journalAndInvocationData}
           icon={IconName.Invocation}
           iconLabel="Invocation"
+          trail={<Breadcrumbs variant="flat" />}
         >
           {journalAndInvocationData?.target && (
             <ServiceTarget

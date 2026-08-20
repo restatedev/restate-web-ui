@@ -40,14 +40,18 @@ function TrailProbe() {
   );
 }
 
-function createTestRouter(initialPath = '/invocations', testPages = pages) {
+function createTestRouter(
+  initialPath = '/invocations',
+  testPages = pages,
+  variant?: 'chips' | 'flat',
+) {
   return createMemoryRouter(
     [
       {
         element: (
           <BreadcrumbsProvider pages={testPages}>
             <TrailProbe />
-            <Breadcrumbs />
+            <Breadcrumbs variant={variant} />
             <Outlet />
           </BreadcrumbsProvider>
         ),
@@ -213,5 +217,43 @@ describe('BreadcrumbsProvider', () => {
     render(<RouterProvider router={router} />);
     await navigate(router, '/features');
     expect(trail()).toBe('');
+  });
+});
+
+describe('Breadcrumbs flat variant', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
+  it('should render crumbs as flat links with a plain current crumb', async () => {
+    const router = createTestRouter('/invocations', pages, 'flat');
+    render(<RouterProvider router={router} />);
+    await navigate(router, '/invocations/inv-1');
+
+    const listLink = screen.getByRole('link', { name: 'Invocations' });
+    expect(listLink.getAttribute('href')).toBe('/invocations');
+    expect(screen.queryByRole('link', { name: 'inv-1' })).toBeNull();
+    const currentLabel = screen.getByText('inv-1');
+    expect(currentLabel.closest('[aria-current="page"]')).toBeTruthy();
+  });
+
+  it('should keep the collapse dropdowns in the flat variant', async () => {
+    const router = createTestRouter('/invocations', pages, 'flat');
+    render(<RouterProvider router={router} />);
+    for (let i = 1; i <= 5; i++) {
+      await navigate(router, `/invocations/inv-${i}`);
+    }
+
+    expect(screen.getByRole('link', { name: 'Invocations' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'inv-1' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'inv-4' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'inv-2' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'inv-3' })).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Show 2 more pages' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Show 4 more pages' }),
+    ).toBeTruthy();
   });
 });

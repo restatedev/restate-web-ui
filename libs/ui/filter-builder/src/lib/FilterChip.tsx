@@ -1,4 +1,5 @@
 import { Button } from '@restate/ui/button';
+import { Chip, ChipGroup, ChipSegment } from '@restate/ui/chip';
 import {
   Dropdown,
   DropdownItem,
@@ -35,104 +36,37 @@ import {
 } from 'react';
 import { Form } from 'react-router';
 
-const chipStyles = tv({
-  base: 'inline-flex min-w-0 items-center',
-  variants: {
-    appearance: {
-      dark: 'contents',
-      light: 'rounded-lg border border-blue-200 bg-blue-50 shadow-xs',
-    },
-  },
+const darkChipStyles = tv({
+  base: 'contents',
 });
 
-const chipButtonStyles = tv({
-  base: 'flex min-w-0 items-center text-xs',
-  variants: {
-    appearance: {
-      dark: 'gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-zinc-50 hover:bg-white/30 pressed:bg-white/30',
-      light:
-        'min-h-[1.625rem] gap-1 rounded-lg border-transparent bg-transparent px-1 py-0 text-blue-950 shadow-none hover:bg-blue-100 pressed:bg-blue-200',
-    },
-    hasRemove: {
-      true: '',
-    },
-  },
-  compoundVariants: [
-    {
-      appearance: 'light',
-      hasRemove: true,
-      className: 'rounded-r-none',
-    },
-  ],
+const darkChipButtonStyles = tv({
+  base: 'flex min-w-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30',
 });
 
-const chipValueStyles = tv({
-  base: 'min-w-0 truncate',
+const darkChipValueStyles = tv({
+  base: 'max-w-56 min-w-0 truncate font-semibold',
+});
+
+const lightGroupStyles = tv({
+  base: 'min-w-0 text-xs has-[[data-chip-overlay]_button:disabled]:opacity-60 [&>[data-chip]:not(:first-child)]:-ml-1.5',
+});
+
+const lightValueStyles = tv({
+  base: 'flex min-w-0 items-center gap-1 truncate',
   variants: {
-    appearance: {
-      dark: 'max-w-56 font-semibold',
-      light: [
-        'ml-0.5 max-w-28 font-medium',
+    isRichValue: {
+      true: [
         '[&_[data-chip-group]>*:not(:first-child)]:-ml-1!',
         '[&_[data-chip]]:[--chip-height:1.25rem]',
         '[&_[data-chip]]:[--chip-radius:0.375rem]',
         '[&_[data-chip]_[data-chip-segment]:first-child_[data-chip-segment-inner]]:pl-0.5',
         '[&_[data-chip]_[data-chip-segment]:first-child_[data-chip-segment-inner]:has(svg)]:pl-1.5',
       ],
-    },
-    isRichValue: {
-      true: '',
-      false: '',
+      false: 'max-w-28 font-mono text-zinc-800',
     },
   },
-  compoundVariants: [
-    {
-      appearance: 'light',
-      isRichValue: false,
-      className:
-        'rounded-md border border-blue-200 bg-white px-1 py-0.5 font-mono text-zinc-700 shadow-xs',
-    },
-  ],
-});
-
-const chipLabelStyles = tv({
-  base: 'shrink-0 whitespace-nowrap',
-  variants: {
-    appearance: {
-      dark: '',
-      light: 'font-medium text-blue-950',
-    },
-  },
-});
-
-const chipOperationStyles = tv({
-  base: 'shrink-0 font-mono',
-  variants: {
-    appearance: {
-      dark: '',
-      light: 'font-normal text-blue-600',
-    },
-  },
-});
-
-const filterIconStyles = tv({
-  base: 'h-3.5 w-3.5 shrink-0',
-  variants: {
-    appearance: {
-      dark: 'text-current opacity-70',
-      light: 'text-blue-600',
-    },
-  },
-});
-
-const chevronStyles = tv({
-  base: 'h-3.5 w-3.5 shrink-0',
-  variants: {
-    appearance: {
-      dark: 'ml-1',
-      light: 'ml-0.5',
-    },
-  },
+  defaultVariants: { isRichValue: false },
 });
 
 const chipPopoverStyles = tv({
@@ -185,8 +119,103 @@ export function FilterChip({
     submit();
   };
 
+  const valueContent = renderValue
+    ? renderValue(item)
+    : item.type === 'STRING_LIST' &&
+        (!item.value.operation || item.value.operation === 'IN') &&
+        (item.isAllSelected || item.isNothingSelected)
+      ? 'Any'
+      : item.valueLabel ||
+        (queryClauseOperationRequiresValue(item.value.operation)
+          ? (emptyValueLabel ?? '?')
+          : '');
+
+  if (appearance === 'light') {
+    const hasRemove = Boolean(showRemove && onRemove);
+    return (
+      <ChipGroup className={lightGroupStyles({ className })}>
+        <EditFilterTrigger
+          clause={item}
+          onRemove={onRemove}
+          onUpdate={onUpdate}
+          onClose={close}
+          isNew={isNew}
+          popoverPlacement={popoverPlacement}
+          popoverClassName={popoverClassName}
+          renderOption={renderOption}
+        >
+          <Chip
+            left="straight"
+            right={hasRemove ? 'angled' : 'straight'}
+            size="lg"
+            overlay={
+              <Button
+                autoFocus={isNew}
+                data-filter-id={item.id}
+                variant="icon"
+                disabled={disabled}
+                aria-label={`Edit ${item.label} filter`}
+                className={
+                  'rounded-lg border-0 bg-transparent p-0 shadow-none outline-offset-0 hover:bg-transparent pressed:bg-transparent ' +
+                  (buttonClassName ?? '')
+                }
+              />
+            }
+          >
+            <ChipSegment className="gap-1 bg-blue-50 px-1.5">
+              <Icon
+                name={IconName.ListFilter}
+                className="h-3 w-3 shrink-0 text-blue-600"
+              />
+              <span className="shrink-0 font-medium whitespace-nowrap text-blue-900/80">
+                {item.label}
+              </span>
+            </ChipSegment>
+            {item.operationLabel && (
+              <ChipSegment className="bg-gray-50 px-1.5 font-mono text-zinc-400">
+                {item.operationLabel}
+              </ChipSegment>
+            )}
+            <ChipSegment className="gap-0.5 px-2.5">
+              <span
+                className={lightValueStyles({
+                  isRichValue: Boolean(renderValue),
+                  className: valueClassName,
+                })}
+              >
+                {valueContent}
+              </span>
+              <Icon
+                name={IconName.ChevronDown}
+                className="h-3 w-3 shrink-0 text-zinc-400"
+              />
+            </ChipSegment>
+          </Chip>
+        </EditFilterTrigger>
+        {hasRemove && onRemove && (
+          <Chip left="angled" right="straight" size="lg">
+            <ChipSegment className="p-0">
+              <Button
+                type="button"
+                variant="icon"
+                aria-label={`Remove ${item.label} filter`}
+                className="h-full w-full rounded-[inherit] rounded-l-none py-0 pr-1 pl-2 text-zinc-400 shadow-none hover:bg-red-50 hover:text-red-600 pressed:bg-red-100"
+                onClick={() => {
+                  onRemove();
+                  submit();
+                }}
+              >
+                <Icon name={IconName.X} className="h-3 w-3" />
+              </Button>
+            </ChipSegment>
+          </Chip>
+        )}
+      </ChipGroup>
+    );
+  }
+
   return (
-    <div className={chipStyles({ appearance, className })}>
+    <div className={darkChipStyles({ className })}>
       <EditFilterTrigger
         clause={item}
         onRemove={onRemove}
@@ -202,47 +231,24 @@ export function FilterChip({
           data-filter-id={item.id}
           variant="secondary"
           disabled={disabled}
-          className={chipButtonStyles({
-            appearance,
-            hasRemove: showRemove,
-            className: buttonClassName,
-          })}
+          className={darkChipButtonStyles({ className: buttonClassName })}
         >
           <Icon
-            name={IconName.Filter}
-            className={filterIconStyles({ appearance })}
+            name={IconName.ListFilter}
+            className="h-3.5 w-3.5 shrink-0 text-current opacity-70"
           />
-          <span className={chipLabelStyles({ appearance })}>{item.label}</span>
+          <span className="shrink-0 whitespace-nowrap">{item.label}</span>
           {item.operationLabel?.split(' ').map((segment) => (
-            <span className={chipOperationStyles({ appearance })} key={segment}>
+            <span className="shrink-0 font-mono" key={segment}>
               {segment}
             </span>
           ))}
-          <span
-            className={chipValueStyles({
-              appearance,
-              isRichValue: Boolean(renderValue),
-              className: valueClassName,
-            })}
-          >
-            {renderValue
-              ? renderValue(item)
-              : item.type === 'STRING_LIST' &&
-                  (!item.value.operation || item.value.operation === 'IN') &&
-                  (item.isAllSelected || item.isNothingSelected)
-                ? 'Any'
-                : item.valueLabel ||
-                  (queryClauseOperationRequiresValue(item.value.operation)
-                    ? (emptyValueLabel ?? '?')
-                    : '')}
+          <span className={darkChipValueStyles({ className: valueClassName })}>
+            {valueContent}
           </span>
           <Icon
-            name={
-              appearance === 'light'
-                ? IconName.ChevronDown
-                : IconName.ChevronsUpDown
-            }
-            className={chevronStyles({ appearance })}
+            name={IconName.ChevronsUpDown}
+            className="ml-1 h-3.5 w-3.5 shrink-0"
           />
         </Button>
       </EditFilterTrigger>
@@ -251,7 +257,7 @@ export function FilterChip({
           type="button"
           variant="icon"
           aria-label={`Remove ${item.label} filter`}
-          className="min-h-[1.625rem] self-stretch rounded-l-none rounded-r-lg border-l border-blue-200 px-1 py-0 text-blue-500 hover:bg-blue-100 hover:text-blue-700 pressed:bg-blue-200"
+          className="min-h-[1.625rem] self-stretch rounded-l-none rounded-r-lg px-1 py-0 text-zinc-50/70 hover:bg-white/20 hover:text-zinc-50 pressed:bg-white/25"
           onClick={() => {
             onRemove();
             submit();

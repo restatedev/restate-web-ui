@@ -4,7 +4,7 @@ import {
   type HeaderIconProps,
   type HeaderVariant,
 } from '@restate/ui/header';
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 export type InvocationStatusIntent = HeaderVariant;
 
@@ -36,18 +36,21 @@ export function InvocationStatusHeader({
   invocation,
   status,
   className,
+  trail,
   children,
   ...iconProps
 }: PropsWithChildren<{
   invocation?: Invocation;
   status?: string;
   className?: string;
+  trail?: ReactNode;
 }> &
   HeaderIconProps) {
   return (
     <Header
       variant={getInvocationStatusIntent(invocation, status)}
       className={className}
+      trail={trail}
       {...iconProps}
     >
       {children}

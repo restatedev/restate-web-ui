@@ -65,7 +65,7 @@ export function VirtualObjectStatsCard({
           </div>
           <div className="mt-0.5 text-2xs text-gray-400">
             {inboxDuration
-              ? `Across ${formatNumber(inboxDuration.vqueueCount)} ${inboxDuration.vqueueCount === 1 ? 'VQueue' : 'VQueues'} · includes retries`
+              ? `Across ${formatNumber(inboxDuration.vqueueCount)} ${inboxDuration.vqueueCount === 1 ? 'VQueue' : 'VQueues'}`
               : 'No sampled VQueues'}
           </div>
         </div>

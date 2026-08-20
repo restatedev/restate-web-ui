@@ -5,4 +5,8 @@ export {
   useBreadcrumbs,
   useBreadcrumbPages,
 } from './lib/BreadcrumbsProvider';
-export { Breadcrumbs, CrumbContent } from './lib/Breadcrumbs';
+export {
+  Breadcrumbs,
+  CrumbContent,
+  type BreadcrumbsVariant,
+} from './lib/Breadcrumbs';

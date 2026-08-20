@@ -81,7 +81,8 @@ const styles = tv({
     tabsWrapper:
       'relative flex min-h-16 w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
     tabList: 'relative flex h-full max-w-full items-end gap-1 px-1',
-    tabsToolbarSlot: 'flex flex-1 items-end justify-end self-stretch pb-0',
+    tabsToolbarSlot:
+      'flex min-w-0 flex-1 items-end justify-end self-stretch pb-0',
   },
   variants: {
     flush: {
