@@ -3808,7 +3808,7 @@ export interface components {
       | components['schemas']['VQueueLockNameFilterItem'];
     VQueueExactStringFilterItem: {
       /** @enum {string} */
-      field: 'id' | 'service' | 'l1' | 'l2';
+      field: 'id' | 'service' | 'serviceKey' | 'l1' | 'l2';
       /** @enum {string} */
       type: 'STRING';
       /** @enum {string} */
@@ -3872,7 +3872,7 @@ export interface components {
       limit?: number;
     };
     ListVQueuesRequestBody: {
-      /** @description Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching. */
+      /** @description Structured VQueue filters combined with AND. Supported fields are id, service, serviceKey, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, serviceKey, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching. Exact service and serviceKey filters are combined into an exact lockName lookup. */
       filters?: components['schemas']['VQueueFilterItem'][];
       sort?: components['schemas']['VQueueSort'];
       limit?: number;

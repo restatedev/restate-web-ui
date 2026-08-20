@@ -66,19 +66,21 @@ describe('Virtual Object VQueue navigation', () => {
     });
 
     expect(readVQueueFilters(href)).toEqual([
-      ['lockName', 'EQUALS', 'Counter/customer-1'],
+      ['service', 'EQUALS', 'Counter'],
+      ['serviceKey', 'EQUALS', 'customer-1'],
       ['scope', 'EQUALS', 'tenant-a'],
     ]);
   });
 
-  it('filters an unscoped Virtual Object by lock', () => {
+  it('filters an unscoped Virtual Object by service and service key', () => {
     const href = vqueuesForVirtualObjectInstanceHref('/ui', {
       service: 'Counter',
       key: 'customer-1',
     });
 
     expect(readVQueueFilters(href)).toEqual([
-      ['lockName', 'EQUALS', 'Counter/customer-1'],
+      ['service', 'EQUALS', 'Counter'],
+      ['serviceKey', 'EQUALS', 'customer-1'],
     ]);
   });
 });

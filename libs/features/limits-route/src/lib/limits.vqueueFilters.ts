@@ -22,9 +22,9 @@ const vqueueServiceFilterSchema = {
   type: 'STRING',
 } satisfies QueryClauseSchema<'STRING'>;
 
-const vqueueLockNameFilterSchema = {
-  id: 'lockName',
-  label: 'Lock',
+const vqueueServiceKeyFilterSchema = {
+  id: 'serviceKey',
+  label: 'Service key',
   operations: [{ value: 'EQUALS', label: 'is' }],
   type: 'STRING',
 } satisfies QueryClauseSchema<'STRING'>;
@@ -32,7 +32,7 @@ const vqueueLockNameFilterSchema = {
 export const VQUEUE_FILTER_SCHEMA = [
   vqueueIdFilterSchema,
   vqueueServiceFilterSchema,
-  vqueueLockNameFilterSchema,
+  vqueueServiceKeyFilterSchema,
   ...LIMIT_IDENTITY_FILTER_SCHEMA,
 ] satisfies QueryClauseSchema<QueryClauseType>[];
 
@@ -70,7 +70,8 @@ export function createVQueueFiltersForVirtualObjectInstance(identity: {
     ...(identity.scope === undefined
       ? []
       : [createExactVQueueFilter('scope', identity.scope)]),
-    createExactVQueueFilter('lockName', `${identity.service}/${identity.key}`),
+    createExactVQueueFilter('service', identity.service),
+    createExactVQueueFilter('serviceKey', identity.key),
   ];
 }
 

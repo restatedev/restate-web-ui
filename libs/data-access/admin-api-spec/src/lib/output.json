@@ -10514,7 +10514,7 @@
         "properties": {
           "field": {
             "type": "string",
-            "enum": ["id", "service", "l1", "l2"]
+            "enum": ["id", "service", "serviceKey", "l1", "l2"]
           },
           "type": {
             "type": "string",
@@ -10689,7 +10689,7 @@
         "properties": {
           "filters": {
             "type": "array",
-            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching.",
+            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, serviceKey, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, serviceKey, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching. Exact service and serviceKey filters are combined into an exact lockName lookup.",
             "items": {
               "$ref": "#/components/schemas/VQueueFilterItem"
             }

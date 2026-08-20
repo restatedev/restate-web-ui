@@ -100,19 +100,45 @@ describe('VQueue filters', () => {
     ]);
   });
 
-  it('supports exact matching for a service lock', () => {
-    const schema = getSchema('lockName');
+  it('supports exact matching for a service key', () => {
+    const schema = getSchema('serviceKey');
     const clause = new QueryClause(schema, {
       operation: 'EQUALS',
-      value: 'Counter/customer-1',
+      value: 'customer-1',
     });
 
     expect(toVQueueFilters([clause])).toEqual([
       {
-        field: 'lockName',
+        field: 'serviceKey',
         type: 'STRING',
         operation: 'EQUALS',
-        value: 'Counter/customer-1',
+        value: 'customer-1',
+      },
+    ]);
+  });
+
+  it('keeps exact service and service-key filters for query optimization', () => {
+    const service = new QueryClause(getSchema('service'), {
+      operation: 'EQUALS',
+      value: 'Counter',
+    });
+    const serviceKey = new QueryClause(getSchema('serviceKey'), {
+      operation: 'EQUALS',
+      value: 'customer-1',
+    });
+
+    expect(toVQueueFilters([service, serviceKey])).toEqual([
+      {
+        field: 'service',
+        type: 'STRING',
+        operation: 'EQUALS',
+        value: 'Counter',
+      },
+      {
+        field: 'serviceKey',
+        type: 'STRING',
+        operation: 'EQUALS',
+        value: 'customer-1',
       },
     ]);
   });
