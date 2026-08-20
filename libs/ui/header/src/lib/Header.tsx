@@ -36,7 +36,8 @@ const headerStyles = tv({
     iconGlyph: 'h-4.5 w-4.5',
     iconLabelText:
       'hidden text-[0.8125rem] leading-none font-semibold tracking-[-0.01em] whitespace-nowrap text-blue-900/75 lg:block',
-    trailRow: 'relative z-40 mx-5 mt-8 hidden min-w-0 px-4 has-[nav]:flex md:mt-0',
+    trailRow:
+      'relative z-40 mx-5 mt-8 hidden min-w-0 px-4 has-[nav]:flex md:mt-0',
     trailShelf: '-mb-1 flex min-w-0 items-center',
   },
   variants: {

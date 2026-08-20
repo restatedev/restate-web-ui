@@ -45,7 +45,7 @@ const styles = tv({
         nav: 'ml-2 gap-x-0 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
       },
       flat: {
-        nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&>*+*]:-ml-px [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px]',
+        nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px] [&>*+*]:-ml-px',
       },
     },
     seg: {
@@ -260,11 +260,7 @@ export function Breadcrumbs({
                   className={flatItem({
                     hiddenOnMobile: !isEdge && isMobileCollapsed,
                     seg:
-                      index === 0
-                        ? 'first'
-                        : crumb.isCurrent
-                          ? 'none'
-                          : 'mid',
+                      index === 0 ? 'first' : crumb.isCurrent ? 'none' : 'mid',
                   })}
                 >
                   {PopoverComponent && !crumb.isCurrent ? (
