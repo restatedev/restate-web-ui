@@ -10,10 +10,7 @@ import {
   type WorkflowRunIdentity,
 } from '@restate/features/workflow-run';
 import { Actions } from '@restate/features/invocation-route';
-import {
-  InvocationStatusHeader,
-  Status,
-} from '@restate/features/invocation-ui';
+import { InvocationStatusHeader } from '@restate/features/invocation-ui';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { CardGrid } from '@restate/ui/card';
 import { EmptyState } from '@restate/ui/empty-state';
@@ -22,16 +19,12 @@ import { IconName } from '@restate/ui/icons';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import {
-  WorkflowDetails,
-  workflowRunStateTabHref,
-  workflowRunTabFromSearch,
-} from './WorkflowDetails';
+import { WorkflowDetails, workflowRunTabFromSearch } from './WorkflowDetails';
 import {
   WorkflowRunCard,
   WorkflowRunUnavailableBanner,
 } from './WorkflowRunCard';
-import { WorkflowStatsCard } from './WorkflowStatsCard';
+import { WorkflowInteractionsCard } from './WorkflowInteractionsCard';
 
 function Component() {
   const { service = '', workflowId = '' } = useParams<{
@@ -104,11 +97,6 @@ function Component() {
             className="min-w-0 flex-[0_1_auto]"
           />
           {runInvocation && (
-            <div className="shrink-0 pr-2 *:origin-[center_left] *:scale-[1.15]">
-              <Status invocation={runInvocation} mini="md" timeline={false} />
-            </div>
-          )}
-          {runInvocation && (
             <div className="ml-auto shrink-0">
               <Actions
                 invocation={runInvocation}
@@ -129,16 +117,20 @@ function Component() {
             }
             className="relative z-40 mx-5 mt-3"
           >
-            {runInvocation && <WorkflowRunCard invocation={runInvocation} />}
+            {runInvocation && (
+              <WorkflowRunCard
+                invocation={runInvocation}
+                stats={statsData?.supported ? statsData : undefined}
+              />
+            )}
             {statsData?.supported && (
               <>
-                <WorkflowStatsCard stats={statsData} />
+                <WorkflowInteractionsCard stats={statsData} />
                 {statsData.state && (
                   <StateStatsCard
                     numKeys={statsData.state.numKeys}
                     totalSize={statsData.state.totalSize}
                     description="Stored by this Workflow"
-                    stateHref={workflowRunStateTabHref(searchParams)}
                   />
                 )}
               </>

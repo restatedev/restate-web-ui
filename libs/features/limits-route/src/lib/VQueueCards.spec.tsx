@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 describe('VQueueDurationsCard', () => {
-  it('shows duration bars and a stacked scheduler-block breakdown', async () => {
+  it('shows flat duration rows and a stacked scheduler-block breakdown', async () => {
     vi.useFakeTimers();
     render(
       <VQueueDurationsCard
@@ -75,9 +75,9 @@ describe('VQueueDurationsCard', () => {
     expect(screen.getByText('8s')).toBeTruthy();
 
     const orderedRows = [
-      screen.getByText('Inbox'),
       screen.getByText('Queue'),
       screen.getByText('Blocked'),
+      screen.getByText('Inbox'),
       screen.getByText('Running'),
       screen.getByText('Suspended'),
     ];

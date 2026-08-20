@@ -1823,7 +1823,7 @@
       "post": {
         "tags": ["query-workflows"],
         "summary": "List Workflow runs",
-        "description": "Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's Workflow handler are included; Shared handler invocations are excluded.",
+        "description": "Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's run handler are included; interaction invocations are excluded.",
         "operationId": "list_workflow_runs",
         "security": [],
         "parameters": [
@@ -1903,7 +1903,7 @@
       "get": {
         "tags": ["query-workflows"],
         "summary": "Get a Workflow run",
-        "description": "Returns the main run invocation and the 50 most recent retained invocations for the exact service, Workflow id, and optional scope identity.",
+        "description": "Returns the main run invocation and the 50 most recent retained interactions for the exact service, Workflow id, and optional scope identity.",
         "operationId": "get_workflow_run",
         "security": [],
         "parameters": [
@@ -2115,6 +2115,16 @@
               }
             }
           },
+          "409": {
+            "description": "The Virtual Object activity changed while the response was assembled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VirtualObjectSnapshotChangedResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "",
             "content": {
@@ -2194,7 +2204,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VirtualObjectInboxSnapshotChangedResponse"
+                  "$ref": "#/components/schemas/VirtualObjectSnapshotChangedResponse"
                 }
               }
             }
@@ -5561,7 +5571,7 @@
           },
           "recentInvocations": {
             "type": "array",
-            "description": "Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls.",
+            "description": "Retained interactions with this Workflow identity ordered newest first. The run invocation is excluded.",
             "items": {
               "$ref": "#/components/schemas/InvocationV2"
             }
@@ -5847,7 +5857,7 @@
           }
         }
       },
-      "VirtualObjectInboxSnapshotChangedResponse": {
+      "VirtualObjectSnapshotChangedResponse": {
         "type": "object",
         "required": ["message", "restate_code"],
         "properties": {
@@ -6650,7 +6660,7 @@
         "properties": {
           "field": {
             "type": "string",
-            "enum": ["id", "service", "l1", "l2"]
+            "enum": ["id", "service", "serviceKey", "l1", "l2"]
           },
           "type": {
             "type": "string",
@@ -6823,7 +6833,7 @@
         "properties": {
           "filters": {
             "type": "array",
-            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching.",
+            "description": "Structured VQueue filters combined with AND. Supported fields are id, service, serviceKey, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, serviceKey, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching. Exact service and serviceKey filters are combined into an exact lockName lookup.",
             "items": {
               "$ref": "#/components/schemas/VQueueFilterItem"
             }

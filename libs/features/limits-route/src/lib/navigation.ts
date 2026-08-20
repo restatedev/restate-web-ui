@@ -1,6 +1,10 @@
 import { writeFilterClauses } from '@restate/ui/filter-builder';
 import type { LimitCounterIdentity } from '@restate/features/vqueue-ui';
-import { createVQueueFiltersForCounter } from './limits.vqueueFilters';
+import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
+import {
+  createVQueueFiltersForCounter,
+  createVQueueFiltersForVirtualObjectInstance,
+} from './limits.vqueueFilters';
 
 export {
   ALL_LIMIT_COUNTERS,
@@ -22,9 +26,23 @@ export function vqueuesForLimitCounterHref(
   baseUrl: string,
   identity: LimitCounterIdentity,
 ) {
-  const search = writeFilterClauses(
-    new URLSearchParams(),
-    createVQueueFiltersForCounter(identity),
+  return filteredVqueuesHref(baseUrl, createVQueueFiltersForCounter(identity));
+}
+
+export function vqueuesForVirtualObjectInstanceHref(
+  baseUrl: string,
+  identity: VirtualObjectInstanceIdentity,
+) {
+  return filteredVqueuesHref(
+    baseUrl,
+    createVQueueFiltersForVirtualObjectInstance(identity),
   );
+}
+
+function filteredVqueuesHref(
+  baseUrl: string,
+  filters: Parameters<typeof writeFilterClauses>[1],
+) {
+  const search = writeFilterClauses(new URLSearchParams(), filters);
   return `${baseUrl}/flow-control/vqueues?${search}`;
 }

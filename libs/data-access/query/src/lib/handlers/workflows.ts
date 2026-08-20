@@ -238,10 +238,11 @@ export async function getWorkflowRun(
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND ${targetServiceKeyClause(this, workflowId)}${scopeClause}
+      AND ${targetServiceKeyClause(this, workflowId)}
+      AND target_handler_name <> ${quoteSqlString(handlers.run)}${scopeClause}
     ORDER BY created_at DESC NULLS LAST
     LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
-    'workflows/recent-invocations',
+    'workflows/interactions',
   );
   const [runId, recentResult] = await Promise.all([runPromise, recentPromise]);
   const recentInvocationsTruncated =

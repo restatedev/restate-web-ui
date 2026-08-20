@@ -24,6 +24,14 @@ import {
 } from '@restate/features/codec';
 import { SplitButton } from '@restate/ui/split-button';
 import { useRestateContext } from '@restate/features/restate-context';
+import {
+  VirtualObjectInstanceTarget,
+  virtualObjectInstanceHref,
+} from '@restate/features/virtual-object-instance';
+import {
+  WorkflowRunTarget,
+  workflowRunHref,
+} from '@restate/features/workflow-run';
 import { Portal } from '@restate/ui/portal';
 import { Collection, type Key } from 'react-aria-components';
 import {
@@ -83,7 +91,7 @@ function EditStateTrigger(props: ComponentProps<typeof Button>) {
 
 const stateObjectStyles = tv({
   slots: {
-    objectKeyCell: '[&&&]:overflow-hidden',
+    objectKeyCell: '[&&&]:overflow-visible',
     objectKey: 'flex min-w-0 items-center gap-2',
     chevron:
       'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
@@ -134,6 +142,18 @@ export function getObjectKeyColumnName(
   return 'Service key';
 }
 
+function getObjectIdentityColumnName(
+  serviceType: StateServiceType | undefined,
+) {
+  if (serviceType === 'workflow') {
+    return 'Workflow run';
+  }
+  if (serviceType === 'virtual_object') {
+    return 'Virtual object instance';
+  }
+  return getObjectKeyColumnName(serviceType);
+}
+
 function useStateObjectEntries(
   serviceName: string,
   row: StateObjectRecord,
@@ -178,26 +198,16 @@ export function StateObjectTable({
   onDeleteObject: (row: StateObjectRecord) => void;
   onEditValue: (row: StateObjectRecord, stateKey: string) => void;
 }) {
-  const hasScopeColumn = items.some((item) => item.scope !== undefined);
+  const { baseUrl } = useRestateContext();
   const columns = useMemo<PanelTableColumn<StateTableColumnId>[]>(
     () => [
       {
         id: 'object_key',
-        name: getObjectKeyColumnName(serviceType),
+        name: getObjectIdentityColumnName(serviceType),
         isRowHeader: true,
-        defaultWidth: 240,
-        minWidth: 180,
+        defaultWidth: 360,
+        minWidth: 280,
       },
-      ...(hasScopeColumn
-        ? ([
-            {
-              id: 'scope',
-              name: 'Scope',
-              defaultWidth: 180,
-              minWidth: 140,
-            },
-          ] satisfies PanelTableColumn<StateTableColumnId>[])
-        : []),
       {
         id: 'state_key',
         name: 'State key',
@@ -221,7 +231,7 @@ export function StateObjectTable({
         width: 72,
       },
     ],
-    [hasScopeColumn, serviceType],
+    [serviceType],
   );
   const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(() => new Set());
   const itemIds = useMemo(
@@ -272,6 +282,7 @@ export function StateObjectTable({
       bodyDependencies={[
         codecOptions,
         visibleExpandedKeys,
+        baseUrl,
         serviceName,
         serviceType,
         isLoadingPreviews,
@@ -282,7 +293,9 @@ export function StateObjectTable({
           row={row}
           col={col}
           codecOptions={codecOptions}
+          baseUrl={baseUrl}
           serviceName={serviceName}
+          serviceType={serviceType}
           isExpanded={visibleExpandedKeys.has(row.id)}
           isLoadingPreview={isLoadingPreviews}
           onOpenObject={onOpenObject}
@@ -425,7 +438,9 @@ function StateObjectCell({
   row,
   col,
   codecOptions,
+  baseUrl,
   serviceName,
+  serviceType,
   isExpanded,
   isLoadingPreview,
   onOpenObject,
@@ -435,7 +450,9 @@ function StateObjectCell({
   row: StateObjectRecord;
   col: PanelTableColumn<StateTableColumnId>;
   codecOptions?: RestateCodecOptions;
+  baseUrl: string;
   serviceName: string;
+  serviceType?: StateServiceType;
   isExpanded: boolean;
   isLoadingPreview?: boolean;
   onOpenObject: (key: string, scope?: string) => void;
@@ -446,7 +463,6 @@ function StateObjectCell({
     objectKeyCell,
     objectKey,
     chevron,
-    objectIcon,
     actionsCell,
     actions,
     objectActionButton,
@@ -459,25 +475,14 @@ function StateObjectCell({
           <Button slot="chevron" variant="icon" className={chevron()}>
             <Icon name={IconName.ChevronRight} className="h-full w-full" />
           </Button>
-          <span className={objectIcon()}>
-            <Icon name={IconName.Database} className="h-full w-full p-1" />
-          </span>
-          <KeyCell
-            serviceKey={row.key}
-            onOpen={() => onOpenObject(row.key, row.scope)}
-            className="text-0.5xs font-medium"
+          <StateObjectIdentityTarget
+            row={row}
+            baseUrl={baseUrl}
+            serviceName={serviceName}
+            serviceType={serviceType}
+            onOpenObject={onOpenObject}
           />
         </div>
-      </Cell>
-    );
-  }
-
-  if (col.id === 'scope') {
-    return (
-      <Cell>
-        {row.scope !== undefined ? (
-          <KeyCell serviceKey={row.scope} className="text-sm font-medium" />
-        ) : null}
       </Cell>
     );
   }
@@ -541,6 +546,68 @@ function StateObjectCell({
   }
 
   return <Cell />;
+}
+
+function StateObjectIdentityTarget({
+  row,
+  baseUrl,
+  serviceName,
+  serviceType,
+  onOpenObject,
+}: {
+  row: StateObjectRecord;
+  baseUrl: string;
+  serviceName: string;
+  serviceType?: StateServiceType;
+  onOpenObject: (key: string, scope?: string) => void;
+}) {
+  const identityScope = row.scope === undefined ? {} : { scope: row.scope };
+
+  if (serviceType === 'workflow') {
+    const identity = {
+      service: serviceName,
+      id: row.key,
+      ...identityScope,
+    };
+    return (
+      <WorkflowRunTarget
+        identity={identity}
+        href={workflowRunHref(baseUrl, identity)}
+        showService={false}
+        containerClassName="max-w-full min-w-0"
+      />
+    );
+  }
+
+  if (serviceType === 'virtual_object') {
+    const identity = {
+      service: serviceName,
+      key: row.key,
+      ...identityScope,
+    };
+    return (
+      <VirtualObjectInstanceTarget
+        identity={identity}
+        href={virtualObjectInstanceHref(baseUrl, identity)}
+        showService={false}
+        containerClassName="max-w-full min-w-0"
+      />
+    );
+  }
+
+  const { objectIcon } = stateObjectStyles();
+  return (
+    <>
+      <span className={objectIcon()}>
+        <Icon name={IconName.Database} className="h-full w-full p-1" />
+      </span>
+      <KeyCell
+        serviceKey={row.key}
+        onOpen={() => onOpenObject(row.key, row.scope)}
+        className="text-0.5xs font-medium"
+      />
+    </>
+  );
 }
 
 function StateObjectRefreshingStatus({
@@ -818,7 +885,7 @@ function StateChildCell({
     return <Cell className={loadMoreCell()} />;
   }
 
-  if (col.id === 'object_key' || col.id === 'scope') {
+  if (col.id === 'object_key') {
     return <Cell className={childObjectCell()} />;
   }
 

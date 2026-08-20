@@ -18,6 +18,8 @@ type VQueueMetaRow = components['schemas']['VQueueMetaRow'];
 type VQueueSchedulerState = components['schemas']['VQueueSchedulerState'];
 type VQueueSort = components['schemas']['VQueueSort'];
 type VQueueFilterItem = components['schemas']['VQueueFilterItem'];
+type VQueueExactStringFilterItem =
+  components['schemas']['VQueueExactStringFilterItem'];
 
 interface SchedulerRow {
   id?: unknown;
@@ -79,6 +81,7 @@ const STRING_FIELDS: Record<string, string> = {
 const STRING_OPERATIONS: Record<string, ReadonlySet<string>> = {
   id: new Set(['EQUALS']),
   service: new Set(['EQUALS']),
+  serviceKey: new Set(['EQUALS']),
   scope: new Set(['EQUALS', 'CONTAINS']),
   limitKey: new Set(['EQUALS', 'CONTAINS']),
   l1: new Set(['EQUALS']),
@@ -194,6 +197,21 @@ function limitKeySegmentPredicate(
   return `ends_with(limit_key, ${quoteSqlString(`/${string}`)})`;
 }
 
+function serviceKeyPredicate(
+  filter: VQueueFilterItem,
+  operation: unknown,
+  value: unknown,
+) {
+  if (operation !== 'EQUALS') {
+    return filterError(
+      filter,
+      `unsupported STRING operation ${String(operation)}`,
+    );
+  }
+  const string = stringValue(filter, value);
+  return `SUBSTR(lock_name, CHAR_LENGTH(service_name) + 2) = ${quoteSqlString(string)}`;
+}
+
 function stringListPredicate(
   filter: VQueueFilterItem,
   operation: unknown,
@@ -237,6 +255,9 @@ function filterPredicate(filter: VQueueFilterItem) {
       if (filter.field === 'l1' || filter.field === 'l2') {
         return limitKeySegmentPredicate(filter, operation, value);
       }
+      if (filter.field === 'serviceKey') {
+        return serviceKeyPredicate(filter, operation, value);
+      }
       const expression = STRING_FIELDS[filter.field];
       if (!expression) filterError(filter, 'unsupported STRING field');
       return stringPredicate(filter, expression, operation, value);
@@ -250,6 +271,58 @@ function filterPredicate(filter: VQueueFilterItem) {
   }
 }
 
+function isExactStringFilter(
+  filter: VQueueFilterItem,
+  field: VQueueExactStringFilterItem['field'],
+): filter is VQueueExactStringFilterItem {
+  return (
+    filter.field === field &&
+    filter.type === 'STRING' &&
+    filter.operation === 'EQUALS' &&
+    'value' in filter &&
+    typeof filter.value === 'string'
+  );
+}
+
+function combineExactServiceKeyFilters(filters: VQueueFilterItem[]) {
+  const serviceFilters = filters.filter((filter) =>
+    isExactStringFilter(filter, 'service'),
+  );
+  const serviceKeyFilters = filters.filter((filter) =>
+    isExactStringFilter(filter, 'serviceKey'),
+  );
+  const serviceFilter = serviceFilters[0];
+  const serviceKeyFilter = serviceKeyFilters[0];
+  if (
+    serviceFilters.length !== 1 ||
+    serviceKeyFilters.length !== 1 ||
+    !serviceFilter ||
+    !serviceKeyFilter
+  ) {
+    return filters;
+  }
+
+  const firstIndex = Math.min(
+    filters.indexOf(serviceFilter),
+    filters.indexOf(serviceKeyFilter),
+  );
+  return filters.flatMap((filter, index) => {
+    if (index === firstIndex) {
+      return [
+        {
+          field: 'lockName',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: `${serviceFilter.value}/${serviceKeyFilter.value}`,
+        } satisfies VQueueFilterItem,
+      ];
+    }
+    return filter === serviceFilter || filter === serviceKeyFilter
+      ? []
+      : [filter];
+  });
+}
+
 function whereClause(filters: unknown) {
   if (filters === undefined) return { clause: '' };
   if (!Array.isArray(filters)) {
@@ -257,9 +330,9 @@ function whereClause(filters: unknown) {
   }
   if (!filters.length) return { clause: '' };
   try {
-    const predicates = filters.map((filter) =>
-      filterPredicate(filter as VQueueFilterItem),
-    );
+    const predicates = combineExactServiceKeyFilters(
+      filters as VQueueFilterItem[],
+    ).map(filterPredicate);
     return { clause: `\n    WHERE ${predicates.join(' AND ')}` };
   } catch (error) {
     return {

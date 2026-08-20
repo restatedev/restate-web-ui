@@ -28,6 +28,10 @@ import {
 } from '@restate/ui/query-builder';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { tv } from '@restate/util/styles';
+import {
+  deduplicateFilters,
+  friendlyOperationLabel,
+} from './deduplicateFilters';
 
 function toQueryClauseValue(
   filter: FilterItem,
@@ -133,17 +137,19 @@ function Filters({
   const hasVqueueFilter = paramsWithFilters?.filters.some(
     (filter) => filter.field === 'vqueue_id',
   );
-  const hasStatusFilter = paramsWithFilters?.filters.some(
-    (filter) => filter.field === 'status' && !filter.isActionImplicitFilter,
-  );
-  const hasStageFilter = paramsWithFilters?.filters.some(
-    (filter) => filter.field === 'stage',
-  );
   const isVisibleActionFilter = (filter: FilterItem) =>
     state.type === 'retry-now' &&
     filter.field === 'status' &&
     filter.type === 'STRING' &&
     filter.value === 'backing-off';
+  const hasStatusFilter = paramsWithFilters?.filters.some(
+    (filter) =>
+      filter.field === 'status' &&
+      (!filter.isActionImplicitFilter || isVisibleActionFilter(filter)),
+  );
+  const hasStageFilter = paramsWithFilters?.filters.some(
+    (filter) => filter.field === 'stage',
+  );
   const implicitServiceFilter: FilterItem = {
     field: 'target_service_name',
     type: 'STRING_LIST',
@@ -156,14 +162,14 @@ function Filters({
     operation: 'IN',
     value: [],
   };
-  const paramsWithFiltersWithServiceAndStatus: FilterItem[] = [
+  const paramsWithFiltersWithServiceAndStatus = deduplicateFilters<FilterItem>([
     ...(hasServiceFilter || hasVqueueFilter ? [] : [implicitServiceFilter]),
     ...(hasStatusFilter || hasStageFilter ? [] : [implicitStatusFilter]),
     ...(paramsWithFilters?.filters ?? []).filter(
       (filter) =>
         !filter.isActionImplicitFilter || isVisibleActionFilter(filter),
     ),
-  ];
+  ]);
 
   return (
     <div className={filterStyles({ className })}>
@@ -178,6 +184,9 @@ function Filters({
               fieldValue: filter.field,
             })
           : undefined;
+        const operationLabel =
+          queryClause?.operationLabel ??
+          friendlyOperationLabel(filter.operation as QueryClauseOperationId);
 
         return (
           <div
@@ -187,11 +196,11 @@ function Filters({
             <span className="shrink-0 whitespace-nowrap">
               {queryClause?.label || filter.field}
             </span>
-            {queryClause?.operationLabel?.split(' ').map((segment) => (
+            {operationLabel.split(' ').map((segment) => (
               <span className="font-mono" key={segment}>
                 {segment}
               </span>
-            )) || filter.operation}
+            ))}
             <TruncateWithTooltip>
               <span className="font-semibold">
                 {queryClause &&

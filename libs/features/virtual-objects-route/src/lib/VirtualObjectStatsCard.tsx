@@ -1,5 +1,11 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardHeaderLink,
+  CardHeroValue,
+  CardRow,
+} from '@restate/ui/card';
 import { IconName } from '@restate/ui/icons';
 import { RelativeDate } from '@restate/ui/tooltip';
 import {
@@ -26,8 +32,10 @@ function formatDurationRange(range: VirtualObjectStatsDurationRange) {
 
 export function VirtualObjectStatsCard({
   stats,
+  vqueuesHref,
 }: {
   stats: VirtualObjectStatsResponse;
+  vqueuesHref: string;
 }) {
   if (!stats.supported) return null;
 
@@ -38,9 +46,17 @@ export function VirtualObjectStatsCard({
   return (
     <Card intent="none">
       <CardHeader
-        title="Statistics"
+        title="Inbox"
         icon={IconName.Layers}
         iconClassName="rotate-90"
+        action={
+          <CardHeaderLink
+            href={vqueuesHref}
+            aria-label="View VQueues for this Virtual Object instance"
+          >
+            VQueues
+          </CardHeaderLink>
+        }
       />
       <CardRow variant="hero">
         <div className="min-w-0 flex-auto">

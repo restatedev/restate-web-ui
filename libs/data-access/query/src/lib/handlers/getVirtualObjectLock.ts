@@ -5,6 +5,7 @@ import {
   getVirtualObjectEntryDetails,
   isLockConsistent,
   lockEntryRows,
+  virtualObjectSnapshotChangedResponse,
 } from './virtualObjectEntries';
 
 interface LockHolderRow {
@@ -89,21 +90,27 @@ export async function getVirtualObjectLock(
   key: string,
   scope?: string,
 ) {
-  const lock = await queryVirtualObjectLock(this, service, key, scope);
-  if (!lock.lockHolder || lock.lockHolder.kind === 'other') {
-    return Response.json(lock);
+  let lock = await queryVirtualObjectLock(this, service, key, scope);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (!lock.lockHolder || lock.lockHolder.kind === 'other') {
+      return Response.json(lock);
+    }
+    const lockDetails = await getVirtualObjectEntryDetails(
+      this,
+      lockEntryRows(lock),
+      'all',
+    );
+    const hydratedLock = addEntryDetailsToLock(
+      lock,
+      lockDetails,
+      !this.features.has('vqueues'),
+    );
+    if (isLockConsistent(this, hydratedLock, lockDetails)) {
+      return Response.json(hydratedLock);
+    }
+    if (attempt === 0) {
+      lock = await queryVirtualObjectLock(this, service, key, scope);
+    }
   }
-  const lockDetails = await getVirtualObjectEntryDetails(
-    this,
-    lockEntryRows(lock),
-    'all',
-  );
-  const hydratedLock = addEntryDetailsToLock(
-    lock,
-    lockDetails,
-    !this.features.has('vqueues'),
-  );
-  return Response.json(
-    isLockConsistent(this, hydratedLock, lockDetails) ? hydratedLock : lock,
-  );
+  return virtualObjectSnapshotChangedResponse();
 }

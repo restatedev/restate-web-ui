@@ -5,6 +5,7 @@ import {
   limitCountersForIdentityHref,
   limitRulesForPatternHref,
   vqueuesForLimitCounterHref,
+  vqueuesForVirtualObjectInstanceHref,
 } from './navigation';
 import {
   LIMIT_RULE_FILTER_SCHEMA,
@@ -56,6 +57,34 @@ describe('counter VQueue navigation', () => {
   });
 });
 
+describe('Virtual Object VQueue navigation', () => {
+  it('filters by scoped Virtual Object identity', () => {
+    const href = vqueuesForVirtualObjectInstanceHref('/ui', {
+      service: 'Counter',
+      key: 'customer-1',
+      scope: 'tenant-a',
+    });
+
+    expect(readVQueueFilters(href)).toEqual([
+      ['service', 'EQUALS', 'Counter'],
+      ['serviceKey', 'EQUALS', 'customer-1'],
+      ['scope', 'EQUALS', 'tenant-a'],
+    ]);
+  });
+
+  it('filters an unscoped Virtual Object by service and service key', () => {
+    const href = vqueuesForVirtualObjectInstanceHref('/ui', {
+      service: 'Counter',
+      key: 'customer-1',
+    });
+
+    expect(readVQueueFilters(href)).toEqual([
+      ['service', 'EQUALS', 'Counter'],
+      ['serviceKey', 'EQUALS', 'customer-1'],
+    ]);
+  });
+});
+
 describe('blocking counter navigation', () => {
   it('filters the exact L2 counter and its rule', () => {
     const href = limitCountersForIdentityHref(
@@ -82,6 +111,10 @@ describe('blocking counter navigation', () => {
 
 function readFilters(identity: { scope: string; l1?: string; l2?: string }) {
   const href = vqueuesForLimitCounterHref('/ui', identity);
+  return readVQueueFilters(href);
+}
+
+function readVQueueFilters(href: string) {
   const url = new URL(href, 'https://example.com');
   expect(url.pathname).toBe('/ui/flow-control/vqueues');
   return readFilterClauses(url.searchParams, VQUEUE_FILTER_SCHEMA).map(

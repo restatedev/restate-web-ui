@@ -6,7 +6,7 @@ import {
   vqueueDurationMilliseconds,
 } from '@restate/features/vqueue-ui';
 import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui/card';
-import { Icon, IconName } from '@restate/ui/icons';
+import { IconName } from '@restate/ui/icons';
 import { HoverTooltip, InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
 import {
   formatMilliseconds,
@@ -133,16 +133,6 @@ const durationBarStyles = tv({
 
 const durationRowStyles = tv({
   base: 'grid w-full min-w-0 grid-cols-[minmax(6rem,0.8fr)_minmax(7rem,1.2fr)_8rem] items-center gap-3',
-});
-
-const durationDiagnosticStyles = tv({
-  slots: {
-    row: 'bg-gray-100/30',
-    label:
-      'flex min-w-0 items-center gap-1.5 pl-2 text-2xs font-normal text-gray-400',
-    icon: 'h-3 w-3 shrink-0 text-gray-300',
-    value: 'text-right text-2xs text-zinc-500 tabular-nums',
-  },
 });
 
 const blockTooltipStyles = tv({
@@ -310,16 +300,18 @@ function BlockDurationBar({
 }
 
 export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
-  const rows = DURATION_ROWS.map((row) => ({
-    ...row,
-    value: data.stageAvg[row.key],
-    milliseconds: vqueueDurationMilliseconds(data.stageAvg[row.key]),
-  }));
-  const firstStartWait = {
-    ...FIRST_START_WAIT,
-    value: data.stageAvg.queue,
-    milliseconds: vqueueDurationMilliseconds(data.stageAvg.queue),
-  };
+  const rows = [
+    {
+      ...FIRST_START_WAIT,
+      value: data.stageAvg.queue,
+      milliseconds: vqueueDurationMilliseconds(data.stageAvg.queue),
+    },
+    ...DURATION_ROWS.map((row) => ({
+      ...row,
+      value: data.stageAvg[row.key],
+      milliseconds: vqueueDurationMilliseconds(data.stageAvg[row.key]),
+    })),
+  ];
   const blocks = data.head.avgBlocks
     .map((block) => ({
       ...block,
@@ -341,10 +333,8 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
   const maximum = Math.max(
     endToEndMilliseconds ?? 0,
     blockTotal,
-    firstStartWait.milliseconds ?? 0,
     ...rows.map((row) => row.milliseconds ?? 0),
   );
-  const diagnosticStyles = durationDiagnosticStyles();
   return (
     <Card>
       <CardHeader
@@ -354,7 +344,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
           <InlineTooltip
             variant="indicator-button"
             title="Each timing averages its own events"
-            description="End to end measures entries that complete normally; stage durations are measured when that stage exits, so a stage average can be longer than end to end."
+            description="End to end measures entries that complete normally. Stage timings measure exits. Queue measures the wait before the first start. Blocked measures waits sampled at dispatch attempts. These averages do not add up."
             ariaLabel="Explain how timings are averaged"
             className="ml-0.5 text-xs text-gray-400"
           />
@@ -396,35 +386,10 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
               </span>
             </div>
           </CardRow>
-          {row.key === 'inbox' && (
-            <CardRow className={diagnosticStyles.row()}>
+          {row.key === 'queue' && blocks.length > 0 && (
+            <CardRow>
               <div className={durationRowStyles()}>
-                <span className={diagnosticStyles.label()}>
-                  <Icon
-                    name={IconName.CornerDownRight}
-                    className={diagnosticStyles.icon()}
-                  />
-                  {firstStartWait.label}
-                </span>
-                <DurationBar
-                  milliseconds={firstStartWait.milliseconds}
-                  maximum={maximum}
-                  color={firstStartWait.color}
-                />
-                <span className={diagnosticStyles.value()}>
-                  {formatVqueueDuration(firstStartWait.value) ?? '—'}
-                </span>
-              </div>
-            </CardRow>
-          )}
-          {row.key === 'inbox' && blocks.length > 0 && (
-            <CardRow className={diagnosticStyles.row()}>
-              <div className={durationRowStyles()}>
-                <span className={diagnosticStyles.label()}>
-                  <Icon
-                    name={IconName.CornerDownRight}
-                    className={diagnosticStyles.icon()}
-                  />
+                <span className="min-w-0 text-2xs font-medium text-gray-400">
                   Blocked
                 </span>
                 <BlockDurationBar
@@ -432,7 +397,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
                   total={blockTotal}
                   maximum={maximum}
                 />
-                <span className={diagnosticStyles.value()}>
+                <span className="text-right text-xs text-zinc-600 tabular-nums">
                   {formatMilliseconds(blockTotal)}
                 </span>
               </div>

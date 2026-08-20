@@ -10,6 +10,8 @@ import {
   type VirtualObjectInstanceIdentity,
 } from '@restate/features/virtual-object-instance';
 import { ServiceTarget } from '@restate/features/service-target';
+import { vqueuesForVirtualObjectInstanceHref } from '@restate/features/limits-route';
+import { useRestateContext } from '@restate/features/restate-context';
 import { StateStatsCard } from '@restate/features/state-object-route';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { EmptyState } from '@restate/ui/empty-state';
@@ -22,12 +24,20 @@ import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { CardGrid } from '@restate/ui/card';
 import {
-  virtualObjectInstanceStateTabHref,
   virtualObjectInstanceTabFromSearch,
   VirtualObjectDetails,
 } from './VirtualObjectDetails';
 import { VirtualObjectLockHero } from './VirtualObjectLockHero';
 import { VirtualObjectStatsCard } from './VirtualObjectStatsCard';
+
+function retrySnapshotChanged(failureCount: number, error: unknown) {
+  return (
+    failureCount < 1 &&
+    error instanceof RestateError &&
+    error.status === 409 &&
+    error.restateCode === 'snapshot_changed'
+  );
+}
 
 function Component() {
   const { service = '', key = '' } = useParams<{
@@ -35,6 +45,7 @@ function Component() {
     key: string;
   }>();
   const [searchParams] = useSearchParams();
+  const { baseUrl } = useRestateContext();
   const scope = virtualObjectScopeFromSearch(searchParams);
   const tab = virtualObjectInstanceTabFromSearch(searchParams);
   const identity = useMemo<VirtualObjectInstanceIdentity>(
@@ -66,11 +77,7 @@ function Component() {
     enabled: Boolean(service) && Boolean(key) && tab === 'exclusive',
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    retry: (failureCount, retryError) =>
-      failureCount < 1 &&
-      retryError instanceof RestateError &&
-      retryError.status === 409 &&
-      retryError.restateCode === 'snapshot_changed',
+    retry: retrySnapshotChanged,
     staleTime: 0,
   });
   const {
@@ -89,6 +96,7 @@ function Component() {
       enabled: Boolean(service) && Boolean(key),
       refetchOnMount: true,
       refetchOnWindowFocus: false,
+      retry: retrySnapshotChanged,
       staleTime: 0,
     });
   const { data: statsData } = useGetVirtualObjectStats(service, key, scope, {
@@ -128,12 +136,17 @@ function Component() {
             <VirtualObjectLockHero lockHolder={lockData?.lockHolder} />
             {statsData?.supported && (
               <>
-                <VirtualObjectStatsCard stats={statsData} />
+                <VirtualObjectStatsCard
+                  stats={statsData}
+                  vqueuesHref={vqueuesForVirtualObjectInstanceHref(
+                    baseUrl,
+                    identity,
+                  )}
+                />
                 {statsData.state && (
                   <StateStatsCard
                     numKeys={statsData.state.numKeys}
                     totalSize={statsData.state.totalSize}
-                    stateHref={virtualObjectInstanceStateTabHref(searchParams)}
                   />
                 )}
               </>

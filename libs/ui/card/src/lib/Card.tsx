@@ -159,6 +159,27 @@ export function CardHeader({
   );
 }
 
+export function CardHeaderLink({
+  href,
+  'aria-label': ariaLabel,
+  children,
+}: PropsWithChildren<{ href: string; 'aria-label'?: string }>) {
+  return (
+    <Link
+      href={href}
+      variant="secondary"
+      aria-label={ariaLabel}
+      className="group flex items-center gap-0.5 text-2xs font-medium text-gray-400 no-underline transition-colors hover:text-gray-600"
+    >
+      {children}
+      <Icon
+        name={IconName.ChevronRight}
+        className="h-3 w-3 transition-transform duration-150 group-hover:translate-x-0.5"
+      />
+    </Link>
+  );
+}
+
 const cardRowStyles = tv({
   base: 'flex min-w-0 items-center gap-3 px-3',
   slots: {

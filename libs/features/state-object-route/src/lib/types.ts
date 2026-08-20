@@ -1,6 +1,5 @@
 export type StateTableColumnId =
   | 'object_key'
-  | 'scope'
   | 'state_key'
   | 'size'
   | 'value'

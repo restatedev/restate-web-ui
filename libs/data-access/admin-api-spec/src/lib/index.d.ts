@@ -982,7 +982,7 @@ export interface paths {
     put?: never;
     /**
      * List Workflow runs
-     * @description Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's Workflow handler are included; Shared handler invocations are excluded.
+     * @description Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's run handler are included; interaction invocations are excluded.
      */
     post: operations['list_workflow_runs'];
     delete?: never;
@@ -1000,7 +1000,7 @@ export interface paths {
     };
     /**
      * Get a Workflow run
-     * @description Returns the main run invocation and the 50 most recent retained invocations for the exact service, Workflow id, and optional scope identity.
+     * @description Returns the main run invocation and the 50 most recent retained interactions for the exact service, Workflow id, and optional scope identity.
      */
     get: operations['get_workflow_run'];
     put?: never;
@@ -3320,7 +3320,7 @@ export interface components {
     WorkflowRunDetailsResponse: {
       /** @description The retained canonical run invocation. Omitted when the Workflow identity has retained interactions but its run invocation is unavailable. */
       runInvocation?: components['schemas']['InvocationV2'];
-      /** @description Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls. */
+      /** @description Retained interactions with this Workflow identity ordered newest first. The run invocation is excluded. */
       recentInvocations: components['schemas']['InvocationV2'][];
       recentInvocationsLimit: number;
       recentInvocationsTruncated: boolean;
@@ -3482,7 +3482,7 @@ export interface components {
       activity?: components['schemas']['VirtualObjectStatsActivity'];
       state?: components['schemas']['KeyedServiceStatsState'];
     };
-    VirtualObjectInboxSnapshotChangedResponse: {
+    VirtualObjectSnapshotChangedResponse: {
       message: string;
       /** @enum {string} */
       restate_code: 'snapshot_changed';
@@ -3808,7 +3808,7 @@ export interface components {
       | components['schemas']['VQueueLockNameFilterItem'];
     VQueueExactStringFilterItem: {
       /** @enum {string} */
-      field: 'id' | 'service' | 'l1' | 'l2';
+      field: 'id' | 'service' | 'serviceKey' | 'l1' | 'l2';
       /** @enum {string} */
       type: 'STRING';
       /** @enum {string} */
@@ -3872,7 +3872,7 @@ export interface components {
       limit?: number;
     };
     ListVQueuesRequestBody: {
-      /** @description Structured VQueue filters combined with AND. Supported fields are id, service, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching. */
+      /** @description Structured VQueue filters combined with AND. Supported fields are id, service, serviceKey, scope, limitKey, l1, l2, and lockName. String comparisons are case-insensitive. id, service, serviceKey, l1, and l2 support exact equality; scope and limitKey support exact equality and literal substring matching. Exact service and serviceKey filters are combined into an exact lockName lookup. */
       filters?: components['schemas']['VQueueFilterItem'][];
       sort?: components['schemas']['VQueueSort'];
       limit?: number;
@@ -8588,6 +8588,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
+      /** @description The Virtual Object activity changed while the response was assembled. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectSnapshotChangedResponse'];
+        };
+      };
       500: {
         headers: {
           [name: string]: unknown;
@@ -8646,7 +8655,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['VirtualObjectInboxSnapshotChangedResponse'];
+          'application/json': components['schemas']['VirtualObjectSnapshotChangedResponse'];
         };
       };
       500: {

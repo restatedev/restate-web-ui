@@ -190,6 +190,81 @@ describe('GET /query/virtual-objects/:service/instances/:key/lock', () => {
     });
   });
 
+  it('refreshes a lock that changes while its details are loading', async () => {
+    let lockQueryCount = 0;
+    setResponder((statement) => {
+      if (statement.includes('FROM sys_locks')) {
+        lockQueryCount += 1;
+        return [
+          {
+            acquired_by: lockQueryCount === 1 ? 'inv_1stale' : 'inv_1current',
+            acquired_at: '2026-07-23T09:00:00.000Z',
+          },
+        ];
+      }
+      if (statement.includes('FROM sys_vqueue_entry_status')) {
+        if (statement.includes("'inv_1stale'")) return [];
+        return [
+          {
+            id: 'inv_1current',
+            kind: 'invocation',
+            vqueue_id: 'vq_1current',
+            stage: 'running',
+            status: 'started',
+            has_lock: true,
+          },
+        ];
+      }
+      if (statement.includes('FROM sys_invocation WHERE')) {
+        return statement.includes("'inv_1current'")
+          ? [invocation('inv_1current')]
+          : [];
+      }
+      return [];
+    });
+
+    const response = await get(
+      '/virtual-objects/Counter/instances/customer-1/lock',
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      supported: true,
+      lockHolder: {
+        id: 'inv_1current',
+        invocation: expect.objectContaining({ id: 'inv_1current' }),
+      },
+    });
+    expect(lockQueryCount).toBe(2);
+  });
+
+  it('returns a snapshot-changed response instead of a partial lock', async () => {
+    let lockQueryCount = 0;
+    setResponder((statement) => {
+      if (statement.includes('FROM sys_locks')) {
+        lockQueryCount += 1;
+        return [
+          {
+            acquired_by: 'inv_1lock',
+            acquired_at: '2026-07-23T09:00:00.000Z',
+          },
+        ];
+      }
+      return [];
+    });
+
+    const response = await get(
+      '/virtual-objects/Counter/instances/customer-1/lock',
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      message: 'Object activity changed while loading—try again.',
+      restate_code: 'snapshot_changed',
+    });
+    expect(lockQueryCount).toBe(2);
+  });
+
   it('preserves an unrecognized lock holder kind', async () => {
     setResponder(() => [
       {
