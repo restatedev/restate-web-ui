@@ -3399,3 +3399,14 @@
 - 2026-08-20 filter URL test ordering: `readFilterClauses` walks the supplied schema, so parsed filters are returned in schema order rather than URL/creation order. Set navigation expectations to the canonical schema order.
 - 2026-08-20 VQueue SQL filter tests: The user wants assertions on the whole generated SQL, not predicate-only `toContain` checks. Use full inline snapshots and copy the canonical projection carefully without duplicating columns.
 - 2026-08-20 generated filter-union narrowing: `Array.filter` with an inline boolean predicate does not narrow `VQueueFilterItem` away from nullable lock filters, even after checking `type` and `value`. Use an explicit type-guard function returning `VQueueExactStringFilterItem` before accessing `.value`.
+## 2026-08-20 — Detail card alignment and execution status
+
+- Align the Virtual Object Lock card's Created label and timestamp by baseline (`items-baseline`), since their font sizes differ.
+- The Virtual Object details State summary should not include a "View state" row.
+- The Workflow Execution hero follows the Lock hero: invocation ID on the left and its status on the right. Do not put execution duration in that row.
+- Once the Workflow Execution card shows the run status, do not duplicate that status badge in the Workflow page header.
+- When testing a component that renders `Status`, include a `QueryClientProvider`; its paused/transient-error hooks require the React Query context even when their queries are disabled.
+
+## 2026-08-20 — Command hygiene correction
+
+- I accidentally used a shell pipeline while listing Vitest configs. Keep discovery commands pipeline-free, as required by the repo workflow.

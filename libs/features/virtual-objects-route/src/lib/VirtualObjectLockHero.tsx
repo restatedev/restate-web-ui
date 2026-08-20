@@ -157,7 +157,7 @@ export function VirtualObjectLockHero({
           </CardRow>
         ))}
       {invocation?.created_at && (
-        <CardRow label="Created">
+        <CardRow label="Created" className="items-baseline">
           <RelativeDate
             date={invocation.created_at}
             title="Invocation created at"

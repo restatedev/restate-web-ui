@@ -1,6 +1,8 @@
 import type { Invocation } from '@restate/data-access/admin-api-spec';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import type { PropsWithChildren } from 'react';
 import { MemoryRouter } from 'react-router';
 import {
   WorkflowRunCard,
@@ -22,10 +24,18 @@ const invocation: Invocation = {
   target_service_ty: 'workflow',
 };
 
+function TestProviders({ children }: PropsWithChildren) {
+  return (
+    <QueryClientProvider client={new QueryClient()}>
+      <MemoryRouter>{children}</MemoryRouter>
+    </QueryClientProvider>
+  );
+}
+
 describe('WorkflowRunCard', () => {
-  it('shows execution duration instead of a completed timestamp', () => {
+  it('shows the invocation status beside the invocation ID', () => {
     render(
-      <MemoryRouter>
+      <TestProviders>
         <SnapshotTimeProvider
           lastSnapshot={Date.parse('2026-08-20T09:00:03.000Z')}
         >
@@ -38,43 +48,42 @@ describe('WorkflowRunCard', () => {
             }}
           />
         </SnapshotTimeProvider>
-      </MemoryRouter>,
+      </TestProviders>,
     );
 
     expect(screen.getByRole('heading', { name: 'Execution' })).toBeTruthy();
     const invocationLink = screen.getByRole('link', {
       name: 'Open invocation inv-workflow-run',
     });
-    expect(invocationLink.textContent).toContain('took 1.528s');
-    expect(invocationLink.textContent).not.toContain('Duration');
-    const timing = invocationLink.querySelector('[data-card-link-end-content]');
-    expect(timing?.previousElementSibling?.className).toContain('flex-auto');
-    expect(timing?.nextElementSibling?.classList).toContain(
-      'lucide-chevron-right',
-    );
+    expect(invocationLink.textContent).toContain('Succeeded');
+    expect(invocationLink.textContent).not.toContain('1.528s');
     expect(screen.queryByText('Completed')).toBeNull();
     expect(screen.getByText('Created').closest('a')).toBeNull();
   });
 
-  it('describes elapsed time for an incomplete execution', () => {
+  it('shows the active invocation status', () => {
     render(
-      <MemoryRouter>
+      <TestProviders>
         <WorkflowRunCard
-          invocation={{ ...invocation, completed_at: undefined }}
+          invocation={{
+            ...invocation,
+            completed_at: undefined,
+            status: 'running',
+          }}
           stats={{
             supported: true,
             duration: 'PT1.528S',
             pendingPromiseCount: 0,
           }}
         />
-      </MemoryRouter>,
+      </TestProviders>,
     );
 
-    expect(
-      screen.getByRole('link', {
-        name: 'Open invocation inv-workflow-run',
-      }).textContent,
-    ).toContain('processing for 1.528s');
+    const invocationLink = screen.getByRole('link', {
+      name: 'Open invocation inv-workflow-run',
+    });
+    expect(invocationLink.textContent).toContain('Running');
+    expect(invocationLink.textContent).not.toContain('1.528s');
   });
 });
 

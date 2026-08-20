@@ -3,6 +3,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import {
   getInvocationStatusIntent,
   InvocationId,
+  Status,
 } from '@restate/features/invocation-ui';
 import { LimitKey } from '@restate/features/vqueue-ui';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
@@ -57,24 +58,20 @@ export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
         variant="hero"
         href={`${baseUrl}/invocations/${invocation.id}`}
         aria-label={`Open invocation ${invocation.id}`}
-        endContent={
-          stats?.supported && stats.duration ? (
-            <span className="text-xs text-gray-400">
-              {invocation.completed_at ? 'took' : 'processing for'}{' '}
-              <span className="font-semibold text-zinc-700 tabular-nums">
-                {formatDuration(stats.duration)}
-              </span>
-            </span>
-          ) : undefined
+        className="flex-wrap gap-y-1"
+        label={
+          <InvocationId
+            id={invocation.id}
+            truncateInMiddle
+            popover={false}
+            link={false}
+            className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-zinc-400"
+          />
         }
       >
-        <InvocationId
-          id={invocation.id}
-          truncateInMiddle
-          popover={false}
-          link={false}
-          className="w-fit max-w-full min-w-0 text-sm [&_svg]:text-zinc-400"
-        />
+        <div className="min-w-0">
+          <Status invocation={invocation} mini="md" timeline={false} />
+        </div>
       </CardLinkRow>
       {/* TODO: Bring the VQueue ID row back when it is useful on Workflow run cards.
       {(invocation.vqueue?.vqueue_id ?? invocation.vqueue_id) && (

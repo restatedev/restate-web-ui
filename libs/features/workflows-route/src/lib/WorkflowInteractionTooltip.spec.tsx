@@ -28,5 +28,10 @@ describe('WorkflowInteractionTooltip', () => {
     expect(screen.getByRole('tooltip').textContent).toContain(
       'Interactions are invocations of handlers other than the run handler. They are commonly used to query or signal a Workflow while its execution is running or retained.',
     );
+    const learnMore = screen.getByRole('link', { name: 'Learn more' });
+    expect(learnMore.getAttribute('href')).toBe(
+      'https://docs.restate.dev/tour/workflows#workflow-patterns',
+    );
+    expect(learnMore.getAttribute('target')).toBe('_blank');
   });
 });
