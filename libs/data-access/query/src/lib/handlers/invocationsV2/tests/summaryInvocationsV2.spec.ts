@@ -132,6 +132,372 @@ describe('POST /query/v2/invocations/summary', () => {
       });
     });
 
+    it('applies a non-highlighted status filter to the batch summary', async () => {
+      setResponder(() => [
+        {
+          service_name: 'FlowControlUiStateService',
+          bucket: 'ready-yielded-backing-off',
+          count: 4,
+        },
+      ]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'stages',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.target_service_name AS service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END AS bucket,
+                COUNT(1) AS count
+              FROM sys_invocation_status ss
+              LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
+              WHERE ss.target_service_name IN ('FlowControlUiStateService')
+                AND ss.status IN ('invoked')
+                AND ((ss.status = 'invoked' AND sis.in_flight IS NOT TRUE AND sis.retry_count > 0))
+              GROUP BY
+                ss.target_service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END",
+        ]
+      `);
+      expect(body.appliedFilters).toHaveLength(2);
+      expect(body.total).toBe(4);
+    });
+
+    it('uses VQueue metadata for a highlighted batch status filter', async () => {
+      setResponder(() => [
+        {
+          service_name: 'FlowControlUiStateService',
+          inbox: 5,
+          running: 2,
+          suspended: 1,
+          paused: 3,
+          finished: 8,
+        },
+      ]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        highlightFields: ['status'],
+        mode: { type: 'sampled', sampleSize: 1_000_000 },
+        view: 'stages',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                vm.service_name,
+                SUM(vm.num_inbox) AS inbox,
+                SUM(vm.num_running) AS running,
+                SUM(vm.num_suspended) AS suspended,
+                SUM(vm.num_paused) AS paused,
+                SUM(vm.num_finished) AS finished
+              FROM sys_vqueue_meta vm
+              WHERE vm.service_name IN ('FlowControlUiStateService')
+                AND (
+                  vm.num_inbox > 0
+                  OR vm.num_running > 0
+                  OR vm.num_suspended > 0
+                  OR vm.num_paused > 0
+                  OR vm.num_finished > 0
+                )
+              GROUP BY vm.service_name",
+        ]
+      `);
+      expect(body.appliedFilters).toEqual([
+        {
+          type: 'STRING_LIST',
+          field: 'target_service_name',
+          operation: 'IN',
+          value: ['FlowControlUiStateService'],
+        },
+      ]);
+      expect(body).toMatchObject({
+        mode: 'sampled',
+        total: 19,
+        isPartial: false,
+        stageBuckets: [
+          expect.objectContaining({
+            key: 'inbox',
+            count: 5,
+            isIncluded: true,
+          }),
+          expect.objectContaining({ key: 'running', isIncluded: false }),
+          expect.objectContaining({ key: 'suspended', isIncluded: false }),
+          expect.objectContaining({ key: 'paused', isIncluded: false }),
+          expect.objectContaining({ key: 'finished', isIncluded: false }),
+        ],
+      });
+    });
+
+    it('counts the filtered VQueue population without grouping', async () => {
+      setResponder(() => [{ count: 8_340 }]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'sampled', sampleSize: 1_000_000 },
+        view: 'count',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  entry_kind,
+                  stage,
+                  status
+                FROM sys_vqueues
+                LIMIT 1000000
+              ) v
+              WHERE v.entry_kind = 'invocation'
+                AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'sampled',
+        total: 8_340,
+        isPartial: true,
+        appliedFilters: [
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        stageBuckets: [],
+        statusBuckets: [],
+        serviceBuckets: [],
+      });
+    });
+
+    it('samples VQueue entries before applying service and status filters', async () => {
+      setResponder(() => [{ count: 8_340 }]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'sampled', sampleSize: 1_000_000 },
+        view: 'count',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  id,
+                  entry_kind,
+                  stage,
+                  status
+                FROM sys_vqueues
+                LIMIT 1000000
+              ) v
+              WHERE v.id IN (
+                SELECT vm.id
+                FROM sys_vqueue_meta vm
+                WHERE vm.service_name IN ('FlowControlUiStateService')
+                  AND (vm.num_inbox > 0)
+              )
+                AND v.entry_kind = 'invocation'
+                AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'sampled',
+        total: 8_340,
+        isPartial: true,
+      });
+    });
+
+    it('uses one unbounded query for an exact metadata-filtered count', async () => {
+      setResponder(() => [{ count: 8_340 }]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'count',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM sys_vqueues v
+              WHERE v.id IN (
+                SELECT vm.id
+                FROM sys_vqueue_meta vm
+                WHERE vm.service_name IN ('FlowControlUiStateService')
+                  AND (vm.num_inbox > 0)
+              )
+                AND v.entry_kind = 'invocation'
+                AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'exact',
+        total: 8_340,
+        isPartial: false,
+      });
+    });
+
+    it('passes an unsupported stage filter through to DataFusion', async () => {
+      setResponder(() => [
+        {
+          service_name: 'FlowControlUiStateService',
+          bucket: 'ready-yielded-backing-off',
+          count: 4,
+        },
+      ]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'stage',
+            operation: 'EQUALS',
+            value: 'inbox',
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'stages',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.target_service_name AS service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END AS bucket,
+                COUNT(1) AS count
+              FROM sys_invocation_status ss
+              LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
+              WHERE ss.target_service_name IN ('FlowControlUiStateService')
+                AND ss.status IN ('invoked')
+                AND ((ss.status = 'invoked' AND sis.in_flight IS NOT TRUE AND sis.retry_count > 0))
+                AND ss.stage = 'inbox'
+              GROUP BY
+                ss.target_service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END",
+        ]
+      `);
+      expect(body.appliedFilters).toHaveLength(3);
+      expect(body).toMatchObject({
+        total: 4,
+        isPartial: false,
+        stageCountsArePartial: false,
+      });
+    });
+
     it('ignores the legacy rolling range for VQueue summaries', async () => {
       setResponder(() => []);
 
@@ -894,6 +1260,60 @@ describe('POST /query/v2/invocations/summary', () => {
       `);
       expect(body).toMatchObject({ mode: 'sampled', isPartial: true });
       expect(body.stageCountsArePartial).toBe(true);
+    });
+
+    it('counts the filtered status population without grouping', async () => {
+      setResponder(() => [{ count: 8_340 }]);
+
+      const response = await post(
+        '/v2/invocations/summary',
+        {
+          filters: [
+            {
+              type: 'STRING',
+              field: 'status',
+              operation: 'EQUALS',
+              value: 'backing-off',
+            },
+          ],
+          mode: { type: 'sampled', sampleSize: 1_000_000 },
+          view: 'count',
+        },
+        NO_VQUEUE_HEADERS,
+      );
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  id, status
+                FROM sys_invocation_status
+                LIMIT 1000000
+              ) sampled_invocations
+              LEFT JOIN sys_invocation_state sis ON sis.id = sampled_invocations.id
+              WHERE sampled_invocations.status IN ('invoked')
+                AND ((sampled_invocations.status = 'invoked' AND sis.in_flight IS NOT TRUE AND sis.retry_count > 0))",
+        ]
+      `);
+      expect(body).toMatchObject({
+        mode: 'sampled',
+        total: 8_340,
+        isPartial: true,
+        appliedFilters: [
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        stageBuckets: [],
+        statusBuckets: [],
+        serviceBuckets: [],
+      });
     });
 
     it('returns exact legacy stages and breakdowns from one status scan', async () => {

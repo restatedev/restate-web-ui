@@ -1,16 +1,21 @@
 import {
+  type FilterItem,
   getInvocationStatusesForStage,
   INVOCATION_STATUS_DEFINITIONS,
 } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from '../../shared';
 import type { InvocationStatus } from '../../../invocationStatuses';
 import {
+  filterToSql,
   supportsInvocationV2Vqueues,
   type InvocationFilterV2,
   type ResolvedInvocationModeV2,
 } from '../shared';
-import { invocationStatusFilterClauses } from '../list/invocationStatusFilters';
-import { invocationStatusSampleColumns } from '../list/invocationStatusPlan';
+import { invocationStatusClauses } from '../list/invocationStatusFilters';
+import {
+  invocationStatusSampleColumns,
+  needsInvocationStateJoin,
+} from '../list/invocationStatusPlan';
 import type {
   InvocationStatusSummaryBucket,
   InvocationSummaryQueryResult,
@@ -19,6 +24,10 @@ import type {
 type SummaryRow = {
   service_name?: string;
   bucket?: string;
+  count?: number | string;
+};
+
+type CountRow = {
   count?: number | string;
 };
 
@@ -42,6 +51,56 @@ ${
         END`;
 }
 
+function summaryFilterClauses(
+  filters: InvocationFilterV2[],
+  statusAlias: string,
+  stateAlias: string,
+) {
+  const stageFilters = filters.filter(({ field }) => field === 'stage');
+  return [
+    ...invocationStatusClauses(
+      filters.filter(({ field }) => field !== 'stage'),
+      statusAlias,
+      stateAlias,
+    ),
+    ...stageFilters.flatMap((filter) => {
+      const clause = filterToSql(filter as FilterItem, `${statusAlias}.stage`);
+      return clause ? [clause] : [];
+    }),
+  ];
+}
+
+export async function queryInvocationCountFromInvocationStatusAndState(
+  context: QueryContext,
+  filters: InvocationFilterV2[],
+  mode: ResolvedInvocationModeV2,
+) {
+  const statusAlias = mode.type === 'sampled' ? 'sampled_invocations' : 'ss';
+  const clauses = summaryFilterClauses(filters, statusAlias, 'sis');
+  const where = clauses.length
+    ? `\n      WHERE ${clauses.join('\n        AND ')}`
+    : '';
+  const source =
+    mode.type === 'sampled'
+      ? `(\n        SELECT\n          ${invocationStatusSampleColumns(filters, undefined, ['id', 'status'])}\n        FROM sys_invocation_status\n        LIMIT ${mode.sampleSize}\n      ) sampled_invocations`
+      : 'sys_invocation_status ss';
+  const stateJoin = needsInvocationStateJoin(filters)
+    ? `\n      LEFT JOIN sys_invocation_state sis ON sis.id = ${statusAlias}.id`
+    : '';
+  const { rows } = (await context.query(
+    `
+      SELECT
+        COUNT(1) AS count
+      FROM ${source}${stateJoin}${where}
+    `.trim(),
+    'invocations-v2/count-from-status-and-state',
+  )) as { rows: CountRow[] };
+  return {
+    count: Number(rows[0]?.count ?? 0),
+    isPartial: mode.type === 'sampled',
+  };
+}
+
 /**
  * Returns filtered status and per-service summary buckets. Invocation status supplies
  * the durable population and filters; invocation state separates invoker-owned
@@ -52,13 +111,14 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
 ): Promise<InvocationSummaryQueryResult> {
-  const exactClauses = invocationStatusFilterClauses(filters, 'ss');
+  const exactClauses = summaryFilterClauses(filters, 'ss', 'sis');
   const exactWhere = exactClauses.length
     ? `\n      WHERE ${exactClauses.join('\n        AND ')}`
     : '';
-  const sampledClauses = invocationStatusFilterClauses(
+  const sampledClauses = summaryFilterClauses(
     filters,
     'sampled_invocations',
+    'sis',
   );
   const sampledWhere = sampledClauses.length
     ? `\n        WHERE ${sampledClauses.join('\n          AND ')}`

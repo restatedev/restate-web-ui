@@ -2,6 +2,7 @@ export {
   listInvocationsV2,
   type ListInvocationsV2Args,
 } from './listInvocationsV2';
+export { selectInvocationCandidatesV2 } from './selectInvocationCandidatesV2';
 export {
   summaryInvocationsV2,
   type SummaryInvocationsV2Args,

@@ -13,6 +13,7 @@ import { queryInvocationSummaryFromInvocationStatusAndState } from './summary/qu
 import { queryInvocationSummaryFromVqueues } from './summary/queryInvocationSummaryFromVqueues';
 import type { InvocationSummaryQueryResult } from './summary/types';
 import { createInvocationSummaryQueryPlan } from './summary/createInvocationSummaryQueryPlan';
+import { queryInvocationCountV2 } from './summary/queryInvocationCountV2';
 import { rangeToCreatedAtFilter } from '../summaryInvocations';
 
 export type SummaryInvocationsV2Args =
@@ -70,6 +71,29 @@ export async function summaryInvocationsV2(
 
   const { mode, error: modeError } = resolveInvocationModeV2(requestedMode);
   if (modeError || !mode) return badRequest(modeError ?? 'Invalid query mode');
+
+  if (view === 'count') {
+    const countResult = await queryInvocationCountV2(
+      this,
+      requestedFilters,
+      mode,
+    );
+    if ('error' in countResult) return badRequest(countResult.error);
+    return Response.json({
+      queryDurationMs: performance.now() - queryStartedAt,
+      mode: mode.type,
+      isPartial: countResult.isPartial,
+      stageCountsArePartial: false,
+      total: countResult.count,
+      ...(mode.type === 'sampled' && {
+        sample: { sampleSize: mode.sampleSize },
+      }),
+      appliedFilters: requestedFilters,
+      stageBuckets: [],
+      statusBuckets: [],
+      serviceBuckets: [],
+    });
+  }
 
   const highlightedFields = new Set<string>(highlightFields);
   const appliedFilters = requestedFilters.filter(

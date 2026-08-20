@@ -20,7 +20,7 @@ export interface QueryPageRef {
 }
 
 export interface QueryMaxExecution {
-  sql: string;
+  sql?: string;
   durationMs: number;
   executedAt: number;
   page?: string;
@@ -80,7 +80,7 @@ interface QueryStatEntry {
 
 // Percentiles are computed over the most recent samples only; count and max
 // cover the whole recorded history.
-const MAX_SAMPLES = 1000;
+const MAX_SAMPLES = 500;
 const MAX_PAGES = 15;
 const OVERFLOW_PAGE = 'other';
 
@@ -92,12 +92,16 @@ const STORAGE_PREFIX = 'restate.query-stats.v2.';
 const TAB_ID_KEY = 'restate.query-stats.tab-id';
 const BUCKET_TTL_MS = 24 * 60 * 60 * 1000;
 const PERSIST_DELAY_MS = 2000;
+const STORAGE_BUDGET_BYTES = 2 * 1024 * 1024;
+const MAX_PERSISTED_SQL_LENGTH = 8 * 1024;
+const MAX_PERSISTED_PAGE_HREF_LENGTH = 2 * 1024;
 
 interface PersistedBucket {
   updatedAt: number;
   entries: [
     QueryId,
-    Omit<QueryStatEntry, 'pages'> & {
+    Omit<QueryStatEntry, 'pages' | 'max'> & {
+      max: QueryMaxExecution | null;
       pages: [string, PageEntry][];
     },
   ][];
@@ -176,14 +180,35 @@ function serializeEntries(
 ): PersistedBucket {
   return {
     updatedAt: Date.now(),
-    entries: Array.from(source.entries(), ([id, entry]) => [
-      id,
-      { ...entry, pages: [...entry.pages.entries()] },
-    ]),
+    entries: Array.from(
+      source.entries(),
+      ([id, entry]): PersistedBucket['entries'][number] => {
+        const max = entry.max ? { ...entry.max } : null;
+        if (max?.sql && max.sql.length > MAX_PERSISTED_SQL_LENGTH) {
+          delete max.sql;
+        }
+        if (
+          max?.pageHref &&
+          max.pageHref.length > MAX_PERSISTED_PAGE_HREF_LENGTH
+        ) {
+          delete max.pageHref;
+        }
+        const pages = Array.from(
+          entry.pages.entries(),
+          ([page, value]): [string, PageEntry] => [
+            page,
+            value.href && value.href.length > MAX_PERSISTED_PAGE_HREF_LENGTH
+              ? { count: value.count }
+              : value,
+          ],
+        );
+        return [id, { ...entry, max, pages }];
+      },
+    ),
   };
 }
 
-function parseBucket(raw: string | null): Map<QueryId, QueryStatEntry> | null {
+function parsePersistedBucket(raw: string | null): PersistedBucket | null {
   if (!raw) {
     return null;
   }
@@ -191,22 +216,106 @@ function parseBucket(raw: string | null): Map<QueryId, QueryStatEntry> | null {
     const bucket = JSON.parse(raw) as PersistedBucket;
     if (
       !bucket ||
+      !Number.isFinite(bucket.updatedAt) ||
       !Array.isArray(bucket.entries) ||
-      Date.now() - bucket.updatedAt > BUCKET_TTL_MS
+      bucket.updatedAt < 0
     ) {
       return null;
     }
+    return bucket;
+  } catch {
+    return null;
+  }
+}
+
+function isExpiredBucket(bucket: PersistedBucket): boolean {
+  return Date.now() - bucket.updatedAt > BUCKET_TTL_MS;
+}
+
+function parseBucket(raw: string | null): Map<QueryId, QueryStatEntry> | null {
+  const bucket = parsePersistedBucket(raw);
+  if (!bucket || isExpiredBucket(bucket)) {
+    return null;
+  }
+  try {
     const parsed = new Map<QueryId, QueryStatEntry>();
     for (const [id, entry] of bucket.entries) {
       if (!(id in QUERY_DEFINITIONS)) {
         continue;
       }
-      parsed.set(id, { ...entry, pages: new Map(entry.pages) });
+      const samples = Array.isArray(entry.samples)
+        ? entry.samples.slice(-MAX_SAMPLES)
+        : [];
+      parsed.set(id, {
+        ...entry,
+        samples,
+        sampleCursor: samples.length >= MAX_SAMPLES ? 0 : entry.sampleCursor,
+        pages: new Map(
+          Array.isArray(entry.pages) ? entry.pages.slice(0, MAX_PAGES) : [],
+        ),
+      });
     }
     return parsed;
   } catch {
     return null;
   }
+}
+
+function storageEntrySize(key: string, value: string): number {
+  return (key.length + value.length) * 2;
+}
+
+function pruneStorageForWrite(
+  storage: Storage,
+  bucketKey: string,
+  value: string,
+): { canWrite: boolean; removed: boolean } {
+  const keys: string[] = [];
+  for (let index = 0; index < storage.length; index++) {
+    const key = storage.key(index);
+    if (key?.startsWith(STORAGE_PREFIX) && key !== bucketKey) {
+      keys.push(key);
+    }
+  }
+
+  const candidates: {
+    key: string;
+    size: number;
+    updatedAt: number;
+  }[] = [];
+  let removed = false;
+  for (const key of keys) {
+    const raw = storage.getItem(key);
+    const bucket = parsePersistedBucket(raw);
+    if (!raw || !bucket || isExpiredBucket(bucket)) {
+      storage.removeItem(key);
+      removed = true;
+      continue;
+    }
+    candidates.push({
+      key,
+      size: storageEntrySize(key, raw),
+      updatedAt: bucket.updatedAt,
+    });
+  }
+
+  const pendingSize = storageEntrySize(bucketKey, value);
+  if (pendingSize > STORAGE_BUDGET_BYTES) {
+    return { canWrite: false, removed };
+  }
+
+  let totalSize =
+    pendingSize + candidates.reduce((total, entry) => total + entry.size, 0);
+  candidates.sort((left, right) => left.updatedAt - right.updatedAt);
+  for (const candidate of candidates) {
+    if (totalSize <= STORAGE_BUDGET_BYTES) {
+      break;
+    }
+    storage.removeItem(candidate.key);
+    totalSize -= candidate.size;
+    removed = true;
+  }
+  return { canWrite: true, removed };
 }
 
 function flushScope(baseUrl: string, state: ScopeState) {
@@ -218,11 +327,21 @@ function flushScope(baseUrl: string, state: ScopeState) {
     return;
   }
   try {
-    storage.setItem(bucketKey, JSON.stringify(serializeEntries(state.entries)));
-    for (const key of foreignBucketKeys(storage, baseUrl, bucketKey)) {
-      if (!parseBucket(storage.getItem(key))) {
-        storage.removeItem(key);
-      }
+    const value = JSON.stringify(serializeEntries(state.entries));
+    const { canWrite, removed } = pruneStorageForWrite(
+      storage,
+      bucketKey,
+      value,
+    );
+    if (removed) {
+      scopeStates.forEach((scopeState) => {
+        scopeState.foreignEntriesCache = null;
+        scopeState.snapshot = null;
+      });
+      listeners.forEach((listener) => listener());
+    }
+    if (canWrite) {
+      storage.setItem(bucketKey, value);
     }
   } catch {
     // Quota or privacy-mode failures must never break recording.

@@ -1,10 +1,9 @@
 import type {
   FilterItem,
-  RawInvocation,
+  components,
 } from '@restate/data-access/admin-api-spec';
-import { convertInvocationsFilters } from '../convertFilters';
 import { type QueryContext } from './shared';
-import { vqueueStatusEnabled } from './vqueue';
+import { selectInvocationCandidatesV2 } from './invocationsV2';
 
 const DEFAULT_PAGE_SIZE = 1000;
 
@@ -34,19 +33,34 @@ export async function getInvocationIds(
     : [];
 
   const allFilters = [...filters, ...createdAfterFilter];
-  const vqueueBackingOff = vqueueStatusEnabled(this);
+  if (pageSize <= 0) {
+    return { invocationIds: [], hasMore: false, lastCreatedAt: undefined };
+  }
 
-  const invocationData = await this.query(
-    `SELECT id, created_at from sys_invocation ${convertInvocationsFilters(allFilters, { vqueueBackingOff })} ORDER BY created_at ASC LIMIT ${pageSize}`,
-    'invocations/ids-page',
-  ).then(({ rows }) => rows as Pick<RawInvocation, 'id' | 'created_at'>[]);
+  const data = await selectInvocationCandidatesV2(this, {
+    filters: allFilters as components['schemas']['InvocationV2FilterItem'][],
+    sort: { field: 'created_at', order: 'ASC' },
+    mode: { type: 'exact' },
+    includeInvocationDetails: true,
+    limit: pageSize,
+  });
+  if ('error' in data) {
+    throw new Error(data.error);
+  }
+  const rows = data.rows.slice(0, Math.min(pageSize, data.limit));
+  if (data.partial && rows.length === 0) {
+    throw new Error('Unable to continue partial batch invocation selection');
+  }
 
-  const invocationIds = invocationData.map(({ id }) => id);
-  const lastCreatedAt = invocationData.at(-1)?.created_at;
+  const invocationIds = rows.map(({ id }) => id);
+  const lastCreatedAt = rows.at(-1)?.created_at;
 
   return {
     invocationIds,
-    hasMore: invocationIds.length >= pageSize && pageSize !== 0,
+    hasMore:
+      data.rows.length > rows.length ||
+      data.rows.length >= data.limit ||
+      data.partial !== undefined,
     lastCreatedAt,
   };
 }

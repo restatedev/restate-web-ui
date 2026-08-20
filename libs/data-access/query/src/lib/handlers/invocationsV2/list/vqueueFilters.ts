@@ -120,13 +120,34 @@ export function vqueueMetadataCounterPredicate(
     .join(' OR ')})`;
 }
 
+export function vqueueMetadataPredicates(
+  filters: InvocationFilterV2[],
+  statuses: readonly InvocationStatusV2[] | undefined,
+  alias: string,
+) {
+  const filterPredicates = (filters as FilterItem[]).flatMap((filter) => {
+    const tableField = getInvocationListFieldOnTable(
+      filter.field,
+      'sys_vqueue_meta',
+    );
+    if (!tableField) return [];
+    const clause = filterToSql(filter, `${alias}.${tableField.column}`);
+    return clause ? [clause] : [];
+  });
+  return [
+    ...filterPredicates,
+    ...(statuses ? [vqueueMetadataCounterPredicate(statuses, alias)] : []),
+  ];
+}
+
 /** Returns only columns required outside a sampled VQueue subquery. */
 export function vqueueSampleColumns(
   filters: InvocationFilterV2[],
   statuses: readonly InvocationStatusV2[] | undefined,
   sortField: InvocationSortV2['field'] | undefined,
+  requiredColumns: string[] = ['entry_id', 'entry_kind'],
 ) {
-  const columns = new Set(['entry_id', 'entry_kind']);
+  const columns = new Set(requiredColumns);
   if (statuses) columns.add('stage');
   if (
     statuses?.some(

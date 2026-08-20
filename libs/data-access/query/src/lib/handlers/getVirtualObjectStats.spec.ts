@@ -25,20 +25,8 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
             attempted_vqueue_count: 4,
             min_avg_inbox_duration: 'PT1.5S',
             max_avg_inbox_duration: 'PT8S',
-            oldest_attempt_at: '2026-01-01T00:00:01.000Z',
-            latest_attempt_at: '2026-07-31T09:00:01.000Z',
-            min_avg_blocked_on_concurrency_rules: 'PT0S',
-            max_avg_blocked_on_concurrency_rules: 'PT1.2S',
-            min_avg_blocked_on_invoker_concurrency: 'PT0S',
-            max_avg_blocked_on_invoker_concurrency: 'PT0.4S',
-            min_avg_blocked_on_invoker_throttling: 'PT0S',
-            max_avg_blocked_on_invoker_throttling: 'PT0.7S',
-            min_avg_blocked_on_lock: 'PT0S',
-            max_avg_blocked_on_lock: 'PT2.1S',
             num_inbox: 1176,
             last_enqueued_at: '2026-07-31T08:59:58.000Z',
-            latest_start_at: '2026-07-31T09:00:00.000Z',
-            last_finish_at: '2026-07-31T09:00:05.000Z',
           },
         ];
       }
@@ -59,20 +47,8 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
             COUNT(last_attempt_at) AS attempted_vqueue_count,
             MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS min_avg_inbox_duration,
             MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS max_avg_inbox_duration,
-            MIN(last_attempt_at) AS oldest_attempt_at,
-            MAX(last_attempt_at) AS latest_attempt_at,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_concurrency_rules END) AS min_avg_blocked_on_concurrency_rules,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_concurrency_rules END) AS max_avg_blocked_on_concurrency_rules,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_concurrency END) AS min_avg_blocked_on_invoker_concurrency,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_concurrency END) AS max_avg_blocked_on_invoker_concurrency,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_throttling END) AS min_avg_blocked_on_invoker_throttling,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_throttling END) AS max_avg_blocked_on_invoker_throttling,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_lock END) AS min_avg_blocked_on_lock,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_lock END) AS max_avg_blocked_on_lock,
-            COALESCE(SUM(num_inbox), 0) AS num_inbox,
-            MAX(last_enqueued_at) AS last_enqueued_at,
-            MAX(last_start_at) AS latest_start_at,
-            MAX(last_finish_at) AS last_finish_at
+            SUM(num_inbox) AS num_inbox,
+            MAX(last_enqueued_at) AS last_enqueued_at
           FROM sys_vqueue_meta
           WHERE service_name = 'Counter'
             AND lock_name = 'Counter/customer-1'
@@ -102,50 +78,11 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
         min: 'PT1.5S',
         max: 'PT8S',
         vqueueCount: 4,
-        oldestUpdatedAt: '2026-01-01T00:00:01.000Z',
-        latestUpdatedAt: '2026-07-31T09:00:01.000Z',
       },
       numInbox: 1176,
-      averageBlockedDurations: [
-        {
-          gate: 'concurrency_rules',
-          min: 'PT0S',
-          max: 'PT1.2S',
-          vqueueCount: 4,
-          oldestUpdatedAt: '2026-01-01T00:00:01.000Z',
-          latestUpdatedAt: '2026-07-31T09:00:01.000Z',
-        },
-        {
-          gate: 'invoker_concurrency',
-          min: 'PT0S',
-          max: 'PT0.4S',
-          vqueueCount: 4,
-          oldestUpdatedAt: '2026-01-01T00:00:01.000Z',
-          latestUpdatedAt: '2026-07-31T09:00:01.000Z',
-        },
-        {
-          gate: 'invoker_throttling',
-          min: 'PT0S',
-          max: 'PT0.7S',
-          vqueueCount: 4,
-          oldestUpdatedAt: '2026-01-01T00:00:01.000Z',
-          latestUpdatedAt: '2026-07-31T09:00:01.000Z',
-        },
-        {
-          gate: 'lock',
-          min: 'PT0S',
-          max: 'PT2.1S',
-          vqueueCount: 4,
-          oldestUpdatedAt: '2026-01-01T00:00:01.000Z',
-          latestUpdatedAt: '2026-07-31T09:00:01.000Z',
-        },
-      ],
       activity: {
         oldestInboxedAt: '2026-07-29T11:00:00.000Z',
         lastEnqueuedAt: '2026-07-31T08:59:58.000Z',
-        lastStartedAt: '2026-07-31T09:00:00.000Z',
-        lastAttemptAt: '2026-07-31T09:00:01.000Z',
-        lastFinishedAt: '2026-07-31T09:00:05.000Z',
       },
       state: {
         numKeys: 12,
@@ -165,9 +102,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
             attempted_vqueue_count: 1,
             min_avg_inbox_duration: 'PT4S',
             max_avg_inbox_duration: 'PT4S',
-            oldest_attempt_at: '2026-07-31T09:00:01.000Z',
-            latest_attempt_at: '2026-07-31T09:00:01.000Z',
-            latest_start_at: '2026-07-31T09:00:00.000Z',
             num_inbox: 2,
           },
         ];
@@ -189,20 +123,8 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
             COUNT(last_attempt_at) AS attempted_vqueue_count,
             MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS min_avg_inbox_duration,
             MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS max_avg_inbox_duration,
-            MIN(last_attempt_at) AS oldest_attempt_at,
-            MAX(last_attempt_at) AS latest_attempt_at,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_concurrency_rules END) AS min_avg_blocked_on_concurrency_rules,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_concurrency_rules END) AS max_avg_blocked_on_concurrency_rules,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_concurrency END) AS min_avg_blocked_on_invoker_concurrency,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_concurrency END) AS max_avg_blocked_on_invoker_concurrency,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_throttling END) AS min_avg_blocked_on_invoker_throttling,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_invoker_throttling END) AS max_avg_blocked_on_invoker_throttling,
-            MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_lock END) AS min_avg_blocked_on_lock,
-            MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_blocked_on_lock END) AS max_avg_blocked_on_lock,
-            COALESCE(SUM(num_inbox), 0) AS num_inbox,
-            MAX(last_enqueued_at) AS last_enqueued_at,
-            MAX(last_start_at) AS latest_start_at,
-            MAX(last_finish_at) AS last_finish_at
+            SUM(num_inbox) AS num_inbox,
+            MAX(last_enqueued_at) AS last_enqueued_at
           FROM sys_vqueue_meta
           WHERE service_name = 'Counter'
             AND lock_name = 'Counter/customer-1'
@@ -232,15 +154,10 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
         min: 'PT4S',
         max: 'PT4S',
         vqueueCount: 1,
-        oldestUpdatedAt: '2026-07-31T09:00:01.000Z',
-        latestUpdatedAt: '2026-07-31T09:00:01.000Z',
       },
       numInbox: 2,
-      averageBlockedDurations: [],
       activity: {
         oldestInboxedAt: '2026-07-31T08:00:00.000Z',
-        lastStartedAt: '2026-07-31T09:00:00.000Z',
-        lastAttemptAt: '2026-07-31T09:00:01.000Z',
       },
       state: {
         numKeys: 2,

@@ -78,6 +78,8 @@ the aggregate population.
 | VQueue stages with service filter  | The same metadata counters with `vm.service_name IN (...)`                                                      |
 | VQueue breakdowns                  | Independent stage-pruned inbox and finished status aggregates from `sys_vqueues`                                |
 | VQueue, sampled scope/limit filter | Exact filtered metadata counters; sampled breakdowns use a bounded metadata-ID semi-join                        |
+| Count-only, VQueue-compatible      | Scalar filtered `COUNT(1)` from `sys_vqueues`, optionally with a bounded metadata-ID semi-join                  |
+| Count-only fallback                | Scalar filtered `COUNT(1)` from `sys_invocation_status`, joining state only for statuses that require it        |
 | Applied service or other filter    | Filtered `sys_invocation_status LEFT JOIN sys_invocation_state`, grouped by service and response-defined bucket |
 | No VQueue stages                   | Grouped `sys_invocation_status` aggregate and small in-flight state/status join in parallel                     |
 | No VQueue breakdowns               | Filtered `sys_invocation_status LEFT JOIN sys_invocation_state`                                                 |
@@ -96,6 +98,8 @@ The page first requests `view: 'stages'`. If a returned stage has
 endpoint and merges the result. A status/state response is already coarse and
 does not trigger another request. The chart always renders the response-defined
 stage and status buckets with separate stage and breakdown loading states.
+Batch dialogs request `view: 'count'`, which applies every filter and returns
+only `total`; it does not produce or group breakdown buckets.
 
 ## `POST /query/v2/invocations/inbox`
 

@@ -1,8 +1,5 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from '../../shared';
-import { getInvocationListFieldOnTable } from '../invocationListFields';
 import {
-  filterToSql,
   INVOCATIONS_V2_LIMIT,
   type ResolvedInvocationModeV2,
   VQUEUE_SERVICE_QUEUE_LIMIT,
@@ -15,29 +12,11 @@ import type {
 import {
   vqueueColumnForSort,
   vqueueFilterClauses,
-  vqueueMetadataCounterPredicate,
+  vqueueMetadataPredicates,
   vqueueSampleColumns,
   vqueueStagePredicate,
   vqueueStatusPredicate,
 } from './vqueueFilters';
-
-function metadataPredicates(query: SysVqueueMetaAndVqueuesQueryPlan) {
-  const filters = (query.filters as FilterItem[]).flatMap((filter) => {
-    const tableField = getInvocationListFieldOnTable(
-      filter.field,
-      'sys_vqueue_meta',
-    );
-    if (!tableField) return [];
-    const clause = filterToSql(filter, `vm.${tableField.column}`);
-    return clause ? [clause] : [];
-  });
-  return [
-    ...filters,
-    ...(query.statuses
-      ? [vqueueMetadataCounterPredicate(query.statuses, 'vm')]
-      : []),
-  ];
-}
 
 /**
  * Runs when queue-level filters need sys_vqueue_meta for either the whole plan
@@ -48,11 +27,17 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
   context: QueryContext,
   query: SysVqueueMetaAndVqueuesQueryPlan,
   mode: ResolvedInvocationModeV2,
+  includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
 ): Promise<{
   rows: InvocationCandidateRow[];
   partial?: VqueueListPartialResult;
 }> {
-  const queuePredicates = metadataPredicates(query);
+  const queuePredicates = vqueueMetadataPredicates(
+    query.filters,
+    query.statuses,
+    'vm',
+  );
   const statusPredicates = !query.statuses
     ? []
     : query.statuses.length === 0
@@ -81,7 +66,11 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
   const candidatesPromise = context.query(
     `
       SELECT
-        v.entry_id AS id
+        v.entry_id AS id${
+          includeInvocationDetails && query.sort?.field === 'created_at'
+            ? ',\n        v.created_at AS created_at'
+            : ''
+        }
       FROM ${source}
       WHERE v.id IN (
         SELECT vm.id
@@ -90,7 +79,7 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
         LIMIT ${VQUEUE_SERVICE_QUEUE_LIMIT}
       )
         AND ${entryPredicates.join('\n        AND ')}${orderBy}
-      LIMIT ${INVOCATIONS_V2_LIMIT}
+      LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-vqueue-meta',
   ) as Promise<{ rows: InvocationCandidateRow[] }>;

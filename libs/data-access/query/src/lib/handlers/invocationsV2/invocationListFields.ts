@@ -392,6 +392,22 @@ export const INVOCATION_LIST_FIELDS = {
       },
     },
   },
+  stage: {
+    filter: 'column',
+    sort: false,
+    tables: {
+      sys_vqueues: {
+        column: 'stage',
+        since: '1.7.0',
+        feature: 'vqueues',
+      },
+      sys_vqueue_entry_status: {
+        column: 'stage',
+        since: '1.7.1',
+        feature: 'vqueues',
+      },
+    },
+  },
   limit_key: {
     filter: 'column',
     sort: false,

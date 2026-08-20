@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   deduplicateFilters,
   friendlyOperationLabel,
+  toInvocationV2SummaryFilter,
 } from './deduplicateFilters';
 
 describe('friendlyOperationLabel', () => {
@@ -50,5 +51,39 @@ describe('deduplicateFilters', () => {
     ] satisfies FilterItem[];
 
     expect(deduplicateFilters(filters)).toEqual(filters);
+  });
+});
+
+describe('toInvocationV2SummaryFilter', () => {
+  it('expands the legacy completed status to terminal V2 statuses', () => {
+    expect(
+      toInvocationV2SummaryFilter({
+        field: 'status',
+        type: 'STRING',
+        operation: 'EQUALS',
+        value: 'completed',
+      }),
+    ).toEqual({
+      field: 'status',
+      type: 'STRING_LIST',
+      operation: 'IN',
+      value: ['succeeded', 'failed', 'cancelled', 'killed'],
+    });
+  });
+
+  it('expands completed inside a legacy status exclusion', () => {
+    expect(
+      toInvocationV2SummaryFilter({
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'NOT_IN',
+        value: ['paused', 'completed'],
+      }),
+    ).toEqual({
+      field: 'status',
+      type: 'STRING_LIST',
+      operation: 'NOT_IN',
+      value: ['paused', 'succeeded', 'failed', 'cancelled', 'killed'],
+    });
   });
 });

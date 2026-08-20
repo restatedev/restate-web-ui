@@ -259,7 +259,7 @@ function explainFileContent(
       : []),
     '',
     '-- SQL',
-    max ? formatSql(max.sql) : '',
+    max?.sql ? formatSql(max.sql) : '',
     '',
     '-- Plan',
     ...rows.map((row) => {
@@ -285,7 +285,7 @@ function useExplainAnalyze() {
       stat: QueryStat;
       verbose: boolean;
     }) => {
-      if (!stat.max) {
+      if (!stat.max?.sql) {
         throw new Error('No recorded execution to explain.');
       }
       const command = explainAnalyzeCommand(verbose);
@@ -317,7 +317,7 @@ function QueryActions({
   explain: ReturnType<typeof useExplainAnalyze>;
 }) {
   const isRunning = explain.isPending && explain.variables?.stat.id === stat.id;
-  const isDisabled = !stat.max || explain.isPending;
+  const isDisabled = !stat.max?.sql || explain.isPending;
   const run = (verbose: boolean) => explain.mutate({ stat, verbose });
 
   return (
@@ -521,7 +521,7 @@ function renderStatsCell(
       return (
         <Cell>
           <span className="flex min-w-0 items-center gap-1 tabular-nums">
-            {stat.max ? (
+            {stat.max?.sql ? (
               <TruncateWithTooltip
                 alwaysShow
                 size="lg"
@@ -540,7 +540,7 @@ function renderStatsCell(
                 {formatMs(stat.max.durationMs)}
               </TruncateWithTooltip>
             ) : (
-              formatMs(stat.max)
+              formatMs(stat.max?.durationMs)
             )}
             {stat.max?.timedOut && (
               <Icon

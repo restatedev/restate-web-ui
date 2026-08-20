@@ -5,6 +5,7 @@ import type {
 import { convertInvocation } from '../../../convertInvocation';
 import type { QueryContext } from '../../shared';
 import {
+  INVOCATIONS_V2_LIMIT,
   type InvocationFilterV2,
   type InvocationSortV2,
   type ResolvedInvocationModeV2,
@@ -17,6 +18,7 @@ import { queryInvocationRowsByIds } from './queryInvocationRowsByIds';
 import { queryRunningOrBackingOffCandidatesFromInvocationState } from './queryRunningOrBackingOffCandidatesFromInvocationState';
 import { queryCandidatesFromInvocationStatusAndState } from './queryCandidatesFromInvocationStatusAndState';
 import { queryCandidatesFromInvocationStatus } from './queryCandidatesFromInvocationStatus';
+import type { InvocationCandidateRow } from './types';
 
 type Invocation = components['schemas']['Invocation'];
 
@@ -33,18 +35,14 @@ function withDuration(invocation: Invocation, requestTime: string): Invocation {
   };
 }
 
-/**
- * Selects the smallest invocation status/state candidate source that can
- * satisfy the request, then performs one bounded `sys_invocation` detail
- * lookup.
- */
-export async function listInvocationsFromInvocationStatusAndState(
+export async function selectInvocationsFromInvocationStatusAndState(
   context: QueryContext,
   filters: InvocationFilterV2[],
   sort: InvocationSortV2 | undefined,
   mode: ResolvedInvocationModeV2,
-  requestTime: string,
-): Promise<Invocation[]> {
+  includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
+) {
   const invocationStateStatuses = invocationStateOnlyStatuses(filters, sort);
   let candidatesResult;
   if (invocationStateStatuses) {
@@ -52,6 +50,7 @@ export async function listInvocationsFromInvocationStatusAndState(
       await queryRunningOrBackingOffCandidatesFromInvocationState(
         context,
         invocationStateStatuses,
+        limit,
       );
   } else if (needsInvocationStateJoin(filters)) {
     candidatesResult = await queryCandidatesFromInvocationStatusAndState(
@@ -59,6 +58,8 @@ export async function listInvocationsFromInvocationStatusAndState(
       filters,
       sort,
       mode,
+      includeInvocationDetails,
+      limit,
     );
   } else {
     candidatesResult = await queryCandidatesFromInvocationStatus(
@@ -66,11 +67,21 @@ export async function listInvocationsFromInvocationStatusAndState(
       filters,
       sort,
       mode,
+      includeInvocationDetails,
+      limit,
     );
   }
-  const ids = candidatesResult.rows
-    .map((row) => row.id as string)
-    .filter(Boolean);
+  return candidatesResult.rows as InvocationCandidateRow[];
+}
+
+export async function loadInvocationsFromInvocationStatusAndState(
+  context: QueryContext,
+  candidates: InvocationCandidateRow[],
+  filters: InvocationFilterV2[],
+  sort: InvocationSortV2 | undefined,
+  requestTime: string,
+): Promise<Invocation[]> {
+  const ids = candidates.map((row) => row.id as string).filter(Boolean);
   if (ids.length === 0) return [];
   const detailRows = (
     await queryInvocationRowsByIds(context, ids, filters, sort)

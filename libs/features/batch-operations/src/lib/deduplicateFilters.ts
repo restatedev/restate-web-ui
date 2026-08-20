@@ -17,8 +17,44 @@ const OPERATION_LABELS: Record<QueryClauseOperationId, string> = {
   'IS NOT NULL': 'is not null',
 };
 
+const COMPLETED_INVOCATION_STATUSES = [
+  'succeeded',
+  'failed',
+  'cancelled',
+  'killed',
+];
+
 export function friendlyOperationLabel(operation: QueryClauseOperationId) {
   return OPERATION_LABELS[operation];
+}
+
+export function toInvocationV2SummaryFilter(filter: FilterItem): FilterItem {
+  if (filter.field !== 'status' || !('value' in filter)) return filter;
+  if (
+    filter.type === 'STRING' &&
+    filter.value === 'completed' &&
+    (filter.operation === 'EQUALS' || filter.operation === 'NOT_EQUALS')
+  ) {
+    return {
+      ...filter,
+      type: 'STRING_LIST',
+      operation: filter.operation === 'EQUALS' ? 'IN' : 'NOT_IN',
+      value: COMPLETED_INVOCATION_STATUSES,
+    };
+  }
+  if (
+    filter.type === 'STRING_LIST' &&
+    (filter.operation === 'IN' || filter.operation === 'NOT_IN') &&
+    filter.value.includes('completed')
+  ) {
+    return {
+      ...filter,
+      value: filter.value.flatMap((value) =>
+        value === 'completed' ? COMPLETED_INVOCATION_STATUSES : value,
+      ),
+    };
+  }
+  return filter;
 }
 
 function filterCriterionKey(filter: FilterItem) {
