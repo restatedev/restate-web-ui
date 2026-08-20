@@ -8,6 +8,7 @@ import {
   isLockConsistent,
   lockEntryRows,
   mergeEntryDetails,
+  virtualObjectSnapshotChangedResponse,
   type VirtualObjectEntryDetails,
   type VirtualObjectEntryRow,
 } from './virtualObjectEntries';
@@ -19,12 +20,6 @@ const SCOPED_VQUEUE_QUERY_LIMIT = 250;
 type VirtualObjectInboxResponse =
   components['schemas']['VirtualObjectInboxResponse'];
 type VirtualObjectLock = components['schemas']['VirtualObjectLockResponse'];
-type VirtualObjectInboxSnapshotChangedResponse =
-  components['schemas']['VirtualObjectInboxSnapshotChangedResponse'];
-
-const SNAPSHOT_CHANGED_MESSAGE =
-  'Object activity changed while loading—try again.';
-
 interface ReconciledInboxLockDetails {
   lock: VirtualObjectLock;
   entryDetails: VirtualObjectEntryDetails;
@@ -217,14 +212,6 @@ async function findLegacyInboxEntries(
   return rows.map((row) => ({ id: row['id'], kind: 'invocation' }));
 }
 
-function snapshotChangedResponse() {
-  const body: VirtualObjectInboxSnapshotChangedResponse = {
-    message: SNAPSHOT_CHANGED_MESSAGE,
-    restate_code: 'snapshot_changed',
-  };
-  return Response.json(body, { status: 409 });
-}
-
 function isInitialLockConsistent(
   context: QueryContext,
   lock: VirtualObjectLock,
@@ -394,7 +381,7 @@ async function getInboxEntriesAndLockDetails(
           excludeLockHolder: true,
         }),
       )
-    : snapshotChangedResponse();
+    : virtualObjectSnapshotChangedResponse();
 }
 
 function hasConflictingLockEntry(
@@ -444,7 +431,7 @@ async function getScopedInboxEntriesAndLockDetails(
     !isLockConsistent(context, lock, entryDetails) ||
     hasConflictingLockEntry(entryDetails, lock.lockHolder?.id)
   ) {
-    return snapshotChangedResponse();
+    return virtualObjectSnapshotChangedResponse();
   }
 
   return Response.json(

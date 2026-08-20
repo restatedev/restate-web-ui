@@ -12,11 +12,21 @@ import {
 
 type VirtualObjectInboxEntry = components['schemas']['VirtualObjectInboxEntry'];
 type VirtualObjectLock = components['schemas']['VirtualObjectLockResponse'];
+type VirtualObjectSnapshotChangedResponse =
+  components['schemas']['VirtualObjectSnapshotChangedResponse'];
 type InvocationSelection = 'active' | 'all';
 
 const TERMINAL_INVOCATION_STATUS_SET = new Set<string>(
   TERMINAL_INVOCATION_STATUSES,
 );
+
+export function virtualObjectSnapshotChangedResponse() {
+  const body: VirtualObjectSnapshotChangedResponse = {
+    message: 'Object activity changed while loading—try again.',
+    restate_code: 'snapshot_changed',
+  };
+  return Response.json(body, { status: 409 });
+}
 
 export interface VirtualObjectEntryRow {
   id?: string;

@@ -3482,7 +3482,7 @@ export interface components {
       activity?: components['schemas']['VirtualObjectStatsActivity'];
       state?: components['schemas']['KeyedServiceStatsState'];
     };
-    VirtualObjectInboxSnapshotChangedResponse: {
+    VirtualObjectSnapshotChangedResponse: {
       message: string;
       /** @enum {string} */
       restate_code: 'snapshot_changed';
@@ -8588,6 +8588,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
+      /** @description The Virtual Object activity changed while the response was assembled. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['VirtualObjectSnapshotChangedResponse'];
+        };
+      };
       500: {
         headers: {
           [name: string]: unknown;
@@ -8646,7 +8655,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['VirtualObjectInboxSnapshotChangedResponse'];
+          'application/json': components['schemas']['VirtualObjectSnapshotChangedResponse'];
         };
       };
       500: {

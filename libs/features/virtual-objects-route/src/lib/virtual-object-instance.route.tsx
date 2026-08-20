@@ -29,6 +29,15 @@ import {
 import { VirtualObjectLockHero } from './VirtualObjectLockHero';
 import { VirtualObjectStatsCard } from './VirtualObjectStatsCard';
 
+function retrySnapshotChanged(failureCount: number, error: unknown) {
+  return (
+    failureCount < 1 &&
+    error instanceof RestateError &&
+    error.status === 409 &&
+    error.restateCode === 'snapshot_changed'
+  );
+}
+
 function Component() {
   const { service = '', key = '' } = useParams<{
     service: string;
@@ -66,11 +75,7 @@ function Component() {
     enabled: Boolean(service) && Boolean(key) && tab === 'exclusive',
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    retry: (failureCount, retryError) =>
-      failureCount < 1 &&
-      retryError instanceof RestateError &&
-      retryError.status === 409 &&
-      retryError.restateCode === 'snapshot_changed',
+    retry: retrySnapshotChanged,
     staleTime: 0,
   });
   const {
@@ -89,6 +94,7 @@ function Component() {
       enabled: Boolean(service) && Boolean(key),
       refetchOnMount: true,
       refetchOnWindowFocus: false,
+      retry: retrySnapshotChanged,
       staleTime: 0,
     });
   const { data: statsData } = useGetVirtualObjectStats(service, key, scope, {

@@ -1,5 +1,11 @@
 # Napkin
 
+- 2026-08-20 self on bounded retry loops: My first two-attempt lock hydration loop refreshed the lock after the final failed attempt, issuing a third unused query. Gate the refresh on whether another attempt remains, and assert the query count in the persistent-race test.
+
+- 2026-08-20 self on repeated JSON response blocks: My broad OpenAPI patch matched the list-instances `400` response instead of the intended lock endpoint. Anchor schema edits on the endpoint's unique `200` description/schema, then inspect that exact endpoint before generation.
+
+- 2026-08-20 self on inspection pipelines: I twice piped `rg` through another command even though the repository notes explicitly prohibit noisy inspection pipelines. Use scoped `rg` globs and its output limit directly; run a separate search when filtering is still needed.
+
 - 2026-08-19 VQueue limiter placement FINAL (user's design): no well, no dash, no inset container at all. The limiter group (Scope with FULL "SCOPE" label + LimitKey, interlocked) is RIGHT-ALIGNED in the header — spatial separation expresses the orthogonality: left edge = target, right edge = limiter qualifier, paused badge outermost. This superseded both the dash and the recessed-slot experiments; the slot/well no longer exists anywhere, so its "limiter coordinate" semantics are retired.
 
 - 2026-08-19 whole-row links rule (user-directed): if a card row's value is a link, the WHOLE row is the link (CardLinkRow) — applied to DETAILS VQueue row (VQueueIdDisplay inside, now exported from vqueue-ui), LOCK hero and WORKFLOW RUN hero (InvocationId gained `link={false}` display mode to avoid nested anchors; note its tv styles already destructure `link` — alias to linkStyle). Neutral card tabs must carry the same white shared-field radial as the body (`bg-radial-[800px_400px_at_-0.625rem_100%] from-white`) because the 'none' box wash is from-white — a plain gray-50 tab reads darker than the washed body corner. Also removed: Statistics "Queue time" row (workflow), "Pinned" annotation on Deployment tab (Last attempt kept); VQueue TIMING ⓘ moved inside the tab via new CardHeader `titleAddon` prop.
