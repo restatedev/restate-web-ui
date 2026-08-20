@@ -289,8 +289,8 @@ function CountersComponent() {
             popoverPlacement="bottom start"
             popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
             optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
-            className="min-h-7 w-full justify-end text-gray-800"
-            inputClassName="min-h-7 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-7 [&_input]:min-h-7 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+            className="min-h-6.5 w-full justify-end text-gray-800"
+            inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
           >
             {(props) => {
               const isRule = props.item.id === LIMIT_COUNTER_RULE_QUERY_PARAM;
@@ -324,7 +324,7 @@ function CountersComponent() {
                 ? 'Refreshing limit counters'
                 : 'Refresh limit counters'
             }
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg p-0"
+            className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
             onClick={() => {
               void counters.refetch();
               void rules.refetch();
