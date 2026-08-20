@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-20 self on ContentPanel inspection: I repeatedly combined reads/process checks with `&&` or `;` while tracing tab sizing, despite the repo's one-check-per-command rule. Keep each file range and each PID lookup in an independent command/tool call.
+
 - 2026-08-20 user correction on filter popover flicker: The reported close/reopen happens in the active `FilterChip` value editor, not the main add-filter ComboBox suggestions popover. `FormFieldMultiCombobox` treated its inline `children` renderer as a React component type (`const Tag = children`), so every route rerender changed that type, remounted the tag/FilterChip, and reset its local open state while typing. Test tag/editor DOM identity across `onUpdate`, not only ComboBox `onOpenChange`.
 
 - 2026-08-20 self on stable-callback lookup: I appended an invalid `head -?` pipeline to a scoped `rg`, causing zsh glob failure and repeating the no-pipeline mistake. Use only the bounded `rg` command.
