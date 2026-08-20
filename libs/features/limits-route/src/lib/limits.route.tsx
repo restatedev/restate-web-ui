@@ -94,7 +94,7 @@ import {
   LimitListPagination,
   useLimitListPagination,
 } from './LimitListPagination';
-import { FlowControlHero, flowControlTabs } from './FlowControlPage';
+import { FlowControlHeader, flowControlTabs } from './FlowControlPage';
 import {
   LimitRuleFilterOption,
   LimitRuleFilterValue,
@@ -1012,7 +1012,7 @@ function Component() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <FlowControlHero />
+      <FlowControlHeader />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'rules')}>
         <ContentPanelToolbar>{pageToolbar}</ContentPanelToolbar>
         <ContentPanelBody className="pb-32">

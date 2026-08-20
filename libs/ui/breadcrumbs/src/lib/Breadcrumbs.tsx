@@ -35,8 +35,11 @@ const styles = tv({
       'relative isolate flex min-w-0 items-center gap-x-0.5 px-1.5 pt-px pb-[6px] before:absolute before:inset-0 before:-z-10 before:bg-zinc-500/8 has-[[data-hovered]]:before:bg-zinc-500/13 has-[[data-pressed]]:before:bg-zinc-500/18',
     flatLink:
       'flex min-w-0 items-center gap-1 rounded px-0.5 font-normal text-zinc-600 no-underline hover:text-zinc-800',
-    flatCurrent:
-      'flex min-w-0 items-center gap-1 px-0.5 font-normal text-zinc-500',
+    flatCurrent: 'flex min-w-0 items-center',
+    flatCurrentChip:
+      '[--chip-height:1.6875rem] [--chip-radius:0.375rem] [--chip-slope:6px]',
+    flatCurrentChipRoot: 'bg-gray-100 text-2xs font-normal text-zinc-500',
+    flatCurrentChipSegment: 'pr-1.5 pl-2.5',
     flatEllipsisButton: 'rounded p-0.5 text-zinc-600 hover:text-zinc-800',
   },
   variants: {
@@ -57,8 +60,8 @@ const styles = tv({
         flatItem:
           'px-2.5 before:[clip-path:polygon(6px_0,100%_0,calc(100%-6px)_100%,0_100%)]',
       },
-      none: {
-        flatItem: 'before:hidden',
+      last: {
+        flatItem: 'p-0 before:hidden',
       },
     },
     hiddenOnMobile: {
@@ -195,9 +198,17 @@ export function Breadcrumbs({
   if (crumbs.length < 2) {
     return null;
   }
-  const { nav, chip, current, flatItem, flatLink, flatCurrent } = styles({
-    variant,
-  });
+  const {
+    nav,
+    chip,
+    current,
+    flatItem,
+    flatLink,
+    flatCurrent,
+    flatCurrentChip,
+    flatCurrentChipRoot,
+    flatCurrentChipSegment,
+  } = styles({ variant });
   const total = crumbs.length;
   const isFlat = variant === 'flat';
   const isMobileCollapsed = total >= 4;
@@ -240,7 +251,17 @@ export function Breadcrumbs({
         if (isFlat) {
           const interactiveElement = crumb.isCurrent ? (
             <span aria-current="page" className={flatCurrent()}>
-              <Content crumb={crumb} />
+              <Chip
+                left="angled"
+                right="straight"
+                size="sm"
+                containerClassName={flatCurrentChip()}
+                className={flatCurrentChipRoot()}
+              >
+                <ChipSegment className={flatCurrentChipSegment()}>
+                  <Content crumb={crumb} />
+                </ChipSegment>
+              </Chip>
             </span>
           ) : (
             <Link
@@ -260,7 +281,7 @@ export function Breadcrumbs({
                   className={flatItem({
                     hiddenOnMobile: !isEdge && isMobileCollapsed,
                     seg:
-                      index === 0 ? 'first' : crumb.isCurrent ? 'none' : 'mid',
+                      index === 0 ? 'first' : crumb.isCurrent ? 'last' : 'mid',
                   })}
                 >
                   {PopoverComponent && !crumb.isCurrent ? (

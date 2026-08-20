@@ -27,7 +27,7 @@ import { tv } from '@restate/util/styles';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { type SortDescriptor } from 'react-aria-components';
 import { Form, useSearchParams } from 'react-router';
-import { FlowControlHero, flowControlTabs } from './FlowControlPage';
+import { FlowControlHeader, flowControlTabs } from './FlowControlPage';
 import { VQUEUE_LIST_QUERY_SIZE } from './limits.constants';
 import {
   LimitListPagination,
@@ -229,7 +229,7 @@ function VQueuesComponent() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <FlowControlHero />
+      <FlowControlHeader />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'vqueues')}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
           {pageToolbar}

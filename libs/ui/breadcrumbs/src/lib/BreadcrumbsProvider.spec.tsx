@@ -225,7 +225,7 @@ describe('Breadcrumbs flat variant', () => {
     window.sessionStorage.clear();
   });
 
-  it('should render crumbs as flat links with a plain current crumb', async () => {
+  it('should render crumbs as flat links with a bordered current crumb', async () => {
     const router = createTestRouter('/invocations', pages, 'flat');
     render(<RouterProvider router={router} />);
     await navigate(router, '/invocations/inv-1');
@@ -234,7 +234,9 @@ describe('Breadcrumbs flat variant', () => {
     expect(listLink.getAttribute('href')).toBe('/invocations');
     expect(screen.queryByRole('link', { name: 'inv-1' })).toBeNull();
     const currentLabel = screen.getByText('inv-1');
-    expect(currentLabel.closest('[aria-current="page"]')).toBeTruthy();
+    const currentCrumb = currentLabel.closest('[aria-current="page"]');
+    expect(currentCrumb).toBeTruthy();
+    expect(currentCrumb?.querySelector('[data-chip]')).toBeTruthy();
   });
 
   it('should keep the collapse dropdowns in the flat variant', async () => {

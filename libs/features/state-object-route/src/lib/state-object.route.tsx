@@ -29,7 +29,7 @@ import {
 } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations } from '@restate/util/intl';
-import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
 import {
   AddQueryTrigger,
   QueryBuilder,
@@ -150,7 +150,7 @@ const stateRouteStyles = tv({
   base: 'relative flex min-h-0 flex-1 flex-col',
   variants: {
     hasStorageBreakdown: {
-      true: 'gap-4 pt-20',
+      true: 'gap-4',
       false: '',
     },
   },
@@ -393,6 +393,10 @@ function Component() {
           hasStorageBreakdown: showStateStorage,
         })}
       >
+        <ListPageHeader icon={IconName.Database} title="State">
+          Browse and manage the key/value state stored by your Virtual Objects
+          and Workflows.
+        </ListPageHeader>
         {showStateStorage && (
           <div className="mx-auto flex w-full max-w-3xl flex-col items-stretch gap-2 px-4">
             <StateStorageBreakdown />

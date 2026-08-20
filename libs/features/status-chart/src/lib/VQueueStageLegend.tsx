@@ -22,7 +22,7 @@ import { StageBreakdownPopoverContent } from './StageBreakdownPopoverContent';
 import { FacetCount } from './FacetCount';
 
 const legendStyles = tv({
-  base: 'mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm',
+  base: 'flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm md:justify-start',
 });
 
 const itemStyles = tv({

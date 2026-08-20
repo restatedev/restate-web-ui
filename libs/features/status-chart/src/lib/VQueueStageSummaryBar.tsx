@@ -37,19 +37,19 @@ const INBOX_HIGHLIGHT =
 const styles = tv({
   slots: {
     container:
-      'grid w-full grid-cols-1 items-center gap-y-2 md:grid-cols-[1fr_auto_1fr]',
+      'grid w-full grid-cols-1 items-center gap-y-2.5 md:grid-cols-[auto_minmax(0,1fr)]',
     tabs: 'contents',
     focusRow:
-      'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-zinc-500 md:col-start-2 md:row-start-1',
+      'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-zinc-500 md:row-start-1 md:mx-0 md:justify-self-start',
     breakdownControl:
-      'col-start-1 row-start-1 justify-self-center md:justify-self-end md:pr-2',
+      'col-start-1 row-start-1 justify-self-center md:col-start-2 md:self-center md:justify-self-end md:pr-1',
     focusTabList:
       'gap-0 rounded-xl border-[0.5px] border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.03)]',
     focusTab: 'items-baseline gap-1.5 px-3 py-1.5 font-sans text-xs',
     focusCount: 'font-medium text-gray-500 tabular-nums',
     matches: 'text-3xs leading-none font-medium text-zinc-500',
     panels:
-      'col-start-1 row-start-3 w-full overflow-visible md:col-span-3 md:row-start-2',
+      'col-start-1 row-start-3 w-full overflow-visible md:col-span-2 md:row-start-2',
     panel: 'outline-none',
     rail: 'relative flex h-7 w-full items-stretch gap-1',
   },

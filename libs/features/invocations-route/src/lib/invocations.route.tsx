@@ -57,7 +57,7 @@ import {
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { HoverTooltip } from '@restate/ui/tooltip';
-import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -156,7 +156,7 @@ const PAGE_SIZE = 30;
 const HERO_BREAKDOWN_SAMPLE_SIZE = 1_000_000;
 
 const summaryHeaderStyles = tv({
-  base: 'mx-auto flex w-full max-w-7xl flex-col items-stretch gap-2 px-4',
+  base: 'flex w-full min-w-0 flex-col items-stretch gap-2.5 px-4 pt-0 pb-1',
 });
 
 // Segmented control matching the JournalDetailToggle's inset-container +
@@ -645,46 +645,53 @@ function Component() {
       <SampleNotice />
     ) : undefined;
 
+  const summaryContent = (
+    <div className={summaryHeaderStyles()}>
+      <VQueueStageSummaryBar
+        byStage={displayedByStage}
+        byStatus={displayedByStatus}
+        focus={vqueueSummaryFocus}
+        onFocusChange={changeVqueueSummaryFocus}
+        breakdownMode={countMode}
+        canSampleBreakdown={canSampleBreakdown}
+        onBreakdownModeChange={setCountMode}
+        isLoading={isStageSummaryLoading}
+        isFetching={isStageFetching}
+        isDimmed={statusDim}
+        getHref={statusHref}
+        areStageCountsPartial={displayedStageCountsArePartial}
+        isBreakdownSampled={breakdownIsSampled}
+        countsReflectFilters={stageCountsReflectFilters}
+        populationByStage={populationByStage}
+        countsAreContextual={countsAreContextual}
+        isBreakdownLoading={isVqueueBreakdownLoading}
+      />
+      <VQueueStageLegend
+        byStage={displayedByStage}
+        byStatus={displayedByStatus}
+        focus={vqueueSummaryFocus}
+        isBreakdownSampled={breakdownIsSampled}
+        areStageCountsPartial={displayedStageCountsArePartial}
+        isLoading={isStageSummaryLoading}
+        isError={isSummaryError}
+        isDimmed={statusDim}
+        getHref={statusHref}
+        populationByStage={populationByStage}
+        populationByStatus={populationByStatus}
+        countsAreContextual={countsAreContextual}
+        isBreakdownLoading={isVqueueBreakdownLoading}
+        isBreakdownError={isVqueueBreakdownError}
+      />
+    </div>
+  );
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="relative flex min-h-0 flex-1 flex-col gap-4 pt-20">
-        <div className={summaryHeaderStyles()}>
-          <VQueueStageSummaryBar
-            byStage={displayedByStage}
-            byStatus={displayedByStatus}
-            focus={vqueueSummaryFocus}
-            onFocusChange={changeVqueueSummaryFocus}
-            breakdownMode={countMode}
-            canSampleBreakdown={canSampleBreakdown}
-            onBreakdownModeChange={setCountMode}
-            isLoading={isStageSummaryLoading}
-            isFetching={isStageFetching}
-            isDimmed={statusDim}
-            getHref={statusHref}
-            areStageCountsPartial={displayedStageCountsArePartial}
-            isBreakdownSampled={breakdownIsSampled}
-            countsReflectFilters={stageCountsReflectFilters}
-            populationByStage={populationByStage}
-            countsAreContextual={countsAreContextual}
-            isBreakdownLoading={isVqueueBreakdownLoading}
-          />
-          <VQueueStageLegend
-            byStage={displayedByStage}
-            byStatus={displayedByStatus}
-            focus={vqueueSummaryFocus}
-            isBreakdownSampled={breakdownIsSampled}
-            areStageCountsPartial={displayedStageCountsArePartial}
-            isLoading={isStageSummaryLoading}
-            isError={isSummaryError}
-            isDimmed={statusDim}
-            getHref={statusHref}
-            populationByStage={populationByStage}
-            populationByStatus={populationByStatus}
-            countsAreContextual={countsAreContextual}
-            isBreakdownLoading={isVqueueBreakdownLoading}
-            isBreakdownError={isVqueueBreakdownError}
-          />
-        </div>
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <ListPageHeader icon={IconName.Invocation} title="Invocations">
+          Every handler call across your services. Track progress, inspect
+          journals, and act on invocations in bulk.
+        </ListPageHeader>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar>
             <SampleScanToggle
@@ -879,6 +886,9 @@ function Component() {
             </Dropdown>
           </ContentPanelToolbar>
           <ContentPanelBody className="pb-32">
+            <div className="-mb-1 border-b border-gray-200/80 px-1 pt-9 pb-1.5">
+              {summaryContent}
+            </div>
             <ContentPanelSection flush>
               <PanelTable
                 aria-label="Invocations"

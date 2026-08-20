@@ -34,6 +34,7 @@ import {
   useFilterBuilder,
 } from '@restate/ui/filter-builder';
 import { Icon, IconName } from '@restate/ui/icons';
+import { ListPageHeader } from '@restate/ui/layout';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import {
@@ -213,7 +214,7 @@ function LockHolderCell({
   );
 }
 
-function VirtualObjectsHero({
+function VirtualObjectsHeader({
   hasScopedVirtualObjects,
 }: {
   hasScopedVirtualObjects: boolean;
@@ -223,26 +224,20 @@ function VirtualObjectsHero({
     : 'a service and key';
 
   return (
-    <section className="flex w-full flex-col gap-3 px-5 pt-14 pb-12 md:px-8 md:pt-16 md:pb-16">
-      <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-zinc-950">
-        <Icon name={IconName.VirtualObject} className="h-6 w-6 text-zinc-400" />
-        Virtual Objects
-      </h1>
-      <p className="max-w-4xl text-base leading-7 text-zinc-500">
-        Virtual Objects are stateful entities identified by{' '}
-        {identityDescription}. Each instance has persistent K/V state. Restate
-        runs at most one exclusive handler at a time per instance, while shared
-        handlers can run concurrently.{' '}
-        <Link
-          href="https://docs.restate.dev/foundations/services#virtual-object"
-          variant="secondary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn more
-        </Link>
-      </p>
-    </section>
+    <ListPageHeader icon={IconName.VirtualObject} title="Virtual Objects">
+      Virtual Objects are stateful entities identified by {identityDescription}.
+      Each instance has persistent K/V state. Restate runs at most one exclusive
+      handler at a time per instance, while shared handlers can run
+      concurrently.{' '}
+      <Link
+        href="https://docs.restate.dev/foundations/services#virtual-object"
+        variant="secondary"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Learn more
+      </Link>
+    </ListPageHeader>
   );
 }
 
@@ -421,7 +416,7 @@ function Component() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <VirtualObjectsHero hasScopedVirtualObjects={hasScopedVirtualObjects} />
+      <VirtualObjectsHeader hasScopedVirtualObjects={hasScopedVirtualObjects} />
       <ContentPanel tabs={tabs}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
           <Form
