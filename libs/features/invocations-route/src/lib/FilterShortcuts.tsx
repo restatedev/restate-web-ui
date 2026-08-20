@@ -62,13 +62,13 @@ const makeShortcuts: (
   return [
     {
       id: 'processing',
-      label: 'Processing',
+      label: 'Running',
       columns: defaultColumns,
       sort: SORT_NONE,
       filters: [
         toClause(schema, 'status', {
           operation: 'IN',
-          value: ['running', 'backing-off'],
+          value: ['running'],
         }),
       ],
     },
@@ -86,7 +86,7 @@ const makeShortcuts: (
     },
     {
       id: 'stuck',
-      label: 'Held',
+      label: 'Not processing',
       columns: defaultColumns,
       sort: { field: 'created_at', order: 'ASC' },
       filters: [

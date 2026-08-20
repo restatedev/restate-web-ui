@@ -1,5 +1,11 @@
 # Napkin
 
+- 2026-08-20 invocation shortcut naming/filter correction (user): the visible `Running` shortcut means only `running` while retaining the internal id `processing`. The former `Held` shortcut is `Not processing` and covers pending, backing-off, paused, ready, plus yielded when VQueues expose it. Keep the internal preset id `stuck` for URL/storage compatibility.
+
+- 2026-08-20 self on shortcut test search: I piped a scoped `rg` through another `rg`, immediately repeating the just-recorded no-pipeline mistake. Use one `rg` with all needed expressions and scoped paths.
+
+- 2026-08-20 self on invocation-state path search: I again piped a scoped `rg` through `head` while tracing the legacy/VQueue-off query route. Use a narrower path or output token limit without a shell pipeline.
+
 - 2026-08-20 Query stats storage-risk audit: Each environment and browser tab has an isolated localStorage bucket, but all buckets share the Cloud app origin quota. The current 117 query definitions × 1000 duration samples serialize to about 0.70 MiB per saturated bucket even with minimal SQL/pages; `max.sql` has no length cap. The 24-hour cleanup scans only sibling tab buckets for the current base URL and runs after `setItem`, so inactive-environment buckets are never reclaimed and quota failure prevents cleanup. Keep query recording non-fatal, but add prefix-wide expired-bucket GC before writes plus a conservative total byte budget/oldest-bucket eviction; consider reducing samples and bounding persisted max SQL.
 
 - 2026-08-20 list-page header production pattern: the approved blue type-plate + visible 68ch description is now `ListPageHeader` in `@restate/ui/layout`. Consumers are Invocations, Workflows, Virtual Objects, State, and the shared Flow Control header (Rules/Counters/VQueues). Keep Overview and SQL diagnostics outside this pattern; Query inspector has an explicit no-page-hero decision. Invocations' aggregate is permanently the in-panel cap; do not restore the `MOCK_AGG` deck/cap fork.
