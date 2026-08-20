@@ -153,12 +153,18 @@ export function AddQueryTrigger({
   const items = useMemo(() => {
     return schema.map((clauseSchema) => new QueryClause(clauseSchema));
   }, [schema]);
+  const onAddValuesRef = useRef({ items, query });
+  useEffect(() => {
+    onAddValuesRef.current = { items, query };
+  }, [items, query]);
 
   const inputRef = useFocusShortcut<HTMLInputElement>();
 
   const onAdd = useCallback(
     (key: Key, value?: string) => {
-      const customClause = items.find(
+      const { items: currentItems, query: currentQuery } =
+        onAddValuesRef.current;
+      const customClause = currentItems.find(
         (item) => item.id === key && item.type === 'CUSTOM_STRING',
       );
       if (customClause) {
@@ -166,11 +172,10 @@ export function AddQueryTrigger({
           ...customClause.value,
           fieldValue: value,
         });
-        query?.update(key, newCustomClause);
+        currentQuery?.update(key, newCustomClause);
       }
       setNewId?.(String(key));
     },
-    // TODO: update deps
     [setNewId],
   );
   const onRemove = useCallback(

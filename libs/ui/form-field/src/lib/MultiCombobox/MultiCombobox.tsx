@@ -11,6 +11,7 @@ import {
   ComponentProps,
   useRef,
   useLayoutEffect,
+  useMemo,
 } from 'react';
 import {
   ComboBox,
@@ -20,7 +21,7 @@ import {
   Label,
   InputProps,
 } from 'react-aria-components';
-import { useListData, ListData } from 'react-stately';
+import { ListData } from 'react-stately';
 import {
   FocusScope,
   type Placement,
@@ -65,6 +66,22 @@ function DefaultMenuTrigger() {
   return null;
 }
 
+interface MultiSelectTagProps<T extends object> {
+  item: T;
+  onRemove?: VoidFunction;
+  onUpdate?: (newValue: T) => void;
+  formRef?: RefObject<HTMLFormElement | null>;
+}
+
+function MultiSelectTag<T extends object>({
+  render,
+  ...props
+}: MultiSelectTagProps<T> & {
+  render: (props: MultiSelectTagProps<T>) => ReactNode;
+}) {
+  return render(props);
+}
+
 export interface MultiSelectProps<T extends object> extends Omit<
   RACComboBoxProps<T>,
   | 'children'
@@ -91,12 +108,7 @@ export interface MultiSelectProps<T extends object> extends Omit<
   onInputSubmit?: (value: string) => boolean;
   renderOption?: (item: T) => ReactNode;
   renderEmptyState?: (inputValue: string) => React.ReactNode;
-  children?: ComponentType<{
-    item: T;
-    onRemove?: VoidFunction;
-    onUpdate?: (newValue: T) => void;
-    formRef?: RefObject<HTMLFormElement | null>;
-  }>;
+  children?: (props: MultiSelectTagProps<T>) => ReactNode;
   MenuTrigger?: ComponentType<unknown>;
   label: string;
   placeholder?: string;
@@ -212,7 +224,10 @@ export function FormFieldMultiCombobox<
 }: MultiSelectProps<T>) {
   const { contains } = useFilter({ sensitivity: 'base' });
 
-  const selectedKeys = selectedList.items.map((i) => i.id);
+  const selectedKeys = useMemo(
+    () => selectedList.items.map((item) => item.id),
+    [selectedList.items],
+  );
   const [menuTrigger, setMenuTrigger] =
     useState<ComponentProps<typeof ComboBox>['menuTrigger']>('focus');
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -243,11 +258,6 @@ export function FormFieldMultiCombobox<
     [contains, selectedKeys],
   );
 
-  const availableList = useListData({
-    initialItems: items,
-    filter,
-  });
-
   const [fieldState, setFieldState] = useState<{
     selectedKey: Key | null;
     inputValue: string;
@@ -255,6 +265,10 @@ export function FormFieldMultiCombobox<
     selectedKey: null,
     inputValue: '',
   });
+  const availableItems = useMemo(
+    () => items.filter((item) => filter(item, fieldState.inputValue)),
+    [fieldState.inputValue, filter, items],
+  );
 
   const onRemove = useCallback(
     (key: Key) => {
@@ -295,7 +309,7 @@ export function FormFieldMultiCombobox<
         return;
       }
 
-      const item = availableList.getItem(id);
+      const item = availableItems.find((item) => item.id === id);
 
       if (!item) {
         return;
@@ -310,11 +324,9 @@ export function FormFieldMultiCombobox<
         });
         onItemAdd?.(id, inputValue);
       }
-
-      availableList.setFilterText('');
     },
     [
-      availableList,
+      availableItems,
       fieldState.inputValue,
       onItemAdd,
       selectedKeys,
@@ -327,8 +339,6 @@ export function FormFieldMultiCombobox<
       inputValue: value,
       selectedKey: value === '' ? null : prevState.selectedKey,
     }));
-
-    availableList.setFilterText(value);
   };
 
   const deleteLast = useCallback(() => {
@@ -356,11 +366,10 @@ export function FormFieldMultiCombobox<
       if (e.key === 'Enter' && !(e.metaKey || e.ctrlKey)) {
         if (fieldState.inputValue && onInputSubmit?.(fieldState.inputValue)) {
           setFieldState({ inputValue: '', selectedKey: null });
-          availableList.setFilterText('');
           e.preventDefault();
           return;
         }
-        const id = availableList.items.at(0)?.id;
+        const id = availableItems.at(0)?.id;
         const focusedOption = listBoxRef.current?.querySelector(
           '[role=option][data-focused=true]',
         );
@@ -376,7 +385,7 @@ export function FormFieldMultiCombobox<
       }
     },
     [
-      availableList,
+      availableItems,
       deleteLast,
       fieldState.inputValue,
       onInputSubmit,
@@ -479,11 +488,9 @@ export function FormFieldMultiCombobox<
   );
   const areAllTagsCollapsed =
     hiddenItems.length > 0 && visibleItems.length === 0;
-  const Tag = children;
-  const optionItems = availableList.items
-    .filter(
-      (item) => !item.allowCustomValue || availableList.items.length === 1,
-    )
+  const renderTag = children;
+  const optionItems = availableItems
+    .filter((item) => !item.allowCustomValue || availableItems.length === 1)
     .map((item) => (
       <ListBoxItem
         value={String(item.id)}
@@ -522,7 +529,8 @@ export function FormFieldMultiCombobox<
               tagKey={item.id}
               onRemove={onRemove.bind(null, item.id)}
             >
-              <Tag
+              <MultiSelectTag
+                render={renderTag}
                 item={item}
                 onRemove={onRemove.bind(null, item.id)}
                 onUpdate={onUpdate}
@@ -578,7 +586,8 @@ export function FormFieldMultiCombobox<
                       tagKey={item.id}
                       onRemove={onRemove.bind(null, item.id)}
                     >
-                      <Tag
+                      <MultiSelectTag
+                        render={renderTag}
                         item={item}
                         onRemove={onRemove.bind(null, item.id)}
                         onUpdate={onUpdate}
@@ -601,7 +610,7 @@ export function FormFieldMultiCombobox<
             tagsPlacement,
             className: inputClassName,
           })}
-          items={availableList.items}
+          items={availableItems}
           selectedKey={fieldState.selectedKey}
           inputValue={fieldState.inputValue}
           onSelectionChange={onSelectionChange}
@@ -620,7 +629,6 @@ export function FormFieldMultiCombobox<
                   inputValue: '',
                   selectedKey: null,
                 });
-                availableList.setFilterText('');
               }}
               aria-describedby={tagGroupId}
               onKeyDownCapture={onKeyDownCapture}
@@ -629,7 +637,7 @@ export function FormFieldMultiCombobox<
             />
           </div>
 
-          {availableList.items.length > 0 && (
+          {availableItems.length > 0 && (
             <PopoverOverlay
               placement={popoverPlacement}
               className={popoverStyles({ className: popoverClassName })}
