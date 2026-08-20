@@ -88,6 +88,15 @@ describe('queryStats', () => {
     });
   });
 
+  it('keeps the latest 500 duration samples', () => {
+    for (let durationMs = 1; durationMs <= 600; durationMs++) {
+      record({ durationMs });
+    }
+
+    const [stat] = getQueryStatsSnapshot();
+    expect(stat).toMatchObject({ count: 600, p50: 350, p90: 550 });
+  });
+
   it('excludes aborted and errored executions from duration stats', () => {
     record({ durationMs: 100 });
     record({ durationMs: 9_999, outcome: 'aborted' });
@@ -219,6 +228,17 @@ describe('describeQueryPage', () => {
 });
 
 describe('persistence', () => {
+  const STORAGE_PREFIX = 'restate.query-stats.v2.';
+  const TAB_ID_KEY = 'restate.query-stats.tab-id';
+
+  function bucketKey(baseUrl: string, tabId: string) {
+    return `${STORAGE_PREFIX}${encodeURIComponent(baseUrl)}.${tabId}`;
+  }
+
+  function persistedBucket(updatedAt: number, padding = '') {
+    return JSON.stringify({ updatedAt, entries: [], padding });
+  }
+
   function createStorageStub(): Storage {
     const store = new Map<string, string>();
     return {
@@ -338,5 +358,80 @@ describe('persistence', () => {
         durationMs: 900,
       },
     );
+  });
+
+  it('removes expired buckets from other admin base URLs before writing', async () => {
+    const local = createStorageStub();
+    const session = createStorageStub();
+    const expiredKey = bucketKey('https://admin.expired.example', 'old-tab');
+    local.setItem(expiredKey, persistedBucket(1));
+
+    const queryStats = await importFreshModule(local, session);
+    queryStats.recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT current',
+      durationMs: 100,
+      outcome: 'success',
+      executedAt: Date.now(),
+      baseUrl: 'https://admin.current.example',
+    });
+    queryStats.flushQueryStats();
+
+    expect(local.getItem(expiredKey)).toBeNull();
+    const tabId = session.getItem(TAB_ID_KEY);
+    expect(tabId).not.toBeNull();
+    expect(
+      local.getItem(
+        bucketKey('https://admin.current.example', tabId as string),
+      ),
+    ).not.toBeNull();
+  });
+
+  it('evicts the oldest buckets across admin base URLs to stay within budget', async () => {
+    const local = createStorageStub();
+    const session = createStorageStub();
+    const olderKey = bucketKey('https://admin.older.example', 'older-tab');
+    const newerKey = bucketKey('https://admin.newer.example', 'newer-tab');
+    const now = Date.now();
+    local.setItem(olderKey, persistedBucket(now - 2_000, 'x'.repeat(600_000)));
+    local.setItem(newerKey, persistedBucket(now - 1_000, 'x'.repeat(600_000)));
+
+    const queryStats = await importFreshModule(local, session);
+    queryStats.recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT current',
+      durationMs: 100,
+      outcome: 'success',
+      executedAt: now,
+      baseUrl: 'https://admin.current.example',
+    });
+    queryStats.flushQueryStats();
+
+    expect(local.getItem(olderKey)).toBeNull();
+    expect(local.getItem(newerKey)).not.toBeNull();
+  });
+
+  it('keeps oversized SQL in memory without persisting it', async () => {
+    const local = createStorageStub();
+    const session = createStorageStub();
+    const sql = `SELECT '${'x'.repeat(20_000)}'`;
+
+    const queryStats = await importFreshModule(local, session);
+    queryStats.recordQuery({
+      id: 'invocations/get',
+      sql,
+      durationMs: 100,
+      outcome: 'success',
+      executedAt: 1_000,
+    });
+    queryStats.flushQueryStats();
+    expect(queryStats.getQueryStatsSnapshot()[0]?.max?.sql).toBe(sql);
+
+    const reloaded = await importFreshModule(local, session);
+    expect(reloaded.getQueryStatsSnapshot()[0]?.max).toEqual({
+      durationMs: 100,
+      executedAt: 1_000,
+      timedOut: false,
+    });
   });
 });
