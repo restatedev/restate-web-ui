@@ -3554,7 +3554,7 @@ export interface components {
        * @enum {string}
        */
       view?: 'all' | 'stages' | 'live-stages' | 'breakdowns' | 'count';
-      /** @description Filters on these fields do not restrict the aggregate population. Their matching response buckets are marked with isIncluded instead. */
+      /** @description For bucket views, filters on these fields do not restrict the aggregate population and matching buckets are marked with isIncluded instead. The count view always applies every filter. */
       highlightFields?: ('status' | 'target_service_name')[];
     };
     InvocationStatusSummaryBucketV2: {

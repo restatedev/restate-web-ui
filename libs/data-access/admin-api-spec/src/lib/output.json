@@ -9887,7 +9887,7 @@
           "highlightFields": {
             "type": "array",
             "uniqueItems": true,
-            "description": "Filters on these fields do not restrict the aggregate population. Their matching response buckets are marked with isIncluded instead.",
+            "description": "For bucket views, filters on these fields do not restrict the aggregate population and matching buckets are marked with isIncluded instead. The count view always applies every filter.",
             "items": {
               "type": "string",
               "enum": ["status", "target_service_name"]
