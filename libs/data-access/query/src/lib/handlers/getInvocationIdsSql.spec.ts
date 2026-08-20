@@ -101,10 +101,74 @@ describe('getInvocationIds SQL', () => {
       pageSize: 1000,
     });
 
-    expect(sql[0]).toContain('LIMIT 1000');
-    expect(sql.slice(1)).toHaveLength(2);
-    expect(sql[1]?.match(/'inv-\d+'/g)).toHaveLength(500);
-    expect(sql[2]?.match(/'inv-\d+'/g)).toHaveLength(500);
+    const candidateStatusSql = (start: number) => `SELECT
+        v.entry_id,
+        v.stage,
+        v.status
+      FROM sys_vqueue_entry_status v
+      WHERE v.entry_id IN (${Array.from(
+        { length: 500 },
+        (_, index) => `'inv-${start + index}'`,
+      ).join(', ')})
+        AND v.entry_kind = 'invocation'`;
+    expect(sql).toEqual([
+      `SELECT
+        ss.id AS id,
+        ss.created_at AS created_at
+      FROM sys_invocation_status ss
+      WHERE ss.status IN ('invoked')
+        AND ss.target_handler_name = 'run'
+      ORDER BY ss.created_at ASC NULLS LAST
+      LIMIT 1000`,
+      candidateStatusSql(0),
+      candidateStatusSql(500),
+    ]);
     expect(result.invocationIds).toHaveLength(1000);
+  });
+
+  it('retains completion fields for a terminal stored-status fallback', async () => {
+    const sql: string[] = [];
+    const context = {
+      restateVersion: '1.7.2',
+      features: new Set(['vqueues']),
+      query(statement: string) {
+        sql.push(statement.trim());
+        return Promise.resolve({ rows: [] });
+      },
+    } as unknown as QueryContext;
+
+    await getInvocationIds.call(context, {
+      filters: [
+        {
+          field: 'status',
+          type: 'STRING_LIST',
+          operation: 'IN',
+          value: ['backing-off', 'failed'],
+        },
+        {
+          field: 'target_handler_name',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'run',
+        },
+      ],
+      pageSize: 1000,
+    });
+
+    expect(sql).toMatchInlineSnapshot(`
+      [
+        "SELECT
+              ss.id AS id,
+              ss.created_at AS created_at,
+              ss.status AS raw_status,
+              ss.completion_result,
+              ss.completion_failure
+            FROM sys_invocation_status ss
+            WHERE ss.status IN ('invoked', 'completed')
+              AND ss.target_handler_name = 'run'
+            ORDER BY ss.created_at ASC NULLS LAST
+            LIMIT 1000",
+      ]
+    `);
   });
 });
