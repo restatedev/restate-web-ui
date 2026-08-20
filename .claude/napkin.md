@@ -22,6 +22,18 @@
 
 - 2026-08-20 self on filter-schema inspection: I piped a scoped `rg` into `sed` even though the repository notes repeatedly require focused commands without inspection pipelines. Use `rg` alone with narrow paths and the tool output limit.
 
+- 2026-08-20 user clarification on Virtual Object Inbox metric: Keep a duration in the card, but do not use an average-based metric. `avg_inbox_duration` is itself an EMA, so a genuinely non-average duration must come from current entry state; promote the already-returned `oldestInboxedAt` into an “Oldest entry waiting” live duration, contextualized by `numInbox`, and remove all per-VQueue EMA/range fields and contributing-VQueue count.
+
+- 2026-08-20 preferred Virtual Object Inbox card simplification: Drop historical duration entirely and make the card current-state-focused, matching StateStatsCard's hierarchy: hero = current inbox entry count; supporting rows = oldest current inbox entry and last enqueued; header action = VQueues. Once the duration range is gone, `COUNT(last_attempt_at)` and all EMA/attempt-range response fields have no UI purpose and should also be removed. The remaining SQL uses SUM plus standalone MIN/MAX timestamp aggregates, so it cannot hit #5214's paired same-column MIN/MAX trigger.
+
+- 2026-08-20 self on neighboring-card inspection: I guessed `StateStatsCard.tsx` lived in `virtual-objects-route` and combined confirmed/guessed reads with `&&`, causing the second missing-path read to fail. Locate imported component files with `rg` first and run independent reads through parallel tool calls.
+
+- 2026-08-20 self on napkin concurrency: A napkin patch failed because another workspace task inserted newer top entries after I read the file. Re-read the insertion context and apply a narrow top-anchored patch; never overwrite concurrent notes.
+
+- 2026-08-20 self on Vitest filtering: Vitest 4 does not accept Nx's `--testFile` option. Pass the spec path positionally to `vitest run` or use `--testNamePattern`.
+
+- 2026-08-20 user correction on batch pagination: The batch provider requests 1000 IDs per page, so the shared candidate selector must accept a caller limit instead of clamping batch selection to the invocations list's 250-row default. Keep list selection at 250, pass 1000 from `getInvocationIds`, and refine VQueue statuses in groups of at most 500.
+
 - 2026-08-20 virtual-object inbox metric direction: To eliminate the final MIN/MAX pair, use `AVG(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END)`. Restate's DataFusion 54 supports AVG over Arrow Duration directly and returns Duration, so no cast is needed. This is an equal-weighted mean of the per-VQueue EMAs, not an invocation-weighted mean, because `sys_vqueue_meta` exposes no historical sample count. Return `{ value, vqueueCount }` and label it as an average across contributing VQueues.
 
 - 2026-08-20 self on cross-repo rg paths: I searched `tests` and `libs` while the workdir was the sibling `restate` repo, where those paths do not exist, causing avoidable `rg` errors. Resolve/scoped-check paths per repository before multi-path searches.

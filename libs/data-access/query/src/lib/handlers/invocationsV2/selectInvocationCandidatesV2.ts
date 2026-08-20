@@ -111,9 +111,7 @@ async function refineBestEffortCandidates(
   const results = await Promise.all(
     Array.from(
       {
-        length: Math.ceil(
-          ids.length / BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
-        ),
+        length: Math.ceil(ids.length / BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT),
       },
       (_, index) =>
         queryVqueueCandidateStatusesByIds(
