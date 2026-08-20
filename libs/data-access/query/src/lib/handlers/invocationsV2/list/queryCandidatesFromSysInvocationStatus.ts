@@ -49,6 +49,7 @@ export function queryCandidatesFromSysInvocationStatus(
   context: QueryContext,
   query: SysInvocationStatusQueryPlan,
   mode: ResolvedInvocationModeV2,
+  includeInvocationDetails = false,
 ) {
   const statusPredicate =
     query.statuses === undefined
@@ -77,7 +78,11 @@ export function queryCandidatesFromSysInvocationStatus(
   return context.query(
     `
       SELECT
-        ss.id AS id
+        ss.id AS id${
+          includeInvocationDetails && query.sort?.field === 'created_at'
+            ? ',\n        ss.created_at AS created_at'
+            : ''
+        }
       FROM ${source}${where}${orderBy}
       LIMIT ${INVOCATIONS_V2_LIMIT}
     `.trim(),

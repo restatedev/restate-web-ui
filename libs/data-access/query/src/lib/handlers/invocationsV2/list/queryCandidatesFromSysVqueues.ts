@@ -18,6 +18,7 @@ export function queryCandidatesFromSysVqueues(
   context: QueryContext,
   query: SysVqueuesQueryPlan,
   mode: ResolvedInvocationModeV2,
+  includeInvocationDetails = false,
 ) {
   const statusPredicates = !query.statuses
     ? []
@@ -47,7 +48,11 @@ export function queryCandidatesFromSysVqueues(
   return context.query(
     `
       SELECT
-        v.entry_id AS id
+        v.entry_id AS id${
+          includeInvocationDetails && query.sort?.field === 'created_at'
+            ? ',\n        v.created_at AS created_at'
+            : ''
+        }
       FROM ${source}
       WHERE ${clauses.join('\n        AND ')}${orderBy}
       LIMIT ${INVOCATIONS_V2_LIMIT}

@@ -17,6 +17,7 @@ import { queryInvocationRowsByIds } from './queryInvocationRowsByIds';
 import { queryRunningOrBackingOffCandidatesFromInvocationState } from './queryRunningOrBackingOffCandidatesFromInvocationState';
 import { queryCandidatesFromInvocationStatusAndState } from './queryCandidatesFromInvocationStatusAndState';
 import { queryCandidatesFromInvocationStatus } from './queryCandidatesFromInvocationStatus';
+import type { InvocationCandidateRow } from './types';
 
 type Invocation = components['schemas']['Invocation'];
 
@@ -38,13 +39,13 @@ function withDuration(invocation: Invocation, requestTime: string): Invocation {
  * satisfy the request, then performs one bounded `sys_invocation` detail
  * lookup.
  */
-export async function listInvocationsFromInvocationStatusAndState(
+export async function selectInvocationsFromInvocationStatusAndState(
   context: QueryContext,
   filters: InvocationFilterV2[],
   sort: InvocationSortV2 | undefined,
   mode: ResolvedInvocationModeV2,
-  requestTime: string,
-): Promise<Invocation[]> {
+  includeInvocationDetails = false,
+) {
   const invocationStateStatuses = invocationStateOnlyStatuses(filters, sort);
   let candidatesResult;
   if (invocationStateStatuses) {
@@ -59,6 +60,7 @@ export async function listInvocationsFromInvocationStatusAndState(
       filters,
       sort,
       mode,
+      includeInvocationDetails,
     );
   } else {
     candidatesResult = await queryCandidatesFromInvocationStatus(
@@ -66,11 +68,26 @@ export async function listInvocationsFromInvocationStatusAndState(
       filters,
       sort,
       mode,
+      includeInvocationDetails,
     );
   }
-  const ids = candidatesResult.rows
-    .map((row) => row.id as string)
-    .filter(Boolean);
+  return candidatesResult.rows as InvocationCandidateRow[];
+}
+
+export async function listInvocationsFromInvocationStatusAndState(
+  context: QueryContext,
+  filters: InvocationFilterV2[],
+  sort: InvocationSortV2 | undefined,
+  mode: ResolvedInvocationModeV2,
+  requestTime: string,
+): Promise<Invocation[]> {
+  const candidates = await selectInvocationsFromInvocationStatusAndState(
+    context,
+    filters,
+    sort,
+    mode,
+  );
+  const ids = candidates.map((row) => row.id as string).filter(Boolean);
   if (ids.length === 0) return [];
   const detailRows = (
     await queryInvocationRowsByIds(context, ids, filters, sort)

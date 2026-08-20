@@ -27,10 +27,15 @@ function storedStatusPredicate(query: BestEffortSysInvocationStatusQueryPlan) {
 
 function columnsNeededFromSample(
   query: BestEffortSysInvocationStatusQueryPlan,
+  includeInvocationDetails: boolean,
 ) {
   const statusField =
     INVOCATION_LIST_FIELDS.status.tables.sys_invocation_status;
   const columns = new Set(['id', statusField.column]);
+  if (includeInvocationDetails) {
+    columns.add(statusField.supportingColumns.completionResult);
+    columns.add(statusField.supportingColumns.completionFailure);
+  }
   for (const filter of query.filters) {
     columns.add(invocationStatusColumnName(filter.field));
   }
@@ -50,6 +55,7 @@ export function queryBestEffortCandidatesFromSysInvocationStatus(
   context: QueryContext,
   query: BestEffortSysInvocationStatusQueryPlan,
   mode: ResolvedInvocationModeV2,
+  includeInvocationDetails = false,
 ) {
   const clauses = [
     storedStatusPredicate(query),
@@ -66,13 +72,21 @@ export function queryBestEffortCandidatesFromSysInvocationStatus(
     : '';
   const source =
     mode.type === 'sampled'
-      ? `(\n          SELECT\n            ${columnsNeededFromSample(query).join(',\n            ')}\n          FROM sys_invocation_status\n          LIMIT ${mode.sampleSize}\n        ) ss`
+      ? `(\n          SELECT\n            ${columnsNeededFromSample(query, includeInvocationDetails).join(',\n            ')}\n          FROM sys_invocation_status\n          LIMIT ${mode.sampleSize}\n        ) ss`
       : 'sys_invocation_status ss';
 
   return context.query(
     `
       SELECT
-        ss.id AS id
+        ss.id AS id${
+          includeInvocationDetails && query.sort?.field === 'created_at'
+            ? ',\n        ss.created_at AS created_at'
+            : ''
+        }${
+          includeInvocationDetails
+            ? ',\n        ss.status AS raw_status,\n        ss.completion_result,\n        ss.completion_failure'
+            : ''
+        }
       FROM ${source}${where}${orderBy}
       LIMIT ${BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT}
     `.trim(),

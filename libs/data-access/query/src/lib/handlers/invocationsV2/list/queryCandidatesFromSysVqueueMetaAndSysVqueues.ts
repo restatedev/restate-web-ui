@@ -48,6 +48,7 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
   context: QueryContext,
   query: SysVqueueMetaAndVqueuesQueryPlan,
   mode: ResolvedInvocationModeV2,
+  includeInvocationDetails = false,
 ): Promise<{
   rows: InvocationCandidateRow[];
   partial?: VqueueListPartialResult;
@@ -81,7 +82,11 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
   const candidatesPromise = context.query(
     `
       SELECT
-        v.entry_id AS id
+        v.entry_id AS id${
+          includeInvocationDetails && query.sort?.field === 'created_at'
+            ? ',\n        v.created_at AS created_at'
+            : ''
+        }
       FROM ${source}
       WHERE v.id IN (
         SELECT vm.id
