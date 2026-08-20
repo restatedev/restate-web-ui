@@ -12,7 +12,7 @@ import { createQueryPlanFromSysVqueueMetaAndSysVqueues } from './createQueryPlan
 import { createQueryPlanFromSysVqueues } from './createQueryPlanFromSysVqueues';
 import type { InvocationStatusSelection, VqueueListQueryPlan } from './types';
 
-function resolveInvocationStatusSelection(
+export function resolveInvocationStatusSelection(
   filters: InvocationFilterV2[],
 ): InvocationStatusSelection {
   const statusFilters = (filters as FilterItem[]).filter(

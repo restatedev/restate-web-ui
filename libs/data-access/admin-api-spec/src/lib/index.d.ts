@@ -3550,10 +3550,10 @@ export interface components {
        */
       range?: 'PT1H' | 'P1D' | 'ALL';
       /**
-       * @description Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; all returns both complete stages and breakdowns.
+       * @description Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; count applies every filter and returns only the total; all returns both complete stages and breakdowns.
        * @enum {string}
        */
-      view?: 'all' | 'stages' | 'live-stages' | 'breakdowns';
+      view?: 'all' | 'stages' | 'live-stages' | 'breakdowns' | 'count';
       /** @description Filters on these fields do not restrict the aggregate population. Their matching response buckets are marked with isIncluded instead. */
       highlightFields?: ('status' | 'target_service_name')[];
     };

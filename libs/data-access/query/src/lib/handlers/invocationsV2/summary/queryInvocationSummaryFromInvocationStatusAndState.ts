@@ -24,6 +24,10 @@ type SummaryRow = {
   count?: number | string;
 };
 
+type CountRow = {
+  count?: number | string;
+};
+
 function statusExpression(
   statusAlias: string,
   stateAlias: string,
@@ -61,6 +65,35 @@ function summaryFilterClauses(
       return clause ? [clause] : [];
     }),
   ];
+}
+
+export async function queryInvocationCountFromInvocationStatusAndState(
+  context: QueryContext,
+  filters: InvocationFilterV2[],
+  mode: ResolvedInvocationModeV2,
+) {
+  const statusAlias = mode.type === 'sampled' ? 'sampled_invocations' : 'ss';
+  const clauses = summaryFilterClauses(filters, statusAlias, 'sis');
+  const where = clauses.length
+    ? `\n      WHERE ${clauses.join('\n        AND ')}`
+    : '';
+  const source =
+    mode.type === 'sampled'
+      ? `(\n        SELECT\n          ${invocationStatusSampleColumns(filters, undefined, ['id', 'status'])}\n        FROM sys_invocation_status\n        LIMIT ${mode.sampleSize}\n      ) sampled_invocations`
+      : 'sys_invocation_status ss';
+  const { rows } = (await context.query(
+    `
+      SELECT
+        COUNT(1) AS count
+      FROM ${source}
+      LEFT JOIN sys_invocation_state sis ON sis.id = ${statusAlias}.id${where}
+    `.trim(),
+    'invocations-v2/count-from-status-and-state',
+  )) as { rows: CountRow[] };
+  return {
+    count: Number(rows[0]?.count ?? 0),
+    isPartial: mode.type === 'sampled',
+  };
 }
 
 /**

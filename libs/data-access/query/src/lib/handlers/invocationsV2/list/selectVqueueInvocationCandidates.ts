@@ -20,7 +20,7 @@ import type {
   VqueueListQueryPlan,
 } from './types';
 
-function sourcePlansToExecute(
+export function sourcePlansToExecute(
   queryPlan: VqueueListQueryPlan,
   sort: InvocationSortV2 | undefined,
 ):

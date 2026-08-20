@@ -22,6 +22,16 @@
 
 - 2026-08-20 self on filter-schema inspection: I piped a scoped `rg` into `sed` even though the repository notes repeatedly require focused commands without inspection pipelines. Use `rg` alone with narrow paths and the tool output limit.
 
+- 2026-08-20 user correction on batch summary count: Highlighted status buckets only identify a containing stage, so summing included stages overcounts (backing-off became the entire Inbox). Batch dialogs need a count-only V2 summary view that applies every filter and executes a scalar `COUNT(1)` without `GROUP BY`; use VQueue entries when they can satisfy the filters and fall back to status/state only when needed.
+
+- 2026-08-20 self on inspection commands: I used output pipes twice despite the repo napkin explicitly calling this noisy. Scope `rg` directly and inspect named files in separate tool calls; do not pipe inspection output through `head` or another command.
+
+- 2026-08-20 self on migrating batch counts to V2: Check every action's implicit filters, not only the reported dialog. Several batch actions still use legacy `status = completed`; translate that to the four terminal V2 statuses for the summary request while leaving the mutation payload unchanged.
+
+- 2026-08-20 user correction from live Retry dialog: Batch count summaries use a 1,000,000-row sample. Highlight `status` so action/page status predicates do not force the status/state fallback; use the included coarse stage buckets as the hint (e.g. ready/yielded/backing-off share Inbox), deduplicate identical page+implicit filters, and never disable a filter-based action from a sampled zero. Only an exact selected-ID population can prove empty.
+
+- 2026-08-20 user correction on batch dialog summary mode: The dialog count is only a hint. Request the V2 stages summary in sampled mode, not exact; preserve cheap exact VQueue metadata behavior internally and mark the displayed count as a lower bound when the summary response is partial.
+
 - 2026-08-20 self on patching near template interpolation: I inserted `summaryFilterClauses` after the first standalone `}` inside `statusExpression`, which was the `${...}` interpolation boundary rather than the function end and caused a syntax error. When patching template-heavy functions, anchor on the complete trailing `END\`;` plus closing brace.
 
 - 2026-08-20 user clarification on unsupported summary stage: “May reject” means do not reject in the planner and do not silently drop the filter. Pass `stage` through as the ordinary status-source column and let DataFusion report that the fallback table does not support it. Preserve exact status filtering; remove only the invented status/state→stage CASE translation.
