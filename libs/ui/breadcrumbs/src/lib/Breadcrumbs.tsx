@@ -36,7 +36,7 @@ const styles = tv({
     flatLink:
       'flex min-w-0 items-center gap-1 rounded px-0.5 font-normal text-zinc-600 no-underline hover:text-zinc-800',
     flatCurrent:
-      'flex min-w-0 items-center gap-1 px-0.5 font-normal text-zinc-500 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
+      'flex min-w-0 items-center gap-1 px-0.5 font-normal text-zinc-500',
     flatEllipsisButton: 'rounded p-0.5 text-zinc-600 hover:text-zinc-800',
   },
   variants: {
@@ -45,7 +45,7 @@ const styles = tv({
         nav: 'ml-2 gap-x-0 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
       },
       flat: {
-        nav: 'gap-x-0 text-2xs leading-none [&>*+*]:-ml-px [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px]',
+        nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&>*+*]:-ml-px [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px]',
       },
     },
     seg: {
