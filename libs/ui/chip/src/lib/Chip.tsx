@@ -1,4 +1,4 @@
-import { Children, PropsWithChildren } from 'react';
+import { Children, PropsWithChildren, type ReactNode } from 'react';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 
@@ -256,6 +256,7 @@ export function Chip({
   right,
   size,
   href,
+  overlay,
   'aria-label': ariaLabel,
 }: PropsWithChildren<{
   className?: string;
@@ -264,6 +265,7 @@ export function Chip({
   right?: ChipEdge;
   size?: ChipSize;
   href?: string;
+  overlay?: ReactNode;
   'aria-label'?: string;
 }>) {
   const { outer, root, link } = styles({ left, right, size });
@@ -279,6 +281,17 @@ export function Chip({
           variant="secondary"
           className={link()}
         />
+      )}
+      {!href && overlay && (
+        <span
+          data-chip-overlay
+          className={link({
+            className:
+              'has-[[data-pressed]]:before:bg-black/6 [&>button]:absolute [&>button]:inset-0',
+          })}
+        >
+          {overlay}
+        </span>
       )}
     </div>
   );

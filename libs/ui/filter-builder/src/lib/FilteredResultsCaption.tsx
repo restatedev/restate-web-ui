@@ -13,7 +13,7 @@ export function FilteredResultsCaption({
   return (
     <div className="mx-2 mt-11 -mb-8 flex h-8 min-w-0 items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50 px-2 text-xs">
       <Icon
-        name={IconName.Filter}
+        name={IconName.ListFilter}
         className="h-3.5 w-3.5 shrink-0 text-blue-500"
       />
       <span className="shrink-0 font-medium text-gray-700">

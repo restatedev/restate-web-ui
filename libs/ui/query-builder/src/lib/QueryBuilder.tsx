@@ -216,11 +216,11 @@ export function AddQueryTrigger({
       overflowItemLabel="filter"
       overflowPrefix={
         <Icon
-          name={IconName.Filter}
+          name={IconName.ListFilter}
           className="h-3.5 w-3.5 shrink-0 text-blue-600"
         />
       }
-      overflowClassName="border-blue-200 bg-blue-50 font-medium text-blue-950 shadow-xs hover:bg-blue-100 pressed:bg-blue-200"
+      overflowClassName="border-gray-200 bg-gray-50 font-medium text-zinc-700 shadow-xs hover:bg-gray-100 pressed:bg-gray-200"
     />
   );
 }
