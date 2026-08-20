@@ -3237,6 +3237,7 @@ export interface components {
         | 'modified_at'
         | 'completed_at'
         | 'vqueue_id'
+        | 'stage'
         | 'scope'
         | 'limit_key';
     };

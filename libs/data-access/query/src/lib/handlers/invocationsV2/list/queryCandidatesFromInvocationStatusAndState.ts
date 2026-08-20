@@ -20,11 +20,16 @@ export function queryCandidatesFromInvocationStatusAndState(
   filters: InvocationFilterV2[],
   sort: InvocationSortV2 | undefined,
   mode: ResolvedInvocationModeV2,
+  includeSelectionFields = false,
 ) {
   const where = invocationStatusWhere(filters, 'ss', 'sis');
   const sortColumn = sort
     ? invocationStatusColumnForField(sort.field, 'ss')
     : undefined;
+  const createdAtColumn =
+    includeSelectionFields && sort?.field === 'created_at'
+      ? ',\n          ss.created_at AS created_at'
+      : '';
   if (mode.type === 'sampled') {
     const sampleColumns = invocationStatusSampleColumns(filters, sort?.field);
     const suffix = `${where ? `\n        ${where}` : ''}${
@@ -33,7 +38,7 @@ export function queryCandidatesFromInvocationStatusAndState(
     return context.query(
       `
         SELECT
-          ss.id AS id
+          ss.id AS id${createdAtColumn}
         FROM (
           SELECT
             ${sampleColumns}
@@ -60,7 +65,7 @@ export function queryCandidatesFromInvocationStatusAndState(
   return context.query(
     `
       SELECT
-        ss.id AS id
+        ss.id AS id${createdAtColumn}
       FROM sys_invocation_status ss
       LEFT JOIN (
         SELECT

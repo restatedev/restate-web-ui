@@ -11,6 +11,10 @@ export type { VqueueStage } from '../../../invocationStatuses';
 
 export type InvocationCandidateRow = {
   id: string;
+  created_at?: string;
+  raw_status?: string;
+  completion_result?: string;
+  completion_failure?: string;
 };
 
 export type InvocationCandidate = InvocationCandidateRow & {

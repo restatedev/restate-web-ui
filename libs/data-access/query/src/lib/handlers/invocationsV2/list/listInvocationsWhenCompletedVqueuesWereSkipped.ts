@@ -18,7 +18,7 @@ import type {
 
 const TERMINAL_STATUSES = new Set<string>(TERMINAL_INVOCATION_STATUSES);
 
-function createQueryPlanWhenCompletedVqueuesWereSkipped(
+export function createQueryPlanWhenCompletedVqueuesWereSkipped(
   context: QueryContext,
   filters: InvocationFilterV2[],
   sort: InvocationSortV2 | undefined,

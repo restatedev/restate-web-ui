@@ -208,6 +208,19 @@ export function invocationStatusWhere(
   invocationStatusAlias: string,
   invocationStateAlias: string,
 ): string {
+  const clauses = invocationStatusClauses(
+    filters,
+    invocationStatusAlias,
+    invocationStateAlias,
+  );
+  return clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+}
+
+export function invocationStatusClauses(
+  filters: InvocationFilterV2[],
+  invocationStatusAlias: string,
+  invocationStateAlias: string,
+): string[] {
   const source: InvocationFilterSource = {
     type: 'invocation-status',
     alias: invocationStatusAlias,
@@ -223,5 +236,5 @@ export function invocationStatusWhere(
       (clause): clause is string => Boolean(clause),
     );
   });
-  return clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  return clauses;
 }
