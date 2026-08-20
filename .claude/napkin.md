@@ -1,5 +1,19 @@
 # Napkin
 
+- 2026-08-20 Workflow card FINAL: Name the Workflow statistics card “Execution” and do not show a VQueues link on it. Remove the service-only VQueue navigation helper when unused. The Virtual Object “Inbox” card retains its exact-instance VQueues drill-down.
+
+- 2026-08-20 Virtual Object card naming correction: The card with average inbox time, inbox count, oldest inboxed entry, and last enqueue is “Inbox”, not “Queue activity”; those values summarize current inbox state rather than general activity.
+
+- 2026-08-20 self on Nx project naming: I guessed the shared card library project was `ui-card`; its `project.json` name is `card`. Read the local project manifest before invoking a newly touched library target.
+
+- 2026-08-20 Virtual Object Inbox-to-VQueues navigation: Do not make the hero statistic row a link. Put a subtle `VQueues` + chevron link in the `CardHeader` action slot at the top right, outside the title tab; keep the hero row purely informational.
+
+- 2026-08-20 linked statistics copy correction: Do not append a blue inline “View VQueues” CTA inside a statistics subtitle; it competes with the metric and looks bolted on. For the Virtual Object Inbox card, explain the relationship with the existing “Across … VQueues” subtitle and keep navigation in the card-header action.
+
+- 2026-08-20 workflow comparison design gate: Run performance-sensitive statistics/query designs by the user before implementation. Do not add a per-detail-page scan of all retained workflow invocations without explicit approval; distinguish exact run averages from cheaper VQueue EMA approximations.
+
+- 2026-08-20 self on workflow source discovery: I piped `rg --files` into `rg` despite the repo's repeated no-pipeline inspection rule. Use a scoped `rg --files <directory> --glob '<pattern>'` or a direct symbol search instead.
+
 - 2026-08-20 user-facing batch filter operations: Never expose internal query operation IDs such as `EQUALS`, `NOT_IN`, or `NOT_CONTAINS`. Prefer the field schema's label and use an exhaustive friendly fallback (`is`, `is not`, `does not contain`, etc.) when an action-required filter's shape differs from the page schema. A visible action-required Status criterion suppresses the contradictory `Status is Any` placeholder.
 
 - 2026-08-20 batch-operation filter display: Action-required filters remain in the request and must remain visibly represented when they narrow the selection, especially Retry Now's Backing-off restriction. For display, collapse semantically equivalent `STRING EQUALS value` and singleton `STRING_LIST IN [value]` criteria so the same status is not shown twice; retain both when a broader caller filter is genuinely narrowed.

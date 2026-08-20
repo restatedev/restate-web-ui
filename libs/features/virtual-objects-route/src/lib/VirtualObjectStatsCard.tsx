@@ -2,8 +2,8 @@ import type { components } from '@restate/data-access/admin-api-spec';
 import {
   Card,
   CardHeader,
+  CardHeaderLink,
   CardHeroValue,
-  CardLinkRow,
   CardRow,
 } from '@restate/ui/card';
 import { IconName } from '@restate/ui/icons';
@@ -46,31 +46,33 @@ export function VirtualObjectStatsCard({
   return (
     <Card intent="none">
       <CardHeader
-        title="Statistics"
+        title="Inbox"
         icon={IconName.Layers}
         iconClassName="rotate-90"
-      />
-      <CardLinkRow
-        href={vqueuesHref}
-        aria-label="View VQueues for this Virtual Object instance"
-        variant="hero"
-        label={
-          <div className="min-w-0">
-            <div className="text-0.5xs font-medium text-gray-500">
-              Average time inboxed
-            </div>
-            <div className="mt-0.5 text-2xs text-gray-400">
-              {inboxDuration
-                ? `Across ${formatNumber(inboxDuration.vqueueCount)} ${inboxDuration.vqueueCount === 1 ? 'VQueue' : 'VQueues'} · includes retries`
-                : 'No sampled VQueues'}
-            </div>
-          </div>
+        action={
+          <CardHeaderLink
+            href={vqueuesHref}
+            aria-label="View VQueues for this Virtual Object instance"
+          >
+            VQueues
+          </CardHeaderLink>
         }
-      >
+      />
+      <CardRow variant="hero">
+        <div className="min-w-0 flex-auto">
+          <div className="text-0.5xs font-medium text-gray-500">
+            Average time inboxed
+          </div>
+          <div className="mt-0.5 text-2xs text-gray-400">
+            {inboxDuration
+              ? `Across ${formatNumber(inboxDuration.vqueueCount)} ${inboxDuration.vqueueCount === 1 ? 'VQueue' : 'VQueues'} · includes retries`
+              : 'No sampled VQueues'}
+          </div>
+        </div>
         <CardHeroValue>
           {inboxDuration ? formatDurationRange(inboxDuration) : '—'}
         </CardHeroValue>
-      </CardLinkRow>
+      </CardRow>
       <CardRow label="Inbox">
         <span className="text-xs text-zinc-600 tabular-nums">
           {formatNumber(stats.numInbox ?? 0)} entries

@@ -26,7 +26,7 @@ export function WorkflowStatsCard({
   return (
     <Card intent="none">
       <CardHeader
-        title="Statistics"
+        title="Execution"
         icon={IconName.Layers}
         iconClassName="rotate-90"
       />

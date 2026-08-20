@@ -24,14 +24,13 @@ describe('VirtualObjectStatsCard', () => {
     const link = screen.getByRole('link', {
       name: 'View VQueues for this Virtual Object instance',
     });
+    expect(screen.getByRole('heading', { name: 'Inbox' })).toBeTruthy();
     expect(link.getAttribute('href')).toBe(
       '/ui/flow-control/vqueues?filter_scope=tenant-a',
     );
-    expect(screen.getByText('Average time inboxed').closest('a')).toBe(link);
-    expect(
-      screen
-        .getByText('72ms')
-        .nextElementSibling?.classList.contains('lucide-chevron-right'),
-    ).toBe(true);
+    expect(screen.getByText('VQueues').closest('a')).toBe(link);
+    expect(link.querySelector('.lucide-chevron-right')).toBeTruthy();
+    expect(screen.getByText('Average time inboxed').closest('a')).toBeNull();
+    expect(screen.getByText('72ms').closest('a')).toBeNull();
   });
 });
