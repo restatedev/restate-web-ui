@@ -66,6 +66,8 @@ describe('getInvocationIds', () => {
         },
       ],
       sort: { field: 'created_at', order: 'ASC' },
+      mode: { type: 'exact' },
+      includeInvocationDetails: true,
     });
     expect(result).toEqual({
       invocationIds: ['inv_1', 'inv_2'],

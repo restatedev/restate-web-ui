@@ -34,11 +34,6 @@ function withDuration(invocation: Invocation, requestTime: string): Invocation {
   };
 }
 
-/**
- * Selects the smallest invocation status/state candidate source that can
- * satisfy the request, then performs one bounded `sys_invocation` detail
- * lookup.
- */
 export async function selectInvocationsFromInvocationStatusAndState(
   context: QueryContext,
   filters: InvocationFilterV2[],
@@ -74,19 +69,13 @@ export async function selectInvocationsFromInvocationStatusAndState(
   return candidatesResult.rows as InvocationCandidateRow[];
 }
 
-export async function listInvocationsFromInvocationStatusAndState(
+export async function loadInvocationsFromInvocationStatusAndState(
   context: QueryContext,
+  candidates: InvocationCandidateRow[],
   filters: InvocationFilterV2[],
   sort: InvocationSortV2 | undefined,
-  mode: ResolvedInvocationModeV2,
   requestTime: string,
 ): Promise<Invocation[]> {
-  const candidates = await selectInvocationsFromInvocationStatusAndState(
-    context,
-    filters,
-    sort,
-    mode,
-  );
   const ids = candidates.map((row) => row.id as string).filter(Boolean);
   if (ids.length === 0) return [];
   const detailRows = (

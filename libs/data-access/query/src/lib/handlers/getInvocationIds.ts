@@ -40,11 +40,13 @@ export async function getInvocationIds(
   const data = await selectInvocationCandidatesV2(this, {
     filters: allFilters as components['schemas']['InvocationV2FilterItem'][],
     sort: { field: 'created_at', order: 'ASC' },
+    mode: { type: 'exact' },
+    includeInvocationDetails: true,
   });
   if ('error' in data) {
     throw new Error(data.error);
   }
-  const rows = data.rows.slice(0, pageSize);
+  const rows = data.rows.slice(0, Math.min(pageSize, data.limit));
   if (data.partial && rows.length === 0) {
     throw new Error('Unable to continue partial batch invocation selection');
   }

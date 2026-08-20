@@ -1,18 +1,10 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from '../shared';
-import { listInvocationsFromInvocationStatusAndState } from './list/listInvocationsFromInvocationStatusAndState';
 import { enrichInvocationFlowControl } from './list/enrichInvocationFlowControl';
-import { listInvocationsFromVqueues } from './list/listInvocationsFromVqueues';
-import { listInvocationsWhenCompletedVqueuesWereSkipped } from './list/listInvocationsWhenCompletedVqueuesWereSkipped';
-import {
-  badRequest,
-  INVOCATIONS_V2_LIMIT,
-  resolveInvocationModeV2,
-  supportsInvocationV2Vqueues,
-  validateInvocationFiltersV2,
-  validateInvocationFieldsForServer,
-  validateInvocationSortV2,
-} from './shared';
+import { loadInvocationsFromInvocationStatusAndState } from './list/listInvocationsFromInvocationStatusAndState';
+import { loadVqueueInvocationsByIds } from './list/loadVqueueInvocationsByIds';
+import { selectInvocationCandidatesV2 } from './selectInvocationCandidatesV2';
+import { badRequest, INVOCATIONS_V2_LIMIT } from './shared';
 
 export type ListInvocationsV2Args =
   components['schemas']['ListInvocationsV2RequestBody'];
@@ -32,72 +24,49 @@ export async function listInvocationsV2(
     includeFlowControl = false,
   }: ListInvocationsV2Args,
 ): Promise<Response> {
-  const filterError = validateInvocationFiltersV2(filters);
-  if (filterError) return badRequest(filterError);
-
-  const sortError = validateInvocationSortV2(sort);
-  if (sortError) return badRequest(sortError);
-
-  const useVqueues = supportsInvocationV2Vqueues(this);
-  const fieldAvailabilityError = validateInvocationFieldsForServer(
-    this,
+  const selected = await selectInvocationCandidatesV2(this, {
     filters,
     sort,
-    useVqueues
-      ? ['sys_vqueues', 'sys_vqueue_meta', 'sys_invocation_status']
-      : ['sys_invocation_status'],
-  );
-  if (fieldAvailabilityError) return badRequest(fieldAvailabilityError);
-
-  const { mode, error: modeError } = resolveInvocationModeV2(requestedMode);
-  if (modeError || !mode) return badRequest(modeError ?? 'Invalid mode');
+    mode: requestedMode,
+    includeInvocationDetails: false,
+  });
+  if ('error' in selected) return badRequest(selected.error);
 
   const requestTime = new Date().toISOString();
-  let result;
-  if (useVqueues && this.features.has('vqueues_migration_skip_completed')) {
-    result = await listInvocationsWhenCompletedVqueuesWereSkipped(
-      this,
-      filters,
-      sort,
-      mode,
-      requestTime,
-    );
-  } else if (useVqueues) {
-    result = await listInvocationsFromVqueues(
-      this,
-      filters,
-      sort,
-      mode,
-      requestTime,
-    );
-  } else {
-    result = {
-      rows: await listInvocationsFromInvocationStatusAndState(
-        this,
-        filters,
-        sort,
-        mode,
-        requestTime,
-      ),
-    };
-  }
-
-  if ('error' in result) return badRequest(result.error);
-  const isPartial = mode.type === 'sampled' || Boolean(result.partial);
   const rows =
-    includeFlowControl && useVqueues
-      ? await enrichInvocationFlowControl(this, result.rows, requestTime)
-      : result.rows;
+    selected.source === 'vqueue'
+      ? await loadVqueueInvocationsByIds(
+          this,
+          selected.rows,
+          filters,
+          selected.statusSelection,
+          sort,
+          requestTime,
+        )
+      : await loadInvocationsFromInvocationStatusAndState(
+          this,
+          selected.rows,
+          filters,
+          sort,
+          requestTime,
+        );
+  const limitedRows = rows.slice(0, INVOCATIONS_V2_LIMIT);
+  const isPartial =
+    selected.mode.type === 'sampled' || Boolean(selected.partial);
+  const enrichedRows =
+    includeFlowControl && selected.source === 'vqueue'
+      ? await enrichInvocationFlowControl(this, limitedRows, requestTime)
+      : limitedRows;
 
   return Response.json({
-    rows,
+    rows: enrichedRows,
     limit: INVOCATIONS_V2_LIMIT,
-    mode: mode.type,
+    mode: selected.mode.type,
     isPartial,
-    ...(result.partial && { partial: result.partial }),
-    ...(mode.type === 'sampled' && {
+    ...(selected.partial && { partial: selected.partial }),
+    ...(selected.mode.type === 'sampled' && {
       sample: {
-        sampleSize: mode.sampleSize,
+        sampleSize: selected.mode.sampleSize,
       },
     }),
   } satisfies ListInvocationsV2Response);

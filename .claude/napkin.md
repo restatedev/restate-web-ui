@@ -22,6 +22,12 @@
 
 - 2026-08-20 self on filter-schema inspection: I piped a scoped `rg` into `sed` even though the repository notes repeatedly require focused commands without inspection pipelines. Use `rg` alone with narrow paths and the tool output limit.
 
+- 2026-08-20 self on shared-selector test fixture: After making mode and detail projection explicit shared-selector inputs, the `getInvocationIds` interaction assertion still expected the old two-field request. Update caller-contract assertions whenever an internal API becomes shared, even when full SQL snapshots already pass.
+
+- 2026-08-20 self on shared candidate result union: I omitted `partial?: undefined` from the invocation-status branch, so common callers could not read `selected.partial` without redundant source narrowing. Give shared response fields a consistent shape across discriminated branches.
+
+- 2026-08-20 user correction on candidate-selector abstraction: Extract the complete first half of `listInvocationsV2`, not merely the VQueue executor. `listInvocationsV2` and batch ID traversal must share validation, server/source routing, migration-plan selection, and candidate selection; keep VQueue-specific selection private and avoid a batch-only top-level query orchestrator.
+
 - 2026-08-20 self on final batch-selector inspection: I combined `git diff --stat` and a scoped `git diff` with `&&`, despite the repository rule against chained shell inspections. Run them as separate parallel tool calls.
 
 - 2026-08-20 user correction on V2 batch candidate selection: Do not build a second VQueue candidate executor for batch IDs. Extract the existing pre-hydration phase from `executeVqueueListQueryPlan`; the invocations list hydrates those shared candidates, while filtered batch selection returns their IDs (plus only the minimal exact-status refinement and `created_at` projection needed when hydration is skipped).

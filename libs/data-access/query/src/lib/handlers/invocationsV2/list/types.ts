@@ -1,4 +1,3 @@
-import type { components } from '@restate/data-access/admin-api-spec';
 import type {
   InvocationFilterV2,
   InvocationSortV2,
@@ -110,13 +109,6 @@ export type VqueueListPartialResult =
       reason: 'candidate-limit';
       candidateLimit: number;
     };
-
-export type VqueueListResult =
-  | {
-      rows: components['schemas']['InvocationV2'][];
-      partial?: VqueueListPartialResult;
-    }
-  | { error: string };
 
 export type VqueueRow = VqueueStatus & {
   entry_id: string;

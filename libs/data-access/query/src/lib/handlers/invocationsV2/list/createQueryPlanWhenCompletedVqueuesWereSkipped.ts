@@ -1,16 +1,11 @@
 import { TERMINAL_INVOCATION_STATUSES } from '../../../invocationStatuses';
 import type { QueryContext } from '../../shared';
-import {
-  type InvocationFilterV2,
-  type InvocationSortV2,
-  type ResolvedInvocationModeV2,
-} from '../shared';
+import { type InvocationFilterV2, type InvocationSortV2 } from '../shared';
 import { createQueryPlanFromSysInvocationStatus } from './createQueryPlanFromSysInvocationStatus';
 import { createBestEffortQueryPlanFromSysInvocationStatus } from './createBestEffortQueryPlanFromSysInvocationStatus';
 import { createQueryPlanFromSysVqueueMetaAndSysVqueues } from './createQueryPlanFromSysVqueueMetaAndSysVqueues';
 import { createQueryPlanFromSysVqueues } from './createQueryPlanFromSysVqueues';
 import { createVqueueListQueryPlan } from './createVqueueListQueryPlan';
-import { executeVqueueListQueryPlan } from './executeVqueueListQueryPlan';
 import type {
   InvocationCandidateSourcePlan,
   VqueueListQueryPlan,
@@ -124,30 +119,4 @@ export function createQueryPlanWhenCompletedVqueuesWereSkipped(
     sort,
   );
   return { statusSelection, sourcePlans: [bestEffortPlan] };
-}
-
-/**
- * Lists invocations when completed rows were deliberately omitted from the
- * VQueue migration. Delete this branch with the migration capability.
- */
-export function listInvocationsWhenCompletedVqueuesWereSkipped(
-  context: QueryContext,
-  filters: InvocationFilterV2[],
-  sort: InvocationSortV2 | undefined,
-  mode: ResolvedInvocationModeV2,
-  requestTime: string,
-) {
-  const queryPlan = createQueryPlanWhenCompletedVqueuesWereSkipped(
-    context,
-    filters,
-    sort,
-  );
-  return executeVqueueListQueryPlan(
-    context,
-    queryPlan,
-    filters,
-    sort,
-    mode,
-    requestTime,
-  );
 }
