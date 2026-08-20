@@ -58,7 +58,7 @@ export async function getVirtualObjectStats(
       COUNT(last_attempt_at) AS attempted_vqueue_count,
       MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS min_avg_inbox_duration,
       MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END) AS max_avg_inbox_duration,
-      COALESCE(SUM(num_inbox), 0) AS num_inbox,
+      SUM(num_inbox) AS num_inbox,
       MAX(last_enqueued_at) AS last_enqueued_at
     FROM sys_vqueue_meta
     WHERE service_name = ${quoteSqlString(service)}

@@ -22,6 +22,8 @@
 
 - 2026-08-20 self on filter-schema inspection: I piped a scoped `rg` into `sed` even though the repository notes repeatedly require focused commands without inspection pipelines. Use `rg` alone with narrow paths and the tool output limit.
 
+- 2026-08-20 final VO stats SUM normalization: Use `SUM(num_inbox)` without SQL `COALESCE`; `nonNegativeInteger()` already maps the aggregate's null result for an empty input to API value `0`. Keep the query definition and SQL snapshots structurally aligned with the raw SUM.
+
 - 2026-08-20 correction on paused VQueue populations: Do not apply `WHERE is_active` to the whole Virtual Object stats query because paused queues can still contain inbox entries and must contribute to `SUM(num_inbox)` (and oldest-inboxed lookup). Treat the duration population separately: paused/inactive VQueue EMAs are historical and may be stale, so if the metric should describe currently processing queues, apply `is_active` only inside the COUNT/MIN/MAX CASE expressions and label the UI accordingly. My earlier blanket “include paused” answer conflated current backlog with historical duration semantics.
 
 - 2026-08-20 final Virtual Object stats decision (supersedes alternative metric directions below): Keep `COUNT(last_attempt_at)` plus the MIN/MAX `avg_inbox_duration` range, current inbox SUM, and latest-enqueued MAX. Remove unused blocked-duration pairs, attempt timestamp pair, start/finish MAX fields, response properties, and generated API types. Do not filter `sys_vqueue_meta` by `is_active`: paused queues can still contain inbox entries, and idle queues retain the historical EMA; filtering would undercount and make the metric disappear as soon as a queue empties.

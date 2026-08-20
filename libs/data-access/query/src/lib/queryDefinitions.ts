@@ -690,9 +690,9 @@ export const QUERY_DEFINITIONS = {
   },
   'virtual-objects/stats-vqueue-meta': {
     description:
-      'Aggregate a virtual object’s VQueue timing and blocked-duration stats for its Stats card.',
+      'Summarize a virtual object’s VQueue inbox duration range, contributing queue count, current inbox count, and latest enqueue time.',
     shape:
-      'SELECT COUNT(last_attempt_at), <MIN and MAX of each avg-duration and blocked-duration column>, SUM(num_inbox), <MAX of each activity timestamp> FROM sys_vqueue_meta WHERE service_name = ? AND lock_name = ? AND scope …',
+      'SELECT COUNT(last_attempt_at), MIN(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END), MAX(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END), SUM(num_inbox), MAX(last_enqueued_at) FROM sys_vqueue_meta WHERE service_name = ? AND lock_name = ? AND scope …',
     tables: ['sys_vqueue_meta'],
   },
   'virtual-objects/vqueue-id-lookup': {
