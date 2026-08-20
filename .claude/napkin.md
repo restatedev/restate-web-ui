@@ -1,5 +1,15 @@
 # Napkin
 
+- 2026-08-20 self on tooltip discovery: I piped a broad `rg` result through `head` while comparing tab-safe tooltip patterns, repeating the existing no-pipeline mistake. Use `rg --max-count` or a narrower path/glob.
+
+- 2026-08-20 self on Vitest 4 filtering: I followed the repository guideline's `nx test --testFile` example even though this workspace's Vitest rejects `--testFile`, and the napkin already recorded the correct focused invocation. Use `pnpm exec vitest --config <library>/vite.config.ts <path-relative-to-library-root>`.
+
+- 2026-08-20 Admin API generation command correction: The repository guideline says `pnpm nx create admin-api`, but the actual `create` target is declared by the `admin-api-spec` project. Use `NX_DAEMON=false NX_ISOLATE_PLUGINS=false pnpm nx create admin-api-spec` after checking its `project.json`.
+
+- 2026-08-20 self on compact inspection: I used a `sed; git status; sed` command that produced truncated output while checking the Workflow tooltip work. Keep each inspection bounded enough that the relevant result remains visible.
+
+- 2026-08-20 Workflow secondary-call terminology: Exclude the run invocation because it already has its own card. Use “Interactions” for calls to the Workflow's other concurrent methods, and “Last interaction” for the latest one. This is established Restate product language from the original Workflow API design discussion, which repeatedly describes queries, signals, and similar calls as ways to “interact” with a Workflow or its execution. Do not expose the technical “Shared handler” term or copy Temporal’s “Signals and Queries.”
+
 - 2026-08-20 Workflow card FINAL: Name the Workflow statistics card “Execution” and do not show a VQueues link on it. Remove the service-only VQueue navigation helper when unused. The Virtual Object “Inbox” card retains its exact-instance VQueues drill-down.
 
 - 2026-08-20 Virtual Object card naming correction: The card with average inbox time, inbox count, oldest inboxed entry, and last enqueue is “Inbox”, not “Queue activity”; those values summarize current inbox state rather than general activity.

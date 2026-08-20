@@ -9,6 +9,7 @@ import {
 } from '@restate/ui/content-panel';
 import { formatNumber } from '@restate/util/intl';
 import { useMemo } from 'react';
+import { WorkflowInteractionTooltip } from './WorkflowInteractionTooltip';
 import { WorkflowInvocationsTable } from './WorkflowInvocationsTable';
 
 type WorkflowRunDetailsResponse =
@@ -30,7 +31,7 @@ export function workflowRunStateTabHref(searchParams: URLSearchParams): string {
   return `?${params.toString()}`;
 }
 
-function RecentInvocationsTabLabel({
+function InteractionsTabLabel({
   data,
   isPending,
 }: {
@@ -41,13 +42,15 @@ function RecentInvocationsTabLabel({
   const isTruncated = data?.recentInvocationsTruncated ?? false;
   return (
     <span className="flex items-center gap-1.5">
-      Recent invocations
+      <WorkflowInteractionTooltip variant="tab">
+        Interactions
+      </WorkflowInteractionTooltip>
       {count !== undefined ? (
         <span
           title={
             isTruncated
-              ? `At least ${formatNumber(count)} retained invocations`
-              : `${formatNumber(count)} retained invocations`
+              ? `At least ${formatNumber(count)} retained interactions`
+              : `${formatNumber(count)} retained interactions`
           }
           className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums"
         >
@@ -81,9 +84,7 @@ export function WorkflowDetails({
       items: [
         {
           id: 'recent',
-          label: (
-            <RecentInvocationsTabLabel data={data} isPending={isPending} />
-          ),
+          label: <InteractionsTabLabel data={data} isPending={isPending} />,
         },
         { id: 'state', label: 'State' },
       ],
@@ -99,14 +100,14 @@ export function WorkflowDetails({
         <ContentPanelSection flush>
           {tab === 'recent' ? (
             <WorkflowInvocationsTable
-              ariaLabel="Recent Workflow invocations"
+              ariaLabel="Workflow interactions"
               rows={data?.recentInvocations ?? []}
               isPending={isPending}
               error={error}
               truncated={data?.recentInvocationsTruncated}
               limit={data?.recentInvocationsLimit}
-              emptyTitle="No recent invocations found"
-              emptyDescription="Invocations for this Workflow will appear here while they are retained."
+              emptyTitle="No interactions yet"
+              emptyDescription="Interactions with this Workflow will appear here while they are retained."
             />
           ) : (
             <KeyedServiceState

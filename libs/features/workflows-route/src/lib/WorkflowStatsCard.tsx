@@ -1,13 +1,14 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui/card';
 import { IconName } from '@restate/ui/icons';
-import { InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
+import { RelativeDate } from '@restate/ui/tooltip';
 import {
   formatDurations,
   formatNumber,
   normaliseDuration,
   parseISODuration,
 } from '@restate/util/intl';
+import { WorkflowInteractionTooltip } from './WorkflowInteractionTooltip';
 
 type WorkflowRunStatsResponse =
   components['schemas']['WorkflowRunStatsResponse'];
@@ -55,13 +56,9 @@ export function WorkflowStatsCard({
       </CardRow>
       <CardRow
         label={
-          <InlineTooltip
-            variant="indicator-button"
-            title="Workflow interaction"
-            description="The latest invocation of a shared handler for this Workflow instance. The run handler is not included."
-          >
+          <WorkflowInteractionTooltip>
             Last interaction
-          </InlineTooltip>
+          </WorkflowInteractionTooltip>
         }
       >
         {stats.lastInteractionAt ? (

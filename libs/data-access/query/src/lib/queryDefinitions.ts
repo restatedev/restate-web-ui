@@ -758,7 +758,7 @@ export const QUERY_DEFINITIONS = {
   },
   'workflows/last-interaction': {
     description:
-      'Find the latest non-run interaction (signals, shared handlers) with a workflow run for its stats card.',
+      'Find the latest non-run interaction with a workflow run for its stats card.',
     shape:
       "SELECT MAX(created_at) FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name <> ? [AND scope …]",
     tables: ['sys_invocation_status'],
@@ -770,11 +770,11 @@ export const QUERY_DEFINITIONS = {
       'SELECT COUNT(*) FROM sys_promise WHERE service_name = ? AND service_key = ? [AND scope …] AND completed = false',
     tables: ['sys_promise'],
   },
-  'workflows/recent-invocations': {
+  'workflows/interactions': {
     description:
-      'Select recent invocations targeting a workflow run for its details page.',
+      'Select recent retained interactions with a workflow run for its details page.',
     shape:
-      "SELECT id FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? [AND scope …] ORDER BY created_at DESC NULLS LAST LIMIT 51",
+      "SELECT id FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name <> ? [AND scope …] ORDER BY created_at DESC NULLS LAST LIMIT 51",
     tables: ['sys_invocation_status'],
   },
   'workflows/run-invocation-lookup': {

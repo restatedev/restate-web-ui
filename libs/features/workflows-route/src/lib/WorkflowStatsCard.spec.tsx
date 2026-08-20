@@ -18,4 +18,22 @@ describe('WorkflowStatsCard', () => {
     expect(screen.getByText('Workflow duration').closest('a')).toBeNull();
     expect(screen.getByText('1.528s').closest('a')).toBeNull();
   });
+
+  it('shows Workflow interaction help beside the execution field', () => {
+    render(
+      <WorkflowStatsCard
+        stats={{
+          supported: true,
+          pendingPromiseCount: 0,
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Last interaction')).toBeTruthy();
+    expect(
+      screen.getByRole('button', {
+        name: 'Explain Workflow interactions',
+      }),
+    ).toBeTruthy();
+  });
 });

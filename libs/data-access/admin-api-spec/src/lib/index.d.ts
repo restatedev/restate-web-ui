@@ -982,7 +982,7 @@ export interface paths {
     put?: never;
     /**
      * List Workflow runs
-     * @description Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's Workflow handler are included; Shared handler invocations are excluded.
+     * @description Returns a bounded, newest-first set of retained runs for one Workflow service. Only invocations targeting the service's run handler are included; interaction invocations are excluded.
      */
     post: operations['list_workflow_runs'];
     delete?: never;
@@ -1000,7 +1000,7 @@ export interface paths {
     };
     /**
      * Get a Workflow run
-     * @description Returns the main run invocation and the 50 most recent retained invocations for the exact service, Workflow id, and optional scope identity.
+     * @description Returns the main run invocation and the 50 most recent retained interactions for the exact service, Workflow id, and optional scope identity.
      */
     get: operations['get_workflow_run'];
     put?: never;
@@ -3320,7 +3320,7 @@ export interface components {
     WorkflowRunDetailsResponse: {
       /** @description The retained canonical run invocation. Omitted when the Workflow identity has retained interactions but its run invocation is unavailable. */
       runInvocation?: components['schemas']['InvocationV2'];
-      /** @description Retained invocations for this Workflow identity ordered newest first, including the run and Shared handler calls. */
+      /** @description Retained interactions with this Workflow identity ordered newest first. The run invocation is excluded. */
       recentInvocations: components['schemas']['InvocationV2'][];
       recentInvocationsLimit: number;
       recentInvocationsTruncated: boolean;

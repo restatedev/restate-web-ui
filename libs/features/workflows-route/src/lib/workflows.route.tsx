@@ -154,8 +154,8 @@ function WorkflowsHero() {
       <p className="max-w-4xl text-base leading-7 text-zinc-500">
         Workflows are durable, multi-step processes identified by a service and
         workflow ID. Each workflow retains isolated state, its run handler
-        executes exactly once for that identity, and shared handlers can
-        interact with it concurrently.{' '}
+        executes exactly once for that identity, and other handlers can interact
+        with it concurrently.{' '}
         <Link
           href="https://docs.restate.dev/foundations/services#workflow"
           variant="secondary"

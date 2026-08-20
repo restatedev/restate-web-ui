@@ -108,7 +108,7 @@ export function WorkflowInvocationsTable({
       />
       {truncated && (
         <div className="px-4 pt-3 text-xs text-zinc-500">
-          Showing the {limit} most recent invocations.
+          Showing the {limit} most recent interactions.
         </div>
       )}
     </>
