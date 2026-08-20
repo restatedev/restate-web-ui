@@ -124,6 +124,39 @@ describe('POST /query/v2/invocations', () => {
       `);
     });
 
+    it('filters batch selection by VQueue stage', async () => {
+      await post('/v2/invocations', {
+        filters: [
+          {
+            field: 'vqueue_id',
+            type: 'STRING',
+            operation: 'EQUALS',
+            value: 'vq_orders',
+          },
+          {
+            field: 'stage',
+            type: 'STRING',
+            operation: 'EQUALS',
+            value: 'inbox',
+          },
+        ],
+        sort: { field: 'created_at', order: 'ASC' },
+      });
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                v.entry_id AS id
+              FROM sys_vqueues v
+              WHERE v.entry_kind = 'invocation'
+                AND v.id = 'vq_orders'
+                AND v.stage = 'inbox'
+              ORDER BY v.created_at ASC NULLS LAST
+              LIMIT 250",
+        ]
+      `);
+    });
+
     it('queries the Held shortcut entirely from VQueues with transitioned_at', async () => {
       await post('/v2/invocations', {
         filters: [

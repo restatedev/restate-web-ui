@@ -132,6 +132,143 @@ describe('POST /query/v2/invocations/summary', () => {
       });
     });
 
+    it('applies a non-highlighted status filter to the batch summary', async () => {
+      setResponder(() => [
+        {
+          service_name: 'FlowControlUiStateService',
+          bucket: 'ready-yielded-backing-off',
+          count: 4,
+        },
+      ]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'stages',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.target_service_name AS service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END AS bucket,
+                COUNT(1) AS count
+              FROM sys_invocation_status ss
+              LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
+              WHERE ss.target_service_name IN ('FlowControlUiStateService')
+                AND ss.status IN ('invoked')
+                AND ((ss.status = 'invoked' AND sis.in_flight IS NOT TRUE AND sis.retry_count > 0))
+              GROUP BY
+                ss.target_service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END",
+        ]
+      `);
+      expect(body.appliedFilters).toHaveLength(2);
+      expect(body.total).toBe(4);
+    });
+
+    it('passes an unsupported stage filter through to DataFusion', async () => {
+      setResponder(() => [
+        {
+          service_name: 'FlowControlUiStateService',
+          bucket: 'ready-yielded-backing-off',
+          count: 4,
+        },
+      ]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_service_name',
+            operation: 'IN',
+            value: ['FlowControlUiStateService'],
+          },
+          {
+            type: 'STRING',
+            field: 'stage',
+            operation: 'EQUALS',
+            value: 'inbox',
+          },
+          {
+            type: 'STRING',
+            field: 'status',
+            operation: 'EQUALS',
+            value: 'backing-off',
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'stages',
+      });
+      const body = await response.json();
+
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.target_service_name AS service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END AS bucket,
+                COUNT(1) AS count
+              FROM sys_invocation_status ss
+              LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
+              WHERE ss.target_service_name IN ('FlowControlUiStateService')
+                AND ss.status IN ('invoked')
+                AND ((ss.status = 'invoked' AND sis.in_flight IS NOT TRUE AND sis.retry_count > 0))
+                AND ss.stage = 'inbox'
+              GROUP BY
+                ss.target_service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END",
+        ]
+      `);
+      expect(body.appliedFilters).toHaveLength(3);
+      expect(body).toMatchObject({
+        total: 4,
+        isPartial: false,
+        stageCountsArePartial: false,
+      });
+    });
+
     it('ignores the legacy rolling range for VQueue summaries', async () => {
       setResponder(() => []);
 
