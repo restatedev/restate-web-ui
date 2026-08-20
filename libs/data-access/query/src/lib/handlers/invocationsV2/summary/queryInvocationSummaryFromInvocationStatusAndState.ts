@@ -12,7 +12,10 @@ import {
   type ResolvedInvocationModeV2,
 } from '../shared';
 import { invocationStatusClauses } from '../list/invocationStatusFilters';
-import { invocationStatusSampleColumns } from '../list/invocationStatusPlan';
+import {
+  invocationStatusSampleColumns,
+  needsInvocationStateJoin,
+} from '../list/invocationStatusPlan';
 import type {
   InvocationStatusSummaryBucket,
   InvocationSummaryQueryResult,
@@ -81,12 +84,14 @@ export async function queryInvocationCountFromInvocationStatusAndState(
     mode.type === 'sampled'
       ? `(\n        SELECT\n          ${invocationStatusSampleColumns(filters, undefined, ['id', 'status'])}\n        FROM sys_invocation_status\n        LIMIT ${mode.sampleSize}\n      ) sampled_invocations`
       : 'sys_invocation_status ss';
+  const stateJoin = needsInvocationStateJoin(filters)
+    ? `\n      LEFT JOIN sys_invocation_state sis ON sis.id = ${statusAlias}.id`
+    : '';
   const { rows } = (await context.query(
     `
       SELECT
         COUNT(1) AS count
-      FROM ${source}
-      LEFT JOIN sys_invocation_state sis ON sis.id = ${statusAlias}.id${where}
+      FROM ${source}${stateJoin}${where}
     `.trim(),
     'invocations-v2/count-from-status-and-state',
   )) as { rows: CountRow[] };
