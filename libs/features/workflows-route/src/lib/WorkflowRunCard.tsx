@@ -8,8 +8,24 @@ import { LimitKey } from '@restate/features/vqueue-ui';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
 import { Icon, IconName } from '@restate/ui/icons';
 import { RelativeDate } from '@restate/ui/tooltip';
+import {
+  formatDurations,
+  normaliseDuration,
+  parseISODuration,
+} from '@restate/util/intl';
 
 type Invocation = components['schemas']['InvocationV2'];
+type WorkflowRunStatsResponse =
+  components['schemas']['WorkflowRunStatsResponse'];
+
+interface WorkflowRunCardProps {
+  invocation: Invocation;
+  stats?: WorkflowRunStatsResponse;
+}
+
+function formatDuration(value: string) {
+  return formatDurations(normaliseDuration(parseISODuration(value)));
+}
 
 export function WorkflowRunUnavailableBanner() {
   return (
@@ -32,16 +48,25 @@ export function WorkflowRunUnavailableBanner() {
   );
 }
 
-export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
+export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
   const { baseUrl } = useRestateContext();
   return (
     <Card intent={getInvocationStatusIntent(invocation)}>
-      <CardHeader title="Workflow run" icon={IconName.Workflow} />
+      <CardHeader title="Execution" icon={IconName.Workflow} />
       <CardLinkRow
         variant="hero"
         href={`${baseUrl}/invocations/${invocation.id}`}
         aria-label={`Open invocation ${invocation.id}`}
-        className="flex-wrap gap-y-1"
+        endContent={
+          stats?.supported && stats.duration ? (
+            <span className="text-xs text-gray-400">
+              {invocation.completed_at ? 'took' : 'processing for'}{' '}
+              <span className="font-semibold text-zinc-700 tabular-nums">
+                {formatDuration(stats.duration)}
+              </span>
+            </span>
+          ) : undefined
+        }
       >
         <InvocationId
           id={invocation.id}
@@ -70,12 +95,11 @@ export function WorkflowRunCard({ invocation }: { invocation: Invocation }) {
           />
         </CardRow>
       )}
-      {invocation.completed_at && (
-        <CardRow label="Completed">
-          <RelativeDate
-            date={invocation.completed_at}
-            title="Run invocation completed at"
-          />
+      {stats?.supported && stats.waitingToStartDuration && (
+        <CardRow label="Waiting to start">
+          <span className="text-xs text-zinc-600 tabular-nums">
+            {formatDuration(stats.waitingToStartDuration)}
+          </span>
         </CardRow>
       )}
       {invocation.limit_key && (

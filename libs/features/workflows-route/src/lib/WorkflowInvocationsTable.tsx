@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
@@ -15,31 +14,21 @@ import { useLocation, useNavigate } from 'react-router';
 type Invocation = components['schemas']['InvocationV2'];
 type ColumnId = InvocationTableColumnKey;
 
-function getColumns(hasVqueues: boolean) {
-  return [
-    {
-      ...INVOCATION_TABLE_COLUMN_CONFIG.id,
-      id: 'id',
-      name: 'Invocation',
-      isRowHeader: true,
-      minWidth: 250,
-    },
-    { ...INVOCATION_TABLE_COLUMN_CONFIG.created_at, id: 'created_at' },
-    {
-      ...INVOCATION_TABLE_COLUMN_CONFIG.target_handler_name,
-      id: 'target_handler_name',
-    },
-    ...(hasVqueues
-      ? [
-          {
-            ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
-            id: 'limit_key' as const,
-          },
-        ]
-      : []),
-    { ...INVOCATION_TABLE_COLUMN_CONFIG.status, id: 'status' },
-  ] satisfies PanelTableColumn<ColumnId>[];
-}
+export const WORKFLOW_INTERACTION_COLUMNS = [
+  {
+    ...INVOCATION_TABLE_COLUMN_CONFIG.id,
+    id: 'id',
+    name: 'Invocation',
+    isRowHeader: true,
+    minWidth: 250,
+  },
+  { ...INVOCATION_TABLE_COLUMN_CONFIG.created_at, id: 'created_at' },
+  {
+    ...INVOCATION_TABLE_COLUMN_CONFIG.target_handler_name,
+    id: 'target_handler_name',
+  },
+  { ...INVOCATION_TABLE_COLUMN_CONFIG.status, id: 'status' },
+] satisfies PanelTableColumn<ColumnId>[];
 
 export function WorkflowInvocationsTable({
   ariaLabel,
@@ -60,8 +49,6 @@ export function WorkflowInvocationsTable({
   emptyTitle: string;
   emptyDescription: string;
 }) {
-  const features = useFeatures();
-  const columns = getColumns(features.has('vqueues'));
   const { baseUrl } = useRestateContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,12 +57,12 @@ export function WorkflowInvocationsTable({
     <>
       <PanelTable
         aria-label={ariaLabel}
-        columns={columns}
+        columns={WORKFLOW_INTERACTION_COLUMNS}
         items={rows}
         isLoading={isPending}
         error={error}
         numOfRows={6}
-        bodyDependencies={[rows, error, columns]}
+        bodyDependencies={[rows, error, WORKFLOW_INTERACTION_COLUMNS]}
         onRowAction={(rowId) => {
           navigate(
             `${baseUrl}/invocations/${String(rowId)}${getSearchParams(location.search)}`,

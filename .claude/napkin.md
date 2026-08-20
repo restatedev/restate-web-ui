@@ -1,5 +1,21 @@
 # Napkin
 
+- 2026-08-20 Execution hero timing correction: The timing must use a dedicated CardLinkRow end slot immediately before the chevron, not sit inside the flexible invocation content where it lands near the middle. Drop the “Duration” label. Completed runs read `took …`; incomplete runs with elapsed execution time read `processing for …`.
+
+- 2026-08-20 Execution timing placement FINAL: Created is its own standard card row. Duration belongs at the right edge of the invocation hero row, before the navigation chevron; do not combine it with Created or split the metadata row into columns.
+
+- 2026-08-20 self on Execution row patching: I included too much surrounding JSX in the first one-column patch, and a tiny delimiter/context mismatch caused the entire patch, including the napkin update, to fail. Patch the exact `CardRow` body and its test assertions as separate focused hunks.
+
+- 2026-08-20 Execution timing row correction: Do not split Created and Duration into two equal visual columns. Keep one standard card row: Created on the left and a single right-side value such as `2m ago · 1.524s duration`, preserving card height alignment without a mini-grid.
+
+- 2026-08-20 Workflow card row alignment: On the Workflow page, omit the State card’s “View state” row because the State tab already provides access. Put Created and Duration side by side in one Execution metadata row so Execution, Interactions, and State align at two body rows in normal running/completed states.
+
+- 2026-08-20 Interactions card tooltip/empty state: Put the interaction definition tooltip beside the Interactions card title, not beside the Last interaction metric. When there is no interaction, render “None” at normal row-value size rather than as an oversized hero value.
+
+- 2026-08-20 Workflow card semantic split: The run invocation card is “Execution” and owns Created, Duration, Waiting to start, and Limit key. Duration replaces the redundant Completed timestamp row. The separate “Interactions” card owns Last interaction as its hero plus Pending promises.
+
+- 2026-08-20 Workflow Interactions polish: Keep the info glyph beside the Interactions tab visually quiet (`text-zinc-400`), and do not show the Limit key column in the Workflow interactions table. Limit keys affect concurrency but are not part of Workflow identity.
+
 - 2026-08-20 self on tooltip discovery: I piped a broad `rg` result through `head` while comparing tab-safe tooltip patterns, repeating the existing no-pipeline mistake. Use `rg --max-count` or a narrower path/glob.
 
 - 2026-08-20 self on Vitest 4 filtering: I followed the repository guideline's `nx test --testFile` example even though this workspace's Vitest rejects `--testFile`, and the napkin already recorded the correct focused invocation. Use `pnpm exec vitest --config <library>/vite.config.ts <path-relative-to-library-root>`.

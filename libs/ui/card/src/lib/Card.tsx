@@ -236,6 +236,7 @@ export function CardLinkRow({
   label,
   variant,
   showChevron = true,
+  endContent,
   className,
   children,
 }: PropsWithChildren<{
@@ -244,6 +245,7 @@ export function CardLinkRow({
   label?: ReactNode;
   variant?: 'hero' | 'default';
   showChevron?: boolean;
+  endContent?: ReactNode;
   className?: string;
 }>) {
   const styles = cardRowStyles({ variant });
@@ -264,6 +266,11 @@ export function CardLinkRow({
       {label && <span className={styles.label()}>{label}</span>}
       {children}
       {!label && <span className="min-w-2 flex-auto" />}
+      {endContent && (
+        <span data-card-link-end-content="" className="shrink-0">
+          {endContent}
+        </span>
+      )}
       {showChevron && (
         <Icon
           name={IconName.ChevronRight}

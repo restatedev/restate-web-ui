@@ -22,16 +22,12 @@ import { IconName } from '@restate/ui/icons';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import {
-  WorkflowDetails,
-  workflowRunStateTabHref,
-  workflowRunTabFromSearch,
-} from './WorkflowDetails';
+import { WorkflowDetails, workflowRunTabFromSearch } from './WorkflowDetails';
 import {
   WorkflowRunCard,
   WorkflowRunUnavailableBanner,
 } from './WorkflowRunCard';
-import { WorkflowStatsCard } from './WorkflowStatsCard';
+import { WorkflowInteractionsCard } from './WorkflowInteractionsCard';
 
 function Component() {
   const { service = '', workflowId = '' } = useParams<{
@@ -129,16 +125,20 @@ function Component() {
             }
             className="relative z-40 mx-5 mt-3"
           >
-            {runInvocation && <WorkflowRunCard invocation={runInvocation} />}
+            {runInvocation && (
+              <WorkflowRunCard
+                invocation={runInvocation}
+                stats={statsData?.supported ? statsData : undefined}
+              />
+            )}
             {statsData?.supported && (
               <>
-                <WorkflowStatsCard stats={statsData} />
+                <WorkflowInteractionsCard stats={statsData} />
                 {statsData.state && (
                   <StateStatsCard
                     numKeys={statsData.state.numKeys}
                     totalSize={statsData.state.totalSize}
                     description="Stored by this Workflow"
-                    stateHref={workflowRunStateTabHref(searchParams)}
                   />
                 )}
               </>

@@ -3,7 +3,8 @@ import { HoverTooltip, InlineTooltip } from '@restate/ui/tooltip';
 import type { ReactNode } from 'react';
 
 interface WorkflowInteractionTooltipProps {
-  children: ReactNode;
+  children?: ReactNode;
+  className?: string;
   variant?: 'inline' | 'tab';
 }
 
@@ -12,6 +13,7 @@ const description =
 
 export function WorkflowInteractionTooltip({
   children,
+  className,
   variant = 'inline',
 }: WorkflowInteractionTooltipProps) {
   if (variant === 'tab') {
@@ -29,12 +31,12 @@ export function WorkflowInteractionTooltip({
           }
           size="default"
           placement="top"
-          className="inline-flex shrink-0"
+          className={className ?? 'inline-flex shrink-0'}
         >
           <span
             role="img"
             aria-label="About Workflow interactions"
-            className="inline-flex text-current opacity-70"
+            className="inline-flex text-zinc-400"
           >
             <Icon
               name={IconName.Info}
@@ -51,6 +53,7 @@ export function WorkflowInteractionTooltip({
       variant="indicator-button"
       title="Workflow interactions"
       description={description}
+      className={className}
     >
       {children}
     </InlineTooltip>
