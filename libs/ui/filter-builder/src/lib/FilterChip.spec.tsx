@@ -1,11 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useMemo } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  AddQueryTrigger,
   QueryClause,
+  QueryBuilder,
   type QueryClauseSchema,
   type QueryClauseType,
+  useQueryBuilder,
 } from '@restate/ui/query-builder';
 import { FilterChip, type FilterChipProps } from './FilterChip';
 
@@ -28,6 +32,34 @@ function renderChip(props: Partial<FilterChipProps> = {}) {
         <FilterChip item={clause} appearance="light" showRemove {...props} />
       ),
     },
+  ]);
+  return render(<RouterProvider router={router} />);
+}
+
+function FilterBuilderHarness() {
+  const initialClauses = useMemo(
+    () => [
+      new QueryClause(schema, {
+        operation: 'EQUALS',
+        value: 'Checkout',
+      }),
+    ],
+    [],
+  );
+  const query = useQueryBuilder(initialClauses);
+
+  return (
+    <QueryBuilder query={query} schema={[schema]} multiple>
+      <AddQueryTrigger placeholder="Filter…" title="Filters">
+        {(props) => <FilterChip {...props} appearance="light" />}
+      </AddQueryTrigger>
+    </QueryBuilder>
+  );
+}
+
+function renderBuilder() {
+  const router = createMemoryRouter([
+    { path: '/', element: <FilterBuilderHarness /> },
   ]);
   return render(<RouterProvider router={router} />);
 }
@@ -69,5 +101,19 @@ describe('FilterChip light', () => {
 
     expect(onRemove).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('textbox')).toBeNull();
+  });
+
+  it('keeps the editor mounted while its value is updated', async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Edit Service filter' }),
+    );
+    const input = await screen.findByRole('textbox');
+    await user.type(input, 'x');
+
+    expect(screen.getByRole('textbox')).toBe(input);
+    expect((input as HTMLInputElement).value).toBe('Checkoutx');
   });
 });

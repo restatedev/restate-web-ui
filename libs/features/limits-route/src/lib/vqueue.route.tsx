@@ -140,6 +140,17 @@ export function vqueueStageFromSearch(
   return isVqueueStage(stage) ? stage : 'inbox';
 }
 
+export function displayedVqueueStageCount(
+  snapshotCount: number | undefined,
+  visibleRowCount: number | undefined,
+  isVisibleRowCountTruncated: boolean | undefined,
+) {
+  if (visibleRowCount === undefined) return snapshotCount;
+  return isVisibleRowCountTruncated
+    ? Math.max(snapshotCount ?? 0, visibleRowCount)
+    : visibleRowCount;
+}
+
 export function vqueueBatchFilters(
   vqueueId: string,
   stage: VqueueEntryStage,
@@ -371,6 +382,11 @@ function Component() {
     staleTime: 0,
   });
   const data = snapshot.data;
+  const selectedStageCount = displayedVqueueStageCount(
+    data?.counts[stage],
+    entries.data?.stage === stage ? entries.data.rows.length : undefined,
+    entries.data?.stage === stage ? entries.data.truncated : undefined,
+  );
   const inboxSchedulingData =
     stage !== 'inbox' ||
     hasBlockedVqueueHeadInRows(entries.data?.rows ?? [], data)
@@ -383,7 +399,7 @@ function Component() {
         label: (
           <StageTabLabel
             label={label}
-            count={data?.counts[id]}
+            count={id === stage ? selectedStageCount : data?.counts[id]}
             isPending={snapshot.isPending}
             schedulerData={id === 'inbox' ? inboxSchedulingData : undefined}
           />
@@ -397,7 +413,14 @@ function Component() {
         }
       },
     }),
-    [data, inboxSchedulingData, snapshot.refetch, snapshot.isPending, stage],
+    [
+      data,
+      inboxSchedulingData,
+      selectedStageCount,
+      snapshot.refetch,
+      snapshot.isPending,
+      stage,
+    ],
   );
   const isFetching = snapshot.isFetching || entries.isFetching;
   const isEntriesPending =
@@ -465,7 +488,7 @@ function Component() {
               <VQueueBatchActions
                 vqueueId={vqueueId}
                 stage={stage}
-                count={data.counts[stage]}
+                count={selectedStageCount ?? data.counts[stage]}
               />
               <Tooltip>
                 <TooltipTrigger>
