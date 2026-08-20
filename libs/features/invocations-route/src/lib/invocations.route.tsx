@@ -124,6 +124,7 @@ import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
+  canReconcileStatusFacetFromList,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
@@ -501,29 +502,33 @@ function Component() {
   const actionsTotalDisplay = `${totalAccuracy === 'estimate' ? '~' : ''}${formatNumber(effectiveTotal, true)}${totalAccuracy === 'lower-bound' ? '+' : ''}`;
   const offerCompleteScan =
     listSampled && (Boolean(data?.isPartial) || effectiveTotal > 0);
+  const completeStatusFacetRows = completeListRows;
   const displayedByStage = useMemo(
     () =>
-      completeListRows
+      completeStatusFacetRows
         ? withInvocationStatusCounts(
             byStage,
-            completeListRows.map(({ status }) => status),
+            completeStatusFacetRows.map(({ status }) => status),
+            statusFilter,
           )
         : byStage,
-    [byStage, completeListRows],
+    [byStage, completeStatusFacetRows, statusFilter],
   );
   const displayedByStatus = useMemo(
     () =>
-      completeListRows
+      completeStatusFacetRows
         ? withInvocationStatusCounts(
             byStatus,
-            completeListRows.map(({ status }) => status),
+            completeStatusFacetRows.map(({ status }) => status),
+            statusFilter,
           )
         : byStatus,
-    [byStatus, completeListRows],
+    [byStatus, completeStatusFacetRows, statusFilter],
   );
-  const displayedStageCountsArePartial = completeListRows
-    ? false
-    : summaryData?.stageCountsArePartial;
+  const displayedStageCountsArePartial =
+    completeStatusFacetRows && canReconcileStatusFacetFromList(statusFilter)
+      ? false
+      : summaryData?.stageCountsArePartial;
   const serviceTabs = useServiceTabs(
     summaryData,
     deploymentsData,
@@ -662,6 +667,7 @@ function Component() {
         areStageCountsPartial={displayedStageCountsArePartial}
         isBreakdownSampled={breakdownIsSampled}
         countsReflectFilters={stageCountsReflectFilters}
+        totalsByStage={byStage}
         populationByStage={populationByStage}
         countsAreContextual={countsAreContextual}
         isBreakdownLoading={isVqueueBreakdownLoading}
@@ -676,6 +682,7 @@ function Component() {
         isError={isSummaryError}
         isDimmed={statusDim}
         getHref={statusHref}
+        totalsByStage={byStage}
         populationByStage={populationByStage}
         populationByStatus={populationByStatus}
         countsAreContextual={countsAreContextual}
@@ -689,8 +696,8 @@ function Component() {
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
       <div className="relative flex min-h-0 flex-1 flex-col">
         <ListPageHeader icon={IconName.Invocation} title="Invocations">
-          Every handler call across your services. Track progress, inspect
-          journals, and act on invocations in bulk.
+          Invocations are requests to execute handlers. Follow their lifecycle,
+          inspect their journals, and intervene when execution needs attention.
         </ListPageHeader>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar>

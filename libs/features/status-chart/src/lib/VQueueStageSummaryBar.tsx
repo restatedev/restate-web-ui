@@ -137,6 +137,7 @@ export function VQueueStageSummaryBar({
   areStageCountsPartial,
   isBreakdownSampled,
   countsReflectFilters,
+  totalsByStage,
   populationByStage,
   countsAreContextual,
   isBreakdownLoading,
@@ -156,6 +157,7 @@ export function VQueueStageSummaryBar({
   areStageCountsPartial?: boolean;
   isBreakdownSampled: boolean;
   countsReflectFilters?: boolean;
+  totalsByStage?: VQueueStageSummaryEntry[];
   populationByStage?: VQueueStageSummaryEntry[];
   countsAreContextual?: boolean;
   isBreakdownLoading?: (stageName: string) => boolean;
@@ -192,11 +194,12 @@ export function VQueueStageSummaryBar({
   const notCompletedStages = byStage.filter(
     (stage) => stage.name !== 'finished' && stage.count > 0,
   );
-  const notCompletedCount = notCompletedStages.reduce(
-    (sum, stage) => sum + stage.count,
-    0,
-  );
-  const completedCount = completedStage?.count ?? 0;
+  const totalStages = totalsByStage ?? byStage;
+  const notCompletedCount = totalStages
+    .filter((stage) => stage.name !== 'finished')
+    .reduce((sum, stage) => sum + stage.count, 0);
+  const completedCount =
+    totalStages.find((stage) => stage.name === 'finished')?.count ?? 0;
   const inboxBreakdownLoading = isBreakdownLoading?.('inbox') ?? false;
   const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
   const hasInboxBreakdown = visibleInboxStatuses.length > 0;

@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-08-20 self on follow-up status-facet inspection: I chained `git diff --check && git status` despite the napkin's repeated no-chaining rule. Keep repository checks as independent tool calls even when both are read-only.
+
+- 2026-08-20 invocation status-first facet behavior (user): Operators usually filter by status before service. Keep the status chart self-excluding: a status filter highlights statuses and narrows service-tab numerators/table rows, but must not replace the whole chart population with those same filtered rows (which produces a tautological 100% selected-status bar). Service and unrelated filters still contextualize the status chart. A complete uncapped list may overlay its exact count onto buckets fully covered by the active status filter, while untouched sibling buckets and focus totals retain population context; only a list with no status filter can reconcile the entire facet.
+
 - 2026-08-20 invocation shortcut naming/filter correction (user): the visible `Running` shortcut means only `running` while retaining the internal id `processing`. The former `Held` shortcut is `Not processing` and covers pending, backing-off, paused, ready, plus yielded when VQueues expose it. Keep the internal preset id `stuck` for URL/storage compatibility.
 
 - 2026-08-20 self on shortcut test search: I piped a scoped `rg` through another `rg`, immediately repeating the just-recorded no-pipeline mistake. Use one `rg` with all needed expressions and scoped paths.
