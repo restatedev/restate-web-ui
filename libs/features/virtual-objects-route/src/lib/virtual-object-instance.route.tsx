@@ -108,11 +108,11 @@ function Component() {
   return (
     <SnapshotTimeProvider lastSnapshot={lockDataUpdatedAt}>
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-        <Breadcrumbs className="mt-8 px-5 md:mt-0" />
         <Header
           icon={IconName.VirtualObject}
           iconLabel="Virtual Object"
           className="min-w-0"
+          trail={<Breadcrumbs variant="flat" />}
         >
           <ServiceTarget
             scope={scope}

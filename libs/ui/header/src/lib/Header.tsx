@@ -1,6 +1,6 @@
 import { Icon, type IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 
 export type HeaderVariant =
   | 'success'
@@ -25,6 +25,7 @@ export type HeaderProps = PropsWithChildren<
     variant?: HeaderVariant;
     className?: string;
     iconClassName?: string;
+    trail?: ReactNode;
   } & HeaderIconProps
 >;
 
@@ -35,6 +36,8 @@ const headerStyles = tv({
     iconGlyph: 'h-4.5 w-4.5',
     iconLabelText:
       'hidden text-[0.8125rem] leading-none font-semibold tracking-[-0.01em] whitespace-nowrap text-blue-900/75 lg:block',
+    trailRow: 'relative z-40 mx-5 mt-8 hidden min-w-0 px-4 has-[nav]:flex md:mt-0',
+    trailShelf: '-mb-1 flex min-w-0 items-center',
   },
   variants: {
     variant: {
@@ -61,8 +64,12 @@ const headerStyles = tv({
       true: {},
       false: {},
     },
+    hasTrail: {
+      true: { base: 'mt-0' },
+      false: {},
+    },
   },
-  defaultVariants: { variant: 'default', hasIcon: false },
+  defaultVariants: { variant: 'default', hasIcon: false, hasTrail: false },
 });
 
 export function Header({
@@ -71,23 +78,32 @@ export function Header({
   iconLabel,
   iconClassName,
   className,
+  trail,
   children,
 }: HeaderProps) {
-  const styles = headerStyles({ variant, hasIcon: Boolean(icon) });
+  const hasTrail = trail !== undefined && trail !== null;
+  const styles = headerStyles({ variant, hasIcon: Boolean(icon), hasTrail });
   return (
-    <header className={styles.base({ className })}>
-      {icon && (
-        <span role="img" aria-label={iconLabel} className={styles.icon()}>
-          <Icon
-            name={icon}
-            className={styles.iconGlyph({ className: iconClassName })}
-          />
-          <span aria-hidden="true" className={styles.iconLabelText()}>
-            {iconLabel}
-          </span>
-        </span>
+    <>
+      {hasTrail && (
+        <div data-header-trail className={styles.trailRow()}>
+          <div className={styles.trailShelf()}>{trail}</div>
+        </div>
       )}
-      {children}
-    </header>
+      <header className={styles.base({ className })}>
+        {icon && (
+          <span role="img" aria-label={iconLabel} className={styles.icon()}>
+            <Icon
+              name={icon}
+              className={styles.iconGlyph({ className: iconClassName })}
+            />
+            <span aria-hidden="true" className={styles.iconLabelText()}>
+              {iconLabel}
+            </span>
+          </span>
+        )}
+        {children}
+      </header>
+    </>
   );
 }

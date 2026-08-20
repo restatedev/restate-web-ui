@@ -80,12 +80,12 @@ function Component() {
       lastSnapshot={Math.max(dataUpdatedAt, statsDataUpdatedAt)}
     >
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
-        <Breadcrumbs className="mt-8 px-5 md:mt-0" />
         <InvocationStatusHeader
           invocation={runInvocation}
           icon={IconName.Workflow}
           iconLabel="Workflow"
           className="min-w-0"
+          trail={<Breadcrumbs variant="flat" />}
         >
           <ServiceTarget
             scope={scope}

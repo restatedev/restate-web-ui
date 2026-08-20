@@ -9,6 +9,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
+import { Link } from '@restate/ui/link';
 import {
   Popover,
   PopoverContent,
@@ -18,9 +19,11 @@ import { tv } from '@restate/util/styles';
 import { useBreadcrumbPages, useBreadcrumbs } from './BreadcrumbsProvider';
 import type { BreadcrumbComponentProps, TrailCrumb } from './types';
 
+export type BreadcrumbsVariant = 'chips' | 'flat';
+
 const styles = tv({
   slots: {
-    nav: 'ml-2 flex max-w-full min-w-0 flex-wrap items-center gap-x-0 gap-y-1 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
+    nav: 'flex max-w-full min-w-0 flex-wrap items-center gap-y-1',
     chip: 'max-w-44 bg-gray-50 text-xs font-normal text-zinc-600',
     current:
       'flex max-w-full min-w-0 items-center gap-0.5 pl-1 text-xs font-normal text-zinc-500 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
@@ -28,11 +31,40 @@ const styles = tv({
     label: 'min-w-0 truncate',
     ellipsisButton: 'h-full rounded-none px-1 py-0 text-zinc-500',
     menuItem: 'flex max-w-60 min-w-0 items-center gap-1 text-xs font-normal',
+    flatItem:
+      'relative isolate flex min-w-0 items-center gap-x-0.5 px-1.5 pt-px pb-[6px] before:absolute before:inset-0 before:-z-10 before:bg-zinc-500/8 has-[[data-hovered]]:before:bg-zinc-500/13 has-[[data-pressed]]:before:bg-zinc-500/18',
+    flatLink:
+      'flex min-w-0 items-center gap-1 rounded px-0.5 font-normal text-zinc-600 no-underline hover:text-zinc-800',
+    flatCurrent:
+      'flex min-w-0 items-center gap-1 px-0.5 font-normal text-zinc-500 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
+    flatEllipsisButton: 'rounded p-0.5 text-zinc-600 hover:text-zinc-800',
   },
   variants: {
+    variant: {
+      chips: {
+        nav: 'ml-2 gap-x-0 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
+      },
+      flat: {
+        nav: 'gap-x-0 text-2xs leading-none [&>*+*]:-ml-px [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px]',
+      },
+    },
+    seg: {
+      first: {
+        flatItem:
+          'pr-2.5 before:rounded-l-md before:[clip-path:polygon(0_0,100%_0,calc(100%-6px)_100%,0_100%)]',
+      },
+      mid: {
+        flatItem:
+          'px-2.5 before:[clip-path:polygon(6px_0,100%_0,calc(100%-6px)_100%,0_100%)]',
+      },
+      none: {
+        flatItem: 'before:hidden',
+      },
+    },
     hiddenOnMobile: {
       true: {
         chip: 'max-md:hidden',
+        flatItem: 'max-md:hidden',
       },
       false: {},
     },
@@ -44,6 +76,8 @@ const styles = tv({
     },
   },
   defaultVariants: {
+    variant: 'chips',
+    seg: 'mid',
     hiddenOnMobile: false,
     isList: false,
   },
@@ -76,12 +110,54 @@ export function CrumbContent({ crumb }: BreadcrumbComponentProps) {
 
 function CollapsedCrumbs({
   crumbs,
+  flat,
   className,
 }: {
   crumbs: TrailCrumb[];
+  flat?: boolean;
   className?: string;
 }) {
-  const { chip, ellipsisButton, menuItem, icon, label } = styles();
+  const {
+    chip,
+    ellipsisButton,
+    menuItem,
+    icon,
+    label,
+    flatItem,
+    flatEllipsisButton,
+  } = styles();
+  const menu = (
+    <DropdownPopover>
+      <DropdownMenu>
+        {crumbs.map((crumb) => (
+          <DropdownItem key={crumb.pathname} href={crumb.href}>
+            <span className={menuItem()}>
+              <Icon name={crumb.icon} className={icon()} />
+              <span className={label()}>{crumb.label}</span>
+            </span>
+          </DropdownItem>
+        ))}
+      </DropdownMenu>
+    </DropdownPopover>
+  );
+  if (flat) {
+    return (
+      <span className={flatItem({ className })}>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              variant="icon"
+              aria-label={`Show ${crumbs.length} more pages`}
+              className={flatEllipsisButton()}
+            >
+              <Icon name={IconName.Ellipsis} className="h-3 w-3" />
+            </Button>
+          </DropdownTrigger>
+          {menu}
+        </Dropdown>
+      </span>
+    );
+  }
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -102,30 +178,28 @@ function CollapsedCrumbs({
           </ChipSegment>
         </Chip>
       </DropdownTrigger>
-      <DropdownPopover>
-        <DropdownMenu>
-          {crumbs.map((crumb) => (
-            <DropdownItem key={crumb.pathname} href={crumb.href}>
-              <span className={menuItem()}>
-                <Icon name={crumb.icon} className={icon()} />
-                <span className={label()}>{crumb.label}</span>
-              </span>
-            </DropdownItem>
-          ))}
-        </DropdownMenu>
-      </DropdownPopover>
+      {menu}
     </Dropdown>
   );
 }
 
-export function Breadcrumbs({ className }: { className?: string }) {
+export function Breadcrumbs({
+  variant = 'chips',
+  className,
+}: {
+  variant?: BreadcrumbsVariant;
+  className?: string;
+}) {
   const crumbs = useBreadcrumbs();
   const pages = useBreadcrumbPages();
   if (crumbs.length < 2) {
     return null;
   }
-  const { nav, chip, current } = styles();
+  const { nav, chip, current, flatItem, flatLink, flatCurrent } = styles({
+    variant,
+  });
   const total = crumbs.length;
+  const isFlat = variant === 'flat';
   const isMobileCollapsed = total >= 4;
   const isDesktopCollapsed = total >= 5;
   const mobileHidden = isMobileCollapsed ? crumbs.slice(1, total - 1) : [];
@@ -143,6 +217,74 @@ export function Breadcrumbs({ className }: { className?: string }) {
         );
         const Content = page?.Content ?? CrumbContent;
         const PopoverComponent = page?.Popover;
+
+        const collapsedInserts = (
+          <>
+            {index === 1 && isMobileCollapsed && (
+              <CollapsedCrumbs
+                crumbs={mobileHidden}
+                flat={isFlat}
+                className="md:hidden"
+              />
+            )}
+            {index === 2 && isDesktopCollapsed && (
+              <CollapsedCrumbs
+                crumbs={desktopHidden}
+                flat={isFlat}
+                className="max-md:hidden"
+              />
+            )}
+          </>
+        );
+
+        if (isFlat) {
+          const interactiveElement = crumb.isCurrent ? (
+            <span aria-current="page" className={flatCurrent()}>
+              <Content crumb={crumb} />
+            </span>
+          ) : (
+            <Link
+              href={crumb.href}
+              variant="icon"
+              aria-label={crumb.label}
+              className={flatLink()}
+            >
+              <Content crumb={crumb} />
+            </Link>
+          );
+          return (
+            <Fragment key={crumb.pathname}>
+              {collapsedInserts}
+              {!isCollapsedOnDesktop && (
+                <span
+                  className={flatItem({
+                    hiddenOnMobile: !isEdge && isMobileCollapsed,
+                    seg:
+                      index === 0
+                        ? 'first'
+                        : crumb.isCurrent
+                          ? 'none'
+                          : 'mid',
+                  })}
+                >
+                  {PopoverComponent && !crumb.isCurrent ? (
+                    <Popover>
+                      <PopoverHoverTrigger>
+                        {interactiveElement}
+                      </PopoverHoverTrigger>
+                      <PopoverContent placement="bottom" isNonModal>
+                        <PopoverComponent crumb={crumb} />
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    interactiveElement
+                  )}
+                </span>
+              )}
+            </Fragment>
+          );
+        }
+
         const crumbElement = isCollapsedOnDesktop ? null : crumb.isCurrent ? (
           <span aria-current="page" className={current()}>
             <Content crumb={crumb} />
@@ -169,15 +311,7 @@ export function Breadcrumbs({ className }: { className?: string }) {
 
         return (
           <Fragment key={crumb.pathname}>
-            {index === 1 && isMobileCollapsed && (
-              <CollapsedCrumbs crumbs={mobileHidden} className="md:hidden" />
-            )}
-            {index === 2 && isDesktopCollapsed && (
-              <CollapsedCrumbs
-                crumbs={desktopHidden}
-                className="max-md:hidden"
-              />
-            )}
+            {collapsedInserts}
             {crumbElement &&
               (PopoverComponent && !crumb.isCurrent && !isCollapsedOnDesktop ? (
                 <Popover>
