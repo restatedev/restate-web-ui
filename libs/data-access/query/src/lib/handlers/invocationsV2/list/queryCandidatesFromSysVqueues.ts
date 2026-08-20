@@ -19,6 +19,7 @@ export function queryCandidatesFromSysVqueues(
   query: SysVqueuesQueryPlan,
   mode: ResolvedInvocationModeV2,
   includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
 ) {
   const statusPredicates = !query.statuses
     ? []
@@ -55,7 +56,7 @@ export function queryCandidatesFromSysVqueues(
         }
       FROM ${source}
       WHERE ${clauses.join('\n        AND ')}${orderBy}
-      LIMIT ${INVOCATIONS_V2_LIMIT}
+      LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-vqueues',
   ) as Promise<{ rows: InvocationCandidateRow[] }>;

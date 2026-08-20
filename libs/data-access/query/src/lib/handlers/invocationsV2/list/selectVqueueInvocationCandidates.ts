@@ -3,6 +3,7 @@ import {
   type QueryContext,
 } from '../../shared';
 import {
+  INVOCATIONS_V2_LIMIT,
   INVOCATION_STATUSES,
   STATUSES_RESOLVED_FROM_VQUEUE,
   type InvocationSortV2,
@@ -82,27 +83,33 @@ async function queryCandidates(
   query: InvocationCandidateQueryPlan,
   mode: ResolvedInvocationModeV2,
   includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
 ): Promise<{
   candidates: InvocationCandidate[];
   partial?: VqueueListPartialResult;
 }> {
   switch (query.source) {
     case 'best_effort_sys_invocation_status': {
+      const candidateLimit = Math.max(
+        limit,
+        BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
+      );
       const result = await queryBestEffortCandidatesFromSysInvocationStatus(
         context,
         query,
         mode,
         includeInvocationDetails,
+        candidateLimit,
       );
       return {
         candidates: result.rows.map((row) => ({
           ...row,
           refinesStatusFromVqueue: true,
         })),
-        ...(result.rows.length === BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT && {
+        ...(result.rows.length === candidateLimit && {
           partial: {
             reason: 'candidate-limit' as const,
-            candidateLimit: BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
+            candidateLimit,
           },
         }),
       };
@@ -114,6 +121,7 @@ async function queryCandidates(
         query,
         mode,
         includeInvocationDetails,
+        limit,
       );
       return { candidates: result.rows };
     }
@@ -124,6 +132,7 @@ async function queryCandidates(
         query,
         mode,
         includeInvocationDetails,
+        limit,
       );
       return {
         candidates: result.rows.map((row) => ({
@@ -139,6 +148,7 @@ async function queryCandidates(
         query,
         mode,
         includeInvocationDetails,
+        limit,
       );
       return {
         candidates: result.rows.map((row) => ({
@@ -156,7 +166,10 @@ export async function selectVqueueInvocationCandidates(
   queryPlan: VqueueListQueryPlan,
   sort: InvocationSortV2 | undefined,
   mode: ResolvedInvocationModeV2,
-  { includeInvocationDetails }: { includeInvocationDetails: boolean },
+  {
+    includeInvocationDetails,
+    limit = INVOCATIONS_V2_LIMIT,
+  }: { includeInvocationDetails: boolean; limit?: number },
 ): Promise<
   | {
       rows: InvocationCandidate[];
@@ -171,7 +184,13 @@ export async function selectVqueueInvocationCandidates(
 
   const queryResults = await Promise.all(
     selected.sourcePlans.map((sourcePlan) =>
-      queryCandidates(context, sourcePlan, mode, includeInvocationDetails),
+      queryCandidates(
+        context,
+        sourcePlan,
+        mode,
+        includeInvocationDetails,
+        limit,
+      ),
     ),
   );
   const candidatesById = new Map<string, InvocationCandidate>();

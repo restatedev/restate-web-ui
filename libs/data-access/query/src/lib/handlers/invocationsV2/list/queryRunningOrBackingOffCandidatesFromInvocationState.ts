@@ -10,6 +10,7 @@ import type { InvocationStateStatus } from './invocationStatusPlan';
 export function queryRunningOrBackingOffCandidatesFromInvocationState(
   context: QueryContext,
   statuses: InvocationStateStatus[],
+  limit = INVOCATIONS_V2_LIMIT,
 ) {
   const statusFilter =
     statuses.length === 2
@@ -22,7 +23,7 @@ export function queryRunningOrBackingOffCandidatesFromInvocationState(
     `
       SELECT id
       FROM sys_invocation_state${statusFilter}
-      LIMIT ${INVOCATIONS_V2_LIMIT}
+      LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-state',
   );

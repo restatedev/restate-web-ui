@@ -5,6 +5,7 @@ import type {
 import { convertInvocation } from '../../../convertInvocation';
 import type { QueryContext } from '../../shared';
 import {
+  INVOCATIONS_V2_LIMIT,
   type InvocationFilterV2,
   type InvocationSortV2,
   type ResolvedInvocationModeV2,
@@ -40,6 +41,7 @@ export async function selectInvocationsFromInvocationStatusAndState(
   sort: InvocationSortV2 | undefined,
   mode: ResolvedInvocationModeV2,
   includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
 ) {
   const invocationStateStatuses = invocationStateOnlyStatuses(filters, sort);
   let candidatesResult;
@@ -48,6 +50,7 @@ export async function selectInvocationsFromInvocationStatusAndState(
       await queryRunningOrBackingOffCandidatesFromInvocationState(
         context,
         invocationStateStatuses,
+        limit,
       );
   } else if (needsInvocationStateJoin(filters)) {
     candidatesResult = await queryCandidatesFromInvocationStatusAndState(
@@ -56,6 +59,7 @@ export async function selectInvocationsFromInvocationStatusAndState(
       sort,
       mode,
       includeInvocationDetails,
+      limit,
     );
   } else {
     candidatesResult = await queryCandidatesFromInvocationStatus(
@@ -64,6 +68,7 @@ export async function selectInvocationsFromInvocationStatusAndState(
       sort,
       mode,
       includeInvocationDetails,
+      limit,
     );
   }
   return candidatesResult.rows as InvocationCandidateRow[];

@@ -22,6 +22,12 @@
 
 - 2026-08-20 self on filter-schema inspection: I piped a scoped `rg` into `sed` even though the repository notes repeatedly require focused commands without inspection pipelines. Use `rg` alone with narrow paths and the tool output limit.
 
+- 2026-08-20 virtual-object inbox metric direction: To eliminate the final MIN/MAX pair, use `AVG(CASE WHEN last_attempt_at IS NOT NULL THEN avg_inbox_duration END)`. Restate's DataFusion 54 supports AVG over Arrow Duration directly and returns Duration, so no cast is needed. This is an equal-weighted mean of the per-VQueue EMAs, not an invocation-weighted mean, because `sys_vqueue_meta` exposes no historical sample count. Return `{ value, vqueueCount }` and label it as an average across contributing VQueues.
+
+- 2026-08-20 self on cross-repo rg paths: I searched `tests` and `libs` while the workdir was the sibling `restate` repo, where those paths do not exist, causing avoidable `rg` errors. Resolve/scoped-check paths per repository before multi-path searches.
+
+- 2026-08-20 user correction on query-description scope: Describe the reusable query operation itself, not its current consumer. The invocation-count descriptions should say they count matching invocations, without coupling them to batch actions.
+
 - 2026-08-20 user correction on count sampling: A filtered `sys_vqueue_meta` subquery capped at 100001 is a truncation check, not a sample. Sampled invocation counts must cap the raw invocation-entry source before applying the requested filters. Do not cap the metadata filter or issue the separate 100001-queue sentinel for this count flow; exact mode should use one unbounded count query instead.
 
 - 2026-08-20 virtual-object stats MIN/MAX usage: `useGetVirtualObjectStats` runs when a Virtual Object instance detail page mounts (any tab), only when service/key and the Query API are available; it has no interval and does not refetch on window focus. The Inbox card renders only the `averageInboxDuration` min–max range, its contributing VQueue count, current inbox count, oldest inboxed time, and last enqueued time. The four blocked-duration ranges, oldest/latest attempt timestamps, and last-start/attempt/finish fields returned by the handler currently have no UI consumer, so their aggregates are removable dead query work if the API is narrowed.

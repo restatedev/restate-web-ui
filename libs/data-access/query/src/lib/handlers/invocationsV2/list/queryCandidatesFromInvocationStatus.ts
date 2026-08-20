@@ -21,6 +21,7 @@ export function queryCandidatesFromInvocationStatus(
   sort: InvocationSortV2 | undefined,
   mode: ResolvedInvocationModeV2,
   includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
 ) {
   const where = invocationStatusWhere(filters, 'ss', 'sis');
   const sortColumn = sort
@@ -45,7 +46,7 @@ export function queryCandidatesFromInvocationStatus(
           FROM sys_invocation_status
           LIMIT ${mode.sampleSize}
         ) ss${suffix}
-        LIMIT ${INVOCATIONS_V2_LIMIT}
+        LIMIT ${limit}
       `.trim(),
       'invocations-v2/candidates-from-status',
     );
@@ -59,7 +60,7 @@ export function queryCandidatesFromInvocationStatus(
       SELECT
         ss.id AS id${createdAtColumn}
       FROM sys_invocation_status ss${suffix}
-      LIMIT ${INVOCATIONS_V2_LIMIT}
+      LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-status',
   );

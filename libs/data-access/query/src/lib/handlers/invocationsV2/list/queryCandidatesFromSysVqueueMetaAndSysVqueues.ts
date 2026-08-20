@@ -28,6 +28,7 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
   query: SysVqueueMetaAndVqueuesQueryPlan,
   mode: ResolvedInvocationModeV2,
   includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
 ): Promise<{
   rows: InvocationCandidateRow[];
   partial?: VqueueListPartialResult;
@@ -78,7 +79,7 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
         LIMIT ${VQUEUE_SERVICE_QUEUE_LIMIT}
       )
         AND ${entryPredicates.join('\n        AND ')}${orderBy}
-      LIMIT ${INVOCATIONS_V2_LIMIT}
+      LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-vqueue-meta',
   ) as Promise<{ rows: InvocationCandidateRow[] }>;

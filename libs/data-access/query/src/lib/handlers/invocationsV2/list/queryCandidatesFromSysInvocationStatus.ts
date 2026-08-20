@@ -50,6 +50,7 @@ export function queryCandidatesFromSysInvocationStatus(
   query: SysInvocationStatusQueryPlan,
   mode: ResolvedInvocationModeV2,
   includeInvocationDetails = false,
+  limit = INVOCATIONS_V2_LIMIT,
 ) {
   const statusPredicate =
     query.statuses === undefined
@@ -84,7 +85,7 @@ export function queryCandidatesFromSysInvocationStatus(
             : ''
         }
       FROM ${source}${where}${orderBy}
-      LIMIT ${INVOCATIONS_V2_LIMIT}
+      LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-status-planned',
   ) as Promise<{ rows: InvocationCandidateRow[] }>;

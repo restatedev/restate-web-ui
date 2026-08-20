@@ -42,6 +42,7 @@ export async function getInvocationIds(
     sort: { field: 'created_at', order: 'ASC' },
     mode: { type: 'exact' },
     includeInvocationDetails: true,
+    limit: pageSize,
   });
   if ('error' in data) {
     throw new Error(data.error);

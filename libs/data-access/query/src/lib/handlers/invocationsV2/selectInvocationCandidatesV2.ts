@@ -1,4 +1,7 @@
-import type { QueryContext } from '../shared';
+import {
+  BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
+  type QueryContext,
+} from '../shared';
 import {
   getInvocationStatusFromVqueue,
   type InvocationStatus,
@@ -32,6 +35,7 @@ type SelectInvocationCandidatesV2Args = {
   sort?: InvocationSortV2;
   mode?: InvocationModeV2;
   includeInvocationDetails: boolean;
+  limit?: number;
 };
 
 export type SelectInvocationCandidatesV2Result =
@@ -103,12 +107,30 @@ async function refineBestEffortCandidates(
     ({ refinesStatusFromVqueue }) => refinesStatusFromVqueue,
   );
   if (candidatesToRefine.length === 0) return candidates;
-  const { rows } = await queryVqueueCandidateStatusesByIds(
-    context,
-    candidatesToRefine.map(({ id }) => id),
+  const ids = candidatesToRefine.map(({ id }) => id);
+  const results = await Promise.all(
+    Array.from(
+      {
+        length: Math.ceil(
+          ids.length / BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
+        ),
+      },
+      (_, index) =>
+        queryVqueueCandidateStatusesByIds(
+          context,
+          ids.slice(
+            index * BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
+            (index + 1) * BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
+          ),
+        ),
+    ),
   );
   const statusesById = new Map(
-    rows.map((row) => [row.entry_id, getInvocationStatusFromVqueue(row)]),
+    results.flatMap(({ rows }) =>
+      rows.map(
+        (row) => [row.entry_id, getInvocationStatusFromVqueue(row)] as const,
+      ),
+    ),
   );
   return candidates.filter((candidate) => {
     if (!candidate.refinesStatusFromVqueue) return true;
@@ -137,6 +159,7 @@ export async function selectInvocationCandidatesV2(
     sort,
     mode: requestedMode,
     includeInvocationDetails,
+    limit = INVOCATIONS_V2_LIMIT,
   }: SelectInvocationCandidatesV2Args,
 ): Promise<SelectInvocationCandidatesV2Result> {
   const filterError = validateInvocationFiltersV2(filters);
@@ -165,11 +188,12 @@ export async function selectInvocationCandidatesV2(
       sort,
       mode,
       includeInvocationDetails,
+      limit,
     );
     return {
       source: 'invocation-status',
       rows,
-      limit: INVOCATIONS_V2_LIMIT,
+      limit,
       mode,
     };
   }
@@ -182,7 +206,7 @@ export async function selectInvocationCandidatesV2(
     return {
       source: 'vqueue',
       rows: invocationIds.map((id) => ({ id })),
-      limit: INVOCATIONS_V2_LIMIT,
+      limit,
       mode,
       statusSelection: queryPlan.statusSelection,
     };
@@ -192,7 +216,7 @@ export async function selectInvocationCandidatesV2(
     queryPlan,
     sort,
     mode,
-    { includeInvocationDetails },
+    { includeInvocationDetails, limit },
   );
   if ('error' in result) return result;
   const candidates = includeInvocationDetails
@@ -208,7 +232,7 @@ export async function selectInvocationCandidatesV2(
   return {
     source: 'vqueue',
     rows: candidates,
-    limit: INVOCATIONS_V2_LIMIT,
+    limit,
     mode,
     statusSelection: queryPlan.statusSelection,
     ...(result.partial && { partial: result.partial }),

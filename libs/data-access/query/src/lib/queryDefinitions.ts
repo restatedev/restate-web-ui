@@ -228,7 +228,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Select coarse invocation candidates for the invocations list when VQueue-owned statuses cannot be resolved from one source.',
     shape:
-      'SELECT id FROM sys_invocation_status WHERE status IN (…) [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 500 [sampled: FROM (… LIMIT 1000000)]',
+      'SELECT id FROM sys_invocation_status WHERE status IN (…) [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status'],
   },
   'invocations-v2/candidate-queue-count': {
@@ -249,42 +249,70 @@ export const QUERY_DEFINITIONS = {
     description:
       'Select running/backing-off invocation candidates from the small live-state table (invocations list fast path, servers without VQueues).',
     shape:
-      'SELECT id FROM sys_invocation_state [WHERE in_flight IS (NOT) TRUE] LIMIT 250',
+      'SELECT id FROM sys_invocation_state [WHERE in_flight IS (NOT) TRUE] LIMIT ≤1000',
     tables: ['sys_invocation_state'],
   },
   'invocations-v2/candidates-from-status': {
     description:
       'Select invocation candidates for the invocations list when the status table satisfies all filters (servers without VQueues).',
     shape:
-      'SELECT id FROM sys_invocation_status [WHERE <filters>] [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]',
+      'SELECT id FROM sys_invocation_status [WHERE <filters>] [ORDER BY <sort>] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status'],
   },
   'invocations-v2/candidates-from-status-and-state': {
     description:
       'Select invocation candidates for the invocations list, joining stored status with live state for running/ready predicates (servers without VQueues).',
     shape:
-      'SELECT id FROM sys_invocation_status LEFT JOIN (SELECT id, in_flight, retry_count FROM sys_invocation_state) ON id [WHERE <filters>] [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]',
+      'SELECT id FROM sys_invocation_status LEFT JOIN (SELECT id, in_flight, retry_count FROM sys_invocation_state) ON id [WHERE <filters>] [ORDER BY <sort>] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status', 'sys_invocation_state'],
   },
   'invocations-v2/candidates-from-status-planned': {
     description:
       'Select terminal-status invocation candidates from the status table within a VQueue-planned invocations list.',
     shape:
-      'SELECT id FROM sys_invocation_status WHERE <status predicate> [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]',
+      'SELECT id FROM sys_invocation_status WHERE <status predicate> [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_invocation_status'],
   },
   'invocations-v2/candidates-from-vqueue-meta': {
     description:
       'Select invocation candidates for the invocations list from VQueues bounded by queue-level metadata filters.',
     shape:
-      "SELECT entry_id FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE <queue filters> LIMIT 100000) AND entry_kind = 'invocation' [AND <stage/status>] [ORDER BY <sort> NULLS LAST] LIMIT 250",
+      "SELECT entry_id FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE <queue filters> LIMIT 100000) AND entry_kind = 'invocation' [AND <stage/status>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000",
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/candidates-from-vqueues': {
     description:
       'Select invocation candidates for the invocations list directly from VQueue entries (preferred source).',
     shape:
-      "SELECT entry_id FROM sys_vqueues WHERE entry_kind = 'invocation' [AND <stage/status>] [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT 250 [sampled: FROM (… LIMIT 1000000)]",
+      "SELECT entry_id FROM sys_vqueues WHERE entry_kind = 'invocation' [AND <stage/status>] [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]",
+    tables: ['sys_vqueues'],
+  },
+  'invocations-v2/count-from-status-and-state': {
+    description:
+      'Count invocations matching the current filters, combining stored status with live execution state when needed.',
+    shape:
+      'SELECT COUNT(1) FROM sys_invocation_status [LEFT JOIN sys_invocation_state ON id] [WHERE <filters>] [sampled: FROM (… LIMIT 1000000)]',
+    tables: ['sys_invocation_status', 'sys_invocation_state'],
+  },
+  'invocations-v2/count-from-status-planned': {
+    description:
+      'Count invocations matching the current filters from stored invocation status.',
+    shape:
+      'SELECT COUNT(1) FROM sys_invocation_status [WHERE <status/filter predicates>] [sampled: FROM (… LIMIT 1000000)]',
+    tables: ['sys_invocation_status'],
+  },
+  'invocations-v2/count-from-vqueue-meta': {
+    description:
+      'Count invocations matching the current filters, using queue metadata to narrow the VQueues scanned.',
+    shape:
+      "SELECT COUNT(1) FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE <queue filters>) AND entry_kind = 'invocation' [AND <stage/status>] [sampled: FROM (… LIMIT 1000000)]",
+    tables: ['sys_vqueues', 'sys_vqueue_meta'],
+  },
+  'invocations-v2/count-from-vqueues': {
+    description:
+      'Count invocations matching the current filters directly from VQueue entries.',
+    shape:
+      "SELECT COUNT(1) FROM sys_vqueues WHERE entry_kind = 'invocation' [AND <stage/status>] [AND <filters>] [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/finished-breakdown-from-status': {

@@ -47,15 +47,16 @@ function columnsNeededFromSample(
 
 /**
  * Runs when VQueues own a requested live status, but invocation-status-owned
- * filters or sorting prevent a complete VQueue source plan. It selects at most
- * 500 coarse candidates; common hydration then resolves and rechecks their
- * exact statuses through sys_vqueue_entry_status point lookups.
+ * filters or sorting prevent a complete VQueue source plan. It selects bounded
+ * coarse candidates; common hydration then resolves and rechecks their exact
+ * statuses through sys_vqueue_entry_status point lookups.
  */
 export function queryBestEffortCandidatesFromSysInvocationStatus(
   context: QueryContext,
   query: BestEffortSysInvocationStatusQueryPlan,
   mode: ResolvedInvocationModeV2,
   includeInvocationDetails = false,
+  limit = BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
 ) {
   const clauses = [
     storedStatusPredicate(query),
@@ -88,7 +89,7 @@ export function queryBestEffortCandidatesFromSysInvocationStatus(
             : ''
         }
       FROM ${source}${where}${orderBy}
-      LIMIT ${BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT}
+      LIMIT ${limit}
     `.trim(),
     'invocations-v2/best-effort-candidates',
   ) as Promise<{ rows: InvocationCandidateRow[] }>;
