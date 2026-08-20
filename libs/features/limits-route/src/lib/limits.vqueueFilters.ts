@@ -15,14 +15,24 @@ const vqueueIdFilterSchema = {
   type: 'STRING',
 } satisfies QueryClauseSchema<'STRING'>;
 
+const vqueueServiceFilterSchema = {
+  id: 'service',
+  label: 'Service',
+  operations: [{ value: 'EQUALS', label: 'is' }],
+  type: 'STRING',
+} satisfies QueryClauseSchema<'STRING'>;
+
+const vqueueLockNameFilterSchema = {
+  id: 'lockName',
+  label: 'Lock',
+  operations: [{ value: 'EQUALS', label: 'is' }],
+  type: 'STRING',
+} satisfies QueryClauseSchema<'STRING'>;
+
 export const VQUEUE_FILTER_SCHEMA = [
   vqueueIdFilterSchema,
-  {
-    id: 'service',
-    label: 'Service',
-    operations: [{ value: 'EQUALS', label: 'is' }],
-    type: 'STRING',
-  },
+  vqueueServiceFilterSchema,
+  vqueueLockNameFilterSchema,
   ...LIMIT_IDENTITY_FILTER_SCHEMA,
 ] satisfies QueryClauseSchema<QueryClauseType>[];
 
@@ -49,6 +59,19 @@ export function createVQueueFiltersForCounter(identity: {
     clauses.push(createExactVQueueFilter('l1', identity.l1));
   }
   return clauses;
+}
+
+export function createVQueueFiltersForVirtualObjectInstance(identity: {
+  service: string;
+  key: string;
+  scope?: string;
+}) {
+  return [
+    ...(identity.scope === undefined
+      ? []
+      : [createExactVQueueFilter('scope', identity.scope)]),
+    createExactVQueueFilter('lockName', `${identity.service}/${identity.key}`),
+  ];
 }
 
 export function getVQueueIdFilterValue(input: string) {

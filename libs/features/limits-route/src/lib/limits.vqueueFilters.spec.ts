@@ -100,6 +100,23 @@ describe('VQueue filters', () => {
     ]);
   });
 
+  it('supports exact matching for a service lock', () => {
+    const schema = getSchema('lockName');
+    const clause = new QueryClause(schema, {
+      operation: 'EQUALS',
+      value: 'Counter/customer-1',
+    });
+
+    expect(toVQueueFilters([clause])).toEqual([
+      {
+        field: 'lockName',
+        type: 'STRING',
+        operation: 'EQUALS',
+        value: 'Counter/customer-1',
+      },
+    ]);
+  });
+
   it('ignores operations that are not allowed by a field schema', () => {
     const schema = getSchema('id');
     const clause = new QueryClause(schema, {

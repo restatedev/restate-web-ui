@@ -10,6 +10,8 @@ import {
   type VirtualObjectInstanceIdentity,
 } from '@restate/features/virtual-object-instance';
 import { ServiceTarget } from '@restate/features/service-target';
+import { vqueuesForVirtualObjectInstanceHref } from '@restate/features/limits-route';
+import { useRestateContext } from '@restate/features/restate-context';
 import { StateStatsCard } from '@restate/features/state-object-route';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
 import { EmptyState } from '@restate/ui/empty-state';
@@ -44,6 +46,7 @@ function Component() {
     key: string;
   }>();
   const [searchParams] = useSearchParams();
+  const { baseUrl } = useRestateContext();
   const scope = virtualObjectScopeFromSearch(searchParams);
   const tab = virtualObjectInstanceTabFromSearch(searchParams);
   const identity = useMemo<VirtualObjectInstanceIdentity>(
@@ -134,7 +137,13 @@ function Component() {
             <VirtualObjectLockHero lockHolder={lockData?.lockHolder} />
             {statsData?.supported && (
               <>
-                <VirtualObjectStatsCard stats={statsData} />
+                <VirtualObjectStatsCard
+                  stats={statsData}
+                  vqueuesHref={vqueuesForVirtualObjectInstanceHref(
+                    baseUrl,
+                    identity,
+                  )}
+                />
                 {statsData.state && (
                   <StateStatsCard
                     numKeys={statsData.state.numKeys}
