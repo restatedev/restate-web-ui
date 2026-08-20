@@ -75,11 +75,11 @@ describe('VQueueDurationsCard', () => {
     expect(screen.getByText('8s')).toBeTruthy();
 
     const orderedRows = [
+      screen.getByText('Queue'),
+      screen.getByText('Blocked'),
       screen.getByText('Inbox'),
       screen.getByText('Running'),
       screen.getByText('Suspended'),
-      screen.getByText('Queue'),
-      screen.getByText('Blocked'),
     ];
     orderedRows.slice(1).forEach((row, index) => {
       expect(

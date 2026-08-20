@@ -13,6 +13,7 @@ import {
   formatPercentageWithoutFraction,
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
+import { Fragment } from 'react';
 
 const EVENTS = [
   {
@@ -300,16 +301,16 @@ function BlockDurationBar({
 
 export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
   const rows = [
-    ...DURATION_ROWS.map((row) => ({
-      ...row,
-      value: data.stageAvg[row.key],
-      milliseconds: vqueueDurationMilliseconds(data.stageAvg[row.key]),
-    })),
     {
       ...FIRST_START_WAIT,
       value: data.stageAvg.queue,
       milliseconds: vqueueDurationMilliseconds(data.stageAvg.queue),
     },
+    ...DURATION_ROWS.map((row) => ({
+      ...row,
+      value: data.stageAvg[row.key],
+      milliseconds: vqueueDurationMilliseconds(data.stageAvg[row.key]),
+    })),
   ];
   const blocks = data.head.avgBlocks
     .map((block) => ({
@@ -369,39 +370,41 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
         </div>
       </CardRow>
       {rows.map((row) => (
-        <CardRow key={row.key}>
-          <div className={durationRowStyles()}>
-            <span className="min-w-0 text-2xs font-medium text-gray-400">
-              {row.label}
-            </span>
-            <DurationBar
-              milliseconds={row.milliseconds}
-              maximum={maximum}
-              color={row.color}
-            />
-            <span className="text-right text-xs text-zinc-600 tabular-nums">
-              {formatVqueueDuration(row.value) ?? '—'}
-            </span>
-          </div>
-        </CardRow>
+        <Fragment key={row.key}>
+          <CardRow>
+            <div className={durationRowStyles()}>
+              <span className="min-w-0 text-2xs font-medium text-gray-400">
+                {row.label}
+              </span>
+              <DurationBar
+                milliseconds={row.milliseconds}
+                maximum={maximum}
+                color={row.color}
+              />
+              <span className="text-right text-xs text-zinc-600 tabular-nums">
+                {formatVqueueDuration(row.value) ?? '—'}
+              </span>
+            </div>
+          </CardRow>
+          {row.key === 'queue' && blocks.length > 0 && (
+            <CardRow>
+              <div className={durationRowStyles()}>
+                <span className="min-w-0 text-2xs font-medium text-gray-400">
+                  Blocked
+                </span>
+                <BlockDurationBar
+                  blocks={blocks}
+                  total={blockTotal}
+                  maximum={maximum}
+                />
+                <span className="text-right text-xs text-zinc-600 tabular-nums">
+                  {formatMilliseconds(blockTotal)}
+                </span>
+              </div>
+            </CardRow>
+          )}
+        </Fragment>
       ))}
-      {blocks.length > 0 && (
-        <CardRow>
-          <div className={durationRowStyles()}>
-            <span className="min-w-0 text-2xs font-medium text-gray-400">
-              Blocked
-            </span>
-            <BlockDurationBar
-              blocks={blocks}
-              total={blockTotal}
-              maximum={maximum}
-            />
-            <span className="text-right text-xs text-zinc-600 tabular-nums">
-              {formatMilliseconds(blockTotal)}
-            </span>
-          </div>
-        </CardRow>
-      )}
     </Card>
   );
 }

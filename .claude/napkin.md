@@ -1,6 +1,10 @@
 # Napkin
 
-- 2026-08-20 VQueue Timing hierarchy (user correction): Queue and Blocked are not children or additive components of Inbox. Inbox is a stage-exit dwell EMA, Queue is first-attempt wait, and Blocked is sampled per dispatch attempt; render all as flat peer rows and state that their independently sampled averages do not add up.
+- 2026-08-20 user-facing batch filter operations: Never expose internal query operation IDs such as `EQUALS`, `NOT_IN`, or `NOT_CONTAINS`. Prefer the field schema's label and use an exhaustive friendly fallback (`is`, `is not`, `does not contain`, etc.) when an action-required filter's shape differs from the page schema. A visible action-required Status criterion suppresses the contradictory `Status is Any` placeholder.
+
+- 2026-08-20 batch-operation filter display: Action-required filters remain in the request and must remain visibly represented when they narrow the selection, especially Retry Now's Backing-off restriction. For display, collapse semantically equivalent `STRING EQUALS value` and singleton `STRING_LIST IN [value]` criteria so the same status is not shown twice; retain both when a broader caller filter is genuinely narrowed.
+
+- 2026-08-20 VQueue Timing hierarchy and order (user correction): Queue and Blocked are not children, additive components, or followers of Inbox. Inbox is a stage-exit dwell EMA, Queue is first-attempt wait, and Blocked is sampled per dispatch attempt. Render flat peers in this order: End to end, Queue, Blocked, Inbox, Running, Suspended; state that the independently sampled averages do not add up.
 
 - 2026-08-20 self on bounded retry loops: My first two-attempt lock hydration loop refreshed the lock after the final failed attempt, issuing a third unused query. Gate the refresh on whether another attempt remains, and assert the query count in the persistent-race test.
 
