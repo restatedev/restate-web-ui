@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-20 VQueue Timing hierarchy (user correction): Queue and Blocked are not children or additive components of Inbox. Inbox is a stage-exit dwell EMA, Queue is first-attempt wait, and Blocked is sampled per dispatch attempt; render all as flat peer rows and state that their independently sampled averages do not add up.
+
 - 2026-08-20 self on bounded retry loops: My first two-attempt lock hydration loop refreshed the lock after the final failed attempt, issuing a third unused query. Gate the refresh on whether another attempt remains, and assert the query count in the persistent-race test.
 
 - 2026-08-20 self on repeated JSON response blocks: My broad OpenAPI patch matched the list-instances `400` response instead of the intended lock endpoint. Anchor schema edits on the endpoint's unique `200` description/schema, then inspect that exact endpoint before generation.
