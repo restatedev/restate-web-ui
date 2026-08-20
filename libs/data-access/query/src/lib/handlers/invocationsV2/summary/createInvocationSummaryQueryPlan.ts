@@ -47,6 +47,7 @@ function createQueryPlanFromSysVqueueMetaAndSysVqueues(
   if (
     filters.some(
       (filter) =>
+        filter.field !== 'stage' &&
         !isInvocationListFieldAvailableOnTable(
           context,
           filter.field,
@@ -96,6 +97,7 @@ function createQueryPlanFromSysInvocationStatusAndSysInvocationState(
     ) ||
     filters.some(
       (filter) =>
+        filter.field !== 'stage' &&
         !isInvocationListFieldAvailableOnTable(
           context,
           filter.field,

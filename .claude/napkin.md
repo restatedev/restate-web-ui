@@ -22,6 +22,12 @@
 
 - 2026-08-20 self on filter-schema inspection: I piped a scoped `rg` into `sed` even though the repository notes repeatedly require focused commands without inspection pipelines. Use `rg` alone with narrow paths and the tool output limit.
 
+- 2026-08-20 self on patching near template interpolation: I inserted `summaryFilterClauses` after the first standalone `}` inside `statusExpression`, which was the `${...}` interpolation boundary rather than the function end and caused a syntax error. When patching template-heavy functions, anchor on the complete trailing `END\`;` plus closing brace.
+
+- 2026-08-20 user clarification on unsupported summary stage: “May reject” means do not reject in the planner and do not silently drop the filter. Pass `stage` through as the ordinary status-source column and let DataFusion report that the fallback table does not support it. Preserve exact status filtering; remove only the invented status/state→stage CASE translation.
+
+- 2026-08-20 user correction on summary stage filters: The UI only sends `stage` when VQueues are enabled. Do not synthesize stages from `sys_invocation_status + sys_invocation_state`; that fallback may reject the request. Keep unsupported computed fields out of availability exceptions instead of expanding legacy/fallback SQL.
+
 - 2026-08-20 self on shared-selector test fixture: After making mode and detail projection explicit shared-selector inputs, the `getInvocationIds` interaction assertion still expected the old two-field request. Update caller-contract assertions whenever an internal API becomes shared, even when full SQL snapshots already pass.
 
 - 2026-08-20 self on shared candidate result union: I omitted `partial?: undefined` from the invocation-status branch, so common callers could not read `selected.partial` without redundant source narrowing. Give shared response fields a consistent shape across discriminated branches.

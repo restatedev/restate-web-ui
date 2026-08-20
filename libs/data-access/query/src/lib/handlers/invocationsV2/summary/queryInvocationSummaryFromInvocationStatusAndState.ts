@@ -1,15 +1,17 @@
 import {
+  type FilterItem,
   getInvocationStatusesForStage,
   INVOCATION_STATUS_DEFINITIONS,
 } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from '../../shared';
 import type { InvocationStatus } from '../../../invocationStatuses';
 import {
+  filterToSql,
   supportsInvocationV2Vqueues,
   type InvocationFilterV2,
   type ResolvedInvocationModeV2,
 } from '../shared';
-import { invocationStatusFilterClauses } from '../list/invocationStatusFilters';
+import { invocationStatusClauses } from '../list/invocationStatusFilters';
 import { invocationStatusSampleColumns } from '../list/invocationStatusPlan';
 import type {
   InvocationStatusSummaryBucket,
@@ -42,6 +44,25 @@ ${
         END`;
 }
 
+function summaryFilterClauses(
+  filters: InvocationFilterV2[],
+  statusAlias: string,
+  stateAlias: string,
+) {
+  const stageFilters = filters.filter(({ field }) => field === 'stage');
+  return [
+    ...invocationStatusClauses(
+      filters.filter(({ field }) => field !== 'stage'),
+      statusAlias,
+      stateAlias,
+    ),
+    ...stageFilters.flatMap((filter) => {
+      const clause = filterToSql(filter as FilterItem, `${statusAlias}.stage`);
+      return clause ? [clause] : [];
+    }),
+  ];
+}
+
 /**
  * Returns filtered status and per-service summary buckets. Invocation status supplies
  * the durable population and filters; invocation state separates invoker-owned
@@ -52,13 +73,14 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
 ): Promise<InvocationSummaryQueryResult> {
-  const exactClauses = invocationStatusFilterClauses(filters, 'ss');
+  const exactClauses = summaryFilterClauses(filters, 'ss', 'sis');
   const exactWhere = exactClauses.length
     ? `\n      WHERE ${exactClauses.join('\n        AND ')}`
     : '';
-  const sampledClauses = invocationStatusFilterClauses(
+  const sampledClauses = summaryFilterClauses(
     filters,
     'sampled_invocations',
+    'sis',
   );
   const sampledWhere = sampledClauses.length
     ? `\n        WHERE ${sampledClauses.join('\n          AND ')}`
