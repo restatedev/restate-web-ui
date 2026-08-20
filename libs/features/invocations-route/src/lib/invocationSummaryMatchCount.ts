@@ -31,6 +31,10 @@ function statusMatches(status: string, filter: StatusFilter) {
   return filter.operation === 'IN' ? selected : !selected;
 }
 
+export function canReconcileStatusFacetFromList(statusFilter: StatusFilter) {
+  return !hasStatusFilter(statusFilter);
+}
+
 export function countMatchingStatusBuckets(
   buckets: StatusBucket[],
   populationStatuses: string[],
@@ -183,16 +187,25 @@ export function resolveInvocationPopulationCount({
 
 export function withInvocationStatusCounts<
   Bucket extends { count: number; statuses: string[] },
->(buckets: Bucket[], invocationStatuses: string[]) {
+>(
+  buckets: Bucket[],
+  invocationStatuses: string[],
+  statusFilter?: StatusFilter,
+) {
   const statusCounts = new Map<string, number>();
   for (const status of invocationStatuses) {
     statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
   }
-  return buckets.map((bucket) => ({
-    ...bucket,
-    count: bucket.statuses.reduce(
-      (count, status) => count + (statusCounts.get(status) ?? 0),
-      0,
-    ),
-  }));
+  return buckets.map((bucket) =>
+    hasStatusFilter(statusFilter) &&
+    bucket.statuses.some((status) => !statusMatches(status, statusFilter))
+      ? bucket
+      : {
+          ...bucket,
+          count: bucket.statuses.reduce(
+            (count, status) => count + (statusCounts.get(status) ?? 0),
+            0,
+          ),
+        },
+  );
 }

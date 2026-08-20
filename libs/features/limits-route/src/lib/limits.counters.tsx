@@ -33,7 +33,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { type SortDescriptor } from 'react-aria-components';
 import { Form, useSearchParams } from 'react-router';
 import { CounterTable } from './CounterTable';
-import { FlowControlHero, flowControlTabs } from './FlowControlPage';
+import { FlowControlHeader, flowControlTabs } from './FlowControlPage';
 import { LIMIT_LIST_QUERY_SIZE } from './limits.constants';
 import {
   LIMIT_COUNTER_FILTER_SCHEMA,
@@ -356,7 +356,7 @@ function CountersComponent() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <FlowControlHero />
+      <FlowControlHeader />
       <ContentPanel tabs={flowControlTabs(baseUrl, 'counters')}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
           {pageToolbar}

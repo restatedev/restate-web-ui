@@ -1,4 +1,5 @@
 export { LayoutOutlet } from './lib/LayoutOutlet';
+export { ListPageHeader } from './lib/ListPageHeader';
 export { LayoutProvider } from './lib/Layout';
 export { LayoutZone } from './lib/LayoutZone';
 export {

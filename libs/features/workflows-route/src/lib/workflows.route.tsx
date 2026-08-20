@@ -38,6 +38,7 @@ import {
   useFilterBuilder,
 } from '@restate/ui/filter-builder';
 import { Icon, IconName } from '@restate/ui/icons';
+import { ListPageHeader } from '@restate/ui/layout';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import {
@@ -144,28 +145,22 @@ function workflowRunRouteHref(
   });
 }
 
-function WorkflowsHero() {
+function WorkflowsHeader() {
   return (
-    <section className="flex w-full flex-col gap-3 px-5 pt-14 pb-12 md:px-8 md:pt-16 md:pb-16">
-      <h1 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-zinc-950">
-        <Icon name={IconName.Workflow} className="h-6 w-6 text-zinc-400" />
-        Workflows
-      </h1>
-      <p className="max-w-4xl text-base leading-7 text-zinc-500">
-        Workflows are durable, multi-step processes identified by a service and
-        workflow ID. Each workflow retains isolated state, its run handler
-        executes exactly once for that identity, and other handlers can interact
-        with it concurrently.{' '}
-        <Link
-          href="https://docs.restate.dev/foundations/services#workflow"
-          variant="secondary"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn more
-        </Link>
-      </p>
-    </section>
+    <ListPageHeader icon={IconName.Workflow} title="Workflows">
+      Workflows are durable, multi-step processes identified by a service and
+      workflow ID. Each workflow retains isolated state, its run handler
+      executes exactly once for that identity, and other handlers can interact
+      with it concurrently.{' '}
+      <Link
+        href="https://docs.restate.dev/foundations/services#workflow"
+        variant="secondary"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Learn more
+      </Link>
+    </ListPageHeader>
   );
 }
 
@@ -310,7 +305,7 @@ function Component() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <WorkflowsHero />
+      <WorkflowsHeader />
       <ContentPanel tabs={tabs}>
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
           <Form

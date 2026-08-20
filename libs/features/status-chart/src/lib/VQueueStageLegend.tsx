@@ -22,7 +22,7 @@ import { StageBreakdownPopoverContent } from './StageBreakdownPopoverContent';
 import { FacetCount } from './FacetCount';
 
 const legendStyles = tv({
-  base: 'mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm',
+  base: 'flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm md:justify-start',
 });
 
 const itemStyles = tv({
@@ -81,6 +81,7 @@ export function VQueueStageLegend({
   className,
   isDimmed,
   getHref,
+  totalsByStage,
   populationByStage,
   populationByStatus,
   countsAreContextual,
@@ -97,6 +98,7 @@ export function VQueueStageLegend({
   className?: string;
   isDimmed?: (name: string, statuses?: string[]) => boolean;
   getHref: (name: string, statuses?: string[]) => string;
+  totalsByStage?: VQueueStageSummaryEntry[];
   populationByStage?: VQueueStageSummaryEntry[];
   populationByStatus?: VQueueStatusSummaryEntry[];
   countsAreContextual?: boolean;
@@ -112,8 +114,10 @@ export function VQueueStageLegend({
   );
   const completedStage = stageData.get('finished');
   const completedStatusNames = new Set(completedStage?.statuses ?? []);
-  const completedCount = completedStage?.count ?? 0;
-  const notCompletedCount = byStage
+  const totalStages = totalsByStage ?? byStage;
+  const completedCount =
+    totalStages.find((stage) => stage.name === 'finished')?.count ?? 0;
+  const notCompletedCount = totalStages
     .filter((stage) => stage.name !== 'finished')
     .reduce((total, stage) => total + stage.count, 0);
   const focusedCount =

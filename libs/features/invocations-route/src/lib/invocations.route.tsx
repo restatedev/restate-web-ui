@@ -57,7 +57,7 @@ import {
 } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { HoverTooltip } from '@restate/ui/tooltip';
-import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -124,6 +124,7 @@ import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
+  canReconcileStatusFacetFromList,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
@@ -156,7 +157,7 @@ const PAGE_SIZE = 30;
 const HERO_BREAKDOWN_SAMPLE_SIZE = 1_000_000;
 
 const summaryHeaderStyles = tv({
-  base: 'mx-auto flex w-full max-w-7xl flex-col items-stretch gap-2 px-4',
+  base: 'flex w-full min-w-0 flex-col items-stretch gap-2.5 px-4 pt-0 pb-1',
 });
 
 // Segmented control matching the JournalDetailToggle's inset-container +
@@ -501,29 +502,33 @@ function Component() {
   const actionsTotalDisplay = `${totalAccuracy === 'estimate' ? '~' : ''}${formatNumber(effectiveTotal, true)}${totalAccuracy === 'lower-bound' ? '+' : ''}`;
   const offerCompleteScan =
     listSampled && (Boolean(data?.isPartial) || effectiveTotal > 0);
+  const completeStatusFacetRows = completeListRows;
   const displayedByStage = useMemo(
     () =>
-      completeListRows
+      completeStatusFacetRows
         ? withInvocationStatusCounts(
             byStage,
-            completeListRows.map(({ status }) => status),
+            completeStatusFacetRows.map(({ status }) => status),
+            statusFilter,
           )
         : byStage,
-    [byStage, completeListRows],
+    [byStage, completeStatusFacetRows, statusFilter],
   );
   const displayedByStatus = useMemo(
     () =>
-      completeListRows
+      completeStatusFacetRows
         ? withInvocationStatusCounts(
             byStatus,
-            completeListRows.map(({ status }) => status),
+            completeStatusFacetRows.map(({ status }) => status),
+            statusFilter,
           )
         : byStatus,
-    [byStatus, completeListRows],
+    [byStatus, completeStatusFacetRows, statusFilter],
   );
-  const displayedStageCountsArePartial = completeListRows
-    ? false
-    : summaryData?.stageCountsArePartial;
+  const displayedStageCountsArePartial =
+    completeStatusFacetRows && canReconcileStatusFacetFromList(statusFilter)
+      ? false
+      : summaryData?.stageCountsArePartial;
   const serviceTabs = useServiceTabs(
     summaryData,
     deploymentsData,
@@ -645,46 +650,55 @@ function Component() {
       <SampleNotice />
     ) : undefined;
 
+  const summaryContent = (
+    <div className={summaryHeaderStyles()}>
+      <VQueueStageSummaryBar
+        byStage={displayedByStage}
+        byStatus={displayedByStatus}
+        focus={vqueueSummaryFocus}
+        onFocusChange={changeVqueueSummaryFocus}
+        breakdownMode={countMode}
+        canSampleBreakdown={canSampleBreakdown}
+        onBreakdownModeChange={setCountMode}
+        isLoading={isStageSummaryLoading}
+        isFetching={isStageFetching}
+        isDimmed={statusDim}
+        getHref={statusHref}
+        areStageCountsPartial={displayedStageCountsArePartial}
+        isBreakdownSampled={breakdownIsSampled}
+        countsReflectFilters={stageCountsReflectFilters}
+        totalsByStage={byStage}
+        populationByStage={populationByStage}
+        countsAreContextual={countsAreContextual}
+        isBreakdownLoading={isVqueueBreakdownLoading}
+      />
+      <VQueueStageLegend
+        byStage={displayedByStage}
+        byStatus={displayedByStatus}
+        focus={vqueueSummaryFocus}
+        isBreakdownSampled={breakdownIsSampled}
+        areStageCountsPartial={displayedStageCountsArePartial}
+        isLoading={isStageSummaryLoading}
+        isError={isSummaryError}
+        isDimmed={statusDim}
+        getHref={statusHref}
+        totalsByStage={byStage}
+        populationByStage={populationByStage}
+        populationByStatus={populationByStatus}
+        countsAreContextual={countsAreContextual}
+        isBreakdownLoading={isVqueueBreakdownLoading}
+        isBreakdownError={isVqueueBreakdownError}
+      />
+    </div>
+  );
+
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
-      <div className="relative flex min-h-0 flex-1 flex-col gap-4 pt-20">
-        <div className={summaryHeaderStyles()}>
-          <VQueueStageSummaryBar
-            byStage={displayedByStage}
-            byStatus={displayedByStatus}
-            focus={vqueueSummaryFocus}
-            onFocusChange={changeVqueueSummaryFocus}
-            breakdownMode={countMode}
-            canSampleBreakdown={canSampleBreakdown}
-            onBreakdownModeChange={setCountMode}
-            isLoading={isStageSummaryLoading}
-            isFetching={isStageFetching}
-            isDimmed={statusDim}
-            getHref={statusHref}
-            areStageCountsPartial={displayedStageCountsArePartial}
-            isBreakdownSampled={breakdownIsSampled}
-            countsReflectFilters={stageCountsReflectFilters}
-            populationByStage={populationByStage}
-            countsAreContextual={countsAreContextual}
-            isBreakdownLoading={isVqueueBreakdownLoading}
-          />
-          <VQueueStageLegend
-            byStage={displayedByStage}
-            byStatus={displayedByStatus}
-            focus={vqueueSummaryFocus}
-            isBreakdownSampled={breakdownIsSampled}
-            areStageCountsPartial={displayedStageCountsArePartial}
-            isLoading={isStageSummaryLoading}
-            isError={isSummaryError}
-            isDimmed={statusDim}
-            getHref={statusHref}
-            populationByStage={populationByStage}
-            populationByStatus={populationByStatus}
-            countsAreContextual={countsAreContextual}
-            isBreakdownLoading={isVqueueBreakdownLoading}
-            isBreakdownError={isVqueueBreakdownError}
-          />
-        </div>
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <ListPageHeader icon={IconName.Invocation} title="Invocations">
+          Invocations are requests to execute handlers. Follow their lifecycle,
+          inspect their journals, and intervene when execution needs attention.
+        </ListPageHeader>
         <ContentPanel tabs={serviceTabs}>
           <ContentPanelToolbar>
             <SampleScanToggle
@@ -879,6 +893,9 @@ function Component() {
             </Dropdown>
           </ContentPanelToolbar>
           <ContentPanelBody className="pb-32">
+            <div className="-mb-1 border-b border-gray-200/80 px-1 pt-9 pb-1.5">
+              {summaryContent}
+            </div>
             <ContentPanelSection flush>
               <PanelTable
                 aria-label="Invocations"
@@ -1279,7 +1296,7 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
           // Only restore keys the caller hasn't already set — explicit
           // filter_*/sort_*/column on the URL always wins over the saved
           // state. Restoring sort_* (incl. the `sort_field=none` no-sort
-          // marker) keeps a no-sort preset like Processing from picking up the
+          // marker) keeps a no-sort preset like Running from picking up the
           // default sort on back-navigation; restoring column keeps
           // preset-specific columns (idempotency_key, scheduled_start_at, …).
           // The `column` key repeats per value, but the guard makes the first

@@ -50,13 +50,13 @@ const VALUELESS_OPERATIONS = new Set(['IS NULL', 'IS NOT NULL']);
 const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
     id: 'processing',
-    label: 'Processing',
+    label: 'Running',
     sort: SORT_NONE,
     filters: [
       {
         id: 'status',
         operation: 'IN',
-        value: ['running', 'backing-off'],
+        value: ['running'],
       },
     ],
   },
@@ -74,7 +74,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   },
   {
     id: 'stuck',
-    label: 'Held',
+    label: 'Not processing',
     filters: [
       {
         id: 'status',
@@ -246,7 +246,7 @@ export function getDefaultInvocationsPreset(): string | undefined {
 //               scope filter aside) — the baseline "show everything recent"
 //               view. Matches the All sidebar item.
 //   - 'preset': on `/invocations` and the URL's filter set matches one of
-//               the named shortcuts (In-flight, Held, Scheduled, …).
+//               the named shortcuts (In-flight, Not processing, Scheduled, …).
 //               `id` is the shortcut id, used to highlight that sub-item.
 //   - 'custom': on `/invocations` but the URL doesn't match 'all' or any
 //               preset — the user built their own filter combination. This
@@ -455,7 +455,7 @@ export function InvocationsSidebarItem({
     match: (loc) => classify(loc)?.kind === 'all',
     preserveSearchParams,
   };
-  // Requested rail order: Processing, In-flight, Held, then All, then the
+  // Requested rail order: Running, In-flight, Not processing, then All, then the
   // rest — so All sits after the first three presets in the sub-item list.
   const subItems: SidebarSubItem[] = [
     ...presetSubItems.slice(0, 3),
@@ -469,7 +469,7 @@ export function InvocationsSidebarItem({
   // - on a custom-filter /invocations URL → "Last query" (active)
   // - on an overflow preset (Idempotent, Most retried, …) → preset label (active)
   // - otherwise fall back to the last remembered detail/custom (not active)
-  // Fixed rail presets (Processing, In-flight, Held, All) don't appear here —
+  // Fixed rail presets (Running, In-flight, Not processing, All) don't appear here —
   // they already have their own row in the rail.
   const FIXED_PRESET_IDS = new Set(['inflight', 'stuck', 'processing']);
 

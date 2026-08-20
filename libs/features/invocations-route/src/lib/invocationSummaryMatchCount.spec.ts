@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
+  canReconcileStatusFacetFromList,
   countMatchingStatusBuckets,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
@@ -49,6 +50,23 @@ describe('countMatchingStatusBuckets', () => {
         },
       ),
     ).toBeUndefined();
+  });
+});
+
+describe('canReconcileStatusFacetFromList', () => {
+  it('does not replace the status population with rows narrowed by status', () => {
+    expect(
+      canReconcileStatusFacetFromList({
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'IN',
+        value: ['running'],
+      }),
+    ).toBe(false);
+  });
+
+  it('allows exact list reconciliation without a status filter', () => {
+    expect(canReconcileStatusFacetFromList(undefined)).toBe(true);
   });
 });
 
@@ -102,5 +120,39 @@ describe('withInvocationStatusCounts', () => {
         ['running', 'running', 'succeeded'],
       ).map(({ count }) => count),
     ).toEqual([0, 2, 1]);
+  });
+
+  it('reconciles selected buckets without replacing sibling populations', () => {
+    expect(
+      withInvocationStatusCounts(
+        [
+          { count: 100, statuses: ['pending', 'backing-off'] },
+          { count: 6, statuses: ['running'] },
+          { count: 1, statuses: ['paused'] },
+        ],
+        ['running', 'running', 'running', 'running', 'running'],
+        {
+          field: 'status',
+          type: 'STRING_LIST',
+          operation: 'IN',
+          value: ['running'],
+        },
+      ).map(({ count }) => count),
+    ).toEqual([100, 5, 1]);
+  });
+
+  it('keeps a grouped population when the status filter selects only part of it', () => {
+    expect(
+      withInvocationStatusCounts(
+        [{ count: 100, statuses: ['pending', 'backing-off'] }],
+        ['backing-off'],
+        {
+          field: 'status',
+          type: 'STRING_LIST',
+          operation: 'IN',
+          value: ['backing-off'],
+        },
+      )[0]?.count,
+    ).toBe(100);
   });
 });
