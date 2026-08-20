@@ -238,6 +238,13 @@ export const QUERY_DEFINITIONS = {
       'SELECT COUNT(1) FROM (SELECT id FROM sys_vqueue_meta WHERE <queue filters> LIMIT 100001)',
     tables: ['sys_vqueue_meta'],
   },
+  'invocations-v2/candidate-statuses-by-ids': {
+    description:
+      'Resolve VQueue-owned statuses for a bounded batch candidate set without hydrating invocation details.',
+    shape:
+      "SELECT entry_id, stage, status FROM sys_vqueue_entry_status WHERE entry_id IN (…) AND entry_kind = 'invocation'",
+    tables: ['sys_vqueue_entry_status'],
+  },
   'invocations-v2/candidates-from-state': {
     description:
       'Select running/backing-off invocation candidates from the small live-state table (invocations list fast path, servers without VQueues).',
