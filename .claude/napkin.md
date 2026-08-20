@@ -3405,6 +3405,11 @@
 - The Virtual Object details State summary should not include a "View state" row.
 - The Workflow Execution hero follows the Lock hero: invocation ID on the left and its status on the right. Do not put execution duration in that row.
 - Once the Workflow Execution card shows the run status, do not duplicate that status badge in the Workflow page header.
+
+## 2026-08-20 — Workflow interactions documentation
+
+- Both forms of the Workflow interactions tooltip link to the established Workflow patterns documentation at `https://docs.restate.dev/tour/workflows#workflow-patterns`. Preserve the tab tooltip's non-button trigger while adding the external link inside its content.
+- Specs that render the shared `Link` need a Router context even for external URLs because the component reads search parameters.
 - When testing a component that renders `Status`, include a `QueryClientProvider`; its paused/transient-error hooks require the React Query context even when their queries are disabled.
 
 ## 2026-08-20 — Command hygiene correction

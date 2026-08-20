@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, vi } from 'vitest';
 import { WorkflowInteractionTooltip } from './WorkflowInteractionTooltip';
 
@@ -10,9 +11,11 @@ describe('WorkflowInteractionTooltip', () => {
   it('defines interactions beside a tab without nesting a button', async () => {
     vi.useFakeTimers();
     render(
-      <WorkflowInteractionTooltip variant="tab">
-        Interactions
-      </WorkflowInteractionTooltip>,
+      <MemoryRouter>
+        <WorkflowInteractionTooltip variant="tab">
+          Interactions
+        </WorkflowInteractionTooltip>
+      </MemoryRouter>,
     );
 
     const indicator = screen.getByRole('img', {
