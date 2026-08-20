@@ -3426,46 +3426,12 @@ export interface components {
       max: string;
       /** @description Number of VQueues with a recorded sample contributing to the range. */
       vqueueCount: number;
-      /**
-       * Format: date-time
-       * @description Oldest latest-sample timestamp among the contributing VQueues.
-       */
-      oldestUpdatedAt?: string;
-      /**
-       * Format: date-time
-       * @description Newest latest-sample timestamp among the contributing VQueues.
-       */
-      latestUpdatedAt?: string;
-    };
-    VirtualObjectStatsBlockedDurationRange: {
-      /** @enum {string} */
-      gate:
-        | 'concurrency_rules'
-        | 'invoker_concurrency'
-        | 'invoker_throttling'
-        | 'lock';
-      /** @description Minimum per-VQueue exponential moving average as an ISO 8601 duration. */
-      min: string;
-      /** @description Maximum per-VQueue exponential moving average as an ISO 8601 duration. */
-      max: string;
-      /** @description Number of VQueues with a recorded attempt contributing to the range. */
-      vqueueCount: number;
-      /** Format: date-time */
-      oldestUpdatedAt?: string;
-      /** Format: date-time */
-      latestUpdatedAt?: string;
     };
     VirtualObjectStatsActivity: {
       /** Format: date-time */
       oldestInboxedAt?: string;
       /** Format: date-time */
       lastEnqueuedAt?: string;
-      /** Format: date-time */
-      lastStartedAt?: string;
-      /** Format: date-time */
-      lastAttemptAt?: string;
-      /** Format: date-time */
-      lastFinishedAt?: string;
     };
     KeyedServiceStatsState: {
       /** @description Number of state keys stored by this keyed service instance. */
@@ -3479,7 +3445,6 @@ export interface components {
       averageInboxDuration?: components['schemas']['VirtualObjectStatsDurationRange'];
       /** @description Number of entries currently inboxed across this Virtual Object instance's Virtual Queues. */
       numInbox?: number;
-      averageBlockedDurations?: components['schemas']['VirtualObjectStatsBlockedDurationRange'][];
       activity?: components['schemas']['VirtualObjectStatsActivity'];
       state?: components['schemas']['KeyedServiceStatsState'];
     };

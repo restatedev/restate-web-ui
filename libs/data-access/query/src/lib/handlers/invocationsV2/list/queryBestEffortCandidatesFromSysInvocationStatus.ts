@@ -4,7 +4,11 @@ import {
   type QueryContext,
 } from '../../shared';
 import { INVOCATION_LIST_FIELDS } from '../invocationListFields';
-import { sqlStringList, type ResolvedInvocationModeV2 } from '../shared';
+import {
+  STATUSES_RESOLVED_FROM_VQUEUE,
+  sqlStringList,
+  type ResolvedInvocationModeV2,
+} from '../shared';
 import {
   invocationStatusColumnForField,
   invocationStatusColumnName,
@@ -25,6 +29,34 @@ function storedStatusPredicate(query: BestEffortSysInvocationStatusQueryPlan) {
   ])})`;
 }
 
+function storedStatusFallbackColumns(
+  query: BestEffortSysInvocationStatusQueryPlan,
+  includeInvocationDetails: boolean,
+) {
+  if (!includeInvocationDetails) return [];
+  const statuses = query.statuses.filter(
+    (status) => !STATUSES_RESOLVED_FROM_VQUEUE.has(status),
+  );
+  if (statuses.length === 0) return [];
+
+  const columns = ['status AS raw_status'];
+  if (
+    statuses.some((status) =>
+      ['succeeded', 'failed', 'cancelled', 'killed'].includes(status),
+    )
+  ) {
+    columns.push('completion_result');
+  }
+  if (
+    statuses.some((status) =>
+      ['failed', 'cancelled', 'killed'].includes(status),
+    )
+  ) {
+    columns.push('completion_failure');
+  }
+  return columns;
+}
+
 function columnsNeededFromSample(
   query: BestEffortSysInvocationStatusQueryPlan,
   includeInvocationDetails: boolean,
@@ -32,8 +64,14 @@ function columnsNeededFromSample(
   const statusField =
     INVOCATION_LIST_FIELDS.status.tables.sys_invocation_status;
   const columns = new Set(['id', statusField.column]);
-  if (includeInvocationDetails) {
+  const fallbackColumns = storedStatusFallbackColumns(
+    query,
+    includeInvocationDetails,
+  );
+  if (fallbackColumns.includes('completion_result')) {
     columns.add(statusField.supportingColumns.completionResult);
+  }
+  if (fallbackColumns.includes('completion_failure')) {
     columns.add(statusField.supportingColumns.completionFailure);
   }
   for (const filter of query.filters) {
@@ -58,6 +96,10 @@ export function queryBestEffortCandidatesFromSysInvocationStatus(
   includeInvocationDetails = false,
   limit = BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
 ) {
+  const fallbackColumns = storedStatusFallbackColumns(
+    query,
+    includeInvocationDetails,
+  );
   const clauses = [
     storedStatusPredicate(query),
     ...invocationStatusFilterClauses(query.filters, 'ss'),
@@ -84,8 +126,8 @@ export function queryBestEffortCandidatesFromSysInvocationStatus(
             ? ',\n        ss.created_at AS created_at'
             : ''
         }${
-          includeInvocationDetails
-            ? ',\n        ss.status AS raw_status,\n        ss.completion_result,\n        ss.completion_failure'
+          fallbackColumns.length > 0
+            ? `,\n        ${fallbackColumns.map((column) => `ss.${column}`).join(',\n        ')}`
             : ''
         }
       FROM ${source}${where}${orderBy}

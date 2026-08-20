@@ -34,4 +34,27 @@ describe('batch operation count', () => {
       screen.getByText(/matching the following criteria now/),
     ).toBeTruthy();
   });
+
+  it('omits a zero lower-bound estimate when the sample finds no matches', () => {
+    render(
+      <>
+        {OPERATION_CONFIG['retry-now'].description(0, true, 'just now', {
+          filters: [
+            {
+              field: 'status',
+              type: 'STRING',
+              operation: 'EQUALS',
+              value: 'backing-off',
+            },
+          ],
+        })}
+      </>,
+    );
+
+    const description = screen.getByText(/Are you sure you want to retry/);
+    expect(description.textContent?.replace(/\s+/g, ' ')).toContain(
+      'Are you sure you want to retry invocations matching the following criteria now?',
+    );
+    expect(description.textContent).not.toContain('0+');
+  });
 });

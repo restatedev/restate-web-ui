@@ -5753,52 +5753,6 @@
             "type": "integer",
             "minimum": 1,
             "description": "Number of VQueues with a recorded sample contributing to the range."
-          },
-          "oldestUpdatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Oldest latest-sample timestamp among the contributing VQueues."
-          },
-          "latestUpdatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Newest latest-sample timestamp among the contributing VQueues."
-          }
-        }
-      },
-      "VirtualObjectStatsBlockedDurationRange": {
-        "type": "object",
-        "required": ["gate", "min", "max", "vqueueCount"],
-        "properties": {
-          "gate": {
-            "type": "string",
-            "enum": [
-              "concurrency_rules",
-              "invoker_concurrency",
-              "invoker_throttling",
-              "lock"
-            ]
-          },
-          "min": {
-            "type": "string",
-            "description": "Minimum per-VQueue exponential moving average as an ISO 8601 duration."
-          },
-          "max": {
-            "type": "string",
-            "description": "Maximum per-VQueue exponential moving average as an ISO 8601 duration."
-          },
-          "vqueueCount": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "Number of VQueues with a recorded attempt contributing to the range."
-          },
-          "oldestUpdatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "latestUpdatedAt": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },
@@ -5806,10 +5760,7 @@
         "type": "object",
         "properties": {
           "oldestInboxedAt": { "type": "string", "format": "date-time" },
-          "lastEnqueuedAt": { "type": "string", "format": "date-time" },
-          "lastStartedAt": { "type": "string", "format": "date-time" },
-          "lastAttemptAt": { "type": "string", "format": "date-time" },
-          "lastFinishedAt": { "type": "string", "format": "date-time" }
+          "lastEnqueuedAt": { "type": "string", "format": "date-time" }
         }
       },
       "KeyedServiceStatsState": {
@@ -5843,12 +5794,6 @@
             "type": "integer",
             "minimum": 0,
             "description": "Number of entries currently inboxed across this Virtual Object instance's Virtual Queues."
-          },
-          "averageBlockedDurations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/VirtualObjectStatsBlockedDurationRange"
-            }
           },
           "activity": {
             "$ref": "#/components/schemas/VirtualObjectStatsActivity"

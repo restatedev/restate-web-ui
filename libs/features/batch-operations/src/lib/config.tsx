@@ -38,6 +38,7 @@ function invocationCount(
   duration: string,
   params: Parameters<OperationConfig['description']>[3],
 ) {
+  const sampledWithoutMatches = count === 0 && isLowerBound;
   const label = (
     <span className="font-medium text-gray-700">
       {count === undefined ? (
@@ -46,7 +47,7 @@ function invocationCount(
           aria-label="Loading invocation count"
           className="inline-block h-[0.8em] w-[3.5em] animate-pulse rounded-sm bg-gray-300 align-[-0.05em]"
         />
-      ) : (
+      ) : sampledWithoutMatches ? null : (
         <>
           {formatNumber(count, true)}
           {isLowerBound ? '+' : ''}
@@ -64,9 +65,11 @@ function invocationCount(
   return (
     <InlineTooltip
       description={
-        isLowerBound
-          ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
-          : `This count was calculated ${duration} and may have changed.`
+        sampledWithoutMatches
+          ? `The sample found no matching invocations ${duration}, but matching invocations may still exist.`
+          : isLowerBound
+            ? `This is a lower bound estimate calculated ${duration}. The actual count may be higher and may have changed.`
+            : `This count was calculated ${duration} and may have changed.`
       }
       variant="inline-help"
       className="[&_button]:invisible"
