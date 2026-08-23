@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-08-23 VO/Workflow tabs vs search layout: These two list toolbars should reserve a bounded responsive search width (`sm:min(28rem,40vw)`), make the tab strip shrink/scroll first, and remain right-anchored. `ContentPanelToolbar shrinkTabs` marks the portal content; the parent toolbar slot responds with `flex-none` plus `ml-auto`. Do not change the default basis-0 toolbar behavior used by other filter-heavy tabbed pages.
+
+- 2026-08-23 self on new content-panel test setup: The content-panel Vitest environment has neither `ResizeObserver` nor jest-dom matchers. Stub `ResizeObserver` with non-empty methods and assert DOM attributes through `getAttribute`, not `toHaveAttribute`.
+
 - 2026-08-23 stale VQueue metadata reconciliation: An exact, uncapped list can disprove metadata-derived counts only for lifecycle buckets fully covered by its Status filter. Reconcile those covered population buckets from hydrated row statuses (for example, `Running 7` becomes `Running 0` when the exact running-capable query is empty), while retaining unrelated buckets such as Completed. A granular filter that covers only part of Inbox must not zero the whole Inbox population.
 
 - 2026-08-23 invocation status-churn implementation: An exact `sys_vqueues` candidate selected with a Status predicate now carries selection provenance. If point hydration observes a different latest status, retain the row with that latest status and return its id in `statusChangedInvocationIds`; best-effort and direct-id mismatches still drop. The route displays retained rows, excludes them from current-match totals/status reconciliation, and shows a notice plus `N currently matching · M changed status`. A limit-saturated selection with changed rows remains partial because those rows may have displaced still-matching candidates beyond the cap.
