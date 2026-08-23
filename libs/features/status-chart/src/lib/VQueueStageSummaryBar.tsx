@@ -32,7 +32,6 @@ const INBOX_PATTERN =
   'repeating-linear-gradient(-45deg, transparent 0 4px, rgba(255, 255, 255, 0.28) 4px 6px)';
 const INBOX_HIGHLIGHT =
   'linear-gradient(to bottom, rgba(255, 255, 255, 0.12), transparent 60%)';
-
 const styles = tv({
   slots: {
     container:
@@ -497,6 +496,22 @@ export function VQueueStageSummaryBar({
     </div>
   );
 
+  const renderFocusCount = (
+    label: string,
+    count: number,
+    state: 'known' | 'loading' | 'unknown',
+  ) =>
+    state === 'loading' ? (
+      <span
+        className={focusCount({
+          class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
+        })}
+        aria-label={`${label} count loading`}
+      />
+    ) : state === 'unknown' ? null : (
+      <span className={focusCount()}>{formatNumber(count, true)}</span>
+    );
+
   return (
     <div className={container({ class: className })}>
       {canSampleBreakdown && (
@@ -521,38 +536,36 @@ export function VQueueStageSummaryBar({
           <TabList aria-label="Invocation breakdown" className={focusTabList()}>
             <Tab id="all" className={focusTab()}>
               <span>All statuses</span>
-              {completedStageIsLoading ? (
-                <span
-                  className={focusCount({
-                    class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
-                  })}
-                  aria-label="All-status count loading"
-                />
-              ) : (
-                <span className={focusCount()}>
-                  {formatNumber(populationTotal, true)}
-                </span>
+              {renderFocusCount(
+                'All-status',
+                populationTotal,
+                completedStageIsLoading
+                  ? 'loading'
+                  : areStageCountsPartial && populationTotal === 0
+                    ? 'unknown'
+                    : 'known',
               )}
             </Tab>
             <Tab id="not-completed" className={focusTab()}>
               <span>Not completed</span>
-              <span className={focusCount()}>
-                {formatNumber(populationNotCompletedCount, true)}
-              </span>
+              {renderFocusCount(
+                'Not-completed',
+                populationNotCompletedCount,
+                areStageCountsPartial && populationNotCompletedCount === 0
+                  ? 'unknown'
+                  : 'known',
+              )}
             </Tab>
             <Tab id="completed" className={focusTab()}>
               <span>Completed</span>
-              {completedStageIsLoading ? (
-                <span
-                  className={focusCount({
-                    class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
-                  })}
-                  aria-label="Completed count loading"
-                />
-              ) : (
-                <span className={focusCount()}>
-                  {formatNumber(populationCompletedCount, true)}
-                </span>
+              {renderFocusCount(
+                'Completed',
+                populationCompletedCount,
+                completedStageIsLoading
+                  ? 'loading'
+                  : areStageCountsPartial && populationCompletedCount === 0
+                    ? 'unknown'
+                    : 'known',
               )}
             </Tab>
           </TabList>

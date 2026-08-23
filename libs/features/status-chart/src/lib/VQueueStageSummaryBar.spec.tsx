@@ -304,4 +304,39 @@ describe('VQueueStageSummaryBar', () => {
       ).toBe('All statuses');
     });
   });
+
+  it('omits an uncertain zero count without changing the empty rail', async () => {
+    const sampledZeroStages = totalsByStage.map((stage) => ({
+      ...stage,
+      count: 0,
+    }));
+    render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar
+          byStage={sampledZeroStages}
+          byStatus={[]}
+          focus="not-completed"
+          onFocusChange={() => undefined}
+          breakdownMode="estimate"
+          canSampleBreakdown={false}
+          onBreakdownModeChange={() => undefined}
+          isBreakdownSampled
+          areStageCountsPartial
+          getHref={() => '/invocations'}
+        />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('tab', { name: 'Not completed' }).textContent,
+      ).toBe('Not completed');
+    });
+    expect(screen.queryByText('—')).toBeNull();
+    expect(
+      screen.getByLabelText(
+        'Not-completed invocation distribution with current status highlighted',
+      ).children,
+    ).toHaveLength(1);
+  });
 });

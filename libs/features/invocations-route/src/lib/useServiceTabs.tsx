@@ -30,15 +30,21 @@ type DeploymentsData = NonNullable<
 
 type ServiceRow = {
   id: string;
-  count: number;
+  count?: number;
   statusBuckets: StatusBucket[];
+};
+
+type TabCount = {
+  count?: number;
+  accuracy?: InvocationPopulationCount['accuracy'];
 };
 
 function serviceRows(
   serviceBuckets: ServiceBucket[] | undefined,
   deploymentsData: DeploymentsData | undefined,
+  missingCountsAreUnknown: boolean,
 ) {
-  const services = (serviceBuckets ?? []).map(
+  const services: ServiceRow[] = (serviceBuckets ?? []).map(
     ({ service, count, statusBuckets }) => ({
       id: service,
       count,
@@ -48,10 +54,16 @@ function serviceRows(
   const seen = new Set(services.map(({ id }) => id));
   for (const service of deploymentsData?.sortedServiceNames ?? []) {
     if (!seen.has(service)) {
-      services.push({ id: service, count: 0, statusBuckets: [] });
+      services.push({
+        id: service,
+        count: missingCountsAreUnknown ? undefined : 0,
+        statusBuckets: [],
+      });
     }
   }
-  return services.sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
+  return services.sort(
+    (a, b) => (b.count ?? -1) - (a.count ?? -1) || a.id.localeCompare(b.id),
+  );
 }
 
 function selectedServices(
@@ -90,7 +102,19 @@ function selectedServices(
   return { selectedId: ALL_TAB_ID };
 }
 
-function tabLabel(label: string, total: number, isLoading: boolean): ReactNode {
+export function formatServiceTabCount({ count, accuracy = 'exact' }: TabCount) {
+  if (count === undefined || (accuracy === 'estimate' && count === 0)) {
+    return undefined;
+  }
+  return `${formatNumber(count, true)}${accuracy === 'lower-bound' ? '+' : ''}`;
+}
+
+function tabLabel(
+  label: string,
+  total: TabCount,
+  isLoading: boolean,
+): ReactNode {
+  const formattedTotal = formatServiceTabCount(total);
   return (
     <span className="flex items-center gap-1.5">
       <span className="truncate [[role=tab]_&]:max-w-[12ch]" title={label}>
@@ -98,11 +122,11 @@ function tabLabel(label: string, total: number, isLoading: boolean): ReactNode {
       </span>
       {isLoading ? (
         <span className="inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
-      ) : (
-        <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-          {formatNumber(total, true)}
+      ) : formattedTotal ? (
+        <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium whitespace-nowrap text-zinc-500 tabular-nums">
+          {formattedTotal}
         </span>
-      )}
+      ) : null}
     </span>
   );
 }
@@ -167,10 +191,18 @@ function serviceTabLabel(
   isFiltered: boolean,
   matchingIsPartial: boolean,
   isLoading: boolean,
+  countAccuracy: TabCount['accuracy'],
   currentCount?: InvocationPopulationCount,
 ) {
-  const label = tabLabel(service.id, service.count, isLoading);
-  if (isLoading) return label;
+  const label = tabLabel(
+    service.id,
+    {
+      count: service.count,
+      accuracy: countAccuracy,
+    },
+    isLoading,
+  );
+  if (isLoading || service.count === undefined) return label;
 
   const buckets = new Map(
     service.statusBuckets.map((bucket) => [bucket.key, bucket]),
@@ -230,18 +262,36 @@ export function useServiceTabs(
 ): ContentPanelTabs {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
+  const summaryCountsArePartial = Boolean(
+    summary?.mode === 'sampled' || summary?.isPartial,
+  );
   const services = useMemo(
-    () => serviceRows(summary?.serviceBuckets, deploymentsData),
-    [summary?.serviceBuckets, deploymentsData],
+    () =>
+      serviceRows(
+        summary?.serviceBuckets,
+        deploymentsData,
+        summaryCountsArePartial,
+      ),
+    [summary?.serviceBuckets, deploymentsData, summaryCountsArePartial],
   );
   const selection = selectedServices(
     searchParams.get('filter_target_service_name'),
     services,
   );
-  const total = services.reduce((sum, service) => sum + service.count, 0);
+  const total: TabCount = {
+    count:
+      summary && !(summaryCountsArePartial && summary.total === 0)
+        ? summary.total
+        : undefined,
+    accuracy: summary?.stageCountsArePartial ? 'estimate' : 'exact',
+  };
   const isFiltered = hasStatusFilter(statusFilter);
   const displayedCurrentCount =
-    isFiltered || currentCount?.accuracy === 'exact' ? currentCount : undefined;
+    currentCount &&
+    !(currentCount.accuracy === 'estimate' && currentCount.count === 0) &&
+    (isFiltered || currentCount.accuracy === 'exact')
+      ? currentCount
+      : undefined;
   const populationStatuses =
     summary?.stageBuckets.flatMap(({ statuses }) => statuses) ?? [];
   const globalMatch = isFiltered
@@ -249,10 +299,12 @@ export function useServiceTabs(
       ? countMatchingGlobalStatuses(summary, statusFilter)
       : undefined
     : undefined;
+  const matchingIsPartial = globalMatch?.isPartial ?? false;
   const matchingCount = (subset: ServiceRow[]) => {
     if (!isFiltered) return undefined;
     let count = 0;
     for (const service of subset) {
+      if (service.count === undefined) return undefined;
       if (service.count === 0) continue;
       const serviceCount = countMatchingStatusBuckets(
         service.statusBuckets,
@@ -262,9 +314,8 @@ export function useServiceTabs(
       if (serviceCount === undefined) return undefined;
       count += serviceCount;
     }
-    return count;
+    return matchingIsPartial && count === 0 ? undefined : count;
   };
-  const matchingIsPartial = globalMatch?.isPartial ?? false;
   const items = [
     {
       id: ALL_TAB_ID,
@@ -277,10 +328,17 @@ export function useServiceTabs(
             id: MULTI_TAB_ID,
             label: tabLabel(
               selection.label ?? 'Selected services',
-              selection.services.reduce(
-                (sum, service) => sum + service.count,
-                0,
-              ),
+              {
+                count: selection.services.every(
+                  ({ count }) => count !== undefined,
+                )
+                  ? selection.services.reduce(
+                      (sum, service) => sum + (service.count ?? 0),
+                      0,
+                    )
+                  : undefined,
+                accuracy: total.accuracy,
+              },
               isLoading,
             ),
           },
@@ -296,6 +354,7 @@ export function useServiceTabs(
         isFiltered,
         matchingIsPartial,
         isLoading,
+        total.accuracy,
         selection.selectedId === service.id ? displayedCurrentCount : undefined,
       ),
       href: serviceHref(baseUrl, searchParams, service.id),

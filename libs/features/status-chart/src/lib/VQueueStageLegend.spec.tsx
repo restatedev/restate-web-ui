@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { VQueueStageLegend } from './VQueueStageLegend';
@@ -53,6 +53,7 @@ describe('VQueueStageLegend', () => {
     expect(legend.textContent).toBe('InboxRunningSuspendedPaused');
     expect(screen.getByRole('link', { name: 'Inbox' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Running' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Suspended' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Paused' })).toBeTruthy();
   });
 
@@ -101,6 +102,39 @@ describe('VQueueStageLegend', () => {
       screen.getByRole('link', { name: 'Completed: loading' }).textContent,
     ).toBe('CompletedLoading');
     expect(screen.queryByRole('link', { name: 'Completed: 0' })).toBeNull();
+  });
+
+  it('always links every Inbox sub-status without inventing sampled zeroes', async () => {
+    render(
+      <MemoryRouter>
+        <VQueueStageLegend
+          byStage={stages}
+          byStatus={[
+            {
+              name: 'pending',
+              label: 'Pending',
+              count: 55,
+              statuses: ['pending'],
+            },
+          ]}
+          focus="not-completed"
+          isBreakdownSampled
+          getHref={(name) => `/invocations?status=${name}`}
+        />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Show Inbox breakdown' }),
+    );
+
+    expect(
+      await screen.findByRole('link', { name: 'Pending: ~100% of Inbox' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Scheduled' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Yielded' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Ready' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Backing off' })).toBeTruthy();
   });
 
   it('uses the population to keep filtered-out stage labels present', () => {

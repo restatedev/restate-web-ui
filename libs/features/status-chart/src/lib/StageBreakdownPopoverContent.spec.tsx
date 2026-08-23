@@ -43,4 +43,39 @@ describe('StageBreakdownPopoverContent', () => {
     expect(pending.textContent).toBe('Pending~90%');
     expect(backingOff.textContent).toBe('Backing off~10%');
   });
+
+  it('keeps unknown and exact-zero child statuses linked without inventing a value', () => {
+    render(
+      <MemoryRouter>
+        <StageBreakdownPopoverContent
+          label="Inbox"
+          count={10}
+          items={[
+            {
+              name: 'ready',
+              label: 'Ready',
+              fillLight: '#fff',
+              stroke: '#000',
+              href: '/invocations?status=ready',
+            },
+            {
+              name: 'yielded',
+              label: 'Yielded',
+              count: 0,
+              fillLight: '#fff',
+              stroke: '#000',
+              href: '/invocations?status=yielded',
+            },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Ready' }).textContent).toBe(
+      'Ready',
+    );
+    expect(
+      screen.getByRole('link', { name: 'Yielded: 0% of Inbox' }).textContent,
+    ).toBe('Yielded0%');
+  });
 });
