@@ -1,5 +1,15 @@
 # Napkin
 
+- 2026-08-23 user correction on object-lock hook responsibility: A custom hook must not return rendered `objectTarget`/`lockHolderTarget` nodes. Keep `useInvocationObjectLock` data-only (`identity`, `lockHolder`, `onOpenChange`) and render `InvocationObjectLockTarget` / `InvocationObjectLockHolderTarget` explicitly at the component boundary.
+
+- 2026-08-23 user correction on Inbox blocker composition: Do not make invocation-route replace the whole `VQueueInboxPopoverContent` head verdict through `renderHeadVerdict`. The shared component owns Blocked/Scheduled/Ready rendering; inject only `headBlockedDetails` (typed object target, holder target, and open handler) to cross the dependency boundary.
+
+- 2026-08-23 Inbox-ahead object-lock blocker: The `Next attempt · Pending · waiting behind N` disclosure renders the blocked queue head through `VQueueInboxPopoverContent`, not the focused Journey pending-attempt branch. Give the shared Inbox popover an injectable head-verdict renderer, and have invocation-route reuse one lazy object-lock detail hook for both the focused blocker and the head-ahead blocker. Regression coverage must open both nested popovers and assert the holder invocation plus typed VO target.
+
+- 2026-08-23 self on lock-query test helper extraction: I terminated an inline arrow callback with `;` inside the `renderCard` argument list, creating a syntax error. When replacing a block callback with an expression callback, preserve the surrounding argument comma.
+
+- 2026-08-23 self on Inbox blocker renderer patch: I placed the `VQueueEntryIdRenderer` anchor after `InboxOverview` even though the file defines it before `Head`, so a broad multi-hunk patch failed atomically. Patch each nearby section against its inspected position instead of relying on remembered ordering in a long source file.
+
 - 2026-08-23 lock-card stretched-link correction (user): For a row that combines whole-row navigation with `Status` buttons, keep the link and button as siblings in a relative/isolate container. The normal link owns the visible label and stretches an absolute `::after` over the row; nested buttons/links use relative `z-10`. Do not make an empty `absolute inset-0` anchor—the repository already established the pseudo-link pattern for interactive rows.
 
 - 2026-08-23 self on focus helper lookup: I guessed `libs/ui/focus/src/lib/focusRing.ts`; the implementation is `focus.tsx`. Locate the symbol with scoped `rg` before reading a presumed filename.

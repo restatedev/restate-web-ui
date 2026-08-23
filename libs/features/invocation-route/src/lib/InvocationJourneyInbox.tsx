@@ -5,10 +5,35 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { MetricComparison } from '@restate/ui/metric-comparison';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { formatNumber } from '@restate/util/intl';
+import {
+  InvocationObjectLockHolderTarget,
+  InvocationObjectLockTarget,
+  useInvocationObjectLock,
+} from './InvocationObjectLock';
 import type {
   InvocationJourneyModel,
   JourneyInboxContext,
 } from './InvocationJourneyModel';
+
+function JourneyInboxPopover({ snapshot }: { snapshot: VqueueSnapshot }) {
+  const { identity, lockHolder, onOpenChange } = useInvocationObjectLock(
+    snapshot.status.blockedResource,
+  );
+  return (
+    <VQueueInboxPopoverContent
+      data={snapshot}
+      headBlockedDetails={{
+        objectTarget: identity ? (
+          <InvocationObjectLockTarget identity={identity} />
+        ) : undefined,
+        lockHolderTarget: lockHolder ? (
+          <InvocationObjectLockHolderTarget lockHolder={lockHolder} />
+        ) : undefined,
+        onOpenChange,
+      }}
+    />
+  );
+}
 
 function createInboxSnapshot(
   scenario: InvocationJourneyModel,
@@ -124,7 +149,7 @@ export function JourneyInboxPosition({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-fit max-w-[min(48rem,calc(100vw-2rem))] min-w-[min(22rem,calc(100vw-2rem))]">
-          <VQueueInboxPopoverContent data={snapshot} />
+          <JourneyInboxPopover snapshot={snapshot} />
         </PopoverContent>
       </Popover>
       <span>for</span>

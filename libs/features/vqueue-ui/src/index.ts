@@ -54,6 +54,7 @@ export {
   VQueuePopoverContent,
   type InboxOrderItem,
   type VQueueEntryIdRenderer,
+  type VQueueHeadBlockedDetails,
   type VQueueInboxPopoverContentProps,
   type VQueuePopoverContentProps,
 } from './lib/VQueuePopoverContent';

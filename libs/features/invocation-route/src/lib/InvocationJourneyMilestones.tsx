@@ -1,20 +1,12 @@
-import { useGetVirtualObjectLock } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
-import {
-  InvocationId,
-  InvocationStatusBadge,
-  Status,
-} from '@restate/features/invocation-ui';
-import { useRestateContext } from '@restate/features/restate-context';
-import {
-  VirtualObjectInstanceTarget,
-  virtualObjectInstanceHref,
-  virtualObjectInstanceIdentityFromLockName,
-} from '@restate/features/virtual-object-instance';
+import { InvocationStatusBadge, Status } from '@restate/features/invocation-ui';
 import { BlockedStatus } from '@restate/features/vqueue-ui';
 import { MetricComparison } from '@restate/ui/metric-comparison';
 import { tv } from '@restate/util/styles';
-import { useState } from 'react';
+import {
+  InvocationObjectLockHolderTarget,
+  InvocationObjectLockTarget,
+  useInvocationObjectLock,
+} from './InvocationObjectLock';
 import { JourneyInboxPosition } from './InvocationJourneyInbox';
 import { JourneyBlockedTimeSummary } from './InvocationJourneyBlockedTime';
 import type {
@@ -31,58 +23,14 @@ import type {
 } from './InvocationJourneyModel';
 import { JourneyNodeTime } from './InvocationJourneyTime';
 
-type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
-
-function LockHolderTarget({
-  lockHolder,
-}: {
-  lockHolder: VirtualObjectLockHolder;
-}) {
-  if (lockHolder.kind === 'invocation') {
-    return (
-      <InvocationId
-        id={lockHolder.id}
-        size="md"
-        truncateInMiddle
-        popover={false}
-        className="max-w-full"
-      />
-    );
-  }
-  return (
-    <code className="block max-w-full truncate text-2xs text-zinc-600">
-      {lockHolder.id}
-    </code>
-  );
-}
-
 function PendingAttemptBlockedStatus({
   pendingAttempt,
 }: {
   pendingAttempt: JourneyPendingAttempt;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const { baseUrl } = useRestateContext();
   const resource = pendingAttempt.resource;
-  const objectIdentity =
-    resource?.resource === 'lock'
-      ? virtualObjectInstanceIdentityFromLockName(
-          resource.lockName,
-          resource.scope,
-        )
-      : undefined;
-  const lock = useGetVirtualObjectLock(
-    objectIdentity?.service ?? '',
-    objectIdentity?.key ?? '',
-    objectIdentity?.scope,
-    {
-      enabled: isOpen && Boolean(objectIdentity),
-      refetchOnMount: true,
-      refetchOnWindowFocus: false,
-      staleTime: 0,
-    },
-  );
-  const lockHolder = lock.data?.lockHolder;
+  const { identity, lockHolder, onOpenChange } =
+    useInvocationObjectLock(resource);
 
   return (
     <BlockedStatus
@@ -90,18 +38,16 @@ function PendingAttemptBlockedStatus({
       resource={resource}
       blockedDuration={pendingAttempt.blockedDuration}
       objectTarget={
-        objectIdentity ? (
-          <VirtualObjectInstanceTarget
-            identity={objectIdentity}
-            href={virtualObjectInstanceHref(baseUrl, objectIdentity)}
-            containerClassName="w-full"
-          />
+        identity ? (
+          <InvocationObjectLockTarget identity={identity} />
         ) : undefined
       }
       lockHolderTarget={
-        lockHolder ? <LockHolderTarget lockHolder={lockHolder} /> : undefined
+        lockHolder ? (
+          <InvocationObjectLockHolderTarget lockHolder={lockHolder} />
+        ) : undefined
       }
-      onOpenChange={setIsOpen}
+      onOpenChange={onOpenChange}
     />
   );
 }

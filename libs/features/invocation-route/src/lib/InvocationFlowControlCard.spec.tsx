@@ -99,6 +99,31 @@ function renderCard(
   );
 }
 
+function seedVirtualObjectLock(
+  queryClient: QueryClient,
+  service: string,
+  key: string,
+  holderId: string,
+) {
+  const lockQuery = adminApi(
+    'query',
+    '/query/virtual-objects/{service}/instances/{key}/lock',
+    'get',
+    {
+      baseUrl: '',
+      resolvedPath: `/query/virtual-objects/${encodeURIComponent(service)}/instances/${encodeURIComponent(key)}/lock`,
+      parameters: {
+        path: { service, key },
+        query: { scope: undefined },
+      },
+    },
+  );
+  queryClient.setQueryData(lockQuery.queryKey, {
+    supported: true,
+    lockHolder: { id: holderId, kind: 'invocation' },
+  });
+}
+
 describe('InvocationFlowControlCard', () => {
   it('renders the live journey, aggregate activity, and only the focused head blocker', () => {
     renderCard(
@@ -287,29 +312,13 @@ describe('InvocationFlowControlCard', () => {
         },
       }),
       undefined,
-      (queryClient) => {
-        const lockQuery = adminApi(
-          'query',
-          '/query/virtual-objects/{service}/instances/{key}/lock',
-          'get',
-          {
-            baseUrl: '',
-            resolvedPath:
-              '/query/virtual-objects/ActionSequentialRunner/instances/4d1b3796-21f7-4105-bd7c-d936ab8f72a1/lock',
-            parameters: {
-              path: {
-                service: 'ActionSequentialRunner',
-                key: '4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
-              },
-              query: { scope: undefined },
-            },
-          },
-        );
-        queryClient.setQueryData(lockQuery.queryKey, {
-          supported: true,
-          lockHolder: { id: holderId, kind: 'invocation' },
-        });
-      },
+      (queryClient) =>
+        seedVirtualObjectLock(
+          queryClient,
+          'ActionSequentialRunner',
+          '4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
+          holderId,
+        ),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'on object lock' }));
@@ -322,6 +331,83 @@ describe('InvocationFlowControlCard', () => {
     expect(objectTarget.getAttribute('href')).toBe(
       '/virtual-objects/ActionSequentialRunner/4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
     );
+  });
+
+  it('shows object lock details for the blocked head ahead in the Inbox', () => {
+    const lockName =
+      'ActionSequentialRunner/4d1b3796-21f7-4105-bd7c-d936ab8f72a1';
+    const holderId = 'inv-lock-holder';
+
+    renderCard(
+      invocation({
+        vqueue_id: 'vq-example',
+        stage: 'inbox',
+        status: 'new',
+        created_at: '2026-01-01T00:00:00.000Z',
+        first_runnable_at: '2026-01-01T00:00:10.000Z',
+        transitioned_at: '2026-01-01T00:00:10.000Z',
+        num_attempts: 0,
+      }),
+      snapshot({
+        status: {
+          blocked: true,
+          scheduling: 'blocked',
+          blockedOn: 'lock',
+          blockedResource: {
+            resource: 'lock',
+            lockName,
+          },
+        },
+        counts: {
+          inbox: 277,
+          running: 0,
+          suspended: 0,
+          paused: 0,
+          finished: 0,
+        },
+        head: {
+          entryId: 'inv-blocked-head',
+          stage: 'inbox',
+          status: 'new',
+          totalBlocks: [],
+          nowBlocks: [{ gate: 'lock', duration: 'PT20H12M58S' }],
+          avgBlocks: [],
+        },
+        focusEntry: {
+          id: 'inv-focus',
+          stage: 'inbox',
+          status: 'new',
+          position: 2,
+          attempts: 0,
+          firstRunnableAt: '2026-01-01T00:00:10.000Z',
+          totalBlocks: [],
+          latestBlocks: [],
+        },
+      }),
+      undefined,
+      (queryClient) =>
+        seedVirtualObjectLock(
+          queryClient,
+          'ActionSequentialRunner',
+          '4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
+          holderId,
+        ),
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Open Inbox order: 1 entry ahead/,
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'on object lock' }));
+
+    expect(screen.getByText('has lock on')).toBeTruthy();
+    expect(screen.getByRole('link', { name: holderId })).toBeTruthy();
+    expect(
+      screen.getByRole('link', {
+        name: `Virtual object instance ${lockName.replace('/', ' / ')}`,
+      }),
+    ).toBeTruthy();
   });
 
   it('shows a future schedule as the runnable milestone', () => {
