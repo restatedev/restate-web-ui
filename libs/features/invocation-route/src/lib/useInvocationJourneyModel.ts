@@ -513,9 +513,10 @@ export function useInvocationJourneyModel({
   const totalBlocks = data?.focusEntry?.totalBlocks ?? [];
   const latestBlocks = data?.focusEntry?.latestBlocks ?? [];
   const averageBlocks = data?.head.avgBlocks ?? [];
-  const blockedTime = isBlocked
-    ? undefined
-    : getBlockedTime(totalBlocks, averageBlocks);
+  const blockedTime =
+    isBlocked && attempts === 0
+      ? undefined
+      : getBlockedTime(totalBlocks, averageBlocks);
   const latestAttemptBlockedTime =
     isBlocked ||
     getBlockedMilliseconds(latestBlocks) === getBlockedMilliseconds(totalBlocks)

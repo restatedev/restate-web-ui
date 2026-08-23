@@ -679,7 +679,9 @@ describe('InvocationFlowControlCard', () => {
     );
 
     expect(screen.getByText('on concurrency rule')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Blocked time:/ })).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Blocked time: 2s' }),
+    ).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: /Last attempt blocked time:/ }),
     ).toBeNull();
@@ -724,7 +726,7 @@ describe('InvocationFlowControlCard', () => {
           status: 'new',
           attempts: 0,
           firstRunnableAt: '2026-01-01T00:00:00.000Z',
-          totalBlocks: [],
+          totalBlocks: [{ gate: 'concurrency_rules', duration: 'PT5S' }],
           latestBlocks: [],
         },
       }),

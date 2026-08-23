@@ -14,6 +14,7 @@ import {
 const INSTANCE_LIMIT = 50;
 const QUERY_LIMIT = INSTANCE_LIMIT + 1;
 const MAX_SEARCH_LENGTH = 256;
+const QUERY_STATE_IDENTITIES = false;
 
 export type ListVirtualObjectInstancesArgs =
   components['schemas']['ListVirtualObjectInstancesRequest'];
@@ -498,14 +499,16 @@ export async function listVirtualObjectInstances(
   const filters = parsedFilters.filters;
   const exactKey = exactKeyFilterValue(filters);
   const includePartitionKeyForBacklogQuery = hasVqueues && !sortByBacklog;
-  const identitiesFromStatePromise = this.query(
-    virtualObjectIdentitiesFromStateQuery(service, search, filters, {
-      includeScope: hasVqueues,
-      includePartitionKey: includePartitionKeyForBacklogQuery,
-      unscopedOnly,
-    }),
-    'virtual-objects/identities-from-state',
-  ).then(({ rows }) => rows);
+  const identitiesFromStatePromise = QUERY_STATE_IDENTITIES
+    ? this.query(
+        virtualObjectIdentitiesFromStateQuery(service, search, filters, {
+          includeScope: hasVqueues,
+          includePartitionKey: includePartitionKeyForBacklogQuery,
+          unscopedOnly,
+        }),
+        'virtual-objects/identities-from-state',
+      ).then(({ rows }) => rows)
+    : Promise.resolve([]);
   const identitiesFromVqueueMetaPromise = hasVqueues
     ? this.query(
         sortByBacklog
