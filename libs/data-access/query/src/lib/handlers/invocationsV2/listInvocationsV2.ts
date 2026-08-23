@@ -51,8 +51,14 @@ export async function listInvocationsV2(
           requestTime,
         );
   const limitedRows = rows.slice(0, INVOCATIONS_V2_LIMIT);
+  const cappedCandidateHydrationWasIncomplete =
+    selected.limit > 0 &&
+    selected.rows.length >= selected.limit &&
+    limitedRows.length < selected.limit;
   const isPartial =
-    selected.mode.type === 'sampled' || Boolean(selected.partial);
+    selected.mode.type === 'sampled' ||
+    Boolean(selected.partial) ||
+    cappedCandidateHydrationWasIncomplete;
   const enrichedRows =
     includeFlowControl && selected.source === 'vqueue'
       ? await enrichInvocationFlowControl(this, limitedRows, requestTime)

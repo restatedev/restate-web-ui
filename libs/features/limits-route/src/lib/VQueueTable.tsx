@@ -580,10 +580,8 @@ function renderCell(
     case 'lastActivity':
       return (
         <Cell>
-          {row.latestActivity ? (
+          {row.latestActivity && (
             <RelativeActivity activity={row.latestActivity} />
-          ) : (
-            <span className="text-zinc-300">Never</span>
           )}
         </Cell>
       );

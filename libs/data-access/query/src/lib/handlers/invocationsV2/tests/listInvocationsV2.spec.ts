@@ -823,6 +823,51 @@ describe('POST /query/v2/invocations', () => {
       `);
     });
 
+    it('marks a capped migration selection partial when hydration returns a short page', async () => {
+      const candidates = Array.from({ length: 250 }, (_, index) => ({
+        id: `inv-${index}`,
+      }));
+      setResponder((statement) => {
+        if (statement.includes('FROM sys_invocation_status ss')) {
+          return candidates;
+        }
+        if (statement.includes('FROM sys_vqueues v')) return [];
+        if (statement.includes('FROM sys_invocation i')) {
+          return candidates.slice(0, 243).map(({ id }) =>
+            rawInvocation(id, {
+              status: 'completed',
+              completion_result: 'success',
+            }),
+          );
+        }
+        return [];
+      });
+
+      const response = await post(
+        '/v2/invocations',
+        {
+          filters: [
+            {
+              field: 'status',
+              type: 'STRING_LIST',
+              operation: 'IN',
+              value: ['succeeded', 'backing-off'],
+            },
+          ],
+          sort: { field: 'created_at', order: 'DESC' },
+        },
+        VQUEUE_SKIP_COMPLETED_HEADERS,
+      );
+      const body = await response.json();
+
+      expect(body.rows).toHaveLength(243);
+      expect(body).toMatchObject({
+        limit: 250,
+        mode: 'exact',
+        isPartial: true,
+      });
+    });
+
     it('uses the normal VQueue plan for live-only statuses during migration', async () => {
       await post(
         '/v2/invocations',

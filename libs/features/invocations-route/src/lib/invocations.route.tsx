@@ -125,6 +125,7 @@ import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
   filterInvocationSummaryByStatus,
+  isInvocationListSnapshotComplete,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
@@ -486,9 +487,15 @@ function Component() {
 
   const listRowCount = data?.rows?.length ?? 0;
   const listLimit = data?.limit ?? 0;
-  const listIsCapped = listLimit > 0 && listRowCount >= listLimit;
+  const listSnapshotIsComplete = isInvocationListSnapshotComplete({
+    summaryMatchCount: summaryMatchingCount,
+    listIsAvailable: data != null,
+    listRowCount,
+    listLimit,
+    listIsPartial: Boolean(data?.isPartial),
+  });
   const completeListRows =
-    data && !data.isPartial && !listIsCapped ? data.rows : undefined;
+    data && listSnapshotIsComplete ? data.rows : undefined;
   const { count: effectiveTotal, accuracy: totalAccuracy } =
     resolveInvocationPopulationCount({
       summaryMatchCount: summaryMatchingCount,

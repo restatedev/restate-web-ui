@@ -1,5 +1,15 @@
 # Napkin
 
+- 2026-08-23 invocation short-page fix verified: For VQueues with completed migration skipped, `listInvocationsV2` now reports partial when a limit-saturated candidate set hydrates below the limit. The route also rejects a supposedly complete short list when the summary says the population is at least one full page and larger than the rows. Regression coverage: 250 candidates -> 243 hydrated rows, plus 2.59M summary vs 243 list. Query focused tests (58), invocation-route tests (22), query/web-ui typechecks, and affected lints pass; lint warnings are pre-existing.
+
+- 2026-08-23 VQueues Last activity empty state (user): In the VQueues table, render an empty Last activity cell when `latestActivity` is absent; do not show “Never”. Preserve actual relative timestamps/descriptions and sorting. This decision is table-specific unless the user expands it to VQueue cards.
+
+- 2026-08-23 query focused-test tooling: `pnpm nx test query --testFile=...` is forwarded to Vitest 4.1.5, which rejects `--testFile`. Pass the spec path positionally (`pnpm nx test query -- <path>`) for a focused query test.
+
+- 2026-08-23 invocation 243-vs-2.59M root cause: `Complete` list mode still has a 250 candidate/page ceiling. On a hot VQueue, candidate hydration can discard entries that disappear between selection and detail loading, e.g. 250 candidates become 243 rows. The response can remain `isPartial: false`; the route then wrongly treats `rows.length < limit` as proof that the 243 rows are the whole population and reconciles both Actions and the rail to `1 + 242`. Never infer full population coverage from the post-hydration row count alone. Preserve summary population unless the API supplies a trustworthy completion signal; backend should mark candidate-limit saturation/hydration loss partial or top up.
+
+- 2026-08-23 self on 243-vs-2.59M diagnosis: I piped a scoped `rg` through `head` despite the repeated no-pipeline inspection rule. Keep the search directly scoped and rely on the tool output budget.
+
 - 2026-08-23 self on legend count test: I assumed CSS `gap` would separate adjacent label/count spans in the computed accessible name, but Testing Library correctly exposed `Inbox55`. Give exact-count links an explicit semantic label such as `Inbox: 55`; do not rely on visual spacing for screen-reader separation.
 
 - 2026-08-23 invocation legend accuracy refinement (user, supersedes the label-only rule below): Show a compact raw count beside a legend label when that bucket is accurate (`Inbox 39.5K`, `Running 7`). Omit the metric only when the UI would have to substitute an estimated or ambiguous percentage such as `~1%`; never replace a known exact count with silence. Inbox popover children remain percentages of Inbox.

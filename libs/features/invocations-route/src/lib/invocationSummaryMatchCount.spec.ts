@@ -3,6 +3,7 @@ import type { components } from '@restate/data-access/admin-api-spec';
 import {
   countMatchingStatusBuckets,
   filterInvocationSummaryByStatus,
+  isInvocationListSnapshotComplete,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
@@ -88,6 +89,22 @@ describe('resolveInvocationPopulationCount', () => {
         listIsPartial: false,
       }),
     ).toEqual({ count: 1200, accuracy: 'exact' });
+  });
+
+  it('rejects a short page that contradicts a summary larger than the list capacity', () => {
+    const snapshot = {
+      summaryMatchCount: { count: 2_590_000, isPartial: false },
+      listIsAvailable: true,
+      listRowCount: 243,
+      listLimit: 250,
+      listIsPartial: false,
+    };
+
+    expect(isInvocationListSnapshotComplete(snapshot)).toBe(false);
+    expect(resolveInvocationPopulationCount(snapshot)).toEqual({
+      count: 2_590_000,
+      accuracy: 'exact',
+    });
   });
 });
 

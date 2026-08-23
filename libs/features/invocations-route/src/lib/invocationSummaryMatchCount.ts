@@ -25,6 +25,26 @@ type InvocationListSnapshot = {
   listIsPartial: boolean;
 };
 
+export function isInvocationListSnapshotComplete({
+  summaryMatchCount,
+  listIsAvailable,
+  listRowCount,
+  listLimit,
+  listIsPartial,
+}: {
+  summaryMatchCount: InvocationSummaryMatchCount | undefined;
+} & InvocationListSnapshot) {
+  const listIsCapped = listLimit > 0 && listRowCount >= listLimit;
+  if (!listIsAvailable || listIsPartial || listIsCapped) return false;
+
+  const summaryExceedsListCapacity =
+    listLimit > 0 &&
+    summaryMatchCount !== undefined &&
+    summaryMatchCount.count >= listLimit &&
+    summaryMatchCount.count > listRowCount;
+  return !summaryExceedsListCapacity;
+}
+
 function statusMatches(status: string, filter: StatusFilter) {
   if (!hasStatusFilter(filter)) return true;
   const selected = filter.value.includes(status);
@@ -209,8 +229,14 @@ export function resolveInvocationPopulationCount({
 }: {
   summaryMatchCount: InvocationSummaryMatchCount | undefined;
 } & InvocationListSnapshot): InvocationPopulationCount {
-  const listIsCapped = listLimit > 0 && listRowCount >= listLimit;
-  if (listIsAvailable && !listIsPartial && !listIsCapped) {
+  const listSnapshotIsComplete = isInvocationListSnapshotComplete({
+    summaryMatchCount,
+    listIsAvailable,
+    listRowCount,
+    listLimit,
+    listIsPartial,
+  });
+  if (listSnapshotIsComplete) {
     return { count: listRowCount, accuracy: 'exact' };
   }
 
@@ -223,10 +249,7 @@ export function resolveInvocationPopulationCount({
 
   return {
     count: listRowCount,
-    accuracy:
-      listIsAvailable && !listIsPartial && !listIsCapped
-        ? 'exact'
-        : 'lower-bound',
+    accuracy: 'lower-bound',
   };
 }
 
