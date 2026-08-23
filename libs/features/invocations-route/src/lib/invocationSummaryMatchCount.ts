@@ -268,3 +268,14 @@ export function withInvocationStatusCounts<
     ),
   }));
 }
+
+export function reconcileCoveredInvocationStatusCounts<
+  Bucket extends { count: number; statuses: string[] },
+>(buckets: Bucket[], invocationStatuses: string[], statusFilter: StatusFilter) {
+  const reconciled = withInvocationStatusCounts(buckets, invocationStatuses);
+  return buckets.map((bucket, index) =>
+    bucket.statuses.every((status) => statusMatches(status, statusFilter))
+      ? (reconciled[index] ?? bucket)
+      : bucket,
+  );
+}

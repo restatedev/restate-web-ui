@@ -126,10 +126,10 @@ import { useInvocationSummary } from './useInvocationSummary';
 import {
   filterInvocationSummaryByStatus,
   isInvocationListSnapshotComplete,
+  reconcileCoveredInvocationStatusCounts,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
-import { hasStatusFilter } from './statusFilter';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
@@ -546,13 +546,28 @@ function Component() {
         : byStatus,
     [byStatus, completeStatusFacetRows],
   );
-  const hasActiveStatusFilter = hasStatusFilter(statusFilter);
-  const distributionByStage = hasActiveStatusFilter
-    ? byStage
-    : reconciledByStage;
-  const distributionByStatus = hasActiveStatusFilter
-    ? byStatus
-    : reconciledByStatus;
+  const distributionByStage = useMemo(
+    () =>
+      completeStatusFacetRows
+        ? reconcileCoveredInvocationStatusCounts(
+            byStage,
+            completeStatusFacetRows.map(({ status }) => status),
+            statusFilter,
+          )
+        : byStage,
+    [byStage, completeStatusFacetRows, statusFilter],
+  );
+  const distributionByStatus = useMemo(
+    () =>
+      completeStatusFacetRows
+        ? reconcileCoveredInvocationStatusCounts(
+            byStatus,
+            completeStatusFacetRows.map(({ status }) => status),
+            statusFilter,
+          )
+        : byStatus,
+    [byStatus, completeStatusFacetRows, statusFilter],
+  );
   const matchingSummary = useMemo(() => {
     if (completeStatusFacetRows) {
       return {

@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-23 stale VQueue metadata reconciliation: An exact, uncapped list can disprove metadata-derived counts only for lifecycle buckets fully covered by its Status filter. Reconcile those covered population buckets from hydrated row statuses (for example, `Running 7` becomes `Running 0` when the exact running-capable query is empty), while retaining unrelated buckets such as Completed. A granular filter that covers only part of Inbox must not zero the whole Inbox population.
+
 - 2026-08-23 invocation status-churn implementation: An exact `sys_vqueues` candidate selected with a Status predicate now carries selection provenance. If point hydration observes a different latest status, retain the row with that latest status and return its id in `statusChangedInvocationIds`; best-effort and direct-id mismatches still drop. The route displays retained rows, excludes them from current-match totals/status reconciliation, and shows a notice plus `N currently matching · M changed status`. A limit-saturated selection with changed rows remains partial because those rows may have displaced still-matching candidates beyond the cap.
 
 - 2026-08-23 self on focused query test path: The query Vitest task runs with `libs/data-access/query` as its root, so passing the workspace-relative `libs/data-access/query/src/...` path reports “No test files found” with success. Pass `src/lib/...` after `pnpm nx test query --` and verify that Vitest actually reports the test count.

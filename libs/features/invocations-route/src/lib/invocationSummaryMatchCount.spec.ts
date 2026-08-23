@@ -4,6 +4,7 @@ import {
   countMatchingStatusBuckets,
   filterInvocationSummaryByStatus,
   isInvocationListSnapshotComplete,
+  reconcileCoveredInvocationStatusCounts,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
@@ -142,6 +143,36 @@ describe('withInvocationStatusCounts', () => {
         ['backing-off'],
       )[0]?.count,
     ).toBe(1);
+  });
+});
+
+describe('reconcileCoveredInvocationStatusCounts', () => {
+  const stages = [
+    { count: 100, statuses: ['pending', 'backing-off'] },
+    { count: 7, statuses: ['running'] },
+    { count: 10, statuses: ['succeeded'] },
+  ];
+
+  it('replaces only buckets fully covered by an IN filter', () => {
+    expect(
+      reconcileCoveredInvocationStatusCounts(stages, [], {
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'IN',
+        value: ['backing-off', 'running'],
+      }).map(({ count }) => count),
+    ).toEqual([100, 0, 10]);
+  });
+
+  it('replaces every non-terminal bucket covered by a NOT_IN filter', () => {
+    expect(
+      reconcileCoveredInvocationStatusCounts(stages, [], {
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'NOT_IN',
+        value: ['succeeded'],
+      }).map(({ count }) => count),
+    ).toEqual([0, 0, 10]);
   });
 });
 
