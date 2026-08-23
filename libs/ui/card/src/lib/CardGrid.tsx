@@ -13,7 +13,7 @@ const cardGridStyles = tv({
     distribution: {
       equal: '',
       '5-4-2':
-        'xl:max-w-[126rem] xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(0,2fr)] md:[&>*:first-child]:col-span-2 xl:[&>*:first-child]:col-span-1',
+        'xl:max-w-[126rem] xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_minmax(0,2fr)] md:[&>*]:col-span-2 xl:[&>*]:col-span-1',
     },
   },
   defaultVariants: { columns: 3, distribution: 'equal' },
