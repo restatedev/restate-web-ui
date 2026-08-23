@@ -14,8 +14,10 @@ page), plus the grid that arranges them.
 - `CardRow` — `variant="hero"` for the card's single headline row,
   `default` for demoted supporting rows; optional `label`.
 - `CardLinkRow` — a whole-row link with hover wash and a far-right chevron.
-  Rows without a destination use `CardRow` with the same content anatomy and
-  no chevron.
+  Set `allowsInteractiveChildren` when the row also contains a button or link;
+  the sibling link then stretches its pseudo-element over the relative row,
+  while interactive children sit above it. Rows without a destination use
+  `CardRow` with the same content anatomy and no chevron.
 - `CardGrid` — `columns={1|2|3|4}` (default 3): single column below `md`,
   then capped tracks.
 

@@ -406,12 +406,16 @@ export function VQueueHeadBlockedStatus({
   showComparison = true,
   ruleLimit,
   counterUsage,
+  objectTarget,
+  lockHolderTarget,
   onOpenChange,
 }: {
   data: VqueueSnapshot;
   showComparison?: boolean;
   ruleLimit?: number;
   counterUsage?: number;
+  objectTarget?: ReactNode;
+  lockHolderTarget?: ReactNode;
   onOpenChange?: (isOpen: boolean) => void;
 }) {
   const { baseUrl } = useRestateContext();
@@ -455,6 +459,8 @@ export function VQueueHeadBlockedStatus({
         }
         ruleLimit={ruleLimit}
         counterUsage={counterUsage}
+        objectTarget={objectTarget}
+        lockHolderTarget={lockHolderTarget}
         onOpenChange={onOpenChange}
       />
       {showComparison && duration && (
@@ -481,11 +487,23 @@ export function VQueueHeadBlockedStatus({
   );
 }
 
-export function VQueueHeadVerdict({ data }: { data: VqueueSnapshot }) {
+export interface VQueueHeadBlockedDetails {
+  objectTarget?: ReactNode;
+  lockHolderTarget?: ReactNode;
+  onOpenChange?: (isOpen: boolean) => void;
+}
+
+export function VQueueHeadVerdict({
+  data,
+  headBlockedDetails,
+}: {
+  data: VqueueSnapshot;
+  headBlockedDetails?: VQueueHeadBlockedDetails;
+}) {
   const { scheduling } = data.status;
   if (data.identity.isPaused) return null;
   if (data.status.blocked || scheduling === 'blocked') {
-    return <VQueueHeadBlockedStatus data={data} />;
+    return <VQueueHeadBlockedStatus data={data} {...headBlockedDetails} />;
   }
   if (scheduling === 'scheduled') {
     return <ScheduledStatus scheduledAt={data.status.scheduledAt} />;
@@ -715,10 +733,12 @@ function Head({
   data,
   entryId,
   renderEntryId,
+  headBlockedDetails,
 }: {
   data: VqueueSnapshot;
   entryId: string;
   renderEntryId?: VQueueEntryIdRenderer;
+  headBlockedDetails?: VQueueHeadBlockedDetails;
 }) {
   const { baseUrl } = useRestateContext();
   const defaultEntryId = entryId.startsWith('inv_') ? (
@@ -756,7 +776,7 @@ function Head({
           )}
         </div>
       </div>
-      <VQueueHeadVerdict data={data} />
+      <VQueueHeadVerdict data={data} headBlockedDetails={headBlockedDetails} />
     </div>
   );
 }
@@ -764,10 +784,12 @@ function Head({
 function InboxOverview({
   data,
   renderEntryId,
+  headBlockedDetails,
   standalone = false,
 }: {
   data: VqueueSnapshot;
   renderEntryId?: VQueueEntryIdRenderer;
+  headBlockedDetails?: VQueueHeadBlockedDetails;
   standalone?: boolean;
 }) {
   const headEntryId = data.head.entryId;
@@ -782,7 +804,12 @@ function InboxOverview({
     data.counts.inbox === 1;
 
   const head = headEntryId ? (
-    <Head data={data} entryId={headEntryId} renderEntryId={renderEntryId} />
+    <Head
+      data={data}
+      entryId={headEntryId}
+      renderEntryId={renderEntryId}
+      headBlockedDetails={headBlockedDetails}
+    />
   ) : null;
 
   return (
@@ -817,12 +844,14 @@ export interface VQueuePopoverContentProps {
   className?: string;
   focusStage?: InvocationSummaryStage;
   renderEntryId?: VQueueEntryIdRenderer;
+  headBlockedDetails?: VQueueHeadBlockedDetails;
 }
 
 export interface VQueueInboxPopoverContentProps {
   data: VqueueSnapshot;
   className?: string;
   renderEntryId?: VQueueEntryIdRenderer;
+  headBlockedDetails?: VQueueHeadBlockedDetails;
 }
 
 function VQueuePopoverHeader({ data }: { data: VqueueSnapshot }) {
@@ -879,6 +908,7 @@ export function VQueueInboxPopoverContent({
   data,
   className,
   renderEntryId,
+  headBlockedDetails,
 }: VQueueInboxPopoverContentProps) {
   const contentStyles = styles();
 
@@ -890,7 +920,12 @@ export function VQueueInboxPopoverContent({
         title={<VQueueInboxPopoverHeader data={data} />}
       >
         <div className="w-max max-w-[min(34rem,calc(100vw-3rem))] bg-white">
-          <InboxOverview data={data} renderEntryId={renderEntryId} standalone />
+          <InboxOverview
+            data={data}
+            renderEntryId={renderEntryId}
+            headBlockedDetails={headBlockedDetails}
+            standalone
+          />
         </div>
       </DropdownSection>
     </div>
@@ -902,6 +937,7 @@ export function VQueuePopoverContent({
   className,
   focusStage,
   renderEntryId,
+  headBlockedDetails,
 }: VQueuePopoverContentProps) {
   const hasInboxDetails = data.counts.inbox > 0 || Boolean(data.head.entryId);
   const selectedStage = data.focusEntry?.stage ?? focusStage;
@@ -939,7 +975,11 @@ export function VQueuePopoverContent({
           </div>
           {showInboxDetails && (
             <div className={stageDetailsStyles()}>
-              <InboxOverview data={data} renderEntryId={renderEntryId} />
+              <InboxOverview
+                data={data}
+                renderEntryId={renderEntryId}
+                headBlockedDetails={headBlockedDetails}
+              />
             </div>
           )}
         </div>

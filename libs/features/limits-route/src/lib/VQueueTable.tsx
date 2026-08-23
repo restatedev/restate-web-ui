@@ -6,8 +6,8 @@ import {
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
   VirtualObjectInstanceTarget,
+  virtualObjectInstanceIdentityFromLockName,
   virtualObjectInstanceHref,
-  type VirtualObjectInstanceIdentity,
 } from '@restate/features/virtual-object-instance';
 import {
   DEFAULT_STYLE,
@@ -197,19 +197,8 @@ function latestActivity(row: VQueueMetaRow): Activity | undefined {
   }, undefined);
 }
 
-function lockIdentityFromName(lockName?: string | null) {
-  const separator = lockName?.indexOf('/') ?? -1;
-  if (!lockName || separator <= 0 || separator === lockName.length - 1) {
-    return undefined;
-  }
-  return {
-    service: lockName.slice(0, separator),
-    key: lockName.slice(separator + 1),
-  } satisfies VirtualObjectInstanceIdentity;
-}
-
 function lockIdentity(row: VQueueMetaRow) {
-  return lockIdentityFromName(row.lock_name);
+  return virtualObjectInstanceIdentityFromLockName(row.lock_name);
 }
 
 function chartVisual(tone: ChartTone) {
@@ -261,15 +250,12 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
 type SchedulerState = NonNullable<VQueueMetaRow['scheduler']>;
 type BlockedResource = NonNullable<SchedulerState['blockedResource']>;
 type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
-
 function blockedObjectIdentity(resource: BlockedResource) {
   if (resource.resource !== 'lock') return undefined;
-  const identity = lockIdentityFromName(resource.lockName);
-  if (!identity) return undefined;
-  return {
-    ...identity,
-    ...(resource.scope ? { scope: resource.scope } : {}),
-  } satisfies VirtualObjectInstanceIdentity;
+  return virtualObjectInstanceIdentityFromLockName(
+    resource.lockName,
+    resource.scope,
+  );
 }
 
 function LockHolderTarget({

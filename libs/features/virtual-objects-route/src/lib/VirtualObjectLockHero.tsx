@@ -74,6 +74,7 @@ export function VirtualObjectLockHero({
           variant="hero"
           href={`${baseUrl}/invocations/${lockHolder.id}`}
           aria-label={`Open invocation ${lockHolder.id}`}
+          allowsInteractiveChildren
           className="flex-wrap gap-y-1"
           label={
             <InvocationId

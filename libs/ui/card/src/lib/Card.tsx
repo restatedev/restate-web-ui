@@ -230,46 +230,98 @@ export function CardHeroValue({
   return <span className={cardHeroValueStyles({ className })}>{children}</span>;
 }
 
+type CardLinkRowProps = PropsWithChildren<
+  {
+    href: string;
+    label?: ReactNode;
+    variant?: 'hero' | 'default';
+    showChevron?: boolean;
+    className?: string;
+  } & (
+    | {
+        allowsInteractiveChildren: true;
+        'aria-label': string;
+      }
+    | {
+        allowsInteractiveChildren?: false;
+        'aria-label'?: string;
+      }
+  )
+>;
+
 export function CardLinkRow({
   href,
   'aria-label': ariaLabel,
   label,
   variant,
   showChevron = true,
+  allowsInteractiveChildren = false,
   className,
   children,
-}: PropsWithChildren<{
-  href: string;
-  'aria-label'?: string;
-  label?: ReactNode;
-  variant?: 'hero' | 'default';
-  showChevron?: boolean;
-  className?: string;
-}>) {
+}: CardLinkRowProps) {
   const styles = cardRowStyles({ variant });
+  const chevron = showChevron ? (
+    <Icon
+      name={IconName.ChevronRight}
+      className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 group-hover:translate-x-0.5"
+    />
+  ) : null;
+  const rowContent = (
+    <>
+      {label && <span className={styles.label()}>{label}</span>}
+      {children}
+      {!label && <span className="min-w-2 flex-auto" />}
+      {chevron}
+    </>
+  );
+  const rowClassName = styles.base({
+    className: [
+      'group rounded-none no-underline -outline-offset-2 transition-colors hover:bg-gray-100/70 pressed:bg-gray-200/70',
+      className,
+    ]
+      .filter(Boolean)
+      .join(' '),
+  });
+
+  if (allowsInteractiveChildren) {
+    const stretchedLink = (
+      <Link
+        href={href}
+        variant="secondary"
+        aria-label={ariaLabel}
+        className={[
+          label ? styles.label() : 'min-w-2 flex-auto',
+          "rounded-none no-underline -outline-offset-2 after:absolute after:inset-0 after:z-0 after:content-['']",
+        ].join(' ')}
+      >
+        {label}
+      </Link>
+    );
+    return (
+      <div
+        className={[
+          rowClassName,
+          'relative isolate has-[[data-pressed]]:bg-gray-200/70',
+        ].join(' ')}
+      >
+        {label && stretchedLink}
+        <div className="contents [&_a]:relative [&_a]:z-10 [&_button]:relative [&_button]:z-10">
+          {children}
+        </div>
+        {!label && stretchedLink}
+        {chevron}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={href}
       variant="secondary"
       aria-label={ariaLabel}
-      className={styles.base({
-        className: [
-          'group rounded-none no-underline -outline-offset-2 transition-colors hover:bg-gray-100/70 pressed:bg-gray-200/70',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' '),
-      })}
+      className={rowClassName}
     >
-      {label && <span className={styles.label()}>{label}</span>}
-      {children}
-      {!label && <span className="min-w-2 flex-auto" />}
-      {showChevron && (
-        <Icon
-          name={IconName.ChevronRight}
-          className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 group-hover:translate-x-0.5"
-        />
-      )}
+      {rowContent}
     </Link>
   );
 }

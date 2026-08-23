@@ -7,6 +7,21 @@ export interface VirtualObjectInstanceIdentity {
   scope?: string;
 }
 
+export function virtualObjectInstanceIdentityFromLockName(
+  lockName?: string | null,
+  scope?: string | null,
+): VirtualObjectInstanceIdentity | undefined {
+  const separator = lockName?.indexOf('/') ?? -1;
+  if (!lockName || separator <= 0 || separator === lockName.length - 1) {
+    return undefined;
+  }
+  return {
+    service: lockName.slice(0, separator),
+    key: lockName.slice(separator + 1),
+    ...(scope ? { scope } : {}),
+  };
+}
+
 export function virtualObjectInstanceHref(
   baseUrl: string,
   { service, key, scope }: VirtualObjectInstanceIdentity,

@@ -2,6 +2,11 @@ import { InvocationStatusBadge, Status } from '@restate/features/invocation-ui';
 import { BlockedStatus } from '@restate/features/vqueue-ui';
 import { MetricComparison } from '@restate/ui/metric-comparison';
 import { tv } from '@restate/util/styles';
+import {
+  InvocationObjectLockHolderTarget,
+  InvocationObjectLockTarget,
+  useInvocationObjectLock,
+} from './InvocationObjectLock';
 import { JourneyInboxPosition } from './InvocationJourneyInbox';
 import { JourneyBlockedTimeSummary } from './InvocationJourneyBlockedTime';
 import type {
@@ -17,6 +22,35 @@ import type {
   JourneyTerminalStatus,
 } from './InvocationJourneyModel';
 import { JourneyNodeTime } from './InvocationJourneyTime';
+
+function PendingAttemptBlockedStatus({
+  pendingAttempt,
+}: {
+  pendingAttempt: JourneyPendingAttempt;
+}) {
+  const resource = pendingAttempt.resource;
+  const { identity, lockHolder, onOpenChange } =
+    useInvocationObjectLock(resource);
+
+  return (
+    <BlockedStatus
+      reason={pendingAttempt.reason}
+      resource={resource}
+      blockedDuration={pendingAttempt.blockedDuration}
+      objectTarget={
+        identity ? (
+          <InvocationObjectLockTarget identity={identity} />
+        ) : undefined
+      }
+      lockHolderTarget={
+        lockHolder ? (
+          <InvocationObjectLockHolderTarget lockHolder={lockHolder} />
+        ) : undefined
+      }
+      onOpenChange={onOpenChange}
+    />
+  );
+}
 
 function JourneyMilestone({
   label,
@@ -210,11 +244,7 @@ export function PendingTail({
           <span className="shrink-0 font-medium text-zinc-600">
             Next attempt
           </span>
-          <BlockedStatus
-            reason={pendingAttempt.reason}
-            resource={pendingAttempt.resource}
-            blockedDuration={pendingAttempt.blockedDuration}
-          />
+          <PendingAttemptBlockedStatus pendingAttempt={pendingAttempt} />
           {pendingAttempt.duration && (
             <span className="inline-flex shrink-0 items-baseline gap-x-1.5 text-gray-400">
               <span>for</span>

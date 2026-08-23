@@ -1,5 +1,6 @@
 import {
   formatVirtualObjectInstanceIdentity,
+  virtualObjectInstanceIdentityFromLockName,
   virtualObjectInstanceHref,
 } from './identity';
 
@@ -50,5 +51,29 @@ describe('formatVirtualObjectInstanceIdentity', () => {
         scope: '',
       }),
     ).toBe('Cart / customer-123');
+  });
+});
+
+describe('virtualObjectInstanceIdentityFromLockName', () => {
+  it('parses the service and full key from a lock name', () => {
+    expect(
+      virtualObjectInstanceIdentityFromLockName(
+        'ActionSequentialRunner/customer/42',
+        'tenant-a',
+      ),
+    ).toEqual({
+      service: 'ActionSequentialRunner',
+      key: 'customer/42',
+      scope: 'tenant-a',
+    });
+  });
+
+  it('omits a null scope and rejects malformed lock names', () => {
+    expect(
+      virtualObjectInstanceIdentityFromLockName('ExampleService/key', null),
+    ).toEqual({ service: 'ExampleService', key: 'key' });
+    expect(virtualObjectInstanceIdentityFromLockName('ExampleService')).toBe(
+      undefined,
+    );
   });
 });
