@@ -264,4 +264,44 @@ describe('VQueueStageSummaryBar', () => {
       expect(screen.queryByRole('link', { name: /Inbox:/ })).toBeNull();
     });
   });
+
+  it('reserves a loading segment while the completed population is loading', async () => {
+    const liveStages = totalsByStage.filter(({ name }) => name !== 'finished');
+    render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar
+          byStage={liveStages}
+          byStatus={[]}
+          focus="all"
+          onFocusChange={() => undefined}
+          breakdownMode="exact"
+          canSampleBreakdown={false}
+          onBreakdownModeChange={() => undefined}
+          isBreakdownSampled={false}
+          isBreakdownLoading={(stage) => stage === 'finished'}
+          getHref={() => '/invocations'}
+        />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      const rail = screen.getByLabelText(
+        'All-status invocation distribution with current status highlighted',
+      );
+      const completedLoadingSegment = screen.getByLabelText(
+        'Completed distribution loading',
+      );
+      expect(rail.children).toHaveLength(3);
+      expect((rail.children[2] as HTMLElement).style.flexGrow).toBe('1');
+      expect(completedLoadingSegment).toBeTruthy();
+      expect(
+        screen.getByRole('tab', { name: /Completed count loading/ })
+          .textContent,
+      ).toBe('Completed');
+      expect(
+        screen.getByRole('tab', { name: /All-status count loading/ })
+          .textContent,
+      ).toBe('All statuses');
+    });
+  });
 });

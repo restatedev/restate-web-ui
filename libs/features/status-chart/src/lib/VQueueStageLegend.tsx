@@ -55,6 +55,12 @@ const bulletStyles = tv({
 
 const countStyles = tv({
   base: 'inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px font-medium whitespace-nowrap text-gray-500 tabular-nums',
+  variants: {
+    loading: {
+      true: 'animate-pulse bg-gray-100 text-gray-400',
+      false: '',
+    },
+  },
 });
 
 function shouldShowStatus(status: VQueueStatusSummaryEntry) {
@@ -145,7 +151,7 @@ export function VQueueStageLegend({
         const style = STATUS_STYLE[item.name] ?? DEFAULT_STYLE;
         const appearance = isDimmed?.(item.name, item.statuses)
           ? 'dimmed'
-          : item.count === 0
+          : item.count === 0 && !item.loading
             ? 'faded'
             : 'normal';
         const itemStatuses = new Set(item.statuses);
@@ -176,9 +182,11 @@ export function VQueueStageLegend({
               variant="secondary"
               className={linkStyles()}
               aria-label={
-                !item.loading && !countIsPartial
-                  ? `${item.label}: ${formattedCount}`
-                  : item.label
+                item.loading
+                  ? `${item.label}: loading`
+                  : !countIsPartial
+                    ? `${item.label}: ${formattedCount}`
+                    : item.label
               }
               disabled={Boolean(isLoading || isError || item.loading)}
             >
@@ -199,9 +207,11 @@ export function VQueueStageLegend({
                 }}
               />
               <span>{item.label}</span>
-              {!item.loading && !countIsPartial && (
+              {item.loading ? (
+                <span className={countStyles({ loading: true })}>Loading</span>
+              ) : !countIsPartial ? (
                 <span className={countStyles()}>{formattedCount}</span>
-              )}
+              ) : null}
             </Link>
             {item.expandable && (
               <Popover>

@@ -1,5 +1,11 @@
 # Napkin
 
+- 2026-08-23 Completed-loading UI implemented (user): When the supplemental finished population is absent and loading, show `Completed Loading` in the legend, skeleton counts in All statuses and Completed controls, and a pulsing green loading segment in the rail. The placeholder is minimum-width in All statuses and fills the rail in Completed focus. Never render the missing count as zero. Status-chart tests (14), lint, web-ui typecheck, and diff check pass.
+
+- 2026-08-23 self on completed-loading rail test: The accessible loading label is on the inner segment inside `HoverTooltip`, so its immediate parent is not the flex-grow rail wrapper. Assert the corresponding direct rail child’s `flexGrow`, not `labelledElement.parentElement`.
+
+- 2026-08-23 missing Completed during exact breakdown: With VQueues enabled and completed migration skipped, the progressive summary first requests `view: live-stages`, which intentionally has no finished bucket, then requests `view: breakdowns`; exact mode must aggregate completed rows from `sys_invocation_status` and can lag. While that second request is loading (or if it fails), the UI currently turns the missing finished bucket into `Completed 0` and makes All statuses equal Not completed. Treat missing supplemental finished data as loading/unavailable, never as a real zero; surface breakdown failure in All status focus too. The table's Partial/Complete control is separate from the summary's estimated/exact breakdown mode.
+
 - 2026-08-23 invocation short-page fix verified: For VQueues with completed migration skipped, `listInvocationsV2` now reports partial when a limit-saturated candidate set hydrates below the limit. The route also rejects a supposedly complete short list when the summary says the population is at least one full page and larger than the rows. Regression coverage: 250 candidates -> 243 hydrated rows, plus 2.59M summary vs 243 list. Query focused tests (58), invocation-route tests (22), query/web-ui typechecks, and affected lints pass; lint warnings are pre-existing.
 
 - 2026-08-23 VQueues Last activity empty state (user): In the VQueues table, render an empty Last activity cell when `latestActivity` is absent; do not show “Never”. Preserve actual relative timestamps/descriptions and sorting. This decision is table-specific unless the user expands it to VQueue cards.

@@ -83,6 +83,26 @@ describe('VQueueStageLegend', () => {
     );
   });
 
+  it('shows a loading metric while the completed population is loading', () => {
+    render(
+      <MemoryRouter>
+        <VQueueStageLegend
+          byStage={stages.filter(({ name }) => name !== 'finished')}
+          byStatus={[]}
+          focus="all"
+          isBreakdownSampled={false}
+          isBreakdownLoading={(stage) => stage === 'finished'}
+          getHref={() => '/invocations'}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole('link', { name: 'Completed: loading' }).textContent,
+    ).toBe('CompletedLoading');
+    expect(screen.queryByRole('link', { name: 'Completed: 0' })).toBeNull();
+  });
+
   it('uses the population to keep filtered-out stage labels present', () => {
     const matchingStages = stages.map((stage) => ({
       ...stage,

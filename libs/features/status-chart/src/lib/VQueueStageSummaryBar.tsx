@@ -119,6 +119,14 @@ const runningFlowStyles = tv({
   base: 'pointer-events-none absolute inset-0 animate-runningFlow opacity-20 motion-reduce:animate-none',
 });
 
+const COMPLETED_LOADING_STAGE: VQueueStageSummaryEntry = {
+  name: 'finished',
+  label: 'Completed',
+  count: 1,
+  statuses: [],
+  breakdownIsPartial: true,
+};
+
 export function VQueueStageSummaryBar({
   byStage,
   byStatus,
@@ -186,6 +194,8 @@ export function VQueueStageSummaryBar({
   const completedStage = populationStages.find(
     (stage) => stage.name === 'finished',
   );
+  const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
+  const completedStageIsLoading = completedBreakdownLoading && !completedStage;
   const completedStatusNames = new Set(completedStage?.statuses ?? []);
   const completedStatuses = populationStatuses.filter((status) =>
     status.statuses.some((name) => completedStatusNames.has(name)),
@@ -213,12 +223,16 @@ export function VQueueStageSummaryBar({
   // it is not merely a highlight over the all-status distribution.
   const focusedStages =
     selectedFocus === 'all'
-      ? allStages
+      ? completedStageIsLoading
+        ? [...allStages, COMPLETED_LOADING_STAGE]
+        : allStages
       : selectedFocus === 'not-completed'
         ? notCompletedStages
         : completedStage && completedStage.count > 0
           ? [completedStage]
-          : [];
+          : completedStageIsLoading
+            ? [COMPLETED_LOADING_STAGE]
+            : [];
   const focusedPopulationTotal =
     selectedFocus === 'all'
       ? populationTotal
@@ -226,7 +240,6 @@ export function VQueueStageSummaryBar({
         ? populationNotCompletedCount
         : populationCompletedCount;
   const inboxBreakdownLoading = isBreakdownLoading?.('inbox') ?? false;
-  const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
   const hasInboxBreakdown = visibleInboxStatuses.length > 0;
   const hasCompletedBreakdown = visibleCompletedStatuses.length > 0;
   const {
@@ -305,6 +318,9 @@ export function VQueueStageSummaryBar({
     const ariaLabel = approximate
       ? `${label}: ${percentage} of ${formatNumber(segmentPopulationCount, true)} ${focusedPopulationDescription}`
       : `${label}: ${matchingCount} of ${segmentPopulationCount} (${percentage})`;
+    const segmentAriaLabel = segmentIsLoading
+      ? `${label} distribution loading`
+      : ariaLabel;
     const backgroundGradient = `linear-gradient(to bottom, color-mix(in srgb, white 22%, ${style.fillLight}), ${style.fillLight})`;
     const isGrouped = groupPosition !== 'standalone';
 
@@ -333,7 +349,11 @@ export function VQueueStageSummaryBar({
               <span className="mr-2 ml-2 text-base! text-gray-300!">
                 {label}
               </span>
-              {approximate ? (
+              {segmentIsLoading ? (
+                <span className="text-sm! font-medium text-gray-300!">
+                  Loading
+                </span>
+              ) : approximate ? (
                 <>
                   <span className="text-base! font-semibold text-gray-50!">
                     {percentage}
@@ -377,7 +397,9 @@ export function VQueueStageSummaryBar({
                   ? 0
                   : undefined,
             }}
-            aria-label={getHref ? undefined : ariaLabel}
+            aria-label={
+              getHref && !segmentIsLoading ? undefined : segmentAriaLabel
+            }
           >
             {segment.name === 'running' && !dimmed && (
               <span
@@ -389,12 +411,12 @@ export function VQueueStageSummaryBar({
                 aria-hidden
               />
             )}
-            {getHref && (
+            {getHref && !segmentIsLoading && (
               <Link
                 href={getHref(segment.name, segment.statuses)}
                 preserveQueryParams={false}
                 variant="secondary"
-                aria-label={ariaLabel}
+                aria-label={segmentAriaLabel}
                 className="absolute inset-0 block rounded-[inherit] no-underline outline-none"
               />
             )}
@@ -453,7 +475,7 @@ export function VQueueStageSummaryBar({
             : 'Completed invocation outcome distribution with current status highlighted'
       }
     >
-      {focusedPopulationTotal === 0 ? (
+      {focusedPopulationTotal === 0 && !completedStageIsLoading ? (
         <div className={emptyStyles()} />
       ) : (
         focusedStages.map((stage) =>
@@ -499,9 +521,18 @@ export function VQueueStageSummaryBar({
           <TabList aria-label="Invocation breakdown" className={focusTabList()}>
             <Tab id="all" className={focusTab()}>
               <span>All statuses</span>
-              <span className={focusCount()}>
-                {formatNumber(populationTotal, true)}
-              </span>
+              {completedStageIsLoading ? (
+                <span
+                  className={focusCount({
+                    class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
+                  })}
+                  aria-label="All-status count loading"
+                />
+              ) : (
+                <span className={focusCount()}>
+                  {formatNumber(populationTotal, true)}
+                </span>
+              )}
             </Tab>
             <Tab id="not-completed" className={focusTab()}>
               <span>Not completed</span>
@@ -511,9 +542,18 @@ export function VQueueStageSummaryBar({
             </Tab>
             <Tab id="completed" className={focusTab()}>
               <span>Completed</span>
-              <span className={focusCount()}>
-                {formatNumber(populationCompletedCount, true)}
-              </span>
+              {completedStageIsLoading ? (
+                <span
+                  className={focusCount({
+                    class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
+                  })}
+                  aria-label="Completed count loading"
+                />
+              ) : (
+                <span className={focusCount()}>
+                  {formatNumber(populationCompletedCount, true)}
+                </span>
+              )}
             </Tab>
           </TabList>
         </div>
