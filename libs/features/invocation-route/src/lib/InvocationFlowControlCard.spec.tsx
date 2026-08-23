@@ -8,6 +8,7 @@ import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
 import { InvocationFlowControlCard } from './InvocationFlowControlCard';
 
 type InvocationV2 = components['schemas']['InvocationV2'];
@@ -74,7 +75,9 @@ function renderWithQueryClient(
   });
   prepare?.(queryClient);
   return render(
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{children}</MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -232,6 +235,93 @@ describe('InvocationFlowControlCard', () => {
     ).toBeTruthy();
     expect(screen.queryByText('Pending')).toBeNull();
     expect(screen.queryByText('Backing-off')).toBeNull();
+  });
+
+  it('shows the linked Virtual Object instance and invocation holding its lock', () => {
+    const lockName =
+      'ActionSequentialRunner/4d1b3796-21f7-4105-bd7c-d936ab8f72a1';
+    const holderId = 'inv-lock-holder';
+
+    renderCard(
+      invocation({
+        vqueue_id: 'vq-example',
+        stage: 'inbox',
+        status: 'new',
+        created_at: '2026-01-01T00:00:00.000Z',
+        transitioned_at: '2026-01-01T00:00:00.000Z',
+        num_attempts: 0,
+      }),
+      snapshot({
+        status: {
+          blocked: true,
+          scheduling: 'blocked',
+          blockedOn: 'lock',
+          blockedResource: {
+            resource: 'lock',
+            lockName,
+          },
+        },
+        counts: {
+          inbox: 1,
+          running: 0,
+          suspended: 0,
+          paused: 0,
+          finished: 0,
+        },
+        head: {
+          entryId: 'inv-focus',
+          stage: 'inbox',
+          status: 'new',
+          totalBlocks: [],
+          nowBlocks: [{ gate: 'lock', duration: 'PT16H34M' }],
+          avgBlocks: [],
+        },
+        focusEntry: {
+          id: 'inv-focus',
+          stage: 'inbox',
+          status: 'new',
+          position: 0,
+          attempts: 0,
+          totalBlocks: [],
+          latestBlocks: [],
+        },
+      }),
+      undefined,
+      (queryClient) => {
+        const lockQuery = adminApi(
+          'query',
+          '/query/virtual-objects/{service}/instances/{key}/lock',
+          'get',
+          {
+            baseUrl: '',
+            resolvedPath:
+              '/query/virtual-objects/ActionSequentialRunner/instances/4d1b3796-21f7-4105-bd7c-d936ab8f72a1/lock',
+            parameters: {
+              path: {
+                service: 'ActionSequentialRunner',
+                key: '4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
+              },
+              query: { scope: undefined },
+            },
+          },
+        );
+        queryClient.setQueryData(lockQuery.queryKey, {
+          supported: true,
+          lockHolder: { id: holderId, kind: 'invocation' },
+        });
+      },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'on object lock' }));
+
+    expect(screen.getByText('has lock on')).toBeTruthy();
+    expect(screen.getByRole('link', { name: holderId })).toBeTruthy();
+    const objectTarget = screen.getByRole('link', {
+      name: `Virtual object instance ${lockName.replace('/', ' / ')}`,
+    });
+    expect(objectTarget.getAttribute('href')).toBe(
+      '/virtual-objects/ActionSequentialRunner/4d1b3796-21f7-4105-bd7c-d936ab8f72a1',
+    );
   });
 
   it('shows a future schedule as the runnable milestone', () => {

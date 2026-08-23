@@ -1,7 +1,20 @@
-import { InvocationStatusBadge, Status } from '@restate/features/invocation-ui';
+import { useGetVirtualObjectLock } from '@restate/data-access/admin-api-hooks';
+import type { components } from '@restate/data-access/admin-api-spec';
+import {
+  InvocationId,
+  InvocationStatusBadge,
+  Status,
+} from '@restate/features/invocation-ui';
+import { useRestateContext } from '@restate/features/restate-context';
+import {
+  VirtualObjectInstanceTarget,
+  virtualObjectInstanceHref,
+  virtualObjectInstanceIdentityFromLockName,
+} from '@restate/features/virtual-object-instance';
 import { BlockedStatus } from '@restate/features/vqueue-ui';
 import { MetricComparison } from '@restate/ui/metric-comparison';
 import { tv } from '@restate/util/styles';
+import { useState } from 'react';
 import { JourneyInboxPosition } from './InvocationJourneyInbox';
 import { JourneyBlockedTimeSummary } from './InvocationJourneyBlockedTime';
 import type {
@@ -17,6 +30,81 @@ import type {
   JourneyTerminalStatus,
 } from './InvocationJourneyModel';
 import { JourneyNodeTime } from './InvocationJourneyTime';
+
+type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
+
+function LockHolderTarget({
+  lockHolder,
+}: {
+  lockHolder: VirtualObjectLockHolder;
+}) {
+  if (lockHolder.kind === 'invocation') {
+    return (
+      <InvocationId
+        id={lockHolder.id}
+        size="md"
+        truncateInMiddle
+        popover={false}
+        className="max-w-full"
+      />
+    );
+  }
+  return (
+    <code className="block max-w-full truncate text-2xs text-zinc-600">
+      {lockHolder.id}
+    </code>
+  );
+}
+
+function PendingAttemptBlockedStatus({
+  pendingAttempt,
+}: {
+  pendingAttempt: JourneyPendingAttempt;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { baseUrl } = useRestateContext();
+  const resource = pendingAttempt.resource;
+  const objectIdentity =
+    resource?.resource === 'lock'
+      ? virtualObjectInstanceIdentityFromLockName(
+          resource.lockName,
+          resource.scope,
+        )
+      : undefined;
+  const lock = useGetVirtualObjectLock(
+    objectIdentity?.service ?? '',
+    objectIdentity?.key ?? '',
+    objectIdentity?.scope,
+    {
+      enabled: isOpen && Boolean(objectIdentity),
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      staleTime: 0,
+    },
+  );
+  const lockHolder = lock.data?.lockHolder;
+
+  return (
+    <BlockedStatus
+      reason={pendingAttempt.reason}
+      resource={resource}
+      blockedDuration={pendingAttempt.blockedDuration}
+      objectTarget={
+        objectIdentity ? (
+          <VirtualObjectInstanceTarget
+            identity={objectIdentity}
+            href={virtualObjectInstanceHref(baseUrl, objectIdentity)}
+            containerClassName="w-full"
+          />
+        ) : undefined
+      }
+      lockHolderTarget={
+        lockHolder ? <LockHolderTarget lockHolder={lockHolder} /> : undefined
+      }
+      onOpenChange={setIsOpen}
+    />
+  );
+}
 
 function JourneyMilestone({
   label,
@@ -210,11 +298,7 @@ export function PendingTail({
           <span className="shrink-0 font-medium text-zinc-600">
             Next attempt
           </span>
-          <BlockedStatus
-            reason={pendingAttempt.reason}
-            resource={pendingAttempt.resource}
-            blockedDuration={pendingAttempt.blockedDuration}
-          />
+          <PendingAttemptBlockedStatus pendingAttempt={pendingAttempt} />
           {pendingAttempt.duration && (
             <span className="inline-flex shrink-0 items-baseline gap-x-1.5 text-gray-400">
               <span>for</span>
