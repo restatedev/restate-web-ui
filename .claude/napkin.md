@@ -1,6 +1,6 @@
 # Napkin
 
-- 2026-08-23 VO/Workflow tabs vs search layout: These two list toolbars should reserve a bounded responsive search width (`sm:min(28rem,40vw)`), make the tab strip shrink/scroll first, and remain right-anchored. `ContentPanelToolbar shrinkTabs` marks the portal content; the parent toolbar slot responds with `flex-none` plus `ml-auto`. Do not change the default basis-0 toolbar behavior used by other filter-heavy tabbed pages.
+- 2026-08-23 VO/Workflow tabs vs search layout: Keep the shared `ContentPanel` unchanged. On these two routes, give the existing toolbar slot a bounded responsive minimum width (`sm:min(28rem,40vw)`) via the `ContentPanel` class. Its existing `flex-1` behavior keeps the search right-anchored while the tabs shrink and scroll first.
 
 - 2026-08-23 self on new content-panel test setup: The content-panel Vitest environment has neither `ResizeObserver` nor jest-dom matchers. Stub `ResizeObserver` with non-empty methods and assert DOM attributes through `getAttribute`, not `toHaveAttribute`.
 

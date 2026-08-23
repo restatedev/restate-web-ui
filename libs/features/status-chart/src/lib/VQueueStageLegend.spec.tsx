@@ -182,7 +182,7 @@ describe('VQueueStageLegend', () => {
       <MemoryRouter>
         <VQueueStageLegend
           byStage={stages}
-          byStatus={[populationStatuses[1]]}
+          byStatus={populationStatuses.slice(1)}
           populationByStage={stages}
           populationByStatus={populationStatuses}
           focus="completed"
