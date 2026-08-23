@@ -124,10 +124,11 @@ import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
-  canReconcileStatusFacetFromList,
+  filterInvocationSummaryByStatus,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
+import { hasStatusFilter } from './statusFilter';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
@@ -406,9 +407,7 @@ function Component() {
     focus: vqueueSummaryFocus,
     byStage,
     byStatus,
-    populationByStage,
-    populationByStatus,
-    countsAreContextual,
+    hasServiceScope,
     statusFilter,
     isLoading: isStageSummaryLoading,
     isStageFetching,
@@ -418,7 +417,6 @@ function Component() {
     isBreakdownError: isVqueueBreakdownError,
     breakdownIsSampled,
     canSampleBreakdown,
-    stageCountsReflectFilters,
     matchingCount: summaryMatchingCount,
     isDimmed: statusDim,
     getHref: statusHref,
@@ -503,38 +501,68 @@ function Component() {
   const offerCompleteScan =
     listSampled && (Boolean(data?.isPartial) || effectiveTotal > 0);
   const completeStatusFacetRows = completeListRows;
-  const displayedByStage = useMemo(
+  const reconciledByStage = useMemo(
     () =>
       completeStatusFacetRows
         ? withInvocationStatusCounts(
             byStage,
             completeStatusFacetRows.map(({ status }) => status),
-            statusFilter,
           )
         : byStage,
-    [byStage, completeStatusFacetRows, statusFilter],
+    [byStage, completeStatusFacetRows],
   );
-  const displayedByStatus = useMemo(
+  const reconciledByStatus = useMemo(
     () =>
       completeStatusFacetRows
         ? withInvocationStatusCounts(
             byStatus,
             completeStatusFacetRows.map(({ status }) => status),
-            statusFilter,
           )
         : byStatus,
-    [byStatus, completeStatusFacetRows, statusFilter],
+    [byStatus, completeStatusFacetRows],
   );
-  const displayedStageCountsArePartial =
-    completeStatusFacetRows && canReconcileStatusFacetFromList(statusFilter)
-      ? false
-      : summaryData?.stageCountsArePartial;
+  const hasActiveStatusFilter = hasStatusFilter(statusFilter);
+  const distributionByStage = hasActiveStatusFilter
+    ? byStage
+    : reconciledByStage;
+  const distributionByStatus = hasActiveStatusFilter
+    ? byStatus
+    : reconciledByStatus;
+  const matchingSummary = useMemo(() => {
+    if (completeStatusFacetRows) {
+      return {
+        byStage: reconciledByStage,
+        byStatus: reconciledByStatus,
+        usesBreakdown: false,
+      };
+    }
+    return filterInvocationSummaryByStatus(
+      byStage,
+      byStatus,
+      statusFilter,
+      effectiveTotal,
+    );
+  }, [
+    byStage,
+    byStatus,
+    completeStatusFacetRows,
+    effectiveTotal,
+    reconciledByStage,
+    reconciledByStatus,
+    statusFilter,
+  ]);
+  const displayedStageCountsArePartial = completeStatusFacetRows
+    ? false
+    : Boolean(
+        summaryData?.stageCountsArePartial ||
+        (matchingSummary.usesBreakdown && breakdownIsSampled),
+      );
   const serviceTabs = useServiceTabs(
     summaryData,
     deploymentsData,
     statusFilter,
     isStageSummaryLoading,
-    completeListRows?.length,
+    { count: effectiveTotal, accuracy: totalAccuracy },
   );
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
@@ -653,8 +681,8 @@ function Component() {
   const summaryContent = (
     <div className={summaryHeaderStyles()}>
       <VQueueStageSummaryBar
-        byStage={displayedByStage}
-        byStatus={displayedByStatus}
+        byStage={matchingSummary.byStage}
+        byStatus={matchingSummary.byStatus}
         focus={vqueueSummaryFocus}
         onFocusChange={changeVqueueSummaryFocus}
         breakdownMode={countMode}
@@ -666,15 +694,14 @@ function Component() {
         getHref={statusHref}
         areStageCountsPartial={displayedStageCountsArePartial}
         isBreakdownSampled={breakdownIsSampled}
-        countsReflectFilters={stageCountsReflectFilters}
-        totalsByStage={byStage}
-        populationByStage={populationByStage}
-        countsAreContextual={countsAreContextual}
+        populationByStage={distributionByStage}
+        populationByStatus={distributionByStatus}
+        comparisonScope={hasServiceScope ? 'service' : 'all'}
         isBreakdownLoading={isVqueueBreakdownLoading}
       />
       <VQueueStageLegend
-        byStage={displayedByStage}
-        byStatus={displayedByStatus}
+        byStage={matchingSummary.byStage}
+        byStatus={matchingSummary.byStatus}
         focus={vqueueSummaryFocus}
         isBreakdownSampled={breakdownIsSampled}
         areStageCountsPartial={displayedStageCountsArePartial}
@@ -682,10 +709,8 @@ function Component() {
         isError={isSummaryError}
         isDimmed={statusDim}
         getHref={statusHref}
-        totalsByStage={byStage}
-        populationByStage={populationByStage}
-        populationByStatus={populationByStatus}
-        countsAreContextual={countsAreContextual}
+        populationByStage={distributionByStage}
+        populationByStatus={distributionByStatus}
         isBreakdownLoading={isVqueueBreakdownLoading}
         isBreakdownError={isVqueueBreakdownError}
       />

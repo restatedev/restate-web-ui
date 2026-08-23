@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-23 self on legend count test: I assumed CSS `gap` would separate adjacent label/count spans in the computed accessible name, but Testing Library correctly exposed `Inbox55`. Give exact-count links an explicit semantic label such as `Inbox: 55`; do not rely on visual spacing for screen-reader separation.
+
 - 2026-08-23 invocation legend accuracy refinement (user, supersedes the label-only rule below): Show a compact raw count beside a legend label when that bucket is accurate (`Inbox 39.5K`, `Running 7`). Omit the metric only when the UI would have to substitute an estimated or ambiguous percentage such as `~1%`; never replace a known exact count with silence. Inbox popover children remain percentages of Inbox.
 
 - 2026-08-23 invocation detail CardGrid responsive decision (user): For the `5-4-2` layout, the intermediate two-column breakpoint is a vertical stack, so every card must span both tracks and fill the available width. At `xl`, reset every card to one track and restore the 5:4:2 row. Do not leave secondary cards at half width underneath a full-width Lifecycle card.

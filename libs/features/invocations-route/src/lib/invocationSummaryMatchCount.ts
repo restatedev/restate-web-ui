@@ -31,10 +31,6 @@ function statusMatches(status: string, filter: StatusFilter) {
   return filter.operation === 'IN' ? selected : !selected;
 }
 
-export function canReconcileStatusFacetFromList(statusFilter: StatusFilter) {
-  return !hasStatusFilter(statusFilter);
-}
-
 export function countMatchingStatusBuckets(
   buckets: StatusBucket[],
   populationStatuses: string[],
@@ -71,6 +67,55 @@ export function countMatchingStatusBuckets(
     return undefined;
   }
   return count;
+}
+
+export function filterInvocationSummaryByStatus<
+  StageBucket extends { count: number; statuses: string[] },
+  StatusBucket extends { count: number; statuses: string[] },
+>(
+  stages: StageBucket[],
+  statuses: StatusBucket[],
+  statusFilter: StatusFilter,
+  matchingTotal?: number,
+) {
+  if (!hasStatusFilter(statusFilter)) {
+    return { byStage: stages, byStatus: statuses, usesBreakdown: false };
+  }
+
+  const byStatus = statuses.map((bucket) =>
+    bucket.statuses.every((status) => statusMatches(status, statusFilter))
+      ? bucket
+      : { ...bucket, count: 0 },
+  );
+  const matchingStages = stages.filter((stage) =>
+    stage.statuses.some((status) => statusMatches(status, statusFilter)),
+  );
+  const onlyMatchingStage =
+    matchingStages.length === 1 ? matchingStages[0] : undefined;
+  let usesBreakdown = false;
+  const byStage = stages.map((stage) => {
+    const matchingStatuses = stage.statuses.filter((status) =>
+      statusMatches(status, statusFilter),
+    );
+    if (matchingStatuses.length === 0) return { ...stage, count: 0 };
+    if (matchingStatuses.length < stage.statuses.length) usesBreakdown = true;
+    if (stage === onlyMatchingStage && matchingTotal !== undefined) {
+      return { ...stage, count: matchingTotal };
+    }
+    if (matchingStatuses.length === stage.statuses.length) return stage;
+
+    const stageStatuses = new Set(stage.statuses);
+    return {
+      ...stage,
+      count: byStatus
+        .filter((bucket) =>
+          bucket.statuses.every((status) => stageStatuses.has(status)),
+        )
+        .reduce((count, bucket) => count + bucket.count, 0),
+    };
+  });
+
+  return { byStage, byStatus, usesBreakdown };
 }
 
 export function countMatchingGlobalStatuses(
@@ -187,25 +232,16 @@ export function resolveInvocationPopulationCount({
 
 export function withInvocationStatusCounts<
   Bucket extends { count: number; statuses: string[] },
->(
-  buckets: Bucket[],
-  invocationStatuses: string[],
-  statusFilter?: StatusFilter,
-) {
+>(buckets: Bucket[], invocationStatuses: string[]) {
   const statusCounts = new Map<string, number>();
   for (const status of invocationStatuses) {
     statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
   }
-  return buckets.map((bucket) =>
-    hasStatusFilter(statusFilter) &&
-    bucket.statuses.some((status) => !statusMatches(status, statusFilter))
-      ? bucket
-      : {
-          ...bucket,
-          count: bucket.statuses.reduce(
-            (count, status) => count + (statusCounts.get(status) ?? 0),
-            0,
-          ),
-        },
-  );
+  return buckets.map((bucket) => ({
+    ...bucket,
+    count: bucket.statuses.reduce(
+      (count, status) => count + (statusCounts.get(status) ?? 0),
+      0,
+    ),
+  }));
 }

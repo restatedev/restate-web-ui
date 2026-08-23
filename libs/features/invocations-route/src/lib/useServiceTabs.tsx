@@ -7,14 +7,15 @@ import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import {
   buildStatusEntries,
-  FacetCount,
   InvocationsBreakdownTooltipContent,
 } from '@restate/features/status-chart';
 import {
   countMatchingGlobalStatuses,
   countMatchingStatusBuckets,
+  type InvocationPopulationCount,
 } from './invocationSummaryMatchCount';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
+import { formatNumber } from '@restate/util/intl';
 
 const ALL_TAB_ID = '__all__';
 const MULTI_TAB_ID = '__multi__';
@@ -89,20 +90,7 @@ function selectedServices(
   return { selectedId: ALL_TAB_ID };
 }
 
-function tabLabel(
-  label: string,
-  total: number,
-  matching: number | undefined,
-  isFiltered: boolean,
-  matchingIsPartial: boolean,
-  isLoading: boolean,
-  currentCount?: number,
-): ReactNode {
-  const summaryCount = isFiltered ? matching : total;
-  const countLabel = currentCount ?? summaryCount;
-  const showsComparison =
-    isFiltered || (currentCount !== undefined && currentCount !== summaryCount);
-
+function tabLabel(label: string, total: number, isLoading: boolean): ReactNode {
   return (
     <span className="flex items-center gap-1.5">
       <span className="truncate [[role=tab]_&]:max-w-[12ch]" title={label}>
@@ -110,17 +98,11 @@ function tabLabel(
       </span>
       {isLoading ? (
         <span className="inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
-      ) : countLabel !== undefined ? (
+      ) : (
         <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
-          <FacetCount
-            count={countLabel}
-            total={showsComparison ? total : undefined}
-            approximate={
-              currentCount === undefined && isFiltered && matchingIsPartial
-            }
-          />
+          {formatNumber(total, true)}
         </span>
-      ) : null}
+      )}
     </span>
   );
 }
@@ -185,17 +167,9 @@ function serviceTabLabel(
   isFiltered: boolean,
   matchingIsPartial: boolean,
   isLoading: boolean,
-  currentCount?: number,
+  currentCount?: InvocationPopulationCount,
 ) {
-  const label = tabLabel(
-    service.id,
-    service.count,
-    matching,
-    isFiltered,
-    matchingIsPartial,
-    isLoading,
-    currentCount,
-  );
+  const label = tabLabel(service.id, service.count, isLoading);
   if (isLoading) return label;
 
   const buckets = new Map(
@@ -220,8 +194,8 @@ function serviceTabLabel(
           total={service.count}
           filteredTotal={
             isFiltered ||
-            (currentCount !== undefined && currentCount !== service.count)
-              ? (currentCount ?? matching)
+            (currentCount !== undefined && currentCount.count !== service.count)
+              ? (currentCount?.count ?? matching)
               : undefined
           }
           totalLink={serviceTotalHref(baseUrl, searchParams, service.id)}
@@ -252,7 +226,7 @@ export function useServiceTabs(
   deploymentsData: DeploymentsData | undefined,
   statusFilter: StatusFilter,
   isLoading = false,
-  currentCount?: number,
+  currentCount?: InvocationPopulationCount,
 ): ContentPanelTabs {
   const [searchParams] = useSearchParams();
   const { baseUrl } = useRestateContext();
@@ -266,6 +240,8 @@ export function useServiceTabs(
   );
   const total = services.reduce((sum, service) => sum + service.count, 0);
   const isFiltered = hasStatusFilter(statusFilter);
+  const displayedCurrentCount =
+    isFiltered || currentCount?.accuracy === 'exact' ? currentCount : undefined;
   const populationStatuses =
     summary?.stageBuckets.flatMap(({ statuses }) => statuses) ?? [];
   const globalMatch = isFiltered
@@ -292,15 +268,7 @@ export function useServiceTabs(
   const items = [
     {
       id: ALL_TAB_ID,
-      label: tabLabel(
-        'All services',
-        total,
-        globalMatch?.count,
-        isFiltered,
-        matchingIsPartial,
-        isLoading,
-        selection.selectedId === ALL_TAB_ID ? currentCount : undefined,
-      ),
+      label: tabLabel('All services', total, isLoading),
       href: serviceHref(baseUrl, searchParams),
     },
     ...(selection.services
@@ -313,11 +281,7 @@ export function useServiceTabs(
                 (sum, service) => sum + service.count,
                 0,
               ),
-              matchingCount(selection.services),
-              isFiltered,
-              matchingIsPartial,
               isLoading,
-              currentCount,
             ),
           },
         ]
@@ -332,7 +296,7 @@ export function useServiceTabs(
         isFiltered,
         matchingIsPartial,
         isLoading,
-        selection.selectedId === service.id ? currentCount : undefined,
+        selection.selectedId === service.id ? displayedCurrentCount : undefined,
       ),
       href: serviceHref(baseUrl, searchParams, service.id),
     })),

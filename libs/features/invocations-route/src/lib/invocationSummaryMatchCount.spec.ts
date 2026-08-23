@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
-  canReconcileStatusFacetFromList,
   countMatchingStatusBuckets,
+  filterInvocationSummaryByStatus,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
@@ -50,23 +50,6 @@ describe('countMatchingStatusBuckets', () => {
         },
       ),
     ).toBeUndefined();
-  });
-});
-
-describe('canReconcileStatusFacetFromList', () => {
-  it('does not replace the status population with rows narrowed by status', () => {
-    expect(
-      canReconcileStatusFacetFromList({
-        field: 'status',
-        type: 'STRING_LIST',
-        operation: 'IN',
-        value: ['running'],
-      }),
-    ).toBe(false);
-  });
-
-  it('allows exact list reconciliation without a status filter', () => {
-    expect(canReconcileStatusFacetFromList(undefined)).toBe(true);
   });
 });
 
@@ -122,7 +105,7 @@ describe('withInvocationStatusCounts', () => {
     ).toEqual([0, 2, 1]);
   });
 
-  it('reconciles selected buckets without replacing sibling populations', () => {
+  it('reconciles every bucket to the current list matches', () => {
     expect(
       withInvocationStatusCounts(
         [
@@ -131,28 +114,72 @@ describe('withInvocationStatusCounts', () => {
           { count: 1, statuses: ['paused'] },
         ],
         ['running', 'running', 'running', 'running', 'running'],
-        {
-          field: 'status',
-          type: 'STRING_LIST',
-          operation: 'IN',
-          value: ['running'],
-        },
       ).map(({ count }) => count),
-    ).toEqual([100, 5, 1]);
+    ).toEqual([0, 5, 0]);
   });
 
-  it('keeps a grouped population when the status filter selects only part of it', () => {
+  it('uses current rows for a grouped bucket', () => {
     expect(
       withInvocationStatusCounts(
         [{ count: 100, statuses: ['pending', 'backing-off'] }],
         ['backing-off'],
-        {
-          field: 'status',
-          type: 'STRING_LIST',
-          operation: 'IN',
-          value: ['backing-off'],
-        },
       )[0]?.count,
-    ).toBe(100);
+    ).toBe(1);
+  });
+});
+
+describe('filterInvocationSummaryByStatus', () => {
+  const stages = [
+    { name: 'inbox', count: 100, statuses: ['pending', 'backing-off'] },
+    { name: 'running', count: 5, statuses: ['running'] },
+    { name: 'finished', count: 10, statuses: ['succeeded'] },
+  ];
+  const statuses = [
+    { name: 'pending', count: 90, statuses: ['pending'] },
+    { name: 'backing-off', count: 10, statuses: ['backing-off'] },
+    { name: 'running', count: 5, statuses: ['running'] },
+    { name: 'succeeded', count: 10, statuses: ['succeeded'] },
+  ];
+
+  it('makes every bucket part of the same current-match population', () => {
+    const result = filterInvocationSummaryByStatus(stages, statuses, {
+      field: 'status',
+      type: 'STRING_LIST',
+      operation: 'IN',
+      value: ['backing-off', 'running'],
+    });
+
+    expect(result.byStage.map(({ count }) => count)).toEqual([10, 5, 0]);
+    expect(result.byStatus.map(({ count }) => count)).toEqual([0, 10, 5, 0]);
+    expect(result.usesBreakdown).toBe(true);
+  });
+
+  it('keeps whole selected stages on their exact stage counts', () => {
+    const result = filterInvocationSummaryByStatus(stages, statuses, {
+      field: 'status',
+      type: 'STRING_LIST',
+      operation: 'IN',
+      value: ['pending', 'backing-off', 'running'],
+    });
+
+    expect(result.byStage.map(({ count }) => count)).toEqual([100, 5, 0]);
+    expect(result.usesBreakdown).toBe(false);
+  });
+
+  it('uses the known match total when one selected stage has no breakdown', () => {
+    const result = filterInvocationSummaryByStatus(
+      stages,
+      statuses.filter(({ name }) => name !== 'backing-off'),
+      {
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'IN',
+        value: ['backing-off'],
+      },
+      237,
+    );
+
+    expect(result.byStage.map(({ count }) => count)).toEqual([237, 0, 0]);
+    expect(result.usesBreakdown).toBe(true);
   });
 });
