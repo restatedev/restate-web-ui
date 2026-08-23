@@ -1846,9 +1846,11 @@ describe('POST /query/v2/invocations', () => {
       `);
     });
 
-    it('drops an invoked candidate whose point lookup changed status', async () => {
+    it('drops a best-effort candidate whose point lookup changed status', async () => {
       setResponder((statement) => {
-        if (statement.includes('LIMIT 250')) return [{ id: 'inv-a' }];
+        if (statement.includes('FROM sys_invocation_status ss')) {
+          return [{ id: 'inv-a' }];
+        }
         if (statement.includes('FROM sys_invocation i')) {
           return [rawInvocation('inv-a', { status: 'paused' })];
         }
@@ -1863,10 +1865,88 @@ describe('POST /query/v2/invocations', () => {
             operation: 'EQUALS',
             value: 'running',
           },
+          {
+            field: 'target_service_name',
+            type: 'STRING_LIST',
+            operation: 'IN',
+            value: ['Greeter'],
+          },
         ],
+        sort: { field: 'modified_at', order: 'DESC' },
       });
 
       expect((await response.json()).rows).toEqual([]);
+    });
+
+    it('keeps a VQueue candidate whose status changed during hydration', async () => {
+      setResponder((statement) => {
+        if (statement.includes('FROM sys_vqueues v')) {
+          return [{ id: 'inv-a' }];
+        }
+        if (statement.includes('FROM sys_invocation i')) {
+          return [
+            rawInvocation('inv-a', {
+              status: 'completed',
+              completion_result: 'success',
+            }),
+          ];
+        }
+        return [{ entry_id: 'inv-a', stage: 'finished', status: 'succeeded' }];
+      });
+
+      const response = await post('/v2/invocations', {
+        filters: [
+          {
+            field: 'status',
+            type: 'STRING',
+            operation: 'EQUALS',
+            value: 'running',
+          },
+        ],
+      });
+
+      expect(await response.json()).toMatchObject({
+        rows: [{ id: 'inv-a', status: 'succeeded' }],
+        statusChangedInvocationIds: ['inv-a'],
+      });
+    });
+
+    it('marks a capped VQueue selection partial when retained rows changed status', async () => {
+      const candidates = Array.from({ length: 250 }, (_, index) => ({
+        id: `inv-${index}`,
+      }));
+      setResponder((statement) => {
+        if (statement.includes('FROM sys_vqueues v')) return candidates;
+        if (statement.includes('FROM sys_invocation i')) {
+          return candidates.map(({ id }) =>
+            rawInvocation(id, {
+              status: 'completed',
+              completion_result: 'success',
+            }),
+          );
+        }
+        return candidates.map(({ id }) => ({
+          entry_id: id,
+          stage: 'finished',
+          status: 'succeeded',
+        }));
+      });
+
+      const response = await post('/v2/invocations', {
+        filters: [
+          {
+            field: 'status',
+            type: 'STRING',
+            operation: 'EQUALS',
+            value: 'running',
+          },
+        ],
+      });
+      const body = await response.json();
+
+      expect(body.rows).toHaveLength(250);
+      expect(body.statusChangedInvocationIds).toHaveLength(250);
+      expect(body.isPartial).toBe(true);
     });
   });
 

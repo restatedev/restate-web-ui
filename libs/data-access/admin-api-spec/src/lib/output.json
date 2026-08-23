@@ -9757,6 +9757,12 @@
           "isPartial": {
             "type": "boolean"
           },
+          "statusChangedInvocationIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "sample": {
             "type": "object",
             "required": ["sampleSize"],

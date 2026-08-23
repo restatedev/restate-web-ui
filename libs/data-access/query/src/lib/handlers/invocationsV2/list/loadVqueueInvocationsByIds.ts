@@ -24,7 +24,9 @@ export async function loadVqueueInvocationsByIds(
   sort: InvocationSortV2 | undefined,
   requestTime: string,
 ) {
-  if (candidates.length === 0) return [];
+  if (candidates.length === 0) {
+    return { rows: [], statusChangedInvocationIds: [] };
+  }
   const ids = candidates.map((candidate) => candidate.id);
   const nonStatusFilters = filters.filter(
     (filter) => filter.field !== 'status',
@@ -54,24 +56,28 @@ export async function loadVqueueInvocationsByIds(
       : ids;
   const orderedIds = Array.from(new Set([...orderedHydrationIds, ...ids]));
 
-  return orderedIds.flatMap((id) => {
+  const rows: ReturnType<typeof convertInvocationV2>[] = [];
+  const statusChangedInvocationIds: string[] = [];
+  for (const id of orderedIds) {
     const candidate = candidatesById.get(id);
-    if (!candidate) return [];
+    if (!candidate) continue;
     const vqueue = vqueuesById.get(id);
     const raw = invocationsById.get(id);
-    if (!raw || (candidate.requiresVqueueEntry && !vqueue)) return [];
+    if (!raw || (candidate.requiresVqueueEntry && !vqueue)) continue;
     const invocation = convertInvocationV2(raw, vqueue, requestTime);
     if (
       statusSelection.type === 'selected' &&
       !statusSelection.statuses.has(invocation.status)
     ) {
-      return [];
+      if (!candidate.matchedStatusAtSelection) continue;
+      statusChangedInvocationIds.push(id);
     }
     const requiresVqueue =
       candidate.requiresVqueueEntry ||
       (candidate.refinesStatusFromVqueue &&
         STATUSES_RESOLVED_FROM_VQUEUE.has(invocation.status));
-    if (requiresVqueue && !vqueue) return [];
-    return [invocation];
-  });
+    if (requiresVqueue && !vqueue) continue;
+    rows.push(invocation);
+  }
+  return { rows, statusChangedInvocationIds };
 }

@@ -138,6 +138,7 @@ async function queryCandidates(
         candidates: result.rows.map((row) => ({
           ...row,
           requiresVqueueEntry: true,
+          matchedStatusAtSelection: query.statuses !== undefined,
         })),
       };
     }
@@ -154,6 +155,7 @@ async function queryCandidates(
         candidates: result.rows.map((row) => ({
           ...row,
           requiresVqueueEntry: true,
+          matchedStatusAtSelection: query.statuses !== undefined,
         })),
         partial: result.partial,
       };

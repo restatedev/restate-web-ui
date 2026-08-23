@@ -236,16 +236,24 @@ function SampleScanToggle({
   );
 }
 
-// Shown above the table while the list is sampled: the rows are a partial,
-// unsorted slice, so counts/order can't be trusted as the full picture.
-function SampleNotice() {
+function ResultsNotice({
+  isPartial,
+  statusChangedCount,
+}: {
+  isPartial: boolean;
+  statusChangedCount: number;
+}) {
+  const statusChangedMessage = `${formatNumber(statusChangedCount)} ${statusChangedCount === 1 ? 'invocation changed' : 'invocations changed'} status while results were loading. The latest status is shown.`;
   return (
     <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600">
       <Icon
         name={IconName.Info}
         className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400"
       />
-      <span>This view may not include every matching invocation.</span>
+      <span>
+        {isPartial && 'This view may not include every matching invocation. '}
+        {statusChangedCount > 0 && statusChangedMessage}
+      </span>
     </div>
   );
 }
@@ -485,7 +493,17 @@ function Component() {
     return () => clearTimeout(timer);
   }, [isFetching, searchString, listSampled, slowQueryMs]);
 
-  const listRowCount = data?.rows?.length ?? 0;
+  const statusChangedInvocationIds = useMemo(
+    () => new Set(data?.statusChangedInvocationIds ?? []),
+    [data?.statusChangedInvocationIds],
+  );
+  const matchingListRows = useMemo(
+    () =>
+      data?.rows?.filter(({ id }) => !statusChangedInvocationIds.has(id)) ?? [],
+    [data?.rows, statusChangedInvocationIds],
+  );
+  const statusChangedCount = statusChangedInvocationIds.size;
+  const listRowCount = matchingListRows.length;
   const listLimit = data?.limit ?? 0;
   const listSnapshotIsComplete = isInvocationListSnapshotComplete({
     summaryMatchCount: summaryMatchingCount,
@@ -495,7 +513,7 @@ function Component() {
     listIsPartial: Boolean(data?.isPartial),
   });
   const completeListRows =
-    data && listSnapshotIsComplete ? data.rows : undefined;
+    data && listSnapshotIsComplete ? matchingListRows : undefined;
   const { count: effectiveTotal, accuracy: totalAccuracy } =
     resolveInvocationPopulationCount({
       summaryMatchCount: summaryMatchingCount,
@@ -681,8 +699,13 @@ function Component() {
           setListSampledOverride(true);
         }}
       />
-    ) : !isFetching && (listSampled || data?.isPartial) && !error ? (
-      <SampleNotice />
+    ) : !isFetching &&
+      (listSampled || data?.isPartial || statusChangedCount > 0) &&
+      !error ? (
+      <ResultsNotice
+        isPartial={listSampled || Boolean(data?.isPartial)}
+        statusChangedCount={statusChangedCount}
+      />
     ) : undefined;
 
   const summaryContent = (
@@ -1027,6 +1050,7 @@ function Component() {
                 totalCount={effectiveTotal}
                 totalAccuracy={totalAccuracy}
                 hasActiveFilters={hasActiveFilters}
+                statusChangedCount={statusChangedCount}
                 key={dataUpdate}
               >
                 {!isPending && !error && totalSize > 1 && (
@@ -1186,12 +1210,14 @@ function Footnote({
   totalCount,
   totalAccuracy,
   hasActiveFilters,
+  statusChangedCount,
   children,
 }: PropsWithChildren<{
   data?: ReturnType<typeof useListInvocationsV2>['data'];
   totalCount: number;
   totalAccuracy: 'exact' | 'estimate' | 'lower-bound';
   hasActiveFilters: boolean;
+  statusChangedCount: number;
 }>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -1220,7 +1246,20 @@ function Footnote({
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {visibleCount === 0 && totalCount === 0 ? (
+          {statusChangedCount > 0 ? (
+            <>
+              <span className="font-medium text-gray-500">
+                {totalAccuracy === 'estimate' && '~'}
+                {formatNumber(totalCount, true)}
+                {totalAccuracy === 'lower-bound' && '+'}
+              </span>{' '}
+              currently matching ·{' '}
+              <span className="font-medium text-gray-500">
+                {formatNumber(statusChangedCount)}
+              </span>{' '}
+              changed status
+            </>
+          ) : visibleCount === 0 && totalCount === 0 ? (
             'No invocations found'
           ) : totalAccuracy === 'lower-bound' ? (
             <>
