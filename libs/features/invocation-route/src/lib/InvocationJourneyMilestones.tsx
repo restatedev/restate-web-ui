@@ -210,7 +210,11 @@ export function PendingTail({
           <span className="shrink-0 font-medium text-zinc-600">
             Next attempt
           </span>
-          <BlockedStatus reason={pendingAttempt.reason} />
+          <BlockedStatus
+            reason={pendingAttempt.reason}
+            resource={pendingAttempt.resource}
+            blockedDuration={pendingAttempt.blockedDuration}
+          />
           {pendingAttempt.duration && (
             <span className="inline-flex shrink-0 items-baseline gap-x-1.5 text-gray-400">
               <span>for</span>

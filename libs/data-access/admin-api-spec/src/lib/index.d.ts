@@ -3491,6 +3491,7 @@ export interface components {
       /** @enum {string} */
       mode: 'exact' | 'sampled';
       isPartial: boolean;
+      statusChangedInvocationIds?: string[];
       sample?: {
         sampleSize: number;
       };

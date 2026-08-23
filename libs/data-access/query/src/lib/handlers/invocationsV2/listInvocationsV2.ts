@@ -33,7 +33,7 @@ export async function listInvocationsV2(
   if ('error' in selected) return badRequest(selected.error);
 
   const requestTime = new Date().toISOString();
-  const rows =
+  const loaded =
     selected.source === 'vqueue'
       ? await loadVqueueInvocationsByIds(
           this,
@@ -43,16 +43,32 @@ export async function listInvocationsV2(
           sort,
           requestTime,
         )
-      : await loadInvocationsFromInvocationStatusAndState(
-          this,
-          selected.rows,
-          filters,
-          sort,
-          requestTime,
-        );
+      : {
+          rows: await loadInvocationsFromInvocationStatusAndState(
+            this,
+            selected.rows,
+            filters,
+            sort,
+            requestTime,
+          ),
+          statusChangedInvocationIds: [],
+        };
+  const rows = loaded.rows;
   const limitedRows = rows.slice(0, INVOCATIONS_V2_LIMIT);
+  const limitedRowIds = new Set(limitedRows.map((row) => row.id));
+  const statusChangedInvocationIds = loaded.statusChangedInvocationIds.filter(
+    (id) => limitedRowIds.has(id),
+  );
+  const currentMatchingRowCount =
+    limitedRows.length - statusChangedInvocationIds.length;
+  const cappedCandidateHydrationWasIncomplete =
+    selected.limit > 0 &&
+    selected.rows.length >= selected.limit &&
+    currentMatchingRowCount < selected.limit;
   const isPartial =
-    selected.mode.type === 'sampled' || Boolean(selected.partial);
+    selected.mode.type === 'sampled' ||
+    Boolean(selected.partial) ||
+    cappedCandidateHydrationWasIncomplete;
   const enrichedRows =
     includeFlowControl && selected.source === 'vqueue'
       ? await enrichInvocationFlowControl(this, limitedRows, requestTime)
@@ -63,6 +79,9 @@ export async function listInvocationsV2(
     limit: INVOCATIONS_V2_LIMIT,
     mode: selected.mode.type,
     isPartial,
+    ...(statusChangedInvocationIds.length > 0 && {
+      statusChangedInvocationIds,
+    }),
     ...(selected.partial && { partial: selected.partial }),
     ...(selected.mode.type === 'sampled' && {
       sample: {

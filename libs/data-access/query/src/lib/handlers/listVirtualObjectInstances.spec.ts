@@ -18,7 +18,7 @@ function createContext(
 }
 
 describe('listVirtualObjectInstances', () => {
-  it('uses exact key and scope predicates for every identity source', async () => {
+  it('uses exact key and scope predicates for active identity sources', async () => {
     const { context, query } = createContext(() => []);
 
     const response = await listVirtualObjectInstances.call(context, 'Counter', {
@@ -40,15 +40,6 @@ describe('listVirtualObjectInstances', () => {
 
     expect(response.status).toBe(200);
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter'
-      AND service_key = 'Customer''s'
-      AND scope = 'Tenant-A'
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       scope
@@ -93,14 +84,6 @@ describe('listVirtualObjectInstances', () => {
 
     expect(response.status).toBe(200);
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter'
-      AND service_key ILIKE '%Customer''s%'
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       lock_name,
@@ -155,15 +138,6 @@ describe('listVirtualObjectInstances', () => {
 
     expect(response.status).toBe(200);
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter'
-      AND service_key = 'hot-object-0'
-      AND scope IS NULL
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       scope
@@ -236,21 +210,8 @@ describe('listVirtualObjectInstances', () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it('merges state, exclusive work and shared invocation identities', async () => {
+  it('merges exclusive work and shared invocation identities', async () => {
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM state')) {
-        return [
-          {
-            partition_key: '1',
-            object_key: 'both',
-            scope: 'tenant-a',
-          },
-          {
-            partition_key: '4',
-            object_key: 'state-only',
-          },
-        ];
-      }
       if (sql.includes('SUM(num_inbox) AS backlog')) {
         return [
           {
@@ -312,13 +273,6 @@ describe('listVirtualObjectInstances', () => {
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter''s' AND (service_key LIKE '%o''hare\\%\\_!\\\\path%' OR scope LIKE '%o''hare\\%\\_!\\\\path%')
-    LIMIT 51`,
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
       lock_name,
       scope
     FROM sys_vqueue_meta
@@ -348,13 +302,12 @@ describe('listVirtualObjectInstances', () => {
       scope,
       SUM(num_inbox) AS backlog
     FROM sys_vqueue_meta
-    WHERE partition_key IN (1, 2, 3, 4)
+    WHERE partition_key IN (1, 2, 3)
       AND service_name = 'Counter''s'
       AND (
         (lock_name = 'Counter''s/both' AND scope = 'tenant-a')
         OR (lock_name = 'Counter''s/mutation-only' AND scope = 'tenant-b')
         OR (lock_name = 'Counter''s/shared-only' AND scope = 'tenant-c')
-        OR (lock_name = 'Counter''s/state-only' AND scope IS NULL)
       )
     GROUP BY lock_name, scope`,
       `SELECT
@@ -368,7 +321,6 @@ describe('listVirtualObjectInstances', () => {
         (lock_name = 'Counter''s/both' AND scope = 'tenant-a')
         OR (lock_name = 'Counter''s/mutation-only' AND scope = 'tenant-b')
         OR (lock_name = 'Counter''s/shared-only' AND scope = 'tenant-c')
-        OR (lock_name = 'Counter''s/state-only' AND scope IS NULL)
       )`,
     ]);
     expect(await response.json()).toEqual({
@@ -393,10 +345,6 @@ describe('listVirtualObjectInstances', () => {
           scope: 'tenant-c',
           backlog: 0,
         },
-        {
-          key: 'state-only',
-          backlog: 0,
-        },
       ],
       truncated: false,
     });
@@ -405,16 +353,16 @@ describe('listVirtualObjectInstances', () => {
   it('preserves partition keys above JavaScript integer precision', async () => {
     const exactPartitionKey = '14239471964036668491';
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM state')) {
+      if (sql.includes('SUM(num_inbox) AS backlog')) {
+        return [{ lock_name: 'Counter/vqueue-only', backlog: 1 }];
+      }
+      if (sql.includes('FROM sys_vqueue_meta')) {
         return [
           {
             partition_key: exactPartitionKey,
-            object_key: 'state-only',
+            lock_name: 'Counter/vqueue-only',
           },
         ];
-      }
-      if (sql.includes('SUM(num_inbox) AS backlog')) {
-        return [{ lock_name: 'Counter/state-only', backlog: 1 }];
       }
       return [];
     });
@@ -422,13 +370,6 @@ describe('listVirtualObjectInstances', () => {
     await listVirtualObjectInstances.call(context, 'Counter');
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter'
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       lock_name,
@@ -461,7 +402,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE partition_key IN (${exactPartitionKey})
       AND service_name = 'Counter'
       AND (
-        (lock_name = 'Counter/state-only' AND scope IS NULL)
+        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
       )
     GROUP BY lock_name, scope`,
       `SELECT
@@ -472,18 +413,18 @@ describe('listVirtualObjectInstances', () => {
     FROM sys_locks
     WHERE acquired_by IS NOT NULL
       AND (
-        (lock_name = 'Counter/state-only' AND scope IS NULL)
+        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
       )`,
     ]);
   });
 
   it('rejects numeric partition keys from JSON', async () => {
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM state')) {
+      if (sql.includes('FROM sys_vqueue_meta')) {
         return [
           {
             partition_key: Number('14239471964036668491'),
-            object_key: 'state-only',
+            lock_name: 'Counter/vqueue-only',
           },
         ];
       }
@@ -495,13 +436,6 @@ describe('listVirtualObjectInstances', () => {
     ).rejects.toThrow('Invalid partition key:');
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter'
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       lock_name,
@@ -531,16 +465,16 @@ describe('listVirtualObjectInstances', () => {
 
   it('preserves a zero backlog', async () => {
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM state')) {
+      if (sql.includes('SUM(num_inbox) AS backlog')) {
+        return [{ lock_name: 'Counter/vqueue-only', backlog: 0 }];
+      }
+      if (sql.includes('FROM sys_vqueue_meta')) {
         return [
           {
             partition_key: '7',
-            object_key: 'state-only',
+            lock_name: 'Counter/vqueue-only',
           },
         ];
-      }
-      if (sql.includes('SUM(num_inbox) AS backlog')) {
-        return [{ lock_name: 'Counter/state-only', backlog: 0 }];
       }
       return [];
     });
@@ -548,13 +482,6 @@ describe('listVirtualObjectInstances', () => {
     const response = await listVirtualObjectInstances.call(context, 'Counter');
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter'
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       lock_name,
@@ -587,7 +514,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE partition_key IN (7)
       AND service_name = 'Counter'
       AND (
-        (lock_name = 'Counter/state-only' AND scope IS NULL)
+        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
       )
     GROUP BY lock_name, scope`,
       `SELECT
@@ -598,13 +525,13 @@ describe('listVirtualObjectInstances', () => {
     FROM sys_locks
     WHERE acquired_by IS NOT NULL
       AND (
-        (lock_name = 'Counter/state-only' AND scope IS NULL)
+        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
       )`,
     ]);
     expect(await response.json()).toEqual({
       rows: [
         {
-          key: 'state-only',
+          key: 'vqueue-only',
           backlog: 0,
         },
       ],
@@ -614,9 +541,6 @@ describe('listVirtualObjectInstances', () => {
 
   it('uses active invocation identities on servers without vqueues', async () => {
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM state')) {
-        return [{ object_key: 'state-only' }];
-      }
       if (sql.includes('FROM sys_invocation_status')) {
         return [{ object_key: 'invocation-only' }];
       }
@@ -637,11 +561,6 @@ describe('listVirtualObjectInstances', () => {
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
       `SELECT DISTINCT
-      service_key AS object_key
-    FROM state
-    WHERE service_name = 'Counter' AND (service_key LIKE '%customer%')
-    LIMIT 51`,
-      `SELECT DISTINCT
       target_service_key AS object_key
     FROM sys_invocation_status
     WHERE target_service_name = 'Counter'
@@ -657,7 +576,6 @@ describe('listVirtualObjectInstances', () => {
     WHERE service_name = 'Counter'
       AND (
         (service_key = 'invocation-only')
-        OR (service_key = 'state-only')
       )
     GROUP BY service_key`,
       `SELECT
@@ -668,7 +586,6 @@ describe('listVirtualObjectInstances', () => {
       AND invocation_id IS NOT NULL
       AND (
         (service_key = 'invocation-only')
-        OR (service_key = 'state-only')
       )`,
     ]);
     expect(await response.json()).toEqual({
@@ -681,43 +598,26 @@ describe('listVirtualObjectInstances', () => {
             kind: 'invocation',
           },
         },
-        {
-          key: 'state-only',
-          backlog: 0,
-        },
       ],
       truncated: false,
     });
   });
 
   it('reports truncation when any discovery source is truncated', async () => {
-    const stateRows = Array.from({ length: 51 }, () => ({
-      partition_key: '1',
-      object_key: 'state-only',
+    const invocationRows = Array.from({ length: 51 }, () => ({
+      partition_key: '100',
+      object_key: 'shared-only',
     }));
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM state')) return stateRows;
       if (sql.includes('FROM sys_vqueue_meta')) return [];
       if (sql.includes('FROM sys_locks')) return [];
-      return [
-        {
-          partition_key: '100',
-          object_key: 'shared-only',
-        },
-      ];
+      return invocationRows;
     });
 
     const response = await listVirtualObjectInstances.call(context, 'Counter');
     const body = await response.json();
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter'
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       lock_name,
@@ -747,11 +647,10 @@ describe('listVirtualObjectInstances', () => {
       scope,
       SUM(num_inbox) AS backlog
     FROM sys_vqueue_meta
-    WHERE partition_key IN (100, 1)
+    WHERE partition_key IN (100)
       AND service_name = 'Counter'
       AND (
         (lock_name = 'Counter/shared-only' AND scope IS NULL)
-        OR (lock_name = 'Counter/state-only' AND scope IS NULL)
       )
     GROUP BY lock_name, scope`,
       `SELECT
@@ -763,10 +662,9 @@ describe('listVirtualObjectInstances', () => {
     WHERE acquired_by IS NOT NULL
       AND (
         (lock_name = 'Counter/shared-only' AND scope IS NULL)
-        OR (lock_name = 'Counter/state-only' AND scope IS NULL)
       )`,
     ]);
-    expect(body.rows).toHaveLength(2);
+    expect(body.rows).toHaveLength(1);
     expect(body.rows[0]).toEqual({
       key: 'shared-only',
       backlog: 0,
@@ -776,9 +674,6 @@ describe('listVirtualObjectInstances', () => {
 
   it('sorts by the exact service backlog only when requested', async () => {
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM state')) {
-        return [{ object_key: 'cold' }];
-      }
       if (
         sql.includes('FROM sys_vqueue_meta') &&
         sql.includes('ORDER BY backlog DESC')
@@ -822,12 +717,6 @@ describe('listVirtualObjectInstances', () => {
     });
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      service_key AS object_key,
-      scope
-    FROM state
-    WHERE service_name = 'Counter' AND (service_key LIKE '%customer%' OR scope LIKE '%customer%')
-    LIMIT 51`,
       `SELECT DISTINCT
       lock_name,
       scope
@@ -911,11 +800,6 @@ describe('listVirtualObjectInstances', () => {
     });
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      service_key AS object_key
-    FROM state
-    WHERE service_name = 'Counter'
-    LIMIT 51`,
       `SELECT DISTINCT
       target_service_key AS object_key
     FROM sys_invocation_status

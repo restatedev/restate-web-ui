@@ -124,7 +124,9 @@ import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
-  canReconcileStatusFacetFromList,
+  filterInvocationSummaryByStatus,
+  isInvocationListSnapshotComplete,
+  reconcileCoveredInvocationStatusCounts,
   resolveInvocationPopulationCount,
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
@@ -234,16 +236,24 @@ function SampleScanToggle({
   );
 }
 
-// Shown above the table while the list is sampled: the rows are a partial,
-// unsorted slice, so counts/order can't be trusted as the full picture.
-function SampleNotice() {
+function ResultsNotice({
+  isPartial,
+  statusChangedCount,
+}: {
+  isPartial: boolean;
+  statusChangedCount: number;
+}) {
+  const statusChangedMessage = `${formatNumber(statusChangedCount)} ${statusChangedCount === 1 ? 'invocation changed' : 'invocations changed'} status while results were loading. The latest status is shown.`;
   return (
     <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600">
       <Icon
         name={IconName.Info}
         className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400"
       />
-      <span>This view may not include every matching invocation.</span>
+      <span>
+        {isPartial && 'This view may not include every matching invocation. '}
+        {statusChangedCount > 0 && statusChangedMessage}
+      </span>
     </div>
   );
 }
@@ -406,9 +416,7 @@ function Component() {
     focus: vqueueSummaryFocus,
     byStage,
     byStatus,
-    populationByStage,
-    populationByStatus,
-    countsAreContextual,
+    hasServiceScope,
     statusFilter,
     isLoading: isStageSummaryLoading,
     isStageFetching,
@@ -418,7 +426,6 @@ function Component() {
     isBreakdownError: isVqueueBreakdownError,
     breakdownIsSampled,
     canSampleBreakdown,
-    stageCountsReflectFilters,
     matchingCount: summaryMatchingCount,
     isDimmed: statusDim,
     getHref: statusHref,
@@ -486,11 +493,27 @@ function Component() {
     return () => clearTimeout(timer);
   }, [isFetching, searchString, listSampled, slowQueryMs]);
 
-  const listRowCount = data?.rows?.length ?? 0;
+  const statusChangedInvocationIds = useMemo(
+    () => new Set(data?.statusChangedInvocationIds ?? []),
+    [data?.statusChangedInvocationIds],
+  );
+  const matchingListRows = useMemo(
+    () =>
+      data?.rows?.filter(({ id }) => !statusChangedInvocationIds.has(id)) ?? [],
+    [data?.rows, statusChangedInvocationIds],
+  );
+  const statusChangedCount = statusChangedInvocationIds.size;
+  const listRowCount = matchingListRows.length;
   const listLimit = data?.limit ?? 0;
-  const listIsCapped = listLimit > 0 && listRowCount >= listLimit;
+  const listSnapshotIsComplete = isInvocationListSnapshotComplete({
+    summaryMatchCount: summaryMatchingCount,
+    listIsAvailable: data != null,
+    listRowCount,
+    listLimit,
+    listIsPartial: Boolean(data?.isPartial),
+  });
   const completeListRows =
-    data && !data.isPartial && !listIsCapped ? data.rows : undefined;
+    data && listSnapshotIsComplete ? matchingListRows : undefined;
   const { count: effectiveTotal, accuracy: totalAccuracy } =
     resolveInvocationPopulationCount({
       summaryMatchCount: summaryMatchingCount,
@@ -503,10 +526,30 @@ function Component() {
   const offerCompleteScan =
     listSampled && (Boolean(data?.isPartial) || effectiveTotal > 0);
   const completeStatusFacetRows = completeListRows;
-  const displayedByStage = useMemo(
+  const reconciledByStage = useMemo(
     () =>
       completeStatusFacetRows
         ? withInvocationStatusCounts(
+            byStage,
+            completeStatusFacetRows.map(({ status }) => status),
+          )
+        : byStage,
+    [byStage, completeStatusFacetRows],
+  );
+  const reconciledByStatus = useMemo(
+    () =>
+      completeStatusFacetRows
+        ? withInvocationStatusCounts(
+            byStatus,
+            completeStatusFacetRows.map(({ status }) => status),
+          )
+        : byStatus,
+    [byStatus, completeStatusFacetRows],
+  );
+  const distributionByStage = useMemo(
+    () =>
+      completeStatusFacetRows
+        ? reconcileCoveredInvocationStatusCounts(
             byStage,
             completeStatusFacetRows.map(({ status }) => status),
             statusFilter,
@@ -514,10 +557,10 @@ function Component() {
         : byStage,
     [byStage, completeStatusFacetRows, statusFilter],
   );
-  const displayedByStatus = useMemo(
+  const distributionByStatus = useMemo(
     () =>
       completeStatusFacetRows
-        ? withInvocationStatusCounts(
+        ? reconcileCoveredInvocationStatusCounts(
             byStatus,
             completeStatusFacetRows.map(({ status }) => status),
             statusFilter,
@@ -525,16 +568,41 @@ function Component() {
         : byStatus,
     [byStatus, completeStatusFacetRows, statusFilter],
   );
-  const displayedStageCountsArePartial =
-    completeStatusFacetRows && canReconcileStatusFacetFromList(statusFilter)
-      ? false
-      : summaryData?.stageCountsArePartial;
+  const matchingSummary = useMemo(() => {
+    if (completeStatusFacetRows) {
+      return {
+        byStage: reconciledByStage,
+        byStatus: reconciledByStatus,
+        usesBreakdown: false,
+      };
+    }
+    return filterInvocationSummaryByStatus(
+      byStage,
+      byStatus,
+      statusFilter,
+      effectiveTotal,
+    );
+  }, [
+    byStage,
+    byStatus,
+    completeStatusFacetRows,
+    effectiveTotal,
+    reconciledByStage,
+    reconciledByStatus,
+    statusFilter,
+  ]);
+  const displayedStageCountsArePartial = completeStatusFacetRows
+    ? false
+    : Boolean(
+        summaryData?.stageCountsArePartial ||
+        (matchingSummary.usesBreakdown && breakdownIsSampled),
+      );
   const serviceTabs = useServiceTabs(
     summaryData,
     deploymentsData,
     statusFilter,
     isStageSummaryLoading,
-    completeListRows?.length,
+    { count: effectiveTotal, accuracy: totalAccuracy },
   );
 
   const [selectedInvocationIds, setSelectedInvocationIds] = useState<
@@ -646,15 +714,20 @@ function Component() {
           setListSampledOverride(true);
         }}
       />
-    ) : !isFetching && (listSampled || data?.isPartial) && !error ? (
-      <SampleNotice />
+    ) : !isFetching &&
+      (listSampled || data?.isPartial || statusChangedCount > 0) &&
+      !error ? (
+      <ResultsNotice
+        isPartial={listSampled || Boolean(data?.isPartial)}
+        statusChangedCount={statusChangedCount}
+      />
     ) : undefined;
 
   const summaryContent = (
     <div className={summaryHeaderStyles()}>
       <VQueueStageSummaryBar
-        byStage={displayedByStage}
-        byStatus={displayedByStatus}
+        byStage={matchingSummary.byStage}
+        byStatus={matchingSummary.byStatus}
         focus={vqueueSummaryFocus}
         onFocusChange={changeVqueueSummaryFocus}
         breakdownMode={countMode}
@@ -666,15 +739,14 @@ function Component() {
         getHref={statusHref}
         areStageCountsPartial={displayedStageCountsArePartial}
         isBreakdownSampled={breakdownIsSampled}
-        countsReflectFilters={stageCountsReflectFilters}
-        totalsByStage={byStage}
-        populationByStage={populationByStage}
-        countsAreContextual={countsAreContextual}
+        populationByStage={distributionByStage}
+        populationByStatus={distributionByStatus}
+        comparisonScope={hasServiceScope ? 'service' : 'all'}
         isBreakdownLoading={isVqueueBreakdownLoading}
       />
       <VQueueStageLegend
-        byStage={displayedByStage}
-        byStatus={displayedByStatus}
+        byStage={matchingSummary.byStage}
+        byStatus={matchingSummary.byStatus}
         focus={vqueueSummaryFocus}
         isBreakdownSampled={breakdownIsSampled}
         areStageCountsPartial={displayedStageCountsArePartial}
@@ -682,10 +754,8 @@ function Component() {
         isError={isSummaryError}
         isDimmed={statusDim}
         getHref={statusHref}
-        totalsByStage={byStage}
-        populationByStage={populationByStage}
-        populationByStatus={populationByStatus}
-        countsAreContextual={countsAreContextual}
+        populationByStage={distributionByStage}
+        populationByStatus={distributionByStatus}
         isBreakdownLoading={isVqueueBreakdownLoading}
         isBreakdownError={isVqueueBreakdownError}
       />
@@ -995,6 +1065,7 @@ function Component() {
                 totalCount={effectiveTotal}
                 totalAccuracy={totalAccuracy}
                 hasActiveFilters={hasActiveFilters}
+                statusChangedCount={statusChangedCount}
                 key={dataUpdate}
               >
                 {!isPending && !error && totalSize > 1 && (
@@ -1154,12 +1225,14 @@ function Footnote({
   totalCount,
   totalAccuracy,
   hasActiveFilters,
+  statusChangedCount,
   children,
 }: PropsWithChildren<{
   data?: ReturnType<typeof useListInvocationsV2>['data'];
   totalCount: number;
   totalAccuracy: 'exact' | 'estimate' | 'lower-bound';
   hasActiveFilters: boolean;
+  statusChangedCount: number;
 }>) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -1188,7 +1261,20 @@ function Footnote({
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
       {data && (
         <div className="ml-auto">
-          {visibleCount === 0 && totalCount === 0 ? (
+          {statusChangedCount > 0 ? (
+            <>
+              <span className="font-medium text-gray-500">
+                {totalAccuracy === 'estimate' && '~'}
+                {formatNumber(totalCount, true)}
+                {totalAccuracy === 'lower-bound' && '+'}
+              </span>{' '}
+              currently matching ·{' '}
+              <span className="font-medium text-gray-500">
+                {formatNumber(statusChangedCount)}
+              </span>{' '}
+              changed status
+            </>
+          ) : visibleCount === 0 && totalCount === 0 ? (
             'No invocations found'
           ) : totalAccuracy === 'lower-bound' ? (
             <>

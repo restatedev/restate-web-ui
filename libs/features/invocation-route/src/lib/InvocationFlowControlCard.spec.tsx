@@ -120,7 +120,14 @@ describe('InvocationFlowControlCard', () => {
         status: {
           blocked: true,
           scheduling: 'blocked',
-          blockedOn: 'concurrency_rules',
+          blockedOn: 'limit-key-concurrency',
+          blockedResource: {
+            resource: 'limit-key-concurrency',
+            scope: 'noisy',
+            limitKey: 'interactive/globex',
+            blockedLevel: 'level2',
+            blockedRule: 'noisy/*/*',
+          },
         },
         counts: {
           inbox: 19,
@@ -210,7 +217,16 @@ describe('InvocationFlowControlCard', () => {
     expect(
       screen.getByRole('button', { name: 'Suspensions: 10' }),
     ).toBeTruthy();
-    expect(screen.getByText('on concurrency rule')).toBeTruthy();
+    const blockedReason = screen.getByRole('button', {
+      name: 'on concurrency rule',
+    });
+    fireEvent.click(blockedReason);
+    expect(screen.getByText('concurrency limit')).toBeTruthy();
+    expect(screen.getByText('interactive')).toBeTruthy();
+    expect(screen.getByText('globex')).toBeTruthy();
+    expect(
+      document.querySelector('[data-limit-rule="noisy/*/*"]'),
+    ).toBeTruthy();
     expect(
       screen.getByTitle('Blocked duration: 18s; 3× historical average'),
     ).toBeTruthy();
@@ -679,7 +695,9 @@ describe('InvocationFlowControlCard', () => {
     );
 
     expect(screen.getByText('on concurrency rule')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /Blocked time:/ })).toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Blocked time: 2s' }),
+    ).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: /Last attempt blocked time:/ }),
     ).toBeNull();
@@ -724,7 +742,7 @@ describe('InvocationFlowControlCard', () => {
           status: 'new',
           attempts: 0,
           firstRunnableAt: '2026-01-01T00:00:00.000Z',
-          totalBlocks: [],
+          totalBlocks: [{ gate: 'concurrency_rules', duration: 'PT5S' }],
           latestBlocks: [],
         },
       }),

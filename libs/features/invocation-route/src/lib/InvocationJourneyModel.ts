@@ -61,6 +61,8 @@ export type JourneyNodeTiming = {
 
 export type JourneyPendingAttempt = {
   reason: string;
+  resource?: VqueueSnapshot['status']['blockedResource'];
+  blockedDuration?: string;
   duration?: string;
   ratio?: JourneyAverageRatio;
 };

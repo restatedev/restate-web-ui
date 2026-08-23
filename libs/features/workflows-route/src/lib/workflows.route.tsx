@@ -306,7 +306,10 @@ function Component() {
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <WorkflowsHeader />
-      <ContentPanel tabs={tabs}>
+      <ContentPanel
+        tabs={tabs}
+        className="sm:[&_[data-cp-slot=toolbar]]:min-w-[min(28rem,40vw)]"
+      >
         <ContentPanelToolbar className="justify-end gap-2 px-1 pb-1">
           <Form
             ref={formRef}

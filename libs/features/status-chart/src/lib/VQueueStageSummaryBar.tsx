@@ -16,7 +16,6 @@ import {
 import { BreakdownMode } from './BreakdownMode';
 import type { StatusEntry } from './useOrderedStatuses';
 import { useEffect, useState } from 'react';
-import { FacetCount } from './FacetCount';
 
 export type VQueueSummaryFocus = 'all' | 'not-completed' | 'completed';
 
@@ -33,7 +32,6 @@ const INBOX_PATTERN =
   'repeating-linear-gradient(-45deg, transparent 0 4px, rgba(255, 255, 255, 0.28) 4px 6px)';
 const INBOX_HIGHLIGHT =
   'linear-gradient(to bottom, rgba(255, 255, 255, 0.12), transparent 60%)';
-
 const styles = tv({
   slots: {
     container:
@@ -47,7 +45,6 @@ const styles = tv({
       'gap-0 rounded-xl border-[0.5px] border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.03)]',
     focusTab: 'items-baseline gap-1.5 px-3 py-1.5 font-sans text-xs',
     focusCount: 'font-medium text-gray-500 tabular-nums',
-    matches: 'text-3xs leading-none font-medium text-zinc-500',
     panels:
       'col-start-1 row-start-3 w-full overflow-visible md:col-span-2 md:row-start-2',
     panel: 'outline-none',
@@ -121,6 +118,14 @@ const runningFlowStyles = tv({
   base: 'pointer-events-none absolute inset-0 animate-runningFlow opacity-20 motion-reduce:animate-none',
 });
 
+const COMPLETED_LOADING_STAGE: VQueueStageSummaryEntry = {
+  name: 'finished',
+  label: 'Completed',
+  count: 1,
+  statuses: [],
+  breakdownIsPartial: true,
+};
+
 export function VQueueStageSummaryBar({
   byStage,
   byStatus,
@@ -136,10 +141,9 @@ export function VQueueStageSummaryBar({
   getHref,
   areStageCountsPartial,
   isBreakdownSampled,
-  countsReflectFilters,
-  totalsByStage,
   populationByStage,
-  countsAreContextual,
+  populationByStatus,
+  comparisonScope = 'all',
   isBreakdownLoading,
 }: {
   byStage: VQueueStageSummaryEntry[];
@@ -156,10 +160,9 @@ export function VQueueStageSummaryBar({
   getHref?: (name: string, statuses?: string[]) => string;
   areStageCountsPartial?: boolean;
   isBreakdownSampled: boolean;
-  countsReflectFilters?: boolean;
-  totalsByStage?: VQueueStageSummaryEntry[];
   populationByStage?: VQueueStageSummaryEntry[];
-  countsAreContextual?: boolean;
+  populationByStatus?: VQueueStatusSummaryEntry[];
+  comparisonScope?: 'all' | 'service';
   isBreakdownLoading?: (stageName: string) => boolean;
 }) {
   const [pendingFocus, setPendingFocus] = useState<VQueueSummaryFocus>();
@@ -168,9 +171,17 @@ export function VQueueStageSummaryBar({
     if (pendingFocus === focus) setPendingFocus(undefined);
   }, [focus, pendingFocus]);
 
-  const inboxStage = byStage.find((stage) => stage.name === 'inbox');
+  const matchingStageData = new Map(
+    byStage.map((stage) => [stage.name, stage]),
+  );
+  const matchingStatusData = new Map(
+    byStatus.map((status) => [status.name, status]),
+  );
+  const populationStages = populationByStage ?? byStage;
+  const populationStatuses = populationByStatus ?? byStatus;
+  const inboxStage = populationStages.find((stage) => stage.name === 'inbox');
   const inboxStatusNames = new Set(inboxStage?.statuses ?? []);
-  const inboxStatuses = byStatus.filter((status) =>
+  const inboxStatuses = populationStatuses.filter((status) =>
     status.statuses.some((name) => inboxStatusNames.has(name)),
   );
   const visibleInboxStatuses = inboxStatuses.filter(
@@ -179,9 +190,13 @@ export function VQueueStageSummaryBar({
   const inboxBreakdownSegmentNames = new Set(
     inboxStatuses.map((status) => status.name),
   );
-  const completedStage = byStage.find((stage) => stage.name === 'finished');
+  const completedStage = populationStages.find(
+    (stage) => stage.name === 'finished',
+  );
+  const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
+  const completedStageIsLoading = completedBreakdownLoading && !completedStage;
   const completedStatusNames = new Set(completedStage?.statuses ?? []);
-  const completedStatuses = byStatus.filter((status) =>
+  const completedStatuses = populationStatuses.filter((status) =>
     status.statuses.some((name) => completedStatusNames.has(name)),
   );
   const visibleCompletedStatuses = completedStatuses.filter(
@@ -190,36 +205,42 @@ export function VQueueStageSummaryBar({
   const completedBreakdownSegmentNames = new Set(
     completedStatuses.map((status) => status.name),
   );
-  const allStages = byStage.filter((stage) => stage.count > 0);
-  const notCompletedStages = byStage.filter(
-    (stage) => stage.name !== 'finished' && stage.count > 0,
+  const allStages = populationStages.filter((stage) => stage.count > 0);
+  const notCompletedStages = allStages.filter(
+    (stage) => stage.name !== 'finished',
   );
-  const totalStages = totalsByStage ?? byStage;
-  const notCompletedCount = totalStages
-    .filter((stage) => stage.name !== 'finished')
-    .reduce((sum, stage) => sum + stage.count, 0);
-  const completedCount =
-    totalStages.find((stage) => stage.name === 'finished')?.count ?? 0;
-  const inboxBreakdownLoading = isBreakdownLoading?.('inbox') ?? false;
-  const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
-  const hasInboxBreakdown = visibleInboxStatuses.length > 0;
-  const hasCompletedBreakdown = visibleCompletedStatuses.length > 0;
-  const segments =
+  const populationTotal = populationStages.reduce(
+    (sum, stage) => sum + stage.count,
+    0,
+  );
+  const populationCompletedCount =
+    populationStages.find((stage) => stage.name === 'finished')?.count ?? 0;
+  const populationNotCompletedCount =
+    populationTotal - populationCompletedCount;
+  // Completed histories can dwarf active work and make its distribution
+  // unreadable. The lifecycle focus therefore changes the rail population;
+  // it is not merely a highlight over the all-status distribution.
+  const focusedStages =
     selectedFocus === 'all'
-      ? allStages
+      ? completedStageIsLoading
+        ? [...allStages, COMPLETED_LOADING_STAGE]
+        : allStages
       : selectedFocus === 'not-completed'
         ? notCompletedStages
-        : completedBreakdownLoading || !hasCompletedBreakdown
-          ? completedStage
-            ? [completedStage]
-            : []
-          : visibleCompletedStatuses;
-  const focusedCount =
+        : completedStage && completedStage.count > 0
+          ? [completedStage]
+          : completedStageIsLoading
+            ? [COMPLETED_LOADING_STAGE]
+            : [];
+  const focusedPopulationTotal =
     selectedFocus === 'all'
-      ? notCompletedCount + completedCount
+      ? populationTotal
       : selectedFocus === 'not-completed'
-        ? notCompletedCount
-        : completedCount;
+        ? populationNotCompletedCount
+        : populationCompletedCount;
+  const inboxBreakdownLoading = isBreakdownLoading?.('inbox') ?? false;
+  const hasInboxBreakdown = visibleInboxStatuses.length > 0;
+  const hasCompletedBreakdown = visibleCompletedStatuses.length > 0;
   const {
     container,
     tabs,
@@ -228,75 +249,20 @@ export function VQueueStageSummaryBar({
     focusTabList,
     focusTab,
     focusCount,
-    matches,
     panels,
     panel,
     rail,
   } = styles({
     pulse: Boolean(isFetching),
   });
-  const populationTotal = notCompletedCount + completedCount;
-  const populationStages = populationByStage ?? byStage;
-  const populationCompletedCount =
-    populationStages.find((stage) => stage.name === 'finished')?.count ?? 0;
-  const populationNotCompletedCount = populationStages
-    .filter((stage) => stage.name !== 'finished')
-    .reduce((sum, stage) => sum + stage.count, 0);
-  const unfilteredPopulationTotal =
-    populationNotCompletedCount + populationCompletedCount;
-  const populationCounts = areStageCountsPartial
-    ? {
-        all: countsAreContextual ? (
-          <FacetCount
-            count={populationTotal}
-            total={unfilteredPopulationTotal}
-            approximate
-          />
-        ) : null,
-        notCompleted:
-          populationTotal > 0
-            ? formatApproxPercentage(notCompletedCount / populationTotal)
-            : null,
-        completed:
-          populationTotal > 0
-            ? formatApproxPercentage(completedCount / populationTotal)
-            : null,
-      }
-    : countsAreContextual
-      ? {
-          all: (
-            <FacetCount
-              count={populationTotal}
-              total={unfilteredPopulationTotal}
-            />
-          ),
-          notCompleted: (
-            <FacetCount
-              count={notCompletedCount}
-              total={populationNotCompletedCount}
-            />
-          ),
-          completed: (
-            <FacetCount
-              count={completedCount}
-              total={populationCompletedCount}
-            />
-          ),
-        }
-      : {
-          all: formatNumber(populationTotal, true),
-          notCompleted: formatNumber(notCompletedCount, true),
-          completed: formatNumber(completedCount, true),
-        };
-  const matchesIndicator =
-    countsReflectFilters && !countsAreContextual ? (
-      <span
-        className={matches()}
-        title="Count reflects the current invocation filters"
-      >
-        matches
-      </span>
-    ) : null;
+  const percentageScope = `of ${formatNumber(focusedPopulationTotal, true)}`;
+  const focusedPopulationDescription = `${
+    selectedFocus === 'all' ? 'all' : selectedFocus
+  } invocations ${
+    comparisonScope === 'service'
+      ? 'in the selected service'
+      : 'across all services'
+  }`;
 
   if (isLoading) {
     return (
@@ -322,6 +288,10 @@ export function VQueueStageSummaryBar({
     const label = segment.label ?? STATUS_LABELS[segment.name] ?? segment.name;
     const isInboxStatus = inboxBreakdownSegmentNames.has(segment.name);
     const isCompletedStatus = completedBreakdownSegmentNames.has(segment.name);
+    const matchingCount =
+      matchingStatusData.get(segment.name)?.count ??
+      matchingStageData.get(segment.name)?.count ??
+      0;
     const dimmed = isDimmed?.(segment.name, segment.statuses) ?? false;
     const segmentIsLoading =
       (selectedFocus !== 'completed' &&
@@ -335,12 +305,21 @@ export function VQueueStageSummaryBar({
       : isInboxStatus
         ? isBreakdownSampled || inboxStage?.breakdownIsPartial
         : areStageCountsPartial;
-    const percentage = approximate
-      ? formatApproxPercentage(segment.count / focusedCount)
-      : formatPercentage(segment.count / focusedCount);
+    const segmentPopulationCount = focusedPopulationTotal;
+    const percentage =
+      segmentPopulationCount > 0
+        ? approximate
+          ? formatApproxPercentage(matchingCount / segmentPopulationCount)
+          : formatPercentage(matchingCount / segmentPopulationCount)
+        : approximate
+          ? '~0%'
+          : '0%';
     const ariaLabel = approximate
-      ? `${label}: ${percentage}`
-      : `${label}: ${segment.count} (${percentage})`;
+      ? `${label}: ${percentage} of ${formatNumber(segmentPopulationCount, true)} ${focusedPopulationDescription}`
+      : `${label}: ${matchingCount} of ${segmentPopulationCount} (${percentage})`;
+    const segmentAriaLabel = segmentIsLoading
+      ? `${label} distribution loading`
+      : ariaLabel;
     const backgroundGradient = `linear-gradient(to bottom, color-mix(in srgb, white 22%, ${style.fillLight}), ${style.fillLight})`;
     const isGrouped = groupPosition !== 'standalone';
 
@@ -369,14 +348,24 @@ export function VQueueStageSummaryBar({
               <span className="mr-2 ml-2 text-base! text-gray-300!">
                 {label}
               </span>
-              {approximate ? (
-                <span className="text-base! font-semibold text-gray-50!">
-                  {percentage}
+              {segmentIsLoading ? (
+                <span className="text-sm! font-medium text-gray-300!">
+                  Loading
                 </span>
+              ) : approximate ? (
+                <>
+                  <span className="text-base! font-semibold text-gray-50!">
+                    {percentage}
+                  </span>
+                  <span className="ml-1 text-sm! font-medium text-gray-300!">
+                    {percentageScope}
+                  </span>
+                </>
               ) : (
                 <>
                   <span className="text-base! font-semibold text-gray-50!">
-                    {formatNumber(segment.count)}
+                    {formatNumber(matchingCount)} /{' '}
+                    {formatNumber(segmentPopulationCount)}
                   </span>
                   <span className="ml-1 text-base! font-medium text-gray-200!">
                     ({percentage})
@@ -407,7 +396,9 @@ export function VQueueStageSummaryBar({
                   ? 0
                   : undefined,
             }}
-            aria-label={getHref ? undefined : ariaLabel}
+            aria-label={
+              getHref && !segmentIsLoading ? undefined : segmentAriaLabel
+            }
           >
             {segment.name === 'running' && !dimmed && (
               <span
@@ -419,12 +410,12 @@ export function VQueueStageSummaryBar({
                 aria-hidden
               />
             )}
-            {getHref && (
+            {getHref && !segmentIsLoading && (
               <Link
                 href={getHref(segment.name, segment.statuses)}
                 preserveQueryParams={false}
                 variant="secondary"
-                aria-label={ariaLabel}
+                aria-label={segmentAriaLabel}
                 className="absolute inset-0 block rounded-[inherit] no-underline outline-none"
               />
             )}
@@ -468,32 +459,24 @@ export function VQueueStageSummaryBar({
     !inboxBreakdownLoading &&
     hasInboxBreakdown;
   const showCompletedGroup =
-    selectedFocus === 'all' &&
+    selectedFocus !== 'not-completed' &&
     !completedBreakdownLoading &&
     hasCompletedBreakdown;
-  const focusedStages =
-    selectedFocus === 'all' ? allStages : notCompletedStages;
-  const focusedStageLoading =
-    selectedFocus === 'completed' &&
-    completedBreakdownLoading &&
-    !completedStage;
 
   const summaryRail = (
     <div
       className={rail()}
       aria-label={
         selectedFocus === 'all'
-          ? 'All invocation stages'
+          ? 'All-status invocation distribution with current status highlighted'
           : selectedFocus === 'not-completed'
-            ? 'Not-completed invocation stages'
-            : 'Completed invocation outcomes'
+            ? 'Not-completed invocation distribution with current status highlighted'
+            : 'Completed invocation outcome distribution with current status highlighted'
       }
     >
-      {focusedStageLoading ? (
-        <div className={skeletonStyles()} aria-hidden />
-      ) : focusedCount === 0 ? (
+      {focusedPopulationTotal === 0 && !completedStageIsLoading ? (
         <div className={emptyStyles()} />
-      ) : showInboxGroup || showCompletedGroup ? (
+      ) : (
         focusedStages.map((stage) =>
           stage.name === 'inbox' && showInboxGroup
             ? renderSegmentGroup(
@@ -509,11 +492,25 @@ export function VQueueStageSummaryBar({
                 )
               : renderSegment(stage),
         )
-      ) : (
-        segments.map((segment) => renderSegment(segment))
       )}
     </div>
   );
+
+  const renderFocusCount = (
+    label: string,
+    count: number,
+    state: 'known' | 'loading' | 'unknown',
+  ) =>
+    state === 'loading' ? (
+      <span
+        className={focusCount({
+          class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
+        })}
+        aria-label={`${label} count loading`}
+      />
+    ) : state === 'unknown' ? null : (
+      <span className={focusCount()}>{formatNumber(count, true)}</span>
+    );
 
   return (
     <div className={container({ class: className })}>
@@ -538,29 +535,38 @@ export function VQueueStageSummaryBar({
         <div className={focusRow()}>
           <TabList aria-label="Invocation breakdown" className={focusTabList()}>
             <Tab id="all" className={focusTab()}>
-              <span>All</span>
-              {populationCounts.all && (
-                <span className={focusCount()}>{populationCounts.all}</span>
+              <span>All statuses</span>
+              {renderFocusCount(
+                'All-status',
+                populationTotal,
+                completedStageIsLoading
+                  ? 'loading'
+                  : areStageCountsPartial && populationTotal === 0
+                    ? 'unknown'
+                    : 'known',
               )}
-              {selectedFocus === 'all' ? matchesIndicator : null}
             </Tab>
             <Tab id="not-completed" className={focusTab()}>
               <span>Not completed</span>
-              {populationCounts.notCompleted && (
-                <span className={focusCount()}>
-                  {populationCounts.notCompleted}
-                </span>
+              {renderFocusCount(
+                'Not-completed',
+                populationNotCompletedCount,
+                areStageCountsPartial && populationNotCompletedCount === 0
+                  ? 'unknown'
+                  : 'known',
               )}
-              {selectedFocus === 'not-completed' ? matchesIndicator : null}
             </Tab>
             <Tab id="completed" className={focusTab()}>
               <span>Completed</span>
-              {populationCounts.completed && (
-                <span className={focusCount()}>
-                  {populationCounts.completed}
-                </span>
+              {renderFocusCount(
+                'Completed',
+                populationCompletedCount,
+                completedStageIsLoading
+                  ? 'loading'
+                  : areStageCountsPartial && populationCompletedCount === 0
+                    ? 'unknown'
+                    : 'known',
               )}
-              {selectedFocus === 'completed' ? matchesIndicator : null}
             </Tab>
           </TabList>
         </div>

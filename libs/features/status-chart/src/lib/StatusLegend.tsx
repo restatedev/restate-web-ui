@@ -347,7 +347,6 @@ export function StatusLegend({
               <StageBreakdownPopoverContent
                 label={breakdownRow.label}
                 count={breakdownTotal}
-                populationTotal={total}
                 items={breakdown.items}
                 isLoading={breakdown.isLoading}
                 isError={breakdown.isError}

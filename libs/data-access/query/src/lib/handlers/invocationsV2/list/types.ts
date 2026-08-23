@@ -19,6 +19,7 @@ export type InvocationCandidateRow = {
 export type InvocationCandidate = InvocationCandidateRow & {
   requiresVqueueEntry?: boolean;
   refinesStatusFromVqueue?: boolean;
+  matchedStatusAtSelection?: boolean;
 };
 
 export type InvocationStatusSelection =

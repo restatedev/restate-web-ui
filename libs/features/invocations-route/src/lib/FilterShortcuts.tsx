@@ -86,7 +86,7 @@ const makeShortcuts: (
     },
     {
       id: 'stuck',
-      label: 'Not processing',
+      label: 'Held up',
       columns: defaultColumns,
       sort: { field: 'created_at', order: 'ASC' },
       filters: [

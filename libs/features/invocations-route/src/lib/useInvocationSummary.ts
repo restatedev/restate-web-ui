@@ -209,21 +209,7 @@ export function useInvocationSummary({
     matchingCount,
     focus: getFocusFromStatusFilter(statusFilter),
     statusFilter,
-    stageCountsReflectFilters: (appliedFilters ?? []).length > 0,
-    populationByStage: facets.populationByStage.map((bucket) => ({
-      name: bucket.key,
-      label: bucket.label,
-      count: bucket.count,
-      statuses: bucket.statuses,
-      breakdownIsPartial: bucket.breakdownIsPartial,
-    })),
-    populationByStatus: facets.populationByStatus.map((bucket) => ({
-      name: bucket.key,
-      label: bucket.label,
-      count: bucket.count,
-      statuses: bucket.statuses,
-    })),
-    countsAreContextual: facets.hasServiceFilter,
+    hasServiceScope: facets.hasServiceFilter,
     breakdownIsSampled: countMode === 'estimate',
     canSampleBreakdown: true,
     byStage: facets.byStage.map((bucket) => ({
