@@ -525,6 +525,8 @@ export function useInvocationJourneyModel({
   const pendingAttempt = block
     ? {
         reason: block.reason,
+        resource: data?.status.blockedResource,
+        blockedDuration: block.blockedDuration,
         duration: block.duration,
         ratio: block.ratio,
       }
