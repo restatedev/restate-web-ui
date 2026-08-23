@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-23 virtual-objects-route spec typecheck fixed: Its spec config overrides `compilerOptions.types`, so it must explicitly include `../../../@types/global-env.d.ts` just like `invocation-route` and its own lib config. This resolves all transitive `globalThis.batchOperationPromises` TS7017 errors; verify with the exact `pnpm tsc -p libs/features/virtual-objects-route/tsconfig.spec.json` command.
+
 - 2026-08-23 user correction on object-lock hook responsibility: A custom hook must not return rendered `objectTarget`/`lockHolderTarget` nodes. Keep `useInvocationObjectLock` data-only (`identity`, `lockHolder`, `onOpenChange`) and render `InvocationObjectLockTarget` / `InvocationObjectLockHolderTarget` explicitly at the component boundary.
 
 - 2026-08-23 user correction on Inbox blocker composition: Do not make invocation-route replace the whole `VQueueInboxPopoverContent` head verdict through `renderHeadVerdict`. The shared component owns Blocked/Scheduled/Ready rendering; inject only `headBlockedDetails` (typed object target, holder target, and open handler) to cross the dependency boundary.
