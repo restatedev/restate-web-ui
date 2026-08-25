@@ -1,5 +1,19 @@
 # Napkin
 
+- 2026-08-25 VQ batch unfinished source selection: With only the implicit unfinished filter, the VQ planner still prefers the full `sys_vqueues` plan, so the new `sys_invocation_status` coverage rule is not selected. It matters when another filter is unavailable on `sys_vqueues`: service metadata can switch from meta+VQueues to invocation status, while handler filters can switch from best-effort status plus entry-status refinement to exact invocation status. Narrow VQ-derived status selections still refine.
+
+- 2026-08-25 self on batch filter normalization: A `STRING` filter's value is optional in the generated union even after narrowing its type. Remove `undefined` before building a `string[]`; focused runtime tests do not replace strict library typechecking.
+
+- 2026-08-25 batch unfinished selection final: Keep the action's umbrella `completed` filter at its source and translate it only at `getInvocationIds`, where the V2 selector requires terminal UI statuses. The complete non-terminal selection is exactly resolvable from `sys_invocation_status` and must collapse to `status != 'completed'`, with no VQueue status refinement. Narrow status subsets still require refinement.
+
+- 2026-08-25 self on batch-kill fix scope: I spread a local ID-selection compatibility issue across the shared API types, dialog, provider, and deduplication tests. Keep this compatibility at the batch query boundary and make only the planner optimization general.
+
+- 2026-08-25 self on ad-hoc TypeScript probes: `pnpm exec tsx` is unavailable in this workspace. Use the configured Vitest project or derive focused SQL from the query-builder functions and their snapshots instead of assuming a TSX runner exists.
+
+- 2026-08-25 filtered batch-kill paused-path audit: The dialog preview expands the implicit legacy `status NOT_IN ['completed']` to the four terminal V2 statuses, but the confirmed `/query/invocations/kill` request sent the unconverted filter to `getInvocationIds`; V2 validation rejected it before issuing an ID-selection query or kill request.
+
+- 2026-08-25 self on invocation V2 lookup: I guessed `handlers/invocationsV2.ts`, but the implementation is a directory with `selectInvocationCandidatesV2.ts`. Search the confirmed handler directory before naming the concrete source file.
+
 - 2026-08-23 virtual-objects-route spec typecheck fixed: Its spec config overrides `compilerOptions.types`, so it must explicitly include `../../../@types/global-env.d.ts` just like `invocation-route` and its own lib config. This resolves all transitive `globalThis.batchOperationPromises` TS7017 errors; verify with the exact `pnpm tsc -p libs/features/virtual-objects-route/tsconfig.spec.json` command.
 
 - 2026-08-23 user correction on object-lock hook responsibility: A custom hook must not return rendered `objectTarget`/`lockHolderTarget` nodes. Keep `useInvocationObjectLock` data-only (`identity`, `lockHolder`, `onOpenChange`) and render `InvocationObjectLockTarget` / `InvocationObjectLockHolderTarget` explicitly at the component boundary.

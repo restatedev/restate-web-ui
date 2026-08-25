@@ -94,6 +94,16 @@ export function invocationStatusPredicate(
   statuses: readonly InvocationStatus[],
   alias: string,
 ): string {
+  const selectedStatuses = new Set(statuses);
+  const nonTerminalStatuses = INVOCATION_STATUSES.filter(
+    (status) => !TERMINAL_INVOCATION_STATUSES.includes(status),
+  );
+  if (
+    selectedStatuses.size === nonTerminalStatuses.length &&
+    nonTerminalStatuses.every((status) => selectedStatuses.has(status))
+  ) {
+    return `${alias}.status != 'completed'`;
+  }
   const clauses = statuses.map((status) => durableStatusClause(status, alias));
   return clauses.length === 1
     ? (clauses[0] ?? 'FALSE')
@@ -145,6 +155,9 @@ function rawStatusPrefilter(
         INVOCATION_STATUS_DEFINITIONS[status].sysInvocationStatus === rawStatus,
     ).every((status) => selected.has(status)),
   );
+  if (excludedRawStatuses.length === 1) {
+    return `${alias}.status != '${excludedRawStatuses[0]}'`;
+  }
   return excludedRawStatuses.length
     ? `${alias}.status NOT IN (${sqlStringList(excludedRawStatuses)})`
     : undefined;
@@ -232,6 +245,14 @@ export function invocationStatusClauses(
       return clause ? [clause] : [];
     }
     const raw = rawStatusPrefilter(filter as FilterItem, invocationStatusAlias);
+    const values = new Set(statusValues(filter as FilterItem));
+    if (
+      raw &&
+      values.size === TERMINAL_INVOCATION_STATUSES.length &&
+      TERMINAL_INVOCATION_STATUSES.every((status) => values.has(status))
+    ) {
+      return [raw];
+    }
     return [raw, statusFilterClause(filter as FilterItem, source)].filter(
       (clause): clause is string => Boolean(clause),
     );
