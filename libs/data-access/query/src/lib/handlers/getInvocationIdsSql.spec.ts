@@ -3,6 +3,46 @@ import { getInvocationIds } from './getInvocationIds';
 import type { QueryContext } from './shared';
 
 describe('getInvocationIds SQL', () => {
+  it.each([new Set<string>(), new Set(['vqueues'])])(
+    'selects unfinished invocations without status refinement',
+    async (features) => {
+      const sql: string[] = [];
+      const context = {
+        restateVersion: '1.7.2',
+        features,
+        query(statement: string) {
+          sql.push(statement.trim());
+          return Promise.resolve({ rows: [] });
+        },
+      } as unknown as QueryContext;
+
+      await getInvocationIds.call(context, {
+        filters: [
+          {
+            field: 'status',
+            type: 'STRING_LIST',
+            operation: 'NOT_IN',
+            value: ['completed'],
+          },
+          {
+            field: 'target_handler_name',
+            type: 'STRING',
+            operation: 'EQUALS',
+            value: 'run',
+          },
+        ],
+        pageSize: 1000,
+      });
+
+      expect(sql).toHaveLength(1);
+      expect(sql[0]).toContain('FROM sys_invocation_status ss');
+      expect(sql[0]).toContain("ss.status != 'completed'");
+      expect(sql[0]).toContain("ss.target_handler_name = 'run'");
+      expect(sql[0]).not.toContain('completion_');
+      expect(sql[0]).not.toContain('sys_vqueue_entry_status');
+    },
+  );
+
   it('selects the batch page with the complete V2 candidate query', async () => {
     const sql: string[] = [];
     const context = {

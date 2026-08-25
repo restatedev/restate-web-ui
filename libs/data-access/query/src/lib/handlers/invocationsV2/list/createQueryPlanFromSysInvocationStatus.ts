@@ -38,20 +38,26 @@ export function createQueryPlanFromSysInvocationStatus(
     return { source: 'sys_invocation_status', coverage: 'none' };
   }
 
-  const statusesResolvedByInvocationStatus = statuses?.filter(
-    (status) => !STATUSES_RESOLVED_FROM_VQUEUE.has(status),
-  );
-  const includesStatusResolvedFromVqueue =
-    statuses?.some((status) => STATUSES_RESOLVED_FROM_VQUEUE.has(status)) ??
-    false;
+  const selectedStatuses = statuses ? new Set(statuses) : undefined;
+  const requiresVqueueStatusResolution =
+    selectedStatuses !== undefined &&
+    [...STATUSES_RESOLVED_FROM_VQUEUE].some((status) =>
+      selectedStatuses.has(status),
+    ) &&
+    ![...STATUSES_RESOLVED_FROM_VQUEUE].every((status) =>
+      selectedStatuses.has(status),
+    );
+  const statusesResolvedByInvocationStatus = requiresVqueueStatusResolution
+    ? statuses?.filter((status) => !STATUSES_RESOLVED_FROM_VQUEUE.has(status))
+    : statuses;
   if (
-    includesStatusResolvedFromVqueue &&
+    requiresVqueueStatusResolution &&
     statusesResolvedByInvocationStatus?.length === 0
   ) {
     return { source: 'sys_invocation_status', coverage: 'none' };
   }
 
-  if (includesStatusResolvedFromVqueue) {
+  if (requiresVqueueStatusResolution) {
     return {
       source: 'sys_invocation_status',
       coverage: 'partial',

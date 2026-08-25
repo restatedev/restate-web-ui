@@ -1,6 +1,7 @@
-import type {
-  FilterItem,
-  components,
+import {
+  TERMINAL_INVOCATION_STATUSES,
+  type components,
+  type FilterItem,
 } from '@restate/data-access/admin-api-spec';
 import { type QueryContext } from './shared';
 import { selectInvocationCandidatesV2 } from './invocationsV2';
@@ -12,6 +13,32 @@ type GetInvocationIdsOptions = {
   pageSize?: number;
   createdAfter?: string;
 };
+
+function toInvocationV2Filter(filter: FilterItem): FilterItem {
+  if (filter.field !== 'status') return filter;
+  const values =
+    filter.type === 'STRING_LIST'
+      ? filter.value
+      : filter.type === 'STRING' && filter.value !== undefined
+        ? [filter.value]
+        : [];
+  if (!values.includes('completed')) return filter;
+  const operation =
+    filter.operation === 'EQUALS' || filter.operation === 'IN'
+      ? 'IN'
+      : filter.operation === 'NOT_EQUALS' || filter.operation === 'NOT_IN'
+        ? 'NOT_IN'
+        : undefined;
+  if (!operation) return filter;
+  return {
+    ...filter,
+    type: 'STRING_LIST',
+    operation,
+    value: values.flatMap((value) =>
+      value === 'completed' ? TERMINAL_INVOCATION_STATUSES : value,
+    ),
+  };
+}
 
 export async function getInvocationIds(
   this: QueryContext,
@@ -32,7 +59,10 @@ export async function getInvocationIds(
       ]
     : [];
 
-  const allFilters = [...filters, ...createdAfterFilter];
+  const allFilters = [
+    ...filters.map(toInvocationV2Filter),
+    ...createdAfterFilter,
+  ];
   if (pageSize <= 0) {
     return { invocationIds: [], hasMore: false, lastCreatedAt: undefined };
   }
