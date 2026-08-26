@@ -405,15 +405,15 @@ function LazyValue({
   const { EncodingWaterMark } = useRestateContext();
   const outputCodecOptions = useTargetInvocationCodecOptions('Output');
   const { hideOutput } = useJournalEntriesContext();
+  const isHiddenPendingEntry = hideWhenEntryIsPending && entry?.isPending;
   const { data, failure, isPending, error, isLoaded, size, onOpen } =
-    useLazyPayload(invocationId, entry, 'value');
+    useLazyPayload(
+      invocationId,
+      isHiddenPendingEntry ? undefined : entry,
+      'value',
+    );
 
-  if (
-    !entry ||
-    !invocationId ||
-    hideOutput ||
-    (hideWhenEntryIsPending && entry.isPending)
-  ) {
+  if (!entry || !invocationId || hideOutput || isHiddenPendingEntry) {
     return null;
   }
 
