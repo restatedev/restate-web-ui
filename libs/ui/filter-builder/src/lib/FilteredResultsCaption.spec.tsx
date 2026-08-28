@@ -21,4 +21,21 @@ describe('FilteredResultsCaption', () => {
 
     expect(onClear).toHaveBeenCalledOnce();
   });
+
+  it('accepts layout overrides when embedded in a table toolbar', () => {
+    render(
+      <FilteredResultsCaption
+        noun="virtual object instances"
+        className="m-0 h-9 w-full rounded-xl"
+        onClear={vi.fn()}
+      />,
+    );
+
+    const caption = screen.getByText('Filtered results').parentElement;
+    expect(caption?.className).toContain('m-0');
+    expect(caption?.className).toContain('h-9');
+    expect(caption?.className).toContain('w-full');
+    expect(caption?.className).toContain('rounded-xl');
+    expect(caption?.className).not.toContain('mt-11');
+  });
 });

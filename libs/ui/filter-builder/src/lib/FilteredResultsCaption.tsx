@@ -1,17 +1,24 @@
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
+import { tv } from '@restate/util/styles';
+
+const filteredResultsCaptionStyles = tv({
+  base: 'mx-2 mt-11 -mb-8 flex h-8 min-w-0 items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50 px-2 text-xs',
+});
 
 export interface FilteredResultsCaptionProps {
   noun: string;
   onClear: () => void;
+  className?: string;
 }
 
 export function FilteredResultsCaption({
   noun,
   onClear,
+  className,
 }: FilteredResultsCaptionProps) {
   return (
-    <div className="mx-2 mt-11 -mb-8 flex h-8 min-w-0 items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50 px-2 text-xs">
+    <div className={filteredResultsCaptionStyles({ className })}>
       <Icon
         name={IconName.ListFilter}
         className="h-3.5 w-3.5 shrink-0 text-blue-500"

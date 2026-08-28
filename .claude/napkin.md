@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-08-28 self on stacked Virtual Object rails: Increasing the toolbar wrapper from 36px to 76px while also increasing its negative bottom margin canceled the added flow space and let the first row overlap the second rail. Keep the original `-mb-8` tuck when stacking two 36px rails; the extra wrapper height must move table content down.
+
+- 2026-08-28 Virtual Object banner order (user): When filters are active, render the filtered-results rail above the quick-open rail. Give both rails the same 36px height, 16px outer horizontal margin, rounded-xl shape, and full available width.
+
 - 2026-08-28 Virtual Object quick-open input hit area (user): The chip root can be wider than its single `ChipSegment`, leaving a dead area that does not focus the input. Make the direct segment flex across the chip, remove its right padding, and put equivalent right padding on the full-width input so the visible white region remains clickable.
 
 - 2026-08-28 Virtual Object quick-open action placement (user): Do not place a text “Open” action at the far edge of the banner. Group the action with the target controls as a compact circular arrow button immediately after the Key chip, with an “Open instance” accessible label and tooltip.

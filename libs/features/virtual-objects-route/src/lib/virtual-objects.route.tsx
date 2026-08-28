@@ -430,6 +430,7 @@ function Component() {
   const filteredResultsCaption = hasFilters ? (
     <FilteredResultsCaption
       noun="virtual object instances"
+      className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
       onClear={() =>
         setSearchParams(writeVirtualObjectFilters(searchParams, []), {
           preventScrollReset: true,
@@ -524,23 +525,29 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Virtual Object instances"
-                caption={filteredResultsCaption}
                 columns={visibleColumns}
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
                 toolbar={
-                  <VirtualObjectQuickOpen
-                    draft={openVirtualObjectDraft}
-                    disabled={!selectedService}
-                    hasScopedVirtualObjects={hasScopedVirtualObjects}
-                    onChange={setOpenVirtualObjectDraft}
-                    onOpen={confirmOpenVirtualObject}
-                    service={selectedService}
-                  />
+                  <div className="flex h-full w-full min-w-0 flex-col gap-1">
+                    {filteredResultsCaption}
+                    <div className="flex h-9 w-full shrink-0 items-center rounded-xl bg-zinc-200/45 px-2.5 text-xs supports-[-moz-appearance:none]:bg-zinc-200/65">
+                      <VirtualObjectQuickOpen
+                        draft={openVirtualObjectDraft}
+                        disabled={!selectedService}
+                        hasScopedVirtualObjects={hasScopedVirtualObjects}
+                        onChange={setOpenVirtualObjectDraft}
+                        onOpen={confirmOpenVirtualObject}
+                        service={selectedService}
+                      />
+                    </div>
+                  </div>
                 }
-                toolbarWrapperClassName="mx-4 h-9 -mb-8"
-                toolbarClassName="rounded-xl border-0 bg-zinc-200/45 px-2.5 text-xs shadow-none supports-[-moz-appearance:none]:bg-zinc-200/65"
+                toolbarWrapperClassName={
+                  hasFilters ? 'mx-4 h-[4.75rem] -mb-8' : 'mx-4 h-9 -mb-8'
+                }
+                toolbarClassName="border-0 bg-transparent p-0 shadow-none backdrop-blur-none supports-[-moz-appearance:none]:bg-transparent"
                 bodyDependencies={[
                   selectedService,
                   searchString,
