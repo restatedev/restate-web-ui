@@ -1,5 +1,11 @@
 # Napkin
 
+- 2026-08-28 Shared filter focus treatment (user): Filter multi-comboboxes should show one rounded focus ring on the whole search control, not a second rectangular ring on the raw input. Reset the input with important zero-border, zero-shadow, zero-ring, and no-outline utilities so keyboard `Escape` → `ArrowDown` cannot reintroduce a browser/global input ring; retain the parent `has-[input[data-focused=true]]` border and ring.
+
+- 2026-08-28 self on search-field inspection: I piped `rg` into `sed` despite the repo note against inspection pipelines. Use a bounded `rg` call directly and let the tool output limit constrain results.
+
+- 2026-08-28 Multi-combobox restored focus (user): A shared filter search must show its dropdown whenever focus returns to the input. Do not temporarily change `menuTrigger` to `input` before programmatically focusing it; the focus event is then consumed while opening-on-focus is disabled, leaving a focused field with `aria-expanded=false`. Keep `menuTrigger="focus"` stable.
+
 - 2026-08-28 Invocation quick-open stacking (user): The partial-results rail belongs above `Go to invocation`, matching the filtered-results pattern. A non-sticky quick-open wrapper must use `relative top-auto`, not `static`, so its `z-30` applies without activating the base sticky `top` offset and the later table element cannot intercept clicks over the input.
 
 - 2026-08-28 self on PanelTableQuickOpen shadow cleanup: I removed the `tv` import after deleting one style declaration without checking the rest of the file, but `quickOpenToolbarStyles` still uses it. Search the whole file for an imported symbol before removing the import.
@@ -3973,3 +3979,4 @@
 - 2026-08-28 self on Nx verification: Running two `NX_DAEMON=false` Nx checks concurrently can leave both waiting for project-graph construction in this workspace. Run Nx verification sequentially; if graph construction is still blocked by long-running dev processes, invoke TypeScript, Vitest, and ESLint directly with the repository's Node 24 runtime.
 - 2026-08-28 self on State hook tracing: I used shell pipelines while narrowing route and query matches despite the standing command-hygiene rule. Keep each search and source read independently scoped instead.
 - 2026-08-28 self on Virtual Object query verification: I again piped the final diff through `sed`. Use the tool output limit or a separately scoped diff command instead of shell pipelines.
+- 2026-08-28 self on shared combobox verification: I ignored the existing Nx note and launched test, typecheck, and lint concurrently; plugin-worker graph construction failed and the remaining checks stalled. Run this workspace's Nx checks sequentially.
