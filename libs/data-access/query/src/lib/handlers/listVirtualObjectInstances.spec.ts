@@ -3,10 +3,14 @@ import { listVirtualObjectInstances } from './listVirtualObjectInstances';
 import type { QueryContext } from './shared';
 
 function createContext(
-  responder: (sql: string) => Record<string, unknown>[],
+  responder: (
+    sql: string,
+  ) => Record<string, unknown>[] | Promise<Record<string, unknown>[]>,
   features = new Set(['vqueues', 'scoped_virtual_objects']),
 ) {
-  const query = vi.fn(async (sql: string) => ({ rows: responder(sql) }));
+  const query = vi.fn(async (sql: string) => ({
+    rows: await responder(sql),
+  }));
   const context = {
     query,
     features,
@@ -15,6 +19,14 @@ function createContext(
     restateVersion: '1.7.0',
   } as unknown as QueryContext;
   return { context, query };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
 }
 
 describe('listVirtualObjectInstances', () => {
@@ -51,6 +63,20 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_key = 'Customer''s'
       AND scope = 'Tenant-A'
     LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+      AND lock_name = 'Counter/Customer''s'
+      AND scope = 'Tenant-A'
+    LIMIT 51`,
     ]);
   });
 
@@ -79,6 +105,20 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_ty = 'virtual_object'
       AND status <> 'completed'
       AND target_service_key ILIKE '%Customer''s%'
+    LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+      AND SUBSTR(lock_name, CHAR_LENGTH('Counter/') + 1) ILIKE '%Customer''s%'
     LIMIT 51`,
     ]);
   });
@@ -119,6 +159,20 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_ty = 'virtual_object'
       AND status <> 'completed'
       AND target_service_key = 'hot-object-0'
+      AND scope IS NULL
+    LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+      AND lock_name = 'Counter/hot-object-0'
       AND scope IS NULL
     LIMIT 51`,
       `SELECT
@@ -226,6 +280,21 @@ describe('listVirtualObjectInstances', () => {
       AND status <> 'completed'
       AND (target_service_key LIKE '%o''hare\\%\\_!\\\\path%' OR scope LIKE '%o''hare\\%\\_!\\\\path%')
     LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter''s'
+      AND lock_name IS NOT NULL
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+      AND (SUBSTR(lock_name, CHAR_LENGTH('Counter''s/') + 1) LIKE '%o''hare\\%\\_!\\\\path%' OR scope LIKE '%o''hare\\%\\_!\\\\path%')
+    LIMIT 51`,
       `SELECT
       lock_name,
       scope,
@@ -272,6 +341,82 @@ describe('listVirtualObjectInstances', () => {
     });
   });
 
+  it('uses vqueue identities when that query finishes first', async () => {
+    const invocationRows = deferred<Record<string, unknown>[]>();
+    const { context, query } = createContext((sql) => {
+      if (sql.includes('FROM sys_invocation_status')) {
+        return invocationRows.promise;
+      }
+      if (
+        sql.includes('SELECT DISTINCT') &&
+        sql.includes('FROM sys_vqueue_meta')
+      ) {
+        return [{ partition_key: '5', lock_name: 'Counter/vqueue-first' }];
+      }
+      if (sql.includes('SUM(num_inbox) AS backlog')) {
+        return [{ lock_name: 'Counter/vqueue-first', backlog: 2 }];
+      }
+      return [];
+    });
+
+    const response = await listVirtualObjectInstances.call(context, 'Counter');
+    invocationRows.resolve([
+      { partition_key: '7', object_key: 'invocation-later' },
+    ]);
+
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      target_service_key AS object_key,
+      scope
+    FROM sys_invocation_status
+    WHERE target_service_name = 'Counter'
+      AND target_service_ty = 'virtual_object'
+      AND target_service_key IS NOT NULL
+      AND status <> 'completed'
+    LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND lock_name IS NOT NULL
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+    LIMIT 51`,
+      `SELECT
+      lock_name,
+      scope,
+      SUM(num_inbox) AS backlog
+    FROM sys_vqueue_meta
+    WHERE partition_key IN (5)
+      AND service_name = 'Counter'
+      AND (
+        (lock_name = 'Counter/vqueue-first' AND scope IS NULL)
+      )
+    GROUP BY lock_name, scope`,
+      `SELECT
+      lock_name,
+      scope,
+      acquired_by,
+      acquired_at
+    FROM sys_locks
+    WHERE acquired_by IS NOT NULL
+      AND (
+        (lock_name = 'Counter/vqueue-first' AND scope IS NULL)
+      )`,
+    ]);
+    expect(await response.json()).toEqual({
+      rows: [{ key: 'vqueue-first', backlog: 2 }],
+      truncated: false,
+    });
+  });
+
   it('preserves partition keys above JavaScript integer precision', async () => {
     const exactPartitionKey = '14239471964036668491';
     const { context, query } = createContext((sql) => {
@@ -301,6 +446,20 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
       AND status <> 'completed'
+    LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND lock_name IS NOT NULL
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
     LIMIT 51`,
       `SELECT
       lock_name,
@@ -354,6 +513,20 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_key IS NOT NULL
       AND status <> 'completed'
     LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND lock_name IS NOT NULL
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+    LIMIT 51`,
     ]);
   });
 
@@ -385,6 +558,20 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_ty = 'virtual_object'
       AND target_service_key IS NOT NULL
       AND status <> 'completed'
+    LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND lock_name IS NOT NULL
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
     LIMIT 51`,
       `SELECT
       lock_name,
@@ -508,6 +695,20 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_key IS NOT NULL
       AND status <> 'completed'
     LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND lock_name IS NOT NULL
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+    LIMIT 51`,
       `SELECT
       lock_name,
       scope,
@@ -592,6 +793,19 @@ describe('listVirtualObjectInstances', () => {
       AND target_service_key IS NOT NULL
       AND status <> 'completed'
       AND (target_service_key LIKE '%customer%' OR scope LIKE '%customer%')
+    LIMIT 51`,
+      `SELECT DISTINCT
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND lock_name IS NOT NULL
+      AND (
+        num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+      AND (SUBSTR(lock_name, CHAR_LENGTH('Counter/') + 1) LIKE '%customer%' OR scope LIKE '%customer%')
     LIMIT 51`,
       `SELECT
       lock_name,

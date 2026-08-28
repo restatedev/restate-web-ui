@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-28 Virtual Object identity discovery race (user): Re-enable the bounded `sys_vqueue_meta` identity query on VQueue servers and race it against `sys_invocation_status`; use only the first completed identity result instead of merging both. Keep state discovery disabled. `Promise.race` does not cancel the losing SQL request, so both still start.
+
 - 2026-08-28 Overview2 table refresh (user): Add the compact Limits-style refresh icon button after Deployment actions in the overview table toolbar. Reuse `triggerManualRefresh`, the same tagged-query path used by clicking RestateServer, so active services, deployments, and invocation-summary queries refetch together. Disable and spin the icon while summary/deployment refresh is active.
 
 - 2026-08-28 Overview2 remove handler count (user, supersedes metadata grouping below): Remove the number of handlers from service rows. Revert the segmented metadata pill and render only the shared ServiceType badge as a compact standalone badge aligned to the right, with no reserved handler-count space.
