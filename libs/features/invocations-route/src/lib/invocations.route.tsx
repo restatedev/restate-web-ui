@@ -1,5 +1,10 @@
 import { Button, SubmitButton } from '@restate/ui/button';
-import { PanelTable, PanelTableColumn } from '@restate/ui/table';
+import {
+  PanelTable,
+  PanelTableColumn,
+  PanelTableQuickOpenToolbar,
+  panelTableQuickOpenToolbarClassNames,
+} from '@restate/ui/table';
 import {
   Dropdown,
   DropdownItem,
@@ -72,6 +77,7 @@ import {
   FilterChip,
   FILTER_QUERY_PREFIX,
   FilterShortcutTrigger,
+  FilteredResultsCaption,
   writeFilterClauses,
 } from '@restate/ui/filter-builder';
 import {
@@ -131,6 +137,7 @@ import {
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
+import { InvocationQuickOpen } from './InvocationQuickOpen';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
@@ -151,6 +158,32 @@ const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   target: INVOCATION_TABLE_COLUMN_CONFIG.target.minWidth,
   invoked_by: 100,
 };
+
+function invocationRouteLocation(
+  baseUrl: string,
+  invocationId: string,
+  searchParams: URLSearchParams,
+) {
+  const preservedParams = new URLSearchParams();
+  const paramsToPreserve = [
+    SERVICE_PLAYGROUND_QUERY_PARAM,
+    SERVICE_QUERY_PARAM,
+    DEPLOYMENT_QUERY_PARAM,
+    INVOCATION_QUERY_NAME,
+    STATE_QUERY_NAME,
+    HANDLER_QUERY_PARAM,
+    PANEL_QUERY_PARAM,
+  ];
+  paramsToPreserve.forEach((param) => {
+    searchParams.getAll(param).forEach((value) => {
+      preservedParams.append(param, value);
+    });
+  });
+  return {
+    pathname: `${baseUrl}/invocations/${invocationId}`,
+    search: preservedParams.toString(),
+  };
+}
 const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   invoked_by: 180,
 };
@@ -371,6 +404,7 @@ function Component() {
     useListInvocationsParameters();
 
   const [pageIndex, _setPageIndex] = useState(0);
+  const [openInvocationId, setOpenInvocationId] = useState('');
   const [, startTransition] = useTransition();
   const setPageIndex = useCallback(
     (arg: Parameters<typeof _setPageIndex>[0]) => {
@@ -665,6 +699,11 @@ function Component() {
   const navigate = useNavigate();
   const basePath = useHref('/');
   const isModifierPressed = useRef(false);
+  const confirmOpenInvocation = useCallback(() => {
+    const invocationId = openInvocationId.trim();
+    if (!invocationId) return;
+    navigate(invocationRouteLocation(baseUrl, invocationId, searchParams));
+  }, [baseUrl, navigate, openInvocationId, searchParams]);
   const changeVqueueSummaryFocus = useCallback(
     (focus: typeof vqueueSummaryFocus) => {
       navigate(
@@ -722,6 +761,21 @@ function Component() {
         statusChangedCount={statusChangedCount}
       />
     ) : undefined;
+  const filteredResultsCaption = hasActiveFilters ? (
+    <FilteredResultsCaption
+      noun="invocations"
+      className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
+      onClear={() => {
+        setPageIndex(0);
+        setSearchParams(writeFilterClauses(searchParams, []), {
+          preventScrollReset: true,
+        });
+      }}
+    />
+  ) : undefined;
+  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
+    Boolean(filteredResultsCaption),
+  );
 
   const summaryContent = (
     <div className={summaryHeaderStyles()}>
@@ -972,29 +1026,28 @@ function Component() {
                 caption={tableCaption}
                 columns={panelColumns}
                 items={currentPageItems}
+                toolbar={
+                  <PanelTableQuickOpenToolbar notice={filteredResultsCaption}>
+                    <InvocationQuickOpen
+                      invocationId={openInvocationId}
+                      onChange={setOpenInvocationId}
+                      onOpen={confirmOpenInvocation}
+                    />
+                  </PanelTableQuickOpenToolbar>
+                }
+                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
+                toolbarClassName={quickOpenToolbarClassNames.toolbar}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}
                 onSelectionChange={(keys) =>
                   setSelectedInvocationIds(keys as Set<string>)
                 }
                 onRowAction={(key) => {
-                  const preservedParams = new URLSearchParams();
-                  const paramsToPreserve = [
-                    SERVICE_PLAYGROUND_QUERY_PARAM,
-                    SERVICE_QUERY_PARAM,
-                    DEPLOYMENT_QUERY_PARAM,
-                    INVOCATION_QUERY_NAME,
-                    STATE_QUERY_NAME,
-                    HANDLER_QUERY_PARAM,
-                    PANEL_QUERY_PARAM,
-                  ];
-                  paramsToPreserve.forEach((param) => {
-                    searchParams.getAll(param).forEach((value) => {
-                      preservedParams.append(param, value);
-                    });
-                  });
-                  const pathname = `${baseUrl}/invocations/${key}`;
-                  const search = preservedParams.toString();
+                  const { pathname, search } = invocationRouteLocation(
+                    baseUrl,
+                    String(key),
+                    searchParams,
+                  );
                   if (isModifierPressed.current) {
                     const fullPath = `${basePath}${pathname}`.replace(
                       '//',

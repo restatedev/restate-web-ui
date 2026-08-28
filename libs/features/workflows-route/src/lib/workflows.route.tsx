@@ -40,7 +40,13 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { ListPageHeader } from '@restate/ui/layout';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
+import {
+  Cell,
+  PanelTable,
+  PanelTableQuickOpenToolbar,
+  panelTableQuickOpenToolbarClassNames,
+  type PanelTableColumn,
+} from '@restate/ui/table';
 import {
   Tooltip,
   TooltipContent,
@@ -50,7 +56,7 @@ import {
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Form, useNavigate, useSearchParams } from 'react-router';
 import {
   createWorkflowIdFilter,
@@ -59,6 +65,11 @@ import {
   workflowFilterSchema,
   writeWorkflowFilters,
 } from './workflows.filters';
+import { WorkflowQuickOpen } from './WorkflowQuickOpen';
+import {
+  type WorkflowOpenDraft,
+  workflowIdentityFromOpenDraft,
+} from './workflows.open';
 
 const SERVICE_QUERY_PARAM = 'service';
 const MAX_VISIBLE_SERVICE_TABS = 5;
@@ -170,6 +181,9 @@ function Component() {
   const { baseUrl } = useRestateContext();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
+  const [openWorkflowDraft, setOpenWorkflowDraft] = useState<WorkflowOpenDraft>(
+    { id: '', scope: '' },
+  );
   const columns = useMemo(() => getColumns(hasVqueues), [hasVqueues]);
   const filterSchema = useMemo(
     () => workflowFilterSchema(hasVqueues),
@@ -241,6 +255,22 @@ function Component() {
     services.find((service) => service === requestedService) ??
     services.at(0) ??
     '';
+  const confirmOpenWorkflow = useCallback(() => {
+    const identity = workflowIdentityFromOpenDraft(
+      selectedService,
+      openWorkflowDraft,
+      hasVqueues,
+    );
+    if (!identity) return;
+    navigate(workflowRunRouteHref(baseUrl, identity, searchParams));
+  }, [
+    baseUrl,
+    hasVqueues,
+    navigate,
+    openWorkflowDraft,
+    searchParams,
+    selectedService,
+  ]);
   const {
     data,
     dataUpdatedAt,
@@ -295,6 +325,7 @@ function Component() {
   const filteredResultsCaption = hasFilters ? (
     <FilteredResultsCaption
       noun="workflow runs"
+      className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
       onClear={() =>
         setSearchParams(writeWorkflowFilters(searchParams, []), {
           preventScrollReset: true,
@@ -302,6 +333,9 @@ function Component() {
       }
     />
   ) : undefined;
+  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
+    Boolean(filteredResultsCaption),
+  );
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -387,11 +421,24 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Workflow runs"
-                caption={filteredResultsCaption}
                 columns={columns}
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
+                toolbar={
+                  <PanelTableQuickOpenToolbar notice={filteredResultsCaption}>
+                    <WorkflowQuickOpen
+                      draft={openWorkflowDraft}
+                      disabled={!selectedService}
+                      hasScope={hasVqueues}
+                      onChange={setOpenWorkflowDraft}
+                      onOpen={confirmOpenWorkflow}
+                      service={selectedService}
+                    />
+                  </PanelTableQuickOpenToolbar>
+                }
+                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
+                toolbarClassName={quickOpenToolbarClassNames.toolbar}
                 bodyDependencies={[
                   selectedService,
                   searchString,

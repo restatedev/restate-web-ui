@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-08-28 self on cross-table quick-open verification: `pnpm nx typecheck web-ui` remained alive without output after more than a minute. Stop only the three processes from that invocation and use direct TypeScript or focused project checks instead of waiting on the stalled Nx runner.
+
+- 2026-08-28 Cross-table direct open (user): Reuse the compact inline quick-open rail on Virtual Objects, Workflows, and Invocations. Keep each identity specific: optional scope plus key for Virtual Objects, optional scope plus workflow ID for Workflows, and invocation ID for Invocations. When filters are active, keep the equal-sized filtered-results rail above quick open.
+
 - 2026-08-28 self on stacked Virtual Object rails: Increasing the toolbar wrapper from 36px to 76px while also increasing its negative bottom margin canceled the added flow space and let the first row overlap the second rail. Keep the original `-mb-8` tuck when stacking two 36px rails; the extra wrapper height must move table content down.
 
 - 2026-08-28 Virtual Object banner order (user): When filters are active, render the filtered-results rail above the quick-open rail. Give both rails the same 36px height, 16px outer horizontal margin, rounded-xl shape, and full available width.

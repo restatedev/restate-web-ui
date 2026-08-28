@@ -36,7 +36,13 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { ListPageHeader } from '@restate/ui/layout';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
+import {
+  Cell,
+  PanelTable,
+  PanelTableQuickOpenToolbar,
+  panelTableQuickOpenToolbarClassNames,
+  type PanelTableColumn,
+} from '@restate/ui/table';
 import {
   Tooltip,
   TooltipContent,
@@ -438,6 +444,9 @@ function Component() {
       }
     />
   ) : undefined;
+  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
+    Boolean(filteredResultsCaption),
+  );
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -530,24 +539,19 @@ function Component() {
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
                 toolbar={
-                  <div className="flex h-full w-full min-w-0 flex-col gap-1">
-                    {filteredResultsCaption}
-                    <div className="flex h-9 w-full shrink-0 items-center rounded-xl bg-zinc-200/45 px-2.5 text-xs supports-[-moz-appearance:none]:bg-zinc-200/65">
-                      <VirtualObjectQuickOpen
-                        draft={openVirtualObjectDraft}
-                        disabled={!selectedService}
-                        hasScopedVirtualObjects={hasScopedVirtualObjects}
-                        onChange={setOpenVirtualObjectDraft}
-                        onOpen={confirmOpenVirtualObject}
-                        service={selectedService}
-                      />
-                    </div>
-                  </div>
+                  <PanelTableQuickOpenToolbar notice={filteredResultsCaption}>
+                    <VirtualObjectQuickOpen
+                      draft={openVirtualObjectDraft}
+                      disabled={!selectedService}
+                      hasScopedVirtualObjects={hasScopedVirtualObjects}
+                      onChange={setOpenVirtualObjectDraft}
+                      onOpen={confirmOpenVirtualObject}
+                      service={selectedService}
+                    />
+                  </PanelTableQuickOpenToolbar>
                 }
-                toolbarWrapperClassName={
-                  hasFilters ? 'mx-4 h-[4.75rem] -mb-8' : 'mx-4 h-9 -mb-8'
-                }
-                toolbarClassName="border-0 bg-transparent p-0 shadow-none backdrop-blur-none supports-[-moz-appearance:none]:bg-transparent"
+                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
+                toolbarClassName={quickOpenToolbarClassNames.toolbar}
                 bodyDependencies={[
                   selectedService,
                   searchString,
