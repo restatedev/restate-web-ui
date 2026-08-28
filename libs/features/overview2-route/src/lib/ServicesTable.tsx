@@ -31,7 +31,7 @@ import {
   Row,
 } from '@restate/ui/table';
 import { HoverTooltip, RelativeDate } from '@restate/ui/tooltip';
-import { formatNumber, formatPlurals } from '@restate/util/intl';
+import { formatNumber } from '@restate/util/intl';
 import {
   toServiceAndHandlerInvocationsHref,
   toServiceInvocationsHref,
@@ -81,20 +81,21 @@ const COLUMNS: PanelTableColumn<ServiceColumn>[] = [
     minWidth: 360,
   },
   {
-    id: 'invocations',
-    name: 'Not completed invocations',
-    allowsSorting: true,
-    preferredSortDirection: 'descending',
-    defaultWidth: '1.5fr',
-    minWidth: 190,
-  },
-  {
     id: 'health',
     name: 'Issues',
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '0.5fr',
     minWidth: 70,
+  },
+  {
+    id: 'invocations',
+    name: 'Not completed invocations',
+    allowsSorting: true,
+    preferredSortDirection: 'descending',
+    defaultWidth: '1.5fr',
+    minWidth: 190,
+    maxWidth: 240,
   },
   {
     id: 'created_at',
@@ -121,13 +122,9 @@ const tableStyles = tv({
     serviceTarget:
       'min-w-0 flex-[0_1_auto] [&_[data-chip-root]]:text-[0.8125rem] [&_[data-chip-segment-inner]>svg]:h-3.5 [&_[data-chip-segment-inner]>svg]:w-3.5',
     serviceType:
-      'shrink-0 justify-self-end border-zinc-200/80 bg-zinc-100/70 px-1.5 py-0 text-2xs font-normal whitespace-nowrap text-zinc-500',
-    serviceMetadata:
-      'ml-auto grid shrink-0 grid-cols-[7rem_5.5rem] items-center gap-2',
+      'ml-auto shrink-0 border-zinc-200/80 bg-zinc-100/70 px-1.5 py-0 text-2xs font-normal whitespace-nowrap text-zinc-500',
     chevron:
       'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
-    handlerCount:
-      'shrink-0 text-right text-xs font-normal whitespace-nowrap text-zinc-400 tabular-nums',
     handlerIdentity: 'flex min-w-0 items-center gap-1.5 pl-7',
     handler: 'max-w-fit min-w-0 pr-0 pl-0',
     handlerInvocationCell: 'p-0!',
@@ -320,18 +317,7 @@ function ServiceIdentity({
         isOnboarding={isOnboarding}
         OnboardingGuide={OnboardingGuide}
       />
-      <div className={styles.serviceMetadata()}>
-        {row.ty && (
-          <ServiceType type={row.ty} className={styles.serviceType()} />
-        )}
-        <span className={styles.handlerCount()}>
-          {formatNumber(row.handlers.length, true)}{' '}
-          {formatPlurals(row.handlers.length, {
-            one: 'handler',
-            other: 'handlers',
-          })}
-        </span>
-      </div>
+      {row.ty && <ServiceType type={row.ty} className={styles.serviceType()} />}
     </div>
   );
 }

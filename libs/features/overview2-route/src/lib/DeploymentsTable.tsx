@@ -427,7 +427,7 @@ export function DeploymentsTable() {
             </>
           ) : undefined
         }
-        toolbarWrapperClassName="h-10 -mb-10"
+        toolbarWrapperClassName="h-11 -mb-10"
         toolbarClassName="mt-0.5 h-9 rounded-xl border border-red-200/90 bg-red-50/90 pr-1 pl-3 shadow-none supports-[-moz-appearance:none]:bg-red-50"
         emptyPlaceholder={
           <EmptyState

@@ -1,5 +1,19 @@
 # Napkin
 
+- 2026-08-28 Overview2 remove handler count (user, supersedes metadata grouping below): Remove the number of handlers from service rows. Revert the segmented metadata pill and render only the shared ServiceType badge as a compact standalone badge aligned to the right, with no reserved handler-count space.
+
+- 2026-08-28 Overview2 service metadata grouping (user): Fixed subcolumns alone still look like unrelated labels floating at the far right. Present service type and handler count as one compact, fixed-width neutral metadata pill with a subtle vertical divider. Remove the type badge's nested border/background so the shared container owns the visual grouping while retaining the ServiceType explainer.
+
+- 2026-08-28 Overview2 service column order and handler spacing (user): Remove the added right margin from the service type/handler-count group. Order service columns as Service / handler, Issues, Not completed invocations, Last deployed, Deployment.
+
+- 2026-08-28 Overview2 invocation column final width (user, supersedes 280px below): Set the `Not completed invocations` column maximum width to 240px.
+
+- 2026-08-28 Overview2 service/invocation spacing follow-up (user, supersedes the 320px/8px values below): Tighten `Not completed invocations` to a 280px maximum and increase the service metadata right inset to 12px (`mr-3`).
+
+- 2026-08-28 Overview2 service/invocation column spacing (user): Cap `Not completed invocations` at 320px so it cannot absorb a large share of wide tables. Add an 8px right inset to the service type/handler-count metadata group so handler counts do not sit against the column divider.
+
+- 2026-08-28 Overview2 deployment selection banner gap (user): Reserve 4px below the selection banner before the first deployment row. Make the toolbar wrapper 44px tall while retaining a -40px bottom margin; do not shrink the 36px banner.
+
 - 2026-08-27 self on SQL-test architecture inspection: I piped `rg --files` through `sed` even though this repo's napkin repeatedly says not to use inspection pipelines. Use a narrowly scoped `rg --files` call and rely on the tool output limit.
 
 - 2026-08-26 Overview2 service metadata polish (user): The right-side type/count group must not shift with content length. Use fixed subcolumns for the service-type badge and handler count, right-align both, and anchor the grid to the edge so Service, VirtualObject, Workflow, and singular/plural counts line up row-to-row.
