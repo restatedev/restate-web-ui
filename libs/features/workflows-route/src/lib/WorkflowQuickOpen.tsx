@@ -26,8 +26,8 @@ export function WorkflowQuickOpen({
 
   return (
     <PanelTableQuickOpen
-      ariaLabel="Open a Workflow run"
-      label="Open workflow"
+      ariaLabel="Go to a Workflow run"
+      label="Go to run"
       iconName={IconName.Workflow}
       inputLabel="Workflow ID"
       placeholder="Workflow ID"

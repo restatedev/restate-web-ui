@@ -26,14 +26,14 @@ function QuickOpenHarness({ onOpen }: { onOpen: VoidFunction }) {
 }
 
 describe('VirtualObjectQuickOpen', () => {
-  it('opens the inline scope and key identity from the keyboard form', async () => {
+  it('goes to the inline scope and key identity from the keyboard form', async () => {
     const user = userEvent.setup();
     const onOpen = vi.fn();
     render(<QuickOpenHarness onOpen={onOpen} />);
 
     const scope = screen.getByRole('textbox', { name: 'Scope (optional)' });
     const key = screen.getByRole('textbox', { name: 'Key' });
-    const open = screen.getByRole('button', { name: 'Open instance' });
+    const open = screen.getByRole('button', { name: 'Go to instance' });
 
     expect(open.hasAttribute('disabled')).toBe(true);
     await user.type(scope, 'objects');

@@ -26,14 +26,14 @@ function QuickOpenHarness({ onOpen }: { onOpen: VoidFunction }) {
 }
 
 describe('WorkflowQuickOpen', () => {
-  it('opens the inline scope and workflow identity from the keyboard form', async () => {
+  it('goes to the inline scope and workflow identity from the keyboard form', async () => {
     const user = userEvent.setup();
     const onOpen = vi.fn();
     render(<QuickOpenHarness onOpen={onOpen} />);
 
     const scope = screen.getByRole('textbox', { name: 'Scope (optional)' });
     const workflowId = screen.getByRole('textbox', { name: 'Workflow ID' });
-    const open = screen.getByRole('button', { name: 'Open workflow' });
+    const open = screen.getByRole('button', { name: 'Go to run' });
 
     expect(open.hasAttribute('disabled')).toBe(true);
     await user.type(scope, 'orders');

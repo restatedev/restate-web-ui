@@ -14,8 +14,8 @@ export function InvocationQuickOpen({
 }: InvocationQuickOpenProps) {
   return (
     <PanelTableQuickOpen
-      ariaLabel="Open an invocation"
-      label="Open invocation"
+      ariaLabel="Go to an invocation"
+      label="Go to invocation"
       iconName={IconName.Invocation}
       inputLabel="Invocation ID"
       placeholder="Invocation ID"

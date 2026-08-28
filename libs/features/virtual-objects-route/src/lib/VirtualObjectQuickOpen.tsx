@@ -30,8 +30,8 @@ export function VirtualObjectQuickOpen({
 
   return (
     <PanelTableQuickOpen
-      ariaLabel="Open a Virtual Object instance"
-      label="Open instance"
+      ariaLabel="Go to a Virtual Object instance"
+      label="Go to instance"
       iconName={IconName.VirtualObject}
       inputLabel="Key"
       placeholder="Key"

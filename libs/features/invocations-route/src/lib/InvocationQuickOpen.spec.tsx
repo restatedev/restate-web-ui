@@ -19,7 +19,7 @@ function QuickOpenHarness({ onOpen }: { onOpen: VoidFunction }) {
 }
 
 describe('InvocationQuickOpen', () => {
-  it('opens an invocation ID from the keyboard form', async () => {
+  it('goes to an invocation ID from the keyboard form', async () => {
     const user = userEvent.setup();
     const onOpen = vi.fn();
     render(<QuickOpenHarness onOpen={onOpen} />);
@@ -27,8 +27,11 @@ describe('InvocationQuickOpen', () => {
     const invocationId = screen.getByRole('textbox', {
       name: 'Invocation ID',
     });
-    const open = screen.getByRole('button', { name: 'Open invocation' });
+    const open = screen.getByRole('button', { name: 'Go to invocation' });
 
+    expect(invocationId.closest('[data-chip-root]')?.className).toContain(
+      'shadow-none',
+    );
     expect(open.hasAttribute('disabled')).toBe(true);
     await user.type(invocationId, 'inv_123{Enter}');
 

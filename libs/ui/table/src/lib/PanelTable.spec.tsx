@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { Cell } from './Row';
 import { PanelTable } from './PanelTable';
+import {
+  PanelTableQuickOpenToolbar,
+  panelTableQuickOpenToolbarClassNames,
+} from './PanelTableQuickOpen';
 
 class ResizeObserverMock implements ResizeObserver {
   disconnect = vi.fn();
@@ -52,7 +56,7 @@ describe('PanelTable', () => {
         aria-label="Items"
         columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
         items={[]}
-        toolbar={<button type="button">Open instance</button>}
+        toolbar={<button type="button">Go to instance</button>}
         renderCell={(row: { id: string; name: string }) => (
           <Cell>{row.name}</Cell>
         )}
@@ -60,6 +64,70 @@ describe('PanelTable', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Open instance' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Go to instance' })).toBeTruthy();
+  });
+
+  it('lets a quick-open toolbar scroll with the table content', () => {
+    const classNames = panelTableQuickOpenToolbarClassNames(0);
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+        items={[{ id: 'one', name: 'One' }]}
+        toolbar={<button type="button">Go to instance</button>}
+        toolbarWrapperClassName={classNames.wrapper}
+        toolbarClassName={classNames.toolbar}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+
+    const toolbar = screen.getByRole('toolbar', { name: 'Items tools' });
+    expect(toolbar.parentElement?.className).toContain('relative');
+    expect(toolbar.parentElement?.className).toContain('top-auto');
+    expect(toolbar.parentElement?.className).not.toContain('sticky');
+  });
+
+  it('stacks notices above quick open without putting the table hit layer over it', () => {
+    const classNames = panelTableQuickOpenToolbarClassNames(2);
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+        items={[{ id: 'one', name: 'One' }]}
+        toolbar={
+          <PanelTableQuickOpenToolbar
+            notice={[
+              <div key="partial">Partial results</div>,
+              <div key="filtered">Filtered results</div>,
+            ]}
+          >
+            <button type="button">Go to item</button>
+          </PanelTableQuickOpenToolbar>
+        }
+        toolbarWrapperClassName={classNames.wrapper}
+        toolbarClassName={classNames.toolbar}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+
+    const partial = screen.getByText('Partial results');
+    const filtered = screen.getByText('Filtered results');
+    const quickOpen = screen.getByRole('button', { name: 'Go to item' });
+    const toolbarWrapper = screen.getByRole('toolbar', {
+      name: 'Items tools',
+    }).parentElement;
+
+    expect(
+      partial.compareDocumentPosition(filtered) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      filtered.compareDocumentPosition(quickOpen) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(toolbarWrapper?.className).toContain('relative');
+    expect(toolbarWrapper?.className).toContain('top-auto');
+    expect(toolbarWrapper?.className).toContain('z-30');
+    expect(toolbarWrapper?.className).toContain('h-[7.25rem]');
   });
 });

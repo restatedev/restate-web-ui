@@ -84,7 +84,7 @@ export function PanelTableQuickOpen({
           left={scope ? 'angled' : 'straight'}
           right="straight"
           size="lg"
-          className="w-full focus-within:outline-none [&>[data-chip-segment]]:flex-1"
+          className="w-full shadow-none focus-within:outline-none [&>[data-chip-segment]]:flex-1"
           containerClassName="min-w-48 max-w-80 flex-1 has-[input[data-focused=true]]:[--chip-border-color:var(--color-blue-400)] has-[input[data-focus-visible=true]]:filter-[drop-shadow(0_0_2px_--theme(--color-blue-400/35%))]"
         >
           <ChipSegment className="w-full bg-white pr-0 pl-3">
@@ -125,20 +125,23 @@ export function PanelTableQuickOpen({
 
 const quickOpenToolbarStyles = tv({
   slots: {
-    wrapper: 'mx-4 -mb-8',
+    wrapper: 'relative top-auto mx-4 -mb-8',
     toolbar:
       'border-0 bg-transparent p-0 shadow-none backdrop-blur-none supports-[-moz-appearance:none]:bg-transparent',
   },
   variants: {
-    hasNotice: {
-      true: { wrapper: 'h-[4.75rem]' },
-      false: { wrapper: 'h-9' },
+    noticeRows: {
+      none: { wrapper: 'h-9' },
+      one: { wrapper: 'h-[4.75rem]' },
+      two: { wrapper: 'h-[7.25rem]' },
     },
   },
 });
 
-export function panelTableQuickOpenToolbarClassNames(hasNotice: boolean) {
-  const { wrapper, toolbar } = quickOpenToolbarStyles({ hasNotice });
+export function panelTableQuickOpenToolbarClassNames(noticeCount: number) {
+  const noticeRows =
+    noticeCount > 1 ? 'two' : noticeCount === 1 ? 'one' : 'none';
+  const { wrapper, toolbar } = quickOpenToolbarStyles({ noticeRows });
   return { wrapper: wrapper(), toolbar: toolbar() };
 }
 

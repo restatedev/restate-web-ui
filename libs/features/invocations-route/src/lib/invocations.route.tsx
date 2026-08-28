@@ -278,10 +278,10 @@ function ResultsNotice({
 }) {
   const statusChangedMessage = `${formatNumber(statusChangedCount)} ${statusChangedCount === 1 ? 'invocation changed' : 'invocations changed'} status while results were loading. The latest status is shown.`;
   return (
-    <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600">
+    <div className="flex h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 text-xs text-zinc-600">
       <Icon
         name={IconName.Info}
-        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400"
+        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
       />
       <span>
         {isPartial && 'This view may not include every matching invocation. '}
@@ -753,9 +753,11 @@ function Component() {
           setListSampledOverride(true);
         }}
       />
-    ) : !isFetching &&
-      (listSampled || data?.isPartial || statusChangedCount > 0) &&
-      !error ? (
+    ) : undefined;
+  const resultsNotice =
+    !isFetching &&
+    (listSampled || data?.isPartial || statusChangedCount > 0) &&
+    !error ? (
       <ResultsNotice
         isPartial={listSampled || Boolean(data?.isPartial)}
         statusChangedCount={statusChangedCount}
@@ -773,8 +775,11 @@ function Component() {
       }}
     />
   ) : undefined;
+  const quickOpenNotices = [resultsNotice, filteredResultsCaption].filter(
+    Boolean,
+  );
   const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
-    Boolean(filteredResultsCaption),
+    quickOpenNotices.length,
   );
 
   const summaryContent = (
@@ -1027,7 +1032,7 @@ function Component() {
                 columns={panelColumns}
                 items={currentPageItems}
                 toolbar={
-                  <PanelTableQuickOpenToolbar notice={filteredResultsCaption}>
+                  <PanelTableQuickOpenToolbar notice={quickOpenNotices}>
                     <InvocationQuickOpen
                       invocationId={openInvocationId}
                       onChange={setOpenInvocationId}

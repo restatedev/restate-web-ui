@@ -466,7 +466,7 @@ function Component() {
     />
   ) : undefined;
   const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
-    Boolean(filteredResultsCaption),
+    Number(Boolean(filteredResultsCaption)),
   );
 
   return (

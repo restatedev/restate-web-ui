@@ -1,5 +1,11 @@
 # Napkin
 
+- 2026-08-28 Invocation quick-open stacking (user): The partial-results rail belongs above `Go to invocation`, matching the filtered-results pattern. A non-sticky quick-open wrapper must use `relative top-auto`, not `static`, so its `z-30` applies without activating the base sticky `top` offset and the later table element cannot intercept clicks over the input.
+
+- 2026-08-28 self on PanelTableQuickOpen shadow cleanup: I removed the `tv` import after deleting one style declaration without checking the rest of the file, but `quickOpenToolbarStyles` still uses it. Search the whole file for an imported symbol before removing the import.
+
+- 2026-08-28 Quick-open terminology and motion (user): These rails navigate, so label them `Go to instance`, `Go to run`, and `Go to invocation`, including button/tooltips and accessible names. Quick-open rails scroll with table content instead of sticking. Suppress the input chip shadow entirely; even the built-in `shadow-xs` looks too raised on the Invocation ID field.
+
 - 2026-08-28 Remembered-candidate scope correction (user): Force recent-visit candidates into the Virtual Object list only. Do not add candidate input, extra identity queries, or identity-only fallback rows to the Workflow list.
 
 - 2026-08-28 VO candidate normalization (user): Virtual Object request candidates use generated schema types and come from the UI's recent-visit store. Do not repeat object, field-length, scope-type, or feature validation in the query handler. Normalize and deduplicate typed identities, cap them at ten for bounded SQL, then apply active query and feature semantics.
