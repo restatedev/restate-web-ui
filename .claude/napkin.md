@@ -3908,3 +3908,4 @@
 - 2026-08-23 Status-chart specs use `noUncheckedIndexedAccess`: avoid passing a directly indexed fixture entry as a required prop; use an array operation such as `slice()` so the element type remains non-optional.
 - 2026-08-28 self on Nx verification: Running two `NX_DAEMON=false` Nx checks concurrently can leave both waiting for project-graph construction in this workspace. Run Nx verification sequentially; if graph construction is still blocked by long-running dev processes, invoke TypeScript, Vitest, and ESLint directly with the repository's Node 24 runtime.
 - 2026-08-28 self on State hook tracing: I used shell pipelines while narrowing route and query matches despite the standing command-hygiene rule. Keep each search and source read independently scoped instead.
+- 2026-08-28 self on Virtual Object query verification: I again piped the final diff through `sed`. Use the tool output limit or a separately scoped diff command instead of shell pipelines.

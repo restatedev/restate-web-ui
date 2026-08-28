@@ -42,20 +42,6 @@ describe('listVirtualObjectInstances', () => {
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-      AND lock_name = 'Counter/Customer''s'
-      AND scope = 'Tenant-A'
-    LIMIT 51`,
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
       scope
     FROM sys_invocation_status
@@ -86,20 +72,6 @@ describe('listVirtualObjectInstances', () => {
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
-      lock_name,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-      AND SUBSTR(lock_name, CHAR_LENGTH('Counter/') + 1) ILIKE '%Customer''s%'
-    LIMIT 51`,
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
       scope
     FROM sys_invocation_status
@@ -117,8 +89,8 @@ describe('listVirtualObjectInstances', () => {
         if (sql.includes('SUM(num_inbox)') || sql.includes('FROM sys_locks')) {
           return [];
         }
-        if (sql.includes('FROM sys_vqueue_meta')) {
-          return [{ partition_key: '7' }];
+        if (sql.includes('FROM sys_invocation_status')) {
+          return [{ partition_key: '7', object_key: 'hot-object-0' }];
         }
         return [];
       },
@@ -138,20 +110,6 @@ describe('listVirtualObjectInstances', () => {
 
     expect(response.status).toBe(200);
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-      AND lock_name = 'Counter/hot-object-0'
-      AND scope IS NULL
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
@@ -210,7 +168,7 @@ describe('listVirtualObjectInstances', () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it('merges exclusive work and shared invocation identities', async () => {
+  it('uses active invocation identities for vqueue servers', async () => {
     const { context, query } = createContext((sql) => {
       if (sql.includes('SUM(num_inbox) AS backlog')) {
         return [
@@ -223,20 +181,6 @@ describe('listVirtualObjectInstances', () => {
             lock_name: "Counter's/mutation-only",
             scope: 'tenant-b',
             backlog: 4,
-          },
-        ];
-      }
-      if (sql.includes('FROM sys_vqueue_meta')) {
-        return [
-          {
-            partition_key: '1',
-            lock_name: "Counter's/both",
-            scope: 'tenant-a',
-          },
-          {
-            partition_key: '2',
-            lock_name: "Counter's/mutation-only",
-            scope: 'tenant-b',
           },
         ];
       }
@@ -273,21 +217,6 @@ describe('listVirtualObjectInstances', () => {
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
-      lock_name,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter''s'
-      AND lock_name IS NOT NULL
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-      AND (SUBSTR(lock_name, CHAR_LENGTH('Counter''s/') + 1) LIKE '%o''hare\\%\\_!\\\\path%' OR scope LIKE '%o''hare\\%\\_!\\\\path%')
-    LIMIT 51`,
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
       scope
     FROM sys_invocation_status
@@ -302,11 +231,10 @@ describe('listVirtualObjectInstances', () => {
       scope,
       SUM(num_inbox) AS backlog
     FROM sys_vqueue_meta
-    WHERE partition_key IN (1, 2, 3)
+    WHERE partition_key IN (1, 3)
       AND service_name = 'Counter''s'
       AND (
         (lock_name = 'Counter''s/both' AND scope = 'tenant-a')
-        OR (lock_name = 'Counter''s/mutation-only' AND scope = 'tenant-b')
         OR (lock_name = 'Counter''s/shared-only' AND scope = 'tenant-c')
       )
     GROUP BY lock_name, scope`,
@@ -319,7 +247,6 @@ describe('listVirtualObjectInstances', () => {
     WHERE acquired_by IS NOT NULL
       AND (
         (lock_name = 'Counter''s/both' AND scope = 'tenant-a')
-        OR (lock_name = 'Counter''s/mutation-only' AND scope = 'tenant-b')
         OR (lock_name = 'Counter''s/shared-only' AND scope = 'tenant-c')
       )`,
     ]);
@@ -336,11 +263,6 @@ describe('listVirtualObjectInstances', () => {
           },
         },
         {
-          key: 'mutation-only',
-          scope: 'tenant-b',
-          backlog: 4,
-        },
-        {
           key: 'shared-only',
           scope: 'tenant-c',
           backlog: 0,
@@ -354,13 +276,13 @@ describe('listVirtualObjectInstances', () => {
     const exactPartitionKey = '14239471964036668491';
     const { context, query } = createContext((sql) => {
       if (sql.includes('SUM(num_inbox) AS backlog')) {
-        return [{ lock_name: 'Counter/vqueue-only', backlog: 1 }];
+        return [{ lock_name: 'Counter/invocation-only', backlog: 1 }];
       }
-      if (sql.includes('FROM sys_vqueue_meta')) {
+      if (sql.includes('FROM sys_invocation_status')) {
         return [
           {
             partition_key: exactPartitionKey,
-            lock_name: 'Counter/vqueue-only',
+            object_key: 'invocation-only',
           },
         ];
       }
@@ -370,20 +292,6 @@ describe('listVirtualObjectInstances', () => {
     await listVirtualObjectInstances.call(context, 'Counter');
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      lock_name,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND lock_name IS NOT NULL
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
@@ -402,7 +310,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE partition_key IN (${exactPartitionKey})
       AND service_name = 'Counter'
       AND (
-        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
+        (lock_name = 'Counter/invocation-only' AND scope IS NULL)
       )
     GROUP BY lock_name, scope`,
       `SELECT
@@ -413,18 +321,18 @@ describe('listVirtualObjectInstances', () => {
     FROM sys_locks
     WHERE acquired_by IS NOT NULL
       AND (
-        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
+        (lock_name = 'Counter/invocation-only' AND scope IS NULL)
       )`,
     ]);
   });
 
   it('rejects numeric partition keys from JSON', async () => {
     const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM sys_vqueue_meta')) {
+      if (sql.includes('FROM sys_invocation_status')) {
         return [
           {
             partition_key: Number('14239471964036668491'),
-            lock_name: 'Counter/vqueue-only',
+            object_key: 'invocation-only',
           },
         ];
       }
@@ -436,20 +344,6 @@ describe('listVirtualObjectInstances', () => {
     ).rejects.toThrow('Invalid partition key:');
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      lock_name,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND lock_name IS NOT NULL
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
@@ -466,13 +360,13 @@ describe('listVirtualObjectInstances', () => {
   it('preserves a zero backlog', async () => {
     const { context, query } = createContext((sql) => {
       if (sql.includes('SUM(num_inbox) AS backlog')) {
-        return [{ lock_name: 'Counter/vqueue-only', backlog: 0 }];
+        return [{ lock_name: 'Counter/invocation-only', backlog: 0 }];
       }
-      if (sql.includes('FROM sys_vqueue_meta')) {
+      if (sql.includes('FROM sys_invocation_status')) {
         return [
           {
             partition_key: '7',
-            lock_name: 'Counter/vqueue-only',
+            object_key: 'invocation-only',
           },
         ];
       }
@@ -482,20 +376,6 @@ describe('listVirtualObjectInstances', () => {
     const response = await listVirtualObjectInstances.call(context, 'Counter');
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      lock_name,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND lock_name IS NOT NULL
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-    LIMIT 51`,
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
@@ -514,7 +394,7 @@ describe('listVirtualObjectInstances', () => {
     WHERE partition_key IN (7)
       AND service_name = 'Counter'
       AND (
-        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
+        (lock_name = 'Counter/invocation-only' AND scope IS NULL)
       )
     GROUP BY lock_name, scope`,
       `SELECT
@@ -525,13 +405,13 @@ describe('listVirtualObjectInstances', () => {
     FROM sys_locks
     WHERE acquired_by IS NOT NULL
       AND (
-        (lock_name = 'Counter/vqueue-only' AND scope IS NULL)
+        (lock_name = 'Counter/invocation-only' AND scope IS NULL)
       )`,
     ]);
     expect(await response.json()).toEqual({
       rows: [
         {
-          key: 'vqueue-only',
+          key: 'invocation-only',
           backlog: 0,
         },
       ],
@@ -620,20 +500,6 @@ describe('listVirtualObjectInstances', () => {
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
       `SELECT DISTINCT
       CAST(partition_key AS VARCHAR) AS partition_key,
-      lock_name,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND lock_name IS NOT NULL
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-    LIMIT 51`,
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
       target_service_key AS object_key,
       scope
     FROM sys_invocation_status
@@ -717,19 +583,6 @@ describe('listVirtualObjectInstances', () => {
     });
 
     expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      lock_name,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND lock_name IS NOT NULL
-      AND (
-        num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-      AND (SUBSTR(lock_name, CHAR_LENGTH('Counter/') + 1) LIKE '%customer%' OR scope LIKE '%customer%')
-    LIMIT 51`,
       `SELECT DISTINCT
       target_service_key AS object_key,
       scope

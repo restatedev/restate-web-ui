@@ -15,6 +15,7 @@ const INSTANCE_LIMIT = 50;
 const QUERY_LIMIT = INSTANCE_LIMIT + 1;
 const MAX_SEARCH_LENGTH = 256;
 const QUERY_STATE_IDENTITIES = false;
+const QUERY_VQUEUE_META_IDENTITIES = false;
 
 export type ListVirtualObjectInstancesArgs =
   components['schemas']['ListVirtualObjectInstancesRequest'];
@@ -509,29 +510,30 @@ export async function listVirtualObjectInstances(
         'virtual-objects/identities-from-state',
       ).then(({ rows }) => rows)
     : Promise.resolve([]);
-  const identitiesFromVqueueMetaPromise = hasVqueues
-    ? this.query(
-        sortByBacklog
-          ? virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
-              service,
-              search,
-              filters,
-              unscopedOnly,
-            )
-          : virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
-              service,
-              search,
-              filters,
-              includePartitionKeyForBacklogQuery,
-              unscopedOnly,
-            ),
-        'virtual-objects/identities-from-vqueue-meta',
-      ).then(({ rows }) =>
-        exactKey === undefined
-          ? addObjectKeyFromLockName(rows, service)
-          : addKnownObjectKey(rows, exactKey),
-      )
-    : Promise.resolve([]);
+  const identitiesFromVqueueMetaPromise =
+    hasVqueues && QUERY_VQUEUE_META_IDENTITIES
+      ? this.query(
+          sortByBacklog
+            ? virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
+                service,
+                search,
+                filters,
+                unscopedOnly,
+              )
+            : virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
+                service,
+                search,
+                filters,
+                includePartitionKeyForBacklogQuery,
+                unscopedOnly,
+              ),
+          'virtual-objects/identities-from-vqueue-meta',
+        ).then(({ rows }) =>
+          exactKey === undefined
+            ? addObjectKeyFromLockName(rows, service)
+            : addKnownObjectKey(rows, exactKey),
+        )
+      : Promise.resolve([]);
   const identitiesFromInvocationStatusPromise = this.query(
     virtualObjectIdentitiesFromInvocationStatusQuery(service, search, filters, {
       includeScope: hasVqueues,
