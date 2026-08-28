@@ -21,6 +21,8 @@ describe('PanelTable', () => {
         columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
         items={[{ id: 'one', name: 'One' }]}
         toolbar={<button type="button">Filter items</button>}
+        toolbarWrapperClassName="custom-toolbar-wrapper"
+        toolbarClassName="custom-toolbar"
         caption={<div>Table notice</div>}
         renderCell={(row) => <Cell>{row.name}</Cell>}
       />,
@@ -30,6 +32,10 @@ describe('PanelTable', () => {
     const caption = screen.getByText('Table notice');
 
     expect(toolbar.parentElement?.className).toContain('sticky');
+    expect(toolbar.parentElement?.className).toContain(
+      'custom-toolbar-wrapper',
+    );
+    expect(toolbar.className).toContain('custom-toolbar');
     expect(
       toolbar.compareDocumentPosition(caption) &
         Node.DOCUMENT_POSITION_FOLLOWING,

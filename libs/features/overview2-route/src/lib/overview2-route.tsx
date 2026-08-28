@@ -26,7 +26,6 @@ import { Ellipsis, Spinner } from '@restate/ui/loading';
 import {
   ContentPanel,
   ContentPanelBody,
-  ContentPanelHeader,
   ContentPanelSection,
   ContentPanelToolbar,
 } from '@restate/ui/content-panel';
@@ -44,11 +43,9 @@ import {
   useMetricsState,
 } from './EngineCluster';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
-import { SortByDropdown } from './SortByDropdown';
 import { DeploymentActions } from './DeploymentActions';
-import { ServicesGridList } from './ServicesGridList';
-import { DeploymentsGridList } from './DeploymentsGridList';
-import { HandlersGridList } from './HandlersGridList';
+import { ServicesTable } from './ServicesTable';
+import { DeploymentsTable } from './DeploymentsTable';
 import {
   CompletionTimeRangeToggle,
   OverviewTimeRangeToggle,
@@ -466,10 +463,6 @@ function OverviewContent() {
   const inFlightChart = useInFlightChart();
   const servicesCount = servicesMap?.size ?? 0;
   const deploymentsCount = deploymentsMap?.size ?? 0;
-  const handlersCount = Array.from(servicesMap?.values() ?? []).reduce(
-    (sum, s) => sum + s.handlers.length,
-    0,
-  );
 
   const { GettingStarted, status } = useRestateContext();
 
@@ -537,12 +530,8 @@ function OverviewContent() {
     isSummaryLoading ||
     completionChart.isSummaryBreakdownLoading ||
     (!isSummaryError && totalCount > 0);
-  const filterPlaceholder =
-    mode === 'services'
-      ? 'Filter services, handlers, or deployments…'
-      : mode === 'deployments'
-        ? 'Filter deployments or services…'
-        : 'Filter handlers, services, or types…';
+  const searchPlaceholder =
+    mode === 'services' ? 'Search services…' : 'Search deployments…';
   const summaryErrorIndicator =
     !completionChart.isHistoryEnabled && summaryError ? (
       <Popover>
@@ -891,6 +880,7 @@ function OverviewContent() {
         <div className="h-5" />
       </div>
 
+      <div ref={setPanelEl} aria-hidden className="h-0 w-full shrink-0" />
       <ContentPanel
         className="z-20 w-full"
         tabs={{
@@ -923,75 +913,53 @@ function OverviewContent() {
                 </div>
               ),
             },
-            {
-              id: 'handlers',
-              label: (
-                <div className="flex items-center gap-2">
-                  <Icon
-                    name={IconName.Function}
-                    className="-mx-1.5 h-5.5 w-5.5"
-                  />
-                  Handlers
-                  <TabCount
-                    count={handlersCount}
-                    isLoading={isDeploymentsFetching}
-                  />
-                </div>
-              ),
-            },
           ],
         }}
       >
-        <ContentPanelToolbar>
+        <ContentPanelToolbar className="min-w-0 justify-end gap-2 px-1 pb-1">
+          <SearchField
+            aria-label={
+              mode === 'services'
+                ? 'Search services and handlers'
+                : 'Search deployments'
+            }
+            value={filter}
+            onChange={setFilter}
+            enterKeyHint="search"
+            className="group flex min-h-6.5 max-w-[38ch] min-w-0 flex-[1_1_38ch] items-center rounded-lg border border-gray-200 bg-white/70 text-gray-800 shadow-xs hover:bg-white has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500"
+          >
+            <Label className="sr-only">{searchPlaceholder}</Label>
+            <Icon
+              name={IconName.Search}
+              className="ml-1.5 h-4 w-4 shrink-0 text-gray-400"
+            />
+            <AriaInput
+              ref={filterRef}
+              placeholder={searchPlaceholder}
+              className="h-6 min-h-6 w-full min-w-0 border-0 bg-transparent py-0.5 pr-1 pl-1 text-sm text-current shadow-none outline-none placeholder:text-gray-500/75 focus:border-0 focus:ring-0 focus:outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+            />
+            {filter ? (
+              <Button
+                type="button"
+                variant="icon"
+                aria-label="Clear search"
+                className="mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-gray-400 shadow-none hover:bg-gray-100 hover:text-gray-600 pressed:bg-gray-200"
+                onClick={() => setFilter('')}
+              >
+                <Icon name={IconName.X} className="h-3.5 w-3.5" />
+              </Button>
+            ) : (
+              <FocusShortcutKey variant="light" className="mr-1 shrink-0" />
+            )}
+          </SearchField>
           <DeploymentActions />
         </ContentPanelToolbar>
-        <ContentPanelHeader className="px-1 py-0.5">
-          <div
-            ref={setPanelEl}
-            className="flex w-full flex-col gap-2 lg:flex-row lg:items-center lg:justify-between"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <SortByDropdown />
-            </div>
-            <SearchField
-              aria-label="Filter"
-              value={filter}
-              onChange={setFilter}
-              className="min-w-0 flex-auto outline-none lg:grow-0 lg:basis-[38ch]"
-            >
-              <Label className="sr-only">{filterPlaceholder}</Label>
-              <div className="relative min-h-7">
-                <AriaInput
-                  ref={filterRef}
-                  placeholder={filterPlaceholder}
-                  className="mt-0 h-7 w-full min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-0.5 pr-8 pl-7 text-sm text-gray-800 shadow-none outline-offset-2 placeholder:text-gray-500/65 hover:bg-white/30 focus:border-blue-500/30 focus:bg-white/55 focus:ring-0 focus:outline-2 focus:outline-blue-600"
-                />
-                <Icon
-                  name={IconName.Search}
-                  className="pointer-events-none absolute top-0 bottom-0 left-1.5 aspect-square h-full p-1 text-gray-400"
-                />
-                <FocusShortcutKey
-                  variant="light"
-                  className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2"
-                />
-              </div>
-            </SearchField>
-          </div>
-        </ContentPanelHeader>
         <ContentPanelBody className="pb-20">
-          <ContentPanelSection>
-            <div className="">
-              {isError && !isDeploymentsFetching && error && (
-                <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
-              )}
-              {mode === 'services' ? (
-                <ServicesGridList />
-              ) : mode === 'deployments' ? (
-                <DeploymentsGridList />
-              ) : (
-                <HandlersGridList />
-              )}
-            </div>
+          <ContentPanelSection flush>
+            {isError && !isDeploymentsFetching && error && (
+              <ErrorBanner error={error} className="mx-2 mb-3 rounded-xl" />
+            )}
+            {mode === 'services' ? <ServicesTable /> : <DeploymentsTable />}
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>

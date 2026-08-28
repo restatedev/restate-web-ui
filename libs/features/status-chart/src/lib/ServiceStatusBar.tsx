@@ -36,7 +36,7 @@ function getIssuesByStatus(serviceIssues: ServiceIssue[]) {
 }
 
 const styles = tv({
-  base: 'flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5 [&:not(:has(*))]:h-2.5',
+  base: 'flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5',
   variants: {
     isLoading: {
       true: 'animate-pulse',
@@ -108,6 +108,7 @@ function StatusBar({
   issuesByStatus,
   isLoading,
   noun,
+  ariaLabel,
   onOpenChange,
 }: {
   title: ReactNode;
@@ -118,6 +119,7 @@ function StatusBar({
   issuesByStatus?: Map<string, IssueSeverity>;
   isLoading?: boolean;
   noun?: { one: string; other: string };
+  ariaLabel?: string;
   onOpenChange?: (isOpen: boolean) => void;
 }) {
   const tooltipContent = (
@@ -137,6 +139,7 @@ function StatusBar({
       total={total}
       statuses={statuses}
       tooltipContent={tooltipContent}
+      ariaLabel={ariaLabel}
       isLoading={isLoading}
       onOpenChange={onOpenChange}
     />
@@ -153,6 +156,8 @@ export function ServiceStatusBar({
   isLoading,
   noun,
   rangeLabel,
+  ariaLabel,
+  totalLink: totalLinkOverride,
   onOpenChange,
 }: {
   serviceName: string;
@@ -163,6 +168,8 @@ export function ServiceStatusBar({
   linkParams?: URLSearchParams;
   isLoading?: boolean;
   noun?: { one: string; other: string };
+  ariaLabel?: string;
+  totalLink?: string;
   // Overrides the default range label in the tooltip header (e.g. "in-flight"
   // for the overview when the summary is scoped to in-flight invocations).
   rangeLabel?: ReactNode;
@@ -206,13 +213,15 @@ export function ServiceStatusBar({
     </>
   );
 
-  const totalLink = handlerName
-    ? toServiceAndHandlerInvocationsHref(baseUrl, serviceName, handlerName, {
-        existingParams: linkParams,
-      })
-    : toServiceInvocationsHref(baseUrl, serviceName, {
-        existingParams: linkParams,
-      });
+  const totalLink =
+    totalLinkOverride ??
+    (handlerName
+      ? toServiceAndHandlerInvocationsHref(baseUrl, serviceName, handlerName, {
+          existingParams: linkParams,
+        })
+      : toServiceInvocationsHref(baseUrl, serviceName, {
+          existingParams: linkParams,
+        }));
 
   const getStatusLink = (statusName: string) =>
     handlerName
@@ -237,6 +246,7 @@ export function ServiceStatusBar({
       issuesByStatus={issuesByStatus}
       isLoading={isLoading}
       noun={noun}
+      ariaLabel={ariaLabel}
       onOpenChange={onOpenChange}
     />
   );

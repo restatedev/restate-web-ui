@@ -36,9 +36,6 @@ export function OverviewSidebarItem({
   const deploymentsHref = carryQuery
     ? `${path}?view=deployments&${carryQuery}`
     : `${path}?view=deployments`;
-  const handlersHref = carryQuery
-    ? `${path}?view=handlers&${carryQuery}`
-    : `${path}?view=handlers`;
 
   const servicesMatch: SidebarMatch = (loc) => {
     if (!loc.pathname.startsWith(path)) return false;
@@ -48,9 +45,6 @@ export function OverviewSidebarItem({
   const deploymentsMatch: SidebarMatch = (loc) =>
     loc.pathname.startsWith(path) &&
     loc.searchParams.get('view') === 'deployments';
-  const handlersMatch: SidebarMatch = (loc) =>
-    loc.pathname.startsWith(path) &&
-    loc.searchParams.get('view') === 'handlers';
 
   return (
     <SidebarNavItem
@@ -82,12 +76,6 @@ export function OverviewSidebarItem({
             icon: IconName.Plus,
             preserveSearchParams: true,
           },
-        },
-        {
-          href: handlersHref,
-          label: 'Handlers',
-          match: handlersMatch,
-          preserveSearchParams,
         },
       ]}
     />

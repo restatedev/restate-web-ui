@@ -65,6 +65,8 @@ export interface PanelTableProps<
   rowClassName?: string | ((row: T) => string);
   rowDependencies?: unknown[];
   toolbar?: ReactNode;
+  toolbarWrapperClassName?: string;
+  toolbarClassName?: string;
   // Optional content rendered inside the scroll area, just below the sticky
   // column header and above the rows (scrolls with the rows). Omit for no effect.
   caption?: ReactNode;
@@ -127,6 +129,8 @@ export function PanelTable<
   bodyDependencies,
   bodyKey,
   toolbar,
+  toolbarWrapperClassName,
+  toolbarClassName,
   caption,
   ...ariaProps
 }: PanelTableProps<T, TColId>) {
@@ -387,10 +391,14 @@ export function PanelTable<
         </div>
       </div>
       {toolbar && (
-        <div className={stickyToolbarWrapper()}>
+        <div
+          className={stickyToolbarWrapper({
+            className: toolbarWrapperClassName,
+          })}
+        >
           <AriaToolbar
             aria-label={ariaLabel ? `${ariaLabel} tools` : 'Table tools'}
-            className={stickyToolbar()}
+            className={stickyToolbar({ className: toolbarClassName })}
           >
             {toolbar}
           </AriaToolbar>

@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { OverviewProvider } from './OverviewContext';
+import { OverviewProvider, useOverviewContext } from './OverviewContext';
 
 const { useOverviewDataMock } = vi.hoisted(() => ({
   useOverviewDataMock: vi.fn(),
@@ -47,5 +47,25 @@ describe('OverviewProvider', () => {
     expect(useOverviewDataMock).toHaveBeenCalledWith({
       deploymentStatusEnabled: enabled,
     });
+  });
+
+  it('opens old handler-tab URLs on Services', () => {
+    const queryClient = new QueryClient();
+
+    function ModeProbe() {
+      return <div>{useOverviewContext().mode}</div>;
+    }
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/?view=handlers']}>
+          <OverviewProvider>
+            <ModeProbe />
+          </OverviewProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByText('services')).toBeTruthy();
   });
 });
