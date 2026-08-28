@@ -1,7 +1,6 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
   adminApi,
-  hasCompleteVqueueInvocationPopulation,
   useAdminBaseUrl,
   useAPIStatus,
   useFeatures,
@@ -199,8 +198,7 @@ export function useProgressiveInvocationSummaryV2(
 ) {
   const features = useFeatures();
   const eagerBreakdowns = features.has('vqueues');
-  const splitCompletedStage =
-    eagerBreakdowns && !hasCompleteVqueueInvocationPopulation(features);
+  const splitCompletedStage = eagerBreakdowns;
   const stages = useSummaryInvocationsV2(
     {
       ...body,
