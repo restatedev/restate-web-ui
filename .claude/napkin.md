@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-28 Query inspector SQL tooltip (user): Use one tooltip on the Query pattern, with labelled `Query pattern` and `Slowest recorded query` sections. The Max cell is plain data. Mark the compact query pattern with the shared dashed inline-tooltip underline and help cursor.
+
 - 2026-08-28 Shared filter focus treatment (user): Filter multi-comboboxes should show one rounded focus ring on the whole search control, not a second rectangular ring on the raw input. Reset the input with important zero-border, zero-shadow, zero-ring, and no-outline utilities so keyboard `Escape` → `ArrowDown` cannot reintroduce a browser/global input ring; retain the parent `has-[input[data-focused=true]]` border and ring.
 
 - 2026-08-28 self on search-field inspection: I piped `rg` into `sed` despite the repo note against inspection pipelines. Use a bounded `rg` call directly and let the tool output limit constrain results.

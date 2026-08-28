@@ -94,6 +94,38 @@ describe('queryStats route', () => {
     expect(screen.queryByText(/\d+ of \d+ queries/)).toBeNull();
   });
 
+  it('shows the query pattern and slowest recorded query in one tooltip', async () => {
+    const user = userEvent.setup();
+    recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT 1',
+      durationMs: 120,
+      outcome: 'success',
+      executedAt: Date.now(),
+    });
+    recordQuery({
+      id: 'invocations/get',
+      sql: 'SELECT 2',
+      durationMs: 400,
+      outcome: 'success',
+      executedAt: Date.now(),
+    });
+    renderRoute();
+
+    const trigger = document.querySelector<HTMLElement>(
+      '[data-query-pattern-trigger="true"]',
+    );
+    expect(trigger).toBeTruthy();
+    expect(trigger?.className).toContain('underline');
+    if (!trigger) return;
+
+    await user.hover(trigger);
+
+    expect(await screen.findByText('Query pattern')).toBeTruthy();
+    expect(screen.getByText('Slowest recorded query')).toBeTruthy();
+    expect(document.body.textContent).toContain('SELECT 2');
+  });
+
   it('removes the router base from recorded page hrefs', () => {
     expect(stripRouterBaseFromHref('/ui/invocations', '/ui/')).toBe(
       '/invocations',
