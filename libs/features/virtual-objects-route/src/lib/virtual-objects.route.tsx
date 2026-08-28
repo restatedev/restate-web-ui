@@ -47,7 +47,7 @@ import { formatNumber } from '@restate/util/intl';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { type SortDescriptor } from 'react-aria-components';
 import { Form, useNavigate, useSearchParams } from 'react-router';
 import {
@@ -57,6 +57,11 @@ import {
   virtualObjectFilterSchema,
   writeVirtualObjectFilters,
 } from './virtual-objects.filters';
+import {
+  type VirtualObjectOpenDraft,
+  virtualObjectIdentityFromOpenDraft,
+} from './virtual-objects.open';
+import { VirtualObjectQuickOpen } from './VirtualObjectQuickOpen';
 
 const SERVICE_QUERY_PARAM = 'service';
 const SORT_QUERY_PARAM = 'sort';
@@ -261,6 +266,8 @@ function Component() {
   );
   const filterQuery = useFilterBuilder(committedFilters);
   const formRef = useRef<HTMLFormElement | null>(null);
+  const [openVirtualObjectDraft, setOpenVirtualObjectDraft] =
+    useState<VirtualObjectOpenDraft>({ key: '', scope: '' });
   const submitTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Removing a filter updates the list before this callback runs, but the
   // current render still exposes the old items. Defer submission until React
@@ -320,6 +327,23 @@ function Component() {
     services.find((service) => service === requestedService) ??
     services.at(0) ??
     '';
+  const confirmOpenVirtualObject = useCallback(() => {
+    if (!selectedService) return;
+    const identity = virtualObjectIdentityFromOpenDraft(
+      selectedService,
+      openVirtualObjectDraft,
+      hasScopedVirtualObjects,
+    );
+    if (!identity) return;
+    navigate(virtualObjectInstanceRouteHref(baseUrl, identity, searchParams));
+  }, [
+    baseUrl,
+    hasScopedVirtualObjects,
+    navigate,
+    openVirtualObjectDraft,
+    searchParams,
+    selectedService,
+  ]);
   const sortByBacklog = searchParams.get(SORT_QUERY_PARAM) === BACKLOG_SORT;
   const sortDescriptor: SortDescriptor | undefined = sortByBacklog
     ? { column: 'backlog', direction: 'descending' }
@@ -505,6 +529,18 @@ function Component() {
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
+                toolbar={
+                  <VirtualObjectQuickOpen
+                    draft={openVirtualObjectDraft}
+                    disabled={!selectedService}
+                    hasScopedVirtualObjects={hasScopedVirtualObjects}
+                    onChange={setOpenVirtualObjectDraft}
+                    onOpen={confirmOpenVirtualObject}
+                    service={selectedService}
+                  />
+                }
+                toolbarWrapperClassName="mx-4 h-9 -mb-8"
+                toolbarClassName="rounded-xl border-0 bg-zinc-200/45 px-2.5 text-xs shadow-none supports-[-moz-appearance:none]:bg-zinc-200/65"
                 bodyDependencies={[
                   selectedService,
                   searchString,

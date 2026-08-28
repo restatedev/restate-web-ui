@@ -1,5 +1,35 @@
 # Napkin
 
+- 2026-08-28 Virtual Object quick-open input hit area (user): The chip root can be wider than its single `ChipSegment`, leaving a dead area that does not focus the input. Make the direct segment flex across the chip, remove its right padding, and put equivalent right padding on the full-width input so the visible white region remains clickable.
+
+- 2026-08-28 Virtual Object quick-open action placement (user): Do not place a text “Open” action at the far edge of the banner. Group the action with the target controls as a compact circular arrow button immediately after the Key chip, with an “Open instance” accessible label and tooltip.
+
+- 2026-08-28 Virtual Object quick-open action spacing (user): Put the circular action inside the chip group so unused group width cannot create a gap after Key. Keep only a 4px inset (`ml-1`) and reduce the button from 26px to 24px with a 12px arrow.
+
+- 2026-08-28 Virtual Object quick-open compact height (user): Reduce the utility rail from 44px to 36px (`h-9`) and change the negative margin from `-mb-10` to `-mb-8`, preserving the existing 4px gap before the first table row.
+
+- 2026-08-28 Virtual Object quick-open distinction (user): Make the banner read as a quiet recessed utility rail rather than an alert. Use a slightly darker neutral `zinc-200` tint and a short neutral divider after “Open instance”; keep it borderless and shadowless so it does not compete with table content.
+
+- 2026-08-28 self on quick-open input focus: The remaining blue input rectangle was Tailwind Forms' one-pixel focus `box-shadow`, not a CSS outline. `focus:outline-hidden` cannot remove it; add `focus:ring-0` to the raw React Aria `Input` while retaining focus on the containing chip.
+
+- 2026-08-28 Virtual Object quick-open outer spacing correction (user, supersedes the padding note below): The banner itself needs more horizontal margin, not more inner padding. Use `mx-4` on the toolbar wrapper and restore the banner's original `px-2.5`.
+
+- 2026-08-28 Virtual Object quick-open focus (user): Do not show a native input outline inside the target chip. Use a softer blue chip border for focus and reserve the subtle outer halo for keyboard focus visibility.
+
+- 2026-08-28 Virtual Object quick-open alignment (user): Give the borderless quick-open strip 16px horizontal padding on both sides so its first and last controls align with the table content.
+
+- 2026-08-28 self on quick-open verification: `pnpm nx test virtual-objects-route -- src/lib/VirtualObjectQuickOpen.spec.tsx` produced no test output for 90 seconds. Stop the stalled Nx process and use direct Vitest with the library's `vite.config.ts` for the focused check.
+
+- 2026-08-28 Virtual Object quick-open styling (user): Remove the quick-open strip border, use a slightly darker neutral background, and vertically center every element. Do not render a separate target preview. Put the editable Scope and Key directly inside connected target-style chips, with the angled seam, `SCOPE` marker, and Virtual Object icon.
+
+- 2026-08-28 Virtual Object inline quick open (user, supersedes the dropdown/dialog notes below): Remove the `Open…` filter option and popover. Render a compact, persistent quick-open form in the table toolbar directly below the headers, with optional Scope, required Key, a live `VirtualObjectInstanceTarget` preview, and an Open action. Keep it mounted when the table body is loading, empty, or showing an error.
+
+- 2026-08-28 Virtual Object direct-open refinement (user): `Open…` must always be the third filter-dropdown option, including with empty input. Selecting it opens the scope/key editor; typed text only pre-fills that editor. When text forms an identity, render the action as `Open` followed by the shared `VirtualObjectInstanceTarget` instead of duplicating identity presentation.
+
+- 2026-08-28 Virtual Object direct open (user): Add `Open <input>` as the third option in the existing Virtual Object filter dropdown. Keep Key and Scope filter options visible. When scoped identities are supported, interpret the first `/` as `scope/key` and preserve later slashes in the key; otherwise use the whole input as the key. Confirm/edit the identity in an anchored popover before navigating.
+
+- 2026-08-28 self on multiline search: I passed a literal newline escape to `rg` without multiline mode while tracing the filter. Search each stable fragment separately or use `rg -U` only when a true multiline match is required.
+
 - 2026-08-28 Virtual Object identity discovery race (user): Re-enable the bounded `sys_vqueue_meta` identity query on VQueue servers and race it against `sys_invocation_status`; use only the first completed identity result instead of merging both. Keep state discovery disabled. `Promise.race` does not cancel the losing SQL request, so both still start.
 
 - 2026-08-28 Overview2 table refresh (user): Add the compact Limits-style refresh icon button after Deployment actions in the overview table toolbar. Reuse `triggerManualRefresh`, the same tagged-query path used by clicking RestateServer, so active services, deployments, and invocation-summary queries refetch together. Disable and spin the icon while summary/deployment refresh is active.

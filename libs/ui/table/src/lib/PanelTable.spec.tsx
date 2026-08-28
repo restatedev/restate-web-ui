@@ -41,4 +41,25 @@ describe('PanelTable', () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
+
+  it.each([
+    ['loading', { isLoading: true }],
+    ['empty', {}],
+    ['error', { error: new Error('Unavailable') }],
+  ])('keeps its toolbar visible when the body is %s', (_, state) => {
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+        items={[]}
+        toolbar={<button type="button">Open instance</button>}
+        renderCell={(row: { id: string; name: string }) => (
+          <Cell>{row.name}</Cell>
+        )}
+        {...state}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Open instance' })).toBeTruthy();
+  });
 });
