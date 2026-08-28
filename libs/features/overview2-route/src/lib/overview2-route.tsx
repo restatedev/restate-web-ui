@@ -12,6 +12,7 @@ import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
 import { formatNumber } from '@restate/util/intl';
 import { IssuesBannerStack } from '@restate/ui/issue-banner';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button } from '@restate/ui/button';
 import {
@@ -55,6 +56,15 @@ import { useCompletionChart } from './useCompletionChart';
 import { useInFlightChart } from './useInFlightChart';
 
 const LINE_COUNT = 7;
+
+const refreshIconStyles = tv({
+  base: 'h-3.5 w-3.5',
+  variants: {
+    isRefreshing: {
+      true: 'animate-spin',
+    },
+  },
+});
 
 function usePerspectiveLines(
   containerRef: React.RefObject<HTMLDivElement | null>,
@@ -463,6 +473,7 @@ function OverviewContent() {
   const inFlightChart = useInFlightChart();
   const servicesCount = servicesMap?.size ?? 0;
   const deploymentsCount = deploymentsMap?.size ?? 0;
+  const isOverviewRefreshing = isSummaryLoading || isDeploymentsFetching;
 
   const { GettingStarted, status } = useRestateContext();
 
@@ -953,6 +964,30 @@ function OverviewContent() {
             )}
           </SearchField>
           <DeploymentActions />
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                type="button"
+                variant="icon"
+                aria-label={
+                  isOverviewRefreshing
+                    ? 'Refreshing overview'
+                    : 'Refresh overview'
+                }
+                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
+                onClick={triggerManualRefresh}
+                disabled={isOverviewRefreshing}
+              >
+                <Icon
+                  name={IconName.Retry}
+                  className={refreshIconStyles({
+                    isRefreshing: isOverviewRefreshing,
+                  })}
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent size="sm">Refresh overview</TooltipContent>
+          </Tooltip>
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-20">
           <ContentPanelSection flush>

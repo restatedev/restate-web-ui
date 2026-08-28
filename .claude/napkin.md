@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-08-28 Overview2 table refresh (user): Add the compact Limits-style refresh icon button after Deployment actions in the overview table toolbar. Reuse `triggerManualRefresh`, the same tagged-query path used by clicking RestateServer, so active services, deployments, and invocation-summary queries refetch together. Disable and spin the icon while summary/deployment refresh is active.
+
 - 2026-08-28 Overview2 remove handler count (user, supersedes metadata grouping below): Remove the number of handlers from service rows. Revert the segmented metadata pill and render only the shared ServiceType badge as a compact standalone badge aligned to the right, with no reserved handler-count space.
 
 - 2026-08-28 Overview2 service metadata grouping (user): Fixed subcolumns alone still look like unrelated labels floating at the far right. Present service type and handler count as one compact, fixed-width neutral metadata pill with a subtle vertical divider. Remove the type badge's nested border/background so the shared container owns the visual grouping while retaining the ServiceType explainer.
