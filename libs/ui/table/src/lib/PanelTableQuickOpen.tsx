@@ -74,7 +74,7 @@ export function PanelTableQuickOpen({
                 <Label className="sr-only">Scope (optional)</Label>
                 <Input
                   placeholder="optional"
-                  className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-3 pl-0 font-mono text-xs text-zinc-700 outline-none placeholder:text-zinc-400 focus:ring-0 focus:outline-hidden disabled:text-zinc-400"
+                  className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-3 pl-0 font-mono text-xs text-zinc-700 outline-none placeholder:font-sans placeholder:text-zinc-400 focus:ring-0 focus:outline-hidden disabled:text-zinc-400"
                 />
               </TextField>
             </ChipSegment>
@@ -102,7 +102,7 @@ export function PanelTableQuickOpen({
               <Label className="sr-only">{inputLabel}</Label>
               <Input
                 placeholder={placeholder}
-                className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-2.5 pl-0 font-mono text-xs text-zinc-700 outline-none placeholder:text-zinc-400 focus:ring-0 focus:outline-hidden disabled:text-zinc-400"
+                className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-2.5 pl-0 font-mono text-xs text-zinc-700 outline-none placeholder:font-sans placeholder:text-zinc-400 focus:ring-0 focus:outline-hidden disabled:text-zinc-400"
               />
             </TextField>
           </ChipSegment>
@@ -152,7 +152,7 @@ export function PanelTableQuickOpenToolbar({
   return (
     <div className="flex h-full w-full min-w-0 flex-col gap-1">
       {notice}
-      <div className="flex h-9 w-full shrink-0 items-center rounded-xl bg-zinc-200/45 px-2.5 text-xs supports-[-moz-appearance:none]:bg-zinc-200/65">
+      <div className="flex h-9 w-full shrink-0 items-center rounded-xl bg-zinc-200/30 px-2.5 text-xs supports-[-moz-appearance:none]:bg-zinc-200/45">
         {children}
       </div>
     </div>

@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-08-28 self on remembered-identity inspection: I used `rg ... | head` even though the repo notes prohibit inspection pipelines. Keep result bounds in the tool output and use independently scoped searches.
+
+- 2026-08-28 Cross-table quick-open typography and tone (user): Keep placeholder text sans-serif while entered identity values remain monospaced. Use a lighter neutral background for the shared quick-open rail across Virtual Objects, Workflows, and Invocations.
+
 - 2026-08-28 self on cross-table quick-open verification: `pnpm nx typecheck web-ui` remained alive without output after more than a minute. Stop only the three processes from that invocation and use direct TypeScript or focused project checks instead of waiting on the stalled Nx runner.
 
 - 2026-08-28 Cross-table direct open (user): Reuse the compact inline quick-open rail on Virtual Objects, Workflows, and Invocations. Keep each identity specific: optional scope plus key for Virtual Objects, optional scope plus workflow ID for Workflows, and invocation ID for Invocations. When filters are active, keep the equal-sized filtered-results rail above quick open.
