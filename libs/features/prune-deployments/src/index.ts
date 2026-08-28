@@ -1,2 +1,8 @@
-export { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from './lib/constants';
-export { PruneDrainedDeploymentsDialog } from './lib/Dialog';
+export {
+  DELETE_SELECTED_DEPLOYMENTS_QUERY,
+  PRUNE_DRAINED_DEPLOYMENTS_QUERY,
+} from './lib/constants';
+export {
+  DeleteSelectedDeploymentsDialog,
+  PruneDrainedDeploymentsDialog,
+} from './lib/Dialog';

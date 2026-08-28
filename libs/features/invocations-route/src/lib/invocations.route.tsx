@@ -1,5 +1,10 @@
 import { Button, SubmitButton } from '@restate/ui/button';
-import { PanelTable, PanelTableColumn } from '@restate/ui/table';
+import {
+  PanelTable,
+  PanelTableColumn,
+  PanelTableQuickOpenToolbar,
+  panelTableQuickOpenToolbarClassNames,
+} from '@restate/ui/table';
 import {
   Dropdown,
   DropdownItem,
@@ -72,6 +77,7 @@ import {
   FilterChip,
   FILTER_QUERY_PREFIX,
   FilterShortcutTrigger,
+  FilteredResultsCaption,
   writeFilterClauses,
 } from '@restate/ui/filter-builder';
 import {
@@ -131,6 +137,7 @@ import {
   withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
+import { InvocationQuickOpen } from './InvocationQuickOpen';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
@@ -151,6 +158,32 @@ const MIN_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   target: INVOCATION_TABLE_COLUMN_CONFIG.target.minWidth,
   invoked_by: 100,
 };
+
+function invocationRouteLocation(
+  baseUrl: string,
+  invocationId: string,
+  searchParams: URLSearchParams,
+) {
+  const preservedParams = new URLSearchParams();
+  const paramsToPreserve = [
+    SERVICE_PLAYGROUND_QUERY_PARAM,
+    SERVICE_QUERY_PARAM,
+    DEPLOYMENT_QUERY_PARAM,
+    INVOCATION_QUERY_NAME,
+    STATE_QUERY_NAME,
+    HANDLER_QUERY_PARAM,
+    PANEL_QUERY_PARAM,
+  ];
+  paramsToPreserve.forEach((param) => {
+    searchParams.getAll(param).forEach((value) => {
+      preservedParams.append(param, value);
+    });
+  });
+  return {
+    pathname: `${baseUrl}/invocations/${invocationId}`,
+    search: preservedParams.toString(),
+  };
+}
 const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   invoked_by: 180,
 };
@@ -245,10 +278,10 @@ function ResultsNotice({
 }) {
   const statusChangedMessage = `${formatNumber(statusChangedCount)} ${statusChangedCount === 1 ? 'invocation changed' : 'invocations changed'} status while results were loading. The latest status is shown.`;
   return (
-    <div className="m-2 mt-11 -mb-9 flex items-start gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600">
+    <div className="flex h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 text-xs text-zinc-600">
       <Icon
         name={IconName.Info}
-        className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400"
+        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
       />
       <span>
         {isPartial && 'This view may not include every matching invocation. '}
@@ -371,6 +404,7 @@ function Component() {
     useListInvocationsParameters();
 
   const [pageIndex, _setPageIndex] = useState(0);
+  const [openInvocationId, setOpenInvocationId] = useState('');
   const [, startTransition] = useTransition();
   const setPageIndex = useCallback(
     (arg: Parameters<typeof _setPageIndex>[0]) => {
@@ -665,6 +699,11 @@ function Component() {
   const navigate = useNavigate();
   const basePath = useHref('/');
   const isModifierPressed = useRef(false);
+  const confirmOpenInvocation = useCallback(() => {
+    const invocationId = openInvocationId.trim();
+    if (!invocationId) return;
+    navigate(invocationRouteLocation(baseUrl, invocationId, searchParams));
+  }, [baseUrl, navigate, openInvocationId, searchParams]);
   const changeVqueueSummaryFocus = useCallback(
     (focus: typeof vqueueSummaryFocus) => {
       navigate(
@@ -714,14 +753,34 @@ function Component() {
           setListSampledOverride(true);
         }}
       />
-    ) : !isFetching &&
-      (listSampled || data?.isPartial || statusChangedCount > 0) &&
-      !error ? (
+    ) : undefined;
+  const resultsNotice =
+    !isFetching &&
+    (listSampled || data?.isPartial || statusChangedCount > 0) &&
+    !error ? (
       <ResultsNotice
         isPartial={listSampled || Boolean(data?.isPartial)}
         statusChangedCount={statusChangedCount}
       />
     ) : undefined;
+  const filteredResultsCaption = hasActiveFilters ? (
+    <FilteredResultsCaption
+      noun="invocations"
+      className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
+      onClear={() => {
+        setPageIndex(0);
+        setSearchParams(writeFilterClauses(searchParams, []), {
+          preventScrollReset: true,
+        });
+      }}
+    />
+  ) : undefined;
+  const quickOpenNotices = [resultsNotice, filteredResultsCaption].filter(
+    Boolean,
+  );
+  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
+    quickOpenNotices.length,
+  );
 
   const summaryContent = (
     <div className={summaryHeaderStyles()}>
@@ -972,29 +1031,28 @@ function Component() {
                 caption={tableCaption}
                 columns={panelColumns}
                 items={currentPageItems}
+                toolbar={
+                  <PanelTableQuickOpenToolbar notice={quickOpenNotices}>
+                    <InvocationQuickOpen
+                      invocationId={openInvocationId}
+                      onChange={setOpenInvocationId}
+                      onOpen={confirmOpenInvocation}
+                    />
+                  </PanelTableQuickOpenToolbar>
+                }
+                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
+                toolbarClassName={quickOpenToolbarClassNames.toolbar}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}
                 onSelectionChange={(keys) =>
                   setSelectedInvocationIds(keys as Set<string>)
                 }
                 onRowAction={(key) => {
-                  const preservedParams = new URLSearchParams();
-                  const paramsToPreserve = [
-                    SERVICE_PLAYGROUND_QUERY_PARAM,
-                    SERVICE_QUERY_PARAM,
-                    DEPLOYMENT_QUERY_PARAM,
-                    INVOCATION_QUERY_NAME,
-                    STATE_QUERY_NAME,
-                    HANDLER_QUERY_PARAM,
-                    PANEL_QUERY_PARAM,
-                  ];
-                  paramsToPreserve.forEach((param) => {
-                    searchParams.getAll(param).forEach((value) => {
-                      preservedParams.append(param, value);
-                    });
-                  });
-                  const pathname = `${baseUrl}/invocations/${key}`;
-                  const search = preservedParams.toString();
+                  const { pathname, search } = invocationRouteLocation(
+                    baseUrl,
+                    String(key),
+                    searchParams,
+                  );
                   if (isModifierPressed.current) {
                     const fullPath = `${basePath}${pathname}`.replace(
                       '//',

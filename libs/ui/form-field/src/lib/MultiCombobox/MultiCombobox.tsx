@@ -8,7 +8,6 @@ import {
   ReactNode,
   RefObject,
   PropsWithChildren,
-  ComponentProps,
   useRef,
   useLayoutEffect,
   useMemo,
@@ -169,7 +168,7 @@ const popoverStyles = tv({
 });
 
 const inputStyles = tv({
-  base: 'min-h-8.5 w-full min-w-0 border-0 bg-transparent py-1.5 pr-2 pl-0 text-sm text-current focus:border-0 focus:shadow-none focus:ring-0 focus:outline-0',
+  base: 'min-h-8.5 w-full min-w-0 border-0! bg-transparent py-1.5 pr-2 pl-0 text-sm text-current shadow-none! ring-0! outline-none!',
 });
 
 const overflowStyles = tv({
@@ -228,8 +227,6 @@ export function FormFieldMultiCombobox<
     () => selectedList.items.map((item) => item.id),
     [selectedList.items],
   );
-  const [menuTrigger, setMenuTrigger] =
-    useState<ComponentProps<typeof ComboBox>['menuTrigger']>('focus');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   useEffect(() => {
@@ -282,10 +279,8 @@ export function FormFieldMultiCombobox<
         selectedKey: null,
       });
       onItemRemove?.(key);
-      setMenuTrigger('input');
       setTimeout(() => {
         inputRefObject?.current?.focus();
-        setMenuTrigger('focus');
       });
     },
     [selectedList, onItemRemove, inputRefObject, canRemoveItem],
@@ -605,7 +600,7 @@ export function FormFieldMultiCombobox<
           ref={comboBoxRef}
           {...props}
           allowsEmptyCollection
-          menuTrigger={menuTrigger}
+          menuTrigger="focus"
           className={comboBoxStyles({
             tagsPlacement,
             className: inputClassName,

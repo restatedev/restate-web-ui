@@ -69,6 +69,22 @@ function InlineTagHarness() {
   );
 }
 
+function RemoveTagHarness() {
+  const selectedList = useListData<Item>({
+    initialItems: [{ id: 'alpha', textValue: 'Alpha' }],
+  });
+
+  return (
+    <FormFieldMultiCombobox
+      label="Items"
+      items={[{ id: 'beta', textValue: 'Beta' }]}
+      selectedList={selectedList}
+    >
+      {Tag}
+    </FormFieldMultiCombobox>
+  );
+}
+
 function DynamicItemsHarness({
   onOpenChange,
 }: {
@@ -126,6 +142,34 @@ describe('FormFieldMultiCombobox tag rendering', () => {
 
     expect(screen.getByRole('textbox', { name: 'Edit tag' })).toBe(input);
     expect((input as HTMLInputElement).value).toBe('Alphax');
+  });
+
+  it('opens the options when focus returns to the search field after removing a tag', async () => {
+    const user = userEvent.setup();
+    render(<RemoveTagHarness />);
+
+    await user.click(screen.getByRole('button', { name: 'Alpha' }));
+    const combobox = screen.getByRole('combobox', { name: 'Items' });
+
+    expect(document.activeElement).toBe(combobox);
+    expect(combobox.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByRole('option', { name: 'Beta' })).toBeTruthy();
+  });
+
+  it('keeps the keyboard focus ring on the search control rather than the raw input', async () => {
+    const user = userEvent.setup();
+    render(<RemoveTagHarness />);
+
+    const combobox = screen.getByRole('combobox', { name: 'Items' });
+    await user.click(combobox);
+    await user.keyboard('{Escape}{ArrowDown}');
+
+    expect(document.activeElement).toBe(combobox);
+    expect(combobox.getAttribute('aria-expanded')).toBe('true');
+    expect(combobox.className).toContain('border-0!');
+    expect(combobox.className).toContain('shadow-none!');
+    expect(combobox.className).toContain('ring-0!');
+    expect(combobox.className).toContain('outline-none!');
   });
 
   it('uses updated items after an asynchronous schema change', async () => {

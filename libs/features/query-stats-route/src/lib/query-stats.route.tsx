@@ -140,10 +140,8 @@ function compareStats(a: QueryStat, b: QueryStat, column: StatsColumn): number {
   }
 }
 
-// The dashed underline marks cells whose hover reveals the full statement,
-// matching the app's inline-tooltip indicator treatment.
 const HOVER_INDICATOR_CLASS =
-  'cursor-help underline decoration-dashed decoration-from-font underline-offset-4';
+  'inline cursor-help underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-4 hover:decoration-zinc-500';
 
 const MAX_TABLE_ROWS = 50;
 
@@ -218,6 +216,58 @@ function formatAgo(now: number, timestamp: number): string {
     normaliseDuration({ seconds: Math.floor(elapsed / 1000) }),
   );
   return `${duration} ago`;
+}
+
+function queryTooltipCopyText(stat: QueryStat): string {
+  return [
+    `Query pattern\n${stat.shape}`,
+    ...(stat.max?.sql
+      ? [
+          `Slowest recorded query (${formatMs(stat.max.durationMs)}${
+            stat.max.timedOut ? ', timed out' : ''
+          })\n${stat.max.sql}`,
+        ]
+      : []),
+  ].join('\n\n');
+}
+
+function QueryTooltipContent({ stat }: { stat: QueryStat }) {
+  return (
+    <div className="flex max-w-[64rem] flex-col gap-3 whitespace-normal">
+      <div>
+        <div className="mb-1 font-sans text-2xs! font-medium text-gray-400!">
+          Query pattern
+        </div>
+        <div className="font-mono whitespace-pre">
+          <SqlText
+            sql={formatSql(stat.shape)}
+            tables={stat.tables}
+            surface="dark"
+          />
+        </div>
+      </div>
+      {stat.max?.sql && (
+        <div className="border-t border-zinc-600/80 pt-3">
+          <div className="mb-1 flex items-center gap-2 font-sans">
+            <span className="text-2xs! font-medium text-gray-400!">
+              Slowest recorded query
+            </span>
+            <span className="text-2xs! text-gray-500! tabular-nums">
+              {formatMs(stat.max.durationMs)}
+              {stat.max.timedOut ? ' · Timed out' : ''}
+            </span>
+          </div>
+          <div className="font-mono whitespace-pre">
+            <SqlText
+              sql={formatSql(stat.max.sql)}
+              tables={stat.tables}
+              surface="dark"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function downloadTextFile(filename: string, content: string, type: string) {
@@ -434,23 +484,20 @@ function renderStatsCell(
               <TruncateWithTooltip
                 alwaysShow
                 size="lg"
-                copyText={stat.shape}
-                containerClassName={HOVER_INDICATOR_CLASS}
-                tooltipContent={
-                  <span className="font-mono">
-                    <SqlText
-                      sql={formatSql(stat.shape)}
-                      tables={stat.tables}
-                      surface="dark"
-                    />
-                  </span>
-                }
+                copyText={queryTooltipCopyText(stat)}
+                containerClassName="cursor-help"
+                tooltipContent={<QueryTooltipContent stat={stat} />}
               >
-                <SqlText
-                  sql={compactShape(stat)}
-                  tables={stat.tables}
-                  surface="neutral"
-                />
+                <span
+                  className={HOVER_INDICATOR_CLASS}
+                  data-query-pattern-trigger="true"
+                >
+                  <SqlText
+                    sql={compactShape(stat)}
+                    tables={stat.tables}
+                    surface="neutral"
+                  />
+                </span>
               </TruncateWithTooltip>
             </span>
             <span className="flex min-w-0 items-center gap-1.5 text-2xs text-gray-400">
@@ -521,27 +568,7 @@ function renderStatsCell(
       return (
         <Cell>
           <span className="flex min-w-0 items-center gap-1 tabular-nums">
-            {stat.max?.sql ? (
-              <TruncateWithTooltip
-                alwaysShow
-                size="lg"
-                copyText={stat.max.sql}
-                containerClassName={HOVER_INDICATOR_CLASS}
-                tooltipContent={
-                  <span className="font-mono">
-                    <SqlText
-                      sql={formatSql(stat.max.sql)}
-                      tables={stat.tables}
-                      surface="dark"
-                    />
-                  </span>
-                }
-              >
-                {formatMs(stat.max.durationMs)}
-              </TruncateWithTooltip>
-            ) : (
-              formatMs(stat.max?.durationMs)
-            )}
+            {formatMs(stat.max?.durationMs)}
             {stat.max?.timedOut && (
               <Icon
                 name={IconName.TriangleAlert}

@@ -22,6 +22,18 @@ const INBOX_STATUSES = INBOX_INVOCATION_STATUSES;
 // including value order, so links built here still resolve to that preset.
 const NON_IN_FLIGHT_STATUSES = [...COMPLETED_STATUSES, 'scheduled'];
 
+function setNotCompletedFilter(
+  params: URLSearchParams,
+  notCompletedOnly: boolean,
+) {
+  if (notCompletedOnly) {
+    params.set(
+      'filter_status',
+      JSON.stringify({ operation: 'NOT_IN', value: COMPLETED_STATUSES }),
+    );
+  }
+}
+
 function resolveStatuses(statusName: string, expandFailed = true): string[] {
   if (expandFailed && statusName === 'failed') return FAILED_SUBSTATES;
   if (statusName === 'inbox') return INBOX_STATUSES;
@@ -176,13 +188,20 @@ export function toCompletedInvocationsHref(
 export function toServiceInvocationsHref(
   baseUrl: string,
   serviceName: string,
-  { existingParams }: { existingParams?: URLSearchParams } = {},
+  {
+    existingParams,
+    notCompletedOnly = false,
+  }: {
+    existingParams?: URLSearchParams;
+    notCompletedOnly?: boolean;
+  } = {},
 ) {
   const params = buildParams(existingParams);
   params.set(
     'filter_target_service_name',
     JSON.stringify({ operation: 'IN', value: [serviceName] }),
   );
+  setNotCompletedFilter(params, notCompletedOnly);
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 
@@ -190,7 +209,13 @@ export function toServiceAndHandlerInvocationsHref(
   baseUrl: string,
   serviceName: string,
   handlerName: string,
-  { existingParams }: { existingParams?: URLSearchParams } = {},
+  {
+    existingParams,
+    notCompletedOnly = false,
+  }: {
+    existingParams?: URLSearchParams;
+    notCompletedOnly?: boolean;
+  } = {},
 ) {
   const params = buildParams(existingParams);
   params.set(
@@ -201,6 +226,7 @@ export function toServiceAndHandlerInvocationsHref(
     'filter_target_handler_name',
     JSON.stringify({ operation: 'IN', value: [handlerName] }),
   );
+  setNotCompletedFilter(params, notCompletedOnly);
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 

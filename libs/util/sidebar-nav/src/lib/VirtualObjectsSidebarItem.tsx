@@ -41,6 +41,15 @@ function setRecent(
   recentListeners.forEach((listener) => listener());
 }
 
+export function useRecentVirtualObjectInstance(baseUrl = '') {
+  const path = `${baseUrl}/virtual-objects`;
+  return useSyncExternalStore(
+    subscribeToRecent,
+    () => getRecent(path),
+    () => undefined,
+  );
+}
+
 function currentVirtualObjectInstance(
   path: string,
   pathname: string,
@@ -109,11 +118,7 @@ export function VirtualObjectsSidebarItem({
       currentVirtualObjectInstance(path, location.pathname, location.search),
     [location.pathname, location.search, path],
   );
-  const recent = useSyncExternalStore(
-    subscribeToRecent,
-    () => getRecent(path),
-    () => undefined,
-  );
+  const recent = useRecentVirtualObjectInstance(baseUrl);
 
   useEffect(() => {
     if (current) setRecent(path, current);

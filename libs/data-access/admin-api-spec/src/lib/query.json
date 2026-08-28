@@ -5417,6 +5417,14 @@
       "ListVirtualObjectInstancesRequest": {
         "type": "object",
         "properties": {
+          "candidates": {
+            "type": "array",
+            "maxItems": 10,
+            "description": "Known identities to force into the bounded result when they match the active search and filters. Candidates receive the same backlog and lock hydration as discovered identities.",
+            "items": {
+              "$ref": "#/components/schemas/VirtualObjectInstanceCandidate"
+            }
+          },
           "search": {
             "type": "string",
             "maxLength": 256,
@@ -5430,6 +5438,22 @@
           },
           "sort": {
             "$ref": "#/components/schemas/VirtualObjectInstanceSort"
+          }
+        }
+      },
+      "VirtualObjectInstanceCandidate": {
+        "type": "object",
+        "required": ["key"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
           }
         }
       },

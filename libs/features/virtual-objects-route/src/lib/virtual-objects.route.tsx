@@ -36,7 +36,13 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { ListPageHeader } from '@restate/ui/layout';
 import { getHrefWithQueryParams, Link } from '@restate/ui/link';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
+import {
+  Cell,
+  PanelTable,
+  PanelTableQuickOpenToolbar,
+  panelTableQuickOpenToolbarClassNames,
+  type PanelTableColumn,
+} from '@restate/ui/table';
 import {
   Tooltip,
   TooltipContent,
@@ -45,9 +51,10 @@ import {
 } from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
+import { useRecentVirtualObjectInstance } from '@restate/util/sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { type SortDescriptor } from 'react-aria-components';
 import { Form, useNavigate, useSearchParams } from 'react-router';
 import {
@@ -57,6 +64,11 @@ import {
   virtualObjectFilterSchema,
   writeVirtualObjectFilters,
 } from './virtual-objects.filters';
+import {
+  type VirtualObjectOpenDraft,
+  virtualObjectIdentityFromOpenDraft,
+} from './virtual-objects.open';
+import { VirtualObjectQuickOpen } from './VirtualObjectQuickOpen';
 
 const SERVICE_QUERY_PARAM = 'service';
 const SORT_QUERY_PARAM = 'sort';
@@ -245,6 +257,7 @@ function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
+  const recentVirtualObject = useRecentVirtualObjectInstance(baseUrl);
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const hasScopedVirtualObjects =
@@ -261,6 +274,8 @@ function Component() {
   );
   const filterQuery = useFilterBuilder(committedFilters);
   const formRef = useRef<HTMLFormElement | null>(null);
+  const [openVirtualObjectDraft, setOpenVirtualObjectDraft] =
+    useState<VirtualObjectOpenDraft>({ key: '', scope: '' });
   const submitTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   // Removing a filter updates the list before this callback runs, but the
   // current render still exposes the old items. Defer submission until React
@@ -320,6 +335,23 @@ function Component() {
     services.find((service) => service === requestedService) ??
     services.at(0) ??
     '';
+  const confirmOpenVirtualObject = useCallback(() => {
+    if (!selectedService) return;
+    const identity = virtualObjectIdentityFromOpenDraft(
+      selectedService,
+      openVirtualObjectDraft,
+      hasScopedVirtualObjects,
+    );
+    if (!identity) return;
+    navigate(virtualObjectInstanceRouteHref(baseUrl, identity, searchParams));
+  }, [
+    baseUrl,
+    hasScopedVirtualObjects,
+    navigate,
+    openVirtualObjectDraft,
+    searchParams,
+    selectedService,
+  ]);
   const sortByBacklog = searchParams.get(SORT_QUERY_PARAM) === BACKLOG_SORT;
   const sortDescriptor: SortDescriptor | undefined = sortByBacklog
     ? { column: 'backlog', direction: 'descending' }
@@ -349,6 +381,19 @@ function Component() {
   } = useListVirtualObjectInstances(
     selectedService,
     {
+      ...(recentVirtualObject?.service === selectedService &&
+      (recentVirtualObject.scope === undefined || hasScopedVirtualObjects)
+        ? {
+            candidates: [
+              {
+                key: recentVirtualObject.key,
+                ...(recentVirtualObject.scope !== undefined
+                  ? { scope: recentVirtualObject.scope }
+                  : {}),
+              },
+            ],
+          }
+        : {}),
       ...(filters.length > 0 ? { filters } : {}),
       ...(sortByBacklog
         ? { sort: { field: BACKLOG_SORT, order: 'DESC' as const } }
@@ -362,6 +407,7 @@ function Component() {
       staleTime: 0,
     },
   );
+  const error = servicesError ?? instancesError;
   const items = useMemo<VirtualObjectInstanceRow[]>(
     () =>
       (data?.rows ?? []).map((row) => ({
@@ -373,6 +419,12 @@ function Component() {
   const maxBacklog = useMemo(
     () => items.reduce((maximum, item) => Math.max(maximum, item.backlog), 0),
     [items],
+  );
+  const hasRecentItem = items.some(
+    ({ key, scope }) =>
+      recentVirtualObject?.service === selectedService &&
+      recentVirtualObject.key === key &&
+      recentVirtualObject.scope === scope,
   );
   const visibleColumns = useMemo(
     () => (hasVqueues ? [...columns, lockAcquiredColumn] : columns),
@@ -402,10 +454,10 @@ function Component() {
   );
   const isLoading =
     isServicesPending || (Boolean(selectedService) && isInstancesFetching);
-  const error = servicesError ?? instancesError;
   const filteredResultsCaption = hasFilters ? (
     <FilteredResultsCaption
       noun="virtual object instances"
+      className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
       onClear={() =>
         setSearchParams(writeVirtualObjectFilters(searchParams, []), {
           preventScrollReset: true,
@@ -413,6 +465,9 @@ function Component() {
       }
     />
   ) : undefined;
+  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
+    Number(Boolean(filteredResultsCaption)),
+  );
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -500,11 +555,24 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Virtual Object instances"
-                caption={filteredResultsCaption}
                 columns={visibleColumns}
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
+                toolbar={
+                  <PanelTableQuickOpenToolbar notice={filteredResultsCaption}>
+                    <VirtualObjectQuickOpen
+                      draft={openVirtualObjectDraft}
+                      disabled={!selectedService}
+                      hasScopedVirtualObjects={hasScopedVirtualObjects}
+                      onChange={setOpenVirtualObjectDraft}
+                      onOpen={confirmOpenVirtualObject}
+                      service={selectedService}
+                    />
+                  </PanelTableQuickOpenToolbar>
+                }
+                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
+                toolbarClassName={quickOpenToolbarClassNames.toolbar}
                 bodyDependencies={[
                   selectedService,
                   searchString,
@@ -618,18 +686,20 @@ function Component() {
                   <span>
                     Showing the{' '}
                     <span className="font-medium text-gray-600">
-                      {data.rows.length}
+                      {items.length}
                     </span>{' '}
-                    {sortByBacklog
-                      ? 'highest-backlog instances; more exist.'
-                      : 'instances; more exist.'}
+                    {hasRecentItem
+                      ? 'instances including the last visited; more exist.'
+                      : sortByBacklog
+                        ? 'highest-backlog instances; more exist.'
+                        : 'instances; more exist.'}
                   </span>
                 ) : (
                   <span>
                     <span className="font-medium text-gray-600">
-                      {data.rows.length}
+                      {items.length}
                     </span>{' '}
-                    {data.rows.length === 1 ? 'instance' : 'instances'}
+                    {items.length === 1 ? 'instance' : 'instances'}
                   </span>
                 )}
               </div>

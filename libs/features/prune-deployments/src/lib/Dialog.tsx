@@ -2,7 +2,7 @@ import {
   useListDeployments,
   useListDrainedDeployments,
 } from '@restate/data-access/admin-api-hooks';
-import { Deployment } from '@restate/features/deployment';
+import { Deployment, Warning } from '@restate/features/deployment';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
   DialogClose,
@@ -11,13 +11,17 @@ import {
   QueryDialog,
 } from '@restate/ui/dialog';
 import { ErrorBanner } from '@restate/ui/error';
+import { Link } from '@restate/ui/link';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { FormEvent, useState } from 'react';
 import { Form, useSearchParams } from 'react-router';
-import { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from './constants';
+import {
+  DELETE_SELECTED_DEPLOYMENTS_QUERY,
+  PRUNE_DRAINED_DEPLOYMENTS_QUERY,
+} from './constants';
 import { PruneDeploymentsProgressBar } from './PruneDeploymentsProgressBar';
 import { useDeleteDeployments } from './useDeleteDeployments';
 
@@ -33,7 +37,12 @@ function removePruneDeploymentsQueryParam(prev: URLSearchParams) {
   return prev;
 }
 
-function DrainedDeploymentListSkeleton() {
+function removeDeleteSelectedDeploymentsQueryParam(prev: URLSearchParams) {
+  prev.delete(DELETE_SELECTED_DEPLOYMENTS_QUERY);
+  return prev;
+}
+
+function DeploymentListSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
@@ -57,14 +66,16 @@ function DrainedDeploymentListSkeleton() {
   );
 }
 
-function DrainedDeploymentList({
+function DeploymentList({
   deploymentIds,
   visibleCount,
   onShowMore,
+  listLabel,
 }: {
   deploymentIds: string[];
   visibleCount: number;
   onShowMore: VoidFunction;
+  listLabel: string;
 }) {
   const visibleDeploymentIds = deploymentIds.slice(0, visibleCount);
   const hiddenCount = deploymentIds.length - visibleDeploymentIds.length;
@@ -92,7 +103,7 @@ function DrainedDeploymentList({
         <div className="flex items-center justify-between gap-4 text-0.5xs text-gray-500">
           <span>
             Showing {formatNumber(visibleDeploymentIds.length)} of{' '}
-            {formatNumber(deploymentIds.length)} drained{' '}
+            {formatNumber(deploymentIds.length)} {listLabel}{' '}
             {formatPlurals(deploymentIds.length, {
               one: 'deployment',
               other: 'deployments',
@@ -124,7 +135,8 @@ export function PruneDrainedDeploymentsDialog() {
   return (
     <QueryDialog query={PRUNE_DRAINED_DEPLOYMENTS_QUERY}>
       {isOpen && (
-        <PruneDrainedDeploymentsDialogContent
+        <DeleteDeploymentsDialogContent
+          mode="drained"
           onSuccessClose={removeDialogQueryParam}
         />
       )}
@@ -132,9 +144,43 @@ export function PruneDrainedDeploymentsDialog() {
   );
 }
 
-function PruneDrainedDeploymentsDialogContent({
+export function DeleteSelectedDeploymentsDialog({
+  deploymentIds,
+  onDeleted,
+}: {
+  deploymentIds: string[];
+  onDeleted: VoidFunction;
+}) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isOpen = searchParams.has(DELETE_SELECTED_DEPLOYMENTS_QUERY);
+
+  const handleSuccess = () => {
+    onDeleted();
+    setSearchParams(removeDeleteSelectedDeploymentsQueryParam, {
+      preventScrollReset: true,
+    });
+  };
+
+  return (
+    <QueryDialog query={DELETE_SELECTED_DEPLOYMENTS_QUERY}>
+      {isOpen && (
+        <DeleteDeploymentsDialogContent
+          mode="selected"
+          selectedDeploymentIds={deploymentIds}
+          onSuccessClose={handleSuccess}
+        />
+      )}
+    </QueryDialog>
+  );
+}
+
+function DeleteDeploymentsDialogContent({
+  mode,
+  selectedDeploymentIds = [],
   onSuccessClose,
 }: {
+  mode: 'drained' | 'selected';
+  selectedDeploymentIds?: string[];
   onSuccessClose: VoidFunction;
 }) {
   const queryClient = useQueryClient();
@@ -156,9 +202,17 @@ function PruneDrainedDeploymentsDialogContent({
   const deleteDeployments = useDeleteDeployments();
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_DEPLOYMENTS);
 
-  const availableDeploymentIds = Array.from(drainedDeploymentIds);
+  const isSelectedMode = mode === 'selected';
+  const availableDeploymentIds = isSelectedMode
+    ? selectedDeploymentIds
+    : Array.from(drainedDeploymentIds);
   const isLoading = isDrainedPending || isDeploymentsPending;
   const loadError = drainedDeploymentsError ?? deploymentsError;
+  const activeDeploymentIds = isSelectedMode
+    ? availableDeploymentIds.filter(
+        (deploymentId) => !drainedDeploymentIds.has(deploymentId),
+      )
+    : [];
   const run = deleteDeployments.progress;
   const isRunning = deleteDeployments.isPending;
   const total = run ? run.deploymentIds.length : availableDeploymentIds.length;
@@ -178,7 +232,7 @@ function PruneDrainedDeploymentsDialogContent({
       const deletedCount = availableDeploymentIds.length;
 
       showSuccessNotification(
-        `Successfully deleted ${formatNumber(deletedCount)} drained ${formatPlurals(
+        `Successfully deleted ${formatNumber(deletedCount)} ${isSelectedMode ? 'selected' : 'drained'} ${formatPlurals(
           deletedCount,
           {
             one: 'deployment',
@@ -195,31 +249,71 @@ function PruneDrainedDeploymentsDialogContent({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            Prune drained deployments
+            {isSelectedMode
+              ? 'Delete selected deployments'
+              : 'Prune drained deployments'}
           </h3>
           {isLoading ? (
-            <DrainedDeploymentListSkeleton />
+            <DeploymentListSkeleton />
           ) : loadError ? (
             <ErrorBanner error={loadError} />
           ) : !run ? (
             availableDeploymentIds.length === 0 ? (
               <p className="text-sm text-gray-500">
-                There are no drained deployments to delete right now.
+                {isSelectedMode
+                  ? 'There are no selected deployments to delete.'
+                  : 'There are no drained deployments to delete right now.'}
               </p>
             ) : (
               <>
                 <p className="text-sm text-gray-500">
-                  These {formatNumber(availableDeploymentIds.length)} drained{' '}
-                  {formatPlurals(availableDeploymentIds.length, {
-                    one: 'deployment',
-                    other: 'deployments',
-                  })}{' '}
-                  are no longer serving traffic. Review the list below and
-                  confirm if you want to proceed.
+                  {isSelectedMode ? (
+                    <>
+                      Review the {formatNumber(availableDeploymentIds.length)}{' '}
+                      selected{' '}
+                      {formatPlurals(availableDeploymentIds.length, {
+                        one: 'deployment',
+                        other: 'deployments',
+                      })}{' '}
+                      below and confirm if you want to delete them.
+                    </>
+                  ) : (
+                    <>
+                      These {formatNumber(availableDeploymentIds.length)}{' '}
+                      drained{' '}
+                      {formatPlurals(availableDeploymentIds.length, {
+                        one: 'deployment',
+                        other: 'deployments',
+                      })}{' '}
+                      are no longer serving traffic. Review the list below and
+                      confirm if you want to proceed.
+                    </>
+                  )}
                 </p>
-                <DrainedDeploymentList
+                {activeDeploymentIds.length > 0 && (
+                  <Warning title="Active deployments selected">
+                    {formatNumber(activeDeploymentIds.length)} selected{' '}
+                    {formatPlurals(activeDeploymentIds.length, {
+                      one: 'deployment is',
+                      other: 'deployments are',
+                    })}{' '}
+                    active and may still be serving traffic. Deleting{' '}
+                    {activeDeploymentIds.length === 1 ? 'it' : 'them'} might
+                    break in-flight invocations. Use caution.{' '}
+                    <Link
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      href="https://docs.restate.dev/services/versioning#removing-a-service"
+                      className="text-orange-700 decoration-orange-700"
+                    >
+                      Learn more…
+                    </Link>
+                  </Warning>
+                )}
+                <DeploymentList
                   deploymentIds={availableDeploymentIds}
                   visibleCount={visibleCount}
+                  listLabel={isSelectedMode ? 'selected' : 'drained'}
                   onShowMore={() =>
                     setVisibleCount((count) => count + VISIBLE_DEPLOYMENTS_STEP)
                   }
@@ -251,7 +345,7 @@ function PruneDrainedDeploymentsDialogContent({
                   isPending={isRunning}
                   disabled={!canSubmit}
                 >
-                  Prune deployments
+                  {isSelectedMode ? 'Delete deployments' : 'Prune deployments'}
                 </SubmitButton>
               </div>
             </div>
