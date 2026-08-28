@@ -1,5 +1,19 @@
 # Napkin
 
+- 2026-08-28 Remembered-candidate scope correction (user): Force recent-visit candidates into the Virtual Object list only. Do not add candidate input, extra identity queries, or identity-only fallback rows to the Workflow list.
+
+- 2026-08-28 VO candidate normalization (user): Virtual Object request candidates use generated schema types and come from the UI's recent-visit store. Do not repeat object, field-length, scope-type, or feature validation in the query handler. Normalize and deduplicate typed identities, cap them at ten for bounded SQL, then apply active query and feature semantics.
+
+- 2026-08-28 VO request candidates implemented: The request accepts up to ten candidate identities. The handler normalizes candidates, applies current search/filters, reserves them inside the 50-row result, and reuses exact backlog and lock hydration.
+
+- 2026-08-28 Admin API schema lint baseline: `redocly lint` on the merged output currently reports 198 existing OpenAPI compatibility errors, beginning with missing servers and OpenAPI 3.1 nullable types. The generation target intentionally runs this command with `|| true`; verify new schema sections are absent from reported errors rather than treating the baseline as a new failure.
+
+- 2026-08-28 self on Admin API regeneration: `pnpm nx create admin-api` stalled silently during project-graph startup under the default Node 22 runtime. Stop only that invocation and run the `admin-api-spec:create` target's declared merge and `openapi-typescript` commands directly with the workspace Node 24 runtime; do not run its workspace-wide `nx format` over unrelated changes.
+
+- 2026-08-28 VO remembered candidate correction (user, supersedes the identity-only row approach below): Do not synthesize remembered rows only in the UI. Send recent scope/key identities as candidate inputs to the list endpoint, force them into the bounded selection when they match active filters, and run normal exact hydration so the table receives current backlog and lock data when available.
+
+- 2026-08-28 VO remembered rows (user): The list table and sidebar must agree about the last visited identity. If server discovery omits the remembered identity, include it through the server candidate request and exact hydration rather than synthesizing activity metrics in the UI.
+
 - 2026-08-28 self on remembered-identity inspection: I used `rg ... | head` even though the repo notes prohibit inspection pipelines. Keep result bounds in the tool output and use independently scoped searches.
 
 - 2026-08-28 Cross-table quick-open typography and tone (user): Keep placeholder text sans-serif while entered identity values remain monospaced. Use a lighter neutral background for the shared quick-open rail across Virtual Objects, Workflows, and Invocations.

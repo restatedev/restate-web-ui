@@ -3264,10 +3264,16 @@ export interface components {
       value: string;
     };
     ListVirtualObjectInstancesRequest: {
+      /** @description Known identities to force into the bounded result when they match the active search and filters. Candidates receive the same backlog and lock hydration as discovered identities. */
+      candidates?: components['schemas']['VirtualObjectInstanceCandidate'][];
       /** @description Substring matched against the object key and scope. */
       search?: string;
       filters?: components['schemas']['VirtualObjectInstanceFilterItem'][];
       sort?: components['schemas']['VirtualObjectInstanceSort'];
+    };
+    VirtualObjectInstanceCandidate: {
+      key: string;
+      scope?: string;
     };
     /** @description This opt-in sort scans and aggregates the service's VQueue metadata or legacy inbox before applying the response limit. */
     VirtualObjectInstanceSort: {

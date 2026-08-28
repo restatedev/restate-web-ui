@@ -51,6 +51,7 @@ import {
 } from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
+import { useRecentVirtualObjectInstance } from '@restate/util/sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -256,6 +257,7 @@ function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
+  const recentVirtualObject = useRecentVirtualObjectInstance(baseUrl);
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
   const hasScopedVirtualObjects =
@@ -379,6 +381,19 @@ function Component() {
   } = useListVirtualObjectInstances(
     selectedService,
     {
+      ...(recentVirtualObject?.service === selectedService &&
+      (recentVirtualObject.scope === undefined || hasScopedVirtualObjects)
+        ? {
+            candidates: [
+              {
+                key: recentVirtualObject.key,
+                ...(recentVirtualObject.scope !== undefined
+                  ? { scope: recentVirtualObject.scope }
+                  : {}),
+              },
+            ],
+          }
+        : {}),
       ...(filters.length > 0 ? { filters } : {}),
       ...(sortByBacklog
         ? { sort: { field: BACKLOG_SORT, order: 'DESC' as const } }
@@ -392,6 +407,7 @@ function Component() {
       staleTime: 0,
     },
   );
+  const error = servicesError ?? instancesError;
   const items = useMemo<VirtualObjectInstanceRow[]>(
     () =>
       (data?.rows ?? []).map((row) => ({
@@ -403,6 +419,12 @@ function Component() {
   const maxBacklog = useMemo(
     () => items.reduce((maximum, item) => Math.max(maximum, item.backlog), 0),
     [items],
+  );
+  const hasRecentItem = items.some(
+    ({ key, scope }) =>
+      recentVirtualObject?.service === selectedService &&
+      recentVirtualObject.key === key &&
+      recentVirtualObject.scope === scope,
   );
   const visibleColumns = useMemo(
     () => (hasVqueues ? [...columns, lockAcquiredColumn] : columns),
@@ -432,7 +454,6 @@ function Component() {
   );
   const isLoading =
     isServicesPending || (Boolean(selectedService) && isInstancesFetching);
-  const error = servicesError ?? instancesError;
   const filteredResultsCaption = hasFilters ? (
     <FilteredResultsCaption
       noun="virtual object instances"
@@ -665,18 +686,20 @@ function Component() {
                   <span>
                     Showing the{' '}
                     <span className="font-medium text-gray-600">
-                      {data.rows.length}
+                      {items.length}
                     </span>{' '}
-                    {sortByBacklog
-                      ? 'highest-backlog instances; more exist.'
-                      : 'instances; more exist.'}
+                    {hasRecentItem
+                      ? 'instances including the last visited; more exist.'
+                      : sortByBacklog
+                        ? 'highest-backlog instances; more exist.'
+                        : 'instances; more exist.'}
                   </span>
                 ) : (
                   <span>
                     <span className="font-medium text-gray-600">
-                      {data.rows.length}
+                      {items.length}
                     </span>{' '}
-                    {data.rows.length === 1 ? 'instance' : 'instances'}
+                    {items.length === 1 ? 'instance' : 'instances'}
                   </span>
                 )}
               </div>

@@ -30,6 +30,141 @@ function deferred<T>() {
 }
 
 describe('listVirtualObjectInstances', () => {
+  it('force-includes and hydrates a requested candidate', async () => {
+    const { context, query } = createContext((sql) => {
+      if (sql.includes('SUM(num_inbox) AS backlog')) {
+        return [
+          {
+            lock_name: 'Counter/remembered',
+            scope: 'tenant-a',
+            backlog: 4,
+          },
+        ];
+      }
+      if (sql.includes('FROM sys_locks')) {
+        return [
+          {
+            lock_name: 'Counter/remembered',
+            scope: 'tenant-a',
+            acquired_by: 'inv_lock',
+            acquired_at: '2026-08-28T10:00:00.000Z',
+          },
+        ];
+      }
+      return [];
+    });
+
+    const response = await listVirtualObjectInstances.call(context, 'Counter', {
+      candidates: [{ key: 'remembered', scope: 'tenant-a' }],
+    });
+
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      target_service_key AS object_key,
+      scope
+    FROM sys_invocation_status
+    WHERE target_service_name = 'Counter'
+      AND target_service_ty = 'virtual_object'
+      AND target_service_key IS NOT NULL
+      AND status <> 'completed'
+    LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND lock_name IS NOT NULL
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+    LIMIT 51`,
+      `SELECT
+      lock_name,
+      scope,
+      SUM(num_inbox) AS backlog
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND (
+        (lock_name = 'Counter/remembered' AND scope = 'tenant-a')
+      )
+    GROUP BY lock_name, scope`,
+      `SELECT
+      lock_name,
+      scope,
+      acquired_by,
+      acquired_at
+    FROM sys_locks
+    WHERE acquired_by IS NOT NULL
+      AND (
+        (lock_name = 'Counter/remembered' AND scope = 'tenant-a')
+      )`,
+    ]);
+    expect(await response.json()).toEqual({
+      rows: [
+        {
+          key: 'remembered',
+          scope: 'tenant-a',
+          backlog: 4,
+          lockHolder: {
+            id: 'inv_lock',
+            kind: 'invocation',
+            acquiredAt: '2026-08-28T10:00:00.000Z',
+          },
+        },
+      ],
+      truncated: false,
+    });
+  });
+
+  it('does not include a requested candidate that misses the active filter', async () => {
+    const { context, query } = createContext(() => []);
+
+    const response = await listVirtualObjectInstances.call(context, 'Counter', {
+      candidates: [{ key: 'remembered', scope: 'tenant-a' }],
+      filters: [
+        {
+          field: 'key',
+          type: 'STRING',
+          operation: 'CONTAINS',
+          value: 'other',
+        },
+      ],
+    });
+
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      target_service_key AS object_key,
+      scope
+    FROM sys_invocation_status
+    WHERE target_service_name = 'Counter'
+      AND target_service_ty = 'virtual_object'
+      AND status <> 'completed'
+      AND target_service_key ILIKE '%other%'
+    LIMIT 51`,
+      `SELECT DISTINCT
+      CAST(partition_key AS VARCHAR) AS partition_key,
+      lock_name,
+      scope
+    FROM sys_vqueue_meta
+    WHERE service_name = 'Counter'
+      AND (
+        num_inbox > 0
+        OR num_running > 0
+        OR num_suspended > 0
+        OR num_paused > 0
+      )
+      AND SUBSTR(lock_name, CHAR_LENGTH('Counter/') + 1) ILIKE '%other%'
+    LIMIT 51`,
+    ]);
+    expect(await response.json()).toEqual({ rows: [], truncated: false });
+  });
+
   it('uses exact key and scope predicates for active identity sources', async () => {
     const { context, query } = createContext(() => []);
 
