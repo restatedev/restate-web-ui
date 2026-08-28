@@ -1,7 +1,4 @@
-import {
-  useListStateServices,
-  useListServices,
-} from '@restate/data-access/admin-api-hooks';
+import { useListServices } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -24,7 +21,6 @@ export type StateRouteServiceType = 'virtual_object' | 'workflow';
 type StateRouteService = {
   name: string;
   serviceType?: StateRouteServiceType;
-  hasState: boolean;
 };
 
 const stateOnlyServiceWarning = 'Service no longer registered';
@@ -107,41 +103,16 @@ export function getDefaultStateService(services: string[]) {
 
 export function useStateServiceCatalog() {
   const { data: serviceData, isPending: isServicesPending } = useListServices();
-  const deploymentServiceNames = useMemo(
-    () => ({ services: Array.from(serviceData.keys() ?? []).sort() }),
-    [serviceData],
-  );
-  const {
-    data: stateServicesData,
-    isPending: isStateServicesPending,
-    isPlaceholderData,
-  } = useListStateServices({
-    placeholderData: deploymentServiceNames,
-    staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
 
   return useMemo(() => {
-    const stateServiceNames = new Set(stateServicesData?.services ?? []);
     const byName = new Map<string, StateRouteService>();
-
-    for (const service of stateServiceNames) {
-      byName.set(service, {
-        name: service,
-        hasState: true,
-      });
-    }
 
     for (const service of serviceData.values()) {
       const serviceType = getStateRouteServiceType(service.ty);
       if (!serviceType) continue;
-      const item = byName.get(service.name);
       byName.set(service.name, {
         name: service.name,
         serviceType,
-        hasState: item?.hasState ?? false,
       });
     }
 
@@ -153,37 +124,27 @@ export function useStateServiceCatalog() {
     const workflows = Array.from(byName.values())
       .filter((service) => service.serviceType === 'workflow')
       .sort(sortByName);
-    const stateOnlyServices = Array.from(byName.values())
-      .filter((service) => !service.serviceType && service.hasState)
-      .sort(sortByName);
-    const services = [
-      ...virtualObjects,
-      ...workflows,
-      ...stateOnlyServices,
-    ].map((service) => service.name);
+    const services = [...virtualObjects, ...workflows].map(
+      (service) => service.name,
+    );
     const serviceTypes = new Map(
       [...virtualObjects, ...workflows].map((service) => [
         service.name,
         service.serviceType,
       ]),
     );
+    const stateOnlyServices: string[] = [];
 
     return {
-      isPending: isStateServicesPending && isServicesPending,
-      isUsingPlaceholderServices: isPlaceholderData,
+      isPending: isServicesPending,
+      isUsingPlaceholderServices: false,
       services,
       serviceTypes,
       virtualObjects: virtualObjects.map((service) => service.name),
       workflows: workflows.map((service) => service.name),
-      stateOnlyServices: stateOnlyServices.map((service) => service.name),
+      stateOnlyServices,
     };
-  }, [
-    isPlaceholderData,
-    isServicesPending,
-    isStateServicesPending,
-    serviceData,
-    stateServicesData,
-  ]);
+  }, [isServicesPending, serviceData]);
 }
 
 export function useCurrentStateServiceParam() {
