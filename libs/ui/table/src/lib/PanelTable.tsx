@@ -13,7 +13,9 @@ import {
   ColumnProps as AriaColumnProps,
   Column as AriaColumn,
   ResizableTableContainer,
+  TableLayout,
   Toolbar as AriaToolbar,
+  Virtualizer,
 } from 'react-aria-components';
 import type { Key, SortDescriptor } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
@@ -67,8 +69,9 @@ export interface PanelTableProps<
   toolbar?: ReactNode;
   toolbarWrapperClassName?: string;
   toolbarClassName?: string;
-  // Optional content rendered inside the scroll area, just below the sticky
-  // column header and above the rows (scrolls with the rows). Omit for no effect.
+  virtualized?: boolean;
+  estimatedRowHeight?: number;
+  bodyContainerClassName?: string;
   caption?: ReactNode;
 }
 
@@ -98,7 +101,16 @@ const styles = tv({
     dataTableScroll: 'relative [scrollbar-width:thin] overflow-auto',
     dataTableInner: 'w-full border-separate border-spacing-0',
     dataTableSpacerHeader:
-      'invisible static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_th]:h-9 [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',
+      'invisible static z-auto h-[inherit] w-[inherit] bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_[role=columnheader]]:overflow-hidden [&_[role=columnheader]]:border-0 [&_[role=columnheader]]:p-0 [&_th]:h-9 [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',
+  },
+  variants: {
+    virtualized: {
+      true: {
+        dataTableScroll: 'max-h-[calc(100vh-var(--cp-content-top,0px)-0.5rem)]',
+        dataTableInner:
+          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
+      },
+    },
   },
 });
 
@@ -131,6 +143,9 @@ export function PanelTable<
   toolbar,
   toolbarWrapperClassName,
   toolbarClassName,
+  virtualized = false,
+  estimatedRowHeight = 44,
+  bodyContainerClassName,
   caption,
   ...ariaProps
 }: PanelTableProps<T, TColId>) {
@@ -148,7 +163,7 @@ export function PanelTable<
     dataTableScroll,
     dataTableInner,
     dataTableSpacerHeader,
-  } = styles();
+  } = styles({ virtualized });
 
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
     () => new Map(),
@@ -239,6 +254,8 @@ export function PanelTable<
     [columns, onSortChange, sortDescriptor],
   );
 
+  const stickyHeaderItems = useMemo(() => items.slice(0, 2), [items]);
+
   const stickyHeaderSelectedKeys = useMemo(() => {
     if (selectedKeys === 'all') return 'all';
     if (!selectedKeys || !items.length) return selectedKeys;
@@ -246,8 +263,17 @@ export function PanelTable<
       selectedKeys instanceof Set
         ? (selectedKeys as Set<Key>)
         : new Set<Key>(selectedKeys as Iterable<Key>);
-    return items.every((item) => set.has(item.id)) ? 'all' : selectedKeys;
-  }, [selectedKeys, items]);
+    const selectedItemCount = items.reduce(
+      (count, item) => count + Number(set.has(item.id)),
+      0,
+    );
+    if (selectedItemCount === items.length) return 'all';
+    if (selectedItemCount === 0) return new Set<Key>();
+    const firstStickyItem = stickyHeaderItems[0];
+    return firstStickyItem
+      ? new Set<Key>([firstStickyItem.id])
+      : new Set<Key>();
+  }, [selectedKeys, items, stickyHeaderItems]);
 
   const lastIsFixed = columns[columns.length - 1]?.width !== undefined;
 
@@ -346,6 +372,54 @@ export function PanelTable<
 
   const dataTableSelectionWidth =
     selectionMode && selectionMode !== 'none' ? SELECTION_WIDTH : undefined;
+  const layoutOptions = useMemo(
+    () => ({ estimatedRowHeight, headingHeight: 36 }),
+    [estimatedRowHeight],
+  );
+
+  const dataTable = (
+    <AriaTable
+      aria-label={ariaLabel}
+      key={bodyKey}
+      selectionMode={selectionMode}
+      selectedKeys={selectedKeys}
+      onSelectionChange={handleSelectionChange}
+      onRowAction={onRowAction}
+      treeColumn={treeColumn}
+      expandedKeys={expandedKeys}
+      defaultExpandedKeys={defaultExpandedKeys}
+      onExpandedChange={onExpandedChange}
+      className={dataTableInner()}
+    >
+      <TableHeader
+        className={dataTableSpacerHeader()}
+        selectionColumnWidth={dataTableSelectionWidth}
+        leadingColumn={leadingColumn}
+      >
+        {renderColumns('dataTable', dataTableColumns)}
+      </TableHeader>
+      <TableBody
+        items={items}
+        dependencies={[...(bodyDependencies ?? []), dataTableColumns]}
+        error={error}
+        isLoading={isLoading}
+        numOfColumns={dataTableColumns.length}
+        numOfRows={numOfRows}
+        emptyPlaceholder={emptyPlaceholder}
+        loadingLeadingCell={<Cell />}
+      >
+        {renderBodyRow}
+      </TableBody>
+    </AriaTable>
+  );
+
+  const body = virtualized ? (
+    <Virtualizer layout={TableLayout} layoutOptions={layoutOptions}>
+      {dataTable}
+    </Virtualizer>
+  ) : (
+    dataTable
+  );
 
   return (
     <>
@@ -373,7 +447,10 @@ export function PanelTable<
                 >
                   {renderColumns('stickyHeader', columns)}
                 </TableHeader>
-                <AriaTableBody items={items} dependencies={[columns]}>
+                <AriaTableBody
+                  items={stickyHeaderItems}
+                  dependencies={[columns]}
+                >
                   {(row) => (
                     <Row
                       id={row.id}
@@ -404,44 +481,29 @@ export function PanelTable<
           </AriaToolbar>
         </div>
       )}
-      <div ref={setDataTableScrollEl} className={dataTableScroll()}>
-        {caption}
-        <ResizableTableContainer>
-          <AriaTable
-            aria-label={ariaLabel}
-            key={bodyKey}
-            selectionMode={selectionMode}
-            selectedKeys={selectedKeys}
-            onSelectionChange={handleSelectionChange}
-            onRowAction={onRowAction}
-            treeColumn={treeColumn}
-            expandedKeys={expandedKeys}
-            defaultExpandedKeys={defaultExpandedKeys}
-            onExpandedChange={onExpandedChange}
-            className={dataTableInner()}
-          >
-            <TableHeader
-              className={dataTableSpacerHeader()}
-              selectionColumnWidth={dataTableSelectionWidth}
-              leadingColumn={leadingColumn}
+      {virtualized ? (
+        <div>
+          {caption}
+          <ResizableTableContainer>
+            <div
+              ref={setDataTableScrollEl}
+              className={dataTableScroll({
+                className: bodyContainerClassName,
+              })}
             >
-              {renderColumns('dataTable', dataTableColumns)}
-            </TableHeader>
-            <TableBody
-              items={items}
-              dependencies={[...(bodyDependencies ?? []), dataTableColumns]}
-              error={error}
-              isLoading={isLoading}
-              numOfColumns={dataTableColumns.length}
-              numOfRows={numOfRows}
-              emptyPlaceholder={emptyPlaceholder}
-              loadingLeadingCell={<Cell />}
-            >
-              {renderBodyRow}
-            </TableBody>
-          </AriaTable>
-        </ResizableTableContainer>
-      </div>
+              {body}
+            </div>
+          </ResizableTableContainer>
+        </div>
+      ) : (
+        <div
+          ref={setDataTableScrollEl}
+          className={dataTableScroll({ className: bodyContainerClassName })}
+        >
+          {caption}
+          <ResizableTableContainer>{body}</ResizableTableContainer>
+        </div>
+      )}
     </>
   );
 }

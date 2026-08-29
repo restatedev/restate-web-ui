@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { Cell } from './Row';
 import { PanelTable } from './PanelTable';
@@ -85,6 +85,51 @@ describe('PanelTable', () => {
     expect(toolbar.parentElement?.className).toContain('relative');
     expect(toolbar.parentElement?.className).toContain('top-auto');
     expect(toolbar.parentElement?.className).not.toContain('sticky');
+  });
+
+  it('renders a virtualized table inside its bounded body container', () => {
+    const items = Array.from({ length: 100 }, (_, index) => ({
+      id: `item-${index}`,
+      name: `Item ${index}`,
+    }));
+    const onSelectionChange = vi.fn();
+
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+        items={items}
+        virtualized
+        selectionMode="multiple"
+        selectedKeys={new Set(['item-0'])}
+        onSelectionChange={onSelectionChange}
+        estimatedRowHeight={44}
+        bodyContainerClassName="h-48"
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+
+    const table = screen.getByRole('grid', { name: 'Items' });
+    const headerTable = screen.getByRole('grid', { name: 'Items columns' });
+    const bodyContainer = table.parentElement;
+
+    expect(table.tagName).toBe('DIV');
+    expect(bodyContainer?.className).toContain('h-48');
+    expect(bodyContainer?.className).toContain('overflow-auto');
+    expect(bodyContainer?.parentElement?.className).toContain(
+      'react-aria-ResizableTableContainer',
+    );
+    expect(headerTable.querySelectorAll('[role="row"]')).toHaveLength(3);
+    const selectAll = headerTable.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    expect(selectAll).not.toBeNull();
+    if (!selectAll) throw new Error('Select-all checkbox was not rendered');
+    expect(selectAll.indeterminate).toBe(true);
+    fireEvent.click(selectAll);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(
+      new Set(items.map((item) => item.id)),
+    );
   });
 
   it('stacks notices above quick open without putting the table hit layer over it', () => {

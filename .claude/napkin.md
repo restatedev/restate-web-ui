@@ -1,5 +1,17 @@
 # Napkin
 
+- 2026-08-29 self on PanelTable virtualization assertion: I queried `screen` for the last row and forgot PanelTable's hidden sticky-header table deliberately contains a clone for every item, even though the napkin already records that duplication. Scope row-culling assertions with `within()` to the data grid named by the table's actual `aria-label`.
+
+- 2026-08-29 PanelTable React Aria virtualization: Keep virtualization opt-in so existing document-scrolling tables do not change. Wrap the data table with `Virtualizer`/`TableLayout`, and put its scrollable body container inside `ResizableTableContainer`; React Aria walks from the table to that descendant scroll owner for viewport sizing and column width measurement. Virtualized role-based `div` rows/cells need inherited layout dimensions, and cell borders need an explicit override because each row is wrapped by a virtualizer item.
+
+- 2026-08-29 self on React Aria virtualization test: I assumed a Tailwind height class would give jsdom measurable viewport geometry, then asserted the last row was absent. JSDOM has no CSS layout, so React Aria renders the collection without the browser measurements that drive culling. Test the virtualized DOM mode and body-container wiring in Vitest; use a browser for row-culling behavior.
+
+- 2026-08-29 self on PanelTable `tv` variants: I placed `{base, variants}` objects inside individual `slots`, which `tv()` interpreted as invalid class arrays and collapsed the slot return type. Define variants at the root and map each variant value to the affected slot names.
+
+- 2026-08-29 self on ContentPanel variable lookup: I passed an `rg` pattern beginning with `--` without `-e`, so ripgrep parsed it as an option. Use `rg -n -e '--pattern'` for CSS custom-property searches.
+
+- 2026-08-29 self on PanelTable virtualization lookup: I piped `rg --files` into another `rg` despite repeated repo notes against inspection pipelines. Use `rg --files` with direct globs or a scoped symbol search without shell pipes.
+
 - 2026-08-28 Query inspector SQL tooltip (user): Use one tooltip on the Query pattern, with labelled `Query pattern` and `Slowest recorded query` sections. The Max cell is plain data. Mark the compact query pattern with the shared dashed inline-tooltip underline and help cursor.
 
 - 2026-08-28 Shared filter focus treatment (user): Filter multi-comboboxes should show one rounded focus ring on the whole search control, not a second rectangular ring on the raw input. Reset the input with important zero-border, zero-shadow, zero-ring, and no-outline utilities so keyboard `Escape` → `ArrowDown` cannot reintroduce a browser/global input ring; retain the parent `has-[input[data-focused=true]]` border and ring.
