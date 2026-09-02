@@ -1,9 +1,7 @@
-import { adminApi } from '@restate/data-access/admin-api';
 import type {
   components,
   Invocation,
 } from '@restate/data-access/admin-api-spec';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
@@ -11,6 +9,17 @@ import { VirtualObjectLockHero } from './VirtualObjectLockHero';
 
 vi.mock('@restate/features/invocation-route', () => ({
   Actions: () => null,
+}));
+
+const apiHooks = vi.hoisted(() => ({
+  useGetPausedError: vi.fn(),
+}));
+
+vi.mock('@restate/data-access/admin-api-hooks', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@restate/data-access/admin-api-hooks')
+  >()),
+  useGetPausedError: apiHooks.useGetPausedError,
 }));
 
 const invocation: Invocation = {
@@ -38,29 +47,23 @@ const lockHolder: components['schemas']['VirtualObjectLockHolder'] = {
 describe('VirtualObjectLockHero', () => {
   it('opens the paused error without following the invocation link', async () => {
     const user = userEvent.setup();
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
-    const pausedErrorQuery = adminApi(
-      'query',
-      '/query/invocations/{invocationId}/paused-error',
-      'get',
-      {
-        baseUrl: '',
-        parameters: { path: { invocationId: invocation.id } },
-      },
+    apiHooks.useGetPausedError.mockImplementation(
+      (_invocationId: string, options?: { enabled?: boolean }) => ({
+        data: options?.enabled
+          ? {
+              message: 'Database unavailable',
+              relatedRestateErrorCode: '500',
+            }
+          : undefined,
+        error: null,
+        isPending: false,
+      }),
     );
-    queryClient.setQueryData(pausedErrorQuery.queryKey, {
-      message: 'Database unavailable',
-      relatedRestateErrorCode: '500',
-    });
 
     render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <VirtualObjectLockHero lockHolder={lockHolder} />
-        </MemoryRouter>
-      </QueryClientProvider>,
+      <MemoryRouter>
+        <VirtualObjectLockHero lockHolder={lockHolder} />
+      </MemoryRouter>,
     );
 
     const pausedError = screen.getByRole('button', { name: 'after…' });
@@ -70,9 +73,17 @@ describe('VirtualObjectLockHero', () => {
         name: `Open invocation ${invocation.id}`,
       }),
     ).toBeTruthy();
+    expect(apiHooks.useGetPausedError).toHaveBeenLastCalledWith(
+      invocation.id,
+      expect.objectContaining({ enabled: false }),
+    );
 
     await user.click(pausedError);
 
     expect(await screen.findByText('Database unavailable')).toBeTruthy();
+    expect(apiHooks.useGetPausedError).toHaveBeenLastCalledWith(
+      invocation.id,
+      expect.objectContaining({ enabled: true }),
+    );
   });
 });
