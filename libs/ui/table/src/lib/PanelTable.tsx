@@ -1,4 +1,5 @@
 import {
+  CSSProperties,
   ReactElement,
   ReactNode,
   useCallback,
@@ -71,6 +72,7 @@ export interface PanelTableProps<
   toolbarClassName?: string;
   virtualized?: boolean;
   estimatedRowHeight?: number;
+  bodyHeadingHeight?: number;
   bodyContainerClassName?: string;
   caption?: ReactNode;
 }
@@ -101,7 +103,7 @@ const styles = tv({
     dataTableScroll: 'relative [scrollbar-width:thin] overflow-auto',
     dataTableInner: 'w-full border-separate border-spacing-0',
     dataTableSpacerHeader:
-      'invisible static z-auto h-[inherit] w-[inherit] bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_[role=columnheader]]:overflow-hidden [&_[role=columnheader]]:border-0 [&_[role=columnheader]]:p-0 [&_th]:h-9 [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',
+      'invisible static z-auto h-(--panel-table-body-heading-height) w-[inherit] overflow-hidden bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_[role=columnheader]]:overflow-hidden [&_[role=columnheader]]:border-0 [&_[role=columnheader]]:p-0 [&_th]:h-(--panel-table-body-heading-height) [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',
   },
   variants: {
     virtualized: {
@@ -143,8 +145,9 @@ export function PanelTable<
   toolbar,
   toolbarWrapperClassName,
   toolbarClassName,
-  virtualized = false,
+  virtualized = true,
   estimatedRowHeight = 44,
+  bodyHeadingHeight = 36,
   bodyContainerClassName,
   caption,
   ...ariaProps
@@ -373,9 +376,12 @@ export function PanelTable<
   const dataTableSelectionWidth =
     selectionMode && selectionMode !== 'none' ? SELECTION_WIDTH : undefined;
   const layoutOptions = useMemo(
-    () => ({ estimatedRowHeight, headingHeight: 36 }),
-    [estimatedRowHeight],
+    () => ({ estimatedRowHeight, headingHeight: bodyHeadingHeight }),
+    [bodyHeadingHeight, estimatedRowHeight],
   );
+  const bodyHeadingStyle = {
+    '--panel-table-body-heading-height': `${bodyHeadingHeight}px`,
+  } as CSSProperties;
 
   const dataTable = (
     <AriaTable
@@ -482,22 +488,24 @@ export function PanelTable<
         </div>
       )}
       {virtualized ? (
-        <div>
-          {caption}
-          <ResizableTableContainer>
-            <div
-              ref={setDataTableScrollEl}
-              className={dataTableScroll({
-                className: bodyContainerClassName,
-              })}
-            >
-              {body}
-            </div>
-          </ResizableTableContainer>
-        </div>
+        <ResizableTableContainer>
+          <div
+            ref={setDataTableScrollEl}
+            data-panel-table-body-scroll
+            style={bodyHeadingStyle}
+            className={dataTableScroll({
+              className: bodyContainerClassName,
+            })}
+          >
+            {caption}
+            {body}
+          </div>
+        </ResizableTableContainer>
       ) : (
         <div
           ref={setDataTableScrollEl}
+          data-panel-table-body-scroll
+          style={bodyHeadingStyle}
           className={dataTableScroll({ className: bodyContainerClassName })}
         >
           {caption}

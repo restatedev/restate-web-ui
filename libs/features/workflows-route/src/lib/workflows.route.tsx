@@ -43,8 +43,7 @@ import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import {
   Cell,
   PanelTable,
-  PanelTableQuickOpenToolbar,
-  panelTableQuickOpenToolbarClassNames,
+  PanelTableQuickOpenCaption,
   type PanelTableColumn,
 } from '@restate/ui/table';
 import {
@@ -333,10 +332,6 @@ function Component() {
       }
     />
   ) : undefined;
-  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
-    Number(Boolean(filteredResultsCaption)),
-  );
-
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <WorkflowsHeader />
@@ -421,12 +416,13 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Workflow runs"
+                bodyHeadingHeight={0}
                 columns={columns}
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
-                toolbar={
-                  <PanelTableQuickOpenToolbar notice={filteredResultsCaption}>
+                caption={
+                  <PanelTableQuickOpenCaption notice={filteredResultsCaption}>
                     <WorkflowQuickOpen
                       draft={openWorkflowDraft}
                       disabled={!selectedService}
@@ -435,10 +431,8 @@ function Component() {
                       onOpen={confirmOpenWorkflow}
                       service={selectedService}
                     />
-                  </PanelTableQuickOpenToolbar>
+                  </PanelTableQuickOpenCaption>
                 }
-                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
-                toolbarClassName={quickOpenToolbarClassNames.toolbar}
                 bodyDependencies={[
                   selectedService,
                   searchString,

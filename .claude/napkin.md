@@ -1,5 +1,27 @@
 # Napkin
 
+- 2026-08-29 PanelTable caption-to-row gap correction (user): Measuring `caption` against the first `[role=row]` only measured the invisible spacer header and falsely reported a 4px gap. The first data row still began after React Aria's 36px `headingHeight`. Keep 36px for ordinary tables so their first row clears the separate sticky header, but let quick-open tables set `bodyHeadingHeight={0}` and drive both React Aria layout and `--panel-table-body-heading-height`; then measure against the first body row.
+
+- 2026-08-29 self on dependency inspection: I used `rg | head` despite the repo rule against inspection pipelines, then passed an unmatched pnpm-store glob to zsh. Use a bounded direct `rg` against an explicit path resolved from the package symlink.
+
+- 2026-08-29 PanelTable caption scroll fix: For a virtualized table, render `caption` inside the same `dataTableScroll` element as `Virtualizer`, while keeping that element inside `ResizableTableContainer`. Live browser verification showed quick open moving out with `scrollTop`, the sticky column header remaining separate, and a 4px caption-to-first-row gap at the top.
+
+- 2026-08-29 Quick-open scroll correction (user): Putting quick open in the `caption` prop is insufficient when the caption sits outside PanelTable's `dataTableScroll` owner. It then remains visible while only rows scroll, and the virtualized spacer header compounds the first-row gap. Caption content must live inside the same scroll container as the virtualized table and scroll away with the rows; verify both scroll movement and the top-row gap in a browser.
+
+- 2026-08-29 self on focused PanelTable test: Running root-level `pnpm vitest` bypassed the table project's Nx/Vite alias setup and could not resolve `@restate/ui/focus`. Run the focused suite through `pnpm nx test table --testFile=...` for the configured resolver.
+
+- 2026-08-29 self on quick-open caption spacing: I assumed the virtualized table's hidden header spacer would absorb the caption wrapper's `-mb-8`, but live geometry showed the first row starting 32px before the caption ended. Caption content must use a positive bottom margin (`mb-1`) with no negative tuck; verify `caption.bottom <= firstRow.top` in a real browser.
+
+- 2026-08-29 Quick-open placement correction (user): `PanelTableQuickOpen` is caption content, not a table toolbar. Render its notice stack and quick-open rail in normal caption flow before the virtualized table with a positive row gap; do not rely on non-sticky overrides or negative tucks from the sticky toolbar slot.
+
+- 2026-08-29 PanelTable default virtualization verification: Defaulting `PanelTable` to React Aria virtualization let all existing consumers inherit the bounded body container without repetitive props. Removing only client-side slices/pagers passed six focused library typechecks, 98 route/table tests, affected-file ESLint, the production Web UI build, and `git diff --check`; server query caps keep a truncation notice and nested state entries retain explicit fetch-more rows.
+
+- 2026-08-29 self on PanelTable rollout audit: I piped a scoped `rg` into `wc -l` even though this repo repeatedly forbids inspection pipelines. Use the direct `rg` result or a purpose-built script-free search; an occurrence count was not needed.
+
+- 2026-08-29 PanelTable virtualization rollout (user, supersedes the opt-in notes below): Virtualize every `PanelTable` by default. Remove client-side table pagination and local display caps so each table renders its full fetched result set; keep server query limits, partial-result notices, and on-demand nested state-entry loading because those control data coverage rather than paging already-loaded rows.
+
+- 2026-08-29 Introspection virtualization test surface (user): Use a 1,000-row client-side page and opt its `PanelTable` into virtualization so large explicit SQL results exercise React Aria row culling; keep other routes opt-in.
+
 - 2026-08-29 self on PanelTable virtualization assertion: I queried `screen` for the last row and forgot PanelTable's hidden sticky-header table deliberately contains a clone for every item, even though the napkin already records that duplication. Scope row-culling assertions with `within()` to the data grid named by the table's actual `aria-label`.
 
 - 2026-08-29 PanelTable React Aria virtualization: Keep virtualization opt-in so existing document-scrolling tables do not change. Wrap the data table with `Virtualizer`/`TableLayout`, and put its scrollable body container inside `ResizableTableContainer`; React Aria walks from the table to that descendant scroll owner for viewport sizing and column width measurement. Virtualized role-based `div` rows/cells need inherited layout dimensions, and cell borders need an explicit override because each row is wrapped by a virtualizer item.

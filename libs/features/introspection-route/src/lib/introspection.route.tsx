@@ -1,5 +1,4 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
-import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PanelTable, PanelTableColumn } from '@restate/ui/table';
 import { formatDurations } from '@restate/util/intl';
@@ -7,15 +6,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RouterProvider } from 'react-aria';
 import { useSearchParams } from 'react-router';
 import { IntrospectionCell } from './IntrospectionCell';
@@ -34,12 +25,11 @@ import { addQueryToHistory } from './queryHistory';
 import { UsefulQueries } from './UsefulQueries';
 
 const QUERY_PARAM = 'query';
-const PAGE_SIZE = 30;
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get(QUERY_PARAM) ?? '';
-  const { isFetching, data, dataUpdatedAt, error, errorUpdatedAt, isPending } =
+  const { isFetching, data, dataUpdatedAt, error, errorUpdatedAt } =
     useSqlQuery(query, {
       enabled: Boolean(query),
       refetchOnMount: false,
@@ -79,36 +69,11 @@ function Component() {
     }
   }, [query, data, error]);
 
-  const [, startTransition] = useTransition();
-  const [pageIndex, _setPageIndex] = useState(0);
   const selectQueryRef = useRef<((query: string) => void) | null>(null);
-
-  const setPageIndex = useCallback(
-    (arg: Parameters<typeof _setPageIndex>[0]) => {
-      startTransition(() => {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        _setPageIndex(arg);
-      });
-    },
-    [],
-  );
 
   const sortedItems = useMemo(() => {
     return (data?.rows ?? []).map((row, index) => ({ row, id: index }));
   }, [data?.rows]);
-
-  const currentPageItems = useMemo(() => {
-    return sortedItems.slice(
-      pageIndex * PAGE_SIZE,
-      (pageIndex + 1) * PAGE_SIZE,
-    );
-  }, [pageIndex, sortedItems]);
-
-  useEffect(() => {
-    if (sortedItems.length <= PAGE_SIZE * pageIndex) {
-      setPageIndex(0);
-    }
-  }, [pageIndex, setPageIndex, sortedItems.length]);
 
   const allColumns = useMemo(() => {
     return new Set(data?.rows?.map((row) => Object.keys(row)).flat());
@@ -130,8 +95,6 @@ function Component() {
     return cols;
   }, [allColumns]);
 
-  const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
-
   const panelColumns = useMemo<PanelTableColumn[]>(
     () =>
       selectedColumnsArray.map((col) => ({
@@ -145,8 +108,8 @@ function Component() {
   );
 
   const panelItems = useMemo(
-    () => currentPageItems.map(({ row, id }) => ({ id: String(id), row })),
-    [currentPageItems],
+    () => sortedItems.map(({ row, id }) => ({ id: String(id), row })),
+    [sortedItems],
   );
   const isQueryFetching = isFetching && Boolean(query);
   const visiblePanelItems = isQueryFetching ? [] : panelItems;
@@ -160,7 +123,7 @@ function Component() {
               aria-label="Introspection SQL"
               columns={panelColumns}
               items={visiblePanelItems}
-              bodyDependencies={[allColumns, pageIndex, error]}
+              bodyDependencies={[allColumns, error]}
               isLoading={isQueryFetching}
               numOfRows={panelItems.length || 5}
               emptyPlaceholder={
@@ -217,46 +180,7 @@ function Component() {
                 <IntrospectionCell col={id} row={item.row} key={id} />
               )}
             />
-            <Footnote data={data} key={dataUpdate} query={query}>
-              {!isPending && !error && totalSize > 1 && (
-                <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex === 0}
-                    onClick={() => setPageIndex(0)}
-                  >
-                    <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex === 0}
-                    onClick={() => setPageIndex((s) => s - 1)}
-                    className=""
-                  >
-                    <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-                  </Button>
-                  <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                    {pageIndex + 1} / {totalSize}
-                  </div>
-
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex + 1 === totalSize}
-                    onClick={() => setPageIndex((s) => s + 1)}
-                    className=""
-                  >
-                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="icon"
-                    disabled={pageIndex + 1 === totalSize}
-                    onClick={() => setPageIndex(totalSize - 1)}
-                  >
-                    <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </Footnote>
+            <Footnote data={data} key={dataUpdate} query={query} />
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>
@@ -272,12 +196,11 @@ function Component() {
 
 function Footnote({
   data,
-  children,
   query,
-}: PropsWithChildren<{
+}: {
   data?: ReturnType<typeof useSqlQuery>['data'];
   query?: string;
-}>) {
+}) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
@@ -301,7 +224,7 @@ function Footnote({
   const parts = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
 
-  if (!data && !children) {
+  if (!data) {
     return null;
   }
 
@@ -329,7 +252,6 @@ function Footnote({
           query={query}
           className="block rounded-md bg-zinc-50 px-1.5 py-1.5 text-gray-600"
         />
-        {children}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import {
   ColumnKey,
   getDefaultInvocationColumns,
 } from './columns';
-import { Dispatch, SetStateAction, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   QueryClause,
   QueryClauseOperationId,
@@ -181,10 +181,8 @@ const itemStyles = tv({
 const VISIBLE_SHORTCUTS_COUNT = 4;
 
 export function FilterShortcuts({
-  setPageIndex,
   schema,
 }: {
-  setPageIndex: Dispatch<SetStateAction<number>>;
   schema: QueryClauseSchema<QueryClauseType>[];
 }) {
   const features = useFeatures();
@@ -199,8 +197,6 @@ export function FilterShortcuts({
   const { saveLastQuery } = useInvocationsLastQuery();
 
   const setFilter = (item: FilterShortcut) => {
-    setPageIndex(0);
-
     const newSearchParams = writeFilterClauses(searchParams, item.filters);
 
     newSearchParams.delete(COLUMN_QUERY_PREFIX);

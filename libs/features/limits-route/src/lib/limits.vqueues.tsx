@@ -29,10 +29,7 @@ import { type SortDescriptor } from 'react-aria-components';
 import { Form, useSearchParams } from 'react-router';
 import { FlowControlHeader, flowControlTabs } from './FlowControlPage';
 import { VQUEUE_LIST_QUERY_SIZE } from './limits.constants';
-import {
-  LimitListPagination,
-  useLimitListPagination,
-} from './LimitListPagination';
+import { LimitListTruncation } from './LimitListTruncation';
 import { VQueueTable } from './VQueueTable';
 import {
   createVQueueIdFilter,
@@ -108,7 +105,6 @@ function VQueuesComponent() {
   );
   const vqueues = useListVqueues(request, { enabled: hasVqueues });
   const allVqueues = vqueues.data?.vqueues ?? [];
-  const pagination = useLimitListPagination(allVqueues, request);
   const hasFilters = filters.length > 0;
   const emptyTitle = hasFilters ? 'No matching VQueues' : 'No VQueues';
   const emptyDescription = hasFilters
@@ -245,7 +241,7 @@ function VQueuesComponent() {
             ) : (
               <VQueueTable
                 baseUrl={baseUrl}
-                vqueues={pagination.pageItems}
+                vqueues={allVqueues}
                 isLoading={vqueues.isFetching}
                 error={vqueues.error as Error | null}
                 caption={filteredResultsCaption}
@@ -262,12 +258,9 @@ function VQueuesComponent() {
               />
             )}
             {!vqueues.isFetching && (
-              <LimitListPagination
+              <LimitListTruncation
                 hasMore={Boolean(vqueues.data?.hasMore)}
                 totalItems={allVqueues.length}
-                pageIndex={pagination.pageIndex}
-                pageCount={pagination.pageCount}
-                onPageChange={pagination.setPageIndex}
                 label="VQueues"
               />
             )}

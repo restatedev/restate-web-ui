@@ -2,8 +2,7 @@ import { Button, SubmitButton } from '@restate/ui/button';
 import {
   PanelTable,
   PanelTableColumn,
-  PanelTableQuickOpenToolbar,
-  panelTableQuickOpenToolbarClassNames,
+  PanelTableQuickOpenCaption,
 } from '@restate/ui/table';
 import {
   Dropdown,
@@ -45,14 +44,12 @@ import {
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
 import {
-  PropsWithChildren,
   RefObject,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  useTransition,
 } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import {
@@ -188,7 +185,6 @@ const MAX_COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   invoked_by: 180,
 };
 
-const PAGE_SIZE = 30;
 const HERO_BREAKDOWN_SAMPLE_SIZE = 1_000_000;
 
 const summaryHeaderStyles = tv({
@@ -403,19 +399,7 @@ function Component() {
   const { schema, isLoading, listInvocationsParameters } =
     useListInvocationsParameters();
 
-  const [pageIndex, _setPageIndex] = useState(0);
   const [openInvocationId, setOpenInvocationId] = useState('');
-  const [, startTransition] = useTransition();
-  const setPageIndex = useCallback(
-    (arg: Parameters<typeof _setPageIndex>[0]) => {
-      startTransition(() => {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        _setPageIndex(arg);
-      });
-    },
-    [],
-  );
-  const resetPageIndex = useCallback(() => setPageIndex(0), [setPageIndex]);
 
   const loaderData = useLoaderData<typeof clientLoader>();
   const [countMode, setCountModeState] = useState<CountMode>(
@@ -486,7 +470,6 @@ function Component() {
     error,
     data,
     isFetching,
-    isPending,
     queryKey,
     refetch,
   } = useListInvocationsV2(
@@ -643,22 +626,8 @@ function Component() {
     Set<string>
   >(new Set());
 
-  const currentPageItems = useMemo(() => {
-    return (
-      data?.rows?.slice(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE) ??
-      []
-    );
-  }, [pageIndex, data?.rows]);
-
-  // TODO
-  useEffect(() => {
-    if (Number(data?.rows?.length) <= PAGE_SIZE * pageIndex) {
-      setPageIndex(0);
-    }
-  }, [pageIndex, setPageIndex, data?.rows?.length]);
-
-  const totalSize = Math.ceil((data?.rows ?? []).length / PAGE_SIZE);
-  const hash = 'hash' + currentPageItems.map(({ id }) => id).join('');
+  const tableItems = data?.rows ?? [];
+  const hash = 'hash' + tableItems.map(({ id }) => id).join('');
 
   const panelColumns = useMemo<PanelTableColumn<ColumnKey>[]>(
     () =>
@@ -694,7 +663,7 @@ function Component() {
 
   useEffect(() => {
     setSelectedInvocationIds(new Set());
-  }, [isFetching, pageIndex]);
+  }, [isFetching]);
 
   const navigate = useNavigate();
   const basePath = useHref('/');
@@ -768,7 +737,6 @@ function Component() {
       noun="invocations"
       className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
       onClear={() => {
-        setPageIndex(0);
         setSearchParams(writeFilterClauses(searchParams, []), {
           preventScrollReset: true,
         });
@@ -777,9 +745,6 @@ function Component() {
   ) : undefined;
   const quickOpenNotices = [resultsNotice, filteredResultsCaption].filter(
     Boolean,
-  );
-  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
-    quickOpenNotices.length,
   );
 
   const summaryContent = (
@@ -1028,20 +993,21 @@ function Component() {
             <ContentPanelSection flush>
               <PanelTable
                 aria-label="Invocations"
-                caption={tableCaption}
-                columns={panelColumns}
-                items={currentPageItems}
-                toolbar={
-                  <PanelTableQuickOpenToolbar notice={quickOpenNotices}>
-                    <InvocationQuickOpen
-                      invocationId={openInvocationId}
-                      onChange={setOpenInvocationId}
-                      onOpen={confirmOpenInvocation}
-                    />
-                  </PanelTableQuickOpenToolbar>
+                bodyHeadingHeight={0}
+                caption={
+                  <>
+                    {tableCaption}
+                    <PanelTableQuickOpenCaption notice={quickOpenNotices}>
+                      <InvocationQuickOpen
+                        invocationId={openInvocationId}
+                        onChange={setOpenInvocationId}
+                        onOpen={confirmOpenInvocation}
+                      />
+                    </PanelTableQuickOpenCaption>
+                  </>
                 }
-                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
-                toolbarClassName={quickOpenToolbarClassNames.toolbar}
+                columns={panelColumns}
+                items={tableItems}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}
                 onSelectionChange={(keys) =>
@@ -1067,9 +1033,9 @@ function Component() {
                   }
                 }}
                 bodyKey={hash}
-                bodyDependencies={[selectedColumns, pageIndex, error]}
+                bodyDependencies={[selectedColumns, error]}
                 isLoading={isFetching}
-                numOfRows={Math.max(currentPageItems.length, 8)}
+                numOfRows={Math.max(tableItems.length, 8)}
                 emptyPlaceholder={
                   error ? (
                     <EmptyState
@@ -1125,46 +1091,7 @@ function Component() {
                 hasActiveFilters={hasActiveFilters}
                 statusChangedCount={statusChangedCount}
                 key={dataUpdate}
-              >
-                {!isPending && !error && totalSize > 1 && (
-                  <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex === 0}
-                      onClick={() => setPageIndex(0)}
-                    >
-                      <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex === 0}
-                      onClick={() => setPageIndex((s) => s - 1)}
-                      className=""
-                    >
-                      <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-                    </Button>
-                    <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                      {pageIndex + 1} / {totalSize}
-                    </div>
-
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex + 1 === totalSize}
-                      onClick={() => setPageIndex((s) => s + 1)}
-                      className=""
-                    >
-                      <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex + 1 === totalSize}
-                      onClick={() => setPageIndex(totalSize - 1)}
-                    >
-                      <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </Footnote>
+              />
             </ContentPanelSection>
             {OnboardingGuide && (
               <div className="ml-10">
@@ -1183,8 +1110,6 @@ function Component() {
           schema={schema}
           isLoading={isLoading}
           selectedColumns={selectedColumns}
-          setPageIndex={setPageIndex}
-          resetPageIndex={resetPageIndex}
           isFetching={isFetching}
           submitRef={submitRef}
           queryKey={queryKey}
@@ -1198,8 +1123,6 @@ interface InvocationsFormProps {
   schema: ReturnType<typeof useListInvocationsParameters>['schema'];
   isLoading: boolean;
   selectedColumns: ReturnType<typeof useColumns>['selectedColumns'];
-  setPageIndex: (arg: number | ((prev: number) => number)) => void;
-  resetPageIndex: () => void;
   isFetching: boolean;
   submitRef: RefObject<HTMLButtonElement | null>;
   queryKey: readonly unknown[];
@@ -1209,8 +1132,6 @@ function InvocationsForm({
   schema,
   isLoading,
   selectedColumns,
-  setPageIndex,
-  resetPageIndex,
   isFetching,
   submitRef,
   queryKey,
@@ -1220,7 +1141,6 @@ function InvocationsForm({
     schema,
     isLoading,
     selectedColumns,
-    resetPageIndex,
   });
 
   return (
@@ -1263,7 +1183,7 @@ function InvocationsForm({
           <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
             Quick Filters:
           </div>
-          <FilterShortcuts schema={schema} setPageIndex={setPageIndex} />
+          <FilterShortcuts schema={schema} />
         </div>
       </div>
       <SubmitButton
@@ -1284,14 +1204,13 @@ function Footnote({
   totalAccuracy,
   hasActiveFilters,
   statusChangedCount,
-  children,
-}: PropsWithChildren<{
+}: {
   data?: ReturnType<typeof useListInvocationsV2>['data'];
   totalCount: number;
   totalAccuracy: 'exact' | 'estimate' | 'lower-bound';
   hasActiveFilters: boolean;
   statusChangedCount: number;
-}>) {
+}) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
@@ -1370,7 +1289,6 @@ function Footnote({
           <span className="font-medium text-gray-500">{duration} ago</span>
         </div>
       )}
-      <div>{children}</div>
     </div>
   );
 }

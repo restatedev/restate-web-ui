@@ -39,10 +39,7 @@ import {
   LIMIT_COUNTER_FILTER_SCHEMA,
   toLimitCounterFilters,
 } from './limits.counterFilters';
-import {
-  LimitListPagination,
-  useLimitListPagination,
-} from './LimitListPagination';
+import { LimitListTruncation } from './LimitListTruncation';
 import {
   LimitRuleFilterOption,
   LimitRuleFilterValue,
@@ -178,7 +175,6 @@ function CountersComponent() {
   );
   const counters = useListUserLimits(counterRequest, { enabled: hasVqueues });
   const allCounters = counters.data?.limits ?? [];
-  const counterPagination = useLimitListPagination(allCounters, counterRequest);
   const renderRuleValue = useCallback((item: QueryClause<QueryClauseType>) => {
     const value =
       typeof item.value.value === 'string'
@@ -372,7 +368,7 @@ function CountersComponent() {
             ) : (
               <CounterTable
                 ariaLabel="Limit counters"
-                counters={counterPagination.pageItems}
+                counters={allCounters}
                 baseUrl={baseUrl}
                 variant="all"
                 isLoading={counters.isFetching}
@@ -395,12 +391,9 @@ function CountersComponent() {
               />
             )}
             {!counters.isFetching && (
-              <LimitListPagination
+              <LimitListTruncation
                 hasMore={Boolean(counters.data?.hasMore)}
                 totalItems={allCounters.length}
-                pageIndex={counterPagination.pageIndex}
-                pageCount={counterPagination.pageCount}
-                onPageChange={counterPagination.setPageIndex}
                 label="limit counters"
               />
             )}

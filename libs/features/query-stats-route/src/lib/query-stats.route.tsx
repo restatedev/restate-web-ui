@@ -143,8 +143,6 @@ function compareStats(a: QueryStat, b: QueryStat, column: StatsColumn): number {
 const HOVER_INDICATOR_CLASS =
   'inline cursor-help underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-4 hover:decoration-zinc-500';
 
-const MAX_TABLE_ROWS = 50;
-
 // A one-line skeleton of the full shape: the tables plus the clauses that
 // drive performance. Cheap point lookups (id = ?, id IN (…)) are spelled out
 // so they are recognizable at a glance; the full shape is shown on hover.
@@ -681,8 +679,6 @@ function Component() {
         compareStats(a, b, column) * direction || a.id.localeCompare(b.id),
     );
   }, [filters.items, stats, sortDescriptor]);
-  const visibleRows = useMemo(() => rows.slice(0, MAX_TABLE_ROWS), [rows]);
-
   const exportStats = useCallback(() => {
     downloadTextFile(
       `query-stats-${fileTimestamp()}.json`,
@@ -784,8 +780,8 @@ function Component() {
             <PanelTable
               aria-label="Query stats"
               columns={STATS_COLUMNS}
-              items={visibleRows}
-              numOfRows={Math.max(visibleRows.length, 6)}
+              items={rows}
+              numOfRows={Math.max(rows.length, 6)}
               sortDescriptor={sortDescriptor}
               onSortChange={setSortDescriptor}
               bodyDependencies={[
@@ -813,12 +809,6 @@ function Component() {
               }
               rowClassName="transition-none [content-visibility:auto]"
             />
-            {rows.length > MAX_TABLE_ROWS && (
-              <div className="w-full pt-3 pr-4 pb-2 pl-2 text-xs text-gray-500/80">
-                Showing only the first {MAX_TABLE_ROWS} of{' '}
-                {formatNumber(rows.length)} queries.
-              </div>
-            )}
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>

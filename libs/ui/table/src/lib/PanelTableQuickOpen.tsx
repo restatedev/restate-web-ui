@@ -4,7 +4,6 @@ import { Button } from '@restate/ui/button';
 import { Chip, ChipGroup, ChipSegment } from '@restate/ui/chip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
 
 export interface PanelTableQuickOpenScope {
   value: string;
@@ -123,29 +122,7 @@ export function PanelTableQuickOpen({
   );
 }
 
-const quickOpenToolbarStyles = tv({
-  slots: {
-    wrapper: 'relative top-auto mx-4 -mb-8',
-    toolbar:
-      'border-0 bg-transparent p-0 shadow-none backdrop-blur-none supports-[-moz-appearance:none]:bg-transparent',
-  },
-  variants: {
-    noticeRows: {
-      none: { wrapper: 'h-9' },
-      one: { wrapper: 'h-[4.75rem]' },
-      two: { wrapper: 'h-[7.25rem]' },
-    },
-  },
-});
-
-export function panelTableQuickOpenToolbarClassNames(noticeCount: number) {
-  const noticeRows =
-    noticeCount > 1 ? 'two' : noticeCount === 1 ? 'one' : 'none';
-  const { wrapper, toolbar } = quickOpenToolbarStyles({ noticeRows });
-  return { wrapper: wrapper(), toolbar: toolbar() };
-}
-
-export function PanelTableQuickOpenToolbar({
+export function PanelTableQuickOpenCaption({
   notice,
   children,
 }: {
@@ -153,7 +130,10 @@ export function PanelTableQuickOpenToolbar({
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-full w-full min-w-0 flex-col gap-1">
+    <div
+      data-panel-table-quick-open-caption
+      className="mx-4 mt-11 mb-1 flex min-w-0 flex-col gap-1"
+    >
       {notice}
       <div className="flex h-9 w-full shrink-0 items-center rounded-xl bg-zinc-200/30 px-2.5 text-xs supports-[-moz-appearance:none]:bg-zinc-200/45">
         {children}
