@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-09-02 Overview exact Overall completion reuse: The progressive `view: 'breakdowns'` summary already contains the all-time finished outcome counts. Let `useCompletionRange` skip `/finished-breakdown` only for exact `ALL`, and let `useCompletionChart` use summary totals; retain the dedicated endpoint for bounded ranges and estimated mode. Direct project Vitest, lib/spec `tsc`, and ESLint are reliable when the local Nx runner stalls before target output.
+
+- 2026-09-02 self on overview SQL lookup: I piped `rg --files` through `sort` despite the repo's repeated no-inspection-pipeline rule. Use direct, path-scoped `rg --files` output without shell pipelines.
+
 - 2026-09-02 Lazy Status error details: Gate paused/transient error queries with the React Aria `DialogTrigger` `onOpenChange` state. Because data is unknown before opening, keep the trigger enabled and explicitly render first-load, no-record, request-failure, and invocation-error states inside the popover; terminal failures continue using row data without a query.
 
 - 2026-09-02 self on PanelTable request audit: I piped one broad `rg` result through another `rg` while tracing cell descendants, despite the repo rule against inspection pipelines. Use direct, path-scoped searches for each relevant symbol instead.

@@ -30,6 +30,7 @@ export function useCompletionChart() {
     breakdownMode,
     canSampleBreakdown,
     refetchInterval: overviewRefetchInterval,
+    reuseSummaryForExactOverall: hasVqueues,
     enabled: hasVqueues,
     timeRange: hasVqueues ? undefined : timeRange,
   });
@@ -41,7 +42,7 @@ export function useCompletionChart() {
         rangeBucket: range.rangeBucket,
         isSampled: range.isSampled,
         isPartial: range.isPartial,
-        useSummaryTotals: !hasVqueues,
+        useSummaryTotals: !hasVqueues || range.usesSummary,
         baseUrl,
         linkParams,
       }),
@@ -54,6 +55,7 @@ export function useCompletionChart() {
       range.isPartial,
       range.isSampled,
       range.rangeBucket,
+      range.usesSummary,
     ],
   );
   const onBucketClick = useCallback(
