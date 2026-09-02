@@ -1,5 +1,9 @@
 # Napkin
 
+- 2026-09-02 Lazy Status error details: Gate paused/transient error queries with the React Aria `DialogTrigger` `onOpenChange` state. Because data is unknown before opening, keep the trigger enabled and explicitly render first-load, no-record, request-failure, and invocation-error states inside the popover; terminal failures continue using row data without a query.
+
+- 2026-09-02 self on PanelTable request audit: I piped one broad `rg` result through another `rg` while tracing cell descendants, despite the repo rule against inspection pipelines. Use direct, path-scoped searches for each relevant symbol instead.
+
 - 2026-08-29 PanelTable caption-to-row gap correction (user): Measuring `caption` against the first `[role=row]` only measured the invisible spacer header and falsely reported a 4px gap. The first data row still began after React Aria's 36px `headingHeight`. Keep 36px for ordinary tables so their first row clears the separate sticky header, but let quick-open tables set `bodyHeadingHeight={0}` and drive both React Aria layout and `--panel-table-body-heading-height`; then measure against the first body row.
 
 - 2026-08-29 self on dependency inspection: I used `rg | head` despite the repo rule against inspection pipelines, then passed an unmatched pnpm-store glob to zsh. Use a bounded direct `rg` against an explicit path resolved from the package symlink.
