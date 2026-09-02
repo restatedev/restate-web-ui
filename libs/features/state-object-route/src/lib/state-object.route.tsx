@@ -4,7 +4,7 @@ import {
   useListVirtualObjectState,
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
-import { Button, SubmitButton } from '@restate/ui/button';
+import { SubmitButton } from '@restate/ui/button';
 import {
   ContentPanel,
   ContentPanelBody,
@@ -13,20 +13,12 @@ import {
 } from '@restate/ui/content-panel';
 import { EmptyState } from '@restate/ui/empty-state';
 import { ErrorBanner } from '@restate/ui/error';
-import { Icon, IconName } from '@restate/ui/icons';
+import { IconName } from '@restate/ui/icons';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
@@ -141,7 +133,6 @@ function clausesToFilterArgs(clauses: QueryClause<QueryClauseType>[]): {
   return { systemFilters, stateFilter };
 }
 
-const STATE_PAGE_SIZE = 30;
 const MAX_VISIBLE_STATE_SERVICE_TABS = 5;
 const CUSTOM_KEY_ID = `__rs-state-key__`;
 const SERVICE_KEY_CLAUSE_ID = '__sys_service_key';
@@ -248,19 +239,16 @@ function Component() {
     if ('items' in serviceKeysData) return serviceKeysData.items;
     return serviceKeysData.keys.map((key) => ({ key }));
   }, [serviceKeysData, error]);
-  const [pageIndex, _setPageIndex] = useState(0);
-  const currentPageItems = useMemo(() => {
-    return allItems
-      .slice()
-      .sort((a, b) => a.key.localeCompare(b.key))
-      .slice(pageIndex * STATE_PAGE_SIZE, (pageIndex + 1) * STATE_PAGE_SIZE);
-  }, [pageIndex, allItems]);
+  const sortedItems = useMemo(
+    () => allItems.slice().sort((a, b) => a.key.localeCompare(b.key)),
+    [allItems],
+  );
   const listStateArgs = useMemo(
     () =>
       hasVqueues
-        ? { items: currentPageItems }
-        : { keys: currentPageItems.map((item) => item.key) },
-    [currentPageItems, hasVqueues],
+        ? { items: sortedItems }
+        : { keys: sortedItems.map((item) => item.key) },
+    [hasVqueues, sortedItems],
   );
   const listObjects = useListVirtualObjectState(serviceName, listStateArgs, {
     refetchOnMount: true,
@@ -277,7 +265,7 @@ function Component() {
         obj,
       ]),
     );
-    return currentPageItems.map((item) => {
+    return sortedItems.map((item) => {
       const id = `${item.key}\x00${item.scope ?? ''}`;
       return {
         id,
@@ -286,20 +274,8 @@ function Component() {
         state: previews.get(id)?.state ?? [],
       };
     });
-  }, [currentPageItems, listObjects.data, listObjects.error, error]);
+  }, [error, listObjects.data, listObjects.error, sortedItems]);
   const isLoadingPreviews = listObjects.isFetching && !listObjects.data;
-
-  const [, startTransition] = useTransition();
-
-  const setPageIndex = useCallback(
-    (arg: Parameters<typeof _setPageIndex>[0]) => {
-      startTransition(() => {
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        _setPageIndex(arg);
-      });
-    },
-    [],
-  );
 
   const queryCLient = useQueryClient();
 
@@ -309,15 +285,8 @@ function Component() {
     queryRef.current = query;
   });
 
-  const totalSize = Math.ceil(allItems.length / STATE_PAGE_SIZE);
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
   const setEditState = useEditStateContext();
-
-  useEffect(() => {
-    if (allItems.length <= STATE_PAGE_SIZE * pageIndex) {
-      setPageIndex(0);
-    }
-  }, [pageIndex, allItems, setPageIndex]);
   const stateError = error || listObjects.error;
   const hasActiveFilters = Array.from(searchParams.keys()).some(
     (key) => key.startsWith('filter_') || key.startsWith('sysFilter_'),
@@ -334,7 +303,7 @@ function Component() {
   const resolvedServiceCodecOptions =
     useResolvedCodecOptions(serviceCodecOptions);
   const isStateLoading =
-    isFetching || (listObjects.isFetching && currentPageItems.length !== 0);
+    isFetching || (listObjects.isFetching && sortedItems.length !== 0);
   const openStatePanel = useCallback(
     (rowKey: string, rowScope?: string) => {
       setSearchParams(
@@ -427,7 +396,7 @@ function Component() {
                   serviceType={serviceType}
                   isLoading={isStateLoading && stateObjects.length === 0}
                   isLoadingPreviews={isLoadingPreviews}
-                  numOfRows={currentPageItems.length || 5}
+                  numOfRows={sortedItems.length || 5}
                   onOpenObject={openStatePanel}
                   onEditObject={(row) =>
                     setEditState({
@@ -478,50 +447,7 @@ function Component() {
                   />
                 </div>
               )}
-              <Footnote
-                data={serviceKeysData}
-                isFetching={isFetching || listObjects.isFetching}
-                key={dataUpdate}
-              >
-                {!isFetching && !error && totalSize > 1 && (
-                  <div className="flex items-center rounded-lg border bg-zinc-50 py-0.5 shadow-xs">
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex === 0}
-                      onClick={() => setPageIndex(0)}
-                    >
-                      <Icon name={IconName.ChevronFirst} className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex === 0}
-                      onClick={() => setPageIndex(pageIndex - 1)}
-                      className=""
-                    >
-                      <Icon name={IconName.ChevronLeft} className="h-4 w-4" />
-                    </Button>
-                    <div className="mx-2 flex items-center gap-0.5 text-0.5xs">
-                      {pageIndex + 1} / {totalSize}
-                    </div>
-
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex + 1 === totalSize}
-                      onClick={() => setPageIndex(pageIndex + 1)}
-                      className=""
-                    >
-                      <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="icon"
-                      disabled={pageIndex + 1 === totalSize}
-                      onClick={() => setPageIndex(totalSize - 1)}
-                    >
-                      <Icon name={IconName.ChevronLast} className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </Footnote>
+              <Footnote data={serviceKeysData} key={dataUpdate} />
             </ContentPanelSection>
           </ContentPanelBody>
         </ContentPanel>
@@ -619,12 +545,9 @@ function Component() {
 
 function Footnote({
   data,
-  isFetching,
-  children,
-}: PropsWithChildren<{
-  isFetching: boolean;
+}: {
   data?: ReturnType<typeof useQueryVirtualObjectState>['data'];
-}>) {
+}) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
 
@@ -645,8 +568,7 @@ function Footnote({
     };
   }, [data]);
 
-  const { isPast, ...parts } = durationSinceLastSnapshot(now);
-  const duration = formatDurations(parts);
+  const duration = formatDurations(durationSinceLastSnapshot(now));
   const count = data
     ? 'items' in data
       ? data.items.length
@@ -672,7 +594,6 @@ function Footnote({
           <span className="font-medium text-gray-500">{duration} ago</span>
         </div>
       )}
-      <div>{children}</div>
     </div>
   );
 }

@@ -118,12 +118,10 @@ export function useInvocationsForm({
   schema,
   isLoading,
   selectedColumns,
-  resetPageIndex,
 }: {
   schema: QueryClauseSchema<QueryClauseType>[];
   isLoading: boolean;
   selectedColumns: ColumnKey[];
-  resetPageIndex: () => void;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
@@ -185,7 +183,6 @@ export function useInvocationsForm({
       return false;
     }
 
-    resetPageIndex();
     // Keep lastQuery in sync with the committed state so the next "Back to
     // invocations" navigation (?restore=1) restores what the user actually
     // just submitted. Saving here is a hot-path optimization — the route's

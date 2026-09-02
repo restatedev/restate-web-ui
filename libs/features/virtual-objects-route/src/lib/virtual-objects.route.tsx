@@ -39,8 +39,7 @@ import { getHrefWithQueryParams, Link } from '@restate/ui/link';
 import {
   Cell,
   PanelTable,
-  PanelTableQuickOpenToolbar,
-  panelTableQuickOpenToolbarClassNames,
+  PanelTableQuickOpenCaption,
   type PanelTableColumn,
 } from '@restate/ui/table';
 import {
@@ -465,10 +464,6 @@ function Component() {
       }
     />
   ) : undefined;
-  const quickOpenToolbarClassNames = panelTableQuickOpenToolbarClassNames(
-    Number(Boolean(filteredResultsCaption)),
-  );
-
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
       <VirtualObjectsHeader hasScopedVirtualObjects={hasScopedVirtualObjects} />
@@ -555,12 +550,13 @@ function Component() {
             <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
               <PanelTable
                 aria-label="Virtual Object instances"
+                bodyHeadingHeight={0}
                 columns={visibleColumns}
                 items={items}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
-                toolbar={
-                  <PanelTableQuickOpenToolbar notice={filteredResultsCaption}>
+                caption={
+                  <PanelTableQuickOpenCaption notice={filteredResultsCaption}>
                     <VirtualObjectQuickOpen
                       draft={openVirtualObjectDraft}
                       disabled={!selectedService}
@@ -569,10 +565,8 @@ function Component() {
                       onOpen={confirmOpenVirtualObject}
                       service={selectedService}
                     />
-                  </PanelTableQuickOpenToolbar>
+                  </PanelTableQuickOpenCaption>
                 }
-                toolbarWrapperClassName={quickOpenToolbarClassNames.wrapper}
-                toolbarClassName={quickOpenToolbarClassNames.toolbar}
                 bodyDependencies={[
                   selectedService,
                   searchString,

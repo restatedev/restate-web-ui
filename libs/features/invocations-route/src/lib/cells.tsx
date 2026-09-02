@@ -6,7 +6,7 @@ import {
 import { Cell } from '@restate/ui/table';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ColumnKey } from './columns';
-import { ComponentType } from 'react';
+import { ComponentType, useState } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { CellProps } from './cells/types';
@@ -39,7 +39,8 @@ import {
   useGetJournalEntryMetadata,
   useListSubscriptions,
 } from '@restate/data-access/admin-api-hooks';
-import { Ellipsis } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui/loading';
+import { ErrorBanner } from '@restate/ui/error';
 import {
   Duration,
   ENTRY_COMMANDS_NAMES,
@@ -261,38 +262,37 @@ const lastEntryIconStyles = tv({
   },
 });
 
-function LastJournalEntry({ invocation }: { invocation: Invocation }) {
-  const { data } = useGetJournalEntryMetadata(
-    invocation.id,
-    (invocation.journal_size || 1) - 1,
-  );
-
-  const fnName = data?.type
-    ? data.category === 'notification'
-      ? { ...ENTRY_NOTIFICATIONS_NAMES }[data.type]
-      : data.category === 'command'
-        ? { ...ENTRY_COMMANDS_NAMES }[data.type]
+function getLastJournalEntryName(entry?: JournalEntryV2) {
+  return entry?.type
+    ? entry.category === 'notification'
+      ? { ...ENTRY_NOTIFICATIONS_NAMES }[entry.type]
+      : entry.category === 'command'
+        ? { ...ENTRY_COMMANDS_NAMES }[entry.type]
         : undefined
     : undefined;
+}
 
-  if (!data || !fnName) {
-    return null;
-  }
-
-  const isCompletion = data.category === 'notification';
+function LastJournalEntry({
+  entry,
+  name,
+}: {
+  entry: JournalEntryV2;
+  name: string;
+}) {
+  const isCompletion = entry.category === 'notification';
 
   return (
-    <div className="flex max-w-full items-center gap-1 pl-0.5 text-2xs text-zinc-500/80">
+    <div className="flex max-w-full items-center gap-1 p-3 text-xs text-zinc-500/80">
       <Icon
         name={IconName.CornerDownRight}
         className="h-3 w-3 shrink-0 text-zinc-400"
       />
       <span className="truncate font-mono font-medium text-zinc-500/90 italic">
-        {fnName}
+        {name}
         <span className="opacity-70">()</span>
-        {data.category === 'command' && (
+        {entry.category === 'command' && (
           <EntryChain
-            entry={data as Extract<JournalEntryV2, { category?: 'command' }>}
+            entry={entry as Extract<JournalEntryV2, { category?: 'command' }>}
           />
         )}
       </span>
@@ -301,26 +301,103 @@ function LastJournalEntry({ invocation }: { invocation: Invocation }) {
           <span className="shrink-0 opacity-70">→</span>
           <Icon
             name={
-              data.resultType === 'failure' ? IconName.CircleX : IconName.Check
+              entry.resultType === 'failure' ? IconName.CircleX : IconName.Check
             }
             className={lastEntryIconStyles({
-              result: data.resultType === 'failure' ? 'failure' : 'success',
+              result: entry.resultType === 'failure' ? 'failure' : 'success',
             })}
           />
         </>
       ) : (
         <Ellipsis className="shrink-0" />
       )}
-      {data.start && (
+      {entry.start && (
         <Duration
           prefix={isCompletion ? 'completed' : 'started'}
           suffix="ago"
-          date={data.start}
+          date={entry.start}
           tooltipTitle="Last entry appended at"
           className="shrink-0 px-0"
         />
       )}
     </div>
+  );
+}
+
+function LastJournalEntryPopoverContent({
+  invocation,
+}: {
+  invocation: Invocation;
+}) {
+  const { data, error, isPending } = useGetJournalEntryMetadata(
+    invocation.id,
+    (invocation.journal_size || 1) - 1,
+  );
+  const fnName = getLastJournalEntryName(data);
+
+  return (
+    <DropdownSection title="Last journal entry">
+      {isPending ? (
+        <div className="flex items-center gap-2 p-3 text-sm text-zinc-500">
+          <Spinner className="h-4 w-4" />
+          Loading last journal entry…
+        </div>
+      ) : error ? (
+        <ErrorBanner error={error} className="m-2 rounded-lg text-xs" />
+      ) : data && fnName ? (
+        <LastJournalEntry entry={data} name={fnName} />
+      ) : (
+        <div className="p-3 text-sm text-zinc-500">
+          No last journal entry details are available.
+        </div>
+      )}
+    </DropdownSection>
+  );
+}
+
+function LastJournalEntryPopover({ invocation }: { invocation: Invocation }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Popover onOpenChange={setIsOpen}>
+      <PopoverTrigger>
+        <Button
+          variant="icon"
+          className="-ml-1 flex h-auto w-fit max-w-full min-w-0 items-center gap-0 rounded-md border-0 bg-transparent px-1 py-0.5 text-2xs font-normal text-zinc-500 shadow-none hover:bg-black/5 hover:text-zinc-700 pressed:bg-black/10 [&_.badge]:w-auto [&_.badge]:min-w-0 [&_.badge]:rounded-none [&_.badge]:p-0"
+        >
+          <span className="sr-only">Show last journal entry. </span>
+          <span className="shrink-0">
+            <InvocationTableDate
+              value={invocation.modified_at}
+              tooltipTitle="Modified at"
+            />
+          </span>
+          <span className="min-w-0 truncate text-zinc-500/80">
+            , journal updated
+          </span>
+          <Icon
+            name={IconName.ChevronsUpDown}
+            className="ml-1 h-3 w-3 shrink-0 text-zinc-400"
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
+        {isOpen && <LastJournalEntryPopoverContent invocation={invocation} />}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function ModifiedAtCell({ invocation }: CellProps) {
+  if (invocation.status === 'running' && invocation.journal_size) {
+    return <LastJournalEntryPopover invocation={invocation} />;
+  }
+
+  return (
+    <InvocationTableDate
+      value={invocation.modified_at}
+      tooltipTitle="Modified at"
+    />
   );
 }
 
@@ -398,9 +475,6 @@ function JournalCell({ invocation }: CellProps) {
           </DropdownSection>
         </PopoverContent>
       </Popover>
-      {invocation.status === 'running' && (
-        <LastJournalEntry invocation={invocation} />
-      )}
     </div>
   );
 }
@@ -468,10 +542,7 @@ const CELLS: Record<
     withDate({ field: 'completed_at', tooltipTitle: 'Completed at' }),
     'completed_at',
   ),
-  modified_at: withCell(
-    withDate({ field: 'modified_at', tooltipTitle: 'Modified at' }),
-    'modified_at',
-  ),
+  modified_at: withCell(ModifiedAtCell, 'modified_at'),
   scheduled_at: withCell(
     withDate({ field: 'scheduled_at', tooltipTitle: 'Scheduled at' }),
     'scheduled_at',

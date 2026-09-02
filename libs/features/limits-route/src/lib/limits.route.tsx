@@ -90,10 +90,7 @@ import {
 } from './RuleLevel';
 import { limitCountersForRuleHref } from './navigation';
 import { LIMIT_LIST_QUERY_SIZE } from './limits.constants';
-import {
-  LimitListPagination,
-  useLimitListPagination,
-} from './LimitListPagination';
+import { LimitListTruncation } from './LimitListTruncation';
 import { FlowControlHeader, flowControlTabs } from './FlowControlPage';
 import {
   LimitRuleFilterOption,
@@ -892,8 +889,7 @@ function Component() {
       };
     });
   }, [baseUrl, rules.data?.rules]);
-  const rulePagination = useLimitListPagination(rows, ruleRequest);
-  const ruleTableBodyKey = `${rules.isFetching ? 'loading' : 'ready'}:${rulePagination.pageItems
+  const ruleTableBodyKey = `${rules.isFetching ? 'loading' : 'ready'}:${rows
     .map((row) => row.id)
     .join(':')}`;
 
@@ -1028,10 +1024,10 @@ function Component() {
                 aria-label="Limit rules"
                 bodyKey={ruleTableBodyKey}
                 columns={RULE_COLUMNS}
-                items={rulePagination.pageItems}
+                items={rows}
                 isLoading={rules.isFetching}
                 error={error as Error | null}
-                numOfRows={Math.max(rulePagination.pageItems.length, 6)}
+                numOfRows={Math.max(rows.length, 6)}
                 bodyDependencies={[error, rules.isFetching]}
                 caption={filteredResultsCaption}
                 sortDescriptor={sortDescriptor}
@@ -1059,21 +1055,16 @@ function Component() {
                   )
                 }
                 onRowAction={(key) => {
-                  const row = rulePagination.pageItems.find(
-                    (item) => item.id === String(key),
-                  );
+                  const row = rows.find((item) => item.id === String(key));
                   if (row) navigate(row.href);
                 }}
                 rowClassName="transition-none [content-visibility:auto]"
               />
             )}
             {!rules.isFetching && (
-              <LimitListPagination
+              <LimitListTruncation
                 hasMore={Boolean(rules.data?.hasMore)}
                 totalItems={rows.length}
-                pageIndex={rulePagination.pageIndex}
-                pageCount={rulePagination.pageCount}
-                onPageChange={rulePagination.setPageIndex}
                 label="rules"
               />
             )}

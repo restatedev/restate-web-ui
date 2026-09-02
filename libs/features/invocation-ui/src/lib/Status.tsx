@@ -15,10 +15,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
 import { RestateError } from '@restate/util/errors';
 import { tv } from '@restate/util/styles';
 import { formatOrdinals } from '@restate/util/intl';
-import { Ellipsis } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { StatusTimeline } from './StatusTimeline';
 import { AwaitingOn } from './journal/entries/AwaitingOn';
-import type { PropsWithChildren } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 
 export function getRestateError(invocation?: Invocation) {
   if (!invocation) {
@@ -184,39 +184,7 @@ export function Status({
 }) {
   const { status } = invocation;
   const isPaused = status === 'paused';
-  const { data: pausedErrorData } = useGetPausedError(invocation.id, {
-    enabled: isPaused,
-    refetchOnMount: true,
-    staleTime: 0,
-  });
-  const pausedError =
-    isPaused && pausedErrorData?.message
-      ? new RestateError(
-          pausedErrorData.message,
-          pausedErrorData.relatedRestateErrorCode,
-          true,
-          pausedErrorData.stack,
-        )
-      : undefined;
-  const hasPausedError = Boolean(pausedError) && invocation.status === 'paused';
   const isRetrying = Boolean(invocation.isRetrying);
-  // The last transient (retry) error comes from sys_journal_events, not
-  // sys_invocation.last_failure — the latter is empty for vqueue-backed
-  // invocations that are backing-off.
-  const { data: transientErrorData } = useGetTransientError(invocation.id, {
-    enabled: isRetrying && !invocation.last_failure,
-    refetchOnMount: true,
-    staleTime: 0,
-  });
-  const transientError =
-    isRetrying && transientErrorData?.message
-      ? new RestateError(
-          transientErrorData.message,
-          transientErrorData.relatedRestateErrorCode,
-          true,
-          transientErrorData.stack,
-        )
-      : undefined;
   const error = getRestateError(invocation);
   return (
     <div className="flex flex-row flex-wrap items-baseline gap-0.5">
@@ -224,7 +192,7 @@ export function Status({
         status={status}
         className={className}
         isRetrying={Boolean(invocation.isRetrying)}
-        hasPausedError={hasPausedError}
+        hasPausedError={isPaused}
         mini={mini}
         hasAwaitingOn={Boolean(
           invocation?.last_awaiting_on_future_json ||
@@ -236,23 +204,18 @@ export function Status({
             is tight (e.g. the invocation header). md:contents keeps these as
             inline children of the badge at md+. */}
         <span className={secondaryStyles({ mini })}>
-          {(status === 'failed' || isRetrying) && (
-            <LastError
-              isRetrying={isRetrying}
-              isFailed={status === 'failed'}
-              error={isRetrying ? (transientError ?? error) : error}
-              attemptCount={invocation.retry_count}
-            />
-          )}
-          {hasPausedError && (
-            <LastError
-              isRetrying
-              isFailed={false}
-              error={pausedError}
-              popoverTitle="Paused after"
-              label="after…"
-            />
-          )}
+          {(status === 'failed' || isRetrying) &&
+            (isRetrying && !invocation.last_failure ? (
+              <TransientLastError invocation={invocation} error={error} />
+            ) : (
+              <LastError
+                isRetrying={isRetrying}
+                isFailed={status === 'failed'}
+                error={error}
+                attemptCount={invocation.retry_count}
+              />
+            ))}
+          {isPaused && <PausedLastError invocationId={invocation.id} />}
           {status === 'running' && (
             <AwaitingOn
               future={invocation.last_awaiting_on_future_json}
@@ -278,6 +241,81 @@ export function Status({
         </span>
       )}
     </div>
+  );
+}
+
+function PausedLastError({ invocationId }: { invocationId: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const {
+    data,
+    error: queryError,
+    isPending,
+  } = useGetPausedError(invocationId, {
+    enabled: isOpen,
+    staleTime: 0,
+  });
+  const error = data?.message
+    ? new RestateError(
+        data.message,
+        data.relatedRestateErrorCode,
+        true,
+        data.stack,
+      )
+    : undefined;
+
+  return (
+    <LastError
+      isRetrying
+      isFailed={false}
+      error={error}
+      queryError={queryError}
+      isLoading={isOpen && isPending}
+      loadingMessage="Loading paused error…"
+      emptyMessage="No paused error was recorded."
+      popoverTitle="Paused after"
+      label="after…"
+      onOpenChange={setIsOpen}
+    />
+  );
+}
+
+function TransientLastError({
+  invocation,
+  error: fallbackError,
+}: {
+  invocation: Invocation;
+  error?: RestateError;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const {
+    data,
+    error: queryError,
+    isPending,
+  } = useGetTransientError(invocation.id, {
+    enabled: isOpen,
+    staleTime: 0,
+  });
+  const error = data?.message
+    ? new RestateError(
+        data.message,
+        data.relatedRestateErrorCode,
+        true,
+        data.stack,
+      )
+    : fallbackError;
+
+  return (
+    <LastError
+      isRetrying
+      isFailed={false}
+      error={error}
+      queryError={queryError}
+      isLoading={isOpen && isPending}
+      loadingMessage="Loading last failure…"
+      emptyMessage="No transient error was recorded."
+      attemptCount={invocation.retry_count}
+      onOpenChange={setIsOpen}
+    />
   );
 }
 
@@ -351,6 +389,11 @@ export function LastError({
   attemptCount = 0,
   popoverTitle,
   label,
+  queryError,
+  isLoading = false,
+  loadingMessage,
+  emptyMessage,
+  onOpenChange,
 }: {
   isRetrying: boolean;
   isFailed: boolean;
@@ -358,6 +401,11 @@ export function LastError({
   attemptCount?: number;
   popoverTitle?: string;
   label?: string;
+  queryError?: Error | null;
+  isLoading?: boolean;
+  loadingMessage?: string;
+  emptyMessage?: string;
+  onOpenChange?: (isOpen: boolean) => void;
 }) {
   const hasStack = error?.message.includes('\n') || !!error?.stack;
   const isLargeError = Boolean(error && error?.message.length > 200);
@@ -369,11 +417,14 @@ export function LastError({
   const errorCode =
     error?.restate_code ??
     error?.message.match(ERROR_CODE_REGEXP)?.groups?.restate_code;
+  const canOpen = Boolean(
+    error || queryError || isLoading || loadingMessage || emptyMessage,
+  );
 
   return (
-    <Popover>
+    <Popover onOpenChange={onOpenChange}>
       <PopoverTrigger>
-        <Button variant="secondary" className={trigger()} disabled={!error}>
+        <Button variant="secondary" className={trigger()} disabled={!canOpen}>
           <Icon
             name={isRetrying ? IconName.TriangleAlert : IconName.CircleX}
             className={errorIcon()}
@@ -388,7 +439,7 @@ export function LastError({
               <span className="opacity2-80 font-normal">attempt</span>
             </span>
           ) : null}
-          {error && (
+          {canOpen && (
             <Icon
               name={IconName.ChevronsUpDown}
               className="h-3 w-3 shrink-0 text-gray-500"
@@ -403,11 +454,30 @@ export function LastError({
           }
           className=""
         >
-          <ErrorBanner
-            error={error}
-            className={errorBanner()}
-            isTransient={isRetrying}
-          />
+          {isLoading ? (
+            <div
+              role="status"
+              className={errorBanner({
+                className:
+                  'flex min-h-20 items-center justify-center gap-2 p-4 text-xs text-zinc-500',
+              })}
+            >
+              <Spinner className="h-4 w-4" />
+              {loadingMessage ?? 'Loading error…'}
+            </div>
+          ) : queryError ? (
+            <ErrorBanner error={queryError} className={errorBanner()} />
+          ) : error ? (
+            <ErrorBanner
+              error={error}
+              className={errorBanner()}
+              isTransient={isRetrying}
+            />
+          ) : (
+            <div className={errorBanner({ className: 'p-4 text-xs' })}>
+              {emptyMessage ?? 'No error was recorded.'}
+            </div>
+          )}
         </DropdownSection>
       </PopoverContent>
     </Popover>

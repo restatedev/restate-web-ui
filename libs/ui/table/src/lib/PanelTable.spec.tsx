@@ -1,11 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import { Cell } from './Row';
 import { PanelTable } from './PanelTable';
-import {
-  PanelTableQuickOpenToolbar,
-  panelTableQuickOpenToolbarClassNames,
-} from './PanelTableQuickOpen';
+import { PanelTableQuickOpenCaption } from './PanelTableQuickOpen';
 
 class ResizeObserverMock implements ResizeObserver {
   disconnect = vi.fn();
@@ -67,45 +64,67 @@ describe('PanelTable', () => {
     expect(screen.getByRole('button', { name: 'Go to instance' })).toBeTruthy();
   });
 
-  it('lets a quick-open toolbar scroll with the table content', () => {
-    const classNames = panelTableQuickOpenToolbarClassNames(0);
+  it('renders inside a virtualized bounded body container by default', () => {
+    const items = Array.from({ length: 100 }, (_, index) => ({
+      id: `item-${index}`,
+      name: `Item ${index}`,
+    }));
+    const onSelectionChange = vi.fn();
+
     render(
       <PanelTable
         aria-label="Items"
         columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
-        items={[{ id: 'one', name: 'One' }]}
-        toolbar={<button type="button">Go to instance</button>}
-        toolbarWrapperClassName={classNames.wrapper}
-        toolbarClassName={classNames.toolbar}
+        items={items}
+        selectionMode="multiple"
+        selectedKeys={new Set(['item-0'])}
+        onSelectionChange={onSelectionChange}
+        estimatedRowHeight={44}
+        bodyContainerClassName="h-48"
         renderCell={(row) => <Cell>{row.name}</Cell>}
       />,
     );
 
-    const toolbar = screen.getByRole('toolbar', { name: 'Items tools' });
-    expect(toolbar.parentElement?.className).toContain('relative');
-    expect(toolbar.parentElement?.className).toContain('top-auto');
-    expect(toolbar.parentElement?.className).not.toContain('sticky');
+    const table = screen.getByRole('grid', { name: 'Items' });
+    const headerTable = screen.getByRole('grid', { name: 'Items columns' });
+    const bodyContainer = table.parentElement;
+
+    expect(table.tagName).toBe('DIV');
+    expect(bodyContainer?.className).toContain('h-48');
+    expect(bodyContainer?.className).toContain('overflow-auto');
+    expect(bodyContainer?.parentElement?.className).toContain(
+      'react-aria-ResizableTableContainer',
+    );
+    expect(headerTable.querySelectorAll('[role="row"]')).toHaveLength(3);
+    const selectAll = headerTable.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    expect(selectAll).not.toBeNull();
+    if (!selectAll) throw new Error('Select-all checkbox was not rendered');
+    expect(selectAll.indeterminate).toBe(true);
+    fireEvent.click(selectAll);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(
+      new Set(items.map((item) => item.id)),
+    );
   });
 
-  it('stacks notices above quick open without putting the table hit layer over it', () => {
-    const classNames = panelTableQuickOpenToolbarClassNames(2);
+  it('keeps notices and quick open in caption flow before the data grid', () => {
     render(
       <PanelTable
         aria-label="Items"
         columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
         items={[{ id: 'one', name: 'One' }]}
-        toolbar={
-          <PanelTableQuickOpenToolbar
+        bodyHeadingHeight={0}
+        caption={
+          <PanelTableQuickOpenCaption
             notice={[
               <div key="partial">Partial results</div>,
               <div key="filtered">Filtered results</div>,
             ]}
           >
             <button type="button">Go to item</button>
-          </PanelTableQuickOpenToolbar>
+          </PanelTableQuickOpenCaption>
         }
-        toolbarWrapperClassName={classNames.wrapper}
-        toolbarClassName={classNames.toolbar}
         renderCell={(row) => <Cell>{row.name}</Cell>}
       />,
     );
@@ -113,9 +132,9 @@ describe('PanelTable', () => {
     const partial = screen.getByText('Partial results');
     const filtered = screen.getByText('Filtered results');
     const quickOpen = screen.getByRole('button', { name: 'Go to item' });
-    const toolbarWrapper = screen.getByRole('toolbar', {
-      name: 'Items tools',
-    }).parentElement;
+    const dataGrid = screen.getByRole('grid', { name: 'Items' });
+    const caption = quickOpen.closest('[data-panel-table-quick-open-caption]');
+    const spacerHeader = dataGrid.querySelector('[role="rowgroup"]');
 
     expect(
       partial.compareDocumentPosition(filtered) &
@@ -125,9 +144,25 @@ describe('PanelTable', () => {
       filtered.compareDocumentPosition(quickOpen) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(toolbarWrapper?.className).toContain('relative');
-    expect(toolbarWrapper?.className).toContain('top-auto');
-    expect(toolbarWrapper?.className).toContain('z-30');
-    expect(toolbarWrapper?.className).toContain('h-[7.25rem]');
+    expect(caption).not.toBeNull();
+    if (!caption) throw new Error('Quick-open caption was not rendered');
+    expect(
+      caption.compareDocumentPosition(dataGrid) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(caption.className).not.toContain('sticky');
+    expect(caption.className).not.toContain('absolute');
+    expect(caption.className).not.toContain('-mb-');
+    expect(caption.className).toContain('mb-1');
+    expect(spacerHeader?.className).toContain(
+      'h-(--panel-table-body-heading-height)',
+    );
+    const bodyScroll = caption.closest('[data-panel-table-body-scroll]');
+    expect(bodyScroll).not.toBeNull();
+    expect(bodyScroll?.getAttribute('style')).toContain(
+      '--panel-table-body-heading-height: 0px',
+    );
+    expect(bodyScroll?.contains(dataGrid)).toBe(true);
+    expect(screen.queryByRole('toolbar', { name: 'Items tools' })).toBeNull();
   });
 });

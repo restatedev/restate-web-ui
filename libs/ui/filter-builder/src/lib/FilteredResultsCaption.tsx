@@ -1,6 +1,7 @@
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
+import { type ReactNode } from 'react';
 
 const filteredResultsCaptionStyles = tv({
   base: 'mx-2 mt-11 -mb-8 flex h-8 min-w-0 items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50 px-2 text-xs',
@@ -10,12 +11,14 @@ export interface FilteredResultsCaptionProps {
   noun: string;
   onClear: () => void;
   className?: string;
+  notice?: ReactNode;
 }
 
 export function FilteredResultsCaption({
   noun,
   onClear,
   className,
+  notice,
 }: FilteredResultsCaptionProps) {
   return (
     <div className={filteredResultsCaptionStyles({ className })}>
@@ -27,7 +30,7 @@ export function FilteredResultsCaption({
         Filtered results
       </span>
       <span className="min-w-0 truncate text-zinc-500">
-        Only matching {noun} are shown.
+        Only matching {noun} are shown.{notice ? <> {notice}</> : null}
       </span>
       <Button
         type="button"

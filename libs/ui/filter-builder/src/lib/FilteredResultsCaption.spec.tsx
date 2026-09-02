@@ -38,4 +38,19 @@ describe('FilteredResultsCaption', () => {
     expect(caption?.className).toContain('rounded-xl');
     expect(caption?.className).not.toContain('mt-11');
   });
+
+  it('includes an additional results notice in the same banner', () => {
+    render(
+      <FilteredResultsCaption
+        noun="invocations"
+        notice="3 invocations changed status while results were loading. The latest status is shown."
+        onClear={vi.fn()}
+      />,
+    );
+
+    const caption = screen.getByText('Filtered results').parentElement;
+    expect(caption?.textContent).toContain(
+      'Only matching invocations are shown. 3 invocations changed status while results were loading. The latest status is shown.',
+    );
+  });
 });

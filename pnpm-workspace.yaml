@@ -50,6 +50,7 @@ overrides:
   postcss@<=8.5.17: ^8.5.18
   undici@>=7.0.0 <7.29.0: ^7.29.0
   nanoid@<3.3.17: ^3.3.17
+  browserslist@<=4.28.6: ^4.28.7
 
 peerDependencyRules:
   allowAny:
@@ -68,6 +69,7 @@ minimumReleaseAgeExclude:
   - postcss@8.5.18
   - undici@7.29.0
   - nanoid@3.3.17
+  - browserslist@4.28.7
 
 auditConfig:
   ignoreGhsas:
