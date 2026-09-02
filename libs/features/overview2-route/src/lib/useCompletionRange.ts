@@ -19,6 +19,7 @@ type UseCompletionRangeArgs = {
   canSampleBreakdown: boolean;
   refetchInterval: () => number;
   reuseSummaryForOverall?: boolean;
+  summaryBreakdownIsLoading?: boolean;
   summaryIsPartial?: boolean;
   enabled?: boolean;
   timeRange?: CompletionTimeRange;
@@ -32,6 +33,7 @@ export function useCompletionRange({
   canSampleBreakdown,
   refetchInterval,
   reuseSummaryForOverall = false,
+  summaryBreakdownIsLoading = false,
   summaryIsPartial = false,
   enabled = true,
   timeRange: controlledTimeRange,
@@ -112,11 +114,13 @@ export function useCompletionRange({
     rangeBucket,
     isSampled,
     isPartial,
-    isLoading: isHistoryEnabled
-      ? isHistoryLoading
-      : usesBreakdown
-        ? breakdown.isPending
-        : false,
+    isLoading: usesSummary
+      ? summaryBreakdownIsLoading
+      : isHistoryEnabled
+        ? isHistoryLoading
+        : usesBreakdown
+          ? breakdown.isPending
+          : false,
     isError: enabled && usesBreakdown ? breakdown.isError : false,
   };
 }

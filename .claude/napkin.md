@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-09-02 Overview reused completion loading: When the Overall completion chart reuses the progressive summary, the stage request can finish before the separate breakdown request. Feed `isBreakdownLoading('finished')` into `useCompletionRange` for the summary-reuse branch so `HeroGauge` stays in its loading state and `isEmpty` cannot render `No completed` from temporary zeroes.
+
 - 2026-09-02 self on estimated-summary verification: I chained ESLint and `git diff --check` with `&&` despite the repo instruction to avoid shell command separators. Run independent verification commands as separate parallel tool calls.
 
 - 2026-09-02 Overview Overall completion reuse: The progressive `view: 'breakdowns'` summary already contains the all-time finished outcome counts for exact and estimated modes. Let `useCompletionRange` skip `/finished-breakdown` for `ALL`, preserve the finished stage's sampled/partial metadata, and let `useCompletionChart` use summary totals; retain the dedicated endpoint for bounded ranges. Direct project Vitest, lib/spec `tsc`, and ESLint are reliable when the local Nx runner stalls before target output.

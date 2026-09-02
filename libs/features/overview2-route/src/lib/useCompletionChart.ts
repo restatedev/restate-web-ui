@@ -32,6 +32,7 @@ export function useCompletionChart() {
     canSampleBreakdown,
     refetchInterval: overviewRefetchInterval,
     reuseSummaryForOverall: hasVqueues,
+    summaryBreakdownIsLoading: isCompletedBreakdownLoading,
     summaryIsPartial: isCompletedBreakdownPartial,
     enabled: hasVqueues,
     timeRange: hasVqueues ? undefined : timeRange,

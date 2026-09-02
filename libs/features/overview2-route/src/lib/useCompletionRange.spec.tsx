@@ -77,10 +77,12 @@ describe('useCompletionRange', () => {
         canSampleBreakdown: true,
         refetchInterval: () => 30_000,
         reuseSummaryForOverall: true,
+        summaryBreakdownIsLoading: true,
       }),
     );
 
     expect(result.current.usesSummary).toBe(true);
+    expect(result.current.isLoading).toBe(true);
     expect(useFinishedInvocationsBreakdownV2Mock).toHaveBeenCalledWith(
       { mode: { type: 'exact' } },
       expect.objectContaining({ enabled: false }),
@@ -135,6 +137,7 @@ describe('useCompletionRange', () => {
         canSampleBreakdown: true,
         refetchInterval: () => 30_000,
         reuseSummaryForOverall: true,
+        summaryBreakdownIsLoading: true,
         summaryIsPartial: true,
       }),
     );
@@ -142,6 +145,7 @@ describe('useCompletionRange', () => {
     expect(result.current.usesSummary).toBe(true);
     expect(result.current.isSampled).toBe(true);
     expect(result.current.isPartial).toBe(true);
+    expect(result.current.isLoading).toBe(true);
     expect(result.current.rangeBucket).toBeUndefined();
     expect(useFinishedInvocationsBreakdownV2Mock).toHaveBeenCalledWith(
       { mode: { type: 'sampled', sampleSize: 1_000_000 } },
