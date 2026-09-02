@@ -14,7 +14,6 @@ import {
   ColumnProps as AriaColumnProps,
   Column as AriaColumn,
   ResizableTableContainer,
-  TableLayout,
   Toolbar as AriaToolbar,
   Virtualizer,
 } from 'react-aria-components';
@@ -23,6 +22,7 @@ import { tv } from '@restate/util/styles';
 import { Cell, Row } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
+import { PanelTableLayout } from './PanelTableLayout';
 
 export interface PanelTableColumn<TId extends string = string> {
   id: TId;
@@ -420,7 +420,7 @@ export function PanelTable<
   );
 
   const body = virtualized ? (
-    <Virtualizer layout={TableLayout} layoutOptions={layoutOptions}>
+    <Virtualizer layout={PanelTableLayout} layoutOptions={layoutOptions}>
       {dataTable}
     </Virtualizer>
   ) : (
