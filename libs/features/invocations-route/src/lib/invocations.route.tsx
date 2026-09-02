@@ -141,7 +141,7 @@ const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
   vqueue_id: INVOCATION_TABLE_COLUMN_CONFIG.id.defaultWidth,
   limit_key: INVOCATION_TABLE_COLUMN_CONFIG.limit_key.defaultWidth,
   created_at: INVOCATION_TABLE_COLUMN_CONFIG.created_at.defaultWidth,
-  modified_at: 110,
+  modified_at: 200,
   duration: 110,
   scheduled_at: 110,
   scheduled_start_at: 110,

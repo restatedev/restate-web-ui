@@ -198,7 +198,9 @@ export function InvocationTableDate({
         <DateTooltip date={new Date(value)} title={tooltipTitle}>
           {duration}
         </DateTooltip>
-        <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>
+        <span className="text-2xs font-normal text-zinc-500/80">
+          {isPast && ' ago'}
+        </span>
       </span>
     </Badge>
   );

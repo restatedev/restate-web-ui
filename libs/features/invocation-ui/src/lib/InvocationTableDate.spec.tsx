@@ -15,5 +15,8 @@ describe('InvocationTableDate', () => {
     );
 
     expect(container.textContent).toBe('Scheduled for 2s ago');
+    const suffix = container.querySelector('.text-2xs');
+    expect(suffix?.textContent).toBe(' ago');
+    expect(suffix?.className).toContain('text-zinc-500/80');
   });
 });

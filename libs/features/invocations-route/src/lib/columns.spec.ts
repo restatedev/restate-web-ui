@@ -1,4 +1,8 @@
-import { getDefaultInvocationColumns, setDefaultColumns } from './columns';
+import {
+  COLUMN_NAMES,
+  getDefaultInvocationColumns,
+  setDefaultColumns,
+} from './columns';
 
 describe('invocation columns', () => {
   it('does not include Limit key by default', () => {
@@ -9,5 +13,9 @@ describe('invocation columns', () => {
     const searchParams = setDefaultColumns(new URLSearchParams());
 
     expect(searchParams.getAll('column')).not.toContain('limit_key');
+  });
+
+  it('labels the journal column without the relocated last entry', () => {
+    expect(COLUMN_NAMES.journal_size).toBe('Journal');
   });
 });

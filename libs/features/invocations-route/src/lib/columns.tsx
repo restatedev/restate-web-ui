@@ -52,7 +52,7 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   completed_at: 'Completed at',
   target: INVOCATION_TABLE_COLUMN_CONFIG.target.name,
   status: INVOCATION_TABLE_COLUMN_CONFIG.status.name,
-  journal_size: 'Journal / Last entry',
+  journal_size: 'Journal',
   invoked_by: 'Invoked by',
   deployment: 'Deployment',
   // retry_count: 'Attempt count',
