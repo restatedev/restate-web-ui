@@ -272,19 +272,32 @@ function ResultsNotice({
   isPartial: boolean;
   statusChangedCount: number;
 }) {
-  const statusChangedMessage = `${formatNumber(statusChangedCount)} ${statusChangedCount === 1 ? 'invocation changed' : 'invocations changed'} status while results were loading. The latest status is shown.`;
+  const message = getResultsNoticeMessage(isPartial, statusChangedCount);
   return (
     <div className="flex h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 text-xs text-zinc-600">
       <Icon
         name={IconName.Info}
         className="h-3.5 w-3.5 shrink-0 text-zinc-400"
       />
-      <span>
-        {isPartial && 'This view may not include every matching invocation. '}
-        {statusChangedCount > 0 && statusChangedMessage}
-      </span>
+      <span>{message}</span>
     </div>
   );
+}
+
+function getResultsNoticeMessage(
+  isPartial: boolean,
+  statusChangedCount: number,
+) {
+  const messages = [];
+  if (isPartial) {
+    messages.push('This view may not include every matching invocation.');
+  }
+  if (statusChangedCount > 0) {
+    messages.push(
+      `${formatNumber(statusChangedCount)} ${statusChangedCount === 1 ? 'invocation changed' : 'invocations changed'} status while results were loading. The latest status is shown.`,
+    );
+  }
+  return messages.join(' ');
 }
 
 const queryLoadingOverlayStyles = tv({
@@ -723,10 +736,17 @@ function Component() {
         }}
       />
     ) : undefined;
-  const resultsNotice =
+  const resultsNoticeMessage =
     !isFetching &&
     (listSampled || data?.isPartial || statusChangedCount > 0) &&
-    !error ? (
+    !error
+      ? getResultsNoticeMessage(
+          listSampled || Boolean(data?.isPartial),
+          statusChangedCount,
+        )
+      : undefined;
+  const resultsNotice =
+    resultsNoticeMessage && !hasActiveFilters ? (
       <ResultsNotice
         isPartial={listSampled || Boolean(data?.isPartial)}
         statusChangedCount={statusChangedCount}
@@ -736,6 +756,7 @@ function Component() {
     <FilteredResultsCaption
       noun="invocations"
       className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
+      notice={resultsNoticeMessage}
       onClear={() => {
         setSearchParams(writeFilterClauses(searchParams, []), {
           preventScrollReset: true,

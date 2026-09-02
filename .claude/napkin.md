@@ -4029,3 +4029,4 @@
 - 2026-09-02 self on trigger-style inspection: I piped an `rg` search into `head` despite the repo command-hygiene rule. Limit `rg` through its scope and the tool output budget instead of a shell pipeline.
 - 2026-09-02 relative-date typography: In every invocation table date cell, keep the numeric duration at its existing size but render the `ago` suffix at `text-2xs`, matching the quiet `journal updated` phrase.
 - 2026-09-02 relative-date secondary color: Render both the `ago` suffix and the Modified-at `journal updated` phrase with `text-zinc-500/80` so their size and contrast match.
+- 2026-09-02 invocation result notices: When active filters and a partial/status-change notice coincide, render one blue `Filtered results` banner. Append the result notice to its description and retain the Reset action; keep the neutral notice only when there is no filter banner to merge into.
