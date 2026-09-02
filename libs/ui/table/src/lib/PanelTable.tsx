@@ -14,7 +14,6 @@ import {
   ColumnProps as AriaColumnProps,
   Column as AriaColumn,
   ResizableTableContainer,
-  TableLayout,
   Toolbar as AriaToolbar,
   Virtualizer,
 } from 'react-aria-components';
@@ -23,6 +22,7 @@ import { tv } from '@restate/util/styles';
 import { Cell, Row } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
+import { PanelTableLayout } from './PanelTableLayout';
 
 export interface PanelTableColumn<TId extends string = string> {
   id: TId;
@@ -108,7 +108,6 @@ const styles = tv({
   variants: {
     virtualized: {
       true: {
-        dataTableScroll: 'max-h-[calc(100vh-var(--cp-content-top,0px)-0.5rem)]',
         dataTableInner:
           'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
       },
@@ -420,7 +419,7 @@ export function PanelTable<
   );
 
   const body = virtualized ? (
-    <Virtualizer layout={TableLayout} layoutOptions={layoutOptions}>
+    <Virtualizer layout={PanelTableLayout} layoutOptions={layoutOptions}>
       {dataTable}
     </Virtualizer>
   ) : (

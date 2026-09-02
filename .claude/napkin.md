@@ -1,5 +1,13 @@
 # Napkin
 
+- 2026-09-02 PanelTable page-scroll correction (user, supersedes the bounded-body notes below): Virtualized tables must remain unbounded in normal page flow and use the page/body scroll. Do not cap the shared data container to the viewport. React Aria's `allowsWindowScrolling` mode virtualizes an unbounded collection against the window viewport; retain the horizontal overflow owner only for column scrolling and header synchronization.
+
+- 2026-09-02 PanelTable nested virtualization: React Aria 1.17 `TableLayout.buildBody` iterates the expanded-key-aware flattened body but estimates the remaining tail with `collection.size`, which counts collapsed descendants. Use the shared `PanelTableLayout` override to base tail height and loader index on the visible body iterator.
+
+- 2026-09-02 self on nested virtualization test: JSDOM measures virtualized row cells as 0px, so the rendered content height collapses to the spacer header and cannot prove estimated scroll height. Exercise `PanelTableLayout.buildBody` with a test subclass and a collection whose total size exceeds its visible body iterator.
+
+- 2026-09-02 self on table verification: Both `pnpm nx test table` and `pnpm nx typecheck table` stalled at project startup under Node 22. Stop only those processes, then run Vitest with the table Vite config and TypeScript against `tsconfig.lib.json` and `tsconfig.spec.json` directly.
+
 - 2026-09-02 Overview reused completion loading: When the Overall completion chart reuses the progressive summary, the stage request can finish before the separate breakdown request. Feed `isBreakdownLoading('finished')` into `useCompletionRange` for the summary-reuse branch so `HeroGauge` stays in its loading state and `isEmpty` cannot render `No completed` from temporary zeroes.
 
 - 2026-09-02 self on estimated-summary verification: I chained ESLint and `git diff --check` with `&&` despite the repo instruction to avoid shell command separators. Run independent verification commands as separate parallel tool calls.
