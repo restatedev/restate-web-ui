@@ -18,7 +18,8 @@ type UseCompletionRangeArgs = {
   breakdownMode: BreakdownCountMode;
   canSampleBreakdown: boolean;
   refetchInterval: () => number;
-  reuseSummaryForExactOverall?: boolean;
+  reuseSummaryForOverall?: boolean;
+  summaryIsPartial?: boolean;
   enabled?: boolean;
   timeRange?: CompletionTimeRange;
 };
@@ -30,7 +31,8 @@ export function useCompletionRange({
   breakdownMode,
   canSampleBreakdown,
   refetchInterval,
-  reuseSummaryForExactOverall = false,
+  reuseSummaryForOverall = false,
+  summaryIsPartial = false,
   enabled = true,
   timeRange: controlledTimeRange,
 }: UseCompletionRangeArgs) {
@@ -46,8 +48,7 @@ export function useCompletionRange({
   const usesSummary =
     enabled &&
     !isHistoryEnabled &&
-    reuseSummaryForExactOverall &&
-    breakdownMode === 'exact' &&
+    reuseSummaryForOverall &&
     timeRange === 'ALL';
   const usesBreakdown = enabled && !isHistoryEnabled && !usesSummary;
   const rangeStartTime = usesBreakdown
@@ -85,13 +86,21 @@ export function useCompletionRange({
   const rangeBucket = useMemo(
     () =>
       combineCompletionBuckets(
-        usesBreakdown ? (queriedBucket ? [queriedBucket] : []) : historyBuckets,
+        isHistoryEnabled
+          ? historyBuckets
+          : usesBreakdown && queriedBucket
+            ? [queriedBucket]
+            : [],
       ),
-    [historyBuckets, queriedBucket, usesBreakdown],
+    [historyBuckets, isHistoryEnabled, queriedBucket, usesBreakdown],
   );
   const isSampled =
-    usesBreakdown && canSampleBreakdown && breakdownMode === 'estimate';
-  const isPartial = usesBreakdown && Boolean(breakdown.data?.isPartial);
+    (usesBreakdown || usesSummary) &&
+    canSampleBreakdown &&
+    breakdownMode === 'estimate';
+  const isPartial = usesSummary
+    ? summaryIsPartial
+    : usesBreakdown && Boolean(breakdown.data?.isPartial);
 
   return {
     isHistoryEnabled,

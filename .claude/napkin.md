@@ -1,6 +1,8 @@
 # Napkin
 
-- 2026-09-02 Overview exact Overall completion reuse: The progressive `view: 'breakdowns'` summary already contains the all-time finished outcome counts. Let `useCompletionRange` skip `/finished-breakdown` only for exact `ALL`, and let `useCompletionChart` use summary totals; retain the dedicated endpoint for bounded ranges and estimated mode. Direct project Vitest, lib/spec `tsc`, and ESLint are reliable when the local Nx runner stalls before target output.
+- 2026-09-02 self on estimated-summary verification: I chained ESLint and `git diff --check` with `&&` despite the repo instruction to avoid shell command separators. Run independent verification commands as separate parallel tool calls.
+
+- 2026-09-02 Overview Overall completion reuse: The progressive `view: 'breakdowns'` summary already contains the all-time finished outcome counts for exact and estimated modes. Let `useCompletionRange` skip `/finished-breakdown` for `ALL`, preserve the finished stage's sampled/partial metadata, and let `useCompletionChart` use summary totals; retain the dedicated endpoint for bounded ranges. Direct project Vitest, lib/spec `tsc`, and ESLint are reliable when the local Nx runner stalls before target output.
 
 - 2026-09-02 self on overview SQL lookup: I piped `rg --files` through `sort` despite the repo's repeated no-inspection-pipeline rule. Use direct, path-scoped `rg --files` output without shell pipelines.
 

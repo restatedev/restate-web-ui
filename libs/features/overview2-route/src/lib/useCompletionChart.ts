@@ -19,6 +19,7 @@ export function useCompletionChart() {
     breakdownMode,
     canSampleBreakdown,
     isCompletedBreakdownLoading,
+    isCompletedBreakdownPartial,
     isSummaryLoading,
     isSummaryError,
     linkParams,
@@ -30,7 +31,8 @@ export function useCompletionChart() {
     breakdownMode,
     canSampleBreakdown,
     refetchInterval: overviewRefetchInterval,
-    reuseSummaryForExactOverall: hasVqueues,
+    reuseSummaryForOverall: hasVqueues,
+    summaryIsPartial: isCompletedBreakdownPartial,
     enabled: hasVqueues,
     timeRange: hasVqueues ? undefined : timeRange,
   });

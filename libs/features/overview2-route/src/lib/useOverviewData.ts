@@ -180,6 +180,10 @@ export function useOverviewData({
   const isSummaryLoading = summary.isPending || summary.isPlaceholderData;
   const isInboxBreakdownLoading =
     inboxCount > 0 && summary.isBreakdownLoading('inbox');
+  const isCompletedBreakdownPartial = Boolean(
+    summary.data?.stageBuckets.find(({ key }) => key === 'finished')
+      ?.breakdownIsPartial,
+  );
   const isSummaryError = summary.isError;
   const summaryError = summary.error;
   const hasData = isNew || deploymentsMap !== undefined;
@@ -215,6 +219,7 @@ export function useOverviewData({
     isInboxBreakdownError: summary.isBreakdownError('inbox'),
     isCompletedBreakdownLoading: summary.isBreakdownLoading('finished'),
     isCompletedBreakdownError: summary.isBreakdownError('finished'),
+    isCompletedBreakdownPartial,
     isSummaryError,
     summaryError,
     isServiceSummaryLoading: isSummaryLoading,

@@ -76,7 +76,7 @@ describe('useCompletionRange', () => {
         breakdownMode: 'exact',
         canSampleBreakdown: true,
         refetchInterval: () => 30_000,
-        reuseSummaryForExactOverall: true,
+        reuseSummaryForOverall: true,
       }),
     );
 
@@ -96,7 +96,7 @@ describe('useCompletionRange', () => {
         breakdownMode: 'exact',
         canSampleBreakdown: true,
         refetchInterval: () => 30_000,
-        reuseSummaryForExactOverall: true,
+        reuseSummaryForOverall: true,
       }),
     );
 
@@ -112,8 +112,21 @@ describe('useCompletionRange', () => {
     );
   });
 
-  it('keeps the dedicated breakdown for estimated overall counts', () => {
+  it('reuses a partial sampled summary for estimated overall counts', () => {
     useIsFeatureFlagEnabledMock.mockReturnValue(false);
+    useFinishedInvocationsTimelineV2Mock.mockReturnValue({
+      buckets: [
+        {
+          start: '2026-09-02T10:00:00.000Z',
+          end: '2026-09-02T11:00:00.000Z',
+          succeeded: 9,
+          failed: 1,
+          cancelled: 0,
+          killed: 0,
+        },
+      ],
+      isPending: false,
+    });
 
     const { result } = renderHook(() =>
       useCompletionRange({
@@ -121,14 +134,18 @@ describe('useCompletionRange', () => {
         breakdownMode: 'estimate',
         canSampleBreakdown: true,
         refetchInterval: () => 30_000,
-        reuseSummaryForExactOverall: true,
+        reuseSummaryForOverall: true,
+        summaryIsPartial: true,
       }),
     );
 
-    expect(result.current.usesSummary).toBe(false);
+    expect(result.current.usesSummary).toBe(true);
+    expect(result.current.isSampled).toBe(true);
+    expect(result.current.isPartial).toBe(true);
+    expect(result.current.rangeBucket).toBeUndefined();
     expect(useFinishedInvocationsBreakdownV2Mock).toHaveBeenCalledWith(
       { mode: { type: 'sampled', sampleSize: 1_000_000 } },
-      expect.objectContaining({ enabled: true }),
+      expect.objectContaining({ enabled: false }),
     );
   });
 });
