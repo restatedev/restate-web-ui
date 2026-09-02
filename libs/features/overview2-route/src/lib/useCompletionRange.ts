@@ -18,6 +18,9 @@ type UseCompletionRangeArgs = {
   breakdownMode: BreakdownCountMode;
   canSampleBreakdown: boolean;
   refetchInterval: () => number;
+  reuseSummaryForOverall?: boolean;
+  summaryBreakdownIsLoading?: boolean;
+  summaryIsPartial?: boolean;
   enabled?: boolean;
   timeRange?: CompletionTimeRange;
 };
@@ -29,6 +32,9 @@ export function useCompletionRange({
   breakdownMode,
   canSampleBreakdown,
   refetchInterval,
+  reuseSummaryForOverall = false,
+  summaryBreakdownIsLoading = false,
+  summaryIsPartial = false,
   enabled = true,
   timeRange: controlledTimeRange,
 }: UseCompletionRangeArgs) {
@@ -41,7 +47,12 @@ export function useCompletionRange({
     'FEATURE_COMPLETION_HISTORY',
   );
   const isHistoryEnabled = enabled && isHistoryFeatureEnabled;
-  const usesBreakdown = enabled && !isHistoryEnabled;
+  const usesSummary =
+    enabled &&
+    !isHistoryEnabled &&
+    reuseSummaryForOverall &&
+    timeRange === 'ALL';
+  const usesBreakdown = enabled && !isHistoryEnabled && !usesSummary;
   const rangeStartTime = usesBreakdown
     ? getCompletionRangeStartTime(timeRange)
     : undefined;
@@ -77,16 +88,25 @@ export function useCompletionRange({
   const rangeBucket = useMemo(
     () =>
       combineCompletionBuckets(
-        usesBreakdown ? (queriedBucket ? [queriedBucket] : []) : historyBuckets,
+        isHistoryEnabled
+          ? historyBuckets
+          : usesBreakdown && queriedBucket
+            ? [queriedBucket]
+            : [],
       ),
-    [historyBuckets, queriedBucket, usesBreakdown],
+    [historyBuckets, isHistoryEnabled, queriedBucket, usesBreakdown],
   );
   const isSampled =
-    usesBreakdown && canSampleBreakdown && breakdownMode === 'estimate';
-  const isPartial = usesBreakdown && Boolean(breakdown.data?.isPartial);
+    (usesBreakdown || usesSummary) &&
+    canSampleBreakdown &&
+    breakdownMode === 'estimate';
+  const isPartial = usesSummary
+    ? summaryIsPartial
+    : usesBreakdown && Boolean(breakdown.data?.isPartial);
 
   return {
     isHistoryEnabled,
+    usesSummary,
     timeRange,
     setTimeRange,
     historyBuckets,
@@ -94,8 +114,13 @@ export function useCompletionRange({
     rangeBucket,
     isSampled,
     isPartial,
-    isLoading:
-      enabled && (usesBreakdown ? breakdown.isPending : isHistoryLoading),
+    isLoading: usesSummary
+      ? summaryBreakdownIsLoading
+      : isHistoryEnabled
+        ? isHistoryLoading
+        : usesBreakdown
+          ? breakdown.isPending
+          : false,
     isError: enabled && usesBreakdown ? breakdown.isError : false,
   };
 }
