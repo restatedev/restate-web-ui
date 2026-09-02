@@ -64,7 +64,7 @@ describe('PanelTable', () => {
     expect(screen.getByRole('button', { name: 'Go to instance' })).toBeTruthy();
   });
 
-  it('renders inside a virtualized bounded body container by default', () => {
+  it('renders its virtualized body in the page flow by default', () => {
     const items = Array.from({ length: 100 }, (_, index) => ({
       id: `item-${index}`,
       name: `Item ${index}`,
@@ -80,7 +80,6 @@ describe('PanelTable', () => {
         selectedKeys={new Set(['item-0'])}
         onSelectionChange={onSelectionChange}
         estimatedRowHeight={44}
-        bodyContainerClassName="h-48"
         renderCell={(row) => <Cell>{row.name}</Cell>}
       />,
     );
@@ -90,8 +89,8 @@ describe('PanelTable', () => {
     const bodyContainer = table.parentElement;
 
     expect(table.tagName).toBe('DIV');
-    expect(bodyContainer?.className).toContain('h-48');
     expect(bodyContainer?.className).toContain('overflow-auto');
+    expect(bodyContainer?.className).not.toContain('max-h-');
     expect(bodyContainer?.parentElement?.className).toContain(
       'react-aria-ResizableTableContainer',
     );

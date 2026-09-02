@@ -108,7 +108,6 @@ const styles = tv({
   variants: {
     virtualized: {
       true: {
-        dataTableScroll: 'max-h-[calc(100vh-var(--cp-content-top,0px)-0.5rem)]',
         dataTableInner:
           'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
       },
