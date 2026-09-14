@@ -97,6 +97,30 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+function renderInvocations(initialEntry: string) {
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <RouterProvider
+        router={createMemoryRouter(
+          [
+            {
+              path: '*',
+              element: (
+                <AriaRouter>
+                  <TenantInvocations scope="acme" />
+                </AriaRouter>
+              ),
+            },
+          ],
+          {
+            initialEntries: [initialEntry],
+          },
+        )}
+      />
+    </QueryClientProvider>,
+  );
+}
+
 describe('TenantInvocations', () => {
   it('keeps filters and links scoped and supports invocation actions', async () => {
     const user = userEvent.setup();
@@ -108,28 +132,8 @@ describe('TenantInvocations', () => {
       dataUpdatedAt: Date.now(),
       refetch: refreshList,
     });
-    render(
-      <QueryClientProvider client={new QueryClient()}>
-        <RouterProvider
-          router={createMemoryRouter(
-            [
-              {
-                path: '*',
-                element: (
-                  <AriaRouter>
-                    <TenantInvocations scope="acme" />
-                  </AriaRouter>
-                ),
-              },
-            ],
-            {
-              initialEntries: [
-                '/tenants/acme/invocations?service=Greeter&status=running',
-              ],
-            },
-          )}
-        />
-      </QueryClientProvider>,
+    renderInvocations(
+      '/tenants/acme/invocations?service=Greeter&status=running',
     );
     expect(hooks.list.mock.lastCall?.[0]).toMatchObject({
       mode: { type: 'exact' },
@@ -169,6 +173,7 @@ describe('TenantInvocations', () => {
     await user.clear(input);
     await user.type(input, 'Checkout');
     await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('textbox')).toBeNull());
     await waitFor(() =>
       expect(hooks.list.mock.lastCall?.[0].filters).toContainEqual({
         field: 'target_service_name',
@@ -183,6 +188,26 @@ describe('TenantInvocations', () => {
       operation: 'EQUALS',
       value: 'acme',
     });
+    await user.click(screen.getByRole('link', { name: /Cancel/ }));
+    expect(
+      await screen.findByRole('heading', { name: 'Cancel Invocation' }),
+    ).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Confirm' }));
+    expect(hooks.cancel).toHaveBeenCalledWith({
+      parameters: { path: { invocation_id: 'inv-acme' } },
+    });
+  });
+  it('changes status tabs while preserving the service and scope', async () => {
+    const user = userEvent.setup();
+    hooks.summary.mockReturnValue({ refetch: vi.fn() });
+    hooks.list.mockReturnValue({
+      data: { rows: [invocation], limit: 50 },
+      dataUpdatedAt: Date.now(),
+      refetch: vi.fn(),
+    });
+    renderInvocations(
+      '/tenants/acme/invocations?service=Checkout&status=running',
+    );
     await user.click(screen.getByRole('tab', { name: /^Completed/ }));
     await waitFor(() =>
       expect(hooks.list.mock.lastCall?.[0].filters).toContainEqual({
@@ -198,14 +223,15 @@ describe('TenantInvocations', () => {
         expect.objectContaining({ field: 'status' }),
       ),
     );
-    await user.click(screen.getByRole('link', { name: /Cancel/ }));
-    expect(
-      await screen.findByRole('heading', { name: 'Cancel Invocation' }),
-    ).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: 'Confirm' }));
-    expect(hooks.cancel).toHaveBeenCalledWith({
-      parameters: { path: { invocation_id: 'inv-acme' } },
-    });
+    expect(hooks.list.mock.lastCall?.[0].filters).toEqual([
+      { field: 'scope', type: 'STRING', operation: 'EQUALS', value: 'acme' },
+      {
+        field: 'target_service_name',
+        type: 'STRING',
+        operation: 'EQUALS',
+        value: 'Checkout',
+      },
+    ]);
   });
   it.each([
     [false, true],
@@ -227,28 +253,8 @@ describe('TenantInvocations', () => {
         dataUpdatedAt: Date.now(),
         refetch: vi.fn(),
       });
-      render(
-        <QueryClientProvider client={new QueryClient()}>
-          <RouterProvider
-            router={createMemoryRouter(
-              [
-                {
-                  path: '*',
-                  element: (
-                    <AriaRouter>
-                      <TenantInvocations scope="acme" />
-                    </AriaRouter>
-                  ),
-                },
-              ],
-              {
-                initialEntries: [
-                  `/tenants/acme/invocations${filtered ? '?service=Greeter&status=running' : ''}`,
-                ],
-              },
-            )}
-          />
-        </QueryClientProvider>,
+      renderInvocations(
+        `/tenants/acme/invocations${filtered ? '?service=Greeter&status=running' : ''}`,
       );
       if (selectRows) {
         const grid = screen.getByRole('grid', { name: 'Tenant invocations' });
