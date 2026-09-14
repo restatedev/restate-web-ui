@@ -8,10 +8,14 @@ import { RestateContextProvider } from '@restate/features/restate-context';
 
 const baseUrl = `/tenant-view/${accountId}/${environmentId}/${scope}`;
 
-<RestateContextProvider adminBaseUrl={adminBaseUrl} ingressUrl={ingressUrl} baseUrl={baseUrl}>
+<RestateContextProvider
+  adminBaseUrl={adminBaseUrl}
+  ingressUrl={ingressUrl}
+  baseUrl={baseUrl}
+>
   <TenantSidebar scope={scope} header={cloudAccountAndEnvironmentSwitchers} />
   <TenantView scope={scope} invocationId={id} />
-</RestateContextProvider>
+</RestateContextProvider>;
 ```
 
 `TenantView` renders the list when `invocationId` is omitted, and the journal

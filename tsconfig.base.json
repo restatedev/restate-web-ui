@@ -62,9 +62,6 @@
       "@restate/features/introspection-route": [
         "libs/features/introspection-route/src/index.ts"
       ],
-      "@restate/features/tenant-view": [
-        "libs/features/tenant-view/src/index.ts"
-      ],
       "@restate/features/invocation-route": [
         "libs/features/invocation-route/src/index.ts"
       ],
@@ -118,6 +115,9 @@
       "@restate/features/support": ["libs/features/support/src/index.ts"],
       "@restate/features/system-health": [
         "libs/features/system-health/src/index.ts"
+      ],
+      "@restate/features/tenant-view": [
+        "libs/features/tenant-view/src/index.ts"
       ],
       "@restate/features/user-preference": [
         "libs/features/user-preference/src/index.ts"
