@@ -30,9 +30,11 @@ const schema: QueryClauseSchema<'STRING_LIST'>[] = [
   },
 ];
 const originalGetAnimations = Element.prototype.getAnimations;
+const originalScrollTo = Element.prototype.scrollTo;
 
 beforeEach(() => {
   Element.prototype.getAnimations = () => [];
+  Element.prototype.scrollTo = vi.fn();
   vi.stubGlobal('CSS', { ...globalThis.CSS, escape: (value: string) => value });
   vi.stubGlobal(
     'ResizeObserver',
@@ -47,6 +49,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   Element.prototype.getAnimations = originalGetAnimations;
+  Element.prototype.scrollTo = originalScrollTo;
   vi.unstubAllGlobals();
   vi.clearAllMocks();
 });

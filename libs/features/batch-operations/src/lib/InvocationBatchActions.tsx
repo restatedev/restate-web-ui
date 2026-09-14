@@ -27,6 +27,7 @@ interface InvocationBatchActionsProps {
 }
 
 // Shared by the main invocation list and tenant view; callers supply their own filters.
+// Inherit toolbar alignment so the tenant view can center actions beside refresh.
 export function InvocationBatchActions({
   filters,
   invocationIds,
@@ -90,7 +91,7 @@ export function InvocationBatchActions({
       <DropdownTrigger>
         <Button
           variant={invocationIds.length > 0 ? 'primary' : 'secondary'}
-          className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
+          className="flex items-center gap-1.5 rounded-lg p-0.5 px-2 text-0.5xs"
         >
           Actions
           {Boolean(invocationIds.length || totalCount) && (

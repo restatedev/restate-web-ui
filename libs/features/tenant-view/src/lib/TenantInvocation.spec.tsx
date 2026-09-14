@@ -41,9 +41,11 @@ vi.mock('@restate/features/invocation-route', async (importOriginal) => ({
 }));
 
 const originalGetAnimations = Element.prototype.getAnimations;
+const originalScrollTo = Element.prototype.scrollTo;
 const originalScrollBy = Element.prototype.scrollBy;
 beforeEach(() => {
   Element.prototype.getAnimations = () => [];
+  Element.prototype.scrollTo = vi.fn();
   Element.prototype.scrollBy = vi.fn();
   vi.stubGlobal(
     'ResizeObserver',
@@ -59,6 +61,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   Element.prototype.getAnimations = originalGetAnimations;
+  Element.prototype.scrollTo = originalScrollTo;
   Element.prototype.scrollBy = originalScrollBy;
   vi.clearAllMocks();
   vi.unstubAllGlobals();

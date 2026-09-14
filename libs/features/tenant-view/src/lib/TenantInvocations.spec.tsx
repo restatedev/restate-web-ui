@@ -66,10 +66,16 @@ const invocation: Invocation = {
 };
 
 const originalGetAnimations = Element.prototype.getAnimations;
+const originalScrollTo = Element.prototype.scrollTo;
 const originalScrollBy = Element.prototype.scrollBy;
 beforeEach(() => {
   Element.prototype.getAnimations = () => [];
+  Element.prototype.scrollTo = vi.fn();
   Element.prototype.scrollBy = vi.fn();
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1600);
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(900);
+  vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(1600);
+  vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(44);
   vi.stubGlobal(
     'ResizeObserver',
     class {
@@ -84,8 +90,10 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   Element.prototype.getAnimations = originalGetAnimations;
+  Element.prototype.scrollTo = originalScrollTo;
   Element.prototype.scrollBy = originalScrollBy;
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   vi.clearAllMocks();
 });
 
@@ -132,7 +140,9 @@ describe('TenantInvocations', () => {
       ],
     });
     expect(
-      screen.getByRole('link', { name: 'inv-acme' }).getAttribute('href'),
+      (await screen.findByRole('link', { name: 'inv-acme' })).getAttribute(
+        'href',
+      ),
     ).toBe('/tenants/acme/invocations/inv-acme?service=Greeter');
     expect(screen.getAllByText('Modified at').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /Cancel/ })).toBeTruthy();
@@ -174,15 +184,19 @@ describe('TenantInvocations', () => {
       value: 'acme',
     });
     await user.click(screen.getByRole('tab', { name: /^Completed/ }));
-    expect(hooks.list.mock.lastCall?.[0].filters).toContainEqual({
-      field: 'status',
-      type: 'STRING_LIST',
-      operation: 'IN',
-      value: ['succeeded', 'failed', 'cancelled', 'killed'],
-    });
+    await waitFor(() =>
+      expect(hooks.list.mock.lastCall?.[0].filters).toContainEqual({
+        field: 'status',
+        type: 'STRING_LIST',
+        operation: 'IN',
+        value: ['succeeded', 'failed', 'cancelled', 'killed'],
+      }),
+    );
     await user.click(screen.getByRole('tab', { name: /^All statuses/ }));
-    expect(hooks.list.mock.lastCall?.[0].filters).not.toContainEqual(
-      expect.objectContaining({ field: 'status' }),
+    await waitFor(() =>
+      expect(hooks.list.mock.lastCall?.[0].filters).not.toContainEqual(
+        expect.objectContaining({ field: 'status' }),
+      ),
     );
     await user.click(screen.getByRole('link', { name: /Cancel/ }));
     expect(
@@ -238,7 +252,7 @@ describe('TenantInvocations', () => {
       );
       if (selectRows) {
         const grid = screen.getByRole('grid', { name: 'Tenant invocations' });
-        const checkboxes = within(grid).getAllByRole('checkbox');
+        const checkboxes = await within(grid).findAllByRole('checkbox');
         const lastCheckbox = checkboxes.at(-1);
         if (!lastCheckbox) throw new Error('Missing row selection checkbox');
         await user.click(lastCheckbox);
