@@ -4,21 +4,13 @@ import {
   ServiceType,
 } from '@restate/data-access/admin-api-spec';
 import { Cell } from '@restate/ui/table';
-import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType, useState } from 'react';
 import { Badge } from '@restate/ui/badge';
 import { ServiceTypeExplainer } from '@restate/features/explainers';
 import { CellProps } from './cells/types';
-import {
-  formatDateTime,
-  formatDurations,
-  formatNumber,
-  formatPlurals,
-  formatRange,
-  normaliseDuration,
-  parseISODuration,
-} from '@restate/util/intl';
+import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { tv } from '@restate/util/styles';
 import {
   Actions,
@@ -43,6 +35,7 @@ import { Ellipsis, Spinner } from '@restate/ui/loading';
 import { ErrorBanner } from '@restate/ui/error';
 import {
   Duration,
+  InvocationDuration,
   ENTRY_COMMANDS_NAMES,
   ENTRY_NOTIFICATIONS_NAMES,
   EntryChain,
@@ -479,55 +472,6 @@ function JournalCell({ invocation }: CellProps) {
   );
 }
 
-function DurationCell({ invocation }: CellProps) {
-  if (!invocation.duration) {
-    return null;
-  }
-  const durationObject = normaliseDuration(
-    parseISODuration(invocation.duration),
-  );
-  const formatted = formatDurations(durationObject);
-  const createdAt = new Date(invocation.created_at);
-  const completedAt = invocation.completed_at
-    ? new Date(invocation.completed_at)
-    : undefined;
-  const isCompleted = !!completedAt;
-  return (
-    <Badge className="w-full border-none bg-transparent pl-0">
-      <HoverTooltip
-        className="mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5"
-        content={
-          <div className="flex flex-col gap-3">
-            <div className="text-base font-semibold capitalize">Duration</div>
-            <div className="inline font-medium">
-              <div className="inline font-normal opacity-80">
-                {isCompleted ? (
-                  formatRange(createdAt, completedAt)
-                ) : (
-                  <span>
-                    {formatDateTime(createdAt, 'system')} –{' '}
-                    <Ellipsis>now</Ellipsis>
-                  </span>
-                )}
-              </div>
-              <div className="inline font-semibold">
-                {'  '}({formatted})
-              </div>
-            </div>
-          </div>
-        }
-      >
-        {/*<span className="w-full truncate">
-          {isCompleted ? formatted : <Ellipsis>{formatted}</Ellipsis>}
-        </span>*/}
-        <span className="w-full truncate">
-          {formatted} {!isCompleted && <Ellipsis />}
-        </span>
-      </HoverTooltip>
-    </Badge>
-  );
-}
-
 const CELLS: Record<
   Exclude<ColumnKey, InvocationTableColumnKey>,
   ComponentType<CellProps>
@@ -595,7 +539,8 @@ const CELLS: Record<
     'journal_retention',
   ),
   restarted_from: withCell(RestartedFromCell, 'restarted_from'),
-  duration: withCell(DurationCell, 'duration'),
+  // Tenant view shares this renderer; the main table keeps its existing cell wrapper.
+  duration: withCell(InvocationDuration, 'duration'),
   scope: withCell(ScopeCell, 'scope'),
 };
 

@@ -26,6 +26,8 @@ export default [
     index('routes/invocations.tsx'),
     route(':id', 'routes/invocation.tsx'),
   ]),
+  // Tenant view has its own list/journal path, outside the main admin routes.
+  route('tenant-view/:scope/invocations/:id?', 'routes/tenant-view.tsx'),
   route('flow-control/counters', 'routes/limit-counters.tsx'),
   route('flow-control/vqueues', 'routes/vqueues.tsx'),
   route('flow-control/vqueues/:vqueueId', 'routes/vqueue.tsx'),

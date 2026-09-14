@@ -17,7 +17,13 @@ import {
 } from '@restate/ui/tooltip';
 import { panelHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
-import type { PropsWithChildren, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  type ComponentType,
+  type PropsWithChildren,
+  type ReactNode,
+} from 'react';
 
 const styles = tv({
   slots: {
@@ -172,7 +178,8 @@ function resolveSegmentLink({
     : undefined;
 }
 
-function ServiceTargetContent({
+// Tenant view reuses this markup with scope and service links omitted.
+export function ServiceTargetContent({
   scope,
   service,
   serviceKey,
@@ -459,7 +466,7 @@ function CatalogServiceTarget(
   );
 }
 
-export function ServiceTarget({
+function DefaultServiceTarget({
   serviceType,
   ...props
 }: PropsWithChildren<ServiceTargetProps>) {
@@ -468,4 +475,31 @@ export function ServiceTarget({
   ) : (
     <CatalogServiceTarget {...props} />
   );
+}
+
+// Tenant view overrides the renderer here, avoiding changes to tables, journals, and popovers.
+// Without an override, the main app uses its existing catalog-aware renderer.
+const ServiceTargetContext =
+  createContext<ComponentType<PropsWithChildren<ServiceTargetProps>>>(
+    DefaultServiceTarget,
+  );
+
+export interface ServiceTargetProviderProps {
+  component: ComponentType<PropsWithChildren<ServiceTargetProps>>;
+}
+
+export function ServiceTargetProvider({
+  component,
+  children,
+}: PropsWithChildren<ServiceTargetProviderProps>) {
+  return (
+    <ServiceTargetContext.Provider value={component}>
+      {children}
+    </ServiceTargetContext.Provider>
+  );
+}
+
+export function ServiceTarget(props: PropsWithChildren<ServiceTargetProps>) {
+  const Component = useContext(ServiceTargetContext);
+  return <Component {...props} />;
 }

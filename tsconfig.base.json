@@ -116,6 +116,9 @@
       "@restate/features/system-health": [
         "libs/features/system-health/src/index.ts"
       ],
+      "@restate/features/tenant-view": [
+        "libs/features/tenant-view/src/index.ts"
+      ],
       "@restate/features/user-preference": [
         "libs/features/user-preference/src/index.ts"
       ],

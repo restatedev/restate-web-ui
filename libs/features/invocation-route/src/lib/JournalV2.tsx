@@ -159,19 +159,24 @@ function getJournalEntryKey(entry: JournalEntryV2 | undefined, index: number) {
   return entry?.index ?? index;
 }
 
+export interface JournalV2Props {
+  invocationId: string;
+  className?: string;
+  timelineWidth?: number;
+  showApiError?: boolean;
+  withTimeline?: boolean;
+  // Tenant view hides the SQL introspection link; the main app keeps it by default.
+  showIntrospection?: boolean;
+}
+
 export function JournalV2({
   invocationId,
   className,
   timelineWidth = 0.5,
   showApiError = true,
   withTimeline = true,
-}: {
-  invocationId: string;
-  className?: string;
-  timelineWidth?: number;
-  showApiError?: boolean;
-  withTimeline?: boolean;
-}) {
+  showIntrospection = true,
+}: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
   const {
@@ -452,15 +457,20 @@ export function JournalV2({
                         </Button>
                       </HoverTooltip>
                     )}
-                    <HoverTooltip content="Introspect">
-                      <Link
-                        variant="icon"
-                        href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
-                        target="_blank"
-                      >
-                        <Icon name={IconName.ScanSearch} className="h-4 w-4" />
-                      </Link>
-                    </HoverTooltip>
+                    {showIntrospection && (
+                      <HoverTooltip content="Introspect">
+                        <Link
+                          variant="icon"
+                          href={`${baseUrl}/introspection?query=SELECT id, index, appended_at, entry_type, name, entry_lite_json AS metadata FROM sys_journal WHERE id = '${journalAndInvocationData?.id}'`}
+                          target="_blank"
+                        >
+                          <Icon
+                            name={IconName.ScanSearch}
+                            className="h-4 w-4"
+                          />
+                        </Link>
+                      </HoverTooltip>
+                    )}
                   </div>
                 </ContentPanelToolbar>
               )}

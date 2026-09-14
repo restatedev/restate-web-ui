@@ -1,0 +1,8 @@
+{
+  "name": "tenant-view",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/features/tenant-view/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {}
+}

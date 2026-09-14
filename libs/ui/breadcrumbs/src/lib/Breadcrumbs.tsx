@@ -189,9 +189,12 @@ function CollapsedCrumbs({
 export function Breadcrumbs({
   variant = 'chips',
   className,
+  preserveQueryParams,
 }: {
   variant?: BreadcrumbsVariant;
   className?: string;
+  // Tenant view preserves its list filters on the back link; other callers keep the default.
+  preserveQueryParams?: string[];
 }) {
   const crumbs = useBreadcrumbs();
   const pages = useBreadcrumbPages();
@@ -266,6 +269,7 @@ export function Breadcrumbs({
           ) : (
             <Link
               href={crumb.href}
+              preserveQueryParams={preserveQueryParams}
               variant="icon"
               aria-label={crumb.label}
               className={flatLink()}
