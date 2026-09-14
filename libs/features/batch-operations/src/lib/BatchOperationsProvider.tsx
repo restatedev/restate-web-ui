@@ -67,10 +67,12 @@ interface BatchOperationsContextValue {
 const BatchOperationsContext =
   createContext<BatchOperationsContextValue | null>(null);
 
+// Tenant view hides scope in confirmation dialogs while retaining it in batch requests.
 export function BatchOperationsProvider({
   children,
   batchSize = 1000,
-}: PropsWithChildren<{ batchSize?: number }>) {
+  showScope = true,
+}: PropsWithChildren<{ batchSize?: number; showScope?: boolean }>) {
   const [batchOpes, setBatchOpes] = useState([] as BatchState[]);
   const hasVqueues = useFeatures().has('vqueues');
   const hasPendingOps = batchOpes.some(
@@ -558,6 +560,7 @@ export function BatchOperationsProvider({
           onOpenChange={onOpenChange.bind(null, batch.id)}
           state={batch}
           batchSize={batchSize}
+          showScope={showScope}
         />
       ))}
     </BatchOperationsContext.Provider>

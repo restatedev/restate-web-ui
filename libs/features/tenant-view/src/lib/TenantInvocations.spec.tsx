@@ -193,9 +193,13 @@ describe('TenantInvocations', () => {
       parameters: { path: { invocation_id: 'inv-acme' } },
     });
   });
-  it.each([false, true])(
-    'confirms batch actions for selected=%s with the correct targets',
-    async (selectRows) => {
+  it.each([
+    [false, true],
+    [true, true],
+    [false, false],
+  ])(
+    'confirms batch actions for selected=%s filtered=%s with the correct targets',
+    async (selectRows, filtered) => {
       const user = userEvent.setup();
       hooks.summary.mockReturnValue({
         data: { total: 2, stageBuckets: [], statusBuckets: [] },
@@ -225,7 +229,7 @@ describe('TenantInvocations', () => {
               ],
               {
                 initialEntries: [
-                  '/tenants/acme/invocations?service=Greeter&status=running',
+                  `/tenants/acme/invocations${filtered ? '?service=Greeter&status=running' : ''}`,
                 ],
               },
             )}
@@ -244,6 +248,21 @@ describe('TenantInvocations', () => {
       expect(
         await screen.findByRole('heading', { name: 'Cancel Invocations' }),
       ).toBeTruthy();
+      const dialog = within(screen.getByRole('dialog'));
+      expect(dialog.queryByText('scope')).toBeNull();
+      expect(dialog.queryByText('acme')).toBeNull();
+      expect(dialog.queryByText('target_service_name')).toBeNull();
+      expect(dialog.queryByText('[]')).toBeNull();
+      if (!selectRows) {
+        expect(dialog.getByText('Service')).toBeTruthy();
+        expect(dialog.getByText('Status')).toBeTruthy();
+        if (filtered) {
+          expect(dialog.getByText('Greeter')).toBeTruthy();
+          expect(dialog.getByText('Running')).toBeTruthy();
+        } else {
+          expect(dialog.getAllByText('Any')).toHaveLength(2);
+        }
+      }
       expect(hooks.batchCancel).not.toHaveBeenCalled();
       await user.click(screen.getByRole('button', { name: 'Confirm' }));
       const request = hooks.batchCancel.mock.lastCall?.[0];
@@ -258,18 +277,22 @@ describe('TenantInvocations', () => {
               operation: 'EQUALS',
               value: 'acme',
             },
-            {
-              field: 'target_service_name',
-              type: 'STRING',
-              operation: 'EQUALS',
-              value: 'Greeter',
-            },
-            {
-              field: 'status',
-              type: 'STRING_LIST',
-              operation: 'IN',
-              value: ['running'],
-            },
+            ...(filtered
+              ? [
+                  {
+                    field: 'target_service_name',
+                    type: 'STRING',
+                    operation: 'EQUALS',
+                    value: 'Greeter',
+                  },
+                  {
+                    field: 'status',
+                    type: 'STRING_LIST',
+                    operation: 'IN',
+                    value: ['running'],
+                  },
+                ]
+              : []),
           ]),
         );
       }

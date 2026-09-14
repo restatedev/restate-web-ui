@@ -90,6 +90,16 @@ const statusSchema: QueryClauseSchema<'STRING_LIST'> = {
   })),
 };
 
+const batchSchema: QueryClauseSchema<'STRING_LIST'>[] = [
+  {
+    ...serviceSchema,
+    id: 'target_service_name',
+    type: 'STRING_LIST',
+    options: [],
+  },
+  statusSchema,
+];
+
 export interface TenantInvocationsProps {
   scope: string;
 }
@@ -98,7 +108,7 @@ export function TenantInvocations({ scope }: TenantInvocationsProps) {
   const [searchParams] = useSearchParams();
   return (
     <ServiceTargetProvider component={TenantServiceTarget}>
-      <BatchOperationsProvider>
+      <BatchOperationsProvider showScope={false}>
         <TenantInvocationsContent
           key={JSON.stringify([
             scope,
@@ -227,6 +237,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
               }}
             />
             <InvocationBatchActions
+              schema={batchSchema}
               filters={filters}
               invocationIds={Array.from(selectedInvocationIds)}
             />

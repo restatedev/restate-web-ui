@@ -4086,3 +4086,5 @@
 - 2026-09-14 URL naming: tenant routes now use /tenants/:scope/invocations (Cloud retains /accounts/:accountId/environments/:environmentId prefix). Keep the tenant-view library/import name; only the URL segment changed. Environment switching still exits tenant mode.
 
 - 2026-09-14 user correction: reuse one InvocationBatchActions menu exported from batch-operations in both main and tenant lists; do not keep a tenant-specific duplicate. Shared component preserves main count labels and schema. Keep tenant-view README host-neutral: /tenants/${scope}, no Cloud account/environment routes or switcher examples.
+
+- 2026-09-14 tenant batch confirmation presentation: supply a Service/Status schema to shared batch actions (including empty options for implicit Service Any). BatchOperationsProvider showScope=false hides only the scope criterion in dialogs; keep the scope in execution and summary filters. Main app defaults to showScope=true.
