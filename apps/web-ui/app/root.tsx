@@ -8,6 +8,7 @@ import {
   ScrollRestoration,
   useHref,
   useLocation,
+  useMatch,
   useNavigate,
 } from 'react-router';
 import styles from './tailwind.css?url';
@@ -84,6 +85,7 @@ import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
+import { TenantPreview } from './TenantPreview';
 
 const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
 
@@ -463,6 +465,7 @@ function RouteContent() {
 }
 
 function AppContent() {
+  const tenantMatch = useMatch('/tenant-view/:scope/*');
   const executionMetricsEnabled = useIsFeatureFlagEnabled(
     'FEATURE_EXECUTION_METRICS',
   );
@@ -472,34 +475,43 @@ function AppContent() {
       <PortalProvider>
         <RestateContextProvider
           adminBaseUrl={getCookieValue('adminBaseUrl')}
+          baseUrl={
+            tenantMatch
+              ? `/tenant-view/${encodeURIComponent(tenantMatch.params.scope ?? '')}`
+              : ''
+          }
           GettingStarted={RestateGettingStarted}
           systemHealthMonitor={monitor}
           queryHealthCheckEnabled
           executionMetricsEnabled={executionMetricsEnabled}
         >
           <CodecRuntimeProvider>
-            <BatchOperationsProvider>
-              <EditState>
-                <BreadcrumbsProvider>
-                  <LayoutOutlet zone={LayoutZone.Content}>
-                    <RouteContent />
-                  </LayoutOutlet>
-                </BreadcrumbsProvider>
-                <SidebarPanels />
-                <TopbarPanels />
-                <DeploymentDetails />
-                <ServiceDetails />
-                <DeleteDeployment />
-                <ServicePlayground />
-                <InvocationPanel />
-                <StatePanel />
-                <EditService />
-                <InvocationActions />
-                <RegisterDeploymentDialog />
-                <UpdateDeploymentDialog />
-                <MonacoWarmup />
-              </EditState>
-            </BatchOperationsProvider>
+            {tenantMatch ? (
+              <TenantPreview scope={tenantMatch.params.scope ?? ''} />
+            ) : (
+              <BatchOperationsProvider>
+                <EditState>
+                  <BreadcrumbsProvider>
+                    <LayoutOutlet zone={LayoutZone.Content}>
+                      <RouteContent />
+                    </LayoutOutlet>
+                  </BreadcrumbsProvider>
+                  <SidebarPanels />
+                  <TopbarPanels />
+                  <DeploymentDetails />
+                  <ServiceDetails />
+                  <DeleteDeployment />
+                  <ServicePlayground />
+                  <InvocationPanel />
+                  <StatePanel />
+                  <EditService />
+                  <InvocationActions />
+                  <RegisterDeploymentDialog />
+                  <UpdateDeploymentDialog />
+                  <MonacoWarmup />
+                </EditState>
+              </BatchOperationsProvider>
+            )}
           </CodecRuntimeProvider>
         </RestateContextProvider>
       </PortalProvider>

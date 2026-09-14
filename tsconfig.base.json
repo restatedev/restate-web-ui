@@ -62,6 +62,9 @@
       "@restate/features/introspection-route": [
         "libs/features/introspection-route/src/index.ts"
       ],
+      "@restate/features/tenant-view": [
+        "libs/features/tenant-view/src/index.ts"
+      ],
       "@restate/features/invocation-route": [
         "libs/features/invocation-route/src/index.ts"
       ],

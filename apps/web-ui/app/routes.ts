@@ -26,6 +26,7 @@ export default [
     index('routes/invocations.tsx'),
     route(':id', 'routes/invocation.tsx'),
   ]),
+  route('tenant-view/:scope/invocations/:id?', 'routes/tenant-view.tsx'),
   route('flow-control/counters', 'routes/limit-counters.tsx'),
   route('flow-control/vqueues', 'routes/vqueues.tsx'),
   route('flow-control/vqueues/:vqueueId', 'routes/vqueue.tsx'),

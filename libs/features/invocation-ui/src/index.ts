@@ -26,3 +26,4 @@ export * from './lib/journal/entries/isEntryCompletionAmbiguous';
 export * from './lib/journal/entries/types';
 export * from './lib/journal/entries/AwaitingOn';
 export * from './lib/journal/entries/RelativeTime';
+export { InvocationDuration } from './lib/InvocationDuration';
