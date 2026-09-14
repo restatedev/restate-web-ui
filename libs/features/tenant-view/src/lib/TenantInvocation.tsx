@@ -16,6 +16,8 @@ import { CardGrid } from '@restate/ui/card';
 import { IconName } from '@restate/ui/icons';
 import {
   InvocationLifecycleCard,
+  Actions,
+  InvocationActions,
   JournalV2,
 } from '@restate/features/invocation-route';
 import {
@@ -42,6 +44,7 @@ export function TenantInvocation({
           invocationId={invocationId}
         />
       </BreadcrumbsProvider>
+      <InvocationActions />
     </ServiceTargetProvider>
   );
 }
@@ -87,6 +90,14 @@ function TenantInvocationContent({ invocationId }: { invocationId: string }) {
               </div>
             </>
           )}
+          <div className="ml-auto shrink-0">
+            <Actions
+              invocation={data}
+              mini="md"
+              className="rounded-l-lg text-[0.9375rem]"
+              splitClassName="rounded-lg md:rounded-l-none"
+            />
+          </div>
         </InvocationStatusHeader>
         {error && <ErrorBanner error={error} className="rounded-xl" />}
         {isPending && (

@@ -64,11 +64,13 @@ function BatchOperationContent({
   isLowerBound,
   config,
   state,
+  showScope,
 }: {
   count: number | undefined;
   isLowerBound: boolean | undefined;
   config: OperationConfig;
   state: BatchState;
+  showScope: boolean;
 }) {
   const [now, setNow] = useState(() => Date.now());
   const hasVqueues = useFeatures().has('vqueues');
@@ -81,7 +83,7 @@ function BatchOperationContent({
     return (
       <div className="flex flex-col gap-2">
         <p>No invocations match your criteria.</p>
-        <Filters state={state} className="mt-0" />
+        <Filters showScope={showScope} state={state} className="mt-0" />
         <div className="mt-2 flex gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-0.5xs text-blue-600">
           <Icon
             className="h-5 w-5 shrink-0 fill-blue-600 text-blue-100"
@@ -103,7 +105,7 @@ function BatchOperationContent({
         `${duration} ago`,
         state.params,
       )}
-      {!hasInvocationIds && <Filters state={state} />}
+      {!hasInvocationIds && <Filters showScope={showScope} state={state} />}
     </div>
   );
 }
@@ -114,9 +116,11 @@ const filterStyles = tv({
 function Filters({
   state,
   className,
+  showScope,
 }: {
   state: BatchState;
   className?: string;
+  showScope: boolean;
 }) {
   const paramsWithFilters =
     'filters' in state.params ? state.params : undefined;
@@ -156,8 +160,10 @@ function Filters({
     ...(hasServiceFilter || hasVqueueFilter ? [] : [implicitServiceFilter]),
     ...(hasStatusFilter || hasStageFilter ? [] : [implicitStatusFilter]),
     ...(paramsWithFilters?.filters ?? []).filter(
+      // Scope remains in state.params for requests; tenant dialogs only hide its label.
       (filter) =>
-        !filter.isActionImplicitFilter || isVisibleActionFilter(filter),
+        (showScope || filter.field !== 'scope') &&
+        (!filter.isActionImplicitFilter || isVisibleActionFilter(filter)),
     ),
   ]);
 
@@ -214,10 +220,12 @@ export function BatchOperationDialog({
   onOpenChange,
   batchSize,
   onProgress,
+  showScope = true,
 }: {
   state: BatchState;
   onOpenChange: (isOpen: boolean, canClose: boolean) => void;
   batchSize: number;
+  showScope?: boolean;
   onProgress: (response: BatchInvocationsResponse) => void;
 }) {
   const { reset, ...mutation } = useBatchMutation(
@@ -294,6 +302,7 @@ export function BatchOperationDialog({
             isLowerBound={isLowerBound}
             config={config}
             state={state}
+            showScope={showScope}
           />
         }
         closeText={

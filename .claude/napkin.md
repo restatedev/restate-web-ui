@@ -4078,3 +4078,27 @@
 - 2026-09-14 user explicitly requests comments wherever shared/main-path code changes support tenant view, including Cloud. Explain the tenant-specific reason at each integration point; keep JSON configs valid.
 
 - 2026-09-14 tenant preview sidebar header: user wants the normal Restate server header with version and health, not the scope label. Pass the existing root SidebarHeaderContent through TenantPreview into TenantSidebar.header; keep the shared Cloud header override intact.
+
+- 2026-09-14 tenant actions: user wants normal invocation actions in both tenant pages and a Modified at list column. Reuse Actions and mount InvocationActions per exported page, inside TenantServiceTarget provider; keep all implementation changes in tenant-view. Action tests need the host React Aria RouterProvider as well as React Router; confirmation headings are currently plain h3, so query headings rather than named dialogs.
+
+- 2026-09-14 tenant batch actions: tenant list owns BatchOperationsProvider and exposes selected-ID or all-matching actions via existing batch hooks/dialogs. Always carry the scope filter with service/status for all-matching operations; reset selection on scope/filter changes and intersect selection with current rows. No host or main-path changes needed.
+
+- 2026-09-14 URL naming: tenant routes now use /tenants/:scope/invocations (Cloud retains /accounts/:accountId/environments/:environmentId prefix). Keep the tenant-view library/import name; only the URL segment changed. Environment switching still exits tenant mode.
+
+- 2026-09-14 user correction: reuse one InvocationBatchActions menu exported from batch-operations in both main and tenant lists; do not keep a tenant-specific duplicate. Shared component preserves main count labels and schema. Keep tenant-view README host-neutral: /tenants/${scope}, no Cloud account/environment routes or switcher examples.
+
+- 2026-09-14 tenant batch confirmation presentation: supply a Service/Status schema to shared batch actions (including empty options for implicit Service Any). BatchOperationsProvider showScope=false hides only the scope criterion in dialogs; keep the scope in execution and summary filters. Main app defaults to showScope=true.
+
+- 2026-09-14 tenant switcher: /ui/tenants uses the same minimal shell and original server header. TenantSwitcher takes the tenant root from RestateContext baseUrl and navigates with a trimmed, encoded scope. TenantSidebar optional tenantsHref adds exact-match navigation back to the picker, without activating Tenants on every invocation page.
+
+- 2026-09-14 tenant switcher visual correction: use the overview empty-state treatment (RestateServer illustration, recessed surface, centered heading and compact scope form). Avoid a ListPageHeader plus full-width ContentPanel for this single input.
+
+- 2026-09-14 correction: user only wanted /tenants switcher removed, NOT the tenant invocation views. Restored tenant list/detail routes, actions, scope presentation, and Cloud integration. No switcher page or switcher sidebar link remains.
+
+- 2026-09-14 self: interpreted "remove tenants view completely" too broadly during switcher feedback. Preserve the existing tenant list/detail feature; requested removal concerned only the newly added /tenants picker.
+
+- 2026-09-14 CI test timing: NN_update-tenants run 34841839169 failed because TenantInvocations.spec asserted immediately after clicking Completed; query still had running status. Await waitFor around Completed and All statuses query assertions, as service-filter assertions already do. Awaiting user.click alone does not guarantee React Router transition completion under CI load.
+
+- 2026-09-14 self: waiting for virtualized rows alone did not fix the Nx test run. TenantInvocations tests need explicit clientWidth/clientHeight and scrollWidth/scrollHeight mocks for JSDOM geometry, plus scrollTo for React Aria. Keep the real table and selected-ID assertions; restore geometry spies after cleanup. All 10 affected test targets passed after these harness fixes.
+
+- 2026-09-14 self: c0d82269 still failed CI on Completed despite waitFor. Reproduced lost clicks after service-popover dismissal under concurrent uncached runs; separating only status moved failure to Cancel. Waiting for DOM removal alone was also insufficient. Split service filtering, status changes, and cancellation into separate tests with fresh routers, retaining scope/target assertions. Validate flaky tests without Nx cache and under concurrent load; a cached affected run is not evidence of stability.
