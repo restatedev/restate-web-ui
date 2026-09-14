@@ -178,6 +178,7 @@ function resolveSegmentLink({
     : undefined;
 }
 
+// Tenant view reuses this markup with scope and service links omitted.
 export function ServiceTargetContent({
   scope,
   service,
@@ -476,6 +477,8 @@ function DefaultServiceTarget({
   );
 }
 
+// Tenant view overrides the renderer here, avoiding changes to tables, journals, and popovers.
+// Without an override, the main app uses its existing catalog-aware renderer.
 const ServiceTargetContext =
   createContext<ComponentType<PropsWithChildren<ServiceTargetProps>>>(
     DefaultServiceTarget,

@@ -193,6 +193,7 @@ export function Breadcrumbs({
 }: {
   variant?: BreadcrumbsVariant;
   className?: string;
+  // Tenant view preserves its list filters on the back link; other callers keep the default.
   preserveQueryParams?: string[];
 }) {
   const crumbs = useBreadcrumbs();

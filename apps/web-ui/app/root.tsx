@@ -465,6 +465,7 @@ function RouteContent() {
 }
 
 function AppContent() {
+  // Tenant view uses a separate shell and URL prefix for shared invocation links.
   const tenantMatch = useMatch('/tenant-view/:scope/*');
   const executionMetricsEnabled = useIsFeatureFlagEnabled(
     'FEATURE_EXECUTION_METRICS',
@@ -486,8 +487,12 @@ function AppContent() {
           executionMetricsEnabled={executionMetricsEnabled}
         >
           <CodecRuntimeProvider>
+            {/* Tenant view reuses the normal server header, API and codecs, without admin panels. */}
             {tenantMatch ? (
-              <TenantPreview scope={tenantMatch.params.scope ?? ''} />
+              <TenantPreview
+                scope={tenantMatch.params.scope ?? ''}
+                header={<SidebarHeaderContent />}
+              />
             ) : (
               <BatchOperationsProvider>
                 <EditState>

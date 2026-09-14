@@ -4074,3 +4074,7 @@
 - 2026-09-14 self: default ServiceTarget may expose both service and handler chips with the same handler-link accessible name. Use getAllByRole for presence checks rather than assuming one matching link.
 
 - 2026-09-14 host-owned tenant URLs: removed RestateBaseUrlProvider and baseUrl props from tenant feature pages/sidebar. Web root supplies tenant prefix on its existing RestateContextProvider; all tenant components read useRestateContext. Cloud environment.Component accepts optional baseUrl/children and its existing RestateContextProvider supplies the tenant prefix.
+
+- 2026-09-14 user explicitly requests comments wherever shared/main-path code changes support tenant view, including Cloud. Explain the tenant-specific reason at each integration point; keep JSON configs valid.
+
+- 2026-09-14 tenant preview sidebar header: user wants the normal Restate server header with version and health, not the scope label. Pass the existing root SidebarHeaderContent through TenantPreview into TenantSidebar.header; keep the shared Cloud header override intact.

@@ -14,6 +14,7 @@ export interface InvocationDurationProps {
   invocation: Pick<Invocation, 'duration' | 'created_at' | 'completed_at'>;
 }
 
+// Extracted from the main invocation table for reuse by tenant view.
 export function InvocationDuration({ invocation }: InvocationDurationProps) {
   if (!invocation.duration) {
     return null;

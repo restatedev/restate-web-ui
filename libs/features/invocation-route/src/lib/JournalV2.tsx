@@ -165,6 +165,7 @@ export interface JournalV2Props {
   timelineWidth?: number;
   showApiError?: boolean;
   withTimeline?: boolean;
+  // Tenant view hides the SQL introspection link; the main app keeps it by default.
   showIntrospection?: boolean;
 }
 

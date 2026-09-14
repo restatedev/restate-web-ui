@@ -219,7 +219,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
               />
             )}
             <div className="border-b border-gray-200/80 px-5 pt-8 pb-4">
-              <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
+              <div className="flex w-full flex-col gap-3">
                 <VQueueStageSummaryBar
                   {...chartProps}
                   onFocusChange={(nextFocus) => {

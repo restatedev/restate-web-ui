@@ -539,6 +539,7 @@ const CELLS: Record<
     'journal_retention',
   ),
   restarted_from: withCell(RestartedFromCell, 'restarted_from'),
+  // Tenant view shares this renderer; the main table keeps its existing cell wrapper.
   duration: withCell(InvocationDuration, 'duration'),
   scope: withCell(ScopeCell, 'scope'),
 };
