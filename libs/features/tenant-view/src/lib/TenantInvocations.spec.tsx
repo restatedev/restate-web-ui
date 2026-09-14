@@ -122,7 +122,7 @@ function renderInvocations(initialEntry: string) {
 }
 
 describe('TenantInvocations', () => {
-  it('keeps filters and links scoped and supports invocation actions', async () => {
+  it('keeps filters and links scoped and refreshes manually', async () => {
     const user = userEvent.setup();
     const refreshList = vi.fn();
     const refreshSummary = vi.fn();
@@ -173,7 +173,7 @@ describe('TenantInvocations', () => {
     await user.clear(input);
     await user.type(input, 'Checkout');
     await user.keyboard('{Escape}');
-    await waitFor(() => expect(screen.queryByRole('textbox')).toBeNull());
+    await waitFor(() => expect(input.isConnected).toBe(false));
     await waitFor(() =>
       expect(hooks.list.mock.lastCall?.[0].filters).toContainEqual({
         field: 'target_service_name',
@@ -188,6 +188,18 @@ describe('TenantInvocations', () => {
       operation: 'EQUALS',
       value: 'acme',
     });
+  });
+  it('cancels an invocation after confirmation', async () => {
+    const user = userEvent.setup();
+    hooks.summary.mockReturnValue({ refetch: vi.fn() });
+    hooks.list.mockReturnValue({
+      data: { rows: [invocation], limit: 50 },
+      dataUpdatedAt: Date.now(),
+      refetch: vi.fn(),
+    });
+    renderInvocations(
+      '/tenants/acme/invocations?service=Checkout&status=running',
+    );
     await user.click(screen.getByRole('link', { name: /Cancel/ }));
     expect(
       await screen.findByRole('heading', { name: 'Cancel Invocation' }),
