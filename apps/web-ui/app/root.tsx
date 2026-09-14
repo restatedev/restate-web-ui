@@ -466,7 +466,7 @@ function RouteContent() {
 
 function AppContent() {
   // Tenant view uses a separate shell and URL prefix for shared invocation links.
-  const tenantMatch = useMatch('/tenant-view/:scope/*');
+  const tenantMatch = useMatch('/tenants/:scope/*');
   const executionMetricsEnabled = useIsFeatureFlagEnabled(
     'FEATURE_EXECUTION_METRICS',
   );
@@ -478,7 +478,7 @@ function AppContent() {
           adminBaseUrl={getCookieValue('adminBaseUrl')}
           baseUrl={
             tenantMatch
-              ? `/tenant-view/${encodeURIComponent(tenantMatch.params.scope ?? '')}`
+              ? `/tenants/${encodeURIComponent(tenantMatch.params.scope ?? '')}`
               : ''
           }
           GettingStarted={RestateGettingStarted}

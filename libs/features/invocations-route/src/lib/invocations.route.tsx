@@ -97,7 +97,7 @@ import {
   VQueueStageLegend,
   VQueueStageSummaryBar,
 } from '@restate/features/status-chart';
-import { useBatchOperations } from '@restate/features/batch-operations';
+import { InvocationBatchActions } from '@restate/features/batch-operations';
 import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
@@ -110,7 +110,6 @@ import {
   STATE_QUERY_NAME,
   stripTransientQueryParams,
 } from '@restate/util/panel';
-import { Badge } from '@restate/ui/badge';
 import { Sort } from './QueryButton';
 import {
   getFormUrlSignature,
@@ -123,7 +122,6 @@ import {
   useListInvocationsParameters,
 } from './useInvocationsQueryFilters';
 import { FilterShortcuts } from './FilterShortcuts';
-import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
@@ -664,16 +662,6 @@ function Component() {
     [sortedColumnsList],
   );
 
-  const {
-    batchPurge,
-    batchResume,
-    batchCancel,
-    batchKill,
-    batchPause,
-    batchRestartAsNew,
-    batchRetryNow,
-  } = useBatchOperations();
-
   useEffect(() => {
     setSelectedInvocationIds(new Set());
   }, [isFetching]);
@@ -853,159 +841,14 @@ function Component() {
                 </DropdownSection>
               </DropdownPopover>
             </Dropdown>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button
-                  variant={
-                    selectedInvocationIds.size > 0 ? 'primary' : 'secondary'
-                  }
-                  className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
-                >
-                  Actions{' '}
-                  {Boolean(selectedInvocationIds.size || effectiveTotal) && (
-                    <Badge
-                      size="xs"
-                      variant={
-                        selectedInvocationIds.size > 0 ? 'default' : 'info'
-                      }
-                    >
-                      {selectedInvocationIds.size > 0
-                        ? `${selectedInvocationIds.size}`
-                        : actionsTotalDisplay}
-                    </Badge>
-                  )}
-                  <Icon
-                    name={IconName.ChevronsUpDown}
-                    className="aspect-square h-3.5 w-3.5 opacity-80"
-                  />
-                </Button>
-              </DropdownTrigger>
-              <DropdownPopover>
-                <DropdownSection
-                  title={
-                    <div>
-                      {selectedInvocationIds.size ? (
-                        <span>
-                          Actions{' '}
-                          <span className="font-normal opacity-90">
-                            on {selectedInvocationIds.size} selected items
-                          </span>
-                        </span>
-                      ) : effectiveTotal > 0 ? (
-                        <span>
-                          Actions{' '}
-                          <span className="font-normal opacity-90">
-                            on all {actionsTotalDisplay}{' '}
-                            {formatPlurals(effectiveTotal, {
-                              one: 'result',
-                              other: 'results',
-                            })}
-                          </span>
-                        </span>
-                      ) : (
-                        'Actions'
-                      )}
-                    </div>
-                  }
-                >
-                  <DropdownMenu
-                    selectable
-                    selectedItems={selectedColumns}
-                    onSelect={(key) => {
-                      const args =
-                        selectedInvocationIds.size > 0
-                          ? {
-                              invocationIds: Array.from(
-                                selectedInvocationIds.values(),
-                              ),
-                            }
-                          : // TODO
-                            {
-                              filters: listInvocationsParameters.filters || [],
-                            };
-                      switch (key) {
-                        case 'cancel': {
-                          return batchCancel(args, schema);
-                        }
-                        case 'kill': {
-                          return batchKill(args, schema);
-                        }
-                        case 'pause': {
-                          return batchPause(args, schema);
-                        }
-                        case 'resume': {
-                          return batchResume(args, schema);
-                        }
-                        case 'retry-now': {
-                          return batchRetryNow(args, schema);
-                        }
-                        case 'purge': {
-                          return batchPurge(args, schema);
-                        }
-                        case 'restart-as-new': {
-                          return batchRestartAsNew(args, schema);
-                        }
-
-                        default:
-                          break;
-                      }
-                    }}
-                  >
-                    <DropdownItem value="cancel" destructive>
-                      <Icon
-                        name={IconName.Cancel}
-                        className="h-3.5 w-3.5 shrink-0 opacity-80"
-                      />
-                      Cancel…
-                    </DropdownItem>
-                    <RestateMinimumVersion minVersion="1.6.0">
-                      <DropdownItem value="pause" destructive>
-                        <Icon
-                          name={IconName.Pause}
-                          className="h-3.5 w-3.5 shrink-0 opacity-80"
-                        />
-                        Pause…
-                      </DropdownItem>
-                    </RestateMinimumVersion>
-                    <DropdownItem value="resume">
-                      <Icon
-                        name={IconName.Play}
-                        className="h-3.5 w-3.5 shrink-0 opacity-80"
-                      />
-                      Resume…
-                    </DropdownItem>
-                    <DropdownItem value="retry-now">
-                      <Icon
-                        name={IconName.RetryNow}
-                        className="h-3.5 w-3.5 shrink-0 opacity-80"
-                      />
-                      Retry now…
-                    </DropdownItem>
-                    <DropdownItem value="restart-as-new">
-                      <Icon
-                        name={IconName.Restart}
-                        className="h-3.5 w-3.5 shrink-0 opacity-80"
-                      />
-                      Restart as new…
-                    </DropdownItem>
-                    <DropdownItem value="kill" destructive>
-                      <Icon
-                        name={IconName.Kill}
-                        className="h-3.5 w-3.5 shrink-0 opacity-80"
-                      />
-                      Kill…
-                    </DropdownItem>
-                    <DropdownItem value="purge" destructive>
-                      <Icon
-                        name={IconName.Trash}
-                        className="h-3.5 w-3.5 shrink-0 opacity-80"
-                      />
-                      Purge…
-                    </DropdownItem>
-                  </DropdownMenu>
-                </DropdownSection>
-              </DropdownPopover>
-            </Dropdown>
+            {/* Share the batch menu with tenant view while preserving the main list's counts and filter schema. */}
+            <InvocationBatchActions
+              invocationIds={Array.from(selectedInvocationIds)}
+              filters={listInvocationsParameters.filters ?? []}
+              schema={schema}
+              totalCount={effectiveTotal}
+              totalCountLabel={actionsTotalDisplay}
+            />
           </ContentPanelToolbar>
           <ContentPanelBody className="pb-32">
             <div className="-mb-1 border-b border-gray-200/80 px-1 pt-9 pb-1.5">

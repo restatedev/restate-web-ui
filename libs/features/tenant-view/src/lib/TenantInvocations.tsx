@@ -1,6 +1,10 @@
 import { TenantServiceTarget } from './TenantServiceTarget';
 import { ServiceTargetProvider } from '@restate/features/service-target';
 import {
+  BatchOperationsProvider,
+  InvocationBatchActions,
+} from '@restate/features/batch-operations';
+import {
   useListInvocationsV2,
   useSummaryInvocationsV2,
 } from '@restate/data-access/admin-api-hooks';
@@ -13,8 +17,10 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   InvocationDuration,
+  InvocationTableDate,
   InvocationTableCell,
 } from '@restate/features/invocation-ui';
+import { Actions, InvocationActions } from '@restate/features/invocation-route';
 import { Button } from '@restate/ui/button';
 import {
   ContentPanel,
@@ -42,13 +48,22 @@ import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 
-type Column = 'id' | 'target' | 'status' | 'created_at' | 'duration';
+type Column =
+  | 'id'
+  | 'target'
+  | 'status'
+  | 'created_at'
+  | 'modified_at'
+  | 'duration'
+  | 'actions';
 const columns: PanelTableColumn<Column>[] = [
   { id: 'id', name: 'Invocation', isRowHeader: true, defaultWidth: 190 },
   { id: 'created_at', name: 'Created at', defaultWidth: 120 },
+  { id: 'modified_at', name: 'Modified at', defaultWidth: 120 },
   { id: 'duration', name: 'Duration', defaultWidth: 110 },
   { id: 'target', name: 'Target', minWidth: 240 },
   { id: 'status', name: 'Status', minWidth: 320 },
+  { id: 'actions', name: 'Actions', width: 40, hideLabel: true },
 ];
 
 const snapshotOptions = {
@@ -80,14 +95,26 @@ export interface TenantInvocationsProps {
 }
 
 export function TenantInvocations({ scope }: TenantInvocationsProps) {
+  const [searchParams] = useSearchParams();
   return (
     <ServiceTargetProvider component={TenantServiceTarget}>
-      <TenantInvocationsContent key={scope} scope={scope} />
+      <BatchOperationsProvider>
+        <TenantInvocationsContent
+          key={JSON.stringify([
+            scope,
+            searchParams.get('service'),
+            searchParams.get('status'),
+          ])}
+          scope={scope}
+        />
+      </BatchOperationsProvider>
+      <InvocationActions />
     </ServiceTargetProvider>
   );
 }
 
 function TenantInvocationsContent({ scope }: { scope: string }) {
+  const [selectedIds, setSelectedIds] = useState(new Set<string>());
   const { baseUrl } = useRestateContext();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -170,6 +197,9 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
     },
   };
   const rows = data?.rows ?? [];
+  const selectedInvocationIds = new Set(
+    rows.filter((row) => selectedIds.has(row.id)).map((row) => row.id),
+  );
   const listSearch = new URLSearchParams();
   if (service) listSearch.set('service', service);
   if (status.length > 0) listSearch.set('status', status.join(','));
@@ -195,6 +225,10 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                   next.set('status', selectedStatus.join(','));
                 setSearchParams(next, { preventScrollReset: true });
               }}
+            />
+            <InvocationBatchActions
+              filters={filters}
+              invocationIds={Array.from(selectedInvocationIds)}
             />
             <HoverTooltip content="Refresh invocations">
               <Button
@@ -249,7 +283,11 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                 aria-label="Tenant invocations"
                 columns={columns}
                 items={rows}
-                selectionMode="none"
+                selectionMode="multiple"
+                selectedKeys={selectedInvocationIds}
+                onSelectionChange={(keys) =>
+                  setSelectedIds(new Set(Array.from(keys, String)))
+                }
                 isLoading={isPending}
                 numOfRows={8}
                 onRowAction={(id) =>
@@ -274,7 +312,18 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                   />
                 }
                 renderCell={(row, column) =>
-                  column.id === 'duration' ? (
+                  column.id === 'actions' ? (
+                    <Cell className="align-top [&&&]:overflow-visible">
+                      <Actions invocation={row} />
+                    </Cell>
+                  ) : column.id === 'modified_at' ? (
+                    <Cell className="align-top">
+                      <InvocationTableDate
+                        value={row.modified_at}
+                        tooltipTitle="Modified at"
+                      />
+                    </Cell>
+                  ) : column.id === 'duration' ? (
                     <Cell>
                       <InvocationDuration invocation={row} />
                     </Cell>

@@ -1,3 +1,5 @@
+import { RouterProvider as AriaRouterProvider } from 'react-aria-components';
+import type { PropsWithChildren } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   cleanup,
@@ -5,22 +7,44 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createMemoryRouter, RouterProvider } from 'react-router';
+import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Invocation } from '@restate/data-access/admin-api-spec';
 import { TenantInvocations } from './TenantInvocations';
+
+function AriaRouter({ children }: PropsWithChildren) {
+  const navigate = useNavigate();
+  return (
+    <AriaRouterProvider navigate={navigate}>{children}</AriaRouterProvider>
+  );
+}
 
 vi.mock('@restate/features/restate-context', async (importOriginal) => ({
   ...(await importOriginal<
     typeof import('@restate/features/restate-context')
   >()),
-  useRestateContext: () => ({ baseUrl: '/tenant-view/acme' }),
+  useRestateContext: () => ({ baseUrl: '/tenants/acme' }),
 }));
 
-const hooks = vi.hoisted(() => ({ list: vi.fn(), summary: vi.fn() }));
-vi.mock('@restate/data-access/admin-api-hooks', () => ({
+const hooks = vi.hoisted(() => ({
+  list: vi.fn(),
+  summary: vi.fn(),
+  cancel: vi.fn(),
+  batchCancel: vi.fn(),
+  resetBatch: vi.fn(),
+}));
+vi.mock('@restate/data-access/admin-api-hooks', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@restate/data-access/admin-api-hooks')
+  >()),
+  useCancelInvocation: () => ({ mutate: hooks.cancel, reset: vi.fn() }),
+  useBatchCancelInvocations: () => ({
+    mutate: hooks.batchCancel,
+    reset: hooks.resetBatch,
+  }),
   useListInvocationsV2: hooks.list,
   useSummaryInvocationsV2: hooks.summary,
   useGetPausedError: () => ({}),
@@ -42,8 +66,10 @@ const invocation: Invocation = {
 };
 
 const originalGetAnimations = Element.prototype.getAnimations;
+const originalScrollBy = Element.prototype.scrollBy;
 beforeEach(() => {
   Element.prototype.getAnimations = () => [];
+  Element.prototype.scrollBy = vi.fn();
   vi.stubGlobal(
     'ResizeObserver',
     class {
@@ -58,12 +84,13 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   Element.prototype.getAnimations = originalGetAnimations;
+  Element.prototype.scrollBy = originalScrollBy;
   vi.unstubAllGlobals();
   vi.clearAllMocks();
 });
 
 describe('TenantInvocations', () => {
-  it('keeps filters and invocation links in the tenant route without administrative controls', async () => {
+  it('keeps filters and links scoped and supports invocation actions', async () => {
     const user = userEvent.setup();
     const refreshList = vi.fn();
     const refreshSummary = vi.fn();
@@ -80,12 +107,16 @@ describe('TenantInvocations', () => {
             [
               {
                 path: '*',
-                element: <TenantInvocations scope="acme" />,
+                element: (
+                  <AriaRouter>
+                    <TenantInvocations scope="acme" />
+                  </AriaRouter>
+                ),
               },
             ],
             {
               initialEntries: [
-                '/tenant-view/acme/invocations?service=Greeter&status=running',
+                '/tenants/acme/invocations?service=Greeter&status=running',
               ],
             },
           )}
@@ -102,8 +133,9 @@ describe('TenantInvocations', () => {
     });
     expect(
       screen.getByRole('link', { name: 'inv-acme' }).getAttribute('href'),
-    ).toBe('/tenant-view/acme/invocations/inv-acme?service=Greeter');
-    expect(screen.queryByRole('button', { name: 'Actions' })).toBeNull();
+    ).toBe('/tenants/acme/invocations/inv-acme?service=Greeter');
+    expect(screen.getAllByText('Modified at').length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: /Cancel/ })).toBeTruthy();
     expect(screen.queryByRole('link', { name: /Open.*handler/ })).toBeNull();
     expect(screen.queryByText('SCOPE')).toBeNull();
     expect(hooks.list.mock.lastCall?.[1]).toMatchObject({
@@ -152,5 +184,95 @@ describe('TenantInvocations', () => {
     expect(hooks.list.mock.lastCall?.[0].filters).not.toContainEqual(
       expect.objectContaining({ field: 'status' }),
     );
+    await user.click(screen.getByRole('link', { name: /Cancel/ }));
+    expect(
+      await screen.findByRole('heading', { name: 'Cancel Invocation' }),
+    ).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: 'Confirm' }));
+    expect(hooks.cancel).toHaveBeenCalledWith({
+      parameters: { path: { invocation_id: 'inv-acme' } },
+    });
   });
+  it.each([false, true])(
+    'confirms batch actions for selected=%s with the correct targets',
+    async (selectRows) => {
+      const user = userEvent.setup();
+      hooks.summary.mockReturnValue({
+        data: { total: 2, stageBuckets: [], statusBuckets: [] },
+        refetch: vi.fn(),
+      });
+      hooks.list.mockReturnValue({
+        data: {
+          rows: [invocation, { ...invocation, id: 'inv-acme-2' }],
+          limit: 50,
+        },
+        dataUpdatedAt: Date.now(),
+        refetch: vi.fn(),
+      });
+      render(
+        <QueryClientProvider client={new QueryClient()}>
+          <RouterProvider
+            router={createMemoryRouter(
+              [
+                {
+                  path: '*',
+                  element: (
+                    <AriaRouter>
+                      <TenantInvocations scope="acme" />
+                    </AriaRouter>
+                  ),
+                },
+              ],
+              {
+                initialEntries: [
+                  '/tenants/acme/invocations?service=Greeter&status=running',
+                ],
+              },
+            )}
+          />
+        </QueryClientProvider>,
+      );
+      if (selectRows) {
+        const grid = screen.getByRole('grid', { name: 'Tenant invocations' });
+        const checkboxes = within(grid).getAllByRole('checkbox');
+        const lastCheckbox = checkboxes.at(-1);
+        if (!lastCheckbox) throw new Error('Missing row selection checkbox');
+        await user.click(lastCheckbox);
+      }
+      await user.click(screen.getByRole('button', { name: /^Actions/ }));
+      await user.click(await screen.findByRole('menuitem', { name: /Cancel/ }));
+      expect(
+        await screen.findByRole('heading', { name: 'Cancel Invocations' }),
+      ).toBeTruthy();
+      expect(hooks.batchCancel).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('button', { name: 'Confirm' }));
+      const request = hooks.batchCancel.mock.lastCall?.[0];
+      if (selectRows) {
+        expect(request.body).toEqual({ invocationIds: ['inv-acme-2'] });
+      } else {
+        expect(request.body.filters).toEqual(
+          expect.arrayContaining([
+            {
+              field: 'scope',
+              type: 'STRING',
+              operation: 'EQUALS',
+              value: 'acme',
+            },
+            {
+              field: 'target_service_name',
+              type: 'STRING',
+              operation: 'EQUALS',
+              value: 'Greeter',
+            },
+            {
+              field: 'status',
+              type: 'STRING_LIST',
+              operation: 'IN',
+              value: ['running'],
+            },
+          ]),
+        );
+      }
+    },
+  );
 });

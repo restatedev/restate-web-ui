@@ -4078,3 +4078,11 @@
 - 2026-09-14 user explicitly requests comments wherever shared/main-path code changes support tenant view, including Cloud. Explain the tenant-specific reason at each integration point; keep JSON configs valid.
 
 - 2026-09-14 tenant preview sidebar header: user wants the normal Restate server header with version and health, not the scope label. Pass the existing root SidebarHeaderContent through TenantPreview into TenantSidebar.header; keep the shared Cloud header override intact.
+
+- 2026-09-14 tenant actions: user wants normal invocation actions in both tenant pages and a Modified at list column. Reuse Actions and mount InvocationActions per exported page, inside TenantServiceTarget provider; keep all implementation changes in tenant-view. Action tests need the host React Aria RouterProvider as well as React Router; confirmation headings are currently plain h3, so query headings rather than named dialogs.
+
+- 2026-09-14 tenant batch actions: tenant list owns BatchOperationsProvider and exposes selected-ID or all-matching actions via existing batch hooks/dialogs. Always carry the scope filter with service/status for all-matching operations; reset selection on scope/filter changes and intersect selection with current rows. No host or main-path changes needed.
+
+- 2026-09-14 URL naming: tenant routes now use /tenants/:scope/invocations (Cloud retains /accounts/:accountId/environments/:environmentId prefix). Keep the tenant-view library/import name; only the URL segment changed. Environment switching still exits tenant mode.
+
+- 2026-09-14 user correction: reuse one InvocationBatchActions menu exported from batch-operations in both main and tenant lists; do not keep a tenant-specific duplicate. Shared component preserves main count labels and schema. Keep tenant-view README host-neutral: /tenants/${scope}, no Cloud account/environment routes or switcher examples.
