@@ -2,6 +2,9 @@ import { UnauthorizedError, RestateError } from '@restate/util/errors';
 import { getQueryClient } from '@restate/util/react-query';
 import { getAuthToken } from '@restate/util/api-config';
 import type { Middleware } from 'openapi-fetch';
+import type { components } from '@restate/data-access/admin-api-spec';
+import semverCoerce from 'semver/functions/coerce';
+import semverGte from 'semver/functions/gte';
 import { client } from './client';
 import { metaQueryOptions } from './meta';
 
@@ -73,5 +76,34 @@ const errorMiddleware: Middleware = {
   },
 };
 
+const versionFeaturesMiddleware: Middleware = {
+  async onResponse({ schemaPath, response }) {
+    if (schemaPath !== '/version' || !response.ok) return response;
+
+    const data: components['schemas']['VersionInformation'] = await response
+      .clone()
+      .json();
+    const version = semverCoerce(data.version);
+    if (!version || !semverGte(version, '1.8.0')) return response;
+
+    // Temporary workaround for experimental flags removed in Restate 1.8.
+    // We should probably remove this once consumers use version-aware capabilities.
+    return Response.json(
+      {
+        ...data,
+        features: {
+          vqueues: true,
+          scoped_virtual_objects: true,
+          protocol_v7: true,
+          vqueues_migration_skip_completed: false,
+          ...data.features,
+        },
+      },
+      response,
+    );
+  },
+};
+
 client.use(authMiddleware);
 client.use(errorMiddleware);
+client.use(versionFeaturesMiddleware);
