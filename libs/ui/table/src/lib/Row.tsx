@@ -85,7 +85,7 @@ export function Row<T extends { id?: string }>({
         </Cell>
       )}
       {selectionBehavior === 'toggle' && (
-        <Cell className="items-start pt-2.5 align-baseline">
+        <Cell className="pt-2.5">
           <SelectionCheckbox rowKey={id} />
         </Cell>
       )}
@@ -135,7 +135,7 @@ export function PerformantRow<T extends { id?: string }>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: 'truncate border-b py-2 pl-2 text-xs font-medium text-zinc-600 -outline-offset-2 [--selected-border:var(--color-blue-200)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border)',
+  base: 'truncate border-b py-2 pl-2 flex items-center text-xs font-medium text-zinc-600 -outline-offset-2 [--selected-border:var(--color-blue-200)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border)',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {
