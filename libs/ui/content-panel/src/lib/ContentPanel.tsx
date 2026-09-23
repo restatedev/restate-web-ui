@@ -40,6 +40,7 @@ export interface ContentPanelTab {
   menuLabel?: ReactNode;
   disabled?: boolean;
   href?: string;
+  routerOptions?: ComponentPropsWithoutRef<typeof AriaTab>['routerOptions'];
 }
 
 export interface ContentPanelTabs {
@@ -460,6 +461,7 @@ function Tabs({
                 key={tab.id}
                 id={tab.id}
                 href={tab.href ?? hrefFor(tab.id)}
+                routerOptions={tab.routerOptions}
                 isDisabled={tab.disabled}
                 className={composeRenderProps('', (className, renderProps) =>
                   tabStyles({ ...renderProps, className }),
@@ -521,6 +523,7 @@ function Tabs({
                   <DropdownItem
                     key={tab.id}
                     href={href}
+                    routerOptions={tab.routerOptions}
                     isDisabled={tab.disabled}
                   >
                     {tab.menuLabel ?? tab.label}
@@ -610,6 +613,7 @@ function MobileTabsDropdown({
                   <DropdownItem
                     key={item.id}
                     href={item.href}
+                    routerOptions={item.routerOptions}
                     isDisabled={item.disabled}
                   >
                     {item.menuLabel ?? item.label}

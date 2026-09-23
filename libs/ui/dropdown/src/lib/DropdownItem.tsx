@@ -98,6 +98,7 @@ interface DropdownNavItemProps extends Omit<
   'value' | 'href'
 > {
   href: string;
+  routerOptions?: AriaMenuItemProps['routerOptions'];
   value?: string;
 }
 
