@@ -4137,3 +4137,14 @@
 - 2026-09-23 self: Do not reformat the entire query.json schema when adding one field. Preserve its existing layout and regenerate output.json/index.d.ts. Middleware tests must register a QueryClient before API calls, since auth reads it.
 
 - 2026-09-23 final user preference: Measure Introspection SQL duration inside useSqlQuery queryFn with performance.now; attach it to returned data or the original Error, with no React timing state, new endpoint, schema changes, or generic query interception. Removed the earlier query.ts and /query/sql approaches. Timing stays with cached results and errors. 18 hook tests and app/spec typechecks passed.
+
+- 2026-09-23 user: Tables should scroll with the page vertically; keep horizontal scrolling for wide columns. All 18 production table usages share PanelTable. VQueues reproduced stale virtualizer content height (564px reserved vs 626px measured). Build the full collection geometry before publishing content size (requestedRect unbounded), retaining viewport DOM virtualization; summing only visible collection rows also preserves collapsed-tree height. Full row iteration alone left a 3px discrepancy because later lazy layout still changed geometry. Set shared table/header wrappers to horizontal-only scrolling after fixing height. Browser verified VQueues, Query Stats, horizontal/header scroll synchronization, and service expansion.
+- 2026-09-23 self: Exclude source maps when searching dependency internals; broad searches produce huge unreadable output. In zsh, use rg directory filters instead of globs that may have no matching files.
+
+- 2026-09-23 Query Stats explain downloads: pending state must be included in both PanelTable bodyDependencies and rowDependencies, since row cell collections cache renderCell output independently. Spinner belongs on the always-visible split-button trigger so it stays visible after hover ends. RAC Button overwrites aria-busy from its own isPending; do not rely on forwarding aria-busy manually through the shared Button.
+
+- 2026-09-23 succeeded badge spacing: completed invocations can retain last_awaiting_on_future_json or suspended_waiting_future_json. Status must gate compact awaiting-chip padding by running/suspended status and its corresponding future field, matching the chip it actually renders. Otherwise succeeded labels lose right and vertical padding.
+
+- 2026-09-23 VO listing scope: user wants active-invocation scope stated near the table and in empty states. Added muted caption above quick-open; removed copy implying state-only objects appear. Empty/loading tables use native rendering so the placeholder keeps its natural height.
+
+- 2026-09-23 user refinement: VO active-invocation scope belongs in parentheses in the first column header, not a separate caption. Keep the scope-specific empty-state wording.

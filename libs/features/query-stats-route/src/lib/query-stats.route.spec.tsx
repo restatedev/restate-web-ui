@@ -190,6 +190,12 @@ describe('queryStats route', () => {
   });
 
   it('runs standard explain analyze from the primary action', async () => {
+    let rejectRequest!: (error: Error) => void;
+    postMock.mockReturnValue(
+      new Promise((_, reject) => {
+        rejectRequest = reject;
+      }),
+    );
     recordQuery({
       id: 'invocations/get',
       sql: 'SELECT 1',
@@ -214,6 +220,19 @@ describe('queryStats route', () => {
         }),
       ),
     );
+    const spinner = await screen.findByRole('status', {
+      name: 'Action in progress',
+    });
+    expect(spinner.closest('button')?.disabled).toBe(true);
+
+    rejectRequest(new Error('Explain request failed'));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('status', { name: 'Action in progress' }),
+      ).toBeNull(),
+    );
+    expect(await screen.findByText('Explain request failed')).toBeTruthy();
   });
 
   it('runs verbose explain analyze from the actions menu', async () => {
@@ -245,5 +264,8 @@ describe('queryStats route', () => {
         }),
       ),
     );
+    expect(
+      await screen.findByRole('status', { name: 'Action in progress' }),
+    ).toBeTruthy();
   });
 });

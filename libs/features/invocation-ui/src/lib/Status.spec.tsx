@@ -90,6 +90,31 @@ it('keeps paused and transient error queries disabled until their popovers open'
   );
 });
 
+it('keeps succeeded badge spacing unchanged by retained awaiting metadata', () => {
+  const completed = {
+    id: 'inv-completed',
+    status: 'succeeded',
+    isRetrying: false,
+  } as Invocation;
+  const { rerender } = render(
+    <Status invocation={completed} timeline={false} />,
+  );
+  const badgeClassName = screen.getByText('Succeeded').className;
+
+  rerender(
+    <Status
+      invocation={{
+        ...completed,
+        last_awaiting_on_future_json: { Single: { CompletionId: 1 } },
+        suspended_waiting_future_json: { Single: { CompletionId: 2 } },
+      }}
+      timeline={false}
+    />,
+  );
+
+  expect(screen.getByText('Succeeded').className).toBe(badgeClassName);
+});
+
 describe.each<LazyErrorKind>(['paused', 'transient'])(
   '%s error popover',
   (kind) => {

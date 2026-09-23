@@ -114,7 +114,14 @@ function virtualObjectInstanceRouteHref(
 const columns: PanelTableColumn<ColumnId>[] = [
   {
     id: 'identity',
-    name: 'Virtual object instance',
+    name: (
+      <span>
+        Virtual object instance{' '}
+        <span className="font-normal text-gray-500">
+          (with active invocations)
+        </span>
+      </span>
+    ),
     isRowHeader: true,
     minWidth: 320,
   },
@@ -553,6 +560,7 @@ function Component() {
                 bodyHeadingHeight={0}
                 columns={visibleColumns}
                 items={items}
+                virtualized={items.length > 0}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
                 caption={
@@ -614,13 +622,13 @@ function Component() {
                       }
                       title={
                         hasFilters
-                          ? 'No instances match this filter'
-                          : 'No instances found'
+                          ? 'No virtual objects with active invocations match this filter'
+                          : 'No virtual objects with active invocations'
                       }
                       description={
                         hasFilters
                           ? 'Try adjusting the active filters.'
-                          : 'Instances appear after they store state or receive work.'
+                          : 'Virtual objects appear here while they have active invocations. Use “Go to instance” to open one by key.'
                       }
                     />
                   )

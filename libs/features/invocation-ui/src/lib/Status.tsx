@@ -195,8 +195,8 @@ export function Status({
         hasPausedError={isPaused}
         mini={mini}
         hasAwaitingOn={Boolean(
-          invocation?.last_awaiting_on_future_json ||
-          invocation?.suspended_waiting_future_json,
+          (status === 'running' && invocation.last_awaiting_on_future_json) ||
+          (status === 'suspended' && invocation.suspended_waiting_future_json),
         )}
       >
         {/* Secondary detail (error chip, awaiting-on, duration) — hidden
