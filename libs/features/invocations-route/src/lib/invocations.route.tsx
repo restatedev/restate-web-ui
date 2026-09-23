@@ -261,16 +261,12 @@ function SampleScanToggle({
   );
 }
 
-function ResultsNotice({
-  isPartial,
-  statusChangedCount,
-}: {
-  isPartial: boolean;
-  statusChangedCount: number;
-}) {
-  const message = getResultsNoticeMessage(isPartial, statusChangedCount);
+function ResultsNotice({ message }: { message: string }) {
   return (
-    <div className="flex h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 text-xs text-zinc-600">
+    <div
+      role="status"
+      className="flex min-h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600"
+    >
       <Icon
         name={IconName.Info}
         className="h-3.5 w-3.5 shrink-0 text-zinc-400"
@@ -667,7 +663,11 @@ function Component() {
         }}
       />
     ) : undefined;
-  const resultsNoticeMessage =
+  const mismatchNoticeMessage = countsDisagree
+    ? 'Counts and results differ. Invocations may have changed between requests.'
+    : undefined;
+  const resultsNoticeMessage = [
+    mismatchNoticeMessage,
     !isFetching &&
     (listSampled || data?.isPartial || statusChangedCount > 0) &&
     !error
@@ -675,21 +675,24 @@ function Component() {
           listSampled || Boolean(data?.isPartial),
           statusChangedCount,
         )
-      : undefined;
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(' ');
   const resultsNotice =
     resultsNoticeMessage && !hasActiveFilters ? (
-      <ResultsNotice
-        key="results-notice"
-        isPartial={listSampled || Boolean(data?.isPartial)}
-        statusChangedCount={statusChangedCount}
-      />
+      <ResultsNotice key="results-notice" message={resultsNoticeMessage} />
     ) : undefined;
   const filteredResultsCaption = hasActiveFilters ? (
     <FilteredResultsCaption
       key="filtered-results"
       noun="invocations"
-      className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
-      notice={resultsNoticeMessage}
+      className="m-0 h-auto min-h-9 w-full shrink-0 rounded-xl px-2.5 py-2 [&>span:last-of-type]:whitespace-normal"
+      notice={
+        resultsNoticeMessage ? (
+          <span role="status">{resultsNoticeMessage}</span>
+        ) : undefined
+      }
       onClear={() => {
         setSearchParams(writeFilterClauses(searchParams, []), {
           preventScrollReset: true,
@@ -709,11 +712,6 @@ function Component() {
       {isSummaryError && summaryData && (
         <p role="status" className="text-xs text-gray-500">
           Could not refresh invocation counts. Showing previous counts.
-        </p>
-      )}
-      {countsDisagree && (
-        <p role="status" className="text-xs text-gray-500">
-          Counts and results differ. Run the query again to refresh both.
         </p>
       )}
       <VQueueStageSummaryBar
@@ -872,6 +870,13 @@ function Component() {
                         className="w-full rounded-xl text-left"
                       />
                     </EmptyState>
+                  ) : countsDisagree ? (
+                    <EmptyState
+                      icon={IconName.TriangleAlert}
+                      intent="warning"
+                      title="Counts and results differ"
+                      description="No invocations were returned, but the counts indicate matching invocations. Invocations may have changed between requests."
+                    />
                   ) : offerCompleteScan ? (
                     <EmptyState
                       icon={IconName.ScanSearch}
