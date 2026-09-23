@@ -75,7 +75,7 @@ function deferred() {
   return { promise, resolve };
 }
 
-function wrapper({ children }: PropsWithChildren) {
+function Wrapper({ children }: PropsWithChildren) {
   const [client] = useState(() => {
     const client = new QueryClient({
       defaultOptions: { queries: { retry: false, gcTime: 0 } },
@@ -233,7 +233,7 @@ describe('invocation page query composition', () => {
           breakdownSampleSize: 1000,
           enabled,
         }),
-      { initialProps: { enabled: false }, wrapper },
+      { initialProps: { enabled: false }, wrapper: Wrapper },
     );
     expect(api.request).not.toHaveBeenCalled();
     expect(result.current.matchingCount).toBeUndefined();
@@ -251,7 +251,7 @@ describe('invocation page query composition', () => {
       return execute(path, body);
     });
     const { result } = renderHook(() => usePage(filters('completed')), {
-      wrapper,
+      wrapper: Wrapper,
     });
     await waitFor(() =>
       expect(
@@ -274,7 +274,7 @@ describe('invocation page query composition', () => {
           usePage(filters(focus)),
         {
           initialProps: { focus: 'all' },
-          wrapper,
+          wrapper: Wrapper,
         },
       );
       for (const focus of [
@@ -319,7 +319,7 @@ describe('invocation page query composition', () => {
         return execute(path, body);
       });
       const { result } = renderHook(() => usePage(filters('all'), countMode), {
-        wrapper,
+        wrapper: Wrapper,
       });
       await waitFor(() => expect(result.current.summary.isLoading).toBe(false));
       expect(
@@ -349,7 +349,9 @@ describe('invocation page query composition', () => {
       if (body.view === 'breakdowns') await gate.promise;
       return execute(path, body);
     });
-    const { result } = renderHook(() => usePage(filters('all')), { wrapper });
+    const { result } = renderHook(() => usePage(filters('all')), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.summary.isLoading).toBe(false));
     expect(result.current.summary.matchingCount).toBeUndefined();
     expect(result.current.summary.isBreakdownLoading('finished')).toBe(true);
@@ -365,7 +367,9 @@ describe('invocation page query composition', () => {
 
   it('supports servers without VQueues', async () => {
     api.features.delete('vqueues');
-    const { result } = renderHook(() => usePage(filters('all')), { wrapper });
+    const { result } = renderHook(() => usePage(filters('all')), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.summary.isFetching).toBe(false));
     expect(
       result.current.summary.byStage.find(({ name }) => name === 'finished')
@@ -376,7 +380,7 @@ describe('invocation page query composition', () => {
   it('keeps mixed populations additive without using the filtered table rows', async () => {
     active = 4;
     const { result } = renderHook(() => usePage(filters('completed')), {
-      wrapper,
+      wrapper: Wrapper,
     });
     await waitFor(() => expect(result.current.summary.isFetching).toBe(false));
     expect(
@@ -398,7 +402,9 @@ describe('invocation page query composition', () => {
       if (body.view === 'stages') await gate.promise;
       return execute(path, body);
     });
-    const { result } = renderHook(() => usePage(filters('all')), { wrapper });
+    const { result } = renderHook(() => usePage(filters('all')), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.list.isSuccess).toBe(true));
     expect(result.current.summary.isLoading).toBe(true);
     expect(result.current.summary.matchingCount).toBeUndefined();
@@ -409,7 +415,9 @@ describe('invocation page query composition', () => {
   });
 
   it('retains known counts when a background refresh fails and recovers on retry', async () => {
-    const { result } = renderHook(() => usePage(filters('all')), { wrapper });
+    const { result } = renderHook(() => usePage(filters('all')), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.summary.isFetching).toBe(false));
     api.request.mockRejectedValue(new Error('Connection interrupted'));
     act(() => result.current.summary.refresh());
@@ -429,7 +437,9 @@ describe('invocation page query composition', () => {
       if (body.view === 'stages') throw new Error('Counts unavailable');
       return execute(path, body);
     });
-    const { result } = renderHook(() => usePage(filters('all')), { wrapper });
+    const { result } = renderHook(() => usePage(filters('all')), {
+      wrapper: Wrapper,
+    });
     await waitFor(() => expect(result.current.summary.isError).toBe(true));
     expect(result.current.summary.matchingCount).toBeUndefined();
     expect(result.current.summary.byStage).toEqual([]);
@@ -453,7 +463,7 @@ describe('invocation page query composition', () => {
       };
     });
     const { result } = renderHook(() => usePage(filters('all'), 'estimate'), {
-      wrapper,
+      wrapper: Wrapper,
     });
     await waitFor(() => expect(result.current.summary.isFetching).toBe(false));
     expect(
@@ -476,7 +486,7 @@ describe('invocation page query composition', () => {
       ({ service }) => usePage(filters('all', service)),
       {
         initialProps: { service: 'AgentSession' },
-        wrapper,
+        wrapper: Wrapper,
       },
     );
     rerender({ service: 'Other' });
