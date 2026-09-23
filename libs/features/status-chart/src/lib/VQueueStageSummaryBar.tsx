@@ -15,7 +15,6 @@ import {
 } from './constants';
 import { BreakdownMode } from './BreakdownMode';
 import type { StatusEntry } from './useOrderedStatuses';
-import { useEffect, useState } from 'react';
 
 export type VQueueSummaryFocus = 'all' | 'not-completed' | 'completed';
 
@@ -136,6 +135,7 @@ export function VQueueStageSummaryBar({
   onBreakdownModeChange,
   isLoading,
   isFetching,
+  isError,
   className,
   isDimmed,
   getHref,
@@ -145,6 +145,7 @@ export function VQueueStageSummaryBar({
   populationByStatus,
   comparisonScope = 'all',
   isBreakdownLoading,
+  isBreakdownError,
 }: {
   byStage: VQueueStageSummaryEntry[];
   byStatus: VQueueStatusSummaryEntry[];
@@ -155,6 +156,7 @@ export function VQueueStageSummaryBar({
   onBreakdownModeChange: (mode: 'estimate' | 'exact') => void;
   isLoading?: boolean;
   isFetching?: boolean;
+  isError?: boolean;
   className?: string;
   isDimmed?: (name: string, statuses?: string[]) => boolean;
   getHref?: (name: string, statuses?: string[]) => string;
@@ -164,13 +166,8 @@ export function VQueueStageSummaryBar({
   populationByStatus?: VQueueStatusSummaryEntry[];
   comparisonScope?: 'all' | 'service';
   isBreakdownLoading?: (stageName: string) => boolean;
+  isBreakdownError?: (stageName: string) => boolean;
 }) {
-  const [pendingFocus, setPendingFocus] = useState<VQueueSummaryFocus>();
-  const selectedFocus = pendingFocus ?? focus;
-  useEffect(() => {
-    if (pendingFocus === focus) setPendingFocus(undefined);
-  }, [focus, pendingFocus]);
-
   const matchingStageData = new Map(
     byStage.map((stage) => [stage.name, stage]),
   );
@@ -179,6 +176,7 @@ export function VQueueStageSummaryBar({
   );
   const populationStages = populationByStage ?? byStage;
   const populationStatuses = populationByStatus ?? byStatus;
+  const countsUnavailable = Boolean(isError && populationStages.length === 0);
   const inboxStage = populationStages.find((stage) => stage.name === 'inbox');
   const inboxStatusNames = new Set(inboxStage?.statuses ?? []);
   const inboxStatuses = populationStatuses.filter((status) =>
@@ -195,6 +193,8 @@ export function VQueueStageSummaryBar({
   );
   const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
   const completedStageIsLoading = completedBreakdownLoading && !completedStage;
+  const completedStageIsUnavailable =
+    !completedStage && !completedStageIsLoading;
   const completedStatusNames = new Set(completedStage?.statuses ?? []);
   const completedStatuses = populationStatuses.filter((status) =>
     status.statuses.some((name) => completedStatusNames.has(name)),
@@ -221,11 +221,11 @@ export function VQueueStageSummaryBar({
   // unreadable. The lifecycle focus therefore changes the rail population;
   // it is not merely a highlight over the all-status distribution.
   const focusedStages =
-    selectedFocus === 'all'
+    focus === 'all'
       ? completedStageIsLoading
         ? [...allStages, COMPLETED_LOADING_STAGE]
         : allStages
-      : selectedFocus === 'not-completed'
+      : focus === 'not-completed'
         ? notCompletedStages
         : completedStage && completedStage.count > 0
           ? [completedStage]
@@ -233,9 +233,9 @@ export function VQueueStageSummaryBar({
             ? [COMPLETED_LOADING_STAGE]
             : [];
   const focusedPopulationTotal =
-    selectedFocus === 'all'
+    focus === 'all'
       ? populationTotal
-      : selectedFocus === 'not-completed'
+      : focus === 'not-completed'
         ? populationNotCompletedCount
         : populationCompletedCount;
   const inboxBreakdownLoading = isBreakdownLoading?.('inbox') ?? false;
@@ -257,7 +257,7 @@ export function VQueueStageSummaryBar({
   });
   const percentageScope = `of ${formatNumber(focusedPopulationTotal, true)}`;
   const focusedPopulationDescription = `${
-    selectedFocus === 'all' ? 'all' : selectedFocus
+    focus === 'all' ? 'all' : focus
   } invocations ${
     comparisonScope === 'service'
       ? 'in the selected service'
@@ -294,10 +294,10 @@ export function VQueueStageSummaryBar({
       0;
     const dimmed = isDimmed?.(segment.name, segment.statuses) ?? false;
     const segmentIsLoading =
-      (selectedFocus !== 'completed' &&
+      (focus !== 'completed' &&
         inboxBreakdownLoading &&
         segment.name === 'inbox') ||
-      (selectedFocus !== 'not-completed' &&
+      (focus !== 'not-completed' &&
         completedBreakdownLoading &&
         segment.name === 'finished');
     const approximate = isCompletedStatus
@@ -455,26 +455,39 @@ export function VQueueStageSummaryBar({
   };
 
   const showInboxGroup =
-    selectedFocus !== 'completed' &&
-    !inboxBreakdownLoading &&
-    hasInboxBreakdown;
+    focus !== 'completed' && !inboxBreakdownLoading && hasInboxBreakdown;
   const showCompletedGroup =
-    selectedFocus !== 'not-completed' &&
+    focus !== 'not-completed' &&
     !completedBreakdownLoading &&
     hasCompletedBreakdown;
+  const focusedCountUnavailable =
+    countsUnavailable ||
+    (focus !== 'not-completed' && completedStageIsUnavailable);
+  const focusedCountUnknown =
+    areStageCountsPartial && focusedPopulationTotal === 0;
 
   const summaryRail = (
     <div
       className={rail()}
       aria-label={
-        selectedFocus === 'all'
+        focus === 'all'
           ? 'All-status invocation distribution with current status highlighted'
-          : selectedFocus === 'not-completed'
+          : focus === 'not-completed'
             ? 'Not-completed invocation distribution with current status highlighted'
             : 'Completed invocation outcome distribution with current status highlighted'
       }
     >
-      {focusedPopulationTotal === 0 && !completedStageIsLoading ? (
+      {focusedCountUnavailable ? (
+        <span role="status" className="self-center text-xs text-gray-500">
+          {isError || isBreakdownError?.('finished')
+            ? 'Could not load invocation counts.'
+            : 'Invocation counts are unavailable.'}
+        </span>
+      ) : focusedCountUnknown && !completedStageIsLoading ? (
+        <span role="status" className="self-center text-xs text-gray-500">
+          No matches in this estimate.
+        </span>
+      ) : focusedPopulationTotal === 0 && !completedStageIsLoading ? (
         <div className={emptyStyles()} />
       ) : (
         focusedStages.map((stage) =>
@@ -499,7 +512,7 @@ export function VQueueStageSummaryBar({
   const renderFocusCount = (
     label: string,
     count: number,
-    state: 'known' | 'loading' | 'unknown',
+    state: 'known' | 'loading' | 'unknown' | 'unavailable',
   ) =>
     state === 'loading' ? (
       <span
@@ -508,8 +521,15 @@ export function VQueueStageSummaryBar({
         })}
         aria-label={`${label} count loading`}
       />
+    ) : state === 'unavailable' ? (
+      <span className={focusCount()} aria-label={`${label} count unavailable`}>
+        —
+      </span>
     ) : state === 'unknown' ? null : (
-      <span className={focusCount()}>{formatNumber(count, true)}</span>
+      <span className={focusCount()}>
+        {areStageCountsPartial ? '~' : ''}
+        {formatNumber(count, true)}
+      </span>
     );
 
   return (
@@ -524,10 +544,9 @@ export function VQueueStageSummaryBar({
         </div>
       )}
       <Tabs
-        selectedTab={selectedFocus}
+        selectedTab={focus}
         onTabChange={(tab) => {
           const nextFocus = tab as VQueueSummaryFocus;
-          setPendingFocus(nextFocus);
           onFocusChange(nextFocus);
         }}
         className={tabs()}
@@ -539,11 +558,13 @@ export function VQueueStageSummaryBar({
               {renderFocusCount(
                 'All-status',
                 populationTotal,
-                completedStageIsLoading
-                  ? 'loading'
-                  : areStageCountsPartial && populationTotal === 0
-                    ? 'unknown'
-                    : 'known',
+                countsUnavailable || completedStageIsUnavailable
+                  ? 'unavailable'
+                  : completedStageIsLoading
+                    ? 'loading'
+                    : areStageCountsPartial && populationTotal === 0
+                      ? 'unknown'
+                      : 'known',
               )}
             </Tab>
             <Tab id="not-completed" className={focusTab()}>
@@ -551,9 +572,11 @@ export function VQueueStageSummaryBar({
               {renderFocusCount(
                 'Not-completed',
                 populationNotCompletedCount,
-                areStageCountsPartial && populationNotCompletedCount === 0
-                  ? 'unknown'
-                  : 'known',
+                countsUnavailable
+                  ? 'unavailable'
+                  : areStageCountsPartial && populationNotCompletedCount === 0
+                    ? 'unknown'
+                    : 'known',
               )}
             </Tab>
             <Tab id="completed" className={focusTab()}>
@@ -561,24 +584,26 @@ export function VQueueStageSummaryBar({
               {renderFocusCount(
                 'Completed',
                 populationCompletedCount,
-                completedStageIsLoading
-                  ? 'loading'
-                  : areStageCountsPartial && populationCompletedCount === 0
-                    ? 'unknown'
-                    : 'known',
+                countsUnavailable || completedStageIsUnavailable
+                  ? 'unavailable'
+                  : completedStageIsLoading
+                    ? 'loading'
+                    : areStageCountsPartial && populationCompletedCount === 0
+                      ? 'unknown'
+                      : 'known',
               )}
             </Tab>
           </TabList>
         </div>
         <TabPanels className={panels()}>
           <TabPanel id="all" className={panel()}>
-            {selectedFocus === 'all' ? summaryRail : null}
+            {focus === 'all' ? summaryRail : null}
           </TabPanel>
           <TabPanel id="not-completed" className={panel()}>
-            {selectedFocus === 'not-completed' ? summaryRail : null}
+            {focus === 'not-completed' ? summaryRail : null}
           </TabPanel>
           <TabPanel id="completed" className={panel()}>
-            {selectedFocus === 'completed' ? summaryRail : null}
+            {focus === 'completed' ? summaryRail : null}
           </TabPanel>
         </TabPanels>
       </Tabs>

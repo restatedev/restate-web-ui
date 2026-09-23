@@ -35,6 +35,27 @@ const stages = [
 ];
 
 describe('VQueueStageLegend', () => {
+  it('shows unavailable completed counts in All focus when completion loading fails', () => {
+    render(
+      <MemoryRouter>
+        <VQueueStageLegend
+          byStage={stages.filter(({ name }) => name !== 'finished')}
+          byStatus={[]}
+          focus="all"
+          isBreakdownSampled={false}
+          isBreakdownError={(name) => name === 'finished'}
+          getHref={() => '/invocations'}
+        />
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByRole('link', { name: 'Completed: unavailable' }).textContent,
+    ).toBe('CompletedUnavailable');
+    expect(screen.queryByRole('link', { name: 'Completed: 0' })).toBeNull();
+    expect(
+      screen.getByText('Could not load the completed breakdown.'),
+    ).toBeTruthy();
+  });
   it('omits metrics when the stage counts are partial', () => {
     render(
       <MemoryRouter>

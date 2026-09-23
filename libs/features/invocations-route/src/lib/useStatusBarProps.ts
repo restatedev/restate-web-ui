@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router';
+import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   TERMINAL_INVOCATION_STATUSES,
@@ -31,7 +31,7 @@ export function useStatusBarProps(
   statusFilter: StatusFilter,
   statusBuckets: StatusBucket[],
 ) {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useInvocationSearchParams();
   const { baseUrl } = useRestateContext();
   const buckets = new Map(statusBuckets.map((bucket) => [bucket.key, bucket]));
 

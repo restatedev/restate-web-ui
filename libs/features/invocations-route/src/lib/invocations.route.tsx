@@ -1,3 +1,4 @@
+import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { Button, SubmitButton } from '@restate/ui/button';
 import {
   PanelTable,
@@ -85,7 +86,7 @@ import {
   useHref,
   useLoaderData,
   useNavigate,
-  useSearchParams,
+  useNavigation,
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -126,10 +127,7 @@ import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
   filterInvocationSummaryByStatus,
-  isInvocationListSnapshotComplete,
-  reconcileCoveredInvocationStatusCounts,
   resolveInvocationPopulationCount,
-  withInvocationStatusCounts,
 } from './invocationSummaryMatchCount';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 import { InvocationQuickOpen } from './InvocationQuickOpen';
@@ -388,7 +386,11 @@ function SlowQueryOverlay({
 }
 
 function Component() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useInvocationSearchParams();
+  const navigation = useNavigation();
+  const isQueryNavigationPending =
+    navigation.state !== 'idle' &&
+    navigation.location?.pathname.endsWith('/invocations');
   const {
     OnboardingGuide,
     baseUrl,
@@ -448,7 +450,7 @@ function Component() {
     hasServiceScope,
     statusFilter,
     isLoading: isStageSummaryLoading,
-    isStageFetching,
+    isFetching: isSummaryFetching,
     isError: isSummaryError,
     refresh: refreshSummary,
     isBreakdownLoading: isVqueueBreakdownLoading,
@@ -462,6 +464,7 @@ function Component() {
     filters: listInvocationsParameters.filters,
     countMode,
     breakdownSampleSize,
+    enabled: !isLoading,
   });
   const { data: deploymentsData } = useListDeployments();
   // Href that clears filter_status — drives the legend's leading "All"
@@ -493,6 +496,7 @@ function Component() {
       staleTime: 0,
       refetchOnWindowFocus: false,
       onFetchStart: refreshSummary,
+      enabled: !isLoading,
     },
   );
   const changeListMode = useCallback(
@@ -533,15 +537,6 @@ function Component() {
   const statusChangedCount = statusChangedInvocationIds.size;
   const listRowCount = matchingListRows.length;
   const listLimit = data?.limit ?? 0;
-  const listSnapshotIsComplete = isInvocationListSnapshotComplete({
-    summaryMatchCount: summaryMatchingCount,
-    listIsAvailable: data != null,
-    listRowCount,
-    listLimit,
-    listIsPartial: Boolean(data?.isPartial),
-  });
-  const completeListRows =
-    data && listSnapshotIsComplete ? matchingListRows : undefined;
   const { count: effectiveTotal, accuracy: totalAccuracy } =
     resolveInvocationPopulationCount({
       summaryMatchCount: summaryMatchingCount,
@@ -553,78 +548,25 @@ function Component() {
   const actionsTotalDisplay = `${totalAccuracy === 'estimate' ? '~' : ''}${formatNumber(effectiveTotal, true)}${totalAccuracy === 'lower-bound' ? '+' : ''}`;
   const offerCompleteScan =
     listSampled && (Boolean(data?.isPartial) || effectiveTotal > 0);
-  const completeStatusFacetRows = completeListRows;
-  const reconciledByStage = useMemo(
-    () =>
-      completeStatusFacetRows
-        ? withInvocationStatusCounts(
-            byStage,
-            completeStatusFacetRows.map(({ status }) => status),
-          )
-        : byStage,
-    [byStage, completeStatusFacetRows],
+  const matchingSummary = useMemo(
+    () => filterInvocationSummaryByStatus(byStage, byStatus, statusFilter),
+    [byStage, byStatus, statusFilter],
   );
-  const reconciledByStatus = useMemo(
-    () =>
-      completeStatusFacetRows
-        ? withInvocationStatusCounts(
-            byStatus,
-            completeStatusFacetRows.map(({ status }) => status),
-          )
-        : byStatus,
-    [byStatus, completeStatusFacetRows],
+  const displayedStageCountsArePartial = Boolean(
+    summaryData?.stageCountsArePartial,
   );
-  const distributionByStage = useMemo(
-    () =>
-      completeStatusFacetRows
-        ? reconcileCoveredInvocationStatusCounts(
-            byStage,
-            completeStatusFacetRows.map(({ status }) => status),
-            statusFilter,
-          )
-        : byStage,
-    [byStage, completeStatusFacetRows, statusFilter],
-  );
-  const distributionByStatus = useMemo(
-    () =>
-      completeStatusFacetRows
-        ? reconcileCoveredInvocationStatusCounts(
-            byStatus,
-            completeStatusFacetRows.map(({ status }) => status),
-            statusFilter,
-          )
-        : byStatus,
-    [byStatus, completeStatusFacetRows, statusFilter],
-  );
-  const matchingSummary = useMemo(() => {
-    if (completeStatusFacetRows) {
-      return {
-        byStage: reconciledByStage,
-        byStatus: reconciledByStatus,
-        usesBreakdown: false,
-      };
-    }
-    return filterInvocationSummaryByStatus(
-      byStage,
-      byStatus,
-      statusFilter,
-      effectiveTotal,
-    );
-  }, [
-    byStage,
-    byStatus,
-    completeStatusFacetRows,
-    effectiveTotal,
-    reconciledByStage,
-    reconciledByStatus,
-    statusFilter,
-  ]);
-  const displayedStageCountsArePartial = completeStatusFacetRows
-    ? false
-    : Boolean(
-        summaryData?.stageCountsArePartial ||
-        (matchingSummary.usesBreakdown && breakdownIsSampled),
-      );
+  const countsDisagree =
+    !isFetching &&
+    !isSummaryFetching &&
+    !error &&
+    !isSummaryError &&
+    statusChangedCount === 0 &&
+    data != null &&
+    !data.isPartial &&
+    listRowCount < listLimit &&
+    summaryMatchingCount !== undefined &&
+    !summaryMatchingCount.isPartial &&
+    summaryMatchingCount.count !== listRowCount;
   const serviceTabs = useServiceTabs(
     summaryData,
     deploymentsData,
@@ -680,6 +622,7 @@ function Component() {
         focus === 'all'
           ? clearStatusFilterHref
           : statusHref(focus === 'completed' ? 'finished' : 'not-completed'),
+        { flushSync: true, preventScrollReset: true },
       );
     },
     [clearStatusFilterHref, navigate, statusHref],
@@ -736,12 +679,14 @@ function Component() {
   const resultsNotice =
     resultsNoticeMessage && !hasActiveFilters ? (
       <ResultsNotice
+        key="results-notice"
         isPartial={listSampled || Boolean(data?.isPartial)}
         statusChangedCount={statusChangedCount}
       />
     ) : undefined;
   const filteredResultsCaption = hasActiveFilters ? (
     <FilteredResultsCaption
+      key="filtered-results"
       noun="invocations"
       className="m-0 h-9 w-full shrink-0 rounded-xl px-2.5"
       notice={resultsNoticeMessage}
@@ -757,7 +702,20 @@ function Component() {
   );
 
   const summaryContent = (
-    <div className={summaryHeaderStyles()}>
+    <div
+      className={summaryHeaderStyles()}
+      aria-busy={isQueryNavigationPending || isSummaryFetching}
+    >
+      {isSummaryError && summaryData && (
+        <p role="status" className="text-xs text-gray-500">
+          Could not refresh invocation counts. Showing previous counts.
+        </p>
+      )}
+      {countsDisagree && (
+        <p role="status" className="text-xs text-gray-500">
+          Counts and results differ. Run the query again to refresh both.
+        </p>
+      )}
       <VQueueStageSummaryBar
         byStage={matchingSummary.byStage}
         byStatus={matchingSummary.byStatus}
@@ -767,13 +725,15 @@ function Component() {
         canSampleBreakdown={canSampleBreakdown}
         onBreakdownModeChange={setCountMode}
         isLoading={isStageSummaryLoading}
-        isFetching={isStageFetching}
+        isFetching={isSummaryFetching || isQueryNavigationPending}
+        isError={isSummaryError}
+        isBreakdownError={isVqueueBreakdownError}
         isDimmed={statusDim}
         getHref={statusHref}
         areStageCountsPartial={displayedStageCountsArePartial}
         isBreakdownSampled={breakdownIsSampled}
-        populationByStage={distributionByStage}
-        populationByStatus={distributionByStatus}
+        populationByStage={byStage}
+        populationByStatus={byStatus}
         comparisonScope={hasServiceScope ? 'service' : 'all'}
         isBreakdownLoading={isVqueueBreakdownLoading}
       />
@@ -787,8 +747,8 @@ function Component() {
         isError={isSummaryError}
         isDimmed={statusDim}
         getHref={statusHref}
-        populationByStage={distributionByStage}
-        populationByStatus={distributionByStatus}
+        populationByStage={byStage}
+        populationByStatus={byStatus}
         isBreakdownLoading={isVqueueBreakdownLoading}
         isBreakdownError={isVqueueBreakdownError}
       />
@@ -898,8 +858,8 @@ function Component() {
                 }}
                 bodyKey={hash}
                 bodyDependencies={[selectedColumns, error]}
-                isLoading={isFetching}
-                numOfRows={Math.max(tableItems.length, 8)}
+                isLoading={isFetching || isLoading || isQueryNavigationPending}
+                numOfRows={8}
                 emptyPlaceholder={
                   error ? (
                     <EmptyState

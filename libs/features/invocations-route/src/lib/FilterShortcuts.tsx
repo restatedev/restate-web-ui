@@ -27,7 +27,7 @@ import {
 } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
-import { useSearchParams } from 'react-router';
+import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { SORT_QUERY_PREFIX, SORT_NONE } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 import { useFeatures } from '@restate/data-access/admin-api';
@@ -193,7 +193,7 @@ export function FilterShortcuts({
   );
   const visibleShortcuts = shortcuts.slice(0, VISIBLE_SHORTCUTS_COUNT);
   const overflowShortcuts = shortcuts.slice(VISIBLE_SHORTCUTS_COUNT);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useInvocationSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
 
   const setFilter = (item: FilterShortcut) => {

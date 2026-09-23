@@ -1,7 +1,9 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import {
+  TERMINAL_INVOCATION_STATUSES,
+  type components,
+} from '@restate/data-access/admin-api-spec';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
 
-type InvocationFilter = components['schemas']['InvocationV2FilterItem'];
 type InvocationSummary = components['schemas']['SummaryInvocationsV2Response'];
 type StatusBucket = Pick<
   components['schemas']['InvocationStatusSummaryBucketV2'],
@@ -92,12 +94,7 @@ export function countMatchingStatusBuckets(
 export function filterInvocationSummaryByStatus<
   StageBucket extends { count: number; statuses: string[] },
   StatusBucket extends { count: number; statuses: string[] },
->(
-  stages: StageBucket[],
-  statuses: StatusBucket[],
-  statusFilter: StatusFilter,
-  matchingTotal?: number,
-) {
+>(stages: StageBucket[], statuses: StatusBucket[], statusFilter: StatusFilter) {
   if (!hasStatusFilter(statusFilter)) {
     return { byStage: stages, byStatus: statuses, usesBreakdown: false };
   }
@@ -107,11 +104,6 @@ export function filterInvocationSummaryByStatus<
       ? bucket
       : { ...bucket, count: 0 },
   );
-  const matchingStages = stages.filter((stage) =>
-    stage.statuses.some((status) => statusMatches(status, statusFilter)),
-  );
-  const onlyMatchingStage =
-    matchingStages.length === 1 ? matchingStages[0] : undefined;
   let usesBreakdown = false;
   const byStage = stages.map((stage) => {
     const matchingStatuses = stage.statuses.filter((status) =>
@@ -119,9 +111,6 @@ export function filterInvocationSummaryByStatus<
     );
     if (matchingStatuses.length === 0) return { ...stage, count: 0 };
     if (matchingStatuses.length < stage.statuses.length) usesBreakdown = true;
-    if (stage === onlyMatchingStage && matchingTotal !== undefined) {
-      return { ...stage, count: matchingTotal };
-    }
     if (matchingStatuses.length === stage.statuses.length) return stage;
 
     const stageStatuses = new Set(stage.statuses);
@@ -142,6 +131,13 @@ export function countMatchingGlobalStatuses(
   summary: InvocationSummary,
   statusFilter: StatusFilter,
 ): InvocationSummaryMatchCount | undefined {
+  if (
+    !summary.stageBuckets.some(({ key }) => key === 'finished') &&
+    TERMINAL_INVOCATION_STATUSES.some((status) =>
+      statusMatches(status, statusFilter),
+    )
+  )
+    return undefined;
   let count = 0;
   let isPartial = summary.stageCountsArePartial;
 
@@ -156,6 +152,7 @@ export function countMatchingGlobalStatuses(
     }
 
     const stageStatuses = new Set(stage.statuses);
+    if (stage.breakdownCoverage === 'missing') return undefined;
     const stageBuckets = summary.statusBuckets.filter((bucket) =>
       bucket.statuses.every((status) => stageStatuses.has(status)),
     );
@@ -169,55 +166,7 @@ export function countMatchingGlobalStatuses(
     isPartial ||= stage.breakdownIsPartial;
   }
 
-  return { count, isPartial };
-}
-
-export function getInvocationSummaryMatchCount(
-  summary: InvocationSummary | undefined,
-  filters: InvocationFilter[] | undefined,
-): InvocationSummaryMatchCount | undefined {
-  if (!summary) return undefined;
-
-  const statusFilterItem = filters?.find(({ field }) => field === 'status');
-  if (statusFilterItem && statusFilterItem.type !== 'STRING_LIST') {
-    return undefined;
-  }
-  const statusFilter = statusFilterItem as StatusFilter;
-  const filtersByService = filters?.some(
-    ({ field }) => field === 'target_service_name',
-  );
-
-  if (!filtersByService) {
-    if (!hasStatusFilter(statusFilter)) {
-      return {
-        count: summary.total,
-        isPartial: summary.stageCountsArePartial,
-      };
-    }
-    return countMatchingGlobalStatuses(summary, statusFilter);
-  }
-
-  const populationStatuses = summary.stageBuckets.flatMap(
-    ({ statuses }) => statuses,
-  );
-  let count = 0;
-  for (const service of summary.serviceBuckets.filter(
-    ({ isIncluded }) => isIncluded,
-  )) {
-    if (!hasStatusFilter(statusFilter)) {
-      count += service.count;
-      continue;
-    }
-    const serviceCount = countMatchingStatusBuckets(
-      service.statusBuckets,
-      populationStatuses,
-      statusFilter,
-    );
-    if (serviceCount === undefined) return undefined;
-    count += serviceCount;
-  }
-
-  return { count, isPartial: summary.stageCountsArePartial };
+  return isPartial && count === 0 ? undefined : { count, isPartial };
 }
 
 export function resolveInvocationPopulationCount({
@@ -251,31 +200,4 @@ export function resolveInvocationPopulationCount({
     count: listRowCount,
     accuracy: 'lower-bound',
   };
-}
-
-export function withInvocationStatusCounts<
-  Bucket extends { count: number; statuses: string[] },
->(buckets: Bucket[], invocationStatuses: string[]) {
-  const statusCounts = new Map<string, number>();
-  for (const status of invocationStatuses) {
-    statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
-  }
-  return buckets.map((bucket) => ({
-    ...bucket,
-    count: bucket.statuses.reduce(
-      (count, status) => count + (statusCounts.get(status) ?? 0),
-      0,
-    ),
-  }));
-}
-
-export function reconcileCoveredInvocationStatusCounts<
-  Bucket extends { count: number; statuses: string[] },
->(buckets: Bucket[], invocationStatuses: string[], statusFilter: StatusFilter) {
-  const reconciled = withInvocationStatusCounts(buckets, invocationStatuses);
-  return buckets.map((bucket, index) =>
-    bucket.statuses.every((status) => statusMatches(status, statusFilter))
-      ? (reconciled[index] ?? bucket)
-      : bucket,
-  );
 }

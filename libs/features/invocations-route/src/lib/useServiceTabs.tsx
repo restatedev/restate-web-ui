@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { useRestateContext } from '@restate/features/restate-context';
 import type { components } from '@restate/data-access/admin-api-spec';
 import type { ContentPanelTabs } from '@restate/ui/content-panel';
@@ -260,19 +260,27 @@ export function useServiceTabs(
   isLoading = false,
   currentCount?: InvocationPopulationCount,
 ): ContentPanelTabs {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useInvocationSearchParams();
   const { baseUrl } = useRestateContext();
   const summaryCountsArePartial = Boolean(
     summary?.mode === 'sampled' || summary?.isPartial,
   );
+  const populationIsAvailable = Boolean(
+    summary?.stageBuckets.some(({ key }) => key === 'finished'),
+  );
   const services = useMemo(
     () =>
       serviceRows(
-        summary?.serviceBuckets,
+        populationIsAvailable ? summary?.serviceBuckets : undefined,
         deploymentsData,
-        summaryCountsArePartial,
+        summaryCountsArePartial || !populationIsAvailable,
       ),
-    [summary?.serviceBuckets, deploymentsData, summaryCountsArePartial],
+    [
+      summary?.serviceBuckets,
+      deploymentsData,
+      summaryCountsArePartial,
+      populationIsAvailable,
+    ],
   );
   const selection = selectedServices(
     searchParams.get('filter_target_service_name'),
@@ -280,7 +288,9 @@ export function useServiceTabs(
   );
   const total: TabCount = {
     count:
-      summary && !(summaryCountsArePartial && summary.total === 0)
+      summary &&
+      populationIsAvailable &&
+      !(summaryCountsArePartial && summary.total === 0)
         ? summary.total
         : undefined,
     accuracy: summary?.stageCountsArePartial ? 'estimate' : 'exact',
