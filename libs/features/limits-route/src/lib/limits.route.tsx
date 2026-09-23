@@ -404,7 +404,7 @@ function renderRuleCell(
       );
     case 'actions':
       return (
-        <Cell className="align-top [&&&]:overflow-visible">
+        <Cell className="[&&&]:overflow-visible">
           <RuleActions
             rule={row}
             onToggle={onToggle}

@@ -135,7 +135,7 @@ export function PerformantRow<T extends { id?: string }>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: 'truncate border-b py-2 pl-2 text-xs font-medium text-zinc-600 -outline-offset-2 [--selected-border:var(--color-blue-200)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border)',
+  base: 'content-center truncate border-b py-2 pl-2 align-middle text-xs font-medium text-zinc-600 -outline-offset-2 [--selected-border:var(--color-blue-200)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border) [&.align-baseline]:content-start [&.align-bottom]:content-end [&.align-top]:content-start',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {

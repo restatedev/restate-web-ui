@@ -4150,3 +4150,5 @@
 - 2026-09-23 user refinement: VO active-invocation scope belongs in parentheses in the first column header, not a separate caption. Keep the scope-specific empty-state wording.
 
 - 2026-09-23 user terminology: use “in-flight invocations” in the VO first-column parenthetical and empty states, rather than “active” or “unfinished”; keep the parenthetical lighter gray and normal weight.
+
+- 2026-09-23 shared table cell centering: RAC virtualized cells are block divs, so native vertical-align is ineffective. Add content-center (align-content) to shared Cell, plus align-middle for native td. Map explicit align-top/baseline/bottom classes to content-start/end to retain intended exceptions. Remove stale align-top on single Deployment/Rule action controls. Browser measured service/date, deployment, rule, counter, VQueue and state cell content centered within 0–1px; VQueue height still equals scrollHeight. No inner flex wrappers needed, preserving existing inline content and measurement.
