@@ -4132,3 +4132,8 @@
 - 2026-09-23: Service count placeholders must retain the last formatted label in the existing useServiceTabs layout state. Local badge state was lost when React Aria remounted tab contents; live measurements caught every badge falling back to 000. Hidden text with identical font/padding and aria-hidden preserves exact width during loading. Verified all five visible badges had identical before/pending pixel widths; 50 route tests, app/spec typechecks, and lint passed.
 
 - 2026-09-23 user: Do not auto-refresh count/list mismatches, since retries cannot guarantee consistency. Show mismatch in the filter/results banner and, when the list is empty, in its placeholder. Removed the summary-header warning; preserve existing mismatch detection and partial/error handling.
+
+- 2026-09-23 introspection: Error content existed in the DOM but was clipped by the empty virtualized PanelTable body. Render empty/loading/error states without virtualization, retain it for actual results, and hide old rows on error. Browser verified server error and duration.
+- 2026-09-23 self: Do not reformat the entire query.json schema when adding one field. Preserve its existing layout and regenerate output.json/index.d.ts. Middleware tests must register a QueryClient before API calls, since auth reads it.
+
+- 2026-09-23 final user preference: Measure Introspection SQL duration inside useSqlQuery queryFn with performance.now; attach it to returned data or the original Error, with no React timing state, new endpoint, schema changes, or generic query interception. Removed the earlier query.ts and /query/sql approaches. Timing stays with cached results and errors. 18 hook tests and app/spec typechecks passed.

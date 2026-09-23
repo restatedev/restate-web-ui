@@ -25,6 +25,7 @@ import {
   getOverviewRefreshMeta,
   getDecodeServiceSerdeQueryOptions,
   getEncodeServiceSerdeQueryOptions,
+  type DefaultOperationData,
 } from '@restate/data-access/admin-api';
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
 import type {
@@ -255,9 +256,13 @@ export function useListDeployments(options?: ListDeploymentsOptions) {
   };
 }
 
+type SqlQueryData = NonNullable<DefaultOperationData<'/query', 'post'>> & {
+  queryDurationMs: number;
+};
+
 export function useSqlQuery(
   query: string,
-  options?: HookQueryOptions<'/query', 'post'>,
+  options?: HookQueryOptions<'/query', 'post', SqlQueryData>,
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
@@ -266,9 +271,23 @@ export function useSqlQuery(
     body: { query },
   });
 
-  const results = useQuery({
+  const results = useQuery<SqlQueryData, Error & { queryDurationMs?: number }>({
     ...queryOptions,
     ...options,
+    queryFn: async (...args: Parameters<typeof queryOptions.queryFn>) => {
+      const startedAt = performance.now();
+      try {
+        const data = await queryOptions.queryFn(...args);
+        return { ...data, queryDurationMs: performance.now() - startedAt };
+      } catch (error) {
+        if (error instanceof Error) {
+          Object.assign(error, {
+            queryDurationMs: performance.now() - startedAt,
+          });
+        }
+        throw error;
+      }
+    },
     enabled: Boolean(query) && options?.enabled !== false && enabled,
   });
 
