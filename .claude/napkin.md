@@ -4148,3 +4148,5 @@
 - 2026-09-23 VO listing scope: user wants active-invocation scope stated near the table and in empty states. Added muted caption above quick-open; removed copy implying state-only objects appear. Empty/loading tables use native rendering so the placeholder keeps its natural height.
 
 - 2026-09-23 user refinement: VO active-invocation scope belongs in parentheses in the first column header, not a separate caption. Keep the scope-specific empty-state wording.
+
+- 2026-09-23 user terminology: use “in-flight invocations” in the VO first-column parenthetical and empty states, rather than “active” or “unfinished”; keep the parenthetical lighter gray and normal weight.

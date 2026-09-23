@@ -118,7 +118,7 @@ const columns: PanelTableColumn<ColumnId>[] = [
       <span>
         Virtual object instance{' '}
         <span className="font-normal text-gray-500">
-          (with active invocations)
+          (with in-flight invocations)
         </span>
       </span>
     ),
@@ -622,13 +622,13 @@ function Component() {
                       }
                       title={
                         hasFilters
-                          ? 'No virtual objects with active invocations match this filter'
-                          : 'No virtual objects with active invocations'
+                          ? 'No virtual objects with in-flight invocations match this filter'
+                          : 'No virtual objects with in-flight invocations'
                       }
                       description={
                         hasFilters
                           ? 'Try adjusting the active filters.'
-                          : 'Virtual objects appear here while they have active invocations. Use “Go to instance” to open one by key.'
+                          : 'Virtual objects appear here while they have in-flight invocations. Use “Go to instance” to open one by key.'
                       }
                     />
                   )
