@@ -371,6 +371,7 @@ function QueryActions({
   return (
     <SplitButton
       mini
+      isPending={isRunning}
       className="text-0.5xs"
       onSelect={(action) => {
         if (isDisabled) return;
@@ -785,6 +786,11 @@ function Component() {
               sortDescriptor={sortDescriptor}
               onSortChange={setSortDescriptor}
               bodyDependencies={[
+                now,
+                explain.isPending,
+                explain.variables?.stat.id,
+              ]}
+              rowDependencies={[
                 now,
                 explain.isPending,
                 explain.variables?.stat.id,

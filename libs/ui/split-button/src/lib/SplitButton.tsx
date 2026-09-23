@@ -7,6 +7,7 @@ import {
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Button } from '@restate/ui/button';
+import { Spinner } from '@restate/ui/loading';
 import { tv } from '@restate/util/styles';
 import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 
@@ -56,6 +57,7 @@ export function SplitButton({
   onSelect,
   variant = 'secondary',
   splitClassName,
+  isPending = false,
 }: PropsWithChildren<{
   mini?: boolean | 'md';
   className?: string;
@@ -63,6 +65,7 @@ export function SplitButton({
   onSelect?: (key: string) => void;
   variant?: ComponentProps<typeof Button>['variant'];
   splitClassName?: string;
+  isPending?: boolean;
 }>) {
   const { base, primary } = styles({ mini });
   return (
@@ -72,9 +75,19 @@ export function SplitButton({
         <DropdownTrigger>
           <Button
             variant={variant}
+            disabled={isPending}
             className={menuTriggerStyles({ mini, className: splitClassName })}
           >
-            <Icon name={IconName.ChevronsUpDown} className="h-[1em] w-[1em]" />
+            {isPending ? (
+              <span role="status" aria-label="Action in progress">
+                <Spinner className="h-[1em] w-[1em]" />
+              </span>
+            ) : (
+              <Icon
+                name={IconName.ChevronsUpDown}
+                className="h-[1em] w-[1em]"
+              />
+            )}
           </Button>
         </DropdownTrigger>
         <DropdownPopover>

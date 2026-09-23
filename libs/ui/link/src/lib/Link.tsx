@@ -6,8 +6,14 @@ import {
   composeRenderProps,
   PressEvent,
 } from 'react-aria-components';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, type NavigateOptions } from 'react-router';
 import { tv } from '@restate/util/styles';
+
+declare module 'react-aria-components' {
+  interface RouterConfig {
+    routerOptions: NavigateOptions;
+  }
+}
 
 interface LinkProps
   extends

@@ -14,7 +14,7 @@ import {
 import styles from './tailwind.css?url';
 import elementsCssUrl from '@stoplight/elements/elements-web-components.min.scoped.css?url';
 import elementsJsUrl from '@stoplight/elements/elements-web-components.min.js?url';
-import type { LinksFunction, To } from 'react-router';
+import type { LinksFunction, NavigateOptions, To } from 'react-router';
 import {
   LayoutOutlet,
   LayoutProvider,
@@ -197,10 +197,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const remixNavigate = useNavigate();
 
   const navigate = useCallback(
-    (to: string | Partial<Path>) => {
+    (to: string | Partial<Path>, options?: NavigateOptions) => {
       const hasSearchParams =
         typeof to === 'string' ? to.includes('?') : Boolean(to.search);
-      remixNavigate(to, { preventScrollReset: hasSearchParams });
+      remixNavigate(to, { preventScrollReset: hasSearchParams, ...options });
     },
     [remixNavigate],
   );

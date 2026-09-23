@@ -1,6 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { VQueueStageSummaryBar } from './VQueueStageSummaryBar';
 
 const totalsByStage = [
@@ -26,6 +27,20 @@ const totalsByStage = [
     breakdownIsPartial: false,
   },
 ];
+
+const originalGetAnimations = Element.prototype.getAnimations;
+
+beforeEach(() => {
+  Element.prototype.getAnimations = () => [];
+});
+
+afterEach(() => {
+  cleanup();
+  if (originalGetAnimations)
+    Element.prototype.getAnimations = originalGetAnimations;
+  else Reflect.deleteProperty(Element.prototype, 'getAnimations');
+  vi.unstubAllGlobals();
+});
 
 describe('VQueueStageSummaryBar', () => {
   it('shows distribution totals in focus controls while displaying current matches', async () => {
@@ -115,7 +130,7 @@ describe('VQueueStageSummaryBar', () => {
     await waitFor(() => {
       expect(
         screen.getByRole('tab', { name: /Not completed/ }).textContent,
-      ).toBe('Not completed63');
+      ).toBe('Not completed~63');
       expect(
         screen.getByRole('link', {
           name: 'Inbox: ~87% of 63 not-completed invocations across all services',
@@ -180,7 +195,7 @@ describe('VQueueStageSummaryBar', () => {
     await waitFor(() => {
       expect(
         screen.getByRole('tab', { name: /Not completed/ }).textContent,
-      ).toBe('Not completed60');
+      ).toBe('Not completed~60');
       expect(
         screen.getByRole('link', {
           name: 'Inbox: ~17% of 60 not-completed invocations in the selected service',
@@ -305,7 +320,7 @@ describe('VQueueStageSummaryBar', () => {
     });
   });
 
-  it('omits an uncertain zero count without changing the empty rail', async () => {
+  it('distinguishes an empty estimate from a confirmed empty population', async () => {
     const sampledZeroStages = totalsByStage.map((stage) => ({
       ...stage,
       count: 0,
@@ -338,5 +353,104 @@ describe('VQueueStageSummaryBar', () => {
         'Not-completed invocation distribution with current status highlighted',
       ).children,
     ).toHaveLength(1);
+  });
+
+  it('keeps the selected tab and rail on the committed filter until navigation completes', async () => {
+    vi.stubGlobal('CSS', { escape: (value: string) => value });
+    const onFocusChange = vi.fn();
+    const props = {
+      byStage: totalsByStage,
+      byStatus: [],
+      onFocusChange,
+      breakdownMode: 'exact' as const,
+      canSampleBreakdown: false,
+      onBreakdownModeChange: vi.fn(),
+      isBreakdownSampled: false,
+    };
+    const { rerender } = render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar {...props} focus="not-completed" />
+      </MemoryRouter>,
+    );
+    await userEvent.click(screen.getByRole('tab', { name: /All statuses/ }));
+    expect(onFocusChange).toHaveBeenCalledWith('all');
+    expect(screen.getByRole('tab', { selected: true }).textContent).toBe(
+      'Not completed106',
+    );
+    expect(
+      screen.queryByLabelText(
+        'All-status invocation distribution with current status highlighted',
+      ),
+    ).toBeNull();
+    rerender(
+      <MemoryRouter>
+        <VQueueStageSummaryBar {...props} focus="all" />
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { selected: true }).textContent).toBe(
+        'All statuses146',
+      ),
+    );
+    expect(
+      screen.getByLabelText(
+        'All-status invocation distribution with current status highlighted',
+      ),
+    ).toBeTruthy();
+  });
+
+  it.each(['all', 'completed'] as const)(
+    'does not show zero when missing completed counts fail in %s focus',
+    async (focus) => {
+      render(
+        <MemoryRouter>
+          <VQueueStageSummaryBar
+            byStage={totalsByStage.filter(({ name }) => name !== 'finished')}
+            byStatus={[]}
+            focus={focus}
+            onFocusChange={vi.fn()}
+            breakdownMode="exact"
+            canSampleBreakdown={false}
+            onBreakdownModeChange={vi.fn()}
+            isBreakdownSampled={false}
+            isBreakdownError={(name) => name === 'finished'}
+          />
+        </MemoryRouter>,
+      );
+      expect(
+        await screen.findByLabelText('Completed count unavailable'),
+      ).toBeTruthy();
+      expect(
+        screen.getByLabelText('All-status count unavailable'),
+      ).toBeTruthy();
+      expect(
+        screen.getByText('Could not load invocation counts.'),
+      ).toBeTruthy();
+      expect(
+        screen.getByRole('tab', { name: /Not completed/ }).textContent,
+      ).toBe('Not completed106');
+    },
+  );
+
+  it('shows unavailable rather than an empty population after the stage request fails', async () => {
+    render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar
+          byStage={[]}
+          byStatus={[]}
+          focus="all"
+          onFocusChange={vi.fn()}
+          breakdownMode="exact"
+          canSampleBreakdown={false}
+          onBreakdownModeChange={vi.fn()}
+          isBreakdownSampled={false}
+          isError
+        />
+      </MemoryRouter>,
+    );
+    expect(
+      await screen.findByLabelText('Not-completed count unavailable'),
+    ).toBeTruthy();
+    expect(screen.getByText('Could not load invocation counts.')).toBeTruthy();
   });
 });

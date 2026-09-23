@@ -11,7 +11,7 @@ import type { VQueueSummaryFocus } from '@restate/features/status-chart';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { getInvocationSummaryFacets } from './invocationSummaryFacets';
-import { getInvocationSummaryMatchCount } from './invocationSummaryMatchCount';
+import { countMatchingGlobalStatuses } from './invocationSummaryMatchCount';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
 import { useStatusBarProps } from './useStatusBarProps';
 
@@ -63,10 +63,12 @@ export function useInvocationSummary({
   filters,
   countMode,
   breakdownSampleSize,
+  enabled = true,
 }: {
   filters: InvocationFilter[] | undefined;
   countMode: 'estimate' | 'exact';
   breakdownSampleSize: number;
+  enabled?: boolean;
 }) {
   const queryClient = useQueryClient();
   const statusFilter = getStatusFilter(filters);
@@ -84,7 +86,7 @@ export function useInvocationSummary({
       highlightFields: ['target_service_name'],
       mode,
     },
-    { refetchOnWindowFocus: false },
+    { enabled, refetchOnWindowFocus: false },
   );
   const contextualBreakdown = useSummaryInvocationsV2(
     {
@@ -93,7 +95,7 @@ export function useInvocationSummary({
       view: 'all',
     },
     {
-      enabled: hasServiceFilter,
+      enabled: enabled && hasServiceFilter,
       refetchOnWindowFocus: false,
     },
   );
@@ -106,7 +108,7 @@ export function useInvocationSummary({
       serviceNames: inboxBreakdownServiceNames ?? [],
     },
     {
-      enabled: inboxBreakdownServiceNames !== undefined,
+      enabled: enabled && inboxBreakdownServiceNames !== undefined,
       refetchOnWindowFocus: false,
     },
   );
@@ -153,7 +155,16 @@ export function useInvocationSummary({
     },
   ];
   const statusBarProps = useStatusBarProps(statusFilter, filterBuckets);
-  const matchingCount = getInvocationSummaryMatchCount(summary.data, filters);
+  const matchingCount = summary.data
+    ? countMatchingGlobalStatuses(
+        {
+          ...summary.data,
+          stageBuckets: facets.byStage,
+          statusBuckets: facets.byStatus,
+        },
+        statusFilter,
+      )
+    : undefined;
   const queryKeys = hasServiceFilter
     ? [
         ...summary.queryKeys,
@@ -194,13 +205,13 @@ export function useInvocationSummary({
       contextualBreakdown.isFetching ||
       contextualInboxBreakdown.isFetching,
     isBreakdownLoading: (stageName: string) =>
-      hasServiceFilter
+      hasServiceFilter && stageBuckets.some(({ key }) => key === stageName)
         ? stageName === 'inbox' && inboxBreakdownServiceNames !== undefined
           ? contextualInboxBreakdownLoading
           : contextualBreakdownLoading
         : summary.isBreakdownLoading(stageName),
     isBreakdownError: (stageName: string) =>
-      hasServiceFilter
+      hasServiceFilter && stageBuckets.some(({ key }) => key === stageName)
         ? stageName === 'inbox' && inboxBreakdownServiceNames !== undefined
           ? contextualInboxBreakdownError
           : contextualBreakdownError

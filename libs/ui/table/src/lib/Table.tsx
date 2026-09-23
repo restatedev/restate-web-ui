@@ -41,7 +41,7 @@ const tableStyles = tv({
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
     <div className={tableStyles({ className })}>
-      <div className="relative h-full [scrollbar-width:thin] overflow-auto">
+      <div className="relative [scrollbar-width:thin] overflow-x-auto overflow-y-hidden">
         <ResizableTableContainer>
           <AriaTable
             {...props}

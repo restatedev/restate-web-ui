@@ -109,13 +109,18 @@ export function VQueueStageLegend({
   const completedStage = stageData.get('finished');
   const completedStatusNames = new Set(completedStage?.statuses ?? []);
   const completedBreakdownLoading = isBreakdownLoading?.('finished') ?? false;
+  const completedStatuses = populationStatuses
+    .filter(shouldShowStatus)
+    .filter((status) =>
+      status.statuses.some((name) => completedStatusNames.has(name)),
+    );
   const stageNames =
     focus === 'all'
       ? INVOCATION_SUMMARY_STAGES
       : NOT_COMPLETED_INVOCATION_STAGES;
   const items =
-    focus !== 'completed'
-      ? stageNames.map((name) => {
+    focus !== 'completed' || !completedStatuses.some(({ count }) => count > 0)
+      ? (focus === 'completed' ? ['finished'] : stageNames).map((name) => {
           const stage = stageData.get(name);
           return {
             name,
@@ -124,25 +129,22 @@ export function VQueueStageLegend({
             statuses: stage?.statuses ?? [],
             breakdownIsPartial: stage?.breakdownIsPartial ?? false,
             expandable: name === 'inbox',
+            isOutcome: false,
             loading: Boolean(
               isLoading || (!stage && isBreakdownLoading?.(name)),
             ),
           };
         })
-      : populationStatuses
-          .filter(shouldShowStatus)
-          .filter((status) =>
-            status.statuses.some((name) => completedStatusNames.has(name)),
-          )
-          .map((status) => ({
-            name: status.name,
-            label: status.label ?? STATUS_LABELS[status.name] ?? status.name,
-            count: status.count,
-            statuses: status.statuses,
-            breakdownIsPartial: completedStage?.breakdownIsPartial ?? false,
-            expandable: false,
-            loading: completedBreakdownLoading,
-          }));
+      : completedStatuses.map((status) => ({
+          name: status.name,
+          label: status.label ?? STATUS_LABELS[status.name] ?? status.name,
+          count: status.count,
+          statuses: status.statuses,
+          breakdownIsPartial: completedStage?.breakdownIsPartial ?? false,
+          expandable: false,
+          isOutcome: true,
+          loading: completedBreakdownLoading,
+        }));
   return (
     <div
       className={legendStyles({ class: className })}
@@ -170,10 +172,13 @@ export function VQueueStageLegend({
           }));
         const itemBreakdownLoading = isBreakdownLoading?.(item.name) ?? false;
         const itemBreakdownError = isBreakdownError?.(item.name) ?? false;
+        const unavailable =
+          (isError && populationStages.length === 0) ||
+          (!completedStage && item.name === 'finished' && !item.loading) ||
+          (item.isOutcome && Boolean(isBreakdownError?.('finished')));
         const countIsPartial =
           areStageCountsPartial ||
-          (focus === 'completed' &&
-            (isBreakdownSampled || item.breakdownIsPartial));
+          (item.isOutcome && (isBreakdownSampled || item.breakdownIsPartial));
         const countIsUnknown =
           !item.loading && item.count === 0 && Boolean(countIsPartial);
         const breakdownValuesAreSampled =
@@ -209,11 +214,15 @@ export function VQueueStageLegend({
               aria-label={
                 item.loading
                   ? `${item.label}: loading`
-                  : !countIsPartial
-                    ? `${item.label}: ${formattedCount}`
-                    : item.label
+                  : unavailable
+                    ? `${item.label}: unavailable`
+                    : !countIsPartial
+                      ? `${item.label}: ${formattedCount}`
+                      : item.label
               }
-              disabled={Boolean(isLoading || isError || item.loading)}
+              disabled={Boolean(
+                isLoading || isError || item.loading || unavailable,
+              )}
             >
               <span
                 className={bulletStyles({
@@ -234,6 +243,8 @@ export function VQueueStageLegend({
               <span>{item.label}</span>
               {item.loading ? (
                 <span className={countStyles({ loading: true })}>Loading</span>
+              ) : unavailable ? (
+                <span className={countStyles()}>Unavailable</span>
               ) : !countIsPartial ? (
                 <span className={countStyles()}>{formattedCount}</span>
               ) : null}
@@ -273,7 +284,7 @@ export function VQueueStageLegend({
           </div>
         );
       })}
-      {focus === 'completed' && isBreakdownError?.('finished') && (
+      {focus !== 'not-completed' && isBreakdownError?.('finished') && (
         <span className="text-xs text-red-700">
           Could not load the completed breakdown.
         </span>

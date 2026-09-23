@@ -482,7 +482,7 @@ export function DeploymentsTable() {
           }
           if (column.id === 'actions') {
             return (
-              <Cell className="align-top [&&&]:overflow-visible">
+              <Cell className="[&&&]:overflow-visible">
                 <DeploymentRowActions
                   deploymentId={deployment.id}
                   isUpdateSupported={isDeploymentUpdateSupported}

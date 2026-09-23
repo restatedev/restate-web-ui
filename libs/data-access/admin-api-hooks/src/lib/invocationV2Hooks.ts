@@ -8,6 +8,7 @@ import {
 } from '@restate/data-access/admin-api';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
+import { alignInvocationSummaryBreakdowns } from './invocationSummaryBreakdowns';
 
 type InboxBreakdownData =
   components['schemas']['InboxInvocationsBreakdownV2Response'];
@@ -100,29 +101,9 @@ export function mergeInvocationSummaryBreakdowns(
   const breakdownStages = new Map(
     breakdowns.stageBuckets.map((stage) => [stage.key, stage]),
   );
-  const stageCounts = new Map(
-    [...stages.stageBuckets, ...supplementalStages].map((stage) => [
-      stage.key,
-      stage.count,
-    ]),
+  const refinedStatusBuckets = breakdowns.statusBuckets.filter((bucket) =>
+    bucket.statuses.some((status) => refinableStatuses.has(status)),
   );
-  const refinedStatusBuckets = breakdowns.statusBuckets
-    .filter((bucket) =>
-      bucket.statuses.some((status) => refinableStatuses.has(status)),
-    )
-    .map((bucket) => {
-      const sourceStage = breakdowns.stageBuckets.find((stage) =>
-        bucket.statuses.some((status) => stage.statuses.includes(status)),
-      );
-      const targetCount = sourceStage
-        ? (stageCounts.get(sourceStage.key) ?? 0)
-        : 0;
-      const scale =
-        sourceStage?.breakdownIsPartial && sourceStage.count > 0
-          ? targetCount / sourceStage.count
-          : 1;
-      return { ...bucket, count: Math.round(bucket.count * scale) };
-    });
   const stageBuckets = [
     ...stages.stageBuckets.map((stage) => {
       if (!stage.breakdownCanRefine) return stage;
@@ -176,14 +157,13 @@ export function mergeInvocationSummaryBreakdowns(
       stages.stageCountsArePartial ||
       supplementalStages.some((stage) => stage.breakdownIsPartial),
     total: stageBuckets.reduce((total, stage) => total + stage.count, 0),
-    stageBuckets,
-    statusBuckets: [
+    ...alignInvocationSummaryBreakdowns(stageBuckets, [
       ...stages.statusBuckets.filter(
         (bucket) =>
           !bucket.statuses.some((status) => refinableStatuses.has(status)),
       ),
       ...refinedStatusBuckets,
-    ],
+    ]),
     serviceBuckets: [...serviceBuckets.values()].sort((left, right) =>
       right.count !== left.count
         ? right.count - left.count
@@ -198,7 +178,8 @@ export function useProgressiveInvocationSummaryV2(
 ) {
   const features = useFeatures();
   const eagerBreakdowns = features.has('vqueues');
-  const splitCompletedStage = eagerBreakdowns;
+  const splitCompletedStage =
+    eagerBreakdowns && features.has('vqueues_migration_skip_completed');
   const stages = useSummaryInvocationsV2(
     {
       ...body,

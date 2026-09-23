@@ -8,7 +8,7 @@ import {
   writeFilterClauses,
 } from '@restate/ui/filter-builder';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
@@ -76,7 +76,7 @@ function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
  * URL automatically.
  */
 export function useListInvocationsParameters() {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useInvocationSearchParams();
   const { schema, isLoading } = useSchema();
   const searchString = searchParams.toString();
 
@@ -123,7 +123,7 @@ export function useInvocationsForm({
   isLoading: boolean;
   selectedColumns: ColumnKey[];
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useInvocationSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
 
   const [sortParams, _setSortParams] = useState<SortSelection>(() =>

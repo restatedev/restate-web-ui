@@ -1,5 +1,5 @@
-import { useMemo, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useMemo, useState, type ReactNode } from 'react';
+import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { useRestateContext } from '@restate/features/restate-context';
 import type { components } from '@restate/data-access/admin-api-spec';
 import type { ContentPanelTabs } from '@restate/ui/content-panel';
@@ -16,6 +16,7 @@ import {
 } from './invocationSummaryMatchCount';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
 import { formatNumber } from '@restate/util/intl';
+import { tv } from '@restate/util/styles';
 
 const ALL_TAB_ID = '__all__';
 const MULTI_TAB_ID = '__multi__';
@@ -109,24 +110,36 @@ export function formatServiceTabCount({ count, accuracy = 'exact' }: TabCount) {
   return `${formatNumber(count, true)}${accuracy === 'lower-bound' ? '+' : ''}`;
 }
 
+const countStyles = tv({
+  base: 'rounded bg-zinc-100 px-1 py-px text-2xs font-medium whitespace-nowrap text-zinc-500 tabular-nums',
+  variants: {
+    loading: { true: 'animate-pulse bg-zinc-200 text-transparent' },
+  },
+});
+
 function tabLabel(
   label: string,
   total: TabCount,
   isLoading: boolean,
+  previousCount?: string,
 ): ReactNode {
-  const formattedTotal = formatServiceTabCount(total);
+  const formattedTotal = isLoading
+    ? (previousCount ?? '000')
+    : formatServiceTabCount(total);
   return (
     <span className="flex items-center gap-1.5">
       <span className="truncate [[role=tab]_&]:max-w-[12ch]" title={label}>
         {label}
       </span>
-      {isLoading ? (
-        <span className="inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
-      ) : formattedTotal ? (
-        <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium whitespace-nowrap text-zinc-500 tabular-nums">
+      {formattedTotal !== undefined && (
+        <span
+          className={countStyles({ loading: isLoading })}
+          aria-hidden={isLoading || undefined}
+          data-loading={isLoading || undefined}
+        >
           {formattedTotal}
         </span>
-      ) : null}
+      )}
     </span>
   );
 }
@@ -193,6 +206,7 @@ function serviceTabLabel(
   isLoading: boolean,
   countAccuracy: TabCount['accuracy'],
   currentCount?: InvocationPopulationCount,
+  previousCount?: string,
 ) {
   const label = tabLabel(
     service.id,
@@ -201,6 +215,7 @@ function serviceTabLabel(
       accuracy: countAccuracy,
     },
     isLoading,
+    previousCount,
   );
   if (isLoading || service.count === undefined) return label;
 
@@ -260,31 +275,96 @@ export function useServiceTabs(
   isLoading = false,
   currentCount?: InvocationPopulationCount,
 ): ContentPanelTabs {
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useInvocationSearchParams();
   const { baseUrl } = useRestateContext();
+  const [tabLayout, setTabLayout] = useState<{
+    baseUrl: string;
+    ids: string[];
+    countLabels: Record<string, string | undefined>;
+  }>({ baseUrl, ids: [], countLabels: {} });
   const summaryCountsArePartial = Boolean(
     summary?.mode === 'sampled' || summary?.isPartial,
   );
-  const services = useMemo(
-    () =>
-      serviceRows(
-        summary?.serviceBuckets,
-        deploymentsData,
-        summaryCountsArePartial,
-      ),
-    [summary?.serviceBuckets, deploymentsData, summaryCountsArePartial],
+  const populationIsAvailable = Boolean(
+    summary?.stageBuckets.some(({ key }) => key === 'finished'),
   );
+  const services = useMemo(() => {
+    const rows = serviceRows(
+      populationIsAvailable ? summary?.serviceBuckets : undefined,
+      deploymentsData,
+      summaryCountsArePartial || !populationIsAvailable,
+    );
+    const previousIds = tabLayout.baseUrl === baseUrl ? tabLayout.ids : [];
+    const positions = new Map(previousIds.map((id, index) => [id, index]));
+    if (!populationIsAvailable) {
+      const present = new Set(rows.map(({ id }) => id));
+      rows.push(
+        ...previousIds
+          .filter((id) => !present.has(id))
+          .map((id) => ({
+            id,
+            count: undefined,
+            statusBuckets: [],
+          })),
+      );
+    }
+    return rows.sort(
+      (a, b) =>
+        (positions.get(a.id) ?? previousIds.length) -
+        (positions.get(b.id) ?? previousIds.length),
+    );
+  }, [
+    summary?.serviceBuckets,
+    deploymentsData,
+    summaryCountsArePartial,
+    populationIsAvailable,
+    tabLayout,
+    baseUrl,
+  ]);
   const selection = selectedServices(
     searchParams.get('filter_target_service_name'),
     services,
   );
   const total: TabCount = {
     count:
-      summary && !(summaryCountsArePartial && summary.total === 0)
+      summary &&
+      populationIsAvailable &&
+      !(summaryCountsArePartial && summary.total === 0)
         ? summary.total
         : undefined,
     accuracy: summary?.stageCountsArePartial ? 'estimate' : 'exact',
   };
+  const selectedTotal: TabCount = {
+    count: selection.services?.every(({ count }) => count !== undefined)
+      ? selection.services.reduce(
+          (sum, service) => sum + (service.count ?? 0),
+          0,
+        )
+      : undefined,
+    accuracy: total.accuracy,
+  };
+  const countLabels = Object.fromEntries([
+    [ALL_TAB_ID, formatServiceTabCount(total)],
+    [MULTI_TAB_ID, formatServiceTabCount(selectedTotal)],
+    ...services.map(({ id, count }) => [
+      id,
+      formatServiceTabCount({ count, accuracy: total.accuracy }),
+    ]),
+  ]);
+  if (
+    populationIsAvailable &&
+    !isLoading &&
+    (tabLayout.baseUrl !== baseUrl ||
+      tabLayout.ids.length !== services.length ||
+      services.some(({ id }, index) => tabLayout.ids[index] !== id) ||
+      Object.entries(countLabels).some(
+        ([id, label]) => tabLayout.countLabels[id] !== label,
+      ))
+  ) {
+    setTabLayout({ baseUrl, ids: services.map(({ id }) => id), countLabels });
+  }
+  const previousCountLabels =
+    tabLayout.baseUrl === baseUrl ? tabLayout.countLabels : {};
   const isFiltered = hasStatusFilter(statusFilter);
   const displayedCurrentCount =
     currentCount &&
@@ -319,8 +399,14 @@ export function useServiceTabs(
   const items = [
     {
       id: ALL_TAB_ID,
-      label: tabLabel('All services', total, isLoading),
+      label: tabLabel(
+        'All services',
+        total,
+        isLoading,
+        previousCountLabels[ALL_TAB_ID],
+      ),
       href: serviceHref(baseUrl, searchParams),
+      routerOptions: { flushSync: true, preventScrollReset: true },
     },
     ...(selection.services
       ? [
@@ -328,18 +414,9 @@ export function useServiceTabs(
             id: MULTI_TAB_ID,
             label: tabLabel(
               selection.label ?? 'Selected services',
-              {
-                count: selection.services.every(
-                  ({ count }) => count !== undefined,
-                )
-                  ? selection.services.reduce(
-                      (sum, service) => sum + (service.count ?? 0),
-                      0,
-                    )
-                  : undefined,
-                accuracy: total.accuracy,
-              },
+              selectedTotal,
               isLoading,
+              previousCountLabels[MULTI_TAB_ID],
             ),
           },
         ]
@@ -356,8 +433,10 @@ export function useServiceTabs(
         isLoading,
         total.accuracy,
         selection.selectedId === service.id ? displayedCurrentCount : undefined,
+        previousCountLabels[service.id],
       ),
       href: serviceHref(baseUrl, searchParams, service.id),
+      routerOptions: { flushSync: true, preventScrollReset: true },
     })),
   ];
 

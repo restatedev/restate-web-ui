@@ -1,7 +1,7 @@
 import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PanelTable, PanelTableColumn } from '@restate/ui/table';
-import { formatDurations } from '@restate/util/intl';
+import { formatDurations, formatMilliseconds } from '@restate/util/intl';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
@@ -37,6 +37,8 @@ function Component() {
       // so don't silently re-run it just because the window regained focus
       // after switching back from another window/tab.
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: false,
     });
   const queryCLient = useQueryClient();
 
@@ -112,7 +114,7 @@ function Component() {
     [sortedItems],
   );
   const isQueryFetching = isFetching && Boolean(query);
-  const visiblePanelItems = isQueryFetching ? [] : panelItems;
+  const visiblePanelItems = isQueryFetching || error ? [] : panelItems;
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdate}>
@@ -123,9 +125,10 @@ function Component() {
               aria-label="Introspection SQL"
               columns={panelColumns}
               items={visiblePanelItems}
+              virtualized={visiblePanelItems.length > 0}
               bodyDependencies={[allColumns, error]}
               isLoading={isQueryFetching}
-              numOfRows={panelItems.length || 5}
+              numOfRows={Math.min(panelItems.length || 5, 8)}
               emptyPlaceholder={
                 error ? (
                   <EmptyState
@@ -180,7 +183,17 @@ function Component() {
                 <IntrospectionCell col={id} row={item.row} key={id} />
               )}
             />
-            <Footnote data={data} key={dataUpdate} query={query} />
+            {!isQueryFetching && (
+              <Footnote
+                data={error ? undefined : data}
+                failed={Boolean(error)}
+                durationMs={
+                  error ? error.queryDurationMs : data?.queryDurationMs
+                }
+                key={dataUpdate}
+                query={query}
+              />
+            )}
           </ContentPanelSection>
         </ContentPanelBody>
       </ContentPanel>
@@ -197,9 +210,13 @@ function Component() {
 function Footnote({
   data,
   query,
+  failed,
+  durationMs,
 }: {
   data?: ReturnType<typeof useSqlQuery>['data'];
   query?: string;
+  failed: boolean;
+  durationMs?: number;
 }) {
   const [now, setNow] = useState(() => Date.now());
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
@@ -208,7 +225,7 @@ function Footnote({
     let interval: ReturnType<typeof setInterval> | null = null;
     setNow(Date.now());
 
-    if (data) {
+    if (data || failed) {
       interval = setInterval(() => {
         setNow(Date.now());
       }, 30_000);
@@ -219,20 +236,22 @@ function Footnote({
         clearInterval(interval);
       }
     };
-  }, [data]);
+  }, [data, failed]);
 
   const parts = durationSinceLastSnapshot(now);
   const duration = formatDurations(parts);
 
-  if (!data) {
+  if (!query || (!data && !failed)) {
     return null;
   }
 
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
-      {data && (
+      {(data || failed) && (
         <div className="ml-auto">
-          {data.rows && data.rows.length > 0 ? (
+          {failed ? (
+            'Query failed'
+          ) : data?.rows && data.rows.length > 0 ? (
             <>
               <span className="font-medium text-gray-500">
                 {data.rows.length}
@@ -245,6 +264,11 @@ function Footnote({
           as of{' '}
           <span className="font-medium text-gray-500">{duration} ago</span>
         </div>
+      )}
+      {durationMs !== undefined && (
+        <span title="Elapsed time measured by your browser, including network time.">
+          Duration: {formatMilliseconds(durationMs)}
+        </span>
       )}
       <div className="flex items-center gap-1.5">
         <Download

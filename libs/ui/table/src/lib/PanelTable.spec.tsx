@@ -89,7 +89,8 @@ describe('PanelTable', () => {
     const bodyContainer = table.parentElement;
 
     expect(table.tagName).toBe('DIV');
-    expect(bodyContainer?.className).toContain('overflow-auto');
+    expect(bodyContainer?.className).toContain('overflow-x-auto');
+    expect(bodyContainer?.className).toContain('overflow-y-hidden');
     expect(bodyContainer?.className).not.toContain('max-h-');
     expect(bodyContainer?.parentElement?.className).toContain(
       'react-aria-ResizableTableContainer',

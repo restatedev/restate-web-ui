@@ -1,7 +1,8 @@
 import { DropdownMenuSelection } from '@restate/ui/dropdown';
 import { useEffect, useMemo, useCallback, useState } from 'react';
 import type { Key } from 'react-aria';
-import { useLocation, useSearchParams } from 'react-router';
+import { useLocation } from 'react-router';
+import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { useFeatures } from '@restate/data-access/admin-api';
 import { addUserCol, removeUserCol } from './userPreferences';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
@@ -133,7 +134,7 @@ export function isColumnValid(searchParams: URLSearchParams) {
 }
 
 export function useColumns() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useInvocationSearchParams();
   const location = useLocation();
   const [selectedColumns, _setSelectedColumns] = useState<ColumnKey[]>(
     () => searchParams.getAll(COLUMN_QUERY_PREFIX) as ColumnKey[],

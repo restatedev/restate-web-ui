@@ -90,7 +90,7 @@ const styles = tv({
       'pointer-events-none absolute inset-0 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] backdrop-blur-3xl backdrop-saturate-200',
     stickyHeaderContent: 'relative h-full w-full overflow-hidden',
     stickyHeaderScroll:
-      'relative h-full [scrollbar-width:none] overflow-auto [&::-webkit-scrollbar]:hidden',
+      'relative h-full [scrollbar-width:none] overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden',
     stickyHeaderTable: 'w-full border-separate border-spacing-0',
     stickyHeaderInner:
       'static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_.checkbox]:border-gray-200! [&_.checkbox]:shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]!',
@@ -100,7 +100,8 @@ const styles = tv({
       'sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)+3.25rem-var(--cp-toolbar-tuck,0px))] z-30 mx-2 mt-11 -mb-8 h-8',
     stickyToolbar:
       'relative flex h-full min-w-0 items-center gap-1.5 border-y border-blue-100 bg-blue-50/90 px-2 text-xs backdrop-blur-3xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-blue-50',
-    dataTableScroll: 'relative [scrollbar-width:thin] overflow-auto',
+    dataTableScroll:
+      'relative [scrollbar-width:thin] overflow-x-auto overflow-y-hidden',
     dataTableInner: 'w-full border-separate border-spacing-0',
     dataTableSpacerHeader:
       'invisible static z-auto h-(--panel-table-body-heading-height) w-[inherit] overflow-hidden bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_[role=columnheader]]:overflow-hidden [&_[role=columnheader]]:border-0 [&_[role=columnheader]]:p-0 [&_th]:h-(--panel-table-body-heading-height) [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',
