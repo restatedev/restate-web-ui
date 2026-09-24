@@ -74,3 +74,40 @@ describe('/version feature compatibility', () => {
     });
   });
 });
+
+describe('/query origin headers', () => {
+  beforeEach(() => setQueryClient(new QueryClient()));
+  afterEach(() => vi.unstubAllGlobals());
+
+  async function sendQuery(headers?: Record<string, string>) {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ rows: [] }));
+    vi.stubGlobal('fetch', fetch);
+    await client.POST('/query', {
+      baseUrl: 'https://restate.test',
+      body: { query: 'SELECT 1' },
+      headers,
+    });
+    return (fetch.mock.calls[0]?.[0] as Request).headers;
+  }
+
+  it('marks queries as built-in by default', async () => {
+    const headers = await sendQuery();
+    expect(headers.get('X-Restate-Query-Client')).toBe('ui');
+    expect(headers.get('X-Restate-Query-Origin')).toBe('built-in');
+  });
+
+  it('preserves an explicit origin', async () => {
+    const headers = await sendQuery({ 'X-Restate-Query-Origin': 'user' });
+    expect(headers.get('X-Restate-Query-Client')).toBe('ui');
+    expect(headers.get('X-Restate-Query-Origin')).toBe('user');
+  });
+
+  it('does not tag non-query requests', async () => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({}));
+    vi.stubGlobal('fetch', fetch);
+    await client.GET('/version', { baseUrl: 'https://restate.test' });
+    const headers = (fetch.mock.calls[0]?.[0] as Request).headers;
+    expect(headers.has('X-Restate-Query-Client')).toBe(false);
+    expect(headers.has('X-Restate-Query-Origin')).toBe(false);
+  });
+});

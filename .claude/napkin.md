@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-09-24 self on focused Nx tests: CLAUDE.md's `pnpm nx test <project> --testFile=<file>` fails under Vitest 4.1 with `Unknown option --testFile`. Pass the file as a positional filter instead: `pnpm nx test <project> -- <file>`.
+
 - 2026-09-02 PanelTable page-scroll correction (user, supersedes the bounded-body notes below): Virtualized tables must remain unbounded in normal page flow and use the page/body scroll. Do not cap the shared data container to the viewport. React Aria's `allowsWindowScrolling` mode virtualizes an unbounded collection against the window viewport; retain the horizontal overflow owner only for column scrolling and header synchronization.
 
 - 2026-09-02 PanelTable nested virtualization: React Aria 1.17 `TableLayout.buildBody` iterates the expanded-key-aware flattened body but estimates the remaining tail with `collection.size`, which counts collapsed descendants. Use the shared `PanelTableLayout` override to base tail height and loader index on the visible body iterator.

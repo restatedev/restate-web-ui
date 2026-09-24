@@ -47,6 +47,10 @@ import { useAPIStatus, useFeatures } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 import { isQueryForPath } from './queryMatchers';
+import {
+  QUERY_ORIGIN_HEADER,
+  type QueryOrigin,
+} from '@restate/data-access/query';
 
 const SERVICE_TIMESTAMP = new Map<string, Date>();
 const unsupportedMetricsBaseUrls = new Set<string>();
@@ -269,6 +273,7 @@ export function useSqlQuery(
   const queryOptions = adminApi('query', '/query', 'post', {
     baseUrl,
     body: { query },
+    headers: { [QUERY_ORIGIN_HEADER]: 'user' satisfies QueryOrigin },
   });
 
   const results = useQuery<SqlQueryData, Error & { queryDurationMs?: number }>({

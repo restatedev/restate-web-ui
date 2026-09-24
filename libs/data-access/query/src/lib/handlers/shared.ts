@@ -3,6 +3,12 @@ import semverGte from 'semver/functions/gte';
 import semverCoerce from 'semver/functions/coerce';
 import type { QueryId } from '../queryDefinitions';
 import {
+  QUERY_CLIENT,
+  QUERY_CLIENT_HEADER,
+  QUERY_ORIGIN_HEADER,
+  type QueryOrigin,
+} from '../queryOrigin';
+import {
   getCurrentQueryPage,
   recordQuery,
   type QueryOutcome,
@@ -189,6 +195,8 @@ function queryFetcher(
   const queryHeaders = new Headers(headers);
   queryHeaders.set('accept', 'application/json');
   queryHeaders.set('content-type', 'application/json');
+  queryHeaders.set(QUERY_CLIENT_HEADER, QUERY_CLIENT);
+  queryHeaders.set(QUERY_ORIGIN_HEADER, 'built-in' satisfies QueryOrigin);
 
   const url = `${baseUrl}/query`;
   return ky

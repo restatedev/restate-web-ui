@@ -3,6 +3,12 @@ import { getQueryClient } from '@restate/util/react-query';
 import { getAuthToken } from '@restate/util/api-config';
 import type { Middleware } from 'openapi-fetch';
 import type { components } from '@restate/data-access/admin-api-spec';
+import {
+  QUERY_CLIENT,
+  QUERY_CLIENT_HEADER,
+  QUERY_ORIGIN_HEADER,
+  type QueryOrigin,
+} from '@restate/data-access/query';
 import semverCoerce from 'semver/functions/coerce';
 import semverGte from 'semver/functions/gte';
 import { client } from './client';
@@ -15,12 +21,22 @@ const authMiddleware: Middleware = {
       request.headers.set('Authorization', `Bearer ${token}`);
     }
 
+    const url = new URL(request.url);
+    if (url.pathname.endsWith('/query')) {
+      request.headers.set(QUERY_CLIENT_HEADER, QUERY_CLIENT);
+      if (!request.headers.has(QUERY_ORIGIN_HEADER)) {
+        request.headers.set(
+          QUERY_ORIGIN_HEADER,
+          'built-in' satisfies QueryOrigin,
+        );
+      }
+    }
+
     // Meta headers are read by the in-browser `/query/*` handler only
     // (the real admin server ignores them). `ensureQueryData` doubles
     // as the per-baseUrl readiness gate — the first `/query/*` for a
     // never-seen env waits for `/version` to land.
-    if (new URL(request.url).pathname.includes('/query/')) {
-      const url = new URL(request.url);
+    if (url.pathname.includes('/query/')) {
       const baseUrl = `${url.protocol}//${url.host}`;
       const meta = await getQueryClient().ensureQueryData(
         metaQueryOptions(baseUrl),
