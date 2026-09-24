@@ -4,7 +4,10 @@ import { StrictMode, type PropsWithChildren } from 'react';
 import { RestateError } from '@restate/util/errors';
 import { useSqlQuery } from './hooks';
 
-const { fetchQuery } = vi.hoisted(() => ({ fetchQuery: vi.fn() }));
+const { fetchQuery, adminApiInit } = vi.hoisted(() => ({
+  fetchQuery: vi.fn(),
+  adminApiInit: vi.fn(),
+}));
 
 vi.mock('@restate/data-access/admin-api', () => ({
   useAPIStatus: () => true,
@@ -14,11 +17,14 @@ vi.mock('@restate/data-access/admin-api', () => ({
     path: string,
     method: string,
     init: { body: { query: string } },
-  ) => ({
-    queryKey: [path, method, init.body],
-    queryFn: ({ signal }: { signal: AbortSignal }) =>
-      fetchQuery(init.body.query, signal),
-  }),
+  ) => {
+    adminApiInit(init);
+    return {
+      queryKey: [path, method, init.body],
+      queryFn: ({ signal }: { signal: AbortSignal }) =>
+        fetchQuery(init.body.query, signal),
+    };
+  },
 }));
 
 function deferred<T>() {
@@ -139,5 +145,25 @@ describe('useSqlQuery duration', () => {
     now = 1000;
     await act(async () => oldRequest.resolve({ rows: [] }));
     expect(result.current.data?.queryDurationMs).toBe(30);
+  });
+});
+
+describe('useSqlQuery origin', () => {
+  it('marks explicit SQL as a user query', () => {
+    const client = new QueryClient();
+    fetchQuery.mockResolvedValue({ rows: [] });
+    const { unmount } = renderHook(() => useSqlQuery('SELECT 1'), {
+      wrapper: ({ children }: PropsWithChildren) => (
+        <QueryClientProvider client={client}>{children}</QueryClientProvider>
+      ),
+    });
+
+    expect(adminApiInit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: { 'X-Restate-Query-Origin': 'user' },
+      }),
+    );
+    unmount();
+    client.clear();
   });
 });
