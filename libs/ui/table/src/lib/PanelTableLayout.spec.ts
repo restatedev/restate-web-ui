@@ -50,6 +50,17 @@ describe('PanelTableLayout', () => {
     expect(layout.buildBodyFor(collection).layoutInfo.rect.height).toBe(88);
   });
 
+  it('does not size an empty body from the virtualizer size', () => {
+    const layout = new TestPanelTableLayout({ estimatedRowHeight: 44 });
+    const body = layout.buildBodyFor({
+      body: { key: 'body' },
+      size: 0,
+      getChildren: () => [],
+    });
+
+    expect(body.layoutInfo.rect.height).toBe(0);
+  });
+
   it.each([0, 1_000])(
     'includes measured row heights outside viewport at %i',
     (y) => {

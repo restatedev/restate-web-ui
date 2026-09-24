@@ -153,6 +153,7 @@ export function PanelTable<
   ...ariaProps
 }: PanelTableProps<T, TColId>) {
   const ariaLabel = ariaProps['aria-label'];
+  const isVirtualized = virtualized && items.length > 0;
   const {
     stickyHeaderWrapper,
     stickyHeaderBackdrop,
@@ -166,7 +167,7 @@ export function PanelTable<
     dataTableScroll,
     dataTableInner,
     dataTableSpacerHeader,
-  } = styles({ virtualized });
+  } = styles({ virtualized: isVirtualized });
 
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
     () => new Map(),
@@ -419,7 +420,7 @@ export function PanelTable<
     </AriaTable>
   );
 
-  const body = virtualized ? (
+  const body = isVirtualized ? (
     <Virtualizer layout={PanelTableLayout} layoutOptions={layoutOptions}>
       {dataTable}
     </Virtualizer>
@@ -487,7 +488,7 @@ export function PanelTable<
           </AriaToolbar>
         </div>
       )}
-      {virtualized ? (
+      {isVirtualized ? (
         <ResizableTableContainer>
           <div
             ref={setDataTableScrollEl}

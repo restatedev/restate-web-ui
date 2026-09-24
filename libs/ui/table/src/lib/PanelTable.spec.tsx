@@ -108,6 +108,28 @@ describe('PanelTable', () => {
     );
   });
 
+  it('renders an empty body without virtualization', () => {
+    const renderTable = (items: { id: string; name: string }[]) => (
+      <PanelTable
+        aria-label="Items"
+        columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+        items={items}
+        caption={<div>Table notice</div>}
+        emptyPlaceholder={<div>No items</div>}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />
+    );
+    const { rerender } = render(renderTable([{ id: 'one', name: 'One' }]));
+
+    expect(screen.getByRole('grid', { name: 'Items' }).tagName).toBe('DIV');
+
+    rerender(renderTable([]));
+
+    expect(screen.getByRole('grid', { name: 'Items' }).tagName).toBe('TABLE');
+    expect(screen.getByText('No items')).toBeTruthy();
+    expect(screen.getByText('Table notice')).toBeTruthy();
+  });
+
   it('keeps notices and quick open in caption flow before the data grid', () => {
     render(
       <PanelTable

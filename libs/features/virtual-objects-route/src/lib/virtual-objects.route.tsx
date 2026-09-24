@@ -560,7 +560,6 @@ function Component() {
                 bodyHeadingHeight={0}
                 columns={visibleColumns}
                 items={items}
-                virtualized={items.length > 0}
                 isLoading={isLoading}
                 numOfRows={Math.max(items.length, 6)}
                 caption={
