@@ -1,6 +1,6 @@
 {
   "name": "@restate/web-ui",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "license": "MIT",
   "scripts": {
     "check-licenses": "node scripts/check-licenses.js"
