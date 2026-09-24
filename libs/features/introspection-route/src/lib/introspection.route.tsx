@@ -125,7 +125,6 @@ function Component() {
               aria-label="Introspection SQL"
               columns={panelColumns}
               items={visiblePanelItems}
-              virtualized={visiblePanelItems.length > 0}
               bodyDependencies={[allColumns, error]}
               isLoading={isQueryFetching}
               numOfRows={Math.min(panelItems.length || 5, 8)}

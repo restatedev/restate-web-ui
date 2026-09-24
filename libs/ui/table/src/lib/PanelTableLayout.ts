@@ -9,15 +9,10 @@ export class PanelTableLayout<T> extends TableLayout<T> {
 
   protected override buildBody(y: number): LayoutNode {
     const collection = this.collection;
-    const virtualizer = this.virtualizer;
-    if (!virtualizer) return super.buildBody(y);
+    if (!this.virtualizer) return super.buildBody(y);
 
     const visibleRows = Array.from(
       collection.getChildren?.(collection.body.key) ?? [],
-    );
-    const visibleRowCount = visibleRows.reduce(
-      (count, node) => count + Number(node.type === 'item'),
-      0,
     );
     const rect = new Rect(this.padding, y, 0, 0);
     const layoutInfo = new LayoutInfo('rowgroup', collection.body.key, rect);
@@ -34,9 +29,7 @@ export class PanelTableLayout<T> extends TableLayout<T> {
       children.push(layoutNode);
     }
 
-    if (visibleRowCount === 0) {
-      y = virtualizer.size.height;
-    } else {
+    if (children.length > 0) {
       y -= this.gap;
     }
     rect.width = width;
