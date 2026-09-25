@@ -21,6 +21,20 @@ const ACTION_RUN_ID_KEYS = [
   'github.run.id',
 ];
 
+const GITHUB_KEYS = [...COMMIT_KEYS, ...ACTION_RUN_ID_KEYS, ...REPO_KEYS];
+
+export function getVisibleMetadataEntries(metadata?: Record<string, string>) {
+  return Object.entries(metadata ?? {}).filter(
+    ([name]) => !name.startsWith(HIDDEN_METADATA_PREFIX),
+  );
+}
+
+export function getCustomMetadataEntries(metadata?: Record<string, string>) {
+  return getVisibleMetadataEntries(metadata).filter(
+    ([name]) => !GITHUB_KEYS.includes(name),
+  );
+}
+
 export function Metadata({
   metadata: metadataList,
   className,
@@ -28,13 +42,8 @@ export function Metadata({
   metadata?: Record<string, string>;
   className?: string;
 }) {
-  const metadata = Object.entries(metadataList ?? {}).filter(
-    ([name]) => !name.startsWith(HIDDEN_METADATA_PREFIX),
-  );
-  const metadataExcludingGithub = metadata.filter(
-    ([name]) =>
-      ![...COMMIT_KEYS, ...ACTION_RUN_ID_KEYS, ...REPO_KEYS].includes(name),
-  );
+  const metadata = getVisibleMetadataEntries(metadataList);
+  const metadataExcludingGithub = getCustomMetadataEntries(metadataList);
 
   if (metadata.length > 0) {
     return (

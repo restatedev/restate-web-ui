@@ -3,17 +3,16 @@ import {
   type Deployment as DeploymentMetadata,
 } from '@restate/data-access/admin-api-spec';
 import {
-  DELETE_DEPLOYMENT_QUERY_PARAM,
   Deployment,
+  DeploymentStatusBadge,
 } from '@restate/features/deployment';
 import {
   DELETE_SELECTED_DEPLOYMENTS_QUERY,
   DeleteSelectedDeploymentsDialog,
 } from '@restate/features/prune-deployments';
-import { UPDATE_DEPLOYMENT_QUERY } from '@restate/features/register-deployment';
+import { DeploymentActions } from '@restate/features/register-deployment';
 import { useRestateContext } from '@restate/features/restate-context';
 import { MiniService } from '@restate/features/service';
-import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -25,8 +24,6 @@ import {
 } from '@restate/ui/dropdown';
 import { EmptyState } from '@restate/ui/empty-state';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { SplitButton } from '@restate/ui/split-button';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
@@ -34,15 +31,11 @@ import {
   formatNumber,
   formatPlurals,
 } from '@restate/util/intl';
-import {
-  DEPLOYMENT_QUERY_PARAM,
-  panelHref,
-  usePanel,
-} from '@restate/util/panel';
+import { deploymentHref, serviceHref } from '@restate/util/panel';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import {
   type OverviewDeployment,
@@ -106,40 +99,6 @@ const deploymentTableStyles = tv({
       'min-w-0 flex-[0_1_auto] text-[0.8125rem] font-medium text-zinc-600 [&_div:has(>svg)]:h-6 [&_div:has(>svg)]:w-6',
     deploymentId:
       'block max-w-full min-w-0 truncate rounded-md border border-zinc-200/80 bg-zinc-50/80 px-1.5 py-0.5 font-mono text-2xs font-normal text-zinc-400',
-    status: 'relative inline-flex max-w-full shrink-0 gap-1.5 py-0.5!',
-  },
-  variants: {
-    status: {
-      active: '',
-      drained: 'bg-zinc-100 text-zinc-600',
-    },
-  },
-});
-
-const deploymentStatusDotStyles = tv({
-  base: 'absolute h-2 w-2 rounded-full',
-  variants: {
-    status: {
-      active: 'bg-emerald-500',
-      drained: 'bg-zinc-400',
-    },
-    layer: {
-      solid: '',
-      pulse: 'animate-ping opacity-40',
-    },
-  },
-  compoundVariants: [
-    { status: 'drained', layer: 'pulse', className: 'hidden' },
-  ],
-});
-
-const deploymentRowActionPrimaryStyles = tv({
-  base: 'invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
-  variants: {
-    destructive: {
-      true: 'text-red-500',
-      false: 'text-blue-700',
-    },
   },
 });
 
@@ -179,35 +138,12 @@ export function getDeploymentTableRows({
   return sortDeployments(filtered, sortDescriptor);
 }
 
-function DeploymentStatus({
-  status,
-}: {
-  status: OverviewDeployment['status'];
-}) {
-  const styles = deploymentTableStyles();
-  return (
-    <Badge
-      variant={status === 'active' ? 'success' : 'default'}
-      className={styles.status({ status })}
-    >
-      <span className="relative flex h-2 w-2 items-center justify-center">
-        <span
-          className={deploymentStatusDotStyles({ status, layer: 'pulse' })}
-        />
-        <span
-          className={deploymentStatusDotStyles({ status, layer: 'solid' })}
-        />
-      </span>
-      {status === 'active' ? 'Active' : 'Drained'}
-    </Badge>
-  );
-}
-
 function DeploymentServices({
   deployment,
 }: {
   deployment: OverviewDeployment;
 }) {
+  const { baseUrl } = useRestateContext();
   const services = sortDeploymentServices(deployment.services);
   if (services.length === 0) {
     return (
@@ -242,7 +178,7 @@ function DeploymentServices({
             {services.map((service) => (
               <DropdownItem
                 key={`${service.name}-${service.revision}`}
-                href={panelHref({ service: service.name })}
+                href={serviceHref(baseUrl, { service: service.name })}
                 value={service.name}
               >
                 <MiniService
@@ -275,57 +211,6 @@ function RegisteredAt({ value }: { value: string }) {
   );
 }
 
-function DeploymentRowActions({
-  deploymentId,
-  isUpdateSupported,
-}: {
-  deploymentId: string;
-  isUpdateSupported?: boolean;
-}) {
-  const primaryAction = isUpdateSupported
-    ? {
-        href: `?${UPDATE_DEPLOYMENT_QUERY}=${deploymentId}`,
-        label: 'Update',
-        destructive: false,
-      }
-    : {
-        href: `?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deploymentId}`,
-        label: 'Delete',
-        destructive: true,
-      };
-
-  return (
-    <SplitButton
-      mini
-      menus={
-        <>
-          {isUpdateSupported && (
-            <DropdownItem href={`?${UPDATE_DEPLOYMENT_QUERY}=${deploymentId}`}>
-              Update
-            </DropdownItem>
-          )}
-          <DropdownItem
-            href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deploymentId}`}
-            destructive
-          >
-            Delete
-          </DropdownItem>
-        </>
-      }
-    >
-      <Link
-        href={primaryAction.href}
-        variant="secondary-button"
-        className={deploymentRowActionPrimaryStyles({
-          destructive: primaryAction.destructive,
-        })}
-      >
-        {primaryAction.label}
-      </Link>
-    </SplitButton>
-  );
-}
-
 export function DeploymentsTable() {
   const {
     filter,
@@ -355,7 +240,7 @@ export function DeploymentsTable() {
     new Set<string>(),
   );
   const [, setSearchParams] = useSearchParams();
-  const { isVersionGte } = useRestateContext();
+  const { isVersionGte, baseUrl } = useRestateContext();
   const isDeploymentUpdateSupported = isVersionGte?.('1.6.0');
 
   useEffect(() => {
@@ -380,7 +265,7 @@ export function DeploymentsTable() {
       { preventScrollReset: true },
     );
   };
-  const { open } = usePanel();
+  const navigate = useNavigate();
   const styles = deploymentTableStyles();
 
   return (
@@ -401,7 +286,9 @@ export function DeploymentsTable() {
           setDeploymentSortDescriptor(descriptor ?? null)
         }
         onRowAction={(deploymentId) =>
-          open(DEPLOYMENT_QUERY_PARAM, String(deploymentId))
+          navigate(
+            deploymentHref(baseUrl, { deployment: String(deploymentId) }),
+          )
         }
         rowClassName={styles.row()}
         bodyDependencies={[isDeploymentStatusLoading]}
@@ -468,7 +355,7 @@ export function DeploymentsTable() {
                 {isDeploymentStatusLoading ? (
                   <span className="block h-6 w-20 shrink-0 animate-pulse rounded-full bg-gray-200/70" />
                 ) : (
-                  <DeploymentStatus status={deployment.status} />
+                  <DeploymentStatusBadge status={deployment.status} />
                 )}
               </Cell>
             );
@@ -483,7 +370,7 @@ export function DeploymentsTable() {
           if (column.id === 'actions') {
             return (
               <Cell className="[&&&]:overflow-visible">
-                <DeploymentRowActions
+                <DeploymentActions
                   deploymentId={deployment.id}
                   isUpdateSupported={isDeploymentUpdateSupported}
                 />

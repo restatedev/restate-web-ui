@@ -11,7 +11,8 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { Deployment } from './Deployment';
 import { Revision } from './Revision';
-import { panelHref } from '@restate/util/panel';
+import { deploymentHref } from '@restate/util/panel';
+import { useRestateContext } from '@restate/features/restate-context';
 
 function useDeploymentPairs(serviceName: string) {
   const { data } = useListDeployments({ refetchOnMount: false });
@@ -44,6 +45,7 @@ export function LatestRevisionDeployment({
 }
 
 export function AllRevisions({ serviceName }: { serviceName: string }) {
+  const { baseUrl } = useRestateContext();
   const pairs = useDeploymentPairs(serviceName);
   const latest = pairs[0];
   if (!latest) return null;
@@ -68,7 +70,7 @@ export function AllRevisions({ serviceName }: { serviceName: string }) {
             {pairs.map(({ id, revision }) => (
               <DropdownItem
                 key={id}
-                href={panelHref({ deployment: id })}
+                href={deploymentHref(baseUrl, { deployment: id })}
                 value={id}
               >
                 <Deployment

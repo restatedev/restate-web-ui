@@ -4,13 +4,16 @@ import { ComponentProps, PropsWithChildren } from 'react';
 export function ProtocolTypeExplainer({
   children,
   variant,
+  className,
 }: PropsWithChildren<{
   variant?: ComponentProps<typeof InlineTooltip>['variant'];
+  className?: string;
 }>) {
   return (
     <InlineTooltip
       title="Protocol Type"
       variant={variant}
+      className={className}
       description={
         <>
           <p>
