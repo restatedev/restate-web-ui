@@ -15,7 +15,7 @@ import {
   TruncateTooltipTrigger,
   TruncateWithTooltip,
 } from '@restate/ui/tooltip';
-import { panelHref } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
 import {
   createContext,
@@ -207,7 +207,9 @@ export function ServiceTargetContent({
     ...(hasServiceKey ? [serviceKey] : []),
     ...(hasVisibleHandler ? [handler] : []),
   ].join('/');
-  const handlerHref = handler ? panelHref({ service, handler }) : undefined;
+  const handlerHref = handler
+    ? serviceHref(baseUrl, { service, handler })
+    : undefined;
   const entity = hasServiceKey
     ? getServiceTargetEntityLink({
         baseUrl,

@@ -9,7 +9,8 @@ import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Badge } from '@restate/ui/badge';
 import { Link } from '@restate/ui/link';
-import { panelHref } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
+import { useRestateContext } from '@restate/features/restate-context';
 
 const styles = tv({
   slots: {
@@ -43,6 +44,7 @@ export function Handler({
   compact?: boolean;
 }) {
   const { base, iconBox, name, link } = styles({ compact });
+  const { baseUrl } = useRestateContext();
   return (
     <div className={base({ className })}>
       <div className="flex min-w-0 flex-auto flex-row items-end gap-2">
@@ -96,7 +98,10 @@ export function Handler({
               {showLink && (
                 <Link
                   variant="icon"
-                  href={panelHref({ service, handler: handler.name })}
+                  href={serviceHref(baseUrl, {
+                    service,
+                    handler: handler.name,
+                  })}
                   className={link()}
                 >
                   <Icon
