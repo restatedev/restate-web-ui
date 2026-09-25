@@ -13,7 +13,7 @@ import { Copy } from '@restate/ui/copy';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useRestateContext } from '@restate/features/restate-context';
 import { RelativeDate, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { panelHref } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
 
 type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
 
@@ -149,7 +149,7 @@ export function VirtualObjectLockHero({
       {handler &&
         (invocation?.target_service_name ? (
           <CardLinkRow
-            href={panelHref({
+            href={serviceHref(baseUrl, {
               service: invocation.target_service_name,
               handler,
             })}

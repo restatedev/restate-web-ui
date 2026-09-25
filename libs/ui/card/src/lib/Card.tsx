@@ -1,13 +1,16 @@
+import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import {
   Children,
   createContext,
+  forwardRef,
   isValidElement,
   useContext,
   type PropsWithChildren,
   type ReactNode,
+  type Ref,
 } from 'react';
 
 export type CardIntent =
@@ -348,3 +351,94 @@ export function CardLinkRow({
     </Link>
   );
 }
+
+const cardButtonRowStyles = tv({
+  slots: {
+    shell: 'flex min-w-0',
+    button:
+      'group w-full justify-start rounded-none text-left font-normal shadow-none -outline-offset-2 transition-colors hover:bg-gray-100/70 pressed:bg-gray-200/70',
+    chevron:
+      'h-4 w-4 shrink-0 text-gray-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-gray-500',
+    stretchedRow:
+      'group relative isolate transition-colors hover:bg-gray-100/70 has-[[data-pressed]]:bg-gray-200/70',
+    stretchedButton:
+      'justify-start rounded-none border-0 p-0 text-left font-medium shadow-none -outline-offset-2 after:absolute after:inset-0 after:z-0 after:content-[""] hover:bg-transparent pressed:bg-transparent',
+    interactiveChildren:
+      'contents [&_a]:relative [&_a]:z-10 [&_button]:relative [&_button]:z-10',
+  },
+});
+
+export const CardButtonRow = forwardRef<
+  HTMLButtonElement,
+  PropsWithChildren<{
+    label?: ReactNode;
+    variant?: 'hero' | 'default';
+    showChevron?: boolean;
+    allowsInteractiveChildren?: boolean;
+    renderButton?: (button: ReactNode) => ReactNode;
+    rowRef?: Ref<HTMLDivElement>;
+    className?: string;
+    'aria-label'?: string;
+  }>
+>(function CardButtonRow(
+  {
+    label,
+    variant,
+    showChevron = true,
+    allowsInteractiveChildren = false,
+    renderButton = (button) => button,
+    rowRef,
+    className,
+    children,
+    ...rest
+  },
+  ref,
+) {
+  const styles = cardRowStyles({ variant });
+  const buttonStyles = cardButtonRowStyles();
+  const chevron = showChevron ? (
+    <Icon name={IconName.ChevronRight} className={buttonStyles.chevron()} />
+  ) : null;
+
+  if (allowsInteractiveChildren) {
+    return (
+      <div
+        ref={rowRef}
+        className={styles.base({
+          className: buttonStyles.stretchedRow({ className }),
+        })}
+      >
+        {renderButton(
+          <Button
+            ref={ref}
+            variant="icon"
+            {...rest}
+            className={styles.label({
+              className: buttonStyles.stretchedButton(),
+            })}
+          >
+            {label}
+          </Button>,
+        )}
+        <div className={buttonStyles.interactiveChildren()}>{children}</div>
+        {chevron}
+      </div>
+    );
+  }
+
+  return (
+    <div className={buttonStyles.shell({ className })}>
+      <Button
+        ref={ref}
+        variant="icon"
+        {...rest}
+        className={styles.base({ className: buttonStyles.button() })}
+      >
+        {label && <span className={styles.label()}>{label}</span>}
+        {children}
+        {!label && <span className="min-w-2 flex-auto" />}
+        {chevron}
+      </Button>
+    </div>
+  );
+});

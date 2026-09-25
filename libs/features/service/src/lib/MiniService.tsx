@@ -2,11 +2,11 @@ import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Service } from '@restate/data-access/admin-api-spec';
-import { panelHref } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
+import { useRestateContext } from '@restate/features/restate-context';
 import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
 import { Revision } from '@restate/features/deployment';
-import { useSearchParams } from 'react-router';
 
 const styles = tv({
   base: 'relative -m-1 flex flex-row items-center gap-2 p-1',
@@ -22,7 +22,7 @@ export function MiniService({
   showLink?: boolean;
 }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
-  const [searchParams] = useSearchParams();
+  const { baseUrl } = useRestateContext();
 
   return (
     <div className={styles({ className })}>
@@ -45,10 +45,7 @@ export function MiniService({
           ref={linkRef}
           aria-label={service.name}
           variant="secondary"
-          href={panelHref(
-            { service: service.name },
-            { existingParams: searchParams },
-          )}
+          href={serviceHref(baseUrl, { service: service.name })}
           className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
         >
           <Icon
