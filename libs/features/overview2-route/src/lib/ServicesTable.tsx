@@ -37,12 +37,7 @@ import {
   toServiceInvocationsHref,
 } from '@restate/util/invocation-links';
 import { useOnboarding } from '@restate/util/feature-flag';
-import {
-  HANDLER_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-  panelHref,
-  usePanel,
-} from '@restate/util/panel';
+import { panelHref, serviceHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
 import {
   Collection,
@@ -50,6 +45,7 @@ import {
   type SortDescriptor,
 } from 'react-aria-components';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { sortServices } from './sortServices';
 
@@ -291,6 +287,7 @@ function ServiceIdentity({
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
   const styles = tableStyles();
+  const { baseUrl } = useRestateContext();
   return (
     <div className={styles.serviceIdentity()}>
       {row.handlers.length > 0 ? (
@@ -305,7 +302,7 @@ function ServiceIdentity({
         serviceType={row.ty}
         links={{
           service: {
-            href: panelHref({ service: row.name }),
+            href: serviceHref(baseUrl, { service: row.name }),
             ariaLabel: `Open service ${row.name}`,
           },
         }}
@@ -475,7 +472,7 @@ export function ServicesTable() {
   } = useOverviewContext();
   const { OnboardingGuide } = useRestateContext();
   const isOnboarding = useOnboarding();
-  const { open } = usePanel();
+  const navigate = useNavigate();
   const notCompletedInvocationCounts = useMemo(
     () =>
       new Map(
@@ -573,14 +570,17 @@ export function ServicesTable() {
       onRowAction={(rowId) => {
         const service = serviceRows.get(String(rowId));
         if (service) {
-          open(SERVICE_QUERY_PARAM, service.name);
+          navigate(serviceHref(baseUrl, { service: service.name }));
           return;
         }
         const handler = handlerRows.get(String(rowId));
         if (handler) {
-          open(SERVICE_QUERY_PARAM, handler.service.name, {
-            [HANDLER_QUERY_PARAM]: handler.handler.name,
-          });
+          navigate(
+            serviceHref(baseUrl, {
+              service: handler.service.name,
+              handler: handler.handler.name,
+            }),
+          );
         }
       }}
       rowClassName={styles.row()}
