@@ -12,7 +12,17 @@ import { Link } from '@restate/ui/link';
 import { panelHref } from '@restate/util/panel';
 
 const styles = tv({
-  base: 'relative flex flex-row flex-wrap items-center pr-2',
+  slots: {
+    base: 'relative flex flex-row flex-wrap items-center pr-2',
+    iconBox: 'flex h-[1.75rem] items-center',
+    name: 'min-w-0 flex-auto text-0.5xs leading-[1.75rem] font-medium text-zinc-600 italic',
+    link: "my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:bg-transparent hover:before:bg-black/3",
+  },
+  variants: {
+    compact: {
+      true: { iconBox: 'h-6.5', name: 'leading-6.5', link: 'my-0' },
+    },
+  },
 });
 
 export function Handler({
@@ -22,6 +32,7 @@ export function Handler({
   serviceType,
   showLink,
   showType = true,
+  compact = false,
 }: {
   handler: HandlerType;
   className?: string;
@@ -29,11 +40,13 @@ export function Handler({
   serviceType?: ServiceType;
   showLink?: boolean;
   showType?: boolean;
+  compact?: boolean;
 }) {
+  const { base, iconBox, name, link } = styles({ compact });
   return (
-    <div className={styles({ className })}>
+    <div className={base({ className })}>
       <div className="flex min-w-0 flex-auto flex-row items-end gap-2">
-        <div className="flex h-[1.75rem] items-center">
+        <div className={iconBox()}>
           <div
             className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs"
             data-icon
@@ -58,7 +71,7 @@ export function Handler({
                 </HandlerTypeExplainer>
               </Badge>
             )}
-          <div className="min-w-0 flex-auto text-0.5xs leading-[1.75rem] font-medium text-zinc-600 italic">
+          <div className={name()}>
             <span className="flex items-center">
               <TruncateWithTooltip copyText={handler.name}>
                 {handler.name}
@@ -84,7 +97,7 @@ export function Handler({
                 <Link
                   variant="icon"
                   href={panelHref({ service, handler: handler.name })}
-                  className="my-0.5 ml-auto shrink-0 rounded-full before:absolute before:-top-0.5 before:-right-1 before:-bottom-0.5 before:-left-1 before:z-[0] before:rounded-lg before:content-[''] hover:bg-transparent hover:before:bg-black/3"
+                  className={link()}
                 >
                   <Icon
                     name={IconName.ChevronRight}
