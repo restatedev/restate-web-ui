@@ -493,7 +493,7 @@ function renderCell(
               id={row.id}
               popover={false}
               truncateInMiddle
-              className="max-w-full min-w-0 shrink overflow-hidden"
+              className="my-0 max-w-full min-w-0 shrink overflow-hidden"
             />
             <QueueStatus row={row} />
           </span>

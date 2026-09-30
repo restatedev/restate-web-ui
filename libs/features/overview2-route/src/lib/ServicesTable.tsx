@@ -340,6 +340,7 @@ function HandlerIdentity({
         serviceType={service.ty}
         showLink
         showType={false}
+        compact
         className={styles.handler()}
       />
       <PlaygroundLink
