@@ -478,8 +478,8 @@ function renderStatsCell(
     case 'query':
       return (
         <Cell>
-          <div className="flex min-w-0 flex-col">
-            <span className="min-w-0 font-mono text-xs text-gray-700">
+          <div className="flex min-w-0 items-baseline gap-2">
+            <span className="max-w-[65%] min-w-0 shrink-0 font-mono text-xs text-gray-700">
               <TruncateWithTooltip
                 alwaysShow
                 size="lg"
@@ -499,7 +499,7 @@ function renderStatsCell(
                 </span>
               </TruncateWithTooltip>
             </span>
-            <span className="flex min-w-0 items-center gap-1.5 text-2xs text-gray-400">
+            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-2xs text-gray-400">
               <TruncateWithTooltip hideCopy tooltipContent={stat.description}>
                 {stat.description}
               </TruncateWithTooltip>

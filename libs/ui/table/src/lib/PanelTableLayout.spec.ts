@@ -1,5 +1,14 @@
-import { LayoutInfo, Rect, Size } from 'react-aria-components';
+import { LayoutInfo, Rect, Size, TableLayout } from 'react-aria-components';
 import { PanelTableLayout } from './PanelTableLayout';
+import { afterFastScroll, isScrollingFast } from './scrollSpeed';
+
+vi.mock('./scrollSpeed', () => ({
+  isScrollingFast: vi.fn(() => false),
+  afterFastScroll: vi.fn(),
+}));
+
+const scrollingFast = vi.mocked(isScrollingFast);
+const whenSettled = vi.mocked(afterFastScroll);
 
 class TestPanelTableLayout extends PanelTableLayout<unknown> {
   rowHeights = new Map<string, number>();
@@ -35,6 +44,72 @@ class TestPanelTableLayout extends PanelTableLayout<unknown> {
 }
 
 describe('PanelTableLayout', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    scrollingFast.mockReturnValue(false);
+    whenSettled.mockClear();
+  });
+
+  it('keeps the rendered rows while the page scrolls fast', () => {
+    const visible = vi
+      .spyOn(TableLayout.prototype, 'getVisibleLayoutInfos')
+      .mockReturnValue([]);
+    const layout = new PanelTableLayout();
+
+    layout.getVisibleLayoutInfos(new Rect(0, 0, 800, 1000));
+    scrollingFast.mockReturnValue(true);
+    layout.getVisibleLayoutInfos(new Rect(0, 3000, 800, 1000));
+    scrollingFast.mockReturnValue(false);
+    layout.getVisibleLayoutInfos(new Rect(0, 3200, 800, 1000));
+
+    expect(visible.mock.calls.map(([rect]) => rect)).toEqual([
+      new Rect(0, 0, 800, 1000),
+      new Rect(0, 0, 800, 1000),
+      new Rect(0, 3200, 800, 1000),
+    ]);
+  });
+
+  it('catches up once when fast scrolling ends without another scroll event', () => {
+    vi.spyOn(TableLayout.prototype, 'getVisibleLayoutInfos').mockReturnValue(
+      [],
+    );
+    const layout = new PanelTableLayout();
+    const invalidate = vi.fn();
+    layout.virtualizer = { invalidate } as unknown as NonNullable<
+      typeof layout.virtualizer
+    >;
+
+    layout.getVisibleLayoutInfos(new Rect(0, 5000, 800, 1000));
+    scrollingFast.mockReturnValue(true);
+    layout.getVisibleLayoutInfos(new Rect(0, 0, 800, 1000));
+    layout.getVisibleLayoutInfos(new Rect(0, 0, 800, 1000));
+
+    expect(whenSettled).toHaveBeenCalledTimes(1);
+    expect(invalidate).not.toHaveBeenCalled();
+
+    whenSettled.mock.calls[0]?.[0]();
+
+    expect(invalidate).toHaveBeenCalledWith({ itemSizeChanged: true });
+  });
+
+  it('follows width changes and point queries while scrolling fast', () => {
+    const visible = vi
+      .spyOn(TableLayout.prototype, 'getVisibleLayoutInfos')
+      .mockReturnValue([]);
+    const layout = new PanelTableLayout();
+
+    layout.getVisibleLayoutInfos(new Rect(0, 0, 800, 1000));
+    scrollingFast.mockReturnValue(true);
+    layout.getVisibleLayoutInfos(new Rect(0, 3000, 640, 1000));
+    layout.getVisibleLayoutInfos(new Rect(20, 9000, 1, 1));
+
+    expect(visible.mock.calls.map(([rect]) => rect)).toEqual([
+      new Rect(0, 0, 800, 1000),
+      new Rect(0, 3000, 640, 1000),
+      new Rect(20, 9000, 1, 1),
+    ]);
+  });
+
   it('estimates the body height from visible rows instead of collapsed rows', () => {
     const visibleRows = [
       { key: 'parent-one', type: 'item' },
@@ -81,6 +156,18 @@ describe('PanelTableLayout', () => {
       expect(body.children?.at(-1)?.layoutInfo.rect.maxY).toBe(590);
     },
   );
+
+  it('keeps measured rows when only the unbounded body height changes', () => {
+    const layout = new TestPanelTableLayout({ estimatedRowHeight: 44 });
+    const previous = new Rect(0, 0, 800, 11_000);
+
+    expect(layout.shouldInvalidate(new Rect(0, 0, 800, 11_024), previous)).toBe(
+      false,
+    );
+    expect(layout.shouldInvalidate(new Rect(0, 0, 640, 11_000), previous)).toBe(
+      true,
+    );
+  });
 
   it('lays out the full collection before publishing its content size', () => {
     const rows = [{ key: 'one', type: 'item' }];

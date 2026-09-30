@@ -110,7 +110,7 @@ const styles = tv({
     virtualized: {
       true: {
         dataTableInner:
-          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
+          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]>[role=presentation]]:bg-gray-50 [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
       },
     },
   },
@@ -146,7 +146,7 @@ export function PanelTable<
   toolbarWrapperClassName,
   toolbarClassName,
   virtualized = true,
-  estimatedRowHeight = 44,
+  estimatedRowHeight = 43,
   bodyHeadingHeight = 36,
   bodyContainerClassName,
   caption,
@@ -380,8 +380,45 @@ export function PanelTable<
     () => ({ estimatedRowHeight, headingHeight: bodyHeadingHeight }),
     [bodyHeadingHeight, estimatedRowHeight],
   );
+  const skeletonStyle = useMemo(() => {
+    if (!isVirtualized) return undefined;
+    const height = estimatedRowHeight;
+    const barHeight = 12;
+    const barY = Math.round((height - barHeight) / 2);
+    const shapes: string[] = [];
+    let x = SPACER_WIDTH;
+    if (dataTableSelectionWidth) {
+      shapes.push(
+        `<rect x='${x + 10}' y='${Math.round((height - 16) / 2)}' width='16' height='16' rx='4'/>`,
+      );
+      x += dataTableSelectionWidth;
+    }
+    for (const col of columns) {
+      const width = columnWidths.get(col.id) ?? col.width ?? 120;
+      const bar = Math.min(width - 24, Math.round(width * 0.6));
+      if (!col.hideLabel && bar >= 12) {
+        shapes.push(
+          `<rect x='${x + 8}' y='${barY}' width='${bar}' height='${barHeight}' rx='6'/>`,
+        );
+      }
+      x += width;
+    }
+    const total = Math.ceil(x + SPACER_WIDTH);
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${total}' height='${height}'><g fill='#e2e8f0' fill-opacity='0.7'>${shapes.join('')}</g><rect y='${height - 1}' width='${total}' height='1' fill='#e5e7eb'/></svg>`;
+    return {
+      '--panel-table-skeleton': `url("data:image/svg+xml,${encodeURIComponent(svg)}")`,
+      '--panel-table-skeleton-size': `${total}px ${height}px`,
+    };
+  }, [
+    isVirtualized,
+    estimatedRowHeight,
+    dataTableSelectionWidth,
+    columns,
+    columnWidths,
+  ]);
   const bodyHeadingStyle = {
     '--panel-table-body-heading-height': `${bodyHeadingHeight}px`,
+    ...skeletonStyle,
   } as CSSProperties;
 
   const dataTable = (
