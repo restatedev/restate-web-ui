@@ -10,7 +10,7 @@ import { useApiSpec } from './ServicePlayground';
 const OPERATION_HASH_PREFIX = '#/operations/';
 
 const styles = tv({
-  base: 'm-2 h-[calc(100dvh-var(--cp-content-top,0px)-1rem)] min-h-[32rem] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs [&_.HttpOperation_h1]:hidden! [&_.sl-py-16]:py-8!',
+  base: '@container mx-4 mt-px mb-4 h-[calc(100dvh-var(--cp-content-top,0px)-1rem-1px)] min-h-[32rem] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xs [&_.HttpOperation_h1]:hidden! @max-[56rem]:[&_.sl-elements-api>*:first-child]:hidden! @max-[56rem]:[&_.sl-elements-api>*:nth-child(2)]:px-4! @max-[56rem]:[&_.sl-elements-api>*:nth-child(2)>*]:pt-4! @max-[56rem]:[&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse! @max-[56rem]:[&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0! @max-[56rem]:[&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full! @max-[56rem]:[&_.sl-ml-16]:ml-0! @max-[56rem]:[&_.sl-ml-16]:w-full! @max-[56rem]:[&_.sl-ml-16]:max-w-none! [&_.sl-py-16]:py-8! @max-[56rem]:[&_.sl-stack--8]:gap-6!',
 });
 
 function operationFromHash() {
@@ -97,6 +97,7 @@ export function ServicePlaygroundEmbed({
         <API
           apiDescriptionDocument={apiSpec}
           key={mountKey}
+          layout="sidebar"
           tryItFetcher={tryItFetcher}
         />
       ) : isFetching || mountKey === undefined ? (

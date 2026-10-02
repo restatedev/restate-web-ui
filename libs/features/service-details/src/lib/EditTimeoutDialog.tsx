@@ -5,7 +5,7 @@ import {
   QueryDialog,
 } from '@restate/ui/dialog';
 import { SERVICE_TIMEOUT_EDIT } from './constants';
-import { FormEvent, useId } from 'react';
+import { FormEvent, useId, useState } from 'react';
 import { useFilter } from 'react-aria';
 import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,6 +26,10 @@ import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
+import {
+  AbortTimeoutIllustration,
+  InactivityTimeoutIllustration,
+} from './illustrations';
 
 export function EditTimeoutDialog() {
   const formId = useId();
@@ -93,6 +97,11 @@ export function EditTimeoutDialog() {
   };
 
   const isPendingOrSubmitting = isPending || isSubmitting;
+  const [draft, setDraft] = useState<{ inactivity?: string; abort?: string }>(
+    {},
+  );
+  const inactivityPreview = draft.inactivity ?? data?.inactivity_timeout;
+  const abortPreview = draft.abort ?? data?.abort_timeout;
 
   return (
     <QueryDialog query={SERVICE_TIMEOUT_EDIT}>
@@ -148,6 +157,9 @@ export function EditTimeoutDialog() {
               allowsCustomValue
               defaultFilter={startsWith}
               defaultValue={data?.inactivity_timeout ?? ''}
+              onChange={(value) =>
+                setDraft((old) => ({ ...old, inactivity: value }))
+              }
               disabled={isPendingOrSubmitting}
               label={
                 <InlineTooltip
@@ -195,6 +207,9 @@ export function EditTimeoutDialog() {
               disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
               defaultValue={data?.abort_timeout ?? ''}
+              onChange={(value) =>
+                setDraft((old) => ({ ...old, abort: value }))
+              }
               placeholder="1m"
               label={
                 <InlineTooltip
@@ -233,6 +248,13 @@ export function EditTimeoutDialog() {
                 <ComboBoxItem value="1day">1day</ComboBoxItem>
               </ComboBoxSection>
             </FormFieldCombobox>
+            <div className="flex flex-col gap-6 rounded-xl bg-gray-100 px-3 pt-3 pb-2">
+              <InactivityTimeoutIllustration inactivity={inactivityPreview} />
+              <AbortTimeoutIllustration
+                inactivity={inactivityPreview}
+                abort={abortPreview}
+              />
+            </div>
           </Form>
           <DialogFooter>
             <div className="flex flex-col gap-2">
