@@ -2,7 +2,7 @@ import type {
   components,
   Invocation,
 } from '@restate/data-access/admin-api-spec';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { VirtualObjectLockHero } from './VirtualObjectLockHero';
@@ -68,11 +68,16 @@ describe('VirtualObjectLockHero', () => {
 
     const pausedError = screen.getByRole('button', { name: 'after…' });
     expect(pausedError.closest('a')).toBeNull();
-    expect(
-      screen.getByRole('link', {
-        name: `Open invocation ${invocation.id}`,
-      }),
-    ).toBeTruthy();
+    const invocationLink = screen.getByRole('link', {
+      name: `Open invocation ${invocation.id}`,
+    });
+    expect(invocationLink.textContent).toBe(invocation.id);
+    const invocationRow = invocationLink.closest('div');
+    if (!invocationRow) throw new Error('Invocation row was not rendered');
+    const copy = within(invocationRow).getByRole('button', { name: 'Copy' });
+    expect(copy.closest('a')).toBeNull();
+    await user.click(copy);
+    expect(await navigator.clipboard.readText()).toBe(invocation.id);
     expect(apiHooks.useGetPausedError).toHaveBeenLastCalledWith(
       invocation.id,
       expect.objectContaining({ enabled: false }),

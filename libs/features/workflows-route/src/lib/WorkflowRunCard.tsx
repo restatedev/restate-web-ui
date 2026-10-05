@@ -7,6 +7,7 @@ import {
 } from '@restate/features/invocation-ui';
 import { LimitKey } from '@restate/features/vqueue-ui';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
+import { Copy } from '@restate/ui/copy';
 import { Icon, IconName } from '@restate/ui/icons';
 import { RelativeDate } from '@restate/ui/tooltip';
 import {
@@ -58,11 +59,17 @@ export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
         variant="hero"
         href={`${baseUrl}/invocations/${invocation.id}`}
         aria-label={`Open invocation ${invocation.id}`}
+        allowsInteractiveChildren
         className="flex-wrap gap-y-1"
+        labelAction={
+          <Copy
+            copyText={invocation.id}
+            className="ml-0 p-1 text-zinc-400 [&_svg]:h-3.5 [&_svg]:w-3.5"
+          />
+        }
         label={
           <InvocationId
             id={invocation.id}
-            truncateInMiddle
             popover={false}
             link={false}
             className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-zinc-400"
