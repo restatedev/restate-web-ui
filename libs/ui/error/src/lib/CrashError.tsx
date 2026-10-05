@@ -1,14 +1,10 @@
-import { useRouteError } from 'react-router';
+import { isRouteErrorResponse, useRouteError } from 'react-router';
 import { isUnauthorizedError } from '@restate/util/errors';
 import { Link } from '@restate/ui/link';
-import {
-  Popover,
-  PopoverContent,
-  PopoverHoverTrigger,
-} from '@restate/ui/popover';
 import { Button } from '@restate/ui/button';
 import { Copy } from '@restate/ui/copy';
-import { ErrorBanner } from './ErrorBanner';
+import { EmptyState } from '@restate/ui/empty-state';
+import { IconName } from '@restate/ui/icons';
 
 interface CrashErrorProps {
   supportHref?: string;
@@ -24,47 +20,45 @@ export function CrashError({
     return null;
   }
 
-  const errorWithStack = new Error(
-    [(error as Error)?.message, (error as Error)?.stack]
-      .filter(Boolean)
-      .join('\n\n'),
-  );
+  const details =
+    error instanceof Error
+      ? (error.stack ?? error.message)
+      : isRouteErrorResponse(error)
+        ? `${error.status} ${error.statusText}`
+        : String(error);
+
   return (
-    <div className="flex flex-col items-center text-center">
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-        Oops something went{' '}
-        <Popover>
-          <PopoverHoverTrigger>
-            <Button
-              variant="icon"
-              className="mx-[-0.1em] inline-block h-full rounded-sm px-[0.1em] [font-size:inherit] text-red-700 [font-style:inherit] underline decoration-red-300 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-red-100 pressed:bg-red-100"
-            >
-              wrong!
-            </Button>
-          </PopoverHoverTrigger>
-          <PopoverContent className="max-w-2xl">
-            <ErrorBanner
-              error={errorWithStack}
-              className="pr-16 font-mono whitespace-pre [&_output]:max-h-64"
-            />
-            <Copy
-              copyText={String(errorWithStack)}
-              className="absolute top-1 right-2"
-            />
-          </PopoverContent>
-        </Popover>
-      </h1>
-      <p className="mt-6 text-base leading-7 text-gray-500">
-        Sorry, we couldn’t load what you’re looking for.
-      </p>
-      <div className="mt-10 flex items-center justify-center gap-x-6">
-        <Link variant="button" href="/">
-          Go back home
+    <EmptyState
+      icon={IconName.TriangleAlert}
+      intent="warning"
+      title="This page couldn’t be displayed"
+      description="Something went wrong in the UI while showing this page. Your Restate services and invocations are not affected and keep running."
+      contentClassName="max-w-lg"
+    >
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <Button onClick={() => window.location.reload()}>Reload page</Button>
+        <Link variant="secondary-button" href="/">
+          Go to home
         </Link>
-        <a href={supportHref} className="text-sm font-semibold text-gray-500">
-          Contact support <span aria-hidden="true">&rarr;</span>
-        </a>
       </div>
-    </div>
+      <details className="w-full text-left">
+        <summary className="mx-auto w-fit cursor-pointer rounded-md px-2 py-1 text-xs text-gray-500 hover:text-gray-700">
+          Error details
+        </summary>
+        <div className="relative mt-2">
+          <pre className="max-h-64 overflow-auto rounded-xl border border-gray-200 bg-white p-3 pr-10 font-mono text-xs leading-relaxed break-all whitespace-pre-wrap text-gray-600 shadow-xs">
+            {details}
+          </pre>
+          <Copy copyText={details} className="absolute top-1.5 right-1.5" />
+        </div>
+      </details>
+      <p className="text-xs text-gray-500">
+        If this keeps happening,{' '}
+        <Link variant="secondary" href={supportHref}>
+          let us know
+        </Link>{' '}
+        and include the error details.
+      </p>
+    </EmptyState>
   );
 }

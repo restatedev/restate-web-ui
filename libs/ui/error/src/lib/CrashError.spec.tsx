@@ -29,13 +29,13 @@ describe('CrashError', () => {
   it('links to GitHub issues by default', () => {
     renderCrash(new Error('Boom'));
 
-    expect(screen.getByRole('heading').textContent).toContain(
-      'Oops something went',
+    expect(screen.getByRole('heading').textContent).toBe(
+      'This page couldn’t be displayed',
     );
+    expect(screen.getByText(/not affected/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Reload page' })).toBeTruthy();
     expect(
-      screen
-        .getByRole('link', { name: /Contact support/ })
-        .getAttribute('href'),
+      screen.getByRole('link', { name: 'let us know' }).getAttribute('href'),
     ).toBe('https://github.com/restatedev/restate/issues/new');
   });
 
@@ -43,9 +43,7 @@ describe('CrashError', () => {
     renderCrash(new Error('Boom'), 'mailto:cloud@restate.dev');
 
     expect(
-      screen
-        .getByRole('link', { name: /Contact support/ })
-        .getAttribute('href'),
+      screen.getByRole('link', { name: 'let us know' }).getAttribute('href'),
     ).toBe('mailto:cloud@restate.dev');
   });
 
