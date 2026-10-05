@@ -23,6 +23,7 @@ import { Cell, Row } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
 import { PanelTableLayout } from './PanelTableLayout';
+import { columnKey, fromColumnKey, tableBodyKeyProps } from './keys';
 
 export interface PanelTableColumn<TId extends string = string> {
   id: TId;
@@ -244,18 +245,28 @@ export function PanelTable<
 
   const handleSortChange = useCallback(
     (descriptor: SortDescriptor) => {
-      const column = columns.find(({ id }) => id === descriptor.column);
+      const columnId = fromColumnKey(descriptor.column);
+      const column = columns.find(({ id }) => id === columnId);
       if (!column || !onSortChange) return;
       onSortChange(
         getNextSortDescriptor(
           sortDescriptor,
-          descriptor.column,
+          columnId,
           column.preferredSortDirection,
           column.sortDirections,
         ),
       );
     },
     [columns, onSortChange, sortDescriptor],
+  );
+
+  const stickyHeaderSortDescriptor = useMemo(
+    () =>
+      sortDescriptor && {
+        ...sortDescriptor,
+        column: columnKey(sortDescriptor.column),
+      },
+    [sortDescriptor],
   );
 
   const stickyHeaderItems = useMemo(() => items.slice(0, 2), [items]);
@@ -296,7 +307,7 @@ export function PanelTable<
 
   const leadingColumn = (
     <AriaColumn
-      id={LEFT_SPACER_ID}
+      id={columnKey(LEFT_SPACER_ID)}
       width={SPACER_WIDTH}
       minWidth={SPACER_WIDTH}
       className="p-0"
@@ -312,7 +323,7 @@ export function PanelTable<
         className={
           typeof rowClassName === 'function' ? rowClassName(item) : rowClassName
         }
-        leadingCell={<Cell />}
+        hasLeadingCell
         childRows={renderChildRows?.(item, dataTableColumns)}
       >
         {(col) => {
@@ -337,7 +348,7 @@ export function PanelTable<
     cols: PanelTableColumn[],
   ) =>
     cols.map((col) => {
-      const synced = columnWidths.get(col.id);
+      const synced = columnWidths.get(columnKey(col.id));
       const isFixed = typeof col.width === 'number';
       const widthProps: Pick<
         AriaColumnProps,
@@ -355,7 +366,7 @@ export function PanelTable<
       return (
         <Column
           key={col.id}
-          id={col.id}
+          id={columnKey(col.id)}
           isRowHeader={col.isRowHeader}
           allowsSorting={
             variant === 'stickyHeader' &&
@@ -394,7 +405,7 @@ export function PanelTable<
       x += dataTableSelectionWidth;
     }
     for (const col of columns) {
-      const width = columnWidths.get(col.id) ?? col.width ?? 120;
+      const width = columnWidths.get(columnKey(col.id)) ?? col.width ?? 120;
       const bar = Math.min(width - 24, Math.round(width * 0.6));
       if (!col.hideLabel && bar >= 12) {
         shapes.push(
@@ -429,7 +440,7 @@ export function PanelTable<
       selectedKeys={selectedKeys}
       onSelectionChange={handleSelectionChange}
       onRowAction={onRowAction}
-      treeColumn={treeColumn}
+      treeColumn={treeColumn == null ? treeColumn : columnKey(treeColumn)}
       expandedKeys={expandedKeys}
       defaultExpandedKeys={defaultExpandedKeys}
       onExpandedChange={onExpandedChange}
@@ -450,7 +461,7 @@ export function PanelTable<
         numOfColumns={dataTableColumns.length}
         numOfRows={numOfRows}
         emptyPlaceholder={emptyPlaceholder}
-        loadingLeadingCell={<Cell />}
+        hasLoadingLeadingCell
       >
         {renderBodyRow}
       </TableBody>
@@ -477,7 +488,7 @@ export function PanelTable<
                 selectionMode={selectionMode}
                 selectedKeys={stickyHeaderSelectedKeys}
                 onSelectionChange={handleSelectionChange}
-                sortDescriptor={sortDescriptor}
+                sortDescriptor={stickyHeaderSortDescriptor}
                 onSortChange={handleSortChange}
                 className={stickyHeaderTable()}
               >
@@ -492,6 +503,7 @@ export function PanelTable<
                   {renderColumns('stickyHeader', columns)}
                 </TableHeader>
                 <AriaTableBody
+                  {...tableBodyKeyProps}
                   items={stickyHeaderItems}
                   dependencies={[columns]}
                 >

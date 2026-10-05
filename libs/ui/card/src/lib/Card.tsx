@@ -184,6 +184,9 @@ const cardRowStyles = tv({
   base: 'flex min-w-0 items-center gap-3 px-3',
   slots: {
     label: 'flex-auto shrink-0 font-medium',
+    stretchedLink:
+      "rounded-none no-underline -outline-offset-2 after:absolute after:inset-0 after:z-0 after:content-['']",
+    labelAction: 'relative z-10 flex shrink-0',
   },
   variants: {
     variant: {
@@ -241,10 +244,12 @@ type CardLinkRowProps = PropsWithChildren<
     | {
         allowsInteractiveChildren: true;
         'aria-label': string;
+        labelAction?: ReactNode;
       }
     | {
         allowsInteractiveChildren?: false;
         'aria-label'?: string;
+        labelAction?: never;
       }
   )
 >;
@@ -256,6 +261,7 @@ export function CardLinkRow({
   variant,
   showChevron = true,
   allowsInteractiveChildren = false,
+  labelAction,
   className,
   children,
 }: CardLinkRowProps) {
@@ -284,19 +290,36 @@ export function CardLinkRow({
   });
 
   if (allowsInteractiveChildren) {
-    const stretchedLink = (
-      <Link
-        href={href}
-        variant="secondary"
-        aria-label={ariaLabel}
-        className={[
-          label ? styles.label() : 'min-w-2 flex-auto',
-          "rounded-none no-underline -outline-offset-2 after:absolute after:inset-0 after:z-0 after:content-['']",
-        ].join(' ')}
-      >
-        {label}
-      </Link>
-    );
+    const stretchedLink =
+      label && labelAction ? (
+        <span
+          className={styles.label({ className: 'flex items-center gap-1' })}
+        >
+          <Link
+            href={href}
+            variant="secondary"
+            aria-label={ariaLabel}
+            className={styles.stretchedLink({
+              className: 'min-w-0 text-inherit',
+            })}
+          >
+            {label}
+          </Link>
+          <span className={styles.labelAction()}>{labelAction}</span>
+        </span>
+      ) : (
+        <Link
+          href={href}
+          variant="secondary"
+          aria-label={ariaLabel}
+          className={[
+            label ? styles.label() : 'min-w-2 flex-auto',
+            styles.stretchedLink(),
+          ].join(' ')}
+        >
+          {label}
+        </Link>
+      );
     return (
       <div
         className={[

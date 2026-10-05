@@ -22,6 +22,7 @@ import {
   useState,
 } from 'react';
 import type { Key } from 'react-aria-components';
+import { internalCellKey } from './keys';
 
 const rowStyles = tv({
   extend: focusRing,
@@ -34,7 +35,7 @@ interface RowProps<T extends object> extends Pick<
 > {
   className?: string;
   ref?: Ref<HTMLTableRowElement>;
-  leadingCell?: ReactNode;
+  hasLeadingCell?: boolean;
   childRows?: ReactNode;
 }
 
@@ -65,7 +66,7 @@ export function Row<T extends { id?: string }>({
   children,
   className,
   ref,
-  leadingCell,
+  hasLeadingCell,
   childRows,
   ...otherProps
 }: RowProps<T>) {
@@ -78,14 +79,17 @@ export function Row<T extends { id?: string }>({
       {...otherProps}
       className={rowStyles({ className })}
     >
-      {leadingCell}
+      {hasLeadingCell && <Cell id={internalCellKey(id, 'leading')} />}
       {allowsDragging && (
-        <Cell>
+        <Cell id={internalCellKey(id, 'drag')}>
           <Button slot="drag">≡</Button>
         </Cell>
       )}
       {selectionBehavior === 'toggle' && (
-        <Cell className="items-start pt-2.5 align-baseline">
+        <Cell
+          id={internalCellKey(id, 'selection')}
+          className="items-start pt-2.5 align-baseline"
+        >
           <SelectionCheckbox rowKey={id} />
         </Cell>
       )}

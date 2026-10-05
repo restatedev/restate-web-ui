@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { Collection } from 'react-aria-components';
 import { vi } from 'vitest';
-import { Cell } from './Row';
+import { Cell, Row } from './Row';
 import { PanelTable } from './PanelTable';
 import { PanelTableQuickOpenCaption } from './PanelTableQuickOpen';
 
@@ -187,4 +188,157 @@ describe('PanelTable', () => {
     expect(bodyScroll?.contains(dataGrid)).toBe(true);
     expect(screen.queryByRole('toolbar', { name: 'Items tools' })).toBeNull();
   });
+
+  describe('row ids that match column ids', () => {
+    const columns = [
+      { id: 'name', name: 'Name', isRowHeader: true },
+      { id: 'health', name: 'Health' },
+      { id: 'invocations', name: 'Invocations' },
+      { id: 'created_at', name: 'Created at' },
+      { id: 'deployment', name: 'Deployment' },
+    ];
+
+    it.each(
+      [
+        'name',
+        'health',
+        'invocations',
+        'created_at',
+        'deployment',
+        '__panel_table_spacer_left__',
+        '__panel_table_spacer_right__',
+      ].flatMap((id) => [
+        [id, true],
+        [id, false],
+      ]),
+    )('renders a row with id %s (virtualized: %s)', (id, virtualized) => {
+      expect(() =>
+        render(
+          <PanelTable
+            aria-label="Services"
+            columns={columns}
+            items={[
+              { id: 'other', name: 'Other' },
+              { id, name: id },
+            ]}
+            virtualized={virtualized}
+            renderCell={(row, col) => (
+              <Cell>{col.id === 'name' ? row.name : null}</Cell>
+            )}
+          />,
+        ),
+      ).not.toThrow();
+    });
+
+    it.each(
+      Array.from({ length: 25 }, (_, index) => `react-aria-${index}`).flatMap(
+        (id) => [
+          [id, true],
+          [id, false],
+        ],
+      ),
+    )(
+      'renders a row with auto-generated key %s (virtualized: %s)',
+      (id, virtualized) => {
+        const items = [
+          ...Array.from({ length: 8 }, (_, index) => ({
+            id: `item-${index}`,
+            name: `Item ${index}`,
+          })),
+          { id, name: id },
+        ];
+
+        expect(() =>
+          render(
+            <PanelTable
+              aria-label="Services"
+              columns={columns}
+              items={items}
+              selectionMode="multiple"
+              treeColumn="name"
+              expandedKeys={new Set(items.map((item) => item.id))}
+              virtualized={virtualized}
+              renderCell={(row, col) => (
+                <Cell>{col.id === 'name' ? row.name : null}</Cell>
+              )}
+              renderChildRows={(row, tableColumns) => (
+                <Collection items={[{ id: `${row.id}\u0000child` }]}>
+                  {(child) => (
+                    <Row id={child.id} columns={tableColumns} hasLeadingCell>
+                      {(col) => <Cell key={col.id} />}
+                    </Row>
+                  )}
+                </Collection>
+              )}
+            />,
+          ),
+        ).not.toThrow();
+      },
+    );
+  });
+
+  it('reports sort changes with the original column id', () => {
+    const onSortChange = vi.fn();
+
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[
+          { id: 'name', name: 'Name', isRowHeader: true, allowsSorting: true },
+          { id: 'created_at', name: 'Created at', allowsSorting: true },
+        ]}
+        items={[{ id: 'one', name: 'One' }]}
+        sortDescriptor={{ column: 'name', direction: 'ascending' }}
+        onSortChange={onSortChange}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+
+    const headerTable = screen.getByRole('grid', { name: 'Items columns' });
+    const [nameHeader, createdAtHeader] = Array.from(
+      headerTable.querySelectorAll<HTMLElement>('[role="columnheader"]'),
+    ).filter((header) => header.textContent?.trim());
+
+    expect(nameHeader?.getAttribute('aria-sort')).toBe('ascending');
+    if (!createdAtHeader) throw new Error('Created at header was not rendered');
+    fireEvent.click(createdAtHeader);
+    expect(onSortChange).toHaveBeenLastCalledWith({
+      column: 'created_at',
+      direction: 'ascending',
+    });
+  });
+
+  it.each([true, false])(
+    'renders child rows of an expanded tree row (virtualized: %s)',
+    (virtualized) => {
+      render(
+        <PanelTable
+          aria-label="Items"
+          columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+          items={[{ id: 'parent', name: 'Parent' }]}
+          treeColumn="name"
+          expandedKeys={new Set(['parent'])}
+          virtualized={virtualized}
+          renderCell={(row) => <Cell>{row.name}</Cell>}
+          renderChildRows={(row, columns) => (
+            <Collection
+              items={[{ id: `${row.id}-child`, name: `${row.name} child` }]}
+            >
+              {(child) => (
+                <Row id={child.id} columns={columns} hasLeadingCell>
+                  {(col) => (
+                    <Cell key={col.id}>
+                      {col.id === 'name' ? child.name : null}
+                    </Cell>
+                  )}
+                </Row>
+              )}
+            </Collection>
+          )}
+        />,
+      );
+
+      expect(screen.getByText('Parent child')).toBeTruthy();
+    },
+  );
 });

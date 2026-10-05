@@ -437,7 +437,7 @@ function HandlerRows({
         <Row
           id={row.id}
           columns={columns}
-          leadingCell={<Cell />}
+          hasLeadingCell
           className={styles.childRow()}
         >
           {(column) =>

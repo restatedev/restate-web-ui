@@ -1,7 +1,8 @@
 import type { Invocation } from '@restate/data-access/admin-api-spec';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { PropsWithChildren } from 'react';
 import { MemoryRouter } from 'react-router';
 import {
@@ -55,10 +56,33 @@ describe('WorkflowRunCard', () => {
     const invocationLink = screen.getByRole('link', {
       name: 'Open invocation inv-workflow-run',
     });
-    expect(invocationLink.textContent).toContain('Succeeded');
-    expect(invocationLink.textContent).not.toContain('1.528s');
+    const invocationRow = invocationLink.closest('div');
+    expect(invocationRow?.textContent).toContain('Succeeded');
+    expect(invocationRow?.textContent).not.toContain('1.528s');
     expect(screen.queryByText('Completed')).toBeNull();
     expect(screen.getByText('Created').closest('a')).toBeNull();
+  });
+
+  it('shows the full run invocation ID with a copy button', async () => {
+    const user = userEvent.setup();
+    render(
+      <TestProviders>
+        <WorkflowRunCard invocation={invocation} />
+      </TestProviders>,
+    );
+
+    const invocationLink = screen.getByRole('link', {
+      name: 'Open invocation inv-workflow-run',
+    });
+    expect(invocationLink.textContent).toBe('inv-workflow-run');
+    const invocationRow = invocationLink.closest('div');
+    if (!invocationRow) throw new Error('Invocation row was not rendered');
+    const copy = within(invocationRow).getByRole('button', { name: 'Copy' });
+    expect(copy.closest('a')).toBeNull();
+
+    await user.click(copy);
+
+    expect(await navigator.clipboard.readText()).toBe('inv-workflow-run');
   });
 
   it('shows the active invocation status', () => {
@@ -82,8 +106,9 @@ describe('WorkflowRunCard', () => {
     const invocationLink = screen.getByRole('link', {
       name: 'Open invocation inv-workflow-run',
     });
-    expect(invocationLink.textContent).toContain('Running');
-    expect(invocationLink.textContent).not.toContain('1.528s');
+    const invocationRow = invocationLink.closest('div');
+    expect(invocationRow?.textContent).toContain('Running');
+    expect(invocationRow?.textContent).not.toContain('1.528s');
   });
 });
 

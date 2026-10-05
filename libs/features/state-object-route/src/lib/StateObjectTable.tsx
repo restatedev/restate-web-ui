@@ -792,7 +792,7 @@ function StateObjectChildRows({
         <Row
           id={child.id}
           columns={columns}
-          leadingCell={<Cell />}
+          hasLeadingCell
           className={childRow({
             className: child.id === lastChildRowId ? childRowLast() : undefined,
           })}

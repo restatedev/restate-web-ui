@@ -21,6 +21,12 @@ import { Checkbox } from '@restate/ui/form-field';
 import { PropsWithChildren, ReactNode } from 'react';
 import { TableError, LoadingRows } from './Placeholder';
 import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  DRAG_COLUMN_KEY,
+  SELECTION_COLUMN_KEY,
+  tableBodyKeyProps,
+  tableHeaderKeyProps,
+} from './keys';
 
 interface TableProps extends Pick<
   AriaTableProps,
@@ -169,12 +175,17 @@ export function TableHeader<T extends object>({
     useTableOptions();
 
   return (
-    <AriaTableHeader {...props} className={tableHeaderStyles({ className })}>
+    <AriaTableHeader
+      {...props}
+      {...tableHeaderKeyProps}
+      className={tableHeaderStyles({ className })}
+    >
       {leadingColumn}
       {/* Add extra columns for drag and drop and selection. */}
-      {allowsDragging && <Column />}
+      {allowsDragging && <Column id={DRAG_COLUMN_KEY} />}
       {selectionBehavior === 'toggle' && (
         <AriaColumn
+          id={SELECTION_COLUMN_KEY}
           width={selectionColumnWidth}
           minWidth={selectionColumnWidth}
           className="cursor-default p-2 text-start text-sm font-semibold"
@@ -197,7 +208,7 @@ interface TableBodyProps<T extends object> extends Pick<
   numOfColumns: number;
   numOfRows?: number;
   emptyPlaceholder?: ReactNode;
-  loadingLeadingCell?: ReactNode;
+  hasLoadingLeadingCell?: boolean;
 }
 
 export function TableBody<T extends object>({
@@ -208,12 +219,13 @@ export function TableBody<T extends object>({
   numOfColumns,
   emptyPlaceholder,
   numOfRows,
-  loadingLeadingCell,
+  hasLoadingLeadingCell,
   ...props
 }: TableBodyProps<T>) {
   return (
     <AriaTableBody
       {...props}
+      {...tableBodyKeyProps}
       dependencies={[...dependencies, error, isLoading]}
       renderEmptyState={() => {
         return (
@@ -227,7 +239,7 @@ export function TableBody<T extends object>({
         <LoadingRows
           numOfColumns={numOfColumns}
           numOfRows={numOfRows}
-          leadingCell={loadingLeadingCell}
+          hasLeadingCell={hasLoadingLeadingCell}
         />
       ) : (
         children

@@ -9,6 +9,7 @@ import {
 import { LimitKey } from '@restate/features/vqueue-ui';
 import { Badge } from '@restate/ui/badge';
 import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
+import { Copy } from '@restate/ui/copy';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useRestateContext } from '@restate/features/restate-context';
 import { RelativeDate, TruncateWithTooltip } from '@restate/ui/tooltip';
@@ -76,10 +77,15 @@ export function VirtualObjectLockHero({
           aria-label={`Open invocation ${lockHolder.id}`}
           allowsInteractiveChildren
           className="flex-wrap gap-y-1"
+          labelAction={
+            <Copy
+              copyText={lockHolder.id}
+              className="ml-0 p-1 text-zinc-400 [&_svg]:h-3.5 [&_svg]:w-3.5"
+            />
+          }
           label={
             <InvocationId
               id={lockHolder.id}
-              truncateInMiddle
               popover={false}
               link={false}
               className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-zinc-400"
