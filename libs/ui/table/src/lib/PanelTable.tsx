@@ -23,6 +23,7 @@ import { Cell, Row } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
 import { PanelTableLayout } from './PanelTableLayout';
+import { columnKey, fromColumnKey, tableBodyKeyProps } from './keys';
 
 export interface PanelTableColumn<TId extends string = string> {
   id: TId;
@@ -81,9 +82,6 @@ const SELECTION_WIDTH = 36;
 const SPACER_WIDTH = 8;
 const LEFT_SPACER_ID = '__panel_table_spacer_left__';
 const RIGHT_SPACER_ID = '__panel_table_spacer_right__';
-const COLUMN_KEY_PREFIX = '\u0000col:';
-const colKey = (id: Key) => `${COLUMN_KEY_PREFIX}${id}`;
-const fromColKey = (key: Key) => String(key).slice(COLUMN_KEY_PREFIX.length);
 
 const styles = tv({
   slots: {
@@ -247,7 +245,7 @@ export function PanelTable<
 
   const handleSortChange = useCallback(
     (descriptor: SortDescriptor) => {
-      const columnId = fromColKey(descriptor.column);
+      const columnId = fromColumnKey(descriptor.column);
       const column = columns.find(({ id }) => id === columnId);
       if (!column || !onSortChange) return;
       onSortChange(
@@ -266,7 +264,7 @@ export function PanelTable<
     () =>
       sortDescriptor && {
         ...sortDescriptor,
-        column: colKey(sortDescriptor.column),
+        column: columnKey(sortDescriptor.column),
       },
     [sortDescriptor],
   );
@@ -309,7 +307,7 @@ export function PanelTable<
 
   const leadingColumn = (
     <AriaColumn
-      id={colKey(LEFT_SPACER_ID)}
+      id={columnKey(LEFT_SPACER_ID)}
       width={SPACER_WIDTH}
       minWidth={SPACER_WIDTH}
       className="p-0"
@@ -325,7 +323,7 @@ export function PanelTable<
         className={
           typeof rowClassName === 'function' ? rowClassName(item) : rowClassName
         }
-        leadingCell={<Cell />}
+        hasLeadingCell
         childRows={renderChildRows?.(item, dataTableColumns)}
       >
         {(col) => {
@@ -350,7 +348,7 @@ export function PanelTable<
     cols: PanelTableColumn[],
   ) =>
     cols.map((col) => {
-      const synced = columnWidths.get(colKey(col.id));
+      const synced = columnWidths.get(columnKey(col.id));
       const isFixed = typeof col.width === 'number';
       const widthProps: Pick<
         AriaColumnProps,
@@ -368,7 +366,7 @@ export function PanelTable<
       return (
         <Column
           key={col.id}
-          id={colKey(col.id)}
+          id={columnKey(col.id)}
           isRowHeader={col.isRowHeader}
           allowsSorting={
             variant === 'stickyHeader' &&
@@ -407,7 +405,7 @@ export function PanelTable<
       x += dataTableSelectionWidth;
     }
     for (const col of columns) {
-      const width = columnWidths.get(colKey(col.id)) ?? col.width ?? 120;
+      const width = columnWidths.get(columnKey(col.id)) ?? col.width ?? 120;
       const bar = Math.min(width - 24, Math.round(width * 0.6));
       if (!col.hideLabel && bar >= 12) {
         shapes.push(
@@ -442,7 +440,7 @@ export function PanelTable<
       selectedKeys={selectedKeys}
       onSelectionChange={handleSelectionChange}
       onRowAction={onRowAction}
-      treeColumn={treeColumn == null ? treeColumn : colKey(treeColumn)}
+      treeColumn={treeColumn == null ? treeColumn : columnKey(treeColumn)}
       expandedKeys={expandedKeys}
       defaultExpandedKeys={defaultExpandedKeys}
       onExpandedChange={onExpandedChange}
@@ -463,7 +461,7 @@ export function PanelTable<
         numOfColumns={dataTableColumns.length}
         numOfRows={numOfRows}
         emptyPlaceholder={emptyPlaceholder}
-        loadingLeadingCell={<Cell />}
+        hasLoadingLeadingCell
       >
         {renderBodyRow}
       </TableBody>
@@ -505,6 +503,7 @@ export function PanelTable<
                   {renderColumns('stickyHeader', columns)}
                 </TableHeader>
                 <AriaTableBody
+                  {...tableBodyKeyProps}
                   items={stickyHeaderItems}
                   dependencies={[columns]}
                 >

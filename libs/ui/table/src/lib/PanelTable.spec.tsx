@@ -229,6 +229,52 @@ describe('PanelTable', () => {
         ),
       ).not.toThrow();
     });
+
+    it.each(
+      Array.from({ length: 25 }, (_, index) => `react-aria-${index}`).flatMap(
+        (id) => [
+          [id, true],
+          [id, false],
+        ],
+      ),
+    )(
+      'renders a row with auto-generated key %s (virtualized: %s)',
+      (id, virtualized) => {
+        const items = [
+          ...Array.from({ length: 8 }, (_, index) => ({
+            id: `item-${index}`,
+            name: `Item ${index}`,
+          })),
+          { id, name: id },
+        ];
+
+        expect(() =>
+          render(
+            <PanelTable
+              aria-label="Services"
+              columns={columns}
+              items={items}
+              selectionMode="multiple"
+              treeColumn="name"
+              expandedKeys={new Set(items.map((item) => item.id))}
+              virtualized={virtualized}
+              renderCell={(row, col) => (
+                <Cell>{col.id === 'name' ? row.name : null}</Cell>
+              )}
+              renderChildRows={(row, tableColumns) => (
+                <Collection items={[{ id: `${row.id}\u0000child` }]}>
+                  {(child) => (
+                    <Row id={child.id} columns={tableColumns} hasLeadingCell>
+                      {(col) => <Cell key={col.id} />}
+                    </Row>
+                  )}
+                </Collection>
+              )}
+            />,
+          ),
+        ).not.toThrow();
+      },
+    );
   });
 
   it('reports sort changes with the original column id', () => {
@@ -279,7 +325,7 @@ describe('PanelTable', () => {
               items={[{ id: `${row.id}-child`, name: `${row.name} child` }]}
             >
               {(child) => (
-                <Row id={child.id} columns={columns} leadingCell={<Cell />}>
+                <Row id={child.id} columns={columns} hasLeadingCell>
                   {(col) => (
                     <Cell key={col.id}>
                       {col.id === 'name' ? child.name : null}
