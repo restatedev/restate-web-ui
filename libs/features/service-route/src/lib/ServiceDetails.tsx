@@ -12,7 +12,29 @@ import { ServiceDeploymentsTable } from './ServiceDeploymentsTable';
 import { ServiceHandlersTable } from './ServiceHandlersTable';
 import { ServiceInvocations } from './ServiceInvocations';
 import { ServicePlaygroundEmbed } from '@restate/features/service';
-import { TAB_QUERY_PARAM, type ServiceTab } from './serviceTabs';
+import { VirtualObjectInstances } from '@restate/features/virtual-objects-route';
+import { WorkflowRuns } from '@restate/features/workflows-route';
+import { tv } from '@restate/util/styles';
+import {
+  keyedServiceTab,
+  TAB_QUERY_PARAM,
+  type KeyedServiceTab,
+  type ServiceTab,
+} from './serviceTabs';
+
+const panelStyles = tv({
+  base: '-mt-14',
+  variants: {
+    hasFilterToolbar: {
+      true: 'sm:[&_[data-cp-slot=toolbar]]:min-w-[min(28rem,40vw)]',
+    },
+  },
+});
+
+const KEYED_TAB_LABELS: Record<KeyedServiceTab, string> = {
+  runs: 'Workflow runs',
+  instances: 'Virtual Object instances',
+};
 
 export {
   serviceTabFromSearch,
@@ -75,10 +97,20 @@ export function ServiceDetails({
       0,
     );
   }, [deploymentsData, service]);
+  const keyedTab =
+    keyedServiceTab(serviceType) ??
+    (!serviceType && (tab === 'runs' || tab === 'instances') ? tab : undefined);
+  const activeTab =
+    (tab === 'runs' || tab === 'instances') && tab !== keyedTab
+      ? 'invocations'
+      : tab;
   const tabs = useMemo<ContentPanelTabs>(
     () => ({
       items: [
         { id: 'invocations', label: 'Invocations' },
+        ...(keyedTab
+          ? [{ id: keyedTab, label: KEYED_TAB_LABELS[keyedTab] }]
+          : []),
         {
           id: 'handlers',
           label: (
@@ -106,20 +138,29 @@ export function ServiceDetails({
       defaultId: 'invocations',
       queryParam: TAB_QUERY_PARAM,
     }),
-    [deploymentsCount, handlers.length, isPending],
+    [deploymentsCount, handlers.length, isPending, keyedTab],
   );
 
   return (
-    <ContentPanel className="-mt-14" tabs={tabs}>
-      {tab === 'invocations' ? (
+    <ContentPanel
+      className={panelStyles({ hasFilterToolbar: Boolean(keyedTab) })}
+      tabs={tabs}
+    >
+      {activeTab === 'invocations' ? (
         <ServiceInvocations service={service} handler={selectedHandler} />
+      ) : activeTab === 'runs' ? (
+        <WorkflowRuns service={service} />
+      ) : activeTab === 'instances' ? (
+        <VirtualObjectInstances service={service} />
       ) : (
-        <ContentPanelBody className={tab === 'playground' ? 'pb-0' : 'pb-32'}>
+        <ContentPanelBody
+          className={activeTab === 'playground' ? 'pb-0' : 'pb-32'}
+        >
           <ContentPanelSection
-            flush={tab !== 'playground'}
-            fadeClassName={tab === 'playground' ? 'hidden' : undefined}
+            flush={activeTab !== 'playground'}
+            fadeClassName={activeTab === 'playground' ? 'hidden' : undefined}
           >
-            {tab === 'handlers' ? (
+            {activeTab === 'handlers' ? (
               <ServiceHandlersTable
                 service={service}
                 serviceType={serviceType}
@@ -128,7 +169,7 @@ export function ServiceDetails({
                 isPending={isPending}
                 error={error}
               />
-            ) : tab === 'deployments' ? (
+            ) : activeTab === 'deployments' ? (
               <ServiceDeploymentsTable service={service} />
             ) : (
               <ServicePlaygroundEmbed
