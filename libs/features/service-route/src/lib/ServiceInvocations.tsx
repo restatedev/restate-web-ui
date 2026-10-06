@@ -1,20 +1,18 @@
-import { useListInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
-import { ContentPanelToolbar } from '@restate/ui/content-panel';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
 import {
-  toServiceAndHandlerInvocationsHref,
-  toServiceInvocationsHref,
-} from '@restate/util/invocation-links';
+  ContentPanelBody,
+  ContentPanelSection,
+  ContentPanelToolbar,
+} from '@restate/ui/content-panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
+import { InvocationsStatusSummary } from './InvocationsStatusSummary';
 import {
   InvocationsPanelTable,
   SERVICE_INVOCATION_COLUMNS,
 } from './InvocationsPanelTable';
 import { RefreshButton } from './RefreshButton';
+import { useInvocationsTab } from './useInvocationsTab';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];
 
@@ -25,8 +23,7 @@ export function ServiceInvocations({
   service: string;
   handler?: string;
 }) {
-  const { baseUrl } = useRestateContext();
-  const filters = useMemo<FilterItem[]>(
+  const baseFilters = useMemo<FilterItem[]>(
     () => [
       {
         field: 'target_service_name',
@@ -47,51 +44,43 @@ export function ServiceInvocations({
     ],
     [service, handler],
   );
+  const invocationsTab = useInvocationsTab(baseFilters, Boolean(service));
   const { data, error, isPending, isFetching, refetch, dataUpdatedAt } =
-    useListInvocationsV2(
-      { filters, sort: { field: 'created_at', order: 'DESC' } },
-      {
-        enabled: Boolean(service),
-        refetchOnMount: true,
-        refetchOnWindowFocus: false,
-        staleTime: 0,
-      },
-    );
-  const invocationsHref = handler
-    ? toServiceAndHandlerInvocationsHref(baseUrl, service, handler)
-    : toServiceInvocationsHref(baseUrl, service);
+    invocationsTab.list;
 
   return (
     <>
       <ContentPanelToolbar className="justify-end gap-1 px-1 pb-1">
-        <Link
-          href={invocationsHref}
-          variant="secondary-button"
-          className="flex h-6.5 items-center gap-1 rounded-lg px-2 py-0 text-xs"
-        >
-          Open in Invocations
-          <Icon name={IconName.ArrowUpRight} className="h-3 w-3" />
-        </Link>
         <RefreshButton
-          isFetching={isFetching}
+          isFetching={isFetching || invocationsTab.summary.isFetching}
           label="Refresh invocations"
           onClick={() => void refetch()}
         />
       </ContentPanelToolbar>
       <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-        <InvocationsPanelTable
-          ariaLabel={`Invocations of ${service}`}
-          columns={SERVICE_INVOCATION_COLUMNS}
-          data={data}
-          isPending={isPending}
-          error={error}
-          emptyTitle="No invocations"
-          emptyDescription={
-            handler
-              ? `Invocations of ${handler}() will appear here.`
-              : 'Invocations of this service will appear here.'
-          }
-        />
+        <ContentPanelBody className="pb-32">
+          <InvocationsStatusSummary invocationsTab={invocationsTab} />
+          <ContentPanelSection
+            flush
+            className="-mt-[calc(var(--cp-toolbar-tuck,0px)-0.75rem)]"
+          >
+            <InvocationsPanelTable
+              ariaLabel={`Invocations of ${service}`}
+              columns={SERVICE_INVOCATION_COLUMNS}
+              data={data}
+              isPending={isPending}
+              error={error}
+              emptyTitle="No invocations"
+              emptyDescription={
+                invocationsTab.statusFilter
+                  ? 'No invocations match the selected status.'
+                  : handler
+                    ? `Invocations of ${handler}() will appear here.`
+                    : 'Invocations of this service will appear here.'
+              }
+            />
+          </ContentPanelSection>
+        </ContentPanelBody>
       </SnapshotTimeProvider>
     </>
   );

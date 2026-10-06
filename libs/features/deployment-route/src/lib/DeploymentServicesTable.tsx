@@ -89,7 +89,13 @@ export function DeploymentServicesTable({
                   density="default"
                   className="min-w-0 flex-[0_1_auto]"
                 />
-                {row.service.ty && <ServiceType type={row.service.ty} />}
+                {row.service.ty && (
+                  <ServiceType
+                    type={row.service.ty}
+                    variant="subtle"
+                    className="ml-auto"
+                  />
+                )}
               </div>
             </Cell>
           );

@@ -76,20 +76,20 @@ export function DeploymentDetails({
 
   return (
     <ContentPanel className="-mt-14" tabs={tabs}>
-      <ContentPanelBody className="pb-32">
-        <ContentPanelSection flush>
-          {tab === 'services' ? (
+      {tab === 'services' ? (
+        <ContentPanelBody className="pb-32">
+          <ContentPanelSection flush>
             <DeploymentServicesTable
               deploymentId={deploymentId}
               services={services}
               isPending={isPending}
               error={error}
             />
-          ) : (
-            <DeploymentInvocations deploymentId={deploymentId} />
-          )}
-        </ContentPanelSection>
-      </ContentPanelBody>
+          </ContentPanelSection>
+        </ContentPanelBody>
+      ) : (
+        <DeploymentInvocations deploymentId={deploymentId} />
+      )}
     </ContentPanel>
   );
 }

@@ -28,20 +28,17 @@ import {
   TruncateWithTooltip,
 } from '@restate/ui/tooltip';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import {
+  DetailsCard,
   HeadersCard,
-  LifecycleCard,
   MetadataCard,
-  ProtocolCard,
   hasHeadersCardContent,
   hasMetadataCardContent,
 } from './DeploymentCards';
 import {
   DeploymentDetails,
   deploymentTabFromSearch,
-  deploymentTabHref,
 } from './DeploymentDetails';
 
 function EndpointChip({
@@ -131,13 +128,6 @@ function Component() {
   const { data: drainedDeploymentIds } = useListDrainedDeployments();
   const listedDeployment = deploymentsData?.deployments.get(deploymentId);
   const services = data?.services ?? [];
-  const latestFor = useMemo(() => {
-    const served = listedDeployment?.services ?? [];
-    return served.filter(
-      ({ name, revision }) =>
-        deploymentsData?.services.get(name)?.sortedRevisions[0] === revision,
-    ).length;
-  }, [deploymentsData, listedDeployment]);
   const isDrained = drainedDeploymentIds
     ? drainedDeploymentIds.has(deploymentId)
     : undefined;
@@ -212,17 +202,11 @@ function Component() {
           </div>
         ) : (
           <>
-            <CardGrid columns={4} className="relative z-40 mx-5 mt-3">
-              <LifecycleCard
-                deployment={listedDeployment}
-                isDrained={isDrained}
-                latestFor={latestFor}
-                total={listedDeployment?.services.length ?? services.length}
-                isPending={isPending || !deploymentsData}
-                servicesHref={deploymentTabHref(searchParams, 'services')}
-                invocationsHref={deploymentTabHref(searchParams, 'invocations')}
+            <CardGrid columns={3} className="relative z-40 mx-5 mt-3">
+              <DetailsCard
+                deployment={data}
+                registeredAt={listedDeployment?.created_at}
               />
-              <ProtocolCard deployment={data} isPending={isPending} />
               {data && hasHeadersCardContent(data) && (
                 <HeadersCard
                   deployment={data}

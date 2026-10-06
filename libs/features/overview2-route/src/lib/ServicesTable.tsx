@@ -1,5 +1,6 @@
 import {
   getEndpoint,
+  TERMINAL_INVOCATION_STATUSES,
   type Deployment,
   type Handler,
   type Service,
@@ -32,10 +33,7 @@ import {
 } from '@restate/ui/table';
 import { HoverTooltip, RelativeDate } from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
-import {
-  toServiceAndHandlerInvocationsHref,
-  toServiceInvocationsHref,
-} from '@restate/util/invocation-links';
+import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
 import { useOnboarding } from '@restate/util/feature-flag';
 import { panelHref, serviceHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
@@ -117,8 +115,7 @@ const tableStyles = tv({
     serviceIdentity: 'flex min-w-0 items-center gap-2',
     serviceTarget:
       'min-w-0 flex-[0_1_auto] [&_[data-chip-root]]:text-[0.8125rem] [&_[data-chip-segment-inner]>svg]:h-3.5 [&_[data-chip-segment-inner]>svg]:w-3.5',
-    serviceType:
-      'ml-auto shrink-0 border-zinc-200/80 bg-zinc-100/70 px-1.5 py-0 text-2xs font-normal whitespace-nowrap text-zinc-500',
+    serviceType: 'ml-auto',
     chevron:
       'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
     handlerIdentity: 'flex min-w-0 items-center gap-1.5 pl-7',
@@ -145,6 +142,16 @@ function handlerRowId(serviceName: string, handlerName: string) {
 
 function includesFilter(value: string | null | undefined, filter: string) {
   return value?.toLowerCase().includes(filter) ?? false;
+}
+
+function toServiceDetailsInvocationsHref(baseUrl: string, service: string) {
+  const params = new URLSearchParams({
+    filter_status: JSON.stringify({
+      operation: 'NOT_IN',
+      value: TERMINAL_INVOCATION_STATUSES,
+    }),
+  });
+  return `${serviceHref(baseUrl, { service })}?${params.toString()}`;
 }
 
 export function getNotCompletedInvocationCount(
@@ -314,7 +321,13 @@ function ServiceIdentity({
         isOnboarding={isOnboarding}
         OnboardingGuide={OnboardingGuide}
       />
-      {row.ty && <ServiceType type={row.ty} className={styles.serviceType()} />}
+      {row.ty && (
+        <ServiceType
+          type={row.ty}
+          variant="subtle"
+          className={styles.serviceType()}
+        />
+      )}
     </div>
   );
 }
@@ -631,10 +644,9 @@ export function ServicesTable() {
           const nonCompleted = stageEntries.filter(
             ({ name }) => name !== 'finished',
           );
-          const notCompletedInvocationsHref = toServiceInvocationsHref(
+          const notCompletedInvocationsHref = toServiceDetailsInvocationsHref(
             baseUrl,
             row.name,
-            { existingParams: linkParams, notCompletedOnly: true },
           );
           const issues = serviceIssuesMap.get(row.name) ?? [];
           return (

@@ -111,32 +111,34 @@ export function ServiceDetails({
 
   return (
     <ContentPanel className="-mt-14" tabs={tabs}>
-      <ContentPanelBody className={tab === 'playground' ? 'pb-0' : 'pb-32'}>
-        <ContentPanelSection
-          flush={tab !== 'playground'}
-          fadeClassName={tab === 'playground' ? 'hidden' : undefined}
-        >
-          {tab === 'invocations' ? (
-            <ServiceInvocations service={service} handler={selectedHandler} />
-          ) : tab === 'handlers' ? (
-            <ServiceHandlersTable
-              service={service}
-              serviceType={serviceType}
-              handlers={handlers}
-              selectedHandler={selectedHandler}
-              isPending={isPending}
-              error={error}
-            />
-          ) : tab === 'deployments' ? (
-            <ServiceDeploymentsTable service={service} />
-          ) : (
-            <ServicePlaygroundEmbed
-              service={service}
-              handler={selectedHandler}
-            />
-          )}
-        </ContentPanelSection>
-      </ContentPanelBody>
+      {tab === 'invocations' ? (
+        <ServiceInvocations service={service} handler={selectedHandler} />
+      ) : (
+        <ContentPanelBody className={tab === 'playground' ? 'pb-0' : 'pb-32'}>
+          <ContentPanelSection
+            flush={tab !== 'playground'}
+            fadeClassName={tab === 'playground' ? 'hidden' : undefined}
+          >
+            {tab === 'handlers' ? (
+              <ServiceHandlersTable
+                service={service}
+                serviceType={serviceType}
+                handlers={handlers}
+                selectedHandler={selectedHandler}
+                isPending={isPending}
+                error={error}
+              />
+            ) : tab === 'deployments' ? (
+              <ServiceDeploymentsTable service={service} />
+            ) : (
+              <ServicePlaygroundEmbed
+                service={service}
+                handler={selectedHandler}
+              />
+            )}
+          </ContentPanelSection>
+        </ContentPanelBody>
+      )}
     </ContentPanel>
   );
 }

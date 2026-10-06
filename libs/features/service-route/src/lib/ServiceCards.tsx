@@ -2,6 +2,8 @@ import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import {
   getProtocolType,
   isHttpDeployment,
+  type Deployment as DeploymentData,
+  type DetailedDeployment,
   type Handler,
 } from '@restate/data-access/admin-api-spec';
 import {
@@ -133,102 +135,69 @@ export function CardEditAction({
   );
 }
 
-export function DeploymentCard({
-  deploymentId,
-  revision,
-}: {
-  deploymentId?: string;
-  revision?: number;
-}) {
-  const { isVersionGte, baseUrl } = useRestateContext();
-  const { data } = useListDeployments();
-  const deployment = deploymentId
-    ? data?.deployments.get(deploymentId)
-    : undefined;
-  const isDeprecated = Boolean(
+type DeploymentLike = DeploymentData | DetailedDeployment;
+
+export function useIsDeprecatedDeployment(deployment?: DeploymentLike) {
+  const { isVersionGte } = useRestateContext();
+  return Boolean(
     deployment &&
     deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
     isVersionGte?.('1.6.0'),
   );
+}
 
+export function DeploymentSdkRow({
+  deployment,
+}: {
+  deployment?: DeploymentLike;
+}) {
+  const isDeprecated = useIsDeprecatedDeployment(deployment);
+  if (!deployment || (!deployment.sdk_version && !isDeprecated)) {
+    return null;
+  }
   return (
-    <Card intent={isDeprecated ? 'warning' : 'none'}>
-      <CardHeader title="Latest deployment" icon={IconName.Http}>
-        {deployment ? (
-          <span className={captionStyles()}>
-            Registered
-            <RelativeDate
-              date={deployment.created_at}
-              title="Registered at"
-              className="text-2xs font-medium text-gray-500"
-            />
-          </span>
-        ) : null}
-      </CardHeader>
-      {deploymentId ? (
-        <CardLinkRow
-          variant="hero"
-          href={deploymentHref(baseUrl, { deployment: deploymentId })}
-          aria-label="Open deployment"
-          allowsInteractiveChildren
-          className="gap-0.5"
-        >
-          <Deployment
-            deploymentId={deploymentId}
-            revision={revision}
-            highlightSelection={false}
-            showLink={false}
-            className="m-0 w-full max-w-full p-0 font-normal text-inherit"
-          />
-        </CardLinkRow>
+    <CardRow>
+      {deployment.sdk_version ? (
+        <SDK
+          lastAttemptServer={deployment.sdk_version}
+          className="-mt-0.5 min-w-0 flex-auto gap-2 text-xs font-medium text-zinc-600"
+        />
       ) : (
-        <CardRow variant="hero">
-          <HeroText title="Latest revision" />
-          <Skeleton variant="hero" />
-        </CardRow>
+        <span className="flex-auto text-xs text-gray-500">
+          No SDK version reported
+        </span>
       )}
-      {deployment && (deployment.sdk_version || isDeprecated) && (
-        <CardRow>
-          {deployment.sdk_version ? (
-            <SDK
-              lastAttemptServer={deployment.sdk_version}
-              className="-mt-0.5 min-w-0 flex-auto gap-2 text-xs font-medium text-zinc-600"
-            />
-          ) : (
-            <span className="flex-auto text-xs text-gray-500">
-              No SDK version reported
-            </span>
-          )}
-          {isDeprecated && (
-            <WarningChip
-              label="Unsupported SDK"
-              title="Unsupported SDK version"
-              messages={[
-                <>
-                  This deployment uses an obsolete SDK version that speaks
-                  service protocol{' '}
-                  <code className="font-mono font-semibold">
-                    v{deployment.max_protocol_version}
-                  </code>{' '}
-                  at most, but this Restate version requires{' '}
-                  <code className="font-mono font-semibold">
-                    v{MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION}
-                  </code>{' '}
-                  or newer. Upgrade the SDK and register a new deployment.
-                </>,
-              ]}
-            />
-          )}
-        </CardRow>
+      {isDeprecated && (
+        <WarningChip
+          label="Unsupported SDK"
+          title="Unsupported SDK version"
+          messages={[
+            <>
+              This deployment uses an obsolete SDK version that speaks service
+              protocol{' '}
+              <code className="font-mono font-semibold">
+                v{deployment.max_protocol_version}
+              </code>{' '}
+              at most, but this Restate version requires{' '}
+              <code className="font-mono font-semibold">
+                v{MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION}
+              </code>{' '}
+              or newer. Upgrade the SDK and register a new deployment.
+            </>,
+          ]}
+        />
       )}
-      {deployment && hasGithubMetadata(deployment.metadata) && (
-        <CardRow>
-          <GithubMetadata
-            metadata={deployment.metadata}
-            className="w-full pl-0.5"
-          />
-        </CardRow>
-      )}
+    </CardRow>
+  );
+}
+
+export function DeploymentProtocolRows({
+  deployment,
+}: {
+  deployment?: DeploymentLike;
+}) {
+  return (
+    <>
       <CardRow
         label={
           <span className="flex items-center gap-1">
@@ -276,6 +245,77 @@ export function DeploymentCard({
           <Skeleton />
         )}
       </CardRow>
+    </>
+  );
+}
+
+export function RegisteredCaption({ date }: { date?: string }) {
+  if (!date) {
+    return null;
+  }
+  return (
+    <span className={captionStyles()}>
+      Registered
+      <RelativeDate
+        date={date}
+        title="Registered at"
+        className="text-2xs font-medium text-gray-500"
+      />
+    </span>
+  );
+}
+
+export function DeploymentCard({
+  deploymentId,
+  revision,
+}: {
+  deploymentId?: string;
+  revision?: number;
+}) {
+  const { baseUrl } = useRestateContext();
+  const { data } = useListDeployments();
+  const deployment = deploymentId
+    ? data?.deployments.get(deploymentId)
+    : undefined;
+  const isDeprecated = useIsDeprecatedDeployment(deployment);
+
+  return (
+    <Card intent={isDeprecated ? 'warning' : 'none'}>
+      <CardHeader title="Latest deployment" icon={IconName.Http}>
+        <RegisteredCaption date={deployment?.created_at} />
+      </CardHeader>
+      {deploymentId ? (
+        <CardLinkRow
+          variant="hero"
+          href={deploymentHref(baseUrl, { deployment: deploymentId })}
+          aria-label="Open deployment"
+          allowsInteractiveChildren
+          className="gap-0.5"
+        >
+          <Deployment
+            deploymentId={deploymentId}
+            revision={revision}
+            highlightSelection={false}
+            showLink={false}
+            className="m-0 w-full max-w-full p-0 font-normal text-inherit"
+          />
+        </CardLinkRow>
+      ) : (
+        <CardRow variant="hero">
+          <HeroText title="Latest revision" />
+          <Skeleton variant="hero" />
+        </CardRow>
+      )}
+      <DeploymentSdkRow deployment={deployment} />
+      {deployment && hasGithubMetadata(deployment.metadata) && (
+        <CardRow>
+          <GithubMetadata
+            metadata={deployment.metadata}
+            className="w-full pl-0.5"
+          />
+        </CardRow>
+      )}
+      <DeploymentProtocolRows deployment={deployment} />
     </Card>
   );
 }

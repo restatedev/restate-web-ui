@@ -1,5 +1,6 @@
 import { DELETE_DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { DropdownItem } from '@restate/ui/dropdown';
+import { Icon, IconName } from '@restate/ui/icons';
 import { Link } from '@restate/ui/link';
 import { SplitButton } from '@restate/ui/split-button';
 import { tv } from '@restate/util/styles';
@@ -11,13 +12,17 @@ const primaryStyles = tv({
     variant: {
       row: 'invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
       header:
-        'rounded-l-lg rounded-r-none px-3 py-0 text-xs leading-7 font-medium',
+        'flex translate-x-px items-center gap-1 rounded-l-lg rounded-r-none px-2 py-0.5 text-[0.9375rem] [line-height:inherit] whitespace-nowrap max-md:hidden',
     },
     destructive: {
-      true: 'text-red-600',
+      true: '',
       false: 'text-blue-700',
     },
   },
+  compoundVariants: [
+    { variant: 'row', destructive: true, className: 'text-red-600' },
+    { variant: 'header', destructive: true, className: 'text-red-500' },
+  ],
 });
 
 export function DeploymentActions({
@@ -32,25 +37,46 @@ export function DeploymentActions({
   const updateHref = `?${UPDATE_DEPLOYMENT_QUERY}=${deploymentId}`;
   const deleteHref = `?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deploymentId}`;
   const primaryAction = isUpdateSupported
-    ? { href: updateHref, label: 'Update', destructive: false }
-    : { href: deleteHref, label: 'Delete', destructive: true };
+    ? {
+        href: updateHref,
+        label: 'Update',
+        icon: IconName.Pencil,
+        destructive: false,
+      }
+    : {
+        href: deleteHref,
+        label: 'Delete',
+        icon: IconName.Trash,
+        destructive: true,
+      };
+  const isHeader = variant === 'header';
 
   return (
     <SplitButton
-      mini={variant === 'row'}
+      mini={isHeader ? 'md' : true}
       variant="secondary"
-      className={variant === 'header' ? 'py-0 text-xs' : undefined}
-      splitClassName={
-        variant === 'header'
-          ? 'w-7 rounded-r-lg [&_svg]:h-4 [&_svg]:w-4'
-          : undefined
-      }
+      className={isHeader ? 'rounded-l-lg text-[0.9375rem]' : undefined}
+      splitClassName={isHeader ? 'rounded-lg md:rounded-l-none' : undefined}
       menus={
         <>
           {isUpdateSupported && (
-            <DropdownItem href={updateHref}>Update</DropdownItem>
+            <DropdownItem href={updateHref}>
+              {isHeader && (
+                <Icon
+                  name={IconName.Pencil}
+                  className="h-3.5 w-3.5 shrink-0 opacity-80"
+                />
+              )}
+              Update
+            </DropdownItem>
           )}
           <DropdownItem href={deleteHref} destructive>
+            {isHeader && (
+              <Icon
+                name={IconName.Trash}
+                className="h-3.5 w-3.5 shrink-0 opacity-80"
+              />
+            )}
             Delete
           </DropdownItem>
         </>
@@ -64,6 +90,12 @@ export function DeploymentActions({
           destructive: primaryAction.destructive,
         })}
       >
+        {isHeader && (
+          <Icon
+            name={primaryAction.icon}
+            className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+          />
+        )}
         {primaryAction.label}
       </Link>
     </SplitButton>
