@@ -20,6 +20,7 @@ export function StyledListBox<T extends object>({
 }
 
 interface ListBoxProps {
+  renderEmptyState?: AriaListBoxProps<object>['renderEmptyState'];
   disabledItems?: Iterable<string>;
   ['aria-label']?: string;
   selectable?: never;
@@ -29,8 +30,10 @@ interface ListBoxProps {
   ref?: RefObject<HTMLDivElement | null>;
 }
 
-interface SelectableListBoxProps
-  extends Omit<ListBoxProps, 'selectable' | 'selectedItems' | 'multiple'> {
+interface SelectableListBoxProps extends Omit<
+  ListBoxProps,
+  'selectable' | 'selectedItems' | 'multiple'
+> {
   multiple?: boolean;
   selectedItems?: Iterable<string>;
   selectable: true;

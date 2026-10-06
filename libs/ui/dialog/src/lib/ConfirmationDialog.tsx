@@ -1,3 +1,4 @@
+import { Heading } from 'react-aria-components';
 import { Form } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
@@ -131,7 +132,11 @@ function ConfirmationDialogContent({
   return (
     <DialogContent className="max-w-lg" surface={surface}>
       <div className="flex flex-col gap-2">
-        <h3 className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900">
+        <Heading
+          slot="title"
+          level={3}
+          className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900"
+        >
           {icon && (
             <Icon
               name={icon}
@@ -139,7 +144,7 @@ function ConfirmationDialogContent({
             />
           )}
           {title}
-        </h3>
+        </Heading>
         <div className="flex flex-col gap-2 text-sm text-gray-500">
           {description}
           {alertType && alertContent && (

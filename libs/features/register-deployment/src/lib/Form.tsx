@@ -6,7 +6,7 @@ import {
   PropsWithChildren,
   ReactNode,
 } from 'react';
-import { Radio } from 'react-aria-components';
+import { Radio, Heading } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
 import {
   DeploymentProtocolCheck,
@@ -98,7 +98,13 @@ function Container({
 }>) {
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
+      <Heading
+        slot="title"
+        level={3}
+        className="text-lg leading-6 font-medium text-gray-900"
+      >
+        {title}
+      </Heading>
       {description ? (
         <p className="text-sm text-gray-500">{description}</p>
       ) : (

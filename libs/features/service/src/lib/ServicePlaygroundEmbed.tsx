@@ -34,6 +34,7 @@ export function ServicePlaygroundEmbed({
   const navigate = useNavigate();
   const [mountKey, setMountKey] = useState<number>();
   const handlerRef = useRef(handler);
+  const displayedOperationRef = useRef<string | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   handlerRef.current = handler;
 
@@ -58,8 +59,20 @@ export function ServicePlaygroundEmbed({
       : undefined;
     if (handler && currentHandler !== handler) {
       window.location.hash = `${OPERATION_HASH_PREFIX}${handler}`;
+      displayedOperationRef.current = handler;
+      setMountKey((key) => (key ?? 0) + 1);
+    } else if (!handler && displayedOperationRef.current) {
+      if (current) {
+        window.history.replaceState(
+          window.history.state,
+          '',
+          `${window.location.pathname}${window.location.search}`,
+        );
+      }
+      displayedOperationRef.current = undefined;
       setMountKey((key) => (key ?? 0) + 1);
     } else {
+      displayedOperationRef.current = current;
       setMountKey((key) => key ?? 0);
     }
   }, [handler, handlerByOperation]);
@@ -67,12 +80,17 @@ export function ServicePlaygroundEmbed({
   useEffect(() => {
     const onHashChange = () => {
       const operation = operationFromHash();
+      displayedOperationRef.current = operation;
       const name = operation ? handlerByOperation.get(operation) : undefined;
-      if (!name || name === handlerRef.current) {
+      if (name === handlerRef.current || (operation && !name)) {
         return;
       }
       const next = new URLSearchParams(window.location.search);
-      next.set(HANDLER_QUERY_PARAM, name);
+      if (name) {
+        next.set(HANDLER_QUERY_PARAM, name);
+      } else {
+        next.delete(HANDLER_QUERY_PARAM);
+      }
       navigate(
         { search: `?${next.toString()}`, hash: window.location.hash },
         { replace: true, preventScrollReset: true },

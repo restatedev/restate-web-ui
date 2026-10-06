@@ -18,7 +18,7 @@ import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Radio } from 'react-aria-components';
+import { Radio, Heading } from 'react-aria-components';
 import { RadioGroup } from '@restate/ui/radio-group';
 import { FormFieldLabel } from '@restate/ui/form-field';
 import { tv } from '@restate/util/styles';
@@ -89,12 +89,16 @@ export function EditAccessDialog() {
     <QueryDialog query={SERVICE_ACCESS_EDIT}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <Heading
+            slot="title"
+            level={3}
+            className="text-lg leading-6 font-medium text-gray-900"
+          >
             Ingress access for{' '}
             <span className="rounded-sm bg-gray-100 px-[0.5ch] font-mono">
               {service}
             </span>
-          </h3>
+          </Heading>
           <RestateMinimumVersion minVersion="1.4.5">
             <div className="flex flex-col gap-2 text-sm text-gray-500">
               <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">

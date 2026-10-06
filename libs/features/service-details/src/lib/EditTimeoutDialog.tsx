@@ -1,3 +1,4 @@
+import { Heading } from 'react-aria-components';
 import {
   DialogClose,
   DialogContent,
@@ -5,8 +6,7 @@ import {
   QueryDialog,
 } from '@restate/ui/dialog';
 import { SERVICE_TIMEOUT_EDIT } from './constants';
-import { FormEvent, useId, useState } from 'react';
-import { useFilter } from 'react-aria';
+import { FormEvent, useId } from 'react';
 import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -14,11 +14,6 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
-import {
-  FormFieldCombobox,
-  ComboBoxSection,
-  ComboBoxItem,
-} from '@restate/ui/form-field';
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
@@ -30,6 +25,10 @@ import {
   AbortTimeoutIllustration,
   InactivityTimeoutIllustration,
 } from './illustrations';
+import { FormFieldCombobox } from '@restate/ui/form-field';
+import { useFilter } from 'react-aria';
+import { timeoutOptions } from './durationOptions';
+import { useDialogDraft } from './useDialogDraft';
 
 export function EditTimeoutDialog() {
   const formId = useId();
@@ -97,9 +96,10 @@ export function EditTimeoutDialog() {
   };
 
   const isPendingOrSubmitting = isPending || isSubmitting;
-  const [draft, setDraft] = useState<{ inactivity?: string; abort?: string }>(
-    {},
-  );
+  const [draft, setDraft] = useDialogDraft<{
+    inactivity: string;
+    abort: string;
+  }>(service);
   const inactivityPreview = draft.inactivity ?? data?.inactivity_timeout;
   const abortPreview = draft.abort ?? data?.abort_timeout;
 
@@ -107,12 +107,16 @@ export function EditTimeoutDialog() {
     <QueryDialog query={SERVICE_TIMEOUT_EDIT}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <Heading
+            slot="title"
+            level={3}
+            className="text-lg leading-6 font-medium text-gray-900"
+          >
             Timeout configuration for{' '}
             <span className="rounded-sm bg-gray-100 px-[0.5ch] font-mono">
               {service}
             </span>
-          </h3>
+          </Heading>
           <p className="text-sm text-gray-500">
             Configure timeouts that control how Restate communicates with your
             service deployment.
@@ -153,9 +157,10 @@ export function EditTimeoutDialog() {
             key={String(isPending)}
           >
             <FormFieldCombobox
+              options={timeoutOptions}
+              defaultFilter={startsWith}
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
-              defaultFilter={startsWith}
               defaultValue={data?.inactivity_timeout ?? ''}
               onChange={(value) =>
                 setDraft((old) => ({ ...old, inactivity: value }))
@@ -175,35 +180,12 @@ export function EditTimeoutDialog() {
               name="inactivity_timeout"
               className="[&_label]:text-zinc-500"
               placeholder="1m"
-            >
-              <ComboBoxSection
-                title="Examples"
-                description={
-                  <>
-                    Choose from the example options above, or enter a custom
-                    value in the{' '}
-                    <Link
-                      href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      jiff friendly
-                    </Link>{' '}
-                    format.
-                  </>
-                }
-              >
-                <ComboBoxItem value="1m">1m</ComboBoxItem>
-                <ComboBoxItem value="5m">5m</ComboBoxItem>
-                <ComboBoxItem value="30m">30m</ComboBoxItem>
-                <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                <ComboBoxItem value="1day">1day</ComboBoxItem>
-              </ComboBoxSection>
-            </FormFieldCombobox>
+            />
             <FormFieldCombobox
+              options={timeoutOptions}
+              defaultFilter={startsWith}
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
-              defaultFilter={startsWith}
               disabled={isPendingOrSubmitting}
               className="[&_label]:text-zinc-500"
               defaultValue={data?.abort_timeout ?? ''}
@@ -223,31 +205,7 @@ export function EditTimeoutDialog() {
                 </InlineTooltip>
               }
               name="abort_timeout"
-            >
-              <ComboBoxSection
-                title="Examples"
-                description={
-                  <>
-                    Choose from the example options above, or enter a custom
-                    value in the{' '}
-                    <Link
-                      href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      jiff friendly
-                    </Link>{' '}
-                    format.
-                  </>
-                }
-              >
-                <ComboBoxItem value="1m">1m</ComboBoxItem>
-                <ComboBoxItem value="5m">5m</ComboBoxItem>
-                <ComboBoxItem value="30m">30m</ComboBoxItem>
-                <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                <ComboBoxItem value="1day">1day</ComboBoxItem>
-              </ComboBoxSection>
-            </FormFieldCombobox>
+            />
             <div className="flex flex-col gap-6 rounded-xl bg-gray-100 px-3 pt-3 pb-2">
               <InactivityTimeoutIllustration inactivity={inactivityPreview} />
               <AbortTimeoutIllustration

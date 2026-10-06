@@ -1,26 +1,38 @@
-import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
+import { ComponentProps, ReactNode, useMemo, useState } from 'react';
 import {
   ComboBox as AriaComboBox,
   ComboBoxProps as AriaComboBoxProps,
   Label,
   Input as AriaInput,
   Group,
+  Collection,
 } from 'react-aria-components';
+import { useFilter } from 'react-aria';
 import { FormFieldError } from './FormFieldError';
 import { Button } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
 import { FormFieldLabel } from './FormFieldLabel';
 import { PopoverOverlay } from '@restate/ui/popover';
-import {
-  ListBox,
-  ListBoxItem,
-  ListBoxItemProps,
-  ListBoxSection,
-  ListBoxSectionProps,
-} from '@restate/ui/listbox';
+import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
 import { tv } from '@restate/util/styles';
 
-export interface ComboBoxProps<T extends object> {
+export interface ComboBoxOption {
+  id: string;
+  label?: ReactNode;
+  disabled?: boolean;
+}
+
+export interface ComboBoxOptionSection {
+  id: string;
+  title?: ReactNode;
+  description?: ReactNode;
+  items: readonly ComboBoxOption[];
+}
+
+type ComboBoxEntry = ComboBoxOption | ComboBoxOptionSection;
+
+export interface ComboBoxProps {
+  options: readonly ComboBoxEntry[];
   className?: string;
   required?: boolean;
   disabled?: boolean;
@@ -28,12 +40,15 @@ export interface ComboBoxProps<T extends object> {
   placeholder?: string;
   label?: ReactNode;
   errorMessage?: ComponentProps<typeof FormFieldError>['children'];
-  value?: AriaComboBoxProps<T>['inputValue'];
-  onChange?: AriaComboBoxProps<T>['onInputChange'];
-  allowsCustomValue?: AriaComboBoxProps<T>['allowsCustomValue'];
-  name?: AriaComboBoxProps<T>['name'];
-  defaultValue?: AriaComboBoxProps<T>['defaultInputValue'];
-  defaultFilter?: AriaComboBoxProps<T>['defaultFilter'];
+  value?: AriaComboBoxProps<ComboBoxEntry>['inputValue'];
+  onChange?: AriaComboBoxProps<ComboBoxEntry>['onInputChange'];
+  allowsCustomValue?: AriaComboBoxProps<ComboBoxEntry>['allowsCustomValue'];
+  allowsEmptyCollection?: AriaComboBoxProps<ComboBoxEntry>['allowsEmptyCollection'];
+  renderEmptyState?: ComponentProps<typeof ListBox>['renderEmptyState'];
+  name?: AriaComboBoxProps<ComboBoxEntry>['name'];
+  defaultValue?: AriaComboBoxProps<ComboBoxEntry>['defaultInputValue'];
+  defaultFilter?: AriaComboBoxProps<ComboBoxEntry>['defaultFilter'];
+  onOpenChange?: AriaComboBoxProps<ComboBoxEntry>['onOpenChange'];
   pattern?: string;
 }
 
@@ -45,7 +60,7 @@ const containerStyles = tv({
   base: 'group flex flex-col gap-1',
 });
 
-export function FormFieldCombobox<T extends object>({
+export function FormFieldCombobox({
   className,
   required,
   disabled,
@@ -53,13 +68,35 @@ export function FormFieldCombobox<T extends object>({
   errorMessage,
   label,
   readonly,
-  children,
+  options,
   pattern,
   defaultValue,
   value,
   onChange,
+  renderEmptyState,
+  defaultFilter,
+  onOpenChange,
+  allowsCustomValue,
+  allowsEmptyCollection = true,
   ...props
-}: PropsWithChildren<ComboBoxProps<T>>) {
+}: ComboBoxProps) {
+  const [filterText, setFilterText] = useState('');
+  const { contains } = useFilter({ sensitivity: 'base' });
+  const filter = defaultFilter ?? contains;
+  const items = useMemo(
+    () =>
+      options.flatMap((option): ComboBoxEntry[] => {
+        if ('items' in option) {
+          const items = option.items.filter((item) =>
+            filter(item.id, filterText),
+          );
+          return items.length > 0 ? [{ ...option, items }] : [];
+        }
+        return filter(option.id, filterText) ? [option] : [];
+      }),
+    [options, filter, filterText],
+  );
+
   return (
     <AriaComboBox
       isRequired={required}
@@ -67,7 +104,19 @@ export function FormFieldCombobox<T extends object>({
       menuTrigger="focus"
       defaultInputValue={defaultValue}
       {...(value !== undefined && { inputValue: value })}
-      onInputChange={onChange}
+      onInputChange={(value) => {
+        setFilterText(value);
+        onChange?.(value);
+      }}
+      onOpenChange={(isOpen, trigger) => {
+        if (isOpen && trigger !== 'input') {
+          setFilterText('');
+        }
+        onOpenChange?.(isOpen, trigger);
+      }}
+      items={items}
+      allowsCustomValue={allowsCustomValue}
+      allowsEmptyCollection={allowsEmptyCollection}
       {...props}
       className={containerStyles({ className })}
     >
@@ -94,18 +143,43 @@ export function FormFieldCombobox<T extends object>({
       </Group>
       <FormFieldError>{errorMessage}</FormFieldError>
       <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90">
-        <ListBox className="max-h-[inherit] overflow-auto border-none p-1 outline-0">
-          {children}
+        <ListBox
+          className="max-h-[inherit] overflow-auto border-none p-1 outline-0"
+          renderEmptyState={
+            renderEmptyState ??
+            (() => (
+              <p className="px-2 py-1 text-xs text-gray-500">
+                {allowsCustomValue
+                  ? 'No matching options. Enter a custom value.'
+                  : 'No matching options.'}
+              </p>
+            ))
+          }
+        >
+          <Collection items={items}>
+            {(option) =>
+              'items' in option ? (
+                <ListBoxSection
+                  title={option.title}
+                  description={option.description}
+                >
+                  <Collection items={option.items}>
+                    {(item) => (
+                      <ListBoxItem value={item.id} disabled={item.disabled}>
+                        {item.label ?? item.id}
+                      </ListBoxItem>
+                    )}
+                  </Collection>
+                </ListBoxSection>
+              ) : (
+                <ListBoxItem value={option.id} disabled={option.disabled}>
+                  {option.label ?? option.id}
+                </ListBoxItem>
+              )
+            }
+          </Collection>
         </ListBox>
       </PopoverOverlay>
     </AriaComboBox>
   );
-}
-
-export function ComboBoxItem(props: ListBoxItemProps) {
-  return <ListBoxItem {...props} />;
-}
-
-export function ComboBoxSection(props: ListBoxSectionProps) {
-  return <ListBoxSection {...props} />;
 }

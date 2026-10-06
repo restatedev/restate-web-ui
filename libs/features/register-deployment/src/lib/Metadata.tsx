@@ -4,7 +4,6 @@ import {
   FormFieldLabel,
   FormFieldInput,
   FormFieldCombobox,
-  ComboBoxItem,
 } from '@restate/ui/form-field';
 import { IconName, Icon } from '@restate/ui/icons';
 import { useRegisterDeploymentContext } from './Context';
@@ -20,6 +19,12 @@ const deleteStyles = tv({
     },
   },
 });
+
+const metadataOptions = [
+  { id: 'github.repository' },
+  { id: 'github.commit.sha' },
+  { id: 'github.actions.run.id' },
+];
 
 export function Metadata() {
   const { metadata: list } = useRegisterDeploymentContext();
@@ -50,6 +55,7 @@ export function Metadata() {
         return (
           <div key={item.index} className="flex w-full items-center gap-1.5">
             <FormFieldCombobox
+              options={metadataOptions}
               name="key"
               className="basis-1/3"
               value={item.key}
@@ -61,17 +67,7 @@ export function Metadata() {
                 });
               }}
               allowsCustomValue
-            >
-              <ComboBoxItem value="github.repository">
-                github.repository
-              </ComboBoxItem>
-              <ComboBoxItem value="github.commit.sha">
-                github.commit.sha
-              </ComboBoxItem>
-              <ComboBoxItem value="github.actions.run.id">
-                github.actions.run.id
-              </ComboBoxItem>
-            </FormFieldCombobox>
+            />
             :
             <FormFieldInput
               name="value"
