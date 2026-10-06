@@ -47,12 +47,54 @@ export interface ContentPanelTabs {
   items: ContentPanelTab[];
   defaultId?: string;
   queryParam?: string;
+  stateParams?: (key: string) => boolean;
   selectedId?: string;
   onSelect?: (id: string) => void;
   // Cap the number of inline tabs at desktop sizes; remaining items collapse
   // into a "More" dropdown. If the selected tab isn't in the top N it's
   // promoted into the visible set so it's always reachable in one click.
   maxVisible?: number;
+}
+
+export function isTabStateParam(key: string) {
+  return key.startsWith('filter_') || key.startsWith('sort');
+}
+
+const TAB_STATE_STORAGE_PREFIX = 'restate:content-panel-tab-state';
+
+function tabStateStorageKey(pathname: string, queryParam: string, tab: string) {
+  return `${TAB_STATE_STORAGE_PREFIX}:${pathname}:${queryParam}:${tab}`;
+}
+
+function readTabState(key: string) {
+  try {
+    return new URLSearchParams(window.sessionStorage.getItem(key) ?? '');
+  } catch {
+    return new URLSearchParams();
+  }
+}
+
+function writeTabState(key: string, params: URLSearchParams) {
+  try {
+    if (params.toString()) {
+      window.sessionStorage.setItem(key, params.toString());
+    } else {
+      window.sessionStorage.removeItem(key);
+    }
+  } catch {
+    return;
+  }
+}
+
+function pickParams(
+  params: URLSearchParams,
+  predicate: (key: string) => boolean,
+) {
+  const picked = new URLSearchParams();
+  params.forEach((value, key) => {
+    if (predicate(key)) picked.append(key, value);
+  });
+  return picked;
 }
 
 const ContentPanelContext = createContext<{
@@ -210,6 +252,7 @@ export function ContentPanel({
               maxVisible={tabs.maxVisible}
               defaultTab={tabs.defaultId}
               queryParam={tabs.queryParam}
+              stateParams={tabs.stateParams}
               selectedTab={tabs.selectedId}
               onSelect={tabs.onSelect}
               wrapperClassName={tabsWrapper()}
@@ -240,6 +283,7 @@ interface TabsProps {
   maxVisible?: number;
   defaultTab?: string;
   queryParam?: string;
+  stateParams?: (key: string) => boolean;
   selectedTab?: string;
   onSelect?: (id: string) => void;
   wrapperClassName: string;
@@ -253,6 +297,7 @@ function Tabs({
   maxVisible,
   defaultTab,
   queryParam,
+  stateParams,
   selectedTab: controlledSelectedTab,
   onSelect,
   wrapperClassName,
@@ -276,15 +321,58 @@ function Tabs({
       ? requestedTab
       : fallbackTab;
 
-  const hrefFor = useCallback(
-    (tabId: string): string | undefined => {
-      if (isControlled || !queryParam) return undefined;
-      const params = new URLSearchParams(searchParams);
+  const isStateful = Boolean(stateParams && queryParam && !isControlled);
+  const searchString = searchParams.toString();
+  useEffect(() => {
+    if (!stateParams || !queryParam || isControlled || !selectedTab) return;
+    writeTabState(
+      tabStateStorageKey(location.pathname, queryParam, selectedTab),
+      pickParams(new URLSearchParams(searchString), stateParams),
+    );
+  }, [
+    stateParams,
+    queryParam,
+    isControlled,
+    selectedTab,
+    location.pathname,
+    searchString,
+  ]);
+
+  const paramsForTab = useCallback(
+    (current: URLSearchParams, tabId: string) => {
+      const params = new URLSearchParams(current);
+      if (!queryParam) return params;
+      if (isStateful && stateParams && tabId !== selectedTab) {
+        Array.from(params.keys())
+          .filter(stateParams)
+          .forEach((key) => params.delete(key));
+        readTabState(
+          tabStateStorageKey(location.pathname, queryParam, tabId),
+        ).forEach((value, key) => {
+          if (stateParams(key)) params.append(key, value);
+        });
+      }
       if (tabId === fallbackTab) {
         params.delete(queryParam);
       } else {
         params.set(queryParam, tabId);
       }
+      return params;
+    },
+    [
+      queryParam,
+      isStateful,
+      stateParams,
+      selectedTab,
+      location.pathname,
+      fallbackTab,
+    ],
+  );
+
+  const hrefFor = useCallback(
+    (tabId: string): string | undefined => {
+      if (isControlled || !queryParam) return undefined;
+      const params = paramsForTab(searchParams, tabId);
       const queryString = params.toString();
       return (
         location.pathname +
@@ -296,7 +384,7 @@ function Tabs({
       isControlled,
       queryParam,
       searchParams,
-      fallbackTab,
+      paramsForTab,
       location.pathname,
       location.hash,
     ],
@@ -309,15 +397,7 @@ function Tabs({
       if (isControlled) {
         onSelect?.(next);
       } else if (queryParam) {
-        setSearchParams((old) => {
-          const params = new URLSearchParams(old);
-          if (next === fallbackTab) {
-            params.delete(queryParam);
-          } else {
-            params.set(queryParam, next);
-          }
-          return params;
-        });
+        setSearchParams((old) => paramsForTab(old, next));
         onSelect?.(next);
       } else {
         onSelect?.(next);
@@ -328,7 +408,7 @@ function Tabs({
       isControlled,
       onSelect,
       queryParam,
-      fallbackTab,
+      paramsForTab,
       setSearchParams,
       tabs,
     ],

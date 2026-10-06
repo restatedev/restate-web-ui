@@ -1,6 +1,10 @@
 import { useFeatures } from '@restate/data-access/admin-api';
 import { useListServices } from '@restate/data-access/admin-api-hooks';
-import { ContentPanel, type ContentPanelTabs } from '@restate/ui/content-panel';
+import {
+  ContentPanel,
+  type ContentPanelTabs,
+  isTabStateParam,
+} from '@restate/ui/content-panel';
 import { IconName } from '@restate/ui/icons';
 import { ListPageHeader } from '@restate/ui/layout';
 import { Link } from '@restate/ui/link';
@@ -78,6 +82,7 @@ function Component() {
             })),
             defaultId: services.at(0),
             queryParam: SERVICE_QUERY_PARAM,
+            stateParams: isTabStateParam,
             maxVisible: MAX_VISIBLE_SERVICE_TABS,
           }
         : undefined,

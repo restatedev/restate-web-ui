@@ -4,6 +4,7 @@ import {
   ContentPanelBody,
   ContentPanelSection,
   type ContentPanelTabs,
+  isTabStateParam,
 } from '@restate/ui/content-panel';
 import { formatNumber } from '@restate/util/intl';
 import { useMemo } from 'react';
@@ -70,6 +71,7 @@ export function DeploymentDetails({
       ],
       defaultId: 'services',
       queryParam: TAB_QUERY_PARAM,
+      stateParams: isTabStateParam,
     }),
     [isPending, services.length],
   );
