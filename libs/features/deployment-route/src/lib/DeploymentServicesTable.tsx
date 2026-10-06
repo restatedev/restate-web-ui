@@ -8,12 +8,11 @@ import { Badge } from '@restate/ui/badge';
 import { EmptyState } from '@restate/ui/empty-state';
 import { IconName } from '@restate/ui/icons';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { formatNumber, formatPlurals } from '@restate/util/intl';
 import { serviceHref } from '@restate/util/panel';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
-type ColumnId = 'service' | 'revision' | 'handlers';
+type ColumnId = 'service' | 'revision';
 interface ServiceRow {
   id: string;
   service: Service;
@@ -24,7 +23,6 @@ interface ServiceRow {
 const COLUMNS = [
   { id: 'service', name: 'Service', isRowHeader: true, minWidth: 320 },
   { id: 'revision', name: 'Revision', width: 220 },
-  { id: 'handlers', name: 'Handlers', width: 120 },
 ] satisfies PanelTableColumn<ColumnId>[];
 
 export function DeploymentServicesTable({
@@ -119,17 +117,6 @@ export function DeploymentServicesTable({
                   </span>
                 ) : null}
               </div>
-            </Cell>
-          );
-        }
-        if (column.id === 'handlers') {
-          const count = row.service.handlers.length;
-          return (
-            <Cell>
-              <span className="text-xs text-zinc-600 tabular-nums">
-                {formatNumber(count)}{' '}
-                {formatPlurals(count, { one: 'handler', other: 'handlers' })}
-              </span>
             </Cell>
           );
         }

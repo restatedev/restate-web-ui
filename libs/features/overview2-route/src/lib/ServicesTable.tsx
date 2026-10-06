@@ -12,6 +12,7 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   Handler as ServiceHandler,
+  PlaygroundIconLink,
   ServiceType,
 } from '@restate/features/service';
 import { ServiceTarget } from '@restate/features/service-target';
@@ -125,8 +126,6 @@ const tableStyles = tv({
     handlerInvocationLink:
       'h-full w-full justify-start rounded-none border-none bg-transparent px-2 py-2 text-gray-400/80 shadow-none hover:bg-black/3 hover:text-gray-500',
     handlerInvocationIcon: 'h-4 w-4',
-    playground:
-      'relative shrink-0 border-none bg-gray-50 px-1 py-1 align-middle shadow-none',
     invocationsCell: 'p-0!',
     invocations:
       'group/invocations grid h-full w-full min-w-0 grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-2 rounded-none py-2 pr-3 pl-2 text-inherit no-underline',
@@ -247,30 +246,12 @@ function PlaygroundLink({
   isOnboarding?: boolean;
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
-  const styles = tableStyles();
   const link = (
-    <HoverTooltip content="Playground" disabled={isOnboarding}>
-      <Link
-        aria-label={`Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`}
-        href={panelHref({ playground: serviceName, handler: handlerName })}
-        variant="secondary-button"
-        className={styles.playground({
-          className: isOnboarding
-            ? 'animate-pulseButton bg-blue-50'
-            : undefined,
-        })}
-        autoFocus={isOnboarding}
-      >
-        <Icon
-          name={IconName.Play}
-          className={
-            isOnboarding
-              ? 'ml-px h-3 w-3 fill-blue-500'
-              : 'ml-px h-3 w-3 fill-blue-300 text-blue-700/0'
-          }
-        />
-      </Link>
-    </HoverTooltip>
+    <PlaygroundIconLink
+      aria-label={`Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`}
+      href={panelHref({ playground: serviceName, handler: handlerName })}
+      isHighlighted={isOnboarding}
+    />
   );
 
   if (!OnboardingGuide || handlerName) {

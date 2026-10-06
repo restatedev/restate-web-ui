@@ -4,6 +4,7 @@ export * from './lib/HandlerGridList';
 export * from './lib/HandlerList';
 export * from './lib/InvocationCountLink';
 export * from './lib/MiniService';
+export * from './lib/PlaygroundIconLink';
 export * from './lib/ServiceCard';
 export * from './lib/ServicePlayground';
 export * from './lib/ServicePlaygroundEmbed';
