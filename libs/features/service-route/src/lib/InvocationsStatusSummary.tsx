@@ -7,8 +7,6 @@ import {
   VQueueStageLegend,
   VQueueStageSummaryBar,
 } from '@restate/features/status-chart';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
@@ -20,10 +18,6 @@ const styles = tv({
       'relative z-20 -mb-1 border-b border-gray-200/80 px-1 pt-[calc(var(--cp-section-pt,0px)+0.5rem)] pb-1.5',
     content:
       'flex w-full min-w-0 flex-col items-stretch gap-2.5 px-4 pt-0 pb-1',
-    pageLink:
-      'group/page-link inline-flex shrink-0 items-center gap-0.5 rounded-md px-1 py-0.5 text-2xs font-medium text-zinc-500 no-underline transition-colors hover:bg-black/[0.035] hover:text-zinc-700 focus-visible:bg-black/[0.035] focus-visible:text-zinc-700 pressed:bg-black/[0.07]',
-    pageLinkIcon:
-      'h-3 w-3 text-zinc-400 transition-colors group-hover/page-link:text-zinc-500',
   },
 });
 
@@ -41,7 +35,6 @@ export function InvocationsStatusSummary({
     countMode,
     setCountMode,
     hrefForStatusFilter,
-    invocationsPageHref,
   } = invocationsTab;
   const matching = useMemo(
     () =>
@@ -122,17 +115,6 @@ export function InvocationsStatusSummary({
           populationByStatus={summary.byStatus}
           comparisonScope={summary.hasServiceScope ? 'service' : 'all'}
           isBreakdownLoading={summary.isBreakdownLoading}
-          trailing={
-            <Link
-              href={invocationsPageHref}
-              variant="secondary"
-              preserveQueryParams={false}
-              className={s.pageLink()}
-            >
-              View in Invocations
-              <Icon name={IconName.ArrowUpRight} className={s.pageLinkIcon()} />
-            </Link>
-          }
         />
         <VQueueStageLegend
           byStage={matching.byStage}

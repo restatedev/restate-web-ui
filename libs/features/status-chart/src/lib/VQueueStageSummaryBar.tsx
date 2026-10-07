@@ -13,7 +13,6 @@ import {
   STATUS_LABELS,
   STATUS_STYLE,
 } from './constants';
-import type { ReactNode } from 'react';
 import { BreakdownMode } from './BreakdownMode';
 import type { StatusEntry } from './useOrderedStatuses';
 
@@ -40,7 +39,7 @@ const styles = tv({
     focusRow:
       'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-zinc-500 md:row-start-1 md:mx-0 md:justify-self-start',
     breakdownControl:
-      'col-start-1 row-start-1 flex items-center gap-1.5 justify-self-center md:col-start-2 md:self-center md:justify-self-end md:pr-1',
+      'col-start-1 row-start-1 justify-self-center md:col-start-2 md:self-center md:justify-self-end md:pr-1',
     focusTabList:
       'gap-0 rounded-xl border-[0.5px] border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.03)]',
     focusTab: 'items-baseline gap-1.5 px-3 py-1.5 font-sans text-xs',
@@ -147,7 +146,6 @@ export function VQueueStageSummaryBar({
   comparisonScope = 'all',
   isBreakdownLoading,
   isBreakdownError,
-  trailing,
 }: {
   byStage: VQueueStageSummaryEntry[];
   byStatus: VQueueStatusSummaryEntry[];
@@ -169,7 +167,6 @@ export function VQueueStageSummaryBar({
   comparisonScope?: 'all' | 'service';
   isBreakdownLoading?: (stageName: string) => boolean;
   isBreakdownError?: (stageName: string) => boolean;
-  trailing?: ReactNode;
 }) {
   const matchingStageData = new Map(
     byStage.map((stage) => [stage.name, stage]),
@@ -537,16 +534,13 @@ export function VQueueStageSummaryBar({
 
   return (
     <div className={container({ class: className })}>
-      {(canSampleBreakdown || trailing) && (
+      {canSampleBreakdown && (
         <div className={breakdownControl()}>
-          {canSampleBreakdown && (
-            <BreakdownMode
-              mode={breakdownMode}
-              onChange={onBreakdownModeChange}
-              format="sentence"
-            />
-          )}
-          {trailing}
+          <BreakdownMode
+            mode={breakdownMode}
+            onChange={onBreakdownModeChange}
+            format="sentence"
+          />
         </div>
       )}
       <Tabs

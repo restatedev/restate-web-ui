@@ -5,6 +5,7 @@ import {
   InvocationsStatusSummary,
   RefreshButton,
   useInvocationsTab,
+  ViewInInvocationsLink,
 } from '@restate/features/service-route';
 import {
   ContentPanelBody,
@@ -39,6 +40,7 @@ export function DeploymentInvocations({
   return (
     <>
       <ContentPanelToolbar className="justify-end gap-1 px-1 pb-1">
+        <ViewInInvocationsLink href={invocationsTab.invocationsPageHref} />
         <RefreshButton
           isFetching={isFetching || invocationsTab.summary.isFetching}
           label="Refresh invocations"

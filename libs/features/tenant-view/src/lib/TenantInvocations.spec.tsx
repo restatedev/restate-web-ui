@@ -268,14 +268,18 @@ describe('TenantInvocations', () => {
       renderInvocations(
         `/tenants/acme/invocations${filtered ? '?service=Greeter&status=running' : ''}`,
       );
+      const grid = screen.getByRole('grid', { name: 'Tenant invocations' });
       if (selectRows) {
-        const grid = screen.getByRole('grid', { name: 'Tenant invocations' });
         const checkboxes = await within(grid).findAllByRole('checkbox');
         const lastCheckbox = checkboxes.at(-1);
         if (!lastCheckbox) throw new Error('Missing row selection checkbox');
         await user.click(lastCheckbox);
       }
-      await user.click(screen.getByRole('button', { name: /^Actions/ }));
+      const batchActions = screen
+        .getAllByRole('button', { name: /^Actions/ })
+        .find((button) => !grid.contains(button));
+      if (!batchActions) throw new Error('Missing batch Actions button');
+      await user.click(batchActions);
       await user.click(await screen.findByRole('menuitem', { name: /Cancel/ }));
       expect(
         await screen.findByRole('heading', { name: 'Cancel Invocations' }),

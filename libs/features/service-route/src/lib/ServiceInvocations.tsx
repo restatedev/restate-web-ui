@@ -13,6 +13,7 @@ import {
 } from './InvocationsPanelTable';
 import { RefreshButton } from './RefreshButton';
 import { useInvocationsTab } from './useInvocationsTab';
+import { ViewInInvocationsLink } from './ViewInInvocationsLink';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];
 
@@ -51,6 +52,7 @@ export function ServiceInvocations({
   return (
     <>
       <ContentPanelToolbar className="justify-end gap-1 px-1 pb-1">
+        <ViewInInvocationsLink href={invocationsTab.invocationsPageHref} />
         <RefreshButton
           isFetching={isFetching || invocationsTab.summary.isFetching}
           label="Refresh invocations"

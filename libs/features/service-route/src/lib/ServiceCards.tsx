@@ -50,7 +50,7 @@ import {
   PopoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
-import { InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
+import { HoverTooltip, InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
 import { humanTimeToMs } from '@restate/util/humantime';
 import { deploymentHref } from '@restate/util/panel';
 import { formatNumber } from '@restate/util/intl';
@@ -568,20 +568,41 @@ const EDIT_ACTIONS = [
   { key: SERVICE_TIMEOUT_EDIT, label: 'Timeouts…' },
 ];
 
-function ConfigurationEditMenu({ service }: { service: string }) {
+const editTriggerStyles = tv({
+  base: 'flex h-6 items-center gap-1 rounded-md px-1.5 text-2xs font-medium text-gray-500 hover:bg-transparent hover:text-gray-600 disabled:text-gray-400',
+});
+
+function ConfigurationEditMenu({
+  service,
+  disabledReason,
+}: {
+  service: string;
+  disabledReason?: ReactNode;
+}) {
   const [, setSearchParams] = useSearchParams();
+  const trigger = (
+    <Button
+      variant="icon"
+      className={editTriggerStyles()}
+      disabled={Boolean(disabledReason)}
+    >
+      Edit
+      <Icon name={IconName.ChevronDown} className="h-3 w-3" />
+    </Button>
+  );
+  if (disabledReason) {
+    return (
+      <HoverTooltip
+        content={disabledReason}
+        contentClassName="max-w-56 break-normal"
+      >
+        {trigger}
+      </HoverTooltip>
+    );
+  }
   return (
     <Dropdown>
-      <DropdownTrigger>
-        <Button
-          variant="icon"
-          className="flex h-6 items-center gap-1 rounded-md px-1.5 text-2xs font-medium text-gray-400 hover:bg-transparent hover:text-gray-600"
-        >
-          <Icon name={IconName.Pencil} className="h-3 w-3" />
-          Edit
-          <Icon name={IconName.ChevronDown} className="h-3 w-3" />
-        </Button>
-      </DropdownTrigger>
+      <DropdownTrigger>{trigger}</DropdownTrigger>
       <DropdownPopover placement="bottom end">
         <DropdownSection title="Edit">
           <DropdownMenu
@@ -786,7 +807,16 @@ export function ConfigurationCard({
             className="ml-0.5 text-xs text-gray-400"
           />
         }
-        action={!isReadonly && <ConfigurationEditMenu service={service} />}
+        action={
+          <ConfigurationEditMenu
+            service={service}
+            disabledReason={
+              isReadonly
+                ? 'Configuration can only be edited at the service level. Deselect the handler to edit the service configuration.'
+                : undefined
+            }
+          />
+        }
       >
         {isReadonly && (
           <span className={captionStyles()}>Effective for this handler</span>

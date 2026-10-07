@@ -14,3 +14,4 @@ export {
 } from './lib/ServiceCards';
 export { useInvocationsTab } from './lib/useInvocationsTab';
 export { InvocationsStatusSummary } from './lib/InvocationsStatusSummary';
+export { ViewInInvocationsLink } from './lib/ViewInInvocationsLink';
