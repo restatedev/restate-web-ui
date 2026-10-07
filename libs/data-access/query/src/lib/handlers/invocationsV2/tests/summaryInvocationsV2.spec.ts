@@ -298,14 +298,12 @@ describe('POST /query/v2/invocations/summary', () => {
                 COUNT(1) AS count
               FROM (
                 SELECT
-                  entry_kind,
                   stage,
                   status
                 FROM sys_vqueues
                 LIMIT 1000000
               ) v
-              WHERE v.entry_kind = 'invocation'
-                AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
+              WHERE (v.stage = 'inbox' AND v.status IN ('backing-off'))",
         ]
       `);
       expect(body).toMatchObject({
@@ -356,7 +354,6 @@ describe('POST /query/v2/invocations/summary', () => {
               FROM (
                 SELECT
                   id,
-                  entry_kind,
                   stage,
                   status
                 FROM sys_vqueues
@@ -368,7 +365,6 @@ describe('POST /query/v2/invocations/summary', () => {
                 WHERE vm.service_name IN ('FlowControlUiStateService')
                   AND (vm.num_inbox > 0)
               )
-                AND v.entry_kind = 'invocation'
                 AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
         ]
       `);
@@ -413,7 +409,6 @@ describe('POST /query/v2/invocations/summary', () => {
                 WHERE vm.service_name IN ('FlowControlUiStateService')
                   AND (vm.num_inbox > 0)
               )
-                AND v.entry_kind = 'invocation'
                 AND (v.stage = 'inbox' AND v.status IN ('backing-off'))",
         ]
       `);
@@ -424,7 +419,7 @@ describe('POST /query/v2/invocations/summary', () => {
       });
     });
 
-    it('passes an unsupported stage filter through to DataFusion', async () => {
+    it('translates a stage filter into status predicates', async () => {
       setResponder(() => [
         {
           service_name: 'FlowControlUiStateService',
@@ -477,7 +472,7 @@ describe('POST /query/v2/invocations/summary', () => {
               WHERE ss.target_service_name IN ('FlowControlUiStateService')
                 AND ss.status IN ('invoked')
                 AND ((ss.status = 'invoked' AND sis.in_flight IS NOT TRUE AND sis.retry_count > 0))
-                AND ss.stage = 'inbox'
+                AND ((ss.status IN ('inboxed', 'scheduled') OR (ss.status = 'invoked' AND sis.in_flight IS NOT TRUE)))
               GROUP BY
                 ss.target_service_name,
                 CASE
@@ -539,14 +534,12 @@ describe('POST /query/v2/invocations/summary', () => {
                 COUNT(1) AS count
               FROM sys_vqueues v
               WHERE v.stage = 'inbox'
-                AND v.entry_kind = 'invocation'
               GROUP BY v.status",
           "SELECT
                 v.status,
                 COUNT(1) AS count
               FROM sys_vqueues v
               WHERE v.stage = 'finished'
-                AND v.entry_kind = 'invocation'
               GROUP BY v.status",
         ]
       `);
@@ -652,14 +645,12 @@ describe('POST /query/v2/invocations/summary', () => {
                 COUNT(1) AS count
               FROM sys_vqueues v
               WHERE v.stage = 'inbox'
-                AND v.entry_kind = 'invocation'
               GROUP BY v.status",
           "SELECT
                 v.status,
                 COUNT(1) AS count
               FROM sys_vqueues v
               WHERE v.stage = 'finished'
-                AND v.entry_kind = 'invocation'
               GROUP BY v.status",
         ]
       `);
@@ -845,7 +836,6 @@ describe('POST /query/v2/invocations/summary', () => {
                   v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'inbox'
-                  AND v.entry_kind = 'invocation'
                 LIMIT 10
               ) sampled_inbox
               GROUP BY sampled_inbox.status",
@@ -858,7 +848,6 @@ describe('POST /query/v2/invocations/summary', () => {
                   v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'finished'
-                  AND v.entry_kind = 'invocation'
                 LIMIT 10
               ) sampled_finished
               GROUP BY sampled_finished.status",
@@ -948,7 +937,6 @@ describe('POST /query/v2/invocations/summary', () => {
                   v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'inbox'
-                  AND v.entry_kind = 'invocation'
                 LIMIT 10
               ) sampled_inbox
               WHERE sampled_inbox.id IN (
@@ -968,7 +956,6 @@ describe('POST /query/v2/invocations/summary', () => {
                   v.status
                 FROM sys_vqueues v
                 WHERE v.stage = 'finished'
-                  AND v.entry_kind = 'invocation'
                 LIMIT 10
               ) sampled_finished
               WHERE sampled_finished.id IN (
@@ -1314,6 +1301,92 @@ describe('POST /query/v2/invocations/summary', () => {
         statusBuckets: [],
         serviceBuckets: [],
       });
+    });
+
+    it('filters exact breakdowns by stage with status predicates', async () => {
+      setResponder(() => [
+        { service_name: 'Checkout', bucket: 'pending', count: 5 },
+        { service_name: 'Checkout', bucket: 'running', count: 2 },
+      ]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'stage',
+            operation: 'IN',
+            value: ['inbox', 'running'],
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'breakdowns',
+      });
+
+      expect(response.status).toBe(200);
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.target_service_name AS service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END AS bucket,
+                COUNT(1) AS count
+              FROM sys_invocation_status ss
+              LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
+              WHERE ((ss.status IN ('inboxed', 'scheduled') OR (ss.status = 'invoked' AND sis.in_flight IS NOT TRUE)) OR (ss.status = 'invoked' AND sis.in_flight IS TRUE))
+              GROUP BY
+                ss.target_service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END",
+        ]
+      `);
+    });
+
+    it('counts invocations outside a stage', async () => {
+      setResponder(() => [{ count: 12 }]);
+
+      const response = await post(
+        '/v2/invocations/summary',
+        {
+          filters: [
+            {
+              type: 'STRING_LIST',
+              field: 'stage',
+              operation: 'NOT_IN',
+              value: ['finished', 'suspended'],
+            },
+          ],
+          mode: { type: 'sampled', sampleSize: 1_000_000 },
+          view: 'count',
+        },
+        NO_VQUEUE_HEADERS,
+      );
+
+      expect(((await response.json()) as { total: number }).total).toBe(12);
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  id, status
+                FROM sys_invocation_status
+                LIMIT 1000000
+              ) sampled_invocations
+              WHERE (sampled_invocations.status = 'completed' OR sampled_invocations.status = 'suspended') IS NOT TRUE",
+        ]
+      `);
     });
 
     it('returns exact legacy stages and breakdowns from one status scan', async () => {

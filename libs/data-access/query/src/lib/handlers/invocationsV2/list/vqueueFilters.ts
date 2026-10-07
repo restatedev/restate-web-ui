@@ -145,7 +145,7 @@ export function vqueueSampleColumns(
   filters: InvocationFilterV2[],
   statuses: readonly InvocationStatusV2[] | undefined,
   sortField: InvocationSortV2['field'] | undefined,
-  requiredColumns: string[] = ['entry_id', 'entry_kind'],
+  requiredColumns: string[] = ['entry_id'],
 ) {
   const columns = new Set(requiredColumns);
   if (statuses) columns.add('stage');

@@ -8,6 +8,8 @@ import {
 } from './shared';
 import { getInvocationStatusFromVqueue } from '../../invocationStatuses';
 import type { QueryContext } from '../shared';
+import { SERVICE_STATS, selectFromIndex } from '../indexes';
+import { usesStatsTables } from '../../uiFeatures';
 import { queryInboxDueBreakdownWithServiceFromInvocationStatusAndState } from './inboxDue/queryInboxDueBreakdownWithServiceFromInvocationStatusAndState';
 import { queryOverallInboxDueBreakdownFromInvocationStatusAndState } from './inboxDue/queryOverallInboxDueBreakdownFromInvocationStatusAndState';
 import { queryOverallInboxDueBreakdownFromVqueues } from './inboxDue/queryOverallInboxDueBreakdownFromVqueues';
@@ -197,7 +199,17 @@ export async function inboxInvocationsBreakdownV2(
     rows: StatusBreakdownRow[];
     partial?: InboxBreakdownPartialResult;
   };
-  if (useVqueues && serviceNames.length) {
+  if (useVqueues && usesStatsTables(this)) {
+    const rows = await selectFromIndex(this, SERVICE_STATS, {
+      keys: { service_name: serviceNames.length ? serviceNames : undefined },
+      id: 'stats/services',
+    });
+    result = {
+      rows: rows
+        .filter((row) => row.stage === 'inbox')
+        .map((row) => ({ status: row.status, count: row.num_entries })),
+    };
+  } else if (useVqueues && serviceNames.length) {
     result = await queryInboxStatusBreakdownForServicesFromVqueues(this, {
       serviceNames,
     });
@@ -216,6 +228,7 @@ export async function inboxInvocationsBreakdownV2(
 
   const sampledPopulationIsPartial =
     useVqueues &&
+    !usesStatsTables(this) &&
     !needsService &&
     mode.type === 'sampled' &&
     result.rows.reduce((total, row) => total + Number(row.count ?? 0), 0) >=

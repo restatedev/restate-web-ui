@@ -4,7 +4,10 @@ import {
   type BreakdownCountMode,
 } from '@restate/features/user-preference';
 import { COLUMNS_KEYS, type ColumnKey } from './columns';
-import { SORT_COLUMN_KEYS } from './useInvocationsQueryFilters';
+import {
+  isSortFieldAvailable,
+  SORT_COLUMN_KEYS,
+} from './useInvocationsQueryFilters';
 
 const USER_COLS_KEY = 'invocations-user-cols';
 const USER_SORT_KEY = 'invocations-user-sort';
@@ -53,7 +56,8 @@ export function getUserLastSort(): UserSort | null {
   if (!parsed) return null;
   if (
     typeof parsed.field !== 'string' ||
-    !SORT_COLUMN_KEYS.includes(parsed.field)
+    !SORT_COLUMN_KEYS.includes(parsed.field) ||
+    !isSortFieldAvailable(parsed.field)
   )
     return null;
   if (parsed.order !== 'ASC' && parsed.order !== 'DESC') return null;

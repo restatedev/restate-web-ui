@@ -5,6 +5,7 @@ import type {
 import { convertInvocation, type VqueueStatus } from '../convertInvocation';
 import { TERMINAL_INVOCATION_STATUSES } from '../invocationStatuses';
 import {
+  isInvocationId,
   getSysInvocationListColumns,
   quoteSqlString,
   type QueryContext,
@@ -135,6 +136,55 @@ function toVqueueStatus(entryRow: VirtualObjectEntryRow): VqueueStatus {
   };
 }
 
+export function toVqueueEntry(
+  id: string,
+  entryRow: VirtualObjectEntryRow,
+  invocation?: VirtualObjectInboxEntry['invocation'],
+): VirtualObjectInboxEntry {
+  return {
+    id,
+    kind: entryKind(entryRow.kind),
+    ...(invocation ? { invocation } : {}),
+    ...(entryRow.vqueue_id ? { vqueueId: entryRow.vqueue_id } : {}),
+    ...(entryRow.has_lock !== undefined ? { hasLock: entryRow.has_lock } : {}),
+    ...(entryRow.run_at ? { runAt: entryRow.run_at } : {}),
+    ...(entryRow.sequence_number !== undefined
+      ? { sequenceNumber: entryRow.sequence_number }
+      : {}),
+    ...(entryRow.stage ? { stage: entryRow.stage } : {}),
+    ...(entryRow.status ? { status: entryRow.status } : {}),
+    ...(entryRow.created_at ? { createdAt: entryRow.created_at } : {}),
+    ...(entryRow.transitioned_at
+      ? { transitionedAt: entryRow.transitioned_at }
+      : {}),
+    ...(entryRow.first_runnable_at
+      ? { firstRunnableAt: entryRow.first_runnable_at }
+      : {}),
+    ...(entryRow.first_attempt_at
+      ? { firstAttemptAt: entryRow.first_attempt_at }
+      : {}),
+    ...(entryRow.latest_attempt_at
+      ? { latestAttemptAt: entryRow.latest_attempt_at }
+      : {}),
+    ...(entryRow.num_attempts !== undefined
+      ? { numAttempts: entryRow.num_attempts }
+      : {}),
+    ...(entryRow.num_errors !== undefined
+      ? { numErrors: entryRow.num_errors }
+      : {}),
+    ...(entryRow.num_pauses !== undefined
+      ? { numPauses: entryRow.num_pauses }
+      : {}),
+    ...(entryRow.num_suspensions !== undefined
+      ? { numSuspensions: entryRow.num_suspensions }
+      : {}),
+    ...(entryRow.num_yields !== undefined
+      ? { numYields: entryRow.num_yields }
+      : {}),
+    ...(entryRow.deployment ? { deployment: entryRow.deployment } : {}),
+  };
+}
+
 export async function getVirtualObjectEntryDetails(
   context: QueryContext,
   foundEntries: VirtualObjectEntryRow[],
@@ -150,7 +200,7 @@ export async function getVirtualObjectEntryDetails(
   const entryIds = [...entryRowsById.keys()];
   const invocationIds = entryIds.filter((id) => {
     const entry = entryRowsById.get(id);
-    return entry?.kind === 'invocation' || id.startsWith('inv_');
+    return entry?.kind === 'invocation' || isInvocationId(id);
   });
   const [statusRows, invocationRows] = await Promise.all([
     getVqueueEntryDetailsByIds(context, entryIds, includeFinishedEntryStatus),
@@ -176,55 +226,11 @@ export async function getVirtualObjectEntryDetails(
   const entriesById = new Map<string, VirtualObjectInboxEntry>();
 
   for (const [id, entryRow] of entryRowsById) {
-    const kind = entryKind(entryRow.kind);
     const rawInvocation = rawInvocationsById.get(id);
     const invocation = rawInvocation
       ? convertInvocation(rawInvocation, toVqueueStatus(entryRow))
       : undefined;
-    entriesById.set(id, {
-      id,
-      kind,
-      ...(invocation ? { invocation } : {}),
-      ...(entryRow.vqueue_id ? { vqueueId: entryRow.vqueue_id } : {}),
-      ...(entryRow.has_lock !== undefined
-        ? { hasLock: entryRow.has_lock }
-        : {}),
-      ...(entryRow.run_at ? { runAt: entryRow.run_at } : {}),
-      ...(entryRow.sequence_number !== undefined
-        ? { sequenceNumber: entryRow.sequence_number }
-        : {}),
-      ...(entryRow.stage ? { stage: entryRow.stage } : {}),
-      ...(entryRow.status ? { status: entryRow.status } : {}),
-      ...(entryRow.created_at ? { createdAt: entryRow.created_at } : {}),
-      ...(entryRow.transitioned_at
-        ? { transitionedAt: entryRow.transitioned_at }
-        : {}),
-      ...(entryRow.first_runnable_at
-        ? { firstRunnableAt: entryRow.first_runnable_at }
-        : {}),
-      ...(entryRow.first_attempt_at
-        ? { firstAttemptAt: entryRow.first_attempt_at }
-        : {}),
-      ...(entryRow.latest_attempt_at
-        ? { latestAttemptAt: entryRow.latest_attempt_at }
-        : {}),
-      ...(entryRow.num_attempts !== undefined
-        ? { numAttempts: entryRow.num_attempts }
-        : {}),
-      ...(entryRow.num_errors !== undefined
-        ? { numErrors: entryRow.num_errors }
-        : {}),
-      ...(entryRow.num_pauses !== undefined
-        ? { numPauses: entryRow.num_pauses }
-        : {}),
-      ...(entryRow.num_suspensions !== undefined
-        ? { numSuspensions: entryRow.num_suspensions }
-        : {}),
-      ...(entryRow.num_yields !== undefined
-        ? { numYields: entryRow.num_yields }
-        : {}),
-      ...(entryRow.deployment ? { deployment: entryRow.deployment } : {}),
-    });
+    entriesById.set(id, toVqueueEntry(id, entryRow, invocation));
   }
 
   return { entriesById, vqueueEntryIds } satisfies VirtualObjectEntryDetails;

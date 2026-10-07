@@ -28,7 +28,11 @@ import {
 import { tv } from '@restate/util/styles';
 import { Icon, IconName } from '@restate/ui/icons';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
-import { SORT_QUERY_PREFIX, SORT_NONE } from './useInvocationsQueryFilters';
+import {
+  getDefaultSortField,
+  SORT_QUERY_PREFIX,
+  SORT_NONE,
+} from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
 import { useFeatures } from '@restate/data-access/admin-api';
 
@@ -208,8 +212,13 @@ export function FilterShortcuts({
       newSearchParams.set(SORT_QUERY_PREFIX + 'field', SORT_NONE);
       newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
     } else if (item.sort) {
-      newSearchParams.set(SORT_QUERY_PREFIX + 'field', item.sort.field);
-      newSearchParams.set(SORT_QUERY_PREFIX + 'order', item.sort.order);
+      const sort =
+        item.sort.field === 'created_at' &&
+        getDefaultSortField() === 'transitioned_at'
+          ? { field: 'transitioned_at', order: 'DESC' }
+          : item.sort;
+      newSearchParams.set(SORT_QUERY_PREFIX + 'field', sort.field);
+      newSearchParams.set(SORT_QUERY_PREFIX + 'order', sort.order);
     } else {
       newSearchParams.delete(SORT_QUERY_PREFIX + 'field');
       newSearchParams.delete(SORT_QUERY_PREFIX + 'order');

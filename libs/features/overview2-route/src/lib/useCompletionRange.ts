@@ -21,6 +21,7 @@ type UseCompletionRangeArgs = {
   reuseSummaryForOverall?: boolean;
   summaryBreakdownIsLoading?: boolean;
   summaryIsPartial?: boolean;
+  summaryIsExact?: boolean;
   enabled?: boolean;
   timeRange?: CompletionTimeRange;
 };
@@ -35,6 +36,7 @@ export function useCompletionRange({
   reuseSummaryForOverall = false,
   summaryBreakdownIsLoading = false,
   summaryIsPartial = false,
+  summaryIsExact = false,
   enabled = true,
   timeRange: controlledTimeRange,
 }: UseCompletionRangeArgs) {
@@ -97,7 +99,7 @@ export function useCompletionRange({
     [historyBuckets, isHistoryEnabled, queriedBucket, usesBreakdown],
   );
   const isSampled =
-    (usesBreakdown || usesSummary) &&
+    (usesBreakdown || (usesSummary && !summaryIsExact)) &&
     canSampleBreakdown &&
     breakdownMode === 'estimate';
   const isPartial = usesSummary
@@ -107,6 +109,7 @@ export function useCompletionRange({
   return {
     isHistoryEnabled,
     usesSummary,
+    usesBreakdown,
     timeRange,
     setTimeRange,
     historyBuckets,

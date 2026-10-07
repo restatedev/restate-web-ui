@@ -35,7 +35,6 @@ export async function queryInboxStatusBreakdownForServicesFromVqueues(
         LIMIT ${VQUEUE_SERVICE_QUEUE_LIMIT}
       )
         AND v.stage = 'inbox'
-        AND v.entry_kind = 'invocation'
       GROUP BY v.status
     `.trim(),
     'invocations-v2/inbox-status-for-services',

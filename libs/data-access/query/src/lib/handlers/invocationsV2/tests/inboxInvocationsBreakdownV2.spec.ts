@@ -45,8 +45,7 @@ describe('POST /query/v2/invocations/inbox', () => {
                   AND vm.num_inbox > 0
                 LIMIT 100000
               )
-                AND v.stage = 'inbox'
-                AND v.entry_kind = 'invocation'",
+                AND v.stage = 'inbox'",
         ]
       `);
       expect(body).toMatchObject({
@@ -83,26 +82,25 @@ describe('POST /query/v2/invocations/inbox', () => {
       const body = await response.json();
 
       expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  COUNT(1) AS total,
-                  SUM(
-                    CASE
-                      WHEN v.first_runnable_at <= '2026-01-02T00:00:00.000Z' THEN 1
-                      ELSE 0
-                    END
-                  ) AS due,
-                  SUM(
-                    CASE
-                      WHEN v.first_runnable_at <= '2026-01-02T00:00:00.000Z' THEN 0
-                      ELSE 1
-                    END
-                  ) AS not_due
-                FROM sys_vqueues v
-                WHERE v.stage = 'inbox'
-                  AND v.entry_kind = 'invocation'",
-          ]
-        `);
+        [
+          "SELECT
+                COUNT(1) AS total,
+                SUM(
+                  CASE
+                    WHEN v.first_runnable_at <= '2026-01-02T00:00:00.000Z' THEN 1
+                    ELSE 0
+                  END
+                ) AS due,
+                SUM(
+                  CASE
+                    WHEN v.first_runnable_at <= '2026-01-02T00:00:00.000Z' THEN 0
+                    ELSE 1
+                  END
+                ) AS not_due
+              FROM sys_vqueues v
+              WHERE v.stage = 'inbox'",
+        ]
+      `);
       expect(body).toEqual({
         groupBy: 'due',
         asOf: '2026-01-02T00:00:00.000Z',
@@ -140,7 +138,6 @@ describe('POST /query/v2/invocations/inbox', () => {
                 LIMIT 100000
               )
                 AND v.stage = 'inbox'
-                AND v.entry_kind = 'invocation'
               GROUP BY v.status",
         ]
       `);
@@ -200,16 +197,15 @@ describe('POST /query/v2/invocations/inbox', () => {
       const body = await response.json();
 
       expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  v.status,
-                  COUNT(1) AS count
-                FROM sys_vqueues v
-                WHERE v.stage = 'inbox'
-                  AND v.entry_kind = 'invocation'
-                GROUP BY v.status",
-          ]
-        `);
+        [
+          "SELECT
+                v.status,
+                COUNT(1) AS count
+              FROM sys_vqueues v
+              WHERE v.stage = 'inbox'
+              GROUP BY v.status",
+        ]
+      `);
       expect(body).toEqual({
         groupBy: 'status',
         total: 5,
@@ -232,16 +228,15 @@ describe('POST /query/v2/invocations/inbox', () => {
       );
 
       expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  v.status,
-                  COUNT(1) AS count
-                FROM sys_vqueues v
-                WHERE v.stage = 'inbox'
-                  AND v.entry_kind = 'invocation'
-                GROUP BY v.status",
-          ]
-        `);
+        [
+          "SELECT
+                v.status,
+                COUNT(1) AS count
+              FROM sys_vqueues v
+              WHERE v.stage = 'inbox'
+              GROUP BY v.status",
+        ]
+      `);
     });
   });
 
@@ -267,7 +262,6 @@ describe('POST /query/v2/invocations/inbox', () => {
                     v.status
                   FROM sys_vqueues v
                   WHERE v.stage = 'inbox'
-                    AND v.entry_kind = 'invocation'
                   LIMIT 50000
                 ) sampled_inbox
                 GROUP BY sampled_inbox.status",

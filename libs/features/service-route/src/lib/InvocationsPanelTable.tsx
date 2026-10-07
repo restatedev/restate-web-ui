@@ -2,7 +2,9 @@ import type { components } from '@restate/data-access/admin-api-spec';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationTableCell,
+  isVqueueEntry,
   type InvocationTableColumnKey,
+  VqueueEntryCell,
 } from '@restate/features/invocation-ui';
 import { Actions } from '@restate/features/invocation-route';
 import {
@@ -18,7 +20,8 @@ import { getSearchParams } from '@restate/util/panel';
 import type { Key } from 'react-aria-components';
 import { useLocation, useNavigate } from 'react-router';
 
-type Invocation = components['schemas']['InvocationV2'];
+type InvocationListRow =
+  components['schemas']['ListInvocationsV2Response']['rows'][number];
 type InvocationsResponse = components['schemas']['ListInvocationsV2Response'];
 type InvocationSort = components['schemas']['InvocationV2Sort'];
 export type InvocationsPanelColumn = PanelTableColumn<
@@ -89,7 +92,10 @@ export function InvocationsPanelTable({
   const { baseUrl } = useRestateContext();
   const location = useLocation();
   const navigate = useNavigate();
-  const rows: Invocation[] = data?.rows ?? [];
+  const rows: InvocationListRow[] = data?.rows ?? [];
+  const entryRowIds = rows
+    .filter((row) => isVqueueEntry(row))
+    .map(({ id }) => id);
   const isTruncated = data !== undefined && rows.length >= data.limit;
 
   return (
@@ -108,12 +114,17 @@ export function InvocationsPanelTable({
           onSelectionChange: (keys: Set<Key>) =>
             onSelectionChange?.(new Set(Array.from(keys, String))),
         })}
+        disabledKeys={entryRowIds}
         onRowAction={(rowId) => {
           navigate(
             `${baseUrl}/invocations/${String(rowId)}${getSearchParams(location.search)}`,
           );
         }}
-        rowClassName="cursor-pointer [content-visibility:auto]"
+        rowClassName={(row) =>
+          isVqueueEntry(row)
+            ? 'cursor-default [content-visibility:auto]'
+            : 'cursor-pointer [content-visibility:auto]'
+        }
         bodyHeadingHeight={notice ? 0 : undefined}
         caption={
           notice ? (
@@ -134,7 +145,9 @@ export function InvocationsPanelTable({
           )
         }
         renderCell={(invocation, column) =>
-          column.id === 'actions' ? (
+          isVqueueEntry(invocation) ? (
+            <VqueueEntryCell entry={invocation} column={column.id} />
+          ) : column.id === 'actions' ? (
             <Cell className="align-top [&&&]:overflow-visible">
               <Actions invocation={invocation} />
             </Cell>

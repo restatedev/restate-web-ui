@@ -14,7 +14,8 @@ const FEATURE_FLAG_WARNINGS: Partial<Record<FeatureFlag, string>> = {
 };
 
 function FeatureFlagRow({ flag }: { flag: FeatureFlag }) {
-  const { title, description, available } = FEATURE_FLAG_METADATA[flag];
+  const { title, description, available, serverFeature } =
+    FEATURE_FLAG_METADATA[flag];
   const isEnabled = useIsFeatureFlagEnabled(flag);
   const warning = FEATURE_FLAG_WARNINGS[flag];
 
@@ -39,7 +40,10 @@ function FeatureFlagRow({ flag }: { flag: FeatureFlag }) {
             <span>{warning}</span>
           </div>
         )}
-        <code className="mt-0.5 font-mono text-2xs text-gray-400">{flag}</code>
+        <code className="mt-0.5 font-mono text-2xs text-gray-400">
+          {flag}
+          {serverFeature && ` · requires server feature ${serverFeature}`}
+        </code>
       </div>
       <Switch
         aria-label={title}

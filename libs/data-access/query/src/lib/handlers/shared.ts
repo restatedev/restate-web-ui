@@ -4,6 +4,7 @@ import semverCoerce from 'semver/functions/coerce';
 import type { QueryId } from '../queryDefinitions';
 import { RESTATE_FEATURES_HEADER } from '../getFeatures';
 import { RESTATE_VERSION_HEADER } from '../getVersion';
+import { UI_FEATURES_HEADER } from '../uiFeatures';
 import {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
@@ -266,6 +267,7 @@ export function createQueryContext(
   const downstreamHeaders = new Headers(headers);
   downstreamHeaders.delete(RESTATE_VERSION_HEADER);
   downstreamHeaders.delete(RESTATE_FEATURES_HEADER);
+  downstreamHeaders.delete(UI_FEATURES_HEADER);
 
   return {
     query: (sql: string, id: QueryId) => {
@@ -312,4 +314,8 @@ export function createQueryContext(
     restateVersion,
     features,
   };
+}
+
+export function isInvocationId(id: string) {
+  return id.startsWith('inv_');
 }

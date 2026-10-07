@@ -66,6 +66,57 @@ function querySql(query: ReturnType<typeof vi.fn>) {
 }
 
 describe('listVqueues', () => {
+  it('lists busiest VQueues from the busy index when indexes are enabled', async () => {
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        rows: [{ vqueue_id: vqueue.id }, { vqueue_id: recentVqueue.id }],
+      })
+      .mockResolvedValueOnce({ rows: [recentVqueue, vqueue] })
+      .mockResolvedValueOnce({ rows: [] });
+    const context = {
+      query,
+      features: new Set(['vqueues', 'indexes_v1', 'ui:indexes_v1']),
+    } as unknown as QueryContext;
+
+    const response = await listVqueues.call(context, {
+      sort: { field: 'unfinished', order: 'DESC' },
+    });
+
+    expect(querySql(query)).toMatchInlineSnapshot(`
+      [
+        "SELECT vqueue_id
+      FROM _idx_busy_vqueue
+      ORDER BY total_non_completed DESC, last_modified DESC
+      LIMIT 251",
+        "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
+          FROM sys_vqueue_meta
+          WHERE id IN ('vq_checkout', 'vq_recent')",
+        "SELECT
+        id,
+        status,
+        blocked_on,
+        blocked_on_json,
+        head_entry_id,
+        scheduled_at,
+        invoker_concurrency_block_duration,
+        throttling_rules_block_duration,
+        invoker_throttling_block_duration,
+        invoker_memory_block_duration,
+        concurrency_rules_block_duration,
+        lock_block_duration,
+        deployment_concurrency_block_duration
+      FROM sys_scheduler
+      WHERE id IN ('vq_checkout', 'vq_recent')",
+      ]
+    `);
+    expect(
+      ((await response.json()) as { vqueues: { id: string }[] }).vqueues.map(
+        ({ id }) => id,
+      ),
+    ).toEqual([vqueue.id, recentVqueue.id]);
+  });
+
   it('discovers workload-ranked VQueues and tops up from recent empty metadata', async () => {
     const query = vi
       .fn()
@@ -73,7 +124,7 @@ describe('listVqueues', () => {
       .mockResolvedValueOnce({ rows: [vqueue] })
       .mockResolvedValueOnce({ rows: [recentVqueue] })
       .mockResolvedValueOnce({ rows: [scheduler] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     const response = await listVqueues.call(context);
 
@@ -139,7 +190,7 @@ describe('listVqueues', () => {
 
   it('filters VQueue IDs by exact identity', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     await listVqueues.call(context, {
       filters: [
@@ -164,7 +215,7 @@ describe('listVqueues', () => {
 
   it('combines specific structured filters with AND', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     await listVqueues.call(context, {
       filters: [
@@ -200,7 +251,7 @@ describe('listVqueues', () => {
 
   it('matches the exact service-key portion of a lock', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     await listVqueues.call(context, {
       filters: [
@@ -225,7 +276,7 @@ describe('listVqueues', () => {
 
   it('combines exact service and service-key filters into a lock lookup', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     await listVqueues.call(context, {
       filters: [
@@ -262,7 +313,7 @@ describe('listVqueues', () => {
 
   it('matches a literal scope substring and an exact whole limit key', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     await listVqueues.call(context, {
       filters: [
@@ -293,7 +344,7 @@ describe('listVqueues', () => {
 
   it('matches exact L1 and L2 limit-key segments', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     await listVqueues.call(context, {
       filters: [
@@ -330,7 +381,7 @@ describe('listVqueues', () => {
 
   it('sorts scope and limit key together', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     await listVqueues.call(context, {
       sort: { field: 'scope', order: 'ASC' },
@@ -348,7 +399,7 @@ describe('listVqueues', () => {
 
   it('sorts by every stage count', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     for (const field of [
       'inbox',
@@ -406,7 +457,7 @@ describe('listVqueues', () => {
         rows: [vqueue, { ...vqueue, id: 'vq_payments' }],
       })
       .mockResolvedValueOnce({ rows: [] });
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     const response = await listVqueues.call(context, { limit: 1 });
 
@@ -448,7 +499,7 @@ describe('listVqueues', () => {
 
   it('rejects unsupported sorts and filters before querying', async () => {
     const query = vi.fn();
-    const context = { query } as unknown as QueryContext;
+    const context = { query, features: new Set() } as unknown as QueryContext;
 
     const sortFieldResponse = await listVqueues.call(context, {
       sort: { field: 'createdAt', order: 'ASC' },

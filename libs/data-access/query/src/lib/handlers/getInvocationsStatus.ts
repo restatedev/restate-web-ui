@@ -1,6 +1,6 @@
 import type { RawInvocation } from '@restate/data-access/admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
-import { type QueryContext, quoteSqlString } from './shared';
+import { isInvocationId, type QueryContext, quoteSqlString } from './shared';
 import { fetchVqueueStatuses } from './vqueue';
 
 export async function getInvocationsStatus(
@@ -8,7 +8,7 @@ export async function getInvocationsStatus(
   invocationIds: string[],
 ) {
   const uniqueInvocationIds = [
-    ...new Set(invocationIds.filter((invocationId) => invocationId.length > 0)),
+    ...new Set(invocationIds.filter(isInvocationId)),
   ];
 
   if (uniqueInvocationIds.length === 0) {

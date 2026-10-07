@@ -115,8 +115,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage IN ('inbox', 'running')
+              WHERE v.stage IN ('inbox', 'running')
                 AND ((v.stage = 'inbox' AND v.status IN ('backing-off', 'started', 'yielded')) OR v.stage = 'running')
                 AND v.created_at > '2026-01-01T00:00:00.000Z'
               LIMIT 250",
@@ -148,8 +147,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.id = 'vq_orders'
+              WHERE v.id = 'vq_orders'
                 AND v.stage = 'inbox'
               ORDER BY v.created_at ASC NULLS LAST
               LIMIT 250",
@@ -175,8 +173,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage IN ('inbox', 'paused')
+              WHERE v.stage IN ('inbox', 'paused')
                 AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started', 'yielded')) OR v.stage = 'paused')
               ORDER BY v.transitioned_at ASC NULLS LAST
               LIMIT 250",
@@ -202,8 +199,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage IN ('inbox', 'running', 'suspended', 'paused')
+              WHERE v.stage IN ('inbox', 'running', 'suspended', 'paused')
                 AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started', 'yielded')) OR v.stage = 'running' OR v.stage = 'suspended' OR v.stage = 'paused')
               ORDER BY v.created_at DESC NULLS LAST
               LIMIT 250",
@@ -228,8 +224,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage IN ('inbox', 'running')
+              WHERE v.stage IN ('inbox', 'running')
                 AND ((v.stage = 'inbox' AND v.status IN ('backing-off')) OR v.stage = 'running')
               LIMIT 250",
         ]
@@ -242,11 +237,11 @@ describe('POST /query/v2/invocations', () => {
           return [{ queue_count: 100001 }];
         }
         if (statement.includes('FROM sys_vqueues v')) {
-          return [{ id: 'inv-live' }];
+          return [{ id: 'inv_live' }];
         }
         if (statement.includes('FROM sys_invocation i')) {
           return [
-            rawInvocation('inv-live', {
+            rawInvocation('inv_live', {
               target_service_name: 'myService',
               status: 'ready',
             }),
@@ -254,7 +249,7 @@ describe('POST /query/v2/invocations', () => {
         }
         return [
           {
-            entry_id: 'inv-live',
+            entry_id: 'inv_live',
             stage: 'inbox',
             status: 'backing-off',
             transitioned_at: '2026-01-01T00:00:04.000Z',
@@ -281,7 +276,7 @@ describe('POST /query/v2/invocations', () => {
       });
 
       expect(await response.json()).toMatchObject({
-        rows: [{ id: 'inv-live', status: 'backing-off' }],
+        rows: [{ id: 'inv_live', status: 'backing-off' }],
         mode: 'exact',
         isPartial: true,
         partial: {
@@ -301,7 +296,6 @@ describe('POST /query/v2/invocations', () => {
                   AND (vm.num_inbox > 0 OR vm.num_paused > 0)
                 LIMIT 100000
               )
-                AND v.entry_kind = 'invocation'
                 AND v.stage IN ('inbox', 'paused')
                 AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off', 'started')) OR v.stage = 'paused')
               ORDER BY v.transitioned_at DESC NULLS LAST
@@ -359,10 +353,11 @@ describe('POST /query/v2/invocations', () => {
         vqueue_id,
         limit_key
               FROM sys_invocation i
-              WHERE i.id IN ('inv-live')
+              WHERE i.id IN ('inv_live')
                 AND i.target_service_name IN ('myService')",
           "SELECT
                 v.entry_id,
+                v.entry_kind,
                 v.vqueue_id,
                 v.stage,
                 v.status,
@@ -378,8 +373,7 @@ describe('POST /query/v2/invocations', () => {
                 v.num_errors,
                 v.deployment
               FROM sys_vqueue_entry_status v
-              WHERE v.entry_id IN ('inv-live')
-                AND v.entry_kind = 'invocation'
+              WHERE v.entry_id IN ('inv_live')
               ORDER BY v.transitioned_at DESC NULLS LAST",
         ]
       `);
@@ -422,7 +416,6 @@ describe('POST /query/v2/invocations', () => {
                   AND (vm.num_inbox > 0)
                 LIMIT 100000
               )
-                AND v.entry_kind = 'invocation'
                 AND v.stage = 'inbox'
                 AND (v.stage = 'inbox' AND v.status IN ('backing-off'))
               LIMIT 250",
@@ -454,7 +447,13 @@ describe('POST /query/v2/invocations', () => {
 
       expect(sql).toHaveLength(1);
       expect(sql[0]).toContain('FROM sys_vqueues v');
-      expect(sql[0]).toContain("AND v.id = 'vq_selected'");
+      expect(sql[0]).toMatchInlineSnapshot(`
+        "SELECT
+                v.entry_id AS id
+              FROM sys_vqueues v
+              WHERE v.id = 'vq_selected'
+              LIMIT 250"
+      `);
     });
 
     it('rejects transitioned_at when invocation filters require status refinement', async () => {
@@ -534,7 +533,7 @@ describe('POST /query/v2/invocations', () => {
       setResponder((statement) =>
         statement.startsWith('SELECT ss.id AS id')
           ? Array.from({ length: 500 }, (_, index) => ({
-              id: `inv-${index}`,
+              id: `inv_${index}`,
             }))
           : [],
       );
@@ -647,8 +646,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage IN ('inbox', 'finished')
+              WHERE v.stage IN ('inbox', 'finished')
                 AND ((v.stage = 'inbox' AND v.status IN ('new', 'backing-off')) OR (v.stage = 'finished' AND v.status IN ('succeeded')))
               ORDER BY v.created_at DESC NULLS LAST
               LIMIT 250",
@@ -684,8 +682,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage = 'inbox'
+              WHERE v.stage = 'inbox'
                 AND (v.stage = 'inbox' AND v.status IN ('new', 'backing-off'))
               ORDER BY v.created_at DESC NULLS LAST
               LIMIT 250",
@@ -696,15 +693,15 @@ describe('POST /query/v2/invocations', () => {
     it('orders parallel migration candidates during hydration', async () => {
       setResponder((statement) => {
         if (statement.includes('FROM sys_invocation_status ss')) {
-          return [{ id: 'inv-finished' }];
+          return [{ id: 'inv_finished' }];
         }
         if (statement.includes('FROM sys_vqueues v')) {
-          return [{ id: 'inv-live' }];
+          return [{ id: 'inv_live' }];
         }
         if (statement.includes('FROM sys_invocation i')) {
           return [
-            rawInvocation('inv-live', { status: 'ready' }),
-            rawInvocation('inv-finished', {
+            rawInvocation('inv_live', { status: 'ready' }),
+            rawInvocation('inv_finished', {
               status: 'completed',
               completion_result: 'success',
             }),
@@ -712,7 +709,7 @@ describe('POST /query/v2/invocations', () => {
         }
         return [
           {
-            entry_id: 'inv-live',
+            entry_id: 'inv_live',
             stage: 'inbox',
             status: 'backing-off',
           },
@@ -737,7 +734,7 @@ describe('POST /query/v2/invocations', () => {
 
       expect(
         (await response.json()).rows.map((row: { id: string }) => row.id),
-      ).toEqual(['inv-live', 'inv-finished']);
+      ).toEqual(['inv_live', 'inv_finished']);
       expect(sql).toMatchInlineSnapshot(`
         [
           "SELECT
@@ -749,8 +746,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage = 'inbox'
+              WHERE v.stage = 'inbox'
                 AND (v.stage = 'inbox' AND v.status IN ('backing-off'))
               ORDER BY v.created_at DESC NULLS LAST
               LIMIT 250",
@@ -798,10 +794,11 @@ describe('POST /query/v2/invocations', () => {
         vqueue_id,
         limit_key
               FROM sys_invocation i
-              WHERE i.id IN ('inv-finished', 'inv-live')
+              WHERE i.id IN ('inv_finished', 'inv_live')
               ORDER BY i.created_at DESC NULLS LAST",
           "SELECT
                 v.entry_id,
+                v.entry_kind,
                 v.vqueue_id,
                 v.stage,
                 v.status,
@@ -817,15 +814,14 @@ describe('POST /query/v2/invocations', () => {
                 v.num_errors,
                 v.deployment
               FROM sys_vqueue_entry_status v
-              WHERE v.entry_id IN ('inv-finished', 'inv-live')
-                AND v.entry_kind = 'invocation'",
+              WHERE v.entry_id IN ('inv_finished', 'inv_live')",
         ]
       `);
     });
 
     it('marks a capped migration selection partial when hydration returns a short page', async () => {
       const candidates = Array.from({ length: 250 }, (_, index) => ({
-        id: `inv-${index}`,
+        id: `inv_${index}`,
       }));
       setResponder((statement) => {
         if (statement.includes('FROM sys_invocation_status ss')) {
@@ -890,8 +886,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage = 'inbox'
+              WHERE v.stage = 'inbox'
                 AND (v.stage = 'inbox' AND v.status IN ('new', 'backing-off'))
               ORDER BY v.created_at DESC NULLS LAST
               LIMIT 250",
@@ -1052,7 +1047,6 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
               LIMIT 250",
         ]
       `);
@@ -1081,8 +1075,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
-                AND FALSE
+              WHERE FALSE
               LIMIT 250",
         ]
       `);
@@ -1128,7 +1121,6 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 v.entry_id AS id
               FROM sys_vqueues v
-              WHERE v.entry_kind = 'invocation'
               ORDER BY v.transitioned_at DESC NULLS LAST
               LIMIT 250",
         ]
@@ -1138,18 +1130,18 @@ describe('POST /query/v2/invocations', () => {
     it('skips candidate scans for a bounded id list and runs both point reads', async () => {
       setResponder((statement) => {
         if (statement.includes('FROM sys_invocation i')) {
-          return [rawInvocation('inv-a'), rawInvocation('inv-b')];
+          return [rawInvocation('inv_a'), rawInvocation('inv_b')];
         }
         return [
           {
-            entry_id: 'inv-b',
+            entry_id: 'inv_b',
             stage: 'inbox',
             status: 'backing-off',
             transitioned_at: '2026-01-01T00:00:02.000Z',
             num_errors: 3,
           },
           {
-            entry_id: 'inv-a',
+            entry_id: 'inv_a',
             stage: 'running',
             status: 'started',
             transitioned_at: '2026-01-01T00:00:01.000Z',
@@ -1163,7 +1155,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'id',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['inv-a', 'inv-b'],
+            value: ['inv_a', 'inv_b'],
           },
           {
             field: 'status',
@@ -1177,7 +1169,7 @@ describe('POST /query/v2/invocations', () => {
 
       expect(
         (await response.json()).rows.map((row: { id: string }) => row.id),
-      ).toEqual(['inv-b', 'inv-a']);
+      ).toEqual(['inv_b', 'inv_a']);
       expect(sql).toMatchInlineSnapshot(`
         [
           "SELECT
@@ -1224,9 +1216,10 @@ describe('POST /query/v2/invocations', () => {
         vqueue_id,
         limit_key
               FROM sys_invocation i
-              WHERE i.id IN ('inv-a', 'inv-b')",
+              WHERE i.id IN ('inv_a', 'inv_b')",
           "SELECT
                 v.entry_id,
+                v.entry_kind,
                 v.vqueue_id,
                 v.stage,
                 v.status,
@@ -1242,8 +1235,7 @@ describe('POST /query/v2/invocations', () => {
                 v.num_errors,
                 v.deployment
               FROM sys_vqueue_entry_status v
-              WHERE v.entry_id IN ('inv-a', 'inv-b')
-                AND v.entry_kind = 'invocation'
+              WHERE v.entry_id IN ('inv_a', 'inv_b')
               ORDER BY v.transitioned_at DESC NULLS LAST",
         ]
       `);
@@ -1252,11 +1244,11 @@ describe('POST /query/v2/invocations', () => {
     it('intersects every exact id filter before point lookup', async () => {
       setResponder((statement) => {
         if (statement.includes('FROM sys_invocation i')) {
-          return [rawInvocation('inv-b')];
+          return [rawInvocation('inv_b')];
         }
         return [
           {
-            entry_id: 'inv-b',
+            entry_id: 'inv_b',
             stage: 'inbox',
             status: 'started',
           },
@@ -1269,20 +1261,20 @@ describe('POST /query/v2/invocations', () => {
             field: 'id',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['inv-a', 'inv-b'],
+            value: ['inv_a', 'inv_b'],
           },
           {
             field: 'id',
             type: 'STRING_LIST',
             operation: 'IN',
-            value: ['inv-b', 'inv-c'],
+            value: ['inv_b', 'inv_c'],
           },
         ],
       });
 
       expect(
         (await response.json()).rows.map((row: { id: string }) => row.id),
-      ).toEqual(['inv-b']);
+      ).toEqual(['inv_b']);
       expect(sql).toMatchInlineSnapshot(`
         [
           "SELECT
@@ -1329,9 +1321,10 @@ describe('POST /query/v2/invocations', () => {
         vqueue_id,
         limit_key
               FROM sys_invocation i
-              WHERE i.id IN ('inv-b')",
+              WHERE i.id IN ('inv_b')",
           "SELECT
                 v.entry_id,
+                v.entry_kind,
                 v.vqueue_id,
                 v.stage,
                 v.status,
@@ -1347,8 +1340,7 @@ describe('POST /query/v2/invocations', () => {
                 v.num_errors,
                 v.deployment
               FROM sys_vqueue_entry_status v
-              WHERE v.entry_id IN ('inv-b')
-                AND v.entry_kind = 'invocation'",
+              WHERE v.entry_id IN ('inv_b')",
         ]
       `);
     });
@@ -1357,10 +1349,10 @@ describe('POST /query/v2/invocations', () => {
       vi.useFakeTimers();
       vi.setSystemTime('2026-01-01T00:00:10.000Z');
       const responses: Record<string, unknown>[][] = [
-        [rawInvocation('inv-live', { vqueue_id: 'vq-live' })],
+        [rawInvocation('inv_live', { vqueue_id: 'vq-live' })],
         [
           {
-            entry_id: 'inv-live',
+            entry_id: 'inv_live',
             vqueue_id: 'vq-live',
             stage: 'inbox',
             status: 'new',
@@ -1388,7 +1380,7 @@ describe('POST /query/v2/invocations', () => {
               scope: 'global',
               lock_name: 'Greeter/key',
             }),
-            head_entry_id: 'inv-live',
+            head_entry_id: 'inv_live',
           },
         ],
       ];
@@ -1401,7 +1393,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'id',
             type: 'STRING',
             operation: 'EQUALS',
-            value: 'inv-live',
+            value: 'inv_live',
           },
         ],
         includeFlowControl: true,
@@ -1410,7 +1402,7 @@ describe('POST /query/v2/invocations', () => {
       expect(await response.json()).toMatchObject({
         rows: [
           {
-            id: 'inv-live',
+            id: 'inv_live',
             vqueue: {
               vqueue_id: 'vq-live',
               stage: 'inbox',
@@ -1425,7 +1417,7 @@ describe('POST /query/v2/invocations', () => {
                 },
                 timeInStage: 'PT6S',
                 averageTimeInStage: 'PT1.2S',
-                headEntryId: 'inv-live',
+                headEntryId: 'inv_live',
                 scheduling: 'blocked',
                 blockedOn: 'lock',
                 blockedResource: {
@@ -1484,9 +1476,10 @@ describe('POST /query/v2/invocations', () => {
         vqueue_id,
         limit_key
               FROM sys_invocation i
-              WHERE i.id IN ('inv-live')",
+              WHERE i.id IN ('inv_live')",
           "SELECT
                 v.entry_id,
+                v.entry_kind,
                 v.vqueue_id,
                 v.stage,
                 v.status,
@@ -1502,8 +1495,7 @@ describe('POST /query/v2/invocations', () => {
                 v.num_errors,
                 v.deployment
               FROM sys_vqueue_entry_status v
-              WHERE v.entry_id IN ('inv-live')
-                AND v.entry_kind = 'invocation'",
+              WHERE v.entry_id IN ('inv_live')",
           "SELECT
           id,
           queue_is_paused,
@@ -1534,14 +1526,14 @@ describe('POST /query/v2/invocations', () => {
         if (statement.includes('FROM sys_vqueue_entry_status v')) {
           return [
             {
-              entry_id: 'inv-live',
+              entry_id: 'inv_live',
               stage: 'inbox',
               status: 'yielded',
               deployment: 'dep-live',
             },
           ];
         }
-        return [rawInvocation('inv-live', { status: 'ready' })];
+        return [rawInvocation('inv_live', { status: 'ready' })];
       });
 
       const response = await post('/v2/invocations', {
@@ -1550,7 +1542,7 @@ describe('POST /query/v2/invocations', () => {
             field: 'id',
             type: 'STRING',
             operation: 'EQUALS',
-            value: 'inv-live',
+            value: 'inv_live',
           },
           {
             field: 'status',
@@ -1568,7 +1560,7 @@ describe('POST /query/v2/invocations', () => {
       });
 
       expect(await response.json()).toMatchObject({
-        rows: [{ id: 'inv-live', status: 'yielded' }],
+        rows: [{ id: 'inv_live', status: 'yielded' }],
       });
       expect(sql).toMatchInlineSnapshot(`
         [
@@ -1616,10 +1608,11 @@ describe('POST /query/v2/invocations', () => {
         vqueue_id,
         limit_key
               FROM sys_invocation i
-              WHERE i.id IN ('inv-live')
+              WHERE i.id IN ('inv_live')
                 AND i.pinned_deployment_id = 'dep-live'",
           "SELECT
                 v.entry_id,
+                v.entry_kind,
                 v.vqueue_id,
                 v.stage,
                 v.status,
@@ -1635,8 +1628,7 @@ describe('POST /query/v2/invocations', () => {
                 v.num_errors,
                 v.deployment
               FROM sys_vqueue_entry_status v
-              WHERE v.entry_id IN ('inv-live')
-                AND v.entry_kind = 'invocation'
+              WHERE v.entry_id IN ('inv_live')
                 AND v.deployment = 'dep-live'",
         ]
       `);
@@ -1646,7 +1638,7 @@ describe('POST /query/v2/invocations', () => {
       setResponder((statement) =>
         statement.includes('FROM sys_vqueue_entry_status v')
           ? []
-          : [rawInvocation('inv-live', { vqueue_id: 'vq-live' })],
+          : [rawInvocation('inv_live', { vqueue_id: 'vq-live' })],
       );
 
       const response = await post('/v2/invocations', {
@@ -1655,13 +1647,13 @@ describe('POST /query/v2/invocations', () => {
             field: 'id',
             type: 'STRING',
             operation: 'EQUALS',
-            value: 'inv-live',
+            value: 'inv_live',
           },
         ],
       });
 
       expect(await response.json()).toMatchObject({
-        rows: [{ id: 'inv-live', status: 'ready' }],
+        rows: [{ id: 'inv_live', status: 'ready' }],
       });
     });
 
@@ -1670,7 +1662,7 @@ describe('POST /query/v2/invocations', () => {
         if (statement.includes('FROM sys_vqueue_entry_status v')) {
           return [
             {
-              entry_id: 'inv-live',
+              entry_id: 'inv_live',
               stage: 'running',
               status: 'running',
               transitioned_at: '2026-01-01T00:00:02.000Z',
@@ -1678,12 +1670,12 @@ describe('POST /query/v2/invocations', () => {
           ];
         }
         return [
-          rawInvocation('inv-terminal', {
+          rawInvocation('inv_terminal', {
             status: 'completed',
             completion_result: 'success',
             completed_at: '2026-01-01T00:00:01.000Z',
           }),
-          rawInvocation('inv-live'),
+          rawInvocation('inv_live'),
         ];
       });
 
@@ -1695,7 +1687,7 @@ describe('POST /query/v2/invocations', () => {
               field: 'id',
               type: 'STRING_LIST',
               operation: 'IN',
-              value: ['inv-terminal', 'inv-live'],
+              value: ['inv_terminal', 'inv_live'],
             },
           ],
           sort: { field: 'transitioned_at', order: 'DESC' },
@@ -1708,23 +1700,23 @@ describe('POST /query/v2/invocations', () => {
           (row: { id: string; status: string }) => [row.id, row.status],
         ),
       ).toEqual([
-        ['inv-live', 'running'],
-        ['inv-terminal', 'succeeded'],
+        ['inv_live', 'running'],
+        ['inv_terminal', 'succeeded'],
       ]);
     });
 
     it('uses one modified_at-ordered stream and point-refines its statuses', async () => {
       setResponder((statement) => {
         if (statement.includes('FROM sys_invocation_status ss')) {
-          return [{ id: 'inv-live' }, { id: 'inv-finished' }];
+          return [{ id: 'inv_live' }, { id: 'inv_finished' }];
         }
         if (statement.includes('FROM sys_invocation i')) {
           return [
-            rawInvocation('inv-live', {
+            rawInvocation('inv_live', {
               status: 'ready',
               modified_at: '2026-01-01T00:00:04.000Z',
             }),
-            rawInvocation('inv-finished', {
+            rawInvocation('inv_finished', {
               status: 'completed',
               completion_result: 'success',
               modified_at: '2026-01-01T00:00:03.000Z',
@@ -1733,7 +1725,7 @@ describe('POST /query/v2/invocations', () => {
         }
         return [
           {
-            entry_id: 'inv-live',
+            entry_id: 'inv_live',
             stage: 'inbox',
             status: 'backing-off',
           },
@@ -1760,8 +1752,8 @@ describe('POST /query/v2/invocations', () => {
       const body = await response.json();
 
       expect(body.rows.map((row: { id: string }) => row.id)).toEqual([
-        'inv-live',
-        'inv-finished',
+        'inv_live',
+        'inv_finished',
       ]);
       expect(body.rows.map((row: { status: string }) => row.status)).toEqual([
         'backing-off',
@@ -1820,11 +1812,12 @@ describe('POST /query/v2/invocations', () => {
         vqueue_id,
         limit_key
               FROM sys_invocation i
-              WHERE i.id IN ('inv-live', 'inv-finished')
+              WHERE i.id IN ('inv_live', 'inv_finished')
                 AND i.target_service_name IN ('Greeter')
               ORDER BY i.modified_at DESC NULLS LAST",
           "SELECT
                 v.entry_id,
+                v.entry_kind,
                 v.vqueue_id,
                 v.stage,
                 v.status,
@@ -1840,8 +1833,7 @@ describe('POST /query/v2/invocations', () => {
                 v.num_errors,
                 v.deployment
               FROM sys_vqueue_entry_status v
-              WHERE v.entry_id IN ('inv-live', 'inv-finished')
-                AND v.entry_kind = 'invocation'",
+              WHERE v.entry_id IN ('inv_live', 'inv_finished')",
         ]
       `);
     });
@@ -1849,12 +1841,12 @@ describe('POST /query/v2/invocations', () => {
     it('drops a best-effort candidate whose point lookup changed status', async () => {
       setResponder((statement) => {
         if (statement.includes('FROM sys_invocation_status ss')) {
-          return [{ id: 'inv-a' }];
+          return [{ id: 'inv_a' }];
         }
         if (statement.includes('FROM sys_invocation i')) {
-          return [rawInvocation('inv-a', { status: 'paused' })];
+          return [rawInvocation('inv_a', { status: 'paused' })];
         }
-        return [{ entry_id: 'inv-a', stage: 'paused', status: 'started' }];
+        return [{ entry_id: 'inv_a', stage: 'paused', status: 'started' }];
       });
 
       const response = await post('/v2/invocations', {
@@ -1881,17 +1873,17 @@ describe('POST /query/v2/invocations', () => {
     it('keeps a VQueue candidate whose status changed during hydration', async () => {
       setResponder((statement) => {
         if (statement.includes('FROM sys_vqueues v')) {
-          return [{ id: 'inv-a' }];
+          return [{ id: 'inv_a' }];
         }
         if (statement.includes('FROM sys_invocation i')) {
           return [
-            rawInvocation('inv-a', {
+            rawInvocation('inv_a', {
               status: 'completed',
               completion_result: 'success',
             }),
           ];
         }
-        return [{ entry_id: 'inv-a', stage: 'finished', status: 'succeeded' }];
+        return [{ entry_id: 'inv_a', stage: 'finished', status: 'succeeded' }];
       });
 
       const response = await post('/v2/invocations', {
@@ -1906,14 +1898,14 @@ describe('POST /query/v2/invocations', () => {
       });
 
       expect(await response.json()).toMatchObject({
-        rows: [{ id: 'inv-a', status: 'succeeded' }],
-        statusChangedInvocationIds: ['inv-a'],
+        rows: [{ id: 'inv_a', status: 'succeeded' }],
+        statusChangedInvocationIds: ['inv_a'],
       });
     });
 
     it('marks a capped VQueue selection partial when retained rows changed status', async () => {
       const candidates = Array.from({ length: 250 }, (_, index) => ({
-        id: `inv-${index}`,
+        id: `inv_${index}`,
       }));
       setResponder((statement) => {
         if (statement.includes('FROM sys_vqueues v')) return candidates;
@@ -2014,14 +2006,12 @@ describe('POST /query/v2/invocations', () => {
               FROM (
                   SELECT
                     entry_id,
-                    entry_kind,
                     stage,
                     status
                   FROM sys_vqueues
                   LIMIT 50000
                 ) v
-              WHERE v.entry_kind = 'invocation'
-                AND v.stage IN ('inbox', 'running')
+              WHERE v.stage IN ('inbox', 'running')
                 AND ((v.stage = 'inbox' AND v.status IN ('started')) OR v.stage = 'running')
               LIMIT 250",
         ]
@@ -2096,7 +2086,6 @@ describe('POST /query/v2/invocations', () => {
                   SELECT
                     id,
                     entry_id,
-                    entry_kind,
                     stage,
                     status
                   FROM sys_vqueues
@@ -2109,7 +2098,6 @@ describe('POST /query/v2/invocations', () => {
                   AND (vm.num_inbox > 0)
                 LIMIT 100000
               )
-                AND v.entry_kind = 'invocation'
                 AND v.stage = 'inbox'
                 AND (v.stage = 'inbox' AND v.status IN ('backing-off'))
               LIMIT 250",
@@ -2145,7 +2133,6 @@ describe('POST /query/v2/invocations', () => {
                   SELECT
                     id,
                     entry_id,
-                    entry_kind,
                     stage,
                     status,
                     created_at
@@ -2159,7 +2146,6 @@ describe('POST /query/v2/invocations', () => {
                   AND (vm.num_inbox > 0 OR vm.num_paused > 0)
                 LIMIT 100000
               )
-                AND v.entry_kind = 'invocation'
                 AND v.stage IN ('inbox', 'paused')
                 AND ((v.stage = 'inbox' AND v.status IN ('yielded')) OR v.stage = 'paused')
               ORDER BY v.created_at DESC NULLS LAST
@@ -2173,7 +2159,7 @@ describe('POST /query/v2/invocations', () => {
     it('revalidates status during the invocation point lookup', async () => {
       setResponder((statement) =>
         statement.includes('FROM sys_invocation_status ss')
-          ? [{ id: 'inv-a' }]
+          ? [{ id: 'inv_a' }]
           : [],
       );
 
@@ -2249,7 +2235,7 @@ describe('POST /query/v2/invocations', () => {
         suspended_waiting_for_signals,
         suspended_waiting_future_json
               FROM sys_invocation i
-              WHERE i.id IN ('inv-a')
+              WHERE i.id IN ('inv_a')
                 AND ((i.status = 'ready') OR (i.status = 'paused'))",
         ]
       `);

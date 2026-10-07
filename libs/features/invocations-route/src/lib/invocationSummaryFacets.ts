@@ -88,6 +88,30 @@ function aggregateStageBuckets(
   });
 }
 
+export function summarizeIncludedServices(
+  summary: InvocationSummary | undefined,
+): InvocationSummary | undefined {
+  if (!summary) return undefined;
+  const included = summary.serviceBuckets.filter(
+    ({ isIncluded }) => isIncluded,
+  );
+  if (included.some(({ statusBreakdown }) => !statusBreakdown))
+    return undefined;
+  const counts = new Map<string, number>();
+  for (const { statusBreakdown = [] } of included) {
+    for (const { key, count } of statusBreakdown) {
+      counts.set(key, (counts.get(key) ?? 0) + count);
+    }
+  }
+  return {
+    ...summary,
+    statusBuckets: summary.statusBuckets.map((bucket) => ({
+      ...bucket,
+      count: counts.get(bucket.key) ?? 0,
+    })),
+  };
+}
+
 export function getInvocationSummaryFacets(
   summary: InvocationSummary | undefined,
   filters: InvocationFilter[] | undefined,

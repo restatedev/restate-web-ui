@@ -50,10 +50,10 @@ function withoutStage({
   return { key, label, statuses };
 }
 
-const LIVE_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
+export const LIVE_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
   STATUS_BUCKETS.filter(({ stage }) => stage !== 'finished').map(withoutStage);
 
-const TERMINAL_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
+export const TERMINAL_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
   STATUS_BUCKETS.filter(({ stage }) => stage === 'finished').map(withoutStage);
 
 const GROUPED_TERMINAL_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
@@ -66,7 +66,7 @@ const GROUPED_TERMINAL_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
     },
   ];
 
-const STAGE_LABELS = {
+export const STAGE_LABELS = {
   inbox: 'Inbox',
   running: 'Running',
   suspended: 'Suspended',
@@ -74,12 +74,14 @@ const STAGE_LABELS = {
   finished: 'Completed',
 } as const;
 
-const SERVICE_STAGE_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
-  INVOCATION_SUMMARY_STAGES.map((stage) => ({
-    key: stage,
-    label: STAGE_LABELS[stage],
-    statuses: getInvocationStatusesForStage(stage),
-  }));
+export const SERVICE_STAGE_BUCKETS: Omit<
+  InvocationStatusSummaryBucket,
+  'count'
+>[] = INVOCATION_SUMMARY_STAGES.map((stage) => ({
+  key: stage,
+  label: STAGE_LABELS[stage],
+  statuses: getInvocationStatusesForStage(stage),
+}));
 
 function countRows(rows: StatusRow[]) {
   return rows.reduce((total, row) => total + Number(row.count ?? 0), 0);
@@ -213,7 +215,6 @@ export async function queryInvocationSummaryFromVqueues(
           v.status
         FROM sys_vqueues v
         WHERE v.stage = 'inbox'
-          AND v.entry_kind = 'invocation'
         LIMIT ${mode.sampleSize}
       ) sampled_inbox${
         sampledInboxQueueFilter
@@ -227,10 +228,9 @@ export async function queryInvocationSummaryFromVqueues(
         v.status,
         COUNT(1) AS count
       FROM sys_vqueues v
-      WHERE v.stage = 'inbox'
-        AND v.entry_kind = 'invocation'${
-          inboxQueueFilter ? `\n        AND ${inboxQueueFilter}` : ''
-        }
+      WHERE v.stage = 'inbox'${
+        inboxQueueFilter ? `\n        AND ${inboxQueueFilter}` : ''
+      }
       GROUP BY v.status
     `.trim();
 
@@ -291,7 +291,6 @@ export async function queryInvocationSummaryFromVqueues(
           v.status
         FROM sys_vqueues v
         WHERE v.stage = 'finished'
-          AND v.entry_kind = 'invocation'
         LIMIT ${mode.sampleSize}
       ) sampled_finished${
         sampledFinishedQueueFilter
@@ -306,10 +305,9 @@ export async function queryInvocationSummaryFromVqueues(
         v.status,
         COUNT(1) AS count
       FROM sys_vqueues v
-      WHERE v.stage = 'finished'
-        AND v.entry_kind = 'invocation'${
-          finishedQueueFilter ? `\n        AND ${finishedQueueFilter}` : ''
-        }
+      WHERE v.stage = 'finished'${
+        finishedQueueFilter ? `\n        AND ${finishedQueueFilter}` : ''
+      }
       GROUP BY v.status
     `.trim();
   }

@@ -255,6 +255,27 @@ export function toDeploymentInvocationsHref(
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 
+export function toDeploymentStatusInvocationsHref(
+  baseUrl: string,
+  deploymentId: string,
+  statusName: string,
+  { existingParams }: { existingParams?: URLSearchParams } = {},
+) {
+  const params = buildParams(existingParams);
+  params.set(
+    'filter_deployment',
+    JSON.stringify({ operation: 'IN', value: [deploymentId] }),
+  );
+  params.set(
+    'filter_status',
+    JSON.stringify({
+      operation: 'IN',
+      value: resolveStatuses(statusName),
+    }),
+  );
+  return `${baseUrl}/invocations?${params.toString()}`;
+}
+
 export function toServiceStatusInvocationsHref(
   baseUrl: string,
   serviceName: string,

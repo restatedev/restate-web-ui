@@ -22,6 +22,7 @@ export type InvocationServiceSummaryBucket = {
   service: string;
   count: number;
   statusBuckets: InvocationStatusSummaryBucket[];
+  statusBreakdown?: InvocationStatusSummaryBucket[];
 };
 
 export type InvocationSummaryQueryResult = {

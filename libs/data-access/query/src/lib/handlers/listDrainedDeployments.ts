@@ -1,4 +1,6 @@
 import type { QueryContext } from './shared';
+import { usesStatsTables } from '../uiFeatures';
+import { DEPLOYMENT_STATS } from './indexes';
 
 const DRAINED_DEPLOYMENTS_QUERY = `WITH active_deployments AS (
     SELECT DISTINCT deployment_id AS id
@@ -24,8 +26,7 @@ const VQUEUE_DRAINED_DEPLOYMENTS_QUERY = `WITH active_deployments AS (
 
     SELECT deployment AS id
     FROM sys_vqueues
-    WHERE entry_kind = 'invocation'
-      AND stage != 'finished'
+    WHERE stage != 'finished'
       AND deployment IS NOT NULL
 )
 SELECT id
@@ -36,12 +37,40 @@ EXCEPT
 SELECT id
 FROM active_deployments`;
 
+const STATS_DRAINED_DEPLOYMENTS_QUERY = `WITH active_deployments AS (
+    SELECT deployment_id AS id
+    FROM sys_service
+    WHERE deployment_id IS NOT NULL
+
+    UNION
+
+    SELECT deployment_id AS id
+    FROM ${DEPLOYMENT_STATS.name}
+    WHERE stage IN ('inbox', 'running', 'suspended', 'paused')
+)
+SELECT id
+FROM sys_deployment
+
+EXCEPT
+
+SELECT id
+FROM active_deployments`;
+
+function drainedDeploymentsQuery(context: QueryContext) {
+  if (usesStatsTables(context)) {
+    return [
+      STATS_DRAINED_DEPLOYMENTS_QUERY,
+      'deployments/drained-from-stats',
+    ] as const;
+  }
+  return context.features.has('vqueues')
+    ? ([VQUEUE_DRAINED_DEPLOYMENTS_QUERY, 'deployments/drained'] as const)
+    : ([DRAINED_DEPLOYMENTS_QUERY, 'deployments/drained-legacy'] as const);
+}
+
 export async function listDrainedDeployments(this: QueryContext) {
-  const hasVqueues = this.features.has('vqueues');
-  const { rows } = await this.query(
-    hasVqueues ? VQUEUE_DRAINED_DEPLOYMENTS_QUERY : DRAINED_DEPLOYMENTS_QUERY,
-    hasVqueues ? 'deployments/drained' : 'deployments/drained-legacy',
-  );
+  const [sql, id] = drainedDeploymentsQuery(this);
+  const { rows } = await this.query(sql, id);
 
   return Response.json({
     deployment_ids: rows.map(({ id }) => id as string),

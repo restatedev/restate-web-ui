@@ -22,18 +22,17 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
       });
 
       expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  status,
-                  COUNT(1) AS count
-                FROM sys_vqueues
-                WHERE stage = 'finished'
-                  AND entry_kind = 'invocation'
-                  AND transitioned_at >= '2026-01-01T00:00:00.000Z'
-                  AND transitioned_at < '2026-02-01T00:00:00.000Z'
-                GROUP BY status",
-          ]
-        `);
+        [
+          "SELECT
+                status,
+                COUNT(1) AS count
+              FROM sys_vqueues
+              WHERE stage = 'finished'
+                AND transitioned_at >= '2026-01-01T00:00:00.000Z'
+                AND transitioned_at < '2026-02-01T00:00:00.000Z'
+              GROUP BY status",
+        ]
+      `);
       expect(await response.json()).toMatchObject({
         mode: 'exact',
         granularity: 'exact',
@@ -60,7 +59,6 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
                 SELECT status
                 FROM sys_vqueues
                 WHERE stage = 'finished'
-                  AND entry_kind = 'invocation'
                   AND transitioned_at >= '2026-01-01T00:00:00.000Z'
                   AND transitioned_at < '2026-02-01T00:00:00.000Z'
                 LIMIT 1000000
@@ -84,22 +82,21 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
       const body = await response.json();
 
       expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  sampled_finished.status,
-                  COUNT(1) AS count
-                FROM (
-                  SELECT status
-                  FROM sys_vqueues
-                  WHERE stage = 'finished'
-                    AND entry_kind = 'invocation'
-                    AND transitioned_at >= '2026-01-01T00:00:00.000Z'
-                    AND transitioned_at < '2026-02-01T00:00:00.000Z'
-                  LIMIT 5
-                ) sampled_finished
-                GROUP BY sampled_finished.status",
-          ]
-        `);
+        [
+          "SELECT
+                sampled_finished.status,
+                COUNT(1) AS count
+              FROM (
+                SELECT status
+                FROM sys_vqueues
+                WHERE stage = 'finished'
+                  AND transitioned_at >= '2026-01-01T00:00:00.000Z'
+                  AND transitioned_at < '2026-02-01T00:00:00.000Z'
+                LIMIT 5
+              ) sampled_finished
+              GROUP BY sampled_finished.status",
+        ]
+      `);
       expect(body).toMatchObject({
         mode: 'sampled',
         granularity: 'exact',
@@ -112,20 +109,19 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
       await post('/v2/invocations/finished-breakdown', {});
 
       expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  sampled_finished.status,
-                  COUNT(1) AS count
-                FROM (
-                  SELECT status
-                  FROM sys_vqueues
-                  WHERE stage = 'finished'
-                    AND entry_kind = 'invocation'
-                  LIMIT 50000
-                ) sampled_finished
-                GROUP BY sampled_finished.status",
-          ]
-        `);
+        [
+          "SELECT
+                sampled_finished.status,
+                COUNT(1) AS count
+              FROM (
+                SELECT status
+                FROM sys_vqueues
+                WHERE stage = 'finished'
+                LIMIT 50000
+              ) sampled_finished
+              GROUP BY sampled_finished.status",
+        ]
+      `);
     });
   });
 

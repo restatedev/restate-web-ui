@@ -11,6 +11,7 @@ import { selectVqueueInvocationCandidates } from './list/selectVqueueInvocationC
 import { selectInvocationsFromInvocationStatusAndState } from './list/listInvocationsFromInvocationStatusAndState';
 import { createQueryPlanWhenCompletedVqueuesWereSkipped } from './list/createQueryPlanWhenCompletedVqueuesWereSkipped';
 import { queryVqueueCandidateStatusesByIds } from './list/queryVqueueCandidateStatusesByIds';
+import { selectInvocationCandidatesFromIndexes } from './list/indexedInvocationCandidates';
 import type {
   InvocationCandidate,
   InvocationCandidateRow,
@@ -206,6 +207,21 @@ export async function selectInvocationCandidatesV2(
       rows: invocationIds.map((id) => ({ id })),
       limit,
       mode,
+      statusSelection: queryPlan.statusSelection,
+    };
+  }
+  const indexedCandidates = await selectInvocationCandidatesFromIndexes(
+    context,
+    filters,
+    sort,
+    limit,
+  );
+  if (indexedCandidates) {
+    return {
+      source: 'vqueue',
+      rows: indexedCandidates,
+      limit,
+      mode: { type: 'exact' },
       statusSelection: queryPlan.statusSelection,
     };
   }

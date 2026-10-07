@@ -1,6 +1,5 @@
 import {
   getEndpoint,
-  TERMINAL_INVOCATION_STATUSES,
   type Deployment,
   type Handler,
 } from '@restate/data-access/admin-api-spec';
@@ -33,11 +32,11 @@ import {
   Row,
 } from '@restate/ui/table';
 import { HoverTooltip, RelativeDate } from '@restate/ui/tooltip';
-import { formatNumber } from '@restate/util/intl';
 import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
 import { useOnboarding } from '@restate/util/feature-flag';
 import { panelHref, serviceHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
+import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
 import {
   Collection,
   type Key,
@@ -127,12 +126,6 @@ const tableStyles = tv({
     handlerInvocationLink:
       'h-full w-full justify-start rounded-none border-none bg-transparent px-2 py-2 text-gray-400/80 shadow-none hover:bg-black/3 hover:text-gray-500',
     handlerInvocationIcon: 'h-4 w-4',
-    invocationsCell: 'p-0!',
-    invocations:
-      'group/invocations grid h-full w-full min-w-0 grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-2 rounded-none py-2 pr-3 pl-2 text-inherit no-underline',
-    invocationCount:
-      'inline-flex items-center gap-0.5 justify-self-start rounded-md bg-black/3 px-1.5 py-0.5 text-xs font-medium text-zinc-500 tabular-nums group-hover/invocations:bg-white group-hover/invocations:text-zinc-700',
-    invocationBar: 'w-full max-w-28 min-w-0 justify-self-end',
   },
 });
 
@@ -142,16 +135,6 @@ function handlerRowId(serviceName: string, handlerName: string) {
 
 function includesFilter(value: string | null | undefined, filter: string) {
   return value?.toLowerCase().includes(filter) ?? false;
-}
-
-function toServiceDetailsInvocationsHref(baseUrl: string, service: string) {
-  const params = new URLSearchParams({
-    filter_status: JSON.stringify({
-      operation: 'NOT_IN',
-      value: TERMINAL_INVOCATION_STATUSES,
-    }),
-  });
-  return `${serviceHref(baseUrl, { service })}?${params.toString()}`;
 }
 
 export function getNotCompletedInvocationCount(
@@ -635,48 +618,33 @@ export function ServicesTable() {
           const nonCompleted = stageEntries.filter(
             ({ name }) => name !== 'finished',
           );
-          const notCompletedInvocationsHref = toServiceDetailsInvocationsHref(
-            baseUrl,
-            row.name,
-          );
+          const serviceInvocationsHref = serviceHref(baseUrl, {
+            service: row.name,
+          });
           const issues = serviceIssuesMap.get(row.name) ?? [];
           return (
-            <Cell className={styles.invocationsCell()}>
-              <Link
-                href={notCompletedInvocationsHref}
-                variant="secondary"
-                aria-label={`${formatNumber(invocationCount)} not-completed invocations for ${row.name}`}
-                className={styles.invocations()}
-              >
-                {isServiceSummaryLoading ? (
-                  <span className="h-5 w-12 animate-pulse rounded-full bg-gray-200/70" />
-                ) : (
-                  <span className={styles.invocationCount()}>
-                    {isServiceSummaryError
-                      ? '—'
-                      : formatNumber(invocationCount, true)}
-                    <Icon name={IconName.ChevronRight} className="h-4 w-4" />
-                  </span>
-                )}
-                <div className={styles.invocationBar()}>
-                  <ServiceStatusBar
-                    serviceName={row.name}
-                    statusEntries={nonCompleted}
-                    serviceIssues={issues}
-                    isLoading={isServiceSummaryLoading}
-                    linkParams={linkParams}
-                    rangeLabel="Not completed"
-                    ariaLabel={`Not-completed invocation status for ${row.name}`}
-                    totalLink={notCompletedInvocationsHref}
-                    onOpenChange={(isOpen) => {
-                      if (isOpen && servicesWithHighInbox.has(row.name)) {
-                        void loadServiceInboxBreakdown(row.name);
-                      }
-                    }}
-                  />
-                </div>
-              </Link>
-            </Cell>
+            <NotCompletedInvocationsCell
+              label={row.name}
+              count={invocationCount}
+              isLoading={isServiceSummaryLoading}
+              isError={isServiceSummaryError}
+            >
+              <ServiceStatusBar
+                serviceName={row.name}
+                statusEntries={nonCompleted}
+                serviceIssues={issues}
+                isLoading={isServiceSummaryLoading}
+                linkParams={linkParams}
+                rangeLabel="Not completed"
+                ariaLabel={`Not-completed invocation status for ${row.name}`}
+                totalLink={serviceInvocationsHref}
+                onOpenChange={(isOpen) => {
+                  if (isOpen && servicesWithHighInbox.has(row.name)) {
+                    void loadServiceInboxBreakdown(row.name);
+                  }
+                }}
+              />
+            </NotCompletedInvocationsCell>
           );
         }
         if (column.id === 'health') {

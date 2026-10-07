@@ -157,3 +157,194 @@ describe('/query origin headers', () => {
     expect(headers.has('X-Restate-Query-Level')).toBe(false);
   });
 });
+
+describe('/query UI table flags', () => {
+  beforeEach(() => setQueryClient(new QueryClient()));
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  async function handlerSql(
+    serverFeatures: Record<string, boolean>,
+    send: () => Promise<unknown>,
+  ) {
+    const fetch = vi.fn(async (request: Request) =>
+      new URL(request.url).pathname === '/version'
+        ? Response.json({ version: '1.8.0', features: serverFeatures })
+        : Response.json({ rows: [] }),
+    );
+    vi.stubGlobal('fetch', fetch);
+    await send().catch(() => undefined);
+    const statements = await Promise.all(
+      fetch.mock.calls
+        .map(([request]) => request)
+        .filter((request) => new URL(request.url).pathname === '/query')
+        .map(async (request) => {
+          const body = (await request.clone().json()) as { query: string };
+          return body.query;
+        }),
+    );
+    return statements;
+  }
+
+  const drained = () =>
+    client.GET('/query/deployments/drained', {
+      baseUrl: 'https://restate.test',
+    });
+  const vqueues = () =>
+    client.POST('/query/limits/vqueues', {
+      baseUrl: 'https://restate.test',
+      body: {},
+    });
+
+  it('uses stats tables whenever the server reports track_status_gauges', async () => {
+    expect(await handlerSql({ track_status_gauges: true }, drained))
+      .toMatchInlineSnapshot(`
+      [
+        "WITH active_deployments AS (
+          SELECT deployment_id AS id
+          FROM sys_service
+          WHERE deployment_id IS NOT NULL
+
+          UNION
+
+          SELECT deployment_id AS id
+          FROM sys_deployment_stats
+          WHERE stage IN ('inbox', 'running', 'suspended', 'paused')
+      )
+      SELECT id
+      FROM sys_deployment
+
+      EXCEPT
+
+      SELECT id
+      FROM active_deployments",
+      ]
+    `);
+    expect(await handlerSql({ track_status_gauges: true }, vqueues))
+      .toMatchInlineSnapshot(`
+      [
+        "SELECT id, COUNT(*) AS workload
+          FROM sys_vqueues
+          WHERE stage IN ('inbox', 'running', 'suspended', 'paused')
+          GROUP BY id
+          ORDER BY workload DESC
+          LIMIT 251",
+        "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
+          FROM sys_vqueue_meta
+          WHERE (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) = 0
+            AND (queue_is_paused = true
+              OR GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) > now() - INTERVAL '24 hours')
+          LIMIT 251",
+      ]
+    `);
+  });
+
+  it('uses index tables only when the index flag is on', async () => {
+    localStorage.setItem('FEATURE_INDEXES_V1', 'true');
+    expect(await handlerSql({ indexes_v1: true }, vqueues))
+      .toMatchInlineSnapshot(`
+      [
+        "SELECT vqueue_id
+      FROM _idx_busy_vqueue
+      ORDER BY total_non_completed DESC, last_modified DESC
+      LIMIT 251",
+      ]
+    `);
+    expect(await handlerSql({ indexes_v1: true }, drained))
+      .toMatchInlineSnapshot(`
+        [
+          "WITH active_deployments AS (
+            SELECT deployment_id AS id
+            FROM sys_service
+            WHERE deployment_id IS NOT NULL
+
+            UNION
+
+            SELECT deployment AS id
+            FROM sys_vqueues
+            WHERE stage != 'finished'
+              AND deployment IS NOT NULL
+        )
+        SELECT id
+        FROM sys_deployment
+
+        EXCEPT
+
+        SELECT id
+        FROM active_deployments",
+        ]
+      `);
+  });
+
+  it('uses VQueues when the server does not report track_status_gauges', async () => {
+    expect(await handlerSql({ indexes_v1: true }, drained))
+      .toMatchInlineSnapshot(`
+      [
+        "WITH active_deployments AS (
+          SELECT deployment_id AS id
+          FROM sys_service
+          WHERE deployment_id IS NOT NULL
+
+          UNION
+
+          SELECT deployment AS id
+          FROM sys_vqueues
+          WHERE stage != 'finished'
+            AND deployment IS NOT NULL
+      )
+      SELECT id
+      FROM sys_deployment
+
+      EXCEPT
+
+      SELECT id
+      FROM active_deployments",
+      ]
+    `);
+  });
+
+  it('ignores the index flag when the server supports neither feature', async () => {
+    localStorage.setItem('FEATURE_INDEXES_V1', 'true');
+    expect(await handlerSql({}, drained)).toMatchInlineSnapshot(`
+      [
+        "WITH active_deployments AS (
+          SELECT deployment_id AS id
+          FROM sys_service
+          WHERE deployment_id IS NOT NULL
+
+          UNION
+
+          SELECT deployment AS id
+          FROM sys_vqueues
+          WHERE stage != 'finished'
+            AND deployment IS NOT NULL
+      )
+      SELECT id
+      FROM sys_deployment
+
+      EXCEPT
+
+      SELECT id
+      FROM active_deployments",
+      ]
+    `);
+    expect(await handlerSql({}, vqueues)).toMatchInlineSnapshot(`
+      [
+        "SELECT id, COUNT(*) AS workload
+          FROM sys_vqueues
+          WHERE stage IN ('inbox', 'running', 'suspended', 'paused')
+          GROUP BY id
+          ORDER BY workload DESC
+          LIMIT 251",
+        "SELECT id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished
+          FROM sys_vqueue_meta
+          WHERE (COALESCE(num_inbox, 0) + COALESCE(num_running, 0) + COALESCE(num_suspended, 0) + COALESCE(num_paused, 0)) = 0
+            AND (queue_is_paused = true
+              OR GREATEST(last_enqueued_at, last_start_at, last_attempt_at, last_finish_at) > now() - INTERVAL '24 hours')
+          LIMIT 251",
+      ]
+    `);
+  });
+});

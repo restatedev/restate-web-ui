@@ -1,5 +1,5 @@
 import type { components } from '@restate/data-access/admin-api-spec';
-import { quoteSqlString, type QueryContext } from './shared';
+import { isInvocationId, quoteSqlString, type QueryContext } from './shared';
 import { queryVirtualObjectLock } from './getVirtualObjectLock';
 import {
   addEntryDetailsToLock,
@@ -12,6 +12,8 @@ import {
   type VirtualObjectEntryDetails,
   type VirtualObjectEntryRow,
 } from './virtualObjectEntries';
+import { ENTRY_NEXT_AT_BY_VIRTUAL_OBJECT, selectFromIndex } from './indexes';
+import { usesIndexesV1 } from '../uiFeatures';
 
 const INBOX_LIMIT = 25;
 const INBOX_QUERY_LIMIT = INBOX_LIMIT + 1;
@@ -193,6 +195,28 @@ async function findScopedVirtualObjectInboxEntries(
     'virtual-objects/scoped-inbox-entries',
   );
   return rows as VirtualObjectEntryRow[];
+}
+
+async function findIndexedVirtualObjectInboxEntries(
+  context: QueryContext,
+  service: string,
+  key: string,
+  scope?: string,
+): Promise<VirtualObjectEntryRow[]> {
+  const rows = await selectFromIndex(context, ENTRY_NEXT_AT_BY_VIRTUAL_OBJECT, {
+    keys: { service_name: service, scope: scope ?? null, key, stage: 'inbox' },
+    columns: ['entry_id', 'stage', 'next_at', 'seq'],
+    sorted: true,
+    limit: INBOX_QUERY_LIMIT,
+    id: 'indexes/entries-next-at-by-virtual-object',
+  });
+  return rows.map((row) => ({
+    id: row.entry_id,
+    kind: isInvocationId(row.entry_id) ? 'invocation' : 'state-mutation',
+    stage: row.stage,
+    run_at: row.next_at,
+    sequence_number: row.seq,
+  }));
 }
 
 // Called when the `vqueues` feature is unavailable.
@@ -524,6 +548,14 @@ export async function getVirtualObjectInbox(
       virtualObjectIdentity,
       () => findLegacyInboxEntries(this, service, key),
       { confirmMissingLegacyLock: true },
+    );
+  }
+  if (usesIndexesV1(this)) {
+    return findInboxEntriesAndGetLockDetails(
+      this,
+      virtualObjectIdentity,
+      () => findIndexedVirtualObjectInboxEntries(this, service, key, scope),
+      { requireVqueueInboxStage: true },
     );
   }
   if (scope !== undefined && this.features.has('scoped_virtual_objects')) {

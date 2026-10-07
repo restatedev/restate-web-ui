@@ -4,6 +4,8 @@ import {
   use,
   useSyncExternalStore,
 } from 'react';
+import { getQueryClient } from '@restate/util/react-query';
+import { FEATURE_FLAG_METADATA } from './metadata';
 import { FEATURE_FLAGS, type FeatureFlag } from './type';
 
 const FEATURE_FLAG_CHANGE_EVENT = 'restate-feature-flag-change';
@@ -25,6 +27,9 @@ export function setFeatureFlag(flag: FeatureFlag, value: boolean) {
   localStorage.setItem(flag, String(value));
   refreshFeatureFlags();
   window.dispatchEvent(new Event(FEATURE_FLAG_CHANGE_EVENT));
+  if (FEATURE_FLAG_METADATA[flag].serverFeature) {
+    void getQueryClient().invalidateQueries();
+  }
 }
 
 let value: Partial<Record<FeatureFlag, boolean>> = EMPTY_FEATURE_FLAGS;

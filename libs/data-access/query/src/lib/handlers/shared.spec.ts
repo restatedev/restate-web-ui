@@ -35,6 +35,7 @@ describe('createQueryContext', () => {
         'x-restate-query-level': 'operator',
         'x-restate-version': '1.7.2',
         'x-restate-features': 'vqueues,protocol_v7',
+        'x-restate-ui-features': 'indexes_v1',
       }),
       '1.7.2',
       new Set(['vqueues', 'protocol_v7']),
@@ -46,6 +47,7 @@ describe('createQueryContext', () => {
     for (const [request] of fetch.mock.calls as [Request][]) {
       expect(request.headers.has('x-restate-version')).toBe(false);
       expect(request.headers.has('x-restate-features')).toBe(false);
+      expect(request.headers.has('x-restate-ui-features')).toBe(false);
       expect(request.headers.get('authorization')).toBe('Bearer token');
       expect(request.headers.get('x-restate-query-level')).toBe('operator');
     }

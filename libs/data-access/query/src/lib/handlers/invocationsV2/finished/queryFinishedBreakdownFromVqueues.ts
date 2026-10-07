@@ -28,10 +28,9 @@ export async function queryFinishedBreakdownFromVqueues(
       FROM (
         SELECT status
         FROM sys_vqueues
-        WHERE stage = 'finished'
-          AND entry_kind = 'invocation'${timeClauses
-            .map((clause) => `\n          AND ${clause}`)
-            .join('')}
+        WHERE stage = 'finished'${timeClauses
+          .map((clause) => `\n          AND ${clause}`)
+          .join('')}
         LIMIT ${mode.sampleSize}
       ) sampled_finished
       GROUP BY sampled_finished.status
@@ -42,10 +41,9 @@ export async function queryFinishedBreakdownFromVqueues(
         status,
         COUNT(1) AS count
       FROM sys_vqueues
-      WHERE stage = 'finished'
-        AND entry_kind = 'invocation'${timeClauses
-          .map((clause) => `\n        AND ${clause}`)
-          .join('')}
+      WHERE stage = 'finished'${timeClauses
+        .map((clause) => `\n        AND ${clause}`)
+        .join('')}
       GROUP BY status
     `.trim();
   }

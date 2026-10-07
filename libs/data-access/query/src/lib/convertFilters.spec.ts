@@ -62,7 +62,7 @@ describe('convertInvocationsFilters', () => {
     ];
 
     expect(convertInvocationsFilters(filters)).toBe(
-      `WHERE "vqueue_id" = 'vq_orders' AND id IN (SELECT entry_id FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation')`,
+      `WHERE "vqueue_id" = 'vq_orders' AND id IN (SELECT entry_id FROM sys_vqueues WHERE stage = 'inbox')`,
     );
   });
 });

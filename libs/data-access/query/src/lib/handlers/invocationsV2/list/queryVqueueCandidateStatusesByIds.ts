@@ -13,7 +13,6 @@ export function queryVqueueCandidateStatusesByIds(
         v.status
       FROM sys_vqueue_entry_status v
       WHERE v.entry_id IN (${sqlStringList(ids)})
-        AND v.entry_kind = 'invocation'
     `.trim(),
     'invocations-v2/candidate-statuses-by-ids',
   ) as Promise<{

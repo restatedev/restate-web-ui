@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import {
   toServiceInvocationsHref,
   toServiceStatusInvocationsHref,
+  toDeploymentStatusInvocationsHref,
   toServiceAndHandlerInvocationsHref,
   toServiceAndHandlerStatusInvocationsHref,
 } from '@restate/util/invocation-links';
@@ -248,6 +249,54 @@ export function ServiceStatusBar({
       noun={noun}
       ariaLabel={ariaLabel}
       onOpenChange={onOpenChange}
+    />
+  );
+}
+
+export function DeploymentStatusBar({
+  deploymentId,
+  label,
+  statusEntries,
+  linkParams,
+  isLoading,
+  rangeLabel,
+  ariaLabel,
+  totalLink,
+}: {
+  deploymentId: string;
+  label: ReactNode;
+  statusEntries: StatusBarEntry[];
+  linkParams?: URLSearchParams;
+  isLoading?: boolean;
+  rangeLabel?: ReactNode;
+  ariaLabel?: string;
+  totalLink: string;
+}) {
+  const { baseUrl } = useRestateContext();
+  return (
+    <StatusBar
+      title={
+        <>
+          <div className="text-base! leading-7 font-medium text-gray-300!">
+            {label}
+          </div>
+          {rangeLabel && (
+            <div className="text-0.5xs! font-normal text-gray-400!">
+              {rangeLabel}
+            </div>
+          )}
+        </>
+      }
+      total={statusEntries.reduce((sum, s) => sum + s.count, 0)}
+      totalLink={totalLink}
+      statuses={statusEntries}
+      getStatusLink={(statusName) =>
+        toDeploymentStatusInvocationsHref(baseUrl, deploymentId, statusName, {
+          existingParams: linkParams,
+        })
+      }
+      isLoading={isLoading}
+      ariaLabel={ariaLabel}
     />
   );
 }

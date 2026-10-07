@@ -1039,3 +1039,157 @@ describe('listVirtualObjectInstances', () => {
     });
   });
 });
+
+describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
+  const INDEX_FEATURES = new Set([
+    'vqueues',
+    'scoped_virtual_objects',
+    'track_status_gauges',
+  ]);
+
+  it('lists objects with their backlog in one stats query, then loads locks', async () => {
+    const { context, query } = createContext((sql) => {
+      if (sql.includes('FROM sys_virtual_object_stats')) {
+        return [
+          { object_key: 'a', scope: 'tenant', backlog: 3 },
+          { object_key: 'b', scope: null, backlog: 0 },
+        ];
+      }
+      return [];
+    }, INDEX_FEATURES);
+
+    const response = await listVirtualObjectInstances.call(context, 'Counter', {
+      search: 'acc',
+    });
+
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT
+      key AS object_key,
+      scope,
+      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
+    FROM sys_virtual_object_stats
+    WHERE service_name = 'Counter'
+      AND (key LIKE '%acc%' OR scope LIKE '%acc%')
+    GROUP BY key, scope
+    LIMIT 51`,
+      `SELECT
+      lock_name,
+      scope,
+      acquired_by,
+      acquired_at
+    FROM sys_locks
+    WHERE acquired_by IS NOT NULL
+      AND (
+        (lock_name = 'Counter/a' AND scope = 'tenant')
+        OR (lock_name = 'Counter/b' AND scope IS NULL)
+      )`,
+    ]);
+    expect(await response.json()).toEqual({
+      rows: [
+        { key: 'a', scope: 'tenant', backlog: 3 },
+        { key: 'b', backlog: 0 },
+      ],
+      truncated: false,
+    });
+  });
+
+  it('ranks by backlog with the same query', async () => {
+    const { context, query } = createContext(
+      (sql) =>
+        sql.includes('FROM sys_virtual_object_stats')
+          ? [
+              { object_key: 'busy', scope: 'tenant', backlog: 9 },
+              { object_key: 'idle', scope: 'tenant', backlog: 0 },
+            ]
+          : [],
+      INDEX_FEATURES,
+    );
+
+    const response = await listVirtualObjectInstances.call(context, 'Counter', {
+      sort: { field: 'backlog', order: 'DESC' },
+    });
+
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT
+      key AS object_key,
+      scope,
+      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
+    FROM sys_virtual_object_stats
+    WHERE service_name = 'Counter'
+    GROUP BY key, scope
+    ORDER BY backlog DESC
+    LIMIT 51`,
+      `SELECT
+      lock_name,
+      scope,
+      acquired_by,
+      acquired_at
+    FROM sys_locks
+    WHERE acquired_by IS NOT NULL
+      AND (
+        (lock_name = 'Counter/busy' AND scope = 'tenant')
+        OR (lock_name = 'Counter/idle' AND scope = 'tenant')
+      )`,
+    ]);
+    expect(
+      ((await response.json()) as { rows: { key: string }[] }).rows.map(
+        ({ key }) => key,
+      ),
+    ).toEqual(['busy', 'idle']);
+  });
+
+  it('looks up the backlog only for requested candidates missing from the page', async () => {
+    const { context, query } = createContext((sql) => {
+      if (sql.includes('GROUP BY key, scope\n    LIMIT')) {
+        return [{ object_key: 'a', scope: 'tenant', backlog: 1 }];
+      }
+      if (sql.includes('FROM sys_virtual_object_stats')) {
+        return [{ object_key: 'pinned', scope: 'tenant', backlog: 4 }];
+      }
+      return [];
+    }, INDEX_FEATURES);
+
+    const response = await listVirtualObjectInstances.call(context, 'Counter', {
+      candidates: [{ key: 'pinned', scope: 'tenant' }],
+    });
+
+    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
+      `SELECT
+      key AS object_key,
+      scope,
+      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
+    FROM sys_virtual_object_stats
+    WHERE service_name = 'Counter'
+    GROUP BY key, scope
+    LIMIT 51`,
+      `SELECT
+      key AS object_key,
+      scope,
+      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
+    FROM sys_virtual_object_stats
+    WHERE service_name = 'Counter'
+      AND (
+        (key = 'pinned' AND scope = 'tenant')
+      )
+    GROUP BY key, scope`,
+      `SELECT
+      lock_name,
+      scope,
+      acquired_by,
+      acquired_at
+    FROM sys_locks
+    WHERE acquired_by IS NOT NULL
+      AND (
+        (lock_name = 'Counter/pinned' AND scope = 'tenant')
+        OR (lock_name = 'Counter/a' AND scope = 'tenant')
+      )`,
+    ]);
+    expect(
+      ((await response.json()) as { rows: { key: string; backlog: number }[] })
+        .rows,
+    ).toEqual([
+      { key: 'pinned', scope: 'tenant', backlog: 4 },
+      { key: 'a', scope: 'tenant', backlog: 1 },
+    ]);
+  });
+});

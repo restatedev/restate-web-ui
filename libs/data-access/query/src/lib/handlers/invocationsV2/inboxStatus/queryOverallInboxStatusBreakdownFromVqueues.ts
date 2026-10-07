@@ -20,7 +20,6 @@ export function queryOverallInboxStatusBreakdownFromVqueues(
             v.status
           FROM sys_vqueues v
           WHERE v.stage = 'inbox'
-            AND v.entry_kind = 'invocation'
           LIMIT ${mode.sampleSize}
         ) sampled_inbox
         GROUP BY sampled_inbox.status
@@ -35,7 +34,6 @@ export function queryOverallInboxStatusBreakdownFromVqueues(
         COUNT(1) AS count
       FROM sys_vqueues v
       WHERE v.stage = 'inbox'
-        AND v.entry_kind = 'invocation'
       GROUP BY v.status
     `.trim(),
     'invocations-v2/inbox-status-from-vqueues',

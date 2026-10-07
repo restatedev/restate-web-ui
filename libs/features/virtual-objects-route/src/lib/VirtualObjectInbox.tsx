@@ -9,7 +9,9 @@ import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationTableCell,
   isInvocationTableColumnKey,
+  isVqueueEntry,
   type InvocationTableColumnKey,
+  VqueueEntryCell,
 } from '@restate/features/invocation-ui';
 import { useRestateContext } from '@restate/features/restate-context';
 import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
@@ -138,37 +140,6 @@ function getInboxColumns(showLimitKey: boolean) {
   ] satisfies PanelTableColumn<InboxColumnId>[];
 }
 
-function NonInvocationIdentity({
-  entry,
-  iconName,
-}: {
-  entry: InboxEntry;
-  iconName?: IconName;
-}) {
-  const isStateMutation = entry.kind === 'state-mutation';
-
-  return (
-    <div className="flex min-w-0 items-center gap-2">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
-        <Icon
-          name={
-            iconName ?? (isStateMutation ? IconName.Database : IconName.History)
-          }
-          className="h-full w-full p-1 text-zinc-500"
-        />
-      </div>
-      <div className="flex min-w-0 items-baseline gap-2">
-        {!isStateMutation && (
-          <span className="shrink-0 text-sm font-medium text-zinc-700">
-            Other entry
-          </span>
-        )}
-        <code className="truncate text-xs text-zinc-600">{entry.id}</code>
-      </div>
-    </div>
-  );
-}
-
 function renderInboxCell(
   entry: InboxEntry,
   column: PanelTableColumn<InboxColumnId>,
@@ -182,16 +153,11 @@ function renderInboxCell(
       </Cell>
     );
   }
-  if (column.id === 'id' && entry.kind !== 'invocation') {
-    return (
-      <Cell className="overflow-visible">
-        <NonInvocationIdentity entry={entry} />
-      </Cell>
-    );
+  if (entry.kind !== 'invocation') {
+    return <VqueueEntryCell entry={entry} column={column.id} />;
   }
   if (isInvocationTableColumnKey(column.id)) {
-    const invocation =
-      entry.kind === 'invocation' ? entry.invocation : undefined;
+    const invocation = entry.invocation;
     return (
       <InvocationTableCell
         column={column.id}
@@ -439,11 +405,11 @@ export function VirtualObjectInvocations({
   const columns = useMemo(() => getInboxColumns(hasVqueues), [hasVqueues]);
   const rows = useMemo<InboxEntry[]>(
     () =>
-      data?.rows.map((invocation) => ({
-        id: invocation.id,
-        kind: 'invocation',
-        invocation,
-      })) ?? [],
+      data?.rows.map((row) =>
+        isVqueueEntry(row)
+          ? row
+          : { id: row.id, kind: 'invocation' as const, invocation: row },
+      ) ?? [],
     [data?.rows],
   );
 

@@ -20,6 +20,7 @@ const deploymentStatusOrder: Record<DeploymentStatus, number> = {
 export function sortDeployments(
   deployments: OverviewDeployment[],
   descriptor: SortDescriptor,
+  invocationCounts?: Map<string, number>,
 ) {
   const { column, direction } = descriptor;
   const modifier = direction === 'descending' ? -1 : 1;
@@ -34,6 +35,12 @@ export function sortDeployments(
         return (
           modifier *
           (deploymentStatusOrder[a.status] - deploymentStatusOrder[b.status])
+        );
+      case 'invocations':
+        return (
+          modifier *
+          ((invocationCounts?.get(a.id) ?? 0) -
+            (invocationCounts?.get(b.id) ?? 0))
         );
       case 'created_at':
         return (

@@ -12,6 +12,16 @@ import {
 } from '@restate/features/prune-deployments';
 import { DeploymentActions } from '@restate/features/register-deployment';
 import { useRestateContext } from '@restate/features/restate-context';
+import {
+  getOverviewRefreshMeta,
+  useFeatures,
+} from '@restate/data-access/admin-api';
+import { useSummaryInvocationsV2 } from '@restate/data-access/admin-api-hooks';
+import { usesStatsTables } from '@restate/data-access/query';
+import {
+  buildStatusEntries,
+  DeploymentStatusBar,
+} from '@restate/features/status-chart';
 import { MiniService } from '@restate/features/service';
 import { Button } from '@restate/ui/button';
 import {
@@ -37,6 +47,8 @@ import { tv } from '@restate/util/styles';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
+import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
+import { getNotCompletedInvocationCount } from './ServicesTable';
 import {
   type OverviewDeployment,
   sortDeployments,
@@ -47,6 +59,7 @@ type DeploymentColumn =
   | 'deployment'
   | 'status'
   | 'services'
+  | 'invocations'
   | 'created_at'
   | 'actions';
 
@@ -58,6 +71,15 @@ const COLUMNS: PanelTableColumn<DeploymentColumn>[] = [
     allowsSorting: true,
     defaultWidth: '3.5fr',
     minWidth: 320,
+  },
+  {
+    id: 'invocations',
+    name: 'Not completed invocations',
+    allowsSorting: true,
+    preferredSortDirection: 'descending',
+    defaultWidth: '1.5fr',
+    minWidth: 190,
+    maxWidth: 240,
   },
   {
     id: 'status',
@@ -111,11 +133,13 @@ export function getDeploymentTableRows({
   drainedDeploymentIds,
   filter,
   sortDescriptor,
+  invocationCounts,
 }: {
   deploymentsMap?: Map<string, DeploymentMetadata>;
   drainedDeploymentIds: Set<string>;
   filter: string;
   sortDescriptor: Parameters<typeof sortDeployments>[1];
+  invocationCounts?: Map<string, number>;
 }) {
   const normalizedFilter = filter.trim().toLowerCase();
   const deployments: OverviewDeployment[] = Array.from(
@@ -135,7 +159,7 @@ export function getDeploymentTableRows({
       )
     : deployments;
 
-  return sortDeployments(filtered, sortDescriptor);
+  return sortDeployments(filtered, sortDescriptor, invocationCounts);
 }
 
 function DeploymentServices({
@@ -211,6 +235,48 @@ function RegisteredAt({ value }: { value: string }) {
   );
 }
 
+function useDeploymentStageCounts() {
+  const { overviewRefetchInterval } = useOverviewContext();
+  const isEnabled = usesStatsTables({ features: useFeatures() });
+  const summary = useSummaryInvocationsV2(
+    {
+      view: 'deployments',
+      filters: [
+        {
+          field: 'stage',
+          type: 'STRING_LIST',
+          operation: 'NOT_IN',
+          value: ['finished'],
+        },
+      ],
+    },
+    {
+      enabled: isEnabled,
+      refetchInterval: overviewRefetchInterval,
+      refetchOnWindowFocus: false,
+      meta: getOverviewRefreshMeta(),
+    },
+  );
+  const stageCounts = useMemo(
+    () =>
+      new Map(
+        (summary.data?.deploymentBuckets ?? []).map(
+          ({ deployment, statusBuckets }) => [
+            deployment,
+            statusBuckets.map(({ key, count }) => ({ name: key, count })),
+          ],
+        ),
+      ),
+    [summary.data?.deploymentBuckets],
+  );
+  return {
+    isEnabled,
+    stageCounts,
+    isLoading: summary.isPending,
+    isError: summary.isError,
+  };
+}
+
 export function DeploymentsTable() {
   const {
     filter,
@@ -220,7 +286,26 @@ export function DeploymentsTable() {
     isDeploymentsFetching,
     resolvedDeploymentSortDescriptor,
     setDeploymentSortDescriptor,
+    linkParams,
   } = useOverviewContext();
+  const deploymentInvocations = useDeploymentStageCounts();
+  const invocationCounts = useMemo(
+    () =>
+      new Map(
+        [...deploymentInvocations.stageCounts].map(
+          ([deployment, stages]) =>
+            [deployment, getNotCompletedInvocationCount(stages)] as const,
+        ),
+      ),
+    [deploymentInvocations.stageCounts],
+  );
+  const columns = useMemo(
+    () =>
+      deploymentInvocations.isEnabled
+        ? COLUMNS
+        : COLUMNS.filter(({ id }) => id !== 'invocations'),
+    [deploymentInvocations.isEnabled],
+  );
   const deployments = useMemo(
     () =>
       getDeploymentTableRows({
@@ -228,12 +313,14 @@ export function DeploymentsTable() {
         drainedDeploymentIds,
         filter,
         sortDescriptor: resolvedDeploymentSortDescriptor,
+        invocationCounts,
       }),
     [
       deploymentsMap,
       drainedDeploymentIds,
       filter,
       resolvedDeploymentSortDescriptor,
+      invocationCounts,
     ],
   );
   const [selectedDeploymentIds, setSelectedDeploymentIds] = useState(
@@ -272,7 +359,7 @@ export function DeploymentsTable() {
     <>
       <PanelTable
         aria-label="Deployments"
-        columns={COLUMNS}
+        columns={columns}
         items={deployments}
         selectionMode="multiple"
         selectedKeys={selectedDeploymentIds}
@@ -287,11 +374,18 @@ export function DeploymentsTable() {
         }
         onRowAction={(deploymentId) =>
           navigate(
-            deploymentHref(baseUrl, { deployment: String(deploymentId) }),
+            deploymentHref(baseUrl, {
+              deployment: String(deploymentId),
+              tab: 'invocations',
+            }),
           )
         }
         rowClassName={styles.row()}
-        bodyDependencies={[isDeploymentStatusLoading]}
+        bodyDependencies={[
+          isDeploymentStatusLoading,
+          deploymentInvocations.stageCounts,
+          deploymentInvocations.isLoading,
+        ]}
         toolbar={
           selectedDeploymentIds.size > 0 ? (
             <>
@@ -365,6 +459,36 @@ export function DeploymentsTable() {
               <Cell className="[&&&]:overflow-visible">
                 <DeploymentServices deployment={deployment} />
               </Cell>
+            );
+          }
+          if (column.id === 'invocations') {
+            const href = deploymentHref(baseUrl, {
+              deployment: deployment.id,
+              tab: 'invocations',
+            });
+            const statusEntries = buildStatusEntries(
+              (deploymentInvocations.stageCounts.get(deployment.id) ?? []).map(
+                ({ name, count }) => ({ status: name, count }),
+              ),
+            ).filter(({ name }) => name !== 'finished');
+            return (
+              <NotCompletedInvocationsCell
+                label={deployment.id}
+                count={invocationCounts.get(deployment.id) ?? 0}
+                isLoading={deploymentInvocations.isLoading}
+                isError={deploymentInvocations.isError}
+              >
+                <DeploymentStatusBar
+                  deploymentId={deployment.id}
+                  label={getEndpoint(deployment) ?? deployment.id}
+                  statusEntries={statusEntries}
+                  isLoading={deploymentInvocations.isLoading}
+                  linkParams={linkParams}
+                  rangeLabel="Not completed"
+                  ariaLabel={`Not-completed invocation status for ${deployment.id}`}
+                  totalLink={href}
+                />
+              </NotCompletedInvocationsCell>
             );
           }
           if (column.id === 'actions') {

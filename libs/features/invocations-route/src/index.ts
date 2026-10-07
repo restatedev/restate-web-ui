@@ -27,6 +27,7 @@ export { Sort } from './lib/QueryButton';
 export { RefreshButton } from './lib/RefreshButton';
 export {
   deriveSortFromUrl,
+  getDefaultSortField,
   setSort,
   SORT_NONE,
   SORT_QUERY_PREFIX,

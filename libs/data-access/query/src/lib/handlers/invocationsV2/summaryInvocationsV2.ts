@@ -14,37 +14,17 @@ import { queryInvocationSummaryFromVqueues } from './summary/queryInvocationSumm
 import type { InvocationSummaryQueryResult } from './summary/types';
 import { createInvocationSummaryQueryPlan } from './summary/createInvocationSummaryQueryPlan';
 import { queryInvocationCountV2 } from './summary/queryInvocationCountV2';
+import {
+  queryInvocationCountFromStats,
+  queryInvocationDeploymentBucketsFromStats,
+  queryInvocationSummaryFromStats,
+} from './summary/statsSources';
+import { countInvocationsFromIndexes } from './list/indexedInvocationCandidates';
 import { rangeToCreatedAtFilter } from '../summaryInvocations';
+import { matchesStringFilter } from './summary/matchesStringFilter';
 
 export type SummaryInvocationsV2Args =
   components['schemas']['SummaryInvocationsV2RequestBody'];
-
-function matchesStringFilter(value: string, filter: FilterItem) {
-  if (filter.type === 'STRING') {
-    switch (filter.operation) {
-      case 'EQUALS':
-        return value === filter.value;
-      case 'NOT_EQUALS':
-        return value !== filter.value;
-      case 'CONTAINS':
-        return value.includes(filter.value ?? '');
-      case 'NOT_CONTAINS':
-        return !value.includes(filter.value ?? '');
-      case 'IS NULL':
-        return false;
-      case 'IS NOT NULL':
-        return true;
-    }
-  }
-  if (filter.type === 'STRING_LIST') {
-    const contains = filter.value.includes(value);
-    return filter.operation === 'IN' ? contains : !contains;
-  }
-  if (filter.type === 'NULL') {
-    return filter.operation === 'IS_NOT';
-  }
-  return true;
-}
 
 /**
  * Applies filters not listed in highlightFields to the aggregate query. Each
@@ -72,6 +52,45 @@ export async function summaryInvocationsV2(
   const { mode, error: modeError } = resolveInvocationModeV2(requestedMode);
   if (modeError || !mode) return badRequest(modeError ?? 'Invalid query mode');
 
+  if (view === 'deployments') {
+    const deploymentBuckets = await queryInvocationDeploymentBucketsFromStats(
+      this,
+      requestedFilters,
+    );
+    if (!deploymentBuckets) {
+      return badRequest('The deployments view requires deployment stats');
+    }
+    return Response.json({
+      queryDurationMs: performance.now() - queryStartedAt,
+      mode: 'exact',
+      isPartial: false,
+      stageCountsArePartial: false,
+      total: deploymentBuckets.reduce((total, { count }) => total + count, 0),
+      appliedFilters: requestedFilters,
+      stageBuckets: [],
+      statusBuckets: [],
+      serviceBuckets: [],
+      deploymentBuckets,
+    });
+  }
+  const indexedCount =
+    view !== 'count'
+      ? undefined
+      : ((await queryInvocationCountFromStats(this, requestedFilters)) ??
+        (await countInvocationsFromIndexes(this, requestedFilters)));
+  if (indexedCount !== undefined) {
+    return Response.json({
+      queryDurationMs: performance.now() - queryStartedAt,
+      mode: 'exact',
+      isPartial: false,
+      stageCountsArePartial: false,
+      total: indexedCount,
+      appliedFilters: requestedFilters,
+      stageBuckets: [],
+      statusBuckets: [],
+      serviceBuckets: [],
+    });
+  }
   if (view === 'count') {
     const countResult = await queryInvocationCountV2(
       this,
@@ -122,9 +141,17 @@ export async function summaryInvocationsV2(
   const usesExactLegacyStageSummary =
     selectedPlan.source ===
     'sys_invocation_status_and_sys_invocation_state_exact_summary';
+  const reportsExactMode =
+    usesExactLegacyStageSummary || selectedPlan.source === 'stats';
 
   let result: InvocationSummaryQueryResult;
-  if (selectedPlan.source === 'sys_vqueue_meta_and_sys_vqueues') {
+  const statsResult =
+    selectedPlan.source === 'stats'
+      ? await queryInvocationSummaryFromStats(this, selectedPlan.filters, view)
+      : undefined;
+  if (statsResult) {
+    result = statsResult;
+  } else if (selectedPlan.source === 'sys_vqueue_meta_and_sys_vqueues') {
     result = await queryInvocationSummaryFromVqueues(
       this,
       mode,
@@ -165,12 +192,12 @@ export async function summaryInvocationsV2(
 
   return Response.json({
     queryDurationMs: performance.now() - queryStartedAt,
-    mode: usesExactLegacyStageSummary ? 'exact' : mode.type,
+    mode: reportsExactMode ? 'exact' : mode.type,
     isPartial: result.isPartial,
     stageCountsArePartial: result.stageCountsArePartial,
     total: stageBuckets.reduce((total, bucket) => total + bucket.count, 0),
     ...(mode.type === 'sampled' &&
-      !usesExactLegacyStageSummary && {
+      !reportsExactMode && {
         sample: { sampleSize: mode.sampleSize },
       }),
     appliedFilters,
@@ -182,6 +209,12 @@ export async function summaryInvocationsV2(
         ...statusBucket,
         isIncluded: statusBucket.statuses.some(statusMatches),
       })),
+      ...(bucket.statusBreakdown && {
+        statusBreakdown: bucket.statusBreakdown.map((statusBucket) => ({
+          ...statusBucket,
+          isIncluded: statusBucket.statuses.some(statusMatches),
+        })),
+      }),
       isIncluded: serviceMatches(bucket.service),
     })),
   });

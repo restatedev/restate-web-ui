@@ -3,7 +3,7 @@ import {
   type components,
   type FilterItem,
 } from '@restate/data-access/admin-api-spec';
-import { type QueryContext } from './shared';
+import { isInvocationId, type QueryContext } from './shared';
 import { selectInvocationCandidatesV2 } from './invocationsV2';
 
 const DEFAULT_PAGE_SIZE = 1000;
@@ -82,7 +82,7 @@ export async function getInvocationIds(
     throw new Error('Unable to continue partial batch invocation selection');
   }
 
-  const invocationIds = rows.map(({ id }) => id);
+  const invocationIds = rows.map(({ id }) => id).filter(isInvocationId);
   const lastCreatedAt = rows.at(-1)?.created_at;
 
   return {

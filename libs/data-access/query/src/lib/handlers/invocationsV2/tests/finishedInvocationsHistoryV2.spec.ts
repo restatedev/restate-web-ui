@@ -35,27 +35,26 @@ describe('POST /query/v2/invocations/finished-history', () => {
       const body = await response.json();
 
       expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  to_unixtime(
-                    date_bin(
-                      INTERVAL '60 seconds',
-                      transitioned_at,
-                      TIMESTAMP '1970-01-01T00:00:00'
-                    )
-                  ) AS bucket,
-                  COUNT(1) FILTER (WHERE status = 'succeeded') AS succeeded,
-                  COUNT(1) FILTER (WHERE status = 'failed') AS failed,
-                  COUNT(1) FILTER (WHERE status = 'cancelled') AS cancelled,
-                  COUNT(1) FILTER (WHERE status = 'killed') AS killed
-                FROM sys_vqueues
-                WHERE stage = 'finished'
-                  AND entry_kind = 'invocation'
-                  AND transitioned_at >= '2026-01-01T00:00:00.000Z'
-                  AND transitioned_at < '2026-01-01T00:03:00.000Z'
-                GROUP BY bucket",
-          ]
-        `);
+        [
+          "SELECT
+                to_unixtime(
+                  date_bin(
+                    INTERVAL '60 seconds',
+                    transitioned_at,
+                    TIMESTAMP '1970-01-01T00:00:00'
+                  )
+                ) AS bucket,
+                COUNT(1) FILTER (WHERE status = 'succeeded') AS succeeded,
+                COUNT(1) FILTER (WHERE status = 'failed') AS failed,
+                COUNT(1) FILTER (WHERE status = 'cancelled') AS cancelled,
+                COUNT(1) FILTER (WHERE status = 'killed') AS killed
+              FROM sys_vqueues
+              WHERE stage = 'finished'
+                AND transitioned_at >= '2026-01-01T00:00:00.000Z'
+                AND transitioned_at < '2026-01-01T00:03:00.000Z'
+              GROUP BY bucket",
+        ]
+      `);
       expect(body.granularity).toBe('exact');
       expect(body.buckets).toEqual([
         {

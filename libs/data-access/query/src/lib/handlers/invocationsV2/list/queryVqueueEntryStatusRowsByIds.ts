@@ -20,7 +20,6 @@ export function queryVqueueEntryStatusRowsByIds(
 ) {
   const clauses = [
     `v.entry_id IN (${sqlStringList(ids)})`,
-    "v.entry_kind = 'invocation'",
     ...vqueueFilterClauses(filters, 'sys_vqueue_entry_status', 'v'),
   ];
   const sortColumn = sort
@@ -35,6 +34,7 @@ export function queryVqueueEntryStatusRowsByIds(
     `
       SELECT
         v.entry_id,
+        v.entry_kind,
         v.vqueue_id,
         v.stage,
         v.status,

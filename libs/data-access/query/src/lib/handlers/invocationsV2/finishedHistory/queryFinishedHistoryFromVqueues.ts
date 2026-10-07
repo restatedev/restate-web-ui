@@ -27,7 +27,6 @@ export function queryFinishedHistoryFromVqueues(
         COUNT(1) FILTER (WHERE status = 'killed') AS killed
       FROM sys_vqueues
       WHERE stage = 'finished'
-        AND entry_kind = 'invocation'
         AND transitioned_at >= ${sqlString(startTime)}
         AND transitioned_at < ${sqlString(endTime)}
       GROUP BY bucket

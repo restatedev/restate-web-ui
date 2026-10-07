@@ -162,7 +162,7 @@ function convertInvocationFilterToSqlClause(
     filter.operation === 'EQUALS' &&
     filter.value !== undefined
   ) {
-    return `id IN (SELECT entry_id FROM sys_vqueues WHERE stage = ${quoteSqlString(filter.value)} AND entry_kind = 'invocation')`;
+    return `id IN (SELECT entry_id FROM sys_vqueues WHERE stage = ${quoteSqlString(filter.value)})`;
   }
   if (useScopeSafeServiceKey && filter.field === 'target_service_key') {
     const field = 'SUBSTR(target_service_key, 1)';

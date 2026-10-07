@@ -109,6 +109,45 @@ describe('PanelTable', () => {
     );
   });
 
+  it('leaves disabled rows out of select-all and row actions', () => {
+    const items = [
+      { id: 'one', name: 'One' },
+      { id: 'two', name: 'Two' },
+      { id: 'three', name: 'Three' },
+    ];
+    const onSelectionChange = vi.fn();
+    const onRowAction = vi.fn();
+
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[{ id: 'name', name: 'Name', isRowHeader: true }]}
+        items={items}
+        selectionMode="multiple"
+        selectedKeys={new Set()}
+        disabledKeys={['two']}
+        onSelectionChange={onSelectionChange}
+        onRowAction={onRowAction}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+
+    expect(
+      screen.getByRole('row', { name: /Two/ }).getAttribute('aria-disabled'),
+    ).toBe('true');
+    fireEvent.click(screen.getByText('Two'));
+    expect(onRowAction).not.toHaveBeenCalled();
+
+    const selectAll = screen
+      .getByRole('grid', { name: 'Items columns' })
+      .querySelector<HTMLInputElement>('input[type="checkbox"]');
+    if (!selectAll) throw new Error('Select-all checkbox was not rendered');
+    fireEvent.click(selectAll);
+    expect(onSelectionChange).toHaveBeenLastCalledWith(
+      new Set(['one', 'three']),
+    );
+  });
+
   it('renders an empty body without virtualization', () => {
     const renderTable = (items: { id: string; name: string }[]) => (
       <PanelTable
