@@ -120,19 +120,19 @@ export function DeleteDeployment() {
             <code className="my-1 block max-w-fit rounded-md bg-red-50 p-0.5 text-red-700 ring-red-600/10">
               <TruncateWithTooltip>{deploymentEndpoint}</TruncateWithTooltip>
             </code>
-            <Warning className="mt-4">
-              This might break in-flight invocations, use with{' '}
-              <span className="font-medium">caution</span>.{' '}
-              <Link
-                rel="noopener noreferrer"
-                target="_blank"
-                href="https://docs.restate.dev/services/versioning#removing-a-service"
-                className="text-orange-700 decoration-orange-700"
-              >
-                Learn more…
-              </Link>
-            </Warning>
           </p>
+          <Warning className="mt-4">
+            This might break in-flight invocations, use with{' '}
+            <span className="font-medium">caution</span>.{' '}
+            <Link
+              rel="noopener noreferrer"
+              target="_blank"
+              href="https://docs.restate.dev/services/versioning#removing-a-service"
+              className="text-orange-700 decoration-orange-700"
+            >
+              Learn more…
+            </Link>
+          </Warning>
           <Form
             id={formId}
             method="DELETE"
