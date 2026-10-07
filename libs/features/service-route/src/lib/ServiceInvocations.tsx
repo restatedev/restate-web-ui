@@ -2,7 +2,6 @@ import type { components } from '@restate/data-access/admin-api-spec';
 import {
   ContentPanelBody,
   ContentPanelSection,
-  ContentPanelToolbar,
 } from '@restate/ui/content-panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { useMemo } from 'react';
@@ -11,9 +10,8 @@ import {
   InvocationsPanelTable,
   SERVICE_INVOCATION_COLUMNS,
 } from './InvocationsPanelTable';
-import { RefreshButton } from './RefreshButton';
 import { useInvocationsTab } from './useInvocationsTab';
-import { ViewInInvocationsLink } from './ViewInInvocationsLink';
+import { InvocationsTabToolbar } from './InvocationsTabToolbar';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];
 
@@ -46,19 +44,11 @@ export function ServiceInvocations({
     [service, handler],
   );
   const invocationsTab = useInvocationsTab(baseFilters, Boolean(service));
-  const { data, error, isPending, isFetching, refetch, dataUpdatedAt } =
-    invocationsTab.list;
+  const { data, error, isPending, dataUpdatedAt } = invocationsTab.list;
 
   return (
     <>
-      <ContentPanelToolbar className="justify-end gap-1 px-1 pb-1">
-        <ViewInInvocationsLink href={invocationsTab.invocationsPageHref} />
-        <RefreshButton
-          isFetching={isFetching || invocationsTab.summary.isFetching}
-          label="Refresh invocations"
-          onClick={() => void refetch()}
-        />
-      </ContentPanelToolbar>
+      <InvocationsTabToolbar invocationsTab={invocationsTab} />
       <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
         <ContentPanelBody className="pb-32">
           <InvocationsStatusSummary invocationsTab={invocationsTab} />
@@ -72,6 +62,8 @@ export function ServiceInvocations({
               data={data}
               isPending={isPending}
               error={error}
+              selectedKeys={invocationsTab.selectedInvocationIds}
+              onSelectionChange={invocationsTab.setSelectedIds}
               emptyTitle="No invocations"
               emptyDescription={
                 invocationsTab.statusFilter

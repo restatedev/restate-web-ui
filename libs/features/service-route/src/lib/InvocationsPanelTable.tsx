@@ -11,6 +11,7 @@ import { IconName } from '@restate/ui/icons';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import { formatNumber } from '@restate/util/intl';
 import { getSearchParams } from '@restate/util/panel';
+import type { Key } from 'react-aria-components';
 import { useLocation, useNavigate } from 'react-router';
 
 type Invocation = components['schemas']['InvocationV2'];
@@ -61,6 +62,8 @@ export function InvocationsPanelTable({
   error,
   emptyTitle,
   emptyDescription,
+  selectedKeys,
+  onSelectionChange,
 }: {
   ariaLabel: string;
   columns: InvocationsPanelColumn[];
@@ -69,6 +72,8 @@ export function InvocationsPanelTable({
   error: Error | null;
   emptyTitle: string;
   emptyDescription: string;
+  selectedKeys?: Set<string>;
+  onSelectionChange?: (keys: Set<string>) => void;
 }) {
   const { baseUrl } = useRestateContext();
   const location = useLocation();
@@ -86,6 +91,12 @@ export function InvocationsPanelTable({
         error={error}
         numOfRows={6}
         bodyDependencies={[rows, error, columns]}
+        {...(selectedKeys && {
+          selectionMode: 'multiple' as const,
+          selectedKeys,
+          onSelectionChange: (keys: Set<Key>) =>
+            onSelectionChange?.(new Set(Array.from(keys, String))),
+        })}
         onRowAction={(rowId) => {
           navigate(
             `${baseUrl}/invocations/${String(rowId)}${getSearchParams(location.search)}`,

@@ -1,12 +1,15 @@
 import { useListInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
+  resolveInvocationPopulationCount,
   type StatusFilter,
+  useInvocationFilterSchema,
   useInvocationSummary,
 } from '@restate/features/invocations-route';
 import { useRestateContext } from '@restate/features/restate-context';
 import { toFilterParams } from '@restate/util/invocation-links';
-import { useMemo, useState } from 'react';
+import { formatNumber } from '@restate/util/intl';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];
@@ -72,6 +75,30 @@ export function useInvocationsTab(baseFilters: FilterItem[], enabled: boolean) {
     },
   );
 
+  const { schema } = useInvocationFilterSchema();
+  const [selectedIds, setSelectedIds] = useState(new Set<string>());
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [list.isFetching]);
+  const rows = list.data?.rows;
+  const selectedInvocationIds = useMemo(
+    () =>
+      new Set(
+        (rows ?? [])
+          .filter(({ id }) => selectedIds.has(id))
+          .map(({ id }) => id),
+      ),
+    [rows, selectedIds],
+  );
+  const total = resolveInvocationPopulationCount({
+    summaryMatchCount: summary.matchingCount,
+    listIsAvailable: list.data != null,
+    listRowCount: rows?.length ?? 0,
+    listLimit: list.data?.limit ?? 0,
+    listIsPartial: Boolean(list.data?.isPartial),
+  });
+  const totalLabel = `${total.accuracy === 'estimate' ? '~' : ''}${formatNumber(total.count, true)}${total.accuracy === 'lower-bound' ? '+' : ''}`;
+
   const hrefForStatusFilter = (next: StatusFilter) => {
     const params = new URLSearchParams(searchParams);
     if (next && next.value.length > 0) {
@@ -95,5 +122,11 @@ export function useInvocationsTab(baseFilters: FilterItem[], enabled: boolean) {
     setCountMode,
     hrefForStatusFilter,
     invocationsPageHref,
+    filters,
+    schema,
+    selectedInvocationIds,
+    setSelectedIds,
+    total: total.count,
+    totalLabel,
   };
 }
