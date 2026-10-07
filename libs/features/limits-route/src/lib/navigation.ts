@@ -3,6 +3,7 @@ import type { LimitCounterIdentity } from '@restate/features/vqueue-ui';
 import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
 import {
   createVQueueFiltersForCounter,
+  createVQueueFiltersForService,
   createVQueueFiltersForVirtualObjectInstance,
 } from './limits.vqueueFilters';
 
@@ -37,6 +38,10 @@ export function vqueuesForVirtualObjectInstanceHref(
     baseUrl,
     createVQueueFiltersForVirtualObjectInstance(identity),
   );
+}
+
+export function vqueuesForServiceHref(baseUrl: string, service: string) {
+  return filteredVqueuesHref(baseUrl, createVQueueFiltersForService(service));
 }
 
 function filteredVqueuesHref(

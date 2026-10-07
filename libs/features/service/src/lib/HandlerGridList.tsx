@@ -4,9 +4,10 @@ import {
   GridListItem as AriaGridListItem,
 } from 'react-aria-components';
 import { usePopover } from '@restate/ui/popover';
-import { usePanel } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
+import { useRestateContext } from '@restate/features/restate-context';
+import { useNavigate } from 'react-router';
 import { Handler } from './Handler';
-import { HANDLER_QUERY_PARAM, SERVICE_QUERY_PARAM } from './constants';
 
 export function HandlerGridList({
   serviceName,
@@ -18,7 +19,8 @@ export function HandlerGridList({
   serviceType: Service['ty'];
 }) {
   const { close } = usePopover();
-  const { open } = usePanel();
+  const navigate = useNavigate();
+  const { baseUrl } = useRestateContext();
 
   return (
     <AriaGridList
@@ -36,9 +38,12 @@ export function HandlerGridList({
           }}
           onAction={() => {
             close?.();
-            open(SERVICE_QUERY_PARAM, serviceName, {
-              [HANDLER_QUERY_PARAM]: handler.name,
-            });
+            navigate(
+              serviceHref(baseUrl, {
+                service: serviceName,
+                handler: handler.name,
+              }),
+            );
           }}
           className="cursor-default rounded-md px-3 py-2 text-sm outline-none select-none data-[focused]:bg-blue-600 data-[focused]:text-white [&[data-focused]_*:not(svg)]:!text-inherit"
         >

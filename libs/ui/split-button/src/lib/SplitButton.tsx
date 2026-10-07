@@ -74,6 +74,7 @@ export function SplitButton({
       <Dropdown>
         <DropdownTrigger>
           <Button
+            aria-label="Actions"
             variant={variant}
             disabled={isPending}
             className={menuTriggerStyles({ mini, className: splitClassName })}

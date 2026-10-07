@@ -17,7 +17,6 @@ export const PRESERVED_QUERY_PARAMS = [
   DEPLOYMENT_QUERY_PARAM,
   INVOCATION_QUERY_NAME,
   STATE_QUERY_NAME,
-  HANDLER_QUERY_PARAM,
   PANEL_QUERY_PARAM,
 ];
 
@@ -27,7 +26,6 @@ const INVOCATION_LINK_PRESERVED_PARAMS = [
   DEPLOYMENT_QUERY_PARAM,
   INVOCATION_QUERY_NAME,
   ONBOARDING_QUERY_PARAM,
-  HANDLER_QUERY_PARAM,
   STATE_QUERY_NAME,
 ];
 
@@ -154,4 +152,21 @@ export function panelHref(
     throw new Error('panelHref: unknown panel options');
   }
   return preserveSearchParams(href, existingParams);
+}
+
+export function serviceHref(
+  baseUrl: string,
+  { service, handler }: { service: string; handler?: string | null },
+): string {
+  const search = handler
+    ? `?${HANDLER_QUERY_PARAM}=${encodeURIComponent(handler)}`
+    : '';
+  return `${baseUrl}/services/${encodeURIComponent(service)}${search}`;
+}
+
+export function deploymentHref(
+  baseUrl: string,
+  { deployment }: { deployment: string },
+): string {
+  return `${baseUrl}/deployments/${encodeURIComponent(deployment)}`;
 }

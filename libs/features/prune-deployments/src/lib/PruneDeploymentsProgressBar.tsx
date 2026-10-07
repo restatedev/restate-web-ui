@@ -1,5 +1,6 @@
 import { Deployment } from '@restate/features/deployment';
-import { panelHref } from '@restate/util/panel';
+import { deploymentHref } from '@restate/util/panel';
+import { useRestateContext } from '@restate/features/restate-context';
 import { Button } from '@restate/ui/button';
 import {
   DropdownItem,
@@ -63,6 +64,7 @@ export function PruneDeploymentsProgressBar({
   isPending: boolean;
   failedDeployments?: { deploymentId: string; error: string }[];
 }) {
+  const { baseUrl } = useRestateContext();
   const processed = successful + failed;
   const successRatio = total > 0 ? successful / total : 0;
   const failedRatio = total > 0 ? failed / total : 0;
@@ -106,7 +108,9 @@ export function PruneDeploymentsProgressBar({
                       <DropdownItem
                         key={deploymentId}
                         className=""
-                        href={panelHref({ deployment: deploymentId })}
+                        href={deploymentHref(baseUrl, {
+                          deployment: deploymentId,
+                        })}
                       >
                         <div className="flex flex-col gap-0 text-0.5xs">
                           <Deployment

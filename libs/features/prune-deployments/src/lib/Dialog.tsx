@@ -1,3 +1,4 @@
+import { Heading } from 'react-aria-components';
 import {
   useListDeployments,
   useListDrainedDeployments,
@@ -248,11 +249,15 @@ function DeleteDeploymentsDialogContent({
     <DialogContent className="max-w-2xl" isDismissable={!isRunning}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <Heading
+            slot="title"
+            level={3}
+            className="text-lg leading-6 font-medium text-gray-900"
+          >
             {isSelectedMode
               ? 'Delete selected deployments'
               : 'Prune drained deployments'}
-          </h3>
+          </Heading>
           {isLoading ? (
             <DeploymentListSkeleton />
           ) : loadError ? (

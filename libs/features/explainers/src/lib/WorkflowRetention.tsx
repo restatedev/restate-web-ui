@@ -1,6 +1,9 @@
 import { InlineTooltip } from '@restate/ui/tooltip';
 import { ComponentProps, PropsWithChildren } from 'react';
 
+export const WORKFLOW_RETENTION_DESCRIPTION =
+  "The period for which a workflow's result is retained after run() completes.";
+
 export function WorkflowRetentionExplainer({
   children,
   variant,

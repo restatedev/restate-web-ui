@@ -1,3 +1,4 @@
+import { Heading } from 'react-aria-components';
 import {
   DialogClose,
   DialogContent,
@@ -5,6 +6,7 @@ import {
   QueryDialog,
 } from '@restate/ui/dialog';
 import { SERVICE_RETENTION_EDIT } from './constants';
+import { RetentionIllustration } from './illustrations';
 import { FormEvent, useId } from 'react';
 import { useFilter } from 'react-aria';
 import { Form, useSearchParams } from 'react-router';
@@ -14,13 +16,11 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
-import {
-  FormFieldCombobox,
-  ComboBoxSection,
-  ComboBoxItem,
-} from '@restate/ui/form-field';
+import { FormFieldCombobox } from '@restate/ui/form-field';
 import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
+import { retentionOptions } from './durationOptions';
+import { useDialogDraft } from './useDialogDraft';
 import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button, SubmitButton } from '@restate/ui/button';
@@ -102,17 +102,26 @@ export function EditRetentionDialog() {
 
   const isPendingOrSubmitting = isPending || isSubmitting;
   const isWorkflow = data?.ty === 'Workflow';
+  const [draft, setDraft] = useDialogDraft<{
+    journal: string;
+    idempotency: string;
+    workflow: string;
+  }>(service);
 
   return (
     <QueryDialog query={SERVICE_RETENTION_EDIT}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className={isWorkflow ? 'max-w-3xl' : 'max-w-xl'}>
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <Heading
+            slot="title"
+            level={3}
+            className="text-lg leading-6 font-medium text-gray-900"
+          >
             Retention configuration for{' '}
             <span className="rounded-sm bg-gray-100 px-[0.5ch] font-mono">
               {service}
             </span>
-          </h3>
+          </Heading>
           <p className="text-sm text-gray-500">
             Adjust how long metadata and journals from completed invocations are
             kept.
@@ -154,12 +163,16 @@ export function EditRetentionDialog() {
           >
             {isWorkflow && (
               <FormFieldCombobox
+                options={retentionOptions}
                 pattern={HUMANTIME_PATTERN_INPUT}
                 allowsCustomValue
                 defaultFilter={startsWith}
                 disabled={isPendingOrSubmitting}
                 className="[&_label]:text-zinc-500"
                 defaultValue={data?.workflow_completion_retention ?? ''}
+                onChange={(value) =>
+                  setDraft((old) => ({ ...old, workflow: value }))
+                }
                 label={
                   <WorkflowRetentionExplainer variant="indicator-button">
                     Workflow completion
@@ -167,37 +180,18 @@ export function EditRetentionDialog() {
                 }
                 name="workflow_completion_retention"
                 placeholder="1day"
-              >
-                <ComboBoxSection
-                  title="Examples"
-                  description={
-                    <>
-                      Choose from the example options above, or enter a custom
-                      value in the{' '}
-                      <Link
-                        href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        jiff friendly
-                      </Link>{' '}
-                      format.
-                    </>
-                  }
-                >
-                  <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                  <ComboBoxItem value="12h">12h</ComboBoxItem>
-                  <ComboBoxItem value="1day">1day</ComboBoxItem>
-                  <ComboBoxItem value="7days">7days</ComboBoxItem>
-                </ComboBoxSection>
-              </FormFieldCombobox>
+              />
             )}
 
             <FormFieldCombobox
+              options={retentionOptions}
               pattern={HUMANTIME_PATTERN_INPUT}
               allowsCustomValue
               defaultFilter={startsWith}
               defaultValue={data?.idempotency_retention ?? ''}
+              onChange={(value) =>
+                setDraft((old) => ({ ...old, idempotency: value }))
+              }
               disabled={isPendingOrSubmitting}
               label={
                 <IdempotencyRetentionExplainer
@@ -210,36 +204,17 @@ export function EditRetentionDialog() {
               name="idempotency_retention"
               className="[&_label]:text-zinc-500"
               placeholder="1day"
-            >
-              <ComboBoxSection
-                title="Examples"
-                description={
-                  <>
-                    Choose from the example options above, or enter a custom
-                    value in the{' '}
-                    <Link
-                      href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      jiff friendly
-                    </Link>{' '}
-                    format.
-                  </>
-                }
-              >
-                <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                <ComboBoxItem value="12h">12h</ComboBoxItem>
-                <ComboBoxItem value="1day">1day</ComboBoxItem>
-                <ComboBoxItem value="7days">7days</ComboBoxItem>
-              </ComboBoxSection>
-            </FormFieldCombobox>
+            />
             <RestateMinimumVersion minVersion="1.4.5">
               <FormFieldCombobox
+                options={retentionOptions}
                 pattern={HUMANTIME_PATTERN_INPUT}
                 allowsCustomValue
                 defaultFilter={startsWith}
                 defaultValue={data?.journal_retention ?? ''}
+                onChange={(value) =>
+                  setDraft((old) => ({ ...old, journal: value }))
+                }
                 disabled={isPendingOrSubmitting}
                 label={
                   <JournalRetentionExplainer variant="indicator-button">
@@ -249,31 +224,17 @@ export function EditRetentionDialog() {
                 name="journal_retention"
                 className="[&_label]:text-zinc-500"
                 placeholder="1day"
-              >
-                <ComboBoxSection
-                  title="Examples"
-                  description={
-                    <>
-                      Choose from the example options above, or enter a custom
-                      value in the{' '}
-                      <Link
-                        href="https://docs.rs/jiff/latest/jiff/fmt/friendly/index.html"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        jiff friendly
-                      </Link>{' '}
-                      format.
-                    </>
-                  }
-                >
-                  <ComboBoxItem value="1h 30m">1h 30m</ComboBoxItem>
-                  <ComboBoxItem value="12h">12h</ComboBoxItem>
-                  <ComboBoxItem value="1day">1day</ComboBoxItem>
-                  <ComboBoxItem value="7days">7days</ComboBoxItem>
-                </ComboBoxSection>
-              </FormFieldCombobox>
+              />
             </RestateMinimumVersion>
+            <div className="rounded-xl bg-gray-100 px-3 py-3">
+              <RetentionIllustration
+                journal={draft.journal ?? data?.journal_retention}
+                idempotency={draft.idempotency ?? data?.idempotency_retention}
+                workflow={draft.workflow ?? data?.workflow_completion_retention}
+                isWorkflow={isWorkflow}
+                handlers={data?.handlers}
+              />
+            </div>
           </Form>
           <DialogFooter>
             <div className="flex flex-col gap-2">

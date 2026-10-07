@@ -71,6 +71,7 @@ import {
   Label,
   TextField,
   type SortDescriptor,
+  Heading,
 } from 'react-aria-components';
 import {
   buildPattern,
@@ -549,9 +550,13 @@ export function RuleFormDialog({
               <Icon name={IconName.Filters} className="h-5 w-5 text-blue-500" />
             </span>
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <Heading
+                slot="title"
+                level={2}
+                className="text-lg font-semibold text-gray-900"
+              >
                 {isEditing ? 'Edit rule' : 'Create rule'}
-              </h2>
+              </Heading>
               <p className="text-sm leading-5 text-gray-500">
                 {isEditing
                   ? 'Update this rule’s capacity and settings. Its limit counter level cannot be changed.'

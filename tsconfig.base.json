@@ -50,6 +50,9 @@
       "@restate/features/deployment-details": [
         "libs/features/deployment-details/src/index.ts"
       ],
+      "@restate/features/deployment-route": [
+        "libs/features/deployment-route/src/index.ts"
+      ],
       "@restate/features/edit-state": ["libs/features/edit-state/src/index.ts"],
       "@restate/features/explainers": ["libs/features/explainers/src/index.ts"],
       "@restate/features/features-route": [
@@ -99,6 +102,9 @@
       ],
       "@restate/features/service-protocol": [
         "libs/features/service-protocol/src/index.ts"
+      ],
+      "@restate/features/service-route": [
+        "libs/features/service-route/src/index.ts"
       ],
       "@restate/features/service-target": [
         "libs/features/service-target/src/index.ts"

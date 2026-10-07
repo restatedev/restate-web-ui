@@ -37,7 +37,7 @@ import {
   formatDurations,
   formatNumber,
 } from '@restate/util/intl';
-import { panelHref } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { useMemo, useState, type ReactNode } from 'react';
@@ -506,7 +506,7 @@ function renderCell(
           {identity ? (
             <VirtualObjectInstanceTarget
               identity={identity}
-              serviceHref={panelHref({ service: identity.service })}
+              serviceHref={serviceHref(baseUrl, { service: identity.service })}
               href={virtualObjectInstanceHref(baseUrl, {
                 ...identity,
                 ...(row.scope ? { scope: row.scope } : {}),
@@ -518,7 +518,7 @@ function renderCell(
               service={row.service_name}
               links={{
                 service: {
-                  href: panelHref({ service: row.service_name }),
+                  href: serviceHref(baseUrl, { service: row.service_name }),
                   ariaLabel: `Open service ${row.service_name}`,
                 },
               }}

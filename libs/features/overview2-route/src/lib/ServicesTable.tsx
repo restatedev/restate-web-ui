@@ -1,5 +1,6 @@
 import {
   getEndpoint,
+  TERMINAL_INVOCATION_STATUSES,
   type Deployment,
   type Handler,
   type Service,
@@ -11,6 +12,7 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   Handler as ServiceHandler,
+  PlaygroundIconLink,
   ServiceType,
 } from '@restate/features/service';
 import { ServiceTarget } from '@restate/features/service-target';
@@ -32,17 +34,9 @@ import {
 } from '@restate/ui/table';
 import { HoverTooltip, RelativeDate } from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
-import {
-  toServiceAndHandlerInvocationsHref,
-  toServiceInvocationsHref,
-} from '@restate/util/invocation-links';
+import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
 import { useOnboarding } from '@restate/util/feature-flag';
-import {
-  HANDLER_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-  panelHref,
-  usePanel,
-} from '@restate/util/panel';
+import { panelHref, serviceHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
 import {
   Collection,
@@ -50,6 +44,7 @@ import {
   type SortDescriptor,
 } from 'react-aria-components';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { sortServices } from './sortServices';
 
@@ -121,8 +116,7 @@ const tableStyles = tv({
     serviceIdentity: 'flex min-w-0 items-center gap-2',
     serviceTarget:
       'min-w-0 flex-[0_1_auto] [&_[data-chip-root]]:text-[0.8125rem] [&_[data-chip-segment-inner]>svg]:h-3.5 [&_[data-chip-segment-inner]>svg]:w-3.5',
-    serviceType:
-      'ml-auto shrink-0 border-zinc-200/80 bg-zinc-100/70 px-1.5 py-0 text-2xs font-normal whitespace-nowrap text-zinc-500',
+    serviceType: 'ml-auto',
     chevron:
       'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
     handlerIdentity: 'flex min-w-0 items-center gap-1.5 pl-7',
@@ -132,8 +126,6 @@ const tableStyles = tv({
     handlerInvocationLink:
       'h-full w-full justify-start rounded-none border-none bg-transparent px-2 py-2 text-gray-400/80 shadow-none hover:bg-black/3 hover:text-gray-500',
     handlerInvocationIcon: 'h-4 w-4',
-    playground:
-      'relative shrink-0 border-none bg-gray-50 px-1 py-1 align-middle shadow-none',
     invocationsCell: 'p-0!',
     invocations:
       'group/invocations grid h-full w-full min-w-0 grid-cols-[4.5rem_minmax(0,1fr)] items-center gap-2 rounded-none py-2 pr-3 pl-2 text-inherit no-underline',
@@ -149,6 +141,16 @@ function handlerRowId(serviceName: string, handlerName: string) {
 
 function includesFilter(value: string | null | undefined, filter: string) {
   return value?.toLowerCase().includes(filter) ?? false;
+}
+
+function toServiceDetailsInvocationsHref(baseUrl: string, service: string) {
+  const params = new URLSearchParams({
+    filter_status: JSON.stringify({
+      operation: 'NOT_IN',
+      value: TERMINAL_INVOCATION_STATUSES,
+    }),
+  });
+  return `${serviceHref(baseUrl, { service })}?${params.toString()}`;
 }
 
 export function getNotCompletedInvocationCount(
@@ -244,30 +246,12 @@ function PlaygroundLink({
   isOnboarding?: boolean;
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
-  const styles = tableStyles();
   const link = (
-    <HoverTooltip content="Playground" disabled={isOnboarding}>
-      <Link
-        aria-label={`Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`}
-        href={panelHref({ playground: serviceName, handler: handlerName })}
-        variant="secondary-button"
-        className={styles.playground({
-          className: isOnboarding
-            ? 'animate-pulseButton bg-blue-50'
-            : undefined,
-        })}
-        autoFocus={isOnboarding}
-      >
-        <Icon
-          name={IconName.Play}
-          className={
-            isOnboarding
-              ? 'ml-px h-3 w-3 fill-blue-500'
-              : 'ml-px h-3 w-3 fill-blue-300 text-blue-700/0'
-          }
-        />
-      </Link>
-    </HoverTooltip>
+    <PlaygroundIconLink
+      aria-label={`Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`}
+      href={panelHref({ playground: serviceName, handler: handlerName })}
+      isHighlighted={isOnboarding}
+    />
   );
 
   if (!OnboardingGuide || handlerName) {
@@ -291,6 +275,7 @@ function ServiceIdentity({
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
   const styles = tableStyles();
+  const { baseUrl } = useRestateContext();
   return (
     <div className={styles.serviceIdentity()}>
       {row.handlers.length > 0 ? (
@@ -305,7 +290,7 @@ function ServiceIdentity({
         serviceType={row.ty}
         links={{
           service: {
-            href: panelHref({ service: row.name }),
+            href: serviceHref(baseUrl, { service: row.name }),
             ariaLabel: `Open service ${row.name}`,
           },
         }}
@@ -317,7 +302,13 @@ function ServiceIdentity({
         isOnboarding={isOnboarding}
         OnboardingGuide={OnboardingGuide}
       />
-      {row.ty && <ServiceType type={row.ty} className={styles.serviceType()} />}
+      {row.ty && (
+        <ServiceType
+          type={row.ty}
+          variant="subtle"
+          className={styles.serviceType()}
+        />
+      )}
     </div>
   );
 }
@@ -475,7 +466,7 @@ export function ServicesTable() {
   } = useOverviewContext();
   const { OnboardingGuide } = useRestateContext();
   const isOnboarding = useOnboarding();
-  const { open } = usePanel();
+  const navigate = useNavigate();
   const notCompletedInvocationCounts = useMemo(
     () =>
       new Map(
@@ -573,14 +564,17 @@ export function ServicesTable() {
       onRowAction={(rowId) => {
         const service = serviceRows.get(String(rowId));
         if (service) {
-          open(SERVICE_QUERY_PARAM, service.name);
+          navigate(serviceHref(baseUrl, { service: service.name }));
           return;
         }
         const handler = handlerRows.get(String(rowId));
         if (handler) {
-          open(SERVICE_QUERY_PARAM, handler.service.name, {
-            [HANDLER_QUERY_PARAM]: handler.handler.name,
-          });
+          navigate(
+            serviceHref(baseUrl, {
+              service: handler.service.name,
+              handler: handler.handler.name,
+            }),
+          );
         }
       }}
       rowClassName={styles.row()}
@@ -631,10 +625,9 @@ export function ServicesTable() {
           const nonCompleted = stageEntries.filter(
             ({ name }) => name !== 'finished',
           );
-          const notCompletedInvocationsHref = toServiceInvocationsHref(
+          const notCompletedInvocationsHref = toServiceDetailsInvocationsHref(
             baseUrl,
             row.name,
-            { existingParams: linkParams, notCompletedOnly: true },
           );
           const issues = serviceIssuesMap.get(row.name) ?? [];
           return (

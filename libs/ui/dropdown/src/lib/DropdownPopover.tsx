@@ -1,4 +1,4 @@
-import { PopoverContent } from '@restate/ui/popover';
+import { PopoverOverlay } from '@restate/ui/popover';
 import type { PropsWithChildren } from 'react';
 import { Placement } from 'react-aria';
 import { tv } from '@restate/util/styles';
@@ -9,7 +9,7 @@ interface DropdownPopoverProps {
 }
 
 const styles = tv({
-  base: 'w-fit max-w-[90vw] min-w-[max(var(--trigger-width),150px)] lg:max-w-[50vw]',
+  base: 'w-fit max-w-[90vw] min-w-[max(var(--trigger-width),150px)] rounded-2xl lg:max-w-[50vw]',
 });
 
 export function DropdownPopover({
@@ -18,8 +18,10 @@ export function DropdownPopover({
   ...props
 }: PropsWithChildren<DropdownPopoverProps>) {
   return (
-    <PopoverContent className={styles({ className })} {...props}>
-      {children}
-    </PopoverContent>
+    <PopoverOverlay className={styles({ className })} {...props}>
+      <div className="relative overflow-auto rounded-2xl bg-gray-100 outline-hidden">
+        {children}
+      </div>
+    </PopoverOverlay>
   );
 }

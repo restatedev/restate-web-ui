@@ -116,7 +116,7 @@ describe('ServiceTarget', () => {
       name: 'Open Counter / add handler',
     });
     expect(handlerLink.getAttribute('href')).toBe(
-      '?service=Counter&panel=service&handler=add',
+      '/services/Counter?handler=add',
     );
     expect(handlerLink.closest('[data-chip]')?.getAttribute('class')).toContain(
       'flex-[0_1_auto]',
@@ -162,9 +162,7 @@ describe('ServiceTarget', () => {
     });
     expect(handlerLinks).toHaveLength(2);
     handlerLinks.forEach((link) =>
-      expect(link.getAttribute('href')).toBe(
-        '?service=Greeter&panel=service&handler=greet',
-      ),
+      expect(link.getAttribute('href')).toBe('/services/Greeter?handler=greet'),
     );
     expect(container.querySelectorAll('[data-chip-group]')).toHaveLength(1);
     expect(

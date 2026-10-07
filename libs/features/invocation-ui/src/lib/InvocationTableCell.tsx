@@ -18,7 +18,8 @@ import { formatDurations } from '@restate/util/intl';
 import { useOnboarding } from '@restate/util/feature-flag';
 import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
-import { panelHref } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
+import { useRestateContext } from '@restate/features/restate-context';
 import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { ServiceTarget, Target } from '@restate/features/service-target';
 import { InvocationId } from './InvocationId';
@@ -144,13 +145,16 @@ export function InvocationHandler({
   service?: string;
   handler?: string;
 }) {
+  const { baseUrl } = useRestateContext();
   if (!handler) return null;
 
   return (
     <span className="inline-flex max-w-full rounded-lg shadow-xs">
       <TruncateWithTooltip tooltipContent={handler} copyText={handler}>
         <Chip
-          href={service ? panelHref({ service, handler }) : undefined}
+          href={
+            service ? serviceHref(baseUrl, { service, handler }) : undefined
+          }
           aria-label={service ? `Open ${service}/${handler}` : undefined}
           className="max-w-full bg-white text-zinc-600 italic shadow-none"
         >

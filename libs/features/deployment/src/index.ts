@@ -4,3 +4,4 @@ export * from './lib/LatestRevisionDeployment';
 export * from './lib/Revision';
 export * from './lib/SDK';
 export * from './lib/constants';
+export * from './lib/DeploymentStatusBadge';

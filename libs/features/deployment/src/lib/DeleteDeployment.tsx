@@ -1,3 +1,4 @@
+import { Heading } from 'react-aria-components';
 import {
   DialogClose,
   DialogContent,
@@ -107,27 +108,31 @@ export function DeleteDeployment() {
     <QueryDialog query={DELETE_DEPLOYMENT_QUERY_PARAM}>
       <DialogContent className="max-w-lg">
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <Heading
+            slot="title"
+            level={3}
+            className="text-lg leading-6 font-medium text-gray-900"
+          >
             Confirm Deployment deletion
-          </h3>
+          </Heading>
           <p className="text-sm text-gray-500">
             Are you sure you want to delete this deployment?
             <code className="my-1 block max-w-fit rounded-md bg-red-50 p-0.5 text-red-700 ring-red-600/10">
               <TruncateWithTooltip>{deploymentEndpoint}</TruncateWithTooltip>
             </code>
-            <Warning className="mt-4">
-              This might break in-flight invocations, use with{' '}
-              <span className="font-medium">caution</span>.{' '}
-              <Link
-                rel="noopener noreferrer"
-                target="_blank"
-                href="https://docs.restate.dev/services/versioning#removing-a-service"
-                className="text-orange-700 decoration-orange-700"
-              >
-                Learn more…
-              </Link>
-            </Warning>
           </p>
+          <Warning className="mt-4">
+            This might break in-flight invocations, use with{' '}
+            <span className="font-medium">caution</span>.{' '}
+            <Link
+              rel="noopener noreferrer"
+              target="_blank"
+              href="https://docs.restate.dev/services/versioning#removing-a-service"
+              className="text-orange-700 decoration-orange-700"
+            >
+              Learn more…
+            </Link>
+          </Warning>
           <Form
             id={formId}
             method="DELETE"

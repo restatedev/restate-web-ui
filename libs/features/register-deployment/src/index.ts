@@ -8,3 +8,4 @@ export {
   RegisterDeploymentDialog,
   UpdateDeploymentDialog,
 } from './lib/Dialog';
+export { DeploymentActions } from './lib/DeploymentActions';

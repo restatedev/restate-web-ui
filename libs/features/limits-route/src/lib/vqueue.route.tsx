@@ -10,6 +10,7 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { useBatchOperations } from '@restate/features/batch-operations';
 import { InvocationStatusBadge } from '@restate/features/invocation-ui';
+import { useRestateContext } from '@restate/features/restate-context';
 import { ServiceTarget } from '@restate/features/service-target';
 import { BlockedStatus, LimitKey, Scope } from '@restate/features/vqueue-ui';
 import { Breadcrumbs } from '@restate/ui/breadcrumbs';
@@ -42,7 +43,7 @@ import type {
 } from '@restate/ui/query-builder';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
 import { formatNumber } from '@restate/util/intl';
-import { panelHref } from '@restate/util/panel';
+import { serviceHref } from '@restate/util/panel';
 import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
 import { tv } from '@restate/util/styles';
 import { useMemo, type ReactNode } from 'react';
@@ -316,6 +317,7 @@ function VQueueHeader({
   trail?: ReactNode;
 }) {
   const identity = data?.identity;
+  const { baseUrl } = useRestateContext();
 
   return (
     <Header
@@ -334,7 +336,7 @@ function VQueueHeader({
             showHandler={false}
             links={{
               service: {
-                href: panelHref({ service: identity.service }),
+                href: serviceHref(baseUrl, { service: identity.service }),
                 ariaLabel: `Open service ${identity.service}`,
               },
             }}

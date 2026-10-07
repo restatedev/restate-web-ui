@@ -219,6 +219,35 @@ export const stateObjectCrumb: CrumbFragment = {
   icon: IconName.Box,
 };
 
+export const servicesCrumb: CrumbFragment = {
+  kind: 'list',
+  resource: 'services',
+  label: 'Services',
+  icon: IconName.Box,
+};
+
+export const serviceCrumb: CrumbFragment = {
+  kind: 'detail',
+  resource: 'services',
+  label: (params) => params['service'] ?? '',
+  icon: IconName.Box,
+};
+
+export const deploymentsCrumb: CrumbFragment = {
+  kind: 'list',
+  resource: 'deployments',
+  label: 'Deployments',
+  icon: IconName.Http,
+};
+
+export const deploymentCrumb: CrumbFragment = {
+  kind: 'detail',
+  resource: 'deployments',
+  label: (params) => params['deployment'] ?? '',
+  icon: IconName.Http,
+  Content: InvocationCrumbContent,
+};
+
 export const introspectionCrumb: CrumbFragment = {
   kind: 'list',
   resource: 'introspection',
@@ -273,6 +302,10 @@ export function createBreadcrumbPages(options?: {
       pattern: `${prefix}/workflows/:service/:workflowId`,
       ...workflowRunCrumb,
     },
+    { pattern: `${prefix}/services`, ...servicesCrumb },
+    { pattern: `${prefix}/services/:service`, ...serviceCrumb },
+    { pattern: `${prefix}/deployments`, ...deploymentsCrumb },
+    { pattern: `${prefix}/deployments/:deployment`, ...deploymentCrumb },
     { pattern: `${prefix}/state`, ...stateCrumb },
     { pattern: `${prefix}/state/:virtualObject`, ...stateObjectCrumb },
     { pattern: `${prefix}/introspection`, ...introspectionCrumb },
