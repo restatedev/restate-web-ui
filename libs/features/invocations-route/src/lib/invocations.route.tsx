@@ -717,6 +717,7 @@ function Component() {
       <VQueueStageSummaryBar
         byStage={matchingSummary.byStage}
         byStatus={matchingSummary.byStatus}
+        showFocusCounts={false}
         focus={vqueueSummaryFocus}
         onFocusChange={changeVqueueSummaryFocus}
         breakdownMode={countMode}

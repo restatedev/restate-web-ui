@@ -110,34 +110,64 @@ export function formatServiceTabCount({ count, accuracy = 'exact' }: TabCount) {
   return `${formatNumber(count, true)}${accuracy === 'lower-bound' ? '+' : ''}`;
 }
 
+type TabBadge = { count: string; total?: string };
+
+export function formatServiceTabBadge(
+  total: TabCount,
+  matching?: TabCount,
+): TabBadge | undefined {
+  const formattedTotal = formatServiceTabCount(total);
+  if (formattedTotal === undefined) return undefined;
+  if (!matching || total.count === 0) return { count: formattedTotal };
+  const formattedMatching = formatServiceTabCount(matching);
+  if (formattedMatching === undefined) return undefined;
+  return { count: formattedMatching, total: formattedTotal };
+}
+
+function badgeText(badge: TabBadge | undefined) {
+  if (!badge) return undefined;
+  return badge.total ? `${badge.count} / ${badge.total}` : badge.count;
+}
+
 const countStyles = tv({
-  base: 'rounded bg-zinc-100 px-1 py-px text-2xs font-medium whitespace-nowrap text-zinc-500 tabular-nums',
+  slots: {
+    base: 'rounded bg-zinc-100 px-1 py-px text-2xs font-medium whitespace-nowrap text-zinc-500 tabular-nums',
+    denominator: 'opacity-55',
+  },
   variants: {
-    loading: { true: 'animate-pulse bg-zinc-200 text-transparent' },
+    loading: { true: { base: 'animate-pulse bg-zinc-200 text-transparent' } },
   },
 });
 
 function tabLabel(
   label: string,
-  total: TabCount,
+  badge: TabBadge | undefined,
   isLoading: boolean,
   previousCount?: string,
 ): ReactNode {
-  const formattedTotal = isLoading
+  const styles = countStyles({ loading: isLoading });
+  const content = isLoading
     ? (previousCount ?? '000')
-    : formatServiceTabCount(total);
+    : badge && (
+        <>
+          {badge.count}
+          {badge.total && (
+            <span className={styles.denominator()}> / {badge.total}</span>
+          )}
+        </>
+      );
   return (
     <span className="flex items-center gap-1.5">
       <span className="truncate [[role=tab]_&]:max-w-[12ch]" title={label}>
         {label}
       </span>
-      {formattedTotal !== undefined && (
+      {content && (
         <span
-          className={countStyles({ loading: isLoading })}
+          className={styles.base()}
           aria-hidden={isLoading || undefined}
           data-loading={isLoading || undefined}
         >
-          {formattedTotal}
+          {content}
         </span>
       )}
     </span>
@@ -204,19 +234,11 @@ function serviceTabLabel(
   isFiltered: boolean,
   matchingIsPartial: boolean,
   isLoading: boolean,
-  countAccuracy: TabCount['accuracy'],
+  badge: TabBadge | undefined,
   currentCount?: InvocationPopulationCount,
   previousCount?: string,
 ) {
-  const label = tabLabel(
-    service.id,
-    {
-      count: service.count,
-      accuracy: countAccuracy,
-    },
-    isLoading,
-    previousCount,
-  );
+  const label = tabLabel(service.id, badge, isLoading, previousCount);
   if (isLoading || service.count === undefined) return label;
 
   const buckets = new Map(
@@ -343,28 +365,6 @@ export function useServiceTabs(
       : undefined,
     accuracy: total.accuracy,
   };
-  const countLabels = Object.fromEntries([
-    [ALL_TAB_ID, formatServiceTabCount(total)],
-    [MULTI_TAB_ID, formatServiceTabCount(selectedTotal)],
-    ...services.map(({ id, count }) => [
-      id,
-      formatServiceTabCount({ count, accuracy: total.accuracy }),
-    ]),
-  ]);
-  if (
-    populationIsAvailable &&
-    !isLoading &&
-    (tabLayout.baseUrl !== baseUrl ||
-      tabLayout.ids.length !== services.length ||
-      services.some(({ id }, index) => tabLayout.ids[index] !== id) ||
-      Object.entries(countLabels).some(
-        ([id, label]) => tabLayout.countLabels[id] !== label,
-      ))
-  ) {
-    setTabLayout({ baseUrl, ids: services.map(({ id }) => id), countLabels });
-  }
-  const previousCountLabels =
-    tabLayout.baseUrl === baseUrl ? tabLayout.countLabels : {};
   const isFiltered = hasStatusFilter(statusFilter);
   const displayedCurrentCount =
     currentCount &&
@@ -396,12 +396,56 @@ export function useServiceTabs(
     }
     return matchingIsPartial && count === 0 ? undefined : count;
   };
+  const matchingAccuracy: TabCount['accuracy'] =
+    matchingIsPartial || total.accuracy === 'estimate' ? 'estimate' : 'exact';
+  const tabBadge = (tabTotal: TabCount, matching: number | undefined) =>
+    formatServiceTabBadge(
+      tabTotal,
+      isFiltered ? { count: matching, accuracy: matchingAccuracy } : undefined,
+    );
+  const serviceMatches = new Map(
+    services.map((service) => [service.id, matchingCount([service])]),
+  );
+  const badges = new Map<string, TabBadge | undefined>([
+    [ALL_TAB_ID, tabBadge(total, globalMatch?.count)],
+    [
+      MULTI_TAB_ID,
+      tabBadge(
+        selectedTotal,
+        selection.services ? matchingCount(selection.services) : undefined,
+      ),
+    ],
+    ...services.map(
+      ({ id, count }) =>
+        [
+          id,
+          tabBadge({ count, accuracy: total.accuracy }, serviceMatches.get(id)),
+        ] as const,
+    ),
+  ]);
+  const countLabels = Object.fromEntries(
+    Array.from(badges, ([id, badge]) => [id, badgeText(badge)]),
+  );
+  if (
+    populationIsAvailable &&
+    !isLoading &&
+    (tabLayout.baseUrl !== baseUrl ||
+      tabLayout.ids.length !== services.length ||
+      services.some(({ id }, index) => tabLayout.ids[index] !== id) ||
+      Object.entries(countLabels).some(
+        ([id, label]) => tabLayout.countLabels[id] !== label,
+      ))
+  ) {
+    setTabLayout({ baseUrl, ids: services.map(({ id }) => id), countLabels });
+  }
+  const previousCountLabels =
+    tabLayout.baseUrl === baseUrl ? tabLayout.countLabels : {};
   const items = [
     {
       id: ALL_TAB_ID,
       label: tabLabel(
         'All services',
-        total,
+        badges.get(ALL_TAB_ID),
         isLoading,
         previousCountLabels[ALL_TAB_ID],
       ),
@@ -414,7 +458,7 @@ export function useServiceTabs(
             id: MULTI_TAB_ID,
             label: tabLabel(
               selection.label ?? 'Selected services',
-              selectedTotal,
+              badges.get(MULTI_TAB_ID),
               isLoading,
               previousCountLabels[MULTI_TAB_ID],
             ),
@@ -427,11 +471,11 @@ export function useServiceTabs(
         service,
         baseUrl,
         searchParams,
-        matchingCount([service]),
+        serviceMatches.get(service.id),
         isFiltered,
         matchingIsPartial,
         isLoading,
-        total.accuracy,
+        badges.get(service.id),
         selection.selectedId === service.id ? displayedCurrentCount : undefined,
         previousCountLabels[service.id],
       ),

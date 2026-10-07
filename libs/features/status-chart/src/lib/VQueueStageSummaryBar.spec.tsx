@@ -43,6 +43,37 @@ afterEach(() => {
 });
 
 describe('VQueueStageSummaryBar', () => {
+  it('renders label-only focus controls when focus counts are hidden', async () => {
+    render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar
+          byStage={totalsByStage}
+          byStatus={[]}
+          focus="not-completed"
+          onFocusChange={() => undefined}
+          breakdownMode="exact"
+          canSampleBreakdown={false}
+          onBreakdownModeChange={() => undefined}
+          isBreakdownSampled={false}
+          showFocusCounts={false}
+          getHref={() => '/invocations'}
+        />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('tab', { name: 'All statuses' }).textContent,
+      ).toBe('All statuses');
+      expect(
+        screen.getByRole('tab', { name: 'Not completed' }).textContent,
+      ).toBe('Not completed');
+      expect(screen.getByRole('tab', { name: 'Completed' }).textContent).toBe(
+        'Completed',
+      );
+    });
+  });
+
   it('shows distribution totals in focus controls while displaying current matches', async () => {
     render(
       <MemoryRouter>

@@ -146,6 +146,7 @@ export function VQueueStageSummaryBar({
   comparisonScope = 'all',
   isBreakdownLoading,
   isBreakdownError,
+  showFocusCounts = true,
 }: {
   byStage: VQueueStageSummaryEntry[];
   byStatus: VQueueStatusSummaryEntry[];
@@ -167,6 +168,7 @@ export function VQueueStageSummaryBar({
   comparisonScope?: 'all' | 'service';
   isBreakdownLoading?: (stageName: string) => boolean;
   isBreakdownError?: (stageName: string) => boolean;
+  showFocusCounts?: boolean;
 }) {
   const matchingStageData = new Map(
     byStage.map((stage) => [stage.name, stage]),
@@ -514,7 +516,7 @@ export function VQueueStageSummaryBar({
     count: number,
     state: 'known' | 'loading' | 'unknown' | 'unavailable',
   ) =>
-    state === 'loading' ? (
+    !showFocusCounts ? null : state === 'loading' ? (
       <span
         className={focusCount({
           class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
