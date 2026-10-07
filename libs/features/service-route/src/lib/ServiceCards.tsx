@@ -35,14 +35,6 @@ import {
   CardLinkRow,
   CardRow,
 } from '@restate/ui/card';
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownPopover,
-  DropdownSection,
-  DropdownTrigger,
-} from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
   Popover,
@@ -50,7 +42,7 @@ import {
   PopoverTrigger,
   usePopover,
 } from '@restate/ui/popover';
-import { HoverTooltip, InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
+import { InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
 import { humanTimeToMs } from '@restate/util/humantime';
 import { deploymentHref } from '@restate/util/panel';
 import { formatNumber } from '@restate/util/intl';
@@ -562,72 +554,6 @@ function shortestHandlerName(handlers?: Handler[]) {
     .sort((a, b) => a.length - b.length)[0];
 }
 
-const EDIT_ACTIONS = [
-  { key: SERVICE_ACCESS_EDIT, label: 'Access…' },
-  { key: SERVICE_RETENTION_EDIT, label: 'Retention…' },
-  { key: SERVICE_TIMEOUT_EDIT, label: 'Timeouts…' },
-];
-
-const editTriggerStyles = tv({
-  base: 'flex h-6 items-center gap-1 rounded-md px-1.5 text-2xs font-medium text-gray-500 hover:bg-transparent hover:text-gray-600 disabled:text-gray-400',
-});
-
-function ConfigurationEditMenu({
-  service,
-  disabledReason,
-}: {
-  service: string;
-  disabledReason?: ReactNode;
-}) {
-  const [, setSearchParams] = useSearchParams();
-  const trigger = (
-    <Button
-      variant="icon"
-      className={editTriggerStyles()}
-      disabled={Boolean(disabledReason)}
-    >
-      Edit
-      <Icon name={IconName.ChevronDown} className="h-3 w-3" />
-    </Button>
-  );
-  if (disabledReason) {
-    return (
-      <HoverTooltip
-        content={disabledReason}
-        contentClassName="max-w-56 break-normal"
-      >
-        {trigger}
-      </HoverTooltip>
-    );
-  }
-  return (
-    <Dropdown>
-      <DropdownTrigger>{trigger}</DropdownTrigger>
-      <DropdownPopover placement="bottom end">
-        <DropdownSection title="Edit">
-          <DropdownMenu
-            onSelect={(key) =>
-              setSearchParams(
-                (old) => {
-                  old.set(key, service);
-                  return old;
-                },
-                { preventScrollReset: true },
-              )
-            }
-          >
-            {EDIT_ACTIONS.map((action) => (
-              <DropdownItem key={action.key} value={action.key}>
-                {action.label}
-              </DropdownItem>
-            ))}
-          </DropdownMenu>
-        </DropdownSection>
-      </DropdownPopover>
-    </Dropdown>
-  );
-}
-
 export function ConfigurationCard({
   service,
   config,
@@ -805,16 +731,6 @@ export function ConfigurationCard({
             description="Access decides whether the ingress may call this service. Retention sets how long completed invocations and idempotency keys are kept. Timeouts govern when an inactive handler is suspended or aborted. The retry policy applies to failing invocations."
             learnMoreHref="https://docs.restate.dev/services/configuration"
             className="ml-0.5 text-xs text-gray-400"
-          />
-        }
-        action={
-          <ConfigurationEditMenu
-            service={service}
-            disabledReason={
-              isReadonly
-                ? 'Configuration can only be edited at the service level. Deselect the handler to edit the service configuration.'
-                : undefined
-            }
           />
         }
       >

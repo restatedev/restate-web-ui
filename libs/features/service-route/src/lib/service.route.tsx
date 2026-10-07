@@ -22,6 +22,7 @@ import { WarningChip } from './WarningChip';
 import { formatPlurals } from '@restate/util/intl';
 import { ServiceDetails, serviceTabFromSearch } from './ServiceDetails';
 import { resolveServiceConfig } from './serviceConfig';
+import { ServiceEditActions } from './ServiceEditActions';
 
 function Component() {
   const { service = '' } = useParams<{ service: string }>();
@@ -86,6 +87,9 @@ function Component() {
               className="h-6 shrink-0 text-xs"
             />
           )}
+          <div className="ml-auto flex shrink-0 items-center">
+            <ServiceEditActions service={service} isReadonly={isHandlerMode} />
+          </div>
         </Header>
         {error && !data ? (
           <div className="px-5 py-20">
