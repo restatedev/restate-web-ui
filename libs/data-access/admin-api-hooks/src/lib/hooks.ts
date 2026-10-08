@@ -236,17 +236,74 @@ export function getListDeploymentsQueryOptions(
 
   return {
     ...queryOptions,
+    staleTime: Infinity,
     ...options,
-    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
     queryFn: (...args: Parameters<typeof queryFn>) =>
       Promise.resolve(queryFn(...args)).then(listDeploymentsSelector),
   };
+}
+
+const SERVICE_CATALOG_FINGERPRINT_QUERY = `SELECT s.name, s.revision, s.public, d.id, d.endpoint, d.created_at FROM sys_service s FULL OUTER JOIN sys_deployment d ON s.deployment_id = d.id ORDER BY d.id, s.name`;
+
+function getServiceCatalogFingerprintAdminApi(baseUrl: string) {
+  return adminApi('query', '/query', 'post', {
+    baseUrl,
+    body: { query: SERVICE_CATALOG_FINGERPRINT_QUERY },
+  });
+}
+
+function invalidateServiceCatalog(queryClient: QueryClient, baseUrl: string) {
+  return Promise.all([
+    queryClient.invalidateQueries(
+      { queryKey: getListServicesAdminApi(baseUrl).queryKey },
+      { cancelRefetch: false },
+    ),
+    queryClient.invalidateQueries(
+      {
+        queryKey: adminApi('query', '/deployments', 'get', { baseUrl })
+          .queryKey,
+      },
+      { cancelRefetch: false },
+    ),
+  ]);
+}
+
+function useServiceCatalogFingerprint() {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { queryFn, ...queryOptions } =
+    getServiceCatalogFingerprintAdminApi(baseUrl);
+
+  useQuery<string>({
+    ...queryOptions,
+    staleTime: 10_000,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    queryFn: async (...args: Parameters<typeof queryFn>) => {
+      const previous = queryClient.getQueryData<string>(queryOptions.queryKey);
+      try {
+        const data = await queryFn(...args);
+        const fingerprint = JSON.stringify(data?.rows ?? []);
+        if (previous !== undefined && previous !== fingerprint) {
+          invalidateServiceCatalog(queryClient, baseUrl);
+        }
+        return fingerprint;
+      } catch (error) {
+        if (!args[0].signal.aborted) {
+          invalidateServiceCatalog(queryClient, baseUrl);
+        }
+        throw error;
+      }
+    },
+    enabled,
+  });
 }
 
 export function useListDeployments(options?: ListDeploymentsOptions) {
   const apiEnabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListDeploymentsQueryOptions(baseUrl, options);
+  useServiceCatalogFingerprint();
 
   const results = useQuery<ListDeploymentsData>({
     ...queryOptions,
@@ -1000,9 +1057,14 @@ export function invalidateListServices(
   queryClient: QueryClient,
   baseUrl: string,
 ) {
-  return queryClient.invalidateQueries({
-    queryKey: getListServicesAdminApi(baseUrl).queryKey,
-  });
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: getListServicesAdminApi(baseUrl).queryKey,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: getServiceCatalogFingerprintAdminApi(baseUrl).queryKey,
+    }),
+  ]);
 }
 
 export function useServiceDetails(
@@ -1043,13 +1105,13 @@ export function useListServices(
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListServicesAdminApi(baseUrl);
+  useServiceCatalogFingerprint();
 
   const results = useQuery({
-    staleTime: 0,
     ...queryOptions,
+    staleTime: Infinity,
     ...options,
     select: listServicesSelector,
-    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
     enabled: options?.enabled !== false && enabled,
   });
 

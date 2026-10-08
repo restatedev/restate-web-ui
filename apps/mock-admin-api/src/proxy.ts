@@ -24,7 +24,11 @@ const proxyHandler: RequestHandler = async (req, res) => {
       new WritableStream({
         start() {
           res.statusCode = response.status;
-          response.headers.forEach((v, n) => res.setHeader(n, v));
+          response.headers.forEach((v, n) => {
+            if (n !== 'content-encoding' && n !== 'content-length') {
+              res.setHeader(n, v);
+            }
+          });
         },
         write(chunk) {
           res.write(chunk);
