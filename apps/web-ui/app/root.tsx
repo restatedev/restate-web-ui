@@ -1,7 +1,6 @@
 import {
   Links,
   Meta,
-  Navigate,
   Outlet,
   Path,
   Scripts,
@@ -389,16 +388,13 @@ function SidebarPanels() {
 }
 
 function TopbarPanels() {
-  const hasVqueues = useFeatures().has('vqueues');
   const navItems = [
     { href: '/overview', label: 'Overview' },
     { href: '/invocations', label: 'Invocations' },
     { href: '/workflows', label: 'Workflows' },
     { href: '/virtual-objects', label: 'Virtual Objects' },
     { href: '/state', label: 'State' },
-    ...(hasVqueues
-      ? [{ href: '/flow-control/rules', label: 'Flow control' }]
-      : []),
+    { href: '/flow-control/rules', label: 'Flow control' },
     { href: '/introspection', label: 'Introspection' },
   ];
 
@@ -455,10 +451,6 @@ function RouteContent() {
     (isVersionPending || (serverHasVqueues && !hasVqueues))
   ) {
     return null;
-  }
-
-  if (isFlowControlRoute && !serverHasVqueues) {
-    return <Navigate to="/overview" replace />;
   }
 
   return <Outlet />;
