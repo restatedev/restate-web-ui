@@ -98,6 +98,7 @@ export function InvocationsStatusSummary({
         <VQueueStageSummaryBar
           byStage={matching.byStage}
           byStatus={matching.byStatus}
+          showFocusCounts={false}
           focus={summary.focus}
           onFocusChange={changeFocus}
           breakdownMode={countMode}

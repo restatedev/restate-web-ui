@@ -15,13 +15,11 @@ import { InvocationsTabToolbar } from './InvocationsTabToolbar';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];
 
-export function ServiceInvocations({
-  service,
-  handler,
-}: {
-  service: string;
-  handler?: string;
-}) {
+export function useServiceInvocationsTab(
+  service: string,
+  handler: string | undefined,
+  isActive: boolean,
+) {
   const baseFilters = useMemo<FilterItem[]>(
     () => [
       {
@@ -43,7 +41,21 @@ export function ServiceInvocations({
     ],
     [service, handler],
   );
-  const invocationsTab = useInvocationsTab(baseFilters, Boolean(service));
+  return useInvocationsTab(baseFilters, {
+    enabled: Boolean(service),
+    isActive,
+  });
+}
+
+export function ServiceInvocations({
+  service,
+  handler,
+  invocationsTab,
+}: {
+  service: string;
+  handler?: string;
+  invocationsTab: ReturnType<typeof useInvocationsTab>;
+}) {
   const { data, error, isPending, dataUpdatedAt } = invocationsTab.list;
 
   return (
