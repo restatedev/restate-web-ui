@@ -13,8 +13,7 @@ export function useSchema() {
     useListDeployments();
   const { data: listSubscriptions, isPending: subscriptionsIsLoading } =
     useListSubscriptions();
-  const { data: listServices, isPending: servicesIsLoading } =
-    useListServices();
+  const { data: listServices } = useListServices();
   const features = useFeatures();
   const hasVqueues = features.has('vqueues');
 
@@ -252,7 +251,6 @@ export function useSchema() {
 
   return {
     schema,
-    isLoading:
-      deploymentsIsLoading || servicesIsLoading || subscriptionsIsLoading,
+    isLoading: deploymentsIsLoading || subscriptionsIsLoading,
   };
 }

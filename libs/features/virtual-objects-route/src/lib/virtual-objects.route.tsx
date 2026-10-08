@@ -1,5 +1,5 @@
 import { useFeatures } from '@restate/data-access/admin-api';
-import { useListServices } from '@restate/data-access/admin-api-hooks';
+import { useServiceCatalog } from '@restate/data-access/admin-api-hooks';
 import {
   ContentPanel,
   type ContentPanelTabs,
@@ -52,7 +52,7 @@ function Component() {
     data: serviceData,
     isPending: isServicesPending,
     error: servicesError,
-  } = useListServices();
+  } = useServiceCatalog();
   const services = useMemo(
     () =>
       Array.from(serviceData.values())

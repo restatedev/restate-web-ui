@@ -9,6 +9,7 @@ import {
   useListDeployments,
   useListServices,
   useProgressiveInvocationSummaryV2,
+  useServiceCatalog,
 } from '@restate/data-access/admin-api-hooks';
 import {
   getOverviewRefreshMeta,
@@ -31,6 +32,7 @@ import {
   INITIAL_OVERVIEW_REFETCH_INTERVAL,
 } from './overviewPolling';
 import { normalizeCompletionTimeRange } from './completionBuckets';
+import type { OverviewService } from './sortServices';
 
 export function useOverviewData({
   deploymentStatusEnabled,
@@ -61,7 +63,25 @@ export function useOverviewData({
     isError,
     error,
   } = useListDeployments();
-  const { data: servicesMap } = useListServices();
+  const { data: serviceSummaries, isPending: isServicesPending } =
+    useServiceCatalog();
+  const { data: fullServices, isPending: isHandlersPending } =
+    useListServices();
+  const servicesMap = useMemo(
+    () =>
+      new Map<string, OverviewService>(
+        Array.from(serviceSummaries, ([name, service]) => [
+          name,
+          {
+            ...service,
+            handlers: isHandlersPending
+              ? undefined
+              : (fullServices.get(name)?.handlers ?? []),
+          },
+        ]),
+      ),
+    [fullServices, isHandlersPending, serviceSummaries],
+  );
   const summary = useProgressiveInvocationSummaryV2(
     {
       mode:
@@ -231,5 +251,6 @@ export function useOverviewData({
     isError,
     error,
     isDeploymentsFetching: isFetching,
+    isServicesPending,
   };
 }

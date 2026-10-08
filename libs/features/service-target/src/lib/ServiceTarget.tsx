@@ -1,5 +1,5 @@
 import type { ServiceType } from '@restate/data-access/admin-api-spec';
-import { useListServices } from '@restate/data-access/admin-api-hooks';
+import { useServiceCatalog } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { virtualObjectInstanceHref } from '@restate/features/virtual-object-instance';
 import { Scope } from '@restate/features/vqueue-ui';
@@ -459,7 +459,7 @@ export function ServiceTargetContent({
 function CatalogServiceTarget(
   props: PropsWithChildren<Omit<ServiceTargetProps, 'serviceType'>>,
 ) {
-  const { data: services } = useListServices();
+  const { data: services } = useServiceCatalog();
   return (
     <ServiceTargetContent
       {...props}

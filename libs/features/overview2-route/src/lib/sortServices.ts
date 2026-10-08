@@ -1,17 +1,20 @@
-import type { Deployment, Service } from '@restate/data-access/admin-api-spec';
+import type { ServiceSummary } from '@restate/data-access/admin-api-hooks';
+import type { Deployment, Handler } from '@restate/data-access/admin-api-spec';
 import type { SortDescriptor } from 'react-aria-components';
 import {
   issuesSortScore,
   type ServiceIssue,
 } from '@restate/features/system-health';
 
-export function sortServices(
-  services: Service[],
+export type OverviewService = ServiceSummary & { handlers?: Handler[] };
+
+export function sortServices<T extends ServiceSummary>(
+  services: T[],
   descriptor: SortDescriptor,
   invocationCounts?: Map<string, number>,
   serviceIssuesMap?: Map<string, ServiceIssue[]>,
   deploymentsMap?: Map<string, Deployment>,
-): Service[] {
+): T[] {
   const { column, direction } = descriptor;
   const modifier = direction === 'descending' ? -1 : 1;
   return [...services].sort((a, b) => {

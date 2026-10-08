@@ -236,10 +236,126 @@ export function getListDeploymentsQueryOptions(
 
   return {
     ...queryOptions,
+    staleTime: Infinity,
     ...options,
-    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
     queryFn: (...args: Parameters<typeof queryFn>) =>
       Promise.resolve(queryFn(...args)).then(listDeploymentsSelector),
+  };
+}
+
+const SERVICE_CATALOG_QUERY = `SELECT s.name, s.ty, s.revision, s.public, s.deployment_id, d.id, d.endpoint, d.created_at FROM sys_service s FULL OUTER JOIN sys_deployment d ON s.deployment_id = d.id ORDER BY d.id, s.name`;
+
+type ServiceCatalogRow = {
+  name?: string | null;
+  ty?: string | null;
+  revision?: number | null;
+  public?: boolean | null;
+  deployment_id?: string | null;
+  id?: string | null;
+  endpoint?: string | null;
+  created_at?: string | null;
+};
+
+export type ServiceSummary = Pick<
+  Service,
+  'name' | 'ty' | 'revision' | 'public' | 'deployment_id'
+>;
+
+const SERVICE_CATALOG_TYPES: Record<string, Service['ty']> = {
+  service: 'Service',
+  virtual_object: 'VirtualObject',
+  workflow: 'Workflow',
+};
+
+const EMPTY_SERVICE_SUMMARIES = new Map<string, ServiceSummary>();
+
+function serviceCatalogSelector(rows: ServiceCatalogRow[]) {
+  const services = new Map<string, ServiceSummary>();
+  for (const row of rows) {
+    const ty = row.ty ? SERVICE_CATALOG_TYPES[row.ty] : undefined;
+    if (!row.name || !ty || !row.deployment_id) continue;
+    services.set(row.name, {
+      name: row.name,
+      ty,
+      revision: row.revision ?? 0,
+      public: row.public ?? false,
+      deployment_id: row.deployment_id,
+    });
+  }
+  return services;
+}
+
+function getServiceCatalogAdminApi(baseUrl: string) {
+  return adminApi('query', '/query', 'post', {
+    baseUrl,
+    body: { query: SERVICE_CATALOG_QUERY },
+  });
+}
+
+function invalidateServiceCatalog(queryClient: QueryClient, baseUrl: string) {
+  return Promise.all([
+    queryClient.invalidateQueries(
+      { queryKey: getListServicesAdminApi(baseUrl).queryKey },
+      { cancelRefetch: false },
+    ),
+    queryClient.invalidateQueries(
+      {
+        queryKey: adminApi('query', '/deployments', 'get', { baseUrl })
+          .queryKey,
+      },
+      { cancelRefetch: false },
+    ),
+  ]);
+}
+
+function useServiceCatalogQuery<TData = ServiceCatalogRow[]>(
+  select?: (rows: ServiceCatalogRow[]) => TData,
+) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { queryFn, ...queryOptions } = getServiceCatalogAdminApi(baseUrl);
+
+  return useQuery<ServiceCatalogRow[], Error, TData>({
+    ...queryOptions,
+    staleTime: 10_000,
+    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
+    queryFn: async (...args: Parameters<typeof queryFn>) => {
+      const previous = queryClient.getQueryData<ServiceCatalogRow[]>(
+        queryOptions.queryKey,
+      );
+      try {
+        const data = await queryFn(...args);
+        const rows = (data?.rows ?? []) as ServiceCatalogRow[];
+        if (
+          previous !== undefined &&
+          JSON.stringify(previous) !== JSON.stringify(rows)
+        ) {
+          invalidateServiceCatalog(queryClient, baseUrl);
+        }
+        return rows;
+      } catch (error) {
+        if (!args[0].signal.aborted) {
+          invalidateServiceCatalog(queryClient, baseUrl);
+        }
+        throw error;
+      }
+    },
+    select,
+    enabled,
+  });
+}
+
+export function useServiceCatalog() {
+  const catalog = useServiceCatalogQuery(serviceCatalogSelector);
+  const fullServices = useListServices({ enabled: catalog.isError });
+  const data =
+    catalog.data ?? (fullServices.isSuccess ? fullServices.data : undefined);
+
+  return {
+    data: data ?? EMPTY_SERVICE_SUMMARIES,
+    isPending: !data && !(catalog.isError && fullServices.isError),
+    error: catalog.isError ? fullServices.error : null,
   };
 }
 
@@ -247,6 +363,7 @@ export function useListDeployments(options?: ListDeploymentsOptions) {
   const apiEnabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListDeploymentsQueryOptions(baseUrl, options);
+  useServiceCatalogQuery();
 
   const results = useQuery<ListDeploymentsData>({
     ...queryOptions,
@@ -1000,9 +1117,14 @@ export function invalidateListServices(
   queryClient: QueryClient,
   baseUrl: string,
 ) {
-  return queryClient.invalidateQueries({
-    queryKey: getListServicesAdminApi(baseUrl).queryKey,
-  });
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: getListServicesAdminApi(baseUrl).queryKey,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: getServiceCatalogAdminApi(baseUrl).queryKey,
+    }),
+  ]);
 }
 
 export function useServiceDetails(
@@ -1043,13 +1165,13 @@ export function useListServices(
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListServicesAdminApi(baseUrl);
+  useServiceCatalogQuery();
 
   const results = useQuery({
-    staleTime: 0,
     ...queryOptions,
+    staleTime: Infinity,
     ...options,
     select: listServicesSelector,
-    meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
     enabled: options?.enabled !== false && enabled,
   });
 

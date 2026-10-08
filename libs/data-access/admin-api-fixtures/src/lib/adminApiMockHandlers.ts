@@ -768,6 +768,39 @@ const queryHandler = http.post<
   const requestBody = await request.json();
   const sql = requestBody.query;
 
+  if (/\bFROM\s+sys_service\b/i.test(sql)) {
+    const rows = adminApiDb.deployment
+      .getAll()
+      .filter(({ dryRun }) => !dryRun)
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .flatMap((deployment) => {
+        const deploymentColumns = {
+          id: deployment.id,
+          endpoint: deployment.endpoint,
+        };
+        const services = adminApiDb.service
+          .findMany({
+            where: { deployment: { id: { equals: deployment.id } } },
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
+        return services.length > 0
+          ? services.map((service) => ({
+              name: service.name,
+              ty: {
+                Service: 'service',
+                VirtualObject: 'virtual_object',
+                Workflow: 'workflow',
+              }[service.ty],
+              revision: service.revision,
+              public: service.public,
+              deployment_id: deployment.id,
+              ...deploymentColumns,
+            }))
+          : [deploymentColumns];
+      });
+    return HttpResponse.json({ rows } as any);
+  }
+
   if (/\bFROM\s+sys_rules\b/i.test(sql)) {
     return HttpResponse.json({
       rows: ruleRows(

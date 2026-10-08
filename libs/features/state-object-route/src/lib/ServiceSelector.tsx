@@ -1,4 +1,4 @@
-import { useListServices } from '@restate/data-access/admin-api-hooks';
+import { useServiceCatalog } from '@restate/data-access/admin-api-hooks';
 import { Button } from '@restate/ui/button';
 import {
   Dropdown,
@@ -102,7 +102,8 @@ export function getDefaultStateService(services: string[]) {
 }
 
 export function useStateServiceCatalog() {
-  const { data: serviceData, isPending: isServicesPending } = useListServices();
+  const { data: serviceData, isPending: isServicesPending } =
+    useServiceCatalog();
 
   return useMemo(() => {
     const byName = new Map<string, StateRouteService>();
