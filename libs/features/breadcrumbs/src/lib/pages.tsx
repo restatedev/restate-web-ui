@@ -1,3 +1,4 @@
+import { useDeploymentLabel } from '@restate/features/deployment';
 import { InvocationPopoverContent } from '@restate/features/invocation-ui';
 import { Scope } from '@restate/features/vqueue-ui';
 import {
@@ -22,6 +23,21 @@ function InvocationCrumbContent({ crumb }: BreadcrumbComponentProps) {
   return (
     <>
       <CrumbContent crumb={crumb} />
+      {crumb.isCurrent && (
+        <Copy
+          copyText={crumb.label}
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+        />
+      )}
+    </>
+  );
+}
+
+function DeploymentCrumbContent({ crumb }: BreadcrumbComponentProps) {
+  const { label, icon } = useDeploymentLabel(crumb.label);
+  return (
+    <>
+      <CrumbContent crumb={{ ...crumb, label: label ?? crumb.label, icon }} />
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
@@ -245,7 +261,7 @@ export const deploymentCrumb: CrumbFragment = {
   resource: 'deployments',
   label: (params) => params['deployment'] ?? '',
   icon: IconName.Http,
-  Content: InvocationCrumbContent,
+  Content: DeploymentCrumbContent,
 };
 
 export const introspectionCrumb: CrumbFragment = {
