@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -55,6 +56,7 @@ export interface PanelTableProps<
 > {
   sortDescriptor?: SortDescriptor;
   onSortChange?: (descriptor: SortDescriptor | undefined) => void;
+  onColumnResizeEnd?: (widths: Map<TColId, number>) => void;
   columns: PanelTableColumn<TColId>[];
   items: T[];
   isLoading?: boolean;
@@ -82,6 +84,14 @@ const SELECTION_WIDTH = 36;
 const SPACER_WIDTH = 8;
 const LEFT_SPACER_ID = '__panel_table_spacer_left__';
 const RIGHT_SPACER_ID = '__panel_table_spacer_right__';
+
+function toNumericWidths(widths: Map<Key, number | string>) {
+  const numericWidths = new Map<Key, number>();
+  widths.forEach((size, key) => {
+    if (typeof size === 'number') numericWidths.set(key, size);
+  });
+  return numericWidths;
+}
 
 const styles = tv({
   slots: {
@@ -133,6 +143,7 @@ export function PanelTable<
   onRowAction,
   sortDescriptor,
   onSortChange,
+  onColumnResizeEnd,
   treeColumn,
   expandedKeys,
   defaultExpandedKeys,
@@ -222,13 +233,38 @@ export function PanelTable<
 
   const handleColumnResize = useCallback(
     (widths: Map<Key, number | string>) => {
-      const numericWidths = new Map<Key, number>();
-      widths.forEach((size, key) => {
-        if (typeof size === 'number') numericWidths.set(key, size);
-      });
-      setColumnWidths(numericWidths);
+      setColumnWidths(toNumericWidths(widths));
     },
     [],
+  );
+
+  const resizeStartWidths = useRef<Map<Key, number>>(new Map());
+
+  const handleColumnResizeStart = useCallback(
+    (widths: Map<Key, number | string>) => {
+      resizeStartWidths.current = toNumericWidths(widths);
+    },
+    [],
+  );
+
+  const handleColumnResizeEnd = useCallback(
+    (widths: Map<Key, number | string>) => {
+      if (!onColumnResizeEnd) return;
+      const resizedWidths = new Map<TColId, number>();
+      toNumericWidths(widths).forEach((size, key) => {
+        const columnId = fromColumnKey(key);
+        const column = columns.find(({ id }) => id === columnId);
+        if (
+          column &&
+          column.width === undefined &&
+          resizeStartWidths.current.get(key) !== size
+        ) {
+          resizedWidths.set(column.id, size);
+        }
+      });
+      if (resizedWidths.size > 0) onColumnResizeEnd(resizedWidths);
+    },
+    [columns, onColumnResizeEnd],
   );
 
   const handleSelectionChange = useCallback(
@@ -482,7 +518,11 @@ export function PanelTable<
         <div aria-hidden className={stickyHeaderBackdrop()} />
         <div className={stickyHeaderContent()}>
           <div ref={setStickyHeaderScrollEl} className={stickyHeaderScroll()}>
-            <ResizableTableContainer onResize={handleColumnResize}>
+            <ResizableTableContainer
+              onResizeStart={handleColumnResizeStart}
+              onResize={handleColumnResize}
+              onResizeEnd={handleColumnResizeEnd}
+            >
               <AriaTable
                 aria-label={ariaLabel ? `${ariaLabel} columns` : undefined}
                 selectionMode={selectionMode}
