@@ -4,12 +4,9 @@ import {
   useListDrainedDeployments,
 } from '@restate/data-access/admin-api-hooks';
 import {
-  getEndpoint,
-  isHttpDeployment,
-} from '@restate/data-access/admin-api-spec';
-import {
   DeploymentStatusBadge,
   MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
+  resolveDeploymentEndpoint,
 } from '@restate/features/deployment';
 import { DeploymentActions } from '@restate/features/register-deployment';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -137,22 +134,11 @@ function Component() {
     data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
     isVersionGte?.('1.6.0'),
   );
-  const isTunnel = Boolean(
-    tunnel?.isEnabled &&
-    data &&
-    isHttpDeployment(data) &&
-    tunnel.fromHttp(data.uri),
-  );
-  const endpoint = getEndpoint(data);
-  const tunnelEndpoint = isTunnel ? tunnel?.fromHttp(endpoint) : undefined;
-  const displayedEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
-  const icon = data
-    ? isTunnel
-      ? IconName.Tunnel
-      : isHttpDeployment(data)
-        ? IconName.Http
-        : IconName.Lambda
-    : IconName.Http;
+  const {
+    endpoint: displayedEndpoint,
+    tunnelName,
+    icon,
+  } = resolveDeploymentEndpoint(data, tunnel);
 
   return (
     <SnapshotTimeProvider
@@ -168,7 +154,7 @@ function Component() {
         >
           <EndpointChip
             endpoint={displayedEndpoint}
-            tunnelName={tunnelEndpoint?.name}
+            tunnelName={tunnelName}
             isPending={isPending}
           />
           {isDrained !== undefined && (

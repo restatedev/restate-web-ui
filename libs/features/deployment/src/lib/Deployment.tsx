@@ -4,9 +4,8 @@ import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import {
   DeploymentId,
   Revision as ServiceRevision,
-  getEndpoint,
-  isHttpDeployment,
 } from '@restate/data-access/admin-api-spec';
+import { resolveDeploymentEndpoint } from './deploymentLabel';
 import { Revision } from './Revision';
 import { DEPLOYMENT_QUERY_PARAM } from './constants';
 import { deploymentHref } from '@restate/util/panel';
@@ -175,15 +174,12 @@ export function Deployment({
     return null;
   }
 
-  const isTunnel = Boolean(
-    tunnel?.isEnabled &&
-    isHttpDeployment(deployment) &&
-    tunnel.fromHttp(deployment.uri),
-  );
-  const endpoint = getEndpoint(deployment);
-  const tunnelEndpoint = isTunnel ? tunnel?.fromHttp(endpoint) : undefined;
-
-  const deploymentEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
+  const {
+    endpoint: deploymentEndpoint,
+    isTunnel,
+    tunnelName,
+    icon,
+  } = resolveDeploymentEndpoint(deployment, tunnel);
 
   return (
     <div
@@ -214,16 +210,7 @@ export function Deployment({
         </Popover>
       ) : (
         <div className={iconContainerStyles({ variant })}>
-          <Icon
-            name={
-              isTunnel
-                ? IconName.Tunnel
-                : isHttpDeployment(deployment)
-                  ? IconName.Http
-                  : IconName.Lambda
-            }
-            className={iconStyles({ variant })}
-          />
+          <Icon name={icon} className={iconStyles({ variant })} />
         </div>
       )}
 
@@ -234,11 +221,9 @@ export function Deployment({
               content={
                 <p className="flex items-center">
                   Tunnel name:{' '}
-                  <code className="ml-1 inline-block">
-                    {tunnelEndpoint?.name}
-                  </code>
+                  <code className="ml-1 inline-block">{tunnelName}</code>
                   <Copy
-                    copyText={String(tunnelEndpoint?.name)}
+                    copyText={String(tunnelName)}
                     className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
                   />
                 </p>
@@ -249,9 +234,7 @@ export function Deployment({
                 className="relative z-[2] max-w-fit shrink-0 translate-y-px cursor-default rounded-sm py-0.5 font-mono text-[0.9em] leading-3 text-current"
               >
                 <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
-                <div className="max-w-[20ch] truncate">
-                  {tunnelEndpoint?.name}
-                </div>
+                <div className="max-w-[20ch] truncate">{tunnelName}</div>
               </Badge>
             </HoverTooltip>
           )}

@@ -15,11 +15,10 @@ import { useMemo } from 'react';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];
 
-export function DeploymentInvocations({
-  deploymentId,
-}: {
-  deploymentId: string;
-}) {
+export function useDeploymentInvocationsTab(
+  deploymentId: string,
+  isActive: boolean,
+) {
   const baseFilters = useMemo<FilterItem[]>(
     () => [
       {
@@ -31,7 +30,19 @@ export function DeploymentInvocations({
     ],
     [deploymentId],
   );
-  const invocationsTab = useInvocationsTab(baseFilters, Boolean(deploymentId));
+  return useInvocationsTab(baseFilters, {
+    enabled: Boolean(deploymentId),
+    isActive,
+  });
+}
+
+export function DeploymentInvocations({
+  deploymentId,
+  invocationsTab,
+}: {
+  deploymentId: string;
+  invocationsTab: ReturnType<typeof useInvocationsTab>;
+}) {
   const { data, error, isPending, dataUpdatedAt } = invocationsTab.list;
 
   return (

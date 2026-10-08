@@ -110,7 +110,7 @@ export function formatServiceTabCount({ count, accuracy = 'exact' }: TabCount) {
   return `${formatNumber(count, true)}${accuracy === 'lower-bound' ? '+' : ''}`;
 }
 
-type TabBadge = { count: string; total?: string };
+export type TabBadge = { count: string; total?: string };
 
 export function formatServiceTabBadge(
   total: TabCount,
@@ -139,15 +139,18 @@ const countStyles = tv({
   },
 });
 
-function tabLabel(
-  label: string,
-  badge: TabBadge | undefined,
-  isLoading: boolean,
-  previousCount?: string,
-): ReactNode {
+export function TabCountBadge({
+  badge,
+  isLoading,
+  previousCount,
+}: {
+  badge: TabBadge | undefined;
+  isLoading: boolean;
+  previousCount?: string;
+}) {
   const styles = countStyles({ loading: isLoading });
   const content = isLoading
-    ? (previousCount ?? '000')
+    ? (previousCount ?? badgeText(badge) ?? '000')
     : badge && (
         <>
           {badge.count}
@@ -156,20 +159,34 @@ function tabLabel(
           )}
         </>
       );
+  if (!content) return null;
+  return (
+    <span
+      className={styles.base()}
+      aria-hidden={isLoading || undefined}
+      data-loading={isLoading || undefined}
+    >
+      {content}
+    </span>
+  );
+}
+
+function tabLabel(
+  label: string,
+  badge: TabBadge | undefined,
+  isLoading: boolean,
+  previousCount?: string,
+): ReactNode {
   return (
     <span className="flex items-center gap-1.5">
       <span className="truncate [[role=tab]_&]:max-w-[12ch]" title={label}>
         {label}
       </span>
-      {content && (
-        <span
-          className={styles.base()}
-          aria-hidden={isLoading || undefined}
-          data-loading={isLoading || undefined}
-        >
-          {content}
-        </span>
-      )}
+      <TabCountBadge
+        badge={badge}
+        isLoading={isLoading}
+        previousCount={previousCount}
+      />
     </span>
   );
 }

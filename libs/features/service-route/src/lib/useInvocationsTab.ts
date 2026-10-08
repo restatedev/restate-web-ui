@@ -1,6 +1,7 @@
 import { useListInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
+  formatServiceTabBadge,
   resolveInvocationPopulationCount,
   type StatusFilter,
   useInvocationFilterSchema,
@@ -42,7 +43,10 @@ function parseStatusFilter(value: string | null): StatusFilter {
   return undefined;
 }
 
-export function useInvocationsTab(baseFilters: FilterItem[], enabled: boolean) {
+export function useInvocationsTab(
+  baseFilters: FilterItem[],
+  { enabled, isActive }: { enabled: boolean; isActive: boolean },
+) {
   const { baseUrl } = useRestateContext();
   const [searchParams] = useSearchParams();
   const statusParam = searchParams.get(STATUS_FILTER_QUERY_PARAM);
@@ -67,7 +71,7 @@ export function useInvocationsTab(baseFilters: FilterItem[], enabled: boolean) {
   const list = useListInvocationsV2(
     { filters, sort: { field: 'created_at', order: 'DESC' } },
     {
-      enabled,
+      enabled: enabled && isActive,
       refetchOnMount: true,
       refetchOnWindowFocus: false,
       staleTime: 0,
@@ -99,6 +103,42 @@ export function useInvocationsTab(baseFilters: FilterItem[], enabled: boolean) {
   });
   const totalLabel = `${total.accuracy === 'estimate' ? '~' : ''}${formatNumber(total.count, true)}${total.accuracy === 'lower-bound' ? '+' : ''}`;
 
+  const hasCompletedStage = summary.byStage.some(
+    ({ name }) => name === 'finished',
+  );
+  const populationCount = hasCompletedStage
+    ? summary.byStage.reduce((sum, { count }) => sum + count, 0)
+    : undefined;
+  const populationIsEstimate = Boolean(summary.data?.stageCountsArePartial);
+  const isStatusFiltered = Boolean(statusFilter);
+  const matchingCount = summary.matchingCount?.count;
+  const matchingIsEstimate = Boolean(summary.matchingCount?.isPartial);
+  const tabBadge = useMemo(
+    () =>
+      formatServiceTabBadge(
+        {
+          count: populationCount,
+          accuracy: populationIsEstimate ? 'estimate' : 'exact',
+        },
+        isStatusFiltered
+          ? {
+              count: matchingCount,
+              accuracy: matchingIsEstimate ? 'estimate' : 'exact',
+            }
+          : undefined,
+      ),
+    [
+      populationCount,
+      populationIsEstimate,
+      isStatusFiltered,
+      matchingCount,
+      matchingIsEstimate,
+    ],
+  );
+  const isTabBadgeLoading =
+    summary.isLoading ||
+    (!hasCompletedStage && summary.isBreakdownLoading('finished'));
+
   const hrefForStatusFilter = (next: StatusFilter) => {
     const params = new URLSearchParams(searchParams);
     if (next && next.value.length > 0) {
@@ -128,5 +168,7 @@ export function useInvocationsTab(baseFilters: FilterItem[], enabled: boolean) {
     setSelectedIds,
     total: total.count,
     totalLabel,
+    tabBadge,
+    isTabBadgeLoading,
   };
 }

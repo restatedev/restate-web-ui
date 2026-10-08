@@ -16,3 +16,4 @@ export { useInvocationsTab } from './lib/useInvocationsTab';
 export { InvocationsStatusSummary } from './lib/InvocationsStatusSummary';
 export { ViewInInvocationsLink } from './lib/ViewInInvocationsLink';
 export { InvocationsTabToolbar } from './lib/InvocationsTabToolbar';
+export { InvocationsTabLabel } from './lib/InvocationsTabLabel';

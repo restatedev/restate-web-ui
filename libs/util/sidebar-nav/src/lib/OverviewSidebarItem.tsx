@@ -7,7 +7,13 @@ import {
 import { IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { useLocation, useSearchParams } from 'react-router';
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+  type PropsWithChildren,
+} from 'react';
+import { useDeploymentLabel } from '@restate/features/deployment';
 import { REGISTER_DEPLOYMENT_QUERY } from '@restate/features/register-deployment';
 import { ServicePlaygroundSidebarAction } from '@restate/features/service';
 import {
@@ -84,11 +90,10 @@ function truncateId(id: string): string {
   return `${id.slice(0, 8)}…${id.slice(-5)}`;
 }
 
-function OverviewRecentLabel({ recent }: { recent: OverviewRecent }) {
-  const full =
-    recent.type === 'service'
-      ? [recent.service, recent.handler].filter(Boolean).join('/')
-      : recent.deployment;
+function RecentTooltip({
+  full,
+  children,
+}: PropsWithChildren<{ full: string }>) {
   return (
     <HoverTooltip
       content={<span className="font-mono whitespace-nowrap">{full}</span>}
@@ -96,24 +101,46 @@ function OverviewRecentLabel({ recent }: { recent: OverviewRecent }) {
       offset={10}
       className="min-w-0 flex-auto"
     >
-      {recent.type === 'service' ? (
-        <span className="flex min-w-0 flex-auto items-center gap-1">
-          <span className="min-w-0 flex-1 truncate">{recent.service}</span>
-          {recent.handler && (
-            <>
-              <span className="shrink-0 text-zinc-400">/</span>
-              <span className="max-w-24 shrink-0 truncate font-mono">
-                {recent.handler}
-              </span>
-            </>
-          )}
-        </span>
-      ) : (
-        <span className="min-w-0 flex-auto truncate font-mono">
-          {truncateId(recent.deployment)}
-        </span>
-      )}
+      {children}
     </HoverTooltip>
+  );
+}
+
+function DeploymentRecentLabel({ deploymentId }: { deploymentId: string }) {
+  const { label, endpoint, isPending } = useDeploymentLabel(deploymentId);
+
+  if (isPending) {
+    return <span className="h-3 w-24 animate-pulse rounded bg-zinc-200" />;
+  }
+  return (
+    <RecentTooltip full={endpoint ?? deploymentId}>
+      <span className="min-w-0 flex-auto truncate font-mono">
+        {label ?? truncateId(deploymentId)}
+      </span>
+    </RecentTooltip>
+  );
+}
+
+function OverviewRecentLabel({ recent }: { recent: OverviewRecent }) {
+  if (recent.type === 'deployment') {
+    return <DeploymentRecentLabel deploymentId={recent.deployment} />;
+  }
+  return (
+    <RecentTooltip
+      full={[recent.service, recent.handler].filter(Boolean).join('/')}
+    >
+      <span className="flex min-w-0 flex-auto items-center gap-1">
+        <span className="min-w-0 flex-1 truncate">{recent.service}</span>
+        {recent.handler && (
+          <>
+            <span className="shrink-0 text-zinc-400">/</span>
+            <span className="max-w-24 shrink-0 truncate font-mono">
+              {recent.handler}
+            </span>
+          </>
+        )}
+      </span>
+    </RecentTooltip>
   );
 }
 

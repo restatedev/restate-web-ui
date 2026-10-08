@@ -7,14 +7,13 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { FormFieldSelect } from '@restate/ui/form-field';
-import {
-  Deployment,
-  getEndpoint,
-  isHttpDeployment,
-} from '@restate/data-access/admin-api-spec';
+import { Deployment } from '@restate/data-access/admin-api-spec';
 import { ListBoxItem } from '@restate/ui/listbox';
 import { Icon, IconName } from '@restate/ui/icons';
-import { Revision } from '@restate/features/deployment';
+import {
+  resolveDeploymentEndpoint,
+  Revision,
+} from '@restate/features/deployment';
 import { Badge } from '@restate/ui/badge';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useSearchParams } from 'react-router';
@@ -91,20 +90,12 @@ function ResumeInvocationContent() {
               return null;
             }
 
-            const isTunnel = Boolean(
-              tunnel?.isEnabled &&
-              deployment &&
-              isHttpDeployment(deployment) &&
-              tunnel.fromHttp(deployment.uri),
-            );
-            const endpoint = getEndpoint(deployment);
-            const tunnelEndpoint = isTunnel
-              ? tunnel?.fromHttp(endpoint)
-              : undefined;
-
-            const deploymentEndpoint = isTunnel
-              ? tunnelEndpoint?.remoteUrl
-              : endpoint;
+            const {
+              endpoint: deploymentEndpoint,
+              isTunnel,
+              tunnelName,
+              icon,
+            } = resolveDeploymentEndpoint(deployment, tunnel);
 
             return (
               <ListBoxItem
@@ -117,13 +108,7 @@ function ResumeInvocationContent() {
                 <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
                   <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
                     <Icon
-                      name={
-                        isTunnel
-                          ? IconName.Tunnel
-                          : isHttpDeployment(deployment!)
-                            ? IconName.Http
-                            : IconName.Lambda
-                      }
+                      name={icon}
                       className="h-full w-full p-1 text-zinc-400"
                     />
                   </div>
@@ -134,9 +119,7 @@ function ResumeInvocationContent() {
                     >
                       <Icon name={IconName.AtSign} className="mr-0.5 h-3 w-3" />
 
-                      <div className="w-full truncate">
-                        {tunnelEndpoint?.name}
-                      </div>
+                      <div className="w-full truncate">{tunnelName}</div>
                     </Badge>
                   )}
                   <div className="max-w-fit min-w-0 grow basis-full truncate">

@@ -8,7 +8,6 @@ import {
 import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
 import {
-  getEndpoint,
   isHttpDeployment,
   isLambdaDeployment,
   getProtocolType,
@@ -36,6 +35,7 @@ import {
   DELETE_DEPLOYMENT_QUERY_PARAM,
   SDK,
   MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
+  resolveDeploymentEndpoint,
 } from '@restate/features/deployment';
 import { useRestateContext } from '@restate/features/restate-context';
 import { formatDateTime } from '@restate/util/intl';
@@ -122,16 +122,12 @@ function DeploymentContent({
   const services = data?.services ?? [];
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
 
-  const isTunnel = Boolean(
-    tunnel?.isEnabled &&
-    data &&
-    isHttpDeployment(data) &&
-    tunnel.fromHttp(data.uri),
-  );
-  const endpoint = getEndpoint(data);
-  const tunnelEndpoint = isTunnel ? tunnel?.fromHttp(endpoint) : undefined;
-
-  const displayedEndpoint = isTunnel ? tunnelEndpoint?.remoteUrl : endpoint;
+  const {
+    endpoint: displayedEndpoint,
+    isTunnel,
+    tunnelName,
+    icon,
+  } = resolveDeploymentEndpoint(data, tunnel);
 
   const isDeprecated = Boolean(
     data &&
@@ -143,15 +139,7 @@ function DeploymentContent({
       <h2 className="mb-3 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
         <div className="h-10 w-10 shrink-0 text-blue-400">
           <Icon
-            name={
-              data
-                ? isTunnel
-                  ? IconName.Tunnel
-                  : isHttpDeployment(data)
-                    ? IconName.Http
-                    : IconName.Lambda
-                : IconName.Http
-            }
+            name={icon}
             className="h-full w-full fill-blue-50 p-1.5 text-blue-400 drop-shadow-md"
           />
         </div>{' '}
@@ -170,11 +158,9 @@ function DeploymentContent({
                     content={
                       <p className="flex items-center">
                         Tunnel name:{' '}
-                        <code className="ml-1 inline-block">
-                          {tunnelEndpoint?.name}
-                        </code>
+                        <code className="ml-1 inline-block">{tunnelName}</code>
                         <Copy
-                          copyText={String(tunnelEndpoint?.name)}
+                          copyText={String(tunnelName)}
                           className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
                         />
                       </p>
@@ -190,9 +176,7 @@ function DeploymentContent({
                         className="mr-0.5 h-3.5 w-3.5"
                       />
 
-                      <div className="w-full truncate">
-                        {tunnelEndpoint?.name}
-                      </div>
+                      <div className="w-full truncate">{tunnelName}</div>
                     </Badge>
                   </HoverTooltip>
                 )}

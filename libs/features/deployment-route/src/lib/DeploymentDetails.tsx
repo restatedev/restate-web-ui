@@ -8,7 +8,11 @@ import {
 } from '@restate/ui/content-panel';
 import { formatNumber } from '@restate/util/intl';
 import { useMemo } from 'react';
-import { DeploymentInvocations } from './DeploymentInvocations';
+import { InvocationsTabLabel } from '@restate/features/service-route';
+import {
+  DeploymentInvocations,
+  useDeploymentInvocationsTab,
+} from './DeploymentInvocations';
 import { DeploymentServicesTable } from './DeploymentServicesTable';
 
 export type DeploymentTab = 'services' | 'invocations';
@@ -49,6 +53,11 @@ export function DeploymentDetails({
   isPending: boolean;
   error: Error | null;
 }) {
+  const invocationsTab = useDeploymentInvocationsTab(
+    deploymentId,
+    tab === 'invocations',
+  );
+  const { tabBadge, isTabBadgeLoading } = invocationsTab;
   const tabs = useMemo<ContentPanelTabs>(
     () => ({
       items: [
@@ -67,13 +76,21 @@ export function DeploymentDetails({
             </span>
           ),
         },
-        { id: 'invocations', label: 'Invocations' },
+        {
+          id: 'invocations',
+          label: (
+            <InvocationsTabLabel
+              badge={tabBadge}
+              isLoading={isTabBadgeLoading}
+            />
+          ),
+        },
       ],
       defaultId: 'services',
       queryParam: TAB_QUERY_PARAM,
       stateParams: isTabStateParam,
     }),
-    [isPending, services.length],
+    [isPending, services.length, tabBadge, isTabBadgeLoading],
   );
 
   return (
@@ -90,7 +107,10 @@ export function DeploymentDetails({
           </ContentPanelSection>
         </ContentPanelBody>
       ) : (
-        <DeploymentInvocations deploymentId={deploymentId} />
+        <DeploymentInvocations
+          deploymentId={deploymentId}
+          invocationsTab={invocationsTab}
+        />
       )}
     </ContentPanel>
   );

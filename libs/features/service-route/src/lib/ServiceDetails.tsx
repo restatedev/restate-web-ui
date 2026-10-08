@@ -11,7 +11,11 @@ import { formatNumber } from '@restate/util/intl';
 import { useMemo, type ReactNode } from 'react';
 import { ServiceDeploymentsTable } from './ServiceDeploymentsTable';
 import { ServiceHandlersTable } from './ServiceHandlersTable';
-import { ServiceInvocations } from './ServiceInvocations';
+import { InvocationsTabLabel } from './InvocationsTabLabel';
+import {
+  ServiceInvocations,
+  useServiceInvocationsTab,
+} from './ServiceInvocations';
 import { ServicePlaygroundEmbed } from '@restate/features/service';
 import { VirtualObjectInstances } from '@restate/features/virtual-objects-route';
 import { WorkflowRuns } from '@restate/features/workflows-route';
@@ -105,10 +109,24 @@ export function ServiceDetails({
     (tab === 'runs' || tab === 'instances') && tab !== keyedTab
       ? 'invocations'
       : tab;
+  const invocationsTab = useServiceInvocationsTab(
+    service,
+    selectedHandler,
+    activeTab === 'invocations',
+  );
+  const { tabBadge, isTabBadgeLoading } = invocationsTab;
   const tabs = useMemo<ContentPanelTabs>(
     () => ({
       items: [
-        { id: 'invocations', label: 'Invocations' },
+        {
+          id: 'invocations',
+          label: (
+            <InvocationsTabLabel
+              badge={tabBadge}
+              isLoading={isTabBadgeLoading}
+            />
+          ),
+        },
         ...(keyedTab
           ? [{ id: keyedTab, label: KEYED_TAB_LABELS[keyedTab] }]
           : []),
@@ -140,7 +158,14 @@ export function ServiceDetails({
       queryParam: TAB_QUERY_PARAM,
       stateParams: isTabStateParam,
     }),
-    [deploymentsCount, handlers.length, isPending, keyedTab],
+    [
+      deploymentsCount,
+      handlers.length,
+      isPending,
+      keyedTab,
+      tabBadge,
+      isTabBadgeLoading,
+    ],
   );
 
   return (
@@ -149,7 +174,11 @@ export function ServiceDetails({
       tabs={tabs}
     >
       {activeTab === 'invocations' ? (
-        <ServiceInvocations service={service} handler={selectedHandler} />
+        <ServiceInvocations
+          service={service}
+          handler={selectedHandler}
+          invocationsTab={invocationsTab}
+        />
       ) : activeTab === 'runs' ? (
         <WorkflowRuns service={service} />
       ) : activeTab === 'instances' ? (
