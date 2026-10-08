@@ -786,8 +786,14 @@ const queryHandler = http.post<
         return services.length > 0
           ? services.map((service) => ({
               name: service.name,
+              ty: {
+                Service: 'service',
+                VirtualObject: 'virtual_object',
+                Workflow: 'workflow',
+              }[service.ty],
               revision: service.revision,
               public: service.public,
+              deployment_id: deployment.id,
               ...deploymentColumns,
             }))
           : [deploymentColumns];

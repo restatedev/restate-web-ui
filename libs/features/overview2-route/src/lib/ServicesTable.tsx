@@ -3,7 +3,6 @@ import {
   TERMINAL_INVOCATION_STATUSES,
   type Deployment,
   type Handler,
-  type Service,
 } from '@restate/data-access/admin-api-spec';
 import {
   AllRevisions,
@@ -26,6 +25,7 @@ import { EmptyState } from '@restate/ui/empty-state';
 import { Icon, IconName } from '@restate/ui/icons';
 import { IssueBadge } from '@restate/ui/issue-banner';
 import { Link } from '@restate/ui/link';
+import { Spinner } from '@restate/ui/loading';
 import {
   Cell,
   PanelTable,
@@ -46,7 +46,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
-import { sortServices } from './sortServices';
+import { sortServices, type OverviewService } from './sortServices';
 
 type ServiceColumn =
   | 'name'
@@ -55,7 +55,7 @@ type ServiceColumn =
   | 'created_at'
   | 'deployment';
 
-export interface OverviewServiceTableRow extends Service {
+export interface OverviewServiceTableRow extends OverviewService {
   id: string;
   visibleHandlers: Handler[];
   autoExpand: boolean;
@@ -119,6 +119,7 @@ const tableStyles = tv({
     serviceType: 'ml-auto',
     chevron:
       'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
+    chevronLoading: 'h-5 w-5 shrink-0 p-[3px] text-gray-400',
     handlerIdentity: 'flex min-w-0 items-center gap-1.5 pl-7',
     handler: 'max-w-fit min-w-0 pr-0 pl-0',
     handlerInvocationCell: 'p-0!',
@@ -179,7 +180,7 @@ export function getServiceTableRows({
   invocationCounts,
   serviceIssuesMap,
 }: {
-  servicesMap?: Map<string, Service>;
+  servicesMap?: Map<string, OverviewService>;
   deploymentsMap?: Map<string, Deployment>;
   filter: string;
   sortDescriptor: SortDescriptor;
@@ -188,7 +189,7 @@ export function getServiceTableRows({
 }) {
   const normalizedFilter = filter.trim().toLowerCase();
   const rows = Array.from(servicesMap?.values() ?? []).flatMap((service) => {
-    const handlers = [...service.handlers].sort((a, b) =>
+    const handlers = [...(service.handlers ?? [])].sort((a, b) =>
       a.name.localeCompare(b.name),
     );
     if (!normalizedFilter) {
@@ -232,7 +233,7 @@ export function getServiceTableRows({
     invocationCounts,
     serviceIssuesMap,
     deploymentsMap,
-  ) as OverviewServiceTableRow[];
+  );
 }
 
 function PlaygroundLink({
@@ -278,7 +279,15 @@ function ServiceIdentity({
   const { baseUrl } = useRestateContext();
   return (
     <div className={styles.serviceIdentity()}>
-      {row.handlers.length > 0 ? (
+      {!row.handlers ? (
+        <span
+          role="status"
+          aria-label="Loading handlers"
+          className={styles.chevronLoading()}
+        >
+          <Spinner className="h-full w-full" />
+        </span>
+      ) : row.handlers.length > 0 ? (
         <Button slot="chevron" variant="icon" className={styles.chevron()}>
           <Icon name={IconName.ChevronRight} className="h-full w-full" />
         </Button>
@@ -318,7 +327,7 @@ function HandlerIdentity({
   handler,
   OnboardingGuide,
 }: {
-  service: Service;
+  service: OverviewService;
   handler: Handler;
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
@@ -351,7 +360,7 @@ function renderHandlerCell({
   linkParams,
   OnboardingGuide,
 }: {
-  service: Service;
+  service: OverviewService;
   row: OverviewHandlerTableRow;
   column: PanelTableColumn;
   baseUrl: string;
@@ -459,6 +468,7 @@ export function ServicesTable() {
     isServiceSummaryError,
     isServiceSummaryLoading,
     isDeploymentsFetching,
+    isServicesPending,
     baseUrl,
     linkParams,
     resolvedServiceSortDescriptor,
@@ -539,7 +549,7 @@ export function ServicesTable() {
       aria-label="Services and handlers"
       columns={COLUMNS}
       items={rows}
-      isLoading={isDeploymentsFetching}
+      isLoading={isDeploymentsFetching || isServicesPending}
       numOfRows={Math.max(rows.length, 6)}
       treeColumn="name"
       expandedKeys={visibleExpandedKeys}

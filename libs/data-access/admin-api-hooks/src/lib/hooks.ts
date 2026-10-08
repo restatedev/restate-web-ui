@@ -243,12 +243,52 @@ export function getListDeploymentsQueryOptions(
   };
 }
 
-const SERVICE_CATALOG_FINGERPRINT_QUERY = `SELECT s.name, s.revision, s.public, d.id, d.endpoint, d.created_at FROM sys_service s FULL OUTER JOIN sys_deployment d ON s.deployment_id = d.id ORDER BY d.id, s.name`;
+const SERVICE_CATALOG_QUERY = `SELECT s.name, s.ty, s.revision, s.public, s.deployment_id, d.id, d.endpoint, d.created_at FROM sys_service s FULL OUTER JOIN sys_deployment d ON s.deployment_id = d.id ORDER BY d.id, s.name`;
 
-function getServiceCatalogFingerprintAdminApi(baseUrl: string) {
+type ServiceCatalogRow = {
+  name?: string | null;
+  ty?: string | null;
+  revision?: number | null;
+  public?: boolean | null;
+  deployment_id?: string | null;
+  id?: string | null;
+  endpoint?: string | null;
+  created_at?: string | null;
+};
+
+export type ServiceSummary = Pick<
+  Service,
+  'name' | 'ty' | 'revision' | 'public' | 'deployment_id'
+>;
+
+const SERVICE_CATALOG_TYPES: Record<string, Service['ty']> = {
+  service: 'Service',
+  virtual_object: 'VirtualObject',
+  workflow: 'Workflow',
+};
+
+const EMPTY_SERVICE_SUMMARIES = new Map<string, ServiceSummary>();
+
+function serviceCatalogSelector(rows: ServiceCatalogRow[]) {
+  const services = new Map<string, ServiceSummary>();
+  for (const row of rows) {
+    const ty = row.ty ? SERVICE_CATALOG_TYPES[row.ty] : undefined;
+    if (!row.name || !ty || !row.deployment_id) continue;
+    services.set(row.name, {
+      name: row.name,
+      ty,
+      revision: row.revision ?? 0,
+      public: row.public ?? false,
+      deployment_id: row.deployment_id,
+    });
+  }
+  return services;
+}
+
+function getServiceCatalogAdminApi(baseUrl: string) {
   return adminApi('query', '/query', 'post', {
     baseUrl,
-    body: { query: SERVICE_CATALOG_FINGERPRINT_QUERY },
+    body: { query: SERVICE_CATALOG_QUERY },
   });
 }
 
@@ -268,26 +308,32 @@ function invalidateServiceCatalog(queryClient: QueryClient, baseUrl: string) {
   ]);
 }
 
-function useServiceCatalogFingerprint() {
+function useServiceCatalogQuery<TData = ServiceCatalogRow[]>(
+  select?: (rows: ServiceCatalogRow[]) => TData,
+) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
-  const { queryFn, ...queryOptions } =
-    getServiceCatalogFingerprintAdminApi(baseUrl);
+  const { queryFn, ...queryOptions } = getServiceCatalogAdminApi(baseUrl);
 
-  useQuery<string>({
+  return useQuery<ServiceCatalogRow[], Error, TData>({
     ...queryOptions,
     staleTime: 10_000,
     meta: { ...queryOptions.meta, ...getOverviewRefreshMeta() },
     queryFn: async (...args: Parameters<typeof queryFn>) => {
-      const previous = queryClient.getQueryData<string>(queryOptions.queryKey);
+      const previous = queryClient.getQueryData<ServiceCatalogRow[]>(
+        queryOptions.queryKey,
+      );
       try {
         const data = await queryFn(...args);
-        const fingerprint = JSON.stringify(data?.rows ?? []);
-        if (previous !== undefined && previous !== fingerprint) {
+        const rows = (data?.rows ?? []) as ServiceCatalogRow[];
+        if (
+          previous !== undefined &&
+          JSON.stringify(previous) !== JSON.stringify(rows)
+        ) {
           invalidateServiceCatalog(queryClient, baseUrl);
         }
-        return fingerprint;
+        return rows;
       } catch (error) {
         if (!args[0].signal.aborted) {
           invalidateServiceCatalog(queryClient, baseUrl);
@@ -295,15 +341,29 @@ function useServiceCatalogFingerprint() {
         throw error;
       }
     },
+    select,
     enabled,
   });
+}
+
+export function useServiceCatalog() {
+  const catalog = useServiceCatalogQuery(serviceCatalogSelector);
+  const fullServices = useListServices({ enabled: catalog.isError });
+  const data =
+    catalog.data ?? (fullServices.isSuccess ? fullServices.data : undefined);
+
+  return {
+    data: data ?? EMPTY_SERVICE_SUMMARIES,
+    isPending: !data && !(catalog.isError && fullServices.isError),
+    error: catalog.isError ? fullServices.error : null,
+  };
 }
 
 export function useListDeployments(options?: ListDeploymentsOptions) {
   const apiEnabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListDeploymentsQueryOptions(baseUrl, options);
-  useServiceCatalogFingerprint();
+  useServiceCatalogQuery();
 
   const results = useQuery<ListDeploymentsData>({
     ...queryOptions,
@@ -1062,7 +1122,7 @@ export function invalidateListServices(
       queryKey: getListServicesAdminApi(baseUrl).queryKey,
     }),
     queryClient.invalidateQueries({
-      queryKey: getServiceCatalogFingerprintAdminApi(baseUrl).queryKey,
+      queryKey: getServiceCatalogAdminApi(baseUrl).queryKey,
     }),
   ]);
 }
@@ -1105,7 +1165,7 @@ export function useListServices(
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryOptions = getListServicesAdminApi(baseUrl);
-  useServiceCatalogFingerprint();
+  useServiceCatalogQuery();
 
   const results = useQuery({
     ...queryOptions,

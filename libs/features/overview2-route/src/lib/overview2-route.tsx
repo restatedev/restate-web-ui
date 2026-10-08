@@ -463,6 +463,7 @@ function OverviewContent() {
     isError,
     error,
     isDeploymentsFetching,
+    isServicesPending,
     mode,
     filter,
     setFilter,
@@ -906,7 +907,7 @@ function OverviewContent() {
                   Services
                   <TabCount
                     count={servicesCount}
-                    isLoading={isDeploymentsFetching}
+                    isLoading={isDeploymentsFetching || isServicesPending}
                   />
                 </div>
               ),

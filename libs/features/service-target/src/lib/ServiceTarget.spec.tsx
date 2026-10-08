@@ -8,7 +8,7 @@ const serviceCatalog = vi.hoisted(
 );
 
 vi.mock('@restate/data-access/admin-api-hooks', () => ({
-  useListServices: () => ({ data: serviceCatalog }),
+  useServiceCatalog: () => ({ data: serviceCatalog }),
 }));
 
 function renderTarget(component: React.ReactNode) {
