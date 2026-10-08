@@ -24,8 +24,10 @@ import {
 } from './columns';
 import {
   getUserAddedCols,
+  getUserColWidths,
   getUserCountMode,
   getUserLastSort,
+  setUserColWidths,
   setUserCountMode,
   type CountMode,
 } from './userPreferences';
@@ -561,27 +563,26 @@ function Component() {
     .map(({ id }) => id);
   const firstInvocation = tableItems.find((row) => !isVqueueEntry(row));
 
-  const panelColumns = useMemo<PanelTableColumn<ColumnKey>[]>(
-    () =>
-      sortedColumnsList.map((col) =>
-        col.id === 'actions'
-          ? {
-              id: 'actions' as ColumnKey,
-              name: 'Actions',
-              width: 40,
-              hideLabel: true,
-            }
-          : {
-              id: col.id,
-              name: col.name,
-              isRowHeader: col.isRowHeader,
-              defaultWidth: COLUMN_WIDTH[col.id],
-              minWidth: MIN_COLUMN_WIDTH[col.id] ?? 80,
-              maxWidth: MAX_COLUMN_WIDTH[col.id],
-            },
-      ),
-    [sortedColumnsList],
-  );
+  const panelColumns = useMemo<PanelTableColumn<ColumnKey>[]>(() => {
+    const userColWidths = getUserColWidths();
+    return sortedColumnsList.map((col) =>
+      col.id === 'actions'
+        ? {
+            id: 'actions' as ColumnKey,
+            name: 'Actions',
+            width: 40,
+            hideLabel: true,
+          }
+        : {
+            id: col.id,
+            name: col.name,
+            isRowHeader: col.isRowHeader,
+            defaultWidth: userColWidths[col.id] ?? COLUMN_WIDTH[col.id],
+            minWidth: MIN_COLUMN_WIDTH[col.id] ?? 80,
+            maxWidth: MAX_COLUMN_WIDTH[col.id],
+          },
+    );
+  }, [sortedColumnsList]);
 
   useEffect(() => {
     setSelectedInvocationIds(new Set());
@@ -799,6 +800,7 @@ function Component() {
                   </>
                 }
                 columns={panelColumns}
+                onColumnResizeEnd={setUserColWidths}
                 items={tableItems}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}

@@ -42,7 +42,13 @@ function stubResizeObservers() {
 describe('PanelTable', () => {
   beforeAll(() => {
     globalThis.ResizeObserver = ResizeObserverMock;
+    vi.stubGlobal('CSS', {
+      ...globalThis.CSS,
+      escape: (value: string) => value,
+    });
   });
+
+  afterAll(() => vi.unstubAllGlobals());
 
   it('renders a sticky toolbar below the column header and before the caption', () => {
     render(
@@ -373,6 +379,43 @@ describe('PanelTable', () => {
       column: 'created_at',
       direction: 'ascending',
     });
+  });
+
+  it('reports resized column widths with the original column ids', () => {
+    const onColumnResizeEnd = vi.fn();
+
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[
+          { id: 'name', name: 'Name', isRowHeader: true, defaultWidth: 200 },
+          { id: 'created_at', name: 'Created at', defaultWidth: 150 },
+          { id: 'target', name: 'Target' },
+          { id: 'actions', name: 'Actions', width: 40, hideLabel: true },
+        ]}
+        items={[{ id: 'one', name: 'One' }]}
+        onColumnResizeEnd={onColumnResizeEnd}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+
+    const headerTable = screen.getByRole('grid', { name: 'Items columns' });
+    const resizers = headerTable.querySelectorAll<HTMLInputElement>(
+      'input[type="range"]',
+    );
+    const createdAtResizer = resizers[1];
+    if (!createdAtResizer)
+      throw new Error('Created at resizer was not rendered');
+
+    fireEvent.keyDown(createdAtResizer, { key: 'Enter' });
+    fireEvent.keyDown(createdAtResizer, { key: 'ArrowRight' });
+    expect(onColumnResizeEnd).not.toHaveBeenCalled();
+    fireEvent.keyDown(createdAtResizer, { key: 'Enter' });
+
+    expect(onColumnResizeEnd).toHaveBeenCalledTimes(1);
+    expect(onColumnResizeEnd).toHaveBeenCalledWith(
+      new Map([['created_at', 160]]),
+    );
   });
 
   it.each([true, false])(
