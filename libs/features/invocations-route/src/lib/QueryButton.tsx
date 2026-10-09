@@ -67,9 +67,7 @@ function QueryButton({
   const s = queryButtonStyles({ variant });
   return (
     <Button variant="secondary" className={s.button()}>
-      {operation != null && (
-        <span className={s.operation()}>{operation}</span>
-      )}
+      {operation != null && <span className={s.operation()}>{operation}</span>}
       {field != null && <span className={s.field()}>{field}</span>}
       {value != null && <span className={s.value()}>{value}</span>}
       <Icon name={IconName.ChevronsUpDown} className={s.chevron()} />

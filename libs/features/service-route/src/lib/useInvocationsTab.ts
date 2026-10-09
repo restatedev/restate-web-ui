@@ -148,7 +148,10 @@ export function useInvocationsTab(
   });
   const countsDisagree = doInvocationCountsDisagree({
     isSettled:
-      !list.isFetching && !summary.isFetching && !list.error && !summary.isError,
+      !list.isFetching &&
+      !summary.isFetching &&
+      !list.error &&
+      !summary.isError,
     statusChangedCount,
     summaryMatchCount: summary.matchingCount,
     ...listSnapshot,
