@@ -5,6 +5,10 @@ import {
   type InvocationTableColumnKey,
 } from '@restate/features/invocation-ui';
 import { Actions } from '@restate/features/invocation-route';
+import {
+  CountsDisagreeEmptyState,
+  ResultsNotice,
+} from '@restate/features/invocations-route';
 import { useRestateContext } from '@restate/features/restate-context';
 import { EmptyState } from '@restate/ui/empty-state';
 import { IconName } from '@restate/ui/icons';
@@ -66,6 +70,8 @@ export function InvocationsPanelTable({
   selectedKeys,
   onSelectionChange,
   sort,
+  notice,
+  countsDisagree,
 }: {
   ariaLabel: string;
   columns: InvocationsPanelColumn[];
@@ -77,6 +83,8 @@ export function InvocationsPanelTable({
   selectedKeys?: Set<string>;
   onSelectionChange?: (keys: Set<string>) => void;
   sort?: InvocationSort;
+  notice?: string;
+  countsDisagree?: boolean;
 }) {
   const { baseUrl } = useRestateContext();
   const location = useLocation();
@@ -106,12 +114,24 @@ export function InvocationsPanelTable({
           );
         }}
         rowClassName="cursor-pointer [content-visibility:auto]"
+        bodyHeadingHeight={notice ? 0 : undefined}
+        caption={
+          notice ? (
+            <div className="mx-4 mt-11 mb-1">
+              <ResultsNotice message={notice} />
+            </div>
+          ) : undefined
+        }
         emptyPlaceholder={
-          <EmptyState
-            icon={IconName.Invocation}
-            title={emptyTitle}
-            description={emptyDescription}
-          />
+          countsDisagree ? (
+            <CountsDisagreeEmptyState />
+          ) : (
+            <EmptyState
+              icon={IconName.Invocation}
+              title={emptyTitle}
+              description={emptyDescription}
+            />
+          )
         }
         renderCell={(invocation, column) =>
           column.id === 'actions' ? (

@@ -5,9 +5,16 @@ export {
 } from '@restate/ui/filter-builder';
 export { useInvocationSummary } from './lib/useInvocationSummary';
 export {
+  doInvocationCountsDisagree,
   filterInvocationSummaryByStatus,
+  getListRowCounts,
   resolveInvocationPopulationCount,
 } from './lib/invocationSummaryMatchCount';
+export {
+  CountsDisagreeEmptyState,
+  getResultsNoticeMessage,
+  ResultsNotice,
+} from './lib/resultsNotice';
 export { useSchema as useInvocationFilterSchema } from './lib/useSchema';
 export { getRepresentedStatuses } from './lib/useStatusBarProps';
 export {

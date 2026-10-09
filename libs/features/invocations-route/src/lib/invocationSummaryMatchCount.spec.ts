@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
   countMatchingStatusBuckets,
+  doInvocationCountsDisagree,
   filterInvocationSummaryByStatus,
+  getListRowCounts,
   isInvocationListSnapshotComplete,
   resolveInvocationPopulationCount,
 } from './invocationSummaryMatchCount';
@@ -104,6 +106,81 @@ describe('resolveInvocationPopulationCount', () => {
       count: 2_590_000,
       accuracy: 'exact',
     });
+  });
+});
+
+describe('getListRowCounts', () => {
+  it('excludes rows whose status changed while loading', () => {
+    expect(
+      getListRowCounts({
+        rows: [{ id: 'inv_1' }, { id: 'inv_2' }, { id: 'inv_3' }],
+        statusChangedInvocationIds: ['inv_2'],
+      }),
+    ).toEqual({ statusChangedCount: 1, matchingRowCount: 2 });
+  });
+
+  it('counts nothing before the list loads', () => {
+    expect(getListRowCounts(undefined)).toEqual({
+      statusChangedCount: 0,
+      matchingRowCount: 0,
+    });
+  });
+});
+
+describe('doInvocationCountsDisagree', () => {
+  const settledEmptyList = {
+    isSettled: true,
+    statusChangedCount: 0,
+    summaryMatchCount: { count: 1, isPartial: false },
+    listIsAvailable: true,
+    listRowCount: 0,
+    listLimit: 250,
+    listIsPartial: false,
+  };
+
+  it('flags an exact count that contradicts a complete list', () => {
+    expect(doInvocationCountsDisagree(settledEmptyList)).toBe(true);
+  });
+
+  it('flags a non-zero estimate only when the complete list is empty', () => {
+    expect(
+      doInvocationCountsDisagree({
+        ...settledEmptyList,
+        summaryMatchCount: { count: 1, isPartial: true },
+      }),
+    ).toBe(true);
+    expect(
+      doInvocationCountsDisagree({
+        ...settledEmptyList,
+        summaryMatchCount: { count: 5, isPartial: true },
+        listRowCount: 3,
+      }),
+    ).toBe(false);
+  });
+
+  it('ignores partial or capped lists and requests in flight', () => {
+    expect(
+      doInvocationCountsDisagree({ ...settledEmptyList, listIsPartial: true }),
+    ).toBe(false);
+    expect(
+      doInvocationCountsDisagree({
+        ...settledEmptyList,
+        summaryMatchCount: { count: 300, isPartial: false },
+        listRowCount: 250,
+      }),
+    ).toBe(false);
+    expect(
+      doInvocationCountsDisagree({ ...settledEmptyList, isSettled: false }),
+    ).toBe(false);
+  });
+
+  it('defers to the status-changed notice when rows changed status', () => {
+    expect(
+      doInvocationCountsDisagree({
+        ...settledEmptyList,
+        statusChangedCount: 1,
+      }),
+    ).toBe(false);
   });
 });
 

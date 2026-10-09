@@ -64,6 +64,8 @@ export function DeploymentInvocations({
               selectedKeys={invocationsTab.selectedInvocationIds}
               onSelectionChange={invocationsTab.setSelectedIds}
               sort={invocationsTab.sort}
+              notice={invocationsTab.resultsNotice}
+              countsDisagree={invocationsTab.countsDisagree}
               emptyTitle="No pinned invocations"
               emptyDescription={
                 invocationsTab.statusFilter

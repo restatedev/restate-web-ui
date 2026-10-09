@@ -126,9 +126,16 @@ import { FilterShortcuts } from './FilterShortcuts';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSummary } from './useInvocationSummary';
 import {
+  doInvocationCountsDisagree,
   filterInvocationSummaryByStatus,
+  getListRowCounts,
   resolveInvocationPopulationCount,
 } from './invocationSummaryMatchCount';
+import {
+  CountsDisagreeEmptyState,
+  getResultsNoticeMessage,
+  ResultsNotice,
+} from './resultsNotice';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 import { InvocationQuickOpen } from './InvocationQuickOpen';
 
@@ -259,37 +266,6 @@ function SampleScanToggle({
       </HoverTooltip>
     </div>
   );
-}
-
-function ResultsNotice({ message }: { message: string }) {
-  return (
-    <div
-      role="status"
-      className="flex min-h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600"
-    >
-      <Icon
-        name={IconName.Info}
-        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-      />
-      <span>{message}</span>
-    </div>
-  );
-}
-
-function getResultsNoticeMessage(
-  isPartial: boolean,
-  statusChangedCount: number,
-) {
-  const messages = [];
-  if (isPartial) {
-    messages.push('This view may not include every matching invocation.');
-  }
-  if (statusChangedCount > 0) {
-    messages.push(
-      `${formatNumber(statusChangedCount)} ${statusChangedCount === 1 ? 'invocation changed' : 'invocations changed'} status while results were loading. The latest status is shown.`,
-    );
-  }
-  return messages.join(' ');
 }
 
 const queryLoadingOverlayStyles = tv({
@@ -521,17 +497,10 @@ function Component() {
     return () => clearTimeout(timer);
   }, [isFetching, searchString, listSampled, slowQueryMs]);
 
-  const statusChangedInvocationIds = useMemo(
-    () => new Set(data?.statusChangedInvocationIds ?? []),
-    [data?.statusChangedInvocationIds],
+  const { statusChangedCount, matchingRowCount: listRowCount } = useMemo(
+    () => getListRowCounts(data),
+    [data],
   );
-  const matchingListRows = useMemo(
-    () =>
-      data?.rows?.filter(({ id }) => !statusChangedInvocationIds.has(id)) ?? [],
-    [data?.rows, statusChangedInvocationIds],
-  );
-  const statusChangedCount = statusChangedInvocationIds.size;
-  const listRowCount = matchingListRows.length;
   const listLimit = data?.limit ?? 0;
   const { count: effectiveTotal, accuracy: totalAccuracy } =
     resolveInvocationPopulationCount({
@@ -551,18 +520,15 @@ function Component() {
   const displayedStageCountsArePartial = Boolean(
     summaryData?.stageCountsArePartial,
   );
-  const countsDisagree =
-    !isFetching &&
-    !isSummaryFetching &&
-    !error &&
-    !isSummaryError &&
-    statusChangedCount === 0 &&
-    data != null &&
-    !data.isPartial &&
-    listRowCount < listLimit &&
-    summaryMatchingCount !== undefined &&
-    !summaryMatchingCount.isPartial &&
-    summaryMatchingCount.count !== listRowCount;
+  const countsDisagree = doInvocationCountsDisagree({
+    isSettled: !isFetching && !isSummaryFetching && !error && !isSummaryError,
+    statusChangedCount,
+    summaryMatchCount: summaryMatchingCount,
+    listIsAvailable: data != null,
+    listRowCount,
+    listLimit,
+    listIsPartial: Boolean(data?.isPartial),
+  });
   const serviceTabs = useServiceTabs(
     summaryData,
     deploymentsData,
@@ -663,22 +629,12 @@ function Component() {
         }}
       />
     ) : undefined;
-  const mismatchNoticeMessage = countsDisagree
-    ? 'Counts and results differ. Invocations may have changed between requests.'
-    : undefined;
-  const resultsNoticeMessage = [
-    mismatchNoticeMessage,
-    !isFetching &&
-    (listSampled || data?.isPartial || statusChangedCount > 0) &&
-    !error
-      ? getResultsNoticeMessage(
-          listSampled || Boolean(data?.isPartial),
-          statusChangedCount,
-        )
-      : undefined,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const resultsNoticeMessage = getResultsNoticeMessage({
+    countsDisagree,
+    listIsSettled: !isFetching && !error,
+    isPartial: listSampled || Boolean(data?.isPartial),
+    statusChangedCount,
+  });
   const resultsNotice =
     resultsNoticeMessage && !hasActiveFilters ? (
       <ResultsNotice key="results-notice" message={resultsNoticeMessage} />
@@ -872,12 +828,7 @@ function Component() {
                       />
                     </EmptyState>
                   ) : countsDisagree ? (
-                    <EmptyState
-                      icon={IconName.TriangleAlert}
-                      intent="warning"
-                      title="Counts and results differ"
-                      description="No invocations were returned, but the counts indicate matching invocations. Invocations may have changed between requests."
-                    />
+                    <CountsDisagreeEmptyState />
                   ) : offerCompleteScan ? (
                     <EmptyState
                       icon={IconName.ScanSearch}

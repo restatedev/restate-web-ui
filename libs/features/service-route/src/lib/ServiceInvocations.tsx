@@ -77,6 +77,8 @@ export function ServiceInvocations({
               selectedKeys={invocationsTab.selectedInvocationIds}
               onSelectionChange={invocationsTab.setSelectedIds}
               sort={invocationsTab.sort}
+              notice={invocationsTab.resultsNotice}
+              countsDisagree={invocationsTab.countsDisagree}
               emptyTitle="No invocations"
               emptyDescription={
                 invocationsTab.statusFilter

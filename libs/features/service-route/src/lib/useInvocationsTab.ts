@@ -2,7 +2,10 @@ import { useListInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
   deriveSortFromUrl,
+  doInvocationCountsDisagree,
   formatServiceTabBadge,
+  getListRowCounts,
+  getResultsNoticeMessage,
   resolveInvocationPopulationCount,
   setSort,
   SORT_NONE,
@@ -129,12 +132,32 @@ export function useInvocationsTab(
       ),
     [rows, selectedIds],
   );
-  const total = resolveInvocationPopulationCount({
-    summaryMatchCount: summary.matchingCount,
+  const { statusChangedCount, matchingRowCount } = useMemo(
+    () => getListRowCounts(list.data),
+    [list.data],
+  );
+  const listSnapshot = {
     listIsAvailable: list.data != null,
-    listRowCount: rows?.length ?? 0,
+    listRowCount: matchingRowCount,
     listLimit: list.data?.limit ?? 0,
     listIsPartial: Boolean(list.data?.isPartial),
+  };
+  const total = resolveInvocationPopulationCount({
+    summaryMatchCount: summary.matchingCount,
+    ...listSnapshot,
+  });
+  const countsDisagree = doInvocationCountsDisagree({
+    isSettled:
+      !list.isFetching && !summary.isFetching && !list.error && !summary.isError,
+    statusChangedCount,
+    summaryMatchCount: summary.matchingCount,
+    ...listSnapshot,
+  });
+  const resultsNotice = getResultsNoticeMessage({
+    countsDisagree,
+    listIsSettled: !list.isFetching && !list.error,
+    isPartial: listSnapshot.listIsPartial,
+    statusChangedCount,
   });
   const totalLabel = `${total.accuracy === 'estimate' ? '~' : ''}${formatNumber(total.count, true)}${total.accuracy === 'lower-bound' ? '+' : ''}`;
 
@@ -207,6 +230,8 @@ export function useInvocationsTab(
     selectedInvocationIds,
     setSelectedIds,
     total: total.count,
+    countsDisagree,
+    resultsNotice,
     totalLabel,
     tabBadge,
     isTabBadgeLoading,

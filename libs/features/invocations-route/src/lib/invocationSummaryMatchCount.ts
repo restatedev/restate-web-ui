@@ -47,6 +47,45 @@ export function isInvocationListSnapshotComplete({
   return !summaryExceedsListCapacity;
 }
 
+export function getListRowCounts(
+  list:
+    | { rows?: { id: string }[]; statusChangedInvocationIds?: string[] }
+    | undefined,
+) {
+  const statusChangedIds = new Set(list?.statusChangedInvocationIds ?? []);
+  return {
+    statusChangedCount: statusChangedIds.size,
+    matchingRowCount:
+      list?.rows?.filter(({ id }) => !statusChangedIds.has(id)).length ?? 0,
+  };
+}
+
+export function doInvocationCountsDisagree({
+  isSettled,
+  statusChangedCount,
+  summaryMatchCount,
+  listIsAvailable,
+  listRowCount,
+  listLimit,
+  listIsPartial,
+}: {
+  isSettled: boolean;
+  statusChangedCount: number;
+  summaryMatchCount: InvocationSummaryMatchCount | undefined;
+} & InvocationListSnapshot) {
+  return (
+    isSettled &&
+    statusChangedCount === 0 &&
+    listIsAvailable &&
+    !listIsPartial &&
+    listRowCount < listLimit &&
+    summaryMatchCount !== undefined &&
+    (summaryMatchCount.isPartial
+      ? listRowCount === 0 && summaryMatchCount.count > 0
+      : summaryMatchCount.count !== listRowCount)
+  );
+}
+
 function statusMatches(status: string, filter: StatusFilter) {
   if (!hasStatusFilter(filter)) return true;
   const selected = filter.value.includes(status);
