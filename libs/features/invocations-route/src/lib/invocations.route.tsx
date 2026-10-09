@@ -131,6 +131,7 @@ import {
   getListRowCounts,
   resolveInvocationPopulationCount,
 } from './invocationSummaryMatchCount';
+import { RefreshButton } from './RefreshButton';
 import {
   CountsDisagreeEmptyState,
   getResultsNoticeMessage,
@@ -763,6 +764,11 @@ function Component() {
               schema={schema}
               totalCount={effectiveTotal}
               totalCountLabel={actionsTotalDisplay}
+            />
+            <RefreshButton
+              isFetching={isFetching || isSummaryFetching}
+              label="Refresh invocations"
+              onClick={() => void refetch()}
             />
           </ContentPanelToolbar>
           <ContentPanelBody className="pb-32">

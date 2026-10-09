@@ -4,7 +4,6 @@ export {
   InvocationsPanelTable,
   SERVICE_INVOCATION_COLUMNS,
 } from './lib/InvocationsPanelTable';
-export { RefreshButton } from './lib/RefreshButton';
 export {
   CardEditAction,
   DeploymentProtocolRows,

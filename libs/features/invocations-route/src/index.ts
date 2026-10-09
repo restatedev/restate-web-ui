@@ -24,6 +24,7 @@ export {
 } from './lib/useServiceTabs';
 export type { StatusFilter } from './lib/statusFilter';
 export { Sort } from './lib/QueryButton';
+export { RefreshButton } from './lib/RefreshButton';
 export {
   deriveSortFromUrl,
   setSort,

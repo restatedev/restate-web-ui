@@ -216,6 +216,7 @@ export function useInvocationsTab(
 
   return {
     list,
+    isListLoading: list.isPending || list.isFetching,
     summary,
     statusFilter,
     sort,

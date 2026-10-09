@@ -63,7 +63,7 @@ export function InvocationsPanelTable({
   ariaLabel,
   columns,
   data,
-  isPending,
+  isLoading,
   error,
   emptyTitle,
   emptyDescription,
@@ -76,7 +76,7 @@ export function InvocationsPanelTable({
   ariaLabel: string;
   columns: InvocationsPanelColumn[];
   data?: InvocationsResponse;
-  isPending: boolean;
+  isLoading: boolean;
   error: Error | null;
   emptyTitle: string;
   emptyDescription: string;
@@ -98,7 +98,7 @@ export function InvocationsPanelTable({
         aria-label={ariaLabel}
         columns={columns}
         items={rows}
-        isLoading={isPending}
+        isLoading={isLoading}
         error={error}
         numOfRows={6}
         bodyDependencies={[rows, error, columns]}

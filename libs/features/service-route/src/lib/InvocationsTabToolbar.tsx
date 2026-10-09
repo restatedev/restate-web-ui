@@ -1,7 +1,6 @@
 import { InvocationBatchActions } from '@restate/features/batch-operations';
-import { Sort } from '@restate/features/invocations-route';
+import { RefreshButton, Sort } from '@restate/features/invocations-route';
 import { ContentPanelToolbar } from '@restate/ui/content-panel';
-import { RefreshButton } from './RefreshButton';
 import type { useInvocationsTab } from './useInvocationsTab';
 import { ViewInInvocationsLink } from './ViewInInvocationsLink';
 
