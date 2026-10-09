@@ -170,7 +170,9 @@ export function ServiceDetails({
 
   return (
     <ContentPanel
-      className={panelStyles({ hasFilterToolbar: Boolean(keyedTab) })}
+      className={panelStyles({
+        hasFilterToolbar: Boolean(keyedTab) && activeTab === keyedTab,
+      })}
       tabs={tabs}
     >
       {activeTab === 'invocations' ? (

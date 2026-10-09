@@ -1,8 +1,16 @@
 import { useListInvocationsV2 } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
+  deriveSortFromUrl,
+  doInvocationCountsDisagree,
   formatServiceTabBadge,
+  getListRowCounts,
+  getResultsNoticeMessage,
   resolveInvocationPopulationCount,
+  setSort,
+  SORT_NONE,
+  SORT_QUERY_PREFIX,
+  type SortSelection,
   type StatusFilter,
   useInvocationFilterSchema,
   useInvocationSummary,
@@ -10,13 +18,20 @@ import {
 import { useRestateContext } from '@restate/features/restate-context';
 import { toFilterParams } from '@restate/util/invocation-links';
 import { formatNumber } from '@restate/util/intl';
-import { useEffect, useMemo, useState } from 'react';
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useSearchParams } from 'react-router';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];
 
 export const STATUS_FILTER_QUERY_PARAM = 'filter_status';
 const BREAKDOWN_SAMPLE_SIZE = 1_000_000;
+const NO_SORT: SortSelection = { field: SORT_NONE, order: 'DESC' };
 
 function parseStatusFilter(value: string | null): StatusFilter {
   if (!value) return undefined;
@@ -48,7 +63,30 @@ export function useInvocationsTab(
   { enabled, isActive }: { enabled: boolean; isActive: boolean },
 ) {
   const { baseUrl } = useRestateContext();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sortParams = deriveSortFromUrl(searchParams, NO_SORT);
+  const sort =
+    sortParams.field === SORT_NONE
+      ? undefined
+      : { field: sortParams.field, order: sortParams.order };
+  const setSortParams: Dispatch<SetStateAction<SortSelection>> = (action) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        const selection =
+          typeof action === 'function'
+            ? action(deriveSortFromUrl(prev, NO_SORT))
+            : action;
+        next.delete(SORT_QUERY_PREFIX + 'field');
+        next.delete(SORT_QUERY_PREFIX + 'order');
+        if (selection.field !== SORT_NONE) {
+          setSort(next, { field: selection.field, order: selection.order });
+        }
+        return next;
+      },
+      { preventScrollReset: true },
+    );
+  };
   const statusParam = searchParams.get(STATUS_FILTER_QUERY_PARAM);
   const statusFilter = useMemo(
     () => parseStatusFilter(statusParam),
@@ -69,7 +107,7 @@ export function useInvocationsTab(
     enabled,
   });
   const list = useListInvocationsV2(
-    { filters, sort: { field: 'created_at', order: 'DESC' } },
+    { filters, sort },
     {
       enabled: enabled && isActive,
       refetchOnMount: true,
@@ -94,12 +132,35 @@ export function useInvocationsTab(
       ),
     [rows, selectedIds],
   );
-  const total = resolveInvocationPopulationCount({
-    summaryMatchCount: summary.matchingCount,
+  const { statusChangedCount, matchingRowCount } = useMemo(
+    () => getListRowCounts(list.data),
+    [list.data],
+  );
+  const listSnapshot = {
     listIsAvailable: list.data != null,
-    listRowCount: rows?.length ?? 0,
+    listRowCount: matchingRowCount,
     listLimit: list.data?.limit ?? 0,
     listIsPartial: Boolean(list.data?.isPartial),
+  };
+  const total = resolveInvocationPopulationCount({
+    summaryMatchCount: summary.matchingCount,
+    ...listSnapshot,
+  });
+  const countsDisagree = doInvocationCountsDisagree({
+    isSettled:
+      !list.isFetching &&
+      !summary.isFetching &&
+      !list.error &&
+      !summary.isError,
+    statusChangedCount,
+    summaryMatchCount: summary.matchingCount,
+    ...listSnapshot,
+  });
+  const resultsNotice = getResultsNoticeMessage({
+    countsDisagree,
+    listIsSettled: !list.isFetching && !list.error,
+    isPartial: listSnapshot.listIsPartial,
+    statusChangedCount,
   });
   const totalLabel = `${total.accuracy === 'estimate' ? '~' : ''}${formatNumber(total.count, true)}${total.accuracy === 'lower-bound' ? '+' : ''}`;
 
@@ -152,12 +213,18 @@ export function useInvocationsTab(
     return `?${params.toString()}`;
   };
 
-  const invocationsPageHref = `${baseUrl}/invocations?${toFilterParams(filters).toString()}`;
+  const invocationsPageParams = toFilterParams(filters);
+  if (sort) setSort(invocationsPageParams, sort);
+  const invocationsPageHref = `${baseUrl}/invocations?${invocationsPageParams.toString()}`;
 
   return {
     list,
+    isListLoading: list.isPending || list.isFetching,
     summary,
     statusFilter,
+    sort,
+    sortParams,
+    setSortParams,
     countMode,
     setCountMode,
     hrefForStatusFilter,
@@ -167,6 +234,8 @@ export function useInvocationsTab(
     selectedInvocationIds,
     setSelectedIds,
     total: total.count,
+    countsDisagree,
+    resultsNotice,
     totalLabel,
     tabBadge,
     isTabBadgeLoading,

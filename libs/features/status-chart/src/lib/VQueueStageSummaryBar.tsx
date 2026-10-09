@@ -465,8 +465,6 @@ export function VQueueStageSummaryBar({
   const focusedCountUnavailable =
     countsUnavailable ||
     (focus !== 'not-completed' && completedStageIsUnavailable);
-  const focusedCountUnknown =
-    areStageCountsPartial && focusedPopulationTotal === 0;
 
   const summaryRail = (
     <div
@@ -484,10 +482,6 @@ export function VQueueStageSummaryBar({
           {isError || isBreakdownError?.('finished')
             ? 'Could not load invocation counts.'
             : 'Invocation counts are unavailable.'}
-        </span>
-      ) : focusedCountUnknown && !completedStageIsLoading ? (
-        <span role="status" className="self-center text-xs text-gray-500">
-          No matches in this estimate.
         </span>
       ) : focusedPopulationTotal === 0 && !completedStageIsLoading ? (
         <div className={emptyStyles()} />

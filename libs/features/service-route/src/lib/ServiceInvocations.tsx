@@ -56,7 +56,7 @@ export function ServiceInvocations({
   handler?: string;
   invocationsTab: ReturnType<typeof useInvocationsTab>;
 }) {
-  const { data, error, isPending, dataUpdatedAt } = invocationsTab.list;
+  const { data, error, dataUpdatedAt } = invocationsTab.list;
 
   return (
     <>
@@ -72,10 +72,13 @@ export function ServiceInvocations({
               ariaLabel={`Invocations of ${service}`}
               columns={SERVICE_INVOCATION_COLUMNS}
               data={data}
-              isPending={isPending}
+              isLoading={invocationsTab.isListLoading}
               error={error}
               selectedKeys={invocationsTab.selectedInvocationIds}
               onSelectionChange={invocationsTab.setSelectedIds}
+              sort={invocationsTab.sort}
+              notice={invocationsTab.resultsNotice}
+              countsDisagree={invocationsTab.countsDisagree}
               emptyTitle="No invocations"
               emptyDescription={
                 invocationsTab.statusFilter

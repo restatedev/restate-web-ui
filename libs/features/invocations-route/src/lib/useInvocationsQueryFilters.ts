@@ -58,7 +58,10 @@ export function setDefaultSort(searchParams: URLSearchParams) {
   return setSort(searchParams, { field: 'created_at', order: 'DESC' });
 }
 
-function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
+export function deriveSortFromUrl(
+  searchParams: URLSearchParams,
+  fallback: SortSelection = { field: 'created_at', order: 'DESC' },
+): SortSelection {
   if (isNoSort(searchParams)) {
     return { field: SORT_NONE, order: 'DESC' };
   }
@@ -67,7 +70,7 @@ function deriveSortFromUrl(searchParams: URLSearchParams): SortSelection {
   if (isSortValid(searchParams) && field && order) {
     return { field, order } as SortSelection;
   }
-  return { field: 'created_at', order: 'DESC' };
+  return fallback;
 }
 
 /**
