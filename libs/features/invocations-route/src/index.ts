@@ -16,3 +16,11 @@ export {
   type TabBadge,
 } from './lib/useServiceTabs';
 export type { StatusFilter } from './lib/statusFilter';
+export { Sort } from './lib/QueryButton';
+export {
+  deriveSortFromUrl,
+  setSort,
+  SORT_NONE,
+  SORT_QUERY_PREFIX,
+  type SortSelection,
+} from './lib/useInvocationsQueryFilters';

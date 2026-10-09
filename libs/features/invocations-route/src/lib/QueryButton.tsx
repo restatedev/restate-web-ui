@@ -8,6 +8,7 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
+import { tv } from '@restate/util/styles';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 import {
   SORT_COLUMN_KEYS,
@@ -22,29 +23,56 @@ const SORT_FIELD_LABELS: Record<
   created_at: 'Created at',
 };
 
+type QueryButtonVariant = 'filterBar' | 'toolbar';
+
+const queryButtonStyles = tv({
+  slots: {
+    button: 'flex shrink-0 items-center rounded-lg',
+    operation: 'font-mono',
+    field: 'shrink-0 whitespace-nowrap',
+    value: 'font-semibold',
+    chevron: 'h-3.5 w-3.5 shrink-0',
+  },
+  variants: {
+    variant: {
+      filterBar: {
+        button:
+          'min-w-0 gap-[0.7ch] bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30',
+        value: 'truncate',
+        chevron: 'ml-2',
+      },
+      toolbar: {
+        button: 'gap-1.5 p-0.5 px-2 text-0.5xs',
+        value: 'font-medium whitespace-nowrap',
+        chevron: 'opacity-80',
+      },
+    },
+  },
+  defaultVariants: {
+    variant: 'filterBar',
+  },
+});
+
 function QueryButton({
   operation,
   field,
   value,
+  variant,
 }: {
   operation: ReactNode;
   field: ReactNode;
   value?: ReactNode;
+  variant?: QueryButtonVariant;
 }) {
+  const s = queryButtonStyles({ variant });
   return (
-    <Button
-      variant="secondary"
-      className="flex min-w-0 shrink-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
-    >
-      {operation != null && <span className="font-mono">{operation}</span>}
-      {field != null && (
-        <span className="shrink-0 whitespace-nowrap">{field}</span>
+    <Button variant="secondary" className={s.button()}>
+      {operation != null && (
+        <span className={s.operation()}>{operation}</span>
       )}
-      {value != null && <span className="truncate font-semibold">{value}</span>}
-      <Icon
-        name={IconName.ChevronsUpDown}
-        className="ml-2 h-3.5 w-3.5 shrink-0"
-      />
+      {field != null && <span className={s.field()}>{field}</span>}
+      {value != null && <span className={s.value()}>{value}</span>}
+      <Icon name={IconName.ChevronsUpDown} className={s.chevron()} />
     </Button>
   );
 }
@@ -52,15 +80,18 @@ function QueryButton({
 export function Sort({
   setSortParams,
   sortParams,
+  variant,
 }: {
   sortParams: SortSelection;
   setSortParams: Dispatch<SetStateAction<SortSelection>>;
+  variant?: QueryButtonVariant;
 }) {
   const isNone = sortParams.field === SORT_NONE;
   return (
     <Dropdown>
       <DropdownTrigger>
         <QueryButton
+          variant={variant}
           field={isNone ? 'No sorting' : 'Sort by'}
           value={
             sortParams.field === SORT_NONE

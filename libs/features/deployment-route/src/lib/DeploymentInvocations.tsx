@@ -63,6 +63,7 @@ export function DeploymentInvocations({
               error={error}
               selectedKeys={invocationsTab.selectedInvocationIds}
               onSelectionChange={invocationsTab.setSelectedIds}
+              sort={invocationsTab.sort}
               emptyTitle="No pinned invocations"
               emptyDescription={
                 invocationsTab.statusFilter

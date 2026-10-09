@@ -16,6 +16,7 @@ import { useLocation, useNavigate } from 'react-router';
 
 type Invocation = components['schemas']['InvocationV2'];
 type InvocationsResponse = components['schemas']['ListInvocationsV2Response'];
+type InvocationSort = components['schemas']['InvocationV2Sort'];
 export type InvocationsPanelColumn = PanelTableColumn<
   InvocationTableColumnKey | 'actions'
 >;
@@ -64,6 +65,7 @@ export function InvocationsPanelTable({
   emptyDescription,
   selectedKeys,
   onSelectionChange,
+  sort,
 }: {
   ariaLabel: string;
   columns: InvocationsPanelColumn[];
@@ -74,6 +76,7 @@ export function InvocationsPanelTable({
   emptyDescription: string;
   selectedKeys?: Set<string>;
   onSelectionChange?: (keys: Set<string>) => void;
+  sort?: InvocationSort;
 }) {
   const { baseUrl } = useRestateContext();
   const location = useLocation();
@@ -133,7 +136,11 @@ export function InvocationsPanelTable({
       />
       {isTruncated && (
         <div className="px-4 pt-3 text-xs text-zinc-500">
-          Showing the {formatNumber(data.limit)} most recent invocations.
+          {!sort
+            ? `Showing ${formatNumber(data.limit)} matching invocations, in no particular order.`
+            : sort.order === 'DESC'
+              ? `Showing the ${formatNumber(data.limit)} most recent invocations.`
+              : `Showing the ${formatNumber(data.limit)} oldest invocations.`}
         </div>
       )}
     </>
