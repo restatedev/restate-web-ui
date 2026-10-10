@@ -90,7 +90,7 @@ export function showFoldedArrayLengths(
             showIfCollapsed: true,
             after: {
               content: ` ${length} ${length === 1 ? 'item' : 'items'}`,
-              inlineClassName: 'text-zinc-400 italic',
+              inlineClassName: 'text-zinc-400! italic',
             },
           },
         },
