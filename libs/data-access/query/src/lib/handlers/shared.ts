@@ -2,6 +2,8 @@ import ky, { HTTPError, TimeoutError } from 'ky';
 import semverGte from 'semver/functions/gte';
 import semverCoerce from 'semver/functions/coerce';
 import type { QueryId } from '../queryDefinitions';
+import { RESTATE_FEATURES_HEADER } from '../getFeatures';
+import { RESTATE_VERSION_HEADER } from '../getVersion';
 import {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
@@ -261,6 +263,10 @@ export function createQueryContext(
   features: Set<string>,
   signal?: AbortSignal,
 ): QueryContext {
+  const downstreamHeaders = new Headers(headers);
+  downstreamHeaders.delete(RESTATE_VERSION_HEADER);
+  downstreamHeaders.delete(RESTATE_FEATURES_HEADER);
+
   return {
     query: (sql: string, id: QueryId) => {
       const page = getCurrentQueryPage();
@@ -276,7 +282,11 @@ export function createQueryContext(
           baseUrl,
           page,
         });
-      return queryFetcher(sql, { baseUrl, headers, signal }).then(
+      return queryFetcher(sql, {
+        baseUrl,
+        headers: downstreamHeaders,
+        signal,
+      }).then(
         (result) => {
           record('success');
           return result;
@@ -293,7 +303,7 @@ export function createQueryContext(
     ) =>
       adminApiFetcher<T>(path, {
         baseUrl,
-        headers,
+        headers: downstreamHeaders,
         method: options?.method,
         json: options?.json,
         signal,

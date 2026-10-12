@@ -21,4 +21,31 @@ describe('createQueryContext', () => {
     expect(request.headers.get('X-Restate-Query-Origin')).toBe('built-in');
     expect(request.headers.get('authorization')).toBe('Bearer token');
   });
+
+  it('strips UI meta headers from downstream requests', async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementation(async () => Response.json({ rows: [] }));
+    vi.stubGlobal('fetch', fetch);
+
+    const context = createQueryContext(
+      'https://restate.test',
+      new Headers({
+        authorization: 'Bearer token',
+        'x-restate-version': '1.7.2',
+        'x-restate-features': 'vqueues,protocol_v7',
+      }),
+      '1.7.2',
+      new Set(['vqueues', 'protocol_v7']),
+    );
+    await context.query('SELECT 1', 'deployments/drained');
+    await context.adminApi('/deployments');
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+    for (const [request] of fetch.mock.calls as [Request][]) {
+      expect(request.headers.has('x-restate-version')).toBe(false);
+      expect(request.headers.has('x-restate-features')).toBe(false);
+      expect(request.headers.get('authorization')).toBe('Bearer token');
+    }
+  });
 });

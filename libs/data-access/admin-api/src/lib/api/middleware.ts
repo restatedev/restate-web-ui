@@ -7,6 +7,8 @@ import {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
   QUERY_ORIGIN_HEADER,
+  RESTATE_FEATURES_HEADER,
+  RESTATE_VERSION_HEADER,
   type QueryOrigin,
 } from '@restate/data-access/query';
 import semverCoerce from 'semver/functions/coerce';
@@ -42,7 +44,7 @@ const authMiddleware: Middleware = {
         metaQueryOptions(baseUrl),
       );
       if (meta?.version) {
-        request.headers.set('x-restate-version', meta.version);
+        request.headers.set(RESTATE_VERSION_HEADER, meta.version);
       }
       const enabled = meta?.features
         ? Object.entries(meta.features)
@@ -50,7 +52,7 @@ const authMiddleware: Middleware = {
             .map(([name]) => name)
         : [];
       if (enabled.length > 0) {
-        request.headers.set('x-restate-features', enabled.join(','));
+        request.headers.set(RESTATE_FEATURES_HEADER, enabled.join(','));
       }
     }
     return request;
