@@ -22,7 +22,7 @@ describe('createQueryContext', () => {
     expect(request.headers.get('authorization')).toBe('Bearer token');
   });
 
-  it('strips UI meta headers from downstream requests', async () => {
+  it('strips UI meta headers and forwards the rest downstream', async () => {
     const fetch = vi
       .fn()
       .mockImplementation(async () => Response.json({ rows: [] }));
@@ -32,6 +32,7 @@ describe('createQueryContext', () => {
       'https://restate.test',
       new Headers({
         authorization: 'Bearer token',
+        'x-restate-query-level': 'operator',
         'x-restate-version': '1.7.2',
         'x-restate-features': 'vqueues,protocol_v7',
       }),
@@ -46,6 +47,7 @@ describe('createQueryContext', () => {
       expect(request.headers.has('x-restate-version')).toBe(false);
       expect(request.headers.has('x-restate-features')).toBe(false);
       expect(request.headers.get('authorization')).toBe('Bearer token');
+      expect(request.headers.get('x-restate-query-level')).toBe('operator');
     }
   });
 });

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient } from '@tanstack/react-query';
 import { setQueryClient } from '@restate/util/react-query';
+import { setFeatureFlag } from '@restate/util/feature-flag';
 import { client } from './client';
 import './middleware';
 
@@ -77,7 +78,10 @@ describe('/version feature compatibility', () => {
 
 describe('/query origin headers', () => {
   beforeEach(() => setQueryClient(new QueryClient()));
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
 
   async function sendQuery(headers?: Record<string, string>) {
     const fetch = vi.fn().mockResolvedValue(Response.json({ rows: [] }));
@@ -109,5 +113,47 @@ describe('/query origin headers', () => {
     const headers = (fetch.mock.calls[0]?.[0] as Request).headers;
     expect(headers.has('X-Restate-Query-Client')).toBe(false);
     expect(headers.has('X-Restate-Query-Origin')).toBe(false);
+  });
+
+  it('omits the query level when the flag is off', async () => {
+    const headers = await sendQuery();
+    expect(headers.has('X-Restate-Query-Level')).toBe(false);
+  });
+
+  it('sends the operator query level when the flag is on', async () => {
+    setFeatureFlag('FEATURE_OPERATOR_QUERY_LEVEL', true);
+    const headers = await sendQuery();
+    expect(headers.get('X-Restate-Query-Level')).toBe('operator');
+  });
+
+  it('passes the operator query level through the /query/* handler', async () => {
+    setFeatureFlag('FEATURE_OPERATOR_QUERY_LEVEL', true);
+    const fetch = vi
+      .fn()
+      .mockImplementation(async () =>
+        Response.json({ version: '1.7.2', rows: [] }),
+      );
+    vi.stubGlobal('fetch', fetch);
+
+    await client
+      .GET('/query/invocations/{invocationId}/paused-error', {
+        baseUrl: 'https://restate.test',
+        params: { path: { invocationId: 'inv_1' } },
+      })
+      .catch(() => undefined);
+
+    const sqlRequest = fetch.mock.calls
+      .map(([request]) => request as Request)
+      .find((request) => new URL(request.url).pathname === '/query');
+    expect(sqlRequest?.headers.get('X-Restate-Query-Level')).toBe('operator');
+  });
+
+  it('does not tag other admin requests with the query level', async () => {
+    setFeatureFlag('FEATURE_OPERATOR_QUERY_LEVEL', true);
+    const fetch = vi.fn().mockResolvedValue(Response.json({}));
+    vi.stubGlobal('fetch', fetch);
+    await client.GET('/version', { baseUrl: 'https://restate.test' });
+    const headers = (fetch.mock.calls[0]?.[0] as Request).headers;
+    expect(headers.has('X-Restate-Query-Level')).toBe(false);
   });
 });
