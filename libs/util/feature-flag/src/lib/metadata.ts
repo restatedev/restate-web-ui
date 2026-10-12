@@ -31,4 +31,10 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
     description: 'Show state storage usage grouped by service.',
     available: true,
   },
+  FEATURE_OPERATOR_QUERY_LEVEL: {
+    title: 'Operator query level',
+    description:
+      'Send SQL queries to the admin API with the operator query level.',
+    available: true,
+  },
 };

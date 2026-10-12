@@ -1,12 +1,16 @@
 import { UnauthorizedError, RestateError } from '@restate/util/errors';
 import { getQueryClient } from '@restate/util/react-query';
 import { getAuthToken } from '@restate/util/api-config';
+import { isFeatureEnabled } from '@restate/util/feature-flag';
 import type { Middleware } from 'openapi-fetch';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
+  QUERY_LEVEL_HEADER,
   QUERY_ORIGIN_HEADER,
+  RESTATE_FEATURES_HEADER,
+  RESTATE_VERSION_HEADER,
   type QueryOrigin,
 } from '@restate/data-access/query';
 import semverCoerce from 'semver/functions/coerce';
@@ -22,7 +26,16 @@ const authMiddleware: Middleware = {
     }
 
     const url = new URL(request.url);
-    if (url.pathname.endsWith('/query')) {
+    const isQuery = url.pathname === '/query';
+    const isQueryHandler = url.pathname.startsWith('/query/');
+    if (
+      isFeatureEnabled('FEATURE_OPERATOR_QUERY_LEVEL') &&
+      (isQuery || isQueryHandler)
+    ) {
+      request.headers.set(QUERY_LEVEL_HEADER, 'operator');
+    }
+
+    if (isQuery) {
       request.headers.set(QUERY_CLIENT_HEADER, QUERY_CLIENT);
       if (!request.headers.has(QUERY_ORIGIN_HEADER)) {
         request.headers.set(
@@ -36,13 +49,13 @@ const authMiddleware: Middleware = {
     // (the real admin server ignores them). `ensureQueryData` doubles
     // as the per-baseUrl readiness gate — the first `/query/*` for a
     // never-seen env waits for `/version` to land.
-    if (url.pathname.includes('/query/')) {
+    if (isQueryHandler) {
       const baseUrl = `${url.protocol}//${url.host}`;
       const meta = await getQueryClient().ensureQueryData(
         metaQueryOptions(baseUrl),
       );
       if (meta?.version) {
-        request.headers.set('x-restate-version', meta.version);
+        request.headers.set(RESTATE_VERSION_HEADER, meta.version);
       }
       const enabled = meta?.features
         ? Object.entries(meta.features)
@@ -50,7 +63,7 @@ const authMiddleware: Middleware = {
             .map(([name]) => name)
         : [];
       if (enabled.length > 0) {
-        request.headers.set('x-restate-features', enabled.join(','));
+        request.headers.set(RESTATE_FEATURES_HEADER, enabled.join(','));
       }
     }
     return request;

@@ -3,9 +3,12 @@ export { type StateServiceType } from './lib/handlers';
 export {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
+  QUERY_LEVEL_HEADER,
   QUERY_ORIGIN_HEADER,
   type QueryOrigin,
 } from './lib/queryOrigin';
+export { RESTATE_VERSION_HEADER } from './lib/getVersion';
+export { RESTATE_FEATURES_HEADER } from './lib/getFeatures';
 export {
   QUERY_DEFINITIONS,
   type QueryDefinition,

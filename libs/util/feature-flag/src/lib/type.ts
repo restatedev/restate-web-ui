@@ -9,5 +9,7 @@ export const FEATURE_FLAGS = [
   'FEATURE_COMPLETION_HISTORY',
 
   'FEATURE_STATE_STORAGE_BREAKDOWN',
+
+  'FEATURE_OPERATOR_QUERY_LEVEL',
 ] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];
