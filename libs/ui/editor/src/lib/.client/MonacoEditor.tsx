@@ -1,6 +1,7 @@
 import { RefObject, useEffect, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import './languageSetup';
+import { showFoldedArrayLengths } from './foldedArrayLengths';
 
 const MAX_EDITOR_FORMAT_LENGTH = 10_000_000;
 
@@ -142,6 +143,7 @@ export function MonacoEditor({
         onInput?.(editor.getValue());
       }),
       editor.onDidContentSizeChange(updateStyles),
+      showFoldedArrayLengths(editor),
     ];
 
     if (shouldFormat) {
