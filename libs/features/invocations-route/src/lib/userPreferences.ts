@@ -8,6 +8,7 @@ import { SORT_COLUMN_KEYS } from './useInvocationsQueryFilters';
 
 const USER_COLS_KEY = 'invocations-user-cols';
 const USER_SORT_KEY = 'invocations-user-sort';
+const USER_COL_WIDTHS_KEY = 'invocations-user-col-widths';
 export type CountMode = BreakdownCountMode;
 
 function safeParse<T>(raw: string | null): T | null {
@@ -41,6 +42,34 @@ export function removeUserCol(col: ColumnKey) {
   const current = getUserAddedCols();
   if (!current.includes(col)) return;
   writeUserAddedCols(current.filter((c) => c !== col));
+}
+
+export type UserColWidths = Partial<Record<ColumnKey, number>>;
+
+export function getUserColWidths(): UserColWidths {
+  const parsed = safeParse<Record<string, unknown>>(
+    localStorage.getItem(USER_COL_WIDTHS_KEY),
+  );
+  if (!parsed) return {};
+  const widths: UserColWidths = {};
+  for (const [col, width] of Object.entries(parsed)) {
+    if (
+      (COLUMNS_KEYS as readonly string[]).includes(col) &&
+      typeof width === 'number' &&
+      Number.isFinite(width) &&
+      width > 0
+    ) {
+      widths[col as ColumnKey] = width;
+    }
+  }
+  return widths;
+}
+
+export function setUserColWidths(widths: Map<ColumnKey, number>) {
+  localStorage.setItem(
+    USER_COL_WIDTHS_KEY,
+    JSON.stringify({ ...getUserColWidths(), ...Object.fromEntries(widths) }),
+  );
 }
 
 export interface UserSort {
