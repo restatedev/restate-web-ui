@@ -33,13 +33,13 @@ function convertFilterStringToSqlClause(
 ) {
   switch (filter.operation) {
     case 'EQUALS':
-      return `${field} = '${filter.value}'`;
+      return `${field} = ${quoteSqlString(filter.value ?? '')}`;
     case 'NOT_EQUALS':
-      return `${field} != '${filter.value}'`;
+      return `${field} != ${quoteSqlString(filter.value ?? '')}`;
     case 'CONTAINS':
-      return `${field} LIKE '%${filter.value}%'`;
+      return `${field} LIKE ${quoteSqlString(`%${filter.value ?? ''}%`)}`;
     case 'NOT_CONTAINS':
-      return `${field} NOT LIKE '%${filter.value}%'`;
+      return `${field} NOT LIKE ${quoteSqlString(`%${filter.value ?? ''}%`)}`;
     case 'IS NULL':
       return `${field} IS NULL`;
     case 'IS NOT NULL':
@@ -63,12 +63,12 @@ function convertFilterDateToSqlClause(
 ) {
   switch (filter.operation) {
     case 'AFTER':
-      return `${filter.field} > '${filter.value}'`;
+      return `${filter.field} > ${quoteSqlString(String(filter.value))}`;
     case 'BEFORE':
-      return `${filter.field} < '${filter.value}'`;
+      return `${filter.field} < ${quoteSqlString(String(filter.value))}`;
     case 'BETWEEN':
       if (filter.value != null && typeof filter.value === 'object') {
-        return `(${filter.field} >= '${filter.value.start}' AND ${filter.field} < '${filter.value.end}')`;
+        return `(${filter.field} >= ${quoteSqlString(filter.value.start)} AND ${filter.field} < ${quoteSqlString(filter.value.end)})`;
       }
   }
   return undefined;
@@ -78,15 +78,14 @@ function convertFilterStringListToSqlClause(
   filter: FilterStringListItem & Pick<FilterItem, 'field'>,
   field = filter.field,
 ) {
+  if (filter.value.length === 0) {
+    return filter.operation === 'IN' ? 'FALSE' : 'TRUE';
+  }
   switch (filter.operation) {
     case 'IN':
-      return `${field} IN (${filter.value
-        .map((value) => `'${value}'`)
-        .join(', ')})`;
+      return `${field} IN (${filter.value.map(quoteSqlString).join(', ')})`;
     case 'NOT_IN':
-      return `${field} NOT IN (${filter.value
-        .map((value) => `'${value}'`)
-        .join(', ')})`;
+      return `${field} NOT IN (${filter.value.map(quoteSqlString).join(', ')})`;
   }
 }
 
@@ -457,7 +456,12 @@ function invocationsFilterClauses(
         );
       }
     }
-    if (deploymentFilter.type === 'STRING_LIST') {
+    if (
+      deploymentFilter.type === 'STRING_LIST' &&
+      deploymentFilter.value.length === 0
+    ) {
+      if (deploymentFilter.operation === 'IN') mappedFilters.push('FALSE');
+    } else if (deploymentFilter.type === 'STRING_LIST') {
       if (deploymentFilter.operation === 'IN') {
         mappedFilters.push(
           `(${deploymentFilter.value
@@ -487,6 +491,15 @@ function invocationsFilterClauses(
           : statusFilter.type === 'STRING' && statusFilter.value !== undefined
             ? [statusFilter.value]
             : [];
+      if (values.length === 0) {
+        if (
+          statusFilter.operation === 'IN' ||
+          statusFilter.operation === 'EQUALS'
+        ) {
+          mappedFilters.push('FALSE');
+        }
+        return;
+      }
       // The backing-off/ready rewrite only changes the result when exactly one
       // of them is selected (it shifts vqueue-backed rows across that boundary).
       // When both are present the union equals the plain terms, so skip the
@@ -746,6 +759,12 @@ export function convertInvocationsFiltersForBaseJoin(
   for (const statusFilter of statusFilters) {
     const values = normalizeCompletedStatuses(statusFilterValues(statusFilter));
     const selected = new Set<string>(values);
+    if (values.length === 0) {
+      if (!NEGATIVE_STATUS_OPS.has(statusFilter.operation)) {
+        statusClauses.push('FALSE');
+      }
+      continue;
+    }
 
     if (NEGATIVE_STATUS_OPS.has(statusFilter.operation)) {
       // Negated: AND of the NULL-safe negations. `IS NOT TRUE` (not `NOT`) so

@@ -1,13 +1,15 @@
 import type { Handler } from '@restate/data-access/admin-api-spec';
-import type { QueryContext } from './shared';
+import { quoteSqlString, type QueryContext } from './shared';
 
 function scopeClause(scope?: string) {
-  return scope !== undefined ? ` AND scope = '${scope}'` : ` AND scope IS NULL`;
+  return scope !== undefined
+    ? ` AND scope = ${quoteSqlString(scope)}`
+    : ` AND scope IS NULL`;
 }
 
 function getSizeFromSysInbox(this: QueryContext, key: string, service: string) {
   return this.query(
-    `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}'`,
+    `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = ${quoteSqlString(key)} AND service_name = ${quoteSqlString(service)}`,
     'inbox/size-from-inbox',
   ).then(({ rows }) => rows.at(0)?.size);
 }
@@ -19,7 +21,7 @@ function getSizeFromSysVqueueMeta(
   scope?: string,
 ) {
   return this.query(
-    `SELECT (num_inbox + num_running + num_suspended + num_paused) AS size FROM sys_vqueue_meta WHERE service_name = '${service}' AND lock_name = '${service}/${key}' AND is_active = true${scopeClause(scope)}`,
+    `SELECT (num_inbox + num_running + num_suspended + num_paused) AS size FROM sys_vqueue_meta WHERE service_name = ${quoteSqlString(service)} AND lock_name = ${quoteSqlString(`${service}/${key}`)} AND is_active = true${scopeClause(scope)}`,
     'inbox/size-from-vqueue-meta',
   ).then(({ rows }) => rows.at(0)?.size ?? 0);
 }
@@ -29,7 +31,7 @@ async function getVqueueId(
   invocationId: string,
 ): Promise<{ id?: string; sequence_number?: string }> {
   return this.query(
-    `SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = '${invocationId}'`,
+    `SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = ${quoteSqlString(invocationId)}`,
     'inbox/vqueue-entry-lookup',
   ).then(({ rows }) => ({
     id: rows.at(0)?.id,
@@ -44,14 +46,14 @@ function getPositionFromSysInbox(
   invocationId: string,
 ) {
   return this.query(
-    `SELECT sequence_number FROM sys_inbox WHERE id = '${invocationId}'`,
+    `SELECT sequence_number FROM sys_inbox WHERE id = ${quoteSqlString(invocationId)}`,
     'inbox/inbox-sequence-lookup',
   )
     .then(({ rows }) =>
       rows.length === 0
         ? { rows: [{ position: -1 }] }
         : this.query(
-            `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = '${key}' AND service_name = '${service}' AND sequence_number < ${
+            `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = ${quoteSqlString(key)} AND service_name = ${quoteSqlString(service)} AND sequence_number < ${
               rows.at(0).sequence_number
             }`,
             'inbox/position-from-inbox',
@@ -70,7 +72,7 @@ async function getPositionFromSysVqueues(
   }
 
   return this.query(
-    `SELECT COUNT(*) AS position FROM sys_vqueues WHERE id = '${id}' AND sequence_number < ${sequence_number}`,
+    `SELECT COUNT(*) AS position FROM sys_vqueues WHERE id = ${quoteSqlString(id)} AND sequence_number < ${sequence_number}`,
     'inbox/position-from-vqueues',
   ).then(({ rows }) => rows.at(0)?.position - 1);
 }
@@ -111,12 +113,12 @@ export async function getInbox(
       .then(({ handlers }) =>
         handlers
           .filter((handler) => handler.ty === 'Exclusive')
-          .map((handler) => `'${handler.name}'`),
+          .map((handler) => quoteSqlString(handler.name)),
       )
       .then((handlers) =>
         handlers.length > 0
           ? this.query(
-              `SELECT id FROM sys_invocation WHERE target_service_key = '${key}' AND target_service_name = '${service}' AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (${handlers.join(
+              `SELECT id FROM sys_invocation WHERE target_service_key = ${quoteSqlString(key)} AND target_service_name = ${quoteSqlString(service)} AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (${handlers.join(
                 ', ',
               )})${headScopeClause}`,
               'inbox/head',

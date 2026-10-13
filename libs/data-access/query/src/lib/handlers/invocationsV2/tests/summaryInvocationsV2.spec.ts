@@ -1389,6 +1389,48 @@ describe('POST /query/v2/invocations/summary', () => {
       `);
     });
 
+    it('matches nothing for an empty status list', async () => {
+      setResponder(() => []);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          { field: 'status', type: 'STRING_LIST', operation: 'IN', value: [] },
+        ],
+        mode: { type: 'exact' },
+        view: 'stages',
+      });
+
+      expect(response.status).toBe(200);
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                ss.target_service_name AS service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END AS bucket,
+                COUNT(1) AS count
+              FROM sys_invocation_status ss
+              LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
+              WHERE FALSE
+              GROUP BY
+                ss.target_service_name,
+                CASE
+                  WHEN ss.status = 'inboxed' THEN 'pending'
+                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
+                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
+                  WHEN ss.status = 'completed' THEN 'failed'
+                  ELSE ss.status
+                END",
+        ]
+      `);
+    });
+
     it('returns exact legacy stages and breakdowns from one status scan', async () => {
       setResponder(() => [
         { service_name: 'Checkout', bucket: 'pending', count: 5 },
