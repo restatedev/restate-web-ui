@@ -17,6 +17,7 @@ export function InvocationsTabToolbar({
         variant="toolbar"
         sortParams={invocationsTab.sortParams}
         setSortParams={invocationsTab.setSortParams}
+        filterFields={invocationsTab.filters.map(({ field }) => field)}
       />
       <InvocationBatchActions
         filters={invocationsTab.filters}

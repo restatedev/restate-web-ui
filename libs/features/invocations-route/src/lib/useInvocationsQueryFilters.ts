@@ -13,6 +13,7 @@ import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
+import { isFeatureEnabled } from '@restate/util/feature-flag';
 
 export const SORT_QUERY_PREFIX = 'sort_';
 
@@ -21,8 +22,19 @@ type InvocationV2Sort = components['schemas']['InvocationV2Sort'];
 
 export const SORT_COLUMN_KEYS = [
   'created_at',
+  'transitioned_at',
 ] as const satisfies readonly InvocationV2Sort['field'][];
 type InvocationUiSortField = (typeof SORT_COLUMN_KEYS)[number];
+
+export function isSortFieldAvailable(field: string) {
+  return field !== 'transitioned_at' || isFeatureEnabled('FEATURE_INDEXES_V1');
+}
+
+export function getDefaultSortField(): InvocationUiSortField {
+  return isFeatureEnabled('FEATURE_INDEXES_V1')
+    ? 'transitioned_at'
+    : 'created_at';
+}
 
 // Sentinel sort field meaning "don't sort": the list query then omits its
 // ORDER BY and returns rows in scan order (fastest, but unstable order).
@@ -43,6 +55,7 @@ export function isSortValid(searchParams: URLSearchParams) {
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order') || '';
   return (
     SORT_COLUMN_KEYS.some((sortField) => sortField === field) &&
+    isSortFieldAvailable(field) &&
     ['ASC', 'DESC'].includes(String(order))
   );
 }
@@ -55,12 +68,12 @@ export function setSort(searchParams: URLSearchParams, sort: InvocationV2Sort) {
 }
 
 export function setDefaultSort(searchParams: URLSearchParams) {
-  return setSort(searchParams, { field: 'created_at', order: 'DESC' });
+  return setSort(searchParams, { field: getDefaultSortField(), order: 'DESC' });
 }
 
 export function deriveSortFromUrl(
   searchParams: URLSearchParams,
-  fallback: SortSelection = { field: 'created_at', order: 'DESC' },
+  fallback: SortSelection = { field: getDefaultSortField(), order: 'DESC' },
 ): SortSelection {
   if (isNoSort(searchParams)) {
     return { field: SORT_NONE, order: 'DESC' };

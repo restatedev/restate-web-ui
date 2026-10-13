@@ -1,4 +1,5 @@
 import { useFeatures } from '@restate/data-access/admin-api';
+import { usesStatsTables } from '@restate/data-access/query';
 import { useListVirtualObjectInstances } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import {
@@ -98,20 +99,26 @@ function virtualObjectInstanceRouteHref(
   });
 }
 
-const columns: PanelTableColumn<ColumnId>[] = [
-  {
-    id: 'identity',
-    name: (
-      <span>
-        Virtual object instance{' '}
-        <span className="font-normal text-gray-500">
-          (with in-flight invocations)
-        </span>
+const identityColumn: PanelTableColumn<ColumnId> = {
+  id: 'identity',
+  name: (
+    <span>
+      Virtual object instance{' '}
+      <span className="font-normal text-gray-500">
+        (with in-flight invocations)
       </span>
-    ),
-    isRowHeader: true,
-    minWidth: 320,
-  },
+    </span>
+  ),
+  isRowHeader: true,
+  minWidth: 320,
+};
+
+const statsIdentityColumn: PanelTableColumn<ColumnId> = {
+  ...identityColumn,
+  name: 'Virtual object instance',
+};
+
+const columns: PanelTableColumn<ColumnId>[] = [
   {
     id: 'backlog',
     name: 'Inbox',
@@ -235,6 +242,7 @@ export function VirtualObjectInstances({
   const { baseUrl } = useRestateContext();
   const recentVirtualObject = useRecentVirtualObjectInstance(baseUrl);
   const features = useFeatures();
+  const listsFromStats = usesStatsTables({ features });
   const hasVqueues = features.has('vqueues');
   const hasScopedVirtualObjects =
     hasVqueues && features.has('scoped_virtual_objects');
@@ -311,7 +319,8 @@ export function VirtualObjectInstances({
     searchParams,
     service,
   ]);
-  const sortByBacklog = searchParams.get(SORT_QUERY_PARAM) === BACKLOG_SORT;
+  const sortByBacklog =
+    listsFromStats || searchParams.get(SORT_QUERY_PARAM) === BACKLOG_SORT;
   const sortDescriptor: SortDescriptor | undefined = sortByBacklog
     ? { column: 'backlog', direction: 'descending' }
     : undefined;
@@ -386,8 +395,12 @@ export function VirtualObjectInstances({
       recentVirtualObject.scope === scope,
   );
   const visibleColumns = useMemo(
-    () => (hasVqueues ? [...columns, lockAcquiredColumn] : columns),
-    [hasVqueues],
+    () => [
+      listsFromStats ? statsIdentityColumn : identityColumn,
+      ...columns,
+      ...(hasVqueues ? [lockAcquiredColumn] : []),
+    ],
+    [hasVqueues, listsFromStats],
   );
   const isLoading =
     isServicesPending || (Boolean(service) && isInstancesFetching);
@@ -509,7 +522,9 @@ export function VirtualObjectInstances({
                 error,
               ]}
               sortDescriptor={sortDescriptor}
-              onSortChange={handleBacklogSortChange}
+              onSortChange={
+                listsFromStats ? undefined : handleBacklogSortChange
+              }
               onRowAction={(rowId) => {
                 const item = items.find(({ id }) => id === String(rowId));
                 if (item) {
@@ -544,14 +559,20 @@ export function VirtualObjectInstances({
                   <EmptyState
                     icon={hasFilters ? IconName.Search : IconName.VirtualObject}
                     title={
-                      hasFilters
-                        ? 'No virtual objects with in-flight invocations match this filter'
-                        : 'No virtual objects with in-flight invocations'
+                      listsFromStats
+                        ? hasFilters
+                          ? 'No virtual objects match this filter'
+                          : 'No virtual objects'
+                        : hasFilters
+                          ? 'No virtual objects with in-flight invocations match this filter'
+                          : 'No virtual objects with in-flight invocations'
                     }
                     description={
                       hasFilters
                         ? 'Try adjusting the active filters.'
-                        : 'Virtual objects appear here while they have in-flight invocations. Use “Go to instance” to open one by key.'
+                        : listsFromStats
+                          ? 'Virtual objects appear here once they have invocations. Use “Go to instance” to open one by key.'
+                          : 'Virtual objects appear here while they have in-flight invocations. Use “Go to instance” to open one by key.'
                     }
                   />
                 )

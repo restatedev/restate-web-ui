@@ -10,7 +10,10 @@ import {
 import type { VQueueSummaryFocus } from '@restate/features/status-chart';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { getInvocationSummaryFacets } from './invocationSummaryFacets';
+import {
+  getInvocationSummaryFacets,
+  summarizeIncludedServices,
+} from './invocationSummaryFacets';
 import { countMatchingGlobalStatuses } from './invocationSummaryMatchCount';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
 import { useStatusBarProps } from './useStatusBarProps';
@@ -88,6 +91,8 @@ export function useInvocationSummary({
     },
     { enabled, refetchOnWindowFocus: false },
   );
+  const isFromStats = summary.isFromStats;
+  const usesContextualRequest = hasServiceFilter && !isFromStats;
   const contextualBreakdown = useSummaryInvocationsV2(
     {
       filters: appliedFilters,
@@ -95,12 +100,13 @@ export function useInvocationSummary({
       view: 'all',
     },
     {
-      enabled: enabled && hasServiceFilter,
+      enabled: enabled && usesContextualRequest,
       refetchOnWindowFocus: false,
     },
   );
-  const inboxBreakdownServiceNames =
-    getInboxBreakdownServiceNames(appliedFilters);
+  const inboxBreakdownServiceNames = isFromStats
+    ? undefined
+    : getInboxBreakdownServiceNames(appliedFilters);
   const contextualInboxBreakdown = useInboxInvocationsBreakdownV2(
     {
       groupBy: 'status',
@@ -121,7 +127,9 @@ export function useInvocationSummary({
   const facets = getInvocationSummaryFacets(
     summary.data,
     filters,
-    contextualBreakdown.data,
+    isFromStats
+      ? summarizeIncludedServices(summary.data)
+      : contextualBreakdown.data,
     contextualInboxStatusBreakdown,
   );
   const selectedStatuses = new Set(statusFilter?.value ?? []);
@@ -165,7 +173,7 @@ export function useInvocationSummary({
         statusFilter,
       )
     : undefined;
-  const queryKeys = hasServiceFilter
+  const queryKeys = usesContextualRequest
     ? [
         ...summary.queryKeys,
         contextualBreakdown.queryKey,
@@ -184,11 +192,11 @@ export function useInvocationSummary({
     );
   }, [queryClient, queryKeys]);
   const contextualBreakdownLoading =
-    hasServiceFilter &&
+    usesContextualRequest &&
     contextualBreakdown.data === undefined &&
     !contextualBreakdown.isError;
   const contextualBreakdownError =
-    hasServiceFilter && contextualBreakdown.isError;
+    usesContextualRequest && contextualBreakdown.isError;
   const contextualInboxBreakdownLoading =
     inboxBreakdownServiceNames !== undefined &&
     contextualInboxBreakdown.data === undefined &&
@@ -221,8 +229,13 @@ export function useInvocationSummary({
     focus: getFocusFromStatusFilter(statusFilter),
     statusFilter,
     hasServiceScope: facets.hasServiceFilter,
-    breakdownIsSampled: countMode === 'estimate',
-    canSampleBreakdown: true,
+    breakdownIsSampled: !isFromStats && countMode === 'estimate',
+    canSampleBreakdown: !isFromStats,
+    fixedBreakdownMode: isFromStats
+      ? summary.data?.mode === 'sampled'
+        ? ('estimate' as const)
+        : ('exact' as const)
+      : undefined,
     byStage: facets.byStage.map((bucket) => ({
       name: bucket.key,
       label: bucket.label,

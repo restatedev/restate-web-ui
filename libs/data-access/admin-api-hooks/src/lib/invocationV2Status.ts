@@ -1,4 +1,7 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import {
+  TERMINAL_INVOCATION_STATUSES,
+  type components,
+} from '@restate/data-access/admin-api-spec';
 
 type SummaryData = components['schemas']['SummaryInvocationsV2Response'];
 type InboxData = components['schemas']['InboxInvocationsBreakdownV2Response'];
@@ -76,4 +79,23 @@ export function getServiceInvocationStatusBreakdownV2(
     if (name !== 'inbox' && name !== 'finished') counts.set(name, count);
   }
   return counts;
+}
+
+export function getServiceLiveStatusCountsFromSummaryV2(
+  summary: SummaryData | undefined,
+  service: string,
+) {
+  const breakdown = summary?.serviceBuckets.find(
+    (bucket) => bucket.service === service,
+  )?.statusBreakdown;
+  if (!breakdown) return undefined;
+  const terminal = new Set<string>(TERMINAL_INVOCATION_STATUSES);
+  return new Map(
+    breakdown
+      .filter(
+        ({ statuses, count }) =>
+          count > 0 && !statuses.some((status) => terminal.has(status)),
+      )
+      .map(({ key, count }) => [key, count]),
+  );
 }

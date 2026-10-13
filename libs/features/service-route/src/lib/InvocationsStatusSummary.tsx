@@ -103,6 +103,7 @@ export function InvocationsStatusSummary({
           onFocusChange={changeFocus}
           breakdownMode={countMode}
           canSampleBreakdown={summary.canSampleBreakdown}
+          fixedBreakdownMode={summary.fixedBreakdownMode}
           onBreakdownModeChange={setCountMode}
           isLoading={summary.isLoading}
           isFetching={summary.isFetching}

@@ -56,20 +56,18 @@ async function queryCountFromSysVqueues(
   mode: ResolvedInvocationModeV2,
 ): Promise<InvocationCountResult> {
   const clauses = [
-    "v.entry_kind = 'invocation'",
     ...vqueueStatusPredicates(query.statuses, 'v'),
     ...vqueueFilterClauses(query.filters, 'sys_vqueues', 'v'),
   ];
   const source =
     mode.type === 'sampled'
-      ? `(\n        SELECT\n          ${vqueueSampleColumns(query.filters, query.statuses, undefined, ['entry_kind']).join(',\n          ')}\n        FROM sys_vqueues\n        LIMIT ${mode.sampleSize}\n      ) v`
+      ? `(\n        SELECT\n          ${vqueueSampleColumns(query.filters, query.statuses, undefined, []).join(',\n          ')}\n        FROM sys_vqueues\n        LIMIT ${mode.sampleSize}\n      ) v`
       : 'sys_vqueues v';
   const { rows } = (await context.query(
     `
       SELECT
         COUNT(1) AS count
-      FROM ${source}
-      WHERE ${clauses.join('\n        AND ')}
+      FROM ${source}${clauses.length ? `\n      WHERE ${clauses.join('\n        AND ')}` : ''}
     `.trim(),
     'invocations-v2/count-from-vqueues',
   )) as { rows: CountRow[] };
@@ -90,13 +88,12 @@ async function queryCountFromSysVqueueMetaAndSysVqueues(
     'vm',
   );
   const entryPredicates = [
-    "v.entry_kind = 'invocation'",
     ...vqueueStatusPredicates(query.statuses, 'v'),
     ...vqueueFilterClauses(query.filters, 'sys_vqueues', 'v'),
   ];
   const source =
     mode.type === 'sampled'
-      ? `(\n        SELECT\n          ${vqueueSampleColumns(query.filters, query.statuses, undefined, ['id', 'entry_kind']).join(',\n          ')}\n        FROM sys_vqueues\n        LIMIT ${mode.sampleSize}\n      ) v`
+      ? `(\n        SELECT\n          ${vqueueSampleColumns(query.filters, query.statuses, undefined, ['id']).join(',\n          ')}\n        FROM sys_vqueues\n        LIMIT ${mode.sampleSize}\n      ) v`
       : 'sys_vqueues v';
   const { rows } = (await context.query(
     `
@@ -107,8 +104,7 @@ async function queryCountFromSysVqueueMetaAndSysVqueues(
         SELECT vm.id
         FROM sys_vqueue_meta vm
         WHERE ${queuePredicates.join('\n          AND ')}
-      )
-        AND ${entryPredicates.join('\n        AND ')}
+      )${entryPredicates.map((predicate) => `\n        AND ${predicate}`).join('')}
     `.trim(),
     'invocations-v2/count-from-vqueue-meta',
   )) as { rows: CountRow[] };

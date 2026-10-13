@@ -11,11 +11,12 @@ import {
   InvocationTableDate,
   Status,
   type InvocationTableColumnKey,
+  VqueueEntryIdentity,
 } from '@restate/features/invocation-ui';
 import { useRestateContext } from '@restate/features/restate-context';
 import { VQueueHeadBlockedStatus } from '@restate/features/vqueue-ui';
 import { EmptyState } from '@restate/ui/empty-state';
-import { Icon, IconName } from '@restate/ui/icons';
+import { IconName } from '@restate/ui/icons';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
 import { formatNumber } from '@restate/util/intl';
 import { getSearchParams } from '@restate/util/panel';
@@ -117,28 +118,6 @@ function entryRow(entry: VqueueEntry) {
       };
 }
 
-function NonInvocationEntry({ entry }: { entry: VqueueEntry }) {
-  const isStateMutation = entry.kind === 'state-mutation';
-  return (
-    <span className="flex min-w-0 items-center gap-2">
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
-        <Icon
-          name={isStateMutation ? IconName.Database : IconName.History}
-          className="h-full w-full p-1 text-zinc-500"
-        />
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-xs font-medium text-zinc-700">
-          {isStateMutation ? 'State mutation' : 'Other entry'}
-        </span>
-        <code className="block truncate text-2xs text-zinc-500">
-          {entry.id}
-        </code>
-      </span>
-    </span>
-  );
-}
-
 export function isVqueueEntryNextTransitionBlocked(
   entry: Pick<VqueueEntry, 'id' | 'stage'>,
   snapshot?: VqueueSnapshot,
@@ -203,7 +182,7 @@ function renderCell(
         />
       ) : (
         <Cell className="min-w-0 overflow-visible">
-          <NonInvocationEntry entry={entry} />
+          <VqueueEntryIdentity entry={entry} />
         </Cell>
       );
     case 'status':

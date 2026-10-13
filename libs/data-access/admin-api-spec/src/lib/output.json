@@ -9586,8 +9586,16 @@
           },
           "rows": {
             "type": "array",
+            "description": "Invocations, plus VQueue entries that are not invocations (e.g. state mutations) without invocation details.",
             "items": {
-              "$ref": "#/components/schemas/Invocation"
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/Invocation"
+                },
+                {
+                  "$ref": "#/components/schemas/VirtualObjectInboxEntry"
+                }
+              ]
             }
           },
           "limit": {
@@ -9767,8 +9775,16 @@
         "properties": {
           "rows": {
             "type": "array",
+            "description": "Invocations, plus VQueue entries that are not invocations (e.g. state mutations) without invocation details.",
             "items": {
-              "$ref": "#/components/schemas/InvocationV2"
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/InvocationV2"
+                },
+                {
+                  "$ref": "#/components/schemas/VirtualObjectInboxEntry"
+                }
+              ]
             }
           },
           "limit": {
@@ -9847,8 +9863,15 @@
           },
           "view": {
             "type": "string",
-            "enum": ["all", "stages", "live-stages", "breakdowns", "count"],
-            "description": "Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; count applies every filter and returns only the total; all returns both complete stages and breakdowns."
+            "enum": [
+              "all",
+              "stages",
+              "live-stages",
+              "breakdowns",
+              "count",
+              "deployments"
+            ],
+            "description": "Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; count applies every filter and returns only the total; all returns both complete stages and breakdowns; deployments returns per-deployment status totals in deploymentBuckets and is only served from deployment stats."
           },
           "highlightFields": {
             "type": "array",
@@ -9904,9 +9927,34 @@
               "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
             }
           },
+          "statusBreakdown": {
+            "type": "array",
+            "description": "Exact per-status counts for this service, using the same buckets as the top-level statusBuckets. Present only when the summary is served from stats.",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
+            }
+          },
           "isIncluded": {
             "type": "boolean",
             "description": "Whether this bucket matches the removed target_service_name highlight filters."
+          }
+        }
+      },
+      "InvocationDeploymentSummaryBucketV2": {
+        "type": "object",
+        "required": ["deployment", "count", "statusBuckets"],
+        "properties": {
+          "deployment": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "statusBuckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
+            }
           }
         }
       },
@@ -10022,6 +10070,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InvocationServiceSummaryBucketV2"
+            }
+          },
+          "deploymentBuckets": {
+            "type": "array",
+            "description": "Per-deployment totals for the deployments view, read from deployment stats; only entries already assigned to a deployment are counted.",
+            "items": {
+              "$ref": "#/components/schemas/InvocationDeploymentSummaryBucketV2"
             }
           }
         }

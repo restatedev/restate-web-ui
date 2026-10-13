@@ -1,4 +1,5 @@
 import {
+  quoteSqlString,
   scopeClause,
   type QueryContext,
   type StateServiceType,
@@ -12,7 +13,7 @@ export async function getStateInterface(
   serviceType?: StateServiceType,
 ) {
   const keys: { name: string }[] = await this.query(
-    `SELECT DISTINCT key FROM state WHERE service_name = '${service}' ${serviceKey.length > 0 ? ` AND service_key IN (${serviceKey.map((key) => `'${key}'`).join(', ')})` : ''}${scopeClause(this, scope, serviceType)} GROUP BY key`,
+    `SELECT DISTINCT key FROM state WHERE service_name = ${quoteSqlString(service)} ${serviceKey.length > 0 ? ` AND service_key IN (${serviceKey.map(quoteSqlString).join(', ')})` : ''}${scopeClause(this, scope, serviceType)} GROUP BY key`,
     'state/keys',
   ).then(({ rows }) => rows.map((row) => ({ name: row.key })));
 

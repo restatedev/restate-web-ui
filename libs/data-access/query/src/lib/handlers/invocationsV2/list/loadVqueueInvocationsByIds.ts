@@ -1,6 +1,9 @@
 import type { RawInvocation } from '@restate/data-access/admin-api-spec';
 import { convertInvocationV2 } from '../../../convertInvocation';
-import type { QueryContext } from '../../shared';
+import { getInvocationStatusFromVqueue } from '../../../invocationStatuses';
+import { toVqueueEntry } from '../../virtualObjectEntries';
+import { entryTablesSupportFilters } from './transitionSort';
+import { isInvocationId, type QueryContext } from '../../shared';
 import { getInvocationListFieldOnTable } from '../invocationListFields';
 import {
   STATUSES_RESOLVED_FROM_VQUEUE,
@@ -28,6 +31,10 @@ export async function loadVqueueInvocationsByIds(
     return { rows: [], statusChangedInvocationIds: [] };
   }
   const ids = candidates.map((candidate) => candidate.id);
+  const invocationIds = ids.filter(isInvocationId);
+  const includesEntries = entryTablesSupportFilters(
+    filters.map(({ field }) => field),
+  );
   const nonStatusFilters = filters.filter(
     (filter) => filter.field !== 'status',
   );
@@ -37,7 +44,14 @@ export async function loadVqueueInvocationsByIds(
       : undefined;
   const vqueueSort = sort && !invocationSort ? sort : undefined;
   const [{ rows: invocationRows }, { rows: vqueueRows }] = await Promise.all([
-    queryInvocationRowsByIds(context, ids, nonStatusFilters, invocationSort),
+    invocationIds.length > 0
+      ? queryInvocationRowsByIds(
+          context,
+          invocationIds,
+          nonStatusFilters,
+          invocationSort,
+        )
+      : { rows: [] },
     queryVqueueEntryStatusRowsByIds(context, ids, filters, vqueueSort),
   ]);
   const rawInvocations = invocationRows as RawInvocation[];
@@ -56,12 +70,28 @@ export async function loadVqueueInvocationsByIds(
       : ids;
   const orderedIds = Array.from(new Set([...orderedHydrationIds, ...ids]));
 
-  const rows: ReturnType<typeof convertInvocationV2>[] = [];
+  const rows: (
+    | ReturnType<typeof convertInvocationV2>
+    | ReturnType<typeof toVqueueEntry>
+  )[] = [];
   const statusChangedInvocationIds: string[] = [];
   for (const id of orderedIds) {
     const candidate = candidatesById.get(id);
     if (!candidate) continue;
     const vqueue = vqueuesById.get(id);
+    if (!isInvocationId(id)) {
+      const status = vqueue && getInvocationStatusFromVqueue(vqueue);
+      if (
+        !includesEntries ||
+        !vqueue ||
+        (statusSelection.type === 'selected' &&
+          (!status || !statusSelection.statuses.has(status)))
+      ) {
+        continue;
+      }
+      rows.push(toVqueueEntry(id, { ...vqueue, kind: vqueue.entry_kind }));
+      continue;
+    }
     const raw = invocationsById.get(id);
     if (!raw || (candidate.requiresVqueueEntry && !vqueue)) continue;
     const invocation = convertInvocationV2(raw, vqueue, requestTime);

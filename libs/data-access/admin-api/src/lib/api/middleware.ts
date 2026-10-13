@@ -11,12 +11,14 @@ import {
   QUERY_ORIGIN_HEADER,
   RESTATE_FEATURES_HEADER,
   RESTATE_VERSION_HEADER,
+  UI_FEATURES_HEADER,
   type QueryOrigin,
 } from '@restate/data-access/query';
 import semverCoerce from 'semver/functions/coerce';
 import semverGte from 'semver/functions/gte';
 import { client } from './client';
 import { metaQueryOptions } from './meta';
+import { getEnabledUiFeatures } from './uiFeatures';
 
 const authMiddleware: Middleware = {
   async onRequest({ request }) {
@@ -64,6 +66,13 @@ const authMiddleware: Middleware = {
         : [];
       if (enabled.length > 0) {
         request.headers.set(RESTATE_FEATURES_HEADER, enabled.join(','));
+      }
+      const uiFeatures = getEnabledUiFeatures(
+        new Set(enabled),
+        isFeatureEnabled,
+      );
+      if (uiFeatures.length > 0) {
+        request.headers.set(UI_FEATURES_HEADER, uiFeatures.join(','));
       }
     }
     return request;

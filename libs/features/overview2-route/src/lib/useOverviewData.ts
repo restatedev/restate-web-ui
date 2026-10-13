@@ -4,6 +4,7 @@ import {
   getServiceInvocationStageBreakdownV2,
   getInvocationStatusBreakdownV2,
   getServiceInvocationStatusBreakdownV2,
+  getServiceLiveStatusCountsFromSummaryV2,
   useLazyServiceInboxStatusBreakdownsV2,
   useListDrainedDeployments,
   useListDeployments,
@@ -155,10 +156,16 @@ export function useOverviewData({
       ),
     [serviceStageCounts, servicesMap],
   );
-  const {
-    breakdowns: serviceInboxBreakdowns,
-    load: loadServiceInboxBreakdown,
-  } = useLazyServiceInboxStatusBreakdownsV2();
+  const { breakdowns: serviceInboxBreakdowns, load: loadInboxBreakdown } =
+    useLazyServiceInboxStatusBreakdownsV2();
+  const loadServiceInboxBreakdown = useCallback(
+    (service: string) => {
+      if (!getServiceLiveStatusCountsFromSummaryV2(summary.data, service)) {
+        loadInboxBreakdown(service);
+      }
+    },
+    [loadInboxBreakdown, summary.data],
+  );
   const { isNew, isVersionGte } = useRestateContext();
   const serviceIssuesMap = useMemo(() => {
     const map = new Map<string, ServiceIssue[]>();
@@ -173,13 +180,15 @@ export function useOverviewData({
       const issues = getServiceIssues({
         deployment: deploymentsMap?.get(service.deployment_id),
         isVersionGte,
-        statusCounts: inboxBreakdown
-          ? getServiceInvocationStatusBreakdownV2(
-              summary.data,
-              service.name,
-              inboxBreakdown,
-            )
-          : stageCounts,
+        statusCounts:
+          getServiceLiveStatusCountsFromSummaryV2(summary.data, service.name) ??
+          (inboxBreakdown
+            ? getServiceInvocationStatusBreakdownV2(
+                summary.data,
+                service.name,
+                inboxBreakdown,
+              )
+            : stageCounts),
       });
       if (issues.length > 0) map.set(service.name, issues);
     }
@@ -234,7 +243,9 @@ export function useOverviewData({
     breakdownMode,
     setBreakdownMode,
     canSampleBreakdown: hasVqueues,
-    isBreakdownSampled: hasVqueues && breakdownMode === 'estimate',
+    isSummaryFromStats: summary.isFromStats,
+    isBreakdownSampled:
+      hasVqueues && !summary.isFromStats && breakdownMode === 'estimate',
     isInboxBreakdownLoading,
     isInboxBreakdownError: summary.isBreakdownError('inbox'),
     isCompletedBreakdownLoading: summary.isBreakdownLoading('finished'),

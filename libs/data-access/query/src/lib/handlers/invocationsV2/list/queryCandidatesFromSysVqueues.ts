@@ -30,7 +30,6 @@ export function queryCandidatesFromSysVqueues(
           vqueueStatusPredicate(query.statuses, 'v'),
         ];
   const clauses = [
-    "v.entry_kind = 'invocation'",
     ...statusPredicates,
     ...vqueueFilterClauses(query.filters, 'sys_vqueues', 'v'),
   ];
@@ -54,8 +53,7 @@ export function queryCandidatesFromSysVqueues(
             ? ',\n        v.created_at AS created_at'
             : ''
         }
-      FROM ${source}
-      WHERE ${clauses.join('\n        AND ')}${orderBy}
+      FROM ${source}${clauses.length ? `\n      WHERE ${clauses.join('\n        AND ')}` : ''}${orderBy}
       LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-vqueues',

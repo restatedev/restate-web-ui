@@ -3421,7 +3421,11 @@ export interface components {
     };
     VirtualObjectInvocationsResponse: {
       supported: boolean;
-      rows: components['schemas']['Invocation'][];
+      /** @description Invocations, plus VQueue entries that are not invocations (e.g. state mutations) without invocation details. */
+      rows: (
+        | components['schemas']['Invocation']
+        | components['schemas']['VirtualObjectInboxEntry']
+      )[];
       limit: number;
       truncated: boolean;
     };
@@ -3492,7 +3496,11 @@ export interface components {
       vqueue?: components['schemas']['InvocationVqueueStateV2'];
     };
     ListInvocationsV2Response: {
-      rows: components['schemas']['InvocationV2'][];
+      /** @description Invocations, plus VQueue entries that are not invocations (e.g. state mutations) without invocation details. */
+      rows: (
+        | components['schemas']['InvocationV2']
+        | components['schemas']['VirtualObjectInboxEntry']
+      )[];
       limit: number;
       /** @enum {string} */
       mode: 'exact' | 'sampled';
@@ -3522,10 +3530,16 @@ export interface components {
        */
       range?: 'PT1H' | 'P1D' | 'ALL';
       /**
-       * @description Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; count applies every filter and returns only the total; all returns both complete stages and breakdowns.
+       * @description Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; count applies every filter and returns only the total; all returns both complete stages and breakdowns; deployments returns per-deployment status totals in deploymentBuckets and is only served from deployment stats.
        * @enum {string}
        */
-      view?: 'all' | 'stages' | 'live-stages' | 'breakdowns' | 'count';
+      view?:
+        | 'all'
+        | 'stages'
+        | 'live-stages'
+        | 'breakdowns'
+        | 'count'
+        | 'deployments';
       /** @description For bucket views, filters on these fields do not restrict the aggregate population and matching buckets are marked with isIncluded instead. The count view always applies every filter. */
       highlightFields?: ('status' | 'target_service_name')[];
     };
@@ -3543,8 +3557,15 @@ export interface components {
       service: string;
       count: number;
       statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
+      /** @description Exact per-status counts for this service, using the same buckets as the top-level statusBuckets. Present only when the summary is served from stats. */
+      statusBreakdown?: components['schemas']['InvocationStatusSummaryBucketV2'][];
       /** @description Whether this bucket matches the removed target_service_name highlight filters. */
       isIncluded: boolean;
+    };
+    InvocationDeploymentSummaryBucketV2: {
+      deployment: string;
+      count: number;
+      statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
     };
     InvocationStageSummaryBucketV2: {
       key: components['schemas']['InvocationSummaryStageV2'];
@@ -3580,6 +3601,8 @@ export interface components {
       stageBuckets: components['schemas']['InvocationStageSummaryBucketV2'][];
       statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
       serviceBuckets: components['schemas']['InvocationServiceSummaryBucketV2'][];
+      /** @description Per-deployment totals for the deployments view, read from deployment stats; only entries already assigned to a deployment are counted. */
+      deploymentBuckets?: components['schemas']['InvocationDeploymentSummaryBucketV2'][];
     };
     InboxInvocationsBreakdownV2RequestBody: {
       /**

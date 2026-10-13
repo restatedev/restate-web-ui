@@ -9,6 +9,7 @@ import type {
 import { convertInvocationV2, type VqueueStatus } from '../convertInvocation';
 import {
   getSysInvocationColumns,
+  isInvocationId,
   type QueryContext,
   quoteSqlString,
 } from './shared';
@@ -312,8 +313,7 @@ function focusEntryQuery(focusEntryId: string) {
   e.latest_attempt_blocked_on_lock,
   e.latest_attempt_blocked_on_deployment_concurrency
 FROM sys_vqueue_entry_status e
-WHERE e.entry_id = ${quoteSqlString(focusEntryId)}
-  AND e.entry_kind = 'invocation'`;
+WHERE e.entry_id = ${quoteSqlString(focusEntryId)}`;
 }
 
 function focusedInvocationQuery(context: QueryContext, focusEntryId: string) {
@@ -409,7 +409,7 @@ export async function getVqueueSnapshot(
     focusEntryId
       ? this.query(focusEntryQuery(focusEntryId), 'vqueues/focus-entry')
       : Promise.resolve(undefined),
-    focusEntryId && !options?.focusedInvocation
+    focusEntryId && isInvocationId(focusEntryId) && !options?.focusedInvocation
       ? this.query(
           focusedInvocationQuery(this, focusEntryId),
           'invocations/get',

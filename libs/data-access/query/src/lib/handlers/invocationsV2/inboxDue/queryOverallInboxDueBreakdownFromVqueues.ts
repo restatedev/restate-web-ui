@@ -27,7 +27,6 @@ export function queryOverallInboxDueBreakdownFromVqueues(
         ) AS not_due
       FROM sys_vqueues v
       WHERE v.stage = 'inbox'
-        AND v.entry_kind = 'invocation'
     `.trim(),
     'invocations-v2/inbox-due-from-vqueues',
   );

@@ -6,18 +6,31 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import type { BreakdownCountMode } from '@restate/features/user-preference';
-import { ChartControlTrigger } from './ChartControlTrigger';
+import { ChartControlTrigger, ChartControlValue } from './ChartControlTrigger';
 
 export function BreakdownMode({
   mode,
   onChange,
   format = 'compact',
+  isFixed = false,
 }: {
   mode: BreakdownCountMode;
   onChange: (mode: BreakdownCountMode) => void;
   format?: 'compact' | 'sentence';
+  isFixed?: boolean;
 }) {
   const isSentence = format === 'sentence';
+  const label = mode === 'estimate' ? 'estimated' : 'exact';
+  if (isFixed) {
+    return (
+      <ChartControlValue
+        prefix={isSentence ? 'Showing' : undefined}
+        suffix={isSentence ? 'breakdowns' : undefined}
+      >
+        {label}
+      </ChartControlValue>
+    );
+  }
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -25,7 +38,7 @@ export function BreakdownMode({
           prefix={isSentence ? 'Showing' : undefined}
           suffix={isSentence ? 'breakdowns' : undefined}
         >
-          {mode === 'estimate' ? 'estimated' : 'exact'}
+          {label}
         </ChartControlTrigger>
       </DropdownTrigger>
       <DropdownPopover>

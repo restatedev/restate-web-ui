@@ -79,8 +79,7 @@ describe('getInvocationIds SQL', () => {
               v.entry_id AS id,
               v.created_at AS created_at
             FROM sys_vqueues v
-            WHERE v.entry_kind = 'invocation'
-              AND v.id = 'vq_orders'
+            WHERE v.id = 'vq_orders'
               AND v.stage = 'inbox'
               AND v.created_at > '2026-08-20T10:00:00.000Z'
             ORDER BY v.created_at ASC NULLS LAST
@@ -94,6 +93,52 @@ describe('getInvocationIds SQL', () => {
     });
   });
 
+  it('skips state mutations but pages past them', async () => {
+    const sql: string[] = [];
+    const context = {
+      restateVersion: '1.7.2',
+      features: new Set(['vqueues']),
+      query(statement: string) {
+        sql.push(statement.trim());
+        return Promise.resolve({
+          rows: [
+            { id: 'inv_1', created_at: '2026-08-20T10:00:00.000Z' },
+            { id: 'mut_1', created_at: '2026-08-20T10:00:01.000Z' },
+          ],
+        });
+      },
+    } as unknown as QueryContext;
+
+    const result = await getInvocationIds.call(context, {
+      filters: [
+        {
+          field: 'vqueue_id',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'vq_orders',
+        },
+      ],
+      pageSize: 2,
+    });
+
+    expect(sql).toMatchInlineSnapshot(`
+      [
+        "SELECT
+              v.entry_id AS id,
+              v.created_at AS created_at
+            FROM sys_vqueues v
+            WHERE v.id = 'vq_orders'
+            ORDER BY v.created_at ASC NULLS LAST
+            LIMIT 2",
+      ]
+    `);
+    expect(result).toEqual({
+      invocationIds: ['inv_1'],
+      hasMore: true,
+      lastCreatedAt: '2026-08-20T10:00:01.000Z',
+    });
+  });
+
   it('refines a 1000-invocation batch page in groups of 500', async () => {
     const sql: string[] = [];
     const context = {
@@ -104,14 +149,14 @@ describe('getInvocationIds SQL', () => {
         if (id === 'invocations-v2/best-effort-candidates') {
           return Promise.resolve({
             rows: Array.from({ length: 1000 }, (_, index) => ({
-              id: `inv-${index}`,
+              id: `inv_${index}`,
               created_at: `2026-08-20T10:${String(Math.floor(index / 60)).padStart(2, '0')}:${String(index % 60).padStart(2, '0')}.000Z`,
               raw_status: 'invoked',
             })),
           });
         }
-        const ids = [...statement.matchAll(/'inv-(\d+)'/g)].map(
-          ([, index]) => `inv-${index}`,
+        const ids = [...statement.matchAll(/'inv_(\d+)'/g)].map(
+          ([, index]) => `inv_${index}`,
         );
         return Promise.resolve({
           rows: ids.map((entry_id) => ({
@@ -148,9 +193,8 @@ describe('getInvocationIds SQL', () => {
       FROM sys_vqueue_entry_status v
       WHERE v.entry_id IN (${Array.from(
         { length: 500 },
-        (_, index) => `'inv-${start + index}'`,
-      ).join(', ')})
-        AND v.entry_kind = 'invocation'`;
+        (_, index) => `'inv_${start + index}'`,
+      ).join(', ')})`;
     expect(sql).toEqual([
       `SELECT
         ss.id AS id,

@@ -3,6 +3,7 @@ import type {
   BatchOperationResult,
 } from '@restate/data-access/admin-api-spec';
 import semverGt from 'semver/functions/gte';
+import { isInvocationId } from './shared';
 
 type ProcessorResult = {
   invocationId: string;
@@ -23,6 +24,7 @@ export async function batchProcessInvocations(
     'failed' | 'successful' | 'failedInvocationIds'
   >
 > {
+  invocationIds = invocationIds.filter(isInvocationId);
   const releasedVersion = restateVersion?.split('-')?.at(0);
   const newBatchApiIsSupported = releasedVersion
     ? semverGt(releasedVersion, '1.6.0')

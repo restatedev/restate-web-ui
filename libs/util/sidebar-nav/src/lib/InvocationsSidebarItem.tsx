@@ -11,6 +11,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import { useInvocationsRecent } from './useInvocationsMemory';
 import { useFeatures } from '@restate/data-access/admin-api';
 import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access/admin-api-spec';
+import { isFeatureEnabled } from '@restate/util/feature-flag';
 
 // ─────────────────────────────────────────────────────────────
 // Preset definitions
@@ -165,8 +166,17 @@ const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
   columns: DEFAULT_PRESET_COLUMNS,
 };
 
+function shortcutSort(s: InvocationShortcut): InvocationShortcut['sort'] {
+  return s.sort !== SORT_NONE &&
+    s.sort?.field === 'created_at' &&
+    isFeatureEnabled('FEATURE_INDEXES_V1')
+    ? { field: 'transitioned_at', order: 'DESC' }
+    : s.sort;
+}
+
 function shortcutSearch(s: InvocationShortcut): string {
   const params = new URLSearchParams();
+  const sort = shortcutSort(s);
   for (const f of s.filters) {
     params.set(
       `filter_${f.id}`,
@@ -177,11 +187,11 @@ function shortcutSearch(s: InvocationShortcut): string {
       ),
     );
   }
-  if (s.sort === SORT_NONE) {
+  if (sort === SORT_NONE) {
     params.set('sort_field', SORT_NONE);
-  } else if (s.sort) {
-    params.set('sort_field', s.sort.field);
-    params.set('sort_order', s.sort.order);
+  } else if (sort) {
+    params.set('sort_field', sort.field);
+    params.set('sort_order', sort.order);
   }
   if (s.columns) {
     for (const col of s.columns) {

@@ -3,10 +3,9 @@ import {
   getInvocationStatusesForStage,
   INVOCATION_STATUS_DEFINITIONS,
 } from '@restate/data-access/admin-api-spec';
-import type { QueryContext } from '../../shared';
 import type { InvocationStatus } from '../../../invocationStatuses';
+import { quoteSqlString, type QueryContext } from '../../shared';
 import {
-  filterToSql,
   supportsInvocationV2Vqueues,
   type InvocationFilterV2,
   type ResolvedInvocationModeV2,
@@ -51,22 +50,71 @@ ${
         END`;
 }
 
+function stagePredicate(
+  stage: string,
+  statusAlias: string,
+  stateAlias: string,
+) {
+  switch (stage) {
+    case 'inbox':
+      return `(${statusAlias}.status IN ('inboxed', 'scheduled') OR (${statusAlias}.status = 'invoked' AND ${stateAlias}.in_flight IS NOT TRUE))`;
+    case 'running':
+      return `(${statusAlias}.status = 'invoked' AND ${stateAlias}.in_flight IS TRUE)`;
+    case 'finished':
+      return `${statusAlias}.status = 'completed'`;
+    default:
+      return `${statusAlias}.status = ${quoteSqlString(stage)}`;
+  }
+}
+
+function stageValues(filter: FilterItem) {
+  return filter.type === 'STRING_LIST'
+    ? filter.value
+    : filter.type === 'STRING' && filter.value !== undefined
+      ? [filter.value]
+      : [];
+}
+
+function stageFilterClause(
+  filter: FilterItem,
+  statusAlias: string,
+  stateAlias: string,
+) {
+  const predicates = stageValues(filter).map((stage) =>
+    stagePredicate(stage, statusAlias, stateAlias),
+  );
+  const matches = predicates.length ? `(${predicates.join(' OR ')})` : 'FALSE';
+  return filter.operation === 'NOT_EQUALS' || filter.operation === 'NOT_IN'
+    ? `${matches} IS NOT TRUE`
+    : matches;
+}
+
+function needsStateJoinForStages(filters: InvocationFilterV2[]) {
+  return filters.some(
+    (filter) =>
+      filter.field === 'stage' &&
+      stageValues(filter as FilterItem).some(
+        (stage) => stage === 'inbox' || stage === 'running',
+      ),
+  );
+}
+
 function summaryFilterClauses(
   filters: InvocationFilterV2[],
   statusAlias: string,
   stateAlias: string,
 ) {
-  const stageFilters = filters.filter(({ field }) => field === 'stage');
   return [
     ...invocationStatusClauses(
       filters.filter(({ field }) => field !== 'stage'),
       statusAlias,
       stateAlias,
     ),
-    ...stageFilters.flatMap((filter) => {
-      const clause = filterToSql(filter as FilterItem, `${statusAlias}.stage`);
-      return clause ? [clause] : [];
-    }),
+    ...filters
+      .filter(({ field }) => field === 'stage')
+      .map((filter) =>
+        stageFilterClause(filter as FilterItem, statusAlias, stateAlias),
+      ),
   ];
 }
 
@@ -84,9 +132,10 @@ export async function queryInvocationCountFromInvocationStatusAndState(
     mode.type === 'sampled'
       ? `(\n        SELECT\n          ${invocationStatusSampleColumns(filters, undefined, ['id', 'status'])}\n        FROM sys_invocation_status\n        LIMIT ${mode.sampleSize}\n      ) sampled_invocations`
       : 'sys_invocation_status ss';
-  const stateJoin = needsInvocationStateJoin(filters)
-    ? `\n      LEFT JOIN sys_invocation_state sis ON sis.id = ${statusAlias}.id`
-    : '';
+  const stateJoin =
+    needsInvocationStateJoin(filters) || needsStateJoinForStages(filters)
+      ? `\n      LEFT JOIN sys_invocation_state sis ON sis.id = ${statusAlias}.id`
+      : '';
   const { rows } = (await context.query(
     `
       SELECT

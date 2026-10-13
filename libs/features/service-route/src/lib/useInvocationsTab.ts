@@ -3,6 +3,7 @@ import type { components } from '@restate/data-access/admin-api-spec';
 import {
   deriveSortFromUrl,
   doInvocationCountsDisagree,
+  getDefaultSortField,
   formatServiceTabBadge,
   getListRowCounts,
   getResultsNoticeMessage,
@@ -64,7 +65,12 @@ export function useInvocationsTab(
 ) {
   const { baseUrl } = useRestateContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  const sortParams = deriveSortFromUrl(searchParams, NO_SORT);
+  const sortParams = deriveSortFromUrl(
+    searchParams,
+    getDefaultSortField() === 'transitioned_at'
+      ? { field: 'transitioned_at', order: 'DESC' }
+      : NO_SORT,
+  );
   const sort =
     sortParams.field === SORT_NONE
       ? undefined

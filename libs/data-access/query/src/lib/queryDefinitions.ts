@@ -23,8 +23,15 @@ export const QUERY_DEFINITIONS = {
     description:
       'Identify deployments no longer referenced by any service or unfinished invocation, so the UI can mark them as drained.',
     shape:
-      "WITH active AS (SELECT deployment_id FROM sys_service WHERE deployment_id IS NOT NULL UNION SELECT deployment FROM sys_vqueues WHERE entry_kind = 'invocation' AND stage != 'finished') SELECT id FROM sys_deployment EXCEPT SELECT id FROM active",
+      "WITH active AS (SELECT deployment_id FROM sys_service WHERE deployment_id IS NOT NULL UNION SELECT deployment FROM sys_vqueues WHERE stage != 'finished') SELECT id FROM sys_deployment EXCEPT SELECT id FROM active",
     tables: ['sys_deployment', 'sys_service', 'sys_vqueues'],
+  },
+  'deployments/drained-from-stats': {
+    description:
+      'Identify deployments no longer referenced by any service or unfinished entry, using the deployment stats table.',
+    shape:
+      "WITH active AS (SELECT deployment_id FROM sys_service WHERE deployment_id IS NOT NULL UNION SELECT deployment_id FROM sys_deployment_stats WHERE stage IN ('inbox', 'running', 'suspended', 'paused')) SELECT id FROM sys_deployment EXCEPT SELECT id FROM active",
+    tables: ['sys_deployment', 'sys_service', 'sys_deployment_stats'],
   },
   'deployments/drained-legacy': {
     description:
@@ -79,6 +86,68 @@ export const QUERY_DEFINITIONS = {
       'Find the VQueue id and sequence number of an invocation to locate its queue position.',
     shape: 'SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = ?',
     tables: ['sys_vqueues'],
+  },
+  'indexes/busy-vqueues': {
+    description:
+      'List VQueues with entry counts per stage from the busy-VQueue index, busiest first.',
+    shape:
+      'SELECT vqueue_id FROM _idx_busy_vqueue ORDER BY total_non_completed DESC, last_modified DESC LIMIT ?',
+    tables: ['_idx_busy_vqueue'],
+  },
+  'indexes/count-entries-by-service': {
+    description:
+      'Count entries for the batch dialog from the per-service entry index.',
+    shape:
+      'SELECT COUNT(*) FROM _idx_entry_by_service WHERE [stage IN (…)] [AND service_name IN (…)]',
+    tables: ['_idx_entry_by_service'],
+  },
+  'indexes/count-entries-by-stage': {
+    description:
+      'Count entries for the batch dialog from the per-stage entry index.',
+    shape: 'SELECT COUNT(*) FROM _idx_entry_by_stage WHERE [stage IN (…)]',
+    tables: ['_idx_entry_by_stage'],
+  },
+  'indexes/count-entries-by-virtual-object': {
+    description:
+      'Count entries for the batch dialog from the per-object entry index.',
+    shape:
+      'SELECT COUNT(*) FROM _idx_entry_by_virtual_object WHERE service_name = ? [AND scope = ?] AND key = ? [AND stage IN (…)]',
+    tables: ['_idx_entry_by_virtual_object'],
+  },
+  'indexes/entries-by-service': {
+    description:
+      'List a service’s entries by most recent stage transition from the per-service index.',
+    shape:
+      'SELECT entry_id FROM _idx_entry_by_service WHERE [stage IN (…) AND] service_name IN (…) [ORDER BY transitioned_at DESC] LIMIT ?',
+    tables: ['_idx_entry_by_service'],
+  },
+  'indexes/entries-by-stage': {
+    description:
+      'List entries in a stage by most recent transition from the per-stage index.',
+    shape:
+      'SELECT entry_id FROM _idx_entry_by_stage [WHERE stage IN (…)] [ORDER BY transitioned_at DESC] LIMIT ?',
+    tables: ['_idx_entry_by_stage'],
+  },
+  'indexes/entries-by-virtual-object': {
+    description:
+      'List a virtual object’s entries by most recent stage transition from the per-object index.',
+    shape:
+      'SELECT entry_id FROM _idx_entry_by_virtual_object WHERE service_name = ? [AND scope …] AND key = ? [AND stage IN (…)] [ORDER BY transitioned_at DESC] LIMIT ?',
+    tables: ['_idx_entry_by_virtual_object'],
+  },
+  'indexes/entries-next-at-by-virtual-object': {
+    description:
+      'List a virtual object’s entries by next scheduled time from the per-object next-at index.',
+    shape:
+      "SELECT entry_id, stage, next_at, seq FROM _idx_entry_next_at_by_virtual_object WHERE service_name = ? AND scope … AND key = ? AND stage = 'inbox' ORDER BY next_at ASC, seq ASC LIMIT ?",
+    tables: ['_idx_entry_next_at_by_virtual_object'],
+  },
+  'indexes/service-type': {
+    description:
+      'Check that the filtered services are virtual objects before using the per-object entry index.',
+    shape:
+      "SELECT name FROM sys_service WHERE ty = 'virtual_object' AND name IN (…)",
+    tables: ['sys_service'],
   },
   'invocations/by-ids': {
     description:
@@ -242,7 +311,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Resolve VQueue-owned statuses for a bounded batch candidate set without hydrating invocation details.',
     shape:
-      "SELECT entry_id, stage, status FROM sys_vqueue_entry_status WHERE entry_id IN (…) AND entry_kind = 'invocation'",
+      'SELECT entry_id, stage, status FROM sys_vqueue_entry_status WHERE entry_id IN (…)',
     tables: ['sys_vqueue_entry_status'],
   },
   'invocations-v2/candidates-from-state': {
@@ -277,14 +346,14 @@ export const QUERY_DEFINITIONS = {
     description:
       'Select invocation candidates for the invocations list from VQueues bounded by queue-level metadata filters.',
     shape:
-      "SELECT entry_id FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE <queue filters> LIMIT 100000) AND entry_kind = 'invocation' [AND <stage/status>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000",
+      'SELECT entry_id FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE <queue filters> LIMIT 100000) [AND <stage/status>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000',
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/candidates-from-vqueues': {
     description:
       'Select invocation candidates for the invocations list directly from VQueue entries (preferred source).',
     shape:
-      "SELECT entry_id FROM sys_vqueues WHERE entry_kind = 'invocation' [AND <stage/status>] [AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]",
+      'SELECT entry_id FROM sys_vqueues [WHERE <stage/status> AND <filters>] [ORDER BY <sort> NULLS LAST] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_vqueues'],
   },
   'invocations-v2/count-from-status-and-state': {
@@ -305,14 +374,14 @@ export const QUERY_DEFINITIONS = {
     description:
       'Count invocations matching the current filters, using queue metadata to narrow the VQueues scanned.',
     shape:
-      "SELECT COUNT(1) FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE <queue filters>) AND entry_kind = 'invocation' [AND <stage/status>] [sampled: FROM (… LIMIT 1000000)]",
+      'SELECT COUNT(1) FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE <queue filters>) [AND <stage/status>] [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/count-from-vqueues': {
     description:
       'Count invocations matching the current filters directly from VQueue entries.',
     shape:
-      "SELECT COUNT(1) FROM sys_vqueues WHERE entry_kind = 'invocation' [AND <stage/status>] [AND <filters>] [sampled: FROM (… LIMIT 1000000)]",
+      'SELECT COUNT(1) FROM sys_vqueues [WHERE <stage/status> AND <filters>] [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_vqueues'],
   },
   'invocations-v2/finished-breakdown-from-status': {
@@ -326,7 +395,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Break down finished invocation outcomes from VQueue entries for the Completed facet.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' [AND transitioned_at >= ? AND < ?] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' [AND transitioned_at >= ? AND < ?] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/finished-history-from-status': {
@@ -340,7 +409,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Bucket finished VQueue outcomes into an epoch-aligned time series for the completion chart.',
     shape:
-      "SELECT to_unixtime(date_bin(INTERVAL ?, transitioned_at, epoch)), COUNT(1) FILTER (WHERE status = 'succeeded'), COUNT(1) FILTER (WHERE status = 'failed'), COUNT(1) FILTER (WHERE status = 'cancelled'), COUNT(1) FILTER (WHERE status = 'killed') FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' AND transitioned_at >= ? AND < ? GROUP BY bucket",
+      "SELECT to_unixtime(date_bin(INTERVAL ?, transitioned_at, epoch)), COUNT(1) FILTER (WHERE status = 'succeeded'), COUNT(1) FILTER (WHERE status = 'failed'), COUNT(1) FILTER (WHERE status = 'cancelled'), COUNT(1) FILTER (WHERE status = 'killed') FROM sys_vqueues WHERE stage = 'finished' AND transitioned_at >= ? AND < ? GROUP BY bucket",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/flow-control-meta': {
@@ -360,14 +429,14 @@ export const QUERY_DEFINITIONS = {
     description:
       'Compute due/not-due inbox counts for selected services from bounded VQueues (inbox breakdown).',
     shape:
-      "SELECT COUNT(1) AS total, SUM(CASE WHEN first_runnable_at <= ?) AS due, SUM(CASE WHEN first_runnable_at > ?) AS not_due FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE service_name IN (…) AND num_inbox > 0 LIMIT 100000) AND stage = 'inbox' AND entry_kind = 'invocation'",
+      "SELECT COUNT(1) AS total, SUM(CASE WHEN first_runnable_at <= ?) AS due, SUM(CASE WHEN first_runnable_at > ?) AS not_due FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE service_name IN (…) AND num_inbox > 0 LIMIT 100000) AND stage = 'inbox'",
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/inbox-due-from-vqueues': {
     description:
       'Compute overall due/not-due inbox counts from VQueue entries (inbox breakdown).',
     shape:
-      "SELECT COUNT(1) AS total, SUM(CASE WHEN first_runnable_at <= ?) AS due, SUM(CASE WHEN first_runnable_at > ?) AS not_due FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation'",
+      "SELECT COUNT(1) AS total, SUM(CASE WHEN first_runnable_at <= ?) AS due, SUM(CASE WHEN first_runnable_at > ?) AS not_due FROM sys_vqueues WHERE stage = 'inbox'",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/inbox-due-running-by-service': {
@@ -429,13 +498,13 @@ export const QUERY_DEFINITIONS = {
     description:
       'Break down inbox entry statuses for selected services from bounded VQueues.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE service_name IN (…) AND num_inbox > 0 LIMIT 100000) AND stage = 'inbox' AND entry_kind = 'invocation' GROUP BY status",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE id IN (SELECT id FROM sys_vqueue_meta WHERE service_name IN (…) AND num_inbox > 0 LIMIT 100000) AND stage = 'inbox' GROUP BY status",
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/inbox-status-from-vqueues': {
     description: 'Break down overall inbox entry statuses from VQueue entries.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation' GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/rows-by-ids': {
@@ -456,14 +525,14 @@ export const QUERY_DEFINITIONS = {
     description:
       'Break down finished-entry outcomes for the invocations summary’s Completed stage.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_finished > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_finished > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/summary-vqueue-inbox': {
     description:
       'Break down inbox-stage entry statuses for the invocations summary’s Inbox stage.',
     shape:
-      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' AND entry_kind = 'invocation' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_inbox > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
+      "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'inbox' [AND id IN (SELECT id FROM sys_vqueue_meta WHERE <filters> AND num_inbox > 0 LIMIT 100000)] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
     tables: ['sys_vqueues', 'sys_vqueue_meta'],
   },
   'invocations-v2/summary-vqueue-meta': {
@@ -477,7 +546,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Hydrate the VQueue status overlay for the invocation rows being listed.',
     shape:
-      "SELECT <status columns> FROM sys_vqueue_entry_status WHERE entry_id IN (…) AND entry_kind = 'invocation' [AND <filters>] [ORDER BY <sort> NULLS LAST]",
+      'SELECT <status columns> FROM sys_vqueue_entry_status WHERE entry_id IN (…) [AND <filters>] [ORDER BY <sort> NULLS LAST]',
     tables: ['sys_vqueue_entry_status'],
   },
   'limits/counters-page': {
@@ -569,12 +638,40 @@ export const QUERY_DEFINITIONS = {
       'SELECT service_name, SUM(value_length) FROM state GROUP BY service_name ORDER BY service_name',
     tables: ['state'],
   },
+  'stats/deployments': {
+    description:
+      'Read entry counts per deployment, service, stage, and status from the deployment stats table.',
+    shape:
+      'SELECT deployment_id, service_name, stage, status, num_entries FROM sys_deployment_stats WHERE deployment_id IN (…) [AND <service filters>]',
+    tables: ['sys_deployment_stats'],
+  },
+  'stats/services': {
+    description:
+      'Read entry counts per service, handler, stage, and status from the service stats table.',
+    shape:
+      'SELECT service_name, handler, kind, stage, status, num_entries FROM sys_service_stats [WHERE <service/handler filters>]',
+    tables: ['sys_service_stats'],
+  },
+  'stats/virtual-objects': {
+    description:
+      'Read entry counts per virtual object, handler, stage, and status from the virtual object stats table for virtual-object-scoped summaries.',
+    shape:
+      'SELECT service_name, scope, key, handler, kind, stage, status, num_entries FROM sys_virtual_object_stats [WHERE <service/scope/key/handler filters>]',
+    tables: ['sys_virtual_object_stats'],
+  },
   'virtual-objects/backlogs-from-inbox': {
     description:
       'Count inbox backlog per selected virtual object instance (servers without VQueues).',
     shape:
       'SELECT service_key, COUNT(*) FROM sys_inbox WHERE service_name = ? AND (<identity OR-list>) GROUP BY service_key',
     tables: ['sys_inbox'],
+  },
+  'virtual-objects/backlogs-from-stats': {
+    description:
+      'Sum inbox backlog per selected virtual object instance from the virtual object stats table.',
+    shape:
+      "SELECT key, scope, SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) FROM sys_virtual_object_stats WHERE service_name = ? AND (<identity OR-list>) GROUP BY key, scope",
+    tables: ['sys_virtual_object_stats'],
   },
   'virtual-objects/backlogs-from-vqueue-meta': {
     description:
@@ -604,12 +701,12 @@ export const QUERY_DEFINITIONS = {
       "SELECT DISTINCT [partition_key,] target_service_key [, scope] FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'virtual_object' AND status <> 'completed' [AND <search/filters>] LIMIT 51",
     tables: ['sys_invocation_status'],
   },
-  'virtual-objects/identities-from-state': {
+  'virtual-objects/instances-from-stats': {
     description:
-      'Discover virtual object instances that hold state (Instances table).',
+      'List virtual object instances with their inbox backlog from the virtual object stats table (Instances table), optionally ranked by backlog.',
     shape:
-      'SELECT DISTINCT [partition_key,] service_key [, scope] FROM state WHERE service_name = ? [AND <search/filters>] LIMIT 51',
-    tables: ['state'],
+      "SELECT key, scope, SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog FROM sys_virtual_object_stats WHERE service_name = ? [AND <search/filters>] GROUP BY key, scope [ORDER BY backlog DESC] LIMIT 51",
+    tables: ['sys_virtual_object_stats'],
   },
   'virtual-objects/identities-from-vqueue-meta': {
     description:
@@ -713,14 +810,14 @@ export const QUERY_DEFINITIONS = {
     description:
       'Hydrate the VQueue scheduling status of the invocations shown in tables and details.',
     shape:
-      "SELECT <status columns> FROM sys_vqueue_entry_status WHERE entry_id IN (…) AND entry_kind = 'invocation'",
+      'SELECT <status columns> FROM sys_vqueue_entry_status WHERE entry_id IN (…)',
     tables: ['sys_vqueue_entry_status'],
   },
   'vqueues/focus-entry': {
     description:
       'Read the focused entry’s VQueue status and block durations for the VQueue snapshot.',
     shape:
-      "SELECT <status + block-duration columns> FROM sys_vqueue_entry_status WHERE entry_id = ? AND entry_kind = 'invocation'",
+      'SELECT <status + block-duration columns> FROM sys_vqueue_entry_status WHERE entry_id = ?',
     tables: ['sys_vqueue_entry_status'],
   },
   'vqueues/focus-entry-position': {
@@ -755,7 +852,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Hydrate VQueue metadata for the discovered busiest queue ids (VQueues landing view).',
     shape:
-      'SELECT <meta columns> FROM sys_vqueue_meta WHERE id IN (…) ORDER BY <unfinished sum> DESC, …',
+      'SELECT <meta columns> FROM sys_vqueue_meta WHERE id IN (…) [ORDER BY <unfinished sum> DESC, …]',
     tables: ['sys_vqueue_meta'],
   },
   'vqueues/scheduler-states': {
@@ -822,7 +919,7 @@ export const QUERY_DEFINITIONS = {
     description:
       'Read the run invocation’s VQueue stage and timing for the workflow stats card.',
     shape:
-      "SELECT stage, transitioned_at, first_attempt_at, first_runnable_at FROM sys_vqueue_entry_status WHERE entry_id = ? AND entry_kind = 'invocation' LIMIT 1",
+      'SELECT stage, transitioned_at, first_attempt_at, first_runnable_at FROM sys_vqueue_entry_status WHERE entry_id = ? LIMIT 1',
     tables: ['sys_vqueue_entry_status'],
   },
   'workflows/runs-page': {

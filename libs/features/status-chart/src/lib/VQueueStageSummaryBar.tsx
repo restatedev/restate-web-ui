@@ -132,6 +132,7 @@ export function VQueueStageSummaryBar({
   onFocusChange,
   breakdownMode,
   canSampleBreakdown,
+  fixedBreakdownMode,
   onBreakdownModeChange,
   isLoading,
   isFetching,
@@ -154,6 +155,7 @@ export function VQueueStageSummaryBar({
   onFocusChange: (focus: VQueueSummaryFocus) => void;
   breakdownMode: 'estimate' | 'exact';
   canSampleBreakdown: boolean;
+  fixedBreakdownMode?: 'estimate' | 'exact';
   onBreakdownModeChange: (mode: 'estimate' | 'exact') => void;
   isLoading?: boolean;
   isFetching?: boolean;
@@ -530,10 +532,11 @@ export function VQueueStageSummaryBar({
 
   return (
     <div className={container({ class: className })}>
-      {canSampleBreakdown && (
+      {(canSampleBreakdown || fixedBreakdownMode) && (
         <div className={breakdownControl()}>
           <BreakdownMode
-            mode={breakdownMode}
+            mode={fixedBreakdownMode ?? breakdownMode}
+            isFixed={fixedBreakdownMode !== undefined}
             onChange={onBreakdownModeChange}
             format="sentence"
           />

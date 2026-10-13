@@ -115,7 +115,9 @@ export function statusFilterClause(
   source: InvocationFilterSource,
 ): string {
   const values = statusValues(filter);
-  if (filter.operation === 'EQUALS' || filter.operation === 'IN') {
+  const isPositive = filter.operation === 'EQUALS' || filter.operation === 'IN';
+  if (values.length === 0) return isPositive ? 'FALSE' : 'TRUE';
+  if (isPositive) {
     return `(${values.map((status) => `(${statusClause(status, source)})`).join(' OR ')})`;
   }
   return `(${values.map((status) => `((${statusClause(status, source)}) IS NOT TRUE)`).join(' AND ')})`;

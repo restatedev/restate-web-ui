@@ -10,7 +10,9 @@ import {
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
+import { entryTablesSupportFilters } from '@restate/data-access/query';
 import {
+  isSortFieldAvailable,
   SORT_COLUMN_KEYS,
   SORT_NONE,
   type SortSelection,
@@ -21,6 +23,7 @@ const SORT_FIELD_LABELS: Record<
   string
 > = {
   created_at: 'Created at',
+  transitioned_at: 'Last transition at',
 };
 
 type QueryButtonVariant = 'filterBar' | 'toolbar';
@@ -79,12 +82,15 @@ export function Sort({
   setSortParams,
   sortParams,
   variant,
+  filterFields = [],
 }: {
   sortParams: SortSelection;
   setSortParams: Dispatch<SetStateAction<SortSelection>>;
   variant?: QueryButtonVariant;
+  filterFields?: Iterable<string>;
 }) {
   const isNone = sortParams.field === SORT_NONE;
+  const isTransitionSortUnavailable = !entryTablesSupportFilters(filterFields);
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -117,6 +123,9 @@ export function Sort({
           <DropdownMenu
             selectable
             selectedItems={[sortParams?.field]}
+            disabledItems={
+              isTransitionSortUnavailable ? ['transitioned_at'] : []
+            }
             onSelect={(value) =>
               setSortParams((sortParams) => ({
                 ...sortParams,
@@ -127,9 +136,14 @@ export function Sort({
             <DropdownItem key={SORT_NONE} value={SORT_NONE}>
               No sorting
             </DropdownItem>
-            {SORT_COLUMN_KEYS.map((item) => (
+            {SORT_COLUMN_KEYS.filter(isSortFieldAvailable).map((item) => (
               <DropdownItem key={item} value={item}>
                 {SORT_FIELD_LABELS[item]}
+                {item === 'transitioned_at' && isTransitionSortUnavailable && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    Not available with these filters
+                  </span>
+                )}
               </DropdownItem>
             ))}
           </DropdownMenu>

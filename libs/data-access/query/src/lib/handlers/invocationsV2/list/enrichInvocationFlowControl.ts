@@ -7,7 +7,8 @@ import {
 } from '../../vqueueScheduler';
 import { sqlStringList } from '../shared';
 
-type InvocationV2 = components['schemas']['InvocationV2'];
+type ListRow =
+  components['schemas']['ListInvocationsV2Response']['rows'][number];
 type VqueueState = components['schemas']['InvocationVqueueStateV2'];
 type FlowControl = components['schemas']['InvocationVqueueFlowControlV2'];
 
@@ -145,13 +146,13 @@ function toFlowControl(
 
 export async function enrichInvocationFlowControl(
   context: QueryContext,
-  rows: InvocationV2[],
+  rows: ListRow[],
   requestTime: string,
-): Promise<InvocationV2[]> {
+): Promise<ListRow[]> {
   const vqueueIds = [
     ...new Set(
       rows.flatMap((row) =>
-        row.vqueue?.vqueue_id ? [row.vqueue.vqueue_id] : [],
+        'vqueue' in row && row.vqueue?.vqueue_id ? [row.vqueue.vqueue_id] : [],
       ),
     ),
   ];
@@ -178,8 +179,8 @@ export async function enrichInvocationFlowControl(
   );
 
   return rows.map((row) => {
-    const vqueueId = row.vqueue?.vqueue_id;
-    if (!vqueueId || !row.vqueue) return row;
+    if (!('vqueue' in row) || !row.vqueue?.vqueue_id) return row;
+    const vqueueId = row.vqueue.vqueue_id;
     const meta = metaById.get(vqueueId);
     if (!meta) return row;
     const flowControl = toFlowControl(

@@ -9,8 +9,10 @@ import {
   isInvocationListFieldAvailableOnTable,
   isInvocationListTableAvailable,
 } from '../invocationListFields';
+import { canSummarizeInvocationsFromStats } from './statsSources';
 
 type SummarySource =
+  | 'stats'
   | 'sys_vqueue_meta_and_sys_vqueues'
   | 'sys_invocation_status_and_sys_invocation_state_exact_summary'
   | 'sys_invocation_status_and_sys_invocation_state';
@@ -140,6 +142,16 @@ function createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState
   return { source, coverage: 'full', filters };
 }
 
+function createQueryPlanFromStats(
+  context: QueryContext,
+  filters: InvocationFilterV2[],
+): SummaryQueryPlan {
+  const source = 'stats' as const;
+  return canSummarizeInvocationsFromStats(context, filters)
+    ? { source, coverage: 'full', filters }
+    : { source, coverage: 'none' };
+}
+
 export function createInvocationSummaryQueryPlan(
   context: QueryContext,
   filters: InvocationFilterV2[],
@@ -147,6 +159,7 @@ export function createInvocationSummaryQueryPlan(
   view: 'all' | 'stages' | 'live-stages' | 'breakdowns',
 ) {
   const sourcePlans = [
+    createQueryPlanFromStats(context, filters),
     createQueryPlanFromSysVqueueMetaAndSysVqueues(context, filters, mode, view),
     createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState(
       context,

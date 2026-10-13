@@ -6,6 +6,7 @@ export interface FeatureFlagMetadata {
   // Whether flipping the flag currently changes anything in the UI. Flags that
   // are wired up but not yet backed by functionality are surfaced as read-only.
   available: boolean;
+  serverFeature?: string;
 }
 
 export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
@@ -36,5 +37,12 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
     description:
       'Send SQL queries to the admin API with the operator query level.',
     available: true,
+  },
+  FEATURE_INDEXES_V1: {
+    title: 'Index tables',
+    description:
+      "Use the server's secondary index tables for invocation lists sorted by last transition, virtual object details, and flow control.",
+    available: true,
+    serverFeature: 'indexes_v1',
   },
 };

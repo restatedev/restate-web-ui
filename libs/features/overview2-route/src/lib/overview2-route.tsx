@@ -455,6 +455,7 @@ function OverviewContent() {
     breakdownMode,
     setBreakdownMode,
     canSampleBreakdown,
+    isSummaryFromStats,
     isSummaryError,
     summaryError,
     isInitialLoading,
@@ -472,6 +473,9 @@ function OverviewContent() {
   } = useOverviewContext();
   const completionChart = useCompletionChart();
   const inFlightChart = useInFlightChart();
+  const showsBreakdownMode =
+    canSampleBreakdown &&
+    (completionChart.usesBreakdownMode || !isSummaryFromStats);
   const servicesCount = servicesMap?.size ?? 0;
   const deploymentsCount = deploymentsMap?.size ?? 0;
   const isOverviewRefreshing = isSummaryLoading || isDeploymentsFetching;
@@ -735,9 +739,9 @@ function OverviewContent() {
           status={ferrofluidStatus}
           onPress={onRefresh}
           belowServer={
-            canSampleBreakdown || summaryErrorIndicator ? (
+            showsBreakdownMode || summaryErrorIndicator ? (
               <div className="flex items-center gap-2">
-                {canSampleBreakdown && (
+                {showsBreakdownMode && (
                   <BreakdownMode
                     mode={breakdownMode}
                     onChange={setBreakdownMode}
@@ -866,7 +870,7 @@ function OverviewContent() {
                 <OverviewTimeRangeToggle />
               </>
             )}
-            {canSampleBreakdown && (
+            {showsBreakdownMode && (
               <span className="@min-[64rem]/hero:hidden">
                 <BreakdownMode
                   mode={breakdownMode}

@@ -29,6 +29,7 @@ vi.mock('@restate/data-access/admin-api', async (importOriginal) => ({
   useAPIStatus: () => true,
   useAdminBaseUrl: () => 'http://query.test',
   useFeatures: () => api.features,
+  useQueryHandlerFeatures: () => api.features,
   adminApi: (
     _kind: string,
     path: string,
@@ -143,7 +144,24 @@ beforeEach(() => {
       const { query: sql } = (await request.json()) as { query: string };
       const serviceCount = sql.includes("'Other'") ? 7 : completed;
       let rows: Record<string, unknown>[] = [];
-      if (sql.includes('SUM(vm.num_inbox)')) {
+      if (sql.includes('FROM sys_service_stats')) {
+        rows = [
+          { service_name: 'AgentSession', count: completed },
+          { service_name: 'Other', count: 7 },
+        ]
+          .filter(
+            ({ service_name }) =>
+              !sql.includes('WHERE') || sql.includes(`'${service_name}'`),
+          )
+          .map(({ service_name, count }) => ({
+            service_name,
+            handler: 'run',
+            kind: 'invocation',
+            stage: 'finished',
+            status: 'succeeded',
+            num_entries: count,
+          }));
+      } else if (sql.includes('SUM(vm.num_inbox)')) {
         rows = [
           {
             service_name: 'AgentSession',
@@ -192,13 +210,13 @@ beforeEach(() => {
       ) {
         rows = Array.from(
           { length: Math.min(serviceCount, 250) },
-          (_, index) => ({ id: `inv-${index}` }),
+          (_, index) => ({ id: `inv_${index}` }),
         );
       } else if (sql.includes('FROM sys_invocation i')) {
         rows = Array.from(
           { length: Math.min(serviceCount, 250) },
           (_, index) => ({
-            id: `inv-${index}`,
+            id: `inv_${index}`,
             target: 'AgentSession/run',
             target_service_name: 'AgentSession',
             target_handler_name: 'run',
@@ -239,6 +257,41 @@ describe('invocation page query composition', () => {
     expect(result.current.matchingCount).toBeUndefined();
     rerender({ enabled: true });
     await waitFor(() => expect(result.current.matchingCount?.count).toBe(30));
+  });
+
+  it('serves the page from one exact stats request', async () => {
+    api.features = new Set(['vqueues', 'protocol_v7', 'track_status_gauges']);
+    const { result } = renderHook(
+      () =>
+        useInvocationSummary({
+          filters: filters('all'),
+          countMode: 'estimate',
+          breakdownSampleSize: 1000,
+        }),
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(result.current.matchingCount?.count).toBe(30));
+    expect(
+      api.request.mock.calls.map(([path, body]) => [
+        path,
+        body.view,
+        body.mode,
+        body.highlightFields,
+      ]),
+    ).toEqual([
+      [
+        '/query/v2/invocations/summary',
+        'all',
+        { type: 'exact' },
+        ['target_service_name'],
+      ],
+    ]);
+    expect(result.current).toMatchObject({
+      canSampleBreakdown: false,
+      breakdownIsSampled: false,
+      fixedBreakdownMode: 'exact',
+    });
   });
 
   it('uses a ready service breakdown even when the unrelated global breakdown fails', async () => {

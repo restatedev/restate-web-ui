@@ -315,7 +315,6 @@ export async function getWorkflowRunStats(
       first_runnable_at
     FROM sys_vqueue_entry_status
     WHERE entry_id = ${quoteSqlString(runInvocationId)}
-      AND entry_kind = 'invocation'
     LIMIT 1`,
         'workflows/run-stage',
       ),

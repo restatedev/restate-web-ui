@@ -137,7 +137,11 @@ import {
   getResultsNoticeMessage,
   ResultsNotice,
 } from './resultsNotice';
-import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
+import {
+  INVOCATION_TABLE_COLUMN_CONFIG,
+  isVqueueEntry,
+  VqueueEntryCell,
+} from '@restate/features/invocation-ui';
 import { InvocationQuickOpen } from './InvocationQuickOpen';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {
@@ -430,6 +434,7 @@ function Component() {
     isBreakdownError: isVqueueBreakdownError,
     breakdownIsSampled,
     canSampleBreakdown,
+    fixedBreakdownMode,
     matchingCount: summaryMatchingCount,
     isDimmed: statusDim,
     getHref: statusHref,
@@ -484,6 +489,19 @@ function Component() {
   );
 
   const dataUpdate = error ? errorUpdatedAt : dataUpdatedAt;
+  const listSort = listInvocationsParameters.sort;
+  const isTransitionSortError =
+    listSort?.field === 'transitioned_at' &&
+    error instanceof Error &&
+    error.message.includes('transitioned_at');
+  const sortByCreatedAt = () =>
+    setSearchParams(
+      setSort(new URLSearchParams(searchParams), {
+        field: 'created_at',
+        order: listSort?.order ?? 'DESC',
+      }),
+      { preventScrollReset: true },
+    );
 
   // Once the loading skeleton has been up past slowQueryMs, surface a calm
   // reassurance banner. Reset (and restart the clock) whenever a fresh query
@@ -544,6 +562,10 @@ function Component() {
 
   const tableItems = data?.rows ?? [];
   const hash = 'hash' + tableItems.map(({ id }) => id).join('');
+  const entryRowIds = tableItems
+    .filter((row) => isVqueueEntry(row))
+    .map(({ id }) => id);
+  const firstInvocation = tableItems.find((row) => !isVqueueEntry(row));
 
   const panelColumns = useMemo<PanelTableColumn<ColumnKey>[]>(
     () =>
@@ -679,6 +701,7 @@ function Component() {
         onFocusChange={changeVqueueSummaryFocus}
         breakdownMode={countMode}
         canSampleBreakdown={canSampleBreakdown}
+        fixedBreakdownMode={fixedBreakdownMode}
         onBreakdownModeChange={setCountMode}
         isLoading={isStageSummaryLoading}
         isFetching={isSummaryFetching || isQueryNavigationPending}
@@ -795,6 +818,7 @@ function Component() {
                 items={tableItems}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}
+                disabledKeys={entryRowIds}
                 onSelectionChange={(keys) =>
                   setSelectedInvocationIds(keys as Set<string>)
                 }
@@ -822,7 +846,21 @@ function Component() {
                 isLoading={isFetching || isLoading || isQueryNavigationPending}
                 numOfRows={8}
                 emptyPlaceholder={
-                  error ? (
+                  isTransitionSortError ? (
+                    <EmptyState
+                      icon={IconName.ChevronsUpDown}
+                      title="Can’t sort by last transition with these filters"
+                      description="Some filters, such as handler or idempotency key, can only be sorted by creation time."
+                    >
+                      <Button
+                        variant="secondary"
+                        onClick={sortByCreatedAt}
+                        className="rounded-lg px-3 py-1 text-xs"
+                      >
+                        Sort by created at
+                      </Button>
+                    </EmptyState>
+                  ) : error ? (
                     <EmptyState
                       icon={IconName.TriangleAlert}
                       intent="danger"
@@ -861,15 +899,23 @@ function Component() {
                     />
                   )
                 }
-                rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-                renderCell={(row, { id }) => (
-                  <InvocationCell
-                    key={id}
-                    column={id}
-                    invocation={row}
-                    isVisible
-                  />
-                )}
+                rowClassName={(row) =>
+                  isVqueueEntry(row)
+                    ? 'cursor-default bg-transparent [content-visibility:auto]'
+                    : "bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                }
+                renderCell={(row, { id }) =>
+                  isVqueueEntry(row) ? (
+                    <VqueueEntryCell key={id} entry={row} column={id} />
+                  ) : (
+                    <InvocationCell
+                      key={id}
+                      column={id}
+                      invocation={row}
+                      isVisible
+                    />
+                  )
+                }
               />
               <Footnote
                 data={data}
@@ -884,7 +930,11 @@ function Component() {
               <div className="ml-10">
                 <OnboardingGuide
                   stage="view-invocations"
-                  service={data?.rows.at(0)?.target_service_name}
+                  service={
+                    firstInvocation && !isVqueueEntry(firstInvocation)
+                      ? firstInvocation.target_service_name
+                      : undefined
+                  }
                 />
               </div>
             )}
@@ -957,7 +1007,11 @@ function InvocationsForm({
           MenuTrigger={FilterShortcutTrigger}
           placeholder="Filter invocations…"
           prefix={
-            <Sort setSortParams={setSortParams} sortParams={sortParams} />
+            <Sort
+              setSortParams={setSortParams}
+              sortParams={sortParams}
+              filterFields={query.items.map(({ fieldValue }) => fieldValue)}
+            />
           }
           title="Filters"
           className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"

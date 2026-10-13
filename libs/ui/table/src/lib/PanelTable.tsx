@@ -47,6 +47,7 @@ export interface PanelTableProps<
   | 'aria-label'
   | 'selectionMode'
   | 'selectedKeys'
+  | 'disabledKeys'
   | 'onRowAction'
   | 'treeColumn'
   | 'expandedKeys'
@@ -129,6 +130,7 @@ export function PanelTable<
   rowDependencies,
   selectionMode,
   selectedKeys,
+  disabledKeys,
   onSelectionChange,
   onRowAction,
   sortDescriptor,
@@ -231,16 +233,23 @@ export function PanelTable<
     [],
   );
 
+  const selectableItems = useMemo(() => {
+    const disabled = new Set<Key>(disabledKeys ?? []);
+    return disabled.size
+      ? items.filter((item) => !disabled.has(item.id))
+      : items;
+  }, [disabledKeys, items]);
+
   const handleSelectionChange = useCallback(
     (keys: 'all' | Set<Key>) => {
       if (!onSelectionChange) return;
       if (keys === 'all') {
-        onSelectionChange(new Set(items.map((item) => item.id)));
+        onSelectionChange(new Set(selectableItems.map((item) => item.id)));
       } else {
         onSelectionChange(keys);
       }
     },
-    [onSelectionChange, items],
+    [onSelectionChange, selectableItems],
   );
 
   const handleSortChange = useCallback(
@@ -273,22 +282,22 @@ export function PanelTable<
 
   const stickyHeaderSelectedKeys = useMemo(() => {
     if (selectedKeys === 'all') return 'all';
-    if (!selectedKeys || !items.length) return selectedKeys;
+    if (!selectedKeys || !selectableItems.length) return selectedKeys;
     const set =
       selectedKeys instanceof Set
         ? (selectedKeys as Set<Key>)
         : new Set<Key>(selectedKeys as Iterable<Key>);
-    const selectedItemCount = items.reduce(
+    const selectedItemCount = selectableItems.reduce(
       (count, item) => count + Number(set.has(item.id)),
       0,
     );
-    if (selectedItemCount === items.length) return 'all';
+    if (selectedItemCount === selectableItems.length) return 'all';
     if (selectedItemCount === 0) return new Set<Key>();
     const firstStickyItem = stickyHeaderItems[0];
     return firstStickyItem
       ? new Set<Key>([firstStickyItem.id])
       : new Set<Key>();
-  }, [selectedKeys, items, stickyHeaderItems]);
+  }, [selectedKeys, selectableItems, stickyHeaderItems]);
 
   const lastIsFixed = columns[columns.length - 1]?.width !== undefined;
 
@@ -438,6 +447,7 @@ export function PanelTable<
       key={bodyKey}
       selectionMode={selectionMode}
       selectedKeys={selectedKeys}
+      disabledKeys={disabledKeys}
       onSelectionChange={handleSelectionChange}
       onRowAction={onRowAction}
       treeColumn={treeColumn == null ? treeColumn : columnKey(treeColumn)}

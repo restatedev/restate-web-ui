@@ -6,6 +6,8 @@ import {
   parseVqueueBlockedResource,
   parseVqueueSchedulingStatus,
 } from './vqueueScheduler';
+import { usesIndexesV1 } from '../uiFeatures';
+import { BUSY_VQUEUE, selectFromIndex } from './indexes';
 
 const VQUEUE_COLUMNS =
   'id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished';
@@ -351,11 +353,36 @@ function workloadDiscoveryQuery(limit: number) {
     LIMIT ${limit}`;
 }
 
-function metadataByIdsQuery(ids: string[]) {
+function metadataByIdsQuery(ids: string[], ordered = true) {
+  const order = ordered
+    ? `\n    ORDER BY ${orderBy({ field: 'unfinished', order: 'DESC' })}`
+    : '';
   return `SELECT ${VQUEUE_COLUMNS}
     FROM sys_vqueue_meta
-    WHERE id IN (${ids.map(quoteSqlString).join(', ')})
-    ORDER BY ${orderBy({ field: 'unfinished', order: 'DESC' })}`;
+    WHERE id IN (${ids.map(quoteSqlString).join(', ')})${order}`;
+}
+
+async function listVqueuesFromBusyIndex(context: QueryContext, limit: number) {
+  const ids = (
+    await selectFromIndex(context, BUSY_VQUEUE, {
+      columns: ['vqueue_id'],
+      sorted: true,
+      limit,
+      id: 'indexes/busy-vqueues',
+    })
+  ).map(({ vqueue_id }) => vqueue_id);
+  if (!ids.length) return [];
+  const rows = (
+    await context.query(
+      metadataByIdsQuery(ids, false),
+      'vqueues/metadata-by-ids',
+    )
+  ).rows as VQueueMetaRow[];
+  const rowsById = new Map(rows.map((row) => [row.id, row]));
+  return ids.flatMap((id) => {
+    const row = rowsById.get(id);
+    return row ? [row] : [];
+  });
 }
 
 function landingTopUpQuery(limit: number) {
@@ -446,8 +473,13 @@ export async function listVqueues(
   }
   const limit = Math.min(limitPageSize(args.limit), VQUEUE_LIST_LIMIT);
   const hasFilters = Array.isArray(args.filters) && args.filters.length > 0;
+  const sortsByUnfinished =
+    !args.sort ||
+    (args.sort.field === 'unfinished' && args.sort.order === 'DESC');
   let rows: VQueueMetaRow[];
-  if (!args.sort && !hasFilters) {
+  if (!hasFilters && sortsByUnfinished && usesIndexesV1(this)) {
+    rows = await listVqueuesFromBusyIndex(this, limit + 1);
+  } else if (!args.sort && !hasFilters) {
     const discovery = await this.query(
       workloadDiscoveryQuery(limit + 1),
       'vqueues/workload-discovery',

@@ -113,6 +113,7 @@ export type VqueueListPartialResult =
 
 export type VqueueRow = VqueueStatus & {
   entry_id: string;
+  entry_kind?: string;
   vqueue_id?: string;
   stage: VqueueStage;
   status: string;

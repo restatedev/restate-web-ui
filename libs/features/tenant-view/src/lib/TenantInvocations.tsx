@@ -19,6 +19,8 @@ import {
   InvocationDuration,
   InvocationTableDate,
   InvocationTableCell,
+  isVqueueEntry,
+  VqueueEntryCell,
 } from '@restate/features/invocation-ui';
 import { Actions, InvocationActions } from '@restate/features/invocation-route';
 import { Button } from '@restate/ui/button';
@@ -207,6 +209,9 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
     },
   };
   const rows = data?.rows ?? [];
+  const entryRowIds = rows
+    .filter((row) => isVqueueEntry(row))
+    .map(({ id }) => id);
   const selectedInvocationIds = new Set(
     rows.filter((row) => selectedIds.has(row.id)).map((row) => row.id),
   );
@@ -296,6 +301,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                 items={rows}
                 selectionMode="multiple"
                 selectedKeys={selectedInvocationIds}
+                disabledKeys={entryRowIds}
                 onSelectionChange={(keys) =>
                   setSelectedIds(new Set(Array.from(keys, String)))
                 }
@@ -322,8 +328,13 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                     }
                   />
                 }
+                rowClassName={(row) =>
+                  isVqueueEntry(row) ? 'cursor-default' : ''
+                }
                 renderCell={(row, column) =>
-                  column.id === 'actions' ? (
+                  isVqueueEntry(row) ? (
+                    <VqueueEntryCell entry={row} column={column.id} />
+                  ) : column.id === 'actions' ? (
                     <Cell className="align-top [&&&]:overflow-visible">
                       <Actions invocation={row} />
                     </Cell>

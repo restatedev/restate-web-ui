@@ -47,7 +47,6 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
           vqueueStatusPredicate(query.statuses, 'v'),
         ];
   const entryPredicates = [
-    "v.entry_kind = 'invocation'",
     ...statusPredicates,
     ...vqueueFilterClauses(query.filters, 'sys_vqueues', 'v'),
   ];
@@ -77,8 +76,7 @@ export async function queryCandidatesFromSysVqueueMetaAndSysVqueues(
         FROM sys_vqueue_meta vm
         WHERE ${queuePredicates.join('\n          AND ')}
         LIMIT ${VQUEUE_SERVICE_QUEUE_LIMIT}
-      )
-        AND ${entryPredicates.join('\n        AND ')}${orderBy}
+      )${entryPredicates.map((predicate) => `\n        AND ${predicate}`).join('')}${orderBy}
       LIMIT ${limit}
     `.trim(),
     'invocations-v2/candidates-from-vqueue-meta',

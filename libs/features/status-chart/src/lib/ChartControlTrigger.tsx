@@ -8,10 +8,28 @@ const chartControlStyles = tv({
   variants: {
     interactive: {
       true: 'group/chart-control gap-0.5 transition-colors hover:border-black/10 hover:bg-white/70 hover:text-zinc-700 focus-visible:text-zinc-700 pressed:bg-white/90',
-      false: 'select-none',
+      false: 'gap-0.5 select-none',
     },
   },
 });
+
+export function ChartControlValue({
+  children,
+  prefix,
+  suffix,
+}: {
+  children: ReactNode;
+  prefix?: ReactNode;
+  suffix?: ReactNode;
+}) {
+  return (
+    <span className={chartControlStyles({ interactive: false })}>
+      {prefix && <span className="text-zinc-400">{prefix}</span>}
+      {children}
+      {suffix && <span className="text-zinc-400">{suffix}</span>}
+    </span>
+  );
+}
 
 export function ChartControlTrigger({
   children,

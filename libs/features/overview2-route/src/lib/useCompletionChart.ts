@@ -18,6 +18,7 @@ export function useCompletionChart() {
     timeRange,
     breakdownMode,
     canSampleBreakdown,
+    isSummaryFromStats,
     isCompletedBreakdownLoading,
     isCompletedBreakdownPartial,
     isSummaryLoading,
@@ -34,6 +35,7 @@ export function useCompletionChart() {
     reuseSummaryForOverall: hasVqueues,
     summaryBreakdownIsLoading: isCompletedBreakdownLoading,
     summaryIsPartial: isCompletedBreakdownPartial,
+    summaryIsExact: isSummaryFromStats,
     enabled: hasVqueues,
     timeRange: hasVqueues ? undefined : timeRange,
   });
@@ -88,6 +90,7 @@ export function useCompletionChart() {
     total: model.total,
     successRateLabel: model.successRateLabel,
     isSampled: range.isSampled,
+    usesBreakdownMode: range.usesBreakdown,
     isLoading: isSummaryLoading || range.isLoading,
     isRangeError: range.isError,
     isError: isSummaryError || range.isError,

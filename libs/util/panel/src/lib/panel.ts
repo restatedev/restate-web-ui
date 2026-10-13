@@ -166,7 +166,8 @@ export function serviceHref(
 
 export function deploymentHref(
   baseUrl: string,
-  { deployment }: { deployment: string },
+  { deployment, tab }: { deployment: string; tab?: 'invocations' },
 ): string {
-  return `${baseUrl}/deployments/${encodeURIComponent(deployment)}`;
+  const search = tab ? `?tab=${tab}` : '';
+  return `${baseUrl}/deployments/${encodeURIComponent(deployment)}${search}`;
 }

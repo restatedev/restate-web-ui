@@ -1,8 +1,15 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { withUiFeatures } from '@restate/data-access/query';
+import {
+  useIsFeatureFlagEnabled,
+  type FeatureFlag,
+} from '@restate/util/feature-flag';
 import { useAdminBaseUrl } from '../AdminBaseUrlProvider';
 import { adminApi } from './adminApi';
 import { metaQueryOptions, type MetaSnapshot } from './meta';
 import { HookQueryOptions } from './hookTypes';
+import { getEnabledUiFeatures } from './uiFeatures';
 
 const EMPTY_FEATURES: Set<string> = new Set();
 
@@ -43,6 +50,20 @@ export function useFeatures(): Set<string> {
     select: selectEnabledFeatures,
   });
   return data ?? EMPTY_FEATURES;
+}
+
+export function useQueryHandlerFeatures(): Set<string> {
+  const features = useFeatures();
+  const isIndexesEnabled = useIsFeatureFlagEnabled('FEATURE_INDEXES_V1');
+  return useMemo(() => {
+    const flags: Partial<Record<FeatureFlag, boolean>> = {
+      FEATURE_INDEXES_V1: isIndexesEnabled,
+    };
+    return withUiFeatures(
+      features,
+      getEnabledUiFeatures(features, (flag) => Boolean(flags[flag])),
+    );
+  }, [features, isIndexesEnabled]);
 }
 
 export function hasCompleteVqueueInvocationPopulation(

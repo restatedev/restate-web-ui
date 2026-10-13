@@ -27,8 +27,7 @@ describe('listDrainedDeployments', () => {
 
           SELECT deployment AS id
           FROM sys_vqueues
-          WHERE entry_kind = 'invocation'
-            AND stage != 'finished'
+          WHERE stage != 'finished'
             AND deployment IS NOT NULL
       )
       SELECT id
