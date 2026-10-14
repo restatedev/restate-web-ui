@@ -1,4 +1,4 @@
-import { PropsWithChildren, RefObject } from 'react';
+import { createContext, PropsWithChildren, RefObject, use } from 'react';
 import { Placement } from 'react-aria';
 import {
   Popover as AriaPopover,
@@ -18,9 +18,26 @@ const styles = tv({
   },
 });
 
+const PrefersTopPlacementContext = createContext(false);
+
+export function PreferTopPopovers({ children }: PropsWithChildren) {
+  return (
+    <PrefersTopPlacementContext value={true}>
+      {children}
+    </PrefersTopPlacementContext>
+  );
+}
+
+function topPlacement(placement: Placement = 'bottom'): Placement {
+  return placement.startsWith('bottom')
+    ? (placement.replace('bottom', 'top') as Placement)
+    : placement;
+}
+
 export function PopoverOverlay({
   children,
   className,
+  placement,
   ...props
 }: PropsWithChildren<{
   className?: string;
@@ -28,10 +45,12 @@ export function PopoverOverlay({
   placement?: Placement;
   isNonModal?: boolean;
 }>) {
+  const prefersTop = use(PrefersTopPlacementContext);
   return (
     <AriaPopover
       offset={12}
       {...props}
+      placement={prefersTop ? topPlacement(placement) : placement}
       className={composeRenderProps(className, (className, renderProps) =>
         styles({ ...renderProps, className }),
       )}
