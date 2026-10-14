@@ -400,6 +400,11 @@ export function useSqlQuery(
       const startedAt = performance.now();
       try {
         const data = await queryOptions.queryFn(...args);
+        if (!data) {
+          throw new Error(
+            'The result is too large to display in the browser. Add a LIMIT or select fewer columns.',
+          );
+        }
         return { ...data, queryDurationMs: performance.now() - startedAt };
       } catch (error) {
         if (error instanceof Error) {

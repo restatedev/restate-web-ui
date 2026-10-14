@@ -1,4 +1,7 @@
-import { useSqlQuery } from '@restate/data-access/admin-api-hooks';
+import {
+  useListDeployments,
+  useSqlQuery,
+} from '@restate/data-access/admin-api-hooks';
 import { Icon, IconName } from '@restate/ui/icons';
 import { PanelTable, PanelTableColumn } from '@restate/ui/table';
 import { formatDurations, formatMilliseconds } from '@restate/util/intl';
@@ -9,7 +12,10 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RouterProvider } from 'react-aria';
 import { useSearchParams } from 'react-router';
-import { IntrospectionCell } from './IntrospectionCell';
+import {
+  IntrospectionServicesContext,
+  renderIntrospectionCell,
+} from './IntrospectionCell';
 import { Link } from '@restate/ui/link';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import {
@@ -72,6 +78,14 @@ function Component() {
   }, [query, data, error]);
 
   const selectQueryRef = useRef<((query: string) => void) | null>(null);
+  const { data: deployments } = useListDeployments({ refetchOnMount: false });
+  const serviceNames = Array.from(deployments?.services.keys() ?? [])
+    .sort()
+    .join('\n');
+  const services = useMemo(
+    () => new Set(serviceNames ? serviceNames.split('\n') : []),
+    [serviceNames],
+  );
 
   const sortedItems = useMemo(() => {
     return (data?.rows ?? []).map((row, index) => ({ row, id: index }));
@@ -121,67 +135,69 @@ function Component() {
       <ContentPanel>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
-            <PanelTable
-              aria-label="Introspection SQL"
-              columns={panelColumns}
-              items={visiblePanelItems}
-              bodyDependencies={[allColumns, error]}
-              isLoading={isQueryFetching}
-              numOfRows={Math.min(panelItems.length || 5, 8)}
-              emptyPlaceholder={
-                error ? (
-                  <EmptyState
-                    icon={IconName.TriangleAlert}
-                    intent="danger"
-                    title="Couldn’t run query"
-                  >
-                    <ErrorBanner
-                      error={error}
-                      className="w-full rounded-xl text-left"
-                    />
-                  </EmptyState>
-                ) : query ? (
-                  <EmptyState
-                    icon={IconName.ScanSearch}
-                    title="No results found"
-                    description="Your query ran successfully but returned no rows."
-                  />
-                ) : (
-                  <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-5 py-12">
+            <IntrospectionServicesContext value={services}>
+              <PanelTable
+                aria-label="Introspection SQL"
+                columns={panelColumns}
+                items={visiblePanelItems}
+                bodyDependencies={[allColumns, error]}
+                isLoading={isQueryFetching}
+                numOfRows={Math.min(panelItems.length || 5, 8)}
+                emptyPlaceholder={
+                  error ? (
                     <EmptyState
-                      className="flex-none p-0"
-                      contentClassName="max-w-2xl"
+                      icon={IconName.TriangleAlert}
+                      intent="danger"
+                      title="Couldn’t run query"
+                    >
+                      <ErrorBanner
+                        error={error}
+                        className="w-full rounded-xl text-left"
+                      />
+                    </EmptyState>
+                  ) : query ? (
+                    <EmptyState
                       icon={IconName.ScanSearch}
-                      title="Introspection SQL"
-                      description={
-                        <>
-                          Restate exposes information on invocations and
-                          application state via Introspection SQL. You can use
-                          this to gain insight into the status of invocations
-                          and the service state that is stored.{' '}
-                          <Link
-                            href="https://docs.restate.dev/references/sql-introspection"
-                            variant="secondary"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Learn more
-                          </Link>
-                        </>
-                      }
+                      title="No results found"
+                      description="Your query ran successfully but returned no rows."
                     />
-                    <UsefulQueries
-                      onSelect={(query) => selectQueryRef.current?.(query)}
-                    />
-                  </div>
-                )
-              }
-              rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
-              rowDependencies={[panelColumns]}
-              renderCell={(item, { id }) => (
-                <IntrospectionCell col={id} row={item.row} key={id} />
-              )}
-            />
+                  ) : (
+                    <div className="flex w-full flex-1 flex-col items-center justify-center gap-8 px-5 py-12">
+                      <EmptyState
+                        className="flex-none p-0"
+                        contentClassName="max-w-2xl"
+                        icon={IconName.ScanSearch}
+                        title="Introspection SQL"
+                        description={
+                          <>
+                            Restate exposes information on invocations and
+                            application state via Introspection SQL. You can use
+                            this to gain insight into the status of invocations
+                            and the service state that is stored.{' '}
+                            <Link
+                              href="https://docs.restate.dev/references/sql-introspection"
+                              variant="secondary"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Learn more
+                            </Link>
+                          </>
+                        }
+                      />
+                      <UsefulQueries
+                        onSelect={(query) => selectQueryRef.current?.(query)}
+                      />
+                    </div>
+                  )
+                }
+                rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                rowDependencies={[panelColumns]}
+                renderCell={(item, { id }) =>
+                  renderIntrospectionCell(id, item.row)
+                }
+              />
+            </IntrospectionServicesContext>
             {!isQueryFetching && (
               <Footnote
                 data={error ? undefined : data}
