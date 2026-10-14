@@ -141,6 +141,22 @@ export function useOverviewData({
     }
     return counts;
   }, [summary.data]);
+  const handlerStageCounts = useMemo(
+    () =>
+      new Map(
+        (summary.data?.serviceBuckets ?? []).flatMap(
+          ({ service, handlerBuckets = [] }) =>
+            handlerBuckets.map(
+              ({ handler, statusBuckets }) =>
+                [
+                  `${service}\x00${handler}`,
+                  statusBuckets.map(({ key, count }) => ({ name: key, count })),
+                ] as const,
+            ),
+        ),
+      ),
+    [summary.data],
+  );
   const servicesWithHighInbox = useMemo(
     () =>
       new Set(
@@ -231,6 +247,7 @@ export function useOverviewData({
     totalCount: summary.data?.total ?? 0,
     invocationCounts,
     serviceStageCounts,
+    handlerStageCounts,
     servicesWithHighInbox,
     serviceIssuesMap,
     loadServiceInboxBreakdown,

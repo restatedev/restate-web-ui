@@ -51,6 +51,11 @@ type SummaryResponse = {
     count: number;
     statusBuckets: { key: string; count: number }[];
     statusBreakdown?: { key: string; count: number }[];
+    handlerBuckets?: {
+      handler: string;
+      count: number;
+      statusBuckets: { key: string; count: number }[];
+    }[];
   }[];
 };
 
@@ -107,6 +112,40 @@ describe('invocation summary from sys_service_stats', () => {
       succeeded: 10,
       failed: 4,
     });
+    expect(
+      body.serviceBuckets.map(({ service, handlerBuckets }) => ({
+        service,
+        handlers: Object.fromEntries(
+          (handlerBuckets ?? []).map(({ handler, count, statusBuckets }) => [
+            handler,
+            [count, countsByKey(statusBuckets)],
+          ]),
+        ),
+      })),
+    ).toEqual([
+      {
+        service: 'Counter',
+        handlers: {
+          add: [
+            11,
+            { inbox: 5, running: 0, suspended: 6, paused: 0, finished: 0 },
+          ],
+          get: [
+            7,
+            { inbox: 0, running: 0, suspended: 0, paused: 7, finished: 0 },
+          ],
+        },
+      },
+      {
+        service: 'Greeter',
+        handlers: {
+          greet: [
+            20,
+            { inbox: 5, running: 1, suspended: 0, paused: 0, finished: 14 },
+          ],
+        },
+      },
+    ]);
     expect(
       Object.fromEntries(
         body.serviceBuckets.map(({ service, statusBreakdown }) => [

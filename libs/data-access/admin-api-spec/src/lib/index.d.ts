@@ -3559,8 +3559,15 @@ export interface components {
       statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
       /** @description Exact per-status counts for this service, using the same buckets as the top-level statusBuckets. Present only when the summary is served from stats. */
       statusBreakdown?: components['schemas']['InvocationStatusSummaryBucketV2'][];
+      /** @description Per-handler stage totals for this service. Present only when the summary is served from stats; entries without a handler (state mutations) are not included. */
+      handlerBuckets?: components['schemas']['InvocationHandlerSummaryBucketV2'][];
       /** @description Whether this bucket matches the removed target_service_name highlight filters. */
       isIncluded: boolean;
+    };
+    InvocationHandlerSummaryBucketV2: {
+      handler: string;
+      count: number;
+      statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
     };
     InvocationDeploymentSummaryBucketV2: {
       deployment: string;

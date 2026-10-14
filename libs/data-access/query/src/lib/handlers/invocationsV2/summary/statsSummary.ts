@@ -39,6 +39,7 @@ export type StatsRow = {
 
 type InvocationStatsRow = {
   group: string;
+  handler?: string;
   stage: VqueueStage;
   status: InvocationStatus;
   count: number;
@@ -66,6 +67,7 @@ export function filterStatsRows<Row extends StatsRow>(
       ? [
           {
             group: group(row),
+            ...(row.handler ? { handler: row.handler } : {}),
             stage: row.stage,
             status,
             count: Number(row.num_entries),
@@ -102,7 +104,18 @@ export function summarizeStatsRows(
   const statusCounts = sumBy(rows, (row) => row.status);
   const serviceStageCounts = new Map<string, Map<VqueueStage, number>>();
   const serviceStatusCounts = new Map<string, Map<InvocationStatus, number>>();
+  const handlerStageCounts = new Map<
+    string,
+    Map<string, Map<VqueueStage, number>>
+  >();
   for (const row of rows) {
+    if (row.handler) {
+      const handlers = handlerStageCounts.get(row.group) ?? new Map();
+      const stages = handlers.get(row.handler) ?? new Map();
+      stages.set(row.stage, (stages.get(row.stage) ?? 0) + row.count);
+      handlers.set(row.handler, stages);
+      handlerStageCounts.set(row.group, handlers);
+    }
     const stages = serviceStageCounts.get(row.group) ?? new Map();
     stages.set(row.stage, (stages.get(row.stage) ?? 0) + row.count);
     serviceStageCounts.set(row.group, stages);
@@ -126,6 +139,15 @@ export function summarizeStatsRows(
     ...LIVE_BUCKETS,
     ...(includesCompletedStage ? TERMINAL_BUCKETS : []),
   ];
+  const groupStageBuckets = (counts: Map<VqueueStage, number>) =>
+    SERVICE_STAGE_BUCKETS.filter(
+      (definition) => includesCompletedStage || definition.key !== 'finished',
+    ).map((definition) => ({
+      ...definition,
+      count: counts.get(definition.key as VqueueStage) ?? 0,
+    }));
+  const sumCounts = (buckets: { count: number }[]) =>
+    buckets.reduce((total, bucket) => total + bucket.count, 0);
 
   return {
     stageBuckets,
@@ -136,21 +158,22 @@ export function summarizeStatsRows(
     })),
     serviceBuckets: [...serviceStageCounts]
       .map(([service, counts]) => {
-        const statusBuckets = SERVICE_STAGE_BUCKETS.filter(
-          (definition) =>
-            includesCompletedStage || definition.key !== 'finished',
-        ).map((definition) => ({
-          ...definition,
-          count: counts.get(definition.key as VqueueStage) ?? 0,
-        }));
+        const statusBuckets = groupStageBuckets(counts);
         const statuses = serviceStatusCounts.get(service);
         return {
           service,
-          count: statusBuckets.reduce(
-            (total, bucket) => total + bucket.count,
-            0,
-          ),
+          count: sumCounts(statusBuckets),
           statusBuckets,
+          handlerBuckets: [...(handlerStageCounts.get(service) ?? [])].map(
+            ([handler, handlerCounts]) => {
+              const handlerBuckets = groupStageBuckets(handlerCounts);
+              return {
+                handler,
+                count: sumCounts(handlerBuckets),
+                statusBuckets: handlerBuckets,
+              };
+            },
+          ),
           statusBreakdown: statusDefinitions.map((definition) => ({
             ...definition,
             count: statuses?.get(definition.key as InvocationStatus) ?? 0,

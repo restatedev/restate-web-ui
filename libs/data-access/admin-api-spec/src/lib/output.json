@@ -9934,9 +9934,34 @@
               "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
             }
           },
+          "handlerBuckets": {
+            "type": "array",
+            "description": "Per-handler stage totals for this service. Present only when the summary is served from stats; entries without a handler (state mutations) are not included.",
+            "items": {
+              "$ref": "#/components/schemas/InvocationHandlerSummaryBucketV2"
+            }
+          },
           "isIncluded": {
             "type": "boolean",
             "description": "Whether this bucket matches the removed target_service_name highlight filters."
+          }
+        }
+      },
+      "InvocationHandlerSummaryBucketV2": {
+        "type": "object",
+        "required": ["handler", "count", "statusBuckets"],
+        "properties": {
+          "handler": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "statusBuckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
+            }
           }
         }
       },

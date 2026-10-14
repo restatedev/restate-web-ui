@@ -37,6 +37,7 @@ import { useOnboarding } from '@restate/util/feature-flag';
 import { panelHref, serviceHref } from '@restate/util/panel';
 import { tv } from '@restate/util/styles';
 import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
+import { OVERVIEW_ROW_WAVE } from './overviewWave';
 import {
   Collection,
   type Key,
@@ -126,6 +127,7 @@ const tableStyles = tv({
     handlerInvocationLink:
       'h-full w-full justify-start rounded-none border-none bg-transparent px-2 py-2 text-gray-400/80 shadow-none hover:bg-black/3 hover:text-gray-500',
     handlerInvocationIcon: 'h-4 w-4',
+    handlerInvocationBar: 'ml-auto min-w-3',
   },
 });
 
@@ -335,6 +337,13 @@ function HandlerIdentity({
   );
 }
 
+type HandlerInvocations = {
+  stageCounts?: Map<string, { name: string; count: number }[]>;
+  serviceTotals: Map<string, number>;
+  isLoading: boolean;
+  isError: boolean;
+};
+
 function renderHandlerCell({
   service,
   row,
@@ -342,6 +351,7 @@ function renderHandlerCell({
   baseUrl,
   linkParams,
   OnboardingGuide,
+  handlerInvocations,
 }: {
   service: OverviewService;
   row: OverviewHandlerTableRow;
@@ -349,6 +359,7 @@ function renderHandlerCell({
   baseUrl: string;
   linkParams?: URLSearchParams;
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
+  handlerInvocations: HandlerInvocations;
 }) {
   const styles = tableStyles();
   if (column.id === 'name') {
@@ -360,6 +371,46 @@ function renderHandlerCell({
           OnboardingGuide={OnboardingGuide}
         />
       </Cell>
+    );
+  }
+  if (column.id === 'invocations' && handlerInvocations.stageCounts) {
+    const stages =
+      handlerInvocations.stageCounts.get(
+        handlerRowId(service.name, row.handler.name),
+      ) ?? [];
+    const label = `${service.name}/${row.handler.name}`;
+    const count = getNotCompletedInvocationCount(stages);
+    const serviceTotal =
+      handlerInvocations.serviceTotals.get(service.name) ?? 0;
+    const share = serviceTotal > 0 ? Math.min(1, count / serviceTotal) : 0;
+    return (
+      <NotCompletedInvocationsCell
+        label={label}
+        count={count}
+        isLoading={handlerInvocations.isLoading}
+        isError={handlerInvocations.isError}
+      >
+        <div
+          className={styles.handlerInvocationBar()}
+          style={{ width: `${share * 100}%` }}
+        >
+          <ServiceStatusBar
+            serviceName={service.name}
+            handlerName={row.handler.name}
+            statusEntries={buildStatusEntries(
+              stages.map(({ name, count }) => ({ status: name, count })),
+            ).filter(({ name }) => name !== 'finished')}
+            isLoading={handlerInvocations.isLoading}
+            linkParams={linkParams}
+            rangeLabel="Not completed"
+            ariaLabel={`Not-completed invocation status for ${label}`}
+            totalLink={serviceHref(baseUrl, {
+              service: service.name,
+              handler: row.handler.name,
+            })}
+          />
+        </div>
+      </NotCompletedInvocationsCell>
     );
   }
   if (column.id === 'invocations') {
@@ -398,12 +449,14 @@ function HandlerRows({
   baseUrl,
   linkParams,
   OnboardingGuide,
+  handlerInvocations,
 }: {
   service: OverviewServiceTableRow;
   columns: PanelTableColumn[];
   baseUrl: string;
   linkParams?: URLSearchParams;
   OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
+  handlerInvocations: HandlerInvocations;
 }) {
   const styles = tableStyles();
   const handlers = service.visibleHandlers.map((handler) => ({
@@ -414,7 +467,13 @@ function HandlerRows({
   return (
     <Collection
       items={handlers}
-      dependencies={[columns, baseUrl, linkParams, OnboardingGuide]}
+      dependencies={[
+        columns,
+        baseUrl,
+        linkParams,
+        OnboardingGuide,
+        handlerInvocations,
+      ]}
     >
       {(row) => (
         <Row
@@ -422,6 +481,7 @@ function HandlerRows({
           columns={columns}
           hasLeadingCell
           className={styles.childRow()}
+          dataAttributes={OVERVIEW_ROW_WAVE}
         >
           {(column) =>
             renderHandlerCell({
@@ -431,6 +491,7 @@ function HandlerRows({
               baseUrl,
               linkParams,
               OnboardingGuide,
+              handlerInvocations,
             })
           }
         </Row>
@@ -445,6 +506,8 @@ export function ServicesTable() {
     servicesMap,
     deploymentsMap,
     serviceStageCounts,
+    handlerStageCounts,
+    isSummaryFromStats,
     servicesWithHighInbox,
     serviceIssuesMap,
     loadServiceInboxBreakdown,
@@ -469,6 +532,21 @@ export function ServicesTable() {
         ),
       ),
     [serviceStageCounts],
+  );
+  const handlerInvocations = useMemo<HandlerInvocations>(
+    () => ({
+      stageCounts: isSummaryFromStats ? handlerStageCounts : undefined,
+      serviceTotals: notCompletedInvocationCounts,
+      isLoading: isServiceSummaryLoading,
+      isError: isServiceSummaryError,
+    }),
+    [
+      handlerStageCounts,
+      isServiceSummaryError,
+      isServiceSummaryLoading,
+      isSummaryFromStats,
+      notCompletedInvocationCounts,
+    ],
   );
   const rows = useMemo(
     () =>
@@ -571,6 +649,7 @@ export function ServicesTable() {
         }
       }}
       rowClassName={styles.row()}
+      rowDataAttributes={() => OVERVIEW_ROW_WAVE}
       bodyDependencies={[
         visibleExpandedKeys,
         notCompletedInvocationCounts,
@@ -697,6 +776,7 @@ export function ServicesTable() {
           baseUrl={baseUrl}
           linkParams={linkParams}
           OnboardingGuide={OnboardingGuide}
+          handlerInvocations={handlerInvocations}
         />
       )}
     />
