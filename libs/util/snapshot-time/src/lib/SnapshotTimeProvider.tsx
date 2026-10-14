@@ -3,6 +3,7 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useMemo,
 } from 'react';
 
 const SnapshotTimeContext = createContext({
@@ -13,11 +14,13 @@ export function SnapshotTimeProvider({
   lastSnapshot,
   children,
 }: PropsWithChildren<{ lastSnapshot?: number }>) {
-  if (!lastSnapshot) {
-    return children;
-  }
+  const parent = useContext(SnapshotTimeContext);
+  const value = useMemo(
+    () => (lastSnapshot ? { lastSnapshot } : parent),
+    [lastSnapshot, parent],
+  );
   return (
-    <SnapshotTimeContext.Provider value={{ lastSnapshot }}>
+    <SnapshotTimeContext.Provider value={value}>
       {children}
     </SnapshotTimeContext.Provider>
   );
