@@ -29,11 +29,14 @@ const rowStyles = tv({
   base: 'group/row relative transform cursor-default text-sm text-gray-900 -outline-offset-2 transition [content-visibility:auto] hover:bg-gray-100 disabled:text-gray-300 selected:bg-blue-100/50 selected:hover:bg-blue-100',
 });
 
+export type RowDataAttributes = { [key: `data-${string}`]: string };
+
 interface RowProps<T extends object> extends Pick<
   AriaRowProps<T>,
   'id' | 'columns' | 'children' | 'dependencies' | 'hasChildItems'
 > {
   className?: string;
+  dataAttributes?: RowDataAttributes;
   ref?: Ref<HTMLTableRowElement>;
   hasLeadingCell?: boolean;
   childRows?: ReactNode;
@@ -68,6 +71,7 @@ export function Row<T extends { id?: string }>({
   ref,
   hasLeadingCell,
   childRows,
+  dataAttributes,
   ...otherProps
 }: RowProps<T>) {
   const { selectionBehavior, allowsDragging } = useTableOptions();
@@ -77,6 +81,7 @@ export function Row<T extends { id?: string }>({
       ref={ref}
       id={id}
       {...otherProps}
+      {...dataAttributes}
       className={rowStyles({ className })}
     >
       {hasLeadingCell && <Cell id={internalCellKey(id, 'leading')} />}

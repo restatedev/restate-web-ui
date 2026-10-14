@@ -18,6 +18,7 @@ import { usesStatsTables } from '../uiFeatures';
 import { VIRTUAL_OBJECT_STATS } from './indexes';
 
 const INSTANCE_LIMIT = 50;
+const BACKLOG_DESC_SORT = { field: 'backlog', order: 'DESC' } as const;
 const QUERY_LIMIT = INSTANCE_LIMIT + 1;
 const MAX_SEARCH_LENGTH = 256;
 
@@ -283,25 +284,40 @@ function virtualObjectIdentitiesFromInboxByBacklogQuery(
 const STATS_INBOX_BACKLOG =
   "SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END)";
 
-function virtualObjectInstancesFromStatsQuery(
+function virtualObjectsWithBacklogFromStatsQuery(
   service: string,
-  search: string | undefined,
-  filters: StructuredStringFilter<VirtualObjectFilterField>[],
-  unscopedOnly: boolean,
-  sortByBacklog: boolean,
+  filterClause: string,
 ) {
-  const filterClause = identityFilterClause(search, filters, 'key', true, {
-    unscopedOnly,
-  });
-  const orderBy = sortByBacklog ? '\n    ORDER BY backlog DESC' : '';
   return `SELECT
       key AS object_key,
       scope,
-      ${STATS_INBOX_BACKLOG} AS backlog
+      SUM(num_entries) AS backlog
+    FROM ${VIRTUAL_OBJECT_STATS.name}
+    WHERE service_name = ${quoteSqlString(service)}
+      AND stage = 'inbox'${filterClause}
+    GROUP BY key, scope
+    ORDER BY backlog DESC
+    LIMIT ${QUERY_LIMIT}`;
+}
+
+function virtualObjectsFromStatsQuery(
+  service: string,
+  filterClause: string,
+  limit: number,
+) {
+  return `SELECT DISTINCT
+      key AS object_key,
+      scope
     FROM ${VIRTUAL_OBJECT_STATS.name}
     WHERE service_name = ${quoteSqlString(service)}${filterClause}
-    GROUP BY key, scope${orderBy}
-    LIMIT ${QUERY_LIMIT}`;
+    LIMIT ${limit}`;
+}
+
+function rowIdentity(row: InstanceRow) {
+  return identityId(
+    String(row.object_key),
+    row.scope != null ? String(row.scope) : undefined,
+  );
 }
 
 function getOrCreateInstance(
@@ -511,16 +527,37 @@ async function findInstancesFromStats(
   service: string,
   { search, filters, unscopedOnly, sortByBacklog }: FindInstancesOptions,
 ): Promise<FoundInstances> {
-  const { rows } = await context.query(
-    virtualObjectInstancesFromStatsQuery(
-      service,
-      search,
-      filters,
-      unscopedOnly,
-      sortByBacklog,
+  const filterClause = identityFilterClause(search, filters, 'key', true, {
+    unscopedOnly,
+  });
+  if (!sortByBacklog) {
+    const { rows } = await context.query(
+      virtualObjectsFromStatsQuery(service, filterClause, QUERY_LIMIT),
+      'virtual-objects/instances-from-stats',
+    );
+    return {
+      rows: rows as InstanceRow[],
+      truncated: rows.length > INSTANCE_LIMIT,
+    };
+  }
+  const [withBacklog, all] = await Promise.all([
+    context.query(
+      virtualObjectsWithBacklogFromStatsQuery(service, filterClause),
+      'virtual-objects/instances-with-backlog-from-stats',
     ),
-    'virtual-objects/instances-from-stats',
-  );
+    context.query(
+      virtualObjectsFromStatsQuery(service, filterClause, QUERY_LIMIT * 2),
+      'virtual-objects/instances-from-stats',
+    ),
+  ]);
+  const withBacklogRows = withBacklog.rows as InstanceRow[];
+  const listed = new Set(withBacklogRows.map(rowIdentity));
+  const rows = [
+    ...withBacklogRows,
+    ...(all.rows as InstanceRow[])
+      .filter((row) => !listed.has(rowIdentity(row)))
+      .map((row) => ({ ...row, backlog: 0 })),
+  ].slice(0, QUERY_LIMIT);
   return { rows, truncated: rows.length > INSTANCE_LIMIT };
 }
 
@@ -616,9 +653,11 @@ export async function listVirtualObjectInstances(
   args: ListVirtualObjectInstancesArgs = {},
 ) {
   const search = args.search?.trim().slice(0, MAX_SEARCH_LENGTH) || undefined;
-  const sortByBacklog =
-    args.sort?.field === 'backlog' && args.sort.order === 'DESC';
   const usesStats = usesStatsTables(this);
+  const sortByBacklog =
+    args.sort === undefined
+      ? usesStats
+      : args.sort?.field === 'backlog' && args.sort.order === 'DESC';
   const hasScopedVirtualObjects =
     this.features.has('vqueues') && this.features.has('scoped_virtual_objects');
   const unscopedOnly = shouldFilterScopeIsNull(this, 'virtual_object');
@@ -674,10 +713,9 @@ export async function listVirtualObjectInstances(
       instance,
     ]),
   );
-  const backlogTargets =
-    usesStats || sortByBacklog
-      ? selectedCandidates.filter(({ backlog }) => backlog === undefined)
-      : selectedInstances;
+  const backlogTargets = sortByBacklog
+    ? selectedCandidates.filter(({ backlog }) => backlog === undefined)
+    : selectedInstances;
   const [backlogRows, lockRows] = await Promise.all([
     getBacklogsForInstances(this, service, backlogTargets),
     queryLocksForInstances(this, service, selectedInstances),
@@ -695,5 +733,6 @@ export async function listVirtualObjectInstances(
   return Response.json({
     rows,
     truncated: found.truncated || instancesById.size > INSTANCE_LIMIT,
+    sort: sortByBacklog ? BACKLOG_DESC_SORT : null,
   });
 }

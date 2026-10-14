@@ -48,6 +48,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useOverviewContext } from './OverviewContext';
 import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
+import { OVERVIEW_ROW_WAVE } from './overviewWave';
 import { getNotCompletedInvocationCount } from './ServicesTable';
 import {
   type OverviewDeployment,
@@ -381,6 +382,7 @@ export function DeploymentsTable() {
           )
         }
         rowClassName={styles.row()}
+        rowDataAttributes={() => OVERVIEW_ROW_WAVE}
         bodyDependencies={[
           isDeploymentStatusLoading,
           deploymentInvocations.stageCounts,

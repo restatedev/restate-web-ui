@@ -703,9 +703,16 @@ export const QUERY_DEFINITIONS = {
   },
   'virtual-objects/instances-from-stats': {
     description:
-      'List virtual object instances with their inbox backlog from the virtual object stats table (Instances table), optionally ranked by backlog.',
+      'List virtual object instances of a service from the virtual object stats table, unordered, to fill the Instances table after the objects with a backlog.',
     shape:
-      "SELECT key, scope, SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog FROM sys_virtual_object_stats WHERE service_name = ? [AND <search/filters>] GROUP BY key, scope [ORDER BY backlog DESC] LIMIT 51",
+      'SELECT DISTINCT key, scope FROM sys_virtual_object_stats WHERE service_name = ? [AND <search/filters>] LIMIT 102',
+    tables: ['sys_virtual_object_stats'],
+  },
+  'virtual-objects/instances-with-backlog-from-stats': {
+    description:
+      'List the virtual object instances of a service with the largest inbox backlog from the virtual object stats table (Instances table).',
+    shape:
+      "SELECT key, scope, SUM(num_entries) AS backlog FROM sys_virtual_object_stats WHERE service_name = ? AND stage = 'inbox' [AND <search/filters>] GROUP BY key, scope ORDER BY backlog DESC LIMIT 51",
     tables: ['sys_virtual_object_stats'],
   },
   'virtual-objects/identities-from-vqueue-meta': {

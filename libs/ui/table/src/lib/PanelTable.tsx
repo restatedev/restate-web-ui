@@ -19,7 +19,7 @@ import {
 } from 'react-aria-components';
 import type { Key, SortDescriptor } from 'react-aria-components';
 import { tv } from '@restate/util/styles';
-import { Cell, Row } from './Row';
+import { Cell, Row, type RowDataAttributes } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
 import { PanelTableLayout } from './PanelTableLayout';
@@ -68,6 +68,7 @@ export interface PanelTableProps<
   renderCell: (row: T, col: PanelTableColumn<TColId>) => ReactElement;
   renderChildRows?: (row: T, columns: PanelTableColumn[]) => ReactNode;
   rowClassName?: string | ((row: T) => string);
+  rowDataAttributes?: (row: T) => RowDataAttributes;
   rowDependencies?: unknown[];
   toolbar?: ReactNode;
   toolbarWrapperClassName?: string;
@@ -127,6 +128,7 @@ export function PanelTable<
   renderCell,
   renderChildRows,
   rowClassName,
+  rowDataAttributes,
   rowDependencies,
   selectionMode,
   selectedKeys,
@@ -332,6 +334,7 @@ export function PanelTable<
         className={
           typeof rowClassName === 'function' ? rowClassName(item) : rowClassName
         }
+        dataAttributes={rowDataAttributes?.(item)}
         hasLeadingCell
         childRows={renderChildRows?.(item, dataTableColumns)}
       >
@@ -347,6 +350,7 @@ export function PanelTable<
       renderCell,
       renderChildRows,
       rowClassName,
+      rowDataAttributes,
       rowDependencies,
       dataTableColumns,
     ],

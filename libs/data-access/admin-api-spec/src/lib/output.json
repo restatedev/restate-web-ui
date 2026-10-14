@@ -9179,7 +9179,13 @@
             }
           },
           "sort": {
-            "$ref": "#/components/schemas/VirtualObjectInstanceSort"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VirtualObjectInstanceSort"
+              }
+            ],
+            "nullable": true,
+            "description": "Omit to use the default order: descending backlog when the server tracks status gauges, otherwise unordered. Send null for unordered."
           }
         }
       },
@@ -9202,7 +9208,7 @@
       "VirtualObjectInstanceSort": {
         "type": "object",
         "required": ["field", "order"],
-        "description": "This opt-in sort scans and aggregates the service's VQueue metadata or legacy inbox before applying the response limit.",
+        "description": "Descending backlog order. Aggregates the service's backlog before applying the response limit.",
         "properties": {
           "field": {
             "type": "string",
@@ -9237,11 +9243,11 @@
       },
       "ListVirtualObjectInstancesResponse": {
         "type": "object",
-        "required": ["rows", "truncated"],
+        "required": ["rows", "truncated", "sort"],
         "properties": {
           "rows": {
             "type": "array",
-            "description": "Virtual object instances. Unordered unless the request selects descending backlog order.",
+            "description": "Virtual object instances, in the order described by `sort`.",
             "items": {
               "$ref": "#/components/schemas/VirtualObjectInstanceSummary"
             }
@@ -9249,6 +9255,15 @@
           "truncated": {
             "type": "boolean",
             "description": "True when more matching identities exist than the bounded response contains."
+          },
+          "sort": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VirtualObjectInstanceSort"
+              }
+            ],
+            "nullable": true,
+            "description": "The order applied to `rows`; null when unordered."
           }
         }
       },
@@ -9934,9 +9949,34 @@
               "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
             }
           },
+          "handlerBuckets": {
+            "type": "array",
+            "description": "Per-handler stage totals for this service. Present only when the summary is served from stats; entries without a handler (state mutations) are not included.",
+            "items": {
+              "$ref": "#/components/schemas/InvocationHandlerSummaryBucketV2"
+            }
+          },
           "isIncluded": {
             "type": "boolean",
             "description": "Whether this bucket matches the removed target_service_name highlight filters."
+          }
+        }
+      },
+      "InvocationHandlerSummaryBucketV2": {
+        "type": "object",
+        "required": ["handler", "count", "statusBuckets"],
+        "properties": {
+          "handler": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          },
+          "statusBuckets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvocationStatusSummaryBucketV2"
+            }
           }
         }
       },

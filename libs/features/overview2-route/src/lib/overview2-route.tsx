@@ -23,6 +23,7 @@ import {
   type ArcSegment,
 } from '@restate/features/status-chart';
 import { useWaveAnimation } from '@restate/ui/wave-animation';
+import { OVERVIEW_WAVE_TARGET } from './overviewWave';
 import { Ellipsis, Spinner } from '@restate/ui/loading';
 import {
   ContentPanel,
@@ -67,7 +68,7 @@ const refreshIconStyles = tv({
 });
 
 function usePerspectiveLines(
-  containerRef: React.RefObject<HTMLDivElement | null>,
+  svgRef: React.RefObject<SVGSVGElement | null>,
   serverRef: React.RefObject<HTMLDivElement | null>,
   panel: HTMLElement | null,
   enabled: boolean,
@@ -81,14 +82,19 @@ function usePerspectiveLines(
 
   useEffect(() => {
     if (!enabled) return;
-    const container = containerRef.current;
+    const svg = svgRef.current;
     const server = serverRef.current;
-    if (!container || !server || !panel) return;
+    if (!svg || !server || !panel) return;
+    const tabs =
+      panel.nextElementSibling?.querySelector<HTMLElement>(
+        '[role="tablist"]',
+      ) ?? panel;
 
     const update = () => {
-      const cRect = container.getBoundingClientRect();
+      const cRect = svg.getBoundingClientRect();
       const sRect = server.getBoundingClientRect();
       const pRect = panel.getBoundingClientRect();
+      const tRect = tabs.getBoundingClientRect();
 
       const w = cRect.width;
       const h = cRect.height;
@@ -97,7 +103,7 @@ function usePerspectiveLines(
       const serverCenterX = sRect.left + sRect.width / 2 - cRect.left;
       const startY = sRect.bottom - cRect.top;
       const startSpread = sRect.width / 4;
-      const endY = pRect.top - cRect.top;
+      const endY = tRect.top - cRect.top;
       const panelCenter = pRect.left + pRect.width / 2 - cRect.left;
       const endSpread = pRect.width * 0.35;
 
@@ -123,10 +129,18 @@ function usePerspectiveLines(
 
     update();
     const observer = new ResizeObserver(update);
-    observer.observe(container);
+    observer.observe(svg);
     observer.observe(panel);
+    observer.observe(tabs);
+    for (
+      let sibling = panel.previousElementSibling;
+      sibling;
+      sibling = sibling.previousElementSibling
+    ) {
+      observer.observe(sibling);
+    }
     return () => observer.disconnect();
-  }, [containerRef, serverRef, panel, enabled]);
+  }, [svgRef, serverRef, panel, enabled]);
 
   return lineData;
 }
@@ -529,7 +543,7 @@ function OverviewContent() {
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
   const heroReady = !isInitialLoading && !isBare && !isEmpty;
   const { paths, viewBox, fadeStart, fadeEnd } = usePerspectiveLines(
-    containerRef,
+    linesSvgRef,
     serverRef,
     panelEl,
     heroReady,
@@ -603,7 +617,7 @@ function OverviewContent() {
       { duration: 500, easing: 'ease-in-out' },
     );
     triggerRay();
-    triggerWave(serverRef, 'overview-card');
+    triggerWave(serverRef, OVERVIEW_WAVE_TARGET);
     containerRef.current
       ?.querySelectorAll<HTMLElement>('[data-overview-refresh-bounce]')
       .forEach((el) => {

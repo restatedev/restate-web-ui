@@ -1,6 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { createPortal } from 'react-dom';
 import { useHydrated } from '@restate/util/remix';
+import { PreferTopPopovers } from '@restate/ui/popover';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 
 // `createPortal` renders nothing during SSR, so this is necessarily client-only.
@@ -28,7 +29,11 @@ export function LayoutOutlet({
   }
   return createPortal(
     <>
-      {children}
+      {zone === LayoutZone.Toolbar ? (
+        <PreferTopPopovers>{children}</PreferTopPopovers>
+      ) : (
+        children
+      )}
       {zone === LayoutZone.AppBar && <div data-variant={variant} />}
       {zone === LayoutZone.SideBar && variant !== 'primary' && (
         <div data-variant={variant} hidden />

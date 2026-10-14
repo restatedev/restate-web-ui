@@ -51,6 +51,13 @@ function globalInvocationIssues(summary: SummaryData | undefined) {
   );
 }
 
+const STAGE_SUMMARY_VIEWS = new Set<unknown>([
+  undefined,
+  'all',
+  'stages',
+  'live-stages',
+]);
+
 function getInvocationSummaryView(event: QueryCacheNotifyEvent) {
   const request = event.query.queryKey[1];
   if (!request || typeof request !== 'object' || !('body' in request)) {
@@ -120,9 +127,10 @@ export function createSystemHealthMonitor(
         isQueryForPath(event.query, '/query/v2/invocations/summary', 'post')
       ) {
         const data = event.query.state.data as SummaryData;
-        if (getInvocationSummaryView(event) === 'breakdowns') {
+        const view = getInvocationSummaryView(event);
+        if (view === 'breakdowns') {
           invocationData.breakdowns = data;
-        } else {
+        } else if (STAGE_SUMMARY_VIEWS.has(view)) {
           invocationData.stages = data;
         }
       }

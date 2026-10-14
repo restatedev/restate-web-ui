@@ -9,6 +9,7 @@ import {
   useListDrainedDeployments,
   useListDeployments,
   useListServices,
+  useCanSummarizeInvocationsFromStats,
   useProgressiveInvocationSummaryV2,
   useServiceCatalog,
 } from '@restate/data-access/admin-api-hooks';
@@ -29,8 +30,8 @@ import {
   type BreakdownCountMode,
 } from '@restate/features/user-preference';
 import {
+  getMinOverviewRefetchInterval,
   getOverviewRefetchInterval,
-  INITIAL_OVERVIEW_REFETCH_INTERVAL,
 } from './overviewPolling';
 import { normalizeCompletionTimeRange } from './completionBuckets';
 import type { OverviewService } from './sortServices';
@@ -52,10 +53,20 @@ export function useOverviewData({
     setUserBreakdownCountMode(mode);
     setBreakdownModeState(mode);
   }, []);
-  const overviewRefetchIntervalRef = useRef(INITIAL_OVERVIEW_REFETCH_INTERVAL);
+  const summaryBody = {
+    mode:
+      hasVqueues && breakdownMode === 'estimate'
+        ? ({ type: 'sampled', sampleSize: 1_000_000 } as const)
+        : ({ type: 'exact' } as const),
+    ...(!hasVqueues && { range: timeRange }),
+  };
+  const isSummaryFromStats = useCanSummarizeInvocationsFromStats(summaryBody);
+  const overviewRefetchIntervalRef = useRef<number>(undefined);
   const overviewRefetchInterval = useCallback(
-    () => overviewRefetchIntervalRef.current,
-    [],
+    () =>
+      overviewRefetchIntervalRef.current ??
+      getMinOverviewRefetchInterval(isSummaryFromStats),
+    [isSummaryFromStats],
   );
   const {
     data: { deployments: deploymentsMap } = {},
@@ -83,28 +94,21 @@ export function useOverviewData({
       ),
     [fullServices, isHandlersPending, serviceSummaries],
   );
-  const summary = useProgressiveInvocationSummaryV2(
-    {
-      mode:
-        hasVqueues && breakdownMode === 'estimate'
-          ? { type: 'sampled', sampleSize: 1_000_000 }
-          : { type: 'exact' },
-      ...(!hasVqueues && { range: timeRange }),
+  const summary = useProgressiveInvocationSummaryV2(summaryBody, {
+    refetchInterval: (query) => {
+      const queryDurationMs = query.state.data?.queryDurationMs;
+      if (queryDurationMs !== undefined) {
+        overviewRefetchIntervalRef.current = getOverviewRefetchInterval(
+          queryDurationMs,
+          isSummaryFromStats,
+        );
+      }
+      return overviewRefetchInterval();
     },
-    {
-      refetchInterval: (query) => {
-        const queryDurationMs = query.state.data?.queryDurationMs;
-        if (queryDurationMs !== undefined) {
-          overviewRefetchIntervalRef.current =
-            getOverviewRefetchInterval(queryDurationMs);
-        }
-        return overviewRefetchIntervalRef.current;
-      },
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      meta: getOverviewRefreshMeta(),
-    },
-  );
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    meta: getOverviewRefreshMeta(),
+  });
   const inboxCount = getInvocationSummaryStageCount(summary.data, 'inbox');
 
   const byStatus = useMemo(
@@ -141,6 +145,22 @@ export function useOverviewData({
     }
     return counts;
   }, [summary.data]);
+  const handlerStageCounts = useMemo(
+    () =>
+      new Map(
+        (summary.data?.serviceBuckets ?? []).flatMap(
+          ({ service, handlerBuckets = [] }) =>
+            handlerBuckets.map(
+              ({ handler, statusBuckets }) =>
+                [
+                  `${service}\x00${handler}`,
+                  statusBuckets.map(({ key, count }) => ({ name: key, count })),
+                ] as const,
+            ),
+        ),
+      ),
+    [summary.data],
+  );
   const servicesWithHighInbox = useMemo(
     () =>
       new Set(
@@ -231,6 +251,7 @@ export function useOverviewData({
     totalCount: summary.data?.total ?? 0,
     invocationCounts,
     serviceStageCounts,
+    handlerStageCounts,
     servicesWithHighInbox,
     serviceIssuesMap,
     loadServiceInboxBreakdown,
@@ -243,7 +264,7 @@ export function useOverviewData({
     breakdownMode,
     setBreakdownMode,
     canSampleBreakdown: hasVqueues,
-    isSummaryFromStats: summary.isFromStats,
+    isSummaryFromStats,
     isBreakdownSampled:
       hasVqueues && !summary.isFromStats && breakdownMode === 'estimate',
     isInboxBreakdownLoading,

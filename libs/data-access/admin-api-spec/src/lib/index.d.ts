@@ -3269,13 +3269,14 @@ export interface components {
       /** @description Substring matched against the object key and scope. */
       search?: string;
       filters?: components['schemas']['VirtualObjectInstanceFilterItem'][];
-      sort?: components['schemas']['VirtualObjectInstanceSort'];
+      /** @description Omit to use the default order: descending backlog when the server tracks status gauges, otherwise unordered. Send null for unordered. */
+      sort?: components['schemas']['VirtualObjectInstanceSort'] | null;
     };
     VirtualObjectInstanceCandidate: {
       key: string;
       scope?: string;
     };
-    /** @description This opt-in sort scans and aggregates the service's VQueue metadata or legacy inbox before applying the response limit. */
+    /** @description Descending backlog order. Aggregates the service's backlog before applying the response limit. */
     VirtualObjectInstanceSort: {
       /** @enum {string} */
       field: 'backlog';
@@ -3291,10 +3292,12 @@ export interface components {
       lockHolder?: components['schemas']['VirtualObjectLockHolder'];
     };
     ListVirtualObjectInstancesResponse: {
-      /** @description Virtual object instances. Unordered unless the request selects descending backlog order. */
+      /** @description Virtual object instances, in the order described by `sort`. */
       rows: components['schemas']['VirtualObjectInstanceSummary'][];
       /** @description True when more matching identities exist than the bounded response contains. */
       truncated: boolean;
+      /** @description The order applied to `rows`; null when unordered. */
+      sort: components['schemas']['VirtualObjectInstanceSort'] | null;
     };
     WorkflowRunFilterItem: {
       /** @enum {string} */
@@ -3559,8 +3562,15 @@ export interface components {
       statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
       /** @description Exact per-status counts for this service, using the same buckets as the top-level statusBuckets. Present only when the summary is served from stats. */
       statusBreakdown?: components['schemas']['InvocationStatusSummaryBucketV2'][];
+      /** @description Per-handler stage totals for this service. Present only when the summary is served from stats; entries without a handler (state mutations) are not included. */
+      handlerBuckets?: components['schemas']['InvocationHandlerSummaryBucketV2'][];
       /** @description Whether this bucket matches the removed target_service_name highlight filters. */
       isIncluded: boolean;
+    };
+    InvocationHandlerSummaryBucketV2: {
+      handler: string;
+      count: number;
+      statusBuckets: components['schemas']['InvocationStatusSummaryBucketV2'][];
     };
     InvocationDeploymentSummaryBucketV2: {
       deployment: string;

@@ -5,7 +5,9 @@ import { queryState } from './queryState';
 import type { QueryContext } from './shared';
 
 function createContext(features: string[]) {
-  const query = vi.fn(async () => ({ rows: [] }));
+  const query = vi.fn<
+    (sql: string, id: string) => Promise<{ rows: unknown[] }>
+  >(async () => ({ rows: [] }));
   const context = {
     query,
     adminApi: vi.fn(async () => ({
@@ -17,7 +19,7 @@ function createContext(features: string[]) {
   } as unknown as QueryContext;
   return {
     context,
-    sql: () => query.mock.calls.map(([statement]) => String(statement).trim()),
+    sql: () => query.mock.calls.map(([statement]) => statement.trim()),
   };
 }
 
