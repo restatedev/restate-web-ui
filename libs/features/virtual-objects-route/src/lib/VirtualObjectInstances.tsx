@@ -61,6 +61,7 @@ import { VirtualObjectQuickOpen } from './VirtualObjectQuickOpen';
 
 const SORT_QUERY_PARAM = 'sort';
 const BACKLOG_SORT = 'backlog';
+const NO_SORT = 'none';
 
 const refreshIconStyles = tv({
   base: 'h-3.5 w-3.5',
@@ -319,11 +320,7 @@ export function VirtualObjectInstances({
     searchParams,
     service,
   ]);
-  const sortByBacklog =
-    listsFromStats || searchParams.get(SORT_QUERY_PARAM) === BACKLOG_SORT;
-  const sortDescriptor: SortDescriptor | undefined = sortByBacklog
-    ? { column: 'backlog', direction: 'descending' }
-    : undefined;
+  const sortParam = searchParams.get(SORT_QUERY_PARAM);
 
   const handleBacklogSortChange = (descriptor: SortDescriptor | undefined) => {
     setSearchParams(
@@ -332,7 +329,7 @@ export function VirtualObjectInstances({
         if (descriptor) {
           next.set(SORT_QUERY_PARAM, BACKLOG_SORT);
         } else {
-          next.delete(SORT_QUERY_PARAM);
+          next.set(SORT_QUERY_PARAM, NO_SORT);
         }
         return next;
       },
@@ -363,9 +360,11 @@ export function VirtualObjectInstances({
           }
         : {}),
       ...(filters.length > 0 ? { filters } : {}),
-      ...(sortByBacklog
+      ...(sortParam === BACKLOG_SORT
         ? { sort: { field: BACKLOG_SORT, order: 'DESC' as const } }
-        : {}),
+        : sortParam === NO_SORT
+          ? { sort: null }
+          : {}),
     },
     {
       enabled: Boolean(service),
@@ -375,6 +374,12 @@ export function VirtualObjectInstances({
       staleTime: 0,
     },
   );
+  const sortByBacklog = data
+    ? data.sort?.field === BACKLOG_SORT
+    : sortParam === BACKLOG_SORT;
+  const sortDescriptor: SortDescriptor | undefined = sortByBacklog
+    ? { column: 'backlog', direction: 'descending' }
+    : undefined;
   const error = servicesError ?? instancesError;
   const items = useMemo<VirtualObjectInstanceRow[]>(
     () =>
@@ -522,9 +527,7 @@ export function VirtualObjectInstances({
                 error,
               ]}
               sortDescriptor={sortDescriptor}
-              onSortChange={
-                listsFromStats ? undefined : handleBacklogSortChange
-              }
+              onSortChange={handleBacklogSortChange}
               onRowAction={(rowId) => {
                 const item = items.find(({ id }) => id === String(rowId));
                 if (item) {

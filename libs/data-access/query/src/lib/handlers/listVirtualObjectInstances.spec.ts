@@ -118,6 +118,7 @@ describe('listVirtualObjectInstances', () => {
         },
       ],
       truncated: false,
+      sort: null,
     });
   });
 
@@ -162,7 +163,11 @@ describe('listVirtualObjectInstances', () => {
       AND SUBSTR(lock_name, CHAR_LENGTH('Counter/') + 1) ILIKE '%other%'
     LIMIT 51`,
     ]);
-    expect(await response.json()).toEqual({ rows: [], truncated: false });
+    expect(await response.json()).toEqual({
+      rows: [],
+      truncated: false,
+      sort: null,
+    });
   });
 
   it('uses exact key and scope predicates for active identity sources', async () => {
@@ -335,6 +340,7 @@ describe('listVirtualObjectInstances', () => {
     expect(await response.json()).toEqual({
       rows: [{ key: 'hot-object-0', backlog: 0 }],
       truncated: false,
+      sort: null,
     });
   });
 
@@ -473,6 +479,7 @@ describe('listVirtualObjectInstances', () => {
         },
       ],
       truncated: false,
+      sort: null,
     });
   });
 
@@ -549,6 +556,7 @@ describe('listVirtualObjectInstances', () => {
     expect(await response.json()).toEqual({
       rows: [{ key: 'vqueue-first', backlog: 2 }],
       truncated: false,
+      sort: null,
     });
   });
 
@@ -738,6 +746,7 @@ describe('listVirtualObjectInstances', () => {
         },
       ],
       truncated: false,
+      sort: null,
     });
   });
 
@@ -802,6 +811,7 @@ describe('listVirtualObjectInstances', () => {
         },
       ],
       truncated: false,
+      sort: null,
     });
   });
 
@@ -986,6 +996,7 @@ describe('listVirtualObjectInstances', () => {
         },
       ],
       truncated: false,
+      sort: { field: 'backlog', order: 'DESC' },
     });
   });
 
@@ -1036,6 +1047,7 @@ describe('listVirtualObjectInstances', () => {
         },
       ],
       truncated: false,
+      sort: { field: 'backlog', order: 'DESC' },
     });
   });
 });
@@ -1060,7 +1072,7 @@ describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
     };
   }
 
-  it('lists objects with a backlog first, then the rest at zero', async () => {
+  it('sorts by backlog by default, listing the rest at zero', async () => {
     const { context, query } = createContext(
       respondWithStats(
         [{ object_key: 'a', scope: 'tenant', backlog: 3 }],
@@ -1115,6 +1127,7 @@ describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
         { key: 'b', backlog: 0 },
       ],
       truncated: false,
+      sort: { field: 'backlog', order: 'DESC' },
     });
   });
 
@@ -1154,6 +1167,7 @@ describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
 
     const response = await listVirtualObjectInstances.call(context, 'Counter', {
       candidates: [{ key: 'pinned', scope: 'tenant' }],
+      sort: { field: 'backlog', order: 'DESC' },
     });
 
     expect(query.mock.calls.map(([sql]) => sql)).toMatchInlineSnapshot(`
@@ -1204,5 +1218,64 @@ describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
       { key: 'pinned', scope: 'tenant', backlog: 4 },
       { key: 'a', scope: 'tenant', backlog: 1 },
     ]);
+  });
+
+  it('lists one page of objects and looks up their backlogs when asked for no sort', async () => {
+    const { context, query } = createContext(
+      respondWithStats(
+        [],
+        [
+          { object_key: 'b', scope: null },
+          { object_key: 'a', scope: 'tenant' },
+        ],
+        () => [{ object_key: 'a', scope: 'tenant', backlog: 2 }],
+      ),
+      INDEX_FEATURES,
+    );
+
+    const response = await listVirtualObjectInstances.call(context, 'Counter', {
+      sort: null,
+    });
+
+    expect(query.mock.calls.map(([sql]) => sql)).toMatchInlineSnapshot(`
+      [
+        "SELECT DISTINCT
+            key AS object_key,
+            scope
+          FROM sys_virtual_object_stats
+          WHERE service_name = 'Counter'
+          LIMIT 51",
+        "SELECT
+            key AS object_key,
+            scope,
+            SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
+          FROM sys_virtual_object_stats
+          WHERE service_name = 'Counter'
+            AND (
+              (key = 'b' AND scope IS NULL)
+              OR (key = 'a' AND scope = 'tenant')
+            )
+          GROUP BY key, scope",
+        "SELECT
+            lock_name,
+            scope,
+            acquired_by,
+            acquired_at
+          FROM sys_locks
+          WHERE acquired_by IS NOT NULL
+            AND (
+              (lock_name = 'Counter/b' AND scope IS NULL)
+              OR (lock_name = 'Counter/a' AND scope = 'tenant')
+            )",
+      ]
+    `);
+    expect(await response.json()).toEqual({
+      rows: [
+        { key: 'b', backlog: 0 },
+        { key: 'a', scope: 'tenant', backlog: 2 },
+      ],
+      truncated: false,
+      sort: null,
+    });
   });
 });
