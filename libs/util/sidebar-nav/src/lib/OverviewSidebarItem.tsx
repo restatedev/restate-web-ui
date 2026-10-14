@@ -114,8 +114,10 @@ function DeploymentRecentLabel({ deploymentId }: { deploymentId: string }) {
   }
   return (
     <RecentTooltip full={endpoint ?? deploymentId}>
-      <span className="min-w-0 flex-auto truncate font-mono">
-        {label ?? truncateId(deploymentId)}
+      <span className="flex min-w-0 flex-auto items-center">
+        <span className="min-w-0 flex-1 truncate font-mono">
+          {label ?? truncateId(deploymentId)}
+        </span>
       </span>
     </RecentTooltip>
   );
