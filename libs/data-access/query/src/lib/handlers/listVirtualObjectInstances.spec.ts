@@ -1047,43 +1047,68 @@ describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
     'track_status_gauges',
   ]);
 
-  it('lists objects with their backlog in one stats query, then loads locks', async () => {
-    const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM sys_virtual_object_stats')) {
-        return [
-          { object_key: 'a', scope: 'tenant', backlog: 3 },
-          { object_key: 'b', scope: null, backlog: 0 },
-        ];
-      }
-      return [];
-    }, INDEX_FEATURES);
+  function respondWithStats(
+    withBacklog: Record<string, unknown>[],
+    all: Record<string, unknown>[],
+    other: (sql: string) => Record<string, unknown>[] = () => [],
+  ) {
+    return (sql: string) => {
+      if (!sql.includes('FROM sys_virtual_object_stats')) return [];
+      if (sql.includes("AND stage = 'inbox'")) return withBacklog;
+      if (sql.includes('SELECT DISTINCT')) return all;
+      return other(sql);
+    };
+  }
+
+  it('lists objects with a backlog first, then the rest at zero', async () => {
+    const { context, query } = createContext(
+      respondWithStats(
+        [{ object_key: 'a', scope: 'tenant', backlog: 3 }],
+        [
+          { object_key: 'b', scope: null },
+          { object_key: 'a', scope: 'tenant' },
+        ],
+      ),
+      INDEX_FEATURES,
+    );
 
     const response = await listVirtualObjectInstances.call(context, 'Counter', {
       search: 'acc',
     });
 
-    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT
-      key AS object_key,
-      scope,
-      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
-    FROM sys_virtual_object_stats
-    WHERE service_name = 'Counter'
-      AND (key LIKE '%acc%' OR scope LIKE '%acc%')
-    GROUP BY key, scope
-    LIMIT 51`,
-      `SELECT
-      lock_name,
-      scope,
-      acquired_by,
-      acquired_at
-    FROM sys_locks
-    WHERE acquired_by IS NOT NULL
-      AND (
-        (lock_name = 'Counter/a' AND scope = 'tenant')
-        OR (lock_name = 'Counter/b' AND scope IS NULL)
-      )`,
-    ]);
+    expect(query.mock.calls.map(([sql]) => sql)).toMatchInlineSnapshot(`
+      [
+        "SELECT
+            key AS object_key,
+            scope,
+            SUM(num_entries) AS backlog
+          FROM sys_virtual_object_stats
+          WHERE service_name = 'Counter'
+            AND stage = 'inbox'
+            AND (key LIKE '%acc%' OR scope LIKE '%acc%')
+          GROUP BY key, scope
+          ORDER BY backlog DESC
+          LIMIT 51",
+        "SELECT DISTINCT
+            key AS object_key,
+            scope
+          FROM sys_virtual_object_stats
+          WHERE service_name = 'Counter'
+            AND (key LIKE '%acc%' OR scope LIKE '%acc%')
+          LIMIT 102",
+        "SELECT
+            lock_name,
+            scope,
+            acquired_by,
+            acquired_at
+          FROM sys_locks
+          WHERE acquired_by IS NOT NULL
+            AND (
+              (lock_name = 'Counter/a' AND scope = 'tenant')
+              OR (lock_name = 'Counter/b' AND scope IS NULL)
+            )",
+      ]
+    `);
     expect(await response.json()).toEqual({
       rows: [
         { key: 'a', scope: 'tenant', backlog: 3 },
@@ -1093,97 +1118,85 @@ describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
     });
   });
 
-  it('ranks by backlog with the same query', async () => {
-    const { context, query } = createContext(
-      (sql) =>
-        sql.includes('FROM sys_virtual_object_stats')
-          ? [
-              { object_key: 'busy', scope: 'tenant', backlog: 9 },
-              { object_key: 'idle', scope: 'tenant', backlog: 0 },
-            ]
-          : [],
+  it('marks the page truncated when every row has a backlog', async () => {
+    const busy = Array.from({ length: 51 }, (_, index) => ({
+      object_key: `busy-${index}`,
+      scope: null,
+      backlog: 100 - index,
+    }));
+    const { context } = createContext(
+      respondWithStats(busy, [{ object_key: 'idle', scope: null }]),
       INDEX_FEATURES,
     );
 
     const response = await listVirtualObjectInstances.call(context, 'Counter', {
       sort: { field: 'backlog', order: 'DESC' },
     });
+    const body = (await response.json()) as {
+      rows: { key: string }[];
+      truncated: boolean;
+    };
 
-    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT
-      key AS object_key,
-      scope,
-      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
-    FROM sys_virtual_object_stats
-    WHERE service_name = 'Counter'
-    GROUP BY key, scope
-    ORDER BY backlog DESC
-    LIMIT 51`,
-      `SELECT
-      lock_name,
-      scope,
-      acquired_by,
-      acquired_at
-    FROM sys_locks
-    WHERE acquired_by IS NOT NULL
-      AND (
-        (lock_name = 'Counter/busy' AND scope = 'tenant')
-        OR (lock_name = 'Counter/idle' AND scope = 'tenant')
-      )`,
-    ]);
-    expect(
-      ((await response.json()) as { rows: { key: string }[] }).rows.map(
-        ({ key }) => key,
-      ),
-    ).toEqual(['busy', 'idle']);
+    expect(body.truncated).toBe(true);
+    expect(body.rows).toHaveLength(50);
+    expect(body.rows.map(({ key }) => key)).not.toContain('idle');
   });
 
   it('looks up the backlog only for requested candidates missing from the page', async () => {
-    const { context, query } = createContext((sql) => {
-      if (sql.includes('GROUP BY key, scope\n    LIMIT')) {
-        return [{ object_key: 'a', scope: 'tenant', backlog: 1 }];
-      }
-      if (sql.includes('FROM sys_virtual_object_stats')) {
-        return [{ object_key: 'pinned', scope: 'tenant', backlog: 4 }];
-      }
-      return [];
-    }, INDEX_FEATURES);
+    const { context, query } = createContext(
+      respondWithStats(
+        [{ object_key: 'a', scope: 'tenant', backlog: 1 }],
+        [{ object_key: 'a', scope: 'tenant' }],
+        () => [{ object_key: 'pinned', scope: 'tenant', backlog: 4 }],
+      ),
+      INDEX_FEATURES,
+    );
 
     const response = await listVirtualObjectInstances.call(context, 'Counter', {
       candidates: [{ key: 'pinned', scope: 'tenant' }],
     });
 
-    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT
-      key AS object_key,
-      scope,
-      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
-    FROM sys_virtual_object_stats
-    WHERE service_name = 'Counter'
-    GROUP BY key, scope
-    LIMIT 51`,
-      `SELECT
-      key AS object_key,
-      scope,
-      SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
-    FROM sys_virtual_object_stats
-    WHERE service_name = 'Counter'
-      AND (
-        (key = 'pinned' AND scope = 'tenant')
-      )
-    GROUP BY key, scope`,
-      `SELECT
-      lock_name,
-      scope,
-      acquired_by,
-      acquired_at
-    FROM sys_locks
-    WHERE acquired_by IS NOT NULL
-      AND (
-        (lock_name = 'Counter/pinned' AND scope = 'tenant')
-        OR (lock_name = 'Counter/a' AND scope = 'tenant')
-      )`,
-    ]);
+    expect(query.mock.calls.map(([sql]) => sql)).toMatchInlineSnapshot(`
+      [
+        "SELECT
+            key AS object_key,
+            scope,
+            SUM(num_entries) AS backlog
+          FROM sys_virtual_object_stats
+          WHERE service_name = 'Counter'
+            AND stage = 'inbox'
+          GROUP BY key, scope
+          ORDER BY backlog DESC
+          LIMIT 51",
+        "SELECT DISTINCT
+            key AS object_key,
+            scope
+          FROM sys_virtual_object_stats
+          WHERE service_name = 'Counter'
+          LIMIT 102",
+        "SELECT
+            key AS object_key,
+            scope,
+            SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END) AS backlog
+          FROM sys_virtual_object_stats
+          WHERE service_name = 'Counter'
+            AND (
+              (key = 'pinned' AND scope = 'tenant')
+            )
+          GROUP BY key, scope",
+        "SELECT
+            lock_name,
+            scope,
+            acquired_by,
+            acquired_at
+          FROM sys_locks
+          WHERE acquired_by IS NOT NULL
+            AND (
+              (lock_name = 'Counter/pinned' AND scope = 'tenant')
+              OR (lock_name = 'Counter/a' AND scope = 'tenant')
+            )",
+      ]
+    `);
     expect(
       ((await response.json()) as { rows: { key: string; backlog: number }[] })
         .rows,

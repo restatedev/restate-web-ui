@@ -283,25 +283,36 @@ function virtualObjectIdentitiesFromInboxByBacklogQuery(
 const STATS_INBOX_BACKLOG =
   "SUM(CASE WHEN stage = 'inbox' THEN num_entries ELSE 0 END)";
 
-function virtualObjectInstancesFromStatsQuery(
+function virtualObjectsWithBacklogFromStatsQuery(
   service: string,
-  search: string | undefined,
-  filters: StructuredStringFilter<VirtualObjectFilterField>[],
-  unscopedOnly: boolean,
-  sortByBacklog: boolean,
+  filterClause: string,
 ) {
-  const filterClause = identityFilterClause(search, filters, 'key', true, {
-    unscopedOnly,
-  });
-  const orderBy = sortByBacklog ? '\n    ORDER BY backlog DESC' : '';
   return `SELECT
       key AS object_key,
       scope,
-      ${STATS_INBOX_BACKLOG} AS backlog
+      SUM(num_entries) AS backlog
+    FROM ${VIRTUAL_OBJECT_STATS.name}
+    WHERE service_name = ${quoteSqlString(service)}
+      AND stage = 'inbox'${filterClause}
+    GROUP BY key, scope
+    ORDER BY backlog DESC
+    LIMIT ${QUERY_LIMIT}`;
+}
+
+function virtualObjectsFromStatsQuery(service: string, filterClause: string) {
+  return `SELECT DISTINCT
+      key AS object_key,
+      scope
     FROM ${VIRTUAL_OBJECT_STATS.name}
     WHERE service_name = ${quoteSqlString(service)}${filterClause}
-    GROUP BY key, scope${orderBy}
-    LIMIT ${QUERY_LIMIT}`;
+    LIMIT ${QUERY_LIMIT * 2}`;
+}
+
+function rowIdentity(row: InstanceRow) {
+  return identityId(
+    String(row.object_key),
+    row.scope != null ? String(row.scope) : undefined,
+  );
 }
 
 function getOrCreateInstance(
@@ -509,18 +520,29 @@ type FoundInstances = {
 async function findInstancesFromStats(
   context: QueryContext,
   service: string,
-  { search, filters, unscopedOnly, sortByBacklog }: FindInstancesOptions,
+  { search, filters, unscopedOnly }: FindInstancesOptions,
 ): Promise<FoundInstances> {
-  const { rows } = await context.query(
-    virtualObjectInstancesFromStatsQuery(
-      service,
-      search,
-      filters,
-      unscopedOnly,
-      sortByBacklog,
+  const filterClause = identityFilterClause(search, filters, 'key', true, {
+    unscopedOnly,
+  });
+  const [withBacklog, all] = await Promise.all([
+    context.query(
+      virtualObjectsWithBacklogFromStatsQuery(service, filterClause),
+      'virtual-objects/instances-with-backlog-from-stats',
     ),
-    'virtual-objects/instances-from-stats',
-  );
+    context.query(
+      virtualObjectsFromStatsQuery(service, filterClause),
+      'virtual-objects/instances-from-stats',
+    ),
+  ]);
+  const withBacklogRows = withBacklog.rows as InstanceRow[];
+  const listed = new Set(withBacklogRows.map(rowIdentity));
+  const rows = [
+    ...withBacklogRows,
+    ...(all.rows as InstanceRow[])
+      .filter((row) => !listed.has(rowIdentity(row)))
+      .map((row) => ({ ...row, backlog: 0 })),
+  ].slice(0, QUERY_LIMIT);
   return { rows, truncated: rows.length > INSTANCE_LIMIT };
 }
 
