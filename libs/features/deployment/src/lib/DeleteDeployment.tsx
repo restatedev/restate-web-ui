@@ -5,10 +5,7 @@ import {
   DialogFooter,
   QueryDialog,
 } from '@restate/ui/dialog';
-import {
-  DELETE_DEPLOYMENT_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-} from './constants';
+import { DELETE_DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Form, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
@@ -76,7 +73,6 @@ export function DeleteDeployment() {
         setSearchParams(
           (old) => {
             old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
-            old.delete(DEPLOYMENT_QUERY_PARAM);
             old.delete(ONBOARDING_QUERY_PARAM);
             return old;
           },

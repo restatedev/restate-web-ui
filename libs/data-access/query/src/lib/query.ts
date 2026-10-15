@@ -30,7 +30,6 @@ import {
   getJournalEntryMetadata,
   getInbox,
   getState,
-  getStateInterface,
   queryState,
   listState,
   listStateEntries,
@@ -110,11 +109,6 @@ type BoundHandlers = {
     service: string,
     key: string,
     stateKeys?: string[],
-  ) => Promise<Response>;
-  getStateInterface: (
-    service: string,
-    serviceKey?: string[],
-    scope?: string,
   ) => Promise<Response>;
   queryState: (
     service: string,
@@ -218,8 +212,6 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getInbox: getInbox.bind(context),
     getState: (service, key, stateKeys) =>
       getState.call(context, service, key, undefined, stateKeys),
-    getStateInterface: (service, serviceKey, scope) =>
-      getStateInterface.call(context, service, serviceKey, scope),
     queryState: (service, args) => queryState.call(context, service, args),
     listState: (service, args) => listState.call(context, service, args),
     listStateEntries: (service, key, args) =>
@@ -401,7 +393,6 @@ export const routes = createRoutes('/query', {
   services: {
     state: {
       get: { method: 'GET', pattern: '/services/:name/keys/:key/state' },
-      keys: { method: 'GET', pattern: '/services/:name/state/keys' },
       query: { method: 'POST', pattern: '/services/:name/state/query' },
       list: { method: 'POST', pattern: '/services/:name/state' },
       entries: {
@@ -649,14 +640,6 @@ router.map(routes, {
             ctx.params.name,
             ctx.params.key,
             ctx.url.searchParams.getAll('stateKey'),
-          );
-        },
-        async keys(ctx) {
-          const { getStateInterface } = ctx.storage.get(handlersKey);
-          return getStateInterface(
-            ctx.params.name,
-            ctx.url.searchParams.getAll('serviceKey'),
-            ctx.url.searchParams.get('scope') ?? undefined,
           );
         },
         async query(ctx) {

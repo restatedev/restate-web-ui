@@ -49,19 +49,14 @@ import {
   HealthIndicator,
 } from '@restate/features/health';
 import { Spinner } from '@restate/ui/loading';
-import {
-  InvocationActions,
-  InvocationPanel,
-} from '@restate/features/invocation-route';
+import { InvocationActions } from '@restate/features/invocation-route';
 import { Support } from '@restate/features/support';
-import { StatePanel } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
 import { FeatureFlags } from '@restate/util/feature-flag';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { DeleteDeployment } from '@restate/features/deployment';
 import { ServicePlayground } from '@restate/features/service';
-import { DeploymentDetails } from '@restate/features/deployment-details';
-import { EditService, ServiceDetails } from '@restate/features/service-details';
+import { EditService } from '@restate/features/service-details';
 import { GettingStarted } from '@restate/features/getting-started';
 import {
   RegisterDeploymentDialog,
@@ -467,12 +462,8 @@ function AppContent() {
                   </BreadcrumbsProvider>
                   <SidebarPanels />
                   <TopbarPanels />
-                  <DeploymentDetails />
-                  <ServiceDetails />
                   <DeleteDeployment />
                   <ServicePlayground />
-                  <InvocationPanel />
-                  <StatePanel />
                   <EditService />
                   <InvocationActions />
                   <RegisterDeploymentDialog />

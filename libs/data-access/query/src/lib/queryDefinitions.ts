@@ -377,13 +377,6 @@ export const QUERY_DEFINITIONS = {
       'SELECT key, value FROM state WHERE service_name = ? AND service_key = ? AND scope … [AND key IN (…)]',
     tables: ['state'],
   },
-  'state/keys': {
-    description:
-      'Discover the distinct state keys a service uses to build the state table columns.',
-    shape:
-      'SELECT DISTINCT key FROM state WHERE service_name = ? [AND service_key IN (…)] AND scope … GROUP BY key',
-    tables: ['state'],
-  },
   'state/object-size': {
     description:
       'Count the state keys and total stored bytes of one state object for the virtual object and workflow stats cards.',

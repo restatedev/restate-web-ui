@@ -1134,26 +1134,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/services/{name}/state/keys': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get state keys
-     * @description Get state keys
-     */
-    get: operations['get_state_keys'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/services/{name}/state': {
     parameters: {
       query?: never;
@@ -3739,11 +3719,6 @@ export interface components {
             /** Format: date-time */
             end: string;
           };
-    };
-    StateInterfaceResponse: {
-      keys?: {
-        name: string;
-      }[];
     };
     StateResponse: {
       state: {
@@ -8429,81 +8404,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['InboxResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  get_state_keys: {
-    parameters: {
-      query?: {
-        /** @description service key */
-        serviceKey?: string[];
-        /** @description service scope filter */
-        scope?: string;
-      };
-      header?: never;
-      path: {
-        /** @description service name */
-        name: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['StateInterfaceResponse'];
         };
       };
       400: {

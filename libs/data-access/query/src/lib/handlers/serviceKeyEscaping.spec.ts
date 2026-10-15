@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getInbox } from './getInbox';
-import { getStateInterface } from './getStateInterface';
 import { queryState } from './queryState';
 import type { QueryContext } from './shared';
 
@@ -23,23 +22,6 @@ function createContext() {
 }
 
 describe('service keys with quotes', () => {
-  it('escapes the service key when listing state keys', async () => {
-    const { context, sql } = createContext();
-
-    await getStateInterface.call(
-      context,
-      'myObject3',
-      ["qa'key%_1013"],
-      'codexqa-a-1013',
-    );
-
-    expect(sql()).toMatchInlineSnapshot(`
-      [
-        "SELECT DISTINCT key FROM state WHERE service_name = 'myObject3'  AND service_key IN ('qa''key%_1013') AND scope = 'codexqa-a-1013' GROUP BY key",
-      ]
-    `);
-  });
-
   it('escapes state object filters', async () => {
     const { context, sql } = createContext();
 

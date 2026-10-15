@@ -2001,42 +2001,6 @@ export function useGetVirtualObjectState(
   };
 }
 
-export function useGetVirtualObjectStateInterface(
-  serviceName: string,
-  serviceKey: string[],
-  scope?: string,
-  options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>,
-) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/services/{name}/state/keys',
-    'get',
-    {
-      baseUrl,
-      parameters: {
-        path: { name: serviceName },
-        query: {
-          serviceKey,
-          ...(scope !== undefined ? { scope } : {}),
-        },
-      },
-    },
-  );
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-    enabled: options?.enabled !== false && enabled,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
-  };
-}
-
 export function useQueryVirtualObjectState(
   serviceName: string,
   args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
