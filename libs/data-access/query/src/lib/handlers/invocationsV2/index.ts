@@ -15,7 +15,3 @@ export {
   finishedInvocationsBreakdownV2,
   type FinishedInvocationsBreakdownV2Args,
 } from './finishedInvocationsBreakdownV2';
-export {
-  finishedInvocationsHistoryV2,
-  type FinishedInvocationsHistoryV2Args,
-} from './finishedInvocationsHistoryV2';

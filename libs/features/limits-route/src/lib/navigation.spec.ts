@@ -8,7 +8,7 @@ import {
   vqueuesForVirtualObjectInstanceHref,
 } from './navigation';
 import {
-  LIMIT_RULE_FILTER_SCHEMA,
+  limitRuleFilterSchema,
   selectedLimitRulePattern,
 } from './limits.ruleFilters';
 
@@ -16,10 +16,9 @@ describe('rule navigation', () => {
   it('filters the Rules page by exact pattern', () => {
     const href = limitRulesForPatternHref('/ui', 'tenant-*/payments/priority');
     const url = new URL(href, 'https://example.com');
-    const filters = readFilterClauses(
-      url.searchParams,
-      LIMIT_RULE_FILTER_SCHEMA,
-    );
+    const filters = readFilterClauses(url.searchParams, [
+      limitRuleFilterSchema([]),
+    ]);
 
     expect(url.pathname).toBe('/ui/flow-control/rules');
     expect(selectedLimitRulePattern(filters)).toBe(

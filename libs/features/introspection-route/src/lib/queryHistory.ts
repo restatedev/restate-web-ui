@@ -66,13 +66,6 @@ export function addQueryToHistory(query: string) {
   write(next);
 }
 
-export function removeQueryFromHistory(query: string) {
-  const current = getQueryHistory();
-  const next = current.filter((q) => q !== query);
-  if (next.length === current.length) return;
-  write(next);
-}
-
 export function clearQueryHistory() {
   if (getQueryHistory().length === 0) return;
   write([]);

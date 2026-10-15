@@ -132,16 +132,6 @@ Sampled is the default mode. Time bounds are applied before `LIMIT S`.
 | No VQueue exact   | Aggregate `sys_invocation_status WHERE status = 'completed' [AND completed_at range]`; map success to `succeeded`, everything else to `failed` |
 | No VQueue sampled | Same aggregation over `(SELECT completion_result FROM sys_invocation_status WHERE status = 'completed' [AND completed_at range] LIMIT S)`      |
 
-## `POST /query/v2/invocations/finished-history`
-
-| Scenario  | Query shape                                                                                                                                                                                                                             |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| VQueue    | `SELECT date_bin(interval, transitioned_at), COUNT(*) FILTER (WHERE status = <outcome>) FROM sys_vqueues WHERE stage = 'finished' AND entry_kind = 'invocation' AND transitioned_at >= start AND transitioned_at < end GROUP BY bucket` |
-| No VQueue | `SELECT date_bin(interval, completed_at), COUNT(*) FILTER (WHERE completion_result = success/failure) FROM sys_invocation_status WHERE status = 'completed' AND completed_at >= start AND completed_at < end GROUP BY bucket`           |
-
-The handler fills missing buckets. VQueue returns four outcomes; invocation
-status returns success versus a combined failure bucket.
-
 ## Point APIs
 
 All queries for one ID or a bounded ID list run in parallel. The VQueue query

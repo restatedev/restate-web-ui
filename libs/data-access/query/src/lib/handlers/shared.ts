@@ -17,11 +17,6 @@ import {
   type QueryOutcome,
 } from '../queryStats';
 
-export const DURATION_CALC =
-  "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
-
-export const DURATION_EXPRESSION = `${DURATION_CALC} AS duration`;
-
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS = 10 * 60_000;
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL = '10m';
 export const BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT = 500;

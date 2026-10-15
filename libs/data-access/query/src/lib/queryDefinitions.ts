@@ -156,38 +156,10 @@ export const QUERY_DEFINITIONS = {
       "SELECT <list columns> FROM sys_invocation WHERE id IN (…) [AND status <> 'completed']",
     tables: ['sys_invocation'],
   },
-  'invocations/completed-breakdown': {
-    deprecated: true,
-    description:
-      'No longer issued — replaced by the finished-history time series. Bucketed completed invocations into a success/failure series.',
-    shape:
-      "SELECT to_unixtime(date_bin(INTERVAL ?, completed_at, epoch)), COUNT(*) FILTER (WHERE completion_result = 'success'), COUNT(*) FILTER (WHERE completion_result = 'failure') FROM sys_invocation_status WHERE status = 'completed' AND completed_at >= ? AND completed_at < ? [AND <filters>] GROUP BY bucket",
-    tables: ['sys_invocation_status'],
-  },
-  'invocations/count-estimate': {
-    description:
-      'Estimate how many invocations match the current filters (bounded scan) for the invocations count.',
-    shape:
-      'SELECT COUNT(1) FROM (SELECT <list columns> FROM sys_invocation LIMIT 200000) WHERE <filters>',
-    tables: ['sys_invocation'],
-  },
-  'invocations/count-exact-check': {
-    description:
-      'Fetch the first matching invocation ids to report an exact count when the result set is small.',
-    shape: 'SELECT id FROM sys_invocation WHERE <filters> LIMIT 100',
-    tables: ['sys_invocation'],
-  },
   'invocations/get': {
     description:
       'Load a single invocation’s full row for detail surfaces (invocation page, journal, VQueue snapshot focus).',
     shape: 'SELECT <all columns> FROM sys_invocation WHERE id = ?',
-    tables: ['sys_invocation'],
-  },
-  'invocations/ids-page': {
-    description:
-      'Page through the ids of invocations matching the filters to drive batch actions (cancel, kill, purge, …).',
-    shape:
-      'SELECT id, created_at FROM sys_invocation WHERE <filters> [AND created_at > cursor] ORDER BY created_at ASC LIMIT 1000',
     tables: ['sys_invocation'],
   },
   'invocations/journal-entries': {
@@ -195,14 +167,6 @@ export const QUERY_DEFINITIONS = {
       'Load all journal entries of an invocation for the journal timeline.',
     shape:
       'SELECT <entry columns [+ raw]> FROM sys_journal WHERE id = ? ORDER BY index',
-    tables: ['sys_journal'],
-  },
-  'invocations/journal-entry': {
-    deprecated: true,
-    description:
-      'No longer issued — replaced by the journal-entry metadata and payloads queries. Fetched a single full journal entry.',
-    shape:
-      'SELECT <entry columns + raw> FROM sys_journal WHERE id = ? AND index = ?',
     tables: ['sys_journal'],
   },
   'invocations/journal-entry-metadata': {
@@ -226,22 +190,6 @@ export const QUERY_DEFINITIONS = {
       'SELECT <event columns> FROM sys_journal_events WHERE id = ? ORDER BY appended_at',
     tables: ['sys_journal_events'],
   },
-  'invocations/list-details': {
-    deprecated: true,
-    description:
-      'No longer issued — part of the previous invocations list implementation. Hydrated the full rows for the selected page ids.',
-    shape:
-      'SELECT <list columns>, <duration expr> FROM sys_invocation WHERE id IN (…) AND <filters> [ORDER BY <sort>]',
-    tables: ['sys_invocation'],
-  },
-  'invocations/list-ids': {
-    deprecated: true,
-    description:
-      'No longer issued — part of the previous invocations list implementation. Selected the page’s invocation ids matching filters and sort.',
-    shape:
-      'SELECT id FROM sys_invocation [LEFT JOIN sys_invocation_state ON id] WHERE <filters> [ORDER BY <sort>] LIMIT 250 [sampled: FROM (… LIMIT 50000)]',
-    tables: ['sys_invocation', 'sys_invocation_status', 'sys_invocation_state'],
-  },
   'invocations/paused-error': {
     description:
       'Fetch the pause event with its last failure for a paused invocation’s error panel.',
@@ -254,37 +202,6 @@ export const QUERY_DEFINITIONS = {
       'Refresh the live status of the invocations currently visible (tables, journal links).',
     shape: 'SELECT <status columns> FROM sys_invocation WHERE id IN (…)',
     tables: ['sys_invocation'],
-  },
-  'invocations/summary': {
-    deprecated: true,
-    description:
-      'No longer issued — part of the previous invocations summary implementation. Grouped invocation counts by status, service, and handler.',
-    shape:
-      "SELECT <status CASE>, completion_result, service, handler, COUNT(1) FROM sys_invocation_status LEFT JOIN (SELECT … FROM sys_vqueues WHERE stage = 'inbox') ON entry_id = id [WHERE <filters>] GROUP BY status, completion_result, service, handler [sampled: FROM (… LIMIT 50000)]",
-    tables: ['sys_invocation', 'sys_invocation_status', 'sys_vqueues'],
-  },
-  'invocations/summary-split-counts': {
-    deprecated: true,
-    description:
-      'Disabled summary experiment; its call site is commented out. Grouped raw invocation status counts.',
-    shape:
-      'SELECT status, completion_result, service, handler, COUNT(1) FROM sys_invocation_status [WHERE <filters>] GROUP BY status, completion_result, service, handler [sampled: FROM (… LIMIT 50000)]',
-    tables: ['sys_invocation_status'],
-  },
-  'invocations/summary-split-services': {
-    deprecated: true,
-    description:
-      'Disabled summary experiment; its call site is commented out. Listed service names to zero-fill summary buckets.',
-    shape: 'SELECT name FROM sys_service',
-    tables: ['sys_service'],
-  },
-  'invocations/summary-split-state': {
-    deprecated: true,
-    description:
-      'Disabled summary experiment; its call site is commented out. Derived running/backing-off counts from the live-state table.',
-    shape:
-      'SELECT service, handler, <derived-status CASE>, COUNT(1) FROM sys_invocation_state GROUP BY service, handler, derived_status',
-    tables: ['sys_invocation_state'],
   },
   'invocations/transient-error': {
     description:
@@ -396,20 +313,6 @@ export const QUERY_DEFINITIONS = {
       'Break down finished invocation outcomes from VQueue entries for the Completed facet.',
     shape:
       "SELECT status, COUNT(1) FROM sys_vqueues WHERE stage = 'finished' [AND transitioned_at >= ? AND < ?] GROUP BY status [sampled: FROM (… LIMIT 1000000)]",
-    tables: ['sys_vqueues'],
-  },
-  'invocations-v2/finished-history-from-status': {
-    description:
-      'Bucket completions into an epoch-aligned success/failure time series for the completion chart (servers without VQueues).',
-    shape:
-      "SELECT to_unixtime(date_bin(INTERVAL ?, completed_at, epoch)), COUNT(1) FILTER (WHERE completion_result = 'success'), COUNT(1) FILTER (WHERE completion_result = 'failure') FROM sys_invocation_status WHERE status = 'completed' AND completed_at >= ? AND < ? GROUP BY bucket",
-    tables: ['sys_invocation_status'],
-  },
-  'invocations-v2/finished-history-from-vqueues': {
-    description:
-      'Bucket finished VQueue outcomes into an epoch-aligned time series for the completion chart.',
-    shape:
-      "SELECT to_unixtime(date_bin(INTERVAL ?, transitioned_at, epoch)), COUNT(1) FILTER (WHERE status = 'succeeded'), COUNT(1) FILTER (WHERE status = 'failed'), COUNT(1) FILTER (WHERE status = 'cancelled'), COUNT(1) FILTER (WHERE status = 'killed') FROM sys_vqueues WHERE stage = 'finished' AND transitioned_at >= ? AND < ? GROUP BY bucket",
     tables: ['sys_vqueues'],
   },
   'invocations-v2/flow-control-meta': {
@@ -556,12 +459,6 @@ export const QUERY_DEFINITIONS = {
       'SELECT <counter columns> FROM sys_user_limits [WHERE rule_pattern = ? | rule_pattern IS NOT NULL | <filters> | <search ILIKE>] ORDER BY <multi-key sort> LIMIT ≤1001',
     tables: ['sys_user_limits'],
   },
-  'limits/rule': {
-    description:
-      'Fetch a single limit rule by exact pattern for the rule detail and edit views.',
-    shape: 'SELECT <rule columns> FROM sys_rules WHERE pattern = ?',
-    tables: ['sys_rules'],
-  },
   'limits/rules-counter-stats': {
     description:
       'Aggregate limit-counter totals and backlogged counts per listed rule (Rules table).',
@@ -575,13 +472,6 @@ export const QUERY_DEFINITIONS = {
     shape:
       'SELECT <rule columns> FROM sys_rules [WHERE pattern = ?] ORDER BY pattern ASC|DESC LIMIT ≤1001',
     tables: ['sys_rules'],
-  },
-  'metrics/summary': {
-    description:
-      'Aggregate server-wide throughput and capacity gauges for the Overview metrics strip.',
-    shape:
-      'SELECT <all gauges> FROM (SELECT SUM(invocations), SUM(events), SUM(actions), SUM(invoker_to_service_throughput), SUM(invoker_available_slots), SUM(invoker_used_slots) FROM metrics_processor) CROSS JOIN (SELECT SUM(throughput), SUM(current_connections), SUM(waiting_invocations) FROM metrics_node) CROSS JOIN (SELECT SUM(append_rate) FROM metrics_log)',
-    tables: ['metrics_processor', 'metrics_node', 'metrics_log'],
   },
   'state/entries-page': {
     description:
@@ -623,12 +513,6 @@ export const QUERY_DEFINITIONS = {
       'Fetch a bounded preview of small state values for the visible page of state objects.',
     shape:
       'SELECT service_key [, scope], key, value_length, value FROM state WHERE service_name = ? AND service_key IN (…) [AND scope …] AND value_length <= 2048 LIMIT 1500',
-    tables: ['state'],
-  },
-  'state/services': {
-    description:
-      'List the services that currently store K/V state for the State page’s service list.',
-    shape: 'SELECT DISTINCT service_name FROM state ORDER BY service_name',
     tables: ['state'],
   },
   'state/storage-size': {

@@ -20,11 +20,34 @@ import {
   queryInvocationSummaryFromStats,
 } from './summary/statsSources';
 import { countInvocationsFromIndexes } from './list/indexedInvocationCandidates';
-import { rangeToCreatedAtFilter } from '../summaryInvocations';
 import { matchesStringFilter } from './summary/matchesStringFilter';
 
 export type SummaryInvocationsV2Args =
   components['schemas']['SummaryInvocationsV2RequestBody'];
+
+const RANGE_DURATIONS_MS: Record<string, number> = {
+  PT1H: 60 * 60 * 1000,
+  P1D: 24 * 60 * 60 * 1000,
+};
+
+function rangeToCreatedAtFilter(range: string | undefined):
+  | {
+      type: 'DATE';
+      field: 'created_at';
+      operation: 'AFTER';
+      value: string;
+    }
+  | undefined {
+  if (!range) return undefined;
+  const ms = RANGE_DURATIONS_MS[range];
+  if (!ms) return undefined;
+  return {
+    type: 'DATE',
+    field: 'created_at',
+    operation: 'AFTER',
+    value: new Date(Date.now() - ms).toISOString(),
+  };
+}
 
 /**
  * Applies filters not listed in highlightFields to the aggregate query. Each
