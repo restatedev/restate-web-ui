@@ -28,7 +28,6 @@ import {
   getInvocationJournalV2,
   getJournalEntryPayloads,
   getJournalEntryMetadata,
-  getInbox,
   getState,
   queryState,
   listState,
@@ -95,16 +94,7 @@ type BoundHandlers = {
     invocationId: string,
     entryIndex: number,
   ) => Promise<Response>;
-  getInvocationJournalV2: (
-    invocationId: string,
-    includePayloads?: boolean,
-  ) => Promise<Response>;
-  getInbox: (
-    service: string,
-    key: string,
-    invocationId: string | undefined,
-    scope?: string,
-  ) => Promise<Response>;
+  getInvocationJournalV2: (invocationId: string) => Promise<Response>;
   getState: (
     service: string,
     key: string,
@@ -209,7 +199,6 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getJournalEntryPayloads: getJournalEntryPayloads.bind(context),
     getJournalEntryMetadata: getJournalEntryMetadata.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
-    getInbox: getInbox.bind(context),
     getState: (service, key, stateKeys) =>
       getState.call(context, service, key, undefined, stateKeys),
     queryState: (service, args) => queryState.call(context, service, args),
@@ -371,10 +360,6 @@ export const routes = createRoutes('/query', {
     stats: {
       method: 'GET',
       pattern: '/virtual-objects/:service/instances/:key/stats',
-    },
-    queue: {
-      method: 'GET',
-      pattern: '/virtualObjects/:name/keys/:key/queue',
     },
   },
   workflows: {
@@ -538,9 +523,7 @@ router.map(routes, {
       },
       async get(ctx) {
         const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
-        const includePayloads =
-          ctx.url.searchParams.get('includePayloads') === 'true';
-        return getInvocationJournalV2(ctx.params.invocationId, includePayloads);
+        return getInvocationJournalV2(ctx.params.invocationId);
       },
     },
     virtualObjects: {
@@ -588,17 +571,6 @@ router.map(routes, {
           ctx.url.searchParams.has('scope')
             ? String(ctx.url.searchParams.get('scope'))
             : undefined,
-        );
-      },
-      async queue(ctx) {
-        const { getInbox } = ctx.storage.get(handlersKey);
-        return getInbox(
-          ctx.params.name,
-          ctx.params.key,
-          ctx.url.searchParams.has('invocationId')
-            ? String(ctx.url.searchParams.get('invocationId'))
-            : undefined,
-          ctx.url.searchParams.get('scope') ?? undefined,
         );
       },
     },

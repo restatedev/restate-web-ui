@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getInbox } from './getInbox';
 import { queryState } from './queryState';
 import type { QueryContext } from './shared';
 
@@ -9,9 +8,6 @@ function createContext() {
   >(async () => ({ rows: [] }));
   const context = {
     query,
-    adminApi: vi.fn(async () => ({
-      handlers: [{ name: "add'one", ty: 'Exclusive' }],
-    })),
     features: new Set(),
     baseUrl: '',
   } as unknown as QueryContext;
@@ -47,20 +43,6 @@ describe('service keys with quotes', () => {
         "SELECT DISTINCT service_key, scope
           FROM state WHERE "service_name" = 'myObject3' AND "service_key" = 'qa''key%_1013' AND "scope" = 'codexqa-a-1013'
           LIMIT 301",
-      ]
-    `);
-  });
-
-  it('escapes the key, scope and handler names in inbox lookups', async () => {
-    const { context, sql } = createContext();
-
-    await getInbox.call(context, 'myObject3', "qa'key", 'inv_1', "a'b");
-
-    expect(sql()).toMatchInlineSnapshot(`
-      [
-        "SELECT (num_inbox + num_running + num_suspended + num_paused) AS size FROM sys_vqueue_meta WHERE service_name = 'myObject3' AND lock_name = 'myObject3/qa''key' AND is_active = true AND scope = 'a''b'",
-        "SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = 'inv_1'",
-        "SELECT id FROM sys_invocation WHERE target_service_key = 'qa''key' AND target_service_name = 'myObject3' AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN ('add''one') AND scope = 'a''b'",
       ]
     `);
   });

@@ -29,7 +29,8 @@ import {
 } from 'react';
 import {
   convertStateToObject,
-  useGetVirtualObjectQueue,
+  useGetVirtualObjectInbox,
+  useGetVirtualObjectLock,
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -201,23 +202,28 @@ function EditStateInner({
   );
   const isPartial = typeof key === 'string';
 
-  const {
-    data: queue,
-    queryKey,
-    isFetching,
-  } = useGetVirtualObjectQueue(
+  const activityQueryOptions = {
+    enabled: Boolean(objectKey && service && isOpen),
+    staleTime: 0,
+    refetchOnMount: true,
+  };
+  const lock = useGetVirtualObjectLock(
     String(service),
     String(objectKey),
-    undefined,
     scope,
-    {
-      enabled: Boolean(objectKey && service && isOpen),
-      staleTime: 0,
-      refetchOnMount: true,
-    },
+    activityQueryOptions,
+  );
+  const inbox = useGetVirtualObjectInbox(
+    String(service),
+    String(objectKey),
+    scope,
+    activityQueryOptions,
   );
   const queryClient = useQueryClient();
-  const hasActiveInvocations = (queue?.size ?? 0) > 0;
+  const hasActiveInvocations =
+    Boolean(lock.data?.lockHolder) ||
+    (inbox.data?.inboxCount ?? inbox.data?.rows?.length ?? 0) > 0;
+  const isFetching = lock.isFetching || inbox.isFetching;
   const stateVersion = query.data?.version ?? '';
   const decodedValues = query.data?.values;
   const editorValue = useMemo(
@@ -270,7 +276,8 @@ function EditStateInner({
         if (!isOpen) {
           mutation.reset();
         } else {
-          queryClient.invalidateQueries({ queryKey });
+          queryClient.invalidateQueries({ queryKey: lock.queryKey });
+          queryClient.invalidateQueries({ queryKey: inbox.queryKey });
         }
       }}
     >

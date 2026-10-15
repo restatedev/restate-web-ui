@@ -33,33 +33,6 @@ export const QUERY_DEFINITIONS = {
       "WITH active AS (SELECT deployment_id FROM sys_service WHERE deployment_id IS NOT NULL UNION SELECT deployment_id FROM sys_deployment_stats WHERE stage IN ('inbox', 'running', 'suspended', 'paused')) SELECT id FROM sys_deployment EXCEPT SELECT id FROM active",
     tables: ['sys_deployment', 'sys_service', 'sys_deployment_stats'],
   },
-  'inbox/head': {
-    description:
-      'Find the invocation currently holding a virtual object’s exclusive lock (the queue head).',
-    shape:
-      "SELECT id FROM sys_invocation WHERE target_service_key = ? AND target_service_name = ? AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (…) AND scope …",
-    tables: ['sys_invocation'],
-  },
-  'inbox/position-from-vqueues': {
-    description:
-      'Count how many VQueue entries precede an invocation to show its queue position.',
-    shape:
-      'SELECT COUNT(*) FROM sys_vqueues WHERE id = ? AND sequence_number < ?',
-    tables: ['sys_vqueues'],
-  },
-  'inbox/size-from-vqueue-meta': {
-    description:
-      'Read a virtual object’s unfinished-entry total from its VQueue metadata.',
-    shape:
-      'SELECT (num_inbox + num_running + num_suspended + num_paused) FROM sys_vqueue_meta WHERE service_name = ? AND lock_name = ? AND is_active = true AND scope …',
-    tables: ['sys_vqueue_meta'],
-  },
-  'inbox/vqueue-entry-lookup': {
-    description:
-      'Find the VQueue id and sequence number of an invocation to locate its queue position.',
-    shape: 'SELECT id, sequence_number FROM sys_vqueues WHERE entry_id = ?',
-    tables: ['sys_vqueues'],
-  },
   'indexes/busy-vqueues': {
     description:
       'List VQueues with entry counts per stage from the busy-VQueue index, busiest first.',

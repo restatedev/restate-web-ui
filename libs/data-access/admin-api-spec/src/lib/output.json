@@ -4406,23 +4406,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "journal",
-            "in": "query",
-            "description": "Should include journal",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "includePayloads",
-            "in": "query",
-            "description": "When true, includes full payload data (parameters, values, headers) in journal entries. When false or omitted, returns lite journal entries without payloads for better performance.",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
           }
         ],
         "responses": {
@@ -4460,122 +4443,6 @@
                       }
                     }
                   ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/virtualObjects/{name}/keys/{key}/queue": {
-      "get": {
-        "tags": ["query-invocations"],
-        "summary": "Get Virtual Object inbox inbox for a key",
-        "description": "Get Virtual Object inbox inbox for a key",
-        "operationId": "get_inbox",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "description": "service name",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "in": "path",
-            "description": "key",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "invocationId",
-            "in": "query",
-            "description": "Invocation id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "scope",
-            "in": "query",
-            "description": "Service scope",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InboxResponse"
                 }
               }
             }
@@ -9114,12 +8981,12 @@
           "startTime": {
             "type": "string",
             "format": "date-time",
-            "description": "Inclusive completion-time lower bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode."
+            "description": "Inclusive completion-time lower bound on transitioned_at."
           },
           "endTime": {
             "type": "string",
             "format": "date-time",
-            "description": "Exclusive completion-time upper bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode."
+            "description": "Exclusive completion-time upper bound on transitioned_at."
           }
         }
       },
@@ -9138,22 +9005,11 @@
       },
       "FinishedInvocationsBreakdownV2Response": {
         "type": "object",
-        "required": [
-          "mode",
-          "granularity",
-          "isPartial",
-          "scannedCount",
-          "outcomes"
-        ],
+        "required": ["mode", "isPartial", "scannedCount", "outcomes"],
         "properties": {
           "mode": {
             "type": "string",
             "enum": ["exact", "sampled"]
-          },
-          "granularity": {
-            "type": "string",
-            "enum": ["exact", "failure-grouped"],
-            "description": "VQueue mode reports all four outcomes exactly. Legacy mode avoids reading completion_failure and groups killed/cancelled into failed."
           },
           "isPartial": {
             "type": "boolean"
@@ -12634,21 +12490,6 @@
           "value": {
             "type": "string"
           }
-        }
-      },
-      "InboxResponse": {
-        "type": "object",
-        "required": ["length", "head"],
-        "properties": {
-          "size": {
-            "type": "integer"
-          },
-          "head": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": {
-          "type": "integer"
         }
       },
       "InvocationFuture": {

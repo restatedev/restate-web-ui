@@ -1467,7 +1467,6 @@ function getInvocationV2AdminApi(baseUrl: string, invocationId: string) {
     baseUrl,
     parameters: {
       path: { invocationId },
-      query: { journal: true, includePayloads: false },
     },
   });
 }
@@ -1596,43 +1595,6 @@ export function useGetInvocationsJournalWithInvocationsV2(
       ]);
     },
     invalidate,
-  };
-}
-
-export function useGetVirtualObjectQueue(
-  serviceName: string,
-  key: string,
-  invocationId?: string,
-  scope?: string,
-  options?: HookQueryOptions<
-    '/query/virtualObjects/{name}/keys/{key}/queue',
-    'get'
-  >,
-) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/virtualObjects/{name}/keys/{key}/queue',
-    'get',
-    {
-      baseUrl,
-      parameters: {
-        path: { key, name: serviceName },
-        query: { invocationId, scope },
-      },
-    },
-  );
-
-  const results = useQuery({
-    ...queryOptions,
-    ...options,
-    enabled: options?.enabled !== false && enabled,
-  });
-
-  return {
-    ...results,
-    queryKey: queryOptions.queryKey,
   };
 }
 

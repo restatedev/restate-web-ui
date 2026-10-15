@@ -31,7 +31,6 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
       `);
       expect(await response.json()).toMatchObject({
         mode: 'exact',
-        granularity: 'exact',
         isPartial: false,
         scannedCount: 3,
       });
@@ -95,7 +94,6 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
       `);
       expect(body).toMatchObject({
         mode: 'sampled',
-        granularity: 'exact',
         isPartial: true,
         scannedCount: 5,
       });

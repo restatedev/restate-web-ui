@@ -56,7 +56,6 @@ export async function queryFinishedBreakdownFromVqueues(
 
   return Response.json({
     mode: mode.type,
-    granularity: 'exact',
     isPartial: mode.type === 'sampled' && scannedCount >= mode.sampleSize,
     scannedCount,
     outcomes: buildOutcomes(rows),

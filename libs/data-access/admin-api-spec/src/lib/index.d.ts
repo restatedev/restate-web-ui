@@ -1114,26 +1114,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/virtualObjects/{name}/keys/{key}/queue': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get Virtual Object inbox inbox for a key
-     * @description Get Virtual Object inbox inbox for a key
-     */
-    get: operations['get_inbox'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/services/{name}/state': {
     parameters: {
       query?: never;
@@ -3391,12 +3371,12 @@ export interface components {
       mode?: components['schemas']['FinishedInvocationQueryModeV2'];
       /**
        * Format: date-time
-       * @description Inclusive completion-time lower bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode.
+       * @description Inclusive completion-time lower bound on transitioned_at.
        */
       startTime?: string;
       /**
        * Format: date-time
-       * @description Exclusive completion-time upper bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode.
+       * @description Exclusive completion-time upper bound on transitioned_at.
        */
       endTime?: string;
     };
@@ -3408,11 +3388,6 @@ export interface components {
     FinishedInvocationsBreakdownV2Response: {
       /** @enum {string} */
       mode: 'exact' | 'sampled';
-      /**
-       * @description VQueue mode reports all four outcomes exactly. Legacy mode avoids reading completion_failure and groups killed/cancelled into failed.
-       * @enum {string}
-       */
-      granularity: 'exact' | 'failure-grouped';
       isPartial: boolean;
       scannedCount: number;
       outcomes: components['schemas']['FinishedInvocationOutcomeBreakdownV2'][];
@@ -4771,12 +4746,6 @@ export interface components {
       /** @enum {string} */
       category?: 'command';
       value?: string;
-    };
-    InboxResponse: {
-      size?: number;
-      head: string;
-    } & {
-      [key: string]: number;
     };
     InvocationFuture:
       | components['schemas']['InvocationFutureSingle']
@@ -8299,12 +8268,7 @@ export interface operations {
   };
   get_invocation_journal_v2: {
     parameters: {
-      query?: {
-        /** @description Should include journal */
-        journal?: boolean;
-        /** @description When true, includes full payload data (parameters, values, headers) in journal entries. When false or omitted, returns lite journal entries without payloads for better performance. */
-        includePayloads?: boolean;
-      };
+      query?: never;
       header?: never;
       path: {
         /** @description Invocation id */
@@ -8327,83 +8291,6 @@ export interface operations {
               entries?: components['schemas']['JournalEntryV2'][];
             };
           };
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  get_inbox: {
-    parameters: {
-      query?: {
-        /** @description Invocation id */
-        invocationId?: string;
-        /** @description Service scope */
-        scope?: string;
-      };
-      header?: never;
-      path: {
-        /** @description service name */
-        name: string;
-        /** @description key */
-        key: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['InboxResponse'];
         };
       };
       400: {

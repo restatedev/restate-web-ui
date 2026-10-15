@@ -17,7 +17,6 @@ export { getVirtualObjectInbox } from './getVirtualObjectInbox';
 export { getVirtualObjectInvocations } from './getVirtualObjectInvocations';
 export { getVirtualObjectStats } from './getVirtualObjectStats';
 export { getInvocationJournalV2 } from './getInvocationJournalV2';
-export { getInbox } from './getInbox';
 export { getState } from './getState';
 export { queryState } from './queryState';
 export { listState, type ListStateArgs, type ListStateItem } from './listState';
