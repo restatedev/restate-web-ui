@@ -17,7 +17,6 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
 import { FormFieldCombobox } from '@restate/ui/form-field';
-import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
 import { retentionOptions } from './durationOptions';
 import { useDialogDraft } from './useDialogDraft';
@@ -136,23 +135,20 @@ export function EditRetentionDialog() {
               <Icon name={IconName.ExternalLink} className="h-[1em] w-[1em]" />
             </Link>
           </p>
-          <RestateMinimumVersion minVersion="1.4.5">
-            <div className="flex flex-col gap-2 text-sm text-gray-500">
-              <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">
-                <Icon
-                  className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
-                  name={IconName.TriangleAlert}
-                />
-                <span className="inline-block">
-                  Any changes made here are{' '}
-                  <span className="font-semibold">temporary</span> and remain in
-                  effect only until the service is next discovered and
-                  registered. Use the SDK to configure retention periods
-                  permanently.
-                </span>
-              </p>
-            </div>
-          </RestateMinimumVersion>
+          <div className="flex flex-col gap-2 text-sm text-gray-500">
+            <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">
+              <Icon
+                className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+                name={IconName.TriangleAlert}
+              />
+              <span className="inline-block">
+                Any changes made here are{' '}
+                <span className="font-semibold">temporary</span> and remain in
+                effect only until the service is next discovered and registered.
+                Use the SDK to configure retention periods permanently.
+              </span>
+            </p>
+          </div>
           <Form
             id={formId}
             method="PATCH"
@@ -205,27 +201,25 @@ export function EditRetentionDialog() {
               className="[&_label]:text-zinc-500"
               placeholder="1day"
             />
-            <RestateMinimumVersion minVersion="1.4.5">
-              <FormFieldCombobox
-                options={retentionOptions}
-                pattern={HUMANTIME_PATTERN_INPUT}
-                allowsCustomValue
-                defaultFilter={startsWith}
-                defaultValue={data?.journal_retention ?? ''}
-                onChange={(value) =>
-                  setDraft((old) => ({ ...old, journal: value }))
-                }
-                disabled={isPendingOrSubmitting}
-                label={
-                  <JournalRetentionExplainer variant="indicator-button">
-                    Journal retention
-                  </JournalRetentionExplainer>
-                }
-                name="journal_retention"
-                className="[&_label]:text-zinc-500"
-                placeholder="1day"
-              />
-            </RestateMinimumVersion>
+            <FormFieldCombobox
+              options={retentionOptions}
+              pattern={HUMANTIME_PATTERN_INPUT}
+              allowsCustomValue
+              defaultFilter={startsWith}
+              defaultValue={data?.journal_retention ?? ''}
+              onChange={(value) =>
+                setDraft((old) => ({ ...old, journal: value }))
+              }
+              disabled={isPendingOrSubmitting}
+              label={
+                <JournalRetentionExplainer variant="indicator-button">
+                  Journal retention
+                </JournalRetentionExplainer>
+              }
+              name="journal_retention"
+              className="[&_label]:text-zinc-500"
+              placeholder="1day"
+            />
             <div className="rounded-xl bg-gray-100 px-3 py-3">
               <RetentionIllustration
                 journal={draft.journal ?? data?.journal_retention}

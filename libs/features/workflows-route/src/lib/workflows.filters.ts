@@ -34,12 +34,6 @@ export const WORKFLOW_FILTER_SCHEMA = [
   scopeFilterSchema,
 ] satisfies QueryClauseSchema<QueryClauseType>[];
 
-export function workflowFilterSchema(includeScope: boolean) {
-  return includeScope
-    ? WORKFLOW_FILTER_SCHEMA
-    : WORKFLOW_FILTER_SCHEMA.filter(({ id }) => id !== 'scope');
-}
-
 export function createWorkflowIdFilter(input: string) {
   const value = input.trim();
   return value

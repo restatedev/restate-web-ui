@@ -99,7 +99,7 @@ export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
           />
         </CardRow>
       )}
-      {stats?.supported && stats.waitingToStartDuration && (
+      {stats?.waitingToStartDuration && (
         <CardRow label="Waiting to start">
           <span className="text-xs text-zinc-600 tabular-nums">
             {formatDuration(stats.waitingToStartDuration)}

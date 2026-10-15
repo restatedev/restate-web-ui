@@ -37,8 +37,6 @@ export function VirtualObjectStatsCard({
   stats: VirtualObjectStatsResponse;
   vqueuesHref: string;
 }) {
-  if (!stats.supported) return null;
-
   const inboxDuration = stats.averageInboxDuration;
   const oldestInboxedAt = stats.activity?.oldestInboxedAt;
   const lastEnqueuedAt = stats.activity?.lastEnqueuedAt;

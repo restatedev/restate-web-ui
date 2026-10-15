@@ -23,9 +23,7 @@ describe('useCompletionRange', () => {
   it('marks the completion breakdown for overview refresh', () => {
     renderHook(() =>
       useCompletionRange({
-        hasCompletePopulation: true,
         breakdownMode: 'exact',
-        canSampleBreakdown: true,
         refetchInterval: () => 30_000,
       }),
     );
@@ -33,7 +31,6 @@ describe('useCompletionRange', () => {
     expect(useFinishedInvocationsBreakdownV2Mock).toHaveBeenCalledWith(
       expect.any(Object),
       expect.objectContaining({
-        enabled: true,
         meta: { overviewRefresh: true },
       }),
     );
@@ -42,11 +39,8 @@ describe('useCompletionRange', () => {
   it('reuses the invocation summary for an exact overall breakdown', () => {
     const { result } = renderHook(() =>
       useCompletionRange({
-        hasCompletePopulation: true,
         breakdownMode: 'exact',
-        canSampleBreakdown: true,
         refetchInterval: () => 30_000,
-        reuseSummaryForOverall: true,
         summaryBreakdownIsLoading: true,
       }),
     );
@@ -62,11 +56,8 @@ describe('useCompletionRange', () => {
   it('loads the dedicated breakdown after selecting a bounded range', () => {
     const { result } = renderHook(() =>
       useCompletionRange({
-        hasCompletePopulation: true,
         breakdownMode: 'exact',
-        canSampleBreakdown: true,
         refetchInterval: () => 30_000,
-        reuseSummaryForOverall: true,
       }),
     );
 
@@ -85,11 +76,8 @@ describe('useCompletionRange', () => {
   it('reuses a partial sampled summary for estimated overall counts', () => {
     const { result } = renderHook(() =>
       useCompletionRange({
-        hasCompletePopulation: true,
         breakdownMode: 'estimate',
-        canSampleBreakdown: true,
         refetchInterval: () => 30_000,
-        reuseSummaryForOverall: true,
         summaryBreakdownIsLoading: true,
         summaryIsPartial: true,
       }),

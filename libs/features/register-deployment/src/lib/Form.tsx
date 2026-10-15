@@ -291,7 +291,6 @@ function EndpointForm() {
     isRegister,
     isOnboarding,
     isUpdate,
-    isCloudRunSupported,
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
 
@@ -485,22 +484,20 @@ function EndpointForm() {
                   HTTP endpoint
                 </TooltipContent>
               </Tooltip>
-              {isCloudRunSupported && (
-                <Tooltip>
-                  <TooltipTrigger>
-                    <CustomRadio
-                      value="cloudrun"
-                      className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                      aria-label="Google Cloud Run"
-                    >
-                      <Icon name={IconName.CloudRun} className="h-4 w-4" />
-                    </CustomRadio>
-                  </TooltipTrigger>
-                  <TooltipContent size="sm" offset={20}>
-                    Google Cloud Run
-                  </TooltipContent>
-                </Tooltip>
-              )}
+              <Tooltip>
+                <TooltipTrigger>
+                  <CustomRadio
+                    value="cloudrun"
+                    className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                    aria-label="Google Cloud Run"
+                  >
+                    <Icon name={IconName.CloudRun} className="h-4 w-4" />
+                  </CustomRadio>
+                </TooltipTrigger>
+                <TooltipContent size="sm" offset={20}>
+                  Google Cloud Run
+                </TooltipContent>
+              </Tooltip>
               <Tooltip>
                 <TooltipTrigger>
                   <CustomRadio

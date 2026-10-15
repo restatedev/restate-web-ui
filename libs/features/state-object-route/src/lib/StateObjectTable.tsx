@@ -309,7 +309,6 @@ export function StateObjectTable({
           columns={tableColumns}
           codecOptions={codecOptions}
           serviceName={serviceName}
-          serviceType={serviceType}
           isExpanded={visibleExpandedKeys.has(row.id)}
           onEditValue={(stateKey) => onEditValue(row, stateKey)}
         />
@@ -323,7 +322,6 @@ export function StateEntriesTable({
   serviceName,
   serviceKey,
   scope,
-  serviceType,
   emptyPlaceholder,
   onEditValue,
 }: {
@@ -331,7 +329,6 @@ export function StateEntriesTable({
   serviceName: string;
   serviceKey: string;
   scope?: string;
-  serviceType?: StateServiceType;
   emptyPlaceholder?: ReactNode;
   onEditValue: (stateKey: string) => void;
 }) {
@@ -404,13 +401,12 @@ export function StateEntriesTable({
         codecOptions,
         row,
         serviceName,
-        serviceType,
         onEditValue,
         entriesQuery.dataUpdatedAt,
         entriesQuery.hasNextPage,
         entriesQuery.isFetchingNextPage,
       ]}
-      rowDependencies={[codecOptions, row, serviceName, serviceType]}
+      rowDependencies={[codecOptions, row, serviceName]}
       renderCell={(entry, col) =>
         entry.kind === 'load_more' ? (
           <StateLoadMoreCell
@@ -425,7 +421,6 @@ export function StateEntriesTable({
             col={col}
             codecOptions={codecOptions}
             serviceName={serviceName}
-            serviceType={serviceType}
             onEditValue={onEditValue}
           />
         )
@@ -727,7 +722,6 @@ function StateObjectChildRows({
   columns,
   codecOptions,
   serviceName,
-  serviceType,
   isExpanded,
   onEditValue,
 }: {
@@ -735,7 +729,6 @@ function StateObjectChildRows({
   columns: PanelTableColumn[];
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType?: StateServiceType;
   isExpanded: boolean;
   onEditValue: (stateKey: string) => void;
 }) {
@@ -780,7 +773,6 @@ function StateObjectChildRows({
         columns,
         codecOptions,
         serviceName,
-        serviceType,
         entriesQuery.dataUpdatedAt,
         entriesQuery.error,
         entriesQuery.hasNextPage,
@@ -804,7 +796,6 @@ function StateObjectChildRows({
               col={col}
               codecOptions={codecOptions}
               serviceName={serviceName}
-              serviceType={serviceType}
               error={entriesQuery.error}
               isFetchingNextPage={entriesQuery.isFetchingNextPage}
               onLoadMore={() => entriesQuery.fetchNextPage()}
@@ -824,7 +815,6 @@ function StateChildCell({
   col,
   codecOptions,
   serviceName,
-  serviceType,
   error,
   isFetchingNextPage,
   onLoadMore,
@@ -836,7 +826,6 @@ function StateChildCell({
   col: PanelTableColumn;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType?: StateServiceType;
   error?: Error | null;
   isFetchingNextPage: boolean;
   onLoadMore: VoidFunction;
@@ -906,7 +895,6 @@ function StateChildCell({
       col={col}
       codecOptions={codecOptions}
       serviceName={serviceName}
-      serviceType={serviceType}
       onEditValue={onEditValue}
     />
   );
@@ -954,7 +942,6 @@ function StateEntryCell({
   col,
   codecOptions,
   serviceName,
-  serviceType,
   onEditValue,
 }: {
   row: StateObjectRecord;
@@ -962,7 +949,6 @@ function StateEntryCell({
   col: PanelTableColumn;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType?: StateServiceType;
   onEditValue: (stateKey: string) => void;
 }) {
   const { stateKeyCell, actionsCell, actions, objectActionButton, sizeText } =
@@ -994,7 +980,6 @@ function StateEntryCell({
           row={row}
           codecOptions={codecOptions}
           serviceName={serviceName}
-          serviceType={serviceType}
           onEdit={() => onEditValue(entry.name)}
         />
       </Cell>
@@ -1038,7 +1023,6 @@ function StateValuePreview({
   row,
   codecOptions,
   serviceName,
-  serviceType,
   onEdit,
 }: {
   name: string;
@@ -1047,7 +1031,6 @@ function StateValuePreview({
   row: StateObjectRecord;
   codecOptions?: RestateCodecOptions;
   serviceName: string;
-  serviceType?: StateServiceType;
   onEdit: VoidFunction;
 }) {
   const portalId = useId();
@@ -1059,7 +1042,6 @@ function StateValuePreview({
     serviceName,
     row.key,
     row.scope,
-    serviceType,
     {
       enabled: isOpen && value === undefined,
       refetchOnWindowFocus: false,

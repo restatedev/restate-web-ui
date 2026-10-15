@@ -1,6 +1,5 @@
 import { Button } from '@restate/ui/button';
 import { SectionTitle, Section } from '@restate/ui/section';
-import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { humanTimeToMs } from '@restate/util/humantime';
 import { useSearchParams } from 'react-router';
 import { SERVICE_RETENTION_EDIT } from './constants';
@@ -91,38 +90,36 @@ export function RetentionSection({
           }
           isPending={isPending}
         />
-        <RestateMinimumVersion minVersion="1.4.5">
-          <SubSection
-            value={
-              retention?.journalRetention === '0s'
-                ? 'Disabled'
-                : retention?.journalRetention
-            }
-            label={
-              <JournalRetentionExplainer variant="indicator-button">
-                Journal
-              </JournalRetentionExplainer>
-            }
-            footer={
-              <>
-                {isWorkflow &&
-                  humanTimeToMs(retention?.workflowCompletionRetention) <
-                    humanTimeToMs(retention?.journalRetention) && (
-                    <WarningWorkflowCapExplanation
-                      cap={retention?.workflowCompletionRetention}
-                    />
-                  )}
-                {humanTimeToMs(retention?.idempotencyRetention) <
+        <SubSection
+          value={
+            retention?.journalRetention === '0s'
+              ? 'Disabled'
+              : retention?.journalRetention
+          }
+          label={
+            <JournalRetentionExplainer variant="indicator-button">
+              Journal
+            </JournalRetentionExplainer>
+          }
+          footer={
+            <>
+              {isWorkflow &&
+                humanTimeToMs(retention?.workflowCompletionRetention) <
                   humanTimeToMs(retention?.journalRetention) && (
-                  <WarningIdempotencyCapExplanation
-                    cap={retention?.idempotencyRetention}
+                  <WarningWorkflowCapExplanation
+                    cap={retention?.workflowCompletionRetention}
                   />
                 )}
-              </>
-            }
-            isPending={isPending}
-          />
-        </RestateMinimumVersion>
+              {humanTimeToMs(retention?.idempotencyRetention) <
+                humanTimeToMs(retention?.journalRetention) && (
+                <WarningIdempotencyCapExplanation
+                  cap={retention?.idempotencyRetention}
+                />
+              )}
+            </>
+          }
+          isPending={isPending}
+        />
       </div>
     </Section>
   );

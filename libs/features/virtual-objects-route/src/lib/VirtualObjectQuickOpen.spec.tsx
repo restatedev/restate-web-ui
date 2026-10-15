@@ -16,7 +16,6 @@ function QuickOpenHarness({ onOpen }: { onOpen: VoidFunction }) {
       <VirtualObjectQuickOpen
         draft={draft}
         disabled={false}
-        hasScopedVirtualObjects
         onChange={setDraft}
         onOpen={onOpen}
         service="Counter"

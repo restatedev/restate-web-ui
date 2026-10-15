@@ -13,17 +13,13 @@ import {
   useProgressiveInvocationSummaryV2,
   useServiceCatalog,
 } from '@restate/data-access/admin-api-hooks';
-import {
-  getOverviewRefreshMeta,
-  hasCompleteVqueueInvocationPopulation,
-  useFeatures,
-} from '@restate/data-access/admin-api';
+import { getOverviewRefreshMeta } from '@restate/data-access/admin-api';
 import {
   getServiceIssues,
   MIN_TRAFFIC_THRESHOLD,
   type ServiceIssue,
 } from '@restate/features/system-health';
-import { useRange, useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features/restate-context';
 import {
   getUserBreakdownCountMode,
   setUserBreakdownCountMode,
@@ -33,7 +29,6 @@ import {
   getMinOverviewRefetchInterval,
   getOverviewRefetchInterval,
 } from './overviewPolling';
-import { normalizeCompletionTimeRange } from './completionBuckets';
 import type { OverviewService } from './sortServices';
 
 export function useOverviewData({
@@ -41,11 +36,6 @@ export function useOverviewData({
 }: {
   deploymentStatusEnabled: boolean;
 }) {
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
-  const hasCompleteVqueuePopulation =
-    hasCompleteVqueueInvocationPopulation(features);
-  const timeRange = normalizeCompletionTimeRange(useRange());
   const [breakdownMode, setBreakdownModeState] = useState<BreakdownCountMode>(
     getUserBreakdownCountMode,
   );
@@ -55,12 +45,11 @@ export function useOverviewData({
   }, []);
   const summaryBody = {
     mode:
-      hasVqueues && breakdownMode === 'estimate'
+      breakdownMode === 'estimate'
         ? ({ type: 'sampled', sampleSize: 1_000_000 } as const)
         : ({ type: 'exact' } as const),
-    ...(!hasVqueues && { range: timeRange }),
   };
-  const isSummaryFromStats = useCanSummarizeInvocationsFromStats(summaryBody);
+  const isSummaryFromStats = useCanSummarizeInvocationsFromStats({});
   const overviewRefetchIntervalRef = useRef<number>(undefined);
   const overviewRefetchInterval = useCallback(
     () =>
@@ -186,7 +175,7 @@ export function useOverviewData({
     },
     [loadInboxBreakdown, summary.data],
   );
-  const { isNew, isVersionGte } = useRestateContext();
+  const { isNew } = useRestateContext();
   const serviceIssuesMap = useMemo(() => {
     const map = new Map<string, ServiceIssue[]>();
     for (const service of servicesMap?.values() ?? []) {
@@ -199,7 +188,6 @@ export function useOverviewData({
       );
       const issues = getServiceIssues({
         deployment: deploymentsMap?.get(service.deployment_id),
-        isVersionGte,
         statusCounts:
           getServiceLiveStatusCountsFromSummaryV2(summary.data, service.name) ??
           (inboxBreakdown
@@ -215,7 +203,6 @@ export function useOverviewData({
     return map;
   }, [
     deploymentsMap,
-    isVersionGte,
     serviceInboxBreakdowns,
     serviceStageCounts,
     summary.data,
@@ -258,15 +245,10 @@ export function useOverviewData({
     drainedDeploymentIds,
     isDeploymentStatusLoading,
     isSummaryLoading,
-    hasVqueues,
-    hasCompleteVqueuePopulation,
-    timeRange,
     breakdownMode,
     setBreakdownMode,
-    canSampleBreakdown: hasVqueues,
     isSummaryFromStats,
-    isBreakdownSampled:
-      hasVqueues && !summary.isFromStats && breakdownMode === 'estimate',
+    isBreakdownSampled: !summary.isFromStats && breakdownMode === 'estimate',
     isInboxBreakdownLoading,
     isInboxBreakdownError: summary.isBreakdownError('inbox'),
     isCompletedBreakdownLoading: summary.isBreakdownLoading('finished'),

@@ -6,7 +6,6 @@ describe('WorkflowInteractionsCard', () => {
     render(
       <WorkflowInteractionsCard
         stats={{
-          supported: true,
           pendingPromiseCount: 0,
         }}
       />,
@@ -23,7 +22,6 @@ describe('WorkflowInteractionsCard', () => {
     render(
       <WorkflowInteractionsCard
         stats={{
-          supported: true,
           pendingPromiseCount: 0,
         }}
       />,

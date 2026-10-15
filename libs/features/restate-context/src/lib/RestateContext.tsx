@@ -22,7 +22,6 @@ import {
   classifyHealthFailure,
   type HealthFailure,
 } from '@restate/util/errors';
-import { RangeProvider } from './Range';
 
 export type Status =
   | 'HEALTHY'
@@ -249,7 +248,7 @@ function InternalRestateContextProvider({
       }}
     >
       <APIStatusProvider enabled={status === 'HEALTHY'}>
-        <RangeProvider>{children}</RangeProvider>
+        {children}
       </APIStatusProvider>
     </InternalRestateContext.Provider>
   );

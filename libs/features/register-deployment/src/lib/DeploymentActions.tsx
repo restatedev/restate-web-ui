@@ -27,28 +27,19 @@ const primaryStyles = tv({
 
 export function DeploymentActions({
   deploymentId,
-  isUpdateSupported,
   variant = 'row',
 }: {
   deploymentId: string;
-  isUpdateSupported?: boolean;
   variant?: 'row' | 'header';
 }) {
   const updateHref = `?${UPDATE_DEPLOYMENT_QUERY}=${deploymentId}`;
   const deleteHref = `?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deploymentId}`;
-  const primaryAction = isUpdateSupported
-    ? {
-        href: updateHref,
-        label: 'Update',
-        icon: IconName.Pencil,
-        destructive: false,
-      }
-    : {
-        href: deleteHref,
-        label: 'Delete',
-        icon: IconName.Trash,
-        destructive: true,
-      };
+  const primaryAction = {
+    href: updateHref,
+    label: 'Update',
+    icon: IconName.Pencil,
+    destructive: false,
+  };
   const isHeader = variant === 'header';
 
   return (
@@ -59,17 +50,15 @@ export function DeploymentActions({
       splitClassName={isHeader ? 'rounded-lg md:rounded-l-none' : undefined}
       menus={
         <>
-          {isUpdateSupported && (
-            <DropdownItem href={updateHref}>
-              {isHeader && (
-                <Icon
-                  name={IconName.Pencil}
-                  className="h-3.5 w-3.5 shrink-0 opacity-80"
-                />
-              )}
-              Update
-            </DropdownItem>
-          )}
+          <DropdownItem href={updateHref}>
+            {isHeader && (
+              <Icon
+                name={IconName.Pencil}
+                className="h-3.5 w-3.5 shrink-0 opacity-80"
+              />
+            )}
+            Update
+          </DropdownItem>
           <DropdownItem href={deleteHref} destructive>
             {isHeader && (
               <Icon

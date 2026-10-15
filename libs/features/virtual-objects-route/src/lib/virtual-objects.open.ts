@@ -8,7 +8,6 @@ export interface VirtualObjectOpenDraft {
 export function virtualObjectIdentityFromOpenDraft(
   service: string,
   draft: VirtualObjectOpenDraft,
-  hasScopedVirtualObjects: boolean,
 ): VirtualObjectInstanceIdentity | undefined {
   const key = draft.key.trim();
   if (!key) return undefined;
@@ -16,6 +15,6 @@ export function virtualObjectIdentityFromOpenDraft(
   return {
     service,
     key,
-    ...(hasScopedVirtualObjects && scope ? { scope } : {}),
+    ...(scope ? { scope } : {}),
   };
 }

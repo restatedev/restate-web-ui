@@ -130,11 +130,9 @@ export function CardEditAction({
 type DeploymentLike = DeploymentData | DetailedDeployment;
 
 export function useIsDeprecatedDeployment(deployment?: DeploymentLike) {
-  const { isVersionGte } = useRestateContext();
   return Boolean(
     deployment &&
-    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-    isVersionGte?.('1.6.0'),
+    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   );
 }
 
@@ -573,9 +571,7 @@ export function ConfigurationCard({
   isReadonly: boolean;
   isKeyed?: boolean;
 }) {
-  const { isVersionGte } = useRestateContext();
   const { data: deploymentsData } = useListDeployments();
-  const supportsJournalRetention = isVersionGte?.('1.4.5') ?? false;
   const {
     public: access,
     journalRetention,
@@ -606,7 +602,6 @@ export function ConfigurationCard({
   const journalMs = humanTimeToMs(journalRetention.value);
   const retentionCapMessages: ReactNode[] = [];
   if (
-    supportsJournalRetention &&
     isWorkflow &&
     journalMs > 0 &&
     humanTimeToMs(workflowCompletionRetention) > 0 &&
@@ -623,7 +618,6 @@ export function ConfigurationCard({
     );
   }
   if (
-    supportsJournalRetention &&
     journalMs > 0 &&
     humanTimeToMs(idempotencyRetention.value) > 0 &&
     humanTimeToMs(idempotencyRetention.value) < journalMs
@@ -641,16 +635,12 @@ export function ConfigurationCard({
   }
   const isJournalCappedByOthers = retentionCapMessages.length > 0;
   const retentionChips: ConfigChipProps[] = [
-    ...(supportsJournalRetention
-      ? [
-          {
-            label: 'journal',
-            warning: isJournalCappedByOthers,
-            value: formatConfigDuration(journalRetention.value),
-            tone: journalRetention.isOverride ? 'override' : 'default',
-          } satisfies ConfigChipProps,
-        ]
-      : []),
+    {
+      label: 'journal',
+      warning: isJournalCappedByOthers,
+      value: formatConfigDuration(journalRetention.value),
+      tone: journalRetention.isOverride ? 'override' : 'default',
+    },
     {
       label: 'idempotency',
       value: formatConfigDuration(idempotencyRetention.value),
@@ -785,9 +775,7 @@ export function ConfigurationCard({
             isReadonly={isReadonly}
             illustration={
               <RetentionIllustration
-                journal={
-                  supportsJournalRetention ? journalRetention.value : undefined
-                }
+                journal={journalRetention.value}
                 idempotency={idempotencyRetention.value}
                 workflow={workflowCompletionRetention}
                 isWorkflow={isWorkflow}

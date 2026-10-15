@@ -682,7 +682,6 @@ export function useRegisterDeploymentContext() {
   const isEndpoint = stage === 'endpoint';
   const isAdvanced = stage === 'advanced';
   const isConfirm = stage === 'confirm';
-  const { isVersionGte } = useRestateContext();
 
   const isOnboarding = useOnboarding();
 
@@ -704,11 +703,7 @@ export function useRegisterDeploymentContext() {
   const isHttp1Error =
     error instanceof RestateError && error.restateCode === 'META0014';
   const isBreakingChangeError =
-    error instanceof RestateError &&
-    error.restateCode === 'META0006' &&
-    isVersionGte?.('1.6.0');
-  // Cloud Run (and its Google ID token auth) is a 1.7+ feature.
-  const isCloudRunSupported = Boolean(isVersionGte?.('1.7.0'));
+    error instanceof RestateError && error.restateCode === 'META0006';
 
   return {
     isAdvanced,
@@ -740,14 +735,12 @@ export function useRegisterDeploymentContext() {
     error,
     canSkipAdvanced,
     isTunnel,
-    // Mask Cloud Run behind the version gate so it doesn't exist below 1.7.
-    isCloudRun: isCloudRun && isCloudRunSupported,
+    isCloudRun,
     tunnelName,
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
     isBreakingChangeError,
-    isCloudRunSupported,
     updateShouldAllowBreakingChange,
     shouldAllowBreakingChange,
     isUpdate: mode === 'update',

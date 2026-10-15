@@ -71,19 +71,16 @@ export function checkSlaThresholds(
 }
 export function getServiceIssues({
   deployment,
-  isVersionGte,
   statusCounts,
 }: {
   deployment?: Deployment;
-  isVersionGte?: (version: string) => boolean;
   statusCounts: Map<string, number>;
 }): ServiceIssue[] {
   const issues: ServiceIssue[] = [];
 
   if (
     deployment &&
-    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-    isVersionGte?.('1.6.0')
+    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION
   ) {
     issues.push({
       kind: 'deprecated-sdk',

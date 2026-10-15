@@ -2,7 +2,6 @@ import {
   useListDeployments,
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
-import { useRestateContext } from '@restate/features/restate-context';
 import { ServiceType } from '@restate/features/service';
 import { ServiceTarget } from '@restate/features/service-target';
 import { Badge } from '@restate/ui/badge';
@@ -29,7 +28,6 @@ function Component() {
   const [searchParams] = useSearchParams();
   const tab = serviceTabFromSearch(searchParams);
   const requestedHandler = searchParams.get(HANDLER_QUERY_PARAM);
-  const { isVersionGte } = useRestateContext();
   const { data, error, isPending, dataUpdatedAt } = useServiceDetails(service, {
     enabled: Boolean(service),
     refetchOnMount: true,
@@ -46,7 +44,6 @@ function Component() {
   const isPrivate = !isPending && config.public.value === false;
   const isKeyed = data?.ty === 'VirtualObject' || data?.ty === 'Workflow';
   const schemaWarnings = data?.info ?? [];
-  const hasVersion = Boolean(isVersionGte);
 
   return (
     <SnapshotTimeProvider
@@ -118,7 +115,7 @@ function Component() {
                 isKeyed={isKeyed}
                 handlers={handlers}
                 revision={data?.revision}
-                isPending={isPending || !hasVersion}
+                isPending={isPending}
                 isReadonly={isHandlerMode}
               />
             </CardGrid>

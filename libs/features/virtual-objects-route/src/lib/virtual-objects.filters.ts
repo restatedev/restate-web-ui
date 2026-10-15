@@ -35,12 +35,6 @@ export const VIRTUAL_OBJECT_FILTER_SCHEMA = [
   scopeFilterSchema,
 ] satisfies QueryClauseSchema<QueryClauseType>[];
 
-export function virtualObjectFilterSchema(includeScope: boolean) {
-  return includeScope
-    ? VIRTUAL_OBJECT_FILTER_SCHEMA
-    : VIRTUAL_OBJECT_FILTER_SCHEMA.filter(({ id }) => id !== 'scope');
-}
-
 export function createVirtualObjectKeyFilter(input: string) {
   const value = input.trim();
   return value

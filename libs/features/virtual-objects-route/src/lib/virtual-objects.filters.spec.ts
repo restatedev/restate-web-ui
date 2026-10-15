@@ -4,7 +4,6 @@ import {
   readVirtualObjectFilters,
   toVirtualObjectFilters,
   VIRTUAL_OBJECT_FILTER_SCHEMA,
-  virtualObjectFilterSchema,
   writeVirtualObjectFilters,
 } from './virtual-objects.filters';
 
@@ -40,12 +39,6 @@ describe('Virtual Object filters', () => {
         operation: 'EQUALS',
         value: 'tenant-a',
       },
-    ]);
-  });
-
-  it('hides scope when scoped Virtual Objects are unavailable', () => {
-    expect(virtualObjectFilterSchema(false).map(({ id }) => id)).toEqual([
-      'key',
     ]);
   });
 

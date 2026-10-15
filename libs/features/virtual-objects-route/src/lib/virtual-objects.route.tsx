@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import { useServiceCatalog } from '@restate/data-access/admin-api-hooks';
 import {
   ContentPanel,
@@ -16,21 +15,13 @@ import { VirtualObjectInstances } from './VirtualObjectInstances';
 const SERVICE_QUERY_PARAM = 'service';
 const MAX_VISIBLE_SERVICE_TABS = 5;
 
-function VirtualObjectsHeader({
-  hasScopedVirtualObjects,
-}: {
-  hasScopedVirtualObjects: boolean;
-}) {
-  const identityDescription = hasScopedVirtualObjects
-    ? 'a service, key, and optional scope'
-    : 'a service and key';
-
+function VirtualObjectsHeader() {
   return (
     <ListPageHeader icon={IconName.VirtualObject} title="Virtual Objects">
-      Virtual Objects are stateful entities identified by {identityDescription}.
-      Each instance has persistent K/V state. Restate runs at most one exclusive
-      handler at a time per instance, while shared handlers can run
-      concurrently.{' '}
+      Virtual Objects are stateful entities identified by a service, key, and
+      optional scope. Each instance has persistent K/V state. Restate runs at
+      most one exclusive handler at a time per instance, while shared handlers
+      can run concurrently.{' '}
       <Link
         href="https://docs.restate.dev/foundations/services#virtual-object"
         variant="secondary"
@@ -45,9 +36,6 @@ function VirtualObjectsHeader({
 
 function Component() {
   const [searchParams] = useSearchParams();
-  const features = useFeatures();
-  const hasScopedVirtualObjects =
-    features.has('vqueues') && features.has('scoped_virtual_objects');
   const {
     data: serviceData,
     isPending: isServicesPending,
@@ -90,7 +78,7 @@ function Component() {
   );
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <VirtualObjectsHeader hasScopedVirtualObjects={hasScopedVirtualObjects} />
+      <VirtualObjectsHeader />
       <ContentPanel
         tabs={tabs}
         className="sm:[&_[data-cp-slot=toolbar]]:min-w-[min(28rem,40vw)]"
