@@ -8,30 +8,20 @@ import { Button } from '@restate/ui/button';
 import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
 import { Icon, IconName } from '@restate/ui/icons';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
-import {
-  ComponentProps,
-  Dispatch,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
   useCodecRuntime,
   useResolvedCodecOptions,
 } from '@restate/features/codec';
-import { tv } from '@restate/util/styles';
 import { API } from '@restate/ui/api';
 import {
   ComplementaryClose,
   ComplementaryHeader,
   ComplementaryWithSearchParam,
-  useActiveSidebarParam,
   useParamValue,
 } from '@restate/ui/layout';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import { Link } from '@restate/ui/link';
 import {
   Dropdown,
   DropdownItem,
@@ -41,89 +31,25 @@ import {
   DropdownTrigger,
 } from '@restate/ui/dropdown';
 import { Badge } from '@restate/ui/badge';
-import { useTransition } from 'react';
 import { ErrorBanner } from '@restate/ui/error';
 import { Spinner } from '@restate/ui/loading';
-import { useOnboarding } from '@restate/util/feature-flag';
 import { useQueryClient } from '@tanstack/react-query';
-import { PANEL_QUERY_PARAM, panelHref } from '@restate/util/panel';
-
-const styles = tv({
-  base: 'flex items-center gap-1 rounded-md px-1.5 py-0.5 font-sans text-xs font-normal',
-  variants: {
-    isOnboarding: { true: 'animate-pulseButton', false: '' },
-  },
-});
-export function ServicePlaygroundTrigger({
-  service,
-  handler,
-  onClick,
-  className,
-  variant = 'button',
-}: {
-  service: string;
-  handler?: string | null;
-  className?: string;
-  onClick?: VoidFunction;
-  variant?: ComponentProps<typeof Link>['variant'];
-}) {
-  const { data } = useServiceOpenApi(service);
-  const isOnboarding = useOnboarding();
-
-  if (!data) {
-    return null;
-  }
-
-  return (
-    <Link
-      variant={variant}
-      href={panelHref({ playground: service, ...(handler ? { handler } : {}) })}
-      className={styles({ className, isOnboarding })}
-      autoFocus={isOnboarding}
-    >
-      Playground <Icon name={IconName.ExternalLink} className="h-3 w-3" />
-    </Link>
-  );
-}
+import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 
 const DEFAULT_CATEGORY = 'DEFAULT';
 export function ServicePlayground() {
   const [searchParams] = useSearchParams();
-  const [isSidebar, setIsSidebar] = useState(() => new Map<string, boolean>());
-  const services = searchParams.getAll(SERVICE_PLAYGROUND_QUERY_PARAM);
-  const service = services.at(0);
-  const isActiveServiceSheet = isSidebar.get(String(service)) !== true;
-  const [isPending, startTransition] = useTransition();
+  const service = searchParams.get(SERVICE_PLAYGROUND_QUERY_PARAM);
+  const isDocked =
+    searchParams.get(PANEL_QUERY_PARAM) === SERVICE_PLAYGROUND_QUERY_PARAM;
 
   return (
     <>
-      <ComplementaryWithSearchParam
-        paramName={SERVICE_PLAYGROUND_QUERY_PARAM}
-        onCloseQueryParam={(params) => {
-          params.delete(SERVICE_PLAYGROUND_QUERY_PARAM);
-          return params;
-        }}
-      >
-        <ServicePlaygroundComplementaryContent
-          setIsSidebar={setIsSidebar}
-          isSidebar={isSidebar}
-          onClose={(service) => {
-            startTransition(() => {
-              setIsSidebar((old) => {
-                old.delete(service);
-                return new Map(old);
-              });
-              return Promise.resolve();
-            });
-          }}
-        />
+      <ComplementaryWithSearchParam paramName={SERVICE_PLAYGROUND_QUERY_PARAM}>
+        <ServicePlaygroundComplementaryContent />
       </ComplementaryWithSearchParam>
-      {service && isActiveServiceSheet && !isPending && (
-        <ServicePlaygroundSheetContent
-          service={service}
-          isSidebar={isSidebar}
-          setIsSidebar={setIsSidebar}
-        />
+      {service && !isDocked && (
+        <ServicePlaygroundSheetContent service={service} />
       )}
     </>
   );
@@ -277,21 +203,10 @@ export function useApiSpec(service?: string | null) {
   return { apiSpec, handlers, error, refetch, isFetching, tryItFetcher };
 }
 
-function ServicePlaygroundComplementaryContent({
-  setIsSidebar,
-  isSidebar,
-  onClose,
-}: {
-  setIsSidebar: Dispatch<React.SetStateAction<Map<string, boolean>>>;
-  isSidebar: Map<string, boolean>;
-  onClose?: (service: string) => void;
-}) {
+function ServicePlaygroundComplementaryContent() {
   const service = useParamValue();
   const { apiSpec, handlers, error, refetch, isFetching, tryItFetcher } =
     useApiSpec(service);
-  const activeSearch = useActiveSidebarParam(SERVICE_PLAYGROUND_QUERY_PARAM);
-  const shouldDisplay = isSidebar.get(service) === true;
-  const isActive = activeSearch === service;
   const location = useLocation();
   const [, setSearchParams] = useSearchParams();
 
@@ -322,37 +237,29 @@ function ServicePlaygroundComplementaryContent({
   const defaultHandler = handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
 
   useEffect(() => {
-    if (isActive && shouldDisplay) {
-      if (!isSelectedHandlerFromURLValid && selectedHandler) {
-        window.location.hash = `#/operations/${selectedHandler}`;
-        location.hash = `#/operations/${selectedHandler}`;
-      } else if (
-        !selectedHandler &&
-        !isSelectedHandlerFromURLValid &&
-        defaultHandler
-      ) {
-        setSelectedHandler(defaultHandler);
-      } else if (
-        selectedHandler !== selectedHandlerFromURL &&
-        isSelectedHandlerFromURLValid
-      ) {
-        _setSelectedHandler(selectedHandlerFromURL);
-      }
+    if (!isSelectedHandlerFromURLValid && selectedHandler) {
+      window.location.hash = `#/operations/${selectedHandler}`;
+      location.hash = `#/operations/${selectedHandler}`;
+    } else if (
+      !selectedHandler &&
+      !isSelectedHandlerFromURLValid &&
+      defaultHandler
+    ) {
+      setSelectedHandler(defaultHandler);
+    } else if (
+      selectedHandler !== selectedHandlerFromURL &&
+      isSelectedHandlerFromURLValid
+    ) {
+      _setSelectedHandler(selectedHandlerFromURL);
     }
   }, [
     defaultHandler,
-    isActive,
     isSelectedHandlerFromURLValid,
     location,
     selectedHandler,
     selectedHandlerFromURL,
     setSelectedHandler,
-    shouldDisplay,
   ]);
-
-  if (!shouldDisplay) {
-    return null;
-  }
 
   const selectedCategory = Array.from(handlers.keys()).find((category) =>
     handlers.get(category)?.some(({ id }) => id === selectedHandler),
@@ -369,12 +276,6 @@ function ServicePlaygroundComplementaryContent({
             <Button
               variant="secondary"
               onClick={() => {
-                setIsSidebar((old) => {
-                  if (service) {
-                    old.set(service, false);
-                  }
-                  return new Map(old);
-                });
                 setSearchParams(
                   (prev) => {
                     const next = new URLSearchParams(prev);
@@ -414,7 +315,6 @@ function ServicePlaygroundComplementaryContent({
                 variant="secondary"
                 onClick={() => {
                   _setSelectedHandler(undefined);
-                  onClose?.(service);
                 }}
                 className="flex h-7 w-7 items-center justify-center rounded-full p-0"
               >
@@ -498,34 +398,22 @@ function ServicePlaygroundComplementaryContent({
             <ErrorBanner errors={[error]} />
           </div>
         )}
-        {isActive ? (
-          <API
-            apiDescriptionDocument={apiSpec}
-            layout="sidebar"
-            key={selectedHandlerFromURL}
-            tryItFetcher={tryItFetcher}
-          />
-        ) : (
-          <div className="flex-auto" />
-        )}
+        <API
+          apiDescriptionDocument={apiSpec}
+          layout="sidebar"
+          key={selectedHandlerFromURL}
+          tryItFetcher={tryItFetcher}
+        />
         <Attribution />
       </div>
     </>
   );
 }
 
-function ServicePlaygroundSheetContent({
-  service,
-  setIsSidebar,
-  isSidebar,
-}: {
-  service: string;
-  setIsSidebar: Dispatch<React.SetStateAction<Map<string, boolean>>>;
-  isSidebar: Map<string, boolean>;
-}) {
+function ServicePlaygroundSheetContent({ service }: { service: string }) {
   const { apiSpec, handlers, error, isFetching, tryItFetcher } =
     useApiSpec(service);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
 
   return (
     <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
@@ -564,12 +452,6 @@ function ServicePlaygroundSheetContent({
                 const handlerId =
                   handlerFromUrl || handlers.get(DEFAULT_CATEGORY)?.at(0)?.id;
                 window.location.hash = `#/operations/${handlerId}`;
-                setIsSidebar((old) => {
-                  if (service) {
-                    old.set(service, true);
-                  }
-                  return new Map(old);
-                });
                 setSearchParams(
                   (prev) => {
                     const next = new URLSearchParams(prev);
@@ -584,28 +466,7 @@ function ServicePlaygroundSheetContent({
             </Button>
           )}
           <DialogClose>
-            <Button
-              variant="icon"
-              onClick={() => {
-                const valuesToBeDeleted = searchParams
-                  .getAll(SERVICE_PLAYGROUND_QUERY_PARAM)
-                  .filter((service) => isSidebar.get(service) !== true);
-                setSearchParams(
-                  (prev) => {
-                    let search = prev.toString();
-                    valuesToBeDeleted.forEach((serviceName) => {
-                      search = search.replace(
-                        `${SERVICE_PLAYGROUND_QUERY_PARAM}=${serviceName}`,
-                        '',
-                      );
-                    });
-
-                    return new URLSearchParams(search);
-                  },
-                  { preventScrollReset: true },
-                );
-              }}
-            >
+            <Button variant="icon">
               <Icon name={IconName.X} className="h-5 w-5" />
             </Button>
           </DialogClose>

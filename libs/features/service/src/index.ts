@@ -1,5 +1,4 @@
 export * from './lib/Handler';
-export * from './lib/InvocationCountLink';
 export * from './lib/MiniService';
 export * from './lib/PlaygroundIconLink';
 export * from './lib/ServicePlayground';

@@ -18,11 +18,7 @@ import { useRestateContext } from '@restate/features/restate-context';
 import {
   HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
 } from '@restate/features/service';
-import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
-import { STATE_QUERY_NAME } from '@restate/features/state-object-route';
-import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
 import { toFilterParams } from '@restate/util/invocation-links';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
 import { useOverviewData } from './useOverviewData';
@@ -34,10 +30,6 @@ import {
 
 const PRESERVE_PARAMS = [
   SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-  INVOCATION_QUERY_NAME,
-  STATE_QUERY_NAME,
   HANDLER_QUERY_PARAM,
   PANEL_QUERY_PARAM,
 ] as const;

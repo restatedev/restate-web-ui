@@ -69,15 +69,8 @@ export function QueryDialog({
           onClose?.();
           setSearchParams(
             (prev) => {
-              let next = onCloseQueryParam(new URLSearchParams(prev));
-              if (next.getAll(query).length <= 1) {
-                next.delete(query);
-              } else {
-                const value = next.get(query);
-                next = new URLSearchParams(
-                  next.toString().replace(`${query}=${value}`, ''),
-                );
-              }
+              const next = onCloseQueryParam(new URLSearchParams(prev));
+              next.delete(query);
               return next;
             },
             // Replace so history keeps no dialog-open entry — pressing back

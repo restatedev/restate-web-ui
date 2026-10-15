@@ -41,9 +41,6 @@
       ],
       "@restate/features/codec": ["libs/features/codec/src/index.ts"],
       "@restate/features/deployment": ["libs/features/deployment/src/index.ts"],
-      "@restate/features/deployment-details": [
-        "libs/features/deployment-details/src/index.ts"
-      ],
       "@restate/features/deployment-route": [
         "libs/features/deployment-route/src/index.ts"
       ],

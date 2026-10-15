@@ -116,7 +116,6 @@ export function PruneDeploymentsProgressBar({
                           <Deployment
                             deploymentId={deploymentId}
                             showLink={false}
-                            highlightSelection={false}
                             className="[&_*:not(svg)]:text-inherit"
                           />
 

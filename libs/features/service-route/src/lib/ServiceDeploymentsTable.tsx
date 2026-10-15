@@ -97,7 +97,6 @@ export function ServiceDeploymentsTable({ service }: { service: string }) {
               <Deployment
                 deploymentId={row.deploymentId}
                 showLink={false}
-                highlightSelection={false}
                 showEndpointCopyButton
                 className="w-max max-w-full min-w-0 text-[0.8125rem] font-medium text-zinc-600"
               />

@@ -285,7 +285,6 @@ export function DeploymentCard({
           <Deployment
             deploymentId={deploymentId}
             revision={revision}
-            highlightSelection={false}
             showLink={false}
             className="m-0 w-full max-w-full p-0 font-normal text-inherit"
           />

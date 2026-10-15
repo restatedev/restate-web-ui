@@ -191,7 +191,7 @@ function Component() {
                     </div>
                   )
                 }
-                rowClassName="bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                rowClassName="bg-transparent [content-visibility:auto]"
                 rowDependencies={[panelColumns]}
                 renderCell={(item, { id }) =>
                   renderIntrospectionCell(id, item.row)

@@ -426,7 +426,6 @@ export function DeploymentsTable() {
                   <Deployment
                     deploymentId={deployment.id}
                     variant="secondary"
-                    highlightSelection={false}
                     showLink={false}
                     className={styles.deployment()}
                   />

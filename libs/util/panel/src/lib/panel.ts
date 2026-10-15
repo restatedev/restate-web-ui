@@ -1,104 +1,41 @@
 export const PANEL_QUERY_PARAM = 'panel';
 
-export const SERVICE_QUERY_PARAM = 'service';
+const SERVICE_QUERY_PARAM = 'service';
 export const HANDLER_QUERY_PARAM = 'handler';
 export const SERVICE_PLAYGROUND_QUERY_PARAM = 'servicePlayground';
-export const INVOCATION_QUERY_NAME = 'invocation';
-export const STATE_QUERY_NAME = 'state';
-export const DEPLOYMENT_QUERY_PARAM = 'deployment';
 export const ONBOARDING_QUERY_PARAM = 'onboarding';
 
 export const PRESERVED_QUERY_PARAMS = [
   SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-  INVOCATION_QUERY_NAME,
-  STATE_QUERY_NAME,
   PANEL_QUERY_PARAM,
 ];
 
 const INVOCATION_LINK_PRESERVED_PARAMS = [
   SERVICE_PLAYGROUND_QUERY_PARAM,
   SERVICE_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-  INVOCATION_QUERY_NAME,
   ONBOARDING_QUERY_PARAM,
-  STATE_QUERY_NAME,
 ];
 
-export function getSearchParams(
-  search: string,
-  options?: {
-    preserve?: string[];
-    remove?: (string | { name: string; value: string })[];
-  },
-) {
-  const preserved = new Set([
-    ...INVOCATION_LINK_PRESERVED_PARAMS,
-    ...(options?.preserve ?? []),
-  ]);
+export function getSearchParams(search: string) {
+  const preserved = new Set(INVOCATION_LINK_PRESERVED_PARAMS);
   const searchParams = new URLSearchParams(search);
   Array.from(searchParams.keys()).forEach((key) => {
     if (!preserved.has(key)) {
       searchParams.delete(key);
     }
   });
-  options?.remove?.forEach((entry) => {
-    if (typeof entry === 'string') {
-      searchParams.delete(entry);
-    } else {
-      searchParams.delete(entry.name, entry.value);
-    }
-  });
   return '?' + searchParams.toString();
 }
 
-export type PanelHrefOpts =
-  | { service: string; handler?: string }
-  | { invocation: string }
-  | { deployment: string }
-  | { state: string }
-  | { playground: string; handler?: string };
-
-function preserveSearchParams(
-  href: string,
-  existingParams?: URLSearchParams,
-): string {
-  if (!existingParams) return href;
-  const hashIndex = href.indexOf('#');
-  const search = hashIndex === -1 ? href : href.slice(0, hashIndex);
-  const hash = hashIndex === -1 ? '' : href.slice(hashIndex);
-  const next = new URLSearchParams(existingParams);
-  new URLSearchParams(search.slice(1)).forEach((value, name) => {
-    next.set(name, value);
-  });
-  return `?${next}${hash}`;
-}
-
-export function panelHref(
-  opts: PanelHrefOpts,
-  { existingParams }: { existingParams?: URLSearchParams } = {},
-): string {
-  let href: string;
-  if ('service' in opts) {
-    const handler =
-      opts.handler !== undefined
-        ? `&${HANDLER_QUERY_PARAM}=${opts.handler}`
-        : `&${HANDLER_QUERY_PARAM}=`;
-    href = `?${SERVICE_QUERY_PARAM}=${opts.service}&${PANEL_QUERY_PARAM}=${SERVICE_QUERY_PARAM}${handler}`;
-  } else if ('invocation' in opts) {
-    href = `?${INVOCATION_QUERY_NAME}=${opts.invocation}&${PANEL_QUERY_PARAM}=${INVOCATION_QUERY_NAME}`;
-  } else if ('deployment' in opts) {
-    href = `?${DEPLOYMENT_QUERY_PARAM}=${opts.deployment}&${PANEL_QUERY_PARAM}=${DEPLOYMENT_QUERY_PARAM}`;
-  } else if ('state' in opts) {
-    href = `?${STATE_QUERY_NAME}=${opts.state}&${PANEL_QUERY_PARAM}=${STATE_QUERY_NAME}`;
-  } else if ('playground' in opts) {
-    const hash = opts.handler ? `#/operations/${opts.handler}` : '';
-    href = `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${opts.playground}${hash}`;
-  } else {
-    throw new Error('panelHref: unknown panel options');
-  }
-  return preserveSearchParams(href, existingParams);
+export function panelHref({
+  playground,
+  handler,
+}: {
+  playground: string;
+  handler?: string;
+}): string {
+  const hash = handler ? `#/operations/${handler}` : '';
+  return `?${SERVICE_PLAYGROUND_QUERY_PARAM}=${playground}${hash}`;
 }
 
 export function serviceHref(

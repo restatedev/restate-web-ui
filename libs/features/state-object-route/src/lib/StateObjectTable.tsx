@@ -181,7 +181,6 @@ export function StateObjectTable({
   isLoading,
   isLoadingPreviews,
   numOfRows,
-  onOpenObject,
   onEditObject,
   onDeleteObject,
   onEditValue,
@@ -193,7 +192,6 @@ export function StateObjectTable({
   isLoading?: boolean;
   isLoadingPreviews?: boolean;
   numOfRows: number;
-  onOpenObject: (key: string, scope?: string) => void;
   onEditObject: (row: StateObjectRecord) => void;
   onDeleteObject: (row: StateObjectRecord) => void;
   onEditValue: (row: StateObjectRecord, stateKey: string) => void;
@@ -298,7 +296,6 @@ export function StateObjectTable({
           serviceType={serviceType}
           isExpanded={visibleExpandedKeys.has(row.id)}
           isLoadingPreview={isLoadingPreviews}
-          onOpenObject={onOpenObject}
           onEditObject={onEditObject}
           onDeleteObject={onDeleteObject}
         />
@@ -438,7 +435,6 @@ function StateObjectCell({
   serviceType,
   isExpanded,
   isLoadingPreview,
-  onOpenObject,
   onEditObject,
   onDeleteObject,
 }: {
@@ -450,7 +446,6 @@ function StateObjectCell({
   serviceType?: StateServiceType;
   isExpanded: boolean;
   isLoadingPreview?: boolean;
-  onOpenObject: (key: string, scope?: string) => void;
   onEditObject: (row: StateObjectRecord) => void;
   onDeleteObject: (row: StateObjectRecord) => void;
 }) {
@@ -475,7 +470,6 @@ function StateObjectCell({
             baseUrl={baseUrl}
             serviceName={serviceName}
             serviceType={serviceType}
-            onOpenObject={onOpenObject}
           />
         </div>
       </Cell>
@@ -548,13 +542,11 @@ function StateObjectIdentityTarget({
   baseUrl,
   serviceName,
   serviceType,
-  onOpenObject,
 }: {
   row: StateObjectRecord;
   baseUrl: string;
   serviceName: string;
   serviceType?: StateServiceType;
-  onOpenObject: (key: string, scope?: string) => void;
 }) {
   const identityScope = row.scope === undefined ? {} : { scope: row.scope };
 
@@ -596,11 +588,7 @@ function StateObjectIdentityTarget({
       <span className={objectIcon()}>
         <Icon name={IconName.Database} className="h-full w-full p-1" />
       </span>
-      <KeyCell
-        serviceKey={row.key}
-        onOpen={() => onOpenObject(row.key, row.scope)}
-        className="text-0.5xs font-medium"
-      />
+      <KeyCell serviceKey={row.key} className="text-0.5xs font-medium" />
     </>
   );
 }

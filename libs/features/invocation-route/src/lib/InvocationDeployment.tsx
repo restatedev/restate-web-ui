@@ -98,7 +98,6 @@ export function InvocationDeploymentCell({
         ]
           .filter(Boolean)
           .join(' ')}
-        highlightSelection={false}
       />
     );
   }
@@ -136,7 +135,6 @@ export function InvocationDeployment({
               deploymentId={deploymentId}
               revision={revision}
               className="m-0 w-full max-w-full p-0 pr-0.5 font-normal text-inherit [&_a:before]:rounded-md"
-              highlightSelection={false}
             />
           </CardRow>
           {showSdk &&
@@ -175,7 +173,6 @@ export function InvocationDeployment({
             deploymentId={deploymentId}
             revision={revision}
             className="m-0 w-full max-w-full p-0 pr-0.5 font-normal text-inherit [&_a:before]:rounded-md"
-            highlightSelection={false}
           />
         </div>
         {showSdk &&

@@ -5,7 +5,6 @@ import {
   useVersion,
   useQueryHealthCheck,
   useAdminBaseUrl,
-  useFeatures,
 } from '@restate/data-access/admin-api';
 import {
   ComponentType,
@@ -170,7 +169,6 @@ function InternalRestateContextProvider({
     refetchInterval: 1000 * 60,
   });
   const { data } = useVersion({ enabled: !isPending && isSuccess });
-  const features = useFeatures();
   const version = data?.version;
   const releasedVersion = version?.split('-')?.at(0);
   const resolvedIngress =

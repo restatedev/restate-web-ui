@@ -18,7 +18,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
@@ -38,10 +38,8 @@ import {
   ClauseChip,
   FiltersTrigger,
 } from '@restate/features/invocations-route';
-import { STATE_QUERY_NAME } from './constants';
 import { useEditStateContext } from '@restate/features/edit-state';
 import { useResolvedCodecOptions } from '@restate/features/codec';
-import { toStateParam } from './toStateParam';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
@@ -283,26 +281,6 @@ function Component() {
     useResolvedCodecOptions(serviceCodecOptions);
   const isStateLoading =
     isFetching || (listObjects.isFetching && sortedItems.length !== 0);
-  const openStatePanel = useCallback(
-    (rowKey: string, rowScope?: string) => {
-      setSearchParams(
-        (old) => {
-          old.set(
-            STATE_QUERY_NAME,
-            toStateParam({
-              key: rowKey,
-              virtualObject: serviceName,
-              scope: rowScope || undefined,
-            }),
-          );
-          old.set('panel', STATE_QUERY_NAME);
-          return old;
-        },
-        { preventScrollReset: true },
-      );
-    },
-    [serviceName, setSearchParams],
-  );
   const serviceTabs = useMemo<ContentPanelTabs>(
     () => ({
       items: services.map((service) => ({
@@ -376,7 +354,6 @@ function Component() {
                   isLoading={isStateLoading && stateObjects.length === 0}
                   isLoadingPreviews={isLoadingPreviews}
                   numOfRows={sortedItems.length || 5}
-                  onOpenObject={openStatePanel}
                   onEditObject={(row) =>
                     setEditState({
                       isEditing: true,

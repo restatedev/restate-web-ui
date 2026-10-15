@@ -85,7 +85,7 @@ function getInboxInvocationFilters(
 }
 
 const inboxRowStyles = tv({
-  base: "bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50",
+  base: 'bg-transparent [content-visibility:auto]',
   variants: {
     isClickable: {
       true: 'cursor-pointer',

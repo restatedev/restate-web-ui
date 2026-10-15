@@ -91,11 +91,7 @@ function DeploymentList({
               key={deploymentId}
               className="rounded-xl border border-black/10 bg-white p-2"
             >
-              <Deployment
-                deploymentId={deploymentId}
-                showLink={false}
-                highlightSelection={false}
-              />
+              <Deployment deploymentId={deploymentId} showLink={false} />
             </div>
           ))}
         </div>
