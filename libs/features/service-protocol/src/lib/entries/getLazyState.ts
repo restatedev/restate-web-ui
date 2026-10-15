@@ -3,6 +3,7 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   parseEntryJson,
   JournalRawEntryWithCommandIndex,
   getEntryResultV2,
@@ -35,6 +36,7 @@ function getLazyStateV2(
 
   return {
     key: entryJSON?.Command?.GetLazyState?.key,
+    name: getEntryName(entry, entryJSON?.Command?.GetLazyState?.name),
     start: entry.appended_at,
     isPending: !completionEntry,
     commandIndex,

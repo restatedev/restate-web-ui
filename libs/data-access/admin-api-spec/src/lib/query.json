@@ -7891,6 +7891,9 @@
       "JournalBaseEntryV2": {
         "type": "object",
         "properties": {
+          "name": {
+            "type": "string"
+          },
           "isPending": {
             "type": "boolean"
           },

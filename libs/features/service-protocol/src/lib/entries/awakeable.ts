@@ -9,6 +9,7 @@ import {
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   getCompletionEntry,
   getEntryResultV2,
   getLastFailureV1,
@@ -29,6 +30,7 @@ function awakeableV1(
 
   const metadata = {
     id: undefined,
+    name: getEntryName(entry, message?.name),
     start: undefined,
     isPending: !entry.completed,
     commandIndex: entry.index,
@@ -94,6 +96,7 @@ function awakeableV2(
 
   return {
     id: undefined,
+    name: getEntryName(entry, entryJSON?.Command?.Awakeable?.name),
     start: entry.appended_at,
     isPending: !completionEntry,
     commandIndex,

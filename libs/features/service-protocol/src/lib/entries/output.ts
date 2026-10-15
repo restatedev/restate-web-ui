@@ -9,6 +9,7 @@ import {
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   getEntryResultV2,
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
@@ -27,6 +28,7 @@ function outputV1(
   const error = getLastFailureV1(entry, invocation);
 
   const metadata = {
+    name: getEntryName(entry, message.name),
     start: undefined,
     isPending: false,
     commandIndex: entry.index,
@@ -86,6 +88,7 @@ function outputV2(
     );
 
   return {
+    name: getEntryName(entry, entryJSON?.Command?.Output?.name),
     start: entry.appended_at,
     isPending: false,
     commandIndex,

@@ -345,6 +345,10 @@ export function parseEntryJson(entryJSON?: string) {
   }
 }
 
+export function getEntryName(entry: JournalRawEntry, name?: string) {
+  return name || entry.name || undefined;
+}
+
 export function getTarget(object: any): {
   name?: string;
   key?: string;

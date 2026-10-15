@@ -8,6 +8,7 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   getEntryResultV2,
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
@@ -28,6 +29,7 @@ function getStateKeysV1(
   const error = getLastFailureV1(entry, invocation);
 
   const metadata = {
+    name: getEntryName(entry, message.name),
     start: entry.appended_at,
     isPending: false,
     commandIndex: entry.index,
@@ -86,6 +88,13 @@ function getStateKeysV2(
   );
 
   return {
+    name: getEntryName(
+      entry,
+      (
+        entryJSON?.Command?.GetEagerStateKeys ??
+        entryJSON?.Command?.GetStateKeys
+      )?.name,
+    ),
     start: entry.appended_at,
     isPending: false,
     commandIndex,

@@ -4290,6 +4290,7 @@ export interface components {
       completed?: boolean;
     };
     JournalBaseEntryV2: {
+      name?: string;
       isPending?: boolean;
       /** @enum {string} */
       resultType?: 'success' | 'failure' | 'void';

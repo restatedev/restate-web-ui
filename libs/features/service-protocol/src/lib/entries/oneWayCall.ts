@@ -8,6 +8,7 @@ import {
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   decodeBinary,
   getCompletionEntry,
   getEntryResultV2,
@@ -29,6 +30,7 @@ function oneWayCallV1(
   const error = getLastFailureV1(entry, invocation);
 
   return {
+    name: getEntryName(entry, message.name),
     start: undefined,
     isPending: false,
     commandIndex: entry.index,
@@ -86,7 +88,7 @@ function oneWayCallV2(
   );
 
   return {
-    name: entryJSON?.Command?.OneWayCall?.name,
+    name: getEntryName(entry, entryJSON?.Command?.OneWayCall?.name),
     start: entry.appended_at,
     isPending: false,
     commandIndex,
