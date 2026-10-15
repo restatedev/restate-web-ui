@@ -5,7 +5,7 @@ import type {
 import { convertInvocation, type VqueueStatus } from '../convertInvocation';
 import {
   isInvocationId,
-  getSysInvocationListColumns,
+  SYS_INVOCATION_LIST_SELECT_COLUMNS,
   quoteSqlString,
   type QueryContext,
 } from './shared';
@@ -103,7 +103,7 @@ async function getInvocationsByIds(
   const statusClause =
     invocationSelection === 'active' ? "\n      AND status <> 'completed'" : '';
   const { rows } = await context.query(
-    `SELECT ${getSysInvocationListColumns(context.features).join(', ')}
+    `SELECT ${SYS_INVOCATION_LIST_SELECT_COLUMNS.join(', ')}
     FROM sys_invocation
     WHERE id IN (${invocationIds.map(quoteSqlString).join(', ')})${statusClause}`,
     'invocations/by-ids',

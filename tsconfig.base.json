@@ -23,9 +23,6 @@
       "@restate/data-access/admin-api": [
         "libs/data-access/admin-api/src/index.ts"
       ],
-      "@restate/data-access/admin-api-fixtures": [
-        "libs/data-access/admin-api-fixtures/src/index.ts"
-      ],
       "@restate/data-access/admin-api-hooks": [
         "libs/data-access/admin-api-hooks/src/index.ts"
       ],

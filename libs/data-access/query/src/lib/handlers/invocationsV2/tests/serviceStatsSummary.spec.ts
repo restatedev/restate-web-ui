@@ -3,7 +3,7 @@ import { createInvocationV2QueryTestHarness } from './testUtils';
 
 const INDEX_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-features': 'protocol_v7,indexes_v1,track_status_gauges',
+  'x-restate-features': 'indexes_v1,track_status_gauges',
 };
 
 const STATS_ROWS = [
@@ -389,14 +389,7 @@ describe('invocation summary from sys_service_stats', () => {
   it('falls back without the stats server feature', async () => {
     respondWithStats();
 
-    await harness.post(
-      '/v2/invocations/summary',
-      { view: 'all' },
-      {
-        ...INDEX_HEADERS,
-        'x-restate-features': 'protocol_v7',
-      },
-    );
+    await harness.post('/v2/invocations/summary', { view: 'all' });
 
     expect(harness.sql).toMatchInlineSnapshot(`
       [

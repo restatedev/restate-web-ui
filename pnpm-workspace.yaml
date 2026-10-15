@@ -3,7 +3,6 @@ allowBuilds:
   '@tailwindcss/oxide': false
   core-js: false
   esbuild: false
-  msw: false
   nx: false
   protobufjs: false
   unrs-resolver: false
@@ -32,7 +31,6 @@ overrides:
   'react-router@>=6.7.0 <6.30.4': '6.30.4'
   'svgo@>=3.0.0 <3.3.4': '3.3.4'
   'tmp@>=0.2.0 <0.2.7': '0.2.7'
-  '@mswjs/data>uuid': '11.1.1'
   'postman-collection>uuid': '11.1.1'
   'vite@>=6.0.0 <=6.4.2': '6.4.3'
   'ws@>=8.0.0 <8.21.0': '8.21.0'

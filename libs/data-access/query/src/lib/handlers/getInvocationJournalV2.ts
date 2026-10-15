@@ -17,7 +17,7 @@ import {
 } from '@restate/features/service-protocol';
 import {
   type QueryContext,
-  getSysInvocationColumns,
+  SYS_INVOCATION_SELECT_COLUMNS,
   quoteSqlString,
 } from './shared';
 import { fetchVqueueStatuses } from './vqueue';
@@ -118,7 +118,7 @@ export async function getInvocationJournalV2(
   const [invocationQuery, journalQuery, eventsQuery, vqueueStatuses] =
     await Promise.all([
       this.query(
-        `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
+        `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
         'invocations/get',
       ),
       this.query(

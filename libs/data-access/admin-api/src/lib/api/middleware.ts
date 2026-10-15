@@ -3,7 +3,6 @@ import { getQueryClient } from '@restate/util/react-query';
 import { getAuthToken } from '@restate/util/api-config';
 import { isFeatureEnabled } from '@restate/util/feature-flag';
 import type { Middleware } from 'openapi-fetch';
-import type { components } from '@restate/data-access/admin-api-spec';
 import {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
@@ -13,8 +12,6 @@ import {
   UI_FEATURES_HEADER,
   type QueryOrigin,
 } from '@restate/data-access/query';
-import semverCoerce from 'semver/functions/coerce';
-import semverGte from 'semver/functions/gte';
 import { client } from './client';
 import { metaQueryOptions } from './meta';
 import { getEnabledUiFeatures } from './uiFeatures';
@@ -110,31 +107,5 @@ const errorMiddleware: Middleware = {
   },
 };
 
-const versionFeaturesMiddleware: Middleware = {
-  async onResponse({ schemaPath, response }) {
-    if (schemaPath !== '/version' || !response.ok) return response;
-
-    const data: components['schemas']['VersionInformation'] = await response
-      .clone()
-      .json();
-    const version = semverCoerce(data.version);
-    if (!version || !semverGte(version, '1.8.0')) return response;
-
-    // Temporary workaround for experimental flags removed in Restate 1.8.
-    // We should probably remove this once consumers use version-aware capabilities.
-    return Response.json(
-      {
-        ...data,
-        features: {
-          protocol_v7: true,
-          ...data.features,
-        },
-      },
-      response,
-    );
-  },
-};
-
 client.use(authMiddleware);
 client.use(errorMiddleware);
-client.use(versionFeaturesMiddleware);

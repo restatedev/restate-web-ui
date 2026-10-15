@@ -3,7 +3,7 @@ import { createInvocationV2QueryTestHarness } from './testUtils';
 
 const INDEX_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-features': 'protocol_v7,indexes_v1,track_status_gauges',
+  'x-restate-features': 'indexes_v1,track_status_gauges',
 };
 
 const OBJECT_FILTERS = [

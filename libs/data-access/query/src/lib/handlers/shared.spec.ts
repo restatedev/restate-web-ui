@@ -32,10 +32,10 @@ describe('createQueryContext', () => {
       new Headers({
         authorization: 'Bearer token',
         'x-restate-query-level': 'operator',
-        'x-restate-features': 'protocol_v7',
+        'x-restate-features': 'track_status_gauges',
         'x-restate-ui-features': 'indexes_v1',
       }),
-      new Set(['protocol_v7']),
+      new Set(['track_status_gauges']),
     );
     await context.query('SELECT 1', 'deployments/drained');
     await context.adminApi('/deployments');

@@ -6,13 +6,13 @@ This application is for Restate Web UI, developed using [`Remix`](https://remix.
 
 ```sh
 # Run Web UI app in dev mode
-pnpm nx serve web-ui -c mock|local
+pnpm nx serve web-ui -c local
 
 # Build Web UI app in prod mode
 pnpm nx build web-ui
 
 # Start the Web UI app in prod mode
-pnpm nx start web-ui -c mock|local
+pnpm nx start web-ui -c local
 
 # Run unit tests for Web UI app
 pnpm nx test web-ui

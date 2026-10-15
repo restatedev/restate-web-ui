@@ -3,7 +3,7 @@ import { createInvocationV2QueryTestHarness } from './testUtils';
 
 const INDEX_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-features': 'protocol_v7,indexes_v1',
+  'x-restate-features': 'indexes_v1',
   'x-restate-ui-features': 'indexes_v1',
 };
 const SORT = { field: 'transitioned_at', order: 'DESC' };

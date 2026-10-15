@@ -14,7 +14,7 @@
         "outputPath": "dist/apps/mock-admin-api",
         "format": ["cjs"],
         "bundle": true,
-        "main": "apps/mock-admin-api/src/main.ts",
+        "main": "apps/mock-admin-api/src/proxy.ts",
         "tsConfig": "apps/mock-admin-api/tsconfig.app.json",
         "assets": ["apps/mock-admin-api/src/assets"],
         "generatePackageJson": true,
@@ -26,9 +26,6 @@
         }
       },
       "configurations": {
-        "proxy": {
-          "main": "apps/mock-admin-api/src/proxy.ts"
-        },
         "development": {},
         "production": {
           "esbuildOptions": {
@@ -52,9 +49,6 @@
       "configurations": {
         "development": {
           "buildTarget": "mock-admin-api:build:development"
-        },
-        "proxy": {
-          "buildTarget": "mock-admin-api:build:proxy"
         },
         "production": {
           "buildTarget": "mock-admin-api:build:production"

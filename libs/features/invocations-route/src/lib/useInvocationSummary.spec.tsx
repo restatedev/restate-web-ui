@@ -15,7 +15,7 @@ type Filter = components['schemas']['InvocationV2FilterItem'];
 type SummaryRequest = components['schemas']['SummaryInvocationsV2RequestBody'];
 
 const api = vi.hoisted(() => ({
-  features: new Set(['protocol_v7']),
+  features: new Set<string>(),
   request: vi.fn<(path: string, body: SummaryRequest) => Promise<unknown>>(),
 }));
 
@@ -135,7 +135,7 @@ function usePage(
 beforeEach(() => {
   completed = 30;
   active = 0;
-  api.features = new Set(['protocol_v7']);
+  api.features = new Set();
   api.request.mockReset().mockImplementation(execute);
   vi.stubGlobal(
     'fetch',
@@ -260,7 +260,7 @@ describe('invocation page query composition', () => {
   });
 
   it('serves the page from one exact stats request', async () => {
-    api.features = new Set(['protocol_v7', 'track_status_gauges']);
+    api.features = new Set(['track_status_gauges']);
     const { result } = renderHook(
       () =>
         useInvocationSummary({

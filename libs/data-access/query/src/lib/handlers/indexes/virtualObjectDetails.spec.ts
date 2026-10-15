@@ -7,7 +7,7 @@ function createContext(responder: (sql: string) => Record<string, unknown>[]) {
   const query = vi.fn(async (sql: string) => ({ rows: responder(sql) }));
   const context = {
     query,
-    features: new Set(['protocol_v7', 'indexes_v1', 'ui:indexes_v1']),
+    features: new Set(['indexes_v1', 'ui:indexes_v1']),
     adminApi: vi.fn(),
     baseUrl: '',
   } as unknown as QueryContext;

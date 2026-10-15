@@ -6,7 +6,7 @@ import type {
 import { convertInvocationV2, durationBetween } from '../convertInvocation';
 import { fetchVqueueStatuses } from './vqueue';
 import {
-  getSysInvocationListColumns,
+  SYS_INVOCATION_LIST_SELECT_COLUMNS,
   quoteSqlString,
   targetServiceKeyClause,
   type QueryContext,
@@ -102,7 +102,7 @@ async function hydrateInvocations(
   if (uniqueIds.length === 0) return new Map<string, InvocationV2>();
   const [invocationResult, vqueueStatuses] = await Promise.all([
     context.query(
-      `SELECT ${getSysInvocationListColumns(context.features).join(', ')}
+      `SELECT ${SYS_INVOCATION_LIST_SELECT_COLUMNS.join(', ')}
     FROM sys_invocation
     WHERE id IN (${uniqueIds.map(quoteSqlString).join(', ')})`,
       'invocations/by-ids',

@@ -5,9 +5,8 @@ export type SqlResponder = (
   sql: string,
 ) => Promise<Record<string, unknown>[]> | Record<string, unknown>[];
 
-export const VQUEUE_HEADERS = {
+const DEFAULT_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-features': 'protocol_v7',
 };
 
 export function rawInvocation(
@@ -70,7 +69,7 @@ export function createInvocationV2QueryTestHarness() {
     post(
       path: string,
       body: unknown,
-      headers: Record<string, string> = VQUEUE_HEADERS,
+      headers: Record<string, string> = DEFAULT_HEADERS,
     ) {
       return queryRouter(
         new Request(`http://query.test/query${path}`, {
@@ -80,7 +79,7 @@ export function createInvocationV2QueryTestHarness() {
         }),
       );
     },
-    get(path: string, headers: Record<string, string> = VQUEUE_HEADERS) {
+    get(path: string, headers: Record<string, string> = DEFAULT_HEADERS) {
       return queryRouter(
         new Request(`http://query.test/query${path}`, {
           method: 'GET',

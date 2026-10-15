@@ -1,5 +1,8 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import { getSysInvocationListColumns, type QueryContext } from '../../shared';
+import {
+  SYS_INVOCATION_LIST_SELECT_COLUMNS,
+  type QueryContext,
+} from '../../shared';
 import { getInvocationListFieldOnTable } from '../invocationListFields';
 import {
   type InvocationFilterV2,
@@ -22,7 +25,7 @@ export function queryInvocationRowsByIds(
   filters: InvocationFilterV2[],
   sort?: InvocationSortV2,
 ) {
-  const columns = getSysInvocationListColumns(context.features).join(',\n');
+  const columns = SYS_INVOCATION_LIST_SELECT_COLUMNS.join(',\n');
   const source = { type: 'invocation', alias: 'i' } as const;
   const clauses = (filters as FilterItem[])
     .filter((filter) => filter.field !== 'id')

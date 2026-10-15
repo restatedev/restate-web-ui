@@ -4,7 +4,7 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
 import {
-  getSysInvocationListColumns,
+  SYS_INVOCATION_LIST_SELECT_COLUMNS,
   isInvocationId,
   quoteSqlString,
   targetServiceKeyClause,
@@ -75,7 +75,7 @@ export async function getVirtualObjectInvocations(
   const [invocationResult, vqueueStatuses] = await Promise.all([
     invocationIds.length > 0
       ? this.query(
-          `SELECT ${getSysInvocationListColumns(this.features).join(', ')}
+          `SELECT ${SYS_INVOCATION_LIST_SELECT_COLUMNS.join(', ')}
     FROM sys_invocation
     WHERE id IN (${invocationIds.map(quoteSqlString).join(', ')})`,
           'invocations/by-ids',

@@ -86,23 +86,18 @@ const SYS_INVOCATION_DETAIL_COLUMNS = [
   'last_failure_related_command_type',
 ] as const;
 
-export function getSysInvocationListColumns(
-  features: Set<string>,
-): readonly string[] {
-  const base = features.has('protocol_v7')
-    ? [...SYS_INVOCATION_LIST_COLUMNS, ...SYS_INVOCATION_WAITING_COLUMNS]
-    : SYS_INVOCATION_LIST_COLUMNS;
-  return [...base, 'scope', 'vqueue_id', 'limit_key'];
-}
+export const SYS_INVOCATION_LIST_SELECT_COLUMNS = [
+  ...SYS_INVOCATION_LIST_COLUMNS,
+  ...SYS_INVOCATION_WAITING_COLUMNS,
+  'scope',
+  'vqueue_id',
+  'limit_key',
+] as const;
 
-export function getSysInvocationColumns(
-  features: Set<string>,
-): readonly string[] {
-  return [
-    ...getSysInvocationListColumns(features),
-    ...SYS_INVOCATION_DETAIL_COLUMNS,
-  ];
-}
+export const SYS_INVOCATION_SELECT_COLUMNS = [
+  ...SYS_INVOCATION_LIST_SELECT_COLUMNS,
+  ...SYS_INVOCATION_DETAIL_COLUMNS,
+] as const;
 
 export type QueryContext = {
   query: (sql: string, id: QueryId) => Promise<{ rows: any[] }>;

@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createInvocationV2QueryTestHarness,
-  VQUEUE_HEADERS,
-} from './invocationsV2/tests/testUtils';
-
-const SCOPED_VQUEUE_HEADERS = {
-  'content-type': 'application/json',
-  'x-restate-features': 'protocol_v7',
-};
+import { createInvocationV2QueryTestHarness } from './invocationsV2/tests/testUtils';
 
 describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
   const { get, setResponder, sql } = createInvocationV2QueryTestHarness();
@@ -36,7 +28,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
 
     const response = await get(
       '/virtual-objects/Counter/instances/customer-1/stats?scope=tenant-a',
-      SCOPED_VQUEUE_HEADERS,
     );
 
     expect(sql).toMatchInlineSnapshot(`
@@ -111,7 +102,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
 
     const response = await get(
       '/virtual-objects/Counter/instances/customer-1/stats',
-      VQUEUE_HEADERS,
     );
 
     expect(sql).toMatchInlineSnapshot(`

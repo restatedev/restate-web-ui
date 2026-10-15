@@ -2,7 +2,7 @@
 
 ## Commands
 
-- **Dev**: `pnpm nx serve web-ui -c mock|local` (mock for dev, local for testing against Restate server)
+- **Dev**: `pnpm nx serve web-ui -c local` (proxies to a Restate server on localhost:9070)
 - **Build**: `pnpm nx build web-ui`
 - **Test**: `pnpm nx test <project>` (e.g., `pnpm nx test ui-button`), add `--watch` for watch mode
 - **Single test**: `pnpm nx test <project> --testFile=<file>` or use vitest filtering
