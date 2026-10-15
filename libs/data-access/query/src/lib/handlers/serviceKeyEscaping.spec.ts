@@ -4,7 +4,7 @@ import { getStateInterface } from './getStateInterface';
 import { queryState } from './queryState';
 import type { QueryContext } from './shared';
 
-function createContext(features: string[]) {
+function createContext() {
   const query = vi.fn<
     (sql: string, id: string) => Promise<{ rows: unknown[] }>
   >(async () => ({ rows: [] }));
@@ -13,9 +13,8 @@ function createContext(features: string[]) {
     adminApi: vi.fn(async () => ({
       handlers: [{ name: "add'one", ty: 'Exclusive' }],
     })),
-    features: new Set(features),
+    features: new Set(),
     baseUrl: '',
-    restateVersion: '1.8.1',
   } as unknown as QueryContext;
   return {
     context,
@@ -25,17 +24,13 @@ function createContext(features: string[]) {
 
 describe('service keys with quotes', () => {
   it('escapes the service key when listing state keys', async () => {
-    const { context, sql } = createContext([
-      'vqueues',
-      'scoped_virtual_objects',
-    ]);
+    const { context, sql } = createContext();
 
     await getStateInterface.call(
       context,
       'myObject3',
       ["qa'key%_1013"],
       'codexqa-a-1013',
-      'virtual_object',
     );
 
     expect(sql()).toMatchInlineSnapshot(`
@@ -46,32 +41,24 @@ describe('service keys with quotes', () => {
   });
 
   it('escapes state object filters', async () => {
-    const { context, sql } = createContext([
-      'vqueues',
-      'scoped_virtual_objects',
-    ]);
+    const { context, sql } = createContext();
 
-    await queryState.call(
-      context,
-      'myObject3',
-      {
-        systemFilters: [
-          {
-            field: 'service_key',
-            type: 'STRING',
-            operation: 'EQUALS',
-            value: "qa'key%_1013",
-          },
-          {
-            field: 'scope',
-            type: 'STRING',
-            operation: 'EQUALS',
-            value: 'codexqa-a-1013',
-          },
-        ],
-      },
-      'virtual_object',
-    );
+    await queryState.call(context, 'myObject3', {
+      systemFilters: [
+        {
+          field: 'service_key',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: "qa'key%_1013",
+        },
+        {
+          field: 'scope',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: 'codexqa-a-1013',
+        },
+      ],
+    });
 
     expect(sql()).toMatchInlineSnapshot(`
       [
@@ -83,10 +70,7 @@ describe('service keys with quotes', () => {
   });
 
   it('escapes the key, scope and handler names in inbox lookups', async () => {
-    const { context, sql } = createContext([
-      'vqueues',
-      'scoped_virtual_objects',
-    ]);
+    const { context, sql } = createContext();
 
     await getInbox.call(context, 'myObject3', "qa'key", 'inv_1', "a'b");
 

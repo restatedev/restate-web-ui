@@ -2,21 +2,6 @@ import type { QueryContext } from './shared';
 import { usesStatsTables } from '../uiFeatures';
 import { DEPLOYMENT_STATS } from './indexes';
 
-const DRAINED_DEPLOYMENTS_QUERY = `WITH active_deployments AS (
-    SELECT DISTINCT deployment_id AS id
-    FROM sys_service
-    WHERE deployment_id IS NOT NULL
-    UNION
-    SELECT DISTINCT pinned_deployment_id AS id
-    FROM sys_invocation_status
-    WHERE pinned_deployment_id IS NOT NULL AND status != 'completed'
-)
-SELECT d.id AS id
-FROM sys_deployment d
-EXCEPT
-SELECT id
-FROM active_deployments`;
-
 const VQUEUE_DRAINED_DEPLOYMENTS_QUERY = `WITH active_deployments AS (
     SELECT deployment_id AS id
     FROM sys_service
@@ -63,9 +48,7 @@ function drainedDeploymentsQuery(context: QueryContext) {
       'deployments/drained-from-stats',
     ] as const;
   }
-  return context.features.has('vqueues')
-    ? ([VQUEUE_DRAINED_DEPLOYMENTS_QUERY, 'deployments/drained'] as const)
-    : ([DRAINED_DEPLOYMENTS_QUERY, 'deployments/drained-legacy'] as const);
+  return [VQUEUE_DRAINED_DEPLOYMENTS_QUERY, 'deployments/drained'] as const;
 }
 
 export async function listDrainedDeployments(this: QueryContext) {

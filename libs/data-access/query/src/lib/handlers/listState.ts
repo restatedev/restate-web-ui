@@ -35,7 +35,6 @@ export async function listState(
     return emptyResponse();
   }
 
-  const hasScopeColumn = this.features.has('vqueues');
   const idOf = (key: string, scope: string | null | undefined) =>
     `${key}\x00${scope ?? ''}`;
 
@@ -64,22 +63,17 @@ export async function listState(
 
   // Scope side of the coarse superset filter: exact (service_key, scope) pair
   // matching is done in JS below, so the SQL only needs a pushdown-friendly
-  // superset of the page's scopes. Servers without the `vqueues` feature have
-  // no scope column at all, so it must not be referenced there.
-  let scopeFilter = '';
-  if (hasScopeColumn) {
-    const scopeIn =
-      scopes.length > 0
-        ? `scope IN (${scopes.map(quoteSqlString).join(', ')})`
-        : '';
-    if (scopeIn && hasScopelessItem) {
-      scopeFilter = ` AND (${scopeIn} OR scope IS NULL)`;
-    } else if (scopeIn) {
-      scopeFilter = ` AND ${scopeIn}`;
-    } else {
-      scopeFilter = ' AND scope IS NULL';
-    }
-  }
+  // superset of the page's scopes.
+  const scopeIn =
+    scopes.length > 0
+      ? `scope IN (${scopes.map(quoteSqlString).join(', ')})`
+      : '';
+  const scopeFilter =
+    scopeIn && hasScopelessItem
+      ? ` AND (${scopeIn} OR scope IS NULL)`
+      : scopeIn
+        ? ` AND ${scopeIn}`
+        : ' AND scope IS NULL';
 
   // Single bounded preview query for the whole page of state objects:
   // - plain column predicates (service_name, service_key IN, scope,
@@ -90,7 +84,7 @@ export async function listState(
   //   match (an ordered limit would have to consume every matching row);
   // - which entries win when the LIMIT is hit is therefore arbitrary — the
   //   preview is best-effort and the UI always renders a trailing ellipsis.
-  const previewQuery = `SELECT service_key, ${hasScopeColumn ? 'scope, ' : ''}key, value_length, value
+  const previewQuery = `SELECT service_key, scope, key, value_length, value
     FROM state
     WHERE service_name = ${quoteSqlString(service)}
       AND service_key IN (${serviceKeys.map(quoteSqlString).join(', ')})${scopeFilter}
@@ -99,8 +93,7 @@ export async function listState(
 
   const { rows } = await this.query(previewQuery, 'state/preview');
   for (const row of rows) {
-    const scope =
-      hasScopeColumn && row.scope != null ? String(row.scope) : undefined;
+    const scope = row.scope != null ? String(row.scope) : undefined;
     // The coarse filter can match (service_key, scope) combinations that are
     // not on the page (same key under another requested scope) — drop those.
     const group = groups.get(idOf(String(row.service_key), scope));

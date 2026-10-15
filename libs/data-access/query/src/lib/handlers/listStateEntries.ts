@@ -23,16 +23,13 @@ export async function listStateEntries(
     Math.max(Math.floor(args.limit ?? DEFAULT_PAGE_SIZE), 1),
     MAX_PAGE_SIZE,
   );
-  const hasScopeColumn = this.features.has('vqueues');
-  // Pin the exact row identity: on scope-aware servers a scope-less state
-  // object is `scope IS NULL` — without the pin, entries of the same key under
-  // other scopes would bleed into the page. Servers without the `vqueues`
-  // feature have no scope column, so it must not be referenced there.
-  const scopeFilter = hasScopeColumn
-    ? args.scope !== undefined
+  // Pin the exact row identity: a scope-less state object is `scope IS NULL`
+  // — without the pin, entries of the same key under other scopes would bleed
+  // into the page.
+  const scopeFilter =
+    args.scope !== undefined
       ? ` AND scope = ${quoteSqlString(args.scope)}`
-      : ' AND scope IS NULL'
-    : '';
+      : ' AND scope IS NULL';
   // Keyset pagination: strictly-forward `key > after` cursor instead of
   // OFFSET, which would re-scan and re-sort everything before skipping.
   const afterFilter =

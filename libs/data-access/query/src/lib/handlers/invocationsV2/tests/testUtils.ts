@@ -7,20 +7,7 @@ export type SqlResponder = (
 
 export const VQUEUE_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-version': '1.7.2',
-  'x-restate-features': 'vqueues,protocol_v7',
-};
-
-export const NO_VQUEUE_HEADERS = {
-  'content-type': 'application/json',
-  'x-restate-version': '1.7.2',
   'x-restate-features': 'protocol_v7',
-};
-
-export const VQUEUE_SKIP_COMPLETED_HEADERS = {
-  'content-type': 'application/json',
-  'x-restate-version': '1.7.3',
-  'x-restate-features': 'vqueues,vqueues_migration_skip_completed,protocol_v7',
 };
 
 export function rawInvocation(

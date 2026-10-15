@@ -1,12 +1,6 @@
 import type { VqueueStatus } from '../convertInvocation';
 import { type QueryContext, quoteSqlString } from './shared';
 
-// Whether the VQueue status overlay should run: the server exposes virtual
-// queues and the local flag is on.
-export function vqueueStatusEnabled(ctx: QueryContext): boolean {
-  return ctx.features.has('vqueues');
-}
-
 // Point lookup keyed by entry_id (unique per invocation). List population
 // scans still use sys_vqueues so positive stage predicates can prune keyspaces.
 export async function fetchVqueueStatuses(
@@ -14,9 +8,6 @@ export async function fetchVqueueStatuses(
   invocationIds: string[],
 ): Promise<Map<string, VqueueStatus>> {
   const statuses = new Map<string, VqueueStatus>();
-  if (!vqueueStatusEnabled(ctx)) {
-    return statuses;
-  }
   const ids = [...new Set(invocationIds.filter(Boolean))];
   if (ids.length === 0) {
     return statuses;

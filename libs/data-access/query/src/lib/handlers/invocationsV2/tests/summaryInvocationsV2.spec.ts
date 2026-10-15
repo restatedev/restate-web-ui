@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  NO_VQUEUE_HEADERS,
-  VQUEUE_SKIP_COMPLETED_HEADERS,
-  createInvocationV2QueryTestHarness,
-} from './testUtils';
+import { createInvocationV2QueryTestHarness } from './testUtils';
 
 describe('POST /query/v2/invocations/summary', () => {
   const { sql, post, setResponder } = createInvocationV2QueryTestHarness();
@@ -493,21 +489,6 @@ describe('POST /query/v2/invocations/summary', () => {
       });
     });
 
-    it('ignores the legacy rolling range for VQueue summaries', async () => {
-      setResponder(() => []);
-
-      const response = await post('/v2/invocations/summary', {
-        mode: { type: 'exact' },
-        range: 'PT1H',
-        view: 'stages',
-      });
-      const body = await response.json();
-
-      expect(sql).toHaveLength(1);
-      expect(sql[0]).not.toContain('created_at');
-      expect(body.appliedFilters).toEqual([]);
-    });
-
     it('returns only the refinable status distributions for the breakdown view', async () => {
       setResponder((statement) =>
         statement.includes("stage = 'inbox'")
@@ -786,6 +767,36 @@ describe('POST /query/v2/invocations/summary', () => {
         },
       ]);
     });
+
+    it('returns live stages without the completed stage', async () => {
+      setResponder(() => [
+        {
+          service_name: 'Greeter',
+          inbox: 5,
+          running: 2,
+          suspended: 1,
+          paused: 3,
+        },
+      ]);
+
+      const response = await post('/v2/invocations/summary', {
+        mode: { type: 'exact' },
+        view: 'live-stages',
+      });
+      const body = await response.json();
+
+      expect(sql).toHaveLength(1);
+      expect(sql[0]).toContain('FROM sys_vqueue_meta vm');
+      expect(sql[0]).not.toContain('sys_invocation_status');
+      expect(body.total).toBe(11);
+      expect(
+        body.stageBuckets.map((stage: { key: string }) => stage.key),
+      ).toEqual(['inbox', 'running', 'suspended', 'paused']);
+      expect(body.serviceBuckets[0].statusBuckets).not.toContainEqual(
+        expect.objectContaining({ key: 'finished' }),
+      );
+      expect(body.stageCountsArePartial).toBe(false);
+    });
   });
 
   describe('VQueue sampled', () => {
@@ -1008,6 +1019,38 @@ describe('POST /query/v2/invocations/summary', () => {
           expect.objectContaining({ key: 'failed', count: 40 }),
         ]),
       );
+    });
+
+    it('counts invocations outside a stage', async () => {
+      setResponder(() => [{ count: 12 }]);
+
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'stage',
+            operation: 'NOT_IN',
+            value: ['finished', 'suspended'],
+          },
+        ],
+        mode: { type: 'sampled', sampleSize: 1_000_000 },
+        view: 'count',
+      });
+
+      expect(((await response.json()) as { total: number }).total).toBe(12);
+      expect(sql).toMatchInlineSnapshot(`
+        [
+          "SELECT
+                COUNT(1) AS count
+              FROM (
+                SELECT
+                  stage
+                FROM sys_vqueues
+                LIMIT 1000000
+              ) v
+              WHERE v.stage NOT IN ('finished', 'suspended')",
+        ]
+      `);
     });
   });
 
@@ -1249,60 +1292,6 @@ describe('POST /query/v2/invocations/summary', () => {
       expect(body.stageCountsArePartial).toBe(true);
     });
 
-    it('counts the filtered status population without grouping', async () => {
-      setResponder(() => [{ count: 8_340 }]);
-
-      const response = await post(
-        '/v2/invocations/summary',
-        {
-          filters: [
-            {
-              type: 'STRING',
-              field: 'status',
-              operation: 'EQUALS',
-              value: 'backing-off',
-            },
-          ],
-          mode: { type: 'sampled', sampleSize: 1_000_000 },
-          view: 'count',
-        },
-        NO_VQUEUE_HEADERS,
-      );
-      const body = await response.json();
-
-      expect(sql).toMatchInlineSnapshot(`
-        [
-          "SELECT
-                COUNT(1) AS count
-              FROM (
-                SELECT
-                  id, status
-                FROM sys_invocation_status
-                LIMIT 1000000
-              ) sampled_invocations
-              LEFT JOIN sys_invocation_state sis ON sis.id = sampled_invocations.id
-              WHERE sampled_invocations.status IN ('invoked')
-                AND ((sampled_invocations.status = 'invoked' AND sis.in_flight IS NOT TRUE AND sis.retry_count > 0))",
-        ]
-      `);
-      expect(body).toMatchObject({
-        mode: 'sampled',
-        total: 8_340,
-        isPartial: true,
-        appliedFilters: [
-          {
-            type: 'STRING',
-            field: 'status',
-            operation: 'EQUALS',
-            value: 'backing-off',
-          },
-        ],
-        stageBuckets: [],
-        statusBuckets: [],
-        serviceBuckets: [],
-      });
-    });
-
     it('filters exact breakdowns by stage with status predicates', async () => {
       setResponder(() => [
         { service_name: 'Checkout', bucket: 'pending', count: 5 },
@@ -1353,42 +1342,6 @@ describe('POST /query/v2/invocations/summary', () => {
       `);
     });
 
-    it('counts invocations outside a stage', async () => {
-      setResponder(() => [{ count: 12 }]);
-
-      const response = await post(
-        '/v2/invocations/summary',
-        {
-          filters: [
-            {
-              type: 'STRING_LIST',
-              field: 'stage',
-              operation: 'NOT_IN',
-              value: ['finished', 'suspended'],
-            },
-          ],
-          mode: { type: 'sampled', sampleSize: 1_000_000 },
-          view: 'count',
-        },
-        NO_VQUEUE_HEADERS,
-      );
-
-      expect(((await response.json()) as { total: number }).total).toBe(12);
-      expect(sql).toMatchInlineSnapshot(`
-        [
-          "SELECT
-                COUNT(1) AS count
-              FROM (
-                SELECT
-                  id, status
-                FROM sys_invocation_status
-                LIMIT 1000000
-              ) sampled_invocations
-              WHERE (sampled_invocations.status = 'completed' OR sampled_invocations.status = 'suspended') IS NOT TRUE",
-        ]
-      `);
-    });
-
     it('matches nothing for an empty status list', async () => {
       setResponder(() => []);
 
@@ -1434,27 +1387,27 @@ describe('POST /query/v2/invocations/summary', () => {
     it('returns exact legacy stages and breakdowns from one status scan', async () => {
       setResponder(() => [
         { service_name: 'Checkout', bucket: 'pending', count: 5 },
-        { service_name: 'Checkout', bucket: 'ready', count: 7 },
+        {
+          service_name: 'Checkout',
+          bucket: 'ready-yielded-backing-off',
+          count: 7,
+        },
         { service_name: 'Checkout', bucket: 'running', count: 3 },
         { service_name: 'Checkout', bucket: 'succeeded', count: 2 },
       ]);
 
-      const response = await post(
-        '/v2/invocations/summary',
-        {
-          filters: [
-            {
-              type: 'STRING_LIST',
-              field: 'target_service_name',
-              operation: 'IN',
-              value: ['Checkout'],
-            },
-          ],
-          mode: { type: 'exact' },
-          view: 'stages',
-        },
-        NO_VQUEUE_HEADERS,
-      );
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING_LIST',
+            field: 'target_handler_name',
+            operation: 'IN',
+            value: ['run'],
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'stages',
+      });
       const body = await response.json();
 
       expect(sql).toMatchInlineSnapshot(`
@@ -1464,8 +1417,7 @@ describe('POST /query/v2/invocations/summary', () => {
                 CASE
                   WHEN ss.status = 'inboxed' THEN 'pending'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
-                  WHEN ss.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
-                  WHEN ss.status = 'invoked' THEN 'ready'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
                   WHEN ss.status = 'completed' THEN 'failed'
                   ELSE ss.status
@@ -1473,14 +1425,13 @@ describe('POST /query/v2/invocations/summary', () => {
                 COUNT(1) AS count
               FROM sys_invocation_status ss
               LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
-              WHERE ss.target_service_name IN ('Checkout')
+              WHERE ss.target_handler_name IN ('run')
               GROUP BY
                 ss.target_service_name,
                 CASE
                   WHEN ss.status = 'inboxed' THEN 'pending'
                   WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
-                  WHEN ss.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
-                  WHEN ss.status = 'invoked' THEN 'ready'
+                  WHEN ss.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
                   WHEN ss.status = 'completed' THEN 'failed'
                   ELSE ss.status
@@ -1498,7 +1449,7 @@ describe('POST /query/v2/invocations/summary', () => {
         expect.objectContaining({
           key: 'inbox',
           count: 12,
-          breakdownCoverage: 'full',
+          breakdownCoverage: 'coarse',
           breakdownCanRefine: false,
         }),
         expect.objectContaining({ key: 'running', count: 3 }),
@@ -1509,7 +1460,10 @@ describe('POST /query/v2/invocations/summary', () => {
       expect(body.statusBuckets).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ key: 'pending', count: 5 }),
-          expect.objectContaining({ key: 'ready', count: 7 }),
+          expect.objectContaining({
+            key: 'ready-yielded-backing-off',
+            count: 7,
+          }),
           expect.objectContaining({ key: 'running', count: 3 }),
           expect.objectContaining({ key: 'succeeded', count: 2 }),
         ]),
@@ -1530,22 +1484,18 @@ describe('POST /query/v2/invocations/summary', () => {
         },
       ]);
 
-      const response = await post(
-        '/v2/invocations/summary',
-        {
-          filters: [
-            {
-              type: 'STRING',
-              field: 'target_handler_name',
-              operation: 'EQUALS',
-              value: 'run',
-            },
-          ],
-          mode: { type: 'sampled', sampleSize: 5 },
-          view: 'stages',
-        },
-        NO_VQUEUE_HEADERS,
-      );
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING',
+            field: 'target_handler_name',
+            operation: 'EQUALS',
+            value: 'run',
+          },
+        ],
+        mode: { type: 'sampled', sampleSize: 5 },
+        view: 'stages',
+      });
       const body = await response.json();
 
       expect(sql).toMatchInlineSnapshot(`
@@ -1555,8 +1505,7 @@ describe('POST /query/v2/invocations/summary', () => {
                 CASE
                   WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
                   WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
-                  WHEN sampled_invocations.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
-                  WHEN sampled_invocations.status = 'invoked' THEN 'ready'
+                  WHEN sampled_invocations.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'
                   WHEN sampled_invocations.status = 'completed' THEN 'failed'
                   ELSE sampled_invocations.status
@@ -1575,8 +1524,7 @@ describe('POST /query/v2/invocations/summary', () => {
                 CASE
                   WHEN sampled_invocations.status = 'inboxed' THEN 'pending'
                   WHEN sampled_invocations.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
-                  WHEN sampled_invocations.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
-                  WHEN sampled_invocations.status = 'invoked' THEN 'ready'
+                  WHEN sampled_invocations.status = 'invoked' THEN 'ready-yielded-backing-off'
                   WHEN sampled_invocations.status = 'completed' AND sampled_invocations.completion_result = 'success' THEN 'succeeded'
                   WHEN sampled_invocations.status = 'completed' THEN 'failed'
                   ELSE sampled_invocations.status
@@ -1592,218 +1540,6 @@ describe('POST /query/v2/invocations/summary', () => {
       });
     });
 
-    it('limits a legacy summary to the selected rolling range', async () => {
-      setResponder(() => []);
-
-      const response = await post(
-        '/v2/invocations/summary',
-        {
-          mode: { type: 'exact' },
-          range: 'PT1H',
-          view: 'stages',
-        },
-        NO_VQUEUE_HEADERS,
-      );
-      const body = await response.json();
-      const rangeFilter = body.appliedFilters[0];
-
-      expect(rangeFilter).toMatchObject({
-        type: 'DATE',
-        field: 'created_at',
-        operation: 'AFTER',
-      });
-      expect(Date.parse(rangeFilter.value)).toBeGreaterThan(
-        Date.now() - 60 * 60 * 1000 - 1_000,
-      );
-      expect(sql).toHaveLength(1);
-      expect(sql[0]).toContain(`WHERE ss.created_at > '${rangeFilter.value}'`);
-      expect(body.mode).toBe('exact');
-    });
-
-    it('separates legacy ready and backing-off statuses without yielded', async () => {
-      setResponder(() => [
-        { service_name: 'Greeter', bucket: 'ready', count: 2 },
-        { service_name: 'Greeter', bucket: 'backing-off', count: 1 },
-        { service_name: 'Greeter', bucket: 'running', count: 2 },
-      ]);
-
-      const response = await post(
-        '/v2/invocations/summary',
-        { mode: { type: 'exact' } },
-        NO_VQUEUE_HEADERS,
-      );
-      const body = await response.json();
-
-      expect(sql).toMatchInlineSnapshot(`
-        [
-          "SELECT
-                ss.target_service_name AS service_name,
-                CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
-                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
-                  WHEN ss.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
-                  WHEN ss.status = 'invoked' THEN 'ready'
-                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
-                  WHEN ss.status = 'completed' THEN 'failed'
-                  ELSE ss.status
-                END AS bucket,
-                COUNT(1) AS count
-              FROM sys_invocation_status ss
-              LEFT JOIN sys_invocation_state sis ON sis.id = ss.id
-              GROUP BY
-                ss.target_service_name,
-                CASE
-                  WHEN ss.status = 'inboxed' THEN 'pending'
-                  WHEN ss.status = 'invoked' AND sis.in_flight IS TRUE THEN 'running'
-                  WHEN ss.status = 'invoked' AND sis.retry_count > 0 THEN 'backing-off'
-                  WHEN ss.status = 'invoked' THEN 'ready'
-                  WHEN ss.status = 'completed' AND ss.completion_result = 'success' THEN 'succeeded'
-                  WHEN ss.status = 'completed' THEN 'failed'
-                  ELSE ss.status
-                END",
-        ]
-      `);
-      expect(body.statusBuckets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ key: 'ready', count: 2 }),
-          expect.objectContaining({ key: 'backing-off', count: 1 }),
-        ]),
-      );
-      expect(body.stageBuckets).toContainEqual(
-        expect.objectContaining({
-          key: 'inbox',
-          breakdownCoverage: 'full',
-        }),
-      );
-      expect(
-        body.statusBuckets.some(
-          (bucket: { key: string }) =>
-            bucket.key === 'yielded' ||
-            bucket.key === 'ready-yielded-backing-off',
-        ),
-      ).toBe(false);
-    });
-  });
-
-  describe('skipped completed VQueue migration', () => {
-    it('samples completed invocations before applying a service filter', async () => {
-      setResponder((statement) =>
-        statement.includes('FROM sys_vqueue_meta')
-          ? [
-              {
-                service_name: 'Checkout',
-                inbox: 0,
-                running: 0,
-                suspended: 0,
-                paused: 0,
-              },
-            ]
-          : [
-              {
-                service_name: 'Checkout',
-                status: 'succeeded',
-                count: 2,
-              },
-            ],
-      );
-
-      const response = await post(
-        '/v2/invocations/summary',
-        {
-          filters: [
-            {
-              type: 'STRING_LIST',
-              field: 'target_service_name',
-              operation: 'IN',
-              value: ['Checkout'],
-            },
-          ],
-          mode: { type: 'sampled', sampleSize: 5 },
-          view: 'stages',
-        },
-        VQUEUE_SKIP_COMPLETED_HEADERS,
-      );
-      const body = await response.json();
-
-      expect(sql).toMatchInlineSnapshot(`
-        [
-          "SELECT
-                vm.service_name,
-                SUM(vm.num_inbox) AS inbox,
-                SUM(vm.num_running) AS running,
-                SUM(vm.num_suspended) AS suspended,
-                SUM(vm.num_paused) AS paused
-              FROM sys_vqueue_meta vm
-              WHERE vm.service_name IN ('Checkout')
-                AND (
-                  vm.num_inbox > 0
-                  OR vm.num_running > 0
-                  OR vm.num_suspended > 0
-                  OR vm.num_paused > 0
-                )
-              GROUP BY vm.service_name",
-          "SELECT
-                sampled_finished.target_service_name AS service_name,
-                CASE
-                  WHEN sampled_finished.completion_result = 'success' THEN 'succeeded'
-                  ELSE 'failed'
-                END AS status,
-                COUNT(1) AS count
-              FROM (
-                SELECT
-                  target_service_name, completion_result
-                FROM sys_invocation_status ss
-                WHERE ss.status = 'completed'
-                LIMIT 5
-              ) sampled_finished
-              WHERE sampled_finished.target_service_name IN ('Checkout')
-              GROUP BY
-                sampled_finished.target_service_name,
-                CASE
-                  WHEN sampled_finished.completion_result = 'success' THEN 'succeeded'
-                  ELSE 'failed'
-                END",
-        ]
-      `);
-      expect(body).toMatchObject({
-        mode: 'sampled',
-        total: 2,
-        isPartial: true,
-        stageCountsArePartial: true,
-      });
-    });
-
-    it('returns live stages without waiting for completed invocation status', async () => {
-      setResponder(() => [
-        {
-          service_name: 'Greeter',
-          inbox: 5,
-          running: 2,
-          suspended: 1,
-          paused: 3,
-        },
-      ]);
-
-      const response = await post(
-        '/v2/invocations/summary',
-        { mode: { type: 'exact' }, view: 'live-stages' },
-        VQUEUE_SKIP_COMPLETED_HEADERS,
-      );
-      const body = await response.json();
-
-      expect(sql).toHaveLength(1);
-      expect(sql[0]).toContain('FROM sys_vqueue_meta vm');
-      expect(sql[0]).not.toContain('sys_invocation_status');
-      expect(body.total).toBe(11);
-      expect(
-        body.stageBuckets.map((stage: { key: string }) => stage.key),
-      ).toEqual(['inbox', 'running', 'suspended', 'paused']);
-      expect(body.serviceBuckets[0].statusBuckets).not.toContainEqual(
-        expect.objectContaining({ key: 'finished' }),
-      );
-      expect(body.stageCountsArePartial).toBe(false);
-    });
-
     it('keeps yielded in the coarse live-status bucket', async () => {
       setResponder(() => [
         {
@@ -1813,22 +1549,18 @@ describe('POST /query/v2/invocations/summary', () => {
         },
       ]);
 
-      const response = await post(
-        '/v2/invocations/summary',
-        {
-          filters: [
-            {
-              type: 'STRING',
-              field: 'target_handler_name',
-              operation: 'EQUALS',
-              value: 'run',
-            },
-          ],
-          mode: { type: 'exact' },
-          view: 'breakdowns',
-        },
-        VQUEUE_SKIP_COMPLETED_HEADERS,
-      );
+      const response = await post('/v2/invocations/summary', {
+        filters: [
+          {
+            type: 'STRING',
+            field: 'target_handler_name',
+            operation: 'EQUALS',
+            value: 'run',
+          },
+        ],
+        mode: { type: 'exact' },
+        view: 'breakdowns',
+      });
       const body = await response.json();
 
       expect(body.statusBuckets).toContainEqual({
@@ -1838,87 +1570,6 @@ describe('POST /query/v2/invocations/summary', () => {
         count: 3,
         isIncluded: true,
       });
-    });
-
-    it('uses invocation status only for terminal summary buckets', async () => {
-      await post(
-        '/v2/invocations/summary',
-        { mode: { type: 'exact' } },
-        VQUEUE_SKIP_COMPLETED_HEADERS,
-      );
-
-      expect(sql[2]).toMatchInlineSnapshot(`
-        "SELECT
-                ss.target_service_name AS service_name,
-                CASE
-                  WHEN ss.completion_result = 'success' THEN 'succeeded'
-                  ELSE 'failed'
-                END AS status,
-                COUNT(1) AS count
-              FROM sys_invocation_status ss
-              WHERE ss.status = 'completed'
-              GROUP BY
-                ss.target_service_name,
-                CASE
-                  WHEN ss.completion_result = 'success' THEN 'succeeded'
-                  ELSE 'failed'
-                END"
-      `);
-    });
-
-    it('applies a service filter to live metadata and terminal status', async () => {
-      await post(
-        '/v2/invocations/summary',
-        {
-          filters: [
-            {
-              type: 'STRING_LIST',
-              field: 'target_service_name',
-              operation: 'IN',
-              value: ['Checkout'],
-            },
-          ],
-          mode: { type: 'exact' },
-          view: 'stages',
-        },
-        VQUEUE_SKIP_COMPLETED_HEADERS,
-      );
-
-      expect(sql).toMatchInlineSnapshot(`
-        [
-          "SELECT
-                vm.service_name,
-                SUM(vm.num_inbox) AS inbox,
-                SUM(vm.num_running) AS running,
-                SUM(vm.num_suspended) AS suspended,
-                SUM(vm.num_paused) AS paused
-              FROM sys_vqueue_meta vm
-              WHERE vm.service_name IN ('Checkout')
-                AND (
-                  vm.num_inbox > 0
-                  OR vm.num_running > 0
-                  OR vm.num_suspended > 0
-                  OR vm.num_paused > 0
-                )
-              GROUP BY vm.service_name",
-          "SELECT
-                ss.target_service_name AS service_name,
-                CASE
-                  WHEN ss.completion_result = 'success' THEN 'succeeded'
-                  ELSE 'failed'
-                END AS status,
-                COUNT(1) AS count
-              FROM sys_invocation_status ss
-              WHERE ss.status = 'completed'
-                AND ss.target_service_name IN ('Checkout')
-              GROUP BY
-                ss.target_service_name,
-                CASE
-                  WHEN ss.completion_result = 'success' THEN 'succeeded'
-                  ELSE 'failed'
-                END",
-        ]
-      `);
     });
   });
 });

@@ -42,11 +42,7 @@ function invocation(
   };
 }
 
-function createContext(
-  responder: (sql: string) => Record<string, unknown>[],
-  features = new Set(['vqueues']),
-  restateVersion = '1.7.3',
-) {
+function createContext(responder: (sql: string) => Record<string, unknown>[]) {
   const query = vi.fn(async (sql: string) => ({ rows: responder(sql) }));
   const adminApiOwner: Pick<QueryContext, 'adminApi'> = {
     adminApi: async <T>() => workflowService as T,
@@ -55,15 +51,17 @@ function createContext(
   const context: QueryContext = {
     query,
     adminApi: adminApiOwner.adminApi,
-    features,
+    features: new Set(),
     baseUrl: '',
-    restateVersion,
   };
   return { adminApi, context, query };
 }
 
 describe('Workflow query handlers', () => {
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
 
   it('uses an exact Workflow id predicate', async () => {
     const { context, query } = createContext(() => []);
@@ -124,25 +122,6 @@ describe('Workflow query handlers', () => {
     ORDER BY created_at DESC NULLS LAST
     LIMIT 51`,
     ]);
-  });
-
-  it('rejects Workflow scope filters without VQueues', async () => {
-    const { context, query } = createContext(() => [], new Set());
-
-    const response = await listWorkflowRuns.call(context, 'OrderWorkflow', {
-      filters: [
-        {
-          field: 'scope',
-          type: 'STRING',
-          operation: 'EQUALS',
-          value: 'tenant-a',
-        },
-      ],
-    });
-
-    expect(response.status).toBe(400);
-    expect(await response.text()).toBe('Unsupported filter field: scope');
-    expect(query).not.toHaveBeenCalled();
   });
 
   it('lists only Workflow handler runs and overlays VQueue status', async () => {
@@ -227,65 +206,7 @@ describe('Workflow query handlers', () => {
     });
   });
 
-  it('uses direct key equality without VQueues before Restate 1.7.3', async () => {
-    const { context, query } = createContext(
-      (sql) => {
-        if (
-          sql.includes('FROM sys_invocation_status') &&
-          sql.includes("target_handler_name = 'run'")
-        ) {
-          return [{ id: 'inv_run' }];
-        }
-        if (sql.includes('FROM sys_invocation_status')) {
-          return [{ id: 'inv_shared-2' }, { id: 'inv_shared-1' }];
-        }
-        return [
-          invocation('inv_shared-1', 'approve'),
-          invocation('inv_run', 'run'),
-          invocation('inv_shared-2', 'status'),
-        ];
-      },
-      new Set(),
-      '1.7.2',
-    );
-
-    const response = await getWorkflowRun.call(
-      context,
-      'OrderWorkflow',
-      'order-1',
-    );
-
-    expect(query.mock.calls.map(([sql]) => sql)).toMatchInlineSnapshot(`
-      [
-        "SELECT id
-          FROM sys_invocation_status
-          WHERE target_service_name = 'OrderWorkflow'
-            AND target_service_ty = 'workflow'
-            AND target_service_key = 'order-1'
-            AND target_handler_name = 'run'
-          LIMIT 1",
-        "SELECT id
-          FROM sys_invocation_status
-          WHERE target_service_name = 'OrderWorkflow'
-            AND target_service_ty = 'workflow'
-            AND target_service_key = 'order-1'
-            AND target_handler_name <> 'run'
-          ORDER BY created_at DESC NULLS LAST
-          LIMIT 51",
-        "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure
-          FROM sys_invocation
-          WHERE id IN ('inv_run', 'inv_shared-2', 'inv_shared-1')",
-      ]
-    `);
-    expect(await response.json()).toMatchObject({
-      runInvocation: { id: 'inv_run' },
-      recentInvocations: [{ id: 'inv_shared-2' }, { id: 'inv_shared-1' }],
-      recentInvocationsLimit: 50,
-      recentInvocationsTruncated: false,
-    });
-  });
-
-  it('uses direct key equality for a scoped run on Restate 1.7.3', async () => {
+  it('uses direct key equality for a scoped run', async () => {
     const { context, query } = createContext((sql) => {
       if (sql.includes('FROM sys_invocation_status')) {
         return sql.includes("target_handler_name = 'run'")
@@ -347,22 +268,18 @@ describe('Workflow query handlers', () => {
     });
   });
 
-  it('uses the key workaround with VQueues before Restate 1.7.3', async () => {
-    const { context, query } = createContext(
-      (sql) => {
-        if (sql.includes('FROM sys_invocation_status')) {
-          return sql.includes("target_handler_name = 'run'")
-            ? [{ id: 'inv_run' }]
-            : [];
-        }
-        if (sql.includes('FROM sys_invocation\n')) {
-          return [invocation('inv_run', 'run')];
-        }
-        return [];
-      },
-      new Set(['vqueues']),
-      '1.7.2',
-    );
+  it('uses direct key equality and a null scope for an unscoped run', async () => {
+    const { context, query } = createContext((sql) => {
+      if (sql.includes('FROM sys_invocation_status')) {
+        return sql.includes("target_handler_name = 'run'")
+          ? [{ id: 'inv_run' }]
+          : [];
+      }
+      if (sql.includes('FROM sys_invocation\n')) {
+        return [invocation('inv_run', 'run')];
+      }
+      return [];
+    });
 
     const response = await getWorkflowRun.call(
       context,
@@ -377,7 +294,7 @@ describe('Workflow query handlers', () => {
           FROM sys_invocation_status
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
-            AND SUBSTR(target_service_key, 1) = 'order-1'
+            AND target_service_key = 'order-1'
             AND target_handler_name = 'run'
             AND scope IS NULL
           LIMIT 1",
@@ -385,7 +302,7 @@ describe('Workflow query handlers', () => {
           FROM sys_invocation_status
           WHERE target_service_name = 'OrderWorkflow'
             AND target_service_ty = 'workflow'
-            AND SUBSTR(target_service_key, 1) = 'order-1'
+            AND target_service_key = 'order-1'
             AND target_handler_name <> 'run'
             AND scope IS NULL
           ORDER BY created_at DESC NULLS LAST
@@ -396,21 +313,6 @@ describe('Workflow query handlers', () => {
         "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv_run')",
       ]
     `);
-  });
-
-  it('rejects a scoped identity on a legacy server without querying', async () => {
-    const { adminApi, context, query } = createContext(() => [], new Set());
-
-    const response = await getWorkflowRun.call(
-      context,
-      'OrderWorkflow',
-      'order-1',
-      'tenant-a',
-    );
-
-    expect(response.status).toBe(400);
-    expect(adminApi).not.toHaveBeenCalled();
-    expect(query).not.toHaveBeenCalled();
   });
 
   it('loads retained interactions when the run invocation is unavailable', async () => {
@@ -428,7 +330,7 @@ describe('Workflow query handlers', () => {
         return [invocation('inv_shared', 'approve')];
       }
       return [];
-    }, new Set());
+    });
 
     const response = await getWorkflowRun.call(
       context,
@@ -447,7 +349,7 @@ describe('Workflow query handlers', () => {
   });
 
   it('returns not found when the Workflow has no retained invocations', async () => {
-    const { context } = createContext(() => [], new Set());
+    const { context } = createContext(() => []);
 
     const response = await getWorkflowRun.call(
       context,
@@ -524,7 +426,6 @@ describe('Workflow query handlers', () => {
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       duration: 'PT7200S',
       queueDuration: 'PT3.5S',
       pendingPromiseCount: 2,
@@ -609,7 +510,6 @@ describe('Workflow query handlers', () => {
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       waitingToStartDuration: 'PT30S',
       pendingPromiseCount: 0,
       state: { numKeys: 0, totalSize: 0 },
@@ -629,37 +529,26 @@ describe('Workflow query handlers', () => {
     expect(query).toHaveBeenCalledTimes(1);
   });
 
-  it('reports Workflow statistics as unsupported without Virtual Queues', async () => {
-    const { adminApi, context, query } = createContext(() => [], new Set());
-
-    const response = await getWorkflowRunStats.call(
-      context,
-      'OrderWorkflow',
-      'order-1',
-    );
-
-    expect(await response.json()).toEqual({ supported: false });
-    expect(adminApi).not.toHaveBeenCalled();
-    expect(query).not.toHaveBeenCalled();
-  });
-
   it('routes the Workflow statistics endpoint', async () => {
-    const fetch = vi.spyOn(globalThis, 'fetch');
+    const fetch = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(Response.json({ ty: 'Service', handlers: [] }));
 
     const response = await queryRouter(
       new Request(
         'http://query.test/query/workflows/OrderWorkflow/runs/order-1/stats',
         {
           headers: {
-            'x-restate-version': '1.7.2',
             'x-restate-features': 'protocol_v7',
           },
         },
       ),
     );
 
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ supported: false });
-    expect(fetch).not.toHaveBeenCalled();
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({
+      message: 'OrderWorkflow is not a Workflow service.',
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });

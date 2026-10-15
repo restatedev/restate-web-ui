@@ -6,7 +6,7 @@ function createContext(
   responder: (
     sql: string,
   ) => Record<string, unknown>[] | Promise<Record<string, unknown>[]>,
-  features = new Set(['vqueues', 'scoped_virtual_objects']),
+  features = new Set<string>(),
 ) {
   const query = vi.fn(async (sql: string) => ({
     rows: await responder(sql),
@@ -16,7 +16,6 @@ function createContext(
     features,
     adminApi: vi.fn(),
     baseUrl: '',
-    restateVersion: '1.7.0',
   } as unknown as QueryContext;
   return { context, query };
 }
@@ -261,106 +260,6 @@ describe('listVirtualObjectInstances', () => {
       AND SUBSTR(lock_name, CHAR_LENGTH('Counter/') + 1) ILIKE '%Customer''s%'
     LIMIT 51`,
     ]);
-  });
-
-  it('uses an exact key and null scope to select an unscoped partition', async () => {
-    const { context, query } = createContext(
-      (sql) => {
-        if (sql.includes('SUM(num_inbox)') || sql.includes('FROM sys_locks')) {
-          return [];
-        }
-        if (sql.includes('FROM sys_invocation_status')) {
-          return [{ partition_key: '7', object_key: 'hot-object-0' }];
-        }
-        return [];
-      },
-      new Set(['vqueues']),
-    );
-
-    const response = await listVirtualObjectInstances.call(context, 'Counter', {
-      filters: [
-        {
-          field: 'key',
-          type: 'STRING',
-          operation: 'EQUALS',
-          value: 'hot-object-0',
-        },
-      ],
-    });
-
-    expect(response.status).toBe(200);
-    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      target_service_key AS object_key,
-      scope
-    FROM sys_invocation_status
-    WHERE target_service_name = 'Counter'
-      AND target_service_ty = 'virtual_object'
-      AND status <> 'completed'
-      AND target_service_key = 'hot-object-0'
-      AND scope IS NULL
-    LIMIT 51`,
-      `SELECT DISTINCT
-      CAST(partition_key AS VARCHAR) AS partition_key,
-      scope
-    FROM sys_vqueue_meta
-    WHERE service_name = 'Counter'
-      AND (
-        num_inbox > 0
-        OR num_running > 0
-        OR num_suspended > 0
-        OR num_paused > 0
-      )
-      AND lock_name = 'Counter/hot-object-0'
-      AND scope IS NULL
-    LIMIT 51`,
-      `SELECT
-      lock_name,
-      scope,
-      SUM(num_inbox) AS backlog
-    FROM sys_vqueue_meta
-    WHERE partition_key IN (7)
-      AND service_name = 'Counter'
-      AND (
-        (lock_name = 'Counter/hot-object-0' AND scope IS NULL)
-      )
-    GROUP BY lock_name, scope`,
-      `SELECT
-      lock_name,
-      scope,
-      acquired_by,
-      acquired_at
-    FROM sys_locks
-    WHERE acquired_by IS NOT NULL
-      AND (
-        (lock_name = 'Counter/hot-object-0' AND scope IS NULL)
-      )`,
-    ]);
-    expect(await response.json()).toEqual({
-      rows: [{ key: 'hot-object-0', backlog: 0 }],
-      truncated: false,
-      sort: null,
-    });
-  });
-
-  it('rejects scope filters when scoped identities are unavailable', async () => {
-    const { context, query } = createContext(() => [], new Set(['vqueues']));
-
-    const response = await listVirtualObjectInstances.call(context, 'Counter', {
-      filters: [
-        {
-          field: 'scope',
-          type: 'STRING',
-          operation: 'EQUALS',
-          value: 'tenant-a',
-        },
-      ],
-    });
-
-    expect(response.status).toBe(400);
-    expect(await response.text()).toBe('Unsupported filter field: scope');
-    expect(query).not.toHaveBeenCalled();
   });
 
   it('uses active invocation identities for vqueue servers', async () => {
@@ -750,71 +649,6 @@ describe('listVirtualObjectInstances', () => {
     });
   });
 
-  it('uses active invocation identities on servers without vqueues', async () => {
-    const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM sys_invocation_status')) {
-        return [{ object_key: 'invocation-only' }];
-      }
-      if (sql.includes('FROM sys_inbox')) {
-        return [{ object_key: 'invocation-only', backlog: 2 }];
-      }
-      return [
-        {
-          object_key: 'invocation-only',
-          acquired_by: 'inv_legacy-holder',
-        },
-      ];
-    }, new Set());
-
-    const response = await listVirtualObjectInstances.call(context, 'Counter', {
-      search: 'customer',
-    });
-
-    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      target_service_key AS object_key
-    FROM sys_invocation_status
-    WHERE target_service_name = 'Counter'
-      AND target_service_ty = 'virtual_object'
-      AND target_service_key IS NOT NULL
-      AND status <> 'completed'
-      AND (target_service_key LIKE '%customer%')
-    LIMIT 51`,
-      `SELECT
-      service_key AS object_key,
-      COUNT(*) AS backlog
-    FROM sys_inbox
-    WHERE service_name = 'Counter'
-      AND (
-        (service_key = 'invocation-only')
-      )
-    GROUP BY service_key`,
-      `SELECT
-      service_key AS object_key,
-      invocation_id AS acquired_by
-    FROM sys_keyed_service_status
-    WHERE service_name = 'Counter'
-      AND invocation_id IS NOT NULL
-      AND (
-        (service_key = 'invocation-only')
-      )`,
-    ]);
-    expect(await response.json()).toEqual({
-      rows: [
-        {
-          key: 'invocation-only',
-          backlog: 2,
-          lockHolder: {
-            id: 'inv_legacy-holder',
-            kind: 'invocation',
-          },
-        },
-      ],
-      truncated: false,
-      sort: null,
-    });
-  });
-
   it('reports truncation when any discovery source is truncated', async () => {
     const invocationRows = Array.from({ length: 51 }, () => ({
       partition_key: '100',
@@ -999,65 +833,10 @@ describe('listVirtualObjectInstances', () => {
       sort: { field: 'backlog', order: 'DESC' },
     });
   });
-
-  it('uses the legacy inbox aggregate for an explicit backlog sort', async () => {
-    const { context, query } = createContext((sql) => {
-      if (sql.includes('FROM sys_inbox')) {
-        return [{ object_key: 'hot', backlog: 9 }];
-      }
-      return [];
-    }, new Set());
-
-    const response = await listVirtualObjectInstances.call(context, 'Counter', {
-      sort: { field: 'backlog', order: 'DESC' },
-    });
-
-    expect(query.mock.calls.map(([sql]) => sql)).toEqual([
-      `SELECT DISTINCT
-      target_service_key AS object_key
-    FROM sys_invocation_status
-    WHERE target_service_name = 'Counter'
-      AND target_service_ty = 'virtual_object'
-      AND target_service_key IS NOT NULL
-      AND status <> 'completed'
-    LIMIT 51`,
-      `SELECT
-      service_key AS object_key,
-      COUNT(*) AS backlog
-    FROM sys_inbox
-    WHERE service_name = 'Counter'
-    GROUP BY service_key
-    ORDER BY backlog DESC, object_key ASC
-    LIMIT 51`,
-      `SELECT
-      service_key AS object_key,
-      invocation_id AS acquired_by
-    FROM sys_keyed_service_status
-    WHERE service_name = 'Counter'
-      AND invocation_id IS NOT NULL
-      AND (
-        (service_key = 'hot')
-      )`,
-    ]);
-    expect(await response.json()).toEqual({
-      rows: [
-        {
-          key: 'hot',
-          backlog: 9,
-        },
-      ],
-      truncated: false,
-      sort: { field: 'backlog', order: 'DESC' },
-    });
-  });
 });
 
 describe('listVirtualObjectInstances from sys_virtual_object_stats', () => {
-  const INDEX_FEATURES = new Set([
-    'vqueues',
-    'scoped_virtual_objects',
-    'track_status_gauges',
-  ]);
+  const INDEX_FEATURES = new Set(['track_status_gauges']);
 
   function respondWithStats(
     withBacklog: Record<string, unknown>[],
