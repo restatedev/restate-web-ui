@@ -3,7 +3,6 @@ import { useEffect, useMemo, useCallback, useState } from 'react';
 import type { Key } from 'react-aria';
 import { useLocation } from 'react-router';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
-import { useFeatures } from '@restate/data-access/admin-api';
 import { addUserCol, removeUserCol } from './userPreferences';
 import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
 
@@ -72,20 +71,6 @@ export const COLUMN_NAMES: Record<ColumnKey, string> = {
   vqueue_id: INVOCATION_TABLE_COLUMN_CONFIG.vqueue_id.name,
 };
 
-const FEATURE_GATED_COLUMNS: Partial<Record<ColumnKey, string>> = {
-  vqueue_id: 'vqueues',
-  scope: 'vqueues',
-  limit_key: 'vqueues',
-};
-
-function isColumnAvailable(
-  col: ColumnKey,
-  features: Set<string> | undefined,
-): boolean {
-  const required = FEATURE_GATED_COLUMNS[col];
-  return !required || (features?.has(required) ?? false);
-}
-
 const SORT_ORDER: Record<ColumnKey, number> = Object.entries(
   COLUMNS_KEYS,
 ).reduce(
@@ -149,30 +134,15 @@ export function useColumns() {
         : fromUrl,
     );
   }, [location.key, location.search]);
-  const features = useFeatures();
-
-  const availableColumnNames = useMemo<
-    Partial<Record<ColumnKey, string>>
-  >(() => {
-    return Object.fromEntries(
-      (Object.entries(COLUMN_NAMES) as [ColumnKey, string][]).filter(([key]) =>
-        isColumnAvailable(key, features),
-      ),
-    ) as Partial<Record<ColumnKey, string>>;
-  }, [features]);
-
   const sortedColumnsList = useMemo(() => {
-    const visible = selectedColumns.filter((col) =>
-      isColumnAvailable(col, features),
-    );
-    return [...Array.from(visible).sort(sortColumns), 'actions'].map(
+    return [...Array.from(selectedColumns).sort(sortColumns), 'actions'].map(
       (id, index) => ({
         name: COLUMN_NAMES[id as ColumnKey],
         id,
         isRowHeader: index === 0,
       }),
     ) as { id: ColumnKey; name: string; isRowHeader: boolean }[];
-  }, [selectedColumns, features]);
+  }, [selectedColumns]);
 
   const setSelectedColumns = useCallback(
     (keys: DropdownMenuSelection, updateUrl = true) => {
@@ -208,6 +178,6 @@ export function useColumns() {
     selectedColumns,
     setSelectedColumns,
     sortedColumnsList,
-    availableColumnNames,
+    availableColumnNames: COLUMN_NAMES,
   };
 }

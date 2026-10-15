@@ -40,10 +40,7 @@ import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { DeploymentActions } from './DeploymentActions';
 import { ServicesTable } from './ServicesTable';
 import { DeploymentsTable } from './DeploymentsTable';
-import {
-  CompletionTimeRangeToggle,
-  OverviewTimeRangeToggle,
-} from './TimeRangeToggle';
+import { CompletionTimeRangeToggle } from './TimeRangeToggle';
 import { useCompletionChart } from './useCompletionChart';
 import { useInFlightChart } from './useInFlightChart';
 
@@ -448,12 +445,10 @@ function OverviewContent() {
     servicesMap,
     deploymentsMap,
     totalCount,
-    hasVqueues,
     serviceIssuesMap,
     isSummaryLoading,
     breakdownMode,
     setBreakdownMode,
-    canSampleBreakdown,
     isSummaryFromStats,
     isSummaryError,
     summaryError,
@@ -472,8 +467,7 @@ function OverviewContent() {
   const completionChart = useCompletionChart();
   const inFlightChart = useInFlightChart();
   const showsBreakdownMode =
-    canSampleBreakdown &&
-    (completionChart.usesBreakdownMode || !isSummaryFromStats);
+    completionChart.usesBreakdownMode || !isSummaryFromStats;
   const servicesCount = servicesMap?.size ?? 0;
   const deploymentsCount = deploymentsMap?.size ?? 0;
   const isOverviewRefreshing = isSummaryLoading || isDeploymentsFetching;
@@ -693,9 +687,7 @@ function OverviewContent() {
           href={inFlightChart.href}
           isLoading={isSummaryLoading}
           isError={isSummaryError}
-          eyebrow={
-            hasVqueues ? <ChartContextValue>Overall</ChartContextValue> : null
-          }
+          eyebrow={<ChartContextValue>Overall</ChartContextValue>}
         />
         <EngineCore
           className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mx-10 @min-[64rem]/hero:flex"
@@ -735,12 +727,10 @@ function OverviewContent() {
           isLoading={completionChart.isLoading}
           isError={completionChart.isError}
           eyebrow={
-            hasVqueues ? (
-              <CompletionTimeRangeToggle
-                value={completionChart.timeRange}
-                onChange={completionChart.setTimeRange}
-              />
-            ) : null
+            <CompletionTimeRangeToggle
+              value={completionChart.timeRange}
+              onChange={completionChart.setTimeRange}
+            />
           }
         />
         <div className="hidden w-full min-w-0 flex-col gap-1 self-center justify-self-start @min-[64rem]/hero:col-start-5 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex">
@@ -756,33 +746,6 @@ function OverviewContent() {
         </div>
         <div data-overview-refresh-bounce="" className={summaryStackStyles()}>
           <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
-            {!hasVqueues && (
-              <>
-                {isSummaryLoading ? (
-                  <span className="h-7 w-36 animate-pulse rounded-xl bg-gray-200" />
-                ) : (
-                  <span className="flex items-baseline gap-1.5">
-                    {isSummaryEmpty ? (
-                      <span className="text-base font-medium text-gray-400">
-                        No invocations
-                      </span>
-                    ) : (
-                      <>
-                        <span className="text-lg font-semibold text-gray-700 tabular-nums">
-                          {isSummaryError
-                            ? '–'
-                            : formatNumber(totalCount, true)}
-                        </span>
-                        <span className="text-base text-gray-500">
-                          {totalCount === 1 ? 'invocation' : 'invocations'}
-                        </span>
-                      </>
-                    )}
-                  </span>
-                )}
-                <OverviewTimeRangeToggle />
-              </>
-            )}
             {showsBreakdownMode && (
               <span className="@min-[64rem]/hero:hidden">
                 <BreakdownMode

@@ -328,8 +328,7 @@ export function DeploymentsTable() {
     new Set<string>(),
   );
   const [, setSearchParams] = useSearchParams();
-  const { isVersionGte, baseUrl } = useRestateContext();
-  const isDeploymentUpdateSupported = isVersionGte?.('1.6.0');
+  const { baseUrl } = useRestateContext();
 
   useEffect(() => {
     if (!deploymentsMap) return;
@@ -496,10 +495,7 @@ export function DeploymentsTable() {
           if (column.id === 'actions') {
             return (
               <Cell className="[&&&]:overflow-visible">
-                <DeploymentActions
-                  deploymentId={deployment.id}
-                  isUpdateSupported={isDeploymentUpdateSupported}
-                />
+                <DeploymentActions deploymentId={deployment.id} />
               </Cell>
             );
           }

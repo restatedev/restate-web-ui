@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import {
   useGetVqueue,
   useGetVqueueEntries,
@@ -370,15 +369,14 @@ function Component() {
   const { vqueueId = '' } = useParams<{ vqueueId: string }>();
   const [searchParams] = useSearchParams();
   const stage = vqueueStageFromSearch(searchParams);
-  const hasVqueues = useFeatures().has('vqueues');
   const snapshot = useGetVqueue(vqueueId, undefined, {
-    enabled: hasVqueues && Boolean(vqueueId),
+    enabled: Boolean(vqueueId),
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     staleTime: 0,
   });
   const entries = useGetVqueueEntries(vqueueId, stage, {
-    enabled: hasVqueues && Boolean(vqueueId),
+    enabled: Boolean(vqueueId),
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     staleTime: 0,
@@ -445,16 +443,7 @@ function Component() {
             <VQueueActivityCard data={data} />
           </CardGrid>
         )}
-        {!hasVqueues ? (
-          <div className="px-5 py-20">
-            <EmptyState
-              icon={IconName.Layers}
-              iconClassName="rotate-90"
-              title="VQueues are not enabled"
-              description="Enable VQueues on the Restate server to inspect this queue."
-            />
-          </div>
-        ) : snapshot.error && !data ? (
+        {snapshot.error && !data ? (
           <div className="px-5 py-20">
             <EmptyState
               icon={IconName.TriangleAlert}

@@ -9,11 +9,7 @@ export function useCompletionChart() {
   const {
     byStage,
     byStatus,
-    hasVqueues,
-    hasCompleteVqueuePopulation,
-    timeRange,
     breakdownMode,
-    canSampleBreakdown,
     isSummaryFromStats,
     isCompletedBreakdownLoading,
     isCompletedBreakdownPartial,
@@ -24,16 +20,11 @@ export function useCompletionChart() {
   } = useOverviewContext();
 
   const range = useCompletionRange({
-    hasCompletePopulation: hasCompleteVqueuePopulation,
     breakdownMode,
-    canSampleBreakdown,
     refetchInterval: overviewRefetchInterval,
-    reuseSummaryForOverall: hasVqueues,
     summaryBreakdownIsLoading: isCompletedBreakdownLoading,
     summaryIsPartial: isCompletedBreakdownPartial,
     summaryIsExact: isSummaryFromStats,
-    enabled: hasVqueues,
-    timeRange: hasVqueues ? undefined : timeRange,
   });
   const model = useMemo(
     () =>
@@ -43,7 +34,7 @@ export function useCompletionChart() {
         rangeBucket: range.rangeBucket,
         isSampled: range.isSampled,
         isPartial: range.isPartial,
-        useSummaryTotals: !hasVqueues || range.usesSummary,
+        useSummaryTotals: range.usesSummary,
         baseUrl,
         linkParams,
       }),
@@ -51,7 +42,6 @@ export function useCompletionChart() {
       baseUrl,
       byStage,
       byStatus,
-      hasVqueues,
       linkParams,
       range.isPartial,
       range.isSampled,

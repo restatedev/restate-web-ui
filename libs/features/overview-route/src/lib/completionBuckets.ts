@@ -4,12 +4,6 @@ const DAY_MS = 24 * HOUR_MS;
 
 export type CompletionTimeRange = 'PT1H' | 'P1D' | 'ALL';
 
-export function normalizeCompletionTimeRange(
-  range: string | undefined,
-): CompletionTimeRange {
-  return range === 'P1D' || range === 'ALL' ? range : 'PT1H';
-}
-
 export type CompletionBucket = {
   start: string;
   end: string;

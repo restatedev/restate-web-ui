@@ -2,7 +2,6 @@ import {
   useGetInvocationJournalWithInvocationV2,
   useGetPausedError,
 } from '@restate/data-access/admin-api-hooks';
-import { useFeatures } from '@restate/data-access/admin-api';
 import { ErrorBanner } from '@restate/ui/error';
 import { useParams, useSearchParams } from 'react-router';
 import {
@@ -90,10 +89,7 @@ function Component() {
   });
 
   const { baseUrl } = useRestateContext();
-  const features = useFeatures();
-  const showFlowControl = Boolean(
-    features.has('vqueues') && journalAndInvocationData?.vqueue,
-  );
+  const showFlowControl = Boolean(journalAndInvocationData?.vqueue);
 
   const isPaused = journalAndInvocationData?.status === 'paused';
   const { data: pausedErrorData } = useGetPausedError(String(id), {

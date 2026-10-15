@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import {
   type CreateLimitRuleRequest,
   type LimitRule,
@@ -820,12 +819,8 @@ function Component() {
   const { baseUrl } = useRestateContext();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
   const searchString = searchParams.toString();
-  const ruleOptionsQuery = useListLimitRules(RULE_OPTIONS_REQUEST, {
-    enabled: hasVqueues,
-  });
+  const ruleOptionsQuery = useListLimitRules(RULE_OPTIONS_REQUEST);
   const ruleOptions = ruleOptionsQuery.data?.rules ?? [];
   const filterSchema = useMemo(
     () => limitRuleFilterSchema(ruleOptions),
@@ -872,7 +867,7 @@ function Component() {
     }),
     [selectedPattern, sortDescriptor],
   );
-  const rules = useListLimitRules(ruleRequest, { enabled: hasVqueues });
+  const rules = useListLimitRules(ruleRequest);
   const [isCreateOpen, setCreateOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<EditableLimitRule | null>(
     null,
@@ -930,7 +925,6 @@ function Component() {
           <AddFilterTrigger
             placeholder="Filter rules…"
             title="Rule filters"
-            disabled={!hasVqueues}
             onItemRemove={scheduleSubmit}
             inputPrefix={
               <Icon
@@ -955,7 +949,6 @@ function Component() {
                 appearance="light"
                 showRemove
                 popoverPlacement="bottom"
-                disabled={!hasVqueues}
                 valueClassName="max-w-56"
                 popoverClassName="w-[32rem] max-w-[calc(100vw-2rem)]"
                 renderValue={renderRuleValue}
@@ -970,7 +963,6 @@ function Component() {
         variant="primary"
         className="flex h-6.5 shrink-0 items-center justify-center gap-2 rounded-lg py-0 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
         onClick={() => setCreateOpen(true)}
-        disabled={!hasVqueues}
       >
         <Icon name={IconName.Plus} />
         New rule
@@ -986,7 +978,7 @@ function Component() {
               void rules.refetch();
               void ruleOptionsQuery.refetch();
             }}
-            disabled={!hasVqueues || isFetching}
+            disabled={isFetching}
           >
             <Icon
               name={IconName.Retry}
@@ -1018,54 +1010,46 @@ function Component() {
         <ContentPanelToolbar>{pageToolbar}</ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
-            {!hasVqueues ? (
-              <EmptyState
-                icon={IconName.Filters}
-                title="Flow control is not enabled"
-                description="Enable VQueues on the Restate server to create and manage concurrency rules."
-              />
-            ) : (
-              <PanelTable
-                aria-label="Limit rules"
-                bodyKey={ruleTableBodyKey}
-                columns={RULE_COLUMNS}
-                items={rows}
-                isLoading={rules.isFetching}
-                error={error as Error | null}
-                numOfRows={Math.max(rows.length, 6)}
-                bodyDependencies={[error, rules.isFetching]}
-                caption={filteredResultsCaption}
-                sortDescriptor={sortDescriptor}
-                onSortChange={setSortDescriptor}
-                emptyPlaceholder={
-                  <EmptyState
-                    icon={IconName.Filters}
-                    title={
-                      selectedPattern ? 'No matching rules' : 'No limit rules'
-                    }
-                    description={
-                      selectedPattern
-                        ? 'No configured rule matches the selected pattern.'
-                        : 'Create a rule to configure concurrency capacity.'
-                    }
-                  />
-                }
-                renderCell={(row, column) =>
-                  renderRuleCell(
-                    row,
-                    column,
-                    setTogglingRule,
-                    setEditingRule,
-                    setDeletingRule,
-                  )
-                }
-                onRowAction={(key) => {
-                  const row = rows.find((item) => item.id === String(key));
-                  if (row) navigate(row.href);
-                }}
-                rowClassName="transition-none [content-visibility:auto]"
-              />
-            )}
+            <PanelTable
+              aria-label="Limit rules"
+              bodyKey={ruleTableBodyKey}
+              columns={RULE_COLUMNS}
+              items={rows}
+              isLoading={rules.isFetching}
+              error={error as Error | null}
+              numOfRows={Math.max(rows.length, 6)}
+              bodyDependencies={[error, rules.isFetching]}
+              caption={filteredResultsCaption}
+              sortDescriptor={sortDescriptor}
+              onSortChange={setSortDescriptor}
+              emptyPlaceholder={
+                <EmptyState
+                  icon={IconName.Filters}
+                  title={
+                    selectedPattern ? 'No matching rules' : 'No limit rules'
+                  }
+                  description={
+                    selectedPattern
+                      ? 'No configured rule matches the selected pattern.'
+                      : 'Create a rule to configure concurrency capacity.'
+                  }
+                />
+              }
+              renderCell={(row, column) =>
+                renderRuleCell(
+                  row,
+                  column,
+                  setTogglingRule,
+                  setEditingRule,
+                  setDeletingRule,
+                )
+              }
+              onRowAction={(key) => {
+                const row = rows.find((item) => item.id === String(key));
+                if (row) navigate(row.href);
+              }}
+              rowClassName="transition-none [content-visibility:auto]"
+            />
             {!rules.isFetching && (
               <LimitListTruncation
                 hasMore={Boolean(rules.data?.hasMore)}
