@@ -12,6 +12,7 @@ import {
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   getCompletionEntry,
   getEntryResultV2,
   getLastFailureV1,
@@ -58,6 +59,7 @@ function completePromiseV1(
 
   const metadata = {
     promiseName: entry.promise_name,
+    name: getEntryName(entry, message.name),
     start: undefined,
     isPending: !completion,
     commandIndex: entry.index,
@@ -120,6 +122,7 @@ function completePromiseV2(
 
   return {
     promiseName: entryJSON?.Command?.CompletePromise?.key,
+    name: getEntryName(entry, entryJSON?.Command?.CompletePromise?.name),
     start: entry.appended_at,
     isPending: !completionEntry,
     commandIndex,

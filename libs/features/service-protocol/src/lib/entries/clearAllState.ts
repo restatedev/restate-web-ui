@@ -4,6 +4,7 @@ import {
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   getEntryResultV2,
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
@@ -16,6 +17,7 @@ function clearAllStateV1(
   const error = getLastFailureV1(entry, invocation);
 
   return {
+    name: getEntryName(entry),
     start: entry.appended_at,
     isPending: false,
     commandIndex: entry.index,
@@ -47,6 +49,7 @@ function clearAllStateV2(
   );
 
   return {
+    name: getEntryName(entry),
     start: entry.appended_at,
     isPending: false,
     commandIndex,

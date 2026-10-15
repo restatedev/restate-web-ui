@@ -7,6 +7,7 @@ import {
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   getEntryResultV2,
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
@@ -29,6 +30,7 @@ function clearStateV1(
 
   return {
     key: binaryToUtf8(message.key),
+    name: getEntryName(entry, message.name),
     start: entry.appended_at,
     isPending: false,
     commandIndex: entry.index,
@@ -62,6 +64,7 @@ function clearStateV2(
 
   return {
     key: entryJSON?.Command?.ClearState?.key,
+    name: getEntryName(entry, entryJSON?.Command?.ClearState?.name),
     start: entry.appended_at,
     isPending: false,
     commandIndex,

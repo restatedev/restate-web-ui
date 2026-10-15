@@ -3,6 +3,7 @@ import {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   getEntryResultV2,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
@@ -23,6 +24,7 @@ export function sendSignal(
   const signalName: string | undefined =
     entryJSON?.Command?.SendSignal?.signal_id?.Name;
   const invocationId = entryJSON?.Command?.SendSignal?.target_invocation_id;
+  const name = getEntryName(entry, entryJSON?.Command?.SendSignal?.name);
 
   if (id === 1) {
     const { error, relatedIndexes } = getEntryResultV2(
@@ -33,6 +35,7 @@ export function sendSignal(
     );
 
     return {
+      name,
       start: entry.appended_at,
       isPending: false,
       commandIndex: entry.command_index,
@@ -64,6 +67,7 @@ export function sendSignal(
     );
 
     return {
+      name,
       start: entry.appended_at,
       isPending: false,
       commandIndex: entry.command_index,

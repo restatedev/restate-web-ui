@@ -3,6 +3,7 @@ import type {
   JournalEntryV2,
 } from '@restate/data-access/admin-api-spec';
 import {
+  getEntryName,
   parseEntryJson,
   JournalRawEntryWithCommandIndex,
   getCompletionEntry,
@@ -39,6 +40,7 @@ function attachInvocationV2(
   );
 
   return {
+    name: getEntryName(entry, entryJSON?.Command?.AttachInvocation?.name),
     start: entry.appended_at,
     isPending: !completionEntry,
     commandIndex,
