@@ -1,14 +1,6 @@
 import type { QueryContext } from '../../shared';
-import {
-  hasCompleteVqueueInvocationPopulation,
-  supportsInvocationV2Vqueues,
-  type InvocationFilterV2,
-  type ResolvedInvocationModeV2,
-} from '../shared';
-import {
-  isInvocationListFieldAvailableOnTable,
-  isInvocationListTableAvailable,
-} from '../invocationListFields';
+import type { InvocationFilterV2, ResolvedInvocationModeV2 } from '../shared';
+import { isInvocationListFieldAvailableOnTable } from '../invocationListFields';
 import { canSummarizeInvocationsFromStats } from './statsSources';
 
 type SummarySource =
@@ -26,22 +18,17 @@ type SummaryQueryPlan =
     };
 
 function createQueryPlanFromSysVqueueMetaAndSysVqueues(
-  context: QueryContext,
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
   view: 'all' | 'stages' | 'live-stages' | 'breakdowns',
 ): SummaryQueryPlan {
   const source = 'sys_vqueue_meta_and_sys_vqueues' as const;
   if (
-    !supportsInvocationV2Vqueues(context) ||
-    !isInvocationListTableAvailable(context, 'sys_vqueue_meta') ||
-    !isInvocationListTableAvailable(context, 'sys_vqueues') ||
     !isInvocationListFieldAvailableOnTable(
-      context,
       'target_service_name',
       'sys_vqueue_meta',
     ) ||
-    !isInvocationListFieldAvailableOnTable(context, 'status', 'sys_vqueues')
+    !isInvocationListFieldAvailableOnTable('status', 'sys_vqueues')
   ) {
     return { source, coverage: 'none' };
   }
@@ -50,11 +37,7 @@ function createQueryPlanFromSysVqueueMetaAndSysVqueues(
     filters.some(
       (filter) =>
         filter.field !== 'stage' &&
-        !isInvocationListFieldAvailableOnTable(
-          context,
-          filter.field,
-          'sys_vqueue_meta',
-        ),
+        !isInvocationListFieldAvailableOnTable(filter.field, 'sys_vqueue_meta'),
     )
   ) {
     return { source, coverage: 'none' };
@@ -69,8 +52,7 @@ function createQueryPlanFromSysVqueueMetaAndSysVqueues(
   }
 
   const canReturnEveryRequestedSummary =
-    filters.length === 0 ||
-    (hasCompleteVqueueInvocationPopulation(context) && mode.type === 'sampled');
+    filters.length === 0 || mode.type === 'sampled';
 
   return {
     source,
@@ -80,28 +62,19 @@ function createQueryPlanFromSysVqueueMetaAndSysVqueues(
 }
 
 function createQueryPlanFromSysInvocationStatusAndSysInvocationState(
-  context: QueryContext,
   filters: InvocationFilterV2[],
 ): SummaryQueryPlan {
   const source = 'sys_invocation_status_and_sys_invocation_state' as const;
   if (
-    !isInvocationListTableAvailable(context, 'sys_invocation_status') ||
-    !isInvocationListTableAvailable(context, 'sys_invocation_state') ||
     !isInvocationListFieldAvailableOnTable(
-      context,
       'target_service_name',
       'sys_invocation_status',
     ) ||
-    !isInvocationListFieldAvailableOnTable(
-      context,
-      'status',
-      'sys_invocation_status',
-    ) ||
+    !isInvocationListFieldAvailableOnTable('status', 'sys_invocation_status') ||
     filters.some(
       (filter) =>
         filter.field !== 'stage' &&
         !isInvocationListFieldAvailableOnTable(
-          context,
           filter.field,
           'sys_invocation_status',
         ),
@@ -114,7 +87,6 @@ function createQueryPlanFromSysInvocationStatusAndSysInvocationState(
 }
 
 function createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState(
-  context: QueryContext,
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
   view: 'all' | 'stages' | 'live-stages' | 'breakdowns',
@@ -125,12 +97,9 @@ function createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState
     mode.type !== 'exact' ||
     view !== 'stages' ||
     filters.some((filter) => filter.field === 'status') ||
-    !isInvocationListTableAvailable(context, 'sys_invocation_status') ||
-    !isInvocationListTableAvailable(context, 'sys_invocation_state') ||
     filters.some(
       (filter) =>
         !isInvocationListFieldAvailableOnTable(
-          context,
           filter.field,
           'sys_invocation_status',
         ),
@@ -160,17 +129,13 @@ export function createInvocationSummaryQueryPlan(
 ) {
   const sourcePlans = [
     createQueryPlanFromStats(context, filters),
-    createQueryPlanFromSysVqueueMetaAndSysVqueues(context, filters, mode, view),
+    createQueryPlanFromSysVqueueMetaAndSysVqueues(filters, mode, view),
     createExactSummaryQueryPlanFromSysInvocationStatusAndSysInvocationState(
-      context,
       filters,
       mode,
       view,
     ),
-    createQueryPlanFromSysInvocationStatusAndSysInvocationState(
-      context,
-      filters,
-    ),
+    createQueryPlanFromSysInvocationStatusAndSysInvocationState(filters),
   ];
   const selectedPlan =
     sourcePlans.find(({ coverage }) => coverage === 'full') ??

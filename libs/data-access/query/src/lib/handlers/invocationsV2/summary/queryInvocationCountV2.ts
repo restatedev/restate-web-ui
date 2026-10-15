@@ -1,12 +1,7 @@
 import { TERMINAL_INVOCATION_STATUSES } from '../../../invocationStatuses';
 import type { QueryContext } from '../../shared';
-import {
-  supportsInvocationV2Vqueues,
-  type InvocationFilterV2,
-  type ResolvedInvocationModeV2,
-} from '../shared';
+import type { InvocationFilterV2, ResolvedInvocationModeV2 } from '../shared';
 import { createVqueueListQueryPlan } from '../list/createVqueueListQueryPlan';
-import { createQueryPlanWhenCompletedVqueuesWereSkipped } from '../list/createQueryPlanWhenCompletedVqueuesWereSkipped';
 import { sourcePlansToExecute } from '../list/selectVqueueInvocationCandidates';
 import type {
   ExecutableInvocationCandidateSourcePlan,
@@ -191,10 +186,7 @@ export async function queryInvocationCountV2(
   filters: InvocationFilterV2[],
   mode: ResolvedInvocationModeV2,
 ): Promise<InvocationCountResult | { error: string }> {
-  if (
-    !supportsInvocationV2Vqueues(context) ||
-    filters.some(({ field }) => field === 'id')
-  ) {
+  if (filters.some(({ field }) => field === 'id')) {
     return queryInvocationCountFromInvocationStatusAndState(
       context,
       filters,
@@ -202,13 +194,7 @@ export async function queryInvocationCountV2(
     );
   }
 
-  const queryPlan = context.features.has('vqueues_migration_skip_completed')
-    ? createQueryPlanWhenCompletedVqueuesWereSkipped(
-        context,
-        filters,
-        undefined,
-      )
-    : createVqueueListQueryPlan(context, filters, undefined);
+  const queryPlan = createVqueueListQueryPlan(filters, undefined);
   if (queryPlan.error) return { error: queryPlan.error };
   const selected = sourcePlansToExecute(queryPlan, undefined);
   if ('error' in selected) return selected;

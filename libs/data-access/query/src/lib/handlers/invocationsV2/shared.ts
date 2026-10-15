@@ -3,9 +3,6 @@ import type {
   components,
 } from '@restate/data-access/admin-api-spec';
 import { INVOCATION_SUMMARY_STAGES as SHARED_INVOCATION_SUMMARY_STAGES } from '@restate/data-access/admin-api-spec';
-import semverCoerce from 'semver/functions/coerce';
-import semverGte from 'semver/functions/gte';
-import type { QueryContext } from '../shared';
 import {
   INVOCATION_STATUSES,
   type InvocationStatus,
@@ -46,21 +43,6 @@ export type ResolvedInvocationModeV2 =
 
 export function badRequest(message: string): Response {
   return Response.json({ message }, { status: 400 });
-}
-
-export function supportsInvocationV2Vqueues(context: QueryContext): boolean {
-  if (!context.features.has('vqueues')) return false;
-  const version = semverCoerce(context.restateVersion);
-  return version ? semverGte(version, '1.7.2') : false;
-}
-
-export function hasCompleteVqueueInvocationPopulation(
-  context: QueryContext,
-): boolean {
-  return (
-    supportsInvocationV2Vqueues(context) &&
-    !context.features.has('vqueues_migration_skip_completed')
-  );
 }
 
 export function resolveInvocationModeV2(mode?: InvocationModeV2): {
@@ -146,15 +128,13 @@ export function validateInvocationSortV2(
 }
 
 export function validateInvocationFieldsForServer(
-  context: QueryContext,
   filters: InvocationFilterV2[],
   sort: InvocationSortV2 | undefined,
   tables: readonly InvocationListTable[],
 ): string | undefined {
   const unavailableFilter = filters.find((filter) =>
     tables.every(
-      (table) =>
-        !isInvocationListFieldAvailableOnTable(context, filter.field, table),
+      (table) => !isInvocationListFieldAvailableOnTable(filter.field, table),
     ),
   );
   if (unavailableFilter) {
@@ -163,8 +143,7 @@ export function validateInvocationFieldsForServer(
   if (
     sort &&
     tables.every(
-      (table) =>
-        !isInvocationListFieldAvailableOnTable(context, sort.field, table),
+      (table) => !isInvocationListFieldAvailableOnTable(sort.field, table),
     )
   ) {
     return `${sort.field} is not available on this Restate server`;

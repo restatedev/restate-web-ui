@@ -3,9 +3,7 @@ import { createInvocationV2QueryTestHarness } from './testUtils';
 
 const INDEX_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-version': '1.8.0',
-  'x-restate-features':
-    'vqueues,protocol_v7,scoped_virtual_objects,indexes_v1,track_status_gauges',
+  'x-restate-features': 'protocol_v7,indexes_v1,track_status_gauges',
 };
 
 const STATS_ROWS = [
@@ -396,7 +394,7 @@ describe('invocation summary from sys_service_stats', () => {
       { view: 'all' },
       {
         ...INDEX_HEADERS,
-        'x-restate-features': 'vqueues,protocol_v7,scoped_virtual_objects',
+        'x-restate-features': 'protocol_v7',
       },
     );
 

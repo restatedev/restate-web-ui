@@ -5,7 +5,6 @@ import type {
 import type { QueryContext } from '../shared';
 import {
   badRequest,
-  hasCompleteVqueueInvocationPopulation,
   resolveInvocationModeV2,
   validateInvocationFiltersV2,
 } from './shared';
@@ -25,30 +24,6 @@ import { matchesStringFilter } from './summary/matchesStringFilter';
 export type SummaryInvocationsV2Args =
   components['schemas']['SummaryInvocationsV2RequestBody'];
 
-const RANGE_DURATIONS_MS: Record<string, number> = {
-  PT1H: 60 * 60 * 1000,
-  P1D: 24 * 60 * 60 * 1000,
-};
-
-function rangeToCreatedAtFilter(range: string | undefined):
-  | {
-      type: 'DATE';
-      field: 'created_at';
-      operation: 'AFTER';
-      value: string;
-    }
-  | undefined {
-  if (!range) return undefined;
-  const ms = RANGE_DURATIONS_MS[range];
-  if (!ms) return undefined;
-  return {
-    type: 'DATE',
-    field: 'created_at',
-    operation: 'AFTER',
-    value: new Date(Date.now() - ms).toISOString(),
-  };
-}
-
 /**
  * Applies filters not listed in highlightFields to the aggregate query. Each
  * highlighted field remains outside SQL so sibling buckets stay visible and
@@ -60,16 +35,11 @@ export async function summaryInvocationsV2(
     filters = [],
     highlightFields = [],
     mode: requestedMode,
-    range,
     view = 'all',
   }: SummaryInvocationsV2Args,
 ): Promise<Response> {
   const queryStartedAt = performance.now();
-  const rangeFilter = this.features.has('vqueues')
-    ? undefined
-    : rangeToCreatedAtFilter(range);
-  const requestedFilters = rangeFilter ? [rangeFilter, ...filters] : filters;
-  const filterError = validateInvocationFiltersV2(requestedFilters);
+  const filterError = validateInvocationFiltersV2(filters);
   if (filterError) return badRequest(filterError);
 
   const { mode, error: modeError } = resolveInvocationModeV2(requestedMode);
@@ -78,7 +48,7 @@ export async function summaryInvocationsV2(
   if (view === 'deployments') {
     const deploymentBuckets = await queryInvocationDeploymentBucketsFromStats(
       this,
-      requestedFilters,
+      filters,
     );
     if (!deploymentBuckets) {
       return badRequest('The deployments view requires deployment stats');
@@ -89,7 +59,7 @@ export async function summaryInvocationsV2(
       isPartial: false,
       stageCountsArePartial: false,
       total: deploymentBuckets.reduce((total, { count }) => total + count, 0),
-      appliedFilters: requestedFilters,
+      appliedFilters: filters,
       stageBuckets: [],
       statusBuckets: [],
       serviceBuckets: [],
@@ -99,8 +69,8 @@ export async function summaryInvocationsV2(
   const indexedCount =
     view !== 'count'
       ? undefined
-      : ((await queryInvocationCountFromStats(this, requestedFilters)) ??
-        (await countInvocationsFromIndexes(this, requestedFilters)));
+      : ((await queryInvocationCountFromStats(this, filters)) ??
+        (await countInvocationsFromIndexes(this, filters)));
   if (indexedCount !== undefined) {
     return Response.json({
       queryDurationMs: performance.now() - queryStartedAt,
@@ -108,18 +78,14 @@ export async function summaryInvocationsV2(
       isPartial: false,
       stageCountsArePartial: false,
       total: indexedCount,
-      appliedFilters: requestedFilters,
+      appliedFilters: filters,
       stageBuckets: [],
       statusBuckets: [],
       serviceBuckets: [],
     });
   }
   if (view === 'count') {
-    const countResult = await queryInvocationCountV2(
-      this,
-      requestedFilters,
-      mode,
-    );
+    const countResult = await queryInvocationCountV2(this, filters, mode);
     if ('error' in countResult) return badRequest(countResult.error);
     return Response.json({
       queryDurationMs: performance.now() - queryStartedAt,
@@ -130,7 +96,7 @@ export async function summaryInvocationsV2(
       ...(mode.type === 'sampled' && {
         sample: { sampleSize: mode.sampleSize },
       }),
-      appliedFilters: requestedFilters,
+      appliedFilters: filters,
       stageBuckets: [],
       statusBuckets: [],
       serviceBuckets: [],
@@ -138,20 +104,19 @@ export async function summaryInvocationsV2(
   }
 
   const highlightedFields = new Set<string>(highlightFields);
-  const appliedFilters = requestedFilters.filter(
+  const appliedFilters = filters.filter(
     (filter) => !highlightedFields.has(filter.field),
   );
-  const statusHighlightFilters = requestedFilters.filter(
+  const statusHighlightFilters = filters.filter(
     (filter) =>
       filter.field === 'status' && highlightedFields.has(filter.field),
   ) as FilterItem[];
-  const serviceHighlightFilters = requestedFilters.filter(
+  const serviceHighlightFilters = filters.filter(
     (filter) =>
       filter.field === 'target_service_name' &&
       highlightedFields.has(filter.field),
   ) as FilterItem[];
 
-  const hasCompleteVqueues = hasCompleteVqueueInvocationPopulation(this);
   const { selectedPlan } = createInvocationSummaryQueryPlan(
     this,
     appliedFilters,
@@ -178,7 +143,6 @@ export async function summaryInvocationsV2(
     result = await queryInvocationSummaryFromVqueues(
       this,
       mode,
-      !hasCompleteVqueues,
       selectedPlan.filters,
       view,
     );

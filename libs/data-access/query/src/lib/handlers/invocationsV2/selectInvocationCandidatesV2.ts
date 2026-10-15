@@ -8,20 +8,16 @@ import {
 } from '../../invocationStatuses';
 import { createVqueueListQueryPlan } from './list/createVqueueListQueryPlan';
 import { selectVqueueInvocationCandidates } from './list/selectVqueueInvocationCandidates';
-import { selectInvocationsFromInvocationStatusAndState } from './list/listInvocationsFromInvocationStatusAndState';
-import { createQueryPlanWhenCompletedVqueuesWereSkipped } from './list/createQueryPlanWhenCompletedVqueuesWereSkipped';
 import { queryVqueueCandidateStatusesByIds } from './list/queryVqueueCandidateStatusesByIds';
 import { selectInvocationCandidatesFromIndexes } from './list/indexedInvocationCandidates';
 import type {
   InvocationCandidate,
-  InvocationCandidateRow,
   InvocationStatusSelection,
   VqueueListPartialResult,
 } from './list/types';
 import {
   INVOCATIONS_V2_LIMIT,
   resolveInvocationModeV2,
-  supportsInvocationV2Vqueues,
   type InvocationFilterV2,
   type InvocationModeV2,
   type InvocationSortV2,
@@ -41,14 +37,6 @@ type SelectInvocationCandidatesV2Args = {
 
 export type SelectInvocationCandidatesV2Result =
   | {
-      source: 'invocation-status';
-      rows: InvocationCandidateRow[];
-      limit: number;
-      mode: ResolvedInvocationModeV2;
-      partial?: undefined;
-    }
-  | {
-      source: 'vqueue';
       rows: InvocationCandidate[];
       limit: number;
       mode: ResolvedInvocationModeV2;
@@ -169,41 +157,17 @@ export async function selectInvocationCandidatesV2(
   const { mode, error: modeError } = resolveInvocationModeV2(requestedMode);
   if (modeError || !mode) return { error: modeError ?? 'Invalid mode' };
 
-  const useVqueues = supportsInvocationV2Vqueues(context);
   const fieldAvailabilityError = validateInvocationFieldsForServer(
-    context,
     filters,
     sort,
-    useVqueues
-      ? ['sys_vqueues', 'sys_vqueue_meta', 'sys_invocation_status']
-      : ['sys_invocation_status'],
+    ['sys_vqueues', 'sys_vqueue_meta', 'sys_invocation_status'],
   );
   if (fieldAvailabilityError) return { error: fieldAvailabilityError };
 
-  if (!useVqueues) {
-    const rows = await selectInvocationsFromInvocationStatusAndState(
-      context,
-      filters,
-      sort,
-      mode,
-      includeInvocationDetails,
-      limit,
-    );
-    return {
-      source: 'invocation-status',
-      rows,
-      limit,
-      mode,
-    };
-  }
-
-  const queryPlan = context.features.has('vqueues_migration_skip_completed')
-    ? createQueryPlanWhenCompletedVqueuesWereSkipped(context, filters, sort)
-    : createVqueueListQueryPlan(context, filters, sort);
+  const queryPlan = createVqueueListQueryPlan(filters, sort);
   const invocationIds = invocationIdsFromFilters(filters);
   if (invocationIds) {
     return {
-      source: 'vqueue',
       rows: invocationIds.map((id) => ({ id })),
       limit,
       mode,
@@ -218,7 +182,6 @@ export async function selectInvocationCandidatesV2(
   );
   if (indexedCandidates) {
     return {
-      source: 'vqueue',
       rows: indexedCandidates,
       limit,
       mode: { type: 'exact' },
@@ -244,7 +207,6 @@ export async function selectInvocationCandidatesV2(
     candidates.sort((left, right) => compareCreatedAt(left, right, sort.order));
   }
   return {
-    source: 'vqueue',
     rows: candidates,
     limit,
     mode,

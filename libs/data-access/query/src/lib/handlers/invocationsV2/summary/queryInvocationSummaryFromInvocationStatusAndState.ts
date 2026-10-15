@@ -5,11 +5,7 @@ import {
 } from '@restate/data-access/admin-api-spec';
 import type { InvocationStatus } from '../../../invocationStatuses';
 import { quoteSqlString, type QueryContext } from '../../shared';
-import {
-  supportsInvocationV2Vqueues,
-  type InvocationFilterV2,
-  type ResolvedInvocationModeV2,
-} from '../shared';
+import type { InvocationFilterV2, ResolvedInvocationModeV2 } from '../shared';
 import { invocationStatusClauses } from '../list/invocationStatusFilters';
 import {
   invocationStatusSampleColumns,
@@ -30,20 +26,11 @@ type CountRow = {
   count?: number | string;
 };
 
-function statusExpression(
-  statusAlias: string,
-  stateAlias: string,
-  includesYielded: boolean,
-) {
+function statusExpression(statusAlias: string, stateAlias: string) {
   return `CASE
           WHEN ${statusAlias}.status = 'inboxed' THEN 'pending'
           WHEN ${statusAlias}.status = 'invoked' AND ${stateAlias}.in_flight IS TRUE THEN 'running'
-${
-  includesYielded
-    ? `          WHEN ${statusAlias}.status = 'invoked' THEN 'ready-yielded-backing-off'`
-    : `          WHEN ${statusAlias}.status = 'invoked' AND ${stateAlias}.retry_count > 0 THEN 'backing-off'
-          WHEN ${statusAlias}.status = 'invoked' THEN 'ready'`
-}
+          WHEN ${statusAlias}.status = 'invoked' THEN 'ready-yielded-backing-off'
           WHEN ${statusAlias}.status = 'completed' AND ${statusAlias}.completion_result = 'success' THEN 'succeeded'
           WHEN ${statusAlias}.status = 'completed' THEN 'failed'
           ELSE ${statusAlias}.status
@@ -172,13 +159,8 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
   const sampledWhere = sampledClauses.length
     ? `\n        WHERE ${sampledClauses.join('\n          AND ')}`
     : '';
-  const includesYielded = supportsInvocationV2Vqueues(context);
-  const exactStatus = statusExpression('ss', 'sis', includesYielded);
-  const sampledStatus = statusExpression(
-    'sampled_invocations',
-    'sis',
-    includesYielded,
-  );
+  const exactStatus = statusExpression('ss', 'sis');
+  const sampledStatus = statusExpression('sampled_invocations', 'sis');
   const sampledColumns = invocationStatusSampleColumns(filters, undefined, [
     'id',
     'target_service_name',
@@ -222,7 +204,7 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
   )) as { rows: SummaryRow[] };
   const waitingStatuses: InvocationStatus[] = [
     'ready',
-    ...(includesYielded ? (['yielded'] as const) : []),
+    'yielded',
     'backing-off',
   ];
   const statusDefinitions = Object.fromEntries(
@@ -231,16 +213,13 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
       { key, label, statuses: [key] },
     ]),
   ) as Record<InvocationStatus, Omit<InvocationStatusSummaryBucket, 'count'>>;
-  const waitingDefinitions: Omit<InvocationStatusSummaryBucket, 'count'>[] =
-    includesYielded
-      ? [
-          {
-            key: 'ready-yielded-backing-off',
-            label: 'Ready, yielded or backing off',
-            statuses: waitingStatuses,
-          },
-        ]
-      : [statusDefinitions.ready, statusDefinitions['backing-off']];
+  const waitingDefinitions: Omit<InvocationStatusSummaryBucket, 'count'>[] = [
+    {
+      key: 'ready-yielded-backing-off',
+      label: 'Ready, yielded or backing off',
+      statuses: waitingStatuses,
+    },
+  ];
   const definitions: Omit<InvocationStatusSummaryBucket, 'count'>[] = [
     ...(['scheduled', 'pending'] as const).map(
       (status) => statusDefinitions[status],
@@ -283,28 +262,20 @@ export async function queryInvocationSummaryFromInvocationStatusAndState(
   const isPartial =
     mode.type === 'sampled' &&
     (filters.length > 0 || scannedCount >= mode.sampleSize);
-  const waitingCount = includesYielded
-    ? (statusCounts.get('ready-yielded-backing-off') ?? 0)
-    : (statusCounts.get('ready') ?? 0) + (statusCounts.get('backing-off') ?? 0);
+  const waitingCount = statusCounts.get('ready-yielded-backing-off') ?? 0;
 
   return {
     stageBuckets: [
       {
         key: 'inbox',
         label: 'Inbox',
-        statuses: [
-          'pending',
-          'scheduled',
-          'ready',
-          ...(includesYielded ? (['yielded'] as const) : []),
-          'backing-off',
-        ],
+        statuses: ['pending', 'scheduled', 'ready', 'yielded', 'backing-off'],
         count:
           (statusCounts.get('pending') ?? 0) +
           (statusCounts.get('scheduled') ?? 0) +
           waitingCount,
         breakdownIsPartial: isPartial,
-        breakdownCoverage: includesYielded ? 'coarse' : 'full',
+        breakdownCoverage: 'coarse',
         breakdownCanRefine: false,
       },
       {
