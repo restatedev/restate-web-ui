@@ -1,4 +1,3 @@
-export type PredefinedQueryFeature = 'vqueues';
 export type PredefinedQueryPerformance = 'safe' | 'caution' | 'heavy';
 
 export interface PredefinedQuery {
@@ -7,33 +6,6 @@ export interface PredefinedQuery {
   description: string;
   performance: PredefinedQueryPerformance;
   query: string;
-  requiredFeatures?: readonly PredefinedQueryFeature[];
-}
-
-export function isQueryAvailable(
-  query: PredefinedQuery,
-  availableFeatures: Set<PredefinedQueryFeature>,
-) {
-  return (
-    query.requiredFeatures?.every((feature) =>
-      availableFeatures.has(feature),
-    ) ?? true
-  );
-}
-
-export function getUnavailableReason(
-  query: PredefinedQuery,
-  availableFeatures: Set<PredefinedQueryFeature>,
-) {
-  const missingFeatures = query.requiredFeatures?.filter(
-    (feature) => !availableFeatures.has(feature),
-  );
-
-  if (!missingFeatures?.length) {
-    return undefined;
-  }
-
-  return `Requires ${missingFeatures.join(', ')}`;
 }
 
 export const predefinedQueries = [

@@ -33,32 +33,12 @@ export const QUERY_DEFINITIONS = {
       "WITH active AS (SELECT deployment_id FROM sys_service WHERE deployment_id IS NOT NULL UNION SELECT deployment_id FROM sys_deployment_stats WHERE stage IN ('inbox', 'running', 'suspended', 'paused')) SELECT id FROM sys_deployment EXCEPT SELECT id FROM active",
     tables: ['sys_deployment', 'sys_service', 'sys_deployment_stats'],
   },
-  'deployments/drained-legacy': {
-    description:
-      'Identify deployments no longer referenced by any service or unfinished invocation (servers without VQueues).',
-    shape:
-      "WITH active AS (SELECT DISTINCT deployment_id FROM sys_service UNION SELECT DISTINCT pinned_deployment_id FROM sys_invocation_status WHERE status != 'completed') SELECT id FROM sys_deployment EXCEPT SELECT id FROM active",
-    tables: ['sys_deployment', 'sys_service', 'sys_invocation_status'],
-  },
   'inbox/head': {
     description:
       'Find the invocation currently holding a virtual object’s exclusive lock (the queue head).',
     shape:
-      "SELECT id FROM sys_invocation WHERE target_service_key = ? AND target_service_name = ? AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (…) [AND scope …]",
+      "SELECT id FROM sys_invocation WHERE target_service_key = ? AND target_service_name = ? AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (…) AND scope …",
     tables: ['sys_invocation'],
-  },
-  'inbox/inbox-sequence-lookup': {
-    description:
-      'Look up an invocation’s inbox sequence number before computing its queue position.',
-    shape: 'SELECT sequence_number FROM sys_inbox WHERE id = ?',
-    tables: ['sys_inbox'],
-  },
-  'inbox/position-from-inbox': {
-    description:
-      'Count how many inbox entries precede an invocation to show its queue position (servers without VQueues).',
-    shape:
-      'SELECT COUNT(*) FROM sys_inbox WHERE service_key = ? AND service_name = ? AND sequence_number < ?',
-    tables: ['sys_inbox'],
   },
   'inbox/position-from-vqueues': {
     description:
@@ -67,18 +47,11 @@ export const QUERY_DEFINITIONS = {
       'SELECT COUNT(*) FROM sys_vqueues WHERE id = ? AND sequence_number < ?',
     tables: ['sys_vqueues'],
   },
-  'inbox/size-from-inbox': {
-    description:
-      'Count the queued entries of a virtual object’s inbox (servers without VQueues).',
-    shape:
-      'SELECT COUNT(*) FROM sys_inbox WHERE service_key = ? AND service_name = ?',
-    tables: ['sys_inbox'],
-  },
   'inbox/size-from-vqueue-meta': {
     description:
       'Read a virtual object’s unfinished-entry total from its VQueue metadata.',
     shape:
-      'SELECT (num_inbox + num_running + num_suspended + num_paused) FROM sys_vqueue_meta WHERE service_name = ? AND lock_name = ? AND is_active = true [AND scope …]',
+      'SELECT (num_inbox + num_running + num_suspended + num_paused) FROM sys_vqueue_meta WHERE service_name = ? AND lock_name = ? AND is_active = true AND scope …',
     tables: ['sys_vqueue_meta'],
   },
   'inbox/vqueue-entry-lookup': {
@@ -231,27 +204,6 @@ export const QUERY_DEFINITIONS = {
       'SELECT entry_id, stage, status FROM sys_vqueue_entry_status WHERE entry_id IN (…)',
     tables: ['sys_vqueue_entry_status'],
   },
-  'invocations-v2/candidates-from-state': {
-    description:
-      'Select running/backing-off invocation candidates from the small live-state table (invocations list fast path, servers without VQueues).',
-    shape:
-      'SELECT id FROM sys_invocation_state [WHERE in_flight IS (NOT) TRUE] LIMIT ≤1000',
-    tables: ['sys_invocation_state'],
-  },
-  'invocations-v2/candidates-from-status': {
-    description:
-      'Select invocation candidates for the invocations list when the status table satisfies all filters (servers without VQueues).',
-    shape:
-      'SELECT id FROM sys_invocation_status [WHERE <filters>] [ORDER BY <sort>] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]',
-    tables: ['sys_invocation_status'],
-  },
-  'invocations-v2/candidates-from-status-and-state': {
-    description:
-      'Select invocation candidates for the invocations list, joining stored status with live state for running/ready predicates (servers without VQueues).',
-    shape:
-      'SELECT id FROM sys_invocation_status LEFT JOIN (SELECT id, in_flight, retry_count FROM sys_invocation_state) ON id [WHERE <filters>] [ORDER BY <sort>] LIMIT ≤1000 [sampled: FROM (… LIMIT 1000000)]',
-    tables: ['sys_invocation_status', 'sys_invocation_state'],
-  },
   'invocations-v2/candidates-from-status-planned': {
     description:
       'Select terminal-status invocation candidates from the status table within a VQueue-planned invocations list.',
@@ -301,13 +253,6 @@ export const QUERY_DEFINITIONS = {
       'SELECT COUNT(1) FROM sys_vqueues [WHERE <stage/status> AND <filters>] [sampled: FROM (… LIMIT 1000000)]',
     tables: ['sys_vqueues'],
   },
-  'invocations-v2/finished-breakdown-from-status': {
-    description:
-      'Break down completed invocations into succeeded/failed for the Completed facet (servers without VQueues).',
-    shape:
-      "SELECT <outcome CASE>, COUNT(1) FROM sys_invocation_status WHERE status = 'completed' [AND completed_at >= ? AND < ?] GROUP BY outcome [sampled: FROM (… LIMIT 1000000)]",
-    tables: ['sys_invocation_status'],
-  },
   'invocations-v2/finished-breakdown-from-vqueues': {
     description:
       'Break down finished invocation outcomes from VQueue entries for the Completed facet.',
@@ -341,61 +286,6 @@ export const QUERY_DEFINITIONS = {
     shape:
       "SELECT COUNT(1) AS total, SUM(CASE WHEN first_runnable_at <= ?) AS due, SUM(CASE WHEN first_runnable_at > ?) AS not_due FROM sys_vqueues WHERE stage = 'inbox'",
     tables: ['sys_vqueues'],
-  },
-  'invocations-v2/inbox-due-running-by-service': {
-    description:
-      'Count running invocations per service to subtract from raw invoked rows (due breakdown, servers without VQueues).',
-    shape:
-      "SELECT [service,] COUNT(1) FROM sys_invocation_state JOIN sys_invocation_status ON id WHERE in_flight AND status = 'invoked' [AND service IN (…)] [GROUP BY service]",
-    tables: ['sys_invocation_state', 'sys_invocation_status'],
-  },
-  'invocations-v2/inbox-due-running-count': {
-    description:
-      'Count running invocations to subtract from raw invoked rows (due breakdown, servers without VQueues).',
-    shape: 'SELECT COUNT(1) FROM sys_invocation_state WHERE in_flight',
-    tables: ['sys_invocation_state'],
-  },
-  'invocations-v2/inbox-due-status-by-service': {
-    description:
-      'Count stored inbox statuses per service for the due breakdown (servers without VQueues).',
-    shape:
-      "SELECT [service,] SUM(CASE WHEN status = 'inboxed') AS inboxed, SUM(CASE WHEN status = 'scheduled') AS scheduled, SUM(CASE WHEN status = 'invoked') AS invoked FROM sys_invocation_status WHERE status IN ('inboxed', 'scheduled', 'invoked') [AND service IN (…)] [GROUP BY service]",
-    tables: ['sys_invocation_status'],
-  },
-  'invocations-v2/inbox-due-status-counts': {
-    description:
-      'Count stored inbox statuses for the overall due breakdown (servers without VQueues).',
-    shape:
-      "SELECT SUM(CASE WHEN status = 'inboxed') AS inboxed, SUM(CASE WHEN status = 'scheduled') AS scheduled, SUM(CASE WHEN status = 'invoked') AS invoked FROM sys_invocation_status WHERE status IN ('inboxed', 'scheduled', 'invoked')",
-    tables: ['sys_invocation_status'],
-  },
-  'invocations-v2/inbox-state-by-service': {
-    description:
-      'Count running/backing-off invocations per service from live state (inbox breakdown, servers without VQueues).',
-    shape:
-      "SELECT [service,] SUM(CASE WHEN in_flight) AS running, SUM(CASE WHEN NOT in_flight AND retry_count > 0) AS backing_off FROM sys_invocation_state JOIN sys_invocation_status ON id WHERE status = 'invoked' [AND service IN (…)] [GROUP BY service]",
-    tables: ['sys_invocation_state', 'sys_invocation_status'],
-  },
-  'invocations-v2/inbox-state-counts': {
-    description:
-      'Count running/backing-off invocations from live state (inbox breakdown, servers without VQueues).',
-    shape:
-      'SELECT SUM(CASE WHEN in_flight) AS running, SUM(CASE WHEN NOT in_flight AND retry_count > 0) AS backing_off FROM sys_invocation_state',
-    tables: ['sys_invocation_state'],
-  },
-  'invocations-v2/inbox-status-by-service': {
-    description:
-      'Count stored inbox statuses per service (inbox breakdown, servers without VQueues).',
-    shape:
-      "SELECT [service,] SUM(CASE WHEN status = 'inboxed') AS inboxed, SUM(CASE WHEN status = 'scheduled') AS scheduled, SUM(CASE WHEN status = 'invoked') AS invoked FROM sys_invocation_status WHERE status IN ('inboxed', 'scheduled', 'invoked') [AND service IN (…)] [GROUP BY service]",
-    tables: ['sys_invocation_status'],
-  },
-  'invocations-v2/inbox-status-counts': {
-    description:
-      'Count stored inbox statuses for the overall breakdown (servers without VQueues).',
-    shape:
-      "SELECT SUM(CASE WHEN status = 'inboxed') AS inboxed, SUM(CASE WHEN status = 'scheduled') AS scheduled, SUM(CASE WHEN status = 'invoked') AS invoked FROM sys_invocation_status WHERE status IN ('inboxed', 'scheduled', 'invoked')",
-    tables: ['sys_invocation_status'],
   },
   'invocations-v2/inbox-status-for-services': {
     description:
@@ -477,42 +367,42 @@ export const QUERY_DEFINITIONS = {
     description:
       'Load one page of a state object’s entries (keyset-paginated) for the state entries table.',
     shape:
-      'SELECT key, value_length, CASE value_length <= 64KiB THEN value END FROM state WHERE service_name = ? AND service_key = ? [AND scope …] [AND key > cursor] ORDER BY key LIMIT ≤1001',
+      'SELECT key, value_length, CASE value_length <= 64KiB THEN value END FROM state WHERE service_name = ? AND service_key = ? AND scope … [AND key > cursor] ORDER BY key LIMIT ≤1001',
     tables: ['state'],
   },
   'state/get': {
     description:
       'Fetch the complete K/V state of one service key for the state editor and lazy value popovers.',
     shape:
-      'SELECT key, value FROM state WHERE service_name = ? AND service_key = ? [AND scope …] [AND key IN (…)]',
+      'SELECT key, value FROM state WHERE service_name = ? AND service_key = ? AND scope … [AND key IN (…)]',
     tables: ['state'],
   },
   'state/keys': {
     description:
       'Discover the distinct state keys a service uses to build the state table columns.',
     shape:
-      'SELECT DISTINCT key FROM state WHERE service_name = ? [AND service_key IN (…)] [AND scope …] GROUP BY key',
+      'SELECT DISTINCT key FROM state WHERE service_name = ? [AND service_key IN (…)] AND scope … GROUP BY key',
     tables: ['state'],
   },
   'state/object-size': {
     description:
       'Count the state keys and total stored bytes of one state object for the virtual object and workflow stats cards.',
     shape:
-      'SELECT COUNT(*), SUM(value_length) FROM state WHERE service_name = ? AND service_key = ? [AND scope …]',
+      'SELECT COUNT(*), SUM(value_length) FROM state WHERE service_name = ? AND service_key = ? AND scope …',
     tables: ['state'],
   },
   'state/objects': {
     description:
       'Find the state objects (keys/scopes) of a service matching the current filters for the State page.',
     shape:
-      'SELECT DISTINCT service_key [, scope] FROM state WHERE <filters> LIMIT 301',
+      'SELECT DISTINCT service_key, scope FROM state WHERE <filters> LIMIT 301',
     tables: ['state'],
   },
   'state/preview': {
     description:
       'Fetch a bounded preview of small state values for the visible page of state objects.',
     shape:
-      'SELECT service_key [, scope], key, value_length, value FROM state WHERE service_name = ? AND service_key IN (…) [AND scope …] AND value_length <= 2048 LIMIT 1500',
+      'SELECT service_key, scope, key, value_length, value FROM state WHERE service_name = ? AND service_key IN (…) AND scope … AND value_length <= 2048 LIMIT 1500',
     tables: ['state'],
   },
   'state/storage-size': {
@@ -543,13 +433,6 @@ export const QUERY_DEFINITIONS = {
       'SELECT service_name, scope, key, handler, kind, stage, status, num_entries FROM sys_virtual_object_stats [WHERE <service/scope/key/handler filters>]',
     tables: ['sys_virtual_object_stats'],
   },
-  'virtual-objects/backlogs-from-inbox': {
-    description:
-      'Count inbox backlog per selected virtual object instance (servers without VQueues).',
-    shape:
-      'SELECT service_key, COUNT(*) FROM sys_inbox WHERE service_name = ? AND (<identity OR-list>) GROUP BY service_key',
-    tables: ['sys_inbox'],
-  },
   'virtual-objects/backlogs-from-stats': {
     description:
       'Sum inbox backlog per selected virtual object instance from the virtual object stats table.',
@@ -571,18 +454,11 @@ export const QUERY_DEFINITIONS = {
       'SELECT lock_name, scope, SUM(num_inbox) AS backlog FROM sys_vqueue_meta WHERE service_name = ? AND num_inbox > 0 [AND <search/filters>] GROUP BY lock_name, scope ORDER BY backlog DESC, lock_name, scope LIMIT 51',
     tables: ['sys_vqueue_meta'],
   },
-  'virtual-objects/identities-by-backlog-legacy': {
-    description:
-      'Rank virtual object instances by inbox backlog when the Instances table sorts by backlog (servers without VQueues).',
-    shape:
-      'SELECT service_key, COUNT(*) AS backlog FROM sys_inbox WHERE service_name = ? [AND <search/filters>] GROUP BY service_key ORDER BY backlog DESC, service_key ASC LIMIT 51',
-    tables: ['sys_inbox'],
-  },
   'virtual-objects/identities-from-invocations': {
     description:
       'Discover virtual object instances with non-completed invocations targeting them (Instances table).',
     shape:
-      "SELECT DISTINCT [partition_key,] target_service_key [, scope] FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'virtual_object' AND status <> 'completed' [AND <search/filters>] LIMIT 51",
+      "SELECT DISTINCT [partition_key,] target_service_key, scope FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'virtual_object' AND status <> 'completed' [AND <search/filters>] LIMIT 51",
     tables: ['sys_invocation_status'],
   },
   'virtual-objects/instances-from-stats': {
@@ -613,33 +489,12 @@ export const QUERY_DEFINITIONS = {
       'SELECT SUM(num_inbox) FROM sys_vqueue_meta WHERE service_name = ? AND lock_name = ? AND scope …',
     tables: ['sys_vqueue_meta'],
   },
-  'virtual-objects/inbox-count-legacy': {
-    description:
-      'Count a virtual object’s inbox entries for the Inbox panel (servers without VQueues).',
-    shape:
-      'SELECT COUNT(*) FROM sys_inbox WHERE service_name = ? AND service_key = ?',
-    tables: ['sys_inbox'],
-  },
-  'virtual-objects/inbox-entries-legacy': {
-    description:
-      'Read the first page of a virtual object’s inbox (servers without VQueues).',
-    shape:
-      'SELECT id FROM sys_inbox WHERE service_name = ? AND service_key = ? LIMIT 26',
-    tables: ['sys_inbox'],
-  },
   'virtual-objects/lock': {
     description:
       'Read the current holder of a virtual object’s exclusive lock.',
     shape:
       'SELECT acquired_by, acquired_at FROM sys_locks WHERE lock_name = ? AND scope … AND acquired_by IS NOT NULL LIMIT 1',
     tables: ['sys_locks'],
-  },
-  'virtual-objects/lock-from-keyed-status': {
-    description:
-      'Find the invocation holding a virtual object’s lock (servers without VQueues).',
-    shape:
-      'SELECT invocation_id FROM sys_keyed_service_status WHERE service_name = ? AND service_key = ? AND invocation_id IS NOT NULL LIMIT 1',
-    tables: ['sys_keyed_service_status'],
   },
   'virtual-objects/locks-for-instances': {
     description:
@@ -648,18 +503,11 @@ export const QUERY_DEFINITIONS = {
       'SELECT lock_name, scope, acquired_by, acquired_at FROM sys_locks WHERE acquired_by IS NOT NULL AND (<identity OR-list>)',
     tables: ['sys_locks'],
   },
-  'virtual-objects/locks-from-keyed-status': {
-    description:
-      'Fetch lock-holding invocations for the listed instances (servers without VQueues).',
-    shape:
-      'SELECT service_key, invocation_id FROM sys_keyed_service_status WHERE service_name = ? AND invocation_id IS NOT NULL AND (<identity OR-list>)',
-    tables: ['sys_keyed_service_status'],
-  },
   'virtual-objects/recent-invocation-ids': {
     description:
       'Select the most recent invocation ids targeting a virtual object key for its Invocations panel.',
     shape:
-      "SELECT id FROM sys_invocation_status WHERE target_service_ty = 'virtual_object' AND target_service_name = ? AND target_service_key = ? [AND scope …] ORDER BY created_at DESC NULLS LAST LIMIT 51",
+      "SELECT id FROM sys_invocation_status WHERE target_service_ty = 'virtual_object' AND target_service_name = ? AND target_service_key = ? AND scope … ORDER BY created_at DESC NULLS LAST LIMIT 51",
     tables: ['sys_invocation_status'],
   },
   'virtual-objects/scoped-inbox-entries': {
@@ -783,27 +631,27 @@ export const QUERY_DEFINITIONS = {
     description:
       'Find the latest non-run interaction with a workflow run for its stats card.',
     shape:
-      "SELECT MAX(created_at) FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name <> ? [AND scope …]",
+      "SELECT MAX(created_at) FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name <> ? AND scope …",
     tables: ['sys_invocation_status'],
   },
   'workflows/pending-promises': {
     description:
       'Count a workflow run’s pending durable promises for its stats card.',
     shape:
-      'SELECT COUNT(*) FROM sys_promise WHERE service_name = ? AND service_key = ? [AND scope …] AND completed = false',
+      'SELECT COUNT(*) FROM sys_promise WHERE service_name = ? AND service_key = ? AND scope … AND completed = false',
     tables: ['sys_promise'],
   },
   'workflows/interactions': {
     description:
       'Select recent retained interactions with a workflow run for its details page.',
     shape:
-      "SELECT id FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name <> ? [AND scope …] ORDER BY created_at DESC NULLS LAST LIMIT 51",
+      "SELECT id FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name <> ? AND scope … ORDER BY created_at DESC NULLS LAST LIMIT 51",
     tables: ['sys_invocation_status'],
   },
   'workflows/run-invocation-lookup': {
     description: 'Resolve the invocation id of a workflow run’s run handler.',
     shape:
-      "SELECT id FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name = ? [AND scope …] LIMIT 1",
+      "SELECT id FROM sys_invocation_status WHERE target_service_name = ? AND target_service_ty = 'workflow' AND target_service_key = ? AND target_handler_name = ? AND scope … LIMIT 1",
     tables: ['sys_invocation_status'],
   },
   'workflows/run-stage': {

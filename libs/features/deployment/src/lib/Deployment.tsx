@@ -120,7 +120,7 @@ export function Deployment({
   showSdk?: boolean;
   variant?: 'primary' | 'secondary';
 }) {
-  const { tunnel, isVersionGte, baseUrl } = useRestateContext();
+  const { tunnel, baseUrl } = useRestateContext();
   const { data: { deployments } = {} } = useListDeployments({
     refetchOnMount: false,
   });
@@ -135,8 +135,7 @@ export function Deployment({
 
   const isDeprecated = Boolean(
     deployment &&
-    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-    isVersionGte?.('1.6.0'),
+    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   );
 
   if (!deployment) {

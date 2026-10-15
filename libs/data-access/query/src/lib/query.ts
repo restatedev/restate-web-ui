@@ -54,7 +54,6 @@ import {
   listDrainedDeployments,
   type ListStateArgs,
   type ListStateItem,
-  type StateServiceType,
   listVirtualObjectInstances,
   type ListVirtualObjectInstancesArgs,
   getVirtualObjectLock,
@@ -66,7 +65,6 @@ import {
   getWorkflowRun,
   getWorkflowRunStats,
 } from './handlers';
-import { getVersion } from './getVersion';
 import { getFeatures } from './getFeatures';
 
 type BoundHandlers = {
@@ -111,19 +109,16 @@ type BoundHandlers = {
   getState: (
     service: string,
     key: string,
-    serviceType?: StateServiceType,
     stateKeys?: string[],
   ) => Promise<Response>;
   getStateInterface: (
     service: string,
     serviceKey?: string[],
     scope?: string,
-    serviceType?: StateServiceType,
   ) => Promise<Response>;
   queryState: (
     service: string,
     args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
-    serviceType?: StateServiceType,
   ) => Promise<Response>;
   listState: (service: string, args: ListStateArgs) => Promise<Response>;
   listStateEntries: (
@@ -221,17 +216,16 @@ function bindHandlers(context: QueryContext): BoundHandlers {
     getJournalEntryMetadata: getJournalEntryMetadata.bind(context),
     getInvocationJournalV2: getInvocationJournalV2.bind(context),
     getInbox: getInbox.bind(context),
-    getState: (service, key, serviceType, stateKeys) =>
-      getState.call(context, service, key, undefined, serviceType, stateKeys),
-    getStateInterface: (service, serviceKey, scope, serviceType) =>
-      getStateInterface.call(context, service, serviceKey, scope, serviceType),
-    queryState: (service, args, serviceType) =>
-      queryState.call(context, service, args, serviceType),
+    getState: (service, key, stateKeys) =>
+      getState.call(context, service, key, undefined, stateKeys),
+    getStateInterface: (service, serviceKey, scope) =>
+      getStateInterface.call(context, service, serviceKey, scope),
+    queryState: (service, args) => queryState.call(context, service, args),
     listState: (service, args) => listState.call(context, service, args),
     listStateEntries: (service, key, args) =>
       listStateEntries.call(context, service, key, args),
     getScopedState: (service, scope, key, stateKeys) =>
-      getState.call(context, service, key, scope, undefined, stateKeys),
+      getState.call(context, service, key, scope, stateKeys),
     batchCancelInvocations: batchCancelInvocations.bind(context),
     batchPurgeInvocations: batchPurgeInvocations.bind(context),
     batchKillInvocations: batchKillInvocations.bind(context),
@@ -256,16 +250,6 @@ function bindHandlers(context: QueryContext): BoundHandlers {
 
 const handlersKey = createStorageKey<BoundHandlers>();
 
-function readServiceType(
-  searchParams: URLSearchParams,
-): StateServiceType | undefined {
-  const raw = searchParams.get('serviceType');
-  if (raw === 'virtual_object' || raw === 'workflow' || raw === 'service') {
-    return raw;
-  }
-  return undefined;
-}
-
 const decodeParamsMiddleware: Middleware = (ctx, next) => {
   const params = ctx.params as Record<string, string | undefined>;
   for (const key in params) {
@@ -279,12 +263,10 @@ const decodeParamsMiddleware: Middleware = (ctx, next) => {
 
 const handlersMiddleware: Middleware = (ctx, next) => {
   const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
-  const restateVersion = getVersion(ctx.headers);
   const features = getFeatures(ctx.headers);
   const queryContext = createQueryContext(
     baseUrl,
     ctx.headers,
-    restateVersion,
     features,
     ctx.request.signal,
   );
@@ -666,7 +648,6 @@ router.map(routes, {
           return getState(
             ctx.params.name,
             ctx.params.key,
-            readServiceType(ctx.url.searchParams),
             ctx.url.searchParams.getAll('stateKey'),
           );
         },
@@ -676,7 +657,6 @@ router.map(routes, {
             ctx.params.name,
             ctx.url.searchParams.getAll('serviceKey'),
             ctx.url.searchParams.get('scope') ?? undefined,
-            readServiceType(ctx.url.searchParams),
           );
         },
         async query(ctx) {
@@ -685,11 +665,7 @@ router.map(routes, {
             systemFilters?: FilterItem[];
             stateFilter?: FilterItem;
           };
-          return queryState(
-            ctx.params.name,
-            args,
-            readServiceType(ctx.url.searchParams),
-          );
+          return queryState(ctx.params.name, args);
         },
         async list(ctx) {
           const { listState } = ctx.storage.get(handlersKey);

@@ -11,7 +11,6 @@ import type {
   BatchInvocationsResponse,
   FilterItem,
 } from '@restate/data-access/admin-api-spec';
-import { useFeatures } from '@restate/data-access/admin-api';
 import { showProgressNotification } from '@restate/ui/notification';
 import {
   formatNumber,
@@ -74,7 +73,6 @@ export function BatchOperationsProvider({
   showScope = true,
 }: PropsWithChildren<{ batchSize?: number; showScope?: boolean }>) {
   const [batchOpes, setBatchOpes] = useState([] as BatchState[]);
-  const hasVqueues = useFeatures().has('vqueues');
   const hasPendingOps = batchOpes.some(
     (batch) => !batch.progressStore.getSnapshot()?.isFinished,
   );
@@ -354,7 +352,6 @@ export function BatchOperationsProvider({
                         'paused',
                         'ready',
                         'pending',
-                        ...(hasVqueues ? [] : ['suspended']),
                         'scheduled',
                         'completed',
                       ],
@@ -366,7 +363,7 @@ export function BatchOperationsProvider({
         },
       ]);
     },
-    [hasVqueues],
+    [],
   );
   const batchKill = useCallback(
     (

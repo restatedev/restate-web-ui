@@ -61,9 +61,6 @@ function DeploymentDetailsContents() {
       ...(!deployment && { enabled: false }),
     },
   );
-  const { isVersionGte } = useRestateContext();
-  const isDeploymentUpdateSupported = isVersionGte?.('1.6.0');
-
   if (!deployment) {
     return null;
   }
@@ -98,11 +95,7 @@ function DeploymentDetailsContents() {
           <TooltipContent size="sm">Close</TooltipContent>
         </Tooltip>
       </ComplementaryHeader>
-      <DeploymentContent
-        deployment={deployment}
-        error={error}
-        isDeploymentUpdateSupported={isDeploymentUpdateSupported}
-      />
+      <DeploymentContent deployment={deployment} error={error} />
     </>
   );
 }
@@ -110,14 +103,12 @@ function DeploymentDetailsContents() {
 function DeploymentContent({
   deployment,
   error,
-  isDeploymentUpdateSupported,
 }: {
   deployment: string;
   error?: Error | null;
-  isDeploymentUpdateSupported?: boolean;
 }) {
   const { data, isPending } = useDeploymentDetails(deployment);
-  const { tunnel, isVersionGte } = useRestateContext();
+  const { tunnel } = useRestateContext();
 
   const services = data?.services ?? [];
   const additionalHeaders = Object.entries(data?.additional_headers ?? {});
@@ -130,9 +121,7 @@ function DeploymentContent({
   } = resolveDeploymentEndpoint(data, tunnel);
 
   const isDeprecated = Boolean(
-    data &&
-    data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-    isVersionGte?.('1.6.0'),
+    data && data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   );
   return (
     <>
@@ -186,45 +175,35 @@ function DeploymentContent({
           )}
         </div>
         <div className="ml-auto flex shrink-0 items-center self-start">
-          {isDeploymentUpdateSupported ? (
-            <SplitButton
-              className="py-0 text-0.5xs"
-              variant="secondary"
-              splitClassName="rounded-r-md w-6"
-              mini={false}
-              menus={
-                <>
-                  <DropdownItem
-                    href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
-                  >
-                    Update
-                  </DropdownItem>
-                  <DropdownItem
-                    href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
-                    destructive
-                  >
-                    Delete
-                  </DropdownItem>
-                </>
-              }
-            >
-              <Link
-                href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
-                variant="secondary-button"
-                className="rounded-l-md rounded-r-none px-3 py-0 text-0.5xs leading-6 text-blue-700"
-              >
-                Update
-              </Link>
-            </SplitButton>
-          ) : (
+          <SplitButton
+            className="py-0 text-0.5xs"
+            variant="secondary"
+            splitClassName="rounded-r-md w-6"
+            mini={false}
+            menus={
+              <>
+                <DropdownItem
+                  href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+                >
+                  Update
+                </DropdownItem>
+                <DropdownItem
+                  href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
+                  destructive
+                >
+                  Delete
+                </DropdownItem>
+              </>
+            }
+          >
             <Link
-              href={`?${DELETE_DEPLOYMENT_QUERY_PARAM}=${deployment}`}
-              variant="destructive-button"
-              className="rounded-lg px-3 py-0 text-0.5xs leading-6 font-normal"
+              href={`?${UPDATE_DEPLOYMENT_QUERY}=${deployment}`}
+              variant="secondary-button"
+              className="rounded-l-md rounded-r-none px-3 py-0 text-0.5xs leading-6 text-blue-700"
             >
-              Delete
+              Update
             </Link>
-          )}
+          </SplitButton>
         </div>
       </h2>
       {isDeprecated && (

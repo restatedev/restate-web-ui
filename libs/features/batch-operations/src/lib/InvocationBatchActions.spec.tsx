@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import type { QueryClauseSchema } from '@restate/ui/query-builder';
-import type { PropsWithChildren } from 'react';
 import { InvocationBatchActions } from './InvocationBatchActions';
 
 const batch = vi.hoisted(() => ({
@@ -17,9 +16,6 @@ const batch = vi.hoisted(() => ({
 }));
 vi.mock('./BatchOperationsProvider', () => ({
   useBatchOperations: () => batch,
-}));
-vi.mock('@restate/features/restate-context', () => ({
-  RestateMinimumVersion: ({ children }: PropsWithChildren) => children,
 }));
 
 const filters: FilterItem[] = [

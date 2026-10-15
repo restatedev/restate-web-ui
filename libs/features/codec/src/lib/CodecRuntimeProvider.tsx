@@ -1,5 +1,4 @@
 import { useAdminBaseUrl } from '@restate/data-access/admin-api';
-import { useRestateContext } from '@restate/features/restate-context';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
@@ -46,23 +45,15 @@ export function CodecRuntimeProvider({
 }>) {
   const adminBaseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
-  const { isVersionGte } = useRestateContext();
-  const serdePreviewSupported = Boolean(isVersionGte?.('1.7.0'));
   const previewDecoder = useSerdePreviewDecoder(adminBaseUrl ?? '');
   const previewEncoder = useSerdePreviewEncoder(adminBaseUrl ?? '');
   const decoder = useMemo(
-    () =>
-      composeRestateDecoder(
-        serdePreviewSupported ? [...decoders, previewDecoder] : decoders,
-      ),
-    [...decoders, previewDecoder, serdePreviewSupported],
+    () => composeRestateDecoder([...decoders, previewDecoder]),
+    [...decoders, previewDecoder],
   );
   const encoder = useMemo(
-    () =>
-      composeRestateEncoder(
-        serdePreviewSupported ? [...encoders, previewEncoder] : encoders,
-      ),
-    [...encoders, previewEncoder, serdePreviewSupported],
+    () => composeRestateEncoder([...encoders, previewEncoder]),
+    [...encoders, previewEncoder],
   );
   const refreshCodec = useCallback(() => {
     queryClient.removeQueries({

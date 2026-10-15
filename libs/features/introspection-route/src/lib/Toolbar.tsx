@@ -18,7 +18,6 @@ import {
 import type { editor } from 'monaco-editor';
 import { QueryHistoryDropdown } from './QueryHistoryDropdown';
 import { PredefinedQueriesDropdown } from './PredefinedQueriesDropdown';
-import { useFeatures } from '@restate/data-access/admin-api';
 
 const SQLEditor = lazy(() =>
   import('./.client/SQLEditor').then((m) => ({ default: m.SQLEditor })),
@@ -41,7 +40,6 @@ export function Toolbar({
   const containerRef = useRef<HTMLDivElement>(null);
   const placeholderRef = useRef<HTMLDivElement>(null);
   const submitRef = useSubmitShortcut();
-  const hasVqueues = useFeatures().has('vqueues');
 
   const lastSubmittedQuery = useRef(initialQuery);
   const setQuery = useCallback(
@@ -119,10 +117,7 @@ export function Toolbar({
           </div>
         </div>
         <div className="absolute top-1 right-1 bottom-1 flex items-stretch gap-1">
-          <PredefinedQueriesDropdown
-            hasVqueues={hasVqueues}
-            onSelect={selectQuery}
-          />
+          <PredefinedQueriesDropdown onSelect={selectQuery} />
           <QueryHistoryDropdown onSelect={selectQuery} />
           <SubmitButton
             ref={submitRef}
