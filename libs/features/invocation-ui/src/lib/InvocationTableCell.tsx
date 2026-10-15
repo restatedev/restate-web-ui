@@ -22,6 +22,7 @@ import { serviceHref } from '@restate/util/panel';
 import { useRestateContext } from '@restate/features/restate-context';
 import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
 import { ServiceTarget, Target } from '@restate/features/service-target';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { InvocationId } from './InvocationId';
 import { InvocationStatusBadge, Status } from './Status';
 
@@ -88,15 +89,68 @@ function InvocationTableId({
   size?: 'sm' | 'md' | 'default';
 }) {
   const isOnboarding = useOnboarding();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const invocationIdRef = useRef<HTMLDivElement>(null);
+  const idTextRef = useRef<HTMLElement>(null);
+  const fullWidthRef = useRef<number | undefined>(undefined);
+  const measurementKeyRef = useRef(`${id}:${size}`);
+  const [truncateInMiddle, setTruncateInMiddle] = useState(false);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const invocationId = invocationIdRef.current;
+    const idText = idTextRef.current;
+    if (!container || !invocationId || !idText) return;
+
+    const measurementKey = `${id}:${size}`;
+    if (measurementKeyRef.current !== measurementKey) {
+      measurementKeyRef.current = measurementKey;
+      fullWidthRef.current = undefined;
+      if (truncateInMiddle) {
+        setTruncateInMiddle(false);
+        return;
+      }
+    }
+
+    const updateTruncation = () => {
+      const availableWidth = container.getBoundingClientRect().width;
+      if (availableWidth === 0) return;
+
+      if (!truncateInMiddle) {
+        const invocationIdWidth = invocationId.getBoundingClientRect().width;
+        fullWidthRef.current =
+          invocationIdWidth +
+          Math.max(idText.scrollWidth - idText.clientWidth, 0);
+      }
+
+      const fullWidth = fullWidthRef.current;
+      if (fullWidth === undefined) return;
+      setTruncateInMiddle(availableWidth + 0.5 < fullWidth);
+    };
+
+    updateTruncation();
+    const ResizeObserverConstructor = globalThis.ResizeObserver;
+    if (!ResizeObserverConstructor) return;
+
+    const observer = new ResizeObserverConstructor(updateTruncation);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [id, size, truncateInMiddle]);
+
   return (
-    <InvocationId
-      id={id}
-      className={invocationIdStyles({ isOnboarding })}
-      isLive={isOnboarding}
-      size={size}
-      truncateInMiddle
-      popover={false}
-    />
+    <div ref={containerRef} className="w-full min-w-0" data-invocation-table-id>
+      <InvocationId
+        ref={invocationIdRef}
+        id={id}
+        idTextRef={idTextRef}
+        idTextClassName="block max-w-full min-w-0 truncate"
+        className={invocationIdStyles({ isOnboarding })}
+        isLive={isOnboarding}
+        size={size}
+        truncateInMiddle={truncateInMiddle}
+        popover={false}
+      />
+    </div>
   );
 }
 

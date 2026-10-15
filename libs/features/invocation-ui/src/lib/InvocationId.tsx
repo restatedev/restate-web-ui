@@ -1,4 +1,4 @@
-import { type ReactNode, useRef } from 'react';
+import { forwardRef, type ReactNode, type RefObject, useRef } from 'react';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
@@ -75,106 +75,115 @@ interface InvocationIdProps {
   popover?: boolean;
   link?: boolean;
   title?: ReactNode;
+  idTextClassName?: string;
+  idTextRef?: RefObject<HTMLElement | null>;
 }
 
-export function InvocationId({
-  id,
-  className,
-  iconName = IconName.Invocation,
-  size = 'default',
-  truncateInMiddle = false,
-  popover = true,
-  link = true,
-  title,
-}: InvocationIdProps) {
-  const linkRef = useRef<HTMLAnchorElement>(null);
-  const {
-    base,
-    icon,
-    text,
-    link: linkStyle,
-    container,
-    linkIcon,
-  } = styles({ size });
-  const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
-  const isSelected = invocationInSidebar === id;
+export const InvocationId = forwardRef<HTMLDivElement, InvocationIdProps>(
+  function InvocationId(
+    {
+      id,
+      className,
+      iconName = IconName.Invocation,
+      size = 'default',
+      truncateInMiddle = false,
+      popover = true,
+      link = true,
+      title,
+      idTextClassName,
+      idTextRef,
+    },
+    ref,
+  ) {
+    const linkRef = useRef<HTMLAnchorElement>(null);
+    const {
+      base,
+      icon,
+      text,
+      link: linkStyle,
+      container,
+      linkIcon,
+    } = styles({ size });
+    const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
+    const isSelected = invocationInSidebar === id;
 
-  const { baseUrl } = useRestateContext();
-  const isIcon = size === 'icon';
-  const location = useLocation();
-  const hasPopover = popover;
+    const { baseUrl } = useRestateContext();
+    const isIcon = size === 'icon';
+    const location = useLocation();
+    const hasPopover = popover;
 
-  const linkElement = (
-    <Link
-      ref={linkRef}
-      href={`${baseUrl}/invocations/${id}${getSearchParams(location.search)}`}
-      aria-label={id}
-      variant="secondary"
-      className={linkStyle()}
-      data-invocation-selected={isSelected}
-    >
-      <Icon name={IconName.ChevronRight} className={linkIcon()} />
-    </Link>
-  );
-
-  const idText = (
-    <span className={text()}>
-      {truncateInMiddle ? (
-        <span>
-          {id?.substring(0, 8)}…{id?.slice(-5)}
-        </span>
-      ) : (
-        id
-      )}
-    </span>
-  );
-
-  const element = (
-    <div className={base({ className })}>
-      <div className={container({})}>
-        <div className={icon()}>
-          <Icon name={iconName} className="h-full w-full p-1 text-zinc-500" />
-        </div>
-
-        {!isIcon &&
-          (hasPopover ? (
-            <span className="min-w-0 truncate">{idText}</span>
-          ) : (
-            <TruncateWithTooltip
-              copyText={id}
-              triggerRef={link ? linkRef : undefined}
-              tooltipContent={id}
-              alwaysShow={truncateInMiddle}
-            >
-              {idText}
-            </TruncateWithTooltip>
-          ))}
-
-        {link &&
-          (isIcon && !hasPopover ? (
-            <HoverTooltip content={id} offset={20} className="static">
-              {linkElement}
-            </HoverTooltip>
-          ) : (
-            linkElement
-          ))}
-      </div>
-    </div>
-  );
-
-  if (hasPopover) {
-    return (
-      <Popover>
-        <PopoverHoverTrigger>{element}</PopoverHoverTrigger>
-        <PopoverContent
-          placement="bottom"
-          isNonModal
-          className="w-[min(48rem,calc(100vw-1.5rem))]"
-        >
-          <InvocationPopoverContent id={id} title={title} />
-        </PopoverContent>
-      </Popover>
+    const linkElement = (
+      <Link
+        ref={linkRef}
+        href={`${baseUrl}/invocations/${id}${getSearchParams(location.search)}`}
+        aria-label={id}
+        variant="secondary"
+        className={linkStyle()}
+        data-invocation-selected={isSelected}
+      >
+        <Icon name={IconName.ChevronRight} className={linkIcon()} />
+      </Link>
     );
-  }
-  return element;
-}
+
+    const idText = (
+      <span ref={idTextRef} className={text({ className: idTextClassName })}>
+        {truncateInMiddle ? (
+          <span>
+            {id?.substring(0, 8)}…{id?.slice(-5)}
+          </span>
+        ) : (
+          id
+        )}
+      </span>
+    );
+
+    const element = (
+      <div ref={ref} className={base({ className })}>
+        <div className={container({})}>
+          <div className={icon()}>
+            <Icon name={iconName} className="h-full w-full p-1 text-zinc-500" />
+          </div>
+
+          {!isIcon &&
+            (hasPopover ? (
+              <span className="min-w-0 truncate">{idText}</span>
+            ) : (
+              <TruncateWithTooltip
+                copyText={id}
+                triggerRef={link ? linkRef : undefined}
+                tooltipContent={id}
+                alwaysShow={truncateInMiddle}
+              >
+                {idText}
+              </TruncateWithTooltip>
+            ))}
+
+          {link &&
+            (isIcon && !hasPopover ? (
+              <HoverTooltip content={id} offset={20} className="static">
+                {linkElement}
+              </HoverTooltip>
+            ) : (
+              linkElement
+            ))}
+        </div>
+      </div>
+    );
+
+    if (hasPopover) {
+      return (
+        <Popover>
+          <PopoverHoverTrigger>{element}</PopoverHoverTrigger>
+          <PopoverContent
+            placement="bottom"
+            isNonModal
+            className="w-[min(48rem,calc(100vw-1.5rem))]"
+          >
+            <InvocationPopoverContent id={id} title={title} />
+          </PopoverContent>
+        </Popover>
+      );
+    }
+    return element;
+  },
+);
