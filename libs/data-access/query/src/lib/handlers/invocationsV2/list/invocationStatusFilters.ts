@@ -213,24 +213,6 @@ export function invocationStatusFilterClauses(
     .filter((clause): clause is string => Boolean(clause));
 }
 
-/**
- * Returns a WHERE clause for a candidate query over
- * `sys_invocation_status`, optionally joined to `sys_invocation_state`.
- * Deployment always means pinned deployment in V2.
- */
-export function invocationStatusWhere(
-  filters: InvocationFilterV2[],
-  invocationStatusAlias: string,
-  invocationStateAlias: string,
-): string {
-  const clauses = invocationStatusClauses(
-    filters,
-    invocationStatusAlias,
-    invocationStateAlias,
-  );
-  return clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-}
-
 export function invocationStatusClauses(
   filters: InvocationFilterV2[],
   invocationStatusAlias: string,

@@ -1,8 +1,4 @@
-import type { QueryContext } from '../../shared';
-import {
-  isInvocationListFieldAvailableOnTable,
-  isInvocationListTableAvailable,
-} from '../invocationListFields';
+import { isInvocationListFieldAvailableOnTable } from '../invocationListFields';
 import {
   STATUSES_RESOLVED_FROM_VQUEUE,
   type InvocationFilterV2,
@@ -17,26 +13,21 @@ import type { BestEffortSysInvocationStatusSourcePlan } from './types';
  * lookups.
  */
 export function createBestEffortQueryPlanFromSysInvocationStatus(
-  context: QueryContext,
   filters: InvocationFilterV2[],
   statuses: InvocationStatusV2[] | undefined,
   sort: InvocationSortV2 | undefined,
 ): BestEffortSysInvocationStatusSourcePlan {
   if (
     !statuses?.some((status) => STATUSES_RESOLVED_FROM_VQUEUE.has(status)) ||
-    !isInvocationListTableAvailable(context, 'sys_invocation_status') ||
-    !isInvocationListTableAvailable(context, 'sys_vqueue_entry_status') ||
     filters.some(
       (filter) =>
         !isInvocationListFieldAvailableOnTable(
-          context,
           filter.field,
           'sys_invocation_status',
         ),
     ) ||
     (sort &&
       !isInvocationListFieldAvailableOnTable(
-        context,
         sort.field,
         'sys_invocation_status',
       ))

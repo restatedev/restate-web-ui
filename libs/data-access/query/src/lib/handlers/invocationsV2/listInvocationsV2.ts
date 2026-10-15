@@ -1,7 +1,6 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from '../shared';
 import { enrichInvocationFlowControl } from './list/enrichInvocationFlowControl';
-import { loadInvocationsFromInvocationStatusAndState } from './list/listInvocationsFromInvocationStatusAndState';
 import { loadVqueueInvocationsByIds } from './list/loadVqueueInvocationsByIds';
 import { selectInvocationCandidatesV2 } from './selectInvocationCandidatesV2';
 import { badRequest, INVOCATIONS_V2_LIMIT } from './shared';
@@ -33,26 +32,14 @@ export async function listInvocationsV2(
   if ('error' in selected) return badRequest(selected.error);
 
   const requestTime = new Date().toISOString();
-  const loaded =
-    selected.source === 'vqueue'
-      ? await loadVqueueInvocationsByIds(
-          this,
-          selected.rows,
-          filters,
-          selected.statusSelection,
-          sort,
-          requestTime,
-        )
-      : {
-          rows: await loadInvocationsFromInvocationStatusAndState(
-            this,
-            selected.rows,
-            filters,
-            sort,
-            requestTime,
-          ),
-          statusChangedInvocationIds: [],
-        };
+  const loaded = await loadVqueueInvocationsByIds(
+    this,
+    selected.rows,
+    filters,
+    selected.statusSelection,
+    sort,
+    requestTime,
+  );
   const rows = loaded.rows;
   const limitedRows = rows.slice(0, INVOCATIONS_V2_LIMIT);
   const limitedRowIds = new Set(limitedRows.map((row) => row.id));
@@ -69,10 +56,9 @@ export async function listInvocationsV2(
     selected.mode.type === 'sampled' ||
     Boolean(selected.partial) ||
     cappedCandidateHydrationWasIncomplete;
-  const enrichedRows =
-    includeFlowControl && selected.source === 'vqueue'
-      ? await enrichInvocationFlowControl(this, limitedRows, requestTime)
-      : limitedRows;
+  const enrichedRows = includeFlowControl
+    ? await enrichInvocationFlowControl(this, limitedRows, requestTime)
+    : limitedRows;
 
   return Response.json({
     rows: enrichedRows,

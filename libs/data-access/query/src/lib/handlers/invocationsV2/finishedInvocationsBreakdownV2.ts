@@ -1,7 +1,6 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import type { QueryContext } from '../shared';
-import { badRequest, hasCompleteVqueueInvocationPopulation } from './shared';
-import { queryFinishedBreakdownFromInvocationStatus } from './finished/queryFinishedBreakdownFromInvocationStatus';
+import { badRequest } from './shared';
 import { queryFinishedBreakdownFromVqueues } from './finished/queryFinishedBreakdownFromVqueues';
 import { resolveFinishedMode } from './finished/shared';
 
@@ -9,8 +8,8 @@ export type FinishedInvocationsBreakdownV2Args =
   components['schemas']['FinishedInvocationsBreakdownV2RequestBody'];
 
 /**
- * Routes a validated completion breakdown to exact or bounded sampling and to
- * `sys_vqueues` or `sys_invocation_status` outcome granularity.
+ * Routes a validated completion breakdown to exact or bounded sampling over
+ * `sys_vqueues`.
  */
 export async function finishedInvocationsBreakdownV2(
   this: QueryContext,
@@ -22,16 +21,7 @@ export async function finishedInvocationsBreakdownV2(
 ): Promise<Response> {
   const { mode, error } = resolveFinishedMode(requestedMode);
   if (error || !mode) return badRequest(error ?? 'Invalid mode');
-  const useVqueues = hasCompleteVqueueInvocationPopulation(this);
-
-  if (useVqueues) {
-    return queryFinishedBreakdownFromVqueues(this, {
-      mode,
-      startTime,
-      endTime,
-    });
-  }
-  return queryFinishedBreakdownFromInvocationStatus(this, {
+  return queryFinishedBreakdownFromVqueues(this, {
     mode,
     startTime,
     endTime,

@@ -1,37 +1,11 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import {
   getInvocationListFieldOnTable,
   INVOCATION_LIST_FIELDS,
 } from '../invocationListFields';
 import type { InvocationFilterV2, InvocationSortV2 } from '../shared';
 
-export type InvocationStateStatus = 'running' | 'backing-off';
-
 const invocationStatusColumns =
   INVOCATION_LIST_FIELDS.status.tables.sys_invocation_status;
-
-export function invocationStateOnlyStatuses(
-  filters: InvocationFilterV2[],
-  sort: InvocationSortV2 | undefined,
-): InvocationStateStatus[] | undefined {
-  if (sort || filters.length !== 1) return undefined;
-  const filter = filters[0] as FilterItem | undefined;
-  if (filter?.field !== 'status') return undefined;
-
-  const statuses =
-    filter.type === 'STRING' && filter.operation === 'EQUALS'
-      ? [filter.value]
-      : filter.type === 'STRING_LIST' && filter.operation === 'IN'
-        ? filter.value
-        : [];
-  const uniqueStatuses = [...new Set(statuses)];
-  return uniqueStatuses.length > 0 &&
-    uniqueStatuses.every(
-      (status) => status === 'running' || status === 'backing-off',
-    )
-    ? (uniqueStatuses as InvocationStateStatus[])
-    : undefined;
-}
 
 export function invocationStatusSampleColumns(
   filters: InvocationFilterV2[],
