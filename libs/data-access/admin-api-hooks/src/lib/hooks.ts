@@ -46,6 +46,7 @@ import { RestateError } from '@restate/util/errors';
 import { useAPIStatus, useFeatures } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
+import { getAuthToken } from '@restate/util/api-config';
 import { isQueryForPath } from './queryMatchers';
 import {
   QUERY_ORIGIN_HEADER,
@@ -2940,20 +2941,25 @@ export function useRestartWorkflowAsNew(
           : `${ingressUrl.replace(/\/$/, '')}/restate/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`
         : `${ingressUrl.replace(/\/$/, '')}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`;
 
-      return fetch(sendUrl, {
-        credentials: 'include',
-        method: 'POST',
-        body: body ? base64ToUint8Array(body) : undefined,
-        headers: headers
+      const requestHeaders = new Headers(
+        headers
           ?.filter(
             ({ key }) =>
               !['x-forwarded-for', 'x-forwarded-host'].includes(key) &&
               !key.startsWith('x-restate-'),
           )
-          .reduce(
-            (acc, { key, value }) => ({ ...acc, [key]: value }),
-            {} as Record<string, string>,
-          ),
+          .map(({ key, value }) => [key, value] as [string, string]),
+      );
+      const token = getAuthToken();
+      if (token) {
+        requestHeaders.set('Authorization', `Bearer ${token}`);
+      }
+
+      return fetch(sendUrl, {
+        credentials: 'include',
+        method: 'POST',
+        body: body ? base64ToUint8Array(body) : undefined,
+        headers: requestHeaders,
       }).then(async (res) => {
         if (res.ok) {
           return (await res.json()) as {
