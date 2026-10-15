@@ -33,6 +33,12 @@ export default defineConfig(({ mode }) => {
   const SERVER_HEADERS = {
     'Set-Cookie': `adminBaseUrl=${ADMIN_BASE_URL}; SameSite=Strict; Path=/`,
   };
+  const ADMIN_PROXY = {
+    '^(?!/ui)': {
+      target: 'http://127.0.0.1:9070/',
+      changeOrigin: true,
+    },
+  };
 
   return {
     base: BASE_URL,
@@ -80,15 +86,11 @@ export default defineConfig(({ mode }) => {
         protocol: 'ws',
         port: 3001,
       },
-      proxy: {
-        '^(?!/ui)': {
-          target: 'http://127.0.0.1:9070/',
-          changeOrigin: true,
-        },
-      },
+      proxy: ADMIN_PROXY,
     },
     preview: {
       headers: SERVER_HEADERS,
+      proxy: ADMIN_PROXY,
     },
     define: {
       'globalThis.env': {

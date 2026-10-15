@@ -2,6 +2,6 @@
 
 This library was generated with [Nx](https://nx.dev).
 
-## Running unit tests
+## Regenerating types
 
-Run `nx test admin-api-spec` to execute the unit tests via [Jest](https://jestjs.io).
+Run `nx create admin-api-spec` to merge `query.json` into `output.json` and regenerate `index.d.ts`.

@@ -1,7 +1,6 @@
 import { fromBinary } from '@bufbuild/protobuf';
 import { GetStateKeysEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
 import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
 import { RestateError } from '@restate/util/errors';
 import {
   Invocation,
