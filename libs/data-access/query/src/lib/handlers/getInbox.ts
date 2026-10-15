@@ -1,18 +1,5 @@
 import type { Handler } from '@restate/data-access/admin-api-spec';
-import { quoteSqlString, type QueryContext } from './shared';
-
-function scopeClause(scope?: string) {
-  return scope !== undefined
-    ? ` AND scope = ${quoteSqlString(scope)}`
-    : ` AND scope IS NULL`;
-}
-
-function getSizeFromSysInbox(this: QueryContext, key: string, service: string) {
-  return this.query(
-    `SELECT COUNT(*) AS size FROM sys_inbox WHERE service_key = ${quoteSqlString(key)} AND service_name = ${quoteSqlString(service)}`,
-    'inbox/size-from-inbox',
-  ).then(({ rows }) => rows.at(0)?.size);
-}
+import { quoteSqlString, scopeClause, type QueryContext } from './shared';
 
 function getSizeFromSysVqueueMeta(
   this: QueryContext,
@@ -39,29 +26,6 @@ async function getVqueueId(
   }));
 }
 
-function getPositionFromSysInbox(
-  this: QueryContext,
-  key: string,
-  service: string,
-  invocationId: string,
-) {
-  return this.query(
-    `SELECT sequence_number FROM sys_inbox WHERE id = ${quoteSqlString(invocationId)}`,
-    'inbox/inbox-sequence-lookup',
-  )
-    .then(({ rows }) =>
-      rows.length === 0
-        ? { rows: [{ position: -1 }] }
-        : this.query(
-            `SELECT COUNT(*) AS position FROM sys_inbox WHERE service_key = ${quoteSqlString(key)} AND service_name = ${quoteSqlString(service)} AND sequence_number < ${
-              rows.at(0).sequence_number
-            }`,
-            'inbox/position-from-inbox',
-          ),
-    )
-    .then(({ rows }) => rows.at(0)?.position);
-}
-
 async function getPositionFromSysVqueues(
   this: QueryContext,
   invocationId: string,
@@ -77,28 +41,6 @@ async function getPositionFromSysVqueues(
   ).then(({ rows }) => rows.at(0)?.position - 1);
 }
 
-function getSize(
-  this: QueryContext,
-  key: string,
-  service: string,
-  scope?: string,
-) {
-  return this.features.has('vqueues')
-    ? getSizeFromSysVqueueMeta.call(this, key, service, scope)
-    : getSizeFromSysInbox.call(this, key, service);
-}
-
-function getPosition(
-  this: QueryContext,
-  key: string,
-  service: string,
-  invocationId: string,
-) {
-  return this.features.has('vqueues')
-    ? getPositionFromSysVqueues.call(this, invocationId)
-    : getPositionFromSysInbox.call(this, key, service, invocationId);
-}
-
 export async function getInbox(
   this: QueryContext,
   service: string,
@@ -106,8 +48,6 @@ export async function getInbox(
   invocationId: string | undefined,
   scope?: string,
 ) {
-  const hasVqueues = this.features.has('vqueues');
-  const headScopeClause = hasVqueues ? scopeClause(scope) : '';
   const [head, size, position] = await Promise.all([
     this.adminApi<{ handlers: Handler[] }>(`/services/${service}/handlers`)
       .then(({ handlers }) =>
@@ -120,14 +60,14 @@ export async function getInbox(
           ? this.query(
               `SELECT id FROM sys_invocation WHERE target_service_key = ${quoteSqlString(key)} AND target_service_name = ${quoteSqlString(service)} AND status NOT IN ('completed', 'pending', 'scheduled') AND target_handler_name IN (${handlers.join(
                 ', ',
-              )})${headScopeClause}`,
+              )})${scopeClause(scope)}`,
               'inbox/head',
             )
           : { rows: [] },
       )
       .then(({ rows }) => rows.at(0)?.id),
-    getSize.call(this, key, service, scope),
-    invocationId ? getPosition.call(this, key, service, invocationId) : null,
+    getSizeFromSysVqueueMeta.call(this, key, service, scope),
+    invocationId ? getPositionFromSysVqueues.call(this, invocationId) : null,
   ]);
 
   if (typeof size === 'number') {

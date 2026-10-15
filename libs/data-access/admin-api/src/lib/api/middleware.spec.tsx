@@ -27,10 +27,7 @@ describe('/version feature compatibility', () => {
       expect(await getVersion(data)).toEqual({
         ...data,
         features: {
-          vqueues: true,
-          scoped_virtual_objects: true,
           protocol_v7: true,
-          vqueues_migration_skip_completed: false,
           kafka_scope: true,
         },
       });
@@ -41,10 +38,7 @@ describe('/version feature compatibility', () => {
     const data = {
       version: '1.8.0-dev',
       features: {
-        vqueues: false,
-        scoped_virtual_objects: false,
         protocol_v7: false,
-        vqueues_migration_skip_completed: true,
       },
     };
 
@@ -56,7 +50,7 @@ describe('/version feature compatibility', () => {
     async (version) => {
       const data = {
         ...(version && { version }),
-        features: { vqueues: true, vqueues_migration_skip_completed: true },
+        features: { protocol_v7: false },
       };
 
       expect(await getVersion(data)).toEqual(data);
@@ -67,10 +61,7 @@ describe('/version feature compatibility', () => {
     expect(await getVersion({ version: '1.8.0' })).toEqual({
       version: '1.8.0',
       features: {
-        vqueues: true,
-        scoped_virtual_objects: true,
         protocol_v7: true,
-        vqueues_migration_skip_completed: false,
       },
     });
   });

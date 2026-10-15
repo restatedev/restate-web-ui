@@ -4677,15 +4677,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "description": "service type hint used to apply scope compatibility rules for virtual objects",
-            "schema": {
-              "type": "string",
-              "enum": ["service", "virtual_object", "workflow"]
-            }
           }
         ],
         "responses": {
@@ -4783,41 +4774,25 @@
           "content": {
             "application/json": {
               "schema": {
-                "oneOf": [
-                  {
-                    "type": "object",
-                    "required": ["items"],
-                    "properties": {
-                      "items": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "required": ["key"],
-                          "properties": {
-                            "key": {
-                              "type": "string"
-                            },
-                            "scope": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "required": ["keys"],
-                    "properties": {
-                      "keys": {
-                        "type": "array",
-                        "items": {
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["key"],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "scope": {
                           "type": "string"
                         }
                       }
                     }
                   }
-                ]
+                }
               }
             }
           },
@@ -4960,15 +4935,6 @@
             },
             "style": "form",
             "explode": true
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "description": "service type hint used to apply scope compatibility rules for virtual objects",
-            "schema": {
-              "type": "string",
-              "enum": ["service", "virtual_object", "workflow"]
-            }
           }
         ],
         "responses": {
@@ -5222,15 +5188,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "description": "service type hint used to apply scope compatibility rules for virtual objects",
-            "schema": {
-              "type": "string",
-              "enum": ["service", "virtual_object", "workflow"]
-            }
           }
         ],
         "requestBody": {
@@ -5249,49 +5206,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "required": ["keys"],
-                      "properties": {
-                        "keys": {
-                          "type": "array",
-                          "items": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["key"],
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "scope": {
                             "type": "string"
                           }
-                        },
-                        "truncated": {
-                          "type": "boolean",
-                          "description": "true when more objects match than the server-side limit returned"
                         }
                       }
                     },
-                    {
-                      "type": "object",
-                      "required": ["items"],
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "required": ["key"],
-                            "properties": {
-                              "key": {
-                                "type": "string"
-                              },
-                              "scope": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        },
-                        "truncated": {
-                          "type": "boolean",
-                          "description": "true when more objects match than the server-side limit returned"
-                        }
-                      }
+                    "truncated": {
+                      "type": "boolean",
+                      "description": "true when more objects match than the server-side limit returned"
                     }
-                  ]
+                  }
                 }
               }
             }
@@ -8442,12 +8379,7 @@
       },
       "WorkflowRunStatsResponse": {
         "type": "object",
-        "required": ["supported"],
         "properties": {
-          "supported": {
-            "type": "boolean",
-            "description": "False when the Restate server does not support Virtual Queues."
-          },
           "duration": {
             "type": "string",
             "format": "duration",
@@ -8496,11 +8428,7 @@
       },
       "VirtualObjectLockResponse": {
         "type": "object",
-        "required": ["supported"],
         "properties": {
-          "supported": {
-            "type": "boolean"
-          },
           "lockHolder": {
             "$ref": "#/components/schemas/VirtualObjectLockHolder"
           }
@@ -8608,11 +8536,8 @@
       },
       "VirtualObjectInboxResponse": {
         "type": "object",
-        "required": ["supported", "limit", "truncated"],
+        "required": ["limit", "truncated"],
         "properties": {
-          "supported": {
-            "type": "boolean"
-          },
           "rows": {
             "type": "array",
             "items": {
@@ -8660,11 +8585,8 @@
       },
       "VirtualObjectInvocationsResponse": {
         "type": "object",
-        "required": ["supported", "rows", "limit", "truncated"],
+        "required": ["rows", "limit", "truncated"],
         "properties": {
-          "supported": {
-            "type": "boolean"
-          },
           "rows": {
             "type": "array",
             "description": "Invocations, plus VQueue entries that are not invocations (e.g. state mutations) without invocation details.",
@@ -8737,12 +8659,7 @@
       },
       "VirtualObjectStatsResponse": {
         "type": "object",
-        "required": ["supported"],
         "properties": {
-          "supported": {
-            "type": "boolean",
-            "description": "False when the server does not expose VQueues."
-          },
           "averageInboxDuration": {
             "$ref": "#/components/schemas/VirtualObjectStatsDurationRange"
           },
@@ -8936,11 +8853,6 @@
           },
           "mode": {
             "$ref": "#/components/schemas/InvocationQueryModeV2"
-          },
-          "range": {
-            "type": "string",
-            "enum": ["PT1H", "P1D", "ALL"],
-            "description": "Optional rolling created-at window. PT1H and P1D are resolved when the query executes; ALL applies no time filter."
           },
           "view": {
             "type": "string",
@@ -9206,28 +9118,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "groupByService": {
-            "type": "boolean",
-            "description": "Include service breakdowns. In VQueue mode serviceNames is required because grouping every service would require an unbounded metadata-to-entry join."
-          }
-        }
-      },
-      "InboxInvocationDueServiceBreakdownV2": {
-        "type": "object",
-        "required": ["service", "total", "due", "notDue"],
-        "properties": {
-          "service": {
-            "type": "string"
-          },
-          "total": {
-            "type": "integer"
-          },
-          "due": {
-            "type": "integer"
-          },
-          "notDue": {
-            "type": "integer"
           }
         }
       },
@@ -9257,13 +9147,6 @@
           },
           "partial": {
             "$ref": "#/components/schemas/InboxInvocationsPartialV2"
-          },
-          "byService": {
-            "description": "Present only when groupByService is true.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InboxInvocationDueServiceBreakdownV2"
-            }
           }
         }
       },
@@ -9271,33 +9154,6 @@
         "type": "object",
         "required": ["status", "count"],
         "properties": {
-          "status": {
-            "$ref": "#/components/schemas/InvocationStatus"
-          },
-          "count": {
-            "type": "integer"
-          }
-        }
-      },
-      "InboxInvocationStatusServiceBreakdownV2": {
-        "type": "object",
-        "required": ["service", "count"],
-        "properties": {
-          "service": {
-            "type": "string"
-          },
-          "count": {
-            "type": "integer"
-          }
-        }
-      },
-      "InboxInvocationStatusServiceAndStatusBreakdownV2": {
-        "type": "object",
-        "required": ["service", "status", "count"],
-        "properties": {
-          "service": {
-            "type": "string"
-          },
           "status": {
             "$ref": "#/components/schemas/InvocationStatus"
           },
@@ -9328,20 +9184,6 @@
           },
           "partial": {
             "$ref": "#/components/schemas/InboxInvocationsPartialV2"
-          },
-          "byService": {
-            "description": "Present only when groupByService is true.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InboxInvocationStatusServiceBreakdownV2"
-            }
-          },
-          "byServiceAndStatus": {
-            "description": "Present only when groupByService is true.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InboxInvocationStatusServiceAndStatusBreakdownV2"
-            }
           }
         }
       },

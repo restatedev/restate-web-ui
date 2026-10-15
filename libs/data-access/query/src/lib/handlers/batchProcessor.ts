@@ -2,7 +2,6 @@ import type {
   BatchInvocationsResponse,
   BatchOperationResult,
 } from '@restate/data-access/admin-api-spec';
-import semverGt from 'semver/functions/gte';
 import { isInvocationId } from './shared';
 
 type ProcessorResult = {
@@ -13,70 +12,25 @@ type ProcessorResult = {
 
 export async function batchProcessInvocations(
   invocationIds: string[],
-  processor: (invocationId: string) => Promise<void>,
-  batchProcessor: (invocationIds: string[]) => Promise<BatchOperationResult> = (
-    invocationIds: string[],
-  ) => Promise.resolve({ succeeded: [], failed: [] }),
-  restateVersion?: string,
+  batchProcessor: (invocationIds: string[]) => Promise<BatchOperationResult>,
 ): Promise<
   Pick<
     BatchInvocationsResponse,
     'failed' | 'successful' | 'failedInvocationIds'
   >
 > {
-  invocationIds = invocationIds.filter(isInvocationId);
-  const releasedVersion = restateVersion?.split('-')?.at(0);
-  const newBatchApiIsSupported = releasedVersion
-    ? semverGt(releasedVersion, '1.6.0')
-    : false;
-
-  const batchProcessorWithTransformation: (ids: string[]) => Promise<
-    (
-      | {
-          invocationId: string;
-          success: boolean;
-          error?: undefined;
-        }
-      | {
-          invocationId: string;
-          success: boolean;
-          error: string;
-        }
-    )[]
-  > = (invocationIds: string[]) =>
-    batchProcessor(invocationIds).then((result) => {
-      return [
-        ...result.succeeded.map((id) => {
-          return { invocationId: id, success: true, error: undefined };
-        }),
-        ...result.failed.map(({ invocation_id: invocationId, error }) => {
-          return { invocationId, success: false, error };
-        }),
-      ];
-    });
-
-  const results = newBatchApiIsSupported
-    ? await batchProcessorWithTransformation(invocationIds)
-    : await Promise.allSettled(
-        invocationIds.map(async (invocationId) => {
-          try {
-            await processor(invocationId);
-            return { invocationId, success: true };
-          } catch (error) {
-            return { invocationId, success: false, error: String(error) };
-          }
-        }),
-      );
-
-  const processedResults: ProcessorResult[] = results.map((result, index) => {
-    if (result && 'invocationId' in result) {
-      return result;
-    }
-    if (result && 'status' in result && result.status === 'fulfilled') {
-      return result.value;
-    }
-    return { invocationId: invocationIds[index] ?? '', success: false };
-  });
+  const result = await batchProcessor(invocationIds.filter(isInvocationId));
+  const processedResults: ProcessorResult[] = [
+    ...result.succeeded.map((invocationId) => ({
+      invocationId,
+      success: true,
+    })),
+    ...result.failed.map(({ invocation_id: invocationId, error }) => ({
+      invocationId,
+      success: false,
+      error,
+    })),
+  ];
 
   const successful = processedResults.filter((r) => r.success).length;
   const failed = processedResults.filter((r) => !r.success).length;

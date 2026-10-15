@@ -3091,8 +3091,6 @@ export interface components {
       recentInvocationsTruncated: boolean;
     };
     WorkflowRunStatsResponse: {
-      /** @description False when the Restate server does not support Virtual Queues. */
-      supported: boolean;
       /**
        * Format: duration
        * @description Elapsed time from the run's first start until completion, or until now while it is still running.
@@ -3122,7 +3120,6 @@ export interface components {
       acquiredAt?: string;
     };
     VirtualObjectLockResponse: {
-      supported: boolean;
       lockHolder?: components['schemas']['VirtualObjectLockHolder'];
     };
     VirtualObjectInboxEntry: {
@@ -3163,7 +3160,6 @@ export interface components {
       numInbox: number;
     };
     VirtualObjectInboxResponse: {
-      supported: boolean;
       rows?: components['schemas']['VirtualObjectInboxEntry'][];
       vqueues?: components['schemas']['VirtualObjectVqueueSummary'][];
       /** @description Exact number of entries currently in the inbox for this Virtual Object instance. */
@@ -3178,7 +3174,6 @@ export interface components {
       truncated: boolean;
     };
     VirtualObjectInvocationsResponse: {
-      supported: boolean;
       /** @description Invocations, plus VQueue entries that are not invocations (e.g. state mutations) without invocation details. */
       rows: (
         | components['schemas']['Invocation']
@@ -3208,8 +3203,6 @@ export interface components {
       totalSize: number;
     };
     VirtualObjectStatsResponse: {
-      /** @description False when the server does not expose VQueues. */
-      supported: boolean;
       averageInboxDuration?: components['schemas']['VirtualObjectStatsDurationRange'];
       /** @description Number of entries currently inboxed across this Virtual Object instance's Virtual Queues. */
       numInbox?: number;
@@ -3282,11 +3275,6 @@ export interface components {
     SummaryInvocationsV2RequestBody: {
       filters?: components['schemas']['InvocationV2FilterItem'][];
       mode?: components['schemas']['InvocationQueryModeV2'];
-      /**
-       * @description Optional rolling created-at window. PT1H and P1D are resolved when the query executes; ALL applies no time filter.
-       * @enum {string}
-       */
-      range?: 'PT1H' | 'P1D' | 'ALL';
       /**
        * @description Selects the response sections. Stages returns every coarse stage and service total; live-stages returns only non-completed stage and service totals; breakdowns returns inner status distributions; count applies every filter and returns only the total; all returns both complete stages and breakdowns; deployments returns per-deployment status totals in deploymentBuckets and is only served from deployment stats.
        * @enum {string}
@@ -3379,14 +3367,6 @@ export interface components {
       mode?: components['schemas']['InvocationQueryModeV2'];
       /** @description Filter by service. VQueue mode bounds the metadata population to one million queues and conservatively reports the result as partial without a separate population-count query. */
       serviceNames?: string[];
-      /** @description Include service breakdowns. In VQueue mode serviceNames is required because grouping every service would require an unbounded metadata-to-entry join. */
-      groupByService?: boolean;
-    };
-    InboxInvocationDueServiceBreakdownV2: {
-      service: string;
-      total: number;
-      due: number;
-      notDue: number;
     };
     InboxInvocationsDueBreakdownV2Response: {
       /** @enum {string} */
@@ -3398,19 +3378,8 @@ export interface components {
       notDue: number;
       isPartial: boolean;
       partial?: components['schemas']['InboxInvocationsPartialV2'];
-      /** @description Present only when groupByService is true. */
-      byService?: components['schemas']['InboxInvocationDueServiceBreakdownV2'][];
     };
     InboxInvocationStatusBreakdownV2: {
-      status: components['schemas']['InvocationStatus'];
-      count: number;
-    };
-    InboxInvocationStatusServiceBreakdownV2: {
-      service: string;
-      count: number;
-    };
-    InboxInvocationStatusServiceAndStatusBreakdownV2: {
-      service: string;
       status: components['schemas']['InvocationStatus'];
       count: number;
     };
@@ -3421,10 +3390,6 @@ export interface components {
       byStatus: components['schemas']['InboxInvocationStatusBreakdownV2'][];
       isPartial: boolean;
       partial?: components['schemas']['InboxInvocationsPartialV2'];
-      /** @description Present only when groupByService is true. */
-      byService?: components['schemas']['InboxInvocationStatusServiceBreakdownV2'][];
-      /** @description Present only when groupByService is true. */
-      byServiceAndStatus?: components['schemas']['InboxInvocationStatusServiceAndStatusBreakdownV2'][];
     };
     InboxInvocationsPartialV2: {
       /** @enum {string} */
@@ -8523,8 +8488,6 @@ export interface operations {
         serviceKey?: string[];
         /** @description service scope filter */
         scope?: string;
-        /** @description service type hint used to apply scope compatibility rules for virtual objects */
-        serviceType?: 'service' | 'virtual_object' | 'workflow';
       };
       header?: never;
       path: {
@@ -8605,16 +8568,12 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json':
-          | {
-              items: {
-                key: string;
-                scope?: string;
-              }[];
-            }
-          | {
-              keys: string[];
-            };
+        'application/json': {
+          items: {
+            key: string;
+            scope?: string;
+          }[];
+        };
       };
     };
     responses: {
@@ -8686,8 +8645,6 @@ export interface operations {
       query?: {
         /** @description state key filter; when omitted, all state entries are returned */
         stateKey?: string[];
-        /** @description service type hint used to apply scope compatibility rules for virtual objects */
-        serviceType?: 'service' | 'virtual_object' | 'workflow';
       };
       header?: never;
       path: {
@@ -8855,10 +8812,7 @@ export interface operations {
   };
   query_virtual_object_state: {
     parameters: {
-      query?: {
-        /** @description service type hint used to apply scope compatibility rules for virtual objects */
-        serviceType?: 'service' | 'virtual_object' | 'workflow';
-      };
+      query?: never;
       header?: never;
       path: {
         /** @description service name */
@@ -8877,20 +8831,14 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json':
-            | {
-                keys: string[];
-                /** @description true when more objects match than the server-side limit returned */
-                truncated?: boolean;
-              }
-            | {
-                items: {
-                  key: string;
-                  scope?: string;
-                }[];
-                /** @description true when more objects match than the server-side limit returned */
-                truncated?: boolean;
-              };
+          'application/json': {
+            items: {
+              key: string;
+              scope?: string;
+            }[];
+            /** @description true when more objects match than the server-side limit returned */
+            truncated?: boolean;
+          };
         };
       };
       400: {

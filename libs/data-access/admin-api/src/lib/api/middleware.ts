@@ -10,7 +10,6 @@ import {
   QUERY_LEVEL_HEADER,
   QUERY_ORIGIN_HEADER,
   RESTATE_FEATURES_HEADER,
-  RESTATE_VERSION_HEADER,
   UI_FEATURES_HEADER,
   type QueryOrigin,
 } from '@restate/data-access/query';
@@ -56,9 +55,6 @@ const authMiddleware: Middleware = {
       const meta = await getQueryClient().ensureQueryData(
         metaQueryOptions(baseUrl),
       );
-      if (meta?.version) {
-        request.headers.set(RESTATE_VERSION_HEADER, meta.version);
-      }
       const enabled = meta?.features
         ? Object.entries(meta.features)
             .filter(([, on]) => on)
@@ -130,10 +126,7 @@ const versionFeaturesMiddleware: Middleware = {
       {
         ...data,
         features: {
-          vqueues: true,
-          scoped_virtual_objects: true,
           protocol_v7: true,
-          vqueues_migration_skip_completed: false,
           ...data.features,
         },
       },
