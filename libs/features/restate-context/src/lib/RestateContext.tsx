@@ -113,7 +113,6 @@ type RestateContext = {
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
   isGoogleIdTokenAuthAvailable?: boolean;
-  isExecutionMetricsEnabled: boolean;
 };
 
 const InternalRestateContext = createContext<RestateContext>({
@@ -121,7 +120,6 @@ const InternalRestateContext = createContext<RestateContext>({
   ingressUrl: '',
   baseUrl: '',
   isGoogleIdTokenAuthAvailable: true,
-  isExecutionMetricsEnabled: false,
   invocationsListOptions: DEFAULT_INVOCATIONS_LIST_OPTIONS,
 });
 
@@ -142,7 +140,6 @@ function InternalRestateContextProvider({
   identityKey,
   gcpServiceAccount,
   isGoogleIdTokenAuthAvailable = true,
-  executionMetricsEnabled = false,
   queryHealthCheckEnabled = false,
   invocationsListOptions,
 }: PropsWithChildren<{
@@ -164,7 +161,6 @@ function InternalRestateContextProvider({
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
   isGoogleIdTokenAuthAvailable?: boolean;
-  executionMetricsEnabled?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
   invocationsListOptions?: Partial<InvocationsListOptions>;
@@ -178,8 +174,6 @@ function InternalRestateContextProvider({
   const features = useFeatures();
   const version = data?.version;
   const releasedVersion = version?.split('-')?.at(0);
-  // const hasExecutionMetricsFeature = features.has(EXECUTION_METRICS_FEATURE);
-  const isExecutionMetricsEnabled = executionMetricsEnabled;
   const resolvedIngress =
     ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
 
@@ -251,7 +245,6 @@ function InternalRestateContextProvider({
         identityKey,
         gcpServiceAccount,
         isGoogleIdTokenAuthAvailable,
-        isExecutionMetricsEnabled,
         invocationsListOptions: resolvedInvocationsListOptions,
       }}
     >
@@ -279,7 +272,6 @@ export function RestateContextProvider({
   identityKey,
   gcpServiceAccount,
   isGoogleIdTokenAuthAvailable = true,
-  executionMetricsEnabled = false,
   systemHealthMonitor,
   queryHealthCheckEnabled = false,
   invocationsListOptions,
@@ -303,7 +295,6 @@ export function RestateContextProvider({
   awsRolePolicy?: { value: string; url?: string };
   gcpServiceAccount?: { value: string; url?: string };
   isGoogleIdTokenAuthAvailable?: boolean;
-  executionMetricsEnabled?: boolean;
   systemHealthMonitor?: { reset: () => void; cleanup: () => void };
   queryHealthCheckEnabled?: boolean;
   invocationsListOptions?: Partial<InvocationsListOptions>;
@@ -325,7 +316,6 @@ export function RestateContextProvider({
         identityKey={identityKey}
         gcpServiceAccount={gcpServiceAccount}
         isGoogleIdTokenAuthAvailable={isGoogleIdTokenAuthAvailable}
-        executionMetricsEnabled={executionMetricsEnabled}
         systemHealthMonitor={systemHealthMonitor}
         queryHealthCheckEnabled={queryHealthCheckEnabled}
         invocationsListOptions={invocationsListOptions}

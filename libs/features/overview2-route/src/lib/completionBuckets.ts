@@ -55,30 +55,6 @@ export function createCompletionBucket(
   };
 }
 
-export function combineCompletionBuckets(
-  buckets: CompletionBucket[],
-): CompletionBucket | undefined {
-  const first = buckets.at(0);
-  const last = buckets.at(-1);
-  if (!first || !last) return undefined;
-
-  const counts = buckets.reduce(
-    (total, bucket) => ({
-      succeeded: total.succeeded + bucket.succeeded,
-      failed: total.failed + bucket.failed,
-      cancelled: total.cancelled + bucket.cancelled,
-      killed: total.killed + bucket.killed,
-    }),
-    { succeeded: 0, failed: 0, cancelled: 0, killed: 0 },
-  );
-
-  return {
-    start: first.start,
-    end: last.end,
-    ...counts,
-  };
-}
-
 export function getCompletionTotal(bucket: CompletionBucket | undefined) {
   if (!bucket) return 0;
   return bucket.succeeded + bucket.failed + bucket.cancelled + bucket.killed;

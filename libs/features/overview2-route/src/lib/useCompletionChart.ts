@@ -1,14 +1,10 @@
-import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import type { CompletionBucketOutcome } from '@restate/features/completion-history';
+import { useMemo } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
-import { toCompletedInvocationsBucketHref } from '@restate/util/invocation-links';
 import { createCompletionChartModel } from './completionChartModel';
 import { useOverviewContext } from './OverviewContext';
 import { useCompletionRange } from './useCompletionRange';
 
 export function useCompletionChart() {
-  const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
   const {
     byStage,
@@ -63,29 +59,9 @@ export function useCompletionChart() {
       range.usesSummary,
     ],
   );
-  const onBucketClick = useCallback(
-    (
-      bucket: { start: string; end: string },
-      outcome: CompletionBucketOutcome,
-    ) => {
-      navigate(
-        toCompletedInvocationsBucketHref(baseUrl, {
-          start: bucket.start,
-          end: bucket.end,
-          outcome,
-          existingParams: linkParams,
-        }),
-      );
-    },
-    [baseUrl, linkParams, navigate],
-  );
-
   return {
-    isHistoryEnabled: range.isHistoryEnabled,
     timeRange: range.timeRange,
     setTimeRange: range.setTimeRange,
-    historyBuckets: range.historyBuckets,
-    isHistoryLoading: range.isHistoryLoading,
     segments: model.segments,
     total: model.total,
     successRateLabel: model.successRateLabel,
@@ -98,7 +74,6 @@ export function useCompletionChart() {
     sublabel: model.sublabel,
     isEmpty: !range.isLoading && !range.isError && model.total === 0,
     href: model.href,
-    onBucketClick,
     isSummaryBreakdownLoading: isCompletedBreakdownLoading,
   };
 }

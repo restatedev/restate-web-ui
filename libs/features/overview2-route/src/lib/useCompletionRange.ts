@@ -1,13 +1,8 @@
 import { useMemo, useState } from 'react';
-import {
-  useFinishedInvocationsBreakdownV2,
-  useFinishedInvocationsTimelineV2,
-} from '@restate/data-access/admin-api-hooks';
+import { useFinishedInvocationsBreakdownV2 } from '@restate/data-access/admin-api-hooks';
 import { getOverviewRefreshMeta } from '@restate/data-access/admin-api';
 import type { BreakdownCountMode } from '@restate/features/user-preference';
-import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
-  combineCompletionBuckets,
   createCompletionBucket,
   getCompletionRangeStartTime,
   type CompletionTimeRange,
@@ -45,26 +40,12 @@ export function useCompletionRange({
     controlledTimeRange ??
     selectedTimeRange ??
     (hasCompletePopulation ? 'ALL' : 'PT1H');
-  const isHistoryFeatureEnabled = useIsFeatureFlagEnabled(
-    'FEATURE_COMPLETION_HISTORY',
-  );
-  const isHistoryEnabled = enabled && isHistoryFeatureEnabled;
-  const usesSummary =
-    enabled &&
-    !isHistoryEnabled &&
-    reuseSummaryForOverall &&
-    timeRange === 'ALL';
-  const usesBreakdown = enabled && !isHistoryEnabled && !usesSummary;
+  const usesSummary = enabled && reuseSummaryForOverall && timeRange === 'ALL';
+  const usesBreakdown = enabled && !usesSummary;
   const rangeStartTime = usesBreakdown
     ? getCompletionRangeStartTime(timeRange)
     : undefined;
 
-  const { buckets: historyBuckets, isPending: isHistoryLoading } =
-    useFinishedInvocationsTimelineV2({
-      refetchInterval,
-      enabled: isHistoryEnabled,
-      liveQueryMeta: OVERVIEW_REFRESH_META,
-    });
   const breakdown = useFinishedInvocationsBreakdownV2(
     {
       mode:
@@ -87,17 +68,7 @@ export function useCompletionRange({
         : undefined,
     [breakdown.data, rangeStartTime],
   );
-  const rangeBucket = useMemo(
-    () =>
-      combineCompletionBuckets(
-        isHistoryEnabled
-          ? historyBuckets
-          : usesBreakdown && queriedBucket
-            ? [queriedBucket]
-            : [],
-      ),
-    [historyBuckets, isHistoryEnabled, queriedBucket, usesBreakdown],
-  );
+  const rangeBucket = usesBreakdown ? queriedBucket : undefined;
   const isSampled =
     (usesBreakdown || (usesSummary && !summaryIsExact)) &&
     canSampleBreakdown &&
@@ -107,23 +78,18 @@ export function useCompletionRange({
     : usesBreakdown && Boolean(breakdown.data?.isPartial);
 
   return {
-    isHistoryEnabled,
     usesSummary,
     usesBreakdown,
     timeRange,
     setTimeRange,
-    historyBuckets,
-    isHistoryLoading,
     rangeBucket,
     isSampled,
     isPartial,
     isLoading: usesSummary
       ? summaryBreakdownIsLoading
-      : isHistoryEnabled
-        ? isHistoryLoading
-        : usesBreakdown
-          ? breakdown.isPending
-          : false,
+      : usesBreakdown
+        ? breakdown.isPending
+        : false,
     isError: enabled && usesBreakdown ? breakdown.isError : false,
   };
 }

@@ -18,7 +18,6 @@ export function Summary({
   children,
   className,
 }: PropsWithChildren<SummaryProps>) {
-  // const element = useSummaryElement();
   const { pressProps, isPressed } = usePress({
     onPress: (event) => {
       if (event.pointerType === 'keyboard') {

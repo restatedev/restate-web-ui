@@ -1,4 +1,3 @@
-import type { CompletionBucketOutcome } from '@restate/features/completion-history';
 import {
   buildCompletedSegments,
   splitInvocationTotals,
@@ -14,6 +13,8 @@ import {
   formatPercentageWithoutFraction,
 } from '@restate/util/intl';
 import { getCompletionTotal, type CompletionBucket } from './completionBuckets';
+
+type CompletionBucketOutcome = 'succeeded' | 'failed' | 'cancelled' | 'killed';
 
 type CompletionChartModelArgs = {
   byStage: StatusEntry[];

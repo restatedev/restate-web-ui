@@ -1,6 +1,3 @@
-import { useCallback } from 'react';
-import { useSearchParams } from 'react-router';
-
 export const PANEL_QUERY_PARAM = 'panel';
 
 export const SERVICE_QUERY_PARAM = 'service';
@@ -54,56 +51,6 @@ export function getSearchParams(
     }
   });
   return '?' + searchParams.toString();
-}
-
-export function useActivePanel(): string | null {
-  const [searchParams] = useSearchParams();
-  return searchParams.get(PANEL_QUERY_PARAM);
-}
-
-export function useIsActivePanel(paramName: string): boolean {
-  return useActivePanel() === paramName;
-}
-
-export function usePanel() {
-  const [, setSearchParams] = useSearchParams();
-
-  const open = useCallback(
-    (paramName: string, paramValue: string, extra?: Record<string, string>) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          next.set(paramName, paramValue);
-          next.set(PANEL_QUERY_PARAM, paramName);
-          if (extra) {
-            for (const [key, value] of Object.entries(extra)) {
-              next.set(key, value);
-            }
-          }
-          return next;
-        },
-        { preventScrollReset: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const close = useCallback(() => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        const activePanel = next.get(PANEL_QUERY_PARAM);
-        next.delete(PANEL_QUERY_PARAM);
-        if (activePanel) {
-          next.delete(activePanel);
-        }
-        return next;
-      },
-      { preventScrollReset: true },
-    );
-  }, [setSearchParams]);
-
-  return { open, close };
 }
 
 export type PanelHrefOpts =

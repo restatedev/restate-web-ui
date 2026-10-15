@@ -4,23 +4,9 @@ import {
   type FilterItem,
 } from '@restate/data-access/admin-api-spec';
 
-export const DEFAULT_INVOCATION_COLUMNS = [
-  'id',
-  'created_at',
-  'modified_at',
-  'duration',
-  'target',
-  'status',
-];
-
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 const COMPLETED_STATUSES = TERMINAL_INVOCATION_STATUSES;
 const INBOX_STATUSES = INBOX_INVOCATION_STATUSES;
-// Scheduled invocations haven't started executing yet, so they're neither
-// completed nor in-flight — excluded from the in-flight view too. Keep this in
-// sync with the In-flight preset (INVOCATION_SHORTCUTS / makeShortcuts),
-// including value order, so links built here still resolve to that preset.
-const NON_IN_FLIGHT_STATUSES = [...COMPLETED_STATUSES, 'scheduled'];
 
 function setNotCompletedFilter(
   params: URLSearchParams,
@@ -145,18 +131,6 @@ export function toInvocationsHref(
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 
-export function toInFlightInvocationsHref(
-  baseUrl: string,
-  { existingParams }: { existingParams?: URLSearchParams } = {},
-) {
-  const params = buildParams(existingParams);
-  params.set(
-    'filter_status',
-    JSON.stringify({ operation: 'NOT_IN', value: NON_IN_FLIGHT_STATUSES }),
-  );
-  return `${baseUrl}/invocations?${params.toString()}`;
-}
-
 // "In-flight / scheduled": every non-completed invocation, INCLUDING scheduled
 // ones that haven't started yet (NOT_IN completed). Broader than
 // toInFlightInvocationsHref, which excludes scheduled. Use this where scheduled
@@ -227,31 +201,6 @@ export function toServiceAndHandlerInvocationsHref(
     JSON.stringify({ operation: 'IN', value: [handlerName] }),
   );
   setNotCompletedFilter(params, notCompletedOnly);
-  return `${baseUrl}/invocations?${params.toString()}`;
-}
-
-export function toDeploymentInvocationsHref(
-  baseUrl: string,
-  deploymentId: string,
-  {
-    existingParams,
-    inFlightOnly = false,
-  }: { existingParams?: URLSearchParams; inFlightOnly?: boolean } = {},
-) {
-  const params = buildParams(existingParams);
-  params.set(
-    'filter_deployment',
-    JSON.stringify({ operation: 'IN', value: [deploymentId] }),
-  );
-  if (inFlightOnly) {
-    params.set(
-      'filter_status',
-      JSON.stringify({
-        operation: 'NOT_IN',
-        value: NON_IN_FLIGHT_STATUSES,
-      }),
-    );
-  }
   return `${baseUrl}/invocations?${params.toString()}`;
 }
 

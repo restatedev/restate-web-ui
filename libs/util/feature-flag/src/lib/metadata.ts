@@ -3,46 +3,23 @@ import type { FeatureFlag } from './type';
 export interface FeatureFlagMetadata {
   title: string;
   description: string;
-  // Whether flipping the flag currently changes anything in the UI. Flags that
-  // are wired up but not yet backed by functionality are surfaced as read-only.
-  available: boolean;
   serverFeature?: string;
 }
 
 export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
-  FEATURE_VQUEUE_OBSERVABILITY: {
-    title: 'Invocation stage observability',
-    description: 'Expose detailed invocation stage data.',
-    available: false,
-  },
-  FEATURE_EXECUTION_METRICS: {
-    title: 'Execution metrics',
-    description:
-      "Expose the Restate server's execution metrics — throughput, capacity, and ingress activity.",
-    available: true,
-  },
-  FEATURE_COMPLETION_HISTORY: {
-    title: 'Completion history',
-    description:
-      'Show a timeline of succeeded vs failed invocations over the last day.',
-    available: true,
-  },
   FEATURE_STATE_STORAGE_BREAKDOWN: {
     title: 'State storage breakdown',
     description: 'Show state storage usage grouped by service.',
-    available: true,
   },
   FEATURE_OPERATOR_QUERY_LEVEL: {
     title: 'Operator query level',
     description:
       'Send SQL queries to the admin API with the operator query level.',
-    available: true,
   },
   FEATURE_INDEXES_V1: {
     title: 'Index tables',
     description:
       "Use the server's secondary index tables for invocation lists sorted by last transition, virtual object details, and flow control.",
-    available: true,
     serverFeature: 'indexes_v1',
   },
 };

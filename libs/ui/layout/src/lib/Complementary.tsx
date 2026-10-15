@@ -174,15 +174,6 @@ function ComplementaryWithSearchParamValue({
   );
 }
 
-export function ComplementaryFooter({ children }: PropsWithChildren) {
-  const { footerElement } = use(ComplementaryWithSearchContext);
-
-  if (footerElement) {
-    return createPortal(children, footerElement);
-  }
-  return null;
-}
-
 export function ComplementaryHeader({ children }: PropsWithChildren) {
   const { headerElement } = use(ComplementaryWithSearchContext);
 

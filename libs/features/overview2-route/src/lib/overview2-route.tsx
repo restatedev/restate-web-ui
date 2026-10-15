@@ -35,15 +35,7 @@ import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
 import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
-import {
-  EngineCore,
-  InFlightMetrics,
-  CompletedMetrics,
-  EngineEgress,
-  EngineEgressTop,
-  OverviewMetricsRail,
-  useMetricsState,
-} from './EngineCluster';
+import { EngineCore } from './EngineCluster';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
 import { DeploymentActions } from './DeploymentActions';
 import { ServicesTable } from './ServicesTable';
@@ -52,7 +44,6 @@ import {
   CompletionTimeRangeToggle,
   OverviewTimeRangeToggle,
 } from './TimeRangeToggle';
-import { CompletionHistoryChart } from '@restate/features/completion-history';
 import { useCompletionChart } from './useCompletionChart';
 import { useInFlightChart } from './useInFlightChart';
 
@@ -378,13 +369,7 @@ const gaugeLabelStyles = tv({
 });
 
 const summaryStackStyles = tv({
-  base: 'relative z-40 col-span-3 col-start-1 row-start-3 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-3',
-  variants: {
-    metricsVisible: {
-      true: 'mt-4 @min-[64rem]/hero:mt-7',
-      false: 'mt-1 @min-[64rem]/hero:mt-2',
-    },
-  },
+  base: 'relative z-40 col-span-3 col-start-1 row-start-3 mt-1 flex flex-col items-center @min-[64rem]/hero:col-span-1 @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:mt-2',
 });
 
 function HeroGauge({
@@ -483,7 +468,6 @@ function OverviewContent() {
     filter,
     setFilter,
     triggerManualRefresh,
-    overviewRefetchInterval,
   } = useOverviewContext();
   const completionChart = useCompletionChart();
   const inFlightChart = useInFlightChart();
@@ -502,16 +486,11 @@ function OverviewContent() {
     },
   };
   const isAdminMutating = useIsMutating(adminQueryPredicate) > 0;
-  const metricsState = useMetricsState(overviewRefetchInterval);
   const isSummaryEmpty =
     !isSummaryLoading &&
     !completionChart.isSummaryBreakdownLoading &&
     !isSummaryError &&
     inFlightChart.allTotal === 0;
-  const metricsVisible =
-    metricsState.isMetricsEnabled &&
-    metricsState.hasLoadedMetrics &&
-    (inFlightChart.allTotal > 0 || metricsState.hasMetricActivity);
 
   let overallIssueSeverity: 'high' | 'low' | 'none' = 'none';
   for (const issues of serviceIssuesMap.values()) {
@@ -525,10 +504,7 @@ function OverviewContent() {
   const ferrofluidStatus = useRestateServerStatus({
     isHealthy: status === 'HEALTHY',
     isError: isError || isSummaryError,
-    isActive:
-      inFlightChart.total > 0 ||
-      metricsState.hasMetricActivity ||
-      isAdminMutating,
+    isActive: inFlightChart.total > 0 || isAdminMutating,
     issueSeverity: overallIssueSeverity,
   });
 
@@ -562,51 +538,25 @@ function OverviewContent() {
     (!isSummaryError && totalCount > 0);
   const searchPlaceholder =
     mode === 'services' ? 'Search services…' : 'Search deployments…';
-  const summaryErrorIndicator =
-    !completionChart.isHistoryEnabled && summaryError ? (
-      <Popover>
-        <PopoverTrigger>
-          <Button
-            aria-label="Could not load invocation data"
-            variant="secondary"
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
-          >
-            <Icon
-              name={IconName.TriangleAlert}
-              className="h-4 w-4 fill-red-200 text-red-600"
-            />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="max-w-sm">
-          <ErrorBanner error={summaryError} className="rounded-xl" />
-        </PopoverContent>
-      </Popover>
-    ) : null;
-  const renderCompletionSummary = (
-    className: string,
-    legendClassName = 'min-w-0 place-items-start',
-  ) => (
-    <div className={className}>
-      {completionChart.isHistoryEnabled && completionChart.successRateLabel && (
-        <span className="px-1.5 text-sm font-semibold text-gray-700 tabular-nums">
-          {completionChart.successRateLabel}
-          <span className="ml-1 text-2xs font-normal text-gray-400">
-            success rate
-          </span>
-        </span>
-      )}
-      <StatusLegend
-        items={completionChart.segments}
-        isLoading={completionChart.isLoading}
-        isError={completionChart.isRangeError}
-        orientation="vertical"
-        className={legendClassName}
-        isSampled={completionChart.isSampled}
-        totalCount={completionChart.total}
-      />
-    </div>
-  );
-
+  const summaryErrorIndicator = summaryError ? (
+    <Popover>
+      <PopoverTrigger>
+        <Button
+          aria-label="Could not load invocation data"
+          variant="secondary"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+        >
+          <Icon
+            name={IconName.TriangleAlert}
+            className="h-4 w-4 fill-red-200 text-red-600"
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="max-w-sm">
+        <ErrorBanner error={summaryError} className="rounded-xl" />
+      </PopoverContent>
+    </Popover>
+  ) : null;
   const onRefresh = () => {
     serverRef.current?.animate(
       [
@@ -766,96 +716,45 @@ function OverviewContent() {
               </div>
             ) : undefined
           }
-          aboveServer={
-            <EngineEgressTop
-              hasSummaryActivity={inFlightChart.allTotal > 0}
-              metricsRefetchInterval={overviewRefetchInterval}
-              data-overview-refresh-bounce=""
-              className="pointer-events-auto mb-1"
-            />
+        />
+        <HeroGauge
+          ref={logsRef}
+          className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0"
+          segments={completionChart.segments}
+          count={completionChart.total}
+          valueFormat={
+            completionChart.isSampled ? 'approximate-percentage' : 'count'
+          }
+          valueLabel={completionChart.successRateLabel}
+          label={
+            completionChart.isEmpty ? 'No completed' : completionChart.label
+          }
+          sublabel={completionChart.sublabel}
+          textOnly={completionChart.isEmpty}
+          href={completionChart.href}
+          isLoading={completionChart.isLoading}
+          isError={completionChart.isError}
+          eyebrow={
+            hasVqueues ? (
+              <CompletionTimeRangeToggle
+                value={completionChart.timeRange}
+                onChange={completionChart.setTimeRange}
+              />
+            ) : null
           }
         />
-        {completionChart.isHistoryEnabled ? (
-          <>
-            {renderCompletionSummary(
-              'col-start-2 row-start-2 mt-4 flex w-64 max-w-[calc(100vw-7rem)] min-w-0 flex-col items-center gap-1 self-start justify-self-center text-center @min-[40rem]/hero:w-72 @min-[64rem]/hero:hidden',
-              'min-w-0 place-items-center',
-            )}
-            <CompletionHistoryChart
-              ref={logsRef}
-              buckets={completionChart.historyBuckets}
-              isPending={completionChart.isHistoryLoading}
-              onBucketClick={completionChart.onBucketClick}
-              className="hidden h-20 w-40 self-start overflow-hidden @min-[26rem]/hero:w-44 @min-[40rem]/hero:w-[12.8rem] @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block @min-[64rem]/hero:h-32 @min-[64rem]/hero:w-[15.4rem] @min-[64rem]/hero:self-center"
-            />
-          </>
-        ) : (
-          <HeroGauge
-            ref={logsRef}
-            className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0"
-            segments={completionChart.segments}
-            count={completionChart.total}
-            valueFormat={
-              completionChart.isSampled ? 'approximate-percentage' : 'count'
-            }
-            valueLabel={completionChart.successRateLabel}
-            label={
-              completionChart.isEmpty ? 'No completed' : completionChart.label
-            }
-            sublabel={completionChart.sublabel}
-            textOnly={completionChart.isEmpty}
-            href={completionChart.href}
+        <div className="hidden w-full min-w-0 flex-col gap-1 self-center justify-self-start @min-[64rem]/hero:col-start-5 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex">
+          <StatusLegend
+            items={completionChart.segments}
             isLoading={completionChart.isLoading}
-            isError={completionChart.isError}
-            eyebrow={
-              hasVqueues ? (
-                <CompletionTimeRangeToggle
-                  value={completionChart.timeRange}
-                  onChange={completionChart.setTimeRange}
-                />
-              ) : null
-            }
+            isError={completionChart.isRangeError}
+            orientation="vertical"
+            className="min-w-0 place-items-start"
+            isSampled={completionChart.isSampled}
+            totalCount={completionChart.total}
           />
-        )}
-        {renderCompletionSummary(
-          'hidden w-full min-w-0 flex-col gap-1 self-center justify-self-start @min-[64rem]/hero:col-start-5 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex',
-        )}
-        <OverviewMetricsRail
-          side="left"
-          hasSummaryActivity={inFlightChart.allTotal > 0}
-          metricsRefetchInterval={overviewRefetchInterval}
-          data-overview-refresh-bounce=""
-          className="col-start-1 row-span-2 row-start-1 self-center justify-self-end @min-[64rem]/hero:hidden"
-        />
-        <OverviewMetricsRail
-          side="right"
-          hasSummaryActivity={inFlightChart.allTotal > 0}
-          metricsRefetchInterval={overviewRefetchInterval}
-          data-overview-refresh-bounce=""
-          className="col-start-3 row-span-2 row-start-1 self-center justify-self-start @min-[64rem]/hero:hidden"
-        />
-        <InFlightMetrics
-          hasSummaryActivity={inFlightChart.allTotal > 0}
-          metricsRefetchInterval={overviewRefetchInterval}
-          data-overview-refresh-bounce=""
-          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-2 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
-        />
-        <EngineEgress
-          hasSummaryActivity={inFlightChart.allTotal > 0}
-          metricsRefetchInterval={overviewRefetchInterval}
-          data-overview-refresh-bounce=""
-          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
-        />
-        <CompletedMetrics
-          hasSummaryActivity={inFlightChart.allTotal > 0}
-          metricsRefetchInterval={overviewRefetchInterval}
-          data-overview-refresh-bounce=""
-          className="relative z-10 hidden self-start @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-2 @min-[64rem]/hero:-mt-5 @min-[64rem]/hero:flex"
-        />
-        <div
-          data-overview-refresh-bounce=""
-          className={summaryStackStyles({ metricsVisible })}
-        >
+        </div>
+        <div data-overview-refresh-bounce="" className={summaryStackStyles()}>
           <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
             {!hasVqueues && (
               <>
