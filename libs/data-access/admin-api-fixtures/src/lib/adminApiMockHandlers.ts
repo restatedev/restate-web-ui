@@ -751,11 +751,11 @@ const versionHandler = http.get<
   GetPath<'/version'>
 >('/version', async () => {
   return HttpResponse.json({
-    version: '1.1.1',
+    version: '1.8.0',
     max_admin_api_version: 1,
     min_admin_api_version: 1,
     ingress_endpoint: 'http://localhost:8080',
-    features: { vqueues: true },
+    features: {},
   });
 });
 

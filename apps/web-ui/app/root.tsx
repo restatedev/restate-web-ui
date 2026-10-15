@@ -6,7 +6,6 @@ import {
   Scripts,
   ScrollRestoration,
   useHref,
-  useLocation,
   useMatch,
   useNavigate,
 } from 'react-router';
@@ -72,8 +71,6 @@ import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import {
   setMetaFallback,
   setMetaPersister,
-  useFeatures,
-  useVersion,
 } from '@restate/data-access/admin-api';
 import { setQueryClient } from '@restate/util/react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
@@ -175,7 +172,7 @@ setMetaFallback({ version: '9999999.0.0' });
 // Cross-session warm-up: persist the meta cache (`['meta', baseUrl]`)
 // to `localStorage` via TanStack's `experimental_createPersister`. On
 // subsequent loads, the cache entry is restored before the first read
-// so `useFeatures` / `useRestateVersion` / `/query/*` middleware get
+// so `useFeatures` / `useVersion` / `/query/*` middleware get
 // last-session values immediately and the background `/version` fetch
 // just confirms/refreshes them.
 setMetaPersister(
@@ -435,24 +432,6 @@ function TopbarPanels() {
   );
 }
 
-function RouteContent() {
-  const { pathname } = useLocation();
-  const hasVqueues = useFeatures().has('vqueues');
-  const { data: version, isPending: isVersionPending } = useVersion();
-  const serverHasVqueues = version?.features?.vqueues === true;
-  const isFlowControlRoute =
-    pathname === '/flow-control' || pathname.startsWith('/flow-control/');
-
-  if (
-    isFlowControlRoute &&
-    (isVersionPending || (serverHasVqueues && !hasVqueues))
-  ) {
-    return null;
-  }
-
-  return <Outlet />;
-}
-
 function AppContent() {
   // Tenant view uses a separate shell and URL prefix for shared invocation links.
   const tenantMatch = useMatch('/tenants/:scope/*');
@@ -483,7 +462,7 @@ function AppContent() {
                 <EditState>
                   <BreadcrumbsProvider>
                     <LayoutOutlet zone={LayoutZone.Content}>
-                      <RouteContent />
+                      <Outlet />
                     </LayoutOutlet>
                   </BreadcrumbsProvider>
                   <SidebarPanels />

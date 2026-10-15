@@ -39,7 +39,7 @@ import type {
 } from '@restate/data-access/admin-api';
 import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util/errors';
-import { useAPIStatus, useFeatures } from '@restate/data-access/admin-api';
+import { useAPIStatus } from '@restate/data-access/admin-api';
 import { useRestateContext } from '@restate/features/restate-context';
 import { base64ToUint8Array } from '@restate/util/binary';
 import { getAuthToken } from '@restate/util/api-config';
@@ -460,8 +460,6 @@ export function useListLimitRules(
   options?: LimitPageOptions,
 ) {
   const enabled = useAPIStatus();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/limits/rules', 'post', {
     baseUrl,
@@ -473,7 +471,7 @@ export function useListLimitRules(
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
-    enabled: options?.enabled !== false && enabled && hasVqueues,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -487,8 +485,6 @@ export function useListUserLimits(
   options?: LimitPageOptions,
 ) {
   const enabled = useAPIStatus();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/limits/user-limits', 'post', {
     baseUrl,
@@ -500,7 +496,7 @@ export function useListUserLimits(
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
-    enabled: options?.enabled !== false && enabled && hasVqueues,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -514,8 +510,6 @@ export function useListVqueues(
   options?: LimitPageOptions,
 ) {
   const enabled = useAPIStatus();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/limits/vqueues', 'post', {
     baseUrl,
@@ -527,7 +521,7 @@ export function useListVqueues(
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
-    enabled: options?.enabled !== false && enabled && hasVqueues,
+    enabled: options?.enabled !== false && enabled,
   });
 
   return {
@@ -1966,16 +1960,11 @@ export function useGetVirtualObjectState(
   serviceName: string,
   key: string,
   scope?: string,
-  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/keys/{key}/state', 'get'>,
   stateKeys: string[] = [],
 ) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
-  const query = {
-    ...(serviceType ? { serviceType } : {}),
-    ...(stateKeys.length > 0 ? { stateKey: stateKeys } : {}),
-  };
   const queryOptions =
     scope !== undefined
       ? adminApi(
@@ -1996,7 +1985,7 @@ export function useGetVirtualObjectState(
           baseUrl,
           parameters: {
             path: { key, name: serviceName },
-            ...(Object.keys(query).length > 0 ? { query } : {}),
+            ...(stateKeys.length > 0 ? { query: { stateKey: stateKeys } } : {}),
           },
         });
 
@@ -2016,7 +2005,6 @@ export function useGetVirtualObjectStateInterface(
   serviceName: string,
   serviceKey: string[],
   scope?: string,
-  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/state/keys', 'get'>,
 ) {
   const enabled = useAPIStatus();
@@ -2032,7 +2020,6 @@ export function useGetVirtualObjectStateInterface(
         query: {
           serviceKey,
           ...(scope !== undefined ? { scope } : {}),
-          ...(serviceType ? { serviceType } : {}),
         },
       },
     },
@@ -2053,7 +2040,6 @@ export function useGetVirtualObjectStateInterface(
 export function useQueryVirtualObjectState(
   serviceName: string,
   args: { systemFilters?: FilterItem[]; stateFilter?: FilterItem },
-  serviceType?: 'virtual_object' | 'workflow' | 'service',
   options?: HookQueryOptions<'/query/services/{name}/state/query', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -2066,12 +2052,9 @@ export function useQueryVirtualObjectState(
       baseUrl,
       parameters: {
         path: { name: serviceName },
-        ...(serviceType ? { query: { serviceType } } : {}),
       },
       body: args,
-      resolvedPath: serviceType
-        ? `/query/services/${serviceName}/state/query?serviceType=${serviceType}`
-        : `/query/services/${serviceName}/state/query`,
+      resolvedPath: `/query/services/${serviceName}/state/query`,
     },
   );
   const results = useQuery({
@@ -2089,7 +2072,7 @@ export function useQueryVirtualObjectState(
 
 export function useListVirtualObjectState(
   serviceName: string,
-  args: { keys: string[] } | { items: { key: string; scope?: string }[] },
+  args: { items: { key: string; scope?: string }[] },
   options?: HookQueryOptions<'/query/services/{name}/state', 'post'>,
 ) {
   const enabled = useAPIStatus();
@@ -2108,12 +2091,10 @@ export function useListVirtualObjectState(
     },
   );
 
-  const length = 'keys' in args ? args.keys.length : args.items.length;
-
   const results = useQuery({
     ...queryOptions,
     ...options,
-    enabled: length > 0 && options?.enabled !== false && enabled,
+    enabled: args.items.length > 0 && options?.enabled !== false && enabled,
   });
 
   return {
@@ -2306,7 +2287,7 @@ export function useRestartWorkflowAsNew(
     unknown
   >,
 ) {
-  const { ingressUrl, isVersionGte } = useRestateContext();
+  const { ingressUrl } = useRestateContext();
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
 
@@ -2345,11 +2326,9 @@ export function useRestartWorkflowAsNew(
       const headers = payloadData.headers;
 
       const scope = data?.scope;
-      const sendUrl = isVersionGte?.('1.7.0')
-        ? scope
-          ? `${ingressUrl.replace(/\/$/, '')}/restate/scope/${scope}/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`
-          : `${ingressUrl.replace(/\/$/, '')}/restate/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`
-        : `${ingressUrl.replace(/\/$/, '')}/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}/send`;
+      const sendUrl = scope
+        ? `${ingressUrl.replace(/\/$/, '')}/restate/scope/${scope}/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`
+        : `${ingressUrl.replace(/\/$/, '')}/restate/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`;
 
       const requestHeaders = new Headers(
         headers
