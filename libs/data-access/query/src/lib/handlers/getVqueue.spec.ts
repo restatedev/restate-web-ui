@@ -1,19 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   createInvocationV2QueryTestHarness,
-  NO_VQUEUE_HEADERS,
   rawInvocation,
 } from './invocationsV2/tests/testUtils';
 
 describe('GET /query/vqueues/:vqueueId', () => {
   const { get, setResponder, sql } = createInvocationV2QueryTestHarness();
-
-  it('returns no content when VQueues are unavailable', async () => {
-    const response = await get('/vqueues/vq_orders', NO_VQUEUE_HEADERS);
-
-    expect(response.status).toBe(204);
-    expect(sql).toMatchInlineSnapshot(`[]`);
-  });
 
   it('returns no content when the VQueue is no longer present', async () => {
     const response = await get('/vqueues/vq_orders');

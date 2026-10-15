@@ -373,7 +373,7 @@ export async function getVqueue(
   vqueueId: string,
   focusEntryId?: string,
 ) {
-  if (!this.features.has('vqueues') || !vqueueId) {
+  if (!vqueueId) {
     return new Response(null, { status: 204 });
   }
 
@@ -393,7 +393,7 @@ export async function getVqueueSnapshot(
     requestTime?: string;
   },
 ): Promise<VqueueSnapshot | undefined> {
-  if (!this.features.has('vqueues') || !vqueueId) {
+  if (!vqueueId) {
     return undefined;
   }
 

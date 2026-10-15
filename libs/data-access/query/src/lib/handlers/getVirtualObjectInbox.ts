@@ -37,17 +37,9 @@ interface ScopedVirtualObjectIdentity extends VirtualObjectIdentity {
   scope: string;
 }
 
-interface InboxDetailsOptions {
-  requireVqueueInboxStage?: boolean;
-  confirmMissingLegacyLock?: boolean;
-  inboxCount?: number;
-}
-
 interface InboxResponseOptions {
   lock?: VirtualObjectLock;
-  requireVqueueInboxStage?: boolean;
   inboxCount?: number;
-  excludeLockHolder?: boolean;
 }
 
 async function queryVirtualObjectInboxCount(
@@ -72,42 +64,7 @@ async function queryVirtualObjectInboxCount(
   return Number.isSafeInteger(count) && count >= 0 ? count : undefined;
 }
 
-async function queryLegacyVirtualObjectInboxCount(
-  context: QueryContext,
-  service: string,
-  key: string,
-) {
-  const { rows } = await context.query(
-    `SELECT COUNT(*) AS inbox_count
-    FROM sys_inbox
-    WHERE service_name = ${quoteSqlString(service)}
-      AND service_key = ${quoteSqlString(key)}`,
-    'virtual-objects/inbox-count-legacy',
-  );
-  const count = Number(rows.at(0)?.['inbox_count']);
-  return Number.isSafeInteger(count) && count >= 0 ? count : undefined;
-}
-
-function queryInboxCount(
-  context: QueryContext,
-  virtualObjectIdentity: VirtualObjectIdentity,
-) {
-  return context.features.has('vqueues')
-    ? queryVirtualObjectInboxCount(
-        context,
-        virtualObjectIdentity.service,
-        virtualObjectIdentity.key,
-        virtualObjectIdentity.scope,
-      )
-    : queryLegacyVirtualObjectInboxCount(
-        context,
-        virtualObjectIdentity.service,
-        virtualObjectIdentity.key,
-      );
-}
-
-// Called when `vqueues` is enabled and either the request
-// has no scope or `scoped_virtual_objects` is unavailable.
+// Called when the request has no scope.
 async function findSingleVqueueInboxEntries(
   context: QueryContext,
   service: string,
@@ -219,35 +176,15 @@ async function findIndexedVirtualObjectInboxEntries(
   }));
 }
 
-// Called when the `vqueues` feature is unavailable.
-async function findLegacyInboxEntries(
-  context: QueryContext,
-  service: string,
-  key: string,
-) {
-  const { rows } = await context.query(
-    `SELECT id
-    FROM sys_inbox
-    WHERE service_name = ${quoteSqlString(service)}
-      AND service_key = ${quoteSqlString(key)}
-    LIMIT ${INBOX_QUERY_LIMIT}`,
-    'virtual-objects/inbox-entries-legacy',
-  );
-  return rows.map((row) => ({ id: row['id'], kind: 'invocation' }));
-}
-
 function isInitialLockConsistent(
-  context: QueryContext,
   lock: VirtualObjectLock,
   entryDetails: VirtualObjectEntryDetails,
-  confirmMissingLegacyLock: boolean,
 ) {
   const { lockHolder: entryWithLock } = lock;
   if (entryWithLock) {
-    return isLockConsistent(context, lock, entryDetails);
+    return isLockConsistent(lock, entryDetails);
   }
-  if (entryDetailsContainLock(entryDetails)) return false;
-  return !confirmMissingLegacyLock || context.features.has('vqueues');
+  return !entryDetailsContainLock(entryDetails);
 }
 
 async function reconcileInboxLockDetails(
@@ -255,22 +192,9 @@ async function reconcileInboxLockDetails(
   virtualObjectIdentity: VirtualObjectIdentity,
   initialLock: VirtualObjectLock,
   entryDetails: VirtualObjectEntryDetails,
-  confirmMissingLegacyLock: boolean,
 ): Promise<ReconciledInboxLockDetails | undefined> {
-  const inferAcquiredAtFromInvocation = !context.features.has('vqueues');
-  const lock = addEntryDetailsToLock(
-    initialLock,
-    entryDetails,
-    inferAcquiredAtFromInvocation,
-  );
-  if (
-    isInitialLockConsistent(
-      context,
-      lock,
-      entryDetails,
-      confirmMissingLegacyLock,
-    )
-  ) {
+  const lock = addEntryDetailsToLock(initialLock, entryDetails);
+  if (isInitialLockConsistent(lock, entryDetails)) {
     return { lock, entryDetails };
   }
 
@@ -291,9 +215,8 @@ async function reconcileInboxLockDetails(
   const lockWithDetails = addEntryDetailsToLock(
     refreshedLock,
     refreshedLockDetails,
-    inferAcquiredAtFromInvocation,
   );
-  if (!isLockConsistent(context, lockWithDetails, refreshedLockDetails)) {
+  if (!isLockConsistent(lockWithDetails, refreshedLockDetails)) {
     return undefined;
   }
   return {
@@ -305,14 +228,13 @@ async function reconcileInboxLockDetails(
 function visibleInboxEntry(
   entryRow: VirtualObjectEntryRow,
   entryDetails: VirtualObjectEntryDetails,
-  requireVqueueInboxStage: boolean,
 ) {
   if (!entryRow.id) return undefined;
   const entry = entryDetails.entriesById.get(entryRow.id);
   if (!entry) return undefined;
   if (
-    requireVqueueInboxStage &&
-    (!entryDetails.vqueueEntryIds.has(entryRow.id) || entry.stage !== 'inbox')
+    !entryDetails.vqueueEntryIds.has(entryRow.id) ||
+    entry.stage !== 'inbox'
   ) {
     return undefined;
   }
@@ -323,19 +245,10 @@ function visibleInboxEntry(
 function buildInboxResponse(
   foundEntries: VirtualObjectEntryRow[],
   entryDetails: VirtualObjectEntryDetails,
-  {
-    lock,
-    requireVqueueInboxStage = false,
-    inboxCount,
-    excludeLockHolder = false,
-  }: InboxResponseOptions = {},
+  { lock, inboxCount }: InboxResponseOptions = {},
 ): VirtualObjectInboxResponse {
   const visibleEntries = foundEntries.flatMap((entryRow) => {
-    const entry = visibleInboxEntry(
-      entryRow,
-      entryDetails,
-      requireVqueueInboxStage,
-    );
+    const entry = visibleInboxEntry(entryRow, entryDetails);
     return entry ? [entry] : [];
   });
   const actualLockHolderId = lock?.lockHolder?.id;
@@ -346,10 +259,9 @@ function buildInboxResponse(
     actualLockHolderId &&
     (entryDetails.vqueueEntryIds.has(actualLockHolderId)
       ? lockHolderDetails?.stage === 'inbox'
-      : excludeLockHolder &&
-        foundEntries.some((entry) => entry.id === actualLockHolderId)),
+      : foundEntries.some((entry) => entry.id === actualLockHolderId)),
   );
-  const lockHolderId = excludeLockHolder ? actualLockHolderId : undefined;
+  const lockHolderId = actualLockHolderId;
   const rows = lockHolderId
     ? visibleEntries.filter((entry) => entry.id !== lockHolderId)
     : visibleEntries;
@@ -364,7 +276,6 @@ function buildInboxResponse(
       : 0);
 
   return {
-    supported: true,
     rows: rows.slice(0, INBOX_LIMIT),
     ...(visibleInboxCount !== undefined
       ? { inboxCount: visibleInboxCount }
@@ -379,11 +290,7 @@ async function getInboxEntriesAndLockDetails(
   virtualObjectIdentity: VirtualObjectIdentity,
   foundEntries: VirtualObjectEntryRow[],
   initialLock: VirtualObjectLock,
-  {
-    requireVqueueInboxStage = false,
-    confirmMissingLegacyLock = false,
-    inboxCount,
-  }: InboxDetailsOptions = {},
+  inboxCount?: number,
 ): Promise<Response> {
   const entryDetails = await getVirtualObjectEntryDetails(context, [
     ...foundEntries,
@@ -394,15 +301,12 @@ async function getInboxEntriesAndLockDetails(
     virtualObjectIdentity,
     initialLock,
     entryDetails,
-    confirmMissingLegacyLock,
   );
   return reconciledLockDetails
     ? Response.json(
         buildInboxResponse(foundEntries, reconciledLockDetails.entryDetails, {
           lock: reconciledLockDetails.lock,
-          requireVqueueInboxStage,
           inboxCount,
-          excludeLockHolder: true,
         }),
       )
     : virtualObjectSnapshotChangedResponse();
@@ -452,7 +356,7 @@ async function getScopedInboxEntriesAndLockDetails(
   }
   const lock = addEntryDetailsToLock(refreshedLock, entryDetails);
   if (
-    !isLockConsistent(context, lock, entryDetails) ||
+    !isLockConsistent(lock, entryDetails) ||
     hasConflictingLockEntry(entryDetails, lock.lockHolder?.id)
   ) {
     return virtualObjectSnapshotChangedResponse();
@@ -461,20 +365,9 @@ async function getScopedInboxEntriesAndLockDetails(
   return Response.json(
     buildInboxResponse(foundEntries, entryDetails, {
       lock,
-      requireVqueueInboxStage: true,
       inboxCount,
-      excludeLockHolder: true,
     }),
   );
-}
-
-function unsupportedInbox(): VirtualObjectInboxResponse {
-  return {
-    supported: false,
-    rows: [],
-    limit: INBOX_LIMIT,
-    truncated: false,
-  };
 }
 
 async function findScopedInboxEntriesAndGetLockDetails(
@@ -494,7 +387,12 @@ async function findScopedInboxEntriesAndGetLockDetails(
       virtualObjectIdentity.key,
       virtualObjectIdentity.scope,
     ),
-    queryInboxCount(context, virtualObjectIdentity),
+    queryVirtualObjectInboxCount(
+      context,
+      virtualObjectIdentity.service,
+      virtualObjectIdentity.key,
+      virtualObjectIdentity.scope,
+    ),
   ]);
   return getScopedInboxEntriesAndLockDetails(
     context,
@@ -509,7 +407,6 @@ async function findInboxEntriesAndGetLockDetails(
   context: QueryContext,
   virtualObjectIdentity: VirtualObjectIdentity,
   findEntries: () => Promise<VirtualObjectEntryRow[]>,
-  options?: InboxDetailsOptions,
 ) {
   const [initialLock, foundEntries, inboxCount] = await Promise.all([
     queryVirtualObjectLock(
@@ -519,14 +416,19 @@ async function findInboxEntriesAndGetLockDetails(
       virtualObjectIdentity.scope,
     ),
     findEntries(),
-    queryInboxCount(context, virtualObjectIdentity),
+    queryVirtualObjectInboxCount(
+      context,
+      virtualObjectIdentity.service,
+      virtualObjectIdentity.key,
+      virtualObjectIdentity.scope,
+    ),
   ]);
   return getInboxEntriesAndLockDetails(
     context,
     virtualObjectIdentity,
     foundEntries,
     initialLock,
-    { ...options, inboxCount },
+    inboxCount,
   );
 }
 
@@ -536,39 +438,21 @@ export async function getVirtualObjectInbox(
   key: string,
   scope?: string,
 ) {
-  if (scope !== undefined && !this.features.has('vqueues')) {
-    return Response.json(unsupportedInbox());
-  }
-
   const virtualObjectIdentity = { service, key, scope };
 
-  if (!this.features.has('vqueues')) {
-    return findInboxEntriesAndGetLockDetails(
-      this,
-      virtualObjectIdentity,
-      () => findLegacyInboxEntries(this, service, key),
-      { confirmMissingLegacyLock: true },
-    );
-  }
   if (usesIndexesV1(this)) {
-    return findInboxEntriesAndGetLockDetails(
-      this,
-      virtualObjectIdentity,
-      () => findIndexedVirtualObjectInboxEntries(this, service, key, scope),
-      { requireVqueueInboxStage: true },
+    return findInboxEntriesAndGetLockDetails(this, virtualObjectIdentity, () =>
+      findIndexedVirtualObjectInboxEntries(this, service, key, scope),
     );
   }
-  if (scope !== undefined && this.features.has('scoped_virtual_objects')) {
+  if (scope !== undefined) {
     return findScopedInboxEntriesAndGetLockDetails(this, {
       service,
       key,
       scope,
     });
   }
-  return findInboxEntriesAndGetLockDetails(
-    this,
-    virtualObjectIdentity,
-    () => findSingleVqueueInboxEntries(this, service, key, scope),
-    { requireVqueueInboxStage: true },
+  return findInboxEntriesAndGetLockDetails(this, virtualObjectIdentity, () =>
+    findSingleVqueueInboxEntries(this, service, key, scope),
   );
 }

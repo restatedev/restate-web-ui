@@ -40,12 +40,6 @@ export async function getVirtualObjectStats(
   key: string,
   scope?: string,
 ) {
-  if (!this.features.has('vqueues')) {
-    return Response.json({
-      supported: false,
-    } satisfies VirtualObjectStatsResponse);
-  }
-
   const vqueueScopePredicate = (alias?: string) => {
     const column = alias ? `${alias}.scope` : 'scope';
     return scope === undefined
@@ -86,7 +80,7 @@ export async function getVirtualObjectStats(
       COALESCE(SUM(value_length), 0) AS total_size
     FROM state
     WHERE service_name = ${quoteSqlString(service)}
-      AND service_key = ${quoteSqlString(key)}${scopeClause(this, scope, 'virtual_object')}`,
+      AND service_key = ${quoteSqlString(key)}${scopeClause(scope)}`,
       'state/object-size',
     ),
   ]);
@@ -106,7 +100,6 @@ export async function getVirtualObjectStats(
   const oldestInboxedAt = stringValue(inboxRow['oldest_inboxed_at']);
 
   return Response.json({
-    supported: true,
     ...(averageInboxDuration ? { averageInboxDuration } : {}),
     numInbox: nonNegativeInteger(vqueueRow['num_inbox']),
     activity: {

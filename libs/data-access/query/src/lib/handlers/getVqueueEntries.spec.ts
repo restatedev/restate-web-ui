@@ -1,22 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   createInvocationV2QueryTestHarness,
-  NO_VQUEUE_HEADERS,
   rawInvocation,
 } from './invocationsV2/tests/testUtils';
 
 describe('GET /query/vqueues/:vqueueId/entries', () => {
   const { get, setResponder, sql } = createInvocationV2QueryTestHarness();
-
-  it('returns no content when VQueues are unavailable', async () => {
-    const response = await get(
-      '/vqueues/vq_orders/entries?stage=inbox',
-      NO_VQUEUE_HEADERS,
-    );
-
-    expect(response.status).toBe(204);
-    expect(sql).toEqual([]);
-  });
 
   it('rejects a missing or invalid stage', async () => {
     const response = await get('/vqueues/vq_orders/entries?stage=unknown');

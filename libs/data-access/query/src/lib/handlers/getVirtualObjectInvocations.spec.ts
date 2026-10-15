@@ -45,15 +45,13 @@ function rawInvocation(
 
 function contextWith(
   query: QueryContext['query'],
-  features: string[],
   adminApi: QueryContext['adminApi'] = createAdminApiMock(),
 ) {
   return {
     query,
     adminApi,
     baseUrl: '',
-    restateVersion: '1.7.2',
-    features: new Set(features),
+    features: new Set<string>(),
   } satisfies QueryContext;
 }
 
@@ -62,7 +60,7 @@ function queryStatements(query: ReturnType<typeof vi.fn>) {
 }
 
 describe('GET /query/virtual-objects/:service/instances/:key/invocations', () => {
-  it('uses direct key equality on Restate 1.7.3', async () => {
+  it('returns recent invocations for a scoped identity', async () => {
     const query = vi.fn(async (statement: string) => {
       if (statement.includes('FROM sys_invocation_status')) {
         return { rows: [{ id: 'inv_1shared' }] };
@@ -72,8 +70,7 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues']);
-    context.restateVersion = '1.7.3';
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInvocations.call(
       context,
@@ -99,7 +96,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [
         expect.objectContaining({
           id: 'inv_1shared',
@@ -107,26 +103,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
           target_handler_name: 'read',
         }),
       ],
-      limit: 50,
-      truncated: false,
-    });
-  });
-
-  it('does not query unscoped invocation tables for a scoped identity without VQueues', async () => {
-    const query = vi.fn();
-    const context = contextWith(query, []);
-
-    const response = await getVirtualObjectInvocations.call(
-      context,
-      'Counter',
-      'customer-1',
-      'tenant-a',
-    );
-
-    expect(query).not.toHaveBeenCalled();
-    expect(await response.json()).toEqual({
-      supported: false,
-      rows: [],
       limit: 50,
       truncated: false,
     });
@@ -174,7 +150,7 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues']);
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInvocations.call(
       context,
@@ -188,7 +164,7 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
           FROM sys_invocation_status si
           WHERE si.target_service_ty = 'virtual_object'
             AND si.target_service_name = 'Counter'
-            AND SUBSTR(si.target_service_key, 1) = 'customer-1'
+            AND si.target_service_key = 'customer-1'
             AND si.scope IS NULL
           ORDER BY si.created_at DESC NULLS LAST
           LIMIT 51",
@@ -199,7 +175,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [
         expect.objectContaining({
           id: 'inv_1exclusive',

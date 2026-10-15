@@ -1,18 +1,12 @@
 import { hexToBase64 } from '@restate/util/binary';
 import { stateVersion } from '../stateVersion';
-import {
-  quoteSqlString,
-  scopeClause,
-  type QueryContext,
-  type StateServiceType,
-} from './shared';
+import { quoteSqlString, scopeClause, type QueryContext } from './shared';
 
 export async function getState(
   this: QueryContext,
   service: string,
   key: string,
   scope?: string,
-  serviceType?: StateServiceType,
   stateKeys: string[] = [],
 ) {
   const stateKeyClause =
@@ -26,7 +20,7 @@ export async function getState(
   // that's what listState (page previews) and listStateEntries (paged
   // entries) are for.
   const state: { name: string; value: string }[] = await this.query(
-    `SELECT key, value FROM state WHERE service_name = ${quoteSqlString(service)} AND service_key = ${quoteSqlString(key)}${scopeClause(this, scope, serviceType)}${stateKeyClause}`,
+    `SELECT key, value FROM state WHERE service_name = ${quoteSqlString(service)} AND service_key = ${quoteSqlString(key)}${scopeClause(scope)}${stateKeyClause}`,
     'state/get',
   ).then(({ rows }) =>
     rows.map((row) => ({

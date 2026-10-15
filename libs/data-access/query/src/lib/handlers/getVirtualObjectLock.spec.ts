@@ -1,11 +1,6 @@
 import type { RawInvocation } from '@restate/data-access/admin-api-spec';
-import { describe, expect, it, vi } from 'vitest';
-import type { QueryContext } from './shared';
-import { getVirtualObjectLock } from './getVirtualObjectLock';
-import {
-  createInvocationV2QueryTestHarness,
-  NO_VQUEUE_HEADERS,
-} from './invocationsV2/tests/testUtils';
+import { describe, expect, it } from 'vitest';
+import { createInvocationV2QueryTestHarness } from './invocationsV2/tests/testUtils';
 
 function invocation(
   id: string,
@@ -98,7 +93,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/lock', () => {
       ]
     `);
     expect(await response.json()).toMatchObject({
-      supported: true,
       lockHolder: {
         id: 'inv_1lock',
         kind: 'invocation',
@@ -177,7 +171,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/lock', () => {
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       lockHolder: {
         id: 'mut_1sm',
         kind: 'state-mutation',
@@ -229,7 +222,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/lock', () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
-      supported: true,
       lockHolder: {
         id: 'inv_1current',
         invocation: expect.objectContaining({ id: 'inv_1current' }),
@@ -288,79 +280,11 @@ describe('GET /query/virtual-objects/:service/instances/:key/lock', () => {
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       lockHolder: {
         id: 'migration-holder',
         kind: 'other',
         acquiredAt: '2026-07-23T09:10:00.000Z',
       },
     });
-  });
-
-  it('uses the legacy keyed service lock for unscoped objects', async () => {
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_keyed_service_status')) {
-        return { rows: [{ invocation_id: 'inv_1legacy' }] };
-      }
-      if (statement.includes('FROM sys_invocation\n')) {
-        return {
-          rows: [
-            invocation('inv_1legacy', {
-              running_at: '2026-07-23T09:15:00.000Z',
-            }),
-          ],
-        };
-      }
-      return { rows: [] };
-    });
-    const context = {
-      query,
-      baseUrl: '',
-      restateVersion: '1.7.3',
-      features: new Set(['protocol_v7']),
-    } as unknown as QueryContext;
-
-    const response = await getVirtualObjectLock.call(
-      context,
-      'Counter',
-      'customer-1',
-    );
-
-    expect(query.mock.calls.map(([statement]) => statement))
-      .toMatchInlineSnapshot(`
-        [
-          "SELECT invocation_id
-              FROM sys_keyed_service_status
-              WHERE service_name = 'Counter'
-                AND service_key = 'customer-1'
-                AND invocation_id IS NOT NULL
-              LIMIT 1",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json
-            FROM sys_invocation
-            WHERE id IN ('inv_1legacy')",
-        ]
-      `);
-    expect(await response.json()).toMatchObject({
-      supported: true,
-      lockHolder: {
-        id: 'inv_1legacy',
-        kind: 'invocation',
-        acquiredAt: '2026-07-23T09:15:00.000Z',
-        invocation: expect.objectContaining({
-          id: 'inv_1legacy',
-          status: 'running',
-        }),
-      },
-    });
-  });
-
-  it('reports scoped locks as unsupported without Virtual Queues', async () => {
-    const response = await get(
-      '/virtual-objects/Counter/instances/customer-1/lock?scope=tenant-a',
-      NO_VQUEUE_HEADERS,
-    );
-
-    expect(sql).toEqual([]);
-    expect(await response.json()).toEqual({ supported: false });
   });
 });
