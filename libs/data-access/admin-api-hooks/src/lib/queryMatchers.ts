@@ -14,10 +14,6 @@ export function isQueryForPath(
   return query.meta?.['path'] === path && query.meta?.['method'] === method;
 }
 
-export function isDeploymentsQuery(event: QueryCacheNotifyEvent): boolean {
-  return isQueryForPath(event.query, '/deployments', 'get');
-}
-
 export function isInvocationsV2Query(
   query: Query | QueryCacheNotifyEvent['query'],
 ): boolean {
@@ -41,21 +37,4 @@ export function invalidateInvocationsV2Queries(queryClient: QueryClient) {
 
 export function isQueryHealthCheckQuery(event: QueryCacheNotifyEvent): boolean {
   return event.query.meta?.[QUERY_HEALTH_META_TAG] === true;
-}
-
-export function findSuccessfulQueryData<T>(
-  queries: Query[],
-  path: string,
-  method: string,
-): T | undefined {
-  for (const query of queries) {
-    if (
-      isQueryForPath(query, path, method) &&
-      query.state.status === 'success' &&
-      query.state.data
-    ) {
-      return query.state.data as T;
-    }
-  }
-  return undefined;
 }

@@ -352,25 +352,3 @@ export function useFinishedInvocationsBreakdownV2(
 
   return { ...result, queryKey: queryOptions.queryKey };
 }
-
-export function useFinishedInvocationsHistoryV2(
-  body: components['schemas']['FinishedInvocationsHistoryV2RequestBody'],
-  options?: HookQueryOptions<'/query/v2/invocations/finished-history', 'post'>,
-) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/v2/invocations/finished-history',
-    'post',
-    { baseUrl, body },
-  );
-  const result = useQuery({
-    ...queryOptions,
-    ...options,
-    meta: { ...queryOptions.meta, ...options?.meta },
-    enabled: options?.enabled !== false && enabled,
-  });
-
-  return { ...result, queryKey: queryOptions.queryKey };
-}

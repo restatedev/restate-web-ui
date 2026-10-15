@@ -572,16 +572,3 @@ export async function getVirtualObjectInbox(
     { requireVqueueInboxStage: true },
   );
 }
-
-export async function getVqueueInbox(this: QueryContext, vqueueId: string) {
-  if (!this.features.has('vqueues')) {
-    return Response.json(unsupportedInbox());
-  }
-  const foundEntries = await findVqueueInboxEntriesById(this, vqueueId);
-  const entryDetails = await getVirtualObjectEntryDetails(this, foundEntries);
-  return Response.json(
-    buildInboxResponse(foundEntries, entryDetails, {
-      requireVqueueInboxStage: true,
-    }),
-  );
-}

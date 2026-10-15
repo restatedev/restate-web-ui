@@ -83,10 +83,6 @@ export type BatchInvocationsResponse =
   components['schemas']['BatchInvocationsResponse'];
 export type BatchOperationResult =
   components['schemas']['BatchOperationResult'];
-export type SortInvocations = Exclude<
-  components['schemas']['ListInvocationsRequestBody']['sort'],
-  undefined
->;
 export type JournalEntryPayloads =
   components['schemas']['JournalEntryPayloads'];
 export type FailureEntry = components['schemas']['FailureEntry'];

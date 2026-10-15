@@ -580,26 +580,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/invocations': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * List invocations
-     * @description List invocations
-     */
-    post: operations['list_invocations'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/v2/invocations': {
     parameters: {
       query?: never;
@@ -668,83 +648,6 @@ export interface paths {
     put?: never;
     /** Break down finished invocations by outcome */
     post: operations['finished_invocations_breakdown_v2'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query/v2/invocations/finished-history': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Return finished invocation outcomes in date buckets */
-    post: operations['finished_invocations_history_v2'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query/invocations/count': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Count invocations
-     * @description Count invocations
-     */
-    post: operations['count_invocations'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query/invocations/summary': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Get invocations summary
-     * @description Get an aggregated summary of invocations: counts by status, counts by service, and duration percentiles (p50, p90, p99).
-     */
-    post: operations['get_invocations_summary'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query/invocations/completed-breakdown': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Get completed invocations breakdown over time
-     * @description Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed. Buckets `completed_at` into fixed-width [start, start + interval) buckets across the [startTime, endTime) window. `failed` currently aggregates failed + killed + cancelled.
-     */
-    post: operations['get_completed_invocations_breakdown'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1111,26 +1014,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/vqueues/{vqueueId}/inbox': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get a VQueue inbox
-     * @description Returns the next bounded set of inbox entries in queue order for one VQueue. State mutations are preserved in the result.
-     */
-    get: operations['get_vqueue_inbox'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/vqueues/{vqueueId}/entries': {
     parameters: {
       query?: never;
@@ -1163,26 +1046,6 @@ export interface paths {
      * @description Get a virtual-queue snapshot by VQueue ID, including queue identity, counts, per-stage averages, scheduler and head state, and an optional focused entry. Returns no content when virtual queues are unavailable or the queue is no longer present.
      */
     get: operations['get_vqueue'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query/invocations/{invocationId}/journal/{entryIndex}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get journal entry
-     * @description Get journal entry
-     */
-    get: operations['get_journal_entry'];
     put?: never;
     post?: never;
     delete?: never;
@@ -1411,26 +1274,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/state/services': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * List state services
-     * @description Distinct service names from the state table.
-     */
-    get: operations['list_state_services'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/state/storage-size': {
     parameters: {
       query?: never;
@@ -1471,26 +1314,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/query/limits/rules/{pattern}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get limit rule
-     * @description Configured limit rule from the sys_rules table.
-     */
-    get: operations['get_limit_rule'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   '/query/limits/user-limits': {
     parameters: {
       query?: never;
@@ -1525,46 +1348,6 @@ export interface paths {
      * @description VQueue metadata from the sys_vqueue_meta table, filtered and sorted server-side.
      */
     post: operations['list_vqueues'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query/limits/rules/{pattern}/counters': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * List counters (active matches) for a rule
-     * @description Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.
-     */
-    post: operations['list_limit_counters'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/query/metrics': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get server metrics
-     * @description Aggregated, server-wide throughput and capacity metrics: per-second rates and gauges summed across all partition-processor leaders (metrics_processor), HTTP-ingress nodes (metrics_node), and durable logs (metrics_log).
-     */
-    get: operations['get_metrics'];
-    put?: never;
-    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -3072,10 +2855,6 @@ export interface components {
     ListDrainedDeploymentsResponse: {
       deployment_ids: components['schemas']['DeploymentId'][];
     };
-    /** @description Distinct service names with rows in the state table. */
-    ListStateServicesResponse: {
-      services: string[];
-    };
     /** @description State storage size grouped by service name. Each size is the sum of value_length for the service's rows in the state table. */
     StateStorageSizeResponse: {
       services: {
@@ -3172,30 +2951,6 @@ export interface components {
        */
       blockedDuration?: string;
     };
-    /** @description Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log). */
-    MetricsResponse: {
-      /** @description PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders. */
-      invocations_per_sec: number;
-      /** @description PROCESSOR (metrics_processor.events): journal events written per second — every journal entry on the leader counts as one event. */
-      events_per_sec: number;
-      /** @description PROCESSOR (metrics_processor.actions): user-facing billing/usage actions per second — one action per journal command, metered by payload (one action per started 64 KiB: action_units = ceil(len / 64 KiB), min 1, so 1 byte -> 1 action and 65 KiB -> 2). */
-      actions_per_sec: number;
-      /** @description PROCESSOR (metrics_processor.invoker_to_service_throughput): throughput from the invoker to the service deployments, MiB/s — bytes the invoker streams to SDK endpoints (new commands + replay). */
-      invoker_mibps: number;
-      /** @description PROCESSOR (metrics_processor.invoker_available_slots): invoker concurrency slots free for new invocations, summed across partitions. A partition whose invoker is unlimited or not yet running reports slots as (0, 0). */
-      slots_available: number;
-      /** @description PROCESSOR (metrics_processor.invoker_used_slots): invoker concurrency slots in use (capacity - available), summed across partitions — how many invocations are concurrently executing. */
-      slots_used: number;
-      /** @description INGRESS (metrics_node.throughput): ingress throughput, MiB/s — request + response body bytes seen at the HTTP ingress, turned into a rate by the sampler. */
-      ingress_mibps: number;
-      /** @description INGRESS (metrics_node.current_connections): currently open ingress connections (live gauge). */
-      connections: number;
-      /** @description INGRESS (metrics_node.waiting_invocations): admitted in-flight ingress requests blocked awaiting a result — request-response calls and attaches only; fire-and-forget sends are deliberately excluded. */
-      waiting: number;
-      /** @description DURABLE LOG (metrics_log.append_rate): bytes appended to Bifrost per second, MiB/s — summed across all logs, i.e. total durable-log write throughput. */
-      log_mibps: number;
-    };
-    VirtualObjectState: string[];
     InvocationQueryModeV2:
       | {
           /** @enum {string} */
@@ -3716,67 +3471,6 @@ export interface components {
       isPartial: boolean;
       scannedCount: number;
       outcomes: components['schemas']['FinishedInvocationOutcomeBreakdownV2'][];
-    };
-    FinishedInvocationsHistoryV2RequestBody: {
-      /**
-       * Format: date-time
-       * @description Inclusive completion-time lower bound.
-       */
-      startTime: string;
-      /**
-       * Format: date-time
-       * @description Exclusive completion-time upper bound.
-       */
-      endTime: string;
-      /**
-       * Format: duration
-       * @description Fixed-width ISO 8601 bucket interval, for example PT5M, PT1H, or P1D. The requested range may contain at most 10000 buckets.
-       */
-      interval: string;
-    };
-    FinishedInvocationsHistoryBucketV2: {
-      /** Format: date-time */
-      start: string;
-      /** Format: date-time */
-      end: string;
-      succeeded: number;
-      failed: number;
-      cancelled: number;
-      killed: number;
-    };
-    FinishedInvocationsHistoryV2Response: {
-      /** Format: date-time */
-      startTime: string;
-      /** Format: date-time */
-      endTime: string;
-      /** Format: duration */
-      interval: string;
-      /**
-       * @description VQueue mode separates all four outcomes. Legacy mode reports every non-success outcome as failed.
-       * @enum {string}
-       */
-      granularity: 'exact' | 'failure-grouped';
-      buckets: components['schemas']['FinishedInvocationsHistoryBucketV2'][];
-    };
-    ListInvocationsRequestBody: {
-      filters?: components['schemas']['FilterItem'][];
-      sampled?: boolean;
-      sampleSize?: number;
-      sort?: {
-        /** @enum {string} */
-        field:
-          | 'created_at'
-          | 'modified_at'
-          | 'scheduled_at'
-          | 'scheduled_start_at'
-          | 'running_at'
-          | 'target_service_key'
-          | 'target_service_name'
-          | 'target_handler_name'
-          | 'duration';
-        /** @enum {string} */
-        order: 'ASC' | 'DESC';
-      };
     };
     LimitRuleSort: {
       /** @enum {string} */
@@ -5400,38 +5094,6 @@ export interface components {
       };
       range?: string;
       appliedFilters?: components['schemas']['FilterItem'][];
-    };
-    /** @description Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed over a [startTime, endTime) window. NOTE: `failed` currently aggregates failed + killed + cancelled; these may be split into their own fields later. */
-    CompletedInvocationsBreakdownResponse: {
-      /**
-       * Format: date-time
-       * @description Inclusive lower bound of the window, echoed from the request.
-       */
-      startTime: string;
-      /**
-       * Format: date-time
-       * @description Exclusive upper bound of the window, echoed from the request.
-       */
-      endTime: string;
-      /** @description Bucket width as an ISO 8601 duration, echoed from the request. */
-      interval: string;
-      /** @description Contiguous, zero-filled buckets ordered by start ascending. Each bucket covers [start, end). */
-      buckets: {
-        /**
-         * Format: date-time
-         * @description Inclusive start timestamp of the bucket.
-         */
-        start: string;
-        /**
-         * Format: date-time
-         * @description Exclusive end timestamp of the bucket (start + interval); equals the next bucket's start.
-         */
-        end: string;
-        /** @description Invocations that completed successfully (completion_result = success) within the bucket. */
-        succeeded: number;
-        /** @description Invocations that completed unsuccessfully within the bucket. Currently includes failed, killed, and cancelled. */
-        failed: number;
-      }[];
     };
   };
   responses: {
@@ -7131,80 +6793,6 @@ export interface operations {
       };
     };
   };
-  list_invocations: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ListInvocationsRequestBody'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': {
-            rows: components['schemas']['Invocation'][];
-            limit: number;
-          };
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
   list_invocations_v2: {
     parameters: {
       query?: never;
@@ -7328,285 +6916,6 @@ export interface operations {
       };
       /** @description Invalid query */
       400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  finished_invocations_history_v2: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['FinishedInvocationsHistoryV2RequestBody'];
-      };
-    };
-    responses: {
-      /** @description Finished invocation outcome history */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['FinishedInvocationsHistoryV2Response'];
-        };
-      };
-      /** @description Invalid query */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  count_invocations: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ListInvocationsRequestBody'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': {
-            count: number;
-            isLowerBound?: boolean;
-          };
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  get_invocations_summary: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': {
-          filters?: components['schemas']['FilterItem'][];
-          /** @default true */
-          sampled?: boolean;
-          /** @default 50000 */
-          sampleSize?: number;
-          /** @default false */
-          includeDuration?: boolean;
-          /**
-           * @description Exclude completed invocations (succeeded/failed/killed/cancelled) from the scan, returning only in-flight statuses.
-           * @default false
-           */
-          excludeCompleted?: boolean;
-          range?: string;
-        };
-      };
-    };
-    responses: {
-      /** @description Invocations summary */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['InvocationsSummaryResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  get_completed_invocations_breakdown: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': {
-          /**
-           * Format: date-time
-           * @description Inclusive lower bound of the window (ISO 8601 date-time).
-           */
-          startTime: string;
-          /**
-           * Format: date-time
-           * @description Exclusive upper bound of the window (ISO 8601 date-time).
-           */
-          endTime: string;
-          /** @description Bucket width as an ISO 8601 duration, e.g. PT5M, PT1H, P1D. */
-          interval: string;
-          filters?: components['schemas']['FilterItem'][];
-        };
-      };
-    };
-    responses: {
-      /** @description Completed invocations breakdown over time */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CompletedInvocationsBreakdownResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
         headers: {
           [name: string]: unknown;
         };
@@ -8787,45 +8096,6 @@ export interface operations {
       };
     };
   };
-  get_vqueue_inbox: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description VQueue id */
-        vqueueId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ordered inbox entries for the VQueue */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['VirtualObjectInboxResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
   get_vqueue_entries: {
     parameters: {
       query: {
@@ -8916,78 +8186,6 @@ export interface operations {
         content?: never;
       };
       400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
-  get_journal_entry: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Invocation id */
-        invocationId: string;
-        /** @description Entry index */
-        entryIndex: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['JournalEntryV2'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
         headers: {
           [name: string]: unknown;
         };
@@ -9870,73 +9068,6 @@ export interface operations {
       };
     };
   };
-  list_state_services: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ListStateServicesResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-    };
-  };
   get_state_storage_size: {
     parameters: {
       query?: never;
@@ -10027,28 +9158,6 @@ export interface operations {
       };
     };
   };
-  get_limit_rule: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Limit rule pattern. */
-        pattern: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['RuleResponse'];
-        };
-      };
-    };
-  };
   list_user_limits: {
     parameters: {
       query?: never;
@@ -10091,99 +9200,6 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ListVQueuesResponse'];
-        };
-      };
-    };
-  };
-  list_limit_counters: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Limit rule pattern. */
-        pattern: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ListLimitCountersRequestBody'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ListUserLimitsResponse'];
-        };
-      };
-    };
-  };
-  get_metrics: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['MetricsResponse'];
-        };
-      };
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      500: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
-        };
-      };
-      503: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ErrorDescriptionResponse'];
         };
       };
     };

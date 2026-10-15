@@ -57,10 +57,7 @@ import {
 import { Support } from '@restate/features/support';
 import { StatePanel } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
-import {
-  FeatureFlags,
-  useIsFeatureFlagEnabled,
-} from '@restate/util/feature-flag';
+import { FeatureFlags } from '@restate/util/feature-flag';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { DeleteDeployment } from '@restate/features/deployment';
 import { ServicePlayground } from '@restate/features/service';
@@ -459,9 +456,6 @@ function RouteContent() {
 function AppContent() {
   // Tenant view uses a separate shell and URL prefix for shared invocation links.
   const tenantMatch = useMatch('/tenants/:scope/*');
-  const executionMetricsEnabled = useIsFeatureFlagEnabled(
-    'FEATURE_EXECUTION_METRICS',
-  );
 
   return (
     <QueryProvider queryClient={queryClient}>
@@ -476,7 +470,6 @@ function AppContent() {
           GettingStarted={RestateGettingStarted}
           systemHealthMonitor={monitor}
           queryHealthCheckEnabled
-          executionMetricsEnabled={executionMetricsEnabled}
         >
           <CodecRuntimeProvider>
             {/* Tenant view reuses the normal server header, API and codecs, without admin panels. */}
