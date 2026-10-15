@@ -75,8 +75,8 @@
         "libs/features/limits-route/src/index.ts"
       ],
       "@restate/features/options": ["libs/features/options/src/index.ts"],
-      "@restate/features/overview2-route": [
-        "libs/features/overview2-route/src/index.ts"
+      "@restate/features/overview-route": [
+        "libs/features/overview-route/src/index.ts"
       ],
       "@restate/features/prune-deployments": [
         "libs/features/prune-deployments/src/index.ts"

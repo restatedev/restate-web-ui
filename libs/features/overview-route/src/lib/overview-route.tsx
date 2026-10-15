@@ -935,4 +935,4 @@ function OverviewDialogs() {
   return mode === 'deployments' ? <PruneDrainedDeploymentsDialog /> : null;
 }
 
-export const overview2 = { Component };
+export const overview = { Component };

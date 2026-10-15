@@ -15,7 +15,7 @@ const PAGE_TITLES: [RegExp, string][] = [
   [/\/virtual-objects$/, 'Virtual Objects'],
   [/\/state\/[^/]+$/, 'Service state'],
   [/\/state$/, 'State'],
-  [/\/overview2?$/, 'Overview'],
+  [/\/overview$/, 'Overview'],
   [/\/introspection$/, 'Introspection'],
   [/\/query-stats$/, 'Query inspector'],
   [/\/features$/, 'Features'],
