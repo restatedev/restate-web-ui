@@ -4,7 +4,7 @@
 
 - **Dev**: `pnpm nx serve web-ui` (Vite proxies the admin API to a Restate server on localhost:9070)
 - **Build**: `pnpm nx build web-ui`
-- **Test**: `pnpm nx test <project>` (e.g., `pnpm nx test ui-button`), add `--watch` for watch mode
+- **Test**: `pnpm nx test <project>` (e.g., `pnpm nx test button`), add `--watch` for watch mode
 - **Single test**: `pnpm nx test <project> --testFile=<file>` or use vitest filtering
 - **Lint**: `pnpm nx lint <project>`
 - **Typecheck**: `pnpm nx typecheck web-ui`

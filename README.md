@@ -16,14 +16,11 @@ pnpm install
 ```sh
 # pnpm nx <target> <project> <...options>
 
-# Run the web ui app in dev mode with mock configuration
-pnpm nx serve web-ui --configuration=mock
+# Run the web ui app in dev mode (proxies the admin API to a Restate server on localhost:9070)
+pnpm nx serve web-ui
 
-# Run the web ui app in dev mode against a local restate server
-pnpm nx serve web-ui --configuration=local
-
-# Run the ui-button unit tests in watch mode
-pnpm nx run test ui-button --watch
+# Run the button unit tests in watch mode
+pnpm nx test button --watch
 ```
 
 Details of each package's targets can be available in the `project.json` file within each package.
