@@ -120,7 +120,9 @@ export function TruncateWithTooltip({
 
   return (
     <Tooltip delay={250}>
-      <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
+      <TooltipTriggerStateContext.Provider
+        value={{ isOpen, open, close, shouldSkipAnimation: false }}
+      >
         <span
           className={triggerStyles({
             overflowVisible,

@@ -1,5 +1,6 @@
 import { ComponentProps, useContext, type PropsWithChildren } from 'react';
-import { Pressable, PressResponder, useHover } from '@react-aria/interactions';
+import { Pressable, useHover } from 'react-aria';
+import { PressResponder } from 'react-aria/private/interactions/PressResponder';
 import { TooltipTriggerStateContext } from 'react-aria-components';
 
 type TooltipTriggerProps = Pick<ComponentProps<typeof Pressable>, 'children'>;
@@ -9,7 +10,11 @@ export function TooltipTrigger({
   const state = useContext(TooltipTriggerStateContext);
   const { hoverProps } = useHover({
     onHoverChange(isHovering) {
-      isHovering ? state?.open(false) : state?.close();
+      if (isHovering) {
+        state?.open(false);
+      } else {
+        state?.close();
+      }
     },
   });
 

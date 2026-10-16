@@ -40,7 +40,9 @@ export function DateTooltip({
 
   return (
     <Tooltip delay={250}>
-      <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
+      <TooltipTriggerStateContext.Provider
+        value={{ isOpen, open, close, shouldSkipAnimation: false }}
+      >
         <span ref={triggerRef} className={styles({ className })}>
           {children}
         </span>

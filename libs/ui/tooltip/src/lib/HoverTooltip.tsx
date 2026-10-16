@@ -216,7 +216,9 @@ export function HoverTooltip({
 
   return (
     <Tooltip delay={250} disabled={disabled}>
-      <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
+      <TooltipTriggerStateContext.Provider
+        value={{ isOpen, open, close, shouldSkipAnimation: false }}
+      >
         <span
           ref={triggerRef}
           className={styles({ className })}
