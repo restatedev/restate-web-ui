@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main]
+    branches: [main, 'release-*']
 jobs:
   check-version:
     runs-on: warp-ubuntu-latest-x64-4x
