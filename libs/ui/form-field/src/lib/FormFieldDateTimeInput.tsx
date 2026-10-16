@@ -37,11 +37,10 @@ const segmentStyles = tv({
   },
 });
 
-interface InputProps
-  extends Pick<
-    AriaDateFieldProps<ZonedDateTime>,
-    'name' | 'autoFocus' | 'validate'
-  > {
+interface InputProps extends Pick<
+  AriaDateFieldProps<ZonedDateTime>,
+  'name' | 'autoFocus' | 'validate'
+> {
   className?: string;
   required?: boolean;
   disabled?: boolean;

@@ -3,8 +3,10 @@ import { tv } from '@restate/util/styles';
 import { Group as AriaGroup } from 'react-aria-components';
 import { ComponentProps } from 'react';
 
-interface FormFieldGroupProps
-  extends Pick<ComponentProps<typeof AriaGroup>, 'children'> {
+interface FormFieldGroupProps extends Pick<
+  ComponentProps<typeof AriaGroup>,
+  'children'
+> {
   className?: string;
 }
 

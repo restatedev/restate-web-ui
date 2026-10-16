@@ -1,5 +1,5 @@
 import { Children, PropsWithChildren } from 'react';
-import { usePress } from '@react-aria/interactions';
+import { usePress } from 'react-aria';
 import { useFocusRing } from 'react-aria';
 import { focusRing } from '@restate/ui/focus';
 import { tv } from '@restate/util/styles';

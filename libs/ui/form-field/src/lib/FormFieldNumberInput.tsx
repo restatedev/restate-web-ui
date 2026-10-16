@@ -24,18 +24,17 @@ const containerStyles = tv({
   base: 'group flex flex-col gap-1',
 });
 
-interface InputProps
-  extends Pick<
-    AriaNumberFieldProps,
-    | 'name'
-    | 'value'
-    | 'defaultValue'
-    | 'autoFocus'
-    | 'validate'
-    | 'maxValue'
-    | 'minValue'
-    | 'onChange'
-  > {
+interface InputProps extends Pick<
+  AriaNumberFieldProps,
+  | 'name'
+  | 'value'
+  | 'defaultValue'
+  | 'autoFocus'
+  | 'validate'
+  | 'maxValue'
+  | 'minValue'
+  | 'onChange'
+> {
   className?: string;
   required?: boolean;
   disabled?: boolean;

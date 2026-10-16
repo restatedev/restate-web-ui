@@ -9,7 +9,8 @@ import {
 import { LayoutOutlet } from './LayoutOutlet';
 import { LayoutZone } from './LayoutZone';
 import { useSearchParams } from 'react-router';
-import { Pressable, PressResponder } from '@react-aria/interactions';
+import { Pressable } from 'react-aria';
+import { PressResponder } from 'react-aria/private/interactions/PressResponder';
 import { FocusScope } from 'react-aria';
 import { createPortal } from 'react-dom';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
