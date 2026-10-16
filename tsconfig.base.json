@@ -144,6 +144,9 @@
       "@restate/ui/dialog": ["./libs/ui/dialog/src/index.ts"],
       "@restate/ui/dropdown": ["./libs/ui/dropdown/src/index.ts"],
       "@restate/ui/editor": ["./libs/ui/editor/src/index.ts"],
+      "@restate/ui/editor/monaco": [
+        "./libs/ui/editor/src/lib/.client/monaco.ts"
+      ],
       "@restate/ui/empty-state": ["./libs/ui/empty-state/src/index.ts"],
       "@restate/ui/error": ["./libs/ui/error/src/index.ts"],
       "@restate/ui/filter-builder": ["./libs/ui/filter-builder/src/index.ts"],

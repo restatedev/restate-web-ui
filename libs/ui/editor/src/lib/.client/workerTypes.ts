@@ -1,4 +1,4 @@
-declare module 'monaco-editor/esm/vs/editor/editor.worker?worker' {
+declare module 'monaco-editor/editor/editor.worker?worker' {
   const EditorWorkerFactory: {
     new (): Worker;
   };
@@ -6,7 +6,7 @@ declare module 'monaco-editor/esm/vs/editor/editor.worker?worker' {
   export default EditorWorkerFactory;
 }
 
-declare module 'monaco-editor/esm/vs/language/json/json.worker?worker' {
+declare module 'monaco-editor/language/json/json.worker?worker' {
   const JsonWorkerFactory: {
     new (): Worker;
   };

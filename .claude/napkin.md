@@ -1,5 +1,12 @@
 # Napkin
 
+- 2026-10-16 Monaco 0.57 without monaco-sql-languages (user):
+  - **Where Monaco comes from:** editors import it from `@restate/ui/editor/monaco` (`libs/ui/editor/src/lib/.client/monaco.ts`: workers, `features/register.all`, the `sql` and `json` registrations, and a re-export of `monaco-editor/editor`). Importing plain `monaco-editor` in a runtime module pulls in all languages and emits the TypeScript, CSS and HTML workers into `dist`. Type-only imports are fine.
+  - **SQL autocomplete:** the caret context comes from `getSqlCompletionContext` (pure, spec'd).
+  - **Theme rules:** they must use `.sql`-suffixed tokens (`string.sql`, `operator.sql`, `predefined.sql`); `vs-dark` defines those and outranks bare `string`.
+  - **No squiggles by design:** there are no SQL error squiggles, and `MonacoEditor` sets `renderValidationDecorations: 'off'`, so JSON shows none either.
+  - **Focus outline:** set `focusBorder: '#00000000'` in every theme, otherwise the EditContext input shows a blue outline.
+
 - 2026-10-16 Stoplight Elements vendored (user): no `@stoplight/*` npm deps, no pnpm patch. The fork build lives in `libs/ui/api/vendor/elements/`, and its metadata-only `package.json` keeps `vendor.LICENSE.txt` attribution. Refresh steps are in `libs/ui/api/ELEMENTS.md`. `JsonSchemaViewer` renders the fork's `<elements-json-schema-viewer>`.
   - **Custom-element gotchas:** render via `createElement(tag, props)` (no JSX namespace augmentation; oxlint flags it). Only render once `customElements.whenDefined(tag)` resolves. Before upgrade, React 19 turns object props into `"[object Object]"` attributes.
   - **Styling:** `className` lands on the host, which is `display: inline` by default, so add `block`. The element adds 3 wrapper divs before `.JsonSchemaViewer`, so child-combinator styling must start from `.JsonSchemaViewer`.

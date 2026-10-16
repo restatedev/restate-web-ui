@@ -1,6 +1,5 @@
 import { RefObject, useEffect, useState } from 'react';
-import * as monaco from 'monaco-editor';
-import './languageSetup';
+import * as monaco from './monaco';
 import { showFoldedArrayLengths } from './foldedArrayLengths';
 
 const MAX_EDITOR_FORMAT_LENGTH = 10_000_000;
@@ -47,6 +46,7 @@ export function MonacoEditor({
           'editorGutter.background': '#00000000',
           'editorLineNumber.foreground': '#00000080',
           'editorLineNumber.activeForeground': '#00000080',
+          focusBorder: '#00000000',
         },
         rules: [],
         inherit: true,
@@ -81,7 +81,7 @@ export function MonacoEditor({
       hideCursorInOverviewRuler: true,
       contextmenu: false,
       hover: {
-        enabled: false,
+        enabled: 'off',
       },
       unicodeHighlight: {
         ambiguousCharacters: false,
