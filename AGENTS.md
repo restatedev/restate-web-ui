@@ -110,3 +110,10 @@ pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --im
 - **App-minimal patch set**: Default to refreshing only the assets this app consumes: `elements-web-components.min.js`, `elements-web-components.min.js.LICENSE.txt`, `elements-web-components.min.scoped.css`, `NOTICE`, plus the minimal `package.json` manifest changes that expose those files.
 - **Do not patch by default**: Do not refresh `web-components.min.js` unless the user explicitly asks for it.
 - **Reference doc**: Follow `apps/web-ui/ELEMENTS_PATCH.md` for the concrete patch steps.
+
+## Releasing
+
+- **Trigger**: `.github/workflows/release.yml` publishes `v<version>` on any push to `main` or a `release-*` branch whose `package.json` `version` has no GitHub release yet, then opens a PR in `restatedev/restate-web-ui-crate`.
+- **Releasing an older commit**: Push the version bump on a `release-<version>` branch created from that commit, then cherry-pick the release commit to `main` once the release is published.
+- **Branch names**: Only use the `release-` prefix for branches meant to publish a release.
+- **Reference doc**: Follow the Releasing section in `README.md`.
