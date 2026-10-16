@@ -1,20 +1,20 @@
-import { ComponentProps, useContext } from 'react';
-import { OverlayTriggerStateContext } from 'react-aria-components';
-import { Pressable, PressResponder } from '@react-aria/interactions';
+import { PropsWithChildren, useContext } from 'react';
+import {
+  ButtonContext,
+  OverlayTriggerStateContext,
+} from 'react-aria-components';
 
-interface DialogCLoseProps {
-  children: ComponentProps<typeof Pressable>['children'];
-}
-
-export function DialogClose({ children }: DialogCLoseProps) {
+export function DialogClose({ children }: PropsWithChildren) {
   const state = useContext(OverlayTriggerStateContext);
   return (
-    <PressResponder
-      onPress={() => {
-        state?.close();
+    <ButtonContext.Provider
+      value={{
+        onPress: () => {
+          state?.close();
+        },
       }}
     >
       {children}
-    </PressResponder>
+    </ButtonContext.Provider>
   );
 }

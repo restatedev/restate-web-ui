@@ -1,5 +1,4 @@
 import {
-  ComponentProps,
   createContext,
   use,
   useCallback,
@@ -9,8 +8,7 @@ import {
 import { LayoutOutlet } from './LayoutOutlet';
 import { LayoutZone } from './LayoutZone';
 import { useSearchParams } from 'react-router';
-import { Pressable } from 'react-aria';
-import { PressResponder } from 'react-aria/private/interactions/PressResponder';
+import { ButtonContext } from 'react-aria-components';
 import { FocusScope } from 'react-aria';
 import { createPortal } from 'react-dom';
 import { PANEL_QUERY_PARAM } from '@restate/util/panel';
@@ -84,13 +82,13 @@ export function ComplementaryWithSearchParam({
   );
 }
 
-export function ComplementaryClose({
-  children,
-}: {
-  children: ComponentProps<typeof Pressable>['children'];
-}) {
+export function ComplementaryClose({ children }: PropsWithChildren) {
   const { onClose } = use(ComplementaryContext);
-  return <PressResponder onPress={onClose}>{children}</PressResponder>;
+  return (
+    <ButtonContext.Provider value={{ onPress: onClose }}>
+      {children}
+    </ButtonContext.Provider>
+  );
 }
 
 export function ComplementaryHeader({ children }: PropsWithChildren) {
