@@ -378,7 +378,9 @@ export function StateStorageBreakdown() {
                   <Button
                     variant="secondary"
                     className={legendItem({
-                      class: `${legendItemLink()} border-none bg-transparent shadow-none`,
+                      class: legendItemLink({
+                        class: 'border-none bg-transparent shadow-none',
+                      }),
                     })}
                   >
                     {content}

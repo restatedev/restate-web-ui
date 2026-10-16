@@ -2,7 +2,7 @@ import { FormFieldInput } from '@restate/ui/form-field';
 import { useRegisterDeploymentContext } from './Context';
 
 const ROLE_REGEX =
-  /^arn:aws(?:-cn|-us-gov)?:iam::\d{12}:role(?:\/[\w+=,.@\-]+)+$/;
+  /^arn:aws(?:-cn|-us-gov)?:iam::\d{12}:role(?:\/[\w+=,.@-]+)+$/;
 export function AssumeARNRole({ className }: { className?: string }) {
   const { updateAssumeRoleArn, assumeRoleArn, isPending } =
     useRegisterDeploymentContext();
