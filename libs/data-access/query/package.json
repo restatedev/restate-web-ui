@@ -1,7 +1,0 @@
-{
-  "name": "@restate/data-access/query",
-  "version": "0.0.1",
-  "type": "module",
-  "dependencies": {},
-  "private": true
-}

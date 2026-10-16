@@ -11,8 +11,6 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "noUncheckedSideEffectImports": false,
-    "types": ["*"],
     "paths": {
       "@restate/data-access/admin-api": [
         "./libs/data-access/admin-api/src/index.ts"

@@ -49,9 +49,6 @@ export default defineConfig(({ mode }) => {
       outDir: './dist',
       emptyOutDir: true,
       reportCompressedSize: true,
-      commonjsOptions: {
-        transformMixedEsModules: true,
-      },
     },
     server: {
       headers: SERVER_HEADERS,
