@@ -1,29 +1,30 @@
 on:
   push:
-    branches: [main]
+    branches: [main, 'release-*']
+concurrency: release
 jobs:
   check-version:
     runs-on: warp-ubuntu-latest-x64-4x
     steps:
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.0.8
-          run_install: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: johnnybenson/package-json-versioned-action@v1.0.9
-        id: package-json
-        with:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
-      - run: echo "has-updated -- ${{ steps.package-json.outputs.has-updated }}"
+      - name: Check if version is released
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(jq -r .version package.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "v$VERSION is already released"
+            echo "has-updated=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "v$VERSION is not released yet"
+            echo "has-updated=true" >> "$GITHUB_OUTPUT"
+          fi
     outputs:
-      has-updated: ${{ steps.package-json.outputs.has-updated }}
-      version: ${{ steps.package-json.outputs.version }}
+      has-updated: ${{ steps.version.outputs.has-updated }}
+      version: ${{ steps.version.outputs.version }}
   release:
     runs-on: warp-ubuntu-latest-x64-4x
     name: Release
