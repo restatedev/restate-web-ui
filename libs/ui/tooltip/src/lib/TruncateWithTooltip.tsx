@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 import { TooltipTriggerStateContext } from 'react-aria-components';
-import { Tooltip } from './Tooltip';
+import { useTooltipTriggerState } from 'react-stately';
 import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
 import { useTooltipWithHover } from './useTooltipWithHover';
@@ -118,40 +118,42 @@ export function TruncateWithTooltip({
     contentRef: tooltipHoverRef,
   });
 
+  const tooltipState = useTooltipTriggerState({
+    isOpen,
+    onOpenChange: setIsOpen,
+    closeDelay: 0,
+  });
+
   return (
-    <Tooltip delay={250}>
-      <TooltipTriggerStateContext.Provider
-        value={{ isOpen, open, close, shouldSkipAnimation: false }}
+    <TooltipTriggerStateContext.Provider value={tooltipState}>
+      <span
+        className={triggerStyles({
+          overflowVisible,
+          className: containerClassName,
+        })}
+        ref={containerRef}
       >
-        <span
-          className={triggerStyles({
-            overflowVisible,
-            className: containerClassName,
-          })}
-          ref={containerRef}
+        <TruncateTooltipTrigger
+          ref={triggerRef}
+          overflowVisible={overflowVisible}
         >
-          <TruncateTooltipTrigger
-            ref={triggerRef}
-            overflowVisible={overflowVisible}
-          >
-            {children}
-          </TruncateTooltipTrigger>
-        </span>
-        <TooltipContent size={size} offset={5} triggerRef={containerRef}>
-          <div
-            className={tooltipContentStyles({ className })}
-            ref={tooltipHoverRef}
-          >
-            <div className={contentStyles({ size })}>{tooltipContent}</div>
-            {!hideCopy && (
-              <Copy
-                copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
-                className="sticky top-0 right-0 translate-x-1 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
-              />
-            )}
-          </div>
-        </TooltipContent>
-      </TooltipTriggerStateContext.Provider>
-    </Tooltip>
+          {children}
+        </TruncateTooltipTrigger>
+      </span>
+      <TooltipContent size={size} offset={5} triggerRef={containerRef}>
+        <div
+          className={tooltipContentStyles({ className })}
+          ref={tooltipHoverRef}
+        >
+          <div className={contentStyles({ size })}>{tooltipContent}</div>
+          {!hideCopy && (
+            <Copy
+              copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
+              className="sticky top-0 right-0 translate-x-1 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
+            />
+          )}
+        </div>
+      </TooltipContent>
+    </TooltipTriggerStateContext.Provider>
   );
 }
