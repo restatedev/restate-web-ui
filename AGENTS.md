@@ -91,7 +91,8 @@ pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --im
 - **Package manager**: pnpm (monorepo managed by Nx)
 - **TypeScript**: Strict mode enabled, use `noUncheckedIndexedAccess`
 - **Imports**: Use path aliases (`@restate/ui/*`, `@restate/features/*`, `@restate/data-access/*`, `@restate/util/*`) from tsconfig.base.json
-- **Formatting**: Prettier with single quotes, trailing commas, Tailwind plugin
+- **Formatting**: oxfmt (`.oxfmtrc.json`) with single quotes, trailing commas, Tailwind class sorting; run `pnpm nx format`
+- **Linting**: oxlint (`.oxlintrc.json`); `tools/oxlint-plugin-restate.js` enforces the `tv()` className rule
 - **Styling**: Tailwind CSS, use `tv()` from `@restate/util/styles` for component variants. Never use string interpolation for dynamic Tailwind classes (e.g., `${isVoid ? 'text-zinc-400' : 'text-gray-500'}`). Always use `tv()` with variants instead.
 - **Components**: React 19, React Aria Components for UI primitives, use `forwardRef` for refs
 - **Types**: Define props interfaces explicitly, use `PropsWithChildren` when needed

@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 80,
+  "sortPackageJson": false,
+  "sortTailwindcss": {
+    "stylesheet": "./apps/web-ui/app/tailwind.css",
+    "functions": ["tv"]
+  },
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    "inter.css",
+    "merge.mjs",
+    "CLAUDE.md",
+    "napkin.md"
+  ]
+}
