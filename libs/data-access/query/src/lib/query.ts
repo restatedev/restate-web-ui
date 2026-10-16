@@ -7,11 +7,11 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { RestateError } from '@restate/util/errors';
 import {
+  createContextKey,
   createRouter,
-  createRoutes,
-  createStorageKey,
   type Middleware,
 } from '@remix-run/fetch-router';
+import { createRoutes } from '@remix-run/fetch-router/routes';
 import {
   QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL,
   type QueryContext,
@@ -229,7 +229,7 @@ function bindHandlers(context: QueryContext): BoundHandlers {
   };
 }
 
-const handlersKey = createStorageKey<BoundHandlers>();
+const handlersKey = createContextKey<BoundHandlers>();
 
 const decodeParamsMiddleware: Middleware = (ctx, next) => {
   const params = ctx.params as Record<string, string | undefined>;
@@ -242,7 +242,10 @@ const decodeParamsMiddleware: Middleware = (ctx, next) => {
   return next();
 };
 
-const handlersMiddleware: Middleware = (ctx, next) => {
+const handlersMiddleware: Middleware<{
+  key: typeof handlersKey;
+  value: BoundHandlers;
+}> = (ctx, next) => {
   const baseUrl = `${ctx.url.protocol}//${ctx.url.host}`;
   const features = getFeatures(ctx.headers);
   const queryContext = createQueryContext(
@@ -252,7 +255,7 @@ const handlersMiddleware: Middleware = (ctx, next) => {
     ctx.request.signal,
   );
   const handlers = bindHandlers(queryContext);
-  ctx.storage.set(handlersKey, handlers);
+  ctx.set(handlersKey, handlers);
   return next();
 };
 
@@ -412,278 +415,307 @@ const router = createRouter({
   middleware: [handlersMiddleware],
 });
 
-router.map(routes, {
+router.map(routes.invocations, {
   middleware: [decodeParamsMiddleware],
   actions: {
-    invocations: {
-      async statuses(ctx) {
-        const { getInvocationsStatus } = ctx.storage.get(handlersKey);
-        const {
-          invocationIds = [],
-        }: components['schemas']['GetInvocationsStatusRequestBody'] =
-          await ctx.request.json();
-        return getInvocationsStatus(invocationIds);
-      },
-      async get(ctx) {
-        const { getInvocation } = ctx.storage.get(handlersKey);
-        return getInvocation(ctx.params.invocationId);
-      },
-      async journalEntryPayloads(ctx) {
-        const { getJournalEntryPayloads } = ctx.storage.get(handlersKey);
-        return getJournalEntryPayloads(
-          ctx.params.invocationId,
-          Number(ctx.params.entryIndex),
+    async statuses(ctx) {
+      const { getInvocationsStatus } = ctx.get(handlersKey);
+      const {
+        invocationIds = [],
+      }: components['schemas']['GetInvocationsStatusRequestBody'] =
+        await ctx.request.json();
+      return getInvocationsStatus(invocationIds);
+    },
+    async get(ctx) {
+      const { getInvocation } = ctx.get(handlersKey);
+      return getInvocation(ctx.params.invocationId);
+    },
+    async journalEntryPayloads(ctx) {
+      const { getJournalEntryPayloads } = ctx.get(handlersKey);
+      return getJournalEntryPayloads(
+        ctx.params.invocationId,
+        Number(ctx.params.entryIndex),
+      );
+    },
+    async journalEntryMetadata(ctx) {
+      const { getJournalEntryMetadata } = ctx.get(handlersKey);
+      return getJournalEntryMetadata(
+        ctx.params.invocationId,
+        Number(ctx.params.entryIndex),
+      );
+    },
+    async cancel(ctx) {
+      const { batchCancelInvocations } = ctx.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchCancelInvocations(request);
+    },
+    async purge(ctx) {
+      const { batchPurgeInvocations } = ctx.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchPurgeInvocations(request);
+    },
+    async kill(ctx) {
+      const { batchKillInvocations } = ctx.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchKillInvocations(request);
+    },
+    async pause(ctx) {
+      const { batchPauseInvocations } = ctx.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchPauseInvocations(request);
+    },
+    async resume(ctx) {
+      const { batchResumeInvocations } = ctx.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchResumeInvocations(request);
+    },
+    async restartAsNew(ctx) {
+      const { batchRestartAsNewInvocations } = ctx.get(handlersKey);
+      const request: BatchInvocationsRequestBody = await ctx.request.json();
+      return batchRestartAsNewInvocations(request);
+    },
+    async pausedError(ctx) {
+      const { getPausedError } = ctx.get(handlersKey);
+      return getPausedError(ctx.params.invocationId);
+    },
+    async transientError(ctx) {
+      const { getTransientError } = ctx.get(handlersKey);
+      return getTransientError(ctx.params.invocationId);
+    },
+    async vqueue(ctx) {
+      const { getVqueue } = ctx.get(handlersKey);
+      const focusEntryId =
+        ctx.url.searchParams.get('focusEntryId') ?? undefined;
+      return getVqueue(ctx.params.vqueueId, focusEntryId);
+    },
+    async vqueueEntries(ctx) {
+      const stage = ctx.url.searchParams.get('stage');
+      if (!isVqueueEntryStage(stage)) {
+        return Response.json(
+          { message: 'A valid VQueue stage is required.' },
+          { status: 400 },
         );
-      },
-      async journalEntryMetadata(ctx) {
-        const { getJournalEntryMetadata } = ctx.storage.get(handlersKey);
-        return getJournalEntryMetadata(
-          ctx.params.invocationId,
-          Number(ctx.params.entryIndex),
-        );
-      },
-      async cancel(ctx) {
-        const { batchCancelInvocations } = ctx.storage.get(handlersKey);
-        const request: BatchInvocationsRequestBody = await ctx.request.json();
-        return batchCancelInvocations(request);
-      },
-      async purge(ctx) {
-        const { batchPurgeInvocations } = ctx.storage.get(handlersKey);
-        const request: BatchInvocationsRequestBody = await ctx.request.json();
-        return batchPurgeInvocations(request);
-      },
-      async kill(ctx) {
-        const { batchKillInvocations } = ctx.storage.get(handlersKey);
-        const request: BatchInvocationsRequestBody = await ctx.request.json();
-        return batchKillInvocations(request);
-      },
-      async pause(ctx) {
-        const { batchPauseInvocations } = ctx.storage.get(handlersKey);
-        const request: BatchInvocationsRequestBody = await ctx.request.json();
-        return batchPauseInvocations(request);
-      },
-      async resume(ctx) {
-        const { batchResumeInvocations } = ctx.storage.get(handlersKey);
-        const request: BatchInvocationsRequestBody = await ctx.request.json();
-        return batchResumeInvocations(request);
-      },
-      async restartAsNew(ctx) {
-        const { batchRestartAsNewInvocations } = ctx.storage.get(handlersKey);
-        const request: BatchInvocationsRequestBody = await ctx.request.json();
-        return batchRestartAsNewInvocations(request);
-      },
-      async pausedError(ctx) {
-        const { getPausedError } = ctx.storage.get(handlersKey);
-        return getPausedError(ctx.params.invocationId);
-      },
-      async transientError(ctx) {
-        const { getTransientError } = ctx.storage.get(handlersKey);
-        return getTransientError(ctx.params.invocationId);
-      },
-      async vqueue(ctx) {
-        const { getVqueue } = ctx.storage.get(handlersKey);
-        const focusEntryId =
-          ctx.url.searchParams.get('focusEntryId') ?? undefined;
-        return getVqueue(ctx.params.vqueueId, focusEntryId);
-      },
-      async vqueueEntries(ctx) {
-        const stage = ctx.url.searchParams.get('stage');
-        if (!isVqueueEntryStage(stage)) {
-          return Response.json(
-            { message: 'A valid VQueue stage is required.' },
-            { status: 400 },
-          );
-        }
-        const { getVqueueEntries } = ctx.storage.get(handlersKey);
-        return getVqueueEntries(ctx.params.vqueueId, stage);
-      },
+      }
+      const { getVqueueEntries } = ctx.get(handlersKey);
+      return getVqueueEntries(ctx.params.vqueueId, stage);
     },
-    invocationsV2: {
-      async list(ctx) {
-        const { listInvocationsV2 } = ctx.storage.get(handlersKey);
-        const body = (await ctx.request.json()) as ListInvocationsV2Args;
-        return listInvocationsV2(body);
-      },
-      async summary(ctx) {
-        const { summaryInvocationsV2 } = ctx.storage.get(handlersKey);
-        const body = (await ctx.request.json()) as SummaryInvocationsV2Args;
-        return summaryInvocationsV2(body);
-      },
-      async inbox(ctx) {
-        const { inboxInvocationsBreakdownV2 } = ctx.storage.get(handlersKey);
-        const body =
-          (await ctx.request.json()) as InboxInvocationsBreakdownV2Args;
-        return inboxInvocationsBreakdownV2(body);
-      },
-      async finishedBreakdown(ctx) {
-        const { finishedInvocationsBreakdownV2 } = ctx.storage.get(handlersKey);
-        const body =
-          (await ctx.request.json()) as FinishedInvocationsBreakdownV2Args;
-        return finishedInvocationsBreakdownV2(body);
-      },
-      async get(ctx) {
-        const { getInvocationJournalV2 } = ctx.storage.get(handlersKey);
-        return getInvocationJournalV2(ctx.params.invocationId);
-      },
+  },
+});
+
+router.map(routes.invocationsV2, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async list(ctx) {
+      const { listInvocationsV2 } = ctx.get(handlersKey);
+      const body = (await ctx.request.json()) as ListInvocationsV2Args;
+      return listInvocationsV2(body);
     },
-    virtualObjects: {
-      async instances(ctx) {
-        const { listVirtualObjectInstances } = ctx.storage.get(handlersKey);
-        const body =
-          (await ctx.request.json()) as ListVirtualObjectInstancesArgs;
-        return listVirtualObjectInstances(ctx.params.service, body);
-      },
-      async lock(ctx) {
-        const { getVirtualObjectLock } = ctx.storage.get(handlersKey);
-        return getVirtualObjectLock(
-          ctx.params.service,
-          ctx.params.key,
-          ctx.url.searchParams.has('scope')
-            ? String(ctx.url.searchParams.get('scope'))
-            : undefined,
-        );
-      },
-      async inbox(ctx) {
-        const { getVirtualObjectInbox } = ctx.storage.get(handlersKey);
-        return getVirtualObjectInbox(
-          ctx.params.service,
-          ctx.params.key,
-          ctx.url.searchParams.has('scope')
-            ? String(ctx.url.searchParams.get('scope'))
-            : undefined,
-        );
-      },
-      async invocations(ctx) {
-        const { getVirtualObjectInvocations } = ctx.storage.get(handlersKey);
-        return getVirtualObjectInvocations(
-          ctx.params.service,
-          ctx.params.key,
-          ctx.url.searchParams.has('scope')
-            ? String(ctx.url.searchParams.get('scope'))
-            : undefined,
-        );
-      },
-      async stats(ctx) {
-        const { getVirtualObjectStats } = ctx.storage.get(handlersKey);
-        return getVirtualObjectStats(
-          ctx.params.service,
-          ctx.params.key,
-          ctx.url.searchParams.has('scope')
-            ? String(ctx.url.searchParams.get('scope'))
-            : undefined,
-        );
-      },
+    async summary(ctx) {
+      const { summaryInvocationsV2 } = ctx.get(handlersKey);
+      const body = (await ctx.request.json()) as SummaryInvocationsV2Args;
+      return summaryInvocationsV2(body);
     },
-    workflows: {
-      runs: {
-        async list(ctx) {
-          const { listWorkflowRuns } = ctx.storage.get(handlersKey);
-          const body = (await ctx.request.json()) as ListWorkflowRunsArgs;
-          return listWorkflowRuns(ctx.params.service, body);
-        },
-        async get(ctx) {
-          const { getWorkflowRun } = ctx.storage.get(handlersKey);
-          return getWorkflowRun(
-            ctx.params.service,
-            ctx.params.workflowId,
-            ctx.url.searchParams.has('scope')
-              ? String(ctx.url.searchParams.get('scope'))
-              : undefined,
-          );
-        },
-        async stats(ctx) {
-          const { getWorkflowRunStats } = ctx.storage.get(handlersKey);
-          return getWorkflowRunStats(
-            ctx.params.service,
-            ctx.params.workflowId,
-            ctx.url.searchParams.has('scope')
-              ? String(ctx.url.searchParams.get('scope'))
-              : undefined,
-            ctx.url.searchParams.get('invocationId') || undefined,
-          );
-        },
-      },
+    async inbox(ctx) {
+      const { inboxInvocationsBreakdownV2 } = ctx.get(handlersKey);
+      const body =
+        (await ctx.request.json()) as InboxInvocationsBreakdownV2Args;
+      return inboxInvocationsBreakdownV2(body);
     },
-    services: {
-      state: {
-        async get(ctx) {
-          const { getState } = ctx.storage.get(handlersKey);
-          return getState(
-            ctx.params.name,
-            ctx.params.key,
-            ctx.url.searchParams.getAll('stateKey'),
-          );
-        },
-        async query(ctx) {
-          const { queryState } = ctx.storage.get(handlersKey);
-          const args = (await ctx.request.json()) as {
-            systemFilters?: FilterItem[];
-            stateFilter?: FilterItem;
-          };
-          return queryState(ctx.params.name, args);
-        },
-        async list(ctx) {
-          const { listState } = ctx.storage.get(handlersKey);
-          const body = (await ctx.request.json()) as {
-            items?: ListStateItem[];
-            keys?: string[];
-          };
-          const args: ListStateArgs = body.items
-            ? { items: body.items }
-            : { keys: body.keys ?? [] };
-          return listState(ctx.params.name, args);
-        },
-        async entries(ctx) {
-          const { listStateEntries } = ctx.storage.get(handlersKey);
-          const body = (await ctx.request.json()) as ListStateEntriesArgs;
-          return listStateEntries(ctx.params.name, ctx.params.key, body);
-        },
-      },
-      scopedState: {
-        async get(ctx) {
-          const { getScopedState } = ctx.storage.get(handlersKey);
-          return getScopedState(
-            ctx.params.name,
-            ctx.params.scope,
-            ctx.params.key,
-            ctx.url.searchParams.getAll('stateKey'),
-          );
-        },
-      },
+    async finishedBreakdown(ctx) {
+      const { finishedInvocationsBreakdownV2 } = ctx.get(handlersKey);
+      const body =
+        (await ctx.request.json()) as FinishedInvocationsBreakdownV2Args;
+      return finishedInvocationsBreakdownV2(body);
     },
-    deployments: {
-      async drained(ctx) {
-        const { listDrainedDeployments } = ctx.storage.get(handlersKey);
-        return listDrainedDeployments();
-      },
+    async get(ctx) {
+      const { getInvocationJournalV2 } = ctx.get(handlersKey);
+      return getInvocationJournalV2(ctx.params.invocationId);
     },
-    state: {
-      async storageSize(ctx) {
-        const { getStateStorageSize } = ctx.storage.get(handlersKey);
-        return getStateStorageSize();
-      },
+  },
+});
+
+router.map(routes.virtualObjects, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async instances(ctx) {
+      const { listVirtualObjectInstances } = ctx.get(handlersKey);
+      const body = (await ctx.request.json()) as ListVirtualObjectInstancesArgs;
+      return listVirtualObjectInstances(ctx.params.service, body);
     },
-    limits: {
-      rules: {
-        async list(ctx) {
-          const { listLimitRules } = ctx.storage.get(handlersKey);
-          const args: components['schemas']['ListLimitRulesRequestBody'] =
-            await ctx.request.json();
-          return listLimitRules(args);
-        },
-      },
-      async userLimits(ctx) {
-        const { listUserLimits } = ctx.storage.get(handlersKey);
-        const args: components['schemas']['ListLimitCountersRequestBody'] =
-          await ctx.request.json();
-        return listUserLimits(args);
-      },
-      async vqueues(ctx) {
-        const { listVqueues } = ctx.storage.get(handlersKey);
-        const args: components['schemas']['ListVQueuesRequestBody'] =
-          await ctx.request.json();
-        return listVqueues(args);
-      },
+    async lock(ctx) {
+      const { getVirtualObjectLock } = ctx.get(handlersKey);
+      return getVirtualObjectLock(
+        ctx.params.service,
+        ctx.params.key,
+        ctx.url.searchParams.has('scope')
+          ? String(ctx.url.searchParams.get('scope'))
+          : undefined,
+      );
+    },
+    async inbox(ctx) {
+      const { getVirtualObjectInbox } = ctx.get(handlersKey);
+      return getVirtualObjectInbox(
+        ctx.params.service,
+        ctx.params.key,
+        ctx.url.searchParams.has('scope')
+          ? String(ctx.url.searchParams.get('scope'))
+          : undefined,
+      );
+    },
+    async invocations(ctx) {
+      const { getVirtualObjectInvocations } = ctx.get(handlersKey);
+      return getVirtualObjectInvocations(
+        ctx.params.service,
+        ctx.params.key,
+        ctx.url.searchParams.has('scope')
+          ? String(ctx.url.searchParams.get('scope'))
+          : undefined,
+      );
+    },
+    async stats(ctx) {
+      const { getVirtualObjectStats } = ctx.get(handlersKey);
+      return getVirtualObjectStats(
+        ctx.params.service,
+        ctx.params.key,
+        ctx.url.searchParams.has('scope')
+          ? String(ctx.url.searchParams.get('scope'))
+          : undefined,
+      );
+    },
+  },
+});
+
+router.map(routes.workflows.runs, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async list(ctx) {
+      const { listWorkflowRuns } = ctx.get(handlersKey);
+      const body = (await ctx.request.json()) as ListWorkflowRunsArgs;
+      return listWorkflowRuns(ctx.params.service, body);
+    },
+    async get(ctx) {
+      const { getWorkflowRun } = ctx.get(handlersKey);
+      return getWorkflowRun(
+        ctx.params.service,
+        ctx.params.workflowId,
+        ctx.url.searchParams.has('scope')
+          ? String(ctx.url.searchParams.get('scope'))
+          : undefined,
+      );
+    },
+    async stats(ctx) {
+      const { getWorkflowRunStats } = ctx.get(handlersKey);
+      return getWorkflowRunStats(
+        ctx.params.service,
+        ctx.params.workflowId,
+        ctx.url.searchParams.has('scope')
+          ? String(ctx.url.searchParams.get('scope'))
+          : undefined,
+        ctx.url.searchParams.get('invocationId') || undefined,
+      );
+    },
+  },
+});
+
+router.map(routes.services.state, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async get(ctx) {
+      const { getState } = ctx.get(handlersKey);
+      return getState(
+        ctx.params.name,
+        ctx.params.key,
+        ctx.url.searchParams.getAll('stateKey'),
+      );
+    },
+    async query(ctx) {
+      const { queryState } = ctx.get(handlersKey);
+      const args = (await ctx.request.json()) as {
+        systemFilters?: FilterItem[];
+        stateFilter?: FilterItem;
+      };
+      return queryState(ctx.params.name, args);
+    },
+    async list(ctx) {
+      const { listState } = ctx.get(handlersKey);
+      const body = (await ctx.request.json()) as {
+        items?: ListStateItem[];
+        keys?: string[];
+      };
+      const args: ListStateArgs = body.items
+        ? { items: body.items }
+        : { keys: body.keys ?? [] };
+      return listState(ctx.params.name, args);
+    },
+    async entries(ctx) {
+      const { listStateEntries } = ctx.get(handlersKey);
+      const body = (await ctx.request.json()) as ListStateEntriesArgs;
+      return listStateEntries(ctx.params.name, ctx.params.key, body);
+    },
+  },
+});
+
+router.map(routes.services.scopedState, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async get(ctx) {
+      const { getScopedState } = ctx.get(handlersKey);
+      return getScopedState(
+        ctx.params.name,
+        ctx.params.scope,
+        ctx.params.key,
+        ctx.url.searchParams.getAll('stateKey'),
+      );
+    },
+  },
+});
+
+router.map(routes.deployments, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async drained(ctx) {
+      const { listDrainedDeployments } = ctx.get(handlersKey);
+      return listDrainedDeployments();
+    },
+  },
+});
+
+router.map(routes.state, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async storageSize(ctx) {
+      const { getStateStorageSize } = ctx.get(handlersKey);
+      return getStateStorageSize();
+    },
+  },
+});
+
+router.map(routes.limits, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async userLimits(ctx) {
+      const { listUserLimits } = ctx.get(handlersKey);
+      const args: components['schemas']['ListLimitCountersRequestBody'] =
+        await ctx.request.json();
+      return listUserLimits(args);
+    },
+    async vqueues(ctx) {
+      const { listVqueues } = ctx.get(handlersKey);
+      const args: components['schemas']['ListVQueuesRequestBody'] =
+        await ctx.request.json();
+      return listVqueues(args);
+    },
+  },
+});
+
+router.map(routes.limits.rules, {
+  middleware: [decodeParamsMiddleware],
+  actions: {
+    async list(ctx) {
+      const { listLimitRules } = ctx.get(handlersKey);
+      const args: components['schemas']['ListLimitRulesRequestBody'] =
+        await ctx.request.json();
+      return listLimitRules(args);
     },
   },
 });

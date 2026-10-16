@@ -20,7 +20,8 @@ describe('/query origin headers', () => {
       body: { query: 'SELECT 1' },
       headers,
     });
-    return (fetch.mock.calls[0]?.[0] as Request).headers;
+    const [request] = fetch.mock.calls[0] as [Request];
+    return request.headers;
   }
 
   it('marks queries as built-in by default', async () => {
@@ -39,7 +40,7 @@ describe('/query origin headers', () => {
     const fetch = vi.fn().mockResolvedValue(Response.json({}));
     vi.stubGlobal('fetch', fetch);
     await client.GET('/version', { baseUrl: 'https://restate.test' });
-    const headers = (fetch.mock.calls[0]?.[0] as Request).headers;
+    const [{ headers }] = fetch.mock.calls[0] as [Request];
     expect(headers.has('X-Restate-Query-Client')).toBe(false);
     expect(headers.has('X-Restate-Query-Origin')).toBe(false);
   });
@@ -82,7 +83,7 @@ describe('/query origin headers', () => {
     const fetch = vi.fn().mockResolvedValue(Response.json({}));
     vi.stubGlobal('fetch', fetch);
     await client.GET('/version', { baseUrl: 'https://restate.test' });
-    const headers = (fetch.mock.calls[0]?.[0] as Request).headers;
+    const [{ headers }] = fetch.mock.calls[0] as [Request];
     expect(headers.has('X-Restate-Query-Level')).toBe(false);
   });
 });
@@ -98,22 +99,19 @@ describe('/query UI table flags', () => {
     serverFeatures: Record<string, boolean>,
     send: () => Promise<unknown>,
   ) {
-    const fetch = vi.fn(async (request: Request) =>
-      new URL(request.url).pathname === '/version'
+    const statements: string[] = [];
+    const fetch = vi.fn(async (request: Request) => {
+      const { pathname } = new URL(request.url);
+      if (pathname === '/query') {
+        const body = (await request.clone().json()) as { query: string };
+        statements.push(body.query);
+      }
+      return pathname === '/version'
         ? Response.json({ version: '1.8.0', features: serverFeatures })
-        : Response.json({ rows: [] }),
-    );
+        : Response.json({ rows: [] });
+    });
     vi.stubGlobal('fetch', fetch);
     await send().catch(() => undefined);
-    const statements = await Promise.all(
-      fetch.mock.calls
-        .map(([request]) => request)
-        .filter((request) => new URL(request.url).pathname === '/query')
-        .map(async (request) => {
-          const body = (await request.clone().json()) as { query: string };
-          return body.query;
-        }),
-    );
     return statements;
   }
 

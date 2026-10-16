@@ -203,12 +203,7 @@ function setup(withSummary = false) {
   routers.push(router);
   render(
     <QueryClientProvider client={client}>
-      <RouterProvider
-        router={router}
-        flushSync={(fn) => {
-          flushSync(fn);
-        }}
-      />
+      <RouterProvider router={router} flushSync={flushSync} />
     </QueryClientProvider>,
   );
   return { loader, results, navigations, router };

@@ -1,6 +1,5 @@
 import { RefObject, useCallback, useEffect } from 'react';
 import { useFocusShortcut } from '@restate/ui/keyboard';
-import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
 import * as monaco from 'monaco-editor';
 import {
   setupLanguageFeatures,
@@ -43,13 +42,13 @@ const COLUMNS: ICompletionItem[] = [
   ...Array.from(
     new Set(TABLES.map((table) => table.columns.map((col) => col.name)).flat()),
   ).map((col) => ({
-    kind: languages.CompletionItemKind.Variable,
+    kind: monaco.languages.CompletionItemKind.Variable,
     label: `${col}`,
     sortText: `1$${col}`,
     detail: 'Column',
   })),
   ...TABLES.map((table) => ({
-    kind: languages.CompletionItemKind.Struct,
+    kind: monaco.languages.CompletionItemKind.Struct,
     label: `${table.name}`,
     sortText: `2${table.name}`,
     detail: table.description,
@@ -62,7 +61,7 @@ function getColumns(item: SyntaxSuggestion<WordRange>) {
       TABLES.find(
         (table) => table.name === item.wordRanges?.[0]?.text,
       )?.columns.map((col) => ({
-        kind: languages.CompletionItemKind.Variable,
+        kind: monaco.languages.CompletionItemKind.Variable,
         label: `${col.name}`,
         sortText: `1$${col.name}`,
         detail: col.description,
@@ -87,7 +86,7 @@ const completionService: CompletionService = function (
         ? []
         : [...KEYWORDS].map((kw) => ({
             label: kw,
-            kind: languages.CompletionItemKind.Keyword,
+            kind: monaco.languages.CompletionItemKind.Keyword,
             detail: 'keyword',
             sortText: '3' + kw,
           }));
@@ -135,7 +134,7 @@ const completionService: CompletionService = function (
           ].map((kw) => ({
             label: kw + '()',
             insertText: kw,
-            kind: languages.CompletionItemKind.Function,
+            kind: monaco.languages.CompletionItemKind.Function,
             detail: 'Function',
             sortText: '3' + kw,
           })),
@@ -144,7 +143,7 @@ const completionService: CompletionService = function (
 
       if (item.syntaxContextType === EntityContextType.TABLE) {
         const tableCompletions: ICompletionItem[] = TABLES.map((table) => ({
-          kind: languages.CompletionItemKind.Struct,
+          kind: monaco.languages.CompletionItemKind.Struct,
           label: table.name,
           sortText: `2${table.name}`,
           detail: table.description,
@@ -201,7 +200,7 @@ function buildHistoryCompletions(
     )
     .map((query, index) => ({
       label: { label: toSingleLine(query), description: 'History' },
-      kind: languages.CompletionItemKind.Snippet,
+      kind: monaco.languages.CompletionItemKind.Snippet,
       insertText: query,
       filterText: query,
       sortText: '0' + String(index).padStart(4, '0'),

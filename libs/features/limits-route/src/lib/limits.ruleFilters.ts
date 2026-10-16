@@ -21,12 +21,10 @@ export function limitRuleFilterSchema(
 ): QueryClauseSchema<'STRING'> {
   return {
     ...LIMIT_RULE_PATTERN_FILTER_SCHEMA,
-    options: rules.map(
-      (rule): QueryClauseOption => ({
-        value: rule.pattern,
-        label: rule.pattern,
-      }),
-    ),
+    options: rules.map((rule): QueryClauseOption => ({
+      value: rule.pattern,
+      label: rule.pattern,
+    })),
   };
 }
 

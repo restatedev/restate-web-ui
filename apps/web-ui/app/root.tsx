@@ -141,7 +141,6 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       retry: false,
       refetchOnMount: false,
-      experimental_prefetchInRender: true,
     },
   },
   queryCache: new QueryCache({

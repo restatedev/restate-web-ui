@@ -88,9 +88,9 @@ function getHandlerInputOutputViewContext({
     : undefined;
   const hasJsonObjectSchema = Boolean(
     parsedJsonSchema &&
-      (parsedJsonSchema.type === 'object' ||
-        parsedJsonSchema.anyOf ||
-        jsonSchemaTypes?.includes('object')),
+    (parsedJsonSchema.type === 'object' ||
+      parsedJsonSchema.anyOf ||
+      jsonSchemaTypes?.includes('object')),
   );
   const defaultTriggerLabel =
     getContentTypeDisplayName(contentType).toUpperCase();
