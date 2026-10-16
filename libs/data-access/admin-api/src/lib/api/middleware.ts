@@ -13,7 +13,7 @@ import {
   type QueryOrigin,
 } from '@restate/data-access/query';
 import { client } from './client';
-import { metaQueryOptions } from './meta';
+import { getEnabledFeatures, metaQueryOptions } from './meta';
 import { getEnabledUiFeatures } from './uiFeatures';
 
 const authMiddleware: Middleware = {
@@ -52,11 +52,7 @@ const authMiddleware: Middleware = {
       const meta = await getQueryClient().ensureQueryData(
         metaQueryOptions(baseUrl),
       );
-      const enabled = meta?.features
-        ? Object.entries(meta.features)
-            .filter(([, on]) => on)
-            .map(([name]) => name)
-        : [];
+      const enabled = getEnabledFeatures(meta);
       if (enabled.length > 0) {
         request.headers.set(RESTATE_FEATURES_HEADER, enabled.join(','));
       }

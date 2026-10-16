@@ -1,6 +1,7 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
 import { useVersion } from '@restate/data-access/admin-api';
 import {
+  isServiceStateQuery,
   useListVirtualObjectState,
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
@@ -435,14 +436,7 @@ function Component() {
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
             await queryCLient.resetQueries({
-              predicate: (query) => {
-                const [resolvedUrl] = query.queryKey;
-                return (
-                  typeof resolvedUrl === 'string' &&
-                  resolvedUrl.startsWith(`/query/services/${serviceName}/`) &&
-                  resolvedUrl.includes('/state')
-                );
-              },
+              predicate: (query) => isServiceStateQuery(query, serviceName),
             });
           }}
         >

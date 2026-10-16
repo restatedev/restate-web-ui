@@ -1217,6 +1217,7 @@ export function useDeleteDeployment(
     onSuccess(data, variables, context, meta) {
       invalidateListServices(queryClient, baseUrl);
       options?.onSuccess?.(data, variables, context, meta);
+      queryClient.removeQueries({ queryKey: [`/deployments/${deployment}`] });
     },
   });
 }
@@ -2041,8 +2042,6 @@ export function useListVirtualObjectStateEntries(
 
   const queryKey = useMemo(
     () => [
-      // Keep the resolved path under `/query/services/{service}/…/state` so the
-      // edit-state and state-route invalidation predicates sweep these pages.
       `/query/services/${serviceName}/keys/${key}/state/entries`,
       {
         baseUrl,
@@ -2056,6 +2055,11 @@ export function useListVirtualObjectStateEntries(
 
   const results = useInfiniteQuery({
     queryKey,
+    meta: {
+      path: '/query/services/{name}/keys/{key}/state/entries',
+      method: 'post',
+      isAdmin: true,
+    },
     queryFn: ({ pageParam, signal }) => {
       const { queryFn, queryKey: pageQueryKey } = adminApi(
         'query',

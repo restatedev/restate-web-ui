@@ -3,7 +3,10 @@ import {
   getSetServiceStateMutationOptions,
   useAdminBaseUrl,
 } from '@restate/data-access/admin-api';
-import { convertStateToObject } from '@restate/data-access/admin-api-hooks';
+import {
+  convertStateToObject,
+  isStateQuery,
+} from '@restate/data-access/admin-api-hooks';
 import type { StateResponse } from '@restate/data-access/admin-api-spec';
 import {
   useCodecRuntime,
@@ -254,19 +257,8 @@ export function useEditState(
         },
       );
       queryClient.invalidateQueries({
-        predicate: (query) => {
-          if (Array.isArray(query.queryKey)) {
-            const [resolvedUrl] = query.queryKey;
-
-            return (
-              typeof resolvedUrl === 'string' &&
-              resolvedUrl.startsWith(`/query/services/${service}`) &&
-              resolvedUrl.includes('/state')
-            );
-          }
-
-          return false;
-        },
+        predicate: (query) =>
+          isStateQuery(query, String(service), String(objectKey)),
       });
     },
   });
