@@ -6,7 +6,7 @@ import {
   composeRenderProps,
 } from 'react-aria-components';
 import { focusRing } from '@restate/ui/focus';
-import { PressEvents } from '@react-aria/interactions';
+import { PressEvents } from 'react-aria';
 
 export interface ButtonProps {
   onClick?: (
