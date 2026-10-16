@@ -8,7 +8,6 @@ import {
 export interface VirtualObjectQuickOpenProps {
   draft: VirtualObjectOpenDraft;
   disabled: boolean;
-  hasScopedVirtualObjects: boolean;
   onChange: (draft: VirtualObjectOpenDraft) => void;
   onOpen: VoidFunction;
   service: string;
@@ -17,16 +16,11 @@ export interface VirtualObjectQuickOpenProps {
 export function VirtualObjectQuickOpen({
   draft,
   disabled,
-  hasScopedVirtualObjects,
   onChange,
   onOpen,
   service,
 }: VirtualObjectQuickOpenProps) {
-  const identity = virtualObjectIdentityFromOpenDraft(
-    service,
-    draft,
-    hasScopedVirtualObjects,
-  );
+  const identity = virtualObjectIdentityFromOpenDraft(service, draft);
 
   return (
     <PanelTableQuickOpen
@@ -40,14 +34,10 @@ export function VirtualObjectQuickOpen({
       onOpen={onOpen}
       isValid={Boolean(identity)}
       disabled={disabled}
-      scope={
-        hasScopedVirtualObjects
-          ? {
-              value: draft.scope,
-              onChange: (scope) => onChange({ ...draft, scope }),
-            }
-          : undefined
-      }
+      scope={{
+        value: draft.scope,
+        onChange: (scope) => onChange({ ...draft, scope }),
+      }}
     />
   );
 }

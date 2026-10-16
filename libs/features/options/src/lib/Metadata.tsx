@@ -1,9 +1,7 @@
-import { Section, SectionContent, SectionTitle } from '@restate/ui/section';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { tv } from '@restate/util/styles';
-import { OptionListItemWithTooltip } from './utils';
 
 const HIDDEN_METADATA_PREFIX = 'dev.restate.';
 
@@ -33,50 +31,6 @@ export function getCustomMetadataEntries(metadata?: Record<string, string>) {
   return getVisibleMetadataEntries(metadata).filter(
     ([name]) => !GITHUB_KEYS.includes(name),
   );
-}
-
-export function Metadata({
-  metadata: metadataList,
-  className,
-}: {
-  metadata?: Record<string, string>;
-  className?: string;
-}) {
-  const metadata = getVisibleMetadataEntries(metadataList);
-  const metadataExcludingGithub = getCustomMetadataEntries(metadataList);
-
-  if (metadata.length > 0) {
-    return (
-      <Section className={className}>
-        <SectionTitle>Metadata</SectionTitle>
-        {hasGithubMetadata(metadataList) && (
-          <SectionContent className="p-0">
-            <GithubMetadata metadata={metadataList} />
-          </SectionContent>
-        )}
-        {metadataExcludingGithub.length > 0 && (
-          <SectionContent className="p-0" raised={false}>
-            <div className="mt-2 grid grid-cols-[1fr_2fr] text-xs font-medium text-gray-400">
-              <div className="pl-2">Key</div>
-              <div className="pl-2">Value</div>
-            </div>
-
-            <div className="flex flex-col rounded-[calc(0.75rem-0.125rem)] border shadow-xs">
-              {metadataExcludingGithub.map(([name, value]) => (
-                <OptionListItemWithTooltip
-                  name={name}
-                  value={value}
-                  key={name}
-                />
-              ))}
-            </div>
-          </SectionContent>
-        )}
-      </Section>
-    );
-  }
-
-  return null;
 }
 
 export function hasGithubMetadata(metadata?: Record<string, string>) {

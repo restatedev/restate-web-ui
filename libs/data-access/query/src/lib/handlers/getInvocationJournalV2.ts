@@ -17,9 +17,8 @@ import {
 } from '@restate/features/service-protocol';
 import {
   type QueryContext,
-  getSysInvocationColumns,
+  SYS_INVOCATION_SELECT_COLUMNS,
   quoteSqlString,
-  supportsJournalRawLength,
 } from './shared';
 import { fetchVqueueStatuses } from './vqueue';
 import { getVqueueSnapshot } from './getVqueue';
@@ -110,23 +109,18 @@ function getLastTransientError(
 export async function getInvocationJournalV2(
   this: QueryContext,
   invocationId: string,
-  includePayloads = false,
   includeRaw = false,
 ): Promise<Response> {
   const requestTime = new Date().toISOString();
   const invocationIdSql = quoteSqlString(invocationId);
-  const entryJsonColumn = includePayloads ? 'entry_json' : 'entry_lite_json';
-  const rawLengthColumn = supportsJournalRawLength(this.restateVersion)
-    ? 'raw_length,'
-    : '';
   const [invocationQuery, journalQuery, eventsQuery, vqueueStatuses] =
     await Promise.all([
       this.query(
-        `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
+        `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
         'invocations/get',
       ),
       this.query(
-        `SELECT id, index, appended_at, entry_type, name, ${rawLengthColumn} ${entryJsonColumn}, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql} ORDER BY index`,
+        `SELECT id, index, appended_at, entry_type, name, raw_length, entry_lite_json, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql} ORDER BY index`,
         'invocations/journal-entries',
       ),
       this.query(
@@ -143,12 +137,7 @@ export async function getInvocationJournalV2(
     );
 
   if (shouldFetchWithRaw) {
-    return getInvocationJournalV2.call(
-      this,
-      invocationId,
-      includePayloads,
-      true,
-    );
+    return getInvocationJournalV2.call(this, invocationId, true);
   }
 
   const rawInvocation = invocationQuery.rows.at(0);

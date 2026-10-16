@@ -16,7 +16,6 @@ function QuickOpenHarness({ onOpen }: { onOpen: VoidFunction }) {
       <WorkflowQuickOpen
         draft={draft}
         disabled={false}
-        hasScope
         onChange={setDraft}
         onOpen={onOpen}
         service="OrderWorkflow"

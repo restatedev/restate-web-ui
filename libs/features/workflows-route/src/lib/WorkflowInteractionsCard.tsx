@@ -15,8 +15,6 @@ interface WorkflowInteractionsCardProps {
 export function WorkflowInteractionsCard({
   stats,
 }: WorkflowInteractionsCardProps) {
-  if (!stats.supported) return null;
-
   return (
     <Card intent="none">
       <CardHeader

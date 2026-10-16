@@ -16,8 +16,6 @@ import {
   type ResolvedInvocationModeV2,
 } from '../shared';
 import { getInvocationListFieldOnTable } from '../invocationListFields';
-import { invocationStatusFilterClauses } from '../list/invocationStatusFilters';
-import { invocationStatusSampleColumns } from '../list/invocationStatusPlan';
 import type {
   InvocationStatusSummaryBucket,
   InvocationSummaryQueryResult,
@@ -55,16 +53,6 @@ export const LIVE_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
 
 export const TERMINAL_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
   STATUS_BUCKETS.filter(({ stage }) => stage === 'finished').map(withoutStage);
-
-const GROUPED_TERMINAL_BUCKETS: Omit<InvocationStatusSummaryBucket, 'count'>[] =
-  [
-    { key: 'succeeded', label: 'Succeeded', statuses: ['succeeded'] },
-    {
-      key: 'failed',
-      label: 'Failed, cancelled or killed',
-      statuses: ['failed', 'cancelled', 'killed'],
-    },
-  ];
 
 export const STAGE_LABELS = {
   inbox: 'Inbox',
@@ -131,13 +119,11 @@ function matchingQueueFilter(
 
 /**
  * Returns granular global status summary buckets from stage-pruned VQueue scans and
- * service totals from metadata counters. When completed VQueue migration was
- * skipped, only the terminal branch uses invocation status.
+ * service totals from metadata counters.
  */
 export async function queryInvocationSummaryFromVqueues(
   context: QueryContext,
   mode: ResolvedInvocationModeV2,
-  completedVqueuesWereSkipped: boolean,
   filters: InvocationFilterV2[] = [],
   view: 'all' | 'stages' | 'live-stages' | 'breakdowns' = 'all',
 ): Promise<InvocationSummaryQueryResult> {
@@ -151,9 +137,8 @@ export async function queryInvocationSummaryFromVqueues(
     'vm.num_paused > 0',
   ];
   const completeActivity = [...liveActivity, 'vm.num_finished > 0'];
-  const metaQuery =
-    completedVqueuesWereSkipped || !includesCompletedStage
-      ? `
+  const metaQuery = !includesCompletedStage
+    ? `
       SELECT
         vm.service_name,
         SUM(vm.num_inbox) AS inbox,
@@ -164,7 +149,7 @@ export async function queryInvocationSummaryFromVqueues(
       WHERE ${metadataWhere(filters, liveActivity, 'vm')}
       GROUP BY vm.service_name
     `.trim()
-      : `
+    : `
       SELECT
         vm.service_name,
         SUM(vm.num_inbox) AS inbox,
@@ -189,19 +174,6 @@ export async function queryInvocationSummaryFromVqueues(
   );
   const inboxQueueFilter = matchingQueueFilter(filters, 'num_inbox', 'v');
   const finishedQueueFilter = matchingQueueFilter(filters, 'num_finished', 'v');
-  const finishedInvocationStatusClauses = [
-    "ss.status = 'completed'",
-    ...invocationStatusFilterClauses(filters, 'ss'),
-  ];
-  const sampledFinishedInvocationStatusClauses = invocationStatusFilterClauses(
-    filters,
-    'sampled_finished',
-  );
-  const sampledFinishedInvocationStatusColumns = invocationStatusSampleColumns(
-    filters,
-    undefined,
-    ['target_service_name', 'completion_result'],
-  );
 
   const inboxQuery =
     mode.type === 'sampled'
@@ -235,52 +207,7 @@ export async function queryInvocationSummaryFromVqueues(
     `.trim();
 
   let finishedQuery: string;
-  if (completedVqueuesWereSkipped && mode.type === 'sampled') {
-    finishedQuery = `
-      SELECT
-        sampled_finished.target_service_name AS service_name,
-        CASE
-          WHEN sampled_finished.completion_result = 'success' THEN 'succeeded'
-          ELSE 'failed'
-        END AS status,
-        COUNT(1) AS count
-      FROM (
-        SELECT
-          ${sampledFinishedInvocationStatusColumns}
-        FROM sys_invocation_status ss
-        WHERE ss.status = 'completed'
-        LIMIT ${mode.sampleSize}
-      ) sampled_finished${
-        sampledFinishedInvocationStatusClauses.length > 0
-          ? `\n      WHERE ${sampledFinishedInvocationStatusClauses.join('\n        AND ')}`
-          : ''
-      }
-      GROUP BY
-        sampled_finished.target_service_name,
-        CASE
-          WHEN sampled_finished.completion_result = 'success' THEN 'succeeded'
-          ELSE 'failed'
-        END
-    `.trim();
-  } else if (completedVqueuesWereSkipped) {
-    finishedQuery = `
-      SELECT
-        ss.target_service_name AS service_name,
-        CASE
-          WHEN ss.completion_result = 'success' THEN 'succeeded'
-          ELSE 'failed'
-        END AS status,
-        COUNT(1) AS count
-      FROM sys_invocation_status ss
-      WHERE ${finishedInvocationStatusClauses.join('\n        AND ')}
-      GROUP BY
-        ss.target_service_name,
-        CASE
-          WHEN ss.completion_result = 'success' THEN 'succeeded'
-          ELSE 'failed'
-        END
-    `.trim();
-  } else if (mode.type === 'sampled') {
+  if (mode.type === 'sampled') {
     finishedQuery = `
       SELECT
         sampled_finished.status,
@@ -327,8 +254,7 @@ export async function queryInvocationSummaryFromVqueues(
           'invocations-v2/summary-vqueue-inbox',
         ) as Promise<{ rows: StatusRow[] }>)
       : Promise.resolve({ rows: [] as StatusRow[] }),
-    includesBreakdowns ||
-    (completedVqueuesWereSkipped && includesStages && includesCompletedStage)
+    includesBreakdowns
       ? (context.query(
           finishedQuery,
           'invocations-v2/summary-vqueue-finished',
@@ -367,19 +293,6 @@ export async function queryInvocationSummaryFromVqueues(
     }
   }
 
-  if (completedVqueuesWereSkipped) {
-    for (const row of finishedResult.rows) {
-      if (!row.service_name) continue;
-      const counts =
-        serviceStatusCounts.get(row.service_name) ?? new Map<string, number>();
-      counts.set(
-        'finished',
-        (counts.get('finished') ?? 0) + Number(row.count ?? 0),
-      );
-      serviceStatusCounts.set(row.service_name, counts);
-    }
-  }
-
   const inboxScanned = countRows(inboxResult.rows);
   const finishedScanned = countRows(finishedResult.rows);
   if (!includesStages) {
@@ -392,10 +305,7 @@ export async function queryInvocationSummaryFromVqueues(
     (queueSelectionIsBounded ||
       (mode.type === 'sampled' && inboxScanned >= mode.sampleSize));
   const finishedIsPartial =
-    (includesBreakdowns ||
-      (completedVqueuesWereSkipped &&
-        includesStages &&
-        includesCompletedStage)) &&
+    includesBreakdowns &&
     (queueSelectionIsBounded ||
       (mode.type === 'sampled' && finishedScanned >= mode.sampleSize));
   const inboxScale =
@@ -403,10 +313,7 @@ export async function queryInvocationSummaryFromVqueues(
       ? inboxPopulation / inboxScanned
       : 1;
   const finishedScale =
-    includesStages &&
-    !completedVqueuesWereSkipped &&
-    finishedIsPartial &&
-    finishedScanned > 0
+    includesStages && finishedIsPartial && finishedScanned > 0
       ? finishedPopulation / finishedScanned
       : 1;
 
@@ -428,12 +335,10 @@ export async function queryInvocationSummaryFromVqueues(
     );
   }
   for (const row of finishedResult.rows) {
-    const status = completedVqueuesWereSkipped
-      ? (row.status as InvocationStatus | undefined)
-      : getInvocationStatusFromVqueue({
-          stage: 'finished',
-          status: row.status,
-        });
+    const status = getInvocationStatusFromVqueue({
+      stage: 'finished',
+      status: row.status,
+    });
     if (!status) continue;
     statusCounts.set(
       status,
@@ -444,11 +349,7 @@ export async function queryInvocationSummaryFromVqueues(
 
   const definitions = [
     ...LIVE_BUCKETS,
-    ...(includesCompletedStage
-      ? completedVqueuesWereSkipped
-        ? GROUPED_TERMINAL_BUCKETS
-        : TERMINAL_BUCKETS
-      : []),
+    ...(includesCompletedStage ? TERMINAL_BUCKETS : []),
   ];
 
   return {
@@ -495,27 +396,18 @@ export async function queryInvocationSummaryFromVqueues(
               key: 'finished' as const,
               label: 'Completed',
               statuses: getInvocationStatusesForStage('finished'),
-              count: completedVqueuesWereSkipped
-                ? (statusCounts.get('succeeded') ?? 0) +
-                  (statusCounts.get('failed') ?? 0)
-                : finishedPopulation,
+              count: finishedPopulation,
               breakdownIsPartial: finishedIsPartial,
-              breakdownCoverage: completedVqueuesWereSkipped
-                ? ('coarse' as const)
-                : includesBreakdowns
-                  ? ('full' as const)
-                  : ('missing' as const),
-              breakdownCanRefine:
-                !completedVqueuesWereSkipped && !includesBreakdowns,
+              breakdownCoverage: includesBreakdowns
+                ? ('full' as const)
+                : ('missing' as const),
+              breakdownCanRefine: !includesBreakdowns,
             },
           ]
         : []),
     ],
-    stageCountsArePartial: includesStages
-      ? includesCompletedStage &&
-        completedVqueuesWereSkipped &&
-        finishedIsPartial
-      : inboxIsPartial || finishedIsPartial,
+    stageCountsArePartial:
+      !includesStages && (inboxIsPartial || finishedIsPartial),
     statusBuckets: definitions.map((definition) => ({
       ...definition,
       count: statusCounts.get(definition.key as InvocationStatus) ?? 0,

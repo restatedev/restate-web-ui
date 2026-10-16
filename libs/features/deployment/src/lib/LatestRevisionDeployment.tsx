@@ -37,7 +37,6 @@ export function LatestRevisionDeployment({
   return (
     <Deployment
       deploymentId={latest.id}
-      highlightSelection={false}
       showEndpointCopyButton
       className="mr-[calc(-0.5rem+2px)] min-w-0 [&_a]:mr-0 [&_a>svg]:hidden [&_div:has(+a)]:mr-0 @max-[85rem]:[&_div:has(>svg)]:mr-3.5"
     />
@@ -76,7 +75,6 @@ export function AllRevisions({ serviceName }: { serviceName: string }) {
                 <Deployment
                   deploymentId={id}
                   revision={revision}
-                  highlightSelection={false}
                   showLink={false}
                   className="[&_.badge]:bg-black/3 [&>*]:text-inherit"
                 />

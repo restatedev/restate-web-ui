@@ -8,7 +8,6 @@ export interface WorkflowOpenDraft {
 export function workflowIdentityFromOpenDraft(
   service: string,
   draft: WorkflowOpenDraft,
-  hasScope: boolean,
 ): WorkflowRunIdentity | undefined {
   const id = draft.id.trim();
   if (!service || !id) return undefined;
@@ -16,6 +15,6 @@ export function workflowIdentityFromOpenDraft(
   return {
     service,
     id,
-    ...(hasScope && scope ? { scope } : {}),
+    ...(scope ? { scope } : {}),
   };
 }

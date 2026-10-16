@@ -19,7 +19,7 @@ export function FixHttp1({
   endpoint?: string;
 }) {
   const code = 'META0014';
-  const { help, summary } = ERROR_CODES[code] ?? {};
+  const { help } = ERROR_CODES[code] ?? {};
   return (
     <div className={styles({ className })}>
       <div className="flex flex-auto items-center text-0.5xs">

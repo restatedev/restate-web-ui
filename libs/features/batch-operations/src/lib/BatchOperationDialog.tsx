@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useSummaryInvocationsV2 } from '@restate/data-access/admin-api-hooks';
-import { useFeatures } from '@restate/data-access/admin-api';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
@@ -73,7 +72,6 @@ function BatchOperationContent({
   showScope: boolean;
 }) {
   const [now, setNow] = useState(() => Date.now());
-  const hasVqueues = useFeatures().has('vqueues');
 
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
   const duration = formatDurations(durationSinceLastSnapshot(now));
@@ -90,7 +88,7 @@ function BatchOperationContent({
             name={IconName.Info}
           />
           <div className="flex flex-col gap-1">
-            <span className="block">{config.emptyMessage(hasVqueues)}</span>
+            <span className="block">{config.emptyMessage}</span>
           </div>
         </div>
       </div>

@@ -3,19 +3,14 @@ import {
   badRequest,
   INVOCATION_STATUSES,
   resolveInvocationModeV2,
-  supportsInvocationV2Vqueues,
   type InvocationStatusV2,
 } from './shared';
 import { getInvocationStatusFromVqueue } from '../../invocationStatuses';
 import type { QueryContext } from '../shared';
 import { SERVICE_STATS, selectFromIndex } from '../indexes';
 import { usesStatsTables } from '../../uiFeatures';
-import { queryInboxDueBreakdownWithServiceFromInvocationStatusAndState } from './inboxDue/queryInboxDueBreakdownWithServiceFromInvocationStatusAndState';
-import { queryOverallInboxDueBreakdownFromInvocationStatusAndState } from './inboxDue/queryOverallInboxDueBreakdownFromInvocationStatusAndState';
 import { queryOverallInboxDueBreakdownFromVqueues } from './inboxDue/queryOverallInboxDueBreakdownFromVqueues';
 import { queryInboxDueBreakdownForServicesFromVqueues } from './inboxDue/queryInboxDueBreakdownForServicesFromVqueues';
-import { queryInboxStatusBreakdownWithServiceFromInvocationStatusAndState } from './inboxStatus/queryInboxStatusBreakdownWithServiceFromInvocationStatusAndState';
-import { queryOverallInboxStatusBreakdownFromInvocationStatusAndState } from './inboxStatus/queryOverallInboxStatusBreakdownFromInvocationStatusAndState';
 import { queryOverallInboxStatusBreakdownFromVqueues } from './inboxStatus/queryOverallInboxStatusBreakdownFromVqueues';
 import { queryInboxStatusBreakdownForServicesFromVqueues } from './inboxStatus/queryInboxStatusBreakdownForServicesFromVqueues';
 
@@ -43,27 +38,16 @@ type InboxBreakdownPartialResult = {
 function buildDueBreakdownResponse(
   rows: DueBreakdownRow[],
   asOf: string,
-  groupByService: boolean,
   partial?: InboxBreakdownPartialResult,
 ) {
   let total = 0;
   let due = 0;
   let notDue = 0;
-  const byService = rows.map((row) => {
-    const rowTotal = Number(row.total ?? 0);
-    const rowDue = Number(row.due ?? 0);
-    const rowNotDue = Number(row.not_due ?? 0);
-    total += rowTotal;
-    due += rowDue;
-    notDue += rowNotDue;
-
-    return {
-      service: row.service_name ?? '',
-      total: rowTotal,
-      due: rowDue,
-      notDue: rowNotDue,
-    };
-  });
+  for (const row of rows) {
+    total += Number(row.total ?? 0);
+    due += Number(row.due ?? 0);
+    notDue += Number(row.not_due ?? 0);
+  }
 
   return {
     groupBy: 'due' as const,
@@ -73,22 +57,15 @@ function buildDueBreakdownResponse(
     notDue,
     isPartial: Boolean(partial),
     ...(partial && { partial }),
-    ...(groupByService ? { byService } : {}),
   };
 }
 
 function buildStatusBreakdownResponse(
   rows: StatusBreakdownRow[],
-  groupByService: boolean,
   partial?: InboxBreakdownPartialResult,
   sampledPopulationIsPartial = false,
 ) {
   const byStatus = new Map<InvocationStatusV2, number>();
-  const byService = new Map<string, number>();
-  const byServiceAndStatus = new Map<
-    string,
-    { service: string; status: InvocationStatusV2; count: number }
-  >();
   let total = 0;
 
   for (const row of rows) {
@@ -107,20 +84,6 @@ function buildStatusBreakdownResponse(
     const count = Number(row.count ?? 0);
     total += count;
     byStatus.set(status, (byStatus.get(status) ?? 0) + count);
-
-    if (!groupByService || !row.service_name) continue;
-    byService.set(
-      row.service_name,
-      (byService.get(row.service_name) ?? 0) + count,
-    );
-    const key = `${row.service_name}\0${status}`;
-    const combined = byServiceAndStatus.get(key) ?? {
-      service: row.service_name,
-      status,
-      count: 0,
-    };
-    combined.count += count;
-    byServiceAndStatus.set(key, combined);
   }
 
   return {
@@ -129,10 +92,6 @@ function buildStatusBreakdownResponse(
     byStatus: [...byStatus].map(([status, count]) => ({ status, count })),
     isPartial: Boolean(partial) || sampledPopulationIsPartial,
     ...(partial && { partial }),
-    ...(groupByService && {
-      byService: [...byService].map(([service, count]) => ({ service, count })),
-      byServiceAndStatus: [...byServiceAndStatus.values()],
-    }),
   };
 }
 
@@ -145,17 +104,9 @@ export async function inboxInvocationsBreakdownV2(
     groupBy,
     mode: requestedMode,
     serviceNames = [],
-    groupByService = false,
   }: InboxInvocationsBreakdownV2Args,
 ): Promise<Response> {
-  const useVqueues = supportsInvocationV2Vqueues(this);
-  const needsService = groupByService || serviceNames.length > 0;
-
-  if (useVqueues && groupByService) {
-    return badRequest(
-      'Service grouping is not supported for the current invocation data',
-    );
-  }
+  const needsService = serviceNames.length > 0;
 
   if (groupBy === 'due') {
     const asOf = new Date().toISOString();
@@ -164,31 +115,17 @@ export async function inboxInvocationsBreakdownV2(
       partial?: InboxBreakdownPartialResult;
     };
 
-    if (useVqueues && serviceNames.length) {
+    if (needsService) {
       result = await queryInboxDueBreakdownForServicesFromVqueues(this, {
         serviceNames,
         asOf,
       });
-    } else if (useVqueues) {
-      result = await queryOverallInboxDueBreakdownFromVqueues(this, asOf);
-    } else if (needsService) {
-      result =
-        await queryInboxDueBreakdownWithServiceFromInvocationStatusAndState(
-          this,
-          { serviceNames, groupByService },
-        );
     } else {
-      result =
-        await queryOverallInboxDueBreakdownFromInvocationStatusAndState(this);
+      result = await queryOverallInboxDueBreakdownFromVqueues(this, asOf);
     }
 
     return Response.json(
-      buildDueBreakdownResponse(
-        result.rows,
-        asOf,
-        groupByService,
-        result.partial,
-      ),
+      buildDueBreakdownResponse(result.rows, asOf, result.partial),
     );
   }
 
@@ -199,9 +136,9 @@ export async function inboxInvocationsBreakdownV2(
     rows: StatusBreakdownRow[];
     partial?: InboxBreakdownPartialResult;
   };
-  if (useVqueues && usesStatsTables(this)) {
+  if (usesStatsTables(this)) {
     const rows = await selectFromIndex(this, SERVICE_STATS, {
-      keys: { service_name: serviceNames.length ? serviceNames : undefined },
+      keys: { service_name: needsService ? serviceNames : undefined },
       id: 'stats/services',
     });
     result = {
@@ -209,25 +146,15 @@ export async function inboxInvocationsBreakdownV2(
         .filter((row) => row.stage === 'inbox')
         .map((row) => ({ status: row.status, count: row.num_entries })),
     };
-  } else if (useVqueues && serviceNames.length) {
+  } else if (needsService) {
     result = await queryInboxStatusBreakdownForServicesFromVqueues(this, {
       serviceNames,
     });
-  } else if (useVqueues) {
-    result = await queryOverallInboxStatusBreakdownFromVqueues(this, mode);
-  } else if (needsService) {
-    result =
-      await queryInboxStatusBreakdownWithServiceFromInvocationStatusAndState(
-        this,
-        { serviceNames, groupByService },
-      );
   } else {
-    result =
-      await queryOverallInboxStatusBreakdownFromInvocationStatusAndState(this);
+    result = await queryOverallInboxStatusBreakdownFromVqueues(this, mode);
   }
 
   const sampledPopulationIsPartial =
-    useVqueues &&
     !usesStatsTables(this) &&
     !needsService &&
     mode.type === 'sampled' &&
@@ -236,7 +163,6 @@ export async function inboxInvocationsBreakdownV2(
   return Response.json(
     buildStatusBreakdownResponse(
       result.rows,
-      groupByService,
       result.partial,
       sampledPopulationIsPartial,
     ),

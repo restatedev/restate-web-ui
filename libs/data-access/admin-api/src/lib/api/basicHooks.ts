@@ -23,10 +23,6 @@ function selectEnabledFeatures(meta: MetaSnapshot): Set<string> {
   return out.size === 0 ? EMPTY_FEATURES : out;
 }
 
-function selectVersion(meta: MetaSnapshot): string | undefined {
-  return meta.version;
-}
-
 export function useVersion(options?: HookQueryOptions<'/version', 'get'>) {
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/version', 'get', { baseUrl });
@@ -64,24 +60,6 @@ export function useQueryHandlerFeatures(): Set<string> {
       getEnabledUiFeatures(features, (flag) => Boolean(flags[flag])),
     );
   }, [features, isIndexesEnabled]);
-}
-
-export function hasCompleteVqueueInvocationPopulation(
-  features: ReadonlySet<string>,
-) {
-  return (
-    features.has('vqueues') && !features.has('vqueues_migration_skip_completed')
-  );
-}
-
-/** Restate server version for the current admin baseUrl. */
-export function useRestateVersion(): string | undefined {
-  const baseUrl = useAdminBaseUrl();
-  const { data } = useQuery({
-    ...metaQueryOptions(baseUrl),
-    select: selectVersion,
-  });
-  return data;
 }
 
 export function useHealth(options?: HookQueryOptions<'/health', 'get'>) {

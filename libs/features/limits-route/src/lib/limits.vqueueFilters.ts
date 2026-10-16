@@ -75,10 +75,6 @@ export function createVQueueFiltersForVirtualObjectInstance(identity: {
   ];
 }
 
-export function createVQueueFiltersForService(service: string) {
-  return [createExactVQueueFilter('service', service)];
-}
-
 export function getVQueueIdFilterValue(input: string) {
   const value = input.trim();
   return value.startsWith('vq_') ? value : undefined;

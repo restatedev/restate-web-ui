@@ -1,6 +1,7 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import { useFeatures, useVersion } from '@restate/data-access/admin-api';
+import { useVersion } from '@restate/data-access/admin-api';
 import {
+  isServiceStateQuery,
   useListVirtualObjectState,
   useQueryVirtualObjectState,
 } from '@restate/data-access/admin-api-hooks';
@@ -18,7 +19,7 @@ import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
 } from '@restate/util/snapshot-time';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
 import { formatDurations } from '@restate/util/intl';
 import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
@@ -38,10 +39,8 @@ import {
   ClauseChip,
   FiltersTrigger,
 } from '@restate/features/invocations-route';
-import { STATE_QUERY_NAME } from './constants';
 import { useEditStateContext } from '@restate/features/edit-state';
 import { useResolvedCodecOptions } from '@restate/features/codec';
-import { toStateParam } from './toStateParam';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
 import {
@@ -158,24 +157,12 @@ function Component() {
   const { isValid, redirectTo, services, serviceType, stateOnlyServices } =
     useValidateVirtualObject(serviceName);
   const isWorkflow = serviceType === 'workflow';
-  const queryServiceType =
-    serviceType === 'virtual_object' ? serviceType : undefined;
   const { baseUrl } = useRestateContext();
   const showStateStorage = useIsFeatureFlagEnabled(
     'FEATURE_STATE_STORAGE_BREAKDOWN',
   );
 
   const { isSuccess: versionReady } = useVersion();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
-  const supportsScopedVirtualObjects =
-    hasVqueues && features.has('scoped_virtual_objects');
-  const exposesScope =
-    hasVqueues &&
-    (serviceType !== 'virtual_object' || supportsScopedVirtualObjects);
-  const hasScopeInUrl =
-    searchParams.has('sysFilter_scope') &&
-    (serviceType !== 'virtual_object' || supportsScopedVirtualObjects);
   const schema = useMemo(() => {
     const stringOps = [
       { value: 'EQUALS' as const, label: 'is' },
@@ -196,15 +183,13 @@ function Component() {
       type: 'STRING',
       metadata: { isSystem: true, column: 'service_key', persistent: true },
     });
-    if (exposesScope || hasScopeInUrl) {
-      clauses.push({
-        id: '__sys_service_scope',
-        label: 'Scope',
-        operations: nullableStringOps,
-        type: 'STRING',
-        metadata: { isSystem: true, column: 'scope', persistent: exposesScope },
-      });
-    }
+    clauses.push({
+      id: '__sys_service_scope',
+      label: 'Scope',
+      operations: nullableStringOps,
+      type: 'STRING',
+      metadata: { isSystem: true, column: 'scope', persistent: true },
+    });
 
     clauses.push({
       id: CUSTOM_KEY_ID,
@@ -213,7 +198,7 @@ function Component() {
       type: 'KEY_VALUE',
     });
     return clauses;
-  }, [exposesScope, hasScopeInUrl, serviceType]);
+  }, [serviceType]);
 
   const queryFilters = useMemo(
     () => clausesToFilterArgs(getQuery(searchParams, schema)),
@@ -225,7 +210,7 @@ function Component() {
     error,
     data: serviceKeysData,
     isFetching,
-  } = useQueryVirtualObjectState(serviceName, queryFilters, queryServiceType, {
+  } = useQueryVirtualObjectState(serviceName, queryFilters, {
     refetchOnMount: true,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
@@ -236,20 +221,13 @@ function Component() {
   const allItems = useMemo<{ key: string; scope?: string }[]>(() => {
     if (error) return [];
     if (!serviceKeysData) return [];
-    if ('items' in serviceKeysData) return serviceKeysData.items;
-    return serviceKeysData.keys.map((key) => ({ key }));
+    return serviceKeysData.items;
   }, [serviceKeysData, error]);
   const sortedItems = useMemo(
     () => allItems.slice().sort((a, b) => a.key.localeCompare(b.key)),
     [allItems],
   );
-  const listStateArgs = useMemo(
-    () =>
-      hasVqueues
-        ? { items: sortedItems }
-        : { keys: sortedItems.map((item) => item.key) },
-    [hasVqueues, sortedItems],
-  );
+  const listStateArgs = useMemo(() => ({ items: sortedItems }), [sortedItems]);
   const listObjects = useListVirtualObjectState(serviceName, listStateArgs, {
     refetchOnMount: true,
     refetchOnReconnect: false,
@@ -304,26 +282,6 @@ function Component() {
     useResolvedCodecOptions(serviceCodecOptions);
   const isStateLoading =
     isFetching || (listObjects.isFetching && sortedItems.length !== 0);
-  const openStatePanel = useCallback(
-    (rowKey: string, rowScope?: string) => {
-      setSearchParams(
-        (old) => {
-          old.set(
-            STATE_QUERY_NAME,
-            toStateParam({
-              key: rowKey,
-              virtualObject: serviceName,
-              scope: rowScope || undefined,
-            }),
-          );
-          old.set('panel', STATE_QUERY_NAME);
-          return old;
-        },
-        { preventScrollReset: true },
-      );
-    },
-    [serviceName, setSearchParams],
-  );
   const serviceTabs = useMemo<ContentPanelTabs>(
     () => ({
       items: services.map((service) => ({
@@ -397,7 +355,6 @@ function Component() {
                   isLoading={isStateLoading && stateObjects.length === 0}
                   isLoadingPreviews={isLoadingPreviews}
                   numOfRows={sortedItems.length || 5}
-                  onOpenObject={openStatePanel}
                   onEditObject={(row) =>
                     setEditState({
                       isEditing: true,
@@ -479,14 +436,7 @@ function Component() {
 
             setSearchParams(newSearchParams, { preventScrollReset: true });
             await queryCLient.resetQueries({
-              predicate: (query) => {
-                const [resolvedUrl] = query.queryKey;
-                return (
-                  typeof resolvedUrl === 'string' &&
-                  resolvedUrl.startsWith(`/query/services/${serviceName}/`) &&
-                  resolvedUrl.includes('/state')
-                );
-              },
+              predicate: (query) => isServiceStateQuery(query, serviceName),
             });
           }}
         >
@@ -569,11 +519,7 @@ function Footnote({
   }, [data]);
 
   const duration = formatDurations(durationSinceLastSnapshot(now));
-  const count = data
-    ? 'items' in data
-      ? data.items.length
-      : (data.keys?.length ?? 0)
-    : 0;
+  const count = data?.items.length ?? 0;
 
   return (
     <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">

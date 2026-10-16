@@ -13,7 +13,6 @@ const inputStyles = tv({
   base: '',
   slots: {
     root: 'ml-2 flex max-w-full flex-none items-center self-center [font-size:inherit] **:data-target:font-sans **:data-target:font-medium',
-    target: 'flex-none',
     expression: 'flex min-w-0 translate-y-px items-center',
   },
 });
@@ -45,7 +44,7 @@ export function Input({ entry, invocation, className }: InputProps) {
         command: { type: entry.type },
       } satisfies RestateCodecOptions)
     : undefined;
-  const { root, target, expression } = inputStyles();
+  const { root, expression } = inputStyles();
 
   return (
     <div className={root({ className })}>

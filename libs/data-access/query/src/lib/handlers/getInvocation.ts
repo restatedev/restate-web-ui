@@ -2,7 +2,7 @@ import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
 import { convertInvocation } from '../convertInvocation';
 import {
   type QueryContext,
-  getSysInvocationColumns,
+  SYS_INVOCATION_SELECT_COLUMNS,
   quoteSqlString,
 } from './shared';
 import { fetchVqueueStatuses } from './vqueue';
@@ -10,7 +10,7 @@ import { fetchVqueueStatuses } from './vqueue';
 export async function getInvocation(this: QueryContext, invocationId: string) {
   const [invocationRows, vqueueStatuses] = await Promise.all([
     this.query(
-      `SELECT ${getSysInvocationColumns(this.features).join(', ')} FROM sys_invocation WHERE id = ${quoteSqlString(invocationId)}`,
+      `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${quoteSqlString(invocationId)}`,
       'invocations/get',
     ),
     fetchVqueueStatuses(this, [invocationId]),

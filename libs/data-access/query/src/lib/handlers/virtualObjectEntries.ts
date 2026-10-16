@@ -3,10 +3,9 @@ import type {
   RawInvocation,
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocation, type VqueueStatus } from '../convertInvocation';
-import { TERMINAL_INVOCATION_STATUSES } from '../invocationStatuses';
 import {
   isInvocationId,
-  getSysInvocationListColumns,
+  SYS_INVOCATION_LIST_SELECT_COLUMNS,
   quoteSqlString,
   type QueryContext,
 } from './shared';
@@ -16,10 +15,6 @@ type VirtualObjectLock = components['schemas']['VirtualObjectLockResponse'];
 type VirtualObjectSnapshotChangedResponse =
   components['schemas']['VirtualObjectSnapshotChangedResponse'];
 type InvocationSelection = 'active' | 'all';
-
-const TERMINAL_INVOCATION_STATUS_SET = new Set<string>(
-  TERMINAL_INVOCATION_STATUSES,
-);
 
 export function virtualObjectSnapshotChangedResponse() {
   const body: VirtualObjectSnapshotChangedResponse = {
@@ -67,7 +62,7 @@ async function getVqueueEntryDetailsByIds(
   entryIds: string[],
   includeFinished: boolean,
 ) {
-  if (!context.features.has('vqueues') || entryIds.length === 0) {
+  if (entryIds.length === 0) {
     return [];
   }
   const { rows } = await context.query(
@@ -108,7 +103,7 @@ async function getInvocationsByIds(
   const statusClause =
     invocationSelection === 'active' ? "\n      AND status <> 'completed'" : '';
   const { rows } = await context.query(
-    `SELECT ${getSysInvocationListColumns(context.features).join(', ')}
+    `SELECT ${SYS_INVOCATION_LIST_SELECT_COLUMNS.join(', ')}
     FROM sys_invocation
     WHERE id IN (${invocationIds.map(quoteSqlString).join(', ')})${statusClause}`,
     'invocations/by-ids',
@@ -246,14 +241,11 @@ export function lockEntryRows(lock: VirtualObjectLock) {
 export function addEntryDetailsToLock(
   lock: VirtualObjectLock,
   lockDetails: VirtualObjectEntryDetails,
-  inferAcquiredAtFromInvocation = false,
 ): VirtualObjectLock {
   const { lockHolder } = lock;
   if (!lockHolder) return lock;
   const entry = lockDetails.entriesById.get(lockHolder.id);
-  const acquiredAt =
-    lockHolder.acquiredAt ??
-    (inferAcquiredAtFromInvocation ? entry?.invocation?.running_at : undefined);
+  const acquiredAt = lockHolder.acquiredAt;
   return {
     ...lock,
     lockHolder: {
@@ -267,7 +259,6 @@ export function addEntryDetailsToLock(
 }
 
 export function isLockConsistent(
-  context: QueryContext,
   lock: VirtualObjectLock,
   lockDetails: VirtualObjectEntryDetails,
 ) {
@@ -275,17 +266,11 @@ export function isLockConsistent(
   if (!lockHolder || lockHolder.kind === 'other') return true;
   const entry = lockDetails.entriesById.get(lockHolder.id);
   if (!entry) return false;
-  if (context.features.has('vqueues')) {
-    return (
-      lockDetails.vqueueEntryIds.has(lockHolder.id) &&
-      entry.hasLock === true &&
-      entry.stage !== 'finished' &&
-      (entry.kind !== 'invocation' || Boolean(entry.invocation))
-    );
-  }
-  return Boolean(
-    entry.invocation &&
-    !TERMINAL_INVOCATION_STATUS_SET.has(entry.invocation.status),
+  return (
+    lockDetails.vqueueEntryIds.has(lockHolder.id) &&
+    entry.hasLock === true &&
+    entry.stage !== 'finished' &&
+    (entry.kind !== 'invocation' || Boolean(entry.invocation))
   );
 }
 

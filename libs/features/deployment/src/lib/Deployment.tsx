@@ -7,11 +7,9 @@ import {
 } from '@restate/data-access/admin-api-spec';
 import { resolveDeploymentEndpoint } from './deploymentLabel';
 import { Revision } from './Revision';
-import { DEPLOYMENT_QUERY_PARAM } from './constants';
 import { deploymentHref } from '@restate/util/panel';
 import { Link } from '@restate/ui/link';
 import { useRef } from 'react';
-import { useActiveSidebarParam } from '@restate/ui/layout';
 import { useListDeployments } from '@restate/data-access/admin-api-hooks';
 import { useRestateContext } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
@@ -22,12 +20,8 @@ import { MiniGithubMetadata } from '@restate/features/options';
 import { MiniSDK } from './SDK';
 
 const styles = tv({
-  base: 'group/deployment relative flex flex-row items-center border text-0.5xs transition-all ease-in-out',
+  base: 'group/deployment relative flex flex-row items-center border border-transparent text-0.5xs transition-all ease-in-out',
   variants: {
-    isSelected: {
-      true: 'z-10 rounded-lg border bg-white font-medium shadow-xs shadow-zinc-800/3',
-      false: 'border-transparent',
-    },
     variant: {
       secondary: '-m-1 gap-0.5 p-1',
       primary:
@@ -101,7 +95,6 @@ export function Deployment({
   className,
   revision,
   deploymentId,
-  highlightSelection = true,
   showEndpoint = true,
   showEndpointCopyButton = false,
   showLink = true,
@@ -112,7 +105,6 @@ export function Deployment({
   revision?: ServiceRevision;
   className?: string;
   deploymentId?: DeploymentId;
-  highlightSelection?: boolean;
   showEndpoint?: boolean;
   showEndpointCopyButton?: boolean;
   showLink?: boolean;
@@ -120,29 +112,22 @@ export function Deployment({
   showSdk?: boolean;
   variant?: 'primary' | 'secondary';
 }) {
-  const { tunnel, isVersionGte, baseUrl } = useRestateContext();
+  const { tunnel, baseUrl } = useRestateContext();
   const { data: { deployments } = {} } = useListDeployments({
     refetchOnMount: false,
   });
   const deployment = deploymentId ? deployments?.get(deploymentId) : undefined;
-  const activeDeploymentInSidebar = useActiveSidebarParam(
-    DEPLOYMENT_QUERY_PARAM,
-  );
-
-  const isSelected =
-    activeDeploymentInSidebar === deploymentId && highlightSelection;
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   const isDeprecated = Boolean(
     deployment &&
-    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-    isVersionGte?.('1.6.0'),
+    deployment.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   );
 
   if (!deployment) {
     if (deploymentId) {
       return (
-        <div className={styles({ className, isSelected, variant })}>
+        <div className={styles({ className, variant })}>
           <div className={bodyStyles({ variant })}>
             <div className={endpointStyles({ variant })}>
               <TruncateWithTooltip
@@ -183,7 +168,7 @@ export function Deployment({
 
   return (
     <div
-      className={styles({ className, isSelected, variant })}
+      className={styles({ className, variant })}
       data-deprecated={isDeprecated}
     >
       {isDeprecated ? (

@@ -3,8 +3,7 @@ import { createInvocationV2QueryTestHarness } from '../invocationsV2/tests/testU
 
 const INDEX_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-version': '1.8.0',
-  'x-restate-features': 'vqueues,indexes_v1,track_status_gauges',
+  'x-restate-features': 'indexes_v1,track_status_gauges',
 };
 
 describe('drained deployments', () => {
@@ -43,7 +42,7 @@ describe('drained deployments', () => {
   it('keeps the VQueue query without the stats server feature', async () => {
     await harness.get('/deployments/drained', {
       ...INDEX_HEADERS,
-      'x-restate-features': 'vqueues,indexes_v1',
+      'x-restate-features': 'indexes_v1',
     });
 
     expect(harness.sql).toMatchInlineSnapshot(`

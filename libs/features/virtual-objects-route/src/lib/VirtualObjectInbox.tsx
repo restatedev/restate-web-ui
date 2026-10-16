@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import type {
   components,
   FilterItem,
@@ -44,7 +43,6 @@ type InboxColumnId = InvocationTableColumnKey | 'actions';
 
 function getInboxInvocationFilters(
   identity: VirtualObjectInstanceIdentity,
-  hasVqueues: boolean,
 ): FilterItem[] {
   return [
     {
@@ -65,41 +63,29 @@ function getInboxInvocationFilters(
       operation: 'EQUALS',
       value: identity.key,
     },
-    ...(hasVqueues
-      ? identity.scope === undefined
-        ? ([
-            {
-              field: 'scope',
-              type: 'NULL',
-              operation: 'IS',
-            },
-          ] satisfies FilterItem[])
-        : ([
-            {
-              field: 'scope',
-              type: 'STRING',
-              operation: 'EQUALS',
-              value: identity.scope,
-            },
-          ] satisfies FilterItem[])
-      : []),
+    identity.scope === undefined
+      ? {
+          field: 'scope',
+          type: 'NULL',
+          operation: 'IS',
+        }
+      : {
+          field: 'scope',
+          type: 'STRING',
+          operation: 'EQUALS',
+          value: identity.scope,
+        },
     {
       field: 'status',
       type: 'STRING_LIST',
       operation: 'IN',
-      value: [
-        'scheduled',
-        'pending',
-        'ready',
-        ...(hasVqueues ? ['yielded'] : []),
-        'backing-off',
-      ],
+      value: ['scheduled', 'pending', 'ready', 'yielded', 'backing-off'],
     },
   ];
 }
 
 const inboxRowStyles = tv({
-  base: "bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50",
+  base: 'bg-transparent [content-visibility:auto]',
   variants: {
     isClickable: {
       true: 'cursor-pointer',
@@ -108,37 +94,31 @@ const inboxRowStyles = tv({
   },
 });
 
-function getInboxColumns(showLimitKey: boolean) {
-  return [
-    {
-      ...INVOCATION_TABLE_COLUMN_CONFIG.id,
-      id: 'id',
-      name: 'Entry',
-      isRowHeader: true,
-      minWidth: 250,
-    },
-    { ...INVOCATION_TABLE_COLUMN_CONFIG.created_at, id: 'created_at' },
-    {
-      ...INVOCATION_TABLE_COLUMN_CONFIG.target_handler_name,
-      id: 'target_handler_name',
-    },
-    ...(showLimitKey
-      ? [
-          {
-            ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
-            id: 'limit_key' as const,
-          },
-        ]
-      : []),
-    { ...INVOCATION_TABLE_COLUMN_CONFIG.status, id: 'status' },
-    {
-      id: 'actions',
-      name: 'Actions',
-      width: 40,
-      hideLabel: true,
-    },
-  ] satisfies PanelTableColumn<InboxColumnId>[];
-}
+const INBOX_COLUMNS = [
+  {
+    ...INVOCATION_TABLE_COLUMN_CONFIG.id,
+    id: 'id',
+    name: 'Entry',
+    isRowHeader: true,
+    minWidth: 250,
+  },
+  { ...INVOCATION_TABLE_COLUMN_CONFIG.created_at, id: 'created_at' },
+  {
+    ...INVOCATION_TABLE_COLUMN_CONFIG.target_handler_name,
+    id: 'target_handler_name',
+  },
+  {
+    ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
+    id: 'limit_key' as const,
+  },
+  { ...INVOCATION_TABLE_COLUMN_CONFIG.status, id: 'status' },
+  {
+    id: 'actions',
+    name: 'Actions',
+    width: 40,
+    hideLabel: true,
+  },
+] satisfies PanelTableColumn<InboxColumnId>[];
 
 function renderInboxCell(
   entry: InboxEntry,
@@ -253,7 +233,6 @@ function InboxBatchActions({
 
 function InboxEntriesTable({
   ariaLabel,
-  columns,
   rows,
   isPending,
   error,
@@ -267,7 +246,6 @@ function InboxEntriesTable({
   inboxCount,
 }: {
   ariaLabel: string;
-  columns: PanelTableColumn<InboxColumnId>[];
   rows: InboxEntry[];
   isPending: boolean;
   error: Error | null;
@@ -294,7 +272,7 @@ function InboxEntriesTable({
       )}
       <PanelTable
         aria-label={ariaLabel}
-        columns={columns}
+        columns={INBOX_COLUMNS}
         items={rows}
         isLoading={isPending}
         error={error}
@@ -346,34 +324,18 @@ export function VirtualObjectInbox({
   error: Error | null;
   isPending: boolean;
 }) {
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
-  const columns = useMemo(() => getInboxColumns(hasVqueues), [hasVqueues]);
   const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
   const inboxFilters = useMemo(
-    () => getInboxInvocationFilters(identity, hasVqueues),
-    [hasVqueues, identity],
+    () => getInboxInvocationFilters(identity),
+    [identity],
   );
   const inboxCount =
     data?.inboxCount ?? (!data?.truncated ? rows.length : undefined);
-
-  if (!isPending && data?.supported === false) {
-    return (
-      <div className="px-5 py-12">
-        <EmptyState
-          icon={IconName.History}
-          title="Inbox unavailable"
-          description="This view is not available with this Restate version."
-        />
-      </div>
-    );
-  }
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <InboxEntriesTable
         ariaLabel="Virtual Object inbox entries"
-        columns={columns}
         rows={rows}
         isPending={isPending}
         error={error}
@@ -400,9 +362,6 @@ export function VirtualObjectInvocations({
   error: Error | null;
   isPending: boolean;
 }) {
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
-  const columns = useMemo(() => getInboxColumns(hasVqueues), [hasVqueues]);
   const rows = useMemo<InboxEntry[]>(
     () =>
       data?.rows.map((row) =>
@@ -413,23 +372,10 @@ export function VirtualObjectInvocations({
     [data?.rows],
   );
 
-  if (!isPending && data?.supported === false) {
-    return (
-      <div className="px-5 py-12">
-        <EmptyState
-          icon={IconName.History}
-          title="Recent invocations unavailable"
-          description="This view is not available with this Restate version."
-        />
-      </div>
-    );
-  }
-
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
       <InboxEntriesTable
         ariaLabel="Recent Virtual Object invocations"
-        columns={columns}
         rows={rows}
         isPending={isPending}
         error={error}

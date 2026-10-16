@@ -1,9 +1,6 @@
 import ky, { HTTPError, TimeoutError } from 'ky';
-import semverGte from 'semver/functions/gte';
-import semverCoerce from 'semver/functions/coerce';
 import type { QueryId } from '../queryDefinitions';
 import { RESTATE_FEATURES_HEADER } from '../getFeatures';
-import { RESTATE_VERSION_HEADER } from '../getVersion';
 import { UI_FEATURES_HEADER } from '../uiFeatures';
 import {
   QUERY_CLIENT,
@@ -17,11 +14,6 @@ import {
   type QueryOutcome,
 } from '../queryStats';
 
-export const DURATION_CALC =
-  "CASE WHEN status = 'scheduled' THEN NULL ELSE COALESCE(completed_at, now()) - COALESCE(scheduled_start_at, created_at) END";
-
-export const DURATION_EXPRESSION = `${DURATION_CALC} AS duration`;
-
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS = 10 * 60_000;
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL = '10m';
 export const BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT = 500;
@@ -31,18 +23,10 @@ export function quoteSqlString(value: string): string {
 }
 
 export function targetServiceKeyClause(
-  context: Pick<QueryContext, 'features' | 'restateVersion'>,
   key: string,
   column = 'target_service_key',
 ): string {
-  const version = semverCoerce(context.restateVersion);
-  const requiresVqueueWorkaround =
-    context.features.has('vqueues') &&
-    (!version || !semverGte(version, '1.7.3'));
-  const keyExpression = requiresVqueueWorkaround
-    ? `SUBSTR(${column}, 1)`
-    : column;
-  return `${keyExpression} = ${quoteSqlString(key)}`;
+  return `${column} = ${quoteSqlString(key)}`;
 }
 
 export const SYS_INVOCATION_LIST_COLUMNS = [
@@ -102,33 +86,18 @@ const SYS_INVOCATION_DETAIL_COLUMNS = [
   'last_failure_related_command_type',
 ] as const;
 
-// `raw_length` was added to sys_journal in 1.7.0; older servers don't have the
-// column and DataFusion errors on an unknown column, so gate it to avoid
-// breaking the whole journal query.
-export function supportsJournalRawLength(restateVersion: string): boolean {
-  const coerced = semverCoerce(restateVersion);
-  return coerced ? semverGte(coerced, '1.7.0') : false;
-}
+export const SYS_INVOCATION_LIST_SELECT_COLUMNS = [
+  ...SYS_INVOCATION_LIST_COLUMNS,
+  ...SYS_INVOCATION_WAITING_COLUMNS,
+  'scope',
+  'vqueue_id',
+  'limit_key',
+] as const;
 
-export function getSysInvocationListColumns(
-  features: Set<string>,
-): readonly string[] {
-  const base = features.has('protocol_v7')
-    ? [...SYS_INVOCATION_LIST_COLUMNS, ...SYS_INVOCATION_WAITING_COLUMNS]
-    : SYS_INVOCATION_LIST_COLUMNS;
-  return features.has('vqueues')
-    ? [...base, 'scope', 'vqueue_id', 'limit_key']
-    : base;
-}
-
-export function getSysInvocationColumns(
-  features: Set<string>,
-): readonly string[] {
-  return [
-    ...getSysInvocationListColumns(features),
-    ...SYS_INVOCATION_DETAIL_COLUMNS,
-  ];
-}
+export const SYS_INVOCATION_SELECT_COLUMNS = [
+  ...SYS_INVOCATION_LIST_SELECT_COLUMNS,
+  ...SYS_INVOCATION_DETAIL_COLUMNS,
+] as const;
 
 export type QueryContext = {
   query: (sql: string, id: QueryId) => Promise<{ rows: any[] }>;
@@ -137,32 +106,10 @@ export type QueryContext = {
     options?: { method?: string; json?: unknown },
   ) => Promise<T>;
   baseUrl: string;
-  restateVersion: string;
   features: Set<string>;
 };
 
-export type StateServiceType = 'virtual_object' | 'workflow' | 'service';
-
-export function shouldFilterScopeIsNull(
-  context: { features: Set<string> },
-  serviceType?: StateServiceType,
-): boolean {
-  if (!context.features.has('vqueues')) return false;
-  return (
-    serviceType === 'virtual_object' &&
-    !context.features.has('scoped_virtual_objects')
-  );
-}
-
-export function scopeClause(
-  context: { features: Set<string> },
-  explicitScope?: string,
-  serviceType?: StateServiceType,
-): string {
-  if (!context.features.has('vqueues')) return '';
-  if (shouldFilterScopeIsNull(context, serviceType)) {
-    return ' AND scope IS NULL';
-  }
+export function scopeClause(explicitScope?: string): string {
   if (explicitScope !== undefined) {
     return ` AND scope = ${quoteSqlString(explicitScope)}`;
   }
@@ -260,12 +207,10 @@ function classifyQueryError(error: unknown): QueryOutcome {
 export function createQueryContext(
   baseUrl: string,
   headers: Headers,
-  restateVersion: string,
   features: Set<string>,
   signal?: AbortSignal,
 ): QueryContext {
   const downstreamHeaders = new Headers(headers);
-  downstreamHeaders.delete(RESTATE_VERSION_HEADER);
   downstreamHeaders.delete(RESTATE_FEATURES_HEADER);
   downstreamHeaders.delete(UI_FEATURES_HEADER);
 
@@ -311,7 +256,6 @@ export function createQueryContext(
         signal,
       }),
     baseUrl,
-    restateVersion,
     features,
   };
 }

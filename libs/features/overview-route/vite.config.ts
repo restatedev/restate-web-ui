@@ -1,18 +1,16 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 
-export default defineConfig({
+export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../../node_modules/.vite/libs/features/overview-route',
-
-  plugins: [react(), nxViteTsPaths()],
-
+  plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
   // },
-
   test: {
     passWithNoTests: true,
     watch: false,
@@ -22,7 +20,7 @@ export default defineConfig({
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../../coverage/libs/features/overview-route',
-      provider: 'v8',
+      provider: 'v8' as const,
     },
   },
-});
+}));

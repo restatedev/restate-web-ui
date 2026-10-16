@@ -1,10 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import { useSchema } from './useSchema';
 
-const useFeatures = vi.hoisted(() => vi.fn());
-
-vi.mock('@restate/data-access/admin-api', () => ({ useFeatures }));
-
 vi.mock('@restate/data-access/admin-api-hooks', () => ({
   useListDeployments: () => ({
     data: { deployments: new Map(), sortedServiceNames: [] },
@@ -18,9 +14,7 @@ vi.mock('@restate/data-access/admin-api-hooks', () => ({
 }));
 
 describe('useSchema', () => {
-  it('offers the VQueue filter when VQueues are enabled', () => {
-    useFeatures.mockReturnValue(new Set(['vqueues']));
-
+  it('offers the VQueue filter', () => {
     const { result } = renderHook(() => useSchema());
 
     expect(result.current.schema).toEqual(
@@ -28,15 +22,5 @@ describe('useSchema', () => {
         expect.objectContaining({ id: 'vqueue_id', label: 'VQueue' }),
       ]),
     );
-  });
-
-  it('hides the VQueue filter when VQueues are disabled', () => {
-    useFeatures.mockReturnValue(new Set());
-
-    const { result } = renderHook(() => useSchema());
-
-    expect(
-      result.current.schema.some((field) => field.id === 'vqueue_id'),
-    ).toBe(false);
   });
 });

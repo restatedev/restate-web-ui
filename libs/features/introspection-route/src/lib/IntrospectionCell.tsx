@@ -65,7 +65,6 @@ function IntrospectionValue({
       <Deployment
         deploymentId={value}
         className="m-0 max-w-full p-0 pr-0.5 text-inherit [&_a:before]:rounded-md"
-        highlightSelection={false}
         showEndpoint={false}
       />
     );

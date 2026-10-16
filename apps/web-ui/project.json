@@ -14,30 +14,6 @@
             "command": "cd apps/web-ui && ../../node_modules/.bin/react-router dev --port=4300"
           }
         ]
-      },
-      "configurations": {
-        "mock": {
-          "commands": [
-            {
-              "command": "nx serve mock-admin-api"
-            },
-            {
-              "command": "cd apps/web-ui && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/react-router dev --port=4300"
-            }
-          ],
-          "parallel": true
-        },
-        "local": {
-          "commands": [
-            {
-              "command": "nx serve mock-admin-api -c proxy"
-            },
-            {
-              "command": "cd apps/web-ui && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/react-router dev --port=4300"
-            }
-          ],
-          "parallel": true
-        }
       }
     },
     "build": {
@@ -59,30 +35,6 @@
         "commands": [
           "cd apps/web-ui && NODE_ENV=production ../../node_modules/.bin/react-router build && ../../node_modules/.bin/vite preview --port=4300"
         ]
-      },
-      "configurations": {
-        "mock": {
-          "commands": [
-            {
-              "command": "nx serve mock-admin-api"
-            },
-            {
-              "command": "cd apps/web-ui && NODE_ENV=production && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
-            }
-          ],
-          "parallel": true
-        },
-        "local": {
-          "commands": [
-            {
-              "command": "nx serve mock-admin-api -c proxy"
-            },
-            {
-              "command": "cd apps/web-ui && NODE_ENV=production ../../node_modules/.bin/react-router build && ADMIN_BASE_URL=http://localhost:4001 ../../node_modules/.bin/vite preview --port=4300"
-            }
-          ],
-          "parallel": true
-        }
       }
     }
   }

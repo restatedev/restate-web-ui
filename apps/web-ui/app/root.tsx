@@ -6,7 +6,6 @@ import {
   Scripts,
   ScrollRestoration,
   useHref,
-  useLocation,
   useMatch,
   useNavigate,
 } from 'react-router';
@@ -50,22 +49,14 @@ import {
   HealthIndicator,
 } from '@restate/features/health';
 import { Spinner } from '@restate/ui/loading';
-import {
-  InvocationActions,
-  InvocationPanel,
-} from '@restate/features/invocation-route';
+import { InvocationActions } from '@restate/features/invocation-route';
 import { Support } from '@restate/features/support';
-import { StatePanel } from '@restate/features/state-object-route';
 import { EditState } from '@restate/features/edit-state';
-import {
-  FeatureFlags,
-  useIsFeatureFlagEnabled,
-} from '@restate/util/feature-flag';
+import { FeatureFlags } from '@restate/util/feature-flag';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { DeleteDeployment } from '@restate/features/deployment';
 import { ServicePlayground } from '@restate/features/service';
-import { DeploymentDetails } from '@restate/features/deployment-details';
-import { EditService, ServiceDetails } from '@restate/features/service-details';
+import { EditService } from '@restate/features/service-details';
 import { GettingStarted } from '@restate/features/getting-started';
 import {
   RegisterDeploymentDialog,
@@ -75,8 +66,6 @@ import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
 import {
   setMetaFallback,
   setMetaPersister,
-  useFeatures,
-  useVersion,
 } from '@restate/data-access/admin-api';
 import { setQueryClient } from '@restate/util/react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
@@ -178,7 +167,7 @@ setMetaFallback({ version: '9999999.0.0' });
 // Cross-session warm-up: persist the meta cache (`['meta', baseUrl]`)
 // to `localStorage` via TanStack's `experimental_createPersister`. On
 // subsequent loads, the cache entry is restored before the first read
-// so `useFeatures` / `useRestateVersion` / `/query/*` middleware get
+// so `useFeatures` / `useVersion` / `/query/*` middleware get
 // last-session values immediately and the background `/version` fetch
 // just confirms/refreshes them.
 setMetaPersister(
@@ -438,30 +427,9 @@ function TopbarPanels() {
   );
 }
 
-function RouteContent() {
-  const { pathname } = useLocation();
-  const hasVqueues = useFeatures().has('vqueues');
-  const { data: version, isPending: isVersionPending } = useVersion();
-  const serverHasVqueues = version?.features?.vqueues === true;
-  const isFlowControlRoute =
-    pathname === '/flow-control' || pathname.startsWith('/flow-control/');
-
-  if (
-    isFlowControlRoute &&
-    (isVersionPending || (serverHasVqueues && !hasVqueues))
-  ) {
-    return null;
-  }
-
-  return <Outlet />;
-}
-
 function AppContent() {
   // Tenant view uses a separate shell and URL prefix for shared invocation links.
   const tenantMatch = useMatch('/tenants/:scope/*');
-  const executionMetricsEnabled = useIsFeatureFlagEnabled(
-    'FEATURE_EXECUTION_METRICS',
-  );
 
   return (
     <QueryProvider queryClient={queryClient}>
@@ -476,7 +444,6 @@ function AppContent() {
           GettingStarted={RestateGettingStarted}
           systemHealthMonitor={monitor}
           queryHealthCheckEnabled
-          executionMetricsEnabled={executionMetricsEnabled}
         >
           <CodecRuntimeProvider>
             {/* Tenant view reuses the normal server header, API and codecs, without admin panels. */}
@@ -490,17 +457,13 @@ function AppContent() {
                 <EditState>
                   <BreadcrumbsProvider>
                     <LayoutOutlet zone={LayoutZone.Content}>
-                      <RouteContent />
+                      <Outlet />
                     </LayoutOutlet>
                   </BreadcrumbsProvider>
                   <SidebarPanels />
                   <TopbarPanels />
-                  <DeploymentDetails />
-                  <ServiceDetails />
                   <DeleteDeployment />
                   <ServicePlayground />
-                  <InvocationPanel />
-                  <StatePanel />
                   <EditService />
                   <InvocationActions />
                   <RegisterDeploymentDialog />

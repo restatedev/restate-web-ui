@@ -69,14 +69,12 @@ interface HrefWithQueryParamsOptions {
   preserveQueryParams: boolean | string[];
   href: string;
   searchParams: URLSearchParams;
-  mode?: 'append' | 'prepend';
 }
 
 export function getHrefWithQueryParams({
   preserveQueryParams,
   href,
   searchParams,
-  mode = 'prepend',
 }: HrefWithQueryParamsOptions): string {
   if (Array.isArray(preserveQueryParams)) {
     if (preserveQueryParams.length === 0) return href;
@@ -106,25 +104,13 @@ export function getHrefWithQueryParams({
   if (preserveQueryParams && href.startsWith('?')) {
     const [hrefParams, hash] = href.split('#');
     const newSearchParams = new URLSearchParams(hrefParams);
-    let existingSearchParams = new URLSearchParams(searchParams);
-    Array.from(newSearchParams.entries()).forEach(([key, value]) => {
+    const combinedSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.forEach((_, key) => combinedSearchParams.delete(key));
+    newSearchParams.forEach((value, key) => {
       if (value !== '') {
-        existingSearchParams = new URLSearchParams(
-          existingSearchParams
-            .toString()
-            .replace(`${key}=${value}`, '')
-            .replace(`${key}=${encodeURIComponent(value)}`, ''),
-        );
-      } else {
-        existingSearchParams.delete(key);
-        newSearchParams.delete(key);
+        combinedSearchParams.append(key, value);
       }
     });
-    const combinedSearchParams = new URLSearchParams([
-      ...(mode === 'prepend' ? newSearchParams : []),
-      ...existingSearchParams,
-      ...(mode === 'append' ? newSearchParams : []),
-    ]);
     return '?' + combinedSearchParams.toString() + (hash ? `#${hash}` : '');
   }
   return href;
@@ -133,11 +119,9 @@ export function getHrefWithQueryParams({
 export function useHrefWithQueryParams({
   preserveQueryParams,
   href,
-  mode = 'prepend',
 }: {
   preserveQueryParams: boolean | string[];
   href?: string;
-  mode?: 'append' | 'prepend';
 }) {
   const [searchParams] = useSearchParams();
 
@@ -148,10 +132,9 @@ export function useHrefWithQueryParams({
             preserveQueryParams,
             href,
             searchParams,
-            mode,
           })
         : href,
-    [preserveQueryParams, href, searchParams, mode],
+    [preserveQueryParams, href, searchParams],
   );
   return hrefWithQueryParams;
 }

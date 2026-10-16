@@ -202,8 +202,11 @@ describe('describeQueryPage', () => {
 
   it('appends the active panel from the URL', () => {
     expect(
-      describeQueryPage('/invocations', '?invocation=inv_1&panel=invocation'),
-    ).toBe('/invocations · panel:invocation');
+      describeQueryPage(
+        '/invocations',
+        '?servicePlayground=Greeter&panel=servicePlayground',
+      ),
+    ).toBe('/invocations · panel:servicePlayground');
   });
 
   it('appends registered dialog params present in the URL', () => {

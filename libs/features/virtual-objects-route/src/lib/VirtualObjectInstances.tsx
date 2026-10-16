@@ -50,7 +50,7 @@ import {
   createVirtualObjectKeyFilter,
   readVirtualObjectFilters,
   toVirtualObjectFilters,
-  virtualObjectFilterSchema,
+  VIRTUAL_OBJECT_FILTER_SCHEMA,
   writeVirtualObjectFilters,
 } from './virtual-objects.filters';
 import {
@@ -244,18 +244,14 @@ export function VirtualObjectInstances({
   const recentVirtualObject = useRecentVirtualObjectInstance(baseUrl);
   const features = useFeatures();
   const listsFromStats = usesStatsTables({ features });
-  const hasVqueues = features.has('vqueues');
-  const hasScopedVirtualObjects =
-    hasVqueues && features.has('scoped_virtual_objects');
-  const filterSchema = useMemo(
-    () => virtualObjectFilterSchema(hasScopedVirtualObjects),
-    [hasScopedVirtualObjects],
-  );
   const searchString = searchParams.toString();
   const committedFilters = useMemo(
     () =>
-      readVirtualObjectFilters(new URLSearchParams(searchString), filterSchema),
-    [filterSchema, searchString],
+      readVirtualObjectFilters(
+        new URLSearchParams(searchString),
+        VIRTUAL_OBJECT_FILTER_SCHEMA,
+      ),
+    [searchString],
   );
   const filterQuery = useFilterBuilder(committedFilters);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -308,18 +304,10 @@ export function VirtualObjectInstances({
     const identity = virtualObjectIdentityFromOpenDraft(
       service,
       openVirtualObjectDraft,
-      hasScopedVirtualObjects,
     );
     if (!identity) return;
     navigate(virtualObjectInstanceRouteHref(baseUrl, identity, searchParams));
-  }, [
-    baseUrl,
-    hasScopedVirtualObjects,
-    navigate,
-    openVirtualObjectDraft,
-    searchParams,
-    service,
-  ]);
+  }, [baseUrl, navigate, openVirtualObjectDraft, searchParams, service]);
   const sortParam = searchParams.get(SORT_QUERY_PARAM);
 
   const handleBacklogSortChange = (descriptor: SortDescriptor | undefined) => {
@@ -346,8 +334,7 @@ export function VirtualObjectInstances({
   } = useListVirtualObjectInstances(
     service,
     {
-      ...(recentVirtualObject?.service === service &&
-      (recentVirtualObject.scope === undefined || hasScopedVirtualObjects)
+      ...(recentVirtualObject?.service === service
         ? {
             candidates: [
               {
@@ -403,9 +390,9 @@ export function VirtualObjectInstances({
     () => [
       listsFromStats ? statsIdentityColumn : identityColumn,
       ...columns,
-      ...(hasVqueues ? [lockAcquiredColumn] : []),
+      lockAcquiredColumn,
     ],
-    [hasVqueues, listsFromStats],
+    [listsFromStats],
   );
   const isLoading =
     isServicesPending || (Boolean(service) && isInstancesFetching);
@@ -435,7 +422,11 @@ export function VirtualObjectInstances({
             setSearchParams(next, { preventScrollReset: true });
           }}
         >
-          <FilterBuilder query={filterQuery} schema={filterSchema} multiple>
+          <FilterBuilder
+            query={filterQuery}
+            schema={VIRTUAL_OBJECT_FILTER_SCHEMA}
+            multiple
+          >
             <AddFilterTrigger
               placeholder="Filter Virtual Objects…"
               title="Virtual Object filters"
@@ -511,7 +502,6 @@ export function VirtualObjectInstances({
                   <VirtualObjectQuickOpen
                     draft={openVirtualObjectDraft}
                     disabled={!service}
-                    hasScopedVirtualObjects={hasScopedVirtualObjects}
                     onChange={setOpenVirtualObjectDraft}
                     onOpen={confirmOpenVirtualObject}
                     service={service}

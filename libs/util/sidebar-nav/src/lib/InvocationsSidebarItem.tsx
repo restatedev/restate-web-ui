@@ -9,7 +9,6 @@ import { useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { useRestateContext } from '@restate/features/restate-context';
 import { useInvocationsRecent } from './useInvocationsMemory';
-import { useFeatures } from '@restate/data-access/admin-api';
 import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access/admin-api-spec';
 import { isFeatureEnabled } from '@restate/util/feature-flag';
 
@@ -80,7 +79,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
       {
         id: 'status',
         operation: 'IN',
-        value: ['pending', 'backing-off', 'paused', 'ready'],
+        value: ['pending', 'backing-off', 'paused', 'ready', 'yielded'],
       },
     ],
     sort: { field: 'created_at', order: 'ASC' },
@@ -132,28 +131,6 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
     columns: [...DEFAULT_PRESET_COLUMNS, 'scheduled_start_at'],
   },
 ];
-
-function invocationShortcuts(
-  supportsVqueueOnlyFields: boolean,
-): InvocationShortcut[] {
-  return INVOCATION_SHORTCUTS.map((shortcut) => {
-    if (shortcut.id === 'stuck') {
-      return {
-        ...shortcut,
-        filters: shortcut.filters.map((filter) =>
-          filter.id === 'status' && supportsVqueueOnlyFields
-            ? {
-                ...filter,
-                value: [...((filter.value as string[]) ?? []), 'yielded'],
-              }
-            : filter,
-        ),
-        sort: shortcut.sort,
-      };
-    }
-    return shortcut;
-  });
-}
 
 const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
   id: 'all',
@@ -208,21 +185,17 @@ function shortcutHref(path: string, s: InvocationShortcut): string {
 const FALLBACK_INVOCATIONS_PRESET = 'processing';
 let configuredDefaultInvocationsPreset: string | undefined =
   FALLBACK_INVOCATIONS_PRESET;
-let configuredSupportsVqueueOnlyFields = false;
 
 /**
  * Search string (filters + sort + columns) for a preset id, for callers that
  * navigate/redirect to a preset without a path (e.g. the /invocations route
  * loader). Empty for unknown ids.
  */
-export function getInvocationPresetSearch(
-  id: string,
-  supportsVqueueOnlyFields = configuredSupportsVqueueOnlyFields,
-): string {
+export function getInvocationPresetSearch(id: string): string {
   const shortcut =
     id === ALL_INVOCATIONS_SHORTCUT.id
       ? ALL_INVOCATIONS_SHORTCUT
-      : invocationShortcuts(supportsVqueueOnlyFields).find((s) => s.id === id);
+      : INVOCATION_SHORTCUTS.find((s) => s.id === id);
   return shortcut ? shortcutSearch(shortcut) : '';
 }
 
@@ -231,12 +204,8 @@ export function getInvocationPresetSearch(
 // context) can apply it. Synced by InvocationsSidebarItem on render. On a cold
 // load it isn't set until the sidebar mounts (after loaders run), so initialize
 // it to the same Processing fallback used by the nav link.
-export function setDefaultInvocationsPreset(
-  preset: string | undefined,
-  supportsVqueueOnlyFields = false,
-) {
+export function setDefaultInvocationsPreset(preset: string | undefined) {
   configuredDefaultInvocationsPreset = preset ?? FALLBACK_INVOCATIONS_PRESET;
-  configuredSupportsVqueueOnlyFields = supportsVqueueOnlyFields;
 }
 export function getDefaultInvocationsPreset(): string | undefined {
   return configuredDefaultInvocationsPreset;
@@ -332,7 +301,6 @@ function classifyInvocationsUrl(
   path: string,
   pathname: string,
   searchParams: URLSearchParams,
-  supportsVqueueOnlyFields = configuredSupportsVqueueOnlyFields,
 ): InvocationsUrlKind {
   const detail = pathname.match(new RegExp(`^${path}/([^/]+)`));
   if (detail?.[1]) return { kind: 'detail', id: detail[1] };
@@ -340,7 +308,7 @@ function classifyInvocationsUrl(
   if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) {
     return { kind: 'all' };
   }
-  const preset = invocationShortcuts(supportsVqueueOnlyFields).find((s) =>
+  const preset = INVOCATION_SHORTCUTS.find((s) =>
     urlMatchesShortcut(searchParams, s),
   );
   if (preset) return { kind: 'preset', id: preset.id };
@@ -356,9 +324,7 @@ export function matchesAnyInvocationPreset(
   searchParams: URLSearchParams,
 ): boolean {
   if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) return true;
-  return invocationShortcuts(configuredSupportsVqueueOnlyFields).some((s) =>
-    urlMatchesShortcut(searchParams, s),
-  );
+  return INVOCATION_SHORTCUTS.some((s) => urlMatchesShortcut(searchParams, s));
 }
 
 // Keep in sync with ALL_INVOCATIONS_SHORTCUT + INVOCATION_SHORTCUTS ids.
@@ -383,8 +349,8 @@ export function getInvocationPreset(
   searchParams: URLSearchParams,
 ): InvocationPreset {
   if (urlMatchesShortcut(searchParams, ALL_INVOCATIONS_SHORTCUT)) return 'all';
-  const preset = invocationShortcuts(configuredSupportsVqueueOnlyFields).find(
-    (s) => urlMatchesShortcut(searchParams, s),
+  const preset = INVOCATION_SHORTCUTS.find((s) =>
+    urlMatchesShortcut(searchParams, s),
   );
   return (preset?.id as InvocationPreset) ?? 'custom';
 }
@@ -412,10 +378,8 @@ export function InvocationsSidebarItem({
   const path = `${baseUrl}/invocations`;
   const { recent } = useInvocationsRecent();
   const { defaultInvocationsPreset } = useRestateContext();
-  const features = useFeatures();
-  const supportsVqueueOnlyFields = features.has('vqueues');
   const location = useLocation();
-  const shortcuts = invocationShortcuts(supportsVqueueOnlyFields);
+  const shortcuts = INVOCATION_SHORTCUTS;
 
   const resolvedDefaultInvocationsPreset =
     defaultInvocationsPreset ?? FALLBACK_INVOCATIONS_PRESET;
@@ -423,11 +387,8 @@ export function InvocationsSidebarItem({
   // Mirror the configured default preset to the module store so the route
   // loader can apply it on the next /invocations navigation.
   useEffect(() => {
-    setDefaultInvocationsPreset(
-      resolvedDefaultInvocationsPreset,
-      supportsVqueueOnlyFields,
-    );
-  }, [resolvedDefaultInvocationsPreset, supportsVqueueOnlyFields]);
+    setDefaultInvocationsPreset(resolvedDefaultInvocationsPreset);
+  }, [resolvedDefaultInvocationsPreset]);
 
   // The Invocations nav link lands on the configured preset.
   const defaultShortcut =
@@ -437,18 +398,12 @@ export function InvocationsSidebarItem({
     path,
     location.pathname,
     new URLSearchParams(location.search),
-    supportsVqueueOnlyFields,
   );
 
   // Sub-item match functions all derive from the same classifier — the
   // active preset (if any) wins exactly one highlight.
   const classify = (loc: SidebarLocation) =>
-    classifyInvocationsUrl(
-      path,
-      loc.pathname,
-      loc.searchParams,
-      supportsVqueueOnlyFields,
-    );
+    classifyInvocationsUrl(path, loc.pathname, loc.searchParams);
 
   const presetSubItems: SidebarSubItem[] = shortcuts.map((s) => ({
     href: shortcutHref(path, s),

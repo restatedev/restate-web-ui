@@ -3,9 +3,7 @@ import { createInvocationV2QueryTestHarness } from './testUtils';
 
 const INDEX_HEADERS = {
   'content-type': 'application/json',
-  'x-restate-version': '1.8.1',
-  'x-restate-features':
-    'vqueues,protocol_v7,scoped_virtual_objects,indexes_v1,track_status_gauges',
+  'x-restate-features': 'indexes_v1,track_status_gauges',
 };
 
 const DEPLOYMENT_FILTER = {
@@ -230,11 +228,9 @@ describe('invocation summary from sys_deployment_stats', () => {
   it('rejects the deployments view without stats', async () => {
     harness.setResponder(() => []);
 
-    const response = await harness.post(
-      '/v2/invocations/summary',
-      { view: 'deployments' },
-      { ...INDEX_HEADERS, 'x-restate-features': 'vqueues,protocol_v7' },
-    );
+    const response = await harness.post('/v2/invocations/summary', {
+      view: 'deployments',
+    });
 
     expect(response.status).toBe(400);
     expect(harness.sql).toEqual([]);
@@ -248,7 +244,7 @@ describe('invocation summary from sys_deployment_stats', () => {
       { view: 'count', filters: [DEPLOYMENT_FILTER] },
       {
         ...INDEX_HEADERS,
-        'x-restate-features': 'vqueues,protocol_v7,indexes_v1',
+        'x-restate-features': 'indexes_v1',
       },
     );
 

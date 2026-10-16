@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getLimitRule, listLimitRules } from './listLimitRules';
+import { listLimitRules } from './listLimitRules';
 import type { QueryContext } from './shared';
 
 function querySql(query: ReturnType<typeof vi.fn>) {
@@ -232,45 +232,6 @@ describe('listLimitRules', () => {
         },
       ],
       hasMore: false,
-    });
-  });
-
-  it('converts a rule timestamp to epoch milliseconds', async () => {
-    const query = vi.fn(async () => ({
-      rows: [
-        {
-          pattern: 'checkout',
-          concurrency: 10,
-          description: null,
-          disabled: false,
-          version: 1,
-          last_modified: '2026-08-07T14:36:46.553Z',
-        },
-      ],
-    }));
-    const context = { query } as unknown as QueryContext;
-
-    const response = await getLimitRule.call(context, 'checkout');
-
-    expect(querySql(query)).toMatchInlineSnapshot(`
-      [
-        "SELECT pattern,
-        concurrency,
-        description,
-        disabled,
-        version,
-        last_modified
-          FROM sys_rules
-          WHERE pattern = 'checkout'",
-      ]
-    `);
-    expect(await response.json()).toEqual({
-      pattern: 'checkout',
-      description: null,
-      disabled: false,
-      version: 1,
-      last_modified_millis_since_epoch: Date.parse('2026-08-07T14:36:46.553Z'),
-      limits: { concurrency: 10 },
     });
   });
 });

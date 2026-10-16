@@ -76,7 +76,7 @@ describe('listVqueues', () => {
       .mockResolvedValueOnce({ rows: [] });
     const context = {
       query,
-      features: new Set(['vqueues', 'indexes_v1', 'ui:indexes_v1']),
+      features: new Set(['indexes_v1', 'ui:indexes_v1']),
     } as unknown as QueryContext;
 
     const response = await listVqueues.call(context, {

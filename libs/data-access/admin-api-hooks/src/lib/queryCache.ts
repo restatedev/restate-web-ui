@@ -3,6 +3,7 @@ import type {
   operations,
 } from '@restate/data-access/admin-api-spec';
 import { Query, QueryClient } from '@tanstack/react-query';
+import { retryQueryHandlersOnFeatureChange } from '@restate/data-access/admin-api';
 import {
   isGetInvocationJournalWithInvocationV2,
   isGetVqueue,
@@ -25,6 +26,7 @@ export function queryCacheOnSuccess<TError>(
   data: unknown,
   query: Query<unknown, TError, unknown, readonly unknown[]>,
 ) {
+  retryQueryHandlersOnFeatureChange(queryClient, data, query);
   let newInvocation: InvocationV2 | undefined;
   if (isGetInvocationJournalWithInvocationV2(data, query)) {
     newInvocation = toListInvocation(data);

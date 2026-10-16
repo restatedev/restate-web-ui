@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  NO_VQUEUE_HEADERS,
-  VQUEUE_SKIP_COMPLETED_HEADERS,
-  createInvocationV2QueryTestHarness,
-} from './testUtils';
+import { createInvocationV2QueryTestHarness } from './testUtils';
 
 describe('POST /query/v2/invocations/finished-breakdown', () => {
   const { sql, post, setResponder } = createInvocationV2QueryTestHarness();
@@ -35,7 +31,6 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
       `);
       expect(await response.json()).toMatchObject({
         mode: 'exact',
-        granularity: 'exact',
         isPartial: false,
         scannedCount: 3,
       });
@@ -99,7 +94,6 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
       `);
       expect(body).toMatchObject({
         mode: 'sampled',
-        granularity: 'exact',
         isPartial: true,
         scannedCount: 5,
       });
@@ -122,134 +116,6 @@ describe('POST /query/v2/invocations/finished-breakdown', () => {
               GROUP BY sampled_finished.status",
         ]
       `);
-    });
-  });
-
-  describe('without VQueue exact', () => {
-    it('uses invocation status when completed rows were skipped by VQueue migration', async () => {
-      await post(
-        '/v2/invocations/finished-breakdown',
-        {
-          mode: { type: 'exact' },
-          startTime: '2026-01-01T00:00:00.000Z',
-          endTime: '2026-02-01T00:00:00.000Z',
-        },
-        VQUEUE_SKIP_COMPLETED_HEADERS,
-      );
-
-      expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  CASE
-                    WHEN completion_result = 'success' THEN 'succeeded'
-                    ELSE 'failed'
-                  END AS status,
-                  COUNT(1) AS count
-                FROM sys_invocation_status
-                WHERE status = 'completed'
-                  AND completed_at >= '2026-01-01T00:00:00.000Z'
-                  AND completed_at < '2026-02-01T00:00:00.000Z'
-                GROUP BY
-                  CASE
-                    WHEN completion_result = 'success' THEN 'succeeded'
-                    ELSE 'failed'
-                  END",
-          ]
-        `);
-    });
-
-    it('scans all completed invocation-status rows without a sample subquery', async () => {
-      setResponder(() => [{ status: 'succeeded', count: 2 }]);
-
-      const response = await post(
-        '/v2/invocations/finished-breakdown',
-        {
-          mode: { type: 'exact' },
-          startTime: '2026-01-01T00:00:00.000Z',
-          endTime: '2026-02-01T00:00:00.000Z',
-        },
-        NO_VQUEUE_HEADERS,
-      );
-
-      expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  CASE
-                    WHEN completion_result = 'success' THEN 'succeeded'
-                    ELSE 'failed'
-                  END AS status,
-                  COUNT(1) AS count
-                FROM sys_invocation_status
-                WHERE status = 'completed'
-                  AND completed_at >= '2026-01-01T00:00:00.000Z'
-                  AND completed_at < '2026-02-01T00:00:00.000Z'
-                GROUP BY
-                  CASE
-                    WHEN completion_result = 'success' THEN 'succeeded'
-                    ELSE 'failed'
-                  END",
-          ]
-        `);
-      expect(await response.json()).toMatchObject({
-        mode: 'exact',
-        isPartial: false,
-        scannedCount: 2,
-      });
-    });
-  });
-
-  describe('without VQueue sampled', () => {
-    it('bounds completed rows and returns failure-grouped granularity', async () => {
-      setResponder(() => [
-        { status: 'succeeded', count: 4 },
-        { status: 'failed', count: 5 },
-      ]);
-      const response = await post(
-        '/v2/invocations/finished-breakdown',
-        {
-          mode: { type: 'sampled', sampleSize: 9 },
-          startTime: '2026-01-01T00:00:00.000Z',
-          endTime: '2026-02-01T00:00:00.000Z',
-        },
-        NO_VQUEUE_HEADERS,
-      );
-
-      expect(sql).toMatchInlineSnapshot(`
-          [
-            "SELECT
-                  CASE
-                    WHEN completion_result = 'success' THEN 'succeeded'
-                    ELSE 'failed'
-                  END AS status,
-                  COUNT(1) AS count
-                FROM (
-                  SELECT
-                    completion_result
-                  FROM sys_invocation_status
-                  WHERE status = 'completed'
-                    AND completed_at >= '2026-01-01T00:00:00.000Z'
-                    AND completed_at < '2026-02-01T00:00:00.000Z'
-                  LIMIT 9
-                ) completed_invocations
-                GROUP BY
-                  CASE
-                    WHEN completion_result = 'success' THEN 'succeeded'
-                    ELSE 'failed'
-                  END",
-          ]
-        `);
-      expect(await response.json()).toMatchObject({
-        mode: 'sampled',
-        granularity: 'failure-grouped',
-        isPartial: true,
-        scannedCount: 9,
-        outcomes: [
-          { status: 'succeeded', count: 4 },
-          { status: 'failed', count: 5 },
-          { status: 'cancelled', count: 0 },
-          { status: 'killed', count: 0 },
-        ],
-      });
     });
   });
 

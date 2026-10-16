@@ -34,7 +34,6 @@ import {
   SORT_NONE,
 } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
-import { useFeatures } from '@restate/data-access/admin-api';
 
 interface FilterShortcut {
   columns: ColumnKey[];
@@ -60,8 +59,7 @@ function toClause(
 
 const makeShortcuts: (
   schema: QueryClauseSchema<QueryClauseType>[],
-  supportsVqueueOnlyFields: boolean,
-) => FilterShortcut[] = (schema, supportsVqueueOnlyFields) => {
+) => FilterShortcut[] = (schema) => {
   const defaultColumns = getDefaultInvocationColumns();
   return [
     {
@@ -96,13 +94,7 @@ const makeShortcuts: (
       filters: [
         toClause(schema, 'status', {
           operation: 'IN',
-          value: [
-            'pending',
-            'backing-off',
-            'paused',
-            'ready',
-            ...(supportsVqueueOnlyFields ? (['yielded'] as const) : []),
-          ],
+          value: ['pending', 'backing-off', 'paused', 'ready', 'yielded'],
         }),
       ],
     },
@@ -189,12 +181,7 @@ export function FilterShortcuts({
 }: {
   schema: QueryClauseSchema<QueryClauseType>[];
 }) {
-  const features = useFeatures();
-  const supportsVqueueOnlyFields = features.has('vqueues');
-  const shortcuts = useMemo(
-    () => makeShortcuts(schema, supportsVqueueOnlyFields),
-    [schema, supportsVqueueOnlyFields],
-  );
+  const shortcuts = useMemo(() => makeShortcuts(schema), [schema]);
   const visibleShortcuts = shortcuts.slice(0, VISIBLE_SHORTCUTS_COUNT);
   const overflowShortcuts = shortcuts.slice(VISIBLE_SHORTCUTS_COUNT);
   const [searchParams, setSearchParams] = useInvocationSearchParams();

@@ -111,7 +111,7 @@ function Component() {
   }>();
   const [searchParams] = useSearchParams();
   const tab = deploymentTabFromSearch(searchParams);
-  const { tunnel, isVersionGte } = useRestateContext();
+  const { tunnel } = useRestateContext();
   const { data, error, isPending, dataUpdatedAt } = useDeploymentDetails(
     deploymentId,
     {
@@ -128,11 +128,8 @@ function Component() {
   const isDrained = drainedDeploymentIds
     ? drainedDeploymentIds.has(deploymentId)
     : undefined;
-  const isUpdateSupported = isVersionGte?.('1.6.0');
   const isDeprecated = Boolean(
-    data &&
-    data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION &&
-    isVersionGte?.('1.6.0'),
+    data && data.max_protocol_version < MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   );
   const {
     endpoint: displayedEndpoint,
@@ -165,11 +162,7 @@ function Component() {
           )}
           {data && (
             <div className="ml-auto flex shrink-0 items-center">
-              <DeploymentActions
-                deploymentId={deploymentId}
-                isUpdateSupported={isUpdateSupported}
-                variant="header"
-              />
+              <DeploymentActions deploymentId={deploymentId} variant="header" />
             </div>
           )}
         </Header>
@@ -194,10 +187,7 @@ function Component() {
                 registeredAt={listedDeployment?.created_at}
               />
               {data && hasHeadersCardContent(data) && (
-                <HeadersCard
-                  deployment={data}
-                  isUpdateSupported={isUpdateSupported}
-                />
+                <HeadersCard deployment={data} />
               )}
               {data && hasMetadataCardContent(data) && (
                 <MetadataCard deployment={data} />

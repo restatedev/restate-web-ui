@@ -13,8 +13,6 @@ import {
   useServiceDetails,
 } from '@restate/data-access/admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui/notification';
-import { RestateMinimumVersion } from '@restate/features/restate-context';
-import { Link } from '@restate/ui/link';
 import { ErrorBanner } from '@restate/ui/error';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { Icon, IconName } from '@restate/ui/icons';
@@ -99,23 +97,20 @@ export function EditAccessDialog() {
               {service}
             </span>
           </Heading>
-          <RestateMinimumVersion minVersion="1.4.5">
-            <div className="flex flex-col gap-2 text-sm text-gray-500">
-              <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">
-                <Icon
-                  className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
-                  name={IconName.TriangleAlert}
-                />
-                <span className="inline-block">
-                  Any changes made here are{' '}
-                  <span className="font-semibold">temporary</span> and remain in
-                  effect only until the service is next discovered and
-                  registered. Use the SDK to configure ingress access
-                  permanently.
-                </span>
-              </p>
-            </div>
-          </RestateMinimumVersion>
+          <div className="flex flex-col gap-2 text-sm text-gray-500">
+            <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">
+              <Icon
+                className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+                name={IconName.TriangleAlert}
+              />
+              <span className="inline-block">
+                Any changes made here are{' '}
+                <span className="font-semibold">temporary</span> and remain in
+                effect only until the service is next discovered and registered.
+                Use the SDK to configure ingress access permanently.
+              </span>
+            </p>
+          </div>
           <Form
             id={formId}
             method="PATCH"

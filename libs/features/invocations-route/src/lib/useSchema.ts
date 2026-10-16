@@ -6,7 +6,6 @@ import {
 } from '@restate/data-access/admin-api-hooks';
 import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
 import { useMemo } from 'react';
-import { useFeatures } from '@restate/data-access/admin-api';
 
 export function useSchema() {
   const { data: listDeploymentsData, isPending: deploymentsIsLoading } =
@@ -14,8 +13,6 @@ export function useSchema() {
   const { data: listSubscriptions, isPending: subscriptionsIsLoading } =
     useListSubscriptions();
   const { data: listServices } = useListServices();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
 
   const schema = useMemo(() => {
     const serviceNames = [
@@ -60,9 +57,7 @@ export function useSchema() {
           { value: 'succeeded', label: 'Succeeded' },
           { value: 'failed', label: 'Failed' },
           { value: 'ready', label: 'Ready' },
-          ...(hasVqueues
-            ? [{ value: 'yielded' as const, label: 'Yielded' }]
-            : []),
+          { value: 'yielded', label: 'Yielded' },
         ],
       },
       {
@@ -218,35 +213,30 @@ export function useSchema() {
         operations: dateOperations,
         type: 'DATE',
       },
-      ...(hasVqueues
-        ? [
-            {
-              id: 'vqueue_id',
-              label: 'VQueue',
-              operations: [{ value: 'EQUALS' as const, label: 'is' }],
-              type: 'STRING' as const,
-            },
-            {
-              id: 'scope',
-              label: 'Scope',
-              operations: nullableStringOperations,
-              type: 'STRING' as const,
-            },
-            {
-              id: 'limit_key',
-              label: 'Limit key',
-              operations: nullableStringOperations,
-              type: 'STRING' as const,
-            },
-          ]
-        : []),
+      {
+        id: 'vqueue_id',
+        label: 'VQueue',
+        operations: [{ value: 'EQUALS', label: 'is' }],
+        type: 'STRING',
+      },
+      {
+        id: 'scope',
+        label: 'Scope',
+        operations: nullableStringOperations,
+        type: 'STRING',
+      },
+      {
+        id: 'limit_key',
+        label: 'Limit key',
+        operations: nullableStringOperations,
+        type: 'STRING',
+      },
     ] satisfies QueryClauseSchema<QueryClauseType>[];
   }, [
     listDeploymentsData?.sortedServiceNames,
     listDeploymentsData?.deployments,
     listServices,
     listSubscriptions?.subscriptions,
-    hasVqueues,
   ]);
 
   return {

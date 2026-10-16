@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import { useListWorkflowRuns } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import { Actions } from '@restate/features/invocation-route';
@@ -50,7 +49,7 @@ import {
   createWorkflowIdFilter,
   readWorkflowFilters,
   toWorkflowFilters,
-  workflowFilterSchema,
+  WORKFLOW_FILTER_SCHEMA,
   writeWorkflowFilters,
 } from './workflows.filters';
 import { WorkflowQuickOpen } from './WorkflowQuickOpen';
@@ -78,45 +77,39 @@ interface WorkflowRunRow extends Omit<WorkflowRunSummary, 'id'> {
   workflowId: string;
 }
 
-function getColumns(hasVqueues: boolean) {
-  return [
-    {
-      id: 'identity',
-      name: 'Workflow run',
-      isRowHeader: true,
-      minWidth: 320,
-    },
-    { id: 'status', name: 'Status', minWidth: 190 },
-    {
-      id: 'createdAt',
-      name: 'Created',
-      defaultWidth: 140,
-      minWidth: 110,
-      maxWidth: 160,
-    },
-    ...(hasVqueues
-      ? [
-          {
-            ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
-            id: 'limit_key' as const,
-          },
-        ]
-      : []),
-    {
-      id: 'invocation',
-      name: 'Invocation',
-      defaultWidth: 180,
-      minWidth: 160,
-      maxWidth: 180,
-    },
-    {
-      id: 'actions',
-      name: 'Actions',
-      width: 40,
-      hideLabel: true,
-    },
-  ] satisfies PanelTableColumn<ColumnId>[];
-}
+const COLUMNS = [
+  {
+    id: 'identity',
+    name: 'Workflow run',
+    isRowHeader: true,
+    minWidth: 320,
+  },
+  { id: 'status', name: 'Status', minWidth: 190 },
+  {
+    id: 'createdAt',
+    name: 'Created',
+    defaultWidth: 140,
+    minWidth: 110,
+    maxWidth: 160,
+  },
+  {
+    ...INVOCATION_TABLE_COLUMN_CONFIG.limit_key,
+    id: 'limit_key' as const,
+  },
+  {
+    id: 'invocation',
+    name: 'Invocation',
+    defaultWidth: 180,
+    minWidth: 160,
+    maxWidth: 180,
+  },
+  {
+    id: 'actions',
+    name: 'Actions',
+    width: 40,
+    hideLabel: true,
+  },
+] satisfies PanelTableColumn<ColumnId>[];
 
 function workflowIdentity(
   service: string,
@@ -155,20 +148,17 @@ export function WorkflowRuns({
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { baseUrl } = useRestateContext();
-  const features = useFeatures();
-  const hasVqueues = features.has('vqueues');
   const [openWorkflowDraft, setOpenWorkflowDraft] = useState<WorkflowOpenDraft>(
     { id: '', scope: '' },
   );
-  const columns = useMemo(() => getColumns(hasVqueues), [hasVqueues]);
-  const filterSchema = useMemo(
-    () => workflowFilterSchema(hasVqueues),
-    [hasVqueues],
-  );
   const searchString = searchParams.toString();
   const committedFilters = useMemo(
-    () => readWorkflowFilters(new URLSearchParams(searchString), filterSchema),
-    [filterSchema, searchString],
+    () =>
+      readWorkflowFilters(
+        new URLSearchParams(searchString),
+        WORKFLOW_FILTER_SCHEMA,
+      ),
+    [searchString],
   );
   const filterQuery = useFilterBuilder(committedFilters);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -215,14 +205,10 @@ export function WorkflowRuns({
     [],
   );
   const confirmOpenWorkflow = useCallback(() => {
-    const identity = workflowIdentityFromOpenDraft(
-      service,
-      openWorkflowDraft,
-      hasVqueues,
-    );
+    const identity = workflowIdentityFromOpenDraft(service, openWorkflowDraft);
     if (!identity) return;
     navigate(workflowRunRouteHref(baseUrl, identity, searchParams));
-  }, [baseUrl, hasVqueues, navigate, openWorkflowDraft, searchParams, service]);
+  }, [baseUrl, navigate, openWorkflowDraft, searchParams, service]);
   const {
     data,
     dataUpdatedAt,
@@ -271,7 +257,11 @@ export function WorkflowRuns({
             setSearchParams(next, { preventScrollReset: true });
           }}
         >
-          <FilterBuilder query={filterQuery} schema={filterSchema} multiple>
+          <FilterBuilder
+            query={filterQuery}
+            schema={WORKFLOW_FILTER_SCHEMA}
+            multiple
+          >
             <AddFilterTrigger
               placeholder="Filter Workflow runs…"
               title="Workflow filters"
@@ -336,7 +326,7 @@ export function WorkflowRuns({
             <PanelTable
               aria-label="Workflow runs"
               bodyHeadingHeight={0}
-              columns={columns}
+              columns={COLUMNS}
               items={items}
               isLoading={isLoading}
               numOfRows={Math.max(items.length, 6)}
@@ -345,7 +335,6 @@ export function WorkflowRuns({
                   <WorkflowQuickOpen
                     draft={openWorkflowDraft}
                     disabled={!service}
-                    hasScope={hasVqueues}
                     onChange={setOpenWorkflowDraft}
                     onOpen={confirmOpenWorkflow}
                     service={service}

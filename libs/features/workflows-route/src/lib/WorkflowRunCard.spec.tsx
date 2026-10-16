@@ -43,7 +43,6 @@ describe('WorkflowRunCard', () => {
           <WorkflowRunCard
             invocation={invocation}
             stats={{
-              supported: true,
               duration: 'PT1.528S',
               pendingPromiseCount: 0,
             }}
@@ -95,7 +94,6 @@ describe('WorkflowRunCard', () => {
             status: 'running',
           }}
           stats={{
-            supported: true,
             duration: 'PT1.528S',
             pendingPromiseCount: 0,
           }}

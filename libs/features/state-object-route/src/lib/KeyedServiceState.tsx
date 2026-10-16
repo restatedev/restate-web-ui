@@ -82,7 +82,6 @@ export function KeyedServiceState({
         serviceName={identity.service}
         serviceKey={identity.key}
         scope={identity.scope}
-        serviceType={serviceType}
         emptyPlaceholder={
           <EmptyState
             icon={IconName.Database}

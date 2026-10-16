@@ -145,10 +145,8 @@ export function hasHeadersCardContent(deployment?: DetailedDeployment) {
 
 export function HeadersCard({
   deployment,
-  isUpdateSupported,
 }: {
   deployment: DetailedDeployment;
-  isUpdateSupported?: boolean;
 }) {
   const headers = Object.entries(deployment.additional_headers ?? {});
   const auth = isHttpDeployment(deployment)
@@ -161,13 +159,11 @@ export function HeadersCard({
         title="Headers"
         icon={IconName.TableProperties}
         action={
-          isUpdateSupported && (
-            <CardEditAction
-              param={UPDATE_DEPLOYMENT_QUERY}
-              value={deployment.id}
-              label="Update"
-            />
-          )
+          <CardEditAction
+            param={UPDATE_DEPLOYMENT_QUERY}
+            value={deployment.id}
+            label="Update"
+          />
         }
       >
         <span className={captionStyles()}>

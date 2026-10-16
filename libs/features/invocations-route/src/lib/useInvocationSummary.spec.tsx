@@ -15,7 +15,7 @@ type Filter = components['schemas']['InvocationV2FilterItem'];
 type SummaryRequest = components['schemas']['SummaryInvocationsV2RequestBody'];
 
 const api = vi.hoisted(() => ({
-  features: new Set(['vqueues', 'protocol_v7']),
+  features: new Set<string>(),
   request: vi.fn<(path: string, body: SummaryRequest) => Promise<unknown>>(),
 }));
 
@@ -135,7 +135,7 @@ function usePage(
 beforeEach(() => {
   completed = 30;
   active = 0;
-  api.features = new Set(['vqueues', 'protocol_v7']);
+  api.features = new Set();
   api.request.mockReset().mockImplementation(execute);
   vi.stubGlobal(
     'fetch',
@@ -260,7 +260,7 @@ describe('invocation page query composition', () => {
   });
 
   it('serves the page from one exact stats request', async () => {
-    api.features = new Set(['vqueues', 'protocol_v7', 'track_status_gauges']);
+    api.features = new Set(['track_status_gauges']);
     const { result } = renderHook(
       () =>
         useInvocationSummary({
@@ -394,41 +394,6 @@ describe('invocation page query composition', () => {
       ).toBe(30);
     },
   );
-
-  it('merges completion by service when completed VQueue migration was skipped', async () => {
-    api.features.add('vqueues_migration_skip_completed');
-    const gate = deferred();
-    api.request.mockImplementation(async (path, body) => {
-      if (body.view === 'breakdowns') await gate.promise;
-      return execute(path, body);
-    });
-    const { result } = renderHook(() => usePage(filters('all')), {
-      wrapper: Wrapper,
-    });
-    await waitFor(() => expect(result.current.summary.isLoading).toBe(false));
-    expect(result.current.summary.matchingCount).toBeUndefined();
-    expect(result.current.summary.isBreakdownLoading('finished')).toBe(true);
-    await act(async () => gate.resolve());
-    await waitFor(() =>
-      expect(result.current.summary.matchingCount?.count).toBe(30),
-    );
-    expect(
-      result.current.summary.byStage.find(({ name }) => name === 'finished')
-        ?.count,
-    ).toBe(30);
-  });
-
-  it('supports servers without VQueues', async () => {
-    api.features.delete('vqueues');
-    const { result } = renderHook(() => usePage(filters('all')), {
-      wrapper: Wrapper,
-    });
-    await waitFor(() => expect(result.current.summary.isFetching).toBe(false));
-    expect(
-      result.current.summary.byStage.find(({ name }) => name === 'finished')
-        ?.count,
-    ).toBe(30);
-  });
 
   it('keeps mixed populations additive without using the filtered table rows', async () => {
     active = 4;

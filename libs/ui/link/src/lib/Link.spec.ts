@@ -25,13 +25,35 @@ describe('getHrefWithQueryParams', () => {
     ).toBe('/virtual-objects/Cart/customer-1?deployment=dp_1&service=Cart');
   });
 
-  it('retains the existing query-only href behavior', () => {
+  it('merges a query-only href into the current parameters', () => {
     expect(
       getHrefWithQueryParams({
         href: '?service=Checkout',
         preserveQueryParams: true,
         searchParams: new URLSearchParams('deployment=dp_1'),
       }),
-    ).toBe('?service=Checkout&deployment=dp_1');
+    ).toBe('?deployment=dp_1&service=Checkout');
+  });
+
+  it('replaces instead of stacking a parameter that is already set', () => {
+    expect(
+      getHrefWithQueryParams({
+        href: '?servicePlayground=Cart#/operations/add',
+        preserveQueryParams: true,
+        searchParams: new URLSearchParams(
+          'servicePlayground=Checkout&panel=servicePlayground',
+        ),
+      }),
+    ).toBe('?panel=servicePlayground&servicePlayground=Cart#/operations/add');
+  });
+
+  it('removes parameters set to an empty value', () => {
+    expect(
+      getHrefWithQueryParams({
+        href: '?handler=',
+        preserveQueryParams: true,
+        searchParams: new URLSearchParams('handler=add&tab=state'),
+      }),
+    ).toBe('?tab=state');
   });
 });

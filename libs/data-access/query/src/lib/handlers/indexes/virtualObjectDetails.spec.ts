@@ -7,16 +7,9 @@ function createContext(responder: (sql: string) => Record<string, unknown>[]) {
   const query = vi.fn(async (sql: string) => ({ rows: responder(sql) }));
   const context = {
     query,
-    features: new Set([
-      'vqueues',
-      'scoped_virtual_objects',
-      'protocol_v7',
-      'indexes_v1',
-      'ui:indexes_v1',
-    ]),
+    features: new Set(['indexes_v1', 'ui:indexes_v1']),
     adminApi: vi.fn(),
     baseUrl: '',
-    restateVersion: '1.8.0',
   } as unknown as QueryContext;
   return { context, sql: () => query.mock.calls.map(([sql]) => sql) };
 }

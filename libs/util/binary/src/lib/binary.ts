@@ -7,22 +7,6 @@ export function bytesToBase64(bytes: Uint8Array) {
   return btoa(binary);
 }
 
-export function base64ToUtf8(base64?: string) {
-  if (!base64) {
-    return base64;
-  }
-  const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-export function utf8ToBase64(str?: string) {
-  if (!str) {
-    return str;
-  }
-  return bytesToBase64(utf8ToUint8Array(str)!);
-}
-
 export function hexToBase64(hex?: string) {
   if (!hex) {
     return undefined;
@@ -40,19 +24,6 @@ export function hexToBase64(hex?: string) {
   bytes.forEach((b) => (binary += String.fromCharCode(b)));
 
   return btoa(binary);
-}
-
-export function base64ToHex(base64: string) {
-  // Decode Base64 → binary string
-  const binary = atob(base64);
-
-  // Binary string → hex
-  let hex = '';
-  for (let i = 0; i < binary.length; i++) {
-    hex += binary.charCodeAt(i).toString(16).padStart(2, '0');
-  }
-
-  return hex;
 }
 
 export function hexToUint8Array(hex: string) {
@@ -105,13 +76,6 @@ export function uint8ArrayToUtf8OrBase64(value?: Uint8Array<ArrayBufferLike>) {
   } catch {
     return bytesToBase64(value);
   }
-}
-
-export function base64ToUtf8OrOriginal(base64?: string) {
-  if (!base64) {
-    return base64;
-  }
-  return uint8ArrayToUtf8OrBase64(base64ToUint8Array(base64));
 }
 
 export function uint8ArrayToUtf8OrByteArray(

@@ -45,15 +45,13 @@ function rawInvocation(
 
 function contextWith(
   query: QueryContext['query'],
-  features: string[],
   adminApi: QueryContext['adminApi'] = createAdminApiMock(),
 ) {
   return {
     query,
     adminApi,
     baseUrl: '',
-    restateVersion: '1.7.2',
-    features: new Set(features),
+    features: new Set<string>(),
   } satisfies QueryContext;
 }
 
@@ -62,7 +60,7 @@ function queryStatements(query: ReturnType<typeof vi.fn>) {
 }
 
 describe('GET /query/virtual-objects/:service/instances/:key/invocations', () => {
-  it('uses direct key equality on Restate 1.7.3', async () => {
+  it('returns recent invocations for a scoped identity', async () => {
     const query = vi.fn(async (statement: string) => {
       if (statement.includes('FROM sys_invocation_status')) {
         return { rows: [{ id: 'inv_1shared' }] };
@@ -72,8 +70,7 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues']);
-    context.restateVersion = '1.7.3';
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInvocations.call(
       context,
@@ -92,14 +89,13 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
             AND si.scope = 'tenant-a'
           ORDER BY si.created_at DESC NULLS LAST
           LIMIT 51",
-        "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
+        "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json, scope, vqueue_id, limit_key
           FROM sys_invocation
           WHERE id IN ('inv_1shared')",
         "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv_1shared')",
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [
         expect.objectContaining({
           id: 'inv_1shared',
@@ -107,26 +103,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
           target_handler_name: 'read',
         }),
       ],
-      limit: 50,
-      truncated: false,
-    });
-  });
-
-  it('does not query unscoped invocation tables for a scoped identity without VQueues', async () => {
-    const query = vi.fn();
-    const context = contextWith(query, []);
-
-    const response = await getVirtualObjectInvocations.call(
-      context,
-      'Counter',
-      'customer-1',
-      'tenant-a',
-    );
-
-    expect(query).not.toHaveBeenCalled();
-    expect(await response.json()).toEqual({
-      supported: false,
-      rows: [],
       limit: 50,
       truncated: false,
     });
@@ -174,7 +150,7 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues']);
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInvocations.call(
       context,
@@ -188,18 +164,17 @@ describe('GET /query/virtual-objects/:service/instances/:key/invocations', () =>
           FROM sys_invocation_status si
           WHERE si.target_service_ty = 'virtual_object'
             AND si.target_service_name = 'Counter'
-            AND SUBSTR(si.target_service_key, 1) = 'customer-1'
+            AND si.target_service_key = 'customer-1'
             AND si.scope IS NULL
           ORDER BY si.created_at DESC NULLS LAST
           LIMIT 51",
-        "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
+        "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json, scope, vqueue_id, limit_key
           FROM sys_invocation
           WHERE id IN ('inv_1exclusive', 'inv_1waiting')",
         "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv_1exclusive', 'inv_1waiting')",
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [
         expect.objectContaining({
           id: 'inv_1exclusive',

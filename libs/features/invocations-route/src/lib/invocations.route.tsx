@@ -101,14 +101,10 @@ import {
 import { InvocationBatchActions } from '@restate/features/batch-operations';
 import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
-  SERVICE_QUERY_PARAM,
   HANDLER_QUERY_PARAM,
 } from '@restate/features/service';
-import { DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
-import { INVOCATION_QUERY_NAME } from '@restate/features/invocation-route';
 import {
   PANEL_QUERY_PARAM,
-  STATE_QUERY_NAME,
   stripTransientQueryParams,
 } from '@restate/util/panel';
 import { Sort } from './QueryButton';
@@ -172,10 +168,6 @@ function invocationRouteLocation(
   const preservedParams = new URLSearchParams();
   const paramsToPreserve = [
     SERVICE_PLAYGROUND_QUERY_PARAM,
-    SERVICE_QUERY_PARAM,
-    DEPLOYMENT_QUERY_PARAM,
-    INVOCATION_QUERY_NAME,
-    STATE_QUERY_NAME,
     HANDLER_QUERY_PARAM,
     PANEL_QUERY_PARAM,
   ];
@@ -902,7 +894,7 @@ function Component() {
                 rowClassName={(row) =>
                   isVqueueEntry(row)
                     ? 'cursor-default bg-transparent [content-visibility:auto]'
-                    : "bg-transparent [content-visibility:auto] [&:has(td[role=rowheader]_a[data-invocation-selected='true'])]:bg-blue-50"
+                    : 'bg-transparent [content-visibility:auto]'
                 }
                 renderCell={(row, { id }) =>
                   isVqueueEntry(row) ? (

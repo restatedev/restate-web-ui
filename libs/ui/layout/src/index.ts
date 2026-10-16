@@ -5,8 +5,6 @@ export { LayoutZone } from './lib/LayoutZone';
 export {
   ComplementaryWithSearchParam,
   ComplementaryClose,
-  useActiveSidebarParam,
-  ComplementaryFooter,
   ComplementaryHeader,
   useParamValue,
 } from './lib/Complementary';

@@ -25,12 +25,6 @@ export function workflowRunTabFromSearch(
   return tab === 'state' ? 'state' : 'recent';
 }
 
-export function workflowRunStateTabHref(searchParams: URLSearchParams): string {
-  const params = new URLSearchParams(searchParams);
-  params.set(TAB_QUERY_PARAM, 'state');
-  return `?${params.toString()}`;
-}
-
 function InteractionsTabLabel({
   data,
   isPending,

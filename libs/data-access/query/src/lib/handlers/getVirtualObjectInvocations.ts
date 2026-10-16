@@ -4,7 +4,7 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
 import {
-  getSysInvocationListColumns,
+  SYS_INVOCATION_LIST_SELECT_COLUMNS,
   isInvocationId,
   quoteSqlString,
   targetServiceKeyClause,
@@ -21,32 +21,22 @@ const RECENT_INVOCATION_QUERY_LIMIT = RECENT_INVOCATION_LIMIT + 1;
 type VirtualObjectInvocationsResponse =
   components['schemas']['VirtualObjectInvocationsResponse'];
 
-function unsupportedInvocations(): VirtualObjectInvocationsResponse {
-  return {
-    supported: false,
-    rows: [],
-    limit: RECENT_INVOCATION_LIMIT,
-    truncated: false,
-  };
-}
-
 async function queryRecentInvocationIds(
   context: QueryContext,
   service: string,
   key: string,
   scope?: string,
 ) {
-  const scopeClause = context.features.has('vqueues')
-    ? scope === undefined
+  const scopeClause =
+    scope === undefined
       ? '\n      AND si.scope IS NULL'
-      : `\n      AND si.scope = ${quoteSqlString(scope)}`
-    : '';
+      : `\n      AND si.scope = ${quoteSqlString(scope)}`;
   const { rows } = await context.query(
     `SELECT si.id
     FROM sys_invocation_status si
     WHERE si.target_service_ty = 'virtual_object'
       AND si.target_service_name = ${quoteSqlString(service)}
-      AND ${targetServiceKeyClause(context, key, 'si.target_service_key')}${scopeClause}
+      AND ${targetServiceKeyClause(key, 'si.target_service_key')}${scopeClause}
     ORDER BY si.created_at DESC NULLS LAST
     LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
     'virtual-objects/recent-invocation-ids',
@@ -76,10 +66,6 @@ export async function getVirtualObjectInvocations(
   key: string,
   scope?: string,
 ) {
-  if (scope !== undefined && !this.features.has('vqueues')) {
-    return Response.json(unsupportedInvocations());
-  }
-
   const candidateIds = usesIndexesV1(this)
     ? await queryRecentEntryIds(this, service, key, scope)
     : await queryRecentInvocationIds(this, service, key, scope);
@@ -89,7 +75,7 @@ export async function getVirtualObjectInvocations(
   const [invocationResult, vqueueStatuses] = await Promise.all([
     invocationIds.length > 0
       ? this.query(
-          `SELECT ${getSysInvocationListColumns(this.features).join(', ')}
+          `SELECT ${SYS_INVOCATION_LIST_SELECT_COLUMNS.join(', ')}
     FROM sys_invocation
     WHERE id IN (${invocationIds.map(quoteSqlString).join(', ')})`,
           'invocations/by-ids',
@@ -117,7 +103,6 @@ export async function getVirtualObjectInvocations(
   );
 
   return Response.json({
-    supported: true,
     rows,
     limit: RECENT_INVOCATION_LIMIT,
     truncated,

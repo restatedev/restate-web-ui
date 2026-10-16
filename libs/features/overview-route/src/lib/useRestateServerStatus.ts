@@ -1,49 +1,46 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FerrofluidStatus } from '@restate/ui/restate-server';
 
 export function useRestateServerStatus({
   isHealthy,
   isError,
   isActive,
+  issueSeverity,
 }: {
   isHealthy: boolean;
   isError: boolean;
   isActive: boolean;
+  issueSeverity?: 'high' | 'low' | 'none';
 }): FerrofluidStatus {
-  const [status, setStatus] = useState<FerrofluidStatus>('idle');
+  const [debouncedIdle, setDebouncedIdle] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
+  const isIdle =
+    isHealthy &&
+    !isError &&
+    !isActive &&
+    issueSeverity !== 'high' &&
+    issueSeverity !== 'low';
+
   useEffect(() => {
-    if (!isHealthy || isError) {
-      setStatus('pause');
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+    if (isIdle) {
+      timeoutRef.current = setTimeout(() => {
+        setDebouncedIdle(true);
         timeoutRef.current = null;
-      }
-      return;
+      }, 2000);
+    } else {
+      setDebouncedIdle(false);
     }
-
-    if (isActive) {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-      setStatus('active');
-      return;
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setStatus((prev) => (prev !== 'pause' ? 'idle' : prev));
-      timeoutRef.current = null;
-    }, 2000);
-
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
     };
-  }, [isHealthy, isError, isActive]);
+  }, [isIdle]);
 
-  return status;
+  if (!isHealthy || isError || issueSeverity === 'high') return 'danger';
+  if (issueSeverity === 'low') return 'warning';
+  if (isActive) return 'active';
+  return debouncedIdle ? 'idle' : 'active';
 }

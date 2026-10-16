@@ -3,7 +3,6 @@ import {
   adminApi,
   useAdminBaseUrl,
   useAPIStatus,
-  useFeatures,
   useQueryHandlerFeatures,
   type HookQueryOptions,
 } from '@restate/data-access/admin-api';
@@ -177,19 +176,15 @@ export function mergeInvocationSummaryBreakdowns(
 export function useCanSummarizeInvocationsFromStats({
   filters = [],
   highlightFields = [],
-  range,
 }: Pick<
   components['schemas']['SummaryInvocationsV2RequestBody'],
-  'filters' | 'highlightFields' | 'range'
+  'filters' | 'highlightFields'
 >) {
   const features = useQueryHandlerFeatures();
   const highlighted = new Set<string>(highlightFields);
-  return (
-    (!range || features.has('vqueues')) &&
-    canSummarizeInvocationsFromStats(
-      { features },
-      filters.filter(({ field }) => !highlighted.has(field)),
-    )
+  return canSummarizeInvocationsFromStats(
+    { features },
+    filters.filter(({ field }) => !highlighted.has(field)),
   );
 }
 
@@ -197,37 +192,27 @@ export function useProgressiveInvocationSummaryV2(
   body: Omit<components['schemas']['SummaryInvocationsV2RequestBody'], 'view'>,
   options?: HookQueryOptions<'/query/v2/invocations/summary', 'post'>,
 ) {
-  const features = useFeatures();
   const isFromStats = useCanSummarizeInvocationsFromStats(body);
-  const eagerBreakdowns = features.has('vqueues');
-  const splitCompletedStage =
-    eagerBreakdowns && features.has('vqueues_migration_skip_completed');
   const stages = useSummaryInvocationsV2(
     isFromStats
       ? { ...body, mode: { type: 'exact' }, view: 'all' }
-      : { ...body, view: splitCompletedStage ? 'live-stages' : 'stages' },
+      : { ...body, view: 'stages' },
     options,
   );
   const refinableStageNames = useMemo(
     () =>
       isFromStats
         ? []
-        : [
-            ...(stages.data?.stageBuckets
-              .filter((stage) => stage.breakdownCanRefine)
-              .map((stage) => stage.key) ?? []),
-            ...(splitCompletedStage ? (['finished'] as const) : []),
-          ],
-    [isFromStats, splitCompletedStage, stages.data?.stageBuckets],
+        : (stages.data?.stageBuckets
+            .filter((stage) => stage.breakdownCanRefine)
+            .map((stage) => stage.key) ?? []),
+    [isFromStats, stages.data?.stageBuckets],
   );
   const breakdowns = useSummaryInvocationsV2(
     { ...body, view: 'breakdowns' },
     {
       ...options,
-      enabled:
-        options?.enabled !== false &&
-        !isFromStats &&
-        (eagerBreakdowns || refinableStageNames.length > 0),
+      enabled: options?.enabled !== false && !isFromStats,
     },
   );
   const data = useMemo(
@@ -340,28 +325,6 @@ export function useFinishedInvocationsBreakdownV2(
   const queryOptions = adminApi(
     'query',
     '/query/v2/invocations/finished-breakdown',
-    'post',
-    { baseUrl, body },
-  );
-  const result = useQuery({
-    ...queryOptions,
-    ...options,
-    meta: { ...queryOptions.meta, ...options?.meta },
-    enabled: options?.enabled !== false && enabled,
-  });
-
-  return { ...result, queryKey: queryOptions.queryKey };
-}
-
-export function useFinishedInvocationsHistoryV2(
-  body: components['schemas']['FinishedInvocationsHistoryV2RequestBody'],
-  options?: HookQueryOptions<'/query/v2/invocations/finished-history', 'post'>,
-) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
-  const queryOptions = adminApi(
-    'query',
-    '/query/v2/invocations/finished-history',
     'post',
     { baseUrl, body },
   );

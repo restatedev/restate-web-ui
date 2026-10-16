@@ -21,7 +21,3 @@ export function StaticCodecOptionsProvider({
 export function useCodec() {
   return use(CodecContext);
 }
-
-export function useCodecOptions() {
-  return useCodec();
-}

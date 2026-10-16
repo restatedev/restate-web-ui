@@ -4,8 +4,7 @@ import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Link } from '@restate/ui/link';
 import { Invocation } from '@restate/data-access/admin-api-spec';
 import { tv } from '@restate/util/styles';
-import { getSearchParams, INVOCATION_QUERY_NAME } from '@restate/util/panel';
-import { useActiveSidebarParam } from '@restate/ui/layout';
+import { getSearchParams } from '@restate/util/panel';
 import { useLocation } from 'react-router';
 import { useRestateContext } from '@restate/features/restate-context';
 import {
@@ -96,8 +95,6 @@ export function InvocationId({
     container,
     linkIcon,
   } = styles({ size });
-  const invocationInSidebar = useActiveSidebarParam(INVOCATION_QUERY_NAME);
-  const isSelected = invocationInSidebar === id;
 
   const { baseUrl } = useRestateContext();
   const isIcon = size === 'icon';
@@ -111,7 +108,6 @@ export function InvocationId({
       aria-label={id}
       variant="secondary"
       className={linkStyle()}
-      data-invocation-selected={isSelected}
     >
       <Icon name={IconName.ChevronRight} className={linkIcon()} />
     </Link>

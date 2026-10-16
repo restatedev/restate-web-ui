@@ -8,6 +8,7 @@ export default defineConfig(() => ({
   cacheDir: '../../../node_modules/.vite/libs/ui/metric-comparison',
   plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   test: {
+    passWithNoTests: true,
     watch: false,
     globals: true,
     environment: 'jsdom',

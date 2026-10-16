@@ -9,32 +9,17 @@ import {
 } from '@restate/ui/dropdown';
 import { Icon, IconName } from '@restate/ui/icons';
 import { HoverTooltip } from '@restate/ui/tooltip';
-import {
-  getUnavailableReason,
-  isQueryAvailable,
-  predefinedQueries,
-  type PredefinedQuery,
-  type PredefinedQueryFeature,
-} from './predefinedQueries';
+import { predefinedQueries, type PredefinedQuery } from './predefinedQueries';
 
 const predefinedQueryById = new Map<string, PredefinedQuery>(
   predefinedQueries.map((query) => [query.id, query]),
 );
 
 export function PredefinedQueriesDropdown({
-  hasVqueues,
   onSelect,
 }: {
-  hasVqueues: boolean;
   onSelect: (query: string) => void;
 }) {
-  const availableFeatures = new Set<PredefinedQueryFeature>(
-    hasVqueues ? (['vqueues'] as const) : [],
-  );
-  const disabledItems = predefinedQueries
-    .filter((query) => !isQueryAvailable(query, availableFeatures))
-    .map((query) => query.id);
-
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -52,7 +37,6 @@ export function PredefinedQueriesDropdown({
           <DropdownMenu
             autoFocus
             aria-label="Useful queries"
-            disabledItems={disabledItems}
             onSelect={(id) => {
               const query = predefinedQueryById.get(id);
               if (query) {
@@ -61,11 +45,6 @@ export function PredefinedQueriesDropdown({
             }}
           >
             {predefinedQueries.map((query) => {
-              const unavailableReason = getUnavailableReason(
-                query,
-                availableFeatures,
-              );
-
               return (
                 <DropdownItem
                   key={query.id}
@@ -77,11 +56,6 @@ export function PredefinedQueriesDropdown({
                       <span className="truncate font-medium">
                         {query.title}
                       </span>
-                      {unavailableReason && (
-                        <span className="shrink-0 rounded-md border border-gray-200 px-1.5 py-0.5 text-0.5xs text-gray-500">
-                          {unavailableReason}
-                        </span>
-                      )}
                     </span>
                     <span className="text-xs text-gray-500">
                       {query.description}

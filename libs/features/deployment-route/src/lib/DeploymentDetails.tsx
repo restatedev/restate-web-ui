@@ -27,19 +27,6 @@ export function deploymentTabFromSearch(
     : 'services';
 }
 
-export function deploymentTabHref(
-  searchParams: URLSearchParams,
-  tab: DeploymentTab,
-): string {
-  const params = new URLSearchParams(searchParams);
-  if (tab === 'services') {
-    params.delete(TAB_QUERY_PARAM);
-  } else {
-    params.set(TAB_QUERY_PARAM, tab);
-  }
-  return `?${params.toString()}`;
-}
-
 export function DeploymentDetails({
   deploymentId,
   services,

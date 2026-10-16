@@ -5,11 +5,8 @@ import {
   DialogFooter,
   QueryDialog,
 } from '@restate/ui/dialog';
-import {
-  DELETE_DEPLOYMENT_QUERY_PARAM,
-  DEPLOYMENT_QUERY_PARAM,
-} from './constants';
-import { Form, useSearchParams } from 'react-router';
+import { DELETE_DEPLOYMENT_QUERY_PARAM } from './constants';
+import { Form, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Button, SubmitButton } from '@restate/ui/button';
 import { ErrorBanner } from '@restate/ui/error';
 import { FormFieldInput } from '@restate/ui/form-field';
@@ -26,6 +23,7 @@ import { TruncateWithTooltip } from '@restate/ui/tooltip';
 import { Icon, IconName } from '@restate/ui/icons';
 import { tv } from '@restate/util/styles';
 import { Link } from '@restate/ui/link';
+import { deploymentHref } from '@restate/util/panel';
 
 const warningStyles = tv({
   base: 'flex gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-0.5xs text-orange-600',
@@ -61,7 +59,9 @@ export function DeleteDeployment() {
   const [deploymentEndpoint, setDeploymentEndpoint] = useState(
     getEndpoint(deployment),
   );
-  const { OnboardingGuide } = useRestateContext();
+  const { OnboardingGuide, baseUrl } = useRestateContext();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   if (
     deployment &&
@@ -73,15 +73,21 @@ export function DeleteDeployment() {
     String(deploymentId),
     {
       onSuccess(data, variables) {
-        setSearchParams(
-          (old) => {
-            old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
-            old.delete(DEPLOYMENT_QUERY_PARAM);
-            old.delete(ONBOARDING_QUERY_PARAM);
-            return old;
-          },
-          { preventScrollReset: true },
-        );
+        const isOnDeletedDeployment =
+          location.pathname ===
+          deploymentHref(baseUrl, { deployment: String(deploymentId) });
+        if (isOnDeletedDeployment) {
+          navigate(`${baseUrl}/deployments`, { replace: true });
+        } else {
+          setSearchParams(
+            (old) => {
+              old.delete(DELETE_DEPLOYMENT_QUERY_PARAM);
+              old.delete(ONBOARDING_QUERY_PARAM);
+              return old;
+            },
+            { preventScrollReset: true },
+          );
+        }
         showSuccessNotification(
           <>
             <code>{variables.parameters?.path.deployment}</code> has been

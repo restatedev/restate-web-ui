@@ -201,108 +201,6 @@
         }
       }
     },
-    "/query/invocations": {
-      "post": {
-        "tags": ["query-invocations"],
-        "summary": "List invocations",
-        "description": "List invocations",
-        "operationId": "list_invocations",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ListInvocationsRequestBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": ["rows", "limit"],
-                  "properties": {
-                    "rows": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Invocation"
-                      }
-                    },
-                    "limit": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/query/v2/invocations": {
       "post": {
         "tags": ["query-invocations"],
@@ -454,377 +352,6 @@
           },
           "400": {
             "description": "Invalid query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/v2/invocations/finished-history": {
-      "post": {
-        "tags": ["query-invocations"],
-        "summary": "Return finished invocation outcomes in date buckets",
-        "operationId": "finished_invocations_history_v2",
-        "security": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FinishedInvocationsHistoryV2RequestBody"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Finished invocation outcome history",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FinishedInvocationsHistoryV2Response"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/invocations/count": {
-      "post": {
-        "tags": ["count-invocations"],
-        "summary": "Count invocations",
-        "description": "Count invocations",
-        "operationId": "count_invocations",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ListInvocationsRequestBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": ["count"],
-                  "properties": {
-                    "count": {
-                      "type": "integer"
-                    },
-                    "isLowerBound": {
-                      "type": "boolean"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/invocations/summary": {
-      "post": {
-        "tags": ["query-invocations"],
-        "summary": "Get invocations summary",
-        "description": "Get an aggregated summary of invocations: counts by status, counts by service, and duration percentiles (p50, p90, p99).",
-        "operationId": "get_invocations_summary",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "filters": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/FilterItem"
-                    }
-                  },
-                  "sampled": {
-                    "type": "boolean",
-                    "default": true
-                  },
-                  "sampleSize": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "default": 50000
-                  },
-                  "includeDuration": {
-                    "type": "boolean",
-                    "default": false
-                  },
-                  "excludeCompleted": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Exclude completed invocations (succeeded/failed/killed/cancelled) from the scan, returning only in-flight statuses."
-                  },
-                  "range": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Invocations summary",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InvocationsSummaryResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/invocations/completed-breakdown": {
-      "post": {
-        "tags": ["query-invocations"],
-        "summary": "Get completed invocations breakdown over time",
-        "description": "Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed. Buckets `completed_at` into fixed-width [start, start + interval) buckets across the [startTime, endTime) window. `failed` currently aggregates failed + killed + cancelled.",
-        "operationId": "get_completed_invocations_breakdown",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["startTime", "endTime", "interval"],
-                "properties": {
-                  "startTime": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Inclusive lower bound of the window (ISO 8601 date-time)."
-                  },
-                  "endTime": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Exclusive upper bound of the window (ISO 8601 date-time)."
-                  },
-                  "interval": {
-                    "type": "string",
-                    "description": "Bucket width as an ISO 8601 duration, e.g. PT5M, PT1H, P1D."
-                  },
-                  "filters": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/FilterItem"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Completed invocations breakdown over time",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompletedInvocationsBreakdownResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -2380,56 +1907,6 @@
         }
       }
     },
-    "/query/vqueues/{vqueueId}/inbox": {
-      "get": {
-        "tags": ["query-virtual-objects"],
-        "summary": "Get a VQueue inbox",
-        "description": "Returns the next bounded set of inbox entries in queue order for one VQueue. State mutations are preserved in the result.",
-        "operationId": "get_vqueue_inbox",
-        "security": [],
-        "parameters": [
-          {
-            "name": "vqueueId",
-            "in": "path",
-            "description": "VQueue id",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Ordered inbox entries for the VQueue",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VirtualObjectInboxResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/query/vqueues/{vqueueId}/entries": {
       "get": {
         "tags": ["query-invocations"],
@@ -2543,106 +2020,6 @@
             "description": "Virtual queues are unavailable or the queue is no longer present."
           },
           "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/invocations/{invocationId}/journal/{entryIndex}": {
-      "get": {
-        "tags": ["get-journal-entry"],
-        "summary": "Get journal entry",
-        "description": "Get journal entry",
-        "operationId": "get_journal_entry",
-        "parameters": [
-          {
-            "name": "invocationId",
-            "in": "path",
-            "description": "Invocation id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "entryIndex",
-            "in": "path",
-            "description": "Entry index",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JournalEntryV2"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
             "description": "",
             "content": {
               "application/json": {
@@ -2890,23 +2267,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "journal",
-            "in": "query",
-            "description": "Should include journal",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "includePayloads",
-            "in": "query",
-            "description": "When true, includes full payload data (parameters, values, headers) in journal entries. When false or omitted, returns lite journal entries without payloads for better performance.",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
           }
         ],
         "responses": {
@@ -3011,239 +2371,6 @@
         }
       }
     },
-    "/query/virtualObjects/{name}/keys/{key}/queue": {
-      "get": {
-        "tags": ["query-invocations"],
-        "summary": "Get Virtual Object inbox inbox for a key",
-        "description": "Get Virtual Object inbox inbox for a key",
-        "operationId": "get_inbox",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "description": "service name",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "key",
-            "in": "path",
-            "description": "key",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "invocationId",
-            "in": "query",
-            "description": "Invocation id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "scope",
-            "in": "query",
-            "description": "Service scope",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InboxResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/services/{name}/state/keys": {
-      "get": {
-        "tags": ["query-invocations"],
-        "summary": "Get state keys",
-        "description": "Get state keys",
-        "operationId": "get_state_keys",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "description": "service name",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "serviceKey",
-            "in": "query",
-            "description": "service key",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "name": "scope",
-            "in": "query",
-            "description": "service scope filter",
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "description": "service type hint used to apply scope compatibility rules for virtual objects",
-            "schema": {
-              "type": "string",
-              "enum": ["service", "virtual_object", "workflow"]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateInterfaceResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/query/services/{name}/state": {
       "post": {
         "tags": ["list-state"],
@@ -3265,35 +2392,21 @@
           "content": {
             "application/json": {
               "schema": {
-                "oneOf": [
-                  {
-                    "type": "object",
-                    "required": ["items"],
-                    "properties": {
-                      "items": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "required": ["key"],
-                          "properties": {
-                            "key": { "type": "string" },
-                            "scope": { "type": "string" }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "required": ["keys"],
-                    "properties": {
-                      "keys": {
-                        "type": "array",
-                        "items": { "type": "string" }
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["key"],
+                      "properties": {
+                        "key": { "type": "string" },
+                        "scope": { "type": "string" }
                       }
                     }
                   }
-                ]
+                }
               }
             }
           },
@@ -3432,15 +2545,6 @@
             },
             "style": "form",
             "explode": true
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "description": "service type hint used to apply scope compatibility rules for virtual objects",
-            "schema": {
-              "type": "string",
-              "enum": ["service", "virtual_object", "workflow"]
-            }
           }
         ],
         "responses": {
@@ -3686,15 +2790,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "serviceType",
-            "in": "query",
-            "description": "service type hint used to apply scope compatibility rules for virtual objects",
-            "schema": {
-              "type": "string",
-              "enum": ["service", "virtual_object", "workflow"]
-            }
           }
         ],
         "requestBody": {
@@ -3713,43 +2808,25 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "required": ["keys"],
-                      "properties": {
-                        "keys": {
-                          "type": "array",
-                          "items": { "type": "string" }
-                        },
-                        "truncated": {
-                          "type": "boolean",
-                          "description": "true when more objects match than the server-side limit returned"
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["key"],
+                        "properties": {
+                          "key": { "type": "string" },
+                          "scope": { "type": "string" }
                         }
                       }
                     },
-                    {
-                      "type": "object",
-                      "required": ["items"],
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "required": ["key"],
-                            "properties": {
-                              "key": { "type": "string" },
-                              "scope": { "type": "string" }
-                            }
-                          }
-                        },
-                        "truncated": {
-                          "type": "boolean",
-                          "description": "true when more objects match than the server-side limit returned"
-                        }
-                      }
+                    "truncated": {
+                      "type": "boolean",
+                      "description": "true when more objects match than the server-side limit returned"
                     }
-                  ]
+                  }
                 }
               }
             }
@@ -3995,86 +3072,6 @@
         }
       }
     },
-    "/query/state/services": {
-      "get": {
-        "tags": ["query-state"],
-        "summary": "List state services",
-        "description": "Distinct service names from the state table.",
-        "operationId": "list_state_services",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListStateServicesResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/query/state/storage-size": {
       "get": {
         "tags": ["query-state"],
@@ -4185,37 +3182,6 @@
         }
       }
     },
-    "/query/limits/rules/{pattern}": {
-      "get": {
-        "tags": ["query-limits"],
-        "summary": "Get limit rule",
-        "description": "Configured limit rule from the sys_rules table.",
-        "operationId": "get_limit_rule",
-        "parameters": [
-          {
-            "name": "pattern",
-            "in": "path",
-            "description": "Limit rule pattern.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RuleResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/query/limits/user-limits": {
       "post": {
         "tags": ["query-limits"],
@@ -4269,127 +3235,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ListVQueuesResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/limits/rules/{pattern}/counters": {
-      "post": {
-        "tags": ["query-limits"],
-        "summary": "List counters (active matches) for a rule",
-        "description": "Effective limit rows resolving to a configured rule pattern, filtered and sorted server-side.",
-        "operationId": "list_limit_counters",
-        "parameters": [
-          {
-            "name": "pattern",
-            "in": "path",
-            "description": "Limit rule pattern.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ListLimitCountersRequestBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListUserLimitsResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query/metrics": {
-      "get": {
-        "tags": ["query-metrics"],
-        "summary": "Get server metrics",
-        "description": "Aggregated, server-wide throughput and capacity metrics: per-second rates and gauges summed across all partition-processor leaders (metrics_processor), HTTP-ingress nodes (metrics_node), and durable logs (metrics_log).",
-        "operationId": "get_metrics",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MetricsResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
                 }
               }
             }
@@ -4912,19 +3757,6 @@
           }
         }
       },
-      "ListStateServicesResponse": {
-        "type": "object",
-        "description": "Distinct service names with rows in the state table.",
-        "required": ["services"],
-        "properties": {
-          "services": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
       "StateStorageSizeResponse": {
         "type": "object",
         "description": "State storage size grouped by service name. Each size is the sum of value_length for the service's rows in the state table.",
@@ -5193,70 +4025,6 @@
             "format": "duration",
             "description": "Time the current head has spent waiting on its current blocking resource."
           }
-        }
-      },
-      "MetricsResponse": {
-        "type": "object",
-        "description": "Aggregated, server-wide throughput and capacity metrics. Each field is summed across all rows of its source table (one row per partition-processor leader, HTTP-ingress node, or durable log).",
-        "required": [
-          "invocations_per_sec",
-          "events_per_sec",
-          "actions_per_sec",
-          "invoker_mibps",
-          "slots_available",
-          "slots_used",
-          "ingress_mibps",
-          "connections",
-          "waiting",
-          "log_mibps"
-        ],
-        "properties": {
-          "invocations_per_sec": {
-            "type": "number",
-            "description": "PROCESSOR (metrics_processor.invocations): new invocations started per second — +1 per new invocation (the Command/Input entry) on the partition-processor leader, summed across leaders."
-          },
-          "events_per_sec": {
-            "type": "number",
-            "description": "PROCESSOR (metrics_processor.events): journal events written per second — every journal entry on the leader counts as one event."
-          },
-          "actions_per_sec": {
-            "type": "number",
-            "description": "PROCESSOR (metrics_processor.actions): user-facing billing/usage actions per second — one action per journal command, metered by payload (one action per started 64 KiB: action_units = ceil(len / 64 KiB), min 1, so 1 byte -> 1 action and 65 KiB -> 2)."
-          },
-          "invoker_mibps": {
-            "type": "number",
-            "description": "PROCESSOR (metrics_processor.invoker_to_service_throughput): throughput from the invoker to the service deployments, MiB/s — bytes the invoker streams to SDK endpoints (new commands + replay)."
-          },
-          "slots_available": {
-            "type": "integer",
-            "description": "PROCESSOR (metrics_processor.invoker_available_slots): invoker concurrency slots free for new invocations, summed across partitions. A partition whose invoker is unlimited or not yet running reports slots as (0, 0)."
-          },
-          "slots_used": {
-            "type": "integer",
-            "description": "PROCESSOR (metrics_processor.invoker_used_slots): invoker concurrency slots in use (capacity - available), summed across partitions — how many invocations are concurrently executing."
-          },
-          "ingress_mibps": {
-            "type": "number",
-            "description": "INGRESS (metrics_node.throughput): ingress throughput, MiB/s — request + response body bytes seen at the HTTP ingress, turned into a rate by the sampler."
-          },
-          "connections": {
-            "type": "integer",
-            "description": "INGRESS (metrics_node.current_connections): currently open ingress connections (live gauge)."
-          },
-          "waiting": {
-            "type": "integer",
-            "description": "INGRESS (metrics_node.waiting_invocations): admitted in-flight ingress requests blocked awaiting a result — request-response calls and attaches only; fire-and-forget sends are deliberately excluded."
-          },
-          "log_mibps": {
-            "type": "number",
-            "description": "DURABLE LOG (metrics_log.append_rate): bytes appended to Bifrost per second, MiB/s — summed across all logs, i.e. total durable-log write throughput."
-          }
-        }
-      },
-      "VirtualObjectState": {
-        "type": "array",
-        "items": {
-          "type": "string"
         }
       },
       "InvocationQueryModeV2": {
@@ -5618,12 +4386,7 @@
       },
       "WorkflowRunStatsResponse": {
         "type": "object",
-        "required": ["supported"],
         "properties": {
-          "supported": {
-            "type": "boolean",
-            "description": "False when the Restate server does not support Virtual Queues."
-          },
           "duration": {
             "type": "string",
             "format": "duration",
@@ -5667,9 +4430,7 @@
       },
       "VirtualObjectLockResponse": {
         "type": "object",
-        "required": ["supported"],
         "properties": {
-          "supported": { "type": "boolean" },
           "lockHolder": {
             "$ref": "#/components/schemas/VirtualObjectLockHolder"
           }
@@ -5717,9 +4478,8 @@
       },
       "VirtualObjectInboxResponse": {
         "type": "object",
-        "required": ["supported", "limit", "truncated"],
+        "required": ["limit", "truncated"],
         "properties": {
-          "supported": { "type": "boolean" },
           "rows": {
             "type": "array",
             "items": {
@@ -5759,9 +4519,8 @@
       },
       "VirtualObjectInvocationsResponse": {
         "type": "object",
-        "required": ["supported", "rows", "limit", "truncated"],
+        "required": ["rows", "limit", "truncated"],
         "properties": {
-          "supported": { "type": "boolean" },
           "rows": {
             "type": "array",
             "description": "Invocations, plus VQueue entries that are not invocations (e.g. state mutations) without invocation details.",
@@ -5820,12 +4579,7 @@
       },
       "VirtualObjectStatsResponse": {
         "type": "object",
-        "required": ["supported"],
         "properties": {
-          "supported": {
-            "type": "boolean",
-            "description": "False when the server does not expose VQueues."
-          },
           "averageInboxDuration": {
             "$ref": "#/components/schemas/VirtualObjectStatsDurationRange"
           },
@@ -6013,11 +4767,6 @@
           },
           "mode": {
             "$ref": "#/components/schemas/InvocationQueryModeV2"
-          },
-          "range": {
-            "type": "string",
-            "enum": ["PT1H", "P1D", "ALL"],
-            "description": "Optional rolling created-at window. PT1H and P1D are resolved when the query executes; ALL applies no time filter."
           },
           "view": {
             "type": "string",
@@ -6283,28 +5032,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "groupByService": {
-            "type": "boolean",
-            "description": "Include service breakdowns. In VQueue mode serviceNames is required because grouping every service would require an unbounded metadata-to-entry join."
-          }
-        }
-      },
-      "InboxInvocationDueServiceBreakdownV2": {
-        "type": "object",
-        "required": ["service", "total", "due", "notDue"],
-        "properties": {
-          "service": {
-            "type": "string"
-          },
-          "total": {
-            "type": "integer"
-          },
-          "due": {
-            "type": "integer"
-          },
-          "notDue": {
-            "type": "integer"
           }
         }
       },
@@ -6334,13 +5061,6 @@
           },
           "partial": {
             "$ref": "#/components/schemas/InboxInvocationsPartialV2"
-          },
-          "byService": {
-            "description": "Present only when groupByService is true.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InboxInvocationDueServiceBreakdownV2"
-            }
           }
         }
       },
@@ -6348,33 +5068,6 @@
         "type": "object",
         "required": ["status", "count"],
         "properties": {
-          "status": {
-            "$ref": "#/components/schemas/InvocationStatus"
-          },
-          "count": {
-            "type": "integer"
-          }
-        }
-      },
-      "InboxInvocationStatusServiceBreakdownV2": {
-        "type": "object",
-        "required": ["service", "count"],
-        "properties": {
-          "service": {
-            "type": "string"
-          },
-          "count": {
-            "type": "integer"
-          }
-        }
-      },
-      "InboxInvocationStatusServiceAndStatusBreakdownV2": {
-        "type": "object",
-        "required": ["service", "status", "count"],
-        "properties": {
-          "service": {
-            "type": "string"
-          },
           "status": {
             "$ref": "#/components/schemas/InvocationStatus"
           },
@@ -6405,20 +5098,6 @@
           },
           "partial": {
             "$ref": "#/components/schemas/InboxInvocationsPartialV2"
-          },
-          "byService": {
-            "description": "Present only when groupByService is true.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InboxInvocationStatusServiceBreakdownV2"
-            }
-          },
-          "byServiceAndStatus": {
-            "description": "Present only when groupByService is true.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InboxInvocationStatusServiceAndStatusBreakdownV2"
-            }
           }
         }
       },
@@ -6459,12 +5138,12 @@
           "startTime": {
             "type": "string",
             "format": "date-time",
-            "description": "Inclusive completion-time lower bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode."
+            "description": "Inclusive completion-time lower bound on transitioned_at."
           },
           "endTime": {
             "type": "string",
             "format": "date-time",
-            "description": "Exclusive completion-time upper bound. Uses transitioned_at in VQueue mode and completed_at in legacy mode."
+            "description": "Exclusive completion-time upper bound on transitioned_at."
           }
         }
       },
@@ -6483,22 +5162,11 @@
       },
       "FinishedInvocationsBreakdownV2Response": {
         "type": "object",
-        "required": [
-          "mode",
-          "granularity",
-          "isPartial",
-          "scannedCount",
-          "outcomes"
-        ],
+        "required": ["mode", "isPartial", "scannedCount", "outcomes"],
         "properties": {
           "mode": {
             "type": "string",
             "enum": ["exact", "sampled"]
-          },
-          "granularity": {
-            "type": "string",
-            "enum": ["exact", "failure-grouped"],
-            "description": "VQueue mode reports all four outcomes exactly. Legacy mode avoids reading completion_failure and groups killed/cancelled into failed."
           },
           "isPartial": {
             "type": "boolean"
@@ -6510,137 +5178,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FinishedInvocationOutcomeBreakdownV2"
-            }
-          }
-        }
-      },
-      "FinishedInvocationsHistoryV2RequestBody": {
-        "type": "object",
-        "required": ["startTime", "endTime", "interval"],
-        "properties": {
-          "startTime": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Inclusive completion-time lower bound."
-          },
-          "endTime": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Exclusive completion-time upper bound."
-          },
-          "interval": {
-            "type": "string",
-            "format": "duration",
-            "description": "Fixed-width ISO 8601 bucket interval, for example PT5M, PT1H, or P1D. The requested range may contain at most 10000 buckets."
-          }
-        }
-      },
-      "FinishedInvocationsHistoryBucketV2": {
-        "type": "object",
-        "required": [
-          "start",
-          "end",
-          "succeeded",
-          "failed",
-          "cancelled",
-          "killed"
-        ],
-        "properties": {
-          "start": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "succeeded": {
-            "type": "integer"
-          },
-          "failed": {
-            "type": "integer"
-          },
-          "cancelled": {
-            "type": "integer"
-          },
-          "killed": {
-            "type": "integer"
-          }
-        }
-      },
-      "FinishedInvocationsHistoryV2Response": {
-        "type": "object",
-        "required": [
-          "startTime",
-          "endTime",
-          "interval",
-          "granularity",
-          "buckets"
-        ],
-        "properties": {
-          "startTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "interval": {
-            "type": "string",
-            "format": "duration"
-          },
-          "granularity": {
-            "type": "string",
-            "enum": ["exact", "failure-grouped"],
-            "description": "VQueue mode separates all four outcomes. Legacy mode reports every non-success outcome as failed."
-          },
-          "buckets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FinishedInvocationsHistoryBucketV2"
-            }
-          }
-        }
-      },
-      "ListInvocationsRequestBody": {
-        "type": "object",
-        "properties": {
-          "filters": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FilterItem"
-            }
-          },
-          "sampled": {
-            "type": "boolean"
-          },
-          "sampleSize": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "sort": {
-            "type": "object",
-            "required": ["field", "order"],
-            "properties": {
-              "field": {
-                "type": "string",
-                "enum": [
-                  "created_at",
-                  "modified_at",
-                  "scheduled_at",
-                  "scheduled_start_at",
-                  "running_at",
-                  "target_service_key",
-                  "target_service_name",
-                  "target_handler_name",
-                  "duration"
-                ]
-              },
-              "order": {
-                "type": "string",
-                "enum": ["ASC", "DESC"]
-              }
             }
           }
         }
@@ -7424,23 +5961,6 @@
                 }
               }
             ]
-          }
-        }
-      },
-      "StateInterfaceResponse": {
-        "type": "object",
-        "properties": {
-          "keys": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["name"],
-              "properties": {
-                "name": {
-                  "type": "string"
-                }
-              }
-            }
           }
         }
       },
@@ -9550,19 +8070,6 @@
           "value": { "type": "string" }
         }
       },
-      "InboxResponse": {
-        "type": "object",
-        "required": ["length", "head"],
-        "properties": {
-          "size": {
-            "type": "integer"
-          },
-          "head": { "type": "string" }
-        },
-        "additionalProperties": {
-          "type": "integer"
-        }
-      },
       "InvocationFuture": {
         "oneOf": [
           {
@@ -10299,55 +8806,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FilterItem"
-            }
-          }
-        }
-      },
-      "CompletedInvocationsBreakdownResponse": {
-        "type": "object",
-        "description": "Time-bucketed breakdown of completed invocations (terminal outcomes only) into succeeded vs failed over a [startTime, endTime) window. NOTE: `failed` currently aggregates failed + killed + cancelled; these may be split into their own fields later.",
-        "required": ["startTime", "endTime", "interval", "buckets"],
-        "properties": {
-          "startTime": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Inclusive lower bound of the window, echoed from the request."
-          },
-          "endTime": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Exclusive upper bound of the window, echoed from the request."
-          },
-          "interval": {
-            "type": "string",
-            "description": "Bucket width as an ISO 8601 duration, echoed from the request."
-          },
-          "buckets": {
-            "type": "array",
-            "description": "Contiguous, zero-filled buckets ordered by start ascending. Each bucket covers [start, end).",
-            "items": {
-              "type": "object",
-              "required": ["start", "end", "succeeded", "failed"],
-              "properties": {
-                "start": {
-                  "type": "string",
-                  "format": "date-time",
-                  "description": "Inclusive start timestamp of the bucket."
-                },
-                "end": {
-                  "type": "string",
-                  "format": "date-time",
-                  "description": "Exclusive end timestamp of the bucket (start + interval); equals the next bucket's start."
-                },
-                "succeeded": {
-                  "type": "integer",
-                  "description": "Invocations that completed successfully (completion_result = success) within the bucket."
-                },
-                "failed": {
-                  "type": "integer",
-                  "description": "Invocations that completed unsuccessfully within the bucket. Currently includes failed, killed, and cancelled."
-                }
-              }
             }
           }
         }

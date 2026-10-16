@@ -130,25 +130,3 @@ export function useDecode(
     error: combineErrors(query.error, codecRuntime.error),
   };
 }
-
-export function useEncode(
-  value?: string,
-  isBase64?: boolean,
-  codecOptions?: RestateCodecOptions,
-) {
-  const codecRuntime = useCodecRuntime(codecOptions);
-  const query = useQuery({
-    queryKey: [value, 'encode', codecRuntime.options] as const,
-    queryFn: () =>
-      isBase64 ? codecRuntime.encode(value, codecRuntime.options) : value,
-    staleTime: Infinity,
-    refetchOnMount: false,
-    enabled: !codecRuntime.isPending,
-  });
-
-  return {
-    ...query,
-    isPending: codecRuntime.isPending || query.isPending,
-    error: combineErrors(query.error, codecRuntime.error),
-  };
-}

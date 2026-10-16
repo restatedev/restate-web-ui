@@ -1,10 +1,6 @@
 import type { components } from '@restate/data-access/admin-api-spec';
 import { createVirtualObjectLockHolder } from './getVirtualObjectLock';
-import {
-  quoteSqlString,
-  shouldFilterScopeIsNull,
-  type QueryContext,
-} from './shared';
+import { quoteSqlString, type QueryContext } from './shared';
 import {
   parseStructuredStringFilters,
   structuredStringFilterClause,
@@ -90,17 +86,15 @@ function identityFilterClause(
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
   keyExpression: string,
-  includeScope: boolean,
   options: {
     keyEqualsExpression?: string;
     keyEqualsValue?: (value: string) => string;
     searchOnNewLine?: boolean;
-    unscopedOnly?: boolean;
   } = {},
 ) {
   const pattern = searchPattern(search);
   const searchClause = pattern
-    ? `${options.searchOnNewLine !== false ? '\n      ' : ' '}AND (${keyExpression} LIKE ${pattern}${includeScope ? ` OR scope LIKE ${pattern}` : ''})`
+    ? `${options.searchOnNewLine !== false ? '\n      ' : ' '}AND (${keyExpression} LIKE ${pattern} OR scope LIKE ${pattern})`
     : '';
   const filterClause = structuredStringFilterClause(filters, {
     key: options.keyEqualsExpression
@@ -112,10 +106,7 @@ function identityFilterClause(
       : keyExpression,
     scope: 'scope',
   });
-  const unscopedClause = options.unscopedOnly
-    ? '\n      AND scope IS NULL'
-    : '';
-  return `${searchClause}${filterClause}${unscopedClause}`;
+  return `${searchClause}${filterClause}`;
 }
 
 function buildVirtualObjectIdentitiesFromVqueueMetaQuery(
@@ -124,15 +115,13 @@ function buildVirtualObjectIdentitiesFromVqueueMetaQuery(
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
   includePartitionKey: boolean,
   counterPredicates: string[],
-  unscopedOnly: boolean,
 ) {
   const objectKey = `SUBSTR(lock_name, CHAR_LENGTH(${quoteSqlString(`${service}/`)}) + 1)`;
   const exactKey = exactKeyFilterValue(filters);
   const hasKeyFilter = filters.some(({ field }) => field === 'key');
-  const filterClause = identityFilterClause(search, filters, objectKey, true, {
+  const filterClause = identityFilterClause(search, filters, objectKey, {
     keyEqualsExpression: 'lock_name',
     keyEqualsValue: (value) => `${service}/${value}`,
-    unscopedOnly,
   });
   const counters = counterPredicates.join('\n        OR ');
   const partitionKeyColumn = includePartitionKey
@@ -157,7 +146,6 @@ function virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
   includePartitionKey: boolean,
-  unscopedOnly: boolean,
 ) {
   // Without backlog sorting, this bounded query must also discover identities
   // that only have entries in the inbox.
@@ -167,7 +155,6 @@ function virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
     filters,
     includePartitionKey,
     ['num_inbox > 0', 'num_running > 0', 'num_suspended > 0', 'num_paused > 0'],
-    unscopedOnly,
   );
 }
 
@@ -175,7 +162,6 @@ function virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
   service: string,
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
-  unscopedOnly: boolean,
 ) {
   // The backlog aggregate already discovers inbox identities when sorting, so
   // this bounded query only needs running, suspended, and paused entries.
@@ -185,7 +171,6 @@ function virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
     filters,
     false,
     ['num_running > 0', 'num_suspended > 0', 'num_paused > 0'],
-    unscopedOnly,
   );
 }
 
@@ -193,13 +178,8 @@ function virtualObjectIdentitiesFromInvocationStatusQuery(
   service: string,
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
-  options: {
-    includeScope: boolean;
-    includePartitionKey: boolean;
-    unscopedOnly: boolean;
-  },
+  includePartitionKey: boolean,
 ) {
-  const { includeScope, includePartitionKey, unscopedOnly } = options;
   const hasKeyFilter = filters.some(({ field }) => field === 'key');
   const nonNullKeyClause = hasKeyFilter
     ? ''
@@ -208,14 +188,13 @@ function virtualObjectIdentitiesFromInvocationStatusQuery(
     search,
     filters,
     'target_service_key',
-    includeScope,
-    { unscopedOnly },
   );
   const partitionKeyColumn = includePartitionKey
     ? '      CAST(partition_key AS VARCHAR) AS partition_key,\n'
     : '';
   return `SELECT DISTINCT
-${partitionKeyColumn}      target_service_key AS object_key${includeScope ? ',\n      scope' : ''}
+${partitionKeyColumn}      target_service_key AS object_key,
+      scope
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'virtual_object'${nonNullKeyClause}
@@ -227,16 +206,14 @@ function virtualObjectIdentitiesFromVqueueMetaByBacklogQuery(
   service: string,
   search: string | undefined,
   filters: StructuredStringFilter<VirtualObjectFilterField>[],
-  unscopedOnly: boolean,
 ) {
   const servicePrefix = quoteSqlString(`${service}/`);
   const objectKey = `SUBSTR(lock_name, CHAR_LENGTH(${servicePrefix}) + 1)`;
   const exactKey = exactKeyFilterValue(filters);
   const hasKeyFilter = filters.some(({ field }) => field === 'key');
-  const filterClause = identityFilterClause(search, filters, objectKey, true, {
+  const filterClause = identityFilterClause(search, filters, objectKey, {
     keyEqualsExpression: 'lock_name',
     keyEqualsValue: (value) => `${service}/${value}`,
-    unscopedOnly,
   });
   // Zero-inbox rows cannot change the sum or the positive-backlog ordering.
   // Excluding them avoids grouping the much larger non-inbox metadata population.
@@ -257,27 +234,6 @@ ${lockNameColumn}      scope,
       AND num_inbox > 0${filterClause}
     GROUP BY ${groupBy}
     ORDER BY ${orderBy}
-    LIMIT ${QUERY_LIMIT}`;
-}
-
-function virtualObjectIdentitiesFromInboxByBacklogQuery(
-  service: string,
-  search: string | undefined,
-  filters: StructuredStringFilter<VirtualObjectFilterField>[],
-) {
-  const filterClause = identityFilterClause(
-    search,
-    filters,
-    'service_key',
-    false,
-  );
-  return `SELECT
-      service_key AS object_key,
-      COUNT(*) AS backlog
-    FROM sys_inbox
-    WHERE service_name = ${quoteSqlString(service)}${filterClause}
-    GROUP BY service_key
-    ORDER BY backlog DESC, object_key ASC
     LIMIT ${QUERY_LIMIT}`;
 }
 
@@ -370,18 +326,15 @@ function selectedPartitionKeys(instances: MutableInstance[]) {
 function selectedIdentityClause(
   instances: MutableInstance[],
   keyColumn: string,
-  hasScope: boolean,
   keyPrefix = '',
 ) {
   return instances
     .map(
       ({ key, scope }) =>
         `(${keyColumn} = ${quoteSqlString(`${keyPrefix}${key}`)}${
-          hasScope
-            ? scope === undefined
-              ? ' AND scope IS NULL'
-              : ` AND scope = ${quoteSqlString(scope)}`
-            : ''
+          scope === undefined
+            ? ' AND scope IS NULL'
+            : ` AND scope = ${quoteSqlString(scope)}`
         })`,
     )
     .join('\n        OR ');
@@ -402,47 +355,31 @@ async function getBacklogsForInstances(
     FROM ${VIRTUAL_OBJECT_STATS.name}
     WHERE service_name = ${quoteSqlString(service)}
       AND (
-        ${selectedIdentityClause(instances, 'key', true)}
+        ${selectedIdentityClause(instances, 'key')}
       )
     GROUP BY key, scope`,
       'virtual-objects/backlogs-from-stats',
     );
     return rows;
   }
-  if (context.features.has('vqueues')) {
-    const partitionKeys = selectedPartitionKeys(instances).join(', ');
-    const partitionClause = instances.every(({ partitionKey }) => partitionKey)
-      ? `partition_key IN (${partitionKeys})\n      AND `
-      : '';
-    const { rows } = await context.query(
-      `SELECT
+  const partitionKeys = selectedPartitionKeys(instances).join(', ');
+  const partitionClause = instances.every(({ partitionKey }) => partitionKey)
+    ? `partition_key IN (${partitionKeys})\n      AND `
+    : '';
+  const { rows } = await context.query(
+    `SELECT
       lock_name,
       scope,
       SUM(num_inbox) AS backlog
     FROM sys_vqueue_meta
     WHERE ${partitionClause}service_name = ${quoteSqlString(service)}
       AND (
-        ${selectedIdentityClause(instances, 'lock_name', true, `${service}/`)}
+        ${selectedIdentityClause(instances, 'lock_name', `${service}/`)}
       )
     GROUP BY lock_name, scope`,
-      'virtual-objects/backlogs-from-vqueue-meta',
-    );
-    return addObjectKeyFromLockName(rows, service);
-  }
-
-  const { rows } = await context.query(
-    `SELECT
-      service_key AS object_key,
-      COUNT(*) AS backlog
-    FROM sys_inbox
-    WHERE service_name = ${quoteSqlString(service)}
-      AND (
-        ${selectedIdentityClause(instances, 'service_key', false)}
-      )
-    GROUP BY service_key`,
-    'virtual-objects/backlogs-from-inbox',
+    'virtual-objects/backlogs-from-vqueue-meta',
   );
-  return rows;
+  return addObjectKeyFromLockName(rows, service);
 }
 
 async function queryLocksForInstances(
@@ -451,9 +388,8 @@ async function queryLocksForInstances(
   instances: MutableInstance[],
 ) {
   if (instances.length === 0) return [];
-  if (context.features.has('vqueues')) {
-    const { rows } = await context.query(
-      `SELECT
+  const { rows } = await context.query(
+    `SELECT
       lock_name,
       scope,
       acquired_by,
@@ -461,26 +397,11 @@ async function queryLocksForInstances(
     FROM sys_locks
     WHERE acquired_by IS NOT NULL
       AND (
-        ${selectedIdentityClause(instances, 'lock_name', true, `${service}/`)}
+        ${selectedIdentityClause(instances, 'lock_name', `${service}/`)}
       )`,
-      'virtual-objects/locks-for-instances',
-    );
-    return addObjectKeyFromLockName(rows, service);
-  }
-
-  const { rows } = await context.query(
-    `SELECT
-      service_key AS object_key,
-      invocation_id AS acquired_by
-    FROM sys_keyed_service_status
-    WHERE service_name = ${quoteSqlString(service)}
-      AND invocation_id IS NOT NULL
-      AND (
-        ${selectedIdentityClause(instances, 'service_key', false)}
-      )`,
-    'virtual-objects/locks-from-keyed-status',
+    'virtual-objects/locks-for-instances',
   );
-  return rows;
+  return addObjectKeyFromLockName(rows, service);
 }
 
 function addInstanceLockHolders(
@@ -513,7 +434,6 @@ function compareByBacklog(a: MutableInstance, b: MutableInstance) {
 type FindInstancesOptions = {
   search: string | undefined;
   filters: StructuredStringFilter<VirtualObjectFilterField>[];
-  unscopedOnly: boolean;
   sortByBacklog: boolean;
 };
 
@@ -525,11 +445,9 @@ type FoundInstances = {
 async function findInstancesFromStats(
   context: QueryContext,
   service: string,
-  { search, filters, unscopedOnly, sortByBacklog }: FindInstancesOptions,
+  { search, filters, sortByBacklog }: FindInstancesOptions,
 ): Promise<FoundInstances> {
-  const filterClause = identityFilterClause(search, filters, 'key', true, {
-    unscopedOnly,
-  });
+  const filterClause = identityFilterClause(search, filters, 'key');
   if (!sortByBacklog) {
     const { rows } = await context.query(
       virtualObjectsFromStatsQuery(service, filterClause, QUERY_LIMIT),
@@ -564,9 +482,8 @@ async function findInstancesFromStats(
 async function findInstancesFromQueues(
   context: QueryContext,
   service: string,
-  { search, filters, unscopedOnly, sortByBacklog }: FindInstancesOptions,
+  { search, filters, sortByBacklog }: FindInstancesOptions,
 ): Promise<FoundInstances> {
-  const hasVqueues = context.features.has('vqueues');
   const exactKey = exactKeyFilterValue(filters);
   const withObjectKeys = (rows: Record<string, unknown>[]) =>
     exactKey === undefined
@@ -578,63 +495,43 @@ async function findInstancesFromQueues(
         service,
         search,
         filters,
-        {
-          includeScope: hasVqueues,
-          includePartitionKey: hasVqueues && !sortByBacklog,
-          unscopedOnly,
-        },
+        !sortByBacklog,
       ),
       'virtual-objects/identities-from-invocations',
     )
     .then(({ rows }) => rows);
-  const activeIdentityRowsPromise = hasVqueues
-    ? Promise.race([
-        identitiesFromInvocationStatusPromise,
-        context
-          .query(
-            sortByBacklog
-              ? virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
-                  service,
-                  search,
-                  filters,
-                  unscopedOnly,
-                )
-              : virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
-                  service,
-                  search,
-                  filters,
-                  !sortByBacklog,
-                  unscopedOnly,
-                ),
-            'virtual-objects/identities-from-vqueue-meta',
-          )
-          .then(({ rows }) => withObjectKeys(rows)),
-      ])
-    : identitiesFromInvocationStatusPromise;
+  const activeIdentityRowsPromise = Promise.race([
+    identitiesFromInvocationStatusPromise,
+    context
+      .query(
+        sortByBacklog
+          ? virtualObjectIdentitiesFromVqueueMetaWithNonInboxEntriesQuery(
+              service,
+              search,
+              filters,
+            )
+          : virtualObjectIdentitiesFromVqueueMetaWithUnfinishedEntriesQuery(
+              service,
+              search,
+              filters,
+              !sortByBacklog,
+            ),
+        'virtual-objects/identities-from-vqueue-meta',
+      )
+      .then(({ rows }) => withObjectKeys(rows)),
+  ]);
   const identitiesByBacklogPromise = !sortByBacklog
     ? Promise.resolve([])
-    : hasVqueues
-      ? context
-          .query(
-            virtualObjectIdentitiesFromVqueueMetaByBacklogQuery(
-              service,
-              search,
-              filters,
-              unscopedOnly,
-            ),
-            'virtual-objects/identities-by-backlog',
-          )
-          .then(({ rows }) => withObjectKeys(rows))
-      : context
-          .query(
-            virtualObjectIdentitiesFromInboxByBacklogQuery(
-              service,
-              search,
-              filters,
-            ),
-            'virtual-objects/identities-by-backlog-legacy',
-          )
-          .then(({ rows }) => rows);
+    : context
+        .query(
+          virtualObjectIdentitiesFromVqueueMetaByBacklogQuery(
+            service,
+            search,
+            filters,
+          ),
+          'virtual-objects/identities-by-backlog',
+        )
+        .then(({ rows }) => withObjectKeys(rows));
   const [activeIdentityRows, identitiesByBacklogRows] = await Promise.all([
     activeIdentityRowsPromise,
     identitiesByBacklogPromise,
@@ -658,13 +555,10 @@ export async function listVirtualObjectInstances(
     args.sort === undefined
       ? usesStats
       : args.sort?.field === 'backlog' && args.sort.order === 'DESC';
-  const hasScopedVirtualObjects =
-    this.features.has('vqueues') && this.features.has('scoped_virtual_objects');
-  const unscopedOnly = shouldFilterScopeIsNull(this, 'virtual_object');
-  const parsedFilters = parseStructuredStringFilters(
-    args.filters,
-    hasScopedVirtualObjects ? ['key', 'scope'] : ['key'],
-  );
+  const parsedFilters = parseStructuredStringFilters(args.filters, [
+    'key',
+    'scope',
+  ]);
   if (parsedFilters.error) {
     return new Response(parsedFilters.error, { status: 400 });
   }
@@ -672,13 +566,10 @@ export async function listVirtualObjectInstances(
   const candidates = normalizeIdentityCandidates(
     args.candidates,
     ({ key }) => key,
-  ).filter(
-    (candidate) =>
-      (hasScopedVirtualObjects || candidate.scope === undefined) &&
-      (!unscopedOnly || candidate.scope === undefined) &&
-      identityCandidateMatches(candidate, 'key', search, filters),
+  ).filter((candidate) =>
+    identityCandidateMatches(candidate, 'key', search, filters),
   );
-  const findOptions = { search, filters, unscopedOnly, sortByBacklog };
+  const findOptions = { search, filters, sortByBacklog };
   const found = usesStats
     ? await findInstancesFromStats(this, service, findOptions)
     : await findInstancesFromQueues(this, service, findOptions);

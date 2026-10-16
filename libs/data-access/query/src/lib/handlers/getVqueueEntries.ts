@@ -32,10 +32,6 @@ export async function getVqueueEntries(
   vqueueId: string,
   stage: VqueueEntryStage,
 ) {
-  if (!this.features.has('vqueues')) {
-    return new Response(null, { status: 204 });
-  }
-
   const { rows } = await this.query(
     `SELECT
       id AS vqueue_id,

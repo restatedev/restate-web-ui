@@ -10,16 +10,11 @@ export async function batchCancelInvocations(
   if ('invocationIds' in request) {
     const result = await batchProcessInvocations(
       request.invocationIds,
-      (invocationId) =>
-        this.adminApi(`/invocations/${invocationId}/cancel`, {
-          method: 'PATCH',
-        }),
       (invocationIds) =>
         this.adminApi('/internal/invocations_batch_operations/cancel', {
           method: 'POST',
           json: { invocation_ids: invocationIds },
         }),
-      this.restateVersion,
     );
 
     return Response.json({
@@ -39,18 +34,11 @@ export async function batchCancelInvocations(
     },
   );
 
-  const result = await batchProcessInvocations(
-    invocationIds,
-    (invocationId) =>
-      this.adminApi(`/invocations/${invocationId}/cancel`, {
-        method: 'PATCH',
-      }),
-    (invocationIds) =>
-      this.adminApi('/internal/invocations_batch_operations/cancel', {
-        method: 'POST',
-        json: { invocation_ids: invocationIds },
-      }),
-    this.restateVersion,
+  const result = await batchProcessInvocations(invocationIds, (invocationIds) =>
+    this.adminApi('/internal/invocations_batch_operations/cancel', {
+      method: 'POST',
+      json: { invocation_ids: invocationIds },
+    }),
   );
 
   return Response.json({

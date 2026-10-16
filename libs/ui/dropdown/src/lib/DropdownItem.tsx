@@ -123,7 +123,6 @@ export function DropdownItem(props: DropdownItemProps) {
   const hrefWithQUeryParams = useHrefWithQueryParams({
     href: props.href,
     preserveQueryParams: true,
-    mode: 'append',
   });
 
   if (isNavItem(props)) {

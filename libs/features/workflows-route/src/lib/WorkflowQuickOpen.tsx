@@ -8,7 +8,6 @@ import {
 export interface WorkflowQuickOpenProps {
   draft: WorkflowOpenDraft;
   disabled: boolean;
-  hasScope: boolean;
   onChange: (draft: WorkflowOpenDraft) => void;
   onOpen: VoidFunction;
   service: string;
@@ -17,12 +16,11 @@ export interface WorkflowQuickOpenProps {
 export function WorkflowQuickOpen({
   draft,
   disabled,
-  hasScope,
   onChange,
   onOpen,
   service,
 }: WorkflowQuickOpenProps) {
-  const identity = workflowIdentityFromOpenDraft(service, draft, hasScope);
+  const identity = workflowIdentityFromOpenDraft(service, draft);
 
   return (
     <PanelTableQuickOpen
@@ -36,14 +34,10 @@ export function WorkflowQuickOpen({
       onOpen={onOpen}
       isValid={Boolean(identity)}
       disabled={disabled}
-      scope={
-        hasScope
-          ? {
-              value: draft.scope,
-              onChange: (scope) => onChange({ ...draft, scope }),
-            }
-          : undefined
-      }
+      scope={{
+        value: draft.scope,
+        onChange: (scope) => onChange({ ...draft, scope }),
+      }}
     />
   );
 }

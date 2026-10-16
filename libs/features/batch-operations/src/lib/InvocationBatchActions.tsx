@@ -5,7 +5,6 @@ import type {
   QueryClauseType,
 } from '@restate/ui/query-builder';
 import { formatPlurals } from '@restate/util/intl';
-import { RestateMinimumVersion } from '@restate/features/restate-context';
 import { Badge } from '@restate/ui/badge';
 import { Button } from '@restate/ui/button';
 import {
@@ -50,7 +49,6 @@ export function InvocationBatchActions({
       icon: IconName.Pause,
       destructive: true,
       run: batch.batchPause,
-      minVersion: '1.6.0',
     },
     {
       id: 'resume',
@@ -137,7 +135,7 @@ export function InvocationBatchActions({
             }}
           >
             {actions.map((action) => {
-              const item = (
+              return (
                 <DropdownItem
                   key={action.id}
                   value={action.id}
@@ -149,16 +147,6 @@ export function InvocationBatchActions({
                   />
                   {action.label}…
                 </DropdownItem>
-              );
-              return action.minVersion ? (
-                <RestateMinimumVersion
-                  key={action.id}
-                  minVersion={action.minVersion}
-                >
-                  {item}
-                </RestateMinimumVersion>
-              ) : (
-                item
               );
             })}
           </DropdownMenu>

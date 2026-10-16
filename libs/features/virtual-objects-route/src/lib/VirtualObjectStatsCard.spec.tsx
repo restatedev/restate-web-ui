@@ -8,7 +8,6 @@ describe('VirtualObjectStatsCard', () => {
       <MemoryRouter>
         <VirtualObjectStatsCard
           stats={{
-            supported: true,
             averageInboxDuration: {
               min: 'PT0.072S',
               max: 'PT0.072S',

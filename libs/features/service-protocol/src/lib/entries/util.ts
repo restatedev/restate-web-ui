@@ -6,31 +6,6 @@ import type {
   JournalRawEntry,
 } from '@restate/data-access/admin-api-spec';
 
-export function parseResults(result?: any): {
-  value?: string;
-  failure?: RestateError;
-} {
-  if (result?.Success) {
-    return { value: decodeBinary(result?.Success), failure: undefined };
-  }
-  if (result?.Failure) {
-    return {
-      value: undefined,
-      failure: new RestateError(
-        result?.Failure?.message,
-        result?.Failure?.code,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        result?.Failure?.metadata,
-      ),
-    };
-  }
-
-  return {};
-}
-
 export function parseResults2(result?: any) {
   if (
     typeof result === 'string' &&
@@ -305,26 +280,6 @@ export function getEntryResultV2(
     resultType,
     relatedIndexes: allRelatedIndexes,
   };
-}
-
-export function findEntryAfter(
-  entry: JournalRawEntry,
-  allEntries: JournalRawEntry[],
-  cb: (jsno?: Record<string, any>) => boolean,
-) {
-  const initialIndex =
-    allEntries.at(entry.index) === entry
-      ? entry.index
-      : allEntries.findIndex(({ index }) => index === entry.index);
-  for (let index = initialIndex + 1; index < allEntries.length; index++) {
-    const nextEntry = allEntries[index];
-    const entryJSON = parseEntryJson(nextEntry?.entry_json);
-    const isFound = cb(entryJSON);
-    if (isFound) {
-      return { entry: nextEntry, entryJSON };
-    }
-  }
-  return {};
 }
 
 export function decodeBinary(value?: number[]) {

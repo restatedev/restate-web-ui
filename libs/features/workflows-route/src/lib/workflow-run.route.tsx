@@ -108,22 +108,15 @@ function Component() {
           )}
         </InvocationStatusHeader>
         {data && !runInvocation && <WorkflowRunUnavailableBanner />}
-        {(runInvocation || statsData?.supported) && (
+        {(runInvocation || statsData) && (
           <CardGrid
-            distribution={
-              runInvocation && statsData?.supported && statsData.state
-                ? '5-4-2'
-                : 'equal'
-            }
+            distribution={runInvocation && statsData?.state ? '5-4-2' : 'equal'}
             className="relative z-40 mx-5 mt-3"
           >
             {runInvocation && (
-              <WorkflowRunCard
-                invocation={runInvocation}
-                stats={statsData?.supported ? statsData : undefined}
-              />
+              <WorkflowRunCard invocation={runInvocation} stats={statsData} />
             )}
-            {statsData?.supported && (
+            {statsData && (
               <>
                 <WorkflowInteractionsCard stats={statsData} />
                 {statsData.state && (

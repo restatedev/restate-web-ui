@@ -1,15 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createInvocationV2QueryTestHarness,
-  NO_VQUEUE_HEADERS,
-  VQUEUE_HEADERS,
-} from './invocationsV2/tests/testUtils';
-
-const SCOPED_VQUEUE_HEADERS = {
-  'content-type': 'application/json',
-  'x-restate-version': '1.7.3',
-  'x-restate-features': 'vqueues,scoped_virtual_objects,protocol_v7',
-};
+import { createInvocationV2QueryTestHarness } from './invocationsV2/tests/testUtils';
 
 describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
   const { get, setResponder, sql } = createInvocationV2QueryTestHarness();
@@ -38,7 +28,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
 
     const response = await get(
       '/virtual-objects/Counter/instances/customer-1/stats?scope=tenant-a',
-      SCOPED_VQUEUE_HEADERS,
     );
 
     expect(sql).toMatchInlineSnapshot(`
@@ -73,7 +62,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       averageInboxDuration: {
         min: 'PT1.5S',
         max: 'PT8S',
@@ -91,7 +79,7 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
     });
   });
 
-  it('uses the unscoped Virtual Queue and state rows when scopes are disabled', async () => {
+  it('uses the unscoped Virtual Queue and state rows for an unscoped instance', async () => {
     setResponder((statement) => {
       if (statement.includes('FROM sys_vqueues v')) {
         return [{ oldest_inboxed_at: '2026-07-31T08:00:00.000Z' }];
@@ -114,7 +102,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
 
     const response = await get(
       '/virtual-objects/Counter/instances/customer-1/stats',
-      VQUEUE_HEADERS,
     );
 
     expect(sql).toMatchInlineSnapshot(`
@@ -149,7 +136,6 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
       ]
     `);
     expect(await response.json()).toEqual({
-      supported: true,
       averageInboxDuration: {
         min: 'PT4S',
         max: 'PT4S',
@@ -164,15 +150,5 @@ describe('GET /query/virtual-objects/:service/instances/:key/stats', () => {
         totalSize: 128,
       },
     });
-  });
-
-  it('reports stats as unsupported without Virtual Queues', async () => {
-    const response = await get(
-      '/virtual-objects/Counter/instances/customer-1/stats',
-      NO_VQUEUE_HEADERS,
-    );
-
-    expect(sql).toEqual([]);
-    expect(await response.json()).toEqual({ supported: false });
   });
 });

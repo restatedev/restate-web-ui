@@ -1,0 +1,514 @@
+import {
+  getEndpoint,
+  type Deployment as DeploymentMetadata,
+} from '@restate/data-access/admin-api-spec';
+import {
+  Deployment,
+  DeploymentStatusBadge,
+} from '@restate/features/deployment';
+import {
+  DELETE_SELECTED_DEPLOYMENTS_QUERY,
+  DeleteSelectedDeploymentsDialog,
+} from '@restate/features/prune-deployments';
+import { DeploymentActions } from '@restate/features/register-deployment';
+import { useRestateContext } from '@restate/features/restate-context';
+import {
+  getOverviewRefreshMeta,
+  useFeatures,
+} from '@restate/data-access/admin-api';
+import { useSummaryInvocationsV2 } from '@restate/data-access/admin-api-hooks';
+import { usesStatsTables } from '@restate/data-access/query';
+import {
+  buildStatusEntries,
+  DeploymentStatusBar,
+} from '@restate/features/status-chart';
+import { MiniService } from '@restate/features/service';
+import { Button } from '@restate/ui/button';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownTrigger,
+} from '@restate/ui/dropdown';
+import { EmptyState } from '@restate/ui/empty-state';
+import { Icon, IconName } from '@restate/ui/icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
+import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import {
+  formatDurations,
+  formatNumber,
+  formatPlurals,
+} from '@restate/util/intl';
+import { deploymentHref, serviceHref } from '@restate/util/panel';
+import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
+import { tv } from '@restate/util/styles';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
+import { useOverviewContext } from './OverviewContext';
+import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
+import { OVERVIEW_ROW_WAVE } from './overviewWave';
+import { getNotCompletedInvocationCount } from './ServicesTable';
+import {
+  type OverviewDeployment,
+  sortDeployments,
+  sortDeploymentServices,
+} from './sortDeployments';
+
+type DeploymentColumn =
+  | 'deployment'
+  | 'status'
+  | 'services'
+  | 'invocations'
+  | 'created_at'
+  | 'actions';
+
+const COLUMNS: PanelTableColumn<DeploymentColumn>[] = [
+  {
+    id: 'deployment',
+    name: 'Deployment',
+    isRowHeader: true,
+    allowsSorting: true,
+    defaultWidth: '3.5fr',
+    minWidth: 320,
+  },
+  {
+    id: 'invocations',
+    name: 'Not completed invocations',
+    allowsSorting: true,
+    preferredSortDirection: 'descending',
+    defaultWidth: '1.5fr',
+    minWidth: 190,
+    maxWidth: 240,
+  },
+  {
+    id: 'status',
+    name: 'Status',
+    allowsSorting: true,
+    defaultWidth: 120,
+    minWidth: 100,
+    maxWidth: 140,
+  },
+  {
+    id: 'services',
+    name: 'Services',
+    defaultWidth: 150,
+    minWidth: 130,
+    maxWidth: 170,
+  },
+  {
+    id: 'created_at',
+    name: 'Registered',
+    allowsSorting: true,
+    preferredSortDirection: 'descending',
+    defaultWidth: 150,
+    minWidth: 130,
+    maxWidth: 170,
+  },
+  {
+    id: 'actions',
+    name: 'Actions',
+    width: 40,
+    hideLabel: true,
+  },
+];
+
+const deploymentTableStyles = tv({
+  slots: {
+    row: 'cursor-pointer [content-visibility:auto]',
+    identity: 'flex min-w-0 items-center gap-1.5 py-0.5',
+    deployment:
+      'min-w-0 flex-[0_1_auto] text-[0.8125rem] font-medium text-zinc-600 [&_div:has(>svg)]:h-6 [&_div:has(>svg)]:w-6',
+    deploymentId:
+      'block max-w-full min-w-0 truncate rounded-md border border-zinc-200/80 bg-zinc-50/80 px-1.5 py-0.5 font-mono text-2xs font-normal text-zinc-400',
+  },
+});
+
+function includesFilter(value: string | null | undefined, filter: string) {
+  return value?.toLowerCase().includes(filter) ?? false;
+}
+
+export function getDeploymentTableRows({
+  deploymentsMap,
+  drainedDeploymentIds,
+  filter,
+  sortDescriptor,
+  invocationCounts,
+}: {
+  deploymentsMap?: Map<string, DeploymentMetadata>;
+  drainedDeploymentIds: Set<string>;
+  filter: string;
+  sortDescriptor: Parameters<typeof sortDeployments>[1];
+  invocationCounts?: Map<string, number>;
+}) {
+  const normalizedFilter = filter.trim().toLowerCase();
+  const deployments: OverviewDeployment[] = Array.from(
+    deploymentsMap?.values() ?? [],
+  ).map((deployment) => ({
+    ...deployment,
+    status: drainedDeploymentIds.has(deployment.id) ? 'drained' : 'active',
+  }));
+  const filtered = normalizedFilter
+    ? deployments.filter(
+        (deployment) =>
+          includesFilter(deployment.id, normalizedFilter) ||
+          includesFilter(getEndpoint(deployment), normalizedFilter) ||
+          deployment.services.some((service) =>
+            includesFilter(service.name, normalizedFilter),
+          ),
+      )
+    : deployments;
+
+  return sortDeployments(filtered, sortDescriptor, invocationCounts);
+}
+
+function DeploymentServices({
+  deployment,
+}: {
+  deployment: OverviewDeployment;
+}) {
+  const { baseUrl } = useRestateContext();
+  const services = sortDeploymentServices(deployment.services);
+  if (services.length === 0) {
+    return (
+      <span className="text-xs font-normal text-zinc-400">No services</span>
+    );
+  }
+
+  return (
+    <Dropdown>
+      <DropdownTrigger>
+        <Button
+          variant="secondary"
+          className="relative inline-flex items-center gap-1 rounded-lg py-1 pr-1 pl-2 text-xs font-medium tabular-nums"
+        >
+          <Icon name={IconName.Box} className="h-3.5 w-3.5 text-zinc-500/80" />
+          {formatNumber(services.length, true)}{' '}
+          <span className="opacity-80">
+            {formatPlurals(services.length, {
+              one: 'service',
+              other: 'services',
+            })}
+          </span>
+          <Icon
+            name={IconName.ChevronsUpDown}
+            className="h-3.5 w-3.5 text-gray-400"
+          />
+        </Button>
+      </DropdownTrigger>
+      <DropdownPopover placement="bottom end">
+        <DropdownSection title="Services">
+          <DropdownMenu aria-label={`Services in deployment ${deployment.id}`}>
+            {services.map((service) => (
+              <DropdownItem
+                key={`${service.name}-${service.revision}`}
+                href={serviceHref(baseUrl, { service: service.name })}
+                value={service.name}
+              >
+                <MiniService
+                  service={service}
+                  showLink={false}
+                  className="flex-auto [&_*:not(svg)]:text-inherit [&_.badge]:bg-black/3"
+                />
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </DropdownSection>
+      </DropdownPopover>
+    </Dropdown>
+  );
+}
+
+function RegisteredAt({ value }: { value: string }) {
+  const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const { isPast, ...durationParts } = durationSinceLastSnapshot(value);
+  const duration = formatDurations(durationParts);
+  return (
+    <DateTooltip date={new Date(value)} title="Registered at">
+      <time
+        dateTime={value}
+        className="text-xs font-normal text-zinc-500 tabular-nums"
+      >
+        {isPast ? `${duration} ago` : `in ${duration}`}
+      </time>
+    </DateTooltip>
+  );
+}
+
+function useDeploymentStageCounts() {
+  const { overviewRefetchInterval } = useOverviewContext();
+  const isEnabled = usesStatsTables({ features: useFeatures() });
+  const summary = useSummaryInvocationsV2(
+    {
+      view: 'deployments',
+      filters: [
+        {
+          field: 'stage',
+          type: 'STRING_LIST',
+          operation: 'NOT_IN',
+          value: ['finished'],
+        },
+      ],
+    },
+    {
+      enabled: isEnabled,
+      refetchInterval: overviewRefetchInterval,
+      refetchOnWindowFocus: false,
+      meta: getOverviewRefreshMeta(),
+    },
+  );
+  const stageCounts = useMemo(
+    () =>
+      new Map(
+        (summary.data?.deploymentBuckets ?? []).map(
+          ({ deployment, statusBuckets }) => [
+            deployment,
+            statusBuckets.map(({ key, count }) => ({ name: key, count })),
+          ],
+        ),
+      ),
+    [summary.data?.deploymentBuckets],
+  );
+  return {
+    isEnabled,
+    stageCounts,
+    isLoading: summary.isPending,
+    isError: summary.isError,
+  };
+}
+
+export function DeploymentsTable() {
+  const {
+    filter,
+    deploymentsMap,
+    drainedDeploymentIds,
+    isDeploymentStatusLoading,
+    isDeploymentsFetching,
+    resolvedDeploymentSortDescriptor,
+    setDeploymentSortDescriptor,
+    linkParams,
+  } = useOverviewContext();
+  const deploymentInvocations = useDeploymentStageCounts();
+  const invocationCounts = useMemo(
+    () =>
+      new Map(
+        [...deploymentInvocations.stageCounts].map(
+          ([deployment, stages]) =>
+            [deployment, getNotCompletedInvocationCount(stages)] as const,
+        ),
+      ),
+    [deploymentInvocations.stageCounts],
+  );
+  const columns = useMemo(
+    () =>
+      deploymentInvocations.isEnabled
+        ? COLUMNS
+        : COLUMNS.filter(({ id }) => id !== 'invocations'),
+    [deploymentInvocations.isEnabled],
+  );
+  const deployments = useMemo(
+    () =>
+      getDeploymentTableRows({
+        deploymentsMap,
+        drainedDeploymentIds,
+        filter,
+        sortDescriptor: resolvedDeploymentSortDescriptor,
+        invocationCounts,
+      }),
+    [
+      deploymentsMap,
+      drainedDeploymentIds,
+      filter,
+      resolvedDeploymentSortDescriptor,
+      invocationCounts,
+    ],
+  );
+  const [selectedDeploymentIds, setSelectedDeploymentIds] = useState(
+    new Set<string>(),
+  );
+  const [, setSearchParams] = useSearchParams();
+  const { baseUrl } = useRestateContext();
+
+  useEffect(() => {
+    if (!deploymentsMap) return;
+    setSelectedDeploymentIds((current) => {
+      const next = new Set(
+        Array.from(current).filter((deploymentId) =>
+          deploymentsMap.has(deploymentId),
+        ),
+      );
+      return next.size === current.size ? current : next;
+    });
+  }, [deploymentsMap]);
+
+  const openDeleteSelectedDeployments = () => {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.set(DELETE_SELECTED_DEPLOYMENTS_QUERY, 'true');
+        return next;
+      },
+      { preventScrollReset: true },
+    );
+  };
+  const navigate = useNavigate();
+  const styles = deploymentTableStyles();
+
+  return (
+    <>
+      <PanelTable
+        aria-label="Deployments"
+        columns={columns}
+        items={deployments}
+        selectionMode="multiple"
+        selectedKeys={selectedDeploymentIds}
+        onSelectionChange={(keys) =>
+          setSelectedDeploymentIds(keys as Set<string>)
+        }
+        isLoading={isDeploymentsFetching}
+        numOfRows={Math.max(deployments.length, 6)}
+        sortDescriptor={resolvedDeploymentSortDescriptor}
+        onSortChange={(descriptor) =>
+          setDeploymentSortDescriptor(descriptor ?? null)
+        }
+        onRowAction={(deploymentId) =>
+          navigate(
+            deploymentHref(baseUrl, {
+              deployment: String(deploymentId),
+              tab: 'invocations',
+            }),
+          )
+        }
+        rowClassName={styles.row()}
+        rowDataAttributes={() => OVERVIEW_ROW_WAVE}
+        bodyDependencies={[
+          isDeploymentStatusLoading,
+          deploymentInvocations.stageCounts,
+          deploymentInvocations.isLoading,
+        ]}
+        toolbar={
+          selectedDeploymentIds.size > 0 ? (
+            <>
+              <span className="text-sm font-medium text-red-800 tabular-nums">
+                {formatNumber(selectedDeploymentIds.size)}{' '}
+                {formatPlurals(selectedDeploymentIds.size, {
+                  one: 'deployment',
+                  other: 'deployments',
+                })}{' '}
+                selected
+              </span>
+              <Button
+                variant="secondary"
+                className="ml-auto flex items-center gap-1.5 rounded-lg border-red-200 bg-white/90 px-2.5 py-1 text-xs text-red-700 shadow-none hover:border-red-300 hover:bg-red-100 pressed:bg-red-200"
+                onClick={openDeleteSelectedDeployments}
+              >
+                <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
+                Delete…
+              </Button>
+            </>
+          ) : undefined
+        }
+        toolbarWrapperClassName="h-11 -mb-10"
+        toolbarClassName="mt-0.5 h-9 rounded-xl border border-red-200/90 bg-red-50/90 pr-1 pl-3 shadow-none supports-[-moz-appearance:none]:bg-red-50"
+        emptyPlaceholder={
+          <EmptyState
+            icon={IconName.Search}
+            title="No matching deployments"
+            description="Try adjusting your search."
+          />
+        }
+        renderCell={(deployment, column) => {
+          if (column.id === 'deployment') {
+            return (
+              <Cell className="min-w-0 overflow-hidden">
+                <div className={styles.identity()}>
+                  <Deployment
+                    deploymentId={deployment.id}
+                    variant="secondary"
+                    showLink={false}
+                    className={styles.deployment()}
+                  />
+                  <TruncateWithTooltip
+                    copyText={deployment.id}
+                    tooltipContent={deployment.id}
+                    alwaysShow
+                    containerClassName="max-w-64 min-w-0 flex-[0_1_auto]"
+                  >
+                    <code className={styles.deploymentId()}>
+                      ID {deployment.id}
+                    </code>
+                  </TruncateWithTooltip>
+                </div>
+              </Cell>
+            );
+          }
+          if (column.id === 'status') {
+            return (
+              <Cell>
+                {isDeploymentStatusLoading ? (
+                  <span className="block h-6 w-20 shrink-0 animate-pulse rounded-full bg-gray-200/70" />
+                ) : (
+                  <DeploymentStatusBadge status={deployment.status} />
+                )}
+              </Cell>
+            );
+          }
+          if (column.id === 'services') {
+            return (
+              <Cell className="[&&&]:overflow-visible">
+                <DeploymentServices deployment={deployment} />
+              </Cell>
+            );
+          }
+          if (column.id === 'invocations') {
+            const href = deploymentHref(baseUrl, {
+              deployment: deployment.id,
+              tab: 'invocations',
+            });
+            const statusEntries = buildStatusEntries(
+              (deploymentInvocations.stageCounts.get(deployment.id) ?? []).map(
+                ({ name, count }) => ({ status: name, count }),
+              ),
+            ).filter(({ name }) => name !== 'finished');
+            return (
+              <NotCompletedInvocationsCell
+                label={deployment.id}
+                count={invocationCounts.get(deployment.id) ?? 0}
+                isLoading={deploymentInvocations.isLoading}
+                isError={deploymentInvocations.isError}
+              >
+                <DeploymentStatusBar
+                  deploymentId={deployment.id}
+                  label={getEndpoint(deployment) ?? deployment.id}
+                  statusEntries={statusEntries}
+                  isLoading={deploymentInvocations.isLoading}
+                  linkParams={linkParams}
+                  rangeLabel="Not completed"
+                  ariaLabel={`Not-completed invocation status for ${deployment.id}`}
+                  totalLink={href}
+                />
+              </NotCompletedInvocationsCell>
+            );
+          }
+          if (column.id === 'actions') {
+            return (
+              <Cell className="[&&&]:overflow-visible">
+                <DeploymentActions deploymentId={deployment.id} />
+              </Cell>
+            );
+          }
+          return (
+            <Cell>
+              <RegisteredAt value={deployment.created_at} />
+            </Cell>
+          );
+        }}
+      />
+      <DeleteSelectedDeploymentsDialog
+        deploymentIds={Array.from(selectedDeploymentIds)}
+        onDeleted={() => setSelectedDeploymentIds(new Set())}
+      />
+    </>
+  );
+}

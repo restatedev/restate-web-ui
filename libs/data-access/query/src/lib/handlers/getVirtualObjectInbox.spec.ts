@@ -3,7 +3,7 @@ import type {
   Service,
 } from '@restate/data-access/admin-api-spec';
 import { describe, expect, it, vi } from 'vitest';
-import { getVirtualObjectInbox, getVqueueInbox } from './getVirtualObjectInbox';
+import { getVirtualObjectInbox } from './getVirtualObjectInbox';
 import type { QueryContext } from './shared';
 
 const serviceMetadata = {
@@ -45,15 +45,13 @@ function rawInvocation(
 
 function contextWith(
   query: QueryContext['query'],
-  features: string[],
   adminApi: QueryContext['adminApi'] = createAdminApiMock(),
 ) {
   return {
     query,
     adminApi,
     baseUrl: '',
-    restateVersion: '1.7.2',
-    features: new Set(features),
+    features: new Set<string>(),
   } satisfies QueryContext;
 }
 
@@ -64,34 +62,6 @@ function withoutInboxCountQuery(query: ReturnType<typeof vi.fn>) {
 }
 
 describe('Virtual Object inbox query handler', () => {
-  it('returns the exact legacy sys_inbox count', async () => {
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('COUNT(*) AS inbox_count')) {
-        return { rows: [{ inbox_count: 42 }] };
-      }
-      return { rows: [] };
-    });
-    const context = contextWith(query, []);
-
-    const response = await getVirtualObjectInbox.call(
-      context,
-      'Counter',
-      'customer-1',
-    );
-
-    expect(await response.json()).toMatchObject({
-      supported: true,
-      inboxCount: 42,
-    });
-    expect(query).toHaveBeenCalledWith(
-      `SELECT COUNT(*) AS inbox_count
-    FROM sys_inbox
-    WHERE service_name = 'Counter'
-      AND service_key = 'customer-1'`,
-      'virtual-objects/inbox-count-legacy',
-    );
-  });
-
   it('returns the exact inbox count across matching VQueues', async () => {
     const query = vi.fn(async (statement: string) => {
       if (statement.includes('SUM(num_inbox)')) {
@@ -99,7 +69,7 @@ describe('Virtual Object inbox query handler', () => {
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues', 'scoped_virtual_objects']);
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInbox.call(
       context,
@@ -109,7 +79,6 @@ describe('Virtual Object inbox query handler', () => {
     );
 
     expect(await response.json()).toMatchObject({
-      supported: true,
       inboxCount: 35_548,
     });
     expect(query).toHaveBeenCalledWith(
@@ -120,29 +89,6 @@ describe('Virtual Object inbox query handler', () => {
       AND scope = 'tenant-a'`,
       'virtual-objects/inbox-count',
     );
-  });
-
-  it('does not query unscoped legacy tables for a scoped instance', async () => {
-    const query = vi.fn();
-    const adminApi = createAdminApiMock();
-    const context = contextWith(query, [], adminApi);
-
-    const response = await getVirtualObjectInbox.call(
-      context,
-      'Counter',
-      'customer-1',
-      'tenant-a',
-    );
-
-    expect(await response.json()).toEqual({
-      supported: false,
-      rows: [],
-      limit: 25,
-      truncated: false,
-    });
-
-    expect(query).not.toHaveBeenCalled();
-    expect(adminApi).not.toHaveBeenCalled();
   });
 
   it('reconciles a holder acquired after the initial flat hydration', async () => {
@@ -208,11 +154,7 @@ describe('Virtual Object inbox query handler', () => {
       return { rows: [] };
     });
     const adminApi = createAdminApiMock();
-    const context = contextWith(
-      query,
-      ['vqueues', 'scoped_virtual_objects'],
-      adminApi,
-    );
+    const context = contextWith(query, adminApi);
 
     const response = await getVirtualObjectInbox.call(
       context,
@@ -303,7 +245,6 @@ describe('Virtual Object inbox query handler', () => {
         ]
       `);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [],
       limit: 25,
       truncated: false,
@@ -385,11 +326,7 @@ describe('Virtual Object inbox query handler', () => {
       return { rows: [] };
     });
     const adminApi = createAdminApiMock();
-    const context = contextWith(
-      query,
-      ['vqueues', 'scoped_virtual_objects'],
-      adminApi,
-    );
+    const context = contextWith(query, adminApi);
 
     const response = await getVirtualObjectInbox.call(
       context,
@@ -453,7 +390,7 @@ describe('Virtual Object inbox query handler', () => {
             FROM sys_vqueue_entry_status
             WHERE entry_id IN ('inv_early', 'mut_late', 'inv_lock')
               AND stage <> 'finished'",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
+          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json, scope, vqueue_id, limit_key
             FROM sys_invocation
             WHERE id IN ('inv_early', 'inv_lock')
               AND status <> 'completed'",
@@ -466,7 +403,6 @@ describe('Virtual Object inbox query handler', () => {
         ]
       `);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [
         expect.objectContaining({
           id: 'inv_early',
@@ -561,7 +497,7 @@ describe('Virtual Object inbox query handler', () => {
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues', 'scoped_virtual_objects']);
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInbox.call(
       context,
@@ -624,7 +560,7 @@ describe('Virtual Object inbox query handler', () => {
             FROM sys_vqueue_entry_status
             WHERE entry_id IN ('inv_previous_lock')
               AND stage <> 'finished'",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
+          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json, scope, vqueue_id, limit_key
             FROM sys_invocation
             WHERE id IN ('inv_previous_lock')
               AND status <> 'completed'",
@@ -660,7 +596,6 @@ describe('Virtual Object inbox query handler', () => {
       `);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [],
       limit: 25,
       truncated: false,
@@ -707,7 +642,7 @@ describe('Virtual Object inbox query handler', () => {
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues', 'scoped_virtual_objects']);
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInbox.call(
       context,
@@ -780,7 +715,6 @@ describe('Virtual Object inbox query handler', () => {
       `);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      supported: true,
       rows: [],
       limit: 25,
       truncated: false,
@@ -831,7 +765,7 @@ describe('Virtual Object inbox query handler', () => {
       }
       return { rows: [] };
     });
-    const context = contextWith(query, ['vqueues', 'scoped_virtual_objects']);
+    const context = contextWith(query);
 
     const response = await getVirtualObjectInbox.call(
       context,
@@ -894,7 +828,7 @@ describe('Virtual Object inbox query handler', () => {
             FROM sys_vqueue_entry_status
             WHERE entry_id IN ('inv_previous_lock')
               AND stage <> 'finished'",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, scope, vqueue_id, limit_key
+          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure, last_awaiting_on_future_json, suspended_waiting_for_completions, suspended_waiting_for_signals, suspended_waiting_future_json, scope, vqueue_id, limit_key
             FROM sys_invocation
             WHERE id IN ('inv_previous_lock')
               AND status <> 'completed'",
@@ -933,383 +867,5 @@ describe('Virtual Object inbox query handler', () => {
       message: 'Object activity changed while loading—try again.',
       restate_code: 'snapshot_changed',
     });
-  });
-
-  it('hydrates a legacy holder acquired after the initial empty lock read', async () => {
-    let lockReadCount = 0;
-    let invocationReadCount = 0;
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_keyed_service_status')) {
-        lockReadCount += 1;
-        return lockReadCount === 1
-          ? { rows: [] }
-          : { rows: [{ invocation_id: 'inv_1exclusive' }] };
-      }
-      if (statement.includes('COUNT(*) AS inbox_count')) {
-        return { rows: [{ inbox_count: 1 }] };
-      }
-      if (statement.includes('FROM sys_inbox')) {
-        return { rows: [{ id: 'inv_1exclusive' }] };
-      }
-      if (statement.includes('FROM sys_invocation\n')) {
-        invocationReadCount += 1;
-        return {
-          rows: [
-            rawInvocation('inv_1exclusive', 'add', {
-              status: 'running',
-              running_at: '2026-07-23T08:10:00.000Z',
-              completion_result: undefined,
-            }),
-          ],
-        };
-      }
-      return { rows: [] };
-    });
-    const context = contextWith(query, []);
-
-    const response = await getVirtualObjectInbox.call(
-      context,
-      'Counter',
-      'customer-1',
-    );
-
-    expect(lockReadCount).toBe(2);
-    expect(invocationReadCount).toBe(2);
-    expect(await response.json()).toEqual({
-      supported: true,
-      rows: [],
-      inboxCount: 0,
-      limit: 25,
-      truncated: false,
-    });
-  });
-
-  it('uses the legacy inbox storage order without sorting', async () => {
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_keyed_service_status')) {
-        return { rows: [{ invocation_id: 'inv_1exclusive' }] };
-      }
-      if (statement.includes('FROM sys_invocation\n')) {
-        return {
-          rows: [
-            rawInvocation('inv_1exclusive', 'add', {
-              status: 'running',
-              completion_result: undefined,
-            }),
-          ],
-        };
-      }
-      return { rows: [{ id: 'inv_1exclusive' }] };
-    });
-    const context = contextWith(query, []);
-
-    const response = await getVirtualObjectInbox.call(
-      context,
-      'Counter',
-      'customer-1',
-    );
-
-    expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
-        [
-          "SELECT invocation_id
-              FROM sys_keyed_service_status
-              WHERE service_name = 'Counter'
-                AND service_key = 'customer-1'
-                AND invocation_id IS NOT NULL
-              LIMIT 1",
-          "SELECT id
-            FROM sys_inbox
-            WHERE service_name = 'Counter'
-              AND service_key = 'customer-1'
-            LIMIT 26",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure
-            FROM sys_invocation
-            WHERE id IN ('inv_1exclusive')
-              AND status <> 'completed'",
-        ]
-      `);
-    expect(await response.json()).toEqual({
-      supported: true,
-      rows: [],
-      limit: 25,
-      truncated: false,
-    });
-  });
-
-  it('returns no holder when the refreshed legacy lock is empty', async () => {
-    let lockReadCount = 0;
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_keyed_service_status')) {
-        lockReadCount += 1;
-        return lockReadCount === 1
-          ? { rows: [{ invocation_id: 'inv_finished_lock' }] }
-          : { rows: [] };
-      }
-      if (statement.includes('FROM sys_invocation\n')) {
-        return { rows: [rawInvocation('inv_finished_lock', 'add')] };
-      }
-      return { rows: [] };
-    });
-    const context = contextWith(query, []);
-
-    const response = await getVirtualObjectInbox.call(
-      context,
-      'Counter',
-      'customer-1',
-    );
-
-    expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
-        [
-          "SELECT invocation_id
-              FROM sys_keyed_service_status
-              WHERE service_name = 'Counter'
-                AND service_key = 'customer-1'
-                AND invocation_id IS NOT NULL
-              LIMIT 1",
-          "SELECT id
-            FROM sys_inbox
-            WHERE service_name = 'Counter'
-              AND service_key = 'customer-1'
-            LIMIT 26",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure
-            FROM sys_invocation
-            WHERE id IN ('inv_finished_lock')
-              AND status <> 'completed'",
-          "SELECT invocation_id
-              FROM sys_keyed_service_status
-              WHERE service_name = 'Counter'
-                AND service_key = 'customer-1'
-                AND invocation_id IS NOT NULL
-              LIMIT 1",
-        ]
-      `);
-    expect(await response.json()).toEqual({
-      supported: true,
-      rows: [],
-      limit: 25,
-      truncated: false,
-    });
-  });
-
-  it('returns snapshot_changed when a refreshed legacy holder remains invalid', async () => {
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_keyed_service_status')) {
-        return { rows: [{ invocation_id: 'inv_finished_lock' }] };
-      }
-      if (statement.includes('FROM sys_invocation\n')) {
-        return { rows: [rawInvocation('inv_finished_lock', 'add')] };
-      }
-      return { rows: [] };
-    });
-    const context = contextWith(query, []);
-
-    const response = await getVirtualObjectInbox.call(
-      context,
-      'Counter',
-      'customer-1',
-    );
-
-    expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
-        [
-          "SELECT invocation_id
-              FROM sys_keyed_service_status
-              WHERE service_name = 'Counter'
-                AND service_key = 'customer-1'
-                AND invocation_id IS NOT NULL
-              LIMIT 1",
-          "SELECT id
-            FROM sys_inbox
-            WHERE service_name = 'Counter'
-              AND service_key = 'customer-1'
-            LIMIT 26",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure
-            FROM sys_invocation
-            WHERE id IN ('inv_finished_lock')
-              AND status <> 'completed'",
-          "SELECT invocation_id
-              FROM sys_keyed_service_status
-              WHERE service_name = 'Counter'
-                AND service_key = 'customer-1'
-                AND invocation_id IS NOT NULL
-              LIMIT 1",
-          "SELECT id, target, target_service_name, target_service_key, target_handler_name, target_service_ty, idempotency_key, invoked_by, invoked_by_id, invoked_by_subscription_id, invoked_by_target, restarted_from, pinned_deployment_id, pinned_service_protocol_version, journal_size, journal_commands_size, created_at, modified_at, inboxed_at, scheduled_at, scheduled_start_at, running_at, completed_at, completion_retention, journal_retention, retry_count, last_start_at, next_retry_at, last_attempt_deployment_id, last_attempt_server, last_failure, last_failure_error_code, status, completion_result, completion_failure
-            FROM sys_invocation
-            WHERE id IN ('inv_finished_lock')
-              AND status <> 'completed'",
-        ]
-      `);
-    expect(response.status).toBe(409);
-    expect(await response.json()).toEqual({
-      message: 'Object activity changed while loading—try again.',
-      restate_code: 'snapshot_changed',
-    });
-  });
-});
-
-describe('GET /query/vqueues/:vqueueId/inbox', () => {
-  it('keeps state mutations that are still inboxed after hydration', async () => {
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_vqueues')) {
-        return {
-          rows: [
-            {
-              vqueue_id: 'vq_customer',
-              id: 'mut_1state',
-              kind: 'state-mutation',
-              stage: 'inbox',
-              status: 'new',
-              has_lock: false,
-              run_at: '2026-07-23T09:00:00.000Z',
-              sequence_number: 3,
-            },
-            {
-              vqueue_id: 'vq_customer',
-              id: 'mut_2running',
-              kind: 'state-mutation',
-              stage: 'inbox',
-              status: 'new',
-              has_lock: false,
-              run_at: '2026-07-23T09:01:00.000Z',
-              sequence_number: 4,
-            },
-          ],
-        };
-      }
-      if (statement.includes('FROM sys_vqueue_entry_status')) {
-        return {
-          rows: [
-            {
-              id: 'mut_1state',
-              kind: 'state-mutation',
-              vqueue_id: 'vq_customer',
-              stage: 'inbox',
-              status: 'pending',
-              has_lock: false,
-              run_at: '2026-07-23T09:00:00.000Z',
-              sequence_number: 3,
-              transitioned_at: '2026-07-23T08:05:00.000Z',
-            },
-            {
-              id: 'mut_2running',
-              kind: 'state-mutation',
-              vqueue_id: 'vq_customer',
-              stage: 'running',
-              status: 'started',
-              has_lock: true,
-              run_at: '2026-07-23T09:01:00.000Z',
-              sequence_number: 4,
-              transitioned_at: '2026-07-23T08:06:00.000Z',
-            },
-          ],
-        };
-      }
-      return { rows: [] };
-    });
-    const context = contextWith(query, ['vqueues']);
-
-    const response = await getVqueueInbox.call(context, 'vq_customer');
-
-    expect(withoutInboxCountQuery(query)).toMatchInlineSnapshot(`
-        [
-          "SELECT
-              id AS vqueue_id,
-              entry_id AS id,
-              entry_kind AS kind,
-              stage,
-              status,
-              has_lock,
-              run_at,
-              sequence_number,
-              created_at,
-              transitioned_at
-            FROM sys_vqueues
-            WHERE id = 'vq_customer'
-              AND stage = 'inbox'
-            LIMIT 26",
-          "SELECT
-              entry_id AS id,
-              entry_kind AS kind,
-              vqueue_id,
-              stage,
-              status,
-              has_lock,
-              next_at AS run_at,
-              sequence_number,
-              created_at,
-              transitioned_at,
-              first_attempt_at,
-              latest_attempt_at,
-              first_runnable_at,
-              retry_attempts,
-              retry_count_since_last_stored_command,
-              num_attempts,
-              num_errors,
-              deployment
-            FROM sys_vqueue_entry_status
-            WHERE entry_id IN ('mut_1state', 'mut_2running')
-              AND stage <> 'finished'",
-        ]
-      `);
-    expect(await response.json()).toEqual({
-      supported: true,
-      rows: [
-        {
-          id: 'mut_1state',
-          kind: 'state-mutation',
-          vqueueId: 'vq_customer',
-          hasLock: false,
-          runAt: '2026-07-23T09:00:00.000Z',
-          sequenceNumber: 3,
-          stage: 'inbox',
-          status: 'pending',
-          transitionedAt: '2026-07-23T08:05:00.000Z',
-        },
-      ],
-      limit: 25,
-      truncated: false,
-    });
-  });
-
-  it('hydrates all candidates before applying the final limit', async () => {
-    const candidates = Array.from({ length: 26 }, (_, index) => ({
-      vqueue_id: 'vq_customer',
-      id: `inv_${index}`,
-      kind: 'invocation',
-    }));
-    const query = vi.fn(async (statement: string) => {
-      if (statement.includes('FROM sys_vqueues')) {
-        return { rows: candidates };
-      }
-      if (statement.includes('FROM sys_vqueue_entry_status')) {
-        return {
-          rows: candidates.map((candidate, index) => ({
-            ...candidate,
-            stage: 'inbox',
-            status: 'new',
-            sequence_number: index,
-          })),
-        };
-      }
-      if (statement.includes('FROM sys_invocation\n')) {
-        return {
-          rows: candidates.slice(1).map((candidate) =>
-            rawInvocation(candidate.id, 'add', {
-              status: 'running',
-              completion_result: undefined,
-            }),
-          ),
-        };
-      }
-      return { rows: [] };
-    });
-    const context = contextWith(query, ['vqueues']);
-
-    const response = await getVqueueInbox.call(context, 'vq_customer');
-    const body = await response.json();
-
-    expect(body.rows).toHaveLength(25);
-    expect(body.rows[0].id).toBe('inv_1');
-    expect(body.rows[24].id).toBe('inv_25');
-    expect(body.truncated).toBe(true);
   });
 });

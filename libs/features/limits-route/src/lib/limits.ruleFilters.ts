@@ -16,8 +16,6 @@ const LIMIT_RULE_PATTERN_FILTER_SCHEMA = {
   type: 'STRING',
 } satisfies QueryClauseSchema<'STRING'>;
 
-export const LIMIT_RULE_FILTER_SCHEMA = [LIMIT_RULE_PATTERN_FILTER_SCHEMA];
-
 export function limitRuleFilterSchema(
   rules: LimitRuleWithStats[],
 ): QueryClauseSchema<'STRING'> {

@@ -1,5 +1,4 @@
 import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import type { QueryContext } from '../../shared';
 import {
   INVOCATION_STATUSES,
   type InvocationFilterV2,
@@ -47,7 +46,6 @@ export function resolveInvocationStatusSelection(
  */
 
 export function createVqueueListQueryPlan(
-  context: QueryContext,
   filters: InvocationFilterV2[],
   sort: InvocationSortV2 | undefined,
 ): VqueueListQueryPlan {
@@ -61,21 +59,14 @@ export function createVqueueListQueryPlan(
       : undefined;
 
   const sourcePlans = [
-    createQueryPlanFromSysVqueues(context, candidateFilters, statuses, sort),
+    createQueryPlanFromSysVqueues(candidateFilters, statuses, sort),
     createQueryPlanFromSysVqueueMetaAndSysVqueues(
-      context,
       candidateFilters,
       statuses,
       sort,
     ),
-    createQueryPlanFromSysInvocationStatus(
-      context,
-      candidateFilters,
-      statuses,
-      sort,
-    ),
+    createQueryPlanFromSysInvocationStatus(candidateFilters, statuses, sort),
     createBestEffortQueryPlanFromSysInvocationStatus(
-      context,
       candidateFilters,
       statuses,
       sort,

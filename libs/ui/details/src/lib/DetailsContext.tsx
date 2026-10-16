@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useContext } from 'react';
+import { PropsWithChildren, createContext } from 'react';
 
 const DetailsContext = createContext({ id: '' });
 
@@ -9,10 +9,4 @@ export function DetailsProvider({
   return (
     <DetailsContext.Provider value={{ id }}>{children}</DetailsContext.Provider>
   );
-}
-
-export function useSummaryElement() {
-  const { id } = useContext(DetailsContext);
-  const element = document.getElementById(id);
-  return element;
 }

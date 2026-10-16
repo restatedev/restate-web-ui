@@ -12,20 +12,11 @@ export async function batchResumeInvocations(
   if ('invocationIds' in request) {
     const result = await batchProcessInvocations(
       request.invocationIds,
-      (invocationId) => {
-        const url = deployment
-          ? `/invocations/${invocationId}/resume?deployment=${encodeURIComponent(deployment)}`
-          : `/invocations/${invocationId}/resume`;
-        return this.adminApi(url, {
-          method: 'PATCH',
-        });
-      },
       (invocationIds) =>
         this.adminApi('/internal/invocations_batch_operations/resume', {
           method: 'POST',
           json: { invocation_ids: invocationIds, deployment },
         }),
-      this.restateVersion,
     );
 
     return Response.json({
@@ -45,22 +36,11 @@ export async function batchResumeInvocations(
     },
   );
 
-  const result = await batchProcessInvocations(
-    invocationIds,
-    (invocationId) => {
-      const url = deployment
-        ? `/invocations/${invocationId}/resume?deployment=${encodeURIComponent(deployment)}`
-        : `/invocations/${invocationId}/resume`;
-      return this.adminApi(url, {
-        method: 'PATCH',
-      });
-    },
-    (invocationIds) =>
-      this.adminApi('/internal/invocations_batch_operations/resume', {
-        method: 'POST',
-        json: { invocation_ids: invocationIds, deployment },
-      }),
-    this.restateVersion,
+  const result = await batchProcessInvocations(invocationIds, (invocationIds) =>
+    this.adminApi('/internal/invocations_batch_operations/resume', {
+      method: 'POST',
+      json: { invocation_ids: invocationIds, deployment },
+    }),
   );
 
   return Response.json({

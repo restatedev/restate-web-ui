@@ -53,14 +53,6 @@ export function virtualObjectInstanceTabFromSearch(
   return tab === 'exclusive' ? 'exclusive' : 'recent';
 }
 
-export function virtualObjectInstanceStateTabHref(
-  searchParams: URLSearchParams,
-): string {
-  const params = new URLSearchParams(searchParams);
-  params.set(TAB_QUERY_PARAM, 'state');
-  return `?${params.toString()}`;
-}
-
 export function VirtualObjectDetails({
   identity,
   tab,

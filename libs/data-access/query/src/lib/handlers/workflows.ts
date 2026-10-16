@@ -6,7 +6,7 @@ import type {
 import { convertInvocationV2, durationBetween } from '../convertInvocation';
 import { fetchVqueueStatuses } from './vqueue';
 import {
-  getSysInvocationListColumns,
+  SYS_INVOCATION_LIST_SELECT_COLUMNS,
   quoteSqlString,
   targetServiceKeyClause,
   type QueryContext,
@@ -41,10 +41,6 @@ function notFound(message: string) {
   return Response.json({ message }, { status: 404 });
 }
 
-function badRequest(message: string) {
-  return Response.json({ message }, { status: 400 });
-}
-
 async function getWorkflowHandlers(
   context: QueryContext,
   service: string,
@@ -69,12 +65,7 @@ function searchPattern(search: string | undefined) {
   return quoteSqlString(`%${escaped}%`);
 }
 
-function workflowScopeClause(
-  context: QueryContext,
-  scope?: string,
-  column = 'scope',
-) {
-  if (!context.features.has('vqueues')) return '';
+function workflowScopeClause(scope?: string, column = 'scope') {
   return scope === undefined
     ? `\n      AND ${column} IS NULL`
     : `\n      AND ${column} = ${quoteSqlString(scope)}`;
@@ -87,13 +78,13 @@ async function findWorkflowRunInvocationId(
   runHandler: string,
   scope?: string,
 ) {
-  const scopeClause = workflowScopeClause(context, scope);
+  const scopeClause = workflowScopeClause(scope);
   const { rows } = await context.query(
     `SELECT id
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND ${targetServiceKeyClause(context, workflowId)}
+      AND ${targetServiceKeyClause(workflowId)}
       AND target_handler_name = ${quoteSqlString(runHandler)}${scopeClause}
     LIMIT 1`,
     'workflows/run-invocation-lookup',
@@ -111,7 +102,7 @@ async function hydrateInvocations(
   if (uniqueIds.length === 0) return new Map<string, InvocationV2>();
   const [invocationResult, vqueueStatuses] = await Promise.all([
     context.query(
-      `SELECT ${getSysInvocationListColumns(context.features).join(', ')}
+      `SELECT ${SYS_INVOCATION_LIST_SELECT_COLUMNS.join(', ')}
     FROM sys_invocation
     WHERE id IN (${uniqueIds.map(quoteSqlString).join(', ')})`,
       'invocations/by-ids',
@@ -153,12 +144,12 @@ export async function listWorkflowRuns(
   const search = args.search?.trim().slice(0, MAX_SEARCH_LENGTH) || undefined;
   const pattern = searchPattern(search);
   const searchClause = pattern
-    ? `\n      AND (target_service_key LIKE ${pattern}${this.features.has('vqueues') ? ` OR scope LIKE ${pattern}` : ''})`
+    ? `\n      AND (target_service_key LIKE ${pattern} OR scope LIKE ${pattern})`
     : '';
-  const parsedFilters = parseStructuredStringFilters(
-    args.filters,
-    this.features.has('vqueues') ? ['id', 'scope'] : ['id'],
-  );
+  const parsedFilters = parseStructuredStringFilters(args.filters, [
+    'id',
+    'scope',
+  ]);
   if (parsedFilters.error) {
     return new Response(parsedFilters.error, { status: 400 });
   }
@@ -217,15 +208,12 @@ export async function getWorkflowRun(
   workflowId: string,
   scope?: string,
 ) {
-  if (scope !== undefined && !this.features.has('vqueues')) {
-    return badRequest('Scoped Workflow runs require Virtual Queues.');
-  }
   const handlers = await getWorkflowHandlers(this, service);
   if (!handlers) {
     return notFound(`${service} is not a Workflow service.`);
   }
 
-  const scopeClause = workflowScopeClause(this, scope);
+  const scopeClause = workflowScopeClause(scope);
   const runPromise = findWorkflowRunInvocationId(
     this,
     service,
@@ -238,7 +226,7 @@ export async function getWorkflowRun(
     FROM sys_invocation_status
     WHERE target_service_name = ${quoteSqlString(service)}
       AND target_service_ty = 'workflow'
-      AND ${targetServiceKeyClause(this, workflowId)}
+      AND ${targetServiceKeyClause(workflowId)}
       AND target_handler_name <> ${quoteSqlString(handlers.run)}${scopeClause}
     ORDER BY created_at DESC NULLS LAST
     LIMIT ${RECENT_INVOCATION_QUERY_LIMIT}`,
@@ -279,12 +267,6 @@ export async function getWorkflowRunStats(
   scope?: string,
   invocationId?: string,
 ) {
-  if (!this.features.has('vqueues')) {
-    return Response.json({
-      supported: false,
-    } satisfies WorkflowRunStatsResponse);
-  }
-
   const handlers = await getWorkflowHandlers(this, service);
   if (!handlers) {
     return notFound(`${service} is not a Workflow service.`);
@@ -303,8 +285,8 @@ export async function getWorkflowRunStats(
     return notFound(`Workflow run ${service}/${workflowId} was not found.`);
   }
 
-  const invocationScopeClause = workflowScopeClause(this, scope, 'si.scope');
-  const identityScopeClause = workflowScopeClause(this, scope);
+  const invocationScopeClause = workflowScopeClause(scope, 'si.scope');
+  const identityScopeClause = workflowScopeClause(scope);
   const [runResult, promisesResult, interactionResult, stateResult] =
     await Promise.all([
       this.query(
@@ -331,7 +313,7 @@ export async function getWorkflowRunStats(
     FROM sys_invocation_status si
     WHERE si.target_service_name = ${quoteSqlString(service)}
       AND si.target_service_ty = 'workflow'
-      AND ${targetServiceKeyClause(this, workflowId, 'si.target_service_key')}
+      AND ${targetServiceKeyClause(workflowId, 'si.target_service_key')}
       AND si.target_handler_name <> ${quoteSqlString(handlers.run)}${invocationScopeClause}`,
         'workflows/last-interaction',
       ),
@@ -391,7 +373,6 @@ export async function getWorkflowRunStats(
       : undefined;
 
   return Response.json({
-    supported: true,
     ...(duration ? { duration } : {}),
     ...(queueDuration ? { queueDuration } : {}),
     ...(waitingToStartDuration ? { waitingToStartDuration } : {}),

@@ -8,7 +8,7 @@ import type {
 } from '@restate/data-access/admin-api-spec';
 import { convertInvocationV2, type VqueueStatus } from '../convertInvocation';
 import {
-  getSysInvocationColumns,
+  SYS_INVOCATION_SELECT_COLUMNS,
   isInvocationId,
   type QueryContext,
   quoteSqlString,
@@ -316,8 +316,8 @@ FROM sys_vqueue_entry_status e
 WHERE e.entry_id = ${quoteSqlString(focusEntryId)}`;
 }
 
-function focusedInvocationQuery(context: QueryContext, focusEntryId: string) {
-  return `SELECT ${getSysInvocationColumns(context.features).join(', ')} FROM sys_invocation WHERE id = ${quoteSqlString(focusEntryId)}`;
+function focusedInvocationQuery(focusEntryId: string) {
+  return `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${quoteSqlString(focusEntryId)}`;
 }
 
 function focusEntryPositionQuery(vqueueId: string, focusEntryId: string) {
@@ -373,7 +373,7 @@ export async function getVqueue(
   vqueueId: string,
   focusEntryId?: string,
 ) {
-  if (!this.features.has('vqueues') || !vqueueId) {
+  if (!vqueueId) {
     return new Response(null, { status: 204 });
   }
 
@@ -393,7 +393,7 @@ export async function getVqueueSnapshot(
     requestTime?: string;
   },
 ): Promise<VqueueSnapshot | undefined> {
-  if (!this.features.has('vqueues') || !vqueueId) {
+  if (!vqueueId) {
     return undefined;
   }
 
@@ -410,10 +410,7 @@ export async function getVqueueSnapshot(
       ? this.query(focusEntryQuery(focusEntryId), 'vqueues/focus-entry')
       : Promise.resolve(undefined),
     focusEntryId && isInvocationId(focusEntryId) && !options?.focusedInvocation
-      ? this.query(
-          focusedInvocationQuery(this, focusEntryId),
-          'invocations/get',
-        )
+      ? this.query(focusedInvocationQuery(focusEntryId), 'invocations/get')
       : Promise.resolve(undefined),
   ]);
 

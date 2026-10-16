@@ -111,10 +111,6 @@ export function useJournalTimelineContext() {
   return use(JournalTimelineContext);
 }
 
-export function useJournalContext() {
-  return { ...useJournalEntriesContext(), ...useJournalTimelineContext() };
-}
-
 export function useIsCircularRef(
   calledInvocationId: string | undefined,
   callerInvocationId: string | undefined,

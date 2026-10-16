@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import { useListVqueues } from '@restate/data-access/admin-api-hooks';
 import type { components } from '@restate/data-access/admin-api-spec';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -56,7 +55,6 @@ const refreshIconStyles = tv({
 
 function VQueuesComponent() {
   const { baseUrl } = useRestateContext();
-  const hasVqueues = useFeatures().has('vqueues');
   const [searchParams, setSearchParams] = useSearchParams();
   const searchString = searchParams.toString();
   const committedFilters = useMemo(
@@ -103,7 +101,7 @@ function VQueuesComponent() {
     }),
     [filters, sortDescriptor],
   );
-  const vqueues = useListVqueues(request, { enabled: hasVqueues });
+  const vqueues = useListVqueues(request);
   const allVqueues = vqueues.data?.vqueues ?? [];
   const hasFilters = filters.length > 0;
   const emptyTitle = hasFilters ? 'No matching VQueues' : 'No VQueues';
@@ -156,7 +154,6 @@ function VQueuesComponent() {
           <AddFilterTrigger
             placeholder="Filter VQueues…"
             title="VQueue filters"
-            disabled={!hasVqueues}
             onInputSubmit={applyVQueueId}
             onItemRemove={scheduleSubmit}
             renderOption={renderFilterOption}
@@ -198,7 +195,7 @@ function VQueuesComponent() {
             }
             className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
             onClick={() => void vqueues.refetch()}
-            disabled={!hasVqueues || vqueues.isFetching}
+            disabled={vqueues.isFetching}
           >
             <Icon
               name={IconName.Retry}
@@ -232,31 +229,23 @@ function VQueuesComponent() {
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
-            {!hasVqueues ? (
-              <EmptyState
-                icon={IconName.Layers}
-                title="VQueues are not enabled"
-                description="Enable VQueues on the Restate server to inspect queue metadata."
-              />
-            ) : (
-              <VQueueTable
-                baseUrl={baseUrl}
-                vqueues={allVqueues}
-                isLoading={vqueues.isFetching}
-                error={vqueues.error as Error | null}
-                caption={filteredResultsCaption}
-                dependencies={[searchString, vqueues.isFetching]}
-                sortDescriptor={sortDescriptor}
-                onSortChange={setSortDescriptor}
-                emptyPlaceholder={
-                  <EmptyState
-                    icon={hasFilters ? IconName.Search : IconName.Layers}
-                    title={emptyTitle}
-                    description={emptyDescription}
-                  />
-                }
-              />
-            )}
+            <VQueueTable
+              baseUrl={baseUrl}
+              vqueues={allVqueues}
+              isLoading={vqueues.isFetching}
+              error={vqueues.error as Error | null}
+              caption={filteredResultsCaption}
+              dependencies={[searchString, vqueues.isFetching]}
+              sortDescriptor={sortDescriptor}
+              onSortChange={setSortDescriptor}
+              emptyPlaceholder={
+                <EmptyState
+                  icon={hasFilters ? IconName.Search : IconName.Layers}
+                  title={emptyTitle}
+                  description={emptyDescription}
+                />
+              }
+            />
             {!vqueues.isFetching && (
               <LimitListTruncation
                 hasMore={Boolean(vqueues.data?.hasMore)}

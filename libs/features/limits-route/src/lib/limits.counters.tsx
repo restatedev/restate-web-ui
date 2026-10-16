@@ -1,4 +1,3 @@
-import { useFeatures } from '@restate/data-access/admin-api';
 import {
   useListLimitRules,
   useListUserLimits,
@@ -69,16 +68,13 @@ type ListLimitCountersRequestBody =
 
 function CountersComponent() {
   const { baseUrl } = useRestateContext();
-  const hasVqueues = useFeatures().has('vqueues');
   const [searchParams, setSearchParams] = useSearchParams();
   const searchString = searchParams.toString();
   const ruleSelection = parseLimitCounterRuleSelection(
     searchParams.get(LIMIT_COUNTER_RULE_QUERY_PARAM),
   );
   const selectedRule = selectedLimitCounterRule(ruleSelection);
-  const rules = useListLimitRules(RULE_OPTIONS_REQUEST, {
-    enabled: hasVqueues,
-  });
+  const rules = useListLimitRules(RULE_OPTIONS_REQUEST);
   const ruleOptions = rules.data?.rules ?? [];
   const ruleFilterSchema = useMemo(
     () =>
@@ -173,7 +169,7 @@ function CountersComponent() {
     }),
     [commonRequest, ruleSelection, selectedRule],
   );
-  const counters = useListUserLimits(counterRequest, { enabled: hasVqueues });
+  const counters = useListUserLimits(counterRequest);
   const allCounters = counters.data?.limits ?? [];
   const renderRuleValue = useCallback((item: QueryClause<QueryClauseType>) => {
     const value =
@@ -268,7 +264,6 @@ function CountersComponent() {
           <AddFilterTrigger
             placeholder="Filter limit counters…"
             title="Limit counter filters"
-            disabled={!hasVqueues}
             onItemRemove={scheduleSubmit}
             renderOption={renderFilterOption}
             inputPrefix={
@@ -297,7 +292,6 @@ function CountersComponent() {
                   appearance="light"
                   showRemove={!isRule}
                   popoverPlacement="bottom"
-                  disabled={!hasVqueues}
                   valueClassName={isRule ? 'max-w-56' : undefined}
                   popoverClassName={
                     isRule ? 'w-[32rem] max-w-[calc(100vw-2rem)]' : undefined
@@ -325,7 +319,7 @@ function CountersComponent() {
               void counters.refetch();
               void rules.refetch();
             }}
-            disabled={!hasVqueues || isFetching}
+            disabled={isFetching}
           >
             <Icon
               name={IconName.Retry}
@@ -359,37 +353,25 @@ function CountersComponent() {
         </ContentPanelToolbar>
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>
-            {!hasVqueues ? (
-              <EmptyState
-                icon={IconName.Gauge}
-                title="Flow control is not enabled"
-                description="Enable VQueues on the Restate server to inspect limit counters."
-              />
-            ) : (
-              <CounterTable
-                ariaLabel="Limit counters"
-                counters={allCounters}
-                baseUrl={baseUrl}
-                variant="all"
-                isLoading={counters.isFetching}
-                error={counters.error as Error | null}
-                caption={filteredResultsCaption}
-                dependencies={[
-                  searchString,
-                  ruleSelection,
-                  counters.isFetching,
-                ]}
-                sortDescriptor={sortDescriptor}
-                onSortChange={setSortDescriptor}
-                emptyPlaceholder={
-                  <EmptyState
-                    icon={hasFilters ? IconName.Search : IconName.Gauge}
-                    title={emptyTitle}
-                    description={emptyDescription}
-                  />
-                }
-              />
-            )}
+            <CounterTable
+              ariaLabel="Limit counters"
+              counters={allCounters}
+              baseUrl={baseUrl}
+              variant="all"
+              isLoading={counters.isFetching}
+              error={counters.error as Error | null}
+              caption={filteredResultsCaption}
+              dependencies={[searchString, ruleSelection, counters.isFetching]}
+              sortDescriptor={sortDescriptor}
+              onSortChange={setSortDescriptor}
+              emptyPlaceholder={
+                <EmptyState
+                  icon={hasFilters ? IconName.Search : IconName.Gauge}
+                  title={emptyTitle}
+                  description={emptyDescription}
+                />
+              }
+            />
             {!counters.isFetching && (
               <LimitListTruncation
                 hasMore={Boolean(counters.data?.hasMore)}

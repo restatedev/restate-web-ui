@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createInvocationV2QueryTestHarness,
-  rawInvocation,
-  VQUEUE_SKIP_COMPLETED_HEADERS,
-} from './testUtils';
+import { createInvocationV2QueryTestHarness, rawInvocation } from './testUtils';
 
 describe('GET /query/invocations/:invocationId', () => {
   const { sql, get, setResponder } = createInvocationV2QueryTestHarness();
@@ -99,18 +95,14 @@ describe('GET /query/invocations/:invocationId', () => {
       });
     });
 
-    it('uses entry status whenever the VQueue feature is enabled', async () => {
+    it('uses entry status for the invocation status', async () => {
       setResponder((statement) =>
         statement.includes('FROM sys_vqueue_entry_status')
           ? [{ entry_id: 'inv-a', stage: 'inbox', status: 'backing-off' }]
           : [rawInvocation('inv-a', { status: 'ready' })],
       );
 
-      const response = await get('/invocations/inv-a', {
-        'content-type': 'application/json',
-        'x-restate-version': '1.7.1',
-        'x-restate-features': 'vqueues,protocol_v7',
-      });
+      const response = await get('/invocations/inv-a');
 
       expect(sql).toMatchInlineSnapshot(`
         [
@@ -134,7 +126,7 @@ describe('GET /query/invocations/:invocationId', () => {
       expect(await response.json()).toMatchObject({ status: 'ready' });
     });
 
-    it('uses invocation status for an invocation omitted by skip-completed migration', async () => {
+    it('uses invocation status when an invocation has no VQueue entry', async () => {
       setResponder((statement) =>
         statement.includes('FROM sys_vqueue_entry_status')
           ? []
@@ -146,10 +138,7 @@ describe('GET /query/invocations/:invocationId', () => {
             ],
       );
 
-      const response = await get(
-        '/invocations/inv-a',
-        VQUEUE_SKIP_COMPLETED_HEADERS,
-      );
+      const response = await get('/invocations/inv-a');
 
       expect(await response.json()).toMatchObject({ status: 'succeeded' });
     });

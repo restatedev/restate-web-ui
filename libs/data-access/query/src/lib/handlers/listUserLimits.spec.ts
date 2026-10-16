@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listLimitCountersForRule, listUserLimits } from './listUserLimits';
+import { listUserLimits } from './listUserLimits';
 import type { QueryContext } from './shared';
 
 const counter = {
@@ -315,25 +315,5 @@ describe('listUserLimits', () => {
     `);
     expect(body.limits).toEqual([counter]);
     expect(body.hasMore).toBe(true);
-  });
-
-  it('bounds counters for one rule', async () => {
-    const query = vi.fn().mockResolvedValue({ rows: [] });
-    const context = { query } as unknown as QueryContext;
-
-    const response = await listLimitCountersForRule.call(context, 'tenant/*', {
-      limit: 1,
-    });
-
-    expect(querySql(query)).toMatchInlineSnapshot(`
-      [
-        "SELECT scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters
-          FROM sys_user_limits
-          WHERE rule_pattern = 'tenant/*'
-          ORDER BY COALESCE(num_waiters, 0) DESC, (concurrency_limit IS NULL) ASC, COALESCE(CAST(usage AS DOUBLE) / concurrency_limit, 0) DESC, COALESCE(rule_pattern, '') ASC, scope ASC, COALESCE(l1, '') ASC, COALESCE(l2, '') ASC
-          LIMIT 2",
-      ]
-    `);
-    expect(await response.json()).toEqual({ limits: [], hasMore: false });
   });
 });

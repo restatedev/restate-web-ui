@@ -66,33 +66,6 @@ const UNIT_MAPS: Record<
   d: 'days',
 };
 
-export function formatHumantime(value?: string | null) {
-  if (!value) {
-    return undefined;
-  }
-  const matches = Array.from(value.matchAll(HUMANTIME_REGEXP));
-
-  const isoDuration = matches.reduce((result, match) => {
-    const { groups = {} } = match;
-    const { unitValue, unit } = groups;
-    const unitValueAsNumber = Number(unitValue);
-    const isoUnit = UNIT_MAPS[unit as HUMANTIME_UNITS];
-
-    if (isNaN(unitValueAsNumber)) {
-      return result;
-    }
-
-    return {
-      ...result,
-      [isoUnit]: unitValueAsNumber,
-    };
-  }, {} as Duration);
-
-  return Object.entries(isoDuration)
-    .map(([unit, value]) => `${value}${unit}`)
-    .join(' ');
-}
-
 export function humanTimeToMs(value?: string | null) {
   if (!value) {
     return 0;

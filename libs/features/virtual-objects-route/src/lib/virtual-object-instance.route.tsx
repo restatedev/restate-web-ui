@@ -124,17 +124,15 @@ function Component() {
             className="min-w-0"
           />
         </Header>
-        {(lockData?.lockHolder || statsData?.supported) && (
+        {(lockData?.lockHolder || statsData) && (
           <CardGrid
             distribution={
-              lockData?.lockHolder && statsData?.supported && statsData.state
-                ? '5-4-2'
-                : 'equal'
+              lockData?.lockHolder && statsData?.state ? '5-4-2' : 'equal'
             }
             className="relative z-40 mx-5 mt-3"
           >
             <VirtualObjectLockHero lockHolder={lockData?.lockHolder} />
-            {statsData?.supported && (
+            {statsData && (
               <>
                 <VirtualObjectStatsCard
                   stats={statsData}

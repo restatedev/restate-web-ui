@@ -11,16 +11,7 @@ import {
   useTableOptions,
 } from 'react-aria-components';
 import { Checkbox } from '@restate/ui/form-field';
-import {
-  PropsWithChildren,
-  ReactElement,
-  ReactNode,
-  Ref,
-  useContext,
-  useDeferredValue,
-  useRef,
-  useState,
-} from 'react';
+import { PropsWithChildren, ReactNode, Ref, useContext, useRef } from 'react';
 import type { Key } from 'react-aria-components';
 import { internalCellKey } from './keys';
 
@@ -101,44 +92,6 @@ export function Row<T extends { id?: string }>({
       <Collection items={columns}>{children}</Collection>
       {childRows}
     </AriaRow>
-  );
-}
-
-export function PerformantRow<T extends { id?: string }>({
-  children,
-  ...otherProps
-}: Omit<RowProps<T>, 'children' | 'ref'> & {
-  children: (item: T & { isVisible?: boolean }) => ReactElement;
-}) {
-  const [isVisible, setIsVisible] = useState(false);
-  const deferredIsVisible = useDeferredValue(isVisible);
-  const [observer] = useState(
-    () =>
-      new IntersectionObserver(
-        ([entry]) => {
-          setIsVisible(!!entry?.isIntersecting);
-        },
-        {
-          root: null,
-          rootMargin: '10% 0px 10% 0px',
-          threshold: 0.1,
-        },
-      ),
-  );
-
-  return (
-    <Row
-      ref={(el) => {
-        if (el) observer?.observe(el);
-        return () => {
-          if (el) observer?.unobserve(el);
-        };
-      }}
-      {...otherProps}
-      dependencies={[deferredIsVisible]}
-    >
-      {(col) => children({ ...col, isVisible: deferredIsVisible })}
-    </Row>
   );
 }
 

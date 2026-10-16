@@ -4,7 +4,6 @@ import {
   readWorkflowFilters,
   toWorkflowFilters,
   WORKFLOW_FILTER_SCHEMA,
-  workflowFilterSchema,
   writeWorkflowFilters,
 } from './workflows.filters';
 
@@ -41,10 +40,6 @@ describe('Workflow filters', () => {
         value: 'tenant',
       },
     ]);
-  });
-
-  it('hides scope when VQueues are unavailable', () => {
-    expect(workflowFilterSchema(false).map(({ id }) => id)).toEqual(['id']);
   });
 
   it('surfaces and migrates a legacy search parameter', () => {

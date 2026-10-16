@@ -168,7 +168,6 @@ function counterFiltersClause(filters: unknown) {
 async function counterPage(
   context: QueryContext,
   args: ListLimitCountersRequestBody,
-  pattern?: string,
 ) {
   if (args.sort && !COUNTER_SORT_FIELDS.has(args.sort.field)) {
     return new Response('Unsupported sort field', { status: 400 });
@@ -179,10 +178,10 @@ async function counterPage(
   }
   const limit = limitPageSize(args.limit);
   const where = [
-    pattern || args.rulePattern
-      ? `rule_pattern = ${quoteSqlString(pattern ?? args.rulePattern ?? '')}`
+    args.rulePattern
+      ? `rule_pattern = ${quoteSqlString(args.rulePattern)}`
       : '',
-    !pattern && !args.rulePattern && !args.includeUnlimited
+    !args.rulePattern && !args.includeUnlimited
       ? 'rule_pattern IS NOT NULL'
       : '',
     filters.clause,
@@ -211,12 +210,4 @@ export async function listUserLimits(
   args: ListLimitCountersRequestBody = {},
 ) {
   return counterPage(this, args);
-}
-
-export async function listLimitCountersForRule(
-  this: QueryContext,
-  pattern: string,
-  args: ListLimitCountersRequestBody = {},
-) {
-  return counterPage(this, args, pattern);
 }

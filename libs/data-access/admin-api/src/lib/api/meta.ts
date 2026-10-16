@@ -1,5 +1,9 @@
 import { getQueryClient } from '@restate/util/react-query';
-import type { UseQueryOptions } from '@tanstack/react-query';
+import type {
+  Query,
+  QueryClient,
+  UseQueryOptions,
+} from '@tanstack/react-query';
 import { adminApi } from './adminApi';
 
 /**
@@ -21,6 +25,65 @@ function resolveBaseUrl(baseUrl: string): string {
 
 export const metaQueryKey = (baseUrl: string) =>
   ['meta', resolveBaseUrl(baseUrl)] as const;
+
+export function getEnabledFeatures(meta?: MetaSnapshot): string[] {
+  return Object.entries(meta?.features ?? {})
+    .filter(([, on]) => on)
+    .map(([name]) => name);
+}
+
+const lastEnabledFeatures = new WeakMap<QueryClient, Map<string, string>>();
+
+/**
+ * The meta snapshot is persisted across sessions so `/query/*` requests
+ * can use last session's server features immediately instead of waiting
+ * for `/version` (no startup waterfall). Features rarely change, but when
+ * they do (server upgrade/downgrade, a feature toggled off), queries sent
+ * with the restored flags may target tables the server no longer has.
+ *
+ * Called for every successful query: when a `meta` snapshot's enabled
+ * features differ from the previous one for the same base URL (typically
+ * the restored snapshot followed by the fresh `/version`), reset the
+ * `/query/*` queries that already failed or are still in flight with the
+ * old flags, so they rerun with the new ones. Queries that succeeded are
+ * left alone.
+ */
+export function retryQueryHandlersOnFeatureChange<TError>(
+  queryClient: QueryClient,
+  data: unknown,
+  query: Query<unknown, TError, unknown, readonly unknown[]>,
+) {
+  const [scope, baseUrl] = query.queryKey;
+  if (scope !== 'meta' || typeof baseUrl !== 'string') {
+    return;
+  }
+  const seen = lastEnabledFeatures.get(queryClient) ?? new Map();
+  lastEnabledFeatures.set(queryClient, seen);
+  const features = getEnabledFeatures(data as MetaSnapshot)
+    .sort()
+    .join(',');
+  const previous = seen.get(baseUrl);
+  seen.set(baseUrl, features);
+  if (previous === undefined || previous === features) {
+    return;
+  }
+
+  // `reset()` cancels in-flight fetches. Each query is reset by its own key
+  // because `resetQueries` re-applies its filter for the refetch step after
+  // resetting, when no query is `error`/`fetching` any more, so a status
+  // predicate there would refetch nothing.
+  queryClient
+    .getQueryCache()
+    .findAll({
+      predicate: ({ queryKey: [path], state }) =>
+        typeof path === 'string' &&
+        path.startsWith('/query/') &&
+        (state.status === 'error' || state.fetchStatus === 'fetching'),
+    })
+    .forEach(({ queryKey }) => {
+      void queryClient.resetQueries({ queryKey, exact: true });
+    });
+}
 
 /** App-registered fallback. Surfaced as `placeholderData` and as a graceful-failure value. */
 let metaFallback: MetaSnapshot = {};
