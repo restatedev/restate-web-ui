@@ -130,6 +130,7 @@
       ],
       "@restate/ui/action-text": ["./libs/ui/action-text/src/index.ts"],
       "@restate/ui/api": ["./libs/ui/api/src/index.ts"],
+      "@restate/ui/api/assets": ["./libs/ui/api/src/assets.ts"],
       "@restate/ui/badge": ["./libs/ui/badge/src/index.ts"],
       "@restate/ui/breadcrumbs": ["./libs/ui/breadcrumbs/src/index.ts"],
       "@restate/ui/button": ["./libs/ui/button/src/index.ts"],

@@ -13,6 +13,7 @@
     "inter.css",
     "merge.mjs",
     "CLAUDE.md",
-    "napkin.md"
+    "napkin.md",
+    "libs/ui/api/vendor/**"
   ]
 }

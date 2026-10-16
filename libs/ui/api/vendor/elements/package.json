@@ -1,0 +1,12 @@
+{
+  "name": "@stoplight/elements",
+  "version": "9.0.28",
+  "description": "UI components for composing beautiful developer documentation.",
+  "license": "Apache-2.0",
+  "author": "Stoplight <support@stoplight.io>",
+  "homepage": "https://github.com/restatedev/elements",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/restatedev/elements"
+  }
+}

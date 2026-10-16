@@ -1,25 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import { useId, Component, Suspense, lazy, useEffect, useRef } from 'react';
-import type { ErrorInfo, PropsWithChildren } from 'react';
-import { Icon, IconName } from '@restate/ui/icons';
+import { createElement, useEffect, useId, useRef, useState } from 'react';
 import { Spinner } from '@restate/ui/loading';
 import { tv } from '@restate/util/styles';
 
-if (typeof window !== 'undefined') {
-  import('prism-react-renderer');
-  import('@stoplight/json-schema-viewer');
-}
+const API_TAG = 'elements-api';
+const JSON_SCHEMA_VIEWER_TAG = 'elements-json-schema-viewer';
 
-const JsonSchemaViewerInner = lazy(() => {
-  return import('prism-react-renderer').then((module) => {
-    (window as any).Prism = module.Prism;
-
-    return import('@stoplight/json-schema-viewer').then((module) => ({
-      default: module.JsonSchemaViewer,
-    }));
-  });
-});
+type ElementsApiElement = HTMLElement & {
+  tryItFetcher?: typeof globalThis.fetch;
+};
 
 export const API = ({
   apiDescriptionDocument,
@@ -31,7 +19,7 @@ export const API = ({
   tryItFetcher?: typeof globalThis.fetch;
 }) => {
   const id = useId();
-  const apiRef = useRef(null);
+  const apiRef = useRef<ElementsApiElement>(null);
 
   useEffect(() => {
     const element = apiRef.current;
@@ -47,79 +35,65 @@ export const API = ({
     };
   }, [tryItFetcher]);
 
-  return (
-    <elements-api
-      ref={apiRef}
-      id={id}
-      apiDescriptionDocument={apiDescriptionDocument}
-      router="hash"
-      layout={layout}
-    />
-  );
+  return createElement(API_TAG, {
+    ref: apiRef,
+    id,
+    apiDescriptionDocument,
+    router: 'hash',
+    layout,
+  });
 };
 
+function useIsCustomElementDefined(tagName: string) {
+  const [isDefined, setIsDefined] = useState(
+    () =>
+      typeof customElements !== 'undefined' &&
+      customElements.get(tagName) !== undefined,
+  );
+
+  useEffect(() => {
+    if (isDefined) {
+      return;
+    }
+    let isCancelled = false;
+    customElements.whenDefined(tagName).then(() => {
+      if (!isCancelled) {
+        setIsDefined(true);
+      }
+    });
+    return () => {
+      isCancelled = true;
+    };
+  }, [isDefined, tagName]);
+
+  return isDefined;
+}
+
 const schemaStyles = tv({
-  base: 'stoplight [&_svg.fa-fw]:ml-1 [&_svg.fa-fw]:text-2xs!',
+  base: 'stoplight block [&_svg.fa-fw]:ml-1 [&_svg.fa-fw]:text-2xs!',
 });
 export const JsonSchemaViewer = ({
   schema,
   className,
 }: {
-  schema?: any;
+  schema?: unknown;
   className?: string;
 }) => {
-  return (
-    <ErrorBoundary>
-      <Suspense
-        fallback={
-          <div className="flex items-center gap-1.5 py-2 text-sm text-zinc-500">
-            <Spinner className="h-4 w-4" />
-            Loading…
-          </div>
-        }
-      >
-        <JsonSchemaViewerInner
-          className={schemaStyles({ className })}
-          schema={schema as any}
-          disableCrumbs
-          renderRootTreeLines
-        />
-      </Suspense>
-    </ErrorBoundary>
-  );
+  const isDefined = useIsCustomElementDefined(JSON_SCHEMA_VIEWER_TAG);
+
+  if (!isDefined) {
+    return (
+      <div className="flex items-center gap-1.5 py-2 text-sm text-zinc-500">
+        <Spinner className="h-4 w-4" />
+        Loading…
+      </div>
+    );
+  }
+
+  return createElement(JSON_SCHEMA_VIEWER_TAG, {
+    className: schemaStyles({ className }),
+    schema,
+    disableCrumbs: true,
+    renderRootTreeLines: true,
+  });
 };
-
-class ErrorBoundary extends Component<
-  PropsWithChildren,
-  {
-    hasError: boolean;
-  }
-> {
-  constructor(props: PropsWithChildren) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(_: Error): {
-    hasError: boolean;
-  } {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by ErrorBoundary: ', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="my-1 flex w-full max-w-full min-w-0 flex-wrap items-center gap-2 truncate rounded-lg px-2 py-1 text-0.5xs text-red-500">
-          <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5" /> Failed
-          to display the content type
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}

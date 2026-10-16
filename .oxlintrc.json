@@ -11,7 +11,11 @@
   "env": {
     "builtin": true
   },
-  "ignorePatterns": ["**/.react-router/**", "apps/web-ui/public/**"],
+  "ignorePatterns": [
+    "**/.react-router/**",
+    "apps/web-ui/public/**",
+    "libs/ui/api/vendor/**"
+  ],
   "rules": {
     "@nx/enforce-module-boundaries": [
       "error",

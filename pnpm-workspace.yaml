@@ -1,31 +1,13 @@
 allowBuilds:
-  '@scarf/scarf': false
   '@swc/core': false
   '@tailwindcss/oxide': false
-  core-js: false
   esbuild: false
   nx: false
-  protobufjs: false
   unrs-resolver: false
 
 peerDependencyRules:
-  allowAny:
-    - '@types/react'
-    - '@types/react-dom'
   allowedVersions:
-    react: 19.3.1
-    react-dom: 19.3.1
     openapi-typescript>typescript: '6'
 
 overrides:
-  '@istanbuljs/load-nyc-config>js-yaml': 3.15.2
   'nx>undici': 7.30.0
-  'postman-collection>lodash': 4.18.1
-  'react-use>js-cookie': 3.0.7
-
-patchedDependencies:
-  '@stoplight/elements@9.0.19': patches/@stoplight__elements@9.0.19.patch
-
-auditConfig:
-  ignoreGhsas:
-    - GHSA-qxc2-j82w-r537
