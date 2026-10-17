@@ -1,4 +1,4 @@
-import { serviceRoute } from '@restate/features/service-route';
+import { serviceRoute } from '@restate/features-service-route';
 import type { MetaFunction } from 'react-router';
 
 export const meta: MetaFunction = ({ params }) => [

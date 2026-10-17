@@ -1,4 +1,4 @@
-import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
+import type { VirtualObjectInstanceIdentity } from '@restate/features-virtual-object-instance';
 
 export interface VirtualObjectOpenDraft {
   key: string;

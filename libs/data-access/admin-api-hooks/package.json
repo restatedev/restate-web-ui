@@ -2,11 +2,5 @@
   "name": "@restate/data-access-admin-api-hooks",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "admin-api-hooks",
-    "sourceRoot": "libs/data-access/admin-api-hooks/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

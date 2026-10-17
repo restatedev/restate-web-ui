@@ -7,7 +7,7 @@ const serviceCatalog = vi.hoisted(
   () => new Map<string, { ty: 'Service' | 'VirtualObject' | 'Workflow' }>(),
 );
 
-vi.mock('@restate/data-access/admin-api-hooks', () => ({
+vi.mock('@restate/data-access-admin-api-hooks', () => ({
   useServiceCatalog: () => ({ data: serviceCatalog }),
 }));
 

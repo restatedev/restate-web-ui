@@ -3,7 +3,7 @@ import {
   DialogContent,
   DialogFooter,
   QueryDialog,
-} from '@restate/ui/dialog';
+} from '@restate/ui-dialog';
 import { SERVICE_ACCESS_EDIT } from './constants';
 import { FormEvent, ReactNode, useId } from 'react';
 import { Form, useSearchParams } from 'react-router';
@@ -11,15 +11,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useModifyService,
   useServiceDetails,
-} from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { ErrorBanner } from '@restate/ui/error';
-import { Button, SubmitButton } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { ErrorBanner } from '@restate/ui-error';
+import { Button, SubmitButton } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import { Radio, Heading } from 'react-aria-components';
-import { RadioGroup } from '@restate/ui/radio-group';
-import { FormFieldLabel } from '@restate/ui/form-field';
-import { tv } from '@restate/util/styles';
+import { RadioGroup } from '@restate/ui-radio-group';
+import { FormFieldLabel } from '@restate/ui-form-field';
+import { tv } from '@restate/util-styles';
 
 export function EditAccessDialog() {
   const formId = useId();

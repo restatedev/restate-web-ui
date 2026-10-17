@@ -2,7 +2,7 @@ import {
   TERMINAL_INVOCATION_STATUSES,
   type components,
   type FilterItem,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { isInvocationId, type QueryContext } from './shared';
 import { selectInvocationCandidatesV2 } from './invocationsV2';
 

@@ -1,10 +1,10 @@
 import { useInvocationSearchParams } from './useInvocationSearchParams';
-import { Button, SubmitButton } from '@restate/ui/button';
+import { Button, SubmitButton } from '@restate/ui-button';
 import {
   PanelTable,
   PanelTableColumn,
   PanelTableQuickOpenCaption,
-} from '@restate/ui/table';
+} from '@restate/ui-table';
 import {
   Dropdown,
   DropdownItem,
@@ -12,8 +12,8 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   COLUMN_QUERY_PREFIX,
   ColumnKey,
@@ -38,12 +38,12 @@ import {
   useInvocationsLastQuery,
   useInvocationsRecent,
   type InvocationPreset,
-} from '@restate/util/sidebar-nav';
+} from '@restate/util-sidebar-nav';
 import { InvocationCell } from './cells';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
-} from '@restate/util/snapshot-time';
+} from '@restate/util-snapshot-time';
 import {
   RefObject,
   useCallback,
@@ -52,23 +52,23 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
+import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui-keyboard';
 import {
   formatDurations,
   formatNumber,
   formatPlurals,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui-layout';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
 import {
   AddFilterTrigger,
   FilterBuilder,
@@ -77,7 +77,7 @@ import {
   FilterShortcutTrigger,
   FilteredResultsCaption,
   writeFilterClauses,
-} from '@restate/ui/filter-builder';
+} from '@restate/ui-filter-builder';
 import {
   ClientLoaderFunctionArgs,
   Form,
@@ -92,21 +92,21 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useListDeployments,
   useListInvocationsV2,
-} from '@restate/data-access/admin-api-hooks';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/data-access-admin-api-hooks';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   VQueueStageLegend,
   VQueueStageSummaryBar,
-} from '@restate/features/status-chart';
-import { InvocationBatchActions } from '@restate/features/batch-operations';
+} from '@restate/features-status-chart';
+import { InvocationBatchActions } from '@restate/features-batch-operations';
 import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
   HANDLER_QUERY_PARAM,
-} from '@restate/features/service';
+} from '@restate/features-service';
 import {
   PANEL_QUERY_PARAM,
   stripTransientQueryParams,
-} from '@restate/util/panel';
+} from '@restate/util-panel';
 import { Sort } from './QueryButton';
 import {
   getFormUrlSignature,
@@ -137,7 +137,7 @@ import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   isVqueueEntry,
   VqueueEntryCell,
-} from '@restate/features/invocation-ui';
+} from '@restate/features-invocation-ui';
 import { InvocationQuickOpen } from './InvocationQuickOpen';
 
 const COLUMN_WIDTH: Partial<Record<ColumnKey, number>> = {

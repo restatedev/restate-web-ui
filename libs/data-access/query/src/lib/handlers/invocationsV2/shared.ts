@@ -1,8 +1,8 @@
 import type {
   FilterItem,
   components,
-} from '@restate/data-access/admin-api-spec';
-import { INVOCATION_SUMMARY_STAGES as SHARED_INVOCATION_SUMMARY_STAGES } from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
+import { INVOCATION_SUMMARY_STAGES as SHARED_INVOCATION_SUMMARY_STAGES } from '@restate/data-access-admin-api-spec';
 import {
   INVOCATION_STATUSES,
   type InvocationStatus,

@@ -2,16 +2,16 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
-import { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from '@restate/features/prune-deployments';
+import { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from '@restate/features-prune-deployments';
 import { DeploymentActions } from './DeploymentActions';
 
-vi.mock('@restate/features/register-deployment', () => ({
+vi.mock('@restate/features-register-deployment', () => ({
   REGISTER_DEPLOYMENT_QUERY: 'registerDeployment',
   TriggerRegisterDeploymentDialog: ({ children }: { children: ReactNode }) =>
     children,
 }));
 
-vi.mock('@restate/ui/dropdown', () => ({
+vi.mock('@restate/ui-dropdown', () => ({
   DropdownItem: ({
     children,
     value,
@@ -32,12 +32,12 @@ vi.mock('@restate/ui/dropdown', () => ({
   ),
 }));
 
-vi.mock('@restate/ui/icons', () => ({
+vi.mock('@restate/ui-icons', () => ({
   Icon: () => null,
   IconName: { Plus: 'plus', Trash: 'trash' },
 }));
 
-vi.mock('@restate/ui/split-button', () => ({
+vi.mock('@restate/ui-split-button', () => ({
   SplitButton: ({
     children,
     menus,

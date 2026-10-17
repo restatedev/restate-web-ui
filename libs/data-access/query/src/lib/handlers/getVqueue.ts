@@ -5,7 +5,7 @@ import type {
   VqueueEntryStatus,
   VqueueGateDuration,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { convertInvocationV2, type VqueueStatus } from '../convertInvocation';
 import {
   SYS_INVOCATION_SELECT_COLUMNS,

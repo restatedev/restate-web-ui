@@ -1,5 +1,5 @@
-import { IconName } from '@restate/ui/icons';
-import { PanelTableQuickOpen } from '@restate/ui/table';
+import { IconName } from '@restate/ui-icons';
+import { PanelTableQuickOpen } from '@restate/ui-table';
 import {
   type WorkflowOpenDraft,
   workflowIdentityFromOpenDraft,

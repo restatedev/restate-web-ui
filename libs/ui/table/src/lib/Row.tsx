@@ -1,5 +1,5 @@
-import { focusRing } from '@restate/ui/focus';
-import { tv } from '@restate/util/styles';
+import { focusRing } from '@restate/ui-focus';
+import { tv } from '@restate/util-styles';
 import {
   Cell as AriaCell,
   Row as AriaRow,
@@ -10,7 +10,7 @@ import {
   TableStateContext,
   useTableOptions,
 } from 'react-aria-components';
-import { Checkbox } from '@restate/ui/form-field';
+import { Checkbox } from '@restate/ui-form-field';
 import { PropsWithChildren, ReactNode, Ref, useContext, useRef } from 'react';
 import type { Key } from 'react-aria-components';
 import { internalCellKey } from './keys';

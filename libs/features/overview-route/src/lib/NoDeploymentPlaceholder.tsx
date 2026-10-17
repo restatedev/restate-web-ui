@@ -1,10 +1,10 @@
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   ServiceDeploymentExplainer,
   ServiceExplainer,
-} from '@restate/features/explainers';
-import { TriggerRegisterDeploymentDialog } from '@restate/features/register-deployment';
-import { Spinner } from '@restate/ui/loading';
+} from '@restate/features-explainers';
+import { TriggerRegisterDeploymentDialog } from '@restate/features-register-deployment';
+import { Spinner } from '@restate/ui-loading';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
 
 export function NoDeploymentPlaceholder({

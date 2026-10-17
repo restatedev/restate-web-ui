@@ -2,8 +2,8 @@ import {
   SERVICE_ACCESS_EDIT,
   SERVICE_RETENTION_EDIT,
   SERVICE_TIMEOUT_EDIT,
-} from '@restate/features/service-details';
-import { Button } from '@restate/ui/button';
+} from '@restate/features-service-details';
+import { Button } from '@restate/ui-button';
 import {
   Dropdown,
   DropdownItem,
@@ -11,10 +11,10 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import { useSearchParams } from 'react-router';
 
 const EDIT_ACTIONS = [

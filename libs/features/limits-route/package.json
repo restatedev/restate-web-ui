@@ -2,11 +2,5 @@
   "name": "@restate/features-limits-route",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "limits-route",
-    "sourceRoot": "libs/features/limits-route/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

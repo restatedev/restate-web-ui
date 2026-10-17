@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import {
   useListServices,
   useGetInvocationsJournalWithInvocationsV2,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 
 // Handler (or service) metadata keys controlling which journal entries are
 // hidden by default in the compact view. `…hidden.names` is a comma-separated

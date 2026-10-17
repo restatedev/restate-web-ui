@@ -1,4 +1,4 @@
-import { InlineTooltip } from '@restate/ui/tooltip';
+import { InlineTooltip } from '@restate/ui-tooltip';
 import { PropsWithChildren } from 'react';
 
 export function ServiceDeploymentExplainer({

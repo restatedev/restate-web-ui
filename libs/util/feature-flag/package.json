@@ -2,11 +2,5 @@
   "name": "@restate/util-feature-flag",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "util-feature-flag",
-    "sourceRoot": "libs/util/feature-flag/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

@@ -4,9 +4,9 @@ import {
   setFeatureFlag,
   useIsFeatureFlagEnabled,
   type FeatureFlag,
-} from '@restate/util/feature-flag';
-import { Switch } from '@restate/ui/form-field';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/util-feature-flag';
+import { Switch } from '@restate/ui-form-field';
+import { Icon, IconName } from '@restate/ui-icons';
 
 function FeatureFlagRow({ flag }: { flag: FeatureFlag }) {
   const { title, description, serverFeature } = FEATURE_FLAG_METADATA[flag];

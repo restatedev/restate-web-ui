@@ -1,14 +1,14 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationTableCell,
   type InvocationTableColumnKey,
-} from '@restate/features/invocation-ui';
-import { useRestateContext } from '@restate/features/restate-context';
-import { EmptyState } from '@restate/ui/empty-state';
-import { IconName } from '@restate/ui/icons';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { getSearchParams } from '@restate/util/panel';
+} from '@restate/features-invocation-ui';
+import { useRestateContext } from '@restate/features-restate-context';
+import { EmptyState } from '@restate/ui-empty-state';
+import { IconName } from '@restate/ui-icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { getSearchParams } from '@restate/util-panel';
 import { useLocation, useNavigate } from 'react-router';
 
 type Invocation = components['schemas']['InvocationV2'];

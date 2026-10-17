@@ -2,22 +2,22 @@ import {
   useGetVirtualObjectLock,
   useListUserLimits,
   type VQueueMetaRow,
-} from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-hooks';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   VirtualObjectInstanceTarget,
   virtualObjectInstanceIdentityFromLockName,
   virtualObjectInstanceHref,
-} from '@restate/features/virtual-object-instance';
+} from '@restate/features-virtual-object-instance';
 import {
   DEFAULT_STYLE,
   InvocationsBreakdownTooltipContent,
   StackedStatusBar,
   STATUS_STYLE,
   type StatusBarEntry,
-} from '@restate/features/status-chart';
-import { ServiceTarget } from '@restate/features/service-target';
-import { InvocationId, VQueueEntryId } from '@restate/features/invocation-ui';
+} from '@restate/features-status-chart';
+import { ServiceTarget } from '@restate/features-service-target';
+import { InvocationId, VQueueEntryId } from '@restate/features-invocation-ui';
 import {
   BlockedStatus,
   blockedLimitCounterIdentity,
@@ -27,19 +27,19 @@ import {
   ScheduledStatus,
   Scope,
   VQueueId,
-} from '@restate/features/vqueue-ui';
-import { Badge } from '@restate/ui/badge';
-import { ChipGroup } from '@restate/ui/chip';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { DateTooltip } from '@restate/ui/tooltip';
+} from '@restate/features-vqueue-ui';
+import { Badge } from '@restate/ui-badge';
+import { ChipGroup } from '@restate/ui-chip';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { DateTooltip } from '@restate/ui-tooltip';
 import {
   formatCompactISODuration,
   formatDurations,
   formatNumber,
-} from '@restate/util/intl';
-import { serviceHref } from '@restate/util/panel';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { serviceHref } from '@restate/util-panel';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 import { useMemo, useState, type ReactNode } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
 import { useNavigate } from 'react-router';

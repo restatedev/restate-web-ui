@@ -2,9 +2,9 @@ import type {
   components,
   VqueueEntryStage,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { useListUserLimits } from '@restate/data-access/admin-api-hooks';
-import { Actions } from '@restate/features/invocation-route';
+} from '@restate/data-access-admin-api-spec';
+import { useListUserLimits } from '@restate/data-access-admin-api-hooks';
+import { Actions } from '@restate/features-invocation-route';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationTableCell,
@@ -12,15 +12,15 @@ import {
   Status,
   type InvocationTableColumnKey,
   VqueueEntryIdentity,
-} from '@restate/features/invocation-ui';
-import { useRestateContext } from '@restate/features/restate-context';
-import { VQueueHeadBlockedStatus } from '@restate/features/vqueue-ui';
-import { EmptyState } from '@restate/ui/empty-state';
-import { IconName } from '@restate/ui/icons';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { formatNumber } from '@restate/util/intl';
-import { getSearchParams } from '@restate/util/panel';
-import { tv } from '@restate/util/styles';
+} from '@restate/features-invocation-ui';
+import { useRestateContext } from '@restate/features-restate-context';
+import { VQueueHeadBlockedStatus } from '@restate/features-vqueue-ui';
+import { EmptyState } from '@restate/ui-empty-state';
+import { IconName } from '@restate/ui-icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { formatNumber } from '@restate/util-intl';
+import { getSearchParams } from '@restate/util-panel';
+import { tv } from '@restate/util-styles';
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { getBlockedLimitCounterRequest } from './limits.counterFilters';

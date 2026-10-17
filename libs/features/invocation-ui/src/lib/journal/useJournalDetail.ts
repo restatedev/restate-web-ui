@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router';
-import type { DropdownMenuSelection } from '@restate/ui/dropdown';
+import type { DropdownMenuSelection } from '@restate/ui-dropdown';
 
 // The detailed journal view is no longer all-or-nothing: each of these
 // categories can be toggled independently. Most map 1:1 onto the rows that

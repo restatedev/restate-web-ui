@@ -1,9 +1,9 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   QueryClause,
   QueryClauseSchema,
   QueryClauseType,
-} from '@restate/ui/filter-builder';
+} from '@restate/ui-filter-builder';
 import { LIMIT_IDENTITY_FILTER_SCHEMA } from './limits.identityFilters';
 
 type VQueueFilterItem = components['schemas']['VQueueFilterItem'];

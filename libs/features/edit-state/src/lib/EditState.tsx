@@ -3,17 +3,17 @@ import {
   DialogClose,
   DialogContent,
   DialogFooter,
-} from '@restate/ui/dialog';
+} from '@restate/ui-dialog';
 import { Form } from 'react-router';
 import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
-import { Button, SubmitButton } from '@restate/ui/button';
-import { ErrorBanner } from '@restate/ui/error';
+import { Button, SubmitButton } from '@restate/ui-button';
+import { ErrorBanner } from '@restate/ui-error';
 import {
   FormFieldCode,
   FormFieldInput,
   FormFieldSelect,
-} from '@restate/ui/form-field';
-import { ListBoxItem } from '@restate/ui/listbox';
+} from '@restate/ui-form-field';
+import { ListBoxItem } from '@restate/ui-listbox';
 import {
   createContext,
   Dispatch,
@@ -31,14 +31,14 @@ import {
   convertStateToObject,
   useGetVirtualObjectInbox,
   useGetVirtualObjectLock,
-} from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+} from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import { useQueryClient } from '@tanstack/react-query';
-import { Spinner } from '@restate/ui/loading';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Badge } from '@restate/ui/badge';
+import { Spinner } from '@restate/ui-loading';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { Badge } from '@restate/ui-badge';
 import { useEditState, type EditStateValue } from './useEditState';
 
 const styles = tv({

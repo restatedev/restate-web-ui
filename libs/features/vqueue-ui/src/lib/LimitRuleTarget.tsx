@@ -2,10 +2,10 @@ import {
   ChipGroup,
   type ChipGroupDensity,
   type ChipGroupVariant,
-} from '@restate/ui/chip';
-import { IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-chip';
+import { IconName } from '@restate/ui-icons';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import { LimitKey } from './LimitKey';
 import { Scope } from './Scope';
 

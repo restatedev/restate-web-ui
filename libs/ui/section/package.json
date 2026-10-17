@@ -2,11 +2,5 @@
   "name": "@restate/ui-section",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "section",
-    "sourceRoot": "libs/ui/section/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

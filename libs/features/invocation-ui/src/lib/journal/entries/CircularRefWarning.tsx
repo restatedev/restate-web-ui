@@ -1,6 +1,6 @@
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 
 export function CircularRefWarning() {
   return (

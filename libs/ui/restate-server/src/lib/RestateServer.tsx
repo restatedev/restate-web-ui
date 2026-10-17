@@ -1,7 +1,7 @@
-import { Button } from '@restate/ui/button';
+import { Button } from '@restate/ui-button';
 import { PropsWithChildren, useEffect, useId, useRef } from 'react';
 import { FerrofluidCanvas, type FerrofluidHandle } from './Ferrofluid';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import type { FerrofluidStatus } from './ferrofluid-engine';
 import { useServerAura, ServerRings } from './ServerAura';
 

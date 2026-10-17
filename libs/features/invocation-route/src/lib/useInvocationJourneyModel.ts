@@ -3,8 +3,8 @@ import type {
   JournalEntryV2,
   VqueueEntryStage,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
+import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access-admin-api-spec';
 import {
   getVqueueHeadBlockSummary,
   getVqueueGateLabel,
@@ -13,7 +13,7 @@ import {
   vqueueDurationMilliseconds,
   vqueueDurationPartsMilliseconds,
   vqueueDurationRatio,
-} from '@restate/features/vqueue-ui';
+} from '@restate/features-vqueue-ui';
 import {
   addDurationToDate,
   formatCompactDateTime,
@@ -22,11 +22,11 @@ import {
   formatMilliseconds,
   normaliseDuration,
   parseISODuration,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 import {
   useDurationSinceLastSnapshot,
   useSnapshotTime,
-} from '@restate/util/snapshot-time';
+} from '@restate/util-snapshot-time';
 import {
   getJourneyActivityDetails,
   journalEntriesOfType,

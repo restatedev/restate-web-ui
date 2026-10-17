@@ -1,13 +1,13 @@
-import type { Invocation } from '@restate/data-access/admin-api-spec';
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
-import { Deployment, SDK } from '@restate/features/deployment';
-import { GithubMetadata, hasGithubMetadata } from '@restate/features/options';
-import { Badge } from '@restate/ui/badge';
-import { CardRow } from '@restate/ui/card';
-import { Copy } from '@restate/ui/copy';
-import { Icon, IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+import type { Invocation } from '@restate/data-access-admin-api-spec';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
+import { Deployment, SDK } from '@restate/features-deployment';
+import { GithubMetadata, hasGithubMetadata } from '@restate/features-options';
+import { Badge } from '@restate/ui-badge';
+import { CardRow } from '@restate/ui-card';
+import { Copy } from '@restate/ui-copy';
+import { Icon, IconName } from '@restate/ui-icons';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'flex flex-col items-start text-xs',

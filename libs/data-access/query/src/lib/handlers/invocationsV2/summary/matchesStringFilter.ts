@@ -1,4 +1,4 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
 
 export function matchesStringFilter(value: string, filter: FilterItem) {
   if (filter.type === 'STRING') {

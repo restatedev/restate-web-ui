@@ -1,11 +1,11 @@
-import type { RestateCodecOptions } from '@restate/features/codec';
-import { useEditStateContext } from '@restate/features/edit-state';
-import { Button } from '@restate/ui/button';
-import { ContentPanelToolbar } from '@restate/ui/content-panel';
-import { DropdownItem } from '@restate/ui/dropdown';
-import { EmptyState } from '@restate/ui/empty-state';
-import { Icon, IconName } from '@restate/ui/icons';
-import { SplitButton } from '@restate/ui/split-button';
+import type { RestateCodecOptions } from '@restate/features-codec';
+import { useEditStateContext } from '@restate/features-edit-state';
+import { Button } from '@restate/ui-button';
+import { ContentPanelToolbar } from '@restate/ui-content-panel';
+import { DropdownItem } from '@restate/ui-dropdown';
+import { EmptyState } from '@restate/ui-empty-state';
+import { Icon, IconName } from '@restate/ui-icons';
+import { SplitButton } from '@restate/ui-split-button';
 import { useMemo } from 'react';
 import { StateEntriesTable } from './StateObjectTable';
 

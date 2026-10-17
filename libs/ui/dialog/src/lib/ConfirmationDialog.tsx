@@ -1,14 +1,14 @@
 import { Heading } from 'react-aria-components';
 import { Form } from 'react-router';
-import { Button, SubmitButton } from '@restate/ui/button';
-import { ErrorBanner } from '@restate/ui/error';
+import { Button, SubmitButton } from '@restate/ui-button';
+import { ErrorBanner } from '@restate/ui-error';
 import { FormEvent, PropsWithChildren, ReactNode, useId } from 'react';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui-icons';
 import { DialogFooter } from './DialogFooter';
 import { DialogClose } from './DialogClose';
 import { DialogContent } from './DialogContent';
 import { Dialog, QueryDialog } from './Dialog';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 interface AlertBannerProps {
   type: 'warning' | 'info';

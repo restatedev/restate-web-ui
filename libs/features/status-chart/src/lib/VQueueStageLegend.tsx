@@ -1,9 +1,9 @@
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { formatNumber } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { formatNumber } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import {
   COMPLETED_STAGE_LEGEND_GRADIENT,
   DEFAULT_STYLE,

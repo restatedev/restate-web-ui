@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal, ZonedDateTime } from '@internationalized/date';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import {
   DateInput as AriaDateInput,
   DateRangePicker as AriaDateRangePicker,

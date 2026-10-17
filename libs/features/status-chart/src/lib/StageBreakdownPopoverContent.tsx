@@ -1,12 +1,12 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import {
   formatApproxPercentage,
   formatNumber,
   formatPercentage,
   formatPlurals,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 
 const bulletStyles = tv({
   base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',

@@ -1,7 +1,7 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { Link } from '@restate/ui/link';
-import { tv } from '@restate/util/styles';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { Link } from '@restate/ui-link';
+import { tv } from '@restate/util-styles';
 
 const HIDDEN_METADATA_PREFIX = 'dev.restate.';
 

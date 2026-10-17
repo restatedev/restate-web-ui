@@ -1,15 +1,15 @@
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   MutationOptions,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { adminApi } from '@restate/data-access/admin-api';
-import { useAdminBaseUrl } from '@restate/data-access/admin-api';
-import type { HookMutationOptions } from '@restate/data-access/admin-api';
+import { adminApi } from '@restate/data-access-admin-api';
+import { useAdminBaseUrl } from '@restate/data-access-admin-api';
+import type { HookMutationOptions } from '@restate/data-access-admin-api';
 import { useState, useEffect, useRef } from 'react';
 import { invalidateInvocationsV2Queries } from './queryMatchers';
 

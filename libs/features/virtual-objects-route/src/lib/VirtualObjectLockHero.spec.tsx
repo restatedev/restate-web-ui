@@ -1,13 +1,13 @@
 import type {
   components,
   Invocation,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { VirtualObjectLockHero } from './VirtualObjectLockHero';
 
-vi.mock('@restate/features/invocation-route', () => ({
+vi.mock('@restate/features-invocation-route', () => ({
   Actions: () => null,
 }));
 
@@ -15,9 +15,9 @@ const apiHooks = vi.hoisted(() => ({
   useGetPausedError: vi.fn(),
 }));
 
-vi.mock('@restate/data-access/admin-api-hooks', async (importOriginal) => ({
+vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/data-access/admin-api-hooks')
+    typeof import('@restate/data-access-admin-api-hooks')
   >()),
   useGetPausedError: apiHooks.useGetPausedError,
 }));

@@ -1,21 +1,21 @@
-import { useDeploymentLabel } from '@restate/features/deployment';
-import { InvocationPopoverContent } from '@restate/features/invocation-ui';
-import { Scope } from '@restate/features/vqueue-ui';
+import { useDeploymentLabel } from '@restate/features-deployment';
+import { InvocationPopoverContent } from '@restate/features-invocation-ui';
+import { Scope } from '@restate/features-vqueue-ui';
 import {
   CrumbContent,
   type BreadcrumbComponentProps,
   type PageDefinition,
-} from '@restate/ui/breadcrumbs';
-import { Copy } from '@restate/ui/copy';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-breadcrumbs';
+import { Copy } from '@restate/ui-copy';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   formatVirtualObjectInstanceIdentity,
   virtualObjectScopeFromSearch,
-} from '@restate/features/virtual-object-instance';
+} from '@restate/features-virtual-object-instance';
 import {
   formatWorkflowRunIdentity,
   workflowScopeFromSearch,
-} from '@restate/features/workflow-run';
+} from '@restate/features-workflow-run';
 
 export type CrumbFragment = Omit<PageDefinition, 'pattern'>;
 

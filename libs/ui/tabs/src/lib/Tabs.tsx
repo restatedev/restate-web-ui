@@ -15,8 +15,8 @@ import {
   composeRenderProps,
 } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
-import { focusRing } from '@restate/ui/focus';
-import { tv } from '@restate/util/styles';
+import { focusRing } from '@restate/ui-focus';
+import { tv } from '@restate/util-styles';
 
 export type TabId = string;
 

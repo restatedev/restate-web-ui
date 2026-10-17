@@ -1,4 +1,4 @@
-import { QueryClause } from '@restate/ui/filter-builder';
+import { QueryClause } from '@restate/ui-filter-builder';
 import {
   createVQueueIdFilter,
   getVQueueIdFilterValue,

@@ -1,12 +1,12 @@
-import { tv } from '@restate/util/styles';
-import { formatDurations } from '@restate/util/intl';
-import { getDuration } from '@restate/util/snapshot-time';
+import { tv } from '@restate/util-styles';
+import { formatDurations } from '@restate/util-intl';
+import { getDuration } from '@restate/util-snapshot-time';
 import {
   LIVE_TRANSITION_DURATION_MS,
   useTimelineEngineContext,
   useTimelineIntervalSlots,
-} from '@restate/ui/timeline-zoom';
-import { DateTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-timeline-zoom';
+import { DateTooltip } from '@restate/ui-tooltip';
 import { CSSProperties } from 'react';
 
 const intervalBoundaryStyles = tv({

@@ -1,7 +1,7 @@
 import {
   getInvocationStatusesForStage,
   type FilterItem,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getInvocationStatusFromVqueue,
   type InvocationStatus,

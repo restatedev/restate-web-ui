@@ -1,12 +1,12 @@
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
   usePopover,
-} from '@restate/ui/popover';
+} from '@restate/ui-popover';
 import { PropsWithChildren } from 'react';
 import { Header } from 'react-aria-components';
 

@@ -1,22 +1,22 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
-import { useRestateContext } from '@restate/features/restate-context';
-import type { components } from '@restate/data-access/admin-api-spec';
-import type { ContentPanelTabs } from '@restate/ui/content-panel';
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import { useRestateContext } from '@restate/features-restate-context';
+import type { components } from '@restate/data-access-admin-api-spec';
+import type { ContentPanelTabs } from '@restate/ui-content-panel';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   buildStatusEntries,
   InvocationsBreakdownTooltipContent,
-} from '@restate/features/status-chart';
+} from '@restate/features-status-chart';
 import {
   countMatchingGlobalStatuses,
   countMatchingStatusBuckets,
   type InvocationPopulationCount,
 } from './invocationSummaryMatchCount';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
-import { formatNumber } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+import { formatNumber } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 
 const ALL_TAB_ID = '__all__';
 const MULTI_TAB_ID = '__multi__';

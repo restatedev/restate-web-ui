@@ -1,9 +1,9 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { ErrorBanner } from '@restate/ui/error';
-import type { IssueSeverity } from '@restate/features/system-health';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { ErrorBanner } from '@restate/ui-error';
+import type { IssueSeverity } from '@restate/features-system-health';
 import { issueBannerStyles, issuePingStyles, issueDotStyles } from './styles';
 
 export function IssueBannerPill({

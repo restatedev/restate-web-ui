@@ -1,8 +1,8 @@
-import { withConfirmation } from '@restate/ui/dialog';
-import { usePurgeInvocation } from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { Link } from '@restate/ui/link';
-import { IconName } from '@restate/ui/icons';
+import { withConfirmation } from '@restate/ui-dialog';
+import { usePurgeInvocation } from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { Link } from '@restate/ui-link';
+import { IconName } from '@restate/ui-icons';
 import {
   getInvocationActionFormData,
   getInvocationActionId,

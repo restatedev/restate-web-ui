@@ -3,7 +3,7 @@ import {
   INBOX_INVOCATION_STATUSES,
   INVOCATION_SUMMARY_STAGES,
   NOT_COMPLETED_INVOCATION_STAGES,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 
 const DASHED = { borderType: [8, 4] as number[], borderCap: 'round' as const };
 

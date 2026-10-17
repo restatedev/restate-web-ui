@@ -4,8 +4,8 @@ import {
   SwitchProps as AriaSwitchProps,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
-import { focusRing } from '@restate/ui/focus';
+import { tv } from '@restate/util-styles';
+import { focusRing } from '@restate/ui-focus';
 
 const styles = tv({
   base: 'group inline-flex cursor-default items-center gap-2 text-sm transition',

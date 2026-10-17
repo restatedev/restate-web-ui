@@ -1,12 +1,12 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   adminApi,
   useAdminBaseUrl,
   useAPIStatus,
   useQueryHandlerFeatures,
   type HookQueryOptions,
-} from '@restate/data-access/admin-api';
-import { canSummarizeInvocationsFromStats } from '@restate/data-access/query';
+} from '@restate/data-access-admin-api';
+import { canSummarizeInvocationsFromStats } from '@restate/data-access-query';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { alignInvocationSummaryBreakdowns } from './invocationSummaryBreakdowns';

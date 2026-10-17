@@ -2,11 +2,5 @@
   "name": "@restate/ui-button",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "button",
-    "sourceRoot": "libs/ui/button/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

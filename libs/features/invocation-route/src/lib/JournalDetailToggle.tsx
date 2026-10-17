@@ -6,16 +6,16 @@ import {
   DropdownSection,
   DropdownTrigger,
   type DropdownMenuSelection,
-} from '@restate/ui/dropdown';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-dropdown';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import {
   DETAIL_CATEGORY_DESCRIPTIONS,
   DETAIL_CATEGORY_LABELS,
   type DetailCategory,
-} from '@restate/features/invocation-ui';
+} from '@restate/features-invocation-ui';
 
 // Segmented control matching the old Compact|Detailed Nav box (subtle inset
 // background + white "active" pill), but Detailed is now a split button: the

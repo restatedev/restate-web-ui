@@ -1,9 +1,9 @@
 import type {
   components,
   FilterItem,
-} from '@restate/data-access/admin-api-spec';
-import { useBatchOperations } from '@restate/features/batch-operations';
-import { Actions } from '@restate/features/invocation-route';
+} from '@restate/data-access-admin-api-spec';
+import { useBatchOperations } from '@restate/features-batch-operations';
+import { Actions } from '@restate/features-invocation-route';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationTableCell,
@@ -11,12 +11,12 @@ import {
   isVqueueEntry,
   type InvocationTableColumnKey,
   VqueueEntryCell,
-} from '@restate/features/invocation-ui';
-import { useRestateContext } from '@restate/features/restate-context';
-import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
-import { Badge } from '@restate/ui/badge';
-import { Button } from '@restate/ui/button';
-import { ContentPanelToolbar } from '@restate/ui/content-panel';
+} from '@restate/features-invocation-ui';
+import { useRestateContext } from '@restate/features-restate-context';
+import type { VirtualObjectInstanceIdentity } from '@restate/features-virtual-object-instance';
+import { Badge } from '@restate/ui-badge';
+import { Button } from '@restate/ui-button';
+import { ContentPanelToolbar } from '@restate/ui-content-panel';
 import {
   Dropdown,
   DropdownItem,
@@ -24,14 +24,14 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { EmptyState } from '@restate/ui/empty-state';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { formatNumber } from '@restate/util/intl';
-import { getSearchParams } from '@restate/util/panel';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-dropdown';
+import { EmptyState } from '@restate/ui-empty-state';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
+import { formatNumber } from '@restate/util-intl';
+import { getSearchParams } from '@restate/util-panel';
+import { tv } from '@restate/util-styles';
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import {
   RestateServer,
   type FerrofluidStatus,
-} from '@restate/ui/restate-server';
+} from '@restate/ui-restate-server';
 
 const coreStyles = tv({
   base: 'relative flex flex-col items-center justify-center',

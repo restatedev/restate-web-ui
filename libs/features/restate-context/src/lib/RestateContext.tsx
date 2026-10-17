@@ -5,7 +5,7 @@ import {
   useVersion,
   useQueryHealthCheck,
   useAdminBaseUrl,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access-admin-api';
 import {
   ComponentType,
   createContext,
@@ -20,7 +20,7 @@ import semverGt from 'semver/functions/gte';
 import {
   classifyHealthFailure,
   type HealthFailure,
-} from '@restate/util/errors';
+} from '@restate/util-errors';
 
 export type Status =
   | 'HEALTHY'
@@ -51,7 +51,7 @@ type OnboardingComponent = ComponentType<{
 // before the slow-query reassurance banner appears. The table (list) query has
 // its own sampling default, independent of the summary's estimate/exact knob,
 // chosen per query preset: `listSampledDefaultByPreset` is keyed by preset id
-// from @restate/util/sidebar-nav ('all' | 'inflight' | … | 'custom' for any
+// from @restate/util-sidebar-nav ('all' | 'inflight' | … | 'custom' for any
 // non-preset filter combination) — kept as strings to avoid a dependency cycle
 // with sidebar-nav — and `listSampledDefault` is the fallback for presets not
 // listed there.
@@ -87,7 +87,7 @@ type RestateContext = {
   observabilityDashboardUrl?: string;
   // Preset applied when landing on /invocations without an explicit query (e.g.
   // the Invocations nav link) — falls back to the "All" view when unset. A
-  // preset id from @restate/util/sidebar-nav ('all' | 'inflight' | 'processing'
+  // preset id from @restate/util-sidebar-nav ('all' | 'inflight' | 'processing'
   // | 'stuck' | …). Kept as a string to avoid a dependency cycle with
   // sidebar-nav; the invocations route validates it.
   defaultInvocationsPreset?: string;

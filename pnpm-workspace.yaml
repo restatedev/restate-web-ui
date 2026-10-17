@@ -1,6 +1,9 @@
 packages:
   - libs/*/*
 
+publicHoistPattern:
+  - '@restate/*'
+
 allowBuilds:
   '@swc/core': false
   '@tailwindcss/oxide': false

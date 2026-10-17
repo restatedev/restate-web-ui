@@ -7,16 +7,16 @@ const { getAuthToken } = vi.hoisted(() => ({
   getAuthToken: vi.fn<() => string | undefined>(),
 }));
 
-vi.mock('@restate/util/api-config', () => ({ getAuthToken }));
+vi.mock('@restate/util-api-config', () => ({ getAuthToken }));
 
-vi.mock('@restate/features/restate-context', () => ({
+vi.mock('@restate/features-restate-context', () => ({
   useRestateContext: () => ({
     ingressUrl: 'http://localhost:8080/',
     isVersionGte: () => true,
   }),
 }));
 
-vi.mock('@restate/data-access/admin-api', () => ({
+vi.mock('@restate/data-access-admin-api', () => ({
   useAPIStatus: () => true,
   useAdminBaseUrl: () => 'http://localhost:9070',
   adminApi: (_type: string, path: string) => ({

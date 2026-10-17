@@ -1,4 +1,4 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import { INVOCATION_STATUS_DEFINITIONS } from '../../../invocationStatuses';
 import {
   getInvocationListField,

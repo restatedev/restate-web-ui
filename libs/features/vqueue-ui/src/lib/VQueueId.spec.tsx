@@ -1,4 +1,4 @@
-import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
+import type { VqueueSnapshot } from '@restate/data-access-admin-api-spec';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { VQueueId } from './VQueueId';
@@ -41,7 +41,7 @@ const snapshot: VqueueSnapshot = {
   },
 };
 
-vi.mock('@restate/data-access/admin-api-hooks', () => ({
+vi.mock('@restate/data-access-admin-api-hooks', () => ({
   useGetVqueue,
 }));
 

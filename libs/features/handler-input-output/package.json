@@ -1,12 +1,6 @@
 {
-  "name": "@restate/feature-handler-input-output",
+  "name": "@restate/features-handler-input-output",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "feature-handler-input-output",
-    "sourceRoot": "libs/features/handler-input-output/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

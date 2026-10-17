@@ -1,8 +1,8 @@
 import { useSearchParams } from 'react-router';
 import { PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { DialogTrigger } from 'react-aria-components';
-import { Button } from '@restate/ui/button';
-import { registerTransientQueryParams } from '@restate/util/panel';
+import { Button } from '@restate/ui-button';
+import { registerTransientQueryParams } from '@restate/util-panel';
 
 interface DialogProps {
   open?: boolean;

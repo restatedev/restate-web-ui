@@ -1,4 +1,4 @@
-import { registerTransientQueryParams } from '@restate/util/panel';
+import { registerTransientQueryParams } from '@restate/util-panel';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearQueryStats,

@@ -1,10 +1,10 @@
-import { FormFieldError } from '@restate/ui/form-field';
+import { FormFieldError } from '@restate/ui-form-field';
 import { PropsWithChildren } from 'react';
 import {
   RadioGroup as AriaRadioGroup,
   RadioGroupProps as AriaRadioGroupProps,
 } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 interface RadioGroupProps {
   name: string;

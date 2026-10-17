@@ -1,12 +1,12 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   CodecOptionsProvider,
   type RestateCodecOptions,
-} from '@restate/features/codec';
+} from '@restate/features-codec';
 import { EntryProps } from './types';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { EntryExpression } from './EntryExpression';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui-icons';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 const inputStyles = tv({

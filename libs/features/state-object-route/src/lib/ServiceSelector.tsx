@@ -1,5 +1,5 @@
-import { useServiceCatalog } from '@restate/data-access/admin-api-hooks';
-import { Button } from '@restate/ui/button';
+import { useServiceCatalog } from '@restate/data-access-admin-api-hooks';
+import { Button } from '@restate/ui-button';
 import {
   Dropdown,
   DropdownItem,
@@ -7,11 +7,11 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { issueAlertIconStyles } from '@restate/ui/issue-banner';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { issueAlertIconStyles } from '@restate/ui-issue-banner';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { useRestateContext } from '@restate/features-restate-context';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import invariant from 'tiny-invariant';

@@ -3,15 +3,15 @@ import {
   splitInvocationTotals,
   type ArcSegment,
   type StatusEntry,
-} from '@restate/features/status-chart';
+} from '@restate/features-status-chart';
 import {
   toCompletedInvocationsBucketHref,
   toCompletedInvocationsHref,
-} from '@restate/util/invocation-links';
+} from '@restate/util-invocation-links';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 import { getCompletionTotal, type CompletionBucket } from './completionBuckets';
 
 type CompletionBucketOutcome = 'succeeded' | 'failed' | 'cancelled' | 'killed';

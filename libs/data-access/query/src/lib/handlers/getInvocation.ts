@@ -1,4 +1,4 @@
-import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
+import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util-errors';
 import { convertInvocation } from '../convertInvocation';
 import {
   type QueryContext,

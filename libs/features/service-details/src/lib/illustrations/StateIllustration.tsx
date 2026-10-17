@@ -1,5 +1,5 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import { explanationItemStyles } from './primitives';
 import { JournalLines, Section, timelineStyles } from './timeline';

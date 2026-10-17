@@ -1,14 +1,14 @@
 import {
   useListDeployments,
   useSqlQuery,
-} from '@restate/data-access/admin-api-hooks';
-import { Icon, IconName } from '@restate/ui/icons';
-import { PanelTable, PanelTableColumn } from '@restate/ui/table';
-import { formatDurations, formatMilliseconds } from '@restate/util/intl';
+} from '@restate/data-access-admin-api-hooks';
+import { Icon, IconName } from '@restate/ui-icons';
+import { PanelTable, PanelTableColumn } from '@restate/ui-table';
+import { formatDurations, formatMilliseconds } from '@restate/util-intl';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
-} from '@restate/util/snapshot-time';
+} from '@restate/util-snapshot-time';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RouterProvider } from 'react-aria';
 import { useSearchParams } from 'react-router';
@@ -16,15 +16,15 @@ import {
   IntrospectionServicesContext,
   renderIntrospectionCell,
 } from './IntrospectionCell';
-import { Link } from '@restate/ui/link';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import { Link } from '@restate/ui-link';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
 import { useQueryClient } from '@tanstack/react-query';
 import { Toolbar } from './Toolbar';
 import { addQueryToHistory } from './queryHistory';

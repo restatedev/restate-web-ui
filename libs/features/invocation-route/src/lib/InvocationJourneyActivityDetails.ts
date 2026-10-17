@@ -1,4 +1,4 @@
-import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import type {
   InvocationJourneyModel,
   JourneyActivityDetail,

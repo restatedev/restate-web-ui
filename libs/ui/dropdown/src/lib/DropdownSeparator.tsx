@@ -1,4 +1,4 @@
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { Separator } from 'react-aria-components';
 
 const styles = tv({

@@ -1,7 +1,7 @@
-import { Button } from '@restate/ui/button';
-import { ErrorBanner } from '@restate/ui/error';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Button } from '@restate/ui-button';
+import { ErrorBanner } from '@restate/ui-error';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 
 export function ErrorPopoverPill({
   error,

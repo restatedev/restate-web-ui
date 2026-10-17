@@ -1,7 +1,7 @@
 import { useQueries, useQuery, type QueryKey } from '@tanstack/react-query';
-import { convertStateToObject } from '@restate/data-access/admin-api-hooks';
-import { base64ToUint8Array } from '@restate/util/binary';
-import { combineErrors } from '@restate/util/errors';
+import { convertStateToObject } from '@restate/data-access-admin-api-hooks';
+import { base64ToUint8Array } from '@restate/util-binary';
+import { combineErrors } from '@restate/util-errors';
 import type { RestateCodecOptions } from './types';
 import { useCodecRuntime } from './useCodecRuntime';
 

@@ -1,4 +1,4 @@
-import { deploymentRoute } from '@restate/features/deployment-route';
+import { deploymentRoute } from '@restate/features-deployment-route';
 import type { MetaFunction } from 'react-router';
 
 export const meta: MetaFunction = ({ params }) => [

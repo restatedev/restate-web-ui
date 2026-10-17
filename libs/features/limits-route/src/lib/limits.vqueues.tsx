@@ -1,14 +1,14 @@
-import { useListVqueues } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Button } from '@restate/ui/button';
+import { useListVqueues } from '@restate/data-access-admin-api-hooks';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Button } from '@restate/ui-button';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
 import {
   AddFilterTrigger,
   FilterBuilder,
@@ -19,10 +19,10 @@ import {
   readFilterClauses,
   useFilterBuilder,
   writeFilterClauses,
-} from '@restate/ui/filter-builder';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-filter-builder';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { type SortDescriptor } from 'react-aria-components';
 import { Form, useSearchParams } from 'react-router';

@@ -1,5 +1,5 @@
-import { useRestateContext } from '@restate/features/restate-context';
-import { showWarningNotification } from '@restate/ui/notification';
+import { useRestateContext } from '@restate/features-restate-context';
+import { showWarningNotification } from '@restate/ui-notification';
 import { useEffect } from 'react';
 
 export function useHealthCheckNotification(props?: { message?: string }) {

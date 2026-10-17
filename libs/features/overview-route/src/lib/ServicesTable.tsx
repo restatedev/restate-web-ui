@@ -2,40 +2,40 @@ import {
   getEndpoint,
   type Deployment,
   type Handler,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   AllRevisions,
   LatestRevisionDeployment,
-} from '@restate/features/deployment';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-deployment';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   Handler as ServiceHandler,
   PlaygroundIconLink,
   ServiceType,
-} from '@restate/features/service';
-import { ServiceTarget } from '@restate/features/service-target';
+} from '@restate/features-service';
+import { ServiceTarget } from '@restate/features-service-target';
 import {
   buildStatusEntries,
   ServiceStatusBar,
-} from '@restate/features/status-chart';
-import type { ServiceIssue } from '@restate/features/system-health';
-import { Button } from '@restate/ui/button';
-import { EmptyState } from '@restate/ui/empty-state';
-import { Icon, IconName } from '@restate/ui/icons';
-import { IssueBadge } from '@restate/ui/issue-banner';
-import { Link } from '@restate/ui/link';
-import { Spinner } from '@restate/ui/loading';
+} from '@restate/features-status-chart';
+import type { ServiceIssue } from '@restate/features-system-health';
+import { Button } from '@restate/ui-button';
+import { EmptyState } from '@restate/ui-empty-state';
+import { Icon, IconName } from '@restate/ui-icons';
+import { IssueBadge } from '@restate/ui-issue-banner';
+import { Link } from '@restate/ui-link';
+import { Spinner } from '@restate/ui-loading';
 import {
   Cell,
   PanelTable,
   type PanelTableColumn,
   Row,
-} from '@restate/ui/table';
-import { HoverTooltip, RelativeDate } from '@restate/ui/tooltip';
-import { toServiceAndHandlerInvocationsHref } from '@restate/util/invocation-links';
-import { useOnboarding } from '@restate/util/feature-flag';
-import { panelHref, serviceHref } from '@restate/util/panel';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-table';
+import { HoverTooltip, RelativeDate } from '@restate/ui-tooltip';
+import { toServiceAndHandlerInvocationsHref } from '@restate/util-invocation-links';
+import { useOnboarding } from '@restate/util-feature-flag';
+import { panelHref, serviceHref } from '@restate/util-panel';
+import { tv } from '@restate/util-styles';
 import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
 import { OVERVIEW_ROW_WAVE } from './overviewWave';
 import {

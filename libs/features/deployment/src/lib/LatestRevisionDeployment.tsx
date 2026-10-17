@@ -5,14 +5,14 @@ import {
   DropdownMenu,
   DropdownItem,
   DropdownSection,
-} from '@restate/ui/dropdown';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
+} from '@restate/ui-dropdown';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
 import { Deployment } from './Deployment';
 import { Revision } from './Revision';
-import { deploymentHref } from '@restate/util/panel';
-import { useRestateContext } from '@restate/features/restate-context';
+import { deploymentHref } from '@restate/util-panel';
+import { useRestateContext } from '@restate/features-restate-context';
 
 function useDeploymentPairs(serviceName: string) {
   const { data } = useListDeployments({ refetchOnMount: false });

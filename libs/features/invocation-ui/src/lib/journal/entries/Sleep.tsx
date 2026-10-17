@@ -1,8 +1,8 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { EntryProps } from './types';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { formatDurations } from '@restate/util/intl';
-import { DateTooltip } from '@restate/ui/tooltip';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { formatDurations } from '@restate/util-intl';
+import { DateTooltip } from '@restate/ui-tooltip';
 import { EntryExpression } from './EntryExpression';
 
 export function Sleep({

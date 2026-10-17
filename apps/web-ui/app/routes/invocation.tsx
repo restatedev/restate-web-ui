@@ -1,4 +1,4 @@
-import { invocation } from '@restate/features/invocation-route';
+import { invocation } from '@restate/features-invocation-route';
 import { MetaFunction } from 'react-router';
 
 export default invocation.Component;

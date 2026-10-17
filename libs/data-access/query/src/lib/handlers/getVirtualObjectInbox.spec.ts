@@ -1,7 +1,7 @@
 import type {
   RawInvocation,
   Service,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { describe, expect, it, vi } from 'vitest';
 import { getVirtualObjectInbox } from './getVirtualObjectInbox';
 import type { QueryContext } from './shared';

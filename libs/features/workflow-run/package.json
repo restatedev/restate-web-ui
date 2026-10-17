@@ -2,11 +2,5 @@
   "name": "@restate/features-workflow-run",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "workflow-run",
-    "sourceRoot": "libs/features/workflow-run/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useState } from 'react';
-import * as monaco from '@restate/ui/editor/monaco';
+import * as monaco from '@restate/ui-editor/monaco';
 
 export function ValueMonaco({
   value,

@@ -10,22 +10,22 @@ import type {
   BatchResumeInvocationsRequestBody,
   BatchInvocationsResponse,
   FilterItem,
-} from '@restate/data-access/admin-api-spec';
-import { showProgressNotification } from '@restate/ui/notification';
+} from '@restate/data-access-admin-api-spec';
+import { showProgressNotification } from '@restate/ui-notification';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
   formatPlurals,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 import { useBeforeUnload } from 'react-router';
-import { Ellipsis } from '@restate/ui/loading';
+import { Ellipsis } from '@restate/ui-loading';
 import { BatchState } from './types';
 import { ProgressStore } from './ProgressStore';
 import { NotificationProgressTracker } from './NotificationProgressTracker';
 import { BatchOperationDialog } from './BatchOperationDialog';
 import { OPERATION_CONFIG } from './config';
 import { MAX_FAILED_INVOCATIONS } from './BatchProgressBar';
-import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
+import { QueryClauseSchema, QueryClauseType } from '@restate/ui-query-builder';
 
 let nextBatchId = 0;
 function generateBatchId() {

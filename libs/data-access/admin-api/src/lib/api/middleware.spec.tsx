@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient } from '@tanstack/react-query';
-import { setQueryClient } from '@restate/util/react-query';
-import { setFeatureFlag } from '@restate/util/feature-flag';
+import { setQueryClient } from '@restate/util-react-query';
+import { setFeatureFlag } from '@restate/util-feature-flag';
 import { client } from './client';
 import './middleware';
 

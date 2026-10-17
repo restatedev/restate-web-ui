@@ -19,12 +19,12 @@ const {
   useListDrainedDeploymentsMock: vi.fn(),
 }));
 
-vi.mock('@restate/data-access/admin-api-hooks', () => ({
+vi.mock('@restate/data-access-admin-api-hooks', () => ({
   useListDeployments: useListDeploymentsMock,
   useListDrainedDeployments: useListDrainedDeploymentsMock,
 }));
 
-vi.mock('@restate/features/deployment', () => ({
+vi.mock('@restate/features-deployment', () => ({
   Deployment: ({ deploymentId }: { deploymentId: string }) => (
     <div>{deploymentId}</div>
   ),
@@ -44,7 +44,7 @@ vi.mock('./useDeleteDeployments', () => ({
   useDeleteDeployments: useDeleteDeploymentsMock,
 }));
 
-vi.mock('@restate/ui/dialog', () => ({
+vi.mock('@restate/ui-dialog', () => ({
   DialogClose: ({ children }: { children: ReactNode }) => children,
   DialogContent: ({ children }: { children: ReactNode }) => children,
   DialogFooter: ({ children }: { children: ReactNode }) => children,

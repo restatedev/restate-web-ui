@@ -2,11 +2,5 @@
   "name": "@restate/ui-nav",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "nav",
-    "sourceRoot": "libs/ui/nav/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

@@ -1,4 +1,4 @@
-import { readFilterClauses } from '@restate/ui/filter-builder';
+import { readFilterClauses } from '@restate/ui-filter-builder';
 import { LIMIT_COUNTER_FILTER_SCHEMA } from './limits.counterFilters';
 import { VQUEUE_FILTER_SCHEMA } from './limits.vqueueFilters';
 import {

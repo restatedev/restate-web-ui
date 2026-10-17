@@ -1,6 +1,6 @@
-import type { Invocation } from '@restate/data-access/admin-api-spec';
-import { Card, CardHeader } from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
+import type { Invocation } from '@restate/data-access-admin-api-spec';
+import { Card, CardHeader } from '@restate/ui-card';
+import { IconName } from '@restate/ui-icons';
 import { InvocationDeployment } from './InvocationDeployment';
 
 export function InvocationDeploymentCard({

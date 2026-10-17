@@ -4,8 +4,8 @@ import {
   DropdownMenu,
   DropdownPopover,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import type { BreakdownCountMode } from '@restate/features/user-preference';
+} from '@restate/ui-dropdown';
+import type { BreakdownCountMode } from '@restate/features-user-preference';
 import { ChartControlTrigger, ChartControlValue } from './ChartControlTrigger';
 
 export function BreakdownMode({

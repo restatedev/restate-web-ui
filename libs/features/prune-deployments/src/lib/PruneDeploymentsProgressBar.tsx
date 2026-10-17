@@ -1,21 +1,21 @@
-import { Deployment } from '@restate/features/deployment';
-import { deploymentHref } from '@restate/util/panel';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Button } from '@restate/ui/button';
+import { Deployment } from '@restate/features-deployment';
+import { deploymentHref } from '@restate/util-panel';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Button } from '@restate/ui-button';
 import {
   DropdownItem,
   DropdownMenu,
   DropdownSection,
-} from '@restate/ui/dropdown';
-import { ErrorBanner } from '@restate/ui/error';
-import { Spinner } from '@restate/ui/loading';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-dropdown';
+import { ErrorBanner } from '@restate/ui-error';
+import { Spinner } from '@restate/ui-loading';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 
 const progressBarStyles = tv({
   base: 'peer h-3 transform rounded-l-md rounded-r-xs border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs transition peer-[*]:rounded-l-xs last:rounded-r-md',

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { Button } from '@restate/ui/button';
+import { Button } from '@restate/ui-button';
 import { CardLinkRow } from './Card';
 
 describe('CardLinkRow', () => {

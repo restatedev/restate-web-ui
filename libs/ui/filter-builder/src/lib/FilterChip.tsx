@@ -1,5 +1,5 @@
-import { Button } from '@restate/ui/button';
-import { Chip, ChipGroup, ChipSegment } from '@restate/ui/chip';
+import { Button } from '@restate/ui-button';
+import { Chip, ChipGroup, ChipSegment } from '@restate/ui-chip';
 import {
   Dropdown,
   DropdownItem,
@@ -7,14 +7,14 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
+} from '@restate/ui-dropdown';
 import {
   FormFieldDateTimeInput,
   FormFieldDateTimeRangeInput,
   FormFieldInput,
   FormFieldNumberInput,
-} from '@restate/ui/form-field';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-form-field';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   QueryClause,
   QueryClauseDateRangeValue,
@@ -24,8 +24,8 @@ import {
   queryClauseOperationRequiresValue,
   useFinishNewQuery,
   useNewQueryId,
-} from '@restate/ui/query-builder';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-query-builder';
+import { tv } from '@restate/util-styles';
 import {
   PropsWithChildren,
   ReactNode,

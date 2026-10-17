@@ -1,5 +1,5 @@
-import { Card, CardHeader } from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
+import { Card, CardHeader } from '@restate/ui-card';
+import { IconName } from '@restate/ui-icons';
 import { JourneyComparisonSummary } from './InvocationJourneyMilestones';
 import type { InvocationJourneyModel } from './InvocationJourneyModel';
 import { InvocationJourneyTimeline } from './InvocationJourneyTimeline';

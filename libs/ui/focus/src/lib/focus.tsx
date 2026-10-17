@@ -1,4 +1,4 @@
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 export const focusRing = tv({
   base: 'outline-offset-2 outline-blue-600',

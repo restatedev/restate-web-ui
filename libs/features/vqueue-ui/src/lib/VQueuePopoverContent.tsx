@@ -1,25 +1,25 @@
 import type {
   InvocationSummaryStage,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   DEFAULT_STYLE,
   getStatusFillStyle,
   STATUS_STYLE,
-} from '@restate/features/status-chart';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Badge } from '@restate/ui/badge';
-import { Copy } from '@restate/ui/copy';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Link } from '@restate/ui/link';
-import { MetricComparison } from '@restate/ui/metric-comparison';
+} from '@restate/features-status-chart';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Badge } from '@restate/ui-badge';
+import { Copy } from '@restate/ui-copy';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Link } from '@restate/ui-link';
+import { MetricComparison } from '@restate/ui-metric-comparison';
 import {
   formatCompactISODuration,
   formatDurations,
   formatNumber,
-} from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import { BlockedStatus } from './BlockedStatus';
 import { LimitKey } from './LimitKey';

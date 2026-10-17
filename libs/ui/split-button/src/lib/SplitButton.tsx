@@ -4,11 +4,11 @@ import {
   DropdownPopover,
   DropdownMenu,
   DropdownSection,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Button } from '@restate/ui/button';
-import { Spinner } from '@restate/ui/loading';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Button } from '@restate/ui-button';
+import { Spinner } from '@restate/ui-loading';
+import { tv } from '@restate/util-styles';
 import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
 
 const menuTriggerStyles = tv({

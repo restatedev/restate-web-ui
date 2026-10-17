@@ -1,4 +1,4 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { quoteSqlString, scopeClause, type QueryContext } from './shared';
 
 type VirtualObjectStatsResponse =

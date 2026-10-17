@@ -2,11 +2,5 @@
   "name": "@restate/features-deployment-route",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "deployment-route",
-    "sourceRoot": "libs/features/deployment-route/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

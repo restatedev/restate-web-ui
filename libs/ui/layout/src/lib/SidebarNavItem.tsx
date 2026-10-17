@@ -1,17 +1,17 @@
 import { ReactNode, useMemo } from 'react';
 import { useLocation } from 'react-router';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
-import { Link } from '@restate/ui/link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
+import { Link } from '@restate/ui-link';
 import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownPopover,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Button } from '@restate/ui/button';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-dropdown';
+import { Button } from '@restate/ui-button';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import { useNavExpansion, useSidebar } from './Sidebar';
 
 export interface SidebarLocation {

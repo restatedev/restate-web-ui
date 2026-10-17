@@ -4,12 +4,12 @@ import {
   formatPlurals,
   formatPercentageWithoutFraction,
   formatApproxPercentage,
-} from '@restate/util/intl';
-import { Link } from '@restate/ui/link';
-import { Icon, IconName } from '@restate/ui/icons';
-import type { IssueSeverity } from '@restate/features/system-health';
-import { issueAlertIconStyles } from '@restate/ui/issue-banner';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { Link } from '@restate/ui-link';
+import { Icon, IconName } from '@restate/ui-icons';
+import type { IssueSeverity } from '@restate/features-system-health';
+import { issueAlertIconStyles } from '@restate/ui-issue-banner';
+import { tv } from '@restate/util-styles';
 import {
   STATUS_ORDER,
   STATUS_STYLE,

@@ -3,12 +3,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type PropsWithChildren } from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { query } from '@restate/data-access/query';
-import { useListInvocationsV2 } from '@restate/data-access/admin-api-hooks';
+import { query } from '@restate/data-access-query';
+import { useListInvocationsV2 } from '@restate/data-access-admin-api-hooks';
 import {
   TERMINAL_INVOCATION_STATUSES,
   type components,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { useInvocationSummary } from './useInvocationSummary';
 
 type Filter = components['schemas']['InvocationV2FilterItem'];
@@ -24,8 +24,8 @@ vi.mock('react-router', async (importOriginal) => ({
   useNavigation: () => ({ state: 'idle' }),
 }));
 
-vi.mock('@restate/data-access/admin-api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@restate/data-access/admin-api')>()),
+vi.mock('@restate/data-access-admin-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@restate/data-access-admin-api')>()),
   useAPIStatus: () => true,
   useAdminBaseUrl: () => 'http://query.test',
   useFeatures: () => api.features,
@@ -41,9 +41,9 @@ vi.mock('@restate/data-access/admin-api', async (importOriginal) => ({
   }),
 }));
 
-vi.mock('@restate/features/restate-context', async (importOriginal) => ({
+vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/features/restate-context')
+    typeof import('@restate/features-restate-context')
   >()),
   useRestateContext: () => ({ baseUrl: '' }),
 }));

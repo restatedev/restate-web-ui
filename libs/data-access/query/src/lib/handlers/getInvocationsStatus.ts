@@ -1,4 +1,4 @@
-import type { RawInvocation } from '@restate/data-access/admin-api-spec';
+import type { RawInvocation } from '@restate/data-access-admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
 import { isInvocationId, type QueryContext, quoteSqlString } from './shared';
 import { fetchVqueueStatuses } from './vqueue';

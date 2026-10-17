@@ -27,7 +27,7 @@ export function setQueryClient(qc: QueryClient): void {
 export function getQueryClient(): QueryClient {
   if (!registered) {
     throw new Error(
-      '@restate/util/react-query: queryClient not registered. ' +
+      '@restate/util-react-query: queryClient not registered. ' +
         'Call setQueryClient(queryClient) at app boot before any ' +
         'admin-api request fires.',
     );

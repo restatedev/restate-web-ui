@@ -1,5 +1,5 @@
-import { FormFieldInput, FormFieldLabel } from '@restate/ui/form-field';
-import { Icon, IconName } from '@restate/ui/icons';
+import { FormFieldInput, FormFieldLabel } from '@restate/ui-form-field';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   ComponentProps,
   KeyboardEvent,
@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from 'react';
 import { Radio, Heading } from 'react-aria-components';
-import { RadioGroup } from '@restate/ui/radio-group';
+import { RadioGroup } from '@restate/ui-radio-group';
 import {
   DeploymentProtocolCheck,
   RegisterDeploymentResults,
@@ -23,17 +23,17 @@ import {
   Tooltip,
   TooltipContent,
   RadioTooltipTrigger,
-} from '@restate/ui/tooltip';
-import { ServiceDeploymentExplainer } from '@restate/features/explainers';
-import { useRestateContext } from '@restate/features/restate-context';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-tooltip';
+import { ServiceDeploymentExplainer } from '@restate/features-explainers';
+import { useRestateContext } from '@restate/features-restate-context';
+import { tv } from '@restate/util-styles';
 import { FocusScope, useFocusManager } from 'react-aria';
 import { addProtocol } from './utils';
 import { Helper } from './Helper';
 import { OverrideWarning } from './OverrideWarnning';
 import { OverrideBreaking } from './OverrideBreaking';
 import { Metadata } from './Metadata';
-import { Link } from '@restate/ui/link';
+import { Link } from '@restate/ui-link';
 
 const customRadioStyles = tv({
   base: 'group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden',

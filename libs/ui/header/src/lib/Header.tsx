@@ -1,5 +1,5 @@
-import { Icon, type IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { Icon, type IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import type { PropsWithChildren, ReactNode } from 'react';
 
 export type HeaderVariant =

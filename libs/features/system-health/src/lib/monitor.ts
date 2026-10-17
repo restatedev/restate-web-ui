@@ -4,12 +4,12 @@ import {
   isQueryForPath,
   isQueryHealthCheckQuery,
   mergeInvocationSummaryBreakdowns,
-} from '@restate/data-access/admin-api-hooks';
-import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
-import type { components } from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-hooks';
+import { isOverviewRefreshQuery } from '@restate/data-access-admin-api';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { issueQueue } from './issue-queue';
 import { getGlobalIssues } from './service-issues';
-import { RestateError } from '@restate/util/errors';
+import { RestateError } from '@restate/util-errors';
 
 interface AdditionalObserver {
   match: (event: QueryCacheNotifyEvent) => boolean;

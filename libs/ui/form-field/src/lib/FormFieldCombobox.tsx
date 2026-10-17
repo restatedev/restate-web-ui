@@ -9,12 +9,12 @@ import {
 } from 'react-aria-components';
 import { useFilter } from 'react-aria';
 import { FormFieldError } from './FormFieldError';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import { FormFieldLabel } from './FormFieldLabel';
-import { PopoverOverlay } from '@restate/ui/popover';
-import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
-import { tv } from '@restate/util/styles';
+import { PopoverOverlay } from '@restate/ui-popover';
+import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui-listbox';
+import { tv } from '@restate/util-styles';
 
 export interface ComboBoxOption {
   id: string;

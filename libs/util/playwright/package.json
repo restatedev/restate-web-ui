@@ -2,11 +2,5 @@
   "name": "@restate/util-playwright",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "util-playwright",
-    "sourceRoot": "libs/util/playwright/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

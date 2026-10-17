@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import { useGetInvocation } from '@restate/data-access/admin-api-hooks';
-import { Copy } from '@restate/ui/copy';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Spinner } from '@restate/ui/loading';
-import { ServiceTarget } from '@restate/features/service-target';
+import { useGetInvocation } from '@restate/data-access-admin-api-hooks';
+import { Copy } from '@restate/ui-copy';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Spinner } from '@restate/ui-loading';
+import { ServiceTarget } from '@restate/features-service-target';
 import { Status } from './Status';
 
 interface InvocationPopoverContentProps {

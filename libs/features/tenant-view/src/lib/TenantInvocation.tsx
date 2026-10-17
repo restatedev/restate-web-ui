@@ -1,31 +1,31 @@
 import { TenantServiceTarget } from './TenantServiceTarget';
 import type { TenantInvocationsProps } from './TenantInvocations';
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   InvocationStatusHeader,
   Status,
-} from '@restate/features/invocation-ui';
+} from '@restate/features-invocation-ui';
 import {
   ServiceTarget,
   ServiceTargetProvider,
-} from '@restate/features/service-target';
-import { ContentPanel, ContentPanelBody } from '@restate/ui/content-panel';
-import { ErrorBanner } from '@restate/ui/error';
-import { CardGrid } from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
+} from '@restate/features-service-target';
+import { ContentPanel, ContentPanelBody } from '@restate/ui-content-panel';
+import { ErrorBanner } from '@restate/ui-error';
+import { CardGrid } from '@restate/ui-card';
+import { IconName } from '@restate/ui-icons';
 import {
   InvocationLifecycleCard,
   Actions,
   InvocationActions,
   JournalV2,
-} from '@restate/features/invocation-route';
+} from '@restate/features-invocation-route';
 import {
   Breadcrumbs,
   BreadcrumbsProvider,
-} from '@restate/features/breadcrumbs';
-import { Spinner } from '@restate/ui/loading';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/features-breadcrumbs';
+import { Spinner } from '@restate/ui-loading';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 
 export interface TenantInvocationProps extends TenantInvocationsProps {
   invocationId: string;

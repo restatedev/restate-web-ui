@@ -1,8 +1,8 @@
-import { FormFieldCheckbox, FormFieldInput } from '@restate/ui/form-field';
-import { useRestateContext } from '@restate/features/restate-context';
+import { FormFieldCheckbox, FormFieldInput } from '@restate/ui-form-field';
+import { useRestateContext } from '@restate/features-restate-context';
 import { useRegisterDeploymentContext } from './Context';
 import { tv } from 'tailwind-variants';
-import { InlineTooltip } from '@restate/ui/tooltip';
+import { InlineTooltip } from '@restate/ui-tooltip';
 
 const styles = tv({
   base: '',

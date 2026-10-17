@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { Header } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 export interface DropdownSectionProps extends PropsWithChildren<object> {
   title?: ReactNode;

@@ -2,11 +2,5 @@
   "name": "@restate/features-vqueue-ui",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "vqueue-ui",
-    "sourceRoot": "libs/features/vqueue-ui/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

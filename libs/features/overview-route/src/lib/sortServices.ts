@@ -1,10 +1,10 @@
-import type { ServiceSummary } from '@restate/data-access/admin-api-hooks';
-import type { Deployment, Handler } from '@restate/data-access/admin-api-spec';
+import type { ServiceSummary } from '@restate/data-access-admin-api-hooks';
+import type { Deployment, Handler } from '@restate/data-access-admin-api-spec';
 import type { SortDescriptor } from 'react-aria-components';
 import {
   issuesSortScore,
   type ServiceIssue,
-} from '@restate/features/system-health';
+} from '@restate/features-system-health';
 
 export type OverviewService = ServiceSummary & { handlers?: Handler[] };
 

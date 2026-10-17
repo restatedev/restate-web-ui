@@ -1,4 +1,4 @@
-import { getQueryClient } from '@restate/util/react-query';
+import { getQueryClient } from '@restate/util-react-query';
 import type {
   Query,
   QueryClient,

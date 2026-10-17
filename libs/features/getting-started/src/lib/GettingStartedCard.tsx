@@ -1,8 +1,8 @@
 import { PropsWithChildren } from 'react';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
-import { Badge } from '@restate/ui/badge';
-import { Link } from '@restate/ui/link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
+import { Badge } from '@restate/ui-badge';
+import { Link } from '@restate/ui-link';
 
 const styles = tv({
   base: 'relative flex transform flex-col overflow-hidden rounded-2xl border bg-linear-to-b from-white to-zinc-50 px-3 py-3 shadow-lg shadow-zinc-800/5 transition-all',

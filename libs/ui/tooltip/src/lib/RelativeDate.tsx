@@ -1,6 +1,6 @@
-import { formatDurations } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+import { formatDurations } from '@restate/util-intl';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 import { DateTooltip } from './DateTooltip';
 
 const styles = tv({

@@ -1,7 +1,7 @@
 import {
   ServiceTargetContent,
   type ServiceTargetProps,
-} from '@restate/features/service-target';
+} from '@restate/features-service-target';
 import type { PropsWithChildren } from 'react';
 
 export function TenantServiceTarget(

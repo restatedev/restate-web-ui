@@ -1,21 +1,21 @@
-import { withConfirmation } from '@restate/ui/dialog';
+import { withConfirmation } from '@restate/ui-dialog';
 import { FormEvent } from 'react';
 import {
   useGetInvocation,
   useListDeployments,
   useResumeInvocation,
-} from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { FormFieldSelect } from '@restate/ui/form-field';
-import { Deployment } from '@restate/data-access/admin-api-spec';
-import { ListBoxItem } from '@restate/ui/listbox';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { FormFieldSelect } from '@restate/ui-form-field';
+import { Deployment } from '@restate/data-access-admin-api-spec';
+import { ListBoxItem } from '@restate/ui-listbox';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   resolveDeploymentEndpoint,
   Revision,
-} from '@restate/features/deployment';
-import { Badge } from '@restate/ui/badge';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-deployment';
+import { Badge } from '@restate/ui-badge';
+import { useRestateContext } from '@restate/features-restate-context';
 import { useSearchParams } from 'react-router';
 
 const RESUME_INVOCATION_QUERY_PARAM = 'resume-invocation';

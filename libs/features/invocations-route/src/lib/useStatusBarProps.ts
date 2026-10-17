@@ -1,9 +1,9 @@
 import { useInvocationSearchParams } from './useInvocationSearchParams';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   TERMINAL_INVOCATION_STATUSES,
   type components,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
 
 type StatusBucket = components['schemas']['InvocationStatusSummaryBucketV2'];

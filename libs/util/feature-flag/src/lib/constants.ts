@@ -1,1 +1,1 @@
-export { ONBOARDING_QUERY_PARAM } from '@restate/util/panel';
+export { ONBOARDING_QUERY_PARAM } from '@restate/util-panel';

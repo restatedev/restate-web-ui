@@ -1,8 +1,8 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 
 interface SectionProps {
   className?: string;

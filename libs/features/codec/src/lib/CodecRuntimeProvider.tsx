@@ -1,4 +1,4 @@
-import { useAdminBaseUrl } from '@restate/data-access/admin-api';
+import { useAdminBaseUrl } from '@restate/data-access-admin-api';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,

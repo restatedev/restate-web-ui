@@ -1,9 +1,9 @@
 import type {
   components,
   operations,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { Query, QueryClient } from '@tanstack/react-query';
-import { retryQueryHandlersOnFeatureChange } from '@restate/data-access/admin-api';
+import { retryQueryHandlersOnFeatureChange } from '@restate/data-access-admin-api';
 import {
   isGetInvocationJournalWithInvocationV2,
   isGetVqueue,

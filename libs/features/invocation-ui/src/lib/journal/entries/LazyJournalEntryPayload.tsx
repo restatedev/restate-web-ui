@@ -1,29 +1,29 @@
 import type {
   JournalEntryPayloads,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
-import { useGetJournalEntryPayloads } from '@restate/data-access/admin-api-hooks';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { Portal } from '@restate/ui/portal';
-import { tv, cx } from '@restate/util/styles';
-import { formatBytes } from '@restate/util/intl';
+} from '@restate/data-access-admin-api-spec';
+import { useGetJournalEntryPayloads } from '@restate/data-access-admin-api-hooks';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Spinner } from '@restate/ui-loading';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { Portal } from '@restate/ui-portal';
+import { tv, cx } from '@restate/util-styles';
+import { formatBytes } from '@restate/util-intl';
 import { ReactNode, useMemo, useState } from 'react';
 import { Value } from '../Value';
 import { Headers } from '../Headers';
 import { Failure } from '../Failure';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import { useJournalEntriesContext } from '../JournalContext';
 import {
   StaticCodecOptionsProvider,
   useCodec,
   type RestateCodecOptions,
-} from '@restate/features/codec';
-import { ErrorBanner } from '@restate/ui/error';
-import { Nav, NavButtonItem } from '@restate/ui/nav';
+} from '@restate/features-codec';
+import { ErrorBanner } from '@restate/ui-error';
+import { Nav, NavButtonItem } from '@restate/ui-nav';
 
 const TARGET_INVOCATION_COMMAND_TYPES = [
   'Call',

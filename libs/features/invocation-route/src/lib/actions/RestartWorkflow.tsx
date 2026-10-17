@@ -1,14 +1,14 @@
-import { withConfirmation } from '@restate/ui/dialog';
+import { withConfirmation } from '@restate/ui-dialog';
 import { FormEvent } from 'react';
 import {
   useGetInvocationJournalWithInvocationV2,
   useRestartWorkflowAsNew,
-} from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { IconName } from '@restate/ui/icons';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { IconName } from '@restate/ui-icons';
+import { useRestateContext } from '@restate/features-restate-context';
 import { useSearchParams } from 'react-router';
-import { FormFieldInput } from '@restate/ui/form-field';
+import { FormFieldInput } from '@restate/ui-form-field';
 
 export const RESTART_AS_NEW_WORKFLOW_QUERY_PARAM = 'restart-new-workflow';
 

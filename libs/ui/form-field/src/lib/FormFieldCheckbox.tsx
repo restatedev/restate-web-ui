@@ -1,5 +1,5 @@
 import { Label, CheckboxGroup } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { FormFieldError } from './FormFieldError';
 import {
   ComponentProps,
@@ -12,8 +12,8 @@ import {
   CheckboxProps as AriaCheckboxProps,
   composeRenderProps,
 } from 'react-aria-components';
-import { focusRing } from '@restate/ui/focus';
-import { Icon, IconName } from '@restate/ui/icons';
+import { focusRing } from '@restate/ui-focus';
+import { Icon, IconName } from '@restate/ui-icons';
 import { useObjectRef } from 'react-aria';
 
 interface FormFieldCheckboxProps extends Pick<

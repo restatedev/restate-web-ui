@@ -58,3 +58,4 @@ vitest.config.*.timestamp*
 
 out-tsc
 *.tsbuildinfo
+.vitest

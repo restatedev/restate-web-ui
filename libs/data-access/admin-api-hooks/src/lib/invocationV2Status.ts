@@ -1,7 +1,7 @@
 import {
   TERMINAL_INVOCATION_STATUSES,
   type components,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 
 type SummaryData = components['schemas']['SummaryInvocationsV2Response'];
 type InboxData = components['schemas']['InboxInvocationsBreakdownV2Response'];

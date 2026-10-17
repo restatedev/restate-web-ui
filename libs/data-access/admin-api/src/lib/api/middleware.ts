@@ -1,7 +1,7 @@
-import { UnauthorizedError, RestateError } from '@restate/util/errors';
-import { getQueryClient } from '@restate/util/react-query';
-import { getAuthToken } from '@restate/util/api-config';
-import { isFeatureEnabled } from '@restate/util/feature-flag';
+import { UnauthorizedError, RestateError } from '@restate/util-errors';
+import { getQueryClient } from '@restate/util-react-query';
+import { getAuthToken } from '@restate/util-api-config';
+import { isFeatureEnabled } from '@restate/util-feature-flag';
 import type { Middleware } from 'openapi-fetch';
 import {
   QUERY_CLIENT,
@@ -11,7 +11,7 @@ import {
   RESTATE_FEATURES_HEADER,
   UI_FEATURES_HEADER,
   type QueryOrigin,
-} from '@restate/data-access/query';
+} from '@restate/data-access-query';
 import { client } from './client';
 import { getEnabledFeatures, metaQueryOptions } from './meta';
 import { getEnabledUiFeatures } from './uiFeatures';

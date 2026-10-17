@@ -1,5 +1,5 @@
-import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
+import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 
 // TODO: move to middleware
 export function isEntryCompletionAmbiguous(

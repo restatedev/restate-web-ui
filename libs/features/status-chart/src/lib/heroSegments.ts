@@ -2,7 +2,7 @@ import {
   toCompletedInvocationsHref,
   toInFlightPlusScheduledInvocationsHref,
   toInvocationsHref,
-} from '@restate/util/invocation-links';
+} from '@restate/util-invocation-links';
 import {
   DEFAULT_STYLE,
   INBOX_INVOCATION_STATUSES,

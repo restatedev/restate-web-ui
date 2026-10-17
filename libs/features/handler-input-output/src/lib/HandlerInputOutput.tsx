@@ -1,14 +1,14 @@
-import { JsonSchemaViewer } from '@restate/ui/api';
-import { Badge } from '@restate/ui/badge';
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
+import { JsonSchemaViewer } from '@restate/ui-api';
+import { Badge } from '@restate/ui-badge';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
   usePopover,
-} from '@restate/ui/popover';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-popover';
+import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import type {
   HandlerInputOutputView,

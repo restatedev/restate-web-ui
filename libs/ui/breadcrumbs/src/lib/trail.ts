@@ -1,5 +1,5 @@
 import { generatePath, matchPath, type Params } from 'react-router';
-import { stripTransientSearch } from '@restate/util/panel';
+import { stripTransientSearch } from '@restate/util-panel';
 import type { Crumb, PageDefinition } from './types';
 
 export const MAX_TRAIL_LENGTH = 20;

@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from 'react';
 import type { FerrofluidStatus } from './ferrofluid-engine';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 type AuraIntensity = 'subtle' | 'prominent';
 

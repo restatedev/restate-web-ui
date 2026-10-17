@@ -1,10 +1,10 @@
-import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
+import type { VqueueSnapshot } from '@restate/data-access-admin-api-spec';
 import {
   formatDurations,
   formatNumber,
   normaliseDuration,
   parseISODuration,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 
 const MAX_AVERAGE_RATIO = 100;
 const MIN_COMPARABLE_AVERAGE_MILLISECONDS = 1;

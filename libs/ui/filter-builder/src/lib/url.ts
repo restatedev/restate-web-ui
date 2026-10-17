@@ -2,7 +2,7 @@ import {
   QueryClause,
   QueryClauseSchema,
   QueryClauseType,
-} from '@restate/ui/query-builder';
+} from '@restate/ui-query-builder';
 
 export const FILTER_QUERY_PREFIX = 'filter_';
 

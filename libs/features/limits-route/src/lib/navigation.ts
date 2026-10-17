@@ -1,6 +1,6 @@
-import { writeFilterClauses } from '@restate/ui/filter-builder';
-import type { LimitCounterIdentity } from '@restate/features/vqueue-ui';
-import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
+import { writeFilterClauses } from '@restate/ui-filter-builder';
+import type { LimitCounterIdentity } from '@restate/features-vqueue-ui';
+import type { VirtualObjectInstanceIdentity } from '@restate/features-virtual-object-instance';
 import {
   createVQueueFiltersForCounter,
   createVQueueFiltersForVirtualObjectInstance,
@@ -20,7 +20,7 @@ export {
   selectedLimitCounterRule,
   type LimitCounterIdentity,
   type LimitCounterRuleSelection,
-} from '@restate/features/vqueue-ui';
+} from '@restate/features-vqueue-ui';
 
 export function vqueuesForLimitCounterHref(
   baseUrl: string,

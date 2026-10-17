@@ -1,12 +1,12 @@
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
 import {
   type Deployment,
   type DeploymentId,
   getEndpoint,
   isHttpDeployment,
-} from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
-import { IconName } from '@restate/ui/icons';
+} from '@restate/data-access-admin-api-spec';
+import { useRestateContext } from '@restate/features-restate-context';
+import { IconName } from '@restate/ui-icons';
 
 type Tunnel = ReturnType<typeof useRestateContext>['tunnel'];
 

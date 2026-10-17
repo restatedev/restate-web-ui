@@ -1,42 +1,42 @@
 import {
   useGetInvocationJournalWithInvocationV2,
   useGetPausedError,
-} from '@restate/data-access/admin-api-hooks';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/data-access-admin-api-hooks';
+import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
   getRestateError,
   InvocationStatusHeader,
   Status,
-} from '@restate/features/invocation-ui';
+} from '@restate/features-invocation-ui';
 import { InvocationDeploymentCard } from './InvocationDeploymentCard';
 import { InvocationDetailsCard } from './InvocationDetailsCard';
 import { InvocationFlowControlCard } from './InvocationFlowControlCard';
-import { Link } from '@restate/ui/link';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Section } from '@restate/ui/section';
+import { Link } from '@restate/ui-link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Section } from '@restate/ui-section';
 import { Actions } from './actions';
 import { JournalV2 } from './JournalV2';
-import { useRestateContext } from '@restate/features/restate-context';
-import { ServiceTarget } from '@restate/features/service-target';
-import { tv } from '@restate/util/styles';
-import { Copy } from '@restate/ui/copy';
+import { useRestateContext } from '@restate/features-restate-context';
+import { ServiceTarget } from '@restate/features-service-target';
+import { tv } from '@restate/util-styles';
+import { Copy } from '@restate/ui-copy';
 import { useEffect, useMemo, useRef } from 'react';
-import { Breadcrumbs } from '@restate/ui/breadcrumbs';
-import { ContentPanel, ContentPanelBody } from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
+import { Breadcrumbs } from '@restate/ui-breadcrumbs';
+import { ContentPanel, ContentPanelBody } from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
 import {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   ERROR_CODES,
   RestateError,
   UI_ERROR_CODES,
-} from '@restate/util/errors';
-import { useInvocationsRecent } from '@restate/util/sidebar-nav';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { CardGrid } from '@restate/ui/card';
+} from '@restate/util-errors';
+import { useInvocationsRecent } from '@restate/util-sidebar-nav';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
+import { CardGrid } from '@restate/ui-card';
 
 const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',

@@ -1,7 +1,7 @@
 import type {
   components,
   RawInvocation,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { convertInvocation } from '../convertInvocation';
 import {
   SYS_INVOCATION_LIST_SELECT_COLUMNS,

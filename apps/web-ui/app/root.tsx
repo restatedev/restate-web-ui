@@ -19,8 +19,8 @@ import {
   SidebarHeader,
   SidebarNav,
   useSidebar,
-} from '@restate/ui/layout';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-layout';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   OverviewSidebarItem,
   InvocationsSidebarItem,
@@ -29,49 +29,49 @@ import {
   StateSidebarItem,
   LimitsSidebarItem,
   IntrospectionSidebarItem,
-} from '@restate/util/sidebar-nav';
+} from '@restate/util-sidebar-nav';
 import { RouterProvider } from 'react-aria-components';
-import { Link } from '@restate/ui/link';
-import { Button } from '@restate/ui/button';
+import { Link } from '@restate/ui-link';
+import { Button } from '@restate/ui-button';
 import { useCallback } from 'react';
-import { QueryProvider } from '@restate/util/react-query';
-import { Nav, NavItem } from '@restate/ui/nav';
-import { BreadcrumbsProvider } from '@restate/features/breadcrumbs';
-import { Icon, IconName, Restate } from '@restate/ui/icons';
-import { RestateContextProvider } from '@restate/features/restate-context';
-import { CodecRuntimeProvider } from '@restate/features/codec';
-import { createSystemHealthMonitor } from '@restate/features/system-health';
-import { Version } from '@restate/features/version';
+import { QueryProvider } from '@restate/util-react-query';
+import { Nav, NavItem } from '@restate/ui-nav';
+import { BreadcrumbsProvider } from '@restate/features-breadcrumbs';
+import { Icon, IconName, Restate } from '@restate/ui-icons';
+import { RestateContextProvider } from '@restate/features-restate-context';
+import { CodecRuntimeProvider } from '@restate/features-codec';
+import { createSystemHealthMonitor } from '@restate/features-system-health';
+import { Version } from '@restate/features-version';
 import {
   HealthCheckNotification,
   HealthIndicator,
-} from '@restate/features/health';
-import { Spinner } from '@restate/ui/loading';
-import { InvocationActions } from '@restate/features/invocation-route';
-import { Support } from '@restate/features/support';
-import { EditState } from '@restate/features/edit-state';
-import { FeatureFlags } from '@restate/util/feature-flag';
+} from '@restate/features-health';
+import { Spinner } from '@restate/ui-loading';
+import { InvocationActions } from '@restate/features-invocation-route';
+import { Support } from '@restate/features-support';
+import { EditState } from '@restate/features-edit-state';
+import { FeatureFlags } from '@restate/util-feature-flag';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
-import { DeleteDeployment } from '@restate/features/deployment';
-import { ServicePlayground } from '@restate/features/service';
-import { EditService } from '@restate/features/service-details';
-import { GettingStarted } from '@restate/features/getting-started';
+import { DeleteDeployment } from '@restate/features-deployment';
+import { ServicePlayground } from '@restate/features-service';
+import { EditService } from '@restate/features-service-details';
+import { GettingStarted } from '@restate/features-getting-started';
 import {
   RegisterDeploymentDialog,
   UpdateDeploymentDialog,
-} from '@restate/features/register-deployment';
-import { queryCacheOnSuccess } from '@restate/data-access/admin-api-hooks';
+} from '@restate/features-register-deployment';
+import { queryCacheOnSuccess } from '@restate/data-access-admin-api-hooks';
 import {
   setMetaFallback,
   setMetaPersister,
-} from '@restate/data-access/admin-api';
-import { setQueryClient } from '@restate/util/react-query';
+} from '@restate/data-access-admin-api';
+import { setQueryClient } from '@restate/util-react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
-import { PortalProvider } from '@restate/ui/portal';
-import { BatchOperationsProvider } from '@restate/features/batch-operations';
-import { MonacoWarmup } from '@restate/ui/editor';
-import { elementsCssUrl, elementsJsUrl } from '@restate/ui/api/assets';
-import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
+import { PortalProvider } from '@restate/ui-portal';
+import { BatchOperationsProvider } from '@restate/features-batch-operations';
+import { MonacoWarmup } from '@restate/ui-editor';
+import { elementsCssUrl, elementsJsUrl } from '@restate/ui-api/assets';
+import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
 import { TenantPreview } from './TenantPreview';
 
 const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';

@@ -1,4 +1,4 @@
-import type { operations } from '@restate/data-access/admin-api-spec';
+import type { operations } from '@restate/data-access-admin-api-spec';
 import { adminApi } from './adminApi';
 
 type ServiceSerdeName =

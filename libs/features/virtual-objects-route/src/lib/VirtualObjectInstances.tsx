@@ -1,25 +1,25 @@
-import { useFeatures } from '@restate/data-access/admin-api';
-import { usesStatsTables } from '@restate/data-access/query';
-import { useListVirtualObjectInstances } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
+import { useFeatures } from '@restate/data-access-admin-api';
+import { usesStatsTables } from '@restate/data-access-query';
+import { useListVirtualObjectInstances } from '@restate/data-access-admin-api-hooks';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   InvocationId,
   InvocationTableDate,
-} from '@restate/features/invocation-ui';
+} from '@restate/features-invocation-ui';
 import {
   virtualObjectInstanceHref,
   type VirtualObjectInstanceIdentity,
   VirtualObjectInstanceTarget,
-} from '@restate/features/virtual-object-instance';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Button } from '@restate/ui/button';
+} from '@restate/features-virtual-object-instance';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Button } from '@restate/ui-button';
 import {
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
 import {
   AddFilterTrigger,
   FilterBuilder,
@@ -28,21 +28,21 @@ import {
   QueryClause,
   QueryClauseType,
   useFilterBuilder,
-} from '@restate/ui/filter-builder';
-import { Icon, IconName } from '@restate/ui/icons';
-import { getHrefWithQueryParams } from '@restate/ui/link';
+} from '@restate/ui-filter-builder';
+import { Icon, IconName } from '@restate/ui-icons';
+import { getHrefWithQueryParams } from '@restate/ui-link';
 import {
   Cell,
   PanelTable,
   PanelTableQuickOpenCaption,
   type PanelTableColumn,
-} from '@restate/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import { formatNumber } from '@restate/util/intl';
-import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
-import { useRecentVirtualObjectInstance } from '@restate/util/sidebar-nav';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui-tooltip';
+import { formatNumber } from '@restate/util-intl';
+import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
+import { useRecentVirtualObjectInstance } from '@restate/util-sidebar-nav';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { type SortDescriptor } from 'react-aria-components';
 import { Form, useNavigate, useSearchParams } from 'react-router';

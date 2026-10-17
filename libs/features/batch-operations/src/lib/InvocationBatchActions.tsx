@@ -1,12 +1,12 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import { useBatchOperations } from './BatchOperationsProvider';
 import type {
   QueryClauseSchema,
   QueryClauseType,
-} from '@restate/ui/query-builder';
-import { formatPlurals } from '@restate/util/intl';
-import { Badge } from '@restate/ui/badge';
-import { Button } from '@restate/ui/button';
+} from '@restate/ui-query-builder';
+import { formatPlurals } from '@restate/util-intl';
+import { Badge } from '@restate/ui-badge';
+import { Button } from '@restate/ui-button';
 import {
   Dropdown,
   DropdownItem,
@@ -14,8 +14,8 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
 
 interface InvocationBatchActionsProps {
   filters: FilterItem[];

@@ -1,12 +1,12 @@
-import { focusRing } from '@restate/ui/focus';
-import { Icon, IconName } from '@restate/ui/icons';
+import { focusRing } from '@restate/ui-focus';
+import { Icon, IconName } from '@restate/ui-icons';
 import type { PropsWithChildren } from 'react';
 import {
   ListBoxItem as AriaListBoxItem,
   ListBoxItemProps as AriaListBoxItemProps,
   composeRenderProps,
 } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 export const listBoxItemStyles = tv({
   extend: focusRing,

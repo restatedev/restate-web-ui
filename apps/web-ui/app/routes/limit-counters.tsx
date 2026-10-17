@@ -1,4 +1,4 @@
-import { limitCounters } from '@restate/features/limits-route';
+import { limitCounters } from '@restate/features-limits-route';
 
 export function meta() {
   return [{ title: 'Restate - Limit counters' }];

@@ -2,11 +2,5 @@
   "name": "@restate/ui-dialog",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "dialog",
-    "sourceRoot": "libs/ui/dialog/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

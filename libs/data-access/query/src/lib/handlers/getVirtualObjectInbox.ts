@@ -1,4 +1,4 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { isInvocationId, quoteSqlString, type QueryContext } from './shared';
 import { queryVirtualObjectLock } from './getVirtualObjectLock';
 import {

@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useEffect } from 'react';
-import { useFocusShortcut } from '@restate/ui/keyboard';
-import * as monaco from '@restate/ui/editor/monaco';
+import { useFocusShortcut } from '@restate/ui-keyboard';
+import * as monaco from '@restate/ui-editor/monaco';
 import {
   AGG_APPROXIMATE_FUNCTIONS,
   AGG_GENERAL_FUNCTIONS,

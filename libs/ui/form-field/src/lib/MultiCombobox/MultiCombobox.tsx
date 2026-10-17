@@ -27,18 +27,18 @@ import {
   useFilter,
   useFocusManager,
 } from 'react-aria';
-import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui/listbox';
+import { ListBox, ListBoxItem, ListBoxSection } from '@restate/ui-listbox';
 import { LabeledGroup } from './LabeledGroup';
-import { tv } from '@restate/util/styles';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { tv } from '@restate/util-styles';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   Popover,
   PopoverContent,
   PopoverOverlay,
   PopoverTrigger,
-} from '@restate/ui/popover';
-import { focusRing } from '@restate/ui/focus';
+} from '@restate/ui-popover';
+import { focusRing } from '@restate/ui-focus';
 import { mergeRefs, useObjectRef } from 'react-aria';
 
 const tagStyles = tv({

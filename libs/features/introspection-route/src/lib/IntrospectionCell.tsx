@@ -1,10 +1,10 @@
-import { InvocationId } from '@restate/features/invocation-route';
-import { Target } from '@restate/features/service-target';
-import { Deployment } from '@restate/features/deployment';
-import { Cell } from '@restate/ui/table';
-import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { formatDurations, formatNumber } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
+import { InvocationId } from '@restate/features-invocation-route';
+import { Target } from '@restate/features-service-target';
+import { Deployment } from '@restate/features-deployment';
+import { Cell } from '@restate/ui-table';
+import { DateTooltip, TruncateWithTooltip } from '@restate/ui-tooltip';
+import { formatDurations, formatNumber } from '@restate/util-intl';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
 import { createContext, use } from 'react';
 
 const iso8601UTCPattern =

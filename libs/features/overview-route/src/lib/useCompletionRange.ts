@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { useFinishedInvocationsBreakdownV2 } from '@restate/data-access/admin-api-hooks';
-import { getOverviewRefreshMeta } from '@restate/data-access/admin-api';
-import type { BreakdownCountMode } from '@restate/features/user-preference';
+import { useFinishedInvocationsBreakdownV2 } from '@restate/data-access-admin-api-hooks';
+import { getOverviewRefreshMeta } from '@restate/data-access-admin-api';
+import type { BreakdownCountMode } from '@restate/features-user-preference';
 import {
   createCompletionBucket,
   getCompletionRangeStartTime,

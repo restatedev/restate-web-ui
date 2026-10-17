@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { AxisType, TooltipConfig } from '../types';
 import type { TooltipComponentOption } from 'echarts/components';
-import { formatRange } from '@restate/util/intl';
+import { formatRange } from '@restate/util-intl';
 import { TopLevelFormatterParams } from 'echarts/types/dist/shared';
 
 const noOp = (value: number) => String(value);

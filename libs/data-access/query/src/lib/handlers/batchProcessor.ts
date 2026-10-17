@@ -1,7 +1,7 @@
 import type {
   BatchInvocationsResponse,
   BatchOperationResult,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { isInvocationId } from './shared';
 
 type ProcessorResult = {

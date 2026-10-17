@@ -2,11 +2,5 @@
   "name": "@restate/ui-breadcrumbs",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "breadcrumbs",
-    "sourceRoot": "libs/ui/breadcrumbs/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

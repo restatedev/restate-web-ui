@@ -2,11 +2,5 @@
   "name": "@restate/ui-metric-comparison",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "metric-comparison",
-    "sourceRoot": "libs/ui/metric-comparison/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

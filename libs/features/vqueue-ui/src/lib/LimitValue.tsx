@@ -1,6 +1,6 @@
-import { Badge } from '@restate/ui/badge';
-import { formatNumber } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+import { Badge } from '@restate/ui-badge';
+import { formatNumber } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   slots: {

@@ -1,8 +1,8 @@
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import type { ReactNode } from 'react';
 import type { TenantInvocationsProps } from './TenantInvocations';
-import { IconName, Restate } from '@restate/ui/icons';
-import { SidebarHeader, SidebarNav, SidebarNavItem } from '@restate/ui/layout';
+import { IconName, Restate } from '@restate/ui-icons';
+import { SidebarHeader, SidebarNav, SidebarNavItem } from '@restate/ui-layout';
 
 export interface TenantSidebarProps extends TenantInvocationsProps {
   header?: ReactNode;

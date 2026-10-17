@@ -2,7 +2,7 @@ import type {
   RawInvocation,
   Service,
   components,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { convertInvocationV2, durationBetween } from '../convertInvocation';
 import { fetchVqueueStatuses } from './vqueue';
 import {

@@ -1,7 +1,7 @@
 import type {
   components,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   Dispatch,
   lazy,
@@ -12,17 +12,17 @@ import {
   useState,
 } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
-import { getDuration, SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { Link } from '@restate/ui/link';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Button } from '@restate/ui/button';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { useRestateContext } from '@restate/features/restate-context';
-import { ErrorBanner } from '@restate/ui/error';
-import { JournalContextProvider } from '@restate/features/invocation-ui';
-import { Indicator, Spinner } from '@restate/ui/loading';
-import { Entry } from '@restate/features/invocation-ui';
-import { Input } from '@restate/features/invocation-ui';
+import { getDuration, SnapshotTimeProvider } from '@restate/util-snapshot-time';
+import { Link } from '@restate/ui-link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Button } from '@restate/ui-button';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { useRestateContext } from '@restate/features-restate-context';
+import { ErrorBanner } from '@restate/ui-error';
+import { JournalContextProvider } from '@restate/features-invocation-ui';
+import { Indicator, Spinner } from '@restate/ui-loading';
+import { Entry } from '@restate/features-invocation-ui';
+import { Input } from '@restate/features-invocation-ui';
 import { EntryProgress } from './EntryProgress';
 import {
   PortalProvider,
@@ -34,34 +34,34 @@ import { LifeCycleProgress } from './LifeCycleProgress';
 import { StartDateTimeUnit } from './Units';
 import { ScrollableTimeline } from './ScrollableTimeline';
 import { ErrorBoundary } from './ErrorBoundry';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import {
   isCompletedInvocationStatus,
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { formatDurations, formatPlurals } from '@restate/util/intl';
+import { formatDurations, formatPlurals } from '@restate/util-intl';
 import {
   TimelineEngineProvider,
   useTimelineEngineContext,
-} from '@restate/ui/timeline-zoom';
+} from '@restate/ui-timeline-zoom';
 import {
   ContentPanelHeader,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
+} from '@restate/ui-content-panel';
 import {
   CombinedJournalEntry,
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
-import { Retention } from '@restate/features/invocation-ui';
+import { Retention } from '@restate/features-invocation-ui';
 import {
   COMPACT_DETAIL,
   useJournalDetail,
   type JournalDetail,
-} from '@restate/features/invocation-ui';
+} from '@restate/features-invocation-ui';
 import { JournalDetailToggle } from './JournalDetailToggle';
 import { useHiddenEntryMatchers } from './hiddenEntries';
 import type { Layout } from 'react-resizable-panels';

@@ -1,4 +1,4 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import type { QueryContext } from '../shared';
 import { enrichInvocationFlowControl } from './list/enrichInvocationFlowControl';
 import { loadVqueueInvocationsByIds } from './list/loadVqueueInvocationsByIds';

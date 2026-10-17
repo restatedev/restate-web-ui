@@ -2,22 +2,22 @@ import {
   getServiceKeyStateQueryOptions,
   getSetServiceStateMutationOptions,
   useAdminBaseUrl,
-} from '@restate/data-access/admin-api';
+} from '@restate/data-access-admin-api';
 import {
   convertStateToObject,
   isStateQuery,
-} from '@restate/data-access/admin-api-hooks';
-import type { StateResponse } from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-hooks';
+import type { StateResponse } from '@restate/data-access-admin-api-spec';
 import {
   useCodecRuntime,
   useDecodeState,
   type RestateCodecOptions,
-} from '@restate/features/codec';
+} from '@restate/features-codec';
 import {
   base64ToUint8Array,
   uint8ArrayToUtf8OrByteArray,
-} from '@restate/util/binary';
-import { RestateError } from '@restate/util/errors';
+} from '@restate/util-binary';
+import { RestateError } from '@restate/util-errors';
 import {
   useMutation,
   type UseMutationOptions,

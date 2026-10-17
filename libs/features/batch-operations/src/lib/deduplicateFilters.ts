@@ -1,5 +1,5 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import type { QueryClauseOperationId } from '@restate/ui/query-builder';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
+import type { QueryClauseOperationId } from '@restate/ui-query-builder';
 
 const OPERATION_LABELS: Record<QueryClauseOperationId, string> = {
   EQUALS: 'is',

@@ -2,11 +2,5 @@
   "name": "@restate/ui-popover",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "popover",
-    "sourceRoot": "libs/ui/popover/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

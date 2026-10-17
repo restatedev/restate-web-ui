@@ -1,4 +1,4 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import type { QueryContext } from '../shared';
 import { badRequest } from './shared';
 import { queryFinishedBreakdownFromVqueues } from './finished/queryFinishedBreakdownFromVqueues';

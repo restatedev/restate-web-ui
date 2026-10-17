@@ -1,7 +1,7 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { RestateError } from '@restate/util/errors';
+import { Icon, IconName } from '@restate/ui-icons';
+import { RestateError } from '@restate/util-errors';
 import { PropsWithChildren } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { RestateServerError } from './RestateServerError';
 
 export interface ErrorProps {

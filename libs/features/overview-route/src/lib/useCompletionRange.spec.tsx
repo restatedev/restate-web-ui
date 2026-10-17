@@ -6,7 +6,7 @@ const { useFinishedInvocationsBreakdownV2Mock } = vi.hoisted(() => ({
   useFinishedInvocationsBreakdownV2Mock: vi.fn(),
 }));
 
-vi.mock('@restate/data-access/admin-api-hooks', () => ({
+vi.mock('@restate/data-access-admin-api-hooks', () => ({
   useFinishedInvocationsBreakdownV2: useFinishedInvocationsBreakdownV2Mock,
 }));
 

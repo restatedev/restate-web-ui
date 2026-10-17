@@ -1,5 +1,5 @@
-import { focusRing } from '@restate/ui/focus';
-import { tv } from '@restate/util/styles';
+import { focusRing } from '@restate/ui-focus';
+import { tv } from '@restate/util-styles';
 import {
   Column as AriaColumn,
   Table as AriaTable,
@@ -16,11 +16,11 @@ import {
   useTableOptions,
   TableBody as AriaTableBody,
 } from 'react-aria-components';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Checkbox } from '@restate/ui/form-field';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Checkbox } from '@restate/ui-form-field';
 import { PropsWithChildren, ReactNode } from 'react';
 import { TableError, LoadingRows } from './Placeholder';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import {
   DRAG_COLUMN_KEY,
   SELECTION_COLUMN_KEY,

@@ -1,13 +1,13 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { KeyedServiceState } from '@restate/features/state-object-route';
-import type { VirtualObjectInstanceIdentity } from '@restate/features/virtual-object-instance';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { KeyedServiceState } from '@restate/features-state-object-route';
+import type { VirtualObjectInstanceIdentity } from '@restate/features-virtual-object-instance';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   type ContentPanelTabs,
-} from '@restate/ui/content-panel';
-import { formatNumber } from '@restate/util/intl';
+} from '@restate/ui-content-panel';
+import { formatNumber } from '@restate/util-intl';
 import {
   VirtualObjectInbox,
   VirtualObjectInvocations,
