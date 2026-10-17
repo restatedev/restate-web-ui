@@ -1,4 +1,4 @@
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'rounded-sm px-1.5 text-sm',

@@ -14,7 +14,7 @@ Stoplight Elements. Its built web-component bundle is committed in
 | `LICENSE`, `NOTICE`                          | Elements license and fork notice                                            |
 | `package.json`                               | Name, version and license only, so `vendor.LICENSE.txt` attributes the fork |
 
-`src/assets.ts` (imported as `@restate/ui/api/assets`) exports the JS and CSS
+`src/assets.ts` (imported as `@restate/ui-api/assets`) exports the JS and CSS
 URLs. `apps/web-ui/app/root.tsx` loads them. `src/lib/API.tsx` renders the two
 custom elements.
 

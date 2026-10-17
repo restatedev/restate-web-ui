@@ -1,7 +1,7 @@
 import {
   getInvocationStatusesForStage,
   type FilterItem,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import type { VqueueStage } from '../../../invocationStatuses';
 import { matchesStringFilter } from '../summary/matchesStringFilter';
 import type { InvocationFilterV2 } from '../shared';

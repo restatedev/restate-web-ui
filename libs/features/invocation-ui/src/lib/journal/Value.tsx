@@ -1,18 +1,18 @@
 import { useRef } from 'react';
 import type { editor } from 'monaco-editor';
-import { Editor } from '@restate/ui/editor';
-import { tv } from '@restate/util/styles';
-import { Copy } from '@restate/ui/copy';
-import { InPortal } from '@restate/ui/portal';
-import { ErrorBanner } from '@restate/ui/error';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Editor } from '@restate/ui-editor';
+import { tv } from '@restate/util-styles';
+import { Copy } from '@restate/ui-copy';
+import { InPortal } from '@restate/ui-portal';
+import { ErrorBanner } from '@restate/ui-error';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   Popover,
   PopoverContent,
   PopoverHoverTrigger,
-} from '@restate/ui/popover';
-import { useDecode } from '@restate/features/codec';
+} from '@restate/ui-popover';
+import { useDecode } from '@restate/features-codec';
 
 const styles = tv({
   slots: {

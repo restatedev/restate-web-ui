@@ -1,11 +1,11 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   QueryClause,
   readFilterClauses,
   type QueryClauseSchema,
   type QueryClauseType,
   writeFilterClauses,
-} from '@restate/ui/filter-builder';
+} from '@restate/ui-filter-builder';
 
 type WorkflowRunFilterItem = components['schemas']['WorkflowRunFilterItem'];
 

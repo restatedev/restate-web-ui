@@ -1,12 +1,12 @@
-import { useRestateContext } from '@restate/features/restate-context';
-import { Code, Snippet, SnippetCopy } from '@restate/ui/code';
-import { useOnboarding } from '@restate/util/feature-flag';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Code, Snippet, SnippetCopy } from '@restate/ui-code';
+import { useOnboarding } from '@restate/util-feature-flag';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { useRegisterDeploymentContext } from './Context';
-import { tv } from '@restate/util/styles';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+import { tv } from '@restate/util-styles';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 
 const containerStyles = tv({
   base: 'relative transition-all',

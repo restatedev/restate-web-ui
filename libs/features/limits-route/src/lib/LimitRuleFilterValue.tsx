@@ -1,5 +1,5 @@
-import type { LimitRuleWithStats } from '@restate/data-access/admin-api-hooks';
-import { LimitRuleTarget, LimitValue } from '@restate/features/vqueue-ui';
+import type { LimitRuleWithStats } from '@restate/data-access-admin-api-hooks';
+import { LimitRuleTarget, LimitValue } from '@restate/features-vqueue-ui';
 
 export function LimitRuleFilterValue({ pattern }: { pattern: string }) {
   return (

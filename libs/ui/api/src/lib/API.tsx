@@ -1,6 +1,6 @@
 import { createElement, useEffect, useId, useRef, useState } from 'react';
-import { Spinner } from '@restate/ui/loading';
-import { tv } from '@restate/util/styles';
+import { Spinner } from '@restate/ui-loading';
+import { tv } from '@restate/util-styles';
 
 const API_TAG = 'elements-api';
 const JSON_SCHEMA_VIEWER_TAG = 'elements-json-schema-viewer';

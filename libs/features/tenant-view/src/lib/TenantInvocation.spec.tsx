@@ -14,26 +14,26 @@ function AriaRouter({ children }: PropsWithChildren) {
   );
 }
 
-vi.mock('@restate/features/restate-context', async (importOriginal) => ({
+vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/features/restate-context')
+    typeof import('@restate/features-restate-context')
   >()),
   useRestateContext: () => ({ baseUrl: '/tenants/acme' }),
 }));
 
 const hooks = vi.hoisted(() => ({ journal: vi.fn(), purge: vi.fn() }));
-vi.mock('@restate/data-access/admin-api-hooks', async (importOriginal) => ({
+vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/data-access/admin-api-hooks')
+    typeof import('@restate/data-access-admin-api-hooks')
   >()),
   useGetInvocationJournalWithInvocationV2: hooks.journal,
   usePurgeInvocation: () => ({ mutate: hooks.purge, reset: vi.fn() }),
   useGetPausedError: () => ({}),
   useGetTransientError: () => ({}),
 }));
-vi.mock('@restate/features/invocation-route', async (importOriginal) => ({
+vi.mock('@restate/features-invocation-route', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/features/invocation-route')
+    typeof import('@restate/features-invocation-route')
   >()),
   JournalV2: ({ invocationId }: { invocationId: string }) => (
     <div data-testid="journal">{invocationId}</div>

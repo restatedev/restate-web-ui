@@ -1,20 +1,20 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   getInvocationStatusIntent,
   InvocationId,
   Status,
-} from '@restate/features/invocation-ui';
-import { LimitKey } from '@restate/features/vqueue-ui';
-import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
-import { Copy } from '@restate/ui/copy';
-import { Icon, IconName } from '@restate/ui/icons';
-import { RelativeDate } from '@restate/ui/tooltip';
+} from '@restate/features-invocation-ui';
+import { LimitKey } from '@restate/features-vqueue-ui';
+import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui-card';
+import { Copy } from '@restate/ui-copy';
+import { Icon, IconName } from '@restate/ui-icons';
+import { RelativeDate } from '@restate/ui-tooltip';
 import {
   formatDurations,
   normaliseDuration,
   parseISODuration,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 
 type Invocation = components['schemas']['InvocationV2'];
 type WorkflowRunStatsResponse =

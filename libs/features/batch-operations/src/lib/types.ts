@@ -1,6 +1,6 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import { ProgressStore } from './ProgressStore';
-import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
+import { QueryClauseSchema, QueryClauseType } from '@restate/ui-query-builder';
 
 export type OperationType =
   | 'cancel'

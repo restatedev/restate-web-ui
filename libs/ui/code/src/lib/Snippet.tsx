@@ -1,9 +1,9 @@
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import { Children, PropsWithChildren, ReactNode, memo, useState } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { syntaxHighlighter } from './SyntaxHighlighter';
-import { Nav, NavButtonItem } from '@restate/ui/nav';
+import { Nav, NavButtonItem } from '@restate/ui-nav';
 
 interface SnippetProps {
   className?: string;

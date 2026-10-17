@@ -1,14 +1,14 @@
-import type { SidebarLocation, SidebarSubItem } from '@restate/ui/layout';
-import { SidebarNavItem } from '@restate/ui/layout';
-import { Scope } from '@restate/features/vqueue-ui';
-import { IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import type { SidebarLocation, SidebarSubItem } from '@restate/ui-layout';
+import { SidebarNavItem } from '@restate/ui-layout';
+import { Scope } from '@restate/features-vqueue-ui';
+import { IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   formatWorkflowRunIdentity,
   workflowRunHref,
   workflowScopeFromSearch,
   type WorkflowRunIdentity,
-} from '@restate/features/workflow-run';
+} from '@restate/features-workflow-run';
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useLocation } from 'react-router';
 

@@ -1,19 +1,19 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { Actions } from '@restate/features/invocation-route';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { Actions } from '@restate/features-invocation-route';
 import {
   Duration,
   getInvocationStatusIntent,
   InvocationId,
   Status,
-} from '@restate/features/invocation-ui';
-import { LimitKey } from '@restate/features/vqueue-ui';
-import { Badge } from '@restate/ui/badge';
-import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
-import { Copy } from '@restate/ui/copy';
-import { Icon, IconName } from '@restate/ui/icons';
-import { useRestateContext } from '@restate/features/restate-context';
-import { RelativeDate, TruncateWithTooltip } from '@restate/ui/tooltip';
-import { serviceHref } from '@restate/util/panel';
+} from '@restate/features-invocation-ui';
+import { LimitKey } from '@restate/features-vqueue-ui';
+import { Badge } from '@restate/ui-badge';
+import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui-card';
+import { Copy } from '@restate/ui-copy';
+import { Icon, IconName } from '@restate/ui-icons';
+import { useRestateContext } from '@restate/features-restate-context';
+import { RelativeDate, TruncateWithTooltip } from '@restate/ui-tooltip';
+import { serviceHref } from '@restate/util-panel';
 
 type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
 

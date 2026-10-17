@@ -1,15 +1,15 @@
-import { Invocation } from '@restate/data-access/admin-api-spec';
-import { RetentionExplainer } from '@restate/features/explainers';
-import { Badge } from '@restate/ui/badge';
-import { DateTooltip } from '@restate/ui/tooltip';
+import { Invocation } from '@restate/data-access-admin-api-spec';
+import { RetentionExplainer } from '@restate/features-explainers';
+import { Badge } from '@restate/ui-badge';
+import { DateTooltip } from '@restate/ui-tooltip';
 import {
   addDurationToDate,
   formatDurations,
   normaliseDuration,
   parseISODuration,
-} from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'w-full border-none bg-transparent pl-0 text-2xs font-normal text-zinc-500/80',

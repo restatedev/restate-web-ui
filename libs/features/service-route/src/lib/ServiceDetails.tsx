@@ -1,13 +1,13 @@
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
-import type { Handler, ServiceType } from '@restate/data-access/admin-api-spec';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
+import type { Handler, ServiceType } from '@restate/data-access-admin-api-spec';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   type ContentPanelTabs,
   isTabStateParam,
-} from '@restate/ui/content-panel';
-import { formatNumber } from '@restate/util/intl';
+} from '@restate/ui-content-panel';
+import { formatNumber } from '@restate/util-intl';
 import { useMemo, type ReactNode } from 'react';
 import { ServiceDeploymentsTable } from './ServiceDeploymentsTable';
 import { ServiceHandlersTable } from './ServiceHandlersTable';
@@ -16,10 +16,10 @@ import {
   ServiceInvocations,
   useServiceInvocationsTab,
 } from './ServiceInvocations';
-import { ServicePlaygroundEmbed } from '@restate/features/service';
-import { VirtualObjectInstances } from '@restate/features/virtual-objects-route';
-import { WorkflowRuns } from '@restate/features/workflows-route';
-import { tv } from '@restate/util/styles';
+import { ServicePlaygroundEmbed } from '@restate/features-service';
+import { VirtualObjectInstances } from '@restate/features-virtual-objects-route';
+import { WorkflowRuns } from '@restate/features-workflows-route';
+import { tv } from '@restate/util-styles';
 import {
   keyedServiceTab,
   TAB_QUERY_PARAM,

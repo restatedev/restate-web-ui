@@ -1,5 +1,5 @@
-import { clearQueryStats, recordQuery } from '@restate/data-access/query';
-import { AdminBaseURLProvider } from '@restate/data-access/admin-api';
+import { clearQueryStats, recordQuery } from '@restate/data-access-query';
+import { AdminBaseURLProvider } from '@restate/data-access-admin-api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -9,10 +9,10 @@ import { queryStats, stripRouterBaseFromHref } from './query-stats.route';
 
 const postMock = vi.hoisted(() => vi.fn());
 
-vi.mock('@restate/data-access/admin-api', async () => {
+vi.mock('@restate/data-access-admin-api', async () => {
   const original = await vi.importActual<
-    typeof import('@restate/data-access/admin-api')
-  >('@restate/data-access/admin-api');
+    typeof import('@restate/data-access-admin-api')
+  >('@restate/data-access-admin-api');
   return {
     ...original,
     client: { ...original.client, POST: postMock },

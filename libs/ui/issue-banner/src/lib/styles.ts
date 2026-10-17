@@ -1,4 +1,4 @@
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 export const issuePingStyles = tv({
   base: 'absolute inline-flex h-full w-full animate-ping opacity-50',

@@ -4,8 +4,8 @@ import type {
   BatchInvocationsRequestBody,
   components,
   VqueueEntryStage,
-} from '@restate/data-access/admin-api-spec';
-import { RestateError } from '@restate/util/errors';
+} from '@restate/data-access-admin-api-spec';
+import { RestateError } from '@restate/util-errors';
 import {
   createContextKey,
   createRouter,

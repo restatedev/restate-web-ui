@@ -1,4 +1,4 @@
-import type { Invocation } from '@restate/data-access/admin-api-spec';
+import type { Invocation } from '@restate/data-access-admin-api-spec';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Status } from './Status';
 
@@ -7,9 +7,9 @@ const apiHooks = vi.hoisted(() => ({
   useGetTransientError: vi.fn(),
 }));
 
-vi.mock('@restate/data-access/admin-api-hooks', async (importOriginal) => ({
+vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/data-access/admin-api-hooks')
+    typeof import('@restate/data-access-admin-api-hooks')
   >()),
   useGetPausedError: apiHooks.useGetPausedError,
   useGetTransientError: apiHooks.useGetTransientError,

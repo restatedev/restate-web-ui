@@ -3,7 +3,7 @@ import type {
   InvocationFuture,
   RawInvocation,
   components,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getComputedInvocationStatus,
   type InvocationWithComputedStatus,

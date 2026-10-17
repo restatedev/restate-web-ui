@@ -1,29 +1,29 @@
 import {
   getEndpoint,
   type Deployment as DeploymentMetadata,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   Deployment,
   DeploymentStatusBadge,
-} from '@restate/features/deployment';
+} from '@restate/features-deployment';
 import {
   DELETE_SELECTED_DEPLOYMENTS_QUERY,
   DeleteSelectedDeploymentsDialog,
-} from '@restate/features/prune-deployments';
-import { DeploymentActions } from '@restate/features/register-deployment';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-prune-deployments';
+import { DeploymentActions } from '@restate/features-register-deployment';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   getOverviewRefreshMeta,
   useFeatures,
-} from '@restate/data-access/admin-api';
-import { useSummaryInvocationsV2 } from '@restate/data-access/admin-api-hooks';
-import { usesStatsTables } from '@restate/data-access/query';
+} from '@restate/data-access-admin-api';
+import { useSummaryInvocationsV2 } from '@restate/data-access-admin-api-hooks';
+import { usesStatsTables } from '@restate/data-access-query';
 import {
   buildStatusEntries,
   DeploymentStatusBar,
-} from '@restate/features/status-chart';
-import { MiniService } from '@restate/features/service';
-import { Button } from '@restate/ui/button';
+} from '@restate/features-status-chart';
+import { MiniService } from '@restate/features-service';
+import { Button } from '@restate/ui-button';
 import {
   Dropdown,
   DropdownItem,
@@ -31,19 +31,19 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { EmptyState } from '@restate/ui/empty-state';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { DateTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-dropdown';
+import { EmptyState } from '@restate/ui-empty-state';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { DateTooltip, TruncateWithTooltip } from '@restate/ui-tooltip';
 import {
   formatDurations,
   formatNumber,
   formatPlurals,
-} from '@restate/util/intl';
-import { deploymentHref, serviceHref } from '@restate/util/panel';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { deploymentHref, serviceHref } from '@restate/util-panel';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useOverviewContext } from './OverviewContext';

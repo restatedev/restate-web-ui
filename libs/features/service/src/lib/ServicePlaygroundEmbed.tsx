@@ -1,8 +1,8 @@
-import { API } from '@restate/ui/api';
-import { ErrorBanner } from '@restate/ui/error';
-import { Spinner } from '@restate/ui/loading';
-import { HANDLER_QUERY_PARAM } from '@restate/util/panel';
-import { tv } from '@restate/util/styles';
+import { API } from '@restate/ui-api';
+import { ErrorBanner } from '@restate/ui-error';
+import { Spinner } from '@restate/ui-loading';
+import { HANDLER_QUERY_PARAM } from '@restate/util-panel';
+import { tv } from '@restate/util-styles';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApiSpec } from './ServicePlayground';

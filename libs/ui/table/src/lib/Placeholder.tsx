@@ -1,4 +1,4 @@
-import { ErrorBanner } from '@restate/ui/error';
+import { ErrorBanner } from '@restate/ui-error';
 import { Cell, Row } from './Row';
 
 export function LoadingRows({

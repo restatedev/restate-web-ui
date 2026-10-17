@@ -1,4 +1,4 @@
-import type { WorkflowRunIdentity } from '@restate/features/workflow-run';
+import type { WorkflowRunIdentity } from '@restate/features-workflow-run';
 
 export interface WorkflowOpenDraft {
   id: string;

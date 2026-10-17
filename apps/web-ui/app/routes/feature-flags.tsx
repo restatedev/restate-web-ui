@@ -3,7 +3,7 @@ import {
   FEATURE_FLAGS,
   setFeatureFlag,
   type FeatureFlag,
-} from '@restate/util/feature-flag';
+} from '@restate/util-feature-flag';
 
 function isKnownFlag(flag?: string): flag is FeatureFlag {
   return Boolean(flag && (FEATURE_FLAGS as readonly string[]).includes(flag));

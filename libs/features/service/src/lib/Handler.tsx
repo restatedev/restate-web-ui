@@ -1,16 +1,16 @@
 import {
   Handler as HandlerType,
   ServiceType,
-} from '@restate/data-access/admin-api-spec';
-import { HandlerInputOutput } from '@restate/feature/handler-input-output';
-import { HandlerTypeExplainer } from '@restate/features/explainers';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Badge } from '@restate/ui/badge';
-import { Link } from '@restate/ui/link';
-import { serviceHref } from '@restate/util/panel';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/data-access-admin-api-spec';
+import { HandlerInputOutput } from '@restate/features-handler-input-output';
+import { HandlerTypeExplainer } from '@restate/features-explainers';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { Badge } from '@restate/ui-badge';
+import { Link } from '@restate/ui-link';
+import { serviceHref } from '@restate/util-panel';
+import { useRestateContext } from '@restate/features-restate-context';
 
 const styles = tv({
   slots: {

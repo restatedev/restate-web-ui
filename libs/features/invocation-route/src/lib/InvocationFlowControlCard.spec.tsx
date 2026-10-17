@@ -2,9 +2,9 @@ import type {
   components,
   JournalEntryV2,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { adminApi } from '@restate/data-access/admin-api';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/data-access-admin-api-spec';
+import { adminApi } from '@restate/data-access-admin-api';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';

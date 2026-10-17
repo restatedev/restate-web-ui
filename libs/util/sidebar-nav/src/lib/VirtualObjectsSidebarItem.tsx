@@ -2,16 +2,16 @@ import {
   SidebarNavItem,
   type SidebarLocation,
   type SidebarSubItem,
-} from '@restate/ui/layout';
-import { Scope } from '@restate/features/vqueue-ui';
-import { IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-layout';
+import { Scope } from '@restate/features-vqueue-ui';
+import { IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   formatVirtualObjectInstanceIdentity,
   virtualObjectInstanceHref,
   virtualObjectScopeFromSearch,
   type VirtualObjectInstanceIdentity,
-} from '@restate/features/virtual-object-instance';
+} from '@restate/features-virtual-object-instance';
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useLocation } from 'react-router';
 

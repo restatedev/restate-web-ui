@@ -20,17 +20,17 @@ import {
   composeRenderProps,
 } from 'react-aria-components';
 import { useLocation, useSearchParams } from 'react-router';
-import { focusRing } from '@restate/ui/focus';
-import { tv } from '@restate/util/styles';
+import { focusRing } from '@restate/ui-focus';
+import { tv } from '@restate/util-styles';
 import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownPopover,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-dropdown';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 
 type ContentPanelSlotName = 'toolbar' | 'header';
 

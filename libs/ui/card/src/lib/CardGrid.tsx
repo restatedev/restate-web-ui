@@ -1,4 +1,4 @@
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import type { PropsWithChildren } from 'react';
 
 const cardGridStyles = tv({

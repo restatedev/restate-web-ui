@@ -12,19 +12,19 @@ import {
   useCanSummarizeInvocationsFromStats,
   useProgressiveInvocationSummaryV2,
   useServiceCatalog,
-} from '@restate/data-access/admin-api-hooks';
-import { getOverviewRefreshMeta } from '@restate/data-access/admin-api';
+} from '@restate/data-access-admin-api-hooks';
+import { getOverviewRefreshMeta } from '@restate/data-access-admin-api';
 import {
   getServiceIssues,
   MIN_TRAFFIC_THRESHOLD,
   type ServiceIssue,
-} from '@restate/features/system-health';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-system-health';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   getUserBreakdownCountMode,
   setUserBreakdownCountMode,
   type BreakdownCountMode,
-} from '@restate/features/user-preference';
+} from '@restate/features-user-preference';
 import {
   getMinOverviewRefetchInterval,
   getOverviewRefetchInterval,

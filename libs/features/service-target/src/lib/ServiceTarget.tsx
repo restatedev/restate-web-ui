@@ -1,22 +1,22 @@
-import type { ServiceType } from '@restate/data-access/admin-api-spec';
-import { useServiceCatalog } from '@restate/data-access/admin-api-hooks';
-import { useRestateContext } from '@restate/features/restate-context';
-import { virtualObjectInstanceHref } from '@restate/features/virtual-object-instance';
-import { Scope } from '@restate/features/vqueue-ui';
-import { workflowRunHref } from '@restate/features/workflow-run';
+import type { ServiceType } from '@restate/data-access-admin-api-spec';
+import { useServiceCatalog } from '@restate/data-access-admin-api-hooks';
+import { useRestateContext } from '@restate/features-restate-context';
+import { virtualObjectInstanceHref } from '@restate/features-virtual-object-instance';
+import { Scope } from '@restate/features-vqueue-ui';
+import { workflowRunHref } from '@restate/features-workflow-run';
 import {
   Chip,
   ChipGroup,
   ChipSegment,
   type ChipGroupVariant,
-} from '@restate/ui/chip';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-chip';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   TruncateTooltipTrigger,
   TruncateWithTooltip,
-} from '@restate/ui/tooltip';
-import { serviceHref } from '@restate/util/panel';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-tooltip';
+import { serviceHref } from '@restate/util-panel';
+import { tv } from '@restate/util-styles';
 import {
   createContext,
   useContext,

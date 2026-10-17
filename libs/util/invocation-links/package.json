@@ -2,11 +2,5 @@
   "name": "@restate/util-invocation-links",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "invocation-links",
-    "sourceRoot": "libs/util/invocation-links/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

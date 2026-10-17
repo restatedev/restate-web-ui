@@ -4,24 +4,24 @@ import {
   type Invocation,
   type InvocationComputedStatus2,
   type InvocationSummaryStage,
-} from '@restate/data-access/admin-api-spec';
-import { Badge } from '@restate/ui/badge';
-import { Chip, ChipSegment } from '@restate/ui/chip';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Cell } from '@restate/ui/table';
+} from '@restate/data-access-admin-api-spec';
+import { Badge } from '@restate/ui-badge';
+import { Chip, ChipSegment } from '@restate/ui-chip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Cell } from '@restate/ui-table';
 import {
   DateTooltip,
   TruncateTooltipTrigger,
   TruncateWithTooltip,
-} from '@restate/ui/tooltip';
-import { formatDurations } from '@restate/util/intl';
-import { useOnboarding } from '@restate/util/feature-flag';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
-import { serviceHref } from '@restate/util/panel';
-import { useRestateContext } from '@restate/features/restate-context';
-import { LimitKey, VQueueId } from '@restate/features/vqueue-ui';
-import { ServiceTarget, Target } from '@restate/features/service-target';
+} from '@restate/ui-tooltip';
+import { formatDurations } from '@restate/util-intl';
+import { useOnboarding } from '@restate/util-feature-flag';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
+import { serviceHref } from '@restate/util-panel';
+import { useRestateContext } from '@restate/features-restate-context';
+import { LimitKey, VQueueId } from '@restate/features-vqueue-ui';
+import { ServiceTarget, Target } from '@restate/features-service-target';
 import { InvocationId } from './InvocationId';
 import { InvocationStatusBadge, Status } from './Status';
 

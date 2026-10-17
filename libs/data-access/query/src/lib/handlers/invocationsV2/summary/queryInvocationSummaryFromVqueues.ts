@@ -3,7 +3,7 @@ import {
   INVOCATION_STATUS_DEFINITIONS,
   INVOCATION_SUMMARY_STAGES,
   type FilterItem,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import type { QueryContext } from '../../shared';
 import {
   getInvocationStatusFromVqueue,

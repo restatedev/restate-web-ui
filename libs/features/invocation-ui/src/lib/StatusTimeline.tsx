@@ -1,11 +1,11 @@
-import { Invocation } from '@restate/data-access/admin-api-spec';
-import { Badge } from '@restate/ui/badge';
-import { DateTooltip } from '@restate/ui/tooltip';
-import { formatDurations } from '@restate/util/intl';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
+import { Invocation } from '@restate/data-access-admin-api-spec';
+import { Badge } from '@restate/ui-badge';
+import { DateTooltip } from '@restate/ui-tooltip';
+import { formatDurations } from '@restate/util-intl';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
 import { ComponentType } from 'react';
 import { Retention } from './Retention';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-zinc-500/80',

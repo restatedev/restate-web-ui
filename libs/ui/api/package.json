@@ -5,11 +5,5 @@
   "exports": {
     ".": "./src/index.ts",
     "./assets": "./src/assets.ts"
-  },
-  "nx": {
-    "name": "api",
-    "sourceRoot": "libs/ui/api/src",
-    "projectType": "library",
-    "tags": []
   }
 }

@@ -1,4 +1,4 @@
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 
 export function Version() {
   const { version } = useRestateContext();

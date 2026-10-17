@@ -3,7 +3,6 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/features/service-protocol',
-  resolve: { tsconfigPaths: true },
   plugins: [],
   test: {
     passWithNoTests: true,

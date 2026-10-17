@@ -12,7 +12,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Invocation } from '@restate/data-access/admin-api-spec';
+import type { Invocation } from '@restate/data-access-admin-api-spec';
 import { TenantInvocations } from './TenantInvocations';
 
 function AriaRouter({ children }: PropsWithChildren) {
@@ -22,9 +22,9 @@ function AriaRouter({ children }: PropsWithChildren) {
   );
 }
 
-vi.mock('@restate/features/restate-context', async (importOriginal) => ({
+vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/features/restate-context')
+    typeof import('@restate/features-restate-context')
   >()),
   useRestateContext: () => ({ baseUrl: '/tenants/acme' }),
 }));
@@ -36,9 +36,9 @@ const hooks = vi.hoisted(() => ({
   batchCancel: vi.fn(),
   resetBatch: vi.fn(),
 }));
-vi.mock('@restate/data-access/admin-api-hooks', async (importOriginal) => ({
+vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/data-access/admin-api-hooks')
+    typeof import('@restate/data-access-admin-api-hooks')
   >()),
   useCancelInvocation: () => ({ mutate: hooks.cancel, reset: vi.fn() }),
   useBatchCancelInvocations: () => ({

@@ -1,4 +1,4 @@
-import type { RawInvocation } from '@restate/data-access/admin-api-spec';
+import type { RawInvocation } from '@restate/data-access-admin-api-spec';
 import { convertInvocationV2 } from '../../../convertInvocation';
 import { getInvocationStatusFromVqueue } from '../../../invocationStatuses';
 import { toVqueueEntry } from '../../virtualObjectEntries';

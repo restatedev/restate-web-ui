@@ -2,11 +2,5 @@
   "name": "@restate/features-edit-state",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "edit-state",
-    "sourceRoot": "libs/features/edit-state/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

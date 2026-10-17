@@ -12,10 +12,10 @@ import {
   useState,
 } from 'react';
 import { QueryClause, QueryClauseSchema, QueryClauseType } from './Query';
-import { FormFieldMultiCombobox } from '@restate/ui/form-field';
+import { FormFieldMultiCombobox } from '@restate/ui-form-field';
 import { Key, ListData, useListData } from 'react-stately';
-import { useFocusShortcut } from '@restate/ui/keyboard';
-import { Icon, IconName } from '@restate/ui/icons';
+import { useFocusShortcut } from '@restate/ui-keyboard';
+import { Icon, IconName } from '@restate/ui-icons';
 
 interface QueryBuilderProps {
   schema: QueryClauseSchema<QueryClauseType>[];

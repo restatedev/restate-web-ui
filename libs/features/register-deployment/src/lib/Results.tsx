@@ -1,13 +1,13 @@
-import * as adminApi from '@restate/data-access/admin-api-spec';
-import { Icon, IconName } from '@restate/ui/icons';
+import * as adminApi from '@restate/data-access-admin-api-spec';
+import { Icon, IconName } from '@restate/ui-icons';
 import { useRegisterDeploymentContext } from './Context';
 import { Disclosure, DisclosurePanel } from 'react-aria-components';
-import { Button } from '@restate/ui/button';
-import { ServiceType, Handler } from '@restate/features/service';
-import { Link } from '@restate/ui/link';
-import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features/deployment';
+import { Button } from '@restate/ui-button';
+import { ServiceType, Handler } from '@restate/features-service';
+import { Link } from '@restate/ui-link';
+import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features-deployment';
 import { PropsWithChildren } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const warningStyles = tv({
   base: 'mt-2 flex gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3 text-0.5xs text-orange-600',

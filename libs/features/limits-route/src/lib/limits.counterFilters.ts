@@ -1,6 +1,6 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { blockedLimitCounterIdentity } from '@restate/features/vqueue-ui';
-import { QueryClause, QueryClauseType } from '@restate/ui/filter-builder';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { blockedLimitCounterIdentity } from '@restate/features-vqueue-ui';
+import { QueryClause, QueryClauseType } from '@restate/ui-filter-builder';
 import { LIMIT_IDENTITY_FILTER_SCHEMA } from './limits.identityFilters';
 
 type LimitCounterFilterItem = components['schemas']['LimitCounterFilterItem'];

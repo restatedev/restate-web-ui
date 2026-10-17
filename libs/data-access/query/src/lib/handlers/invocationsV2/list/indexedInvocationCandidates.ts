@@ -1,4 +1,4 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import type { QueryId } from '../../../queryDefinitions';
 import { usesIndexesV1 } from '../../../uiFeatures';
 import {

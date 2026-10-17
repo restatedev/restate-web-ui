@@ -3,9 +3,9 @@ import {
   type SidebarLocation,
   type SidebarMatch,
   type SidebarSubItem,
-} from '@restate/ui/layout';
-import { IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-layout';
+import { IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import { useLocation, useSearchParams } from 'react-router';
 import {
   useEffect,
@@ -13,14 +13,14 @@ import {
   useSyncExternalStore,
   type PropsWithChildren,
 } from 'react';
-import { useDeploymentLabel } from '@restate/features/deployment';
-import { REGISTER_DEPLOYMENT_QUERY } from '@restate/features/register-deployment';
-import { ServicePlaygroundSidebarAction } from '@restate/features/service';
+import { useDeploymentLabel } from '@restate/features-deployment';
+import { REGISTER_DEPLOYMENT_QUERY } from '@restate/features-register-deployment';
+import { ServicePlaygroundSidebarAction } from '@restate/features-service';
 import {
   HANDLER_QUERY_PARAM,
   deploymentHref,
   serviceHref,
-} from '@restate/util/panel';
+} from '@restate/util-panel';
 
 interface OverviewSidebarItemProps {
   baseUrl?: string;

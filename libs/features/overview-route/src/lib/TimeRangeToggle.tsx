@@ -5,8 +5,8 @@ import {
   DropdownMenu,
   DropdownItem,
   DropdownSection,
-} from '@restate/ui/dropdown';
-import { ChartContextTrigger } from '@restate/features/status-chart';
+} from '@restate/ui-dropdown';
+import { ChartContextTrigger } from '@restate/features-status-chart';
 import type { CompletionTimeRange } from './completionBuckets';
 
 const COMPLETION_RANGES = [

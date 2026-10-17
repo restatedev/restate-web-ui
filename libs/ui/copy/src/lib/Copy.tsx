@@ -1,7 +1,7 @@
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import { PropsWithChildren, useState } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 interface CopyProps {
   className?: string;

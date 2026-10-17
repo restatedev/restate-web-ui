@@ -1,4 +1,4 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import {
   SYS_INVOCATION_LIST_SELECT_COLUMNS,
   type QueryContext,

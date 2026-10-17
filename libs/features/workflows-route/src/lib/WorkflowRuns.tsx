@@ -1,27 +1,27 @@
-import { useListWorkflowRuns } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
-import { Actions } from '@restate/features/invocation-route';
+import { useListWorkflowRuns } from '@restate/data-access-admin-api-hooks';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { Actions } from '@restate/features-invocation-route';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationId,
   InvocationTableCell,
   InvocationTableDate,
   Status,
-} from '@restate/features/invocation-ui';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-invocation-ui';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   workflowRunHref,
   WorkflowRunTarget,
   type WorkflowRunIdentity,
-} from '@restate/features/workflow-run';
-import { Button } from '@restate/ui/button';
+} from '@restate/features-workflow-run';
+import { Button } from '@restate/ui-button';
 import {
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
 import {
   AddFilterTrigger,
   FilterBuilder,
@@ -30,19 +30,19 @@ import {
   QueryClause,
   QueryClauseType,
   useFilterBuilder,
-} from '@restate/ui/filter-builder';
-import { Icon, IconName } from '@restate/ui/icons';
-import { getHrefWithQueryParams } from '@restate/ui/link';
+} from '@restate/ui-filter-builder';
+import { Icon, IconName } from '@restate/ui-icons';
+import { getHrefWithQueryParams } from '@restate/ui-link';
 import {
   Cell,
   PanelTable,
   PanelTableQuickOpenCaption,
   type PanelTableColumn,
-} from '@restate/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui-tooltip';
+import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Form, useNavigate, useSearchParams } from 'react-router';
 import {

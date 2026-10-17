@@ -6,7 +6,7 @@ import {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getEntryName,
   decodeBinary,
@@ -15,7 +15,7 @@ import {
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
 } from './util';
-import { binaryToUtf8 } from '@restate/util/binary';
+import { binaryToUtf8 } from '@restate/util-binary';
 
 function setStateV1(
   entry: JournalRawEntry,

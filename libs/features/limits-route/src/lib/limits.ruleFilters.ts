@@ -1,11 +1,11 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { LIMIT_RULE_PATTERN_FILTER_ID } from '@restate/features/vqueue-ui';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { LIMIT_RULE_PATTERN_FILTER_ID } from '@restate/features-vqueue-ui';
 import {
   QueryClause,
   type QueryClauseOption,
   type QueryClauseSchema,
   type QueryClauseType,
-} from '@restate/ui/filter-builder';
+} from '@restate/ui-filter-builder';
 
 type LimitRuleWithStats = components['schemas']['LimitRuleWithStats'];
 

@@ -1,4 +1,4 @@
-import { Button } from '@restate/ui/button';
+import { Button } from '@restate/ui-button';
 import {
   Dropdown,
   DropdownItem,
@@ -6,9 +6,9 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import { predefinedQueries, type PredefinedQuery } from './predefinedQueries';
 
 const predefinedQueryById = new Map<string, PredefinedQuery>(

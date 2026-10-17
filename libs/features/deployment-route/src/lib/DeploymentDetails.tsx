@@ -1,14 +1,14 @@
-import type { Service } from '@restate/data-access/admin-api-spec';
+import type { Service } from '@restate/data-access-admin-api-spec';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   type ContentPanelTabs,
   isTabStateParam,
-} from '@restate/ui/content-panel';
-import { formatNumber } from '@restate/util/intl';
+} from '@restate/ui-content-panel';
+import { formatNumber } from '@restate/util-intl';
 import { useMemo } from 'react';
-import { InvocationsTabLabel } from '@restate/features/service-route';
+import { InvocationsTabLabel } from '@restate/features-service-route';
 import {
   DeploymentInvocations,
   useDeploymentInvocationsTab,

@@ -1,14 +1,14 @@
-import type { Invocation } from '@restate/data-access/admin-api-spec';
-import { Badge } from '@restate/ui/badge';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { Ellipsis } from '@restate/ui/loading';
+import type { Invocation } from '@restate/data-access-admin-api-spec';
+import { Badge } from '@restate/ui-badge';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { Ellipsis } from '@restate/ui-loading';
 import {
   formatDateTime,
   formatDurations,
   formatRange,
   normaliseDuration,
   parseISODuration,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 
 export interface InvocationDurationProps {
   invocation: Pick<Invocation, 'duration' | 'created_at' | 'completed_at'>;

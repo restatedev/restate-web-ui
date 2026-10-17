@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { useSchema } from './useSchema';
 
-vi.mock('@restate/data-access/admin-api-hooks', () => ({
+vi.mock('@restate/data-access-admin-api-hooks', () => ({
   useListDeployments: () => ({
     data: { deployments: new Map(), sortedServiceNames: [] },
     isPending: false,

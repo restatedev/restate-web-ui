@@ -1,12 +1,12 @@
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { tv } from '@restate/util/styles';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { tv } from '@restate/util-styles';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 import { ReactNode } from 'react';
 
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Portal } from '@restate/ui/portal';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Portal } from '@restate/ui-portal';
 import { useJournalEntriesContext } from './JournalContext';
 
 const styles = tv({

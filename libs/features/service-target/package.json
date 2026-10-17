@@ -2,11 +2,5 @@
   "name": "@restate/features-service-target",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "service-target",
-    "sourceRoot": "libs/features/service-target/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

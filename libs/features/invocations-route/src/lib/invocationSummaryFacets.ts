@@ -1,9 +1,9 @@
 import {
   INVOCATION_STATUS_DEFINITIONS,
   type components,
-} from '@restate/data-access/admin-api-spec';
-import { STATUS_ORDER } from '@restate/features/status-chart';
-import { alignInvocationSummaryBreakdowns } from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-spec';
+import { STATUS_ORDER } from '@restate/features-status-chart';
+import { alignInvocationSummaryBreakdowns } from '@restate/data-access-admin-api-hooks';
 
 type InvocationFilter = components['schemas']['InvocationV2FilterItem'];
 type InvocationSummary = components['schemas']['SummaryInvocationsV2Response'];

@@ -1,9 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true,
     "outDir": "out-tsc",
     "tsBuildInfoFile": "out-tsc/tsconfig.tsbuildinfo",
     "allowJs": true,

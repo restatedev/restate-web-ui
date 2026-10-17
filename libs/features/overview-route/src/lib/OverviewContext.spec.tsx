@@ -12,7 +12,7 @@ vi.mock('./useOverviewData', () => ({
   useOverviewData: useOverviewDataMock,
 }));
 
-vi.mock('@restate/features/restate-context', () => ({
+vi.mock('@restate/features-restate-context', () => ({
   useRestateContext: () => ({ baseUrl: 'http://localhost:9070' }),
 }));
 

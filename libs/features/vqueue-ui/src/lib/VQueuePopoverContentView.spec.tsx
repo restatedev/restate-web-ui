@@ -1,5 +1,5 @@
-import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import type { VqueueSnapshot } from '@restate/data-access-admin-api-spec';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';

@@ -1,4 +1,4 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { quoteSqlString, type QueryContext } from './shared';
 import {
   addEntryDetailsToLock,

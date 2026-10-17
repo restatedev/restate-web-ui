@@ -1,4 +1,4 @@
-import { computeNextTrail } from '@restate/ui/breadcrumbs';
+import { computeNextTrail } from '@restate/ui-breadcrumbs';
 import { createBreadcrumbPages } from './pages';
 
 describe('breadcrumb pages', () => {

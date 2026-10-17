@@ -1,16 +1,16 @@
-import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { Expression, InputOutput } from '../Expression';
 import { CommandEntryType } from './types';
 import { ReactNode } from 'react';
-import { Ellipsis } from '@restate/ui/loading';
+import { Ellipsis } from '@restate/ui-loading';
 import { Failure } from '../Failure';
 import { Value } from '../Value';
-import { tv } from '@restate/util/styles';
-import { Icon, IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import { tv } from '@restate/util-styles';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import { isEntryCompletionAmbiguous } from './isEntryCompletionAmbiguous';
-import { useRestateContext } from '@restate/features/restate-context';
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
+import { useRestateContext } from '@restate/features-restate-context';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 
 const NAME_COMMANDS_COMPONENTS: {
   [K in CommandEntryType]: string;

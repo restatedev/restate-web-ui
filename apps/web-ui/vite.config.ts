@@ -23,7 +23,6 @@ export default defineConfig(({ mode }) => {
     base: BASE_URL,
     root: import.meta.dirname,
     cacheDir: '../../node_modules/.vite/apps/web-ui',
-    resolve: { tsconfigPaths: true },
     plugins: [
       {
         ...license({

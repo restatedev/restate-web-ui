@@ -11,7 +11,7 @@ import { TooltipTriggerStateContext } from 'react-aria-components';
 import { useTooltipTriggerState } from 'react-stately';
 import { TooltipContent } from './TooltipContent';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'relative block',

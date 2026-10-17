@@ -3,7 +3,7 @@ import {
   TERMINAL_INVOCATION_STATUSES as SHARED_TERMINAL_INVOCATION_STATUSES,
   type InvocationStatus,
   type InvocationSummaryStage,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 
 export type { InvocationStatus };
 

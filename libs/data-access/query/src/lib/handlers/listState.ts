@@ -1,4 +1,4 @@
-import { hexToBase64 } from '@restate/util/binary';
+import { hexToBase64 } from '@restate/util-binary';
 import { quoteSqlString, type QueryContext } from './shared';
 
 export interface ListStateItem {

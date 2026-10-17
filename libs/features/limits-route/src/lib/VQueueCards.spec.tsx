@@ -1,5 +1,5 @@
-import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import type { VqueueSnapshot } from '@restate/data-access-admin-api-spec';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { VQueueActivityCard, VQueueDurationsCard } from './VQueueCards';

@@ -1,5 +1,5 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { FerrofluidEngine, type FerrofluidStatus } from './ferrofluid-engine';
 
 export type { FerrofluidStatus };

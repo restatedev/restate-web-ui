@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { ScheduledStatus } from './ScheduledStatus';
 
 describe('ScheduledStatus', () => {

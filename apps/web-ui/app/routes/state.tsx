@@ -1,4 +1,4 @@
-import { state } from '@restate/features/state-route';
+import { state } from '@restate/features-state-route';
 
 export function meta() {
   return [{ title: 'Restate - State' }];

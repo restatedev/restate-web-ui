@@ -2,8 +2,8 @@ import type {
   JournalEntryV2,
   JournalRawEntry,
   operations,
-} from '@restate/data-access/admin-api-spec';
-import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
+} from '@restate/data-access-admin-api-spec';
+import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util-errors';
 import { convertInvocationV2, type TransientError } from '../convertInvocation';
 import { convertJournalV2 } from '../convertJournalV2';
 import {
@@ -14,7 +14,7 @@ import {
   type JournalEntryConversionContext,
   type JournalRawEntryWithCommandIndex,
   lifeCycles,
-} from '@restate/features/service-protocol';
+} from '@restate/features-service-protocol';
 import {
   type QueryContext,
   SYS_INVOCATION_SELECT_COLUMNS,

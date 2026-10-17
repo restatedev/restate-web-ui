@@ -20,7 +20,7 @@ pnpm install
 pnpm nx serve web-ui
 
 # Run the button unit tests in watch mode
-pnpm nx test button --watch
+pnpm nx test @restate/ui-button --watch
 ```
 
 Details of each package's targets can be available in the `project.json` file within each package.

@@ -21,14 +21,14 @@ import {
 } from 'react-router';
 import { RouterProvider as AriaRouterProvider } from 'react-aria-components';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ContentPanel } from '@restate/ui/content-panel';
-import type { components } from '@restate/data-access/admin-api-spec';
+import { ContentPanel } from '@restate/ui-content-panel';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { useServiceTabs } from './useServiceTabs';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
 
-vi.mock('@restate/features/restate-context', async (importOriginal) => ({
+vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@restate/features/restate-context')
+    typeof import('@restate/features-restate-context')
   >()),
   useRestateContext: () => ({ baseUrl: '' }),
 }));

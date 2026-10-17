@@ -1,9 +1,9 @@
-import { Invocation } from '@restate/data-access/admin-api-spec';
-import { DropdownItem } from '@restate/ui/dropdown';
-import { Link } from '@restate/ui/link';
-import { tv } from '@restate/util/styles';
-import { SplitButton } from '@restate/ui/split-button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Invocation } from '@restate/data-access-admin-api-spec';
+import { DropdownItem } from '@restate/ui-dropdown';
+import { Link } from '@restate/ui-link';
+import { tv } from '@restate/util-styles';
+import { SplitButton } from '@restate/ui-split-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import { KillInvocation } from './KillInvocation';
 import { CancelInvocation } from './CancelInvocation';
 import { PurgeInvocation } from './PurgeInvocation';
@@ -11,8 +11,8 @@ import { RestartInvocation } from './RestartInvocation';
 import { RetryNowInvocation } from './RetryNowInvocation';
 import { ResumeInvocation } from './ResumeInvocation';
 import { PauseInvocation } from './PauseInvocation';
-import { ActionText } from '@restate/ui/action-text';
-import { withConfirmation } from '@restate/ui/dialog';
+import { ActionText } from '@restate/ui-action-text';
+import { withConfirmation } from '@restate/ui-dialog';
 import { RestartWorkflow } from './RestartWorkflow';
 
 interface ActionConfig {

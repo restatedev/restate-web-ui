@@ -5,7 +5,6 @@ import 'vitest/config';
 export default defineConfig({
   root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/util/api-config',
-  resolve: { tsconfigPaths: true },
 
   plugins: [react()],
 

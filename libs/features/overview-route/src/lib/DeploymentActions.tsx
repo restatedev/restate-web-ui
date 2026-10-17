@@ -1,11 +1,11 @@
-import { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from '@restate/features/prune-deployments';
+import { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from '@restate/features-prune-deployments';
 import {
   REGISTER_DEPLOYMENT_QUERY,
   TriggerRegisterDeploymentDialog,
-} from '@restate/features/register-deployment';
-import { DropdownItem } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { SplitButton } from '@restate/ui/split-button';
+} from '@restate/features-register-deployment';
+import { DropdownItem } from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { SplitButton } from '@restate/ui-split-button';
 import { useSearchParams } from 'react-router';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
 

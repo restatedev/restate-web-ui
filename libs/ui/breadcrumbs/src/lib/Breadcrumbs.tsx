@@ -1,21 +1,21 @@
 import { Fragment } from 'react';
-import { Button } from '@restate/ui/button';
-import { Chip, ChipSegment } from '@restate/ui/chip';
+import { Button } from '@restate/ui-button';
+import { Chip, ChipSegment } from '@restate/ui-chip';
 import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownPopover,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import {
   Popover,
   PopoverContent,
   PopoverHoverTrigger,
-} from '@restate/ui/popover';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-popover';
+import { tv } from '@restate/util-styles';
 import { useBreadcrumbPages, useBreadcrumbs } from './BreadcrumbsProvider';
 import type { BreadcrumbComponentProps, TrailCrumb } from './types';
 

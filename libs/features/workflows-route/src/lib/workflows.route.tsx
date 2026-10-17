@@ -1,13 +1,13 @@
-import { useServiceCatalog } from '@restate/data-access/admin-api-hooks';
+import { useServiceCatalog } from '@restate/data-access-admin-api-hooks';
 import {
   ContentPanel,
   type ContentPanelTabs,
   isTabStateParam,
-} from '@restate/ui/content-panel';
-import { IconName } from '@restate/ui/icons';
-import { ListPageHeader } from '@restate/ui/layout';
-import { Link } from '@restate/ui/link';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-content-panel';
+import { IconName } from '@restate/ui-icons';
+import { ListPageHeader } from '@restate/ui-layout';
+import { Link } from '@restate/ui-link';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { WorkflowRuns } from './WorkflowRuns';

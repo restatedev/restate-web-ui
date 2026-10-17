@@ -1,11 +1,11 @@
 import { forwardRef, PropsWithChildren, ReactNode, useRef } from 'react';
 import { InternalTooltipContent } from './TooltipContent';
-import { Link } from '@restate/ui/link';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Button } from '@restate/ui/button';
+import { Link } from '@restate/ui-link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Button } from '@restate/ui-button';
 import { TooltipTrigger as AriaTooltip } from 'react-aria-components';
 import { useFocusable, useObjectRef } from 'react-aria';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 interface InlineTooltipProps {
   title?: ReactNode;

@@ -1,6 +1,6 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { HoverTooltip, InlineTooltip } from '@restate/ui/tooltip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { HoverTooltip, InlineTooltip } from '@restate/ui-tooltip';
 import type { ReactNode } from 'react';
 
 interface WorkflowInteractionTooltipProps {

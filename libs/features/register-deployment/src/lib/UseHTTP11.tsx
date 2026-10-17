@@ -1,4 +1,4 @@
-import { FormFieldCheckbox } from '@restate/ui/form-field';
+import { FormFieldCheckbox } from '@restate/ui-form-field';
 import { useRegisterDeploymentContext } from './Context';
 
 export function UseHTTP11() {

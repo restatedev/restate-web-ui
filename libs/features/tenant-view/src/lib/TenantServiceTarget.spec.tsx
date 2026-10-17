@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router';
 import {
   ServiceTarget,
   ServiceTargetProvider,
-} from '@restate/features/service-target';
+} from '@restate/features-service-target';
 import { TenantServiceTarget } from './TenantServiceTarget';
 
 describe('TenantServiceTarget', () => {

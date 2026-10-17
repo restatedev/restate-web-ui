@@ -1,11 +1,11 @@
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { ErrorBanner } from '@restate/ui/error';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { RestateError } from '@restate/util/errors';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { ErrorBanner } from '@restate/ui-error';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { RestateError } from '@restate/util-errors';
 import { useMemo } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 const failureStyle = tv({
   base: '',
   slots: {

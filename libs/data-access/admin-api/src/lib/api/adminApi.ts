@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import type { RestateError } from '@restate/util/errors';
+import type { RestateError } from '@restate/util-errors';
 import type {
   UseMutationOptions,
   UseQueryOptions,
 } from '@tanstack/react-query';
 import type { FetchResponse, ParseAs } from 'openapi-fetch';
 export type { SuccessResponse } from 'openapi-typescript-helpers';
-import type { paths } from '@restate/data-access/admin-api-spec';
+import type { paths } from '@restate/data-access-admin-api-spec';
 import { client } from './client';
 
 export type SupportedMethods<Path extends keyof paths> = keyof {

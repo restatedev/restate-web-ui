@@ -1,4 +1,4 @@
-import { FormFieldInput } from '@restate/ui/form-field';
+import { FormFieldInput } from '@restate/ui-form-field';
 import { useRegisterDeploymentContext } from './Context';
 
 const ROLE_REGEX =

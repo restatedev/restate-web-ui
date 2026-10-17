@@ -1,6 +1,6 @@
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Copy } from '@restate/ui/copy';
-import { InPortal } from '@restate/ui/portal';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { Copy } from '@restate/ui-copy';
+import { InPortal } from '@restate/ui-portal';
 
 export function Headers({
   headers,

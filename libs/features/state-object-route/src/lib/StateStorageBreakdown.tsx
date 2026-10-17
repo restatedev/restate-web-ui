@@ -1,17 +1,17 @@
-import { useGetStateStorageSize } from '@restate/data-access/admin-api-hooks';
-import { ErrorBanner } from '@restate/ui/error';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { Link } from '@restate/ui/link';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Button } from '@restate/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useGetStateStorageSize } from '@restate/data-access-admin-api-hooks';
+import { ErrorBanner } from '@restate/ui-error';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { Link } from '@restate/ui-link';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Button } from '@restate/ui-button';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   formatBytes,
   formatNumber,
   formatPercentageWithoutFraction,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { useSearchParams } from 'react-router';
 import { getStateServiceHref } from './ServiceSelector';
 

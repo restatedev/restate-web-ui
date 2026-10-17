@@ -5,10 +5,10 @@ import {
   useBatchKillInvocations,
   useBatchResumeInvocations,
   useBatchRestateAsNewInvocations,
-} from '@restate/data-access/admin-api-hooks';
-import type { BatchInvocationsResponse } from '@restate/data-access/admin-api-spec';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { formatNumber, formatPlurals } from '@restate/util/intl';
+} from '@restate/data-access-admin-api-hooks';
+import type { BatchInvocationsResponse } from '@restate/data-access-admin-api-spec';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { formatNumber, formatPlurals } from '@restate/util-intl';
 import { OperationType } from './types';
 
 export function useBatchMutation(

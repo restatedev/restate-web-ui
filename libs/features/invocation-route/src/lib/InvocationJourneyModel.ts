@@ -1,8 +1,8 @@
 import type {
   JournalEntryV2,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import type { Entry, Status } from '@restate/features/invocation-ui';
+} from '@restate/data-access-admin-api-spec';
+import type { Entry, Status } from '@restate/features-invocation-ui';
 import type { ComponentProps } from 'react';
 
 export type JourneyActivityKind =

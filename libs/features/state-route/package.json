@@ -2,11 +2,5 @@
   "name": "@restate/features-state-route",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "state-route",
-    "sourceRoot": "libs/features/state-route/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

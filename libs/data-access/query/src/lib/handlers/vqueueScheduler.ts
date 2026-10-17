@@ -1,4 +1,4 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 
 type Row = Record<string, unknown>;
 type VqueueBlockedResource = components['schemas']['VqueueBlockedResource'];

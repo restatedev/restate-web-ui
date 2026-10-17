@@ -1,10 +1,10 @@
-import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
-import { VQueueInboxPopoverContent } from '@restate/features/vqueue-ui';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { MetricComparison } from '@restate/ui/metric-comparison';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { formatNumber } from '@restate/util/intl';
+import type { VqueueSnapshot } from '@restate/data-access-admin-api-spec';
+import { VQueueInboxPopoverContent } from '@restate/features-vqueue-ui';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { MetricComparison } from '@restate/ui-metric-comparison';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { formatNumber } from '@restate/util-intl';
 import {
   InvocationObjectLockHolderTarget,
   InvocationObjectLockTarget,

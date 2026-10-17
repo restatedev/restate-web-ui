@@ -1,4 +1,4 @@
-import type { Invocation } from '@restate/data-access/admin-api-spec';
+import type { Invocation } from '@restate/data-access-admin-api-spec';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { InvocationDetailsCard } from './InvocationDetailsCard';

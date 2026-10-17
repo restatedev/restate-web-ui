@@ -1,9 +1,9 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   ContentPanelBody,
   ContentPanelSection,
-} from '@restate/ui/content-panel';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/ui-content-panel';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useMemo } from 'react';
 import { InvocationsStatusSummary } from './InvocationsStatusSummary';
 import {

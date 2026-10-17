@@ -1,6 +1,6 @@
-import { Invocation } from '@restate/data-access/admin-api-spec';
-import { useGetJournalEntryMetadata } from '@restate/data-access/admin-api-hooks';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { Invocation } from '@restate/data-access-admin-api-spec';
+import { useGetJournalEntryMetadata } from '@restate/data-access-admin-api-hooks';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -14,7 +14,7 @@ import { MemoryRouter } from 'react-router';
 import { InvocationCell } from './cells';
 import { ColumnKey } from './columns';
 
-vi.mock('@restate/data-access/admin-api-hooks', async (importOriginal) => ({
+vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
   ...(await importOriginal()),
   useGetJournalEntryMetadata: vi.fn(),
 }));

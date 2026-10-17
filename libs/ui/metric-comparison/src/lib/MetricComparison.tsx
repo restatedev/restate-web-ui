@@ -1,6 +1,6 @@
-import { formatNumber } from '@restate/util/intl';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { formatNumber } from '@restate/util-intl';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import type { ComponentPropsWithoutRef } from 'react';
 
 export interface MetricComparisonProps extends Omit<

@@ -3,11 +3,11 @@ import {
   UNSTABLE_ToastContent as ToastContent,
   Text,
 } from 'react-aria-components';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import { NotificationContent } from './queue';
-import { Ellipsis, Spinner } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui-loading';
 import type { QueuedToast } from 'react-aria-components';
 import { useEffect, useState } from 'react';
 import { UNSTABLE_ToastQueue as ToastQueue } from 'react-aria-components';

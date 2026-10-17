@@ -1,7 +1,7 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Spinner } from '@restate/ui-loading';
 import { BatchState } from './types';
 import { useProgress } from './useProgress';
 

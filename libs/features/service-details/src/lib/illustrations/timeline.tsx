@@ -1,7 +1,7 @@
-import { InvocationStatusBadge } from '@restate/features/invocation-ui';
-import { Icon, IconName } from '@restate/ui/icons';
-import { formatOrdinals } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+import { InvocationStatusBadge } from '@restate/features-invocation-ui';
+import { Icon, IconName } from '@restate/ui-icons';
+import { formatOrdinals } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { Fragment, type ReactNode } from 'react';
 
 export const COLUMN_GAP_PX = 10;

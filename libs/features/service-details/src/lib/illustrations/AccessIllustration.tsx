@@ -1,6 +1,6 @@
-import { Badge } from '@restate/ui/badge';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { Badge } from '@restate/ui-badge';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import { explanationItemStyles } from './primitives';
 import { Section, timelineStyles } from './timeline';
 

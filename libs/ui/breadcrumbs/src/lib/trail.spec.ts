@@ -1,5 +1,5 @@
-import { IconName } from '@restate/ui/icons';
-import { registerTransientQueryParams } from '@restate/util/panel';
+import { IconName } from '@restate/ui-icons';
+import { registerTransientQueryParams } from '@restate/util-panel';
 import {
   classify,
   computeNextTrail,

@@ -2,8 +2,8 @@ import {
   INVOCATION_STATUS_DEFINITIONS,
   TERMINAL_INVOCATION_STATUSES,
   type Deployment,
-} from '@restate/data-access/admin-api-spec';
-import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features/deployment';
+} from '@restate/data-access-admin-api-spec';
+import { MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION } from '@restate/features-deployment';
 import { SLA_THRESHOLDS, MIN_TRAFFIC_THRESHOLD } from './thresholds';
 
 export type IssueSeverity = 'high' | 'low';

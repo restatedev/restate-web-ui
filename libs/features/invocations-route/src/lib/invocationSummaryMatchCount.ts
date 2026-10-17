@@ -1,7 +1,7 @@
 import {
   TERMINAL_INVOCATION_STATUSES,
   type components,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { hasStatusFilter, type StatusFilter } from './statusFilter';
 
 type InvocationSummary = components['schemas']['SummaryInvocationsV2Response'];

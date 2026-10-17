@@ -2,11 +2,5 @@
   "name": "@restate/features-service-route",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "service-route",
-    "sourceRoot": "libs/features/service-route/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

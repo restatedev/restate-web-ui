@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
-import { IconName } from '@restate/ui/icons';
-import { InlineTooltip } from '@restate/ui/tooltip';
-import { formatNumber, formatPlurals } from '@restate/util/intl';
+import { IconName } from '@restate/ui-icons';
+import { InlineTooltip } from '@restate/ui-tooltip';
+import { formatNumber, formatPlurals } from '@restate/util-intl';
 import { OperationType } from './types';
-import { FilterItem } from '@restate/data-access/admin-api-spec';
+import { FilterItem } from '@restate/data-access-admin-api-spec';
 
 export interface OperationConfig {
   title: string;

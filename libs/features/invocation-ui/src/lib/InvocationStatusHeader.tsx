@@ -1,9 +1,9 @@
-import type { Invocation } from '@restate/data-access/admin-api-spec';
+import type { Invocation } from '@restate/data-access-admin-api-spec';
 import {
   Header,
   type HeaderIconProps,
   type HeaderVariant,
-} from '@restate/ui/header';
+} from '@restate/ui-header';
 import type { PropsWithChildren, ReactNode } from 'react';
 
 export type InvocationStatusIntent = HeaderVariant;

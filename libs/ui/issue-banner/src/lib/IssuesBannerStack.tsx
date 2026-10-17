@@ -2,11 +2,11 @@ import { useState } from 'react';
 import {
   useIssueQueue,
   type IssueContent,
-} from '@restate/features/system-health';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { formatPlurals } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/features-system-health';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { formatPlurals } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { issueBannerStyles } from './styles';
 import { IssueBannerPill } from './IssueBannerPill';
 

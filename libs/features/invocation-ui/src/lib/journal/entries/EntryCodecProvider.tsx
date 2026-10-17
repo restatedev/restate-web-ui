@@ -1,15 +1,15 @@
 import type {
   components,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   useGetInvocationJournalWithInvocationV2,
   useGetInvocationStatusDetails,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import {
   CodecOptionsProvider,
   type RestateCodecOptions,
-} from '@restate/features/codec';
+} from '@restate/features-codec';
 import type { PropsWithChildren } from 'react';
 
 type Invocation = ReturnType<

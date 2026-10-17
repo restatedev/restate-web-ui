@@ -2,11 +2,5 @@
   "name": "@restate/ui-tooltip",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "tooltip",
-    "sourceRoot": "libs/ui/tooltip/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

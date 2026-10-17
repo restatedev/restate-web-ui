@@ -1,7 +1,7 @@
 import type {
   components,
   VqueueEntryStage,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { quoteSqlString, type QueryContext } from './shared';
 import {
   getVirtualObjectEntryDetails,

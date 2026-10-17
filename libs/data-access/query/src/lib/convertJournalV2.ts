@@ -1,7 +1,7 @@
 import type {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getState,
   getStateKeys,
@@ -38,7 +38,7 @@ import {
   notificationGetLazyStateKeys,
   assignGroupIds,
   type JournalEntryConversionContext,
-} from '@restate/features/service-protocol';
+} from '@restate/features-service-protocol';
 
 export function convertJournalV2(
   entry: JournalRawEntryWithCommandIndex,

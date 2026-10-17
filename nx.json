@@ -63,11 +63,6 @@
       }
     }
   ],
-  "targetDefaults": {
-    "typecheck": {
-      "dependsOn": ["^typecheck"]
-    }
-  },
   "sync": {
     "applyChanges": true
   },
@@ -75,7 +70,7 @@
     "@nx/react": {
       "application": {
         "style": "none",
-        "linter": "oxlint",
+        "linter": "none",
         "bundler": "vite"
       },
       "component": {
@@ -83,8 +78,18 @@
       },
       "library": {
         "style": "none",
-        "linter": "oxlint",
-        "unitTestRunner": "vitest"
+        "linter": "none",
+        "unitTestRunner": "vitest",
+        "bundler": "none",
+        "skipPackageJson": true
+      }
+    },
+    "@nx/js": {
+      "library": {
+        "linter": "none",
+        "unitTestRunner": "vitest",
+        "bundler": "none",
+        "skipPackageJson": true
       }
     }
   },

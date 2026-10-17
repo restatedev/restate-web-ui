@@ -1,5 +1,5 @@
-import type { RowDataAttributes } from '@restate/ui/table';
-import { waveAnimationProps } from '@restate/ui/wave-animation';
+import type { RowDataAttributes } from '@restate/ui-table';
+import { waveAnimationProps } from '@restate/ui-wave-animation';
 
 export const OVERVIEW_WAVE_TARGET = 'overview-card';
 

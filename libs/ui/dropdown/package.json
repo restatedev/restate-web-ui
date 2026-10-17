@@ -2,11 +2,5 @@
   "name": "@restate/ui-dropdown",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "dropdown",
-    "sourceRoot": "libs/ui/dropdown/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

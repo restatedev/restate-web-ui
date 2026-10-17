@@ -1,5 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
-import { IconName } from '@restate/ui/icons';
+import { IconName } from '@restate/ui-icons';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BreadcrumbsProvider, useBreadcrumbs } from './BreadcrumbsProvider';

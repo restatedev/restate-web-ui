@@ -2,7 +2,7 @@ import {
   type FilterItem,
   getInvocationStatusesForStage,
   INVOCATION_STATUS_DEFINITIONS,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import type { InvocationStatus } from '../../../invocationStatuses';
 import { quoteSqlString, type QueryContext } from '../../shared';
 import type { InvocationFilterV2, ResolvedInvocationModeV2 } from '../shared';

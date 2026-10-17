@@ -2,7 +2,7 @@ import {
   INBOX_INVOCATION_STATUSES,
   TERMINAL_INVOCATION_STATUSES,
   type FilterItem,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 
 const FAILED_SUBSTATES = ['failed', 'cancelled', 'killed'];
 const COMPLETED_STATUSES = TERMINAL_INVOCATION_STATUSES;

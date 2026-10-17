@@ -1,17 +1,17 @@
-import type { UserLimitRow } from '@restate/data-access/admin-api-hooks';
+import type { UserLimitRow } from '@restate/data-access-admin-api-hooks';
 import {
   LimitCounterTarget,
   LimitRuleTarget,
   LimitValue,
-} from '@restate/features/vqueue-ui';
-import { Badge } from '@restate/ui/badge';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { HoverTooltip, InlineTooltip } from '@restate/ui/tooltip';
+} from '@restate/features-vqueue-ui';
+import { Badge } from '@restate/ui-badge';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { HoverTooltip, InlineTooltip } from '@restate/ui-tooltip';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { useMemo, type ReactNode } from 'react';
 import type { SortDescriptor } from 'react-aria-components';
 import { useNavigate } from 'react-router';

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { FerrofluidStatus } from '@restate/ui/restate-server';
+import type { FerrofluidStatus } from '@restate/ui-restate-server';
 
 export function useRestateServerStatus({
   isHealthy,

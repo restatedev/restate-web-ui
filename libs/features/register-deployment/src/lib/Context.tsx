@@ -10,18 +10,18 @@ import {
   useRef,
 } from 'react';
 import { ListData, useListData } from 'react-stately';
-import * as adminApi from '@restate/data-access/admin-api-spec';
-import { getEndpoint } from '@restate/data-access/admin-api-spec';
-import { useDialog } from '@restate/ui/dialog';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { RestateError } from '@restate/util/errors';
+import * as adminApi from '@restate/data-access-admin-api-spec';
+import { getEndpoint } from '@restate/data-access-admin-api-spec';
+import { useDialog } from '@restate/ui-dialog';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { RestateError } from '@restate/util-errors';
 import {
   useListDeployments,
   useRegisterDeployment,
   useUpdateDeployment,
-} from '@restate/data-access/admin-api-hooks';
-import { useRestateContext } from '@restate/features/restate-context';
-import { useOnboarding } from '@restate/util/feature-flag';
+} from '@restate/data-access-admin-api-hooks';
+import { useRestateContext } from '@restate/features-restate-context';
+import { useOnboarding } from '@restate/util-feature-flag';
 import {
   addProtocol,
   FIX_HTTP_ACTION,

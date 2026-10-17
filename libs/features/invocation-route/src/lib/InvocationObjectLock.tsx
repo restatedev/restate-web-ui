@@ -1,16 +1,16 @@
-import { useGetVirtualObjectLock } from '@restate/data-access/admin-api-hooks';
+import { useGetVirtualObjectLock } from '@restate/data-access-admin-api-hooks';
 import type {
   components,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { InvocationId } from '@restate/features/invocation-ui';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/data-access-admin-api-spec';
+import { InvocationId } from '@restate/features-invocation-ui';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   VirtualObjectInstanceTarget,
   virtualObjectInstanceHref,
   virtualObjectInstanceIdentityFromLockName,
   type VirtualObjectInstanceIdentity,
-} from '@restate/features/virtual-object-instance';
+} from '@restate/features-virtual-object-instance';
 import { useState } from 'react';
 
 type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];

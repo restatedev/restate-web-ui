@@ -1,7 +1,7 @@
 import type {
   RawInvocation,
   Service,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { query as queryRouter } from '../query';
 import type { QueryContext } from './shared';

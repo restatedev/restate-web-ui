@@ -1,16 +1,16 @@
 import {
   getDefaultStateService,
   useStateServiceCatalog,
-} from '@restate/features/state-object-route';
-import { IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { Cell, PanelTable, PanelTableColumn } from '@restate/ui/table';
+} from '@restate/features-state-object-route';
+import { IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { Cell, PanelTable, PanelTableColumn } from '@restate/ui-table';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
 import { Navigate } from 'react-router';
 
 const LOADING_COLUMNS: PanelTableColumn[] = [

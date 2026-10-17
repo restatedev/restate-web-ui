@@ -2,11 +2,5 @@
   "name": "@restate/features-virtual-object-instance",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "virtual-object-instance",
-    "sourceRoot": "libs/features/virtual-object-instance/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

@@ -2,11 +2,5 @@
   "name": "@restate/ui-filter-builder",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "filter-builder",
-    "sourceRoot": "libs/ui/filter-builder/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

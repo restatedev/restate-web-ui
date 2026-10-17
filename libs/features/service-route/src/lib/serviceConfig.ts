@@ -1,4 +1,4 @@
-import type { Handler, Service } from '@restate/data-access/admin-api-spec';
+import type { Handler, Service } from '@restate/data-access-admin-api-spec';
 
 export interface EffectiveValue<T> {
   value: T | undefined;

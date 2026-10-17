@@ -10,7 +10,7 @@ import {
   type QueryClauseSchema,
   type QueryClauseType,
   useQueryBuilder,
-} from '@restate/ui/query-builder';
+} from '@restate/ui-query-builder';
 import { FilterChip, type FilterChipProps } from './FilterChip';
 
 const schema = {

@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { withUiFeatures } from '@restate/data-access/query';
+import { withUiFeatures } from '@restate/data-access-query';
 import {
   useIsFeatureFlagEnabled,
   type FeatureFlag,
-} from '@restate/util/feature-flag';
+} from '@restate/util-feature-flag';
 import { useAdminBaseUrl } from '../AdminBaseUrlProvider';
 import { adminApi } from './adminApi';
 import { metaQueryOptions, type MetaSnapshot } from './meta';

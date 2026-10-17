@@ -5,23 +5,23 @@ import {
   toDeploymentStatusInvocationsHref,
   toServiceAndHandlerInvocationsHref,
   toServiceAndHandlerStatusInvocationsHref,
-} from '@restate/util/invocation-links';
+} from '@restate/util-invocation-links';
 import {
   getRangeLabel,
   useRestateContext,
-} from '@restate/features/restate-context';
-import type { components } from '@restate/data-access/admin-api-spec';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/features-restate-context';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import type {
   ServiceIssue,
   IssueSeverity,
-} from '@restate/features/system-health';
+} from '@restate/features-system-health';
 import {
   buildStatusEntries,
   InvocationsBreakdownTooltipContent,
   type StatusBarEntry,
 } from './InvocationsBreakdownTooltipContent';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 function getIssuesByStatus(serviceIssues: ServiceIssue[]) {
   const map = new Map<string, IssueSeverity>();

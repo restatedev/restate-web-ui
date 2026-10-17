@@ -2,11 +2,5 @@
   "name": "@restate/data-access-query",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "query",
-    "sourceRoot": "libs/data-access/query/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

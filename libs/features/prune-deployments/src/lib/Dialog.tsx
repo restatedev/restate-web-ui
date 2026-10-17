@@ -2,20 +2,20 @@ import { Heading } from 'react-aria-components';
 import {
   useListDeployments,
   useListDrainedDeployments,
-} from '@restate/data-access/admin-api-hooks';
-import { Deployment, Warning } from '@restate/features/deployment';
-import { Button, SubmitButton } from '@restate/ui/button';
+} from '@restate/data-access-admin-api-hooks';
+import { Deployment, Warning } from '@restate/features-deployment';
+import { Button, SubmitButton } from '@restate/ui-button';
 import {
   DialogClose,
   DialogContent,
   DialogFooter,
   QueryDialog,
-} from '@restate/ui/dialog';
-import { ErrorBanner } from '@restate/ui/error';
-import { Link } from '@restate/ui/link';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { formatNumber, formatPlurals } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-dialog';
+import { ErrorBanner } from '@restate/ui-error';
+import { Link } from '@restate/ui-link';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { formatNumber, formatPlurals } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { FormEvent, useState } from 'react';
 import { Form, useSearchParams } from 'react-router';

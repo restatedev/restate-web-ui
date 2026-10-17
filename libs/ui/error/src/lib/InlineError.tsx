@@ -1,6 +1,6 @@
-import { Icon, IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui-icons';
 import { PropsWithChildren } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 export interface InlineErrorProps {
   className?: string;

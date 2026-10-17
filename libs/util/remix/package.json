@@ -2,11 +2,5 @@
   "name": "@restate/util-remix",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "util-remix",
-    "sourceRoot": "libs/util/remix/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

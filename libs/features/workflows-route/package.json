@@ -2,11 +2,5 @@
   "name": "@restate/features-workflows-route",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "workflows-route",
-    "sourceRoot": "libs/features/workflows-route/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

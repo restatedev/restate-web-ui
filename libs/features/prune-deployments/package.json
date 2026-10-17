@@ -2,11 +2,5 @@
   "name": "@restate/features-prune-deployments",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
-  "nx": {
-    "name": "prune-deployments",
-    "sourceRoot": "libs/features/prune-deployments/src",
-    "projectType": "library",
-    "tags": []
-  }
+  "exports": "./src/index.ts"
 }

@@ -1,4 +1,4 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { DEFAULT_SAMPLE_SIZE, MAX_SAMPLE_SIZE } from '../shared';
 import {
   TERMINAL_INVOCATION_STATUSES,

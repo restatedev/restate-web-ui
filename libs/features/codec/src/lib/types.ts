@@ -2,7 +2,7 @@ import type {
   Handler,
   JournalEntryV2,
   Service,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 
 export type RestateCodecHandlerMetadata = Partial<
   Pick<

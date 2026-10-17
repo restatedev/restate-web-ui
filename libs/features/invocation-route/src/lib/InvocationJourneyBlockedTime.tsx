@@ -1,9 +1,9 @@
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { MetricComparison } from '@restate/ui/metric-comparison';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { tv } from '@restate/util/styles';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { MetricComparison } from '@restate/ui-metric-comparison';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { tv } from '@restate/util-styles';
 import type { JourneyBlockedTime } from './InvocationJourneyModel';
 
 const styles = tv({

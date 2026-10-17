@@ -1,4 +1,4 @@
-import { TenantView } from '@restate/features/tenant-view';
+import { TenantView } from '@restate/features-tenant-view';
 import { useParams } from 'react-router';
 
 export default function TenantViewRoute() {

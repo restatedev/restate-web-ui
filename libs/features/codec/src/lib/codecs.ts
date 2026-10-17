@@ -8,8 +8,8 @@ import {
   bytesToBase64,
   uint8ArrayToUtf8OrBase64,
   utf8ToUint8Array,
-} from '@restate/util/binary';
-import { RestateError, UI_ERROR_CODES } from '@restate/util/errors';
+} from '@restate/util-binary';
+import { RestateError, UI_ERROR_CODES } from '@restate/util-errors';
 
 export type RestateStringCodec = (
   value?: string,

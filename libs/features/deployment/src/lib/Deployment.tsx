@@ -1,22 +1,22 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
-import { HoverTooltip, TruncateWithTooltip } from '@restate/ui/tooltip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
+import { HoverTooltip, TruncateWithTooltip } from '@restate/ui-tooltip';
 import {
   DeploymentId,
   Revision as ServiceRevision,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { resolveDeploymentEndpoint } from './deploymentLabel';
 import { Revision } from './Revision';
-import { deploymentHref } from '@restate/util/panel';
-import { Link } from '@restate/ui/link';
+import { deploymentHref } from '@restate/util-panel';
+import { Link } from '@restate/ui-link';
 import { useRef } from 'react';
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Badge } from '@restate/ui/badge';
-import { Copy } from '@restate/ui/copy';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { Button } from '@restate/ui/button';
-import { MiniGithubMetadata } from '@restate/features/options';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Badge } from '@restate/ui-badge';
+import { Copy } from '@restate/ui-copy';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { Button } from '@restate/ui-button';
+import { MiniGithubMetadata } from '@restate/features-options';
 import { MiniSDK } from './SDK';
 
 const styles = tv({

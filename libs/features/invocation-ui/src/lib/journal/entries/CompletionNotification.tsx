@@ -1,12 +1,12 @@
 import {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+} from '@restate/data-access-admin-api-spec';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 import { ComponentType } from 'react';
-import { Badge } from '@restate/ui/badge';
+import { Badge } from '@restate/ui-badge';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 import { CommandEntryType, EntryProps } from './types';
 import { EntryCodecProvider } from './EntryCodecProvider';

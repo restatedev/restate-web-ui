@@ -11,9 +11,9 @@ import {
 import { TooltipTriggerStateContext } from 'react-aria-components';
 import { useTooltipTriggerState } from 'react-stately';
 import { TooltipContent } from './TooltipContent';
-import { Copy } from '@restate/ui/copy';
+import { Copy } from '@restate/ui-copy';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const triggerStyles = tv({
   base: 'block max-w-full text-ellipsis whitespace-nowrap',

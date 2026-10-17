@@ -1,8 +1,8 @@
-import { focusRing } from '@restate/ui/focus';
+import { focusRing } from '@restate/ui-focus';
 import { useCallback, useEffect, useRef } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import type { editor } from 'monaco-editor';
-import { Editor } from '@restate/ui/editor';
+import { Editor } from '@restate/ui-editor';
 
 const inputStyles = tv({
   extend: focusRing,

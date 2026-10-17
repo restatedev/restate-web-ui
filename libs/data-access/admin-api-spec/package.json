@@ -4,10 +4,6 @@
   "type": "module",
   "exports": "./src/index.ts",
   "nx": {
-    "name": "admin-api-spec",
-    "sourceRoot": "libs/data-access/admin-api-spec/src",
-    "projectType": "library",
-    "tags": [],
     "targets": {
       "create": {
         "executor": "nx:run-commands",

@@ -1,5 +1,5 @@
-import { FormFieldCheckbox } from '@restate/ui/form-field';
-import { Icon, IconName } from '@restate/ui/icons';
+import { FormFieldCheckbox } from '@restate/ui-form-field';
+import { Icon, IconName } from '@restate/ui-icons';
 import { useRegisterDeploymentContext } from './Context';
 
 export function OverrideWarning() {

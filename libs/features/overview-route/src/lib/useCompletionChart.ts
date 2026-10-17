@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import { createCompletionChartModel } from './completionChartModel';
 import { useOverviewContext } from './OverviewContext';
 import { useCompletionRange } from './useCompletionRange';

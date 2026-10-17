@@ -1,4 +1,4 @@
-import type { UserLimitRow } from '@restate/data-access/admin-api-hooks';
+import type { UserLimitRow } from '@restate/data-access-admin-api-hooks';
 
 type CounterUsage = Pick<UserLimitRow, 'usage' | 'concurrency_limit'>;
 

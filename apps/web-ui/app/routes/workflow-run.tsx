@@ -1,4 +1,4 @@
-import { workflowRun } from '@restate/features/workflows-route';
+import { workflowRun } from '@restate/features-workflows-route';
 import type { MetaFunction } from 'react-router';
 
 export const meta: MetaFunction = ({ params }) => [

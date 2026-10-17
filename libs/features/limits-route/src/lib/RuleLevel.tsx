@@ -1,9 +1,9 @@
 import {
   FLOW_CONTROL_RULE_LEVEL_META,
   FlowControlRuleLevelExplainer,
-} from '@restate/features/explainers';
-import { Badge } from '@restate/ui/badge';
-import { tv } from '@restate/util/styles';
+} from '@restate/features-explainers';
+import { Badge } from '@restate/ui-badge';
+import { tv } from '@restate/util-styles';
 import type { RuleLevel } from './pattern';
 
 export const RULE_LEVEL_META = FLOW_CONTROL_RULE_LEVEL_META;

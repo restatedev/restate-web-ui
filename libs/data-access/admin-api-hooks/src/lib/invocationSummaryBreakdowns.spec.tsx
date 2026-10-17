@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { alignInvocationSummaryBreakdowns } from './invocationSummaryBreakdowns';
 
 const stage: components['schemas']['InvocationStageSummaryBucketV2'] = {

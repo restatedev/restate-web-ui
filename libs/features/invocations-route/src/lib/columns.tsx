@@ -1,10 +1,10 @@
-import { DropdownMenuSelection } from '@restate/ui/dropdown';
+import { DropdownMenuSelection } from '@restate/ui-dropdown';
 import { useEffect, useMemo, useCallback, useState } from 'react';
 import type { Key } from 'react-aria';
 import { useLocation } from 'react-router';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { addUserCol, removeUserCol } from './userPreferences';
-import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features/invocation-ui';
+import { INVOCATION_TABLE_COLUMN_CONFIG } from '@restate/features-invocation-ui';
 
 export const COLUMN_QUERY_PREFIX = 'column';
 

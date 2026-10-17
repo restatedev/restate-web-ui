@@ -1,27 +1,27 @@
-import type { DetailedDeployment } from '@restate/data-access/admin-api-spec';
+import type { DetailedDeployment } from '@restate/data-access-admin-api-spec';
 import {
   isHttpDeployment,
   isLambdaDeployment,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   GithubMetadata,
   getCustomMetadataEntries,
   hasGithubMetadata,
-} from '@restate/features/options';
-import { UPDATE_DEPLOYMENT_QUERY } from '@restate/features/register-deployment';
+} from '@restate/features-options';
+import { UPDATE_DEPLOYMENT_QUERY } from '@restate/features-register-deployment';
 import {
   CardEditAction,
   DeploymentProtocolRows,
   DeploymentSdkRow,
   RegisteredCaption,
   useIsDeprecatedDeployment,
-} from '@restate/features/service-route';
-import { Badge } from '@restate/ui/badge';
-import { Card, CardHeader, CardRow } from '@restate/ui/card';
-import { Copy } from '@restate/ui/copy';
-import { Icon, IconName } from '@restate/ui/icons';
-import { formatNumber, formatPlurals } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/features-service-route';
+import { Badge } from '@restate/ui-badge';
+import { Card, CardHeader, CardRow } from '@restate/ui-card';
+import { Copy } from '@restate/ui-copy';
+import { Icon, IconName } from '@restate/ui-icons';
+import { formatNumber, formatPlurals } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 
 const valueStyles = tv({

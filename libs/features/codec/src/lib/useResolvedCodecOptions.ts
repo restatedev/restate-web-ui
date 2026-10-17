@@ -2,8 +2,8 @@ import {
   type ListDeploymentsData,
   useListDeployments,
   useServiceDetails,
-} from '@restate/data-access/admin-api-hooks';
-import { RestateError, UI_ERROR_CODES } from '@restate/util/errors';
+} from '@restate/data-access-admin-api-hooks';
+import { RestateError, UI_ERROR_CODES } from '@restate/util-errors';
 import { useMemo } from 'react';
 import type {
   AsyncCodecOption,

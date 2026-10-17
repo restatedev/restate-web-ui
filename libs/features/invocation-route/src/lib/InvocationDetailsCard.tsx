@@ -1,17 +1,17 @@
 import type {
   Invocation,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/data-access-admin-api-spec';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   getServiceTargetEntityLink,
   ServiceTarget,
-} from '@restate/features/service-target';
-import { LimitKey, VQueueIdDisplay } from '@restate/features/vqueue-ui';
-import { Badge } from '@restate/ui/badge';
-import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui/card';
-import { Copy } from '@restate/ui/copy';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/features-service-target';
+import { LimitKey, VQueueIdDisplay } from '@restate/features-vqueue-ui';
+import { Badge } from '@restate/ui-badge';
+import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui-card';
+import { Copy } from '@restate/ui-copy';
+import { Icon, IconName } from '@restate/ui-icons';
 import type { ReactNode } from 'react';
 
 function CopyValue({ value }: { value: string }) {

@@ -1,5 +1,5 @@
-import { Badge } from '@restate/ui/badge';
-import { tv } from '@restate/util/styles';
+import { Badge } from '@restate/ui-badge';
+import { tv } from '@restate/util-styles';
 
 export type DeploymentLifecycleStatus = 'active' | 'drained';
 

@@ -1,18 +1,18 @@
-import type { VqueueSnapshot } from '@restate/data-access/admin-api-spec';
-import { STATUS_STYLE } from '@restate/features/status-chart';
+import type { VqueueSnapshot } from '@restate/data-access-admin-api-spec';
+import { STATUS_STYLE } from '@restate/features-status-chart';
 import {
   formatVqueueDuration,
   getVqueueGateLabel,
   vqueueDurationMilliseconds,
-} from '@restate/features/vqueue-ui';
-import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
-import { HoverTooltip, InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
+} from '@restate/features-vqueue-ui';
+import { Card, CardHeader, CardHeroValue, CardRow } from '@restate/ui-card';
+import { IconName } from '@restate/ui-icons';
+import { HoverTooltip, InlineTooltip, RelativeDate } from '@restate/ui-tooltip';
 import {
   formatMilliseconds,
   formatPercentageWithoutFraction,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { Fragment } from 'react';
 
 const EVENTS = [

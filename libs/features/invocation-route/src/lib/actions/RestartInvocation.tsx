@@ -1,33 +1,33 @@
-import { withConfirmation } from '@restate/ui/dialog';
+import { withConfirmation } from '@restate/ui-dialog';
 import { FormEvent } from 'react';
 import {
   useGetInvocation,
   useGetInvocationJournalWithInvocationV2,
   useListDeployments,
   useRestartInvocationAsNew,
-} from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { Icon, IconName } from '@restate/ui/icons';
-import { useRestateContext } from '@restate/features/restate-context';
-import { registerTransientQueryParams } from '@restate/util/panel';
+} from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { Icon, IconName } from '@restate/ui-icons';
+import { useRestateContext } from '@restate/features-restate-context';
+import { registerTransientQueryParams } from '@restate/util-panel';
 import { useSearchParams } from 'react-router';
 import {
   Deployment,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
-import { FormFieldSelect } from '@restate/ui/form-field';
-import { ListBoxItem } from '@restate/ui/listbox';
-import { Badge } from '@restate/ui/badge';
+} from '@restate/data-access-admin-api-spec';
+import { FormFieldSelect } from '@restate/ui-form-field';
+import { ListBoxItem } from '@restate/ui-listbox';
+import { Badge } from '@restate/ui-badge';
 import {
   resolveDeploymentEndpoint,
   Revision,
-} from '@restate/features/deployment';
+} from '@restate/features-deployment';
 
 import {
   CommandEntryType,
   ENTRY_COMMANDS_NAMES,
   EntryChain,
-} from '@restate/features/invocation-ui';
+} from '@restate/features-invocation-ui';
 
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
 export const RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM =

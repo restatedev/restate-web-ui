@@ -1,30 +1,30 @@
-import { Button, SubmitButton } from '@restate/ui/button';
+import { Button, SubmitButton } from '@restate/ui-button';
 import {
   DialogClose,
   DialogContent,
   DialogFooter,
   QueryDialog,
-} from '@restate/ui/dialog';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-dialog';
+import { Icon, IconName } from '@restate/ui-icons';
 import { ComponentProps, PropsWithChildren } from 'react';
-import { ErrorBanner } from '@restate/ui/error';
+import { ErrorBanner } from '@restate/ui-error';
 import { RegistrationForm, UpdateForm } from './Form';
 import { REGISTER_DEPLOYMENT_QUERY, UPDATE_DEPLOYMENT_QUERY } from './constant';
-import { Link } from '@restate/ui/link';
+import { Link } from '@restate/ui-link';
 import {
   DeploymentRegistrationState,
   useRegisterDeploymentContext,
 } from './Context';
-import { tv } from '@restate/util/styles';
-import { useRestateContext } from '@restate/features/restate-context';
-import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
+import { tv } from '@restate/util-styles';
+import { useRestateContext } from '@restate/features-restate-context';
+import { ONBOARDING_QUERY_PARAM } from '@restate/util-feature-flag';
 import { FixHttp1 } from './FixHttp1';
 import { useSearchParams } from 'react-router';
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
 import {
   getEndpoint,
   isLambdaDeployment,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 
 const submitButtonStyles = tv({
   base: 'flex gap-1 pr-3.5',

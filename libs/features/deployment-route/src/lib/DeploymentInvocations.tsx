@@ -1,16 +1,16 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   DEPLOYMENT_INVOCATION_COLUMNS,
   InvocationsPanelTable,
   InvocationsStatusSummary,
   InvocationsTabToolbar,
   useInvocationsTab,
-} from '@restate/features/service-route';
+} from '@restate/features-service-route';
 import {
   ContentPanelBody,
   ContentPanelSection,
-} from '@restate/ui/content-panel';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/ui-content-panel';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useMemo } from 'react';
 
 type FilterItem = components['schemas']['InvocationV2FilterItem'];

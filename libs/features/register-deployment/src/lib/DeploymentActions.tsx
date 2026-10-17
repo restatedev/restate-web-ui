@@ -1,9 +1,9 @@
-import { DELETE_DEPLOYMENT_QUERY_PARAM } from '@restate/features/deployment';
-import { DropdownItem } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { SplitButton } from '@restate/ui/split-button';
-import { tv } from '@restate/util/styles';
+import { DELETE_DEPLOYMENT_QUERY_PARAM } from '@restate/features-deployment';
+import { DropdownItem } from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { SplitButton } from '@restate/ui-split-button';
+import { tv } from '@restate/util-styles';
 import { UPDATE_DEPLOYMENT_QUERY } from './constant';
 
 const primaryStyles = tv({

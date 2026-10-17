@@ -5,7 +5,6 @@ import 'vitest/config';
 export default defineConfig({
   root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/util/react-query',
-  resolve: { tsconfigPaths: true },
 
   plugins: [react()],
 

@@ -1,6 +1,6 @@
-import { Status, useRestateContext } from '@restate/features/restate-context';
+import { Status, useRestateContext } from '@restate/features-restate-context';
 import { StatusIndicator } from './StatusIndicator';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: '',

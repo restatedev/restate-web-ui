@@ -1,4 +1,4 @@
-import { overview } from '@restate/features/overview-route';
+import { overview } from '@restate/features-overview-route';
 
 export function meta() {
   return [{ title: 'Restate - Overview' }];

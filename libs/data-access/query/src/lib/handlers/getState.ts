@@ -1,4 +1,4 @@
-import { hexToBase64 } from '@restate/util/binary';
+import { hexToBase64 } from '@restate/util-binary';
 import { stateVersion } from '../stateVersion';
 import { quoteSqlString, scopeClause, type QueryContext } from './shared';
 

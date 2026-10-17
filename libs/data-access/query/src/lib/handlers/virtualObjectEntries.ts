@@ -1,7 +1,7 @@
 import type {
   components,
   RawInvocation,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { convertInvocation, type VqueueStatus } from '../convertInvocation';
 import {
   isInvocationId,

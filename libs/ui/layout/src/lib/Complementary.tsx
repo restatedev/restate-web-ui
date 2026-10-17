@@ -11,7 +11,7 @@ import { useSearchParams } from 'react-router';
 import { ButtonContext } from 'react-aria-components';
 import { FocusScope } from 'react-aria';
 import { createPortal } from 'react-dom';
-import { PANEL_QUERY_PARAM } from '@restate/util/panel';
+import { PANEL_QUERY_PARAM } from '@restate/util-panel';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};

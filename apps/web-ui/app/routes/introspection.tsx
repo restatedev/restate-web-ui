@@ -1,4 +1,4 @@
-import { introspection } from '@restate/features/introspection-route';
+import { introspection } from '@restate/features-introspection-route';
 import { MetaFunction } from 'react-router';
 
 export const meta: MetaFunction = () => {
