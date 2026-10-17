@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-overview-route",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "overview-route",
+    "sourceRoot": "libs/features/overview-route/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

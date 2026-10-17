@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-sidebar-nav",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "sidebar-nav",
+    "sourceRoot": "libs/util/sidebar-nav/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

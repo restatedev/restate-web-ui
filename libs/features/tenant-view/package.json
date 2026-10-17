@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-tenant-view",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "tenant-view",
+    "sourceRoot": "libs/features/tenant-view/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

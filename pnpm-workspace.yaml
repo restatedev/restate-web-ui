@@ -1,3 +1,6 @@
+packages:
+  - libs/*/*
+
 allowBuilds:
   '@swc/core': false
   '@tailwindcss/oxide': false

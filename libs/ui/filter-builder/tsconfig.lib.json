@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",
@@ -21,5 +24,31 @@
     "vitest.config.ts",
     "vitest.config.mts"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../../util/styles/tsconfig.lib.json"
+    },
+    {
+      "path": "../icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../form-field/tsconfig.lib.json"
+    },
+    {
+      "path": "../dropdown/tsconfig.lib.json"
+    },
+    {
+      "path": "../chip/tsconfig.lib.json"
+    },
+    {
+      "path": "../button/tsconfig.lib.json"
+    },
+    {
+      "path": "../query-builder/tsconfig.lib.json"
+    },
+    {
+      "path": "../keyboard/tsconfig.lib.json"
+    }
+  ]
 }

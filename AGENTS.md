@@ -7,10 +7,17 @@
 - **Test**: `pnpm nx test <project>` (e.g., `pnpm nx test button`), add `--watch` for watch mode
 - **Single test**: `pnpm nx test <project> --testFile=<file>` or use vitest filtering
 - **Lint**: `pnpm nx lint <project>`
-- **Typecheck**: `pnpm nx typecheck web-ui`
+- **Typecheck**: `pnpm nx typecheck <project>` (e.g., `pnpm nx typecheck web-ui`); every project runs `tsc --build tsconfig.json`, covering its runtime and spec configs, after the declarations of the projects it depends on are emitted into their `out-tsc/`
+- **Sync project references**: `pnpm nx sync` (CI runs `pnpm nx sync:check`)
 - **E2E**: `pnpm nx e2e web-ui-e2e`
 
 ## Library Generation
+
+Nx generators still create the old `project.json` layout, so a new lib takes three steps:
+
+1. Generate it with one of the commands below, adding `--linter=none --skipPackageJson`.
+2. Run `node tools/workspace-lib.mjs libs/<type>/<NAME>`. It replaces `project.json` with a `package.json` named `@restate/<type>-<NAME>` (no dependencies or scripts) and makes the tsconfigs composite.
+3. Match the other libs: delete `.babelrc`, replace `vite.config.mts` with a `vite.config.ts` like `libs/ui/badge/vite.config.ts`, and drop the `@swc/helpers` and `.vitest` lines the generator adds to the root `package.json` and `.gitignore`. Then run `pnpm install` and `pnpm nx sync`.
 
 ### UI Libraries
 
@@ -88,9 +95,9 @@ pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --im
 
 ## Code Style
 
-- **Package manager**: pnpm (monorepo managed by Nx)
-- **TypeScript**: Strict mode enabled, use `noUncheckedIndexedAccess`
-- **Imports**: Use path aliases (`@restate/ui/*`, `@restate/features/*`, `@restate/data-access/*`, `@restate/util/*`) from tsconfig.base.json
+- **Package manager**: pnpm (monorepo managed by Nx). Every lib in `libs/*/*` is a workspace package with no dependencies or scripts of its own; all dependencies live in the root `package.json` (add them with `pnpm add -w`)
+- **TypeScript**: Strict mode enabled, use `noUncheckedIndexedAccess`. Libs are composite projects linked by project references that `nx sync` maintains
+- **Imports**: Use path aliases (`@restate/ui/*`, `@restate/features/*`, `@restate/data-access/*`, `@restate/util/*`) from tsconfig.base.json. Each lib is also the workspace package `@restate/<type>-<name>`, but keep using the aliases until the imports are renamed
 - **Formatting**: oxfmt (`.oxfmtrc.json`) with single quotes, trailing commas, Tailwind class sorting; run `pnpm nx format`
 - **Linting**: oxlint (`.oxlintrc.json`); `tools/oxlint-plugin-restate.js` enforces the `tv()` className rule
 - **Styling**: Tailwind CSS, use `tv()` from `@restate/util/styles` for component variants. Never use string interpolation for dynamic Tailwind classes (e.g., `${isVoid ? 'text-zinc-400' : 'text-gray-500'}`). Always use `tv()` with variants instead.

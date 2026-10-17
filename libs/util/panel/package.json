@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-panel",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "panel",
+    "sourceRoot": "libs/util/panel/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

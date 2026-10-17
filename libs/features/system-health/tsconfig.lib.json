@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",
@@ -14,5 +17,22 @@
     "src/**/*.test.ts",
     "src/**/*.spec.tsx",
     "src/**/*.test.tsx"
+  ],
+  "references": [
+    {
+      "path": "../deployment/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/errors/tsconfig.lib.json"
+    },
+    {
+      "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
+    },
+    {
+      "path": "../../data-access/admin-api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
+    }
   ]
 }

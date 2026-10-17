@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-humantime",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "humantime",
+    "sourceRoot": "libs/util/humantime/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-react-query",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "util-react-query",
+    "sourceRoot": "libs/util/react-query/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

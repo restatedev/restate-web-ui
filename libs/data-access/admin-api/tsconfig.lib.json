@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
     "types": [
       "node",
       "../../../@types/global-env.d.ts",
@@ -18,5 +21,25 @@
     "**/*.spec.jsx",
     "**/*.test.jsx"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../../util/api-config/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/react-query/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/feature-flag/tsconfig.lib.json"
+    },
+    {
+      "path": "../query/tsconfig.lib.json"
+    },
+    {
+      "path": "../admin-api-spec/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/errors/tsconfig.lib.json"
+    }
+  ]
 }

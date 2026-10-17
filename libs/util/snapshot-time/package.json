@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-snapshot-time",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "snapshot-time",
+    "sourceRoot": "libs/util/snapshot-time/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

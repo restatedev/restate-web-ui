@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-issue-banner",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "issue-banner",
+    "sourceRoot": "libs/ui/issue-banner/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

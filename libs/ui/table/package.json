@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-table",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "table",
+    "sourceRoot": "libs/ui/table/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

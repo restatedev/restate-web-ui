@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-register-deployment",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "register-deployment",
+    "sourceRoot": "libs/features/register-deployment/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

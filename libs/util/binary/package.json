@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-binary",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "binary",
+    "sourceRoot": "libs/util/binary/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

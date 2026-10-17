@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-breadcrumbs",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "features-breadcrumbs",
+    "sourceRoot": "libs/features/breadcrumbs/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

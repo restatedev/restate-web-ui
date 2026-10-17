@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-virtual-objects-route",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "virtual-objects-route",
+    "sourceRoot": "libs/features/virtual-objects-route/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

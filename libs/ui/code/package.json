@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-code",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "code",
+    "sourceRoot": "libs/ui/code/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

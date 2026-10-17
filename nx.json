@@ -52,20 +52,37 @@
       "options": {
         "targetName": "lint"
       }
+    },
+    {
+      "plugin": "@nx/js/typescript",
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        },
+        "build": false
+      }
     }
   ],
+  "targetDefaults": {
+    "typecheck": {
+      "dependsOn": ["^typecheck"]
+    }
+  },
+  "sync": {
+    "applyChanges": true
+  },
   "generators": {
     "@nx/react": {
       "application": {
-        "style": "tailwind",
+        "style": "none",
         "linter": "oxlint",
         "bundler": "vite"
       },
       "component": {
-        "style": "tailwind"
+        "style": "none"
       },
       "library": {
-        "style": "tailwind",
+        "style": "none",
         "linter": "oxlint",
         "unitTestRunner": "vitest"
       }

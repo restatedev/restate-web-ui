@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-user-preference",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "user-preference",
+    "sourceRoot": "libs/features/user-preference/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

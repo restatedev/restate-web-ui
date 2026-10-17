@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-codec",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "codec",
+    "sourceRoot": "libs/features/codec/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

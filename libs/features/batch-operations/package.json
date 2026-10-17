@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-batch-operations",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "batch-operations",
+    "sourceRoot": "libs/features/batch-operations/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

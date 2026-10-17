@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-badge",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "badge",
+    "sourceRoot": "libs/ui/badge/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

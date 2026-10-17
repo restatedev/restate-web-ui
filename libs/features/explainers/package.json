@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-explainers",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "explainers",
+    "sourceRoot": "libs/features/explainers/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

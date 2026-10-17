@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-radio-group",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "radio-group",
+    "sourceRoot": "libs/ui/radio-group/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

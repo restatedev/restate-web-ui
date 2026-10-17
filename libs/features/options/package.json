@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-options",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "options",
+    "sourceRoot": "libs/features/options/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

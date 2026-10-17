@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-service-protocol",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "service-protocol",
+    "sourceRoot": "libs/features/service-protocol/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

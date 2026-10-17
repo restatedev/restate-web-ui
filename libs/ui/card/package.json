@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-card",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "card",
+    "sourceRoot": "libs/ui/card/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

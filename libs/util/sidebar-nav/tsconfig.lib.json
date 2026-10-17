@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",
@@ -30,5 +33,46 @@
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../../features/workflow-run/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/virtual-object-instance/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/vqueue-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../panel/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/service/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/register-deployment/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/deployment/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/tooltip/tsconfig.lib.json"
+    },
+    {
+      "path": "../feature-flag/tsconfig.lib.json"
+    },
+    {
+      "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/restate-context/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/layout/tsconfig.lib.json"
+    }
+  ]
 }

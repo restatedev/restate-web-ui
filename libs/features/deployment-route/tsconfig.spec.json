@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "outDir": "out-tsc/spec",
+    "tsBuildInfoFile": "out-tsc/spec/tsconfig.spec.tsbuildinfo",
     "types": [
       "vitest/globals",
       "vitest/importMeta",
@@ -10,5 +12,10 @@
       "../../../@types/global-env.d.ts"
     ]
   },
-  "include": ["vite.config.ts", "src/**/*.spec.ts", "src/**/*.spec.tsx"]
+  "include": ["vite.config.ts", "src/**/*.spec.ts", "src/**/*.spec.tsx"],
+  "references": [
+    {
+      "path": "./tsconfig.lib.json"
+    }
+  ]
 }

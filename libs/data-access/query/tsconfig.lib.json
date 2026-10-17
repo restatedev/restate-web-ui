@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
     "types": ["node"]
   },
   "include": ["src/**/*.ts"],
@@ -18,5 +21,22 @@
     "src/**/*.spec.js",
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx"
+  ],
+  "references": [
+    {
+      "path": "../../util/panel/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/binary/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/errors/tsconfig.lib.json"
+    },
+    {
+      "path": "../../features/service-protocol/tsconfig.lib.json"
+    },
+    {
+      "path": "../admin-api-spec/tsconfig.lib.json"
+    }
   ]
 }

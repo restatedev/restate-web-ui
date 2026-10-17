@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-header",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "header",
+    "sourceRoot": "libs/ui/header/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

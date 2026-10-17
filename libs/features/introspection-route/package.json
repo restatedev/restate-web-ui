@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-introspection-route",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "introspection-route",
+    "sourceRoot": "libs/features/introspection-route/src",
+    "projectType": "library",
+    "tags": []
+  }
+}
