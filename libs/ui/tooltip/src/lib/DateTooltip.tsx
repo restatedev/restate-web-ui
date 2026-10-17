@@ -1,6 +1,6 @@
 import { PropsWithChildren, useCallback, useRef, useState } from 'react';
 import { TooltipTriggerStateContext } from 'react-aria-components';
-import { Tooltip } from './Tooltip';
+import { useTooltipTriggerState } from 'react-stately';
 import { TooltipContent } from './TooltipContent';
 import { Copy } from '@restate/ui/copy';
 import { formatDateTime, formatDateToISO } from '@restate/util/intl';
@@ -38,35 +38,39 @@ export function DateTooltip({
     contentRef,
   });
 
+  const tooltipState = useTooltipTriggerState({
+    isOpen,
+    onOpenChange: setIsOpen,
+    closeDelay: 0,
+  });
+
   return (
-    <Tooltip delay={250}>
-      <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
-        <span ref={triggerRef} className={styles({ className })}>
-          {children}
-        </span>
-        <TooltipContent size="sm" offset={5} triggerRef={triggerRef}>
-          <div
-            ref={contentRef}
-            className="flex items-start gap-4 py-1 break-all **:text-xs **:text-gray-200"
-          >
-            <div className="flex flex-col items-start gap-1">
-              <h6 className="mb-2 text-sm font-semibold text-gray-100">
-                {title}
-              </h6>
-              <div className="rounded-sm bg-zinc-700 px-1 font-mono">
-                {formatDateTime(date, 'system')}
-              </div>
-              <div className="rounded-sm bg-zinc-700 px-1 font-mono">
-                {formatDateTime(date, 'UTC')}
-              </div>
+    <TooltipTriggerStateContext.Provider value={tooltipState}>
+      <span ref={triggerRef} className={styles({ className })}>
+        {children}
+      </span>
+      <TooltipContent size="sm" offset={5} triggerRef={triggerRef}>
+        <div
+          ref={contentRef}
+          className="flex items-start gap-4 py-1 break-all **:text-xs **:text-gray-200"
+        >
+          <div className="flex flex-col items-start gap-1">
+            <h6 className="mb-2 text-sm font-semibold text-gray-100">
+              {title}
+            </h6>
+            <div className="rounded-sm bg-zinc-700 px-1 font-mono">
+              {formatDateTime(date, 'system')}
             </div>
-            <Copy
-              copyText={formatDateToISO(date)}
-              className="-m-1 -mt-0.5 rounded-xs bg-transparent p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
-            />
+            <div className="rounded-sm bg-zinc-700 px-1 font-mono">
+              {formatDateTime(date, 'UTC')}
+            </div>
           </div>
-        </TooltipContent>
-      </TooltipTriggerStateContext.Provider>
-    </Tooltip>
+          <Copy
+            copyText={formatDateToISO(date)}
+            className="-m-1 -mt-0.5 rounded-xs bg-transparent p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
+          />
+        </div>
+      </TooltipContent>
+    </TooltipTriggerStateContext.Provider>
   );
 }

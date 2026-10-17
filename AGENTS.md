@@ -91,7 +91,8 @@ pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --im
 - **Package manager**: pnpm (monorepo managed by Nx)
 - **TypeScript**: Strict mode enabled, use `noUncheckedIndexedAccess`
 - **Imports**: Use path aliases (`@restate/ui/*`, `@restate/features/*`, `@restate/data-access/*`, `@restate/util/*`) from tsconfig.base.json
-- **Formatting**: Prettier with single quotes, trailing commas, Tailwind plugin
+- **Formatting**: oxfmt (`.oxfmtrc.json`) with single quotes, trailing commas, Tailwind class sorting; run `pnpm nx format`
+- **Linting**: oxlint (`.oxlintrc.json`); `tools/oxlint-plugin-restate.js` enforces the `tv()` className rule
 - **Styling**: Tailwind CSS, use `tv()` from `@restate/util/styles` for component variants. Never use string interpolation for dynamic Tailwind classes (e.g., `${isVoid ? 'text-zinc-400' : 'text-gray-500'}`). Always use `tv()` with variants instead.
 - **Components**: React 19, React Aria Components for UI primitives, use `forwardRef` for refs
 - **Types**: Define props interfaces explicitly, use `PropsWithChildren` when needed
@@ -105,11 +106,11 @@ pnpm nx g @nx/js:library <NAME> --directory=libs/util/<NAME> --bundler=none --im
 
 ## Stoplight Elements
 
-- **Default workflow**: When asked to update Stoplight Elements assets for `web-ui`, update `patches/@stoplight__elements@9.0.19.patch` and `pnpm-lock.yaml`, not `apps/web-ui/vite.config.ts`.
-- **Source checkout**: The sibling Elements repo currently lives at `../elements-restate/packages/elements`.
-- **App-minimal patch set**: Default to refreshing only the assets this app consumes: `elements-web-components.min.js`, `elements-web-components.min.js.LICENSE.txt`, `elements-web-components.min.scoped.css`, `NOTICE`, plus the minimal `package.json` manifest changes that expose those files.
-- **Do not patch by default**: Do not refresh `web-components.min.js` unless the user explicitly asks for it.
-- **Reference doc**: Follow `apps/web-ui/ELEMENTS_PATCH.md` for the concrete patch steps.
+- **Vendored build**: The app uses a prebuilt bundle from our Elements fork, committed in `libs/ui/api/vendor/elements/`. There is no `@stoplight/*` npm dependency and no pnpm patch.
+- **Source checkout**: The fork lives at `../elements-restate` (`restate` branch, rebased on upstream `stoplightio/elements`).
+- **What is vendored**: `elements-web-components.min.js`, `elements-web-components.min.js.LICENSE.txt`, `elements-web-components.min.scoped.css`, `LICENSE`, `NOTICE`, and a `package.json` that only carries the name, version and license for `vendor.LICENSE.txt` attribution.
+- **Web components**: `<elements-api>` (playground) and `<elements-json-schema-viewer>` (handler schemas). `@restate/ui/api` renders both; `@restate/ui/api/assets` exports the asset URLs that `apps/web-ui/app/root.tsx` loads.
+- **Reference doc**: Follow `libs/ui/api/ELEMENTS.md` to rebuild and refresh the vendored files.
 
 ## Releasing
 

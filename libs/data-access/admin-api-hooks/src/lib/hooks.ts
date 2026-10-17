@@ -1560,40 +1560,38 @@ export function useGetInvocationsJournalWithInvocationsV2(
   );
 
   const results = useQueries({
-    queries: [
-      ...invocationQueries.map((invocationQuery) => ({
-        ...invocationQuery,
-        ...options,
-        refetchOnMount: options?.refetchOnMount !== false,
-        enabled: options?.enabled !== false && enabled,
-        staleTime: 0,
-      })),
-    ],
+    queries: invocationQueries.map((invocationQuery) => ({
+      ...invocationQuery,
+      ...options,
+      refetchOnMount: options?.refetchOnMount !== false,
+      enabled: options?.enabled !== false && enabled,
+      staleTime: 0,
+    })),
     combine,
   });
 
   const queryClient = useQueryClient();
 
   const invalidate = useCallback(() => {
-    return Promise.all([
-      ...invocationQueries.map((invocationQuery) =>
+    return Promise.all(
+      invocationQueries.map((invocationQuery) =>
         queryClient.invalidateQueries({
           queryKey: invocationQuery.queryKey,
         }),
       ),
-    ]);
+    );
   }, [invocationQueries, queryClient]);
 
   return {
     ...results,
     refetch: () => {
-      return Promise.all([
-        ...invocationQueries.map((invocationQuery) =>
+      return Promise.all(
+        invocationQueries.map((invocationQuery) =>
           queryClient.refetchQueries({
             queryKey: invocationQuery.queryKey,
           }),
         ),
-      ]);
+      );
     },
     invalidate,
   };

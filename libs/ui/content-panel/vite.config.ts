@@ -1,16 +1,15 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
-  root: __dirname,
+  root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/ui/content-panel',
-  plugins: [react(), nxViteTsPaths()],
+  resolve: { tsconfigPaths: true },
+  plugins: [react()],
   test: {
     passWithNoTests: true,
     watch: false,
     globals: true,
-    cache: { dir: '../../../node_modules/.vitest' },
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     reporters: ['default'],

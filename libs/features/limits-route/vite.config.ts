@@ -1,12 +1,11 @@
 import react from '@vitejs/plugin-react';
-import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  root: __dirname,
+  root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/features/limits-route',
-  plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
+  resolve: { tsconfigPaths: true },
+  plugins: [react()],
   test: {
     passWithNoTests: true,
     watch: false,

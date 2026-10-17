@@ -3,11 +3,9 @@ interface Env {
   [key: string]: string & {};
 }
 
-declare module globalThis {
-  var env: Env;
-  var batchOperationPromises:
-    | undefined
-    | Record<string, PromiseWithResolvers<boolean> | null>;
-}
+declare var env: Env;
+declare var batchOperationPromises:
+  | undefined
+  | Record<string, PromiseWithResolvers<boolean> | null>;
 
 declare module '*.css';

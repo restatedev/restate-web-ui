@@ -10,17 +10,19 @@ import type { paths } from '@restate/data-access/admin-api-spec';
 import { client } from './client';
 
 export type SupportedMethods<Path extends keyof paths> = keyof {
-  [PossibleMethod in keyof paths[Path] as paths[Path][PossibleMethod] extends NonNullable<{
-    parameters: {
-      query?: unknown;
-      header?: unknown;
-      path?: unknown;
-      cookie?: unknown;
-    };
-    responses: Record<number, any>;
-  }>
-    ? PossibleMethod
-    : never]: paths[Path];
+  [
+    PossibleMethod in keyof paths[Path] as paths[Path][PossibleMethod] extends NonNullable<{
+      parameters: {
+        query?: unknown;
+        header?: unknown;
+        path?: unknown;
+        cookie?: unknown;
+      };
+      responses: Record<number, any>;
+    }>
+      ? PossibleMethod
+      : never
+  ]: paths[Path];
 };
 
 export type OperationParameters<

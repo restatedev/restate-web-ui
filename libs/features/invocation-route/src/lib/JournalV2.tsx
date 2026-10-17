@@ -64,17 +64,19 @@ import {
 } from '@restate/features/invocation-ui';
 import { JournalDetailToggle } from './JournalDetailToggle';
 import { useHiddenEntryMatchers } from './hiddenEntries';
+import type { Layout } from 'react-resizable-panels';
+
+const ENTRIES_PANEL_ID = 'journal-entries';
+const TIMELINE_PANEL_ID = 'journal-timeline';
 
 const LazyPanel = lazy(() =>
   import('react-resizable-panels').then((m) => ({ default: m.Panel })),
 );
-const LazyPanelGroup = lazy(() =>
-  import('react-resizable-panels').then((m) => ({ default: m.PanelGroup })),
+const LazyGroup = lazy(() =>
+  import('react-resizable-panels').then((m) => ({ default: m.Group })),
 );
-const LazyPanelResizeHandle = lazy(() =>
-  import('react-resizable-panels').then((m) => ({
-    default: m.PanelResizeHandle,
-  })),
+const LazySeparator = lazy(() =>
+  import('react-resizable-panels').then((m) => ({ default: m.Separator })),
 );
 
 const liveStyles = tv({
@@ -345,8 +347,8 @@ export function JournalV2({
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
-  const handlePanelLayout = useCallback((sizes: number[]) => {
-    const nextTimelinePanelSize = sizes[1];
+  const handlePanelLayout = useCallback((layout: Layout) => {
+    const nextTimelinePanelSize = layout[TIMELINE_PANEL_ID];
     if (
       nextTimelinePanelSize === undefined ||
       !Number.isFinite(nextTimelinePanelSize)
@@ -541,16 +543,17 @@ export function JournalV2({
                       ref={listRef}
                       className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs"
                     >
-                      <LazyPanelGroup
-                        direction="horizontal"
-                        onLayout={handlePanelLayout}
+                      <LazyGroup
+                        orientation="horizontal"
+                        onLayoutChange={handlePanelLayout}
                         style={{ overflow: 'visible' }}
                         className="min-h-full flex-1"
                       >
                         {/* Left panel */}
                         <LazyPanel
-                          defaultSize={(1 - timelineWidth) * 100}
-                          minSize={20}
+                          id={ENTRIES_PANEL_ID}
+                          defaultSize={`${(1 - timelineWidth) * 100}%`}
+                          minSize="20%"
                           className="z-[2] grid min-w-0"
                           style={{
                             overflow: 'visible',
@@ -583,14 +586,15 @@ export function JournalV2({
                             )}
                           </ContentPanelSection>
                         </LazyPanel>
-                        <LazyPanelResizeHandle className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
+                        <LazySeparator className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
                           <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-blue-500" />
-                        </LazyPanelResizeHandle>
+                        </LazySeparator>
                         {/* Right panel - grid container for overlapping Units */}
                         <LazyPanel
-                          defaultSize={timelineWidth * 100}
+                          id={TIMELINE_PANEL_ID}
+                          defaultSize={`${timelineWidth * 100}%`}
                           className="relative hidden overflow-x-clip bg-black/3 md:grid"
-                          minSize={20}
+                          minSize="20%"
                           style={{
                             overflow: 'visible',
                             minHeight: totalSize,
@@ -625,7 +629,7 @@ export function JournalV2({
                             </ScrollableTimeline>
                           </ContentPanelSection>
                         </LazyPanel>
-                      </LazyPanelGroup>
+                      </LazyGroup>
                     </div>
                   )}
                   <div data-last-failure-fallback aria-hidden className="h-0" />

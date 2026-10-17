@@ -22,7 +22,7 @@ import {
   InlineTooltip,
   Tooltip,
   TooltipContent,
-  TooltipTrigger,
+  RadioTooltipTrigger,
 } from '@restate/ui/tooltip';
 import { ServiceDeploymentExplainer } from '@restate/features/explainers';
 import { useRestateContext } from '@restate/features/restate-context';
@@ -471,7 +471,7 @@ function EndpointForm() {
                 Endpoint type
               </FormFieldLabel>
               <Tooltip>
-                <TooltipTrigger>
+                <RadioTooltipTrigger>
                   <CustomRadio
                     value="http"
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
@@ -479,13 +479,13 @@ function EndpointForm() {
                   >
                     <Icon name={IconName.Http} className="h-4 w-4" />
                   </CustomRadio>
-                </TooltipTrigger>
+                </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
                   HTTP endpoint
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
-                <TooltipTrigger>
+                <RadioTooltipTrigger>
                   <CustomRadio
                     value="cloudrun"
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
@@ -493,13 +493,13 @@ function EndpointForm() {
                   >
                     <Icon name={IconName.CloudRun} className="h-4 w-4" />
                   </CustomRadio>
-                </TooltipTrigger>
+                </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
                   Google Cloud Run
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
-                <TooltipTrigger>
+                <RadioTooltipTrigger>
                   <CustomRadio
                     value="lambda"
                     className="aspect-square items-center rounded-[0.4rem] p-1.5"
@@ -507,14 +507,14 @@ function EndpointForm() {
                   >
                     <Icon name={IconName.Lambda} className="h-4 w-4" />
                   </CustomRadio>
-                </TooltipTrigger>
+                </RadioTooltipTrigger>
                 <TooltipContent size="sm" offset={20}>
                   AWS Lambda
                 </TooltipContent>
               </Tooltip>
               {tunnel?.isEnabled && (
                 <Tooltip>
-                  <TooltipTrigger>
+                  <RadioTooltipTrigger>
                     <CustomRadio
                       value="tunnel"
                       className="aspect-square items-center rounded-[0.4rem] p-1.5"
@@ -522,7 +522,7 @@ function EndpointForm() {
                     >
                       <Icon name={IconName.Tunnel} className="h-4 w-4" />
                     </CustomRadio>
-                  </TooltipTrigger>
+                  </RadioTooltipTrigger>
                   <TooltipContent size="sm" offset={20}>
                     Tunnel
                   </TooltipContent>

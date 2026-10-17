@@ -10,7 +10,7 @@ import { Button } from './Button';
 import { tv } from '@restate/util/styles';
 import { useIsMutating } from '@tanstack/react-query';
 import { Spinner } from '@restate/ui/loading';
-import { mergeRefs, useObjectRef } from '@react-aria/utils';
+import { mergeRefs, useObjectRef } from 'react-aria';
 
 export interface SubmitButtonProps {
   onClick?: VoidFunction;

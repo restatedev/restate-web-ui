@@ -1,4 +1,7 @@
-import { DurationFormat } from '@formatjs/intl-durationformat';
+import {
+  DurationFormat,
+  type DurationInput,
+} from '@formatjs/intl-durationformat';
 import { parseAbsoluteToLocal, parseDuration } from '@internationalized/date';
 import { formatNumber } from './formatNumber';
 
@@ -7,7 +10,6 @@ type DurationStyle = 'long' | 'short' | 'narrow' | 'digital';
 const getFormatter = (style: DurationStyle = 'narrow') =>
   new DurationFormat('en', {
     style,
-    round: true,
     milliseconds: 'numeric',
   });
 
@@ -18,10 +20,7 @@ type FormatDurationOptions = {
 };
 
 export function formatDurations(
-  {
-    isPast,
-    ...duration
-  }: Parameters<DurationFormat['format']>[0] & { isPast?: boolean },
+  { isPast, ...duration }: DurationInput & { isPast?: boolean },
   options?: FormatDurationOptions,
 ) {
   const activeFormatter = options?.style
@@ -83,9 +82,7 @@ export function parseISODuration(iso: string) {
   return parseDuration(iso);
 }
 
-export function formatCompactDuration(
-  duration: Parameters<DurationFormat['format']>[0],
-) {
+export function formatCompactDuration(duration: DurationInput) {
   const value = normaliseDuration(duration);
   const days = value.days ?? 0;
   const hours = value.hours ?? 0;

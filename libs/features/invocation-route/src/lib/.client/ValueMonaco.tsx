@@ -1,6 +1,5 @@
 import { RefObject, useEffect, useState } from 'react';
-import * as monaco from 'monaco-editor';
-import './languageSetup';
+import * as monaco from '@restate/ui/editor/monaco';
 
 export function ValueMonaco({
   value,
@@ -15,7 +14,9 @@ export function ValueMonaco({
     if (el && !editorRef.current) {
       monaco.editor.defineTheme('restate', {
         base: 'vs',
-        colors: {},
+        colors: {
+          focusBorder: '#00000000',
+        },
         rules: [],
         inherit: true,
       });

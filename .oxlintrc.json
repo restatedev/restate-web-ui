@@ -1,0 +1,66 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "react", "jsx-a11y"],
+  "jsPlugins": [
+    "@nx/oxlint/boundaries-plugin",
+    "./tools/oxlint-plugin-restate.js"
+  ],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true
+  },
+  "ignorePatterns": [
+    "**/.react-router/**",
+    "apps/web-ui/public/**",
+    "libs/ui/api/vendor/**"
+  ],
+  "rules": {
+    "@nx/enforce-module-boundaries": [
+      "error",
+      {
+        "enforceBuildableLibDependency": true,
+        "depConstraints": [
+          { "sourceTag": "*", "onlyDependOnLibsWithTags": ["*"] }
+        ]
+      }
+    ],
+    "restate/no-classname-template-literal": "error",
+    "no-case-declarations": "error",
+    "no-empty": "error",
+    "no-empty-function": "error",
+    "no-prototype-builtins": "error",
+    "no-unused-vars": "warn",
+    "no-var": "error",
+    "prefer-const": "error",
+    "typescript/ban-ts-comment": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-namespace": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-unsafe-function-type": "error",
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn",
+    "react/immutability": "warn",
+    "react/incompatible-library": "warn",
+    "react/preserve-manual-memoization": "warn",
+    "react/purity": "warn",
+    "react/refs": "warn",
+    "react/set-state-in-effect": "warn",
+    "react/static-components": "warn",
+    "react/use-memo": "warn",
+    "react/no-children-prop": "off",
+    "jsx-a11y/no-autofocus": "off",
+    "jsx-a11y/no-noninteractive-tabindex": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+    "jsx-a11y/prefer-tag-over-role": "off",
+    "unicorn/no-empty-file": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.d.ts"],
+      "rules": { "no-var": "off" }
+    }
+  ]
+}

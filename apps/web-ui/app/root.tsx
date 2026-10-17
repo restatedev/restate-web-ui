@@ -10,8 +10,6 @@ import {
   useNavigate,
 } from 'react-router';
 import styles from './tailwind.css?url';
-import elementsCssUrl from '@stoplight/elements/elements-web-components.min.scoped.css?url';
-import elementsJsUrl from '@stoplight/elements/elements-web-components.min.js?url';
 import type { LinksFunction, NavigateOptions, To } from 'react-router';
 import {
   LayoutOutlet,
@@ -72,6 +70,7 @@ import { experimental_createQueryPersister } from '@tanstack/react-query-persist
 import { PortalProvider } from '@restate/ui/portal';
 import { BatchOperationsProvider } from '@restate/features/batch-operations';
 import { MonacoWarmup } from '@restate/ui/editor';
+import { elementsCssUrl, elementsJsUrl } from '@restate/ui/api/assets';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util/panel';
 import { TenantPreview } from './TenantPreview';
 
@@ -85,7 +84,6 @@ if (import.meta.env.DEV) {
 }
 
 export const links: LinksFunction = () => [
-  // TODO: move to the its own lib
   {
     rel: 'stylesheet',
     href: elementsCssUrl,
@@ -141,7 +139,6 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       retry: false,
       refetchOnMount: false,
-      experimental_prefetchInRender: true,
     },
   },
   queryCache: new QueryCache({
@@ -217,7 +214,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </RouterProvider>
         <ScrollRestoration />
         <Scripts />
-        {/* TODO: move to its own lib */}
         <script src={elementsJsUrl} async defer></script>
       </body>
     </html>

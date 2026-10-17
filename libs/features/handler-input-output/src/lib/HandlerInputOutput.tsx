@@ -111,7 +111,7 @@ function HandlerInputOutputJsonSchemaPopoverContent({
 }) {
   return (
     <JsonSchemaViewer
-      className="font-mono [&:has([aria-haspopup])]:min-h-32 [&>*>[aria-haspopup]]:mt-2 [&>*[data-test='property-description']]:mt-2"
+      className="font-mono [&_.JsonSchemaViewer>*>[aria-haspopup]]:mt-2 [&_.JsonSchemaViewer>[data-test='property-description']]:mt-2 [&:has([aria-haspopup])]:min-h-32"
       schema={schema}
     />
   );

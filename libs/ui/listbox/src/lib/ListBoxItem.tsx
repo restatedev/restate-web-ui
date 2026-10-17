@@ -67,16 +67,17 @@ interface BaseListBoxItemProps {
   disabled?: boolean;
 }
 
-interface ListBoxCustomItemProps
-  extends PropsWithChildren<
-    Omit<BaseListBoxItemProps, 'children' | 'href' | 'value'>
-  > {
+interface ListBoxCustomItemProps extends PropsWithChildren<
+  Omit<BaseListBoxItemProps, 'children' | 'href' | 'value'>
+> {
   value: string;
   href?: never;
 }
 
-interface ListBoxNavItemProps
-  extends Omit<ListBoxCustomItemProps, 'value' | 'href'> {
+interface ListBoxNavItemProps extends Omit<
+  ListBoxCustomItemProps,
+  'value' | 'href'
+> {
   href: string;
   value?: never;
 }

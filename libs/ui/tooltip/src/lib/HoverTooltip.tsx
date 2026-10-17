@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import { TooltipTriggerStateContext } from 'react-aria-components';
-import { Tooltip } from './Tooltip';
+import { useTooltipTriggerState } from 'react-stately';
 import { TooltipContent } from './TooltipContent';
 import { useTooltipWithHover } from './useTooltipWithHover';
 import { tv } from '@restate/util/styles';
@@ -212,44 +212,59 @@ export function HoverTooltip({
     close();
   }, [clearReopenTimeout, close]);
 
+  const handleOpenChange = useCallback(
+    (nextIsOpen: boolean) => {
+      if (nextIsOpen) {
+        open();
+      } else {
+        close();
+      }
+    },
+    [close, open],
+  );
+
   const tooltipTriggerRef = followCursor ? cursorAnchorRef : triggerRef;
 
+  const tooltipState = useTooltipTriggerState({
+    isOpen,
+    onOpenChange: handleOpenChange,
+    closeDelay: 0,
+  });
+
   return (
-    <Tooltip delay={250} disabled={disabled}>
-      <TooltipTriggerStateContext.Provider value={{ isOpen, open, close }}>
-        <span
-          ref={triggerRef}
-          className={styles({ className })}
-          onMouseMove={updateCursorAnchor}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onWheelCapture={handleWheelStart}
-          onPointerDown={handlePointerDown}
+    <TooltipTriggerStateContext.Provider value={tooltipState}>
+      <span
+        ref={triggerRef}
+        className={styles({ className })}
+        onMouseMove={updateCursorAnchor}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onWheelCapture={handleWheelStart}
+        onPointerDown={handlePointerDown}
+      >
+        {children}
+        {followCursor && (
+          <span
+            ref={cursorAnchorRef}
+            className="pointer-events-none absolute h-px w-px opacity-0"
+            style={{ left: 0, top: 0 }}
+          />
+        )}
+      </span>
+      <TooltipContent
+        size={size}
+        offset={offset}
+        crossOffset={crossOffset}
+        placement={placement}
+        triggerRef={tooltipTriggerRef}
+      >
+        <div
+          ref={contentRef}
+          className={contentStyles({ className: contentClassName })}
         >
-          {children}
-          {followCursor && (
-            <span
-              ref={cursorAnchorRef}
-              className="pointer-events-none absolute h-px w-px opacity-0"
-              style={{ left: 0, top: 0 }}
-            />
-          )}
-        </span>
-        <TooltipContent
-          size={size}
-          offset={offset}
-          crossOffset={crossOffset}
-          placement={placement}
-          triggerRef={tooltipTriggerRef}
-        >
-          <div
-            ref={contentRef}
-            className={contentStyles({ className: contentClassName })}
-          >
-            <div className="flex flex-col items-start gap-1">{content}</div>
-          </div>
-        </TooltipContent>
-      </TooltipTriggerStateContext.Provider>
-    </Tooltip>
+          <div className="flex flex-col items-start gap-1">{content}</div>
+        </div>
+      </TooltipContent>
+    </TooltipTriggerStateContext.Provider>
   );
 }

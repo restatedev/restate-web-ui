@@ -39,7 +39,10 @@ export function StateOnlyServiceWarningIcon({
     >
       <Icon
         name={IconName.TriangleAlert}
-        className={`${issueAlertIconStyles({ severity: 'low' })} h-3.5 w-3.5`}
+        className={issueAlertIconStyles({
+          severity: 'low',
+          className: 'h-3.5 w-3.5',
+        })}
       />
     </span>
   );

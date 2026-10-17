@@ -16,11 +16,10 @@ const containerStyles = tv({
   base: 'flex flex-col',
 });
 
-interface FormFieldTextarea
-  extends Pick<
-    AriaTextAreaProps,
-    'name' | 'autoFocus' | 'autoComplete' | 'maxLength' | 'rows'
-  > {
+interface FormFieldTextarea extends Pick<
+  AriaTextAreaProps,
+  'name' | 'autoFocus' | 'autoComplete' | 'maxLength' | 'rows'
+> {
   className?: string;
   required?: boolean;
   disabled?: boolean;

@@ -6,7 +6,6 @@
       "default",
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/eslint.config.js",
       "!{projectRoot}/src/test-setup.[jt]s"
     ],
     "sharedGlobals": [
@@ -21,15 +20,8 @@
       "options": {
         "buildTargetName": "build",
         "previewTargetName": "preview",
-        "testTargetName": "test",
         "serveTargetName": "serve",
         "serveStaticTargetName": "serve-static"
-      }
-    },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
       }
     },
     {
@@ -48,14 +40,25 @@
         "buildDepsTargetName": "build-deps",
         "typecheckTargetName": "typecheck"
       }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testTargetName": "test"
+      }
+    },
+    {
+      "plugin": "@nx/oxlint",
+      "options": {
+        "targetName": "lint"
+      }
     }
   ],
   "generators": {
     "@nx/react": {
       "application": {
-        "babel": true,
         "style": "tailwind",
-        "linter": "eslint",
+        "linter": "oxlint",
         "bundler": "vite"
       },
       "component": {
@@ -63,16 +66,10 @@
       },
       "library": {
         "style": "tailwind",
-        "linter": "eslint",
+        "linter": "oxlint",
         "unitTestRunner": "vitest"
       }
     }
   },
-  "targetDefaults": {
-    "@nx/js:tsc": {
-      "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
-    }
-  }
+  "analytics": false
 }

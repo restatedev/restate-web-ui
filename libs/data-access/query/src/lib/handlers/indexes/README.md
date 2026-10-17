@@ -153,7 +153,7 @@ Unused today: `_idx_entry_next_at_by_stage`, `_idx_entry_next_at_by_service`
 
 1. Column shapes:
    `SELECT table_name, column_name, data_type FROM information_schema.columns
-WHERE table_name LIKE '_idx%' OR table_name LIKE '%_stats' ORDER BY table_name`
+   WHERE table_name LIKE '_idx%' OR table_name LIKE '%_stats' ORDER BY table_name`
    — compare with `tables.ts` (`columns`, row types).
 2. Key order: `partition-store/src/index/{entry,virtual_object,vqueue}.rs`
    (`define_secondary_index!`) and `partition-store/src/stats/aggregated/*_load.rs`
@@ -162,7 +162,7 @@ WHERE table_name LIKE '_idx%' OR table_name LIKE '%_stats' ORDER BY table_name`
    (`define_filter!`) — which columns push down.
 4. Ordering: `storage-query-datafusion/src/index/*/table.rs` — if the empty
    ordering (`Vec::new()`) is replaced by a declared ordering, `ORDER BY …
-LIMIT` becomes cheap; re-measure with `EXPLAIN ANALYZE`.
+   LIMIT` becomes cheap; re-measure with `EXPLAIN ANALYZE`.
 5. Membership/semantics: `partition-store/src/vqueue_table/{index,stats}.rs`
    (which entries are indexed, `kind`, deployment assignment, which storage
    feature gates each), `features/indexes_v1.rs` and

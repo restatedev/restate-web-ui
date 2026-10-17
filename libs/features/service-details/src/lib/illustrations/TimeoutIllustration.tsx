@@ -208,18 +208,21 @@ export function InactivityTimeoutIllustration({
           ]}
           cards={[
             <InvocationCard
+              key="logged"
               status="running"
               journal="solid"
               rows={1}
               entry="ctx.sleep()"
             />,
             <InvocationCard
+              key="suspended"
               status="suspended"
               journal="solid"
               rows={1}
               entry="ctx.sleep()"
             />,
             <InvocationCard
+              key="resumed"
               status="running"
               journal="solid"
               rows={1}
@@ -269,6 +272,7 @@ export function AbortTimeoutIllustration({
           columns={[{ label: 'entry logged' }, {}, { label: 'aborted' }]}
           cards={[
             <InvocationCard
+              key="logged"
               status="running"
               journal="solid"
               rows={1}
@@ -284,6 +288,7 @@ export function AbortTimeoutIllustration({
               <span className={s.cardNote()}>can't suspend</span>
             </Fragment>,
             <InvocationCard
+              key="aborted"
               status="retrying"
               journal="solid"
               rows={1}

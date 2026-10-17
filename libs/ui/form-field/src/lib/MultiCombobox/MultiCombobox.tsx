@@ -39,7 +39,7 @@ import {
   PopoverTrigger,
 } from '@restate/ui/popover';
 import { focusRing } from '@restate/ui/focus';
-import { mergeRefs, useObjectRef } from '@react-aria/utils';
+import { mergeRefs, useObjectRef } from 'react-aria';
 
 const tagStyles = tv({
   extend: focusRing,

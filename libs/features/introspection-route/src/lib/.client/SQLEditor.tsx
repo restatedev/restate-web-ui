@@ -1,17 +1,6 @@
 import { RefObject, useCallback, useEffect } from 'react';
 import { useFocusShortcut } from '@restate/ui/keyboard';
-import { languages } from 'monaco-editor/esm/vs/editor/editor.api';
-import * as monaco from 'monaco-editor';
-import {
-  setupLanguageFeatures,
-  LanguageIdEnum,
-  CompletionService,
-  ICompletionItem,
-  EntityContextType,
-  SyntaxSuggestion,
-  WordRange,
-} from 'monaco-sql-languages';
-import './languageSetup';
+import * as monaco from '@restate/ui/editor/monaco';
 import {
   AGG_APPROXIMATE_FUNCTIONS,
   AGG_GENERAL_FUNCTIONS,
@@ -34,144 +23,149 @@ import {
   WINDOWS_ANALYTICAL_FUNCTIONS,
   WINDOWS_RANKING_FUNCTIONS,
 } from './constants';
-import { TokenClassConsts, postfixTokenClass } from 'monaco-sql-languages';
 import { getQueryHistory } from '../queryHistory';
+import { getSqlCompletionContext } from '../sqlCompletionContext';
 
 const SQL_EDITOR_THEME = 'restate-sql';
+const SQL_LANGUAGE_ID = 'sql';
 
-const COLUMNS: ICompletionItem[] = [
+type CompletionItem = Omit<monaco.languages.CompletionItem, 'range'>;
+
+const COLUMNS: CompletionItem[] = [
   ...Array.from(
     new Set(TABLES.map((table) => table.columns.map((col) => col.name)).flat()),
   ).map((col) => ({
-    kind: languages.CompletionItemKind.Variable,
+    kind: monaco.languages.CompletionItemKind.Variable,
     label: `${col}`,
+    insertText: `${col}`,
     sortText: `1$${col}`,
     detail: 'Column',
   })),
   ...TABLES.map((table) => ({
-    kind: languages.CompletionItemKind.Struct,
+    kind: monaco.languages.CompletionItemKind.Struct,
     label: `${table.name}`,
+    insertText: `${table.name}`,
     sortText: `2${table.name}`,
     detail: table.description,
   })),
 ];
 
-function getColumns(item: SyntaxSuggestion<WordRange>) {
-  if (item.wordRanges.length === 2) {
-    return (
-      TABLES.find(
-        (table) => table.name === item.wordRanges?.[0]?.text,
-      )?.columns.map((col) => ({
-        kind: languages.CompletionItemKind.Variable,
-        label: `${col.name}`,
-        sortText: `1$${col.name}`,
-        detail: col.description,
-      })) ?? COLUMNS
-    );
-  } else {
+function getColumns(table?: string): CompletionItem[] {
+  if (!table) {
     return COLUMNS;
+  }
+  return (
+    TABLES.find(({ name }) => name === table)?.columns.map((col) => ({
+      kind: monaco.languages.CompletionItemKind.Variable,
+      label: `${col.name}`,
+      insertText: `${col.name}`,
+      sortText: `1$${col.name}`,
+      detail: col.description,
+    })) ?? COLUMNS
+  );
+}
+
+const TABLE_ITEMS: CompletionItem[] = TABLES.map((table) => ({
+  kind: monaco.languages.CompletionItemKind.Struct,
+  label: table.name,
+  insertText: table.name,
+  sortText: `2${table.name}`,
+  detail: table.description,
+}));
+
+const KEYWORD_ITEMS: CompletionItem[] = [...KEYWORDS].map((kw) => ({
+  label: kw,
+  insertText: kw,
+  kind: monaco.languages.CompletionItemKind.Keyword,
+  detail: 'keyword',
+  sortText: '3' + kw,
+}));
+
+const FUNCTION_ITEMS: CompletionItem[] = [
+  ...AGG_GENERAL_FUNCTIONS,
+  ...AGG_STATISTICAL_FUNCTIONS,
+  ...AGG_APPROXIMATE_FUNCTIONS,
+  ...WINDOWS_RANKING_FUNCTIONS,
+  ...WINDOWS_ANALYTICAL_FUNCTIONS,
+  ...STRING_FUNCTIONS,
+  ...BINARY_STRING_FUNCTIONS,
+  ...REG_EXPRESSION_FUNCTIONS,
+  ...MATH_FUNCTIONS,
+  ...TIME_FUNCTIONS,
+  ...CONDITIONAL_FUNCTIONS,
+  ...ARRAY_FUNCTIONS,
+  ...STRUCT_FUNCTIONS,
+  ...MAP_FUNCTIONS,
+  ...HASHING_FUNCTIONS,
+  ...UNION_FUNCTIONS,
+  ...OTHER_FUNCTIONS,
+  ...EXPANSION_FUNCTIONS,
+].map((kw) => ({
+  label: kw + '()',
+  insertText: kw,
+  kind: monaco.languages.CompletionItemKind.Function,
+  detail: 'Function',
+  sortText: '3' + kw,
+}));
+
+function getContextCompletions(
+  model: monaco.editor.ITextModel,
+  position: monaco.Position,
+): CompletionItem[] {
+  const textBeforeCursor = model.getValueInRange({
+    startLineNumber: 1,
+    startColumn: 1,
+    endLineNumber: position.lineNumber,
+    endColumn: position.column,
+  });
+  const context = getSqlCompletionContext(textBeforeCursor, model.getValue());
+
+  switch (context.type) {
+    case 'none':
+      return [];
+    case 'keyword':
+      return KEYWORD_ITEMS;
+    case 'table':
+      return [...TABLE_ITEMS, ...KEYWORD_ITEMS];
+    case 'column':
+      return context.isQualified
+        ? getColumns(context.table)
+        : [...getColumns(), ...FUNCTION_ITEMS, ...KEYWORD_ITEMS];
   }
 }
 
-const completionService: CompletionService = function (
-  model,
-  position,
-  completionContext,
-  suggestions, // syntax context info at caretPosition
-  entities, // tables, columns in the syntax context of the editor text
-) {
-  return new Promise((resolve, reject) => {
-    const historyCompletionItems = buildHistoryCompletions(model, position);
-    const keywordsCompletionItems: ICompletionItem[] =
-      model.getValue().trim() === ''
-        ? []
-        : [...KEYWORDS].map((kw) => ({
-            label: kw,
-            kind: languages.CompletionItemKind.Keyword,
-            detail: 'keyword',
-            sortText: '3' + kw,
-          }));
-    if (!suggestions) {
-      resolve({
-        suggestions: [...historyCompletionItems, ...keywordsCompletionItems],
-        incomplete: true,
-      });
-      return;
-    }
-    const { syntax } = suggestions;
+function provideCompletionItems(
+  model: monaco.editor.ITextModel,
+  position: monaco.Position,
+): monaco.languages.CompletionList {
+  const word = model.getWordUntilPosition(position);
+  const range: monaco.IRange = {
+    startLineNumber: position.lineNumber,
+    endLineNumber: position.lineNumber,
+    startColumn: word.startColumn,
+    endColumn: word.endColumn,
+  };
 
-    let syntaxCompletionItems: ICompletionItem[] = [];
-    const isOnlyFunction =
-      syntax.length === 1 &&
-      syntax[0]?.syntaxContextType !== EntityContextType.COLUMN;
-
-    syntax.forEach((item) => {
-      if (item.syntaxContextType === EntityContextType.COLUMN) {
-        syntaxCompletionItems = [...syntaxCompletionItems, ...getColumns(item)];
-      }
-      if (item.syntaxContextType === EntityContextType.FUNCTION) {
-        syntaxCompletionItems = [
-          ...syntaxCompletionItems,
-          ...(isOnlyFunction ? getColumns(item) : []),
-          ...[
-            ...AGG_GENERAL_FUNCTIONS,
-            ...AGG_STATISTICAL_FUNCTIONS,
-            ...AGG_APPROXIMATE_FUNCTIONS,
-            ...WINDOWS_RANKING_FUNCTIONS,
-            ...WINDOWS_ANALYTICAL_FUNCTIONS,
-            ...STRING_FUNCTIONS,
-            ...BINARY_STRING_FUNCTIONS,
-            ...REG_EXPRESSION_FUNCTIONS,
-            ...MATH_FUNCTIONS,
-            ...TIME_FUNCTIONS,
-            ...CONDITIONAL_FUNCTIONS,
-            ...ARRAY_FUNCTIONS,
-            ...STRUCT_FUNCTIONS,
-            ...MAP_FUNCTIONS,
-            ...HASHING_FUNCTIONS,
-            ...UNION_FUNCTIONS,
-            ...OTHER_FUNCTIONS,
-            ...EXPANSION_FUNCTIONS,
-          ].map((kw) => ({
-            label: kw + '()',
-            insertText: kw,
-            kind: languages.CompletionItemKind.Function,
-            detail: 'Function',
-            sortText: '3' + kw,
-          })),
-        ];
-      }
-
-      if (item.syntaxContextType === EntityContextType.TABLE) {
-        const tableCompletions: ICompletionItem[] = TABLES.map((table) => ({
-          kind: languages.CompletionItemKind.Struct,
-          label: table.name,
-          sortText: `2${table.name}`,
-          detail: table.description,
-        }));
-        syntaxCompletionItems = [...syntaxCompletionItems, ...tableCompletions];
-      }
-    });
-
-    resolve({
-      suggestions: [
-        ...historyCompletionItems,
-        ...syntaxCompletionItems,
-        ...keywordsCompletionItems,
-      ],
-      incomplete: true,
-    });
-  });
-};
+  return {
+    suggestions: [
+      ...buildHistoryCompletions(model, position),
+      ...getContextCompletions(model, position).map((item) => ({
+        ...item,
+        range,
+      })),
+    ],
+    incomplete: true,
+  };
+}
 
 function toSingleLine(query: string) {
   return query.replace(/\s+/g, ' ').trim();
 }
 
 function buildHistoryCompletions(
-  model: monaco.editor.IReadOnlyModel,
+  model: monaco.editor.ITextModel,
   position: monaco.Position,
-): ICompletionItem[] {
+): monaco.languages.CompletionItem[] {
   const history = getQueryHistory();
   if (history.length === 0 || position.lineNumber > 1) {
     return [];
@@ -201,7 +195,7 @@ function buildHistoryCompletions(
     )
     .map((query, index) => ({
       label: { label: toSingleLine(query), description: 'History' },
-      kind: languages.CompletionItemKind.Snippet,
+      kind: monaco.languages.CompletionItemKind.Snippet,
       insertText: query,
       filterText: query,
       sortText: '0' + String(index).padStart(4, '0'),
@@ -233,13 +227,11 @@ export function SQLEditor({
   useEffect(() => {
     const placeholderEl = placeholderRef.current;
     if (hostRef?.current && !editorRef.current) {
-      setupLanguageFeatures(LanguageIdEnum.PG, {
-        completionItems: {
-          enable: true,
-          completionService,
+      const completionProvider =
+        monaco.languages.registerCompletionItemProvider(SQL_LANGUAGE_ID, {
           triggerCharacters: [' ', '.'],
-        },
-      });
+          provideCompletionItems,
+        });
       monaco.editor.defineTheme(SQL_EDITOR_THEME, {
         base: 'vs-dark',
         colors: {
@@ -247,56 +239,22 @@ export function SQLEditor({
           'editor.foreground': '#ffffff',
           'editor.lineHighlightBorder': '#00000000',
           'editorBracketHighlight.foreground1': '#60a5fa',
+          focusBorder: '#00000000',
         },
         rules: [
-          {
-            token: postfixTokenClass(TokenClassConsts.KEYWORD),
-            foreground: '60a5fa',
-          },
-          {
-            token: postfixTokenClass(TokenClassConsts.DELIMITER_PAREN),
-            foreground: '60a5fa',
-          },
-          {
-            token: postfixTokenClass(TokenClassConsts.IDENTIFIER),
-            foreground: 'ffffff',
-          },
-          {
-            token: TokenClassConsts.STRING,
-            foreground: 'cbd5e1',
-          },
-          {
-            token: postfixTokenClass(TokenClassConsts.STRING),
-            foreground: 'cbd5e1',
-          },
-          {
-            token: postfixTokenClass(TokenClassConsts.TYPE),
-            foreground: 'cbd5e1',
-          },
-          {
-            token: postfixTokenClass(TokenClassConsts.NUMBER),
-            foreground: 'cbd5e1',
-          },
-          // AND
-          {
-            token: postfixTokenClass(TokenClassConsts.OPERATOR),
-            foreground: 'ffffff',
-          },
-          {
-            token: postfixTokenClass(TokenClassConsts.OPERATOR_KEYWORD),
-            foreground: 'ffffff',
-          },
-          //MAX
-          {
-            token: postfixTokenClass(TokenClassConsts.PREDEFINED),
-            foreground: 'ffffff',
-          },
+          { token: 'keyword.sql', foreground: '60a5fa' },
+          { token: 'delimiter.parenthesis.sql', foreground: '60a5fa' },
+          { token: 'identifier.sql', foreground: 'ffffff' },
+          { token: 'string.sql', foreground: 'cbd5e1' },
+          { token: 'number.sql', foreground: 'cbd5e1' },
+          { token: 'operator.sql', foreground: 'ffffff' },
+          { token: 'predefined.sql', foreground: 'ffffff' },
         ],
         inherit: true,
       });
       editorRef.current = monaco.editor.create(hostRef.current, {
         value: initialQuery,
-        language: LanguageIdEnum.PG,
+        language: SQL_LANGUAGE_ID,
         lineNumbers: 'off',
         lineDecorationsWidth: 0,
         folding: false,
@@ -328,7 +286,7 @@ export function SQLEditor({
         },
         contextmenu: false,
         hover: {
-          enabled: false,
+          enabled: 'off',
         },
         wordWrap: 'on',
         scrollBeyondLastColumn: 0,
@@ -355,6 +313,10 @@ export function SQLEditor({
       }
 
       updateStyles();
+
+      editorRef.current.onDidDispose(() => {
+        completionProvider.dispose();
+      });
 
       editorRef.current.onDidChangeModelContent(() => {
         updateStyles();

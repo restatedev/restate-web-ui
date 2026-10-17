@@ -44,7 +44,7 @@ describe('useSqlQuery duration', () => {
   beforeEach(() => {
     client = new QueryClient({
       defaultOptions: {
-        queries: { retry: false, experimental_prefetchInRender: true },
+        queries: { retry: false },
       },
     });
     now = 100;

@@ -7,7 +7,7 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check if version is released
         id: version
         env:
@@ -39,18 +39,13 @@ jobs:
       artifact-name: ui-v${{ needs.check-version.outputs.version }}.zip
     steps:
       - run: echo "has-updated -- ${{ needs.check-version.outputs.has-updated }}"
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.0.8
-          run_install: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - run: pnpm install --frozen-lockfile
+      - uses: pnpm/setup@v3
+        with:
+          require-lockfile: true
       - run: pnpm nx build web-ui --skip-nx-cache
       - run: cd dist/apps/web-ui && zip -r ../../../ui-v${{ needs.check-version.outputs.version }}.zip .
       - name: Create a release
@@ -70,7 +65,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
           repository: restatedev/restate-web-ui-crate
@@ -96,7 +91,7 @@ jobs:
         run: cargo build
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
           branch: update-ui-${{needs.release.outputs.tag}}

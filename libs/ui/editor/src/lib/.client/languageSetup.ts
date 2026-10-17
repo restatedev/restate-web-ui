@@ -1,6 +1,6 @@
 import './workerTypes';
-import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import EditorWorker from 'monaco-editor/editor/editor.worker?worker';
+import jsonWorker from 'monaco-editor/language/json/json.worker?worker';
 
 const monacoEnvironment = globalThis as typeof globalThis & {
   MonacoEnvironment?: {

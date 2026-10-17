@@ -1,17 +1,12 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
-  root: __dirname,
+  root: import.meta.dirname,
   cacheDir: '../../../node_modules/.vite/libs/data-access/admin-api',
+  resolve: { tsconfigPaths: true },
 
-  plugins: [react(), nxViteTsPaths()],
-
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [ nxViteTsPaths() ],
-  // },
+  plugins: [react()],
 
   test: {
     passWithNoTests: true,
