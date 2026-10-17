@@ -1,8 +1,0 @@
-{
-  "name": "filter-builder",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/ui/filter-builder/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {}
-}

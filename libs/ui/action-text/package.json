@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-action-text",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "action-text",
+    "sourceRoot": "libs/ui/action-text/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

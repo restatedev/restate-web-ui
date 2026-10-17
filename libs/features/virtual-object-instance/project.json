@@ -1,8 +1,0 @@
-{
-  "name": "virtual-object-instance",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/virtual-object-instance/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {}
-}

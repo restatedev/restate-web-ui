@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-split-button",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "split-button",
+    "sourceRoot": "libs/ui/split-button/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

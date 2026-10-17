@@ -1,0 +1,15 @@
+{
+  "name": "@restate/ui-editor",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./monaco": "./src/lib/.client/monaco.ts"
+  },
+  "nx": {
+    "name": "editor",
+    "sourceRoot": "libs/ui/editor/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

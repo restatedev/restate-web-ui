@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-error",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "error",
+    "sourceRoot": "libs/ui/error/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

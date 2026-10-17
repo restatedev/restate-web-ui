@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-restate-context",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "restate-context",
+    "sourceRoot": "libs/features/restate-context/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

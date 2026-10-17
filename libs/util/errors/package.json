@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-errors",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "util-errors",
+    "sourceRoot": "libs/util/errors/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-features-route",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "features-route",
+    "sourceRoot": "libs/features/features-route/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-chip",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "chip",
+    "sourceRoot": "libs/ui/chip/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

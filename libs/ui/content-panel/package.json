@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-content-panel",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "content-panel",
+    "sourceRoot": "libs/ui/content-panel/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

@@ -42,7 +42,7 @@ export function ValueMonaco({
         },
         contextmenu: false,
         hover: {
-          enabled: false,
+          enabled: 'off',
         },
         wordWrap: 'off',
         scrollBeyondLastLine: false,

@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "outDir": "out-tsc/app",
+    "tsBuildInfoFile": "out-tsc/app/tsconfig.app.tsbuildinfo",
     "types": [
       "@react-router/node",
       "vite/client",
@@ -25,5 +27,139 @@
     "tests/**/*.test.js",
     "tests/**/*.spec.jsx",
     "tests/**/*.test.jsx"
+  ],
+  "references": [
+    {
+      "path": "../../libs/features/workflows-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/state-object-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/virtual-objects-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/state-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/service-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/query-stats-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/overview-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/limits-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/invocations-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/introspection-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/features-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/deployment-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/panel/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/editor/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/batch-operations/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/portal/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/data-access/admin-api/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/data-access/admin-api-hooks/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/register-deployment/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/getting-started/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/service-details/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/service/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/deployment/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/feature-flag/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/edit-state/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/support/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/invocation-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/loading/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/health/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/version/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/system-health/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/codec/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/restate-context/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/breadcrumbs/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/nav/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/react-query/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/button/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/link/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/sidebar-nav/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/tooltip/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/ui/layout/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/tenant-view/tsconfig.lib.json"
+    }
   ]
 }

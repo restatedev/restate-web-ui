@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",
@@ -30,5 +33,31 @@
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx"
   ],
-  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../workflow-run/tsconfig.lib.json"
+    },
+    {
+      "path": "../virtual-object-instance/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/copy/tsconfig.lib.json"
+    },
+    {
+      "path": "../vqueue-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../invocation-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../deployment/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/breadcrumbs/tsconfig.lib.json"
+    }
+  ]
 }

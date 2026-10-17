@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "out-tsc/lib",
+    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",
@@ -9,5 +12,85 @@
     ]
   },
   "exclude": ["**/*.spec.ts", "**/*.spec.tsx", "vite.config.ts"],
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "references": [
+    {
+      "path": "../../ui/layout/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/breadcrumbs/tsconfig.lib.json"
+    },
+    {
+      "path": "../service-target/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/styles/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/filter-builder/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/error/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/button/tsconfig.lib.json"
+    },
+    {
+      "path": "../invocation-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/copy/tsconfig.lib.json"
+    },
+    {
+      "path": "../vqueue-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/snapshot-time/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/panel/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/table/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/empty-state/tsconfig.lib.json"
+    },
+    {
+      "path": "../restate-context/tsconfig.lib.json"
+    },
+    {
+      "path": "../invocation-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/card/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/tooltip/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/link/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/intl/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/content-panel/tsconfig.lib.json"
+    },
+    {
+      "path": "../workflow-run/tsconfig.lib.json"
+    },
+    {
+      "path": "../state-object-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
+    }
+  ]
 }

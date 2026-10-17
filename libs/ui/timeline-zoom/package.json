@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-timeline-zoom",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "timeline-zoom",
+    "sourceRoot": "libs/ui/timeline-zoom/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

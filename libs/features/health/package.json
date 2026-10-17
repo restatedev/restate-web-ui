@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-health",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "health",
+    "sourceRoot": "libs/features/health/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

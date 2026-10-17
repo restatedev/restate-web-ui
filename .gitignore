@@ -55,3 +55,6 @@ vitest.config.*.timestamp*
 
 .claude/worktrees
 .claude/settings.local.json
+
+out-tsc
+*.tsbuildinfo

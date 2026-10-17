@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-focus",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "focus",
+    "sourceRoot": "libs/ui/focus/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

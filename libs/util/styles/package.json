@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-styles",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "styles",
+    "sourceRoot": "libs/util/styles/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

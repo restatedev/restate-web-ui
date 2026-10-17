@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "outDir": "out-tsc/spec",
+    "tsBuildInfoFile": "out-tsc/spec/tsconfig.spec.tsbuildinfo",
     "types": [
       "vitest/globals",
       "vitest/importMeta",
@@ -13,10 +15,7 @@
   "include": [
     "vite.config.ts",
     "vitest.config.ts",
-    "app/**/*.ts",
-    "app/**/*.tsx",
-    "app/**/*.js",
-    "app/**/*.jsx",
+    "constants.ts",
     "tests/**/*.spec.ts",
     "tests/**/*.test.ts",
     "tests/**/*.spec.tsx",
@@ -25,5 +24,10 @@
     "tests/**/*.test.js",
     "tests/**/*.spec.jsx",
     "tests/**/*.test.jsx"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    }
   ]
 }

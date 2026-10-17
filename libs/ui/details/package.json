@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-details",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "details",
+    "sourceRoot": "libs/ui/details/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

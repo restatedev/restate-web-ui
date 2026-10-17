@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-restate-server",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "restate-server",
+    "sourceRoot": "libs/ui/restate-server/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

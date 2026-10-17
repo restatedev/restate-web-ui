@@ -1,8 +1,0 @@
-{
-  "name": "service-target",
-  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/features/service-target/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {}
-}

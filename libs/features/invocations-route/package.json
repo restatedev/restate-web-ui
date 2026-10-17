@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-invocations-route",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "invocations-route",
+    "sourceRoot": "libs/features/invocations-route/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@restate/features-getting-started",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "getting-started",
+    "sourceRoot": "libs/features/getting-started/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-notification",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "notification",
+    "sourceRoot": "libs/ui/notification/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

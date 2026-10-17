@@ -1,0 +1,12 @@
+{
+  "name": "@restate/ui-loading",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "loading",
+    "sourceRoot": "libs/ui/loading/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

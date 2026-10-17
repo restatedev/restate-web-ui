@@ -1,0 +1,12 @@
+{
+  "name": "@restate/util-api-config",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "nx": {
+    "name": "api-config",
+    "sourceRoot": "libs/util/api-config/src",
+    "projectType": "library",
+    "tags": []
+  }
+}

@@ -35,7 +35,8 @@ jobs:
         with:
           require-lockfile: true
       - run: pnpm nx affected --targets=lint --base=origin/main --head=HEAD
-      - run: NX_BASE=origin/main NX_HEAD=HEAD ./scripts/typecheck.cjs
+      - run: pnpm nx sync:check
+      - run: pnpm nx affected --targets=typecheck --base=origin/main --head=HEAD
       - run: NX_BASE=origin/main NX_HEAD=HEAD pnpm nx format:check
       - run: pnpm audit --ignore-registry-errors --prod --audit-level high
       - name: Check dependency licenses
