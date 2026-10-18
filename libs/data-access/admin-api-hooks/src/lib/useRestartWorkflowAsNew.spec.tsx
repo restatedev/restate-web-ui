@@ -3,8 +3,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 import { useRestartWorkflowAsNew } from './hooks';
 
-const { getAuthToken } = vi.hoisted(() => ({
+const { getAuthToken, invocation } = vi.hoisted(() => ({
   getAuthToken: vi.fn<() => string | undefined>(),
+  invocation: { scope: undefined as string | undefined },
 }));
 
 vi.mock('@restate/util-api-config', () => ({ getAuthToken }));
@@ -26,6 +27,7 @@ vi.mock('@restate/data-access-admin-api', () => ({
         ? {
             target_service_name: 'Checkout',
             target_handler_name: 'run',
+            scope: invocation.scope,
             journal: { entries: [{ type: 'Input', category: 'command' }] },
           }
         : {
@@ -52,6 +54,7 @@ describe('useRestartWorkflowAsNew', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
     getAuthToken.mockReset();
+    invocation.scope = undefined;
   });
 
   afterEach(() => {
@@ -82,6 +85,33 @@ describe('useRestartWorkflowAsNew', () => {
     expect(init).toMatchObject({ credentials: 'include', method: 'POST' });
     return new Headers(init?.headers);
   }
+
+  async function restartUrl(workflowId: string) {
+    const { result } = renderHook(() => useRestartWorkflowAsNew('inv_old'), {
+      wrapper,
+    });
+    await act(() =>
+      result.current.mutateAsync({ invocationId: 'inv_old', workflowId }),
+    );
+    return fetchMock.mock.calls[0]?.[0];
+  }
+
+  it.each(['codex/restart', 'with space', 'percent%', 'question?and#hash'])(
+    'encodes the workflow id %j as a single path segment',
+    async (workflowId) => {
+      expect(await restartUrl(workflowId)).toBe(
+        `http://localhost:8080/restate/send/Checkout/${encodeURIComponent(workflowId)}/run`,
+      );
+    },
+  );
+
+  it('encodes the scope as a single path segment', async () => {
+    invocation.scope = 'tenant/a b';
+
+    expect(await restartUrl('codex/restart')).toBe(
+      'http://localhost:8080/restate/scope/tenant%2Fa%20b/send/Checkout/codex%2Frestart/run',
+    );
+  });
 
   it('replaces the journal authorization header with the auth token', async () => {
     getAuthToken.mockReturnValue('token-123');
