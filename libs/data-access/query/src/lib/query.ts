@@ -231,17 +231,6 @@ function bindHandlers(context: QueryContext): BoundHandlers {
 
 const handlersKey = createContextKey<BoundHandlers>();
 
-const decodeParamsMiddleware: Middleware = (ctx, next) => {
-  const params = ctx.params as Record<string, string | undefined>;
-  for (const key in params) {
-    const value = params[key];
-    if (value !== undefined) {
-      params[key] = decodeURIComponent(value);
-    }
-  }
-  return next();
-};
-
 const handlersMiddleware: Middleware<{
   key: typeof handlersKey;
   value: BoundHandlers;
@@ -416,7 +405,6 @@ const router = createRouter({
 });
 
 router.map(routes.invocations, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async statuses(ctx) {
       const { getInvocationsStatus } = ctx.get(handlersKey);
@@ -503,7 +491,6 @@ router.map(routes.invocations, {
 });
 
 router.map(routes.invocationsV2, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async list(ctx) {
       const { listInvocationsV2 } = ctx.get(handlersKey);
@@ -535,7 +522,6 @@ router.map(routes.invocationsV2, {
 });
 
 router.map(routes.virtualObjects, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async instances(ctx) {
       const { listVirtualObjectInstances } = ctx.get(handlersKey);
@@ -586,7 +572,6 @@ router.map(routes.virtualObjects, {
 });
 
 router.map(routes.workflows.runs, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async list(ctx) {
       const { listWorkflowRuns } = ctx.get(handlersKey);
@@ -618,7 +603,6 @@ router.map(routes.workflows.runs, {
 });
 
 router.map(routes.services.state, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async get(ctx) {
       const { getState } = ctx.get(handlersKey);
@@ -656,7 +640,6 @@ router.map(routes.services.state, {
 });
 
 router.map(routes.services.scopedState, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async get(ctx) {
       const { getScopedState } = ctx.get(handlersKey);
@@ -671,7 +654,6 @@ router.map(routes.services.scopedState, {
 });
 
 router.map(routes.deployments, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async drained(ctx) {
       const { listDrainedDeployments } = ctx.get(handlersKey);
@@ -681,7 +663,6 @@ router.map(routes.deployments, {
 });
 
 router.map(routes.state, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async storageSize(ctx) {
       const { getStateStorageSize } = ctx.get(handlersKey);
@@ -691,7 +672,6 @@ router.map(routes.state, {
 });
 
 router.map(routes.limits, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async userLimits(ctx) {
       const { listUserLimits } = ctx.get(handlersKey);
@@ -709,7 +689,6 @@ router.map(routes.limits, {
 });
 
 router.map(routes.limits.rules, {
-  middleware: [decodeParamsMiddleware],
   actions: {
     async list(ctx) {
       const { listLimitRules } = ctx.get(handlersKey);

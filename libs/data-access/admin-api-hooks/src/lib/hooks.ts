@@ -2254,9 +2254,16 @@ export function useRestartWorkflowAsNew(
       const headers = payloadData.headers;
 
       const scope = data?.scope;
+      const targetPath = [
+        data?.target_service_name ?? '',
+        workflowId,
+        data?.target_handler_name ?? '',
+      ]
+        .map(encodeURIComponent)
+        .join('/');
       const sendUrl = scope
-        ? `${ingressUrl.replace(/\/$/, '')}/restate/scope/${scope}/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`
-        : `${ingressUrl.replace(/\/$/, '')}/restate/send/${data?.target_service_name}/${workflowId}/${data?.target_handler_name}`;
+        ? `${ingressUrl.replace(/\/$/, '')}/restate/scope/${encodeURIComponent(scope)}/send/${targetPath}`
+        : `${ingressUrl.replace(/\/$/, '')}/restate/send/${targetPath}`;
 
       const requestHeaders = new Headers(
         headers
