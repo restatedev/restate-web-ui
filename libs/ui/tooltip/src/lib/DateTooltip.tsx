@@ -2,10 +2,10 @@ import { PropsWithChildren, useCallback, useRef, useState } from 'react';
 import { TooltipTriggerStateContext } from 'react-aria-components';
 import { useTooltipTriggerState } from 'react-stately';
 import { TooltipContent } from './TooltipContent';
-import { Copy } from '@restate/ui/copy';
-import { formatDateTime, formatDateToISO } from '@restate/util/intl';
+import { Copy } from '@restate/ui-copy';
+import { formatDateTime, formatDateToISO } from '@restate/util-intl';
 import { useTooltipWithHover } from './useTooltipWithHover';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-300 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5 hover:decoration-zinc-400',

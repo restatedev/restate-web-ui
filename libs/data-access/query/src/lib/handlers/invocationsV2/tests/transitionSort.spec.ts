@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { entryTablesSupportFilters } from '../list/transitionSort';
+import { entryTablesSupportFilters } from '../list/transitionSort.js';
 
 describe('entryTablesSupportFilters', () => {
   it('accepts filters available on VQueue tables or the entry indexes', () => {

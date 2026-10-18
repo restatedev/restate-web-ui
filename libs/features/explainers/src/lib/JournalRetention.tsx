@@ -1,4 +1,4 @@
-import { InlineTooltip } from '@restate/ui/tooltip';
+import { InlineTooltip } from '@restate/ui-tooltip';
 import { ComponentProps, PropsWithChildren } from 'react';
 
 export const JOURNAL_RETENTION_DESCRIPTION =

@@ -1,7 +1,7 @@
 import {
   TabCountBadge,
   type TabBadge,
-} from '@restate/features/invocations-route';
+} from '@restate/features-invocations-route';
 
 export function InvocationsTabLabel({
   badge,

@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
 import { Input, Label, TextField } from 'react-aria-components';
-import { Button } from '@restate/ui/button';
-import { Chip, ChipGroup, ChipSegment } from '@restate/ui/chip';
-import { Icon, IconName } from '@restate/ui/icons';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import { Button } from '@restate/ui-button';
+import { Chip, ChipGroup, ChipSegment } from '@restate/ui-chip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 
 export interface PanelTableQuickOpenScope {
   value: string;

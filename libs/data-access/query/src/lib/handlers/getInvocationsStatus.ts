@@ -1,7 +1,7 @@
-import type { RawInvocation } from '@restate/data-access/admin-api-spec';
-import { convertInvocation } from '../convertInvocation';
-import { isInvocationId, type QueryContext, quoteSqlString } from './shared';
-import { fetchVqueueStatuses } from './vqueue';
+import type { RawInvocation } from '@restate/data-access-admin-api-spec';
+import { convertInvocation } from '../convertInvocation.js';
+import { isInvocationId, type QueryContext, quoteSqlString } from './shared.js';
+import { fetchVqueueStatuses } from './vqueue.js';
 
 export async function getInvocationsStatus(
   this: QueryContext,

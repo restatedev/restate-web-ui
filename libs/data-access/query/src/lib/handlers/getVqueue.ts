@@ -5,18 +5,21 @@ import type {
   VqueueEntryStatus,
   VqueueGateDuration,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { convertInvocationV2, type VqueueStatus } from '../convertInvocation';
+} from '@restate/data-access-admin-api-spec';
+import {
+  convertInvocationV2,
+  type VqueueStatus,
+} from '../convertInvocation.js';
 import {
   SYS_INVOCATION_SELECT_COLUMNS,
   isInvocationId,
   type QueryContext,
   quoteSqlString,
-} from './shared';
+} from './shared.js';
 import {
   parseVqueueBlockedResource,
   parseVqueueSchedulingStatus,
-} from './vqueueScheduler';
+} from './vqueueScheduler.js';
 
 const GATES = [
   'concurrency_rules',

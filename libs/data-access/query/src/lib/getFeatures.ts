@@ -1,4 +1,4 @@
-import { getUiFeatures, withUiFeatures } from './uiFeatures';
+import { getUiFeatures, withUiFeatures } from './uiFeatures.js';
 
 export const RESTATE_FEATURES_HEADER = 'x-restate-features';
 

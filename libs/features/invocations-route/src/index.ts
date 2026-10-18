@@ -2,13 +2,14 @@ export * from './lib/invocations.route';
 export {
   FilterChip as ClauseChip,
   FilterShortcutTrigger as FiltersTrigger,
-} from '@restate/ui/filter-builder';
+} from '@restate/ui-filter-builder';
 export { useInvocationSummary } from './lib/useInvocationSummary';
 export {
   doInvocationCountsDisagree,
   filterInvocationSummaryByStatus,
   getListRowCounts,
   resolveInvocationPopulationCount,
+  type InvocationSummaryMatchCount,
 } from './lib/invocationSummaryMatchCount';
 export {
   CountsDisagreeEmptyState,

@@ -1,7 +1,7 @@
-import { withConfirmation } from '@restate/ui/dialog';
-import { useResumeInvocation } from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { IconName } from '@restate/ui/icons';
+import { withConfirmation } from '@restate/ui-dialog';
+import { useResumeInvocation } from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { IconName } from '@restate/ui-icons';
 import {
   getInvocationActionFormData,
   getInvocationActionId,

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { UnauthorizedError } from '@restate/util/errors';
+import { UnauthorizedError } from '@restate/util-errors';
 import { vi } from 'vitest';
 import { CrashError } from './CrashError';
 

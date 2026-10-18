@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { getInvocationIds } from './getInvocationIds';
-import type { QueryContext } from './shared';
+import { getInvocationIds } from './getInvocationIds.js';
+import type { QueryContext } from './shared.js';
 
 describe('getInvocationIds SQL', () => {
   it('selects unfinished invocations without status refinement', async () => {

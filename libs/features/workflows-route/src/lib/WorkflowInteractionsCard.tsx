@@ -1,8 +1,8 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { Card, CardHeader, CardRow } from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
-import { RelativeDate } from '@restate/ui/tooltip';
-import { formatNumber } from '@restate/util/intl';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { Card, CardHeader, CardRow } from '@restate/ui-card';
+import { IconName } from '@restate/ui-icons';
+import { RelativeDate } from '@restate/ui-tooltip';
+import { formatNumber } from '@restate/util-intl';
 import { WorkflowInteractionTooltip } from './WorkflowInteractionTooltip';
 
 type WorkflowRunStatsResponse =

@@ -2,12 +2,12 @@ import {
   filterInvocationSummaryByStatus,
   getRepresentedStatuses,
   type StatusFilter,
-} from '@restate/features/invocations-route';
+} from '@restate/features-invocations-route';
 import {
   VQueueStageLegend,
   VQueueStageSummaryBar,
-} from '@restate/features/status-chart';
-import { tv } from '@restate/util/styles';
+} from '@restate/features-status-chart';
+import { tv } from '@restate/util-styles';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import type { useInvocationsTab } from './useInvocationsTab';

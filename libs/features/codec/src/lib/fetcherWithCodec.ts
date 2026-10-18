@@ -1,6 +1,6 @@
-import { getAuthToken } from '@restate/util/api-config';
-import { base64ToUint8Array, bytesToBase64 } from '@restate/util/binary';
-import { RestateError } from '@restate/util/errors';
+import { getAuthToken } from '@restate/util-api-config';
+import { base64ToUint8Array, bytesToBase64 } from '@restate/util-binary';
+import { RestateError } from '@restate/util-errors';
 import type { RestateStringCodec } from './codecs';
 import type { CodecFetcher } from './CodecRuntimeProvider';
 import type { RestateCodecOptions } from './types';

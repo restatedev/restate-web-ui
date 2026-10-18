@@ -1,14 +1,14 @@
 import {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getEntryName,
   parseEntryJson,
   JournalRawEntryWithCommandIndex,
   getEntryResultV2,
   getCompletionEntry,
-} from './util';
+} from './util.js';
 
 function getLazyStateV2(
   entry: JournalRawEntryWithCommandIndex,

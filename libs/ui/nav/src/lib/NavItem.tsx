@@ -1,8 +1,8 @@
 import { useLocation, useNavigation } from 'react-router';
 import { GridListItem as AriaGridListItem } from 'react-aria-components';
-import { useHrefWithQueryParams } from '@restate/ui/link';
+import { useHrefWithQueryParams } from '@restate/ui-link';
 import { PropsWithChildren, useCallback, useContext } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { NavContext } from './NavContext';
 
 interface NavItemProps {

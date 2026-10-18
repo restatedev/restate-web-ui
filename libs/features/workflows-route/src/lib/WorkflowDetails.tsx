@@ -1,13 +1,13 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { KeyedServiceState } from '@restate/features/state-object-route';
-import type { WorkflowRunIdentity } from '@restate/features/workflow-run';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { KeyedServiceState } from '@restate/features-state-object-route';
+import type { WorkflowRunIdentity } from '@restate/features-workflow-run';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   type ContentPanelTabs,
-} from '@restate/ui/content-panel';
-import { formatNumber } from '@restate/util/intl';
+} from '@restate/ui-content-panel';
+import { formatNumber } from '@restate/util-intl';
 import { useMemo } from 'react';
 import { WorkflowInteractionTooltip } from './WorkflowInteractionTooltip';
 import { WorkflowInvocationsTable } from './WorkflowInvocationsTable';

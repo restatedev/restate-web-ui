@@ -1,5 +1,5 @@
-import { SidebarNavItem } from '@restate/ui/layout';
-import { IconName } from '@restate/ui/icons';
+import { SidebarNavItem } from '@restate/ui-layout';
+import { IconName } from '@restate/ui-icons';
 
 interface IntrospectionSidebarItemProps {
   baseUrl?: string;

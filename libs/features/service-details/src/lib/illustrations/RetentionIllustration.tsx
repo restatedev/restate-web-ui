@@ -2,9 +2,9 @@ import {
   JOURNAL_RETENTION_DESCRIPTION,
   WORKFLOW_RETENTION_DESCRIPTION,
   idempotencyRetentionDescription,
-} from '@restate/features/explainers';
-import { Icon, IconName } from '@restate/ui/icons';
-import { humanTimeToMs } from '@restate/util/humantime';
+} from '@restate/features-explainers';
+import { Icon, IconName } from '@restate/ui-icons';
+import { humanTimeToMs } from '@restate/util-humantime';
 import { Fragment, type CSSProperties, type ReactNode } from 'react';
 import { explanationItemStyles } from './primitives';
 import {

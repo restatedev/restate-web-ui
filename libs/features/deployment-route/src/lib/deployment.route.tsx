@@ -2,29 +2,29 @@ import {
   useDeploymentDetails,
   useListDeployments,
   useListDrainedDeployments,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import {
   DeploymentStatusBadge,
   MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   resolveDeploymentEndpoint,
-} from '@restate/features/deployment';
-import { DeploymentActions } from '@restate/features/register-deployment';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Badge } from '@restate/ui/badge';
-import { Breadcrumbs } from '@restate/ui/breadcrumbs';
-import { CardGrid } from '@restate/ui/card';
-import { Chip, ChipGroup, ChipSegment } from '@restate/ui/chip';
-import { Copy } from '@restate/ui/copy';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
-import { Header } from '@restate/ui/header';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/features-deployment';
+import { DeploymentActions } from '@restate/features-register-deployment';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Badge } from '@restate/ui-badge';
+import { Breadcrumbs } from '@restate/ui-breadcrumbs';
+import { CardGrid } from '@restate/ui-card';
+import { Chip, ChipGroup, ChipSegment } from '@restate/ui-chip';
+import { Copy } from '@restate/ui-copy';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
+import { Header } from '@restate/ui-header';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   HoverTooltip,
   TruncateTooltipTrigger,
   TruncateWithTooltip,
-} from '@restate/ui/tooltip';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/ui-tooltip';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useParams, useSearchParams } from 'react-router';
 import {
   DetailsCard,

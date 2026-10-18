@@ -1,52 +1,52 @@
 import { TenantServiceTarget } from './TenantServiceTarget';
-import { ServiceTargetProvider } from '@restate/features/service-target';
+import { ServiceTargetProvider } from '@restate/features-service-target';
 import {
   BatchOperationsProvider,
   InvocationBatchActions,
-} from '@restate/features/batch-operations';
+} from '@restate/features-batch-operations';
 import {
   useListInvocationsV2,
   useSummaryInvocationsV2,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import {
   type components,
   getInvocationStatusLabel,
   INVOCATION_STATUSES,
   TERMINAL_INVOCATION_STATUSES,
-} from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/data-access-admin-api-spec';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   InvocationDuration,
   InvocationTableDate,
   InvocationTableCell,
   isVqueueEntry,
   VqueueEntryCell,
-} from '@restate/features/invocation-ui';
-import { Actions, InvocationActions } from '@restate/features/invocation-route';
-import { Button } from '@restate/ui/button';
+} from '@restate/features-invocation-ui';
+import { Actions, InvocationActions } from '@restate/features-invocation-route';
+import { Button } from '@restate/ui-button';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
 import {
   FilterChip,
   QueryClause,
   type QueryClauseSchema,
-} from '@restate/ui/filter-builder';
-import { Icon, IconName } from '@restate/ui/icons';
-import { ListPageHeader } from '@restate/ui/layout';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-filter-builder';
+import { Icon, IconName } from '@restate/ui-icons';
+import { ListPageHeader } from '@restate/ui-layout';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   VQueueStageSummaryBar,
   VQueueStageLegend,
   type VQueueSummaryFocus,
-} from '@restate/features/status-chart';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/features-status-chart';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 

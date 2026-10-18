@@ -1,5 +1,5 @@
-import type { VqueueStatus } from '../convertInvocation';
-import { type QueryContext, quoteSqlString } from './shared';
+import type { VqueueStatus } from '../convertInvocation.js';
+import { type QueryContext, quoteSqlString } from './shared.js';
 
 // Point lookup keyed by entry_id (unique per invocation). List population
 // scans still use sys_vqueues so positive stage predicates can prune keyspaces.

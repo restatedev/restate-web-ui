@@ -1,14 +1,14 @@
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
-import type { Service } from '@restate/data-access/admin-api-spec';
-import { Revision } from '@restate/features/deployment';
-import { useRestateContext } from '@restate/features/restate-context';
-import { ServiceType } from '@restate/features/service';
-import { ServiceTarget } from '@restate/features/service-target';
-import { Badge } from '@restate/ui/badge';
-import { EmptyState } from '@restate/ui/empty-state';
-import { IconName } from '@restate/ui/icons';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { serviceHref } from '@restate/util/panel';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
+import type { Service } from '@restate/data-access-admin-api-spec';
+import { Revision } from '@restate/features-deployment';
+import { useRestateContext } from '@restate/features-restate-context';
+import { ServiceType } from '@restate/features-service';
+import { ServiceTarget } from '@restate/features-service-target';
+import { Badge } from '@restate/ui-badge';
+import { EmptyState } from '@restate/ui-empty-state';
+import { IconName } from '@restate/ui-icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { serviceHref } from '@restate/util-panel';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 

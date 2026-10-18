@@ -1,11 +1,11 @@
-import { Badge } from '@restate/ui/badge';
-import { Button } from '@restate/ui/button';
-import { LimitKey, Scope } from '@restate/features/vqueue-ui';
-import { ChipGroup } from '@restate/ui/chip';
-import { Icon, IconName } from '@restate/ui/icons';
-import { ListBox, ListBoxItem } from '@restate/ui/listbox';
-import { PopoverOverlay } from '@restate/ui/popover';
-import { tv } from '@restate/util/styles';
+import { Badge } from '@restate/ui-badge';
+import { Button } from '@restate/ui-button';
+import { LimitKey, Scope } from '@restate/features-vqueue-ui';
+import { ChipGroup } from '@restate/ui-chip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { ListBox, ListBoxItem } from '@restate/ui-listbox';
+import { PopoverOverlay } from '@restate/ui-popover';
+import { tv } from '@restate/util-styles';
 import { type ReactNode, useMemo, useState } from 'react';
 import {
   ComboBox as AriaComboBox,

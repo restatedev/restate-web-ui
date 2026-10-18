@@ -4,14 +4,14 @@ import {
   Select,
   SelectValue,
 } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { FormFieldError } from './FormFieldError';
 import { ComponentProps, PropsWithChildren, ReactNode } from 'react';
-import { Button } from '@restate/ui/button';
-import { PopoverOverlay } from '@restate/ui/popover';
-import { ListBox, ListBoxItem } from '@restate/ui/listbox';
+import { Button } from '@restate/ui-button';
+import { PopoverOverlay } from '@restate/ui-popover';
+import { ListBox, ListBoxItem } from '@restate/ui-listbox';
 import { FormFieldLabel } from './FormFieldLabel';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui-icons';
 
 const containerStyles = tv({
   base: '',

@@ -1,15 +1,15 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { EntryProps, EventEntryType } from './types';
 import {
   ENTRY_EVENTS_ENTRY_LABELS,
   ENTRY_EVENTS_TITLES,
 } from '../EntryTooltip';
 import { PhaseDuration, RelativeTime } from './RelativeTime';
-import { Badge } from '@restate/ui/badge';
+import { Badge } from '@restate/ui-badge';
 import { Failure } from '../Failure';
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 import { ENTRY_COMMANDS_COMPONENTS } from '../Entry';
 import { ComponentType } from 'react';
 import { EntryCodecProvider } from './EntryCodecProvider';
@@ -18,8 +18,8 @@ import { InvocationId } from '../../InvocationId';
 import {
   useGetInvocationJournalWithInvocationV2,
   useListSubscriptions,
-} from '@restate/data-access/admin-api-hooks';
-import { tv } from '@restate/util/styles';
+} from '@restate/data-access-admin-api-hooks';
+import { tv } from '@restate/util-styles';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2

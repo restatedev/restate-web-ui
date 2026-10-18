@@ -2,8 +2,8 @@ import {
   INVOCATION_LIST_FIELDS,
   type InvocationListField,
   type InvocationListTable,
-} from '../invocationListFields';
-import { ENTRY_INDEX_FILTER_FIELDS } from './indexedInvocationCandidates';
+} from '../invocationListFields.js';
+import { ENTRY_INDEX_FILTER_FIELDS } from './indexedInvocationCandidates.js';
 
 const VQUEUE_TABLES: InvocationListTable[] = [
   'sys_vqueues',

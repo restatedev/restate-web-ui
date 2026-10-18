@@ -1,4 +1,4 @@
-import { QueryClauseSchema, QueryClauseType } from '@restate/ui/filter-builder';
+import { QueryClauseSchema, QueryClauseType } from '@restate/ui-filter-builder';
 
 export const LIMIT_IDENTITY_FILTER_SCHEMA = [
   {

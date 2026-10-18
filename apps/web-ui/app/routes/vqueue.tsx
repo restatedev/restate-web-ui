@@ -1,4 +1,4 @@
-import { vqueue } from '@restate/features/limits-route';
+import { vqueue } from '@restate/features-limits-route';
 
 export function meta() {
   return [{ title: 'Restate - VQueue' }];

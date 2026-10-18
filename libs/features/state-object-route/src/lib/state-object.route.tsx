@@ -1,28 +1,28 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import { useVersion } from '@restate/data-access/admin-api';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
+import { useVersion } from '@restate/data-access-admin-api';
 import {
   isServiceStateQuery,
   useListVirtualObjectState,
   useQueryVirtualObjectState,
-} from '@restate/data-access/admin-api-hooks';
-import { SubmitButton } from '@restate/ui/button';
+} from '@restate/data-access-admin-api-hooks';
+import { SubmitButton } from '@restate/ui-button';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   type ContentPanelTabs,
-} from '@restate/ui/content-panel';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
-import { IconName } from '@restate/ui/icons';
+} from '@restate/ui-content-panel';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
+import { IconName } from '@restate/ui-icons';
 import {
   SnapshotTimeProvider,
   useDurationSinceLastSnapshot,
-} from '@restate/util/snapshot-time';
+} from '@restate/util-snapshot-time';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui/keyboard';
-import { formatDurations } from '@restate/util/intl';
-import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui/layout';
+import { useSubmitShortcut, SubmitShortcutKey } from '@restate/ui-keyboard';
+import { formatDurations } from '@restate/util-intl';
+import { LayoutOutlet, LayoutZone, ListPageHeader } from '@restate/ui-layout';
 import {
   AddQueryTrigger,
   QueryBuilder,
@@ -30,19 +30,19 @@ import {
   QueryClauseSchema,
   QueryClauseType,
   useQueryBuilder,
-} from '@restate/ui/query-builder';
+} from '@restate/ui-query-builder';
 import { Form, Navigate, useParams, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import invariant from 'tiny-invariant';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import {
   ClauseChip,
   FiltersTrigger,
-} from '@restate/features/invocations-route';
-import { useEditStateContext } from '@restate/features/edit-state';
-import { useResolvedCodecOptions } from '@restate/features/codec';
-import { useRestateContext } from '@restate/features/restate-context';
-import { useIsFeatureFlagEnabled } from '@restate/util/feature-flag';
+} from '@restate/features-invocations-route';
+import { useEditStateContext } from '@restate/features-edit-state';
+import { useResolvedCodecOptions } from '@restate/features-codec';
+import { useRestateContext } from '@restate/features-restate-context';
+import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import {
   getStateServiceHref,
   ServiceSelector,

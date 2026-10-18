@@ -1,24 +1,24 @@
 import {
   useListDeployments,
   useServiceDetails,
-} from '@restate/data-access/admin-api-hooks';
-import { ServiceType } from '@restate/features/service';
-import { ServiceTarget } from '@restate/features/service-target';
-import { Badge } from '@restate/ui/badge';
-import { Breadcrumbs } from '@restate/ui/breadcrumbs';
-import { CardGrid } from '@restate/ui/card';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
-import { Header } from '@restate/ui/header';
-import { Icon, IconName } from '@restate/ui/icons';
-import { HANDLER_QUERY_PARAM } from '@restate/util/panel';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/data-access-admin-api-hooks';
+import { ServiceType } from '@restate/features-service';
+import { ServiceTarget } from '@restate/features-service-target';
+import { Badge } from '@restate/ui-badge';
+import { Breadcrumbs } from '@restate/ui-breadcrumbs';
+import { CardGrid } from '@restate/ui-card';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
+import { Header } from '@restate/ui-header';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HANDLER_QUERY_PARAM } from '@restate/util-panel';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { HandlerSelector } from './HandlerSelector';
 import { ConfigurationCard, DeploymentCard } from './ServiceCards';
 import { WarningChip } from './WarningChip';
-import { formatPlurals } from '@restate/util/intl';
+import { formatPlurals } from '@restate/util-intl';
 import { ServiceDetails, serviceTabFromSearch } from './ServiceDetails';
 import { resolveServiceConfig } from './serviceConfig';
 import { ServiceEditActions } from './ServiceEditActions';

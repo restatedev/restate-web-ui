@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, vi } from 'vitest';
-import { query as queryRouter } from '../../../query';
+import { query as queryRouter } from '../../../query.js';
 
 export type SqlResponder = (
   sql: string,

@@ -1,6 +1,6 @@
-import type { QueryContext } from './shared';
-import { usesStatsTables } from '../uiFeatures';
-import { DEPLOYMENT_STATS } from './indexes';
+import type { QueryContext } from './shared.js';
+import { usesStatsTables } from '../uiFeatures.js';
+import { DEPLOYMENT_STATS } from './indexes/index.js';
 
 const VQUEUE_DRAINED_DEPLOYMENTS_QUERY = `WITH active_deployments AS (
     SELECT deployment_id AS id

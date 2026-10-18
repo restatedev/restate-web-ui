@@ -1,19 +1,19 @@
-import { useListDeployments } from '@restate/data-access/admin-api-hooks';
+import { useListDeployments } from '@restate/data-access-admin-api-hooks';
 import {
   getProtocolType,
   isHttpDeployment,
   type Deployment as DeploymentData,
   type DetailedDeployment,
   type Handler,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   Deployment,
   MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   SDK,
-} from '@restate/features/deployment';
-import { ProtocolTypeExplainer } from '@restate/features/explainers';
-import { GithubMetadata, hasGithubMetadata } from '@restate/features/options';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-deployment';
+import { ProtocolTypeExplainer } from '@restate/features-explainers';
+import { GithubMetadata, hasGithubMetadata } from '@restate/features-options';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   AbortTimeoutIllustration,
   AccessIllustration,
@@ -26,28 +26,28 @@ import {
   SERVICE_RETENTION_EDIT,
   SERVICE_TIMEOUT_EDIT,
   StateLoadingIllustration,
-} from '@restate/features/service-details';
-import { Button } from '@restate/ui/button';
+} from '@restate/features-service-details';
+import { Button } from '@restate/ui-button';
 import {
   Card,
   CardButtonRow,
   CardHeader,
   CardLinkRow,
   CardRow,
-} from '@restate/ui/card';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/ui-card';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
   usePopover,
-} from '@restate/ui/popover';
-import { InlineTooltip, RelativeDate } from '@restate/ui/tooltip';
-import { humanTimeToMs } from '@restate/util/humantime';
-import { deploymentHref } from '@restate/util/panel';
-import { formatNumber } from '@restate/util/intl';
+} from '@restate/ui-popover';
+import { InlineTooltip, RelativeDate } from '@restate/ui-tooltip';
+import { humanTimeToMs } from '@restate/util-humantime';
+import { deploymentHref } from '@restate/util-panel';
+import { formatNumber } from '@restate/util-intl';
 import { WarningChip } from './WarningChip';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { formatConfigDuration, type ServiceConfig } from './serviceConfig';

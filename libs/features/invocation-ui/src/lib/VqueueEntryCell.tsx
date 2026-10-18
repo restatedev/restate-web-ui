@@ -1,6 +1,6 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Cell } from '@restate/ui/table';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Cell } from '@restate/ui-table';
 import {
   InvocationTableCell,
   isInvocationTableColumnKey,

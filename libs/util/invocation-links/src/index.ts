@@ -1,1 +1,1 @@
-export * from './lib/invocation-links';
+export * from './lib/invocation-links.js';

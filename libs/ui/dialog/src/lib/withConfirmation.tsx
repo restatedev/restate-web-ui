@@ -16,14 +16,14 @@ import {
 import {
   showCountdownNotification,
   showErrorNotification,
-} from '@restate/ui/notification';
+} from '@restate/ui-notification';
 import {
   getUserPreference,
   setUserPreference,
   UserPreferenceId,
-} from '@restate/features/user-preference';
-import { FormFieldCheckbox, FormFieldLabel } from '@restate/ui/form-field';
-import { registerTransientQueryParams } from '@restate/util/panel';
+} from '@restate/features-user-preference';
+import { FormFieldCheckbox, FormFieldLabel } from '@restate/ui-form-field';
+import { registerTransientQueryParams } from '@restate/util-panel';
 
 export interface BaseHelpers {
   navigate: ReturnType<typeof useNavigate>;

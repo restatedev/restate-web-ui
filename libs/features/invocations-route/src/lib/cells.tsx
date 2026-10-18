@@ -2,16 +2,16 @@ import {
   Invocation,
   JournalEntryV2,
   ServiceType,
-} from '@restate/data-access/admin-api-spec';
-import { Cell } from '@restate/ui/table';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
+} from '@restate/data-access-admin-api-spec';
+import { Cell } from '@restate/ui-table';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import { ColumnKey } from './columns';
 import { ComponentType, useState } from 'react';
-import { Badge } from '@restate/ui/badge';
-import { ServiceTypeExplainer } from '@restate/features/explainers';
+import { Badge } from '@restate/ui-badge';
+import { ServiceTypeExplainer } from '@restate/features-explainers';
 import { CellProps } from './cells/types';
-import { formatNumber, formatPlurals } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+import { formatNumber, formatPlurals } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import {
   Actions,
   getSearchParams,
@@ -19,20 +19,20 @@ import {
   InvocationId,
   JournalV2,
   Retention,
-} from '@restate/features/invocation-route';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-invocation-route';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { useRestateContext } from '@restate/features-restate-context';
 import { useLocation } from 'react-router';
 import {
   useGetJournalEntryMetadata,
   useListSubscriptions,
-} from '@restate/data-access/admin-api-hooks';
-import { Ellipsis, Spinner } from '@restate/ui/loading';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/data-access-admin-api-hooks';
+import { Ellipsis, Spinner } from '@restate/ui-loading';
+import { ErrorBanner } from '@restate/ui-error';
 import {
   Duration,
   InvocationDuration,
@@ -43,9 +43,9 @@ import {
   InvocationTableDate,
   isInvocationTableColumnKey,
   type InvocationTableColumnKey,
-} from '@restate/features/invocation-ui';
-import { Target } from '@restate/features/service-target';
-import { Scope } from '@restate/features/vqueue-ui';
+} from '@restate/features-invocation-ui';
+import { Target } from '@restate/features-service-target';
+import { Scope } from '@restate/features-vqueue-ui';
 
 function withDate({
   tooltipTitle,

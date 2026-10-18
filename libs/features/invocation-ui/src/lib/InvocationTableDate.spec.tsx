@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { InvocationTableDate } from './InvocationTableCell';
 
 describe('InvocationTableDate', () => {

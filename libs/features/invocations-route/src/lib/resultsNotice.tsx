@@ -1,6 +1,6 @@
-import { EmptyState } from '@restate/ui/empty-state';
-import { Icon, IconName } from '@restate/ui/icons';
-import { formatNumber } from '@restate/util/intl';
+import { EmptyState } from '@restate/ui-empty-state';
+import { Icon, IconName } from '@restate/ui-icons';
+import { formatNumber } from '@restate/util-intl';
 
 export function ResultsNotice({ message }: { message: string }) {
   return (

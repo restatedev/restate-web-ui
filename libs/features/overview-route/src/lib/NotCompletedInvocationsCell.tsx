@@ -1,6 +1,6 @@
-import { Cell } from '@restate/ui/table';
-import { formatNumber } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+import { Cell } from '@restate/ui-table';
+import { formatNumber } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import type { PropsWithChildren } from 'react';
 
 const styles = tv({

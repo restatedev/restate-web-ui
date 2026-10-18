@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listVirtualObjectInstances } from './listVirtualObjectInstances';
-import type { QueryContext } from './shared';
+import { listVirtualObjectInstances } from './listVirtualObjectInstances.js';
+import type { QueryContext } from './shared.js';
 
 function createContext(
   responder: (

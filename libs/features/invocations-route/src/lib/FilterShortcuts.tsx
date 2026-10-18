@@ -10,8 +10,8 @@ import {
   QueryClauseSchema,
   QueryClauseType,
   QueryClauseValue,
-} from '@restate/ui/query-builder';
-import { writeFilterClauses } from '@restate/ui/filter-builder';
+} from '@restate/ui-query-builder';
+import { writeFilterClauses } from '@restate/ui-filter-builder';
 import {
   Dropdown,
   DropdownItem,
@@ -19,21 +19,21 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Button } from '@restate/ui/button';
+} from '@restate/ui-dropdown';
+import { Button } from '@restate/ui-button';
 import {
   TERMINAL_INVOCATION_STATUSES,
   type components,
-} from '@restate/data-access/admin-api-spec';
-import { tv } from '@restate/util/styles';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/data-access-admin-api-spec';
+import { tv } from '@restate/util-styles';
+import { Icon, IconName } from '@restate/ui-icons';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
 import {
   getDefaultSortField,
   SORT_QUERY_PREFIX,
   SORT_NONE,
 } from './useInvocationsQueryFilters';
-import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
+import { useInvocationsLastQuery } from '@restate/util-sidebar-nav';
 
 interface FilterShortcut {
   columns: ColumnKey[];

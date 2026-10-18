@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 import { useMove } from 'react-aria';
-import { tv } from '@restate/util/styles';
-import { formatDurations, formatRange } from '@restate/util/intl';
-import { getDuration } from '@restate/util/snapshot-time';
-import { Tooltip, TooltipContent } from '@restate/ui/tooltip';
+import { tv } from '@restate/util-styles';
+import { formatDurations, formatRange } from '@restate/util-intl';
+import { getDuration } from '@restate/util-snapshot-time';
+import { Tooltip, TooltipContent } from '@restate/ui-tooltip';
 
 const styles = tv({
   base: '',

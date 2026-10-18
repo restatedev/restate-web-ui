@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { QueryContext } from './shared';
+import type { QueryContext } from './shared.js';
 
 const { selectInvocationCandidatesV2 } = vi.hoisted(() => ({
   selectInvocationCandidatesV2: vi.fn(),
@@ -7,7 +7,7 @@ const { selectInvocationCandidatesV2 } = vi.hoisted(() => ({
 
 vi.mock('./invocationsV2', () => ({ selectInvocationCandidatesV2 }));
 
-import { getInvocationIds } from './getInvocationIds';
+import { getInvocationIds } from './getInvocationIds.js';
 
 function candidateResult(
   rows: { id: string; created_at: string }[],

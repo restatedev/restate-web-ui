@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listLimitRules } from './listLimitRules';
-import type { QueryContext } from './shared';
+import { listLimitRules } from './listLimitRules.js';
+import type { QueryContext } from './shared.js';
 
 function querySql(query: ReturnType<typeof vi.fn>) {
   return query.mock.calls.map(([sql]) => sql);

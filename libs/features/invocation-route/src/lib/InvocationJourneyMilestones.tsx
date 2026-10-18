@@ -1,7 +1,7 @@
-import { InvocationStatusBadge, Status } from '@restate/features/invocation-ui';
-import { BlockedStatus } from '@restate/features/vqueue-ui';
-import { MetricComparison } from '@restate/ui/metric-comparison';
-import { tv } from '@restate/util/styles';
+import { InvocationStatusBadge, Status } from '@restate/features-invocation-ui';
+import { BlockedStatus } from '@restate/features-vqueue-ui';
+import { MetricComparison } from '@restate/ui-metric-comparison';
+import { tv } from '@restate/util-styles';
 import {
   InvocationObjectLockHolderTarget,
   InvocationObjectLockTarget,

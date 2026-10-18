@@ -7,26 +7,26 @@ import {
   useDeleteLimitRule,
   useListLimitRules,
   useUpdateLimitRule,
-} from '@restate/data-access/admin-api-hooks';
-import { LimitRuleTarget, LimitValue } from '@restate/features/vqueue-ui';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Badge } from '@restate/ui/badge';
-import { Button, SubmitButton } from '@restate/ui/button';
+} from '@restate/data-access-admin-api-hooks';
+import { LimitRuleTarget, LimitValue } from '@restate/features-vqueue-ui';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Badge } from '@restate/ui-badge';
+import { Button, SubmitButton } from '@restate/ui-button';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
+} from '@restate/ui-content-panel';
 import {
   ConfirmationDialog,
   Dialog,
   DialogClose,
   DialogContent,
   DialogFooter,
-} from '@restate/ui/dialog';
-import { DropdownItem } from '@restate/ui/dropdown';
-import { EmptyState } from '@restate/ui/empty-state';
+} from '@restate/ui-dialog';
+import { DropdownItem } from '@restate/ui-dropdown';
+import { EmptyState } from '@restate/ui-empty-state';
 import {
   AddFilterTrigger,
   FilterBuilder,
@@ -38,22 +38,22 @@ import {
   readFilterClauses,
   useFilterBuilder,
   writeFilterClauses,
-} from '@restate/ui/filter-builder';
-import { ErrorBanner } from '@restate/ui/error';
-import { FormFieldCheckbox } from '@restate/ui/form-field';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { SplitButton } from '@restate/ui/split-button';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
+} from '@restate/ui-filter-builder';
+import { ErrorBanner } from '@restate/ui-error';
+import { FormFieldCheckbox } from '@restate/ui-form-field';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { SplitButton } from '@restate/ui-split-button';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
 import {
   InlineTooltip,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TruncateWithTooltip,
-} from '@restate/ui/tooltip';
-import { formatNumber } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-tooltip';
+import { formatNumber } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { type QueryKey, useQueryClient } from '@tanstack/react-query';
 import {
   type FormEvent,

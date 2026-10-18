@@ -1,5 +1,5 @@
 import { PropsWithChildren, ComponentPropsWithoutRef } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 interface BadgeProps {
   variant?: 'success' | 'danger' | 'info' | 'warning' | 'default';

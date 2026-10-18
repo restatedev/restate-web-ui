@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createInvocationV2QueryTestHarness } from '../invocationsV2/tests/testUtils';
+import { createInvocationV2QueryTestHarness } from '../invocationsV2/tests/testUtils.js';
 
 const INDEX_HEADERS = {
   'content-type': 'application/json',

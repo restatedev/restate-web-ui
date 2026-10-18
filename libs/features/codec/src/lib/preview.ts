@@ -1,10 +1,10 @@
 import {
   getDecodeServiceSerdeQueryOptions,
   getEncodeServiceSerdeQueryOptions,
-} from '@restate/data-access/admin-api';
-import type { operations } from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api';
+import type { operations } from '@restate/data-access-admin-api-spec';
 import type { RestateBinaryCodec, RestateCodecOptions } from './types';
-import { utf8ToUint8Array } from '@restate/util/binary';
+import { utf8ToUint8Array } from '@restate/util-binary';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 

@@ -1,4 +1,4 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { EntryProps } from './types';
 import { Expression } from '../Expression';
 import { EntryExpression } from './EntryExpression';

@@ -1,5 +1,5 @@
-import { query } from '@restate/data-access/query';
-import type { paths } from '@restate/data-access/admin-api-spec';
+import { query } from '@restate/data-access-query';
+import type { paths } from '@restate/data-access-admin-api-spec';
 import type { BodySerializer } from 'openapi-fetch';
 import createClient from 'openapi-fetch';
 

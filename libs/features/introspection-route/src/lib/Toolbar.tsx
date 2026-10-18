@@ -1,5 +1,5 @@
-import { SubmitButton } from '@restate/ui/button';
-import { LayoutOutlet, LayoutZone } from '@restate/ui/layout';
+import { SubmitButton } from '@restate/ui-button';
+import { LayoutOutlet, LayoutZone } from '@restate/ui-layout';
 import { Form } from 'react-router';
 import {
   lazy,
@@ -14,7 +14,7 @@ import {
   useSubmitShortcut,
   SubmitShortcutKey,
   FocusShortcutKey,
-} from '@restate/ui/keyboard';
+} from '@restate/ui-keyboard';
 import type { editor } from 'monaco-editor';
 import { QueryHistoryDropdown } from './QueryHistoryDropdown';
 import { PredefinedQueriesDropdown } from './PredefinedQueriesDropdown';

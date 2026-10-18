@@ -1,5 +1,5 @@
-import type { QueryContext } from '../../shared';
-import { sqlString } from '../shared';
+import type { QueryContext } from '../../shared.js';
+import { sqlString } from '../shared.js';
 
 /**
  * Returns the exact overall due/not-due inbox counts from the positive VQueue

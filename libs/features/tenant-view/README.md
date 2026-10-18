@@ -1,10 +1,10 @@
 # Tenant invocation viewer
 
-Import the tenant UI from `@restate/features/tenant-view`.
+Import the tenant UI from `@restate/features-tenant-view`.
 
 ```tsx
-import { TenantSidebar, TenantView } from '@restate/features/tenant-view';
-import { RestateContextProvider } from '@restate/features/restate-context';
+import { TenantSidebar, TenantView } from '@restate/features-tenant-view';
+import { RestateContextProvider } from '@restate/features-restate-context';
 
 const baseUrl = `/tenants/${encodeURIComponent(scope)}`;
 

@@ -1,6 +1,6 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+import { Icon, IconName } from '@restate/ui-icons';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'relative font-mono text-zinc-600',

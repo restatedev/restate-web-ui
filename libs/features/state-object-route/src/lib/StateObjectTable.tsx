@@ -1,38 +1,38 @@
 import {
   useGetVirtualObjectState,
   useListVirtualObjectStateEntries,
-} from '@restate/data-access/admin-api-hooks';
-import { Button } from '@restate/ui/button';
-import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui/table';
-import { ErrorBanner } from '@restate/ui/error';
-import { DropdownItem, DropdownSection } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
-import { formatBytes } from '@restate/util/intl';
+} from '@restate/data-access-admin-api-hooks';
+import { Button } from '@restate/ui-button';
+import { Cell, PanelTable, PanelTableColumn, Row } from '@restate/ui-table';
+import { ErrorBanner } from '@restate/ui-error';
+import { DropdownItem, DropdownSection } from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Spinner } from '@restate/ui-loading';
+import { formatBytes } from '@restate/util-intl';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
   usePopover,
-} from '@restate/ui/popover';
-import { DecodedValue, Value } from '@restate/features/invocation-route';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-popover';
+import { DecodedValue, Value } from '@restate/features-invocation-route';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import {
   type RestateCodecOptions,
   StaticCodecOptionsProvider,
-} from '@restate/features/codec';
-import { SplitButton } from '@restate/ui/split-button';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/features-codec';
+import { SplitButton } from '@restate/ui-split-button';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   VirtualObjectInstanceTarget,
   virtualObjectInstanceHref,
-} from '@restate/features/virtual-object-instance';
+} from '@restate/features-virtual-object-instance';
 import {
   WorkflowRunTarget,
   workflowRunHref,
-} from '@restate/features/workflow-run';
-import { Portal } from '@restate/ui/portal';
+} from '@restate/features-workflow-run';
+import { Portal } from '@restate/ui-portal';
 import { Collection, type Key } from 'react-aria-components';
 import {
   ComponentProps,

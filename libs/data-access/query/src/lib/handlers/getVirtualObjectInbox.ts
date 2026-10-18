@@ -1,6 +1,6 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { isInvocationId, quoteSqlString, type QueryContext } from './shared';
-import { queryVirtualObjectLock } from './getVirtualObjectLock';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { isInvocationId, quoteSqlString, type QueryContext } from './shared.js';
+import { queryVirtualObjectLock } from './getVirtualObjectLock.js';
 import {
   addEntryDetailsToLock,
   entryDetailsContainLock,
@@ -11,9 +11,12 @@ import {
   virtualObjectSnapshotChangedResponse,
   type VirtualObjectEntryDetails,
   type VirtualObjectEntryRow,
-} from './virtualObjectEntries';
-import { ENTRY_NEXT_AT_BY_VIRTUAL_OBJECT, selectFromIndex } from './indexes';
-import { usesIndexesV1 } from '../uiFeatures';
+} from './virtualObjectEntries.js';
+import {
+  ENTRY_NEXT_AT_BY_VIRTUAL_OBJECT,
+  selectFromIndex,
+} from './indexes/index.js';
+import { usesIndexesV1 } from '../uiFeatures.js';
 
 const INBOX_LIMIT = 25;
 const INBOX_QUERY_LIMIT = INBOX_LIMIT + 1;

@@ -1,12 +1,12 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { ServiceTarget } from '@restate/features/service-target';
+import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
+import { ServiceTarget } from '@restate/features-service-target';
 import { EntryProps } from './types';
 import { Expression, InputOutput } from '../Expression';
 import { InvocationId } from '../../InvocationId';
-import { useDurationSinceLastSnapshot } from '@restate/util/snapshot-time';
-import { formatDurations } from '@restate/util/intl';
-import { DateTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { formatDurations } from '@restate/util-intl';
+import { DateTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 import { Value } from '../Value';

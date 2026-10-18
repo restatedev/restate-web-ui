@@ -1,17 +1,19 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "out-tsc/lib",
-    "tsBuildInfoFile": "out-tsc/lib/tsconfig.lib.tsbuildinfo",
+    "outDir": "dist",
     "types": [
       "node",
-      "vite/client",
       "@nx/react/typings/cssmodule.d.ts",
-      "@nx/react/typings/image.d.ts"
-    ]
+      "@nx/react/typings/image.d.ts",
+      "vite/client"
+    ],
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo"
   },
   "exclude": [
+    "out-tsc",
+    "dist",
     "**/*.spec.ts",
     "**/*.test.ts",
     "**/*.spec.tsx",
@@ -21,7 +23,9 @@
     "**/*.spec.jsx",
     "**/*.test.jsx",
     "vite.config.ts",
+    "vite.config.mts",
     "vitest.config.ts",
+    "vitest.config.mts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
     "src/**/*.test.tsx",

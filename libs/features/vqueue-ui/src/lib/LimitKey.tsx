@@ -1,11 +1,11 @@
-import { Chip, ChipSegment } from '@restate/ui/chip';
-import { Copy } from '@restate/ui/copy';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Chip, ChipSegment } from '@restate/ui-chip';
+import { Copy } from '@restate/ui-copy';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   TruncateTooltipTrigger,
   TruncateWithTooltip,
-} from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   slots: {

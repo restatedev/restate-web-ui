@@ -1,7 +1,7 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { HoverTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { HoverTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   slots: {

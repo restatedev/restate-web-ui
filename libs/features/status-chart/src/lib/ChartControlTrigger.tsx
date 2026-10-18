@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 
 const chartControlStyles = tv({
   base: 'inline-flex shrink-0 items-baseline rounded-lg border border-black/[0.05] bg-white/35 px-1.5 py-0.5 text-2xs font-medium text-zinc-500',

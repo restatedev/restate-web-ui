@@ -2,12 +2,12 @@ import {
   activeTransientQueryParams,
   PANEL_QUERY_PARAM,
   stripTransientSearch,
-} from '@restate/util/panel';
+} from '@restate/util-panel';
 import {
   QUERY_DEFINITIONS,
   type QueryDefinition,
   type QueryId,
-} from './queryDefinitions';
+} from './queryDefinitions.js';
 
 export type QueryOutcome = 'success' | 'timeout' | 'error' | 'aborted';
 

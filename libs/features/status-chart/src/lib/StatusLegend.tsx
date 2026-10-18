@@ -3,18 +3,18 @@ import {
   GridListItem as AriaGridListItem,
 } from 'react-aria-components';
 import type { ReactNode } from 'react';
-import { tv } from '@restate/util/styles';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Button } from '@restate/ui/button';
-import { Link } from '@restate/ui/link';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
+import { tv } from '@restate/util-styles';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Button } from '@restate/ui-button';
+import { Link } from '@restate/ui-link';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 import {
   formatNumber,
   formatApproxPercentage,
   formatPercentageWithoutFraction,
-} from '@restate/util/intl';
-import { toInvocationsHref } from '@restate/util/invocation-links';
-import { useRestateContext } from '@restate/features/restate-context';
+} from '@restate/util-intl';
+import { toInvocationsHref } from '@restate/util-invocation-links';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   STATUS_ORDER,
   STATUS_STYLE,

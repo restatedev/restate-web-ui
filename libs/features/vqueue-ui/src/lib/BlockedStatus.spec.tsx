@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { MemoryRouter } from 'react-router';
 import { BlockedStatus, type BlockedStatusProps } from './BlockedStatus';
 

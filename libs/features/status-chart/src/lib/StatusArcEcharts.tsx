@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { Chart, Pie, Slice, Tooltip } from '@restate/ui/charts';
-import { tv } from '@restate/util/styles';
-import { formatApproxPercentage, formatNumber } from '@restate/util/intl';
+import { Chart, Pie, Slice, Tooltip } from '@restate/ui-charts';
+import { tv } from '@restate/util-styles';
+import { formatApproxPercentage, formatNumber } from '@restate/util-intl';
 import { type ArcSegment } from './heroSegments';
 
 export const chartContainerStyles = tv({

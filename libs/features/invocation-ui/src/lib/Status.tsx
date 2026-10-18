@@ -1,21 +1,21 @@
 import {
   Invocation,
   InvocationComputedStatus2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   useGetPausedError,
   useGetTransientError,
-} from '@restate/data-access/admin-api-hooks';
-import { Badge } from '@restate/ui/badge';
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { ErrorBanner } from '@restate/ui/error';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { RestateError } from '@restate/util/errors';
-import { tv } from '@restate/util/styles';
-import { formatOrdinals } from '@restate/util/intl';
-import { Ellipsis, Spinner } from '@restate/ui/loading';
+} from '@restate/data-access-admin-api-hooks';
+import { Badge } from '@restate/ui-badge';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { ErrorBanner } from '@restate/ui-error';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { RestateError } from '@restate/util-errors';
+import { tv } from '@restate/util-styles';
+import { formatOrdinals } from '@restate/util-intl';
+import { Ellipsis, Spinner } from '@restate/ui-loading';
 import { StatusTimeline } from './StatusTimeline';
 import { AwaitingOn } from './journal/entries/AwaitingOn';
 import { type PropsWithChildren, useState } from 'react';

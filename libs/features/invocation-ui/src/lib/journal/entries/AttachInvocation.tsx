@@ -1,14 +1,14 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { EntryProps } from './types';
 import { InvocationId } from '../../InvocationId';
 import { EntryExpression } from './EntryExpression';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { CircularRefWarning } from './CircularRefWarning';
-import { Button } from '@restate/ui/button';
-import { Spinner } from '@restate/ui/loading';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui-button';
+import { Spinner } from '@restate/ui-loading';
+import { Icon, IconName } from '@restate/ui-icons';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 const styles = tv({

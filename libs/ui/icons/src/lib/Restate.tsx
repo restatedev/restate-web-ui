@@ -1,4 +1,4 @@
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'relative h-[1.5em] w-[1.5em]',

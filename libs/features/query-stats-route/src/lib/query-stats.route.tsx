@@ -1,22 +1,22 @@
-import { client, useAdminBaseUrl } from '@restate/data-access/admin-api';
+import { client, useAdminBaseUrl } from '@restate/data-access-admin-api';
 import {
   clearQueryStats,
   getQueryStatsSnapshot,
   subscribeToQueryStats,
   type QueryPageStat,
   type QueryStat,
-} from '@restate/data-access/query';
-import { Badge } from '@restate/ui/badge';
-import { Button } from '@restate/ui/button';
+} from '@restate/data-access-query';
+import { Badge } from '@restate/ui-badge';
+import { Button } from '@restate/ui-button';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
-import { DropdownItem } from '@restate/ui/dropdown';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
+} from '@restate/ui-content-panel';
+import { DropdownItem } from '@restate/ui-dropdown';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
 import {
   AddFilterTrigger,
   FilterBuilder,
@@ -25,23 +25,23 @@ import {
   type QueryClauseSchema,
   type QueryClauseType,
   useFilterBuilder,
-} from '@restate/ui/filter-builder';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { SplitButton } from '@restate/ui/split-button';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
+} from '@restate/ui-filter-builder';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { SplitButton } from '@restate/ui-split-button';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
 import {
   HoverTooltip,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TruncateWithTooltip,
-} from '@restate/ui/tooltip';
+} from '@restate/ui-tooltip';
 import {
   formatDurations,
   formatNumber,
   normaliseDuration,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 import { useMutation } from '@tanstack/react-query';
 import {
   useCallback,

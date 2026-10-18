@@ -1,16 +1,19 @@
-import type { QueryContext } from '../../shared';
-import { INVOCATION_LIST_FIELDS } from '../invocationListFields';
-import { INVOCATIONS_V2_LIMIT, type ResolvedInvocationModeV2 } from '../shared';
+import type { QueryContext } from '../../shared.js';
+import { INVOCATION_LIST_FIELDS } from '../invocationListFields.js';
+import {
+  INVOCATIONS_V2_LIMIT,
+  type ResolvedInvocationModeV2,
+} from '../shared.js';
 import {
   invocationStatusColumnForField,
   invocationStatusColumnName,
   invocationStatusFilterClauses,
   invocationStatusPredicate,
-} from './invocationStatusFilters';
+} from './invocationStatusFilters.js';
 import type {
   InvocationCandidateRow,
   SysInvocationStatusQueryPlan,
-} from './types';
+} from './types.js';
 
 function columnsNeededFromSample(query: SysInvocationStatusQueryPlan) {
   const statusField =

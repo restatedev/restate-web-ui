@@ -1,15 +1,21 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "out-tsc/spec",
-    "tsBuildInfoFile": "out-tsc/spec/tsconfig.spec.tsbuildinfo",
+    "outDir": "./out-tsc/vitest",
     "types": [
       "vitest/globals",
       "vitest/importMeta",
       "vite/client",
       "node",
       "vitest"
-    ]
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "vite.config.ts",

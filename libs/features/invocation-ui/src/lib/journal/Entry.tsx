@@ -1,8 +1,8 @@
 import {
   useGetInvocationJournalWithInvocationV2,
   useGetPausedError,
-} from '@restate/data-access/admin-api-hooks';
-import type { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-hooks';
+import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { ComponentType, memo } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';
@@ -40,7 +40,7 @@ import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalEntriesContext } from './JournalContext';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { EntryCodecProvider } from './entries/EntryCodecProvider';
 import { RelativeTime } from './entries/RelativeTime';
 

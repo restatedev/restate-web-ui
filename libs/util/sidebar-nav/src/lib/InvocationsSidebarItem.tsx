@@ -3,20 +3,20 @@ import {
   type SidebarLocation,
   type SidebarMatch,
   type SidebarSubItem,
-} from '@restate/ui/layout';
-import { IconName } from '@restate/ui/icons';
+} from '@restate/ui-layout';
+import { IconName } from '@restate/ui-icons';
 import { useLocation } from 'react-router';
 import { useEffect } from 'react';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import { useInvocationsRecent } from './useInvocationsMemory';
-import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access/admin-api-spec';
-import { isFeatureEnabled } from '@restate/util/feature-flag';
+import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access-admin-api-spec';
+import { isFeatureEnabled } from '@restate/util-feature-flag';
 
 // ─────────────────────────────────────────────────────────────
 // Preset definitions
 // ─────────────────────────────────────────────────────────────
 
-// Sort sentinel mirroring SORT_NONE in @restate/features/invocations-route
+// Sort sentinel mirroring SORT_NONE in @restate/features-invocations-route
 // (this util lib can't depend on the feature lib). A preset with `sort: 'none'`
 // emits `sort_field=none`, which the route reads as "don't sort".
 const SORT_NONE = 'none';
@@ -92,7 +92,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
       {
         id: 'status',
         operation: 'NOT_IN',
-        // Mirror of COMPLETED_STATUSES in @restate/util/invocation-links;
+        // Mirror of COMPLETED_STATUSES in @restate/util-invocation-links;
         // matches toInFlightPlusScheduledInvocationsHref (in-flight + scheduled).
         value: TERMINAL_INVOCATION_STATUSES,
       },
@@ -257,7 +257,7 @@ function isFilterParamEmpty(value: string | null): boolean {
 
 // Time-range scoping filter that callers layer on top of any preset — e.g. the
 // overview hero gauge forwards the selected range as filter_created_at (the one
-// filter buildParams in @restate/util/invocation-links preserves). It's
+// filter buildParams in @restate/util-invocation-links preserves). It's
 // orthogonal to which preset a URL represents, so preset matching ignores it,
 // the same way sort/column params are ignored.
 const SCOPING_FILTER_KEYS = new Set(['filter_created_at']);

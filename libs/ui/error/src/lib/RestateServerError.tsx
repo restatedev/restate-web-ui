@@ -1,14 +1,14 @@
-import { SnippetCopy } from '@restate/ui/code';
-import { Icon, IconName } from '@restate/ui/icons';
-import { InlineTooltip } from '@restate/ui/tooltip';
+import { SnippetCopy } from '@restate/ui-code';
+import { Icon, IconName } from '@restate/ui-icons';
+import { InlineTooltip } from '@restate/ui-tooltip';
 import {
   ERROR_CODES,
   RestateError,
   UI_ERROR_CODES,
-} from '@restate/util/errors';
+} from '@restate/util-errors';
 import { Fragment, PropsWithChildren } from 'react';
 import Markdown from 'react-markdown';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import {
   Button as RACButton,
   Disclosure,

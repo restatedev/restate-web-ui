@@ -5,7 +5,7 @@ import { ComplementaryOutlet } from './ComplementaryOutlet';
 import {
   NOTIFICATION_ZONE_ID,
   NotificationRegion,
-} from '@restate/ui/notification';
+} from '@restate/ui-notification';
 import { Toolbar } from './Toolbar';
 import { SidebarLayout } from './SidebarLayout';
 

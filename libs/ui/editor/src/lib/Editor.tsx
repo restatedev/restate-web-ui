@@ -1,6 +1,6 @@
-import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
-import { useHydrated } from '@restate/util/remix';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Spinner } from '@restate/ui-loading';
+import { useHydrated } from '@restate/util-remix';
 import {
   Component,
   ErrorInfo,

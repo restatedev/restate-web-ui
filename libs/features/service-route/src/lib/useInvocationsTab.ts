@@ -1,5 +1,5 @@
-import { useListInvocationsV2 } from '@restate/data-access/admin-api-hooks';
-import type { components } from '@restate/data-access/admin-api-spec';
+import { useListInvocationsV2 } from '@restate/data-access-admin-api-hooks';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   deriveSortFromUrl,
   doInvocationCountsDisagree,
@@ -15,10 +15,10 @@ import {
   type StatusFilter,
   useInvocationFilterSchema,
   useInvocationSummary,
-} from '@restate/features/invocations-route';
-import { useRestateContext } from '@restate/features/restate-context';
-import { toFilterParams } from '@restate/util/invocation-links';
-import { formatNumber } from '@restate/util/intl';
+} from '@restate/features-invocations-route';
+import { useRestateContext } from '@restate/features-restate-context';
+import { toFilterParams } from '@restate/util-invocation-links';
+import { formatNumber } from '@restate/util-intl';
 import {
   type Dispatch,
   type SetStateAction,

@@ -1,7 +1,7 @@
-import type { BatchInvocationsRequestBody } from '@restate/data-access/admin-api-spec';
-import { type QueryContext } from './shared';
-import { batchProcessInvocations } from './batchProcessor';
-import { getInvocationIds } from './getInvocationIds';
+import type { BatchInvocationsRequestBody } from '@restate/data-access-admin-api-spec';
+import { type QueryContext } from './shared.js';
+import { batchProcessInvocations } from './batchProcessor.js';
+import { getInvocationIds } from './getInvocationIds.js';
 
 export async function batchKillInvocations(
   this: QueryContext,

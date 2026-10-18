@@ -1,7 +1,10 @@
-import type { QueryContext } from '../../shared';
-import type { InvocationFilterV2, ResolvedInvocationModeV2 } from '../shared';
-import { isInvocationListFieldAvailableOnTable } from '../invocationListFields';
-import { canSummarizeInvocationsFromStats } from './statsSources';
+import type { QueryContext } from '../../shared.js';
+import type {
+  InvocationFilterV2,
+  ResolvedInvocationModeV2,
+} from '../shared.js';
+import { isInvocationListFieldAvailableOnTable } from '../invocationListFields.js';
+import { canSummarizeInvocationsFromStats } from './statsSources.js';
 
 type SummarySource =
   | 'stats'

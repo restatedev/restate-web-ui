@@ -1,13 +1,13 @@
 import {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getEntryName,
   getEntryResultV2,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 export function sendSignal(
   entry: JournalRawEntryWithCommandIndex,

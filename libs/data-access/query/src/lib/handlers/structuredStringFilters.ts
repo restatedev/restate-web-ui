@@ -1,4 +1,4 @@
-import { quoteSqlString } from './shared';
+import { quoteSqlString } from './shared.js';
 
 const OPERATIONS = new Set(['EQUALS', 'CONTAINS']);
 const MAX_VALUE_LENGTH = 256;

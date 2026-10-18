@@ -18,7 +18,7 @@ import {
   Virtualizer,
 } from 'react-aria-components';
 import type { Key, SortDescriptor } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { Cell, Row, type RowDataAttributes } from './Row';
 import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';

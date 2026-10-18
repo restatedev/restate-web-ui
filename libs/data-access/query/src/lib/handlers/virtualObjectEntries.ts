@@ -1,14 +1,14 @@
 import type {
   components,
   RawInvocation,
-} from '@restate/data-access/admin-api-spec';
-import { convertInvocation, type VqueueStatus } from '../convertInvocation';
+} from '@restate/data-access-admin-api-spec';
+import { convertInvocation, type VqueueStatus } from '../convertInvocation.js';
 import {
   isInvocationId,
   SYS_INVOCATION_LIST_SELECT_COLUMNS,
   quoteSqlString,
   type QueryContext,
-} from './shared';
+} from './shared.js';
 
 type VirtualObjectInboxEntry = components['schemas']['VirtualObjectInboxEntry'];
 type VirtualObjectLock = components['schemas']['VirtualObjectLockResponse'];

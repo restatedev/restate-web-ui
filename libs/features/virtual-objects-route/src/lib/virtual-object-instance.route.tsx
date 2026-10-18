@@ -4,25 +4,25 @@ import {
   useGetVirtualObjectLock,
   useGetVirtualObjectStats,
   useServiceDetails,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import {
   virtualObjectScopeFromSearch,
   type VirtualObjectInstanceIdentity,
-} from '@restate/features/virtual-object-instance';
-import { ServiceTarget } from '@restate/features/service-target';
-import { vqueuesForVirtualObjectInstanceHref } from '@restate/features/limits-route';
-import { useRestateContext } from '@restate/features/restate-context';
-import { StateStatsCard } from '@restate/features/state-object-route';
-import { Breadcrumbs } from '@restate/ui/breadcrumbs';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
-import { Header } from '@restate/ui/header';
-import { IconName } from '@restate/ui/icons';
-import { RestateError } from '@restate/util/errors';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/features-virtual-object-instance';
+import { ServiceTarget } from '@restate/features-service-target';
+import { vqueuesForVirtualObjectInstanceHref } from '@restate/features-limits-route';
+import { useRestateContext } from '@restate/features-restate-context';
+import { StateStatsCard } from '@restate/features-state-object-route';
+import { Breadcrumbs } from '@restate/ui-breadcrumbs';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
+import { Header } from '@restate/ui-header';
+import { IconName } from '@restate/ui-icons';
+import { RestateError } from '@restate/util-errors';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { CardGrid } from '@restate/ui/card';
+import { CardGrid } from '@restate/ui-card';
 import {
   virtualObjectInstanceTabFromSearch,
   VirtualObjectDetails,

@@ -1,4 +1,4 @@
-import { formatDateRange, formatDateTime } from '@restate/util/intl';
+import { formatDateRange, formatDateTime } from '@restate/util-intl';
 
 export type QueryClauseType =
   | 'CUSTOM_STRING'

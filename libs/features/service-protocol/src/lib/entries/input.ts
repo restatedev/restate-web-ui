@@ -1,12 +1,12 @@
 import { fromBinary } from '@bufbuild/protobuf';
-import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
-import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
+import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
+import { toUnit8Array } from '../toUni8Array.js';
+import { decode } from '../decoder.js';
 import {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getEntryName,
   decodeBinary,
@@ -14,7 +14,7 @@ import {
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 function inputV1(
   entry: JournalRawEntry,

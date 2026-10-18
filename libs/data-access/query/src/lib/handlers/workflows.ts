@@ -2,19 +2,19 @@ import type {
   RawInvocation,
   Service,
   components,
-} from '@restate/data-access/admin-api-spec';
-import { convertInvocationV2, durationBetween } from '../convertInvocation';
-import { fetchVqueueStatuses } from './vqueue';
+} from '@restate/data-access-admin-api-spec';
+import { convertInvocationV2, durationBetween } from '../convertInvocation.js';
+import { fetchVqueueStatuses } from './vqueue.js';
 import {
   SYS_INVOCATION_LIST_SELECT_COLUMNS,
   quoteSqlString,
   targetServiceKeyClause,
   type QueryContext,
-} from './shared';
+} from './shared.js';
 import {
   parseStructuredStringFilters,
   structuredStringFilterClause,
-} from './structuredStringFilters';
+} from './structuredStringFilters.js';
 
 const WORKFLOW_RUN_LIMIT = 50;
 const WORKFLOW_RUN_QUERY_LIMIT = WORKFLOW_RUN_LIMIT + 1;

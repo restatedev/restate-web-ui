@@ -1,6 +1,6 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import { convertFilters } from '../convertFilters';
-import type { QueryContext } from './shared';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
+import { convertFilters } from '../convertFilters.js';
+import type { QueryContext } from './shared.js';
 
 const STATE_OBJECTS_LIMIT = 300;
 

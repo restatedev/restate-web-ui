@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createInvocationV2QueryTestHarness, rawInvocation } from './testUtils';
+import {
+  createInvocationV2QueryTestHarness,
+  rawInvocation,
+} from './testUtils.js';
 
 describe('POST /query/v2/invocations', () => {
   const { sql, post, setResponder } = createInvocationV2QueryTestHarness();

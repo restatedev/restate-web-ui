@@ -1,5 +1,5 @@
-import type { Handler } from '@restate/data-access/admin-api-spec';
-import { Button } from '@restate/ui/button';
+import type { Handler } from '@restate/data-access-admin-api-spec';
+import { Button } from '@restate/ui-button';
 import {
   Dropdown,
   DropdownItem,
@@ -7,10 +7,10 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { HANDLER_QUERY_PARAM } from '@restate/util/panel';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { HANDLER_QUERY_PARAM } from '@restate/util-panel';
+import { tv } from '@restate/util-styles';
 import { useSearchParams } from 'react-router';
 
 const ALL_HANDLERS = '__all__';

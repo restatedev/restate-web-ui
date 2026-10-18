@@ -1,10 +1,10 @@
-import { RestateError } from '@restate/util/errors';
-import { decode } from '../decoder';
+import { RestateError } from '@restate/util-errors';
+import { decode } from '../decoder.js';
 import type {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 
 export function parseResults2(result?: any) {
   if (

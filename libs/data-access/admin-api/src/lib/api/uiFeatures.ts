@@ -1,8 +1,8 @@
-import type { FeatureFlag } from '@restate/util/feature-flag';
+import type { FeatureFlag } from '@restate/util-feature-flag';
 import {
   INDEXES_V1_UI_FEATURE,
   UI_FEATURE_SERVER_FEATURES,
-} from '@restate/data-access/query';
+} from '@restate/data-access-query';
 
 const UI_FEATURE_FLAGS = [
   [INDEXES_V1_UI_FEATURE, 'FEATURE_INDEXES_V1'],

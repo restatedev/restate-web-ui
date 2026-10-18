@@ -1,8 +1,8 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import type { QueryContext } from '../shared';
-import { badRequest } from './shared';
-import { queryFinishedBreakdownFromVqueues } from './finished/queryFinishedBreakdownFromVqueues';
-import { resolveFinishedMode } from './finished/shared';
+import type { components } from '@restate/data-access-admin-api-spec';
+import type { QueryContext } from '../shared.js';
+import { badRequest } from './shared.js';
+import { queryFinishedBreakdownFromVqueues } from './finished/queryFinishedBreakdownFromVqueues.js';
+import { resolveFinishedMode } from './finished/shared.js';
 
 export type FinishedInvocationsBreakdownV2Args =
   components['schemas']['FinishedInvocationsBreakdownV2RequestBody'];

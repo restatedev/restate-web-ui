@@ -23,7 +23,6 @@ export default defineConfig(({ mode }) => {
     base: BASE_URL,
     root: import.meta.dirname,
     cacheDir: '../../node_modules/.vite/apps/web-ui',
-    resolve: { tsconfigPaths: true },
     plugins: [
       {
         ...license({
@@ -35,6 +34,11 @@ export default defineConfig(({ mode }) => {
                 '../../dist/apps/web-ui',
                 'vendor.LICENSE.txt',
               ),
+              template: (dependencies) =>
+                dependencies
+                  .filter(({ name }) => !name?.startsWith('@restate/'))
+                  .map((dependency) => dependency.text())
+                  .join('\n\n---\n\n'),
             },
           },
         }),

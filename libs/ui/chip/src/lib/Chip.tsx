@@ -1,6 +1,6 @@
 import { Children, PropsWithChildren, type ReactNode } from 'react';
-import { Link } from '@restate/ui/link';
-import { tv } from '@restate/util/styles';
+import { Link } from '@restate/ui-link';
+import { tv } from '@restate/util-styles';
 
 type ChipEdge = 'straight' | 'angled';
 

@@ -1,9 +1,9 @@
-import { FocusShortcutKey } from '@restate/ui/keyboard';
+import { FocusShortcutKey } from '@restate/ui-keyboard';
 import {
   AddQueryTrigger,
   QueryBuilder,
   useQueryBuilder,
-} from '@restate/ui/query-builder';
+} from '@restate/ui-query-builder';
 
 export {
   QueryClause,
@@ -15,7 +15,7 @@ export {
   type QueryClauseType,
   type QueryClauseValue,
   queryClauseOperationRequiresValue,
-} from '@restate/ui/query-builder';
+} from '@restate/ui-query-builder';
 
 export const FilterBuilder = QueryBuilder;
 export const AddFilterTrigger = AddQueryTrigger;

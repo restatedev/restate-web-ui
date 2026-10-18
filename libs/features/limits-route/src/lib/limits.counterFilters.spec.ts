@@ -1,4 +1,4 @@
-import { QueryClause } from '@restate/ui/filter-builder';
+import { QueryClause } from '@restate/ui-filter-builder';
 import {
   getBlockedLimitCounterRequest,
   LIMIT_COUNTER_FILTER_SCHEMA,

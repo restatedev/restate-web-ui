@@ -1,6 +1,6 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import type { QueryId } from '../../../queryDefinitions';
-import { usesIndexesV1 } from '../../../uiFeatures';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
+import type { QueryId } from '../../../queryDefinitions.js';
+import { usesIndexesV1 } from '../../../uiFeatures.js';
 import {
   countFromIndex,
   ENTRY_BY_SERVICE,
@@ -9,11 +9,11 @@ import {
   selectFromIndex,
   type IndexTable,
   type KeyValue,
-} from '../../indexes';
-import { quoteSqlString, type QueryContext } from '../../shared';
-import type { InvocationFilterV2, InvocationSortV2 } from '../shared';
-import { resolveWholeStages, VQUEUE_STAGES } from './wholeStages';
-import type { InvocationCandidate } from './types';
+} from '../../indexes/index.js';
+import { quoteSqlString, type QueryContext } from '../../shared.js';
+import type { InvocationFilterV2, InvocationSortV2 } from '../shared.js';
+import { resolveWholeStages, VQUEUE_STAGES } from './wholeStages.js';
+import type { InvocationCandidate } from './types.js';
 
 type EntryIndexPlan = {
   select: (options: {

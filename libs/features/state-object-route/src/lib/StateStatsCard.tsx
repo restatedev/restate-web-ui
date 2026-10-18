@@ -4,9 +4,9 @@ import {
   CardHeroValue,
   CardLinkRow,
   CardRow,
-} from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
-import { formatBytes, formatNumber } from '@restate/util/intl';
+} from '@restate/ui-card';
+import { IconName } from '@restate/ui-icons';
+import { formatBytes, formatNumber } from '@restate/util-intl';
 
 export function StateStatsCard({
   numKeys,

@@ -1,10 +1,10 @@
 import { isRouteErrorResponse, useRouteError } from 'react-router';
-import { isUnauthorizedError } from '@restate/util/errors';
-import { Link } from '@restate/ui/link';
-import { Button } from '@restate/ui/button';
-import { Copy } from '@restate/ui/copy';
-import { EmptyState } from '@restate/ui/empty-state';
-import { IconName } from '@restate/ui/icons';
+import { isUnauthorizedError } from '@restate/util-errors';
+import { Link } from '@restate/ui-link';
+import { Button } from '@restate/ui-button';
+import { Copy } from '@restate/ui-copy';
+import { EmptyState } from '@restate/ui-empty-state';
+import { IconName } from '@restate/ui-icons';
 
 interface CrashErrorProps {
   supportHref?: string;

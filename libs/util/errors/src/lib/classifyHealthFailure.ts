@@ -1,5 +1,5 @@
-import { RestateError } from './RestateError';
-import { isUnauthorizedError } from './UnauthorizedError';
+import { RestateError } from './RestateError.js';
+import { isUnauthorizedError } from './UnauthorizedError.js';
 
 export type HealthFailure =
   | {

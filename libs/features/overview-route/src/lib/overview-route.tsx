@@ -1,36 +1,36 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { SearchField, Input as AriaInput, Label } from 'react-aria-components';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
-import { Link } from '@restate/ui/link';
-import { RestateServer } from '@restate/ui/restate-server';
-import { useRestateContext } from '@restate/features/restate-context';
-import { PruneDrainedDeploymentsDialog } from '@restate/features/prune-deployments';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
+import { Link } from '@restate/ui-link';
+import { RestateServer } from '@restate/ui-restate-server';
+import { useRestateContext } from '@restate/features-restate-context';
+import { PruneDrainedDeploymentsDialog } from '@restate/features-prune-deployments';
 import { useIsMutating } from '@tanstack/react-query';
-import { useFocusShortcut, FocusShortcutKey } from '@restate/ui/keyboard';
-import { formatNumber } from '@restate/util/intl';
-import { IssuesBannerStack } from '@restate/ui/issue-banner';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import { ErrorBanner } from '@restate/ui/error';
-import { Button } from '@restate/ui/button';
+import { useFocusShortcut, FocusShortcutKey } from '@restate/ui-keyboard';
+import { formatNumber } from '@restate/util-intl';
+import { IssuesBannerStack } from '@restate/ui-issue-banner';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui-tooltip';
+import { ErrorBanner } from '@restate/ui-error';
+import { Button } from '@restate/ui-button';
 import {
   StatusArcEcharts,
   StatusLegend,
   BreakdownMode,
   ChartContextValue,
   type ArcSegment,
-} from '@restate/features/status-chart';
-import { useWaveAnimation } from '@restate/ui/wave-animation';
+} from '@restate/features-status-chart';
+import { useWaveAnimation } from '@restate/ui-wave-animation';
 import { OVERVIEW_WAVE_TARGET } from './overviewWave';
-import { Ellipsis, Spinner } from '@restate/ui/loading';
+import { Ellipsis, Spinner } from '@restate/ui-loading';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
-} from '@restate/ui/content-panel';
+} from '@restate/ui-content-panel';
 import { OverviewProvider, useOverviewContext } from './OverviewContext';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
 import { useRestateServerStatus } from './useRestateServerStatus';

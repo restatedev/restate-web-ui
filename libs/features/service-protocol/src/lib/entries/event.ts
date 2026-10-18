@@ -2,9 +2,9 @@ import {
   Invocation,
   InvocationFuture,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
-import { JournalRawEntryWithCommandIndex, parseEntryJson } from './util';
-import { RestateError } from '@restate/util/errors';
+} from '@restate/data-access-admin-api-spec';
+import { JournalRawEntryWithCommandIndex, parseEntryJson } from './util.js';
+import { RestateError } from '@restate/util-errors';
 
 export function event(
   entry: JournalRawEntryWithCommandIndex,

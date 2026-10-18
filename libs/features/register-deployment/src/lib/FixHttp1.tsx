@@ -1,9 +1,9 @@
-import { SubmitButton } from '@restate/ui/button';
-import { tv } from '@restate/util/styles';
+import { SubmitButton } from '@restate/ui-button';
+import { tv } from '@restate/util-styles';
 import { FIX_HTTP_ACTION } from './utils';
-import { Icon, IconName } from '@restate/ui/icons';
-import { InlineTooltip } from '@restate/ui/tooltip';
-import { ERROR_CODES } from '@restate/util/errors';
+import { Icon, IconName } from '@restate/ui-icons';
+import { InlineTooltip } from '@restate/ui-tooltip';
+import { ERROR_CODES } from '@restate/util-errors';
 import Markdown from 'react-markdown';
 
 const styles = tv({

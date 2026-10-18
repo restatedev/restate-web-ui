@@ -1,4 +1,4 @@
-import type { ServiceType } from '@restate/data-access/admin-api-spec';
+import type { ServiceType } from '@restate/data-access-admin-api-spec';
 
 export type ServiceTab =
   | 'invocations'

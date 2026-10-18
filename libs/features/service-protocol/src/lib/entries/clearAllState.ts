@@ -2,13 +2,13 @@ import {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getEntryName,
   getEntryResultV2,
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
-} from './util';
+} from './util.js';
 
 function clearAllStateV1(
   entry: JournalRawEntry,

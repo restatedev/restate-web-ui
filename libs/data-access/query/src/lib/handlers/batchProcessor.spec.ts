@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { batchProcessInvocations } from './batchProcessor';
+import { batchProcessInvocations } from './batchProcessor.js';
 
 describe('batchProcessInvocations', () => {
   it('only acts on invocation ids', async () => {

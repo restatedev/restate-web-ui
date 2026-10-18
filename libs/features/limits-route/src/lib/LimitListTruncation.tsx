@@ -1,4 +1,4 @@
-import { formatNumber } from '@restate/util/intl';
+import { formatNumber } from '@restate/util-intl';
 
 export function LimitListTruncation({
   label,

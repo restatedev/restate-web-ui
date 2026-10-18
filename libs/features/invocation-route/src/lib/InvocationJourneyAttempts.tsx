@@ -1,8 +1,8 @@
-import { Status } from '@restate/features/invocation-ui';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { formatOrdinals } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+import { Status } from '@restate/features-invocation-ui';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { formatOrdinals } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import { Disclosure, DisclosurePanel, Heading } from 'react-aria-components';
 import {

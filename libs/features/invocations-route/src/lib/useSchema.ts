@@ -1,10 +1,10 @@
-import { getEndpoint } from '@restate/data-access/admin-api-spec';
+import { getEndpoint } from '@restate/data-access-admin-api-spec';
 import {
   useListDeployments,
   useListSubscriptions,
   useListServices,
-} from '@restate/data-access/admin-api-hooks';
-import { QueryClauseSchema, QueryClauseType } from '@restate/ui/query-builder';
+} from '@restate/data-access-admin-api-hooks';
+import { QueryClauseSchema, QueryClauseType } from '@restate/ui-query-builder';
 import { useMemo } from 'react';
 
 export function useSchema() {

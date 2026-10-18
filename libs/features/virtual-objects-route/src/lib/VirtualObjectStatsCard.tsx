@@ -1,19 +1,19 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   Card,
   CardHeader,
   CardHeaderLink,
   CardHeroValue,
   CardRow,
-} from '@restate/ui/card';
-import { IconName } from '@restate/ui/icons';
-import { RelativeDate } from '@restate/ui/tooltip';
+} from '@restate/ui-card';
+import { IconName } from '@restate/ui-icons';
+import { RelativeDate } from '@restate/ui-tooltip';
 import {
   formatDurations,
   formatNumber,
   normaliseDuration,
   parseISODuration,
-} from '@restate/util/intl';
+} from '@restate/util-intl';
 
 type VirtualObjectStatsResponse =
   components['schemas']['VirtualObjectStatsResponse'];

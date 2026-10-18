@@ -2,12 +2,12 @@ import {
   useInboxInvocationsBreakdownV2,
   useProgressiveInvocationSummaryV2,
   useSummaryInvocationsV2,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import {
   INVOCATION_STATUS_DEFINITIONS,
   type components,
-} from '@restate/data-access/admin-api-spec';
-import type { VQueueSummaryFocus } from '@restate/features/status-chart';
+} from '@restate/data-access-admin-api-spec';
+import type { VQueueSummaryFocus } from '@restate/features-status-chart';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import {

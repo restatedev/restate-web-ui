@@ -3,25 +3,25 @@ import {
   invalidateInvocationsV2Queries,
   useServiceDetails,
   useServiceOpenApi,
-} from '@restate/data-access/admin-api-hooks';
-import { Button } from '@restate/ui/button';
-import { QueryDialog, DialogContent, DialogClose } from '@restate/ui/dialog';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/data-access-admin-api-hooks';
+import { Button } from '@restate/ui-button';
+import { QueryDialog, DialogContent, DialogClose } from '@restate/ui-dialog';
+import { Icon, IconName } from '@restate/ui-icons';
 import { SERVICE_PLAYGROUND_QUERY_PARAM } from './constants';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   useCodecRuntime,
   useResolvedCodecOptions,
-} from '@restate/features/codec';
-import { API } from '@restate/ui/api';
+} from '@restate/features-codec';
+import { API } from '@restate/ui-api';
 import {
   ComplementaryClose,
   ComplementaryHeader,
   ComplementaryWithSearchParam,
   useParamValue,
-} from '@restate/ui/layout';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
+} from '@restate/ui-layout';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui-tooltip';
 import {
   Dropdown,
   DropdownItem,
@@ -29,12 +29,12 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Badge } from '@restate/ui/badge';
-import { ErrorBanner } from '@restate/ui/error';
-import { Spinner } from '@restate/ui/loading';
+} from '@restate/ui-dropdown';
+import { Badge } from '@restate/ui-badge';
+import { ErrorBanner } from '@restate/ui-error';
+import { Spinner } from '@restate/ui-loading';
 import { useQueryClient } from '@tanstack/react-query';
-import { PANEL_QUERY_PARAM } from '@restate/util/panel';
+import { PANEL_QUERY_PARAM } from '@restate/util-panel';
 
 const DEFAULT_CATEGORY = 'DEFAULT';
 export function ServicePlayground() {

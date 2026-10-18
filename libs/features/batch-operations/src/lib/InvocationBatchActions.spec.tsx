@@ -1,8 +1,8 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import type { QueryClauseSchema } from '@restate/ui/query-builder';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
+import type { QueryClauseSchema } from '@restate/ui-query-builder';
 import { InvocationBatchActions } from './InvocationBatchActions';
 
 const batch = vi.hoisted(() => ({

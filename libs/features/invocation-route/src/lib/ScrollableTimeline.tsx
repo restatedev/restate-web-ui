@@ -1,5 +1,5 @@
-import { JournalEntryV2 } from '@restate/data-access/admin-api-spec';
-import { tv } from '@restate/util/styles';
+import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
+import { tv } from '@restate/util-styles';
 import { CSSProperties, ReactNode, useRef } from 'react';
 import {
   UnitsPortalContent,
@@ -8,14 +8,14 @@ import {
 } from './Portals';
 import { ViewportSelector } from './ViewportSelector';
 import { Units } from './Units';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   LIVE_TRANSITION_DURATION_MS,
   useTimelineEngineContext,
   useTimelineViewportInteractions,
-} from '@restate/ui/timeline-zoom';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-timeline-zoom';
+import { HoverTooltip } from '@restate/ui-tooltip';
 
 const scrollableTimelineStyles = tv({
   base: 'h-full overflow-x-clip',

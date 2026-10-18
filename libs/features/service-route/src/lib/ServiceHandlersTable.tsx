@@ -1,15 +1,15 @@
-import type { Handler, ServiceType } from '@restate/data-access/admin-api-spec';
+import type { Handler, ServiceType } from '@restate/data-access-admin-api-spec';
 import {
   PlaygroundIconLink,
   Handler as ServiceHandler,
-} from '@restate/features/service';
-import { EmptyState } from '@restate/ui/empty-state';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { HANDLER_QUERY_PARAM } from '@restate/util/panel';
+} from '@restate/features-service';
+import { EmptyState } from '@restate/ui-empty-state';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { HANDLER_QUERY_PARAM } from '@restate/util-panel';
 import { serviceTabHref } from './serviceTabs';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 

@@ -1,25 +1,25 @@
 import {
   BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
   type QueryContext,
-} from '../../shared';
+} from '../../shared.js';
 import {
   INVOCATIONS_V2_LIMIT,
   INVOCATION_STATUSES,
   STATUSES_RESOLVED_FROM_VQUEUE,
   type InvocationSortV2,
   type ResolvedInvocationModeV2,
-} from '../shared';
-import { queryBestEffortCandidatesFromSysInvocationStatus } from './queryBestEffortCandidatesFromSysInvocationStatus';
-import { queryCandidatesFromSysInvocationStatus } from './queryCandidatesFromSysInvocationStatus';
-import { queryCandidatesFromSysVqueueMetaAndSysVqueues } from './queryCandidatesFromSysVqueueMetaAndSysVqueues';
-import { queryCandidatesFromSysVqueues } from './queryCandidatesFromSysVqueues';
+} from '../shared.js';
+import { queryBestEffortCandidatesFromSysInvocationStatus } from './queryBestEffortCandidatesFromSysInvocationStatus.js';
+import { queryCandidatesFromSysInvocationStatus } from './queryCandidatesFromSysInvocationStatus.js';
+import { queryCandidatesFromSysVqueueMetaAndSysVqueues } from './queryCandidatesFromSysVqueueMetaAndSysVqueues.js';
+import { queryCandidatesFromSysVqueues } from './queryCandidatesFromSysVqueues.js';
 import type {
   ExecutableInvocationCandidateSourcePlan,
   InvocationCandidate,
   InvocationCandidateQueryPlan,
   VqueueListPartialResult,
   VqueueListQueryPlan,
-} from './types';
+} from './types.js';
 
 export function sourcePlansToExecute(
   queryPlan: VqueueListQueryPlan,

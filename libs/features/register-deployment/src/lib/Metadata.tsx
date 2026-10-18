@@ -1,13 +1,13 @@
-import { Button } from '@restate/ui/button';
+import { Button } from '@restate/ui-button';
 import {
   FormFieldGroup,
   FormFieldLabel,
   FormFieldInput,
   FormFieldCombobox,
-} from '@restate/ui/form-field';
-import { IconName, Icon } from '@restate/ui/icons';
+} from '@restate/ui-form-field';
+import { IconName, Icon } from '@restate/ui-icons';
 import { useRegisterDeploymentContext } from './Context';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 const deleteStyles = tv({
   base: 'p1',

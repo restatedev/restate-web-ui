@@ -1,4 +1,4 @@
-import type { StructuredStringFilter } from './structuredStringFilters';
+import type { StructuredStringFilter } from './structuredStringFilters.js';
 
 export const MAX_IDENTITY_CANDIDATES = 10;
 

@@ -15,7 +15,7 @@ const { modifyService } = vi.hoisted(() => {
   return { modifyService: vi.fn() };
 });
 
-vi.mock('@restate/data-access/admin-api-hooks', () => ({
+vi.mock('@restate/data-access-admin-api-hooks', () => ({
   useServiceDetails: () => ({
     data: {
       ty: 'Workflow',

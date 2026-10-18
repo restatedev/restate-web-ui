@@ -1,4 +1,4 @@
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import type { PropsWithChildren } from 'react';
 
 export type IllustrationSurface = 'gray' | 'white';

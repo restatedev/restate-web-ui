@@ -6,7 +6,7 @@ import {
   ENTRY_BY_VIRTUAL_OBJECT,
   selectFromIndex,
   SERVICE_STATS,
-} from './index';
+} from './index.js';
 
 function createContext(rows: Record<string, unknown>[] = []) {
   const query = vi.fn<

@@ -1,8 +1,8 @@
 import {
   getInvocationListFieldOnTable,
   INVOCATION_LIST_FIELDS,
-} from '../invocationListFields';
-import type { InvocationFilterV2, InvocationSortV2 } from '../shared';
+} from '../invocationListFields.js';
+import type { InvocationFilterV2, InvocationSortV2 } from '../shared.js';
 
 const invocationStatusColumns =
   INVOCATION_LIST_FIELDS.status.tables.sys_invocation_status;

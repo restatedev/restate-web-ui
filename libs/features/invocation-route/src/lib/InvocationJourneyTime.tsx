@@ -1,4 +1,4 @@
-import { DateTooltip } from '@restate/ui/tooltip';
+import { DateTooltip } from '@restate/ui-tooltip';
 import type { JourneyNodeTiming } from './InvocationJourneyModel';
 
 export function JourneyNodeTime({ timing }: { timing: JourneyNodeTiming }) {

@@ -13,14 +13,14 @@ import {
 import type { SortDescriptor } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { isOverviewRefreshQuery } from '@restate/data-access/admin-api';
-import { useRestateContext } from '@restate/features/restate-context';
+import { isOverviewRefreshQuery } from '@restate/data-access-admin-api';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
-} from '@restate/features/service';
-import { toFilterParams } from '@restate/util/invocation-links';
-import { PANEL_QUERY_PARAM } from '@restate/util/panel';
+} from '@restate/features-service';
+import { toFilterParams } from '@restate/util-invocation-links';
+import { PANEL_QUERY_PARAM } from '@restate/util-panel';
 import { useOverviewData } from './useOverviewData';
 import {
   getOverviewMode,

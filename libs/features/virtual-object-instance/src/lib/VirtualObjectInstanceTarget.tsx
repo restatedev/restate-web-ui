@@ -1,18 +1,18 @@
-import { Scope } from '@restate/features/vqueue-ui';
+import { Scope } from '@restate/features-vqueue-ui';
 import {
   Chip,
   ChipGroup,
   ChipSegment,
   type ChipGroupDensity,
   type ChipGroupVariant,
-} from '@restate/ui/chip';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
+} from '@restate/ui-chip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import {
   TruncateTooltipTrigger,
   TruncateWithTooltip,
-} from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import {
   formatVirtualObjectInstanceIdentity,
   type VirtualObjectInstanceIdentity,

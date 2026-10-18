@@ -1,6 +1,10 @@
-import type { QueryContext } from '../../shared';
-import { sqlString } from '../shared';
-import { buildOutcomes, countRows, type ResolvedFinishedMode } from './shared';
+import type { QueryContext } from '../../shared.js';
+import { sqlString } from '../shared.js';
+import {
+  buildOutcomes,
+  countRows,
+  type ResolvedFinishedMode,
+} from './shared.js';
 
 /** Returns an exact or bounded finished-outcome breakdown from VQueues. */
 export async function queryFinishedBreakdownFromVqueues(

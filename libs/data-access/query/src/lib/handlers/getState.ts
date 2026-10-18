@@ -1,6 +1,6 @@
-import { hexToBase64 } from '@restate/util/binary';
-import { stateVersion } from '../stateVersion';
-import { quoteSqlString, scopeClause, type QueryContext } from './shared';
+import { hexToBase64 } from '@restate/util-binary';
+import { stateVersion } from '../stateVersion.js';
+import { quoteSqlString, scopeClause, type QueryContext } from './shared.js';
 
 export async function getState(
   this: QueryContext,

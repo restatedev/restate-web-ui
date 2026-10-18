@@ -1,4 +1,4 @@
-import { components } from '@restate/data-access/admin-api-spec';
+import { components } from '@restate/data-access-admin-api-spec';
 import {
   FILTER_QUERY_PREFIX,
   QueryClauseSchema,
@@ -6,14 +6,14 @@ import {
   readFilterClauses,
   useFilterBuilder,
   writeFilterClauses,
-} from '@restate/ui/filter-builder';
+} from '@restate/ui-filter-builder';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
 import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
-import { useInvocationsLastQuery } from '@restate/util/sidebar-nav';
-import { isFeatureEnabled } from '@restate/util/feature-flag';
+import { useInvocationsLastQuery } from '@restate/util-sidebar-nav';
+import { isFeatureEnabled } from '@restate/util-feature-flag';
 
 export const SORT_QUERY_PREFIX = 'sort_';
 

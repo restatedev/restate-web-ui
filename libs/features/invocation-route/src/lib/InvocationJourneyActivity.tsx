@@ -2,13 +2,13 @@ import {
   COMPACT_DETAIL,
   Entry,
   JournalEntriesContext,
-} from '@restate/features/invocation-ui';
-import { Button } from '@restate/ui/button';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { formatNumber } from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/features-invocation-ui';
+import { Button } from '@restate/ui-button';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { formatNumber } from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { Fragment } from 'react';
 import type {
   JourneyActivityCounts,

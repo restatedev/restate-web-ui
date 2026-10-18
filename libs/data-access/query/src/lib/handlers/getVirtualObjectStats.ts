@@ -1,5 +1,5 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { quoteSqlString, scopeClause, type QueryContext } from './shared';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { quoteSqlString, scopeClause, type QueryContext } from './shared.js';
 
 type VirtualObjectStatsResponse =
   components['schemas']['VirtualObjectStatsResponse'];

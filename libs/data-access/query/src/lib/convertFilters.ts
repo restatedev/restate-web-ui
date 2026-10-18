@@ -5,8 +5,8 @@ import type {
   FilterNumberItem,
   FilterStringListItem,
   FilterNullItem,
-} from '@restate/data-access/admin-api-spec';
-import { quoteSqlString } from './handlers/shared';
+} from '@restate/data-access-admin-api-spec';
+import { quoteSqlString } from './handlers/shared.js';
 
 function convertFilterNumberToSqlClause(
   filter: FilterNumberItem & Pick<FilterItem, 'field'>,

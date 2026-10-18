@@ -4,7 +4,7 @@ import {
   use,
   useSyncExternalStore,
 } from 'react';
-import { getQueryClient } from '@restate/util/react-query';
+import { getQueryClient } from '@restate/util-react-query';
 import { FEATURE_FLAG_METADATA } from './metadata';
 import { FEATURE_FLAGS, type FeatureFlag } from './type';
 

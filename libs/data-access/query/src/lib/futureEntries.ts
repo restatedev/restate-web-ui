@@ -3,12 +3,12 @@ import type {
   Invocation,
   InvocationFuture,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   assignGroupIds,
   type GroupIds,
   type JournalEntryConversionContext,
-} from '@restate/features/service-protocol';
+} from '@restate/features-service-protocol';
 
 type SignalNotificationEntry = Extract<
   JournalEntryV2,

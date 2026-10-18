@@ -1,5 +1,5 @@
-import type { ComboBoxOptionSection } from '@restate/ui/form-field';
-import { Link } from '@restate/ui/link';
+import type { ComboBoxOptionSection } from '@restate/ui-form-field';
+import { Link } from '@restate/ui-link';
 
 function durationOptions(examples: readonly string[]): ComboBoxOptionSection[] {
   return [

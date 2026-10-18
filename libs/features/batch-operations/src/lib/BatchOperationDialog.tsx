@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useSummaryInvocationsV2 } from '@restate/data-access/admin-api-hooks';
+import { useSummaryInvocationsV2 } from '@restate/data-access-admin-api-hooks';
 import type {
   BatchInvocationsRequestBody,
   BatchInvocationsResponse,
   components,
   FilterItem,
-} from '@restate/data-access/admin-api-spec';
-import { ConfirmationDialog } from '@restate/ui/dialog';
-import { Icon, IconName } from '@restate/ui/icons';
-import { FormFieldSelect, Option } from '@restate/ui/form-field';
+} from '@restate/data-access-admin-api-spec';
+import { ConfirmationDialog } from '@restate/ui-dialog';
+import { Icon, IconName } from '@restate/ui-icons';
+import { FormFieldSelect, Option } from '@restate/ui-form-field';
 import {
   useDurationSinceLastSnapshot,
   SnapshotTimeProvider,
-} from '@restate/util/snapshot-time';
-import { formatDurations } from '@restate/util/intl';
+} from '@restate/util-snapshot-time';
+import { formatDurations } from '@restate/util-intl';
 import { BatchProgressBar } from './BatchProgressBar';
-import { Button } from '@restate/ui/button';
+import { Button } from '@restate/ui-button';
 import { BatchState } from './types';
 import { useBatchMutation } from './useBatchMutation';
 import { useProgress } from './useProgress';
@@ -25,9 +25,9 @@ import {
   QueryClauseOperationId,
   QueryClauseType,
   QueryClauseValue,
-} from '@restate/ui/query-builder';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-query-builder';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import {
   deduplicateFilters,
   friendlyOperationLabel,

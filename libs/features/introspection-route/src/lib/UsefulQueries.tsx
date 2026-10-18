@@ -1,5 +1,5 @@
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import { predefinedQueries } from './predefinedQueries';
 
 export function UsefulQueries({

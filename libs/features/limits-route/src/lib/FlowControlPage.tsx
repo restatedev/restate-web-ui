@@ -1,7 +1,7 @@
-import type { ContentPanelTabs } from '@restate/ui/content-panel';
-import { Icon, IconName } from '@restate/ui/icons';
-import { ListPageHeader } from '@restate/ui/layout';
-import { Link } from '@restate/ui/link';
+import type { ContentPanelTabs } from '@restate/ui-content-panel';
+import { Icon, IconName } from '@restate/ui-icons';
+import { ListPageHeader } from '@restate/ui-layout';
+import { Link } from '@restate/ui-link';
 
 export type FlowControlTabId = 'rules' | 'counters' | 'vqueues';
 

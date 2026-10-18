@@ -2,8 +2,8 @@ import {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api-spec';
-import { event } from './event';
+} from '@restate/data-access-admin-api-spec';
+import { event } from './event.js';
 
 type LifeCycleEvent =
   | Extract<JournalEntryV2, { type?: 'Completion'; category?: 'event' }>

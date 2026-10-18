@@ -1,15 +1,19 @@
 {
   "name": "@restate/ui-api",
-  "private": true,
-  "type": "module",
+  "version": "0.0.1",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./assets": "./src/assets.ts"
-  },
-  "nx": {
-    "name": "api",
-    "sourceRoot": "libs/ui/api/src",
-    "projectType": "library",
-    "tags": []
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./assets": {
+      "types": "./src/assets.ts",
+      "import": "./src/assets.ts",
+      "default": "./src/assets.ts"
+    },
+    "./package.json": "./package.json"
   }
 }

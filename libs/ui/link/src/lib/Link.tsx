@@ -1,4 +1,4 @@
-import { focusRing } from '@restate/ui/focus';
+import { focusRing } from '@restate/ui-focus';
 import { AriaAttributes, forwardRef, useMemo } from 'react';
 import {
   Link as AriaLink,
@@ -7,7 +7,7 @@ import {
   PressEvent,
 } from 'react-aria-components';
 import { useSearchParams, type NavigateOptions } from 'react-router';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 declare module 'react-aria-components' {
   interface RouterConfig {

@@ -1,4 +1,4 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
 
 // `status` is a STRING_LIST filter — narrow to that variant so we can read
 // `.value` as string[] without crawling the FilterItem discriminated union.

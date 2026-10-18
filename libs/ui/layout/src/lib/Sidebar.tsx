@@ -8,9 +8,9 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import { ZONE_IDS, LayoutZone } from './LayoutZone';
 import { LayoutOutlet } from './LayoutOutlet';
 

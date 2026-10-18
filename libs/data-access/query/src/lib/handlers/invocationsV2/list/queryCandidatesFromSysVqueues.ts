@@ -1,13 +1,16 @@
-import type { QueryContext } from '../../shared';
-import { INVOCATIONS_V2_LIMIT, type ResolvedInvocationModeV2 } from '../shared';
-import type { InvocationCandidateRow, SysVqueuesQueryPlan } from './types';
+import type { QueryContext } from '../../shared.js';
+import {
+  INVOCATIONS_V2_LIMIT,
+  type ResolvedInvocationModeV2,
+} from '../shared.js';
+import type { InvocationCandidateRow, SysVqueuesQueryPlan } from './types.js';
 import {
   vqueueColumnForSort,
   vqueueFilterClauses,
   vqueueSampleColumns,
   vqueueStagePredicate,
   vqueueStatusPredicate,
-} from './vqueueFilters';
+} from './vqueueFilters.js';
 
 /**
  * Runs when sys_vqueues can apply the requested criteria for either the whole

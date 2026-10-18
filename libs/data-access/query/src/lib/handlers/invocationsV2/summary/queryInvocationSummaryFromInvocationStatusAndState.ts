@@ -2,19 +2,22 @@ import {
   type FilterItem,
   getInvocationStatusesForStage,
   INVOCATION_STATUS_DEFINITIONS,
-} from '@restate/data-access/admin-api-spec';
-import type { InvocationStatus } from '../../../invocationStatuses';
-import { quoteSqlString, type QueryContext } from '../../shared';
-import type { InvocationFilterV2, ResolvedInvocationModeV2 } from '../shared';
-import { invocationStatusClauses } from '../list/invocationStatusFilters';
+} from '@restate/data-access-admin-api-spec';
+import type { InvocationStatus } from '../../../invocationStatuses.js';
+import { quoteSqlString, type QueryContext } from '../../shared.js';
+import type {
+  InvocationFilterV2,
+  ResolvedInvocationModeV2,
+} from '../shared.js';
+import { invocationStatusClauses } from '../list/invocationStatusFilters.js';
 import {
   invocationStatusSampleColumns,
   needsInvocationStateJoin,
-} from '../list/invocationStatusPlan';
+} from '../list/invocationStatusPlan.js';
 import type {
   InvocationStatusSummaryBucket,
   InvocationSummaryQueryResult,
-} from './types';
+} from './types.js';
 
 type SummaryRow = {
   service_name?: string;

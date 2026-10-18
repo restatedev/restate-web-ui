@@ -1,28 +1,28 @@
 import type {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
-import { Ellipsis } from '@restate/ui/loading';
+} from '@restate/data-access-admin-api-spec';
+import { Ellipsis } from '@restate/ui-loading';
 import {
   formatDateTime,
   formatDurations,
   formatRange,
-} from '@restate/util/intl';
-import { getDuration } from '@restate/util/snapshot-time';
+} from '@restate/util-intl';
+import { getDuration } from '@restate/util-snapshot-time';
 import { DOMAttributes, ReactElement } from 'react';
 import { useJournalTimelineContext } from './JournalContext';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   CommandEntryType,
   EventEntryType,
   NotificationEntryType,
 } from './entries/types';
-import { tv } from '@restate/util/styles';
-import { Icon, IconName } from '@restate/ui/icons';
+import { tv } from '@restate/util-styles';
+import { Icon, IconName } from '@restate/ui-icons';
 import { isEntryCompletionAmbiguous } from './entries/isEntryCompletionAmbiguous';
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
-import { ErrorBanner } from '@restate/ui/error';
-import { RestateError } from '@restate/util/errors';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import { ErrorBanner } from '@restate/ui-error';
+import { RestateError } from '@restate/util-errors';
 
 const entryTooltipStyles = tv({
   base: 'flex h-full',

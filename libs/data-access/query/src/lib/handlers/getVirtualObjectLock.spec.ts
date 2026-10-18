@@ -1,6 +1,6 @@
-import type { RawInvocation } from '@restate/data-access/admin-api-spec';
+import type { RawInvocation } from '@restate/data-access-admin-api-spec';
 import { describe, expect, it } from 'vitest';
-import { createInvocationV2QueryTestHarness } from './invocationsV2/tests/testUtils';
+import { createInvocationV2QueryTestHarness } from './invocationsV2/tests/testUtils.js';
 
 function invocation(
   id: string,

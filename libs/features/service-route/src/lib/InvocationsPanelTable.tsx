@@ -1,22 +1,22 @@
-import type { components } from '@restate/data-access/admin-api-spec';
+import type { components } from '@restate/data-access-admin-api-spec';
 import {
   INVOCATION_TABLE_COLUMN_CONFIG,
   InvocationTableCell,
   isVqueueEntry,
   type InvocationTableColumnKey,
   VqueueEntryCell,
-} from '@restate/features/invocation-ui';
-import { Actions } from '@restate/features/invocation-route';
+} from '@restate/features-invocation-ui';
+import { Actions } from '@restate/features-invocation-route';
 import {
   CountsDisagreeEmptyState,
   ResultsNotice,
-} from '@restate/features/invocations-route';
-import { useRestateContext } from '@restate/features/restate-context';
-import { EmptyState } from '@restate/ui/empty-state';
-import { IconName } from '@restate/ui/icons';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { formatNumber } from '@restate/util/intl';
-import { getSearchParams } from '@restate/util/panel';
+} from '@restate/features-invocations-route';
+import { useRestateContext } from '@restate/features-restate-context';
+import { EmptyState } from '@restate/ui-empty-state';
+import { IconName } from '@restate/ui-icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { formatNumber } from '@restate/util-intl';
+import { getSearchParams } from '@restate/util-panel';
 import type { Key } from 'react-aria-components';
 import { useLocation, useNavigate } from 'react-router';
 

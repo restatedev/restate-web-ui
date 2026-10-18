@@ -1,4 +1,4 @@
-import { virtualObject } from '@restate/features/state-object-route';
+import { virtualObject } from '@restate/features-state-object-route';
 import { MetaFunction } from 'react-router';
 
 export const meta: MetaFunction = (args) => {

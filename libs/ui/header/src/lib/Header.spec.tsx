@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { IconName } from '@restate/ui/icons';
+import { IconName } from '@restate/ui-icons';
 import { describe, expect, it } from 'vitest';
 import { Header } from './Header';
 

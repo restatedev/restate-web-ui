@@ -1,11 +1,11 @@
 import {
   getInvocationStatusesForStage,
   type FilterItem,
-} from '@restate/data-access/admin-api-spec';
-import type { VqueueStage } from '../../../invocationStatuses';
-import { matchesStringFilter } from '../summary/matchesStringFilter';
-import type { InvocationFilterV2 } from '../shared';
-import { resolveInvocationStatusSelection } from './createVqueueListQueryPlan';
+} from '@restate/data-access-admin-api-spec';
+import type { VqueueStage } from '../../../invocationStatuses.js';
+import { matchesStringFilter } from '../summary/matchesStringFilter.js';
+import type { InvocationFilterV2 } from '../shared.js';
+import { resolveInvocationStatusSelection } from './createVqueueListQueryPlan.js';
 
 export const VQUEUE_STAGES: VqueueStage[] = [
   'inbox',

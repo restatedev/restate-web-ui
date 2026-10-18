@@ -1,4 +1,4 @@
-import { RestateError } from './RestateError';
+import { RestateError } from './RestateError.js';
 
 export function combineErrors(
   primary: Error | null | undefined,

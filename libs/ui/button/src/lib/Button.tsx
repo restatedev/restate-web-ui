@@ -1,11 +1,11 @@
 import { ComponentProps, forwardRef, type PropsWithChildren } from 'react';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import {
   PressEvent,
   Button as RACButton,
   composeRenderProps,
 } from 'react-aria-components';
-import { focusRing } from '@restate/ui/focus';
+import { focusRing } from '@restate/ui-focus';
 import { PressEvents } from 'react-aria';
 
 export interface ButtonProps {

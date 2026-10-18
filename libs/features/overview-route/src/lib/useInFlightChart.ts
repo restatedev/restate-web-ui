@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
-import { useRestateContext } from '@restate/features/restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import {
   buildInboxBreakdownSegments,
   buildInFlightSegments,
   buildInFlightStageSegments,
-} from '@restate/features/status-chart';
+} from '@restate/features-status-chart';
 import {
   toInFlightPlusScheduledInvocationsHref,
   toInvocationsHref,
-} from '@restate/util/invocation-links';
+} from '@restate/util-invocation-links';
 import { useOverviewContext } from './OverviewContext';
 
 export function useInFlightChart() {

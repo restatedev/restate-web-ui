@@ -1,10 +1,10 @@
-import type { RawInvocation } from '@restate/data-access/admin-api-spec';
+import type { RawInvocation } from '@restate/data-access-admin-api-spec';
 import { describe, expect, it } from 'vitest';
 import {
   convertInvocation,
   getInvocationStatusFromVqueue,
   type VqueueStatus,
-} from './convertInvocation';
+} from './convertInvocation.js';
 
 function rawInvocation(overrides: Partial<RawInvocation> = {}): RawInvocation {
   return {

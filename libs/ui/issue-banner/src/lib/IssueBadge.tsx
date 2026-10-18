@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { formatPlurals } from '@restate/util/intl';
-import { toServiceStatusInvocationsHref } from '@restate/util/invocation-links';
-import type { ServiceIssue } from '@restate/features/system-health';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { formatPlurals } from '@restate/util-intl';
+import { toServiceStatusInvocationsHref } from '@restate/util-invocation-links';
+import type { ServiceIssue } from '@restate/features-system-health';
 import {
   issueButtonStyles,
   issuePingStyles,

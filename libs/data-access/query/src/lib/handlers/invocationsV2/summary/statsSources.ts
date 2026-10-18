@@ -1,22 +1,22 @@
-import type { FilterItem } from '@restate/data-access/admin-api-spec';
-import type { QueryId } from '../../../queryDefinitions';
-import { usesStatsTables } from '../../../uiFeatures';
+import type { FilterItem } from '@restate/data-access-admin-api-spec';
+import type { QueryId } from '../../../queryDefinitions.js';
+import { usesStatsTables } from '../../../uiFeatures.js';
 import {
   DEPLOYMENT_STATS,
   SERVICE_STATS,
   VIRTUAL_OBJECT_STATS,
   selectFromIndex,
   type IndexTable,
-} from '../../indexes';
-import type { QueryContext } from '../../shared';
-import { filterToSql, type InvocationFilterV2 } from '../shared';
+} from '../../indexes/index.js';
+import type { QueryContext } from '../../shared.js';
+import { filterToSql, type InvocationFilterV2 } from '../shared.js';
 import {
   countStatsRows,
   filterStatsRows,
   summarizeStatsRows,
   type StatsRow,
-} from './statsSummary';
-import type { InvocationSummaryQueryResult } from './types';
+} from './statsSummary.js';
+import type { InvocationSummaryQueryResult } from './types.js';
 
 function statsWhere<Key extends string>(
   columns: Readonly<Partial<Record<string, Key | null>>>,

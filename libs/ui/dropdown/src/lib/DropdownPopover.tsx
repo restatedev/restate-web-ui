@@ -1,7 +1,7 @@
-import { PopoverOverlay } from '@restate/ui/popover';
+import { PopoverOverlay } from '@restate/ui-popover';
 import type { PropsWithChildren } from 'react';
 import { Placement } from 'react-aria';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 
 interface DropdownPopoverProps {
   className?: string;

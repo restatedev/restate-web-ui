@@ -1,4 +1,4 @@
-import { getQueryClient } from '@restate/util/react-query';
+import { getQueryClient } from '@restate/util-react-query';
 
 /**
  * Cache key for the auth token. Apps write via `setAuthToken` on boot

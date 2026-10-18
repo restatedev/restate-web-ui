@@ -1,5 +1,5 @@
-import { IconName } from '@restate/ui/icons';
-import { SidebarNavItem } from '@restate/ui/layout';
+import { IconName } from '@restate/ui-icons';
+import { SidebarNavItem } from '@restate/ui-layout';
 
 interface LimitsSidebarItemProps {
   baseUrl?: string;

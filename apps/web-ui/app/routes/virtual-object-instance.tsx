@@ -1,4 +1,4 @@
-import { virtualObjectInstance } from '@restate/features/virtual-objects-route';
+import { virtualObjectInstance } from '@restate/features-virtual-objects-route';
 import type { MetaFunction } from 'react-router';
 
 export const meta: MetaFunction = ({ params }) => [

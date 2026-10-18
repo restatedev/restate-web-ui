@@ -1,18 +1,18 @@
 import ky, { HTTPError, TimeoutError } from 'ky';
-import type { QueryId } from '../queryDefinitions';
-import { RESTATE_FEATURES_HEADER } from '../getFeatures';
-import { UI_FEATURES_HEADER } from '../uiFeatures';
+import type { QueryId } from '../queryDefinitions.js';
+import { RESTATE_FEATURES_HEADER } from '../getFeatures.js';
+import { UI_FEATURES_HEADER } from '../uiFeatures.js';
 import {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
   QUERY_ORIGIN_HEADER,
   type QueryOrigin,
-} from '../queryOrigin';
+} from '../queryOrigin.js';
 import {
   getCurrentQueryPage,
   recordQuery,
   type QueryOutcome,
-} from '../queryStats';
+} from '../queryStats.js';
 
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS = 10 * 60_000;
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL = '10m';

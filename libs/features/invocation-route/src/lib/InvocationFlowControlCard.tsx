@@ -1,7 +1,7 @@
 import type {
   JournalEntryV2,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import { InvocationJourneyCard } from './InvocationJourneyCard';
 import {
   type InvocationJourneySource,

@@ -1,11 +1,11 @@
-import type { QueryContext } from '../../shared';
-import { getInvocationListFieldOnTable } from '../invocationListFields';
+import type { QueryContext } from '../../shared.js';
+import { getInvocationListFieldOnTable } from '../invocationListFields.js';
 import {
   sqlStringList,
   type InvocationFilterV2,
   type InvocationSortV2,
-} from '../shared';
-import { vqueueFilterClauses } from './vqueueFilters';
+} from '../shared.js';
+import { vqueueFilterClauses } from './vqueueFilters.js';
 
 /**
  * Runs beside invocation hydration for a bounded VQueue candidate set. It

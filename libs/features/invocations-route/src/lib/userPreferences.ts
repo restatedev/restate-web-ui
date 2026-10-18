@@ -2,7 +2,7 @@ import {
   getUserBreakdownCountMode,
   setUserBreakdownCountMode,
   type BreakdownCountMode,
-} from '@restate/features/user-preference';
+} from '@restate/features-user-preference';
 import { COLUMNS_KEYS, type ColumnKey } from './columns';
 import {
   isSortFieldAvailable,

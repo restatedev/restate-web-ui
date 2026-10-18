@@ -1,14 +1,14 @@
 import {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   assignGroupIds,
   getEntryResultV2,
   type JournalEntryConversionContext,
   type JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 export function signal(
   entry: JournalRawEntryWithCommandIndex,

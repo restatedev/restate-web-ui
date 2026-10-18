@@ -1,12 +1,12 @@
-import { Link } from '@restate/ui/link';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@restate/ui/tabs';
-import { HoverTooltip } from '@restate/ui/tooltip';
+import { Link } from '@restate/ui-link';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@restate/ui-tabs';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   formatApproxPercentage,
   formatNumber,
   formatPercentage,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import {
   DEFAULT_STYLE,
   INBOX_STAGE_GRADIENT,

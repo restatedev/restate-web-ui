@@ -1,14 +1,14 @@
 import type {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getEntryName,
   parseEntryJson,
   JournalRawEntryWithCommandIndex,
   getCompletionEntry,
   getEntryResultV2,
-} from './util';
+} from './util.js';
 
 function attachInvocationV2(
   entry: JournalRawEntryWithCommandIndex,

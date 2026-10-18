@@ -2,21 +2,21 @@ import {
   useGetWorkflowRun,
   useGetWorkflowRunStats,
   useServiceDetails,
-} from '@restate/data-access/admin-api-hooks';
-import { ServiceTarget } from '@restate/features/service-target';
-import { StateStatsCard } from '@restate/features/state-object-route';
+} from '@restate/data-access-admin-api-hooks';
+import { ServiceTarget } from '@restate/features-service-target';
+import { StateStatsCard } from '@restate/features-state-object-route';
 import {
   workflowScopeFromSearch,
   type WorkflowRunIdentity,
-} from '@restate/features/workflow-run';
-import { Actions } from '@restate/features/invocation-route';
-import { InvocationStatusHeader } from '@restate/features/invocation-ui';
-import { Breadcrumbs } from '@restate/ui/breadcrumbs';
-import { CardGrid } from '@restate/ui/card';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
-import { IconName } from '@restate/ui/icons';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
+} from '@restate/features-workflow-run';
+import { Actions } from '@restate/features-invocation-route';
+import { InvocationStatusHeader } from '@restate/features-invocation-ui';
+import { Breadcrumbs } from '@restate/ui-breadcrumbs';
+import { CardGrid } from '@restate/ui-card';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
+import { IconName } from '@restate/ui-icons';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useMemo } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { WorkflowDetails, workflowRunTabFromSearch } from './WorkflowDetails';

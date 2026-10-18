@@ -1,17 +1,17 @@
-import { useGetVqueue } from '@restate/data-access/admin-api-hooks';
+import { useGetVqueue } from '@restate/data-access-admin-api-hooks';
 import type {
   InvocationSummaryStage,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Button } from '@restate/ui/button';
-import { Copy } from '@restate/ui/copy';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Link } from '@restate/ui/link';
-import { Spinner } from '@restate/ui/loading';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { tv } from '@restate/util/styles';
+} from '@restate/data-access-admin-api-spec';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Button } from '@restate/ui-button';
+import { Copy } from '@restate/ui-copy';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
+import { Spinner } from '@restate/ui-loading';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { tv } from '@restate/util-styles';
 import { useState } from 'react';
 import type { Placement } from 'react-aria';
 import { VQueueIdDisplay, type VQueueIdDisplayProps } from './VQueueIdDisplay';

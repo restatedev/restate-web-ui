@@ -1,17 +1,17 @@
 import type {
   Invocation,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
-import { formatDurations } from '@restate/util/intl';
-import { getDuration } from '@restate/util/snapshot-time';
+} from '@restate/data-access-admin-api-spec';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import { formatDurations } from '@restate/util-intl';
+import { getDuration } from '@restate/util-snapshot-time';
 import { CSSProperties, PropsWithChildren } from 'react';
-import { tv } from '@restate/util/styles';
-import { useJournalTimelineContext } from '@restate/features/invocation-ui';
-import { Ellipsis } from '@restate/ui/loading';
-import { EntryTooltip } from '@restate/features/invocation-ui';
-import { Icon, IconName } from '@restate/ui/icons';
-import { isEntryCompletionAmbiguous } from '@restate/features/invocation-ui';
+import { tv } from '@restate/util-styles';
+import { useJournalTimelineContext } from '@restate/features-invocation-ui';
+import { Ellipsis } from '@restate/ui-loading';
+import { EntryTooltip } from '@restate/features-invocation-ui';
+import { Icon, IconName } from '@restate/ui-icons';
+import { isEntryCompletionAmbiguous } from '@restate/features-invocation-ui';
 import { ErrorBoundary } from './ErrorBoundry';
 
 const pointStyles = tv({

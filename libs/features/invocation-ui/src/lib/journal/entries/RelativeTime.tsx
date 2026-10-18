@@ -1,10 +1,10 @@
-import { DateTooltip } from '@restate/ui/tooltip';
-import { formatDurations } from '@restate/util/intl';
+import { DateTooltip } from '@restate/ui-tooltip';
+import { formatDurations } from '@restate/util-intl';
 import {
   getDuration,
   useDurationSinceLastSnapshot,
-} from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 
 const styles = tv({
   base: 'min-w-0 shrink truncate font-sans text-2xs font-normal text-zinc-400',

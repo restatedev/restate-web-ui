@@ -1,11 +1,11 @@
 import type {
   JournalEntryPayloads,
   JournalRawEntry,
-} from '@restate/data-access/admin-api-spec';
-import { bytesToBase64, hexToUint8Array } from '@restate/util/binary';
-import type { QueryContext } from './shared';
+} from '@restate/data-access-admin-api-spec';
+import { bytesToBase64, hexToUint8Array } from '@restate/util-binary';
+import type { QueryContext } from './shared.js';
 import { fromBinary } from '@bufbuild/protobuf';
-import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
+import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
 
 type EntryType = JournalRawEntry['entry_type'];
 

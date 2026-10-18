@@ -1,12 +1,12 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { quoteSqlString, type QueryContext } from './shared';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { quoteSqlString, type QueryContext } from './shared.js';
 import {
   addEntryDetailsToLock,
   getVirtualObjectEntryDetails,
   isLockConsistent,
   lockEntryRows,
   virtualObjectSnapshotChangedResponse,
-} from './virtualObjectEntries';
+} from './virtualObjectEntries.js';
 
 interface LockHolderRow {
   acquired_by?: string;

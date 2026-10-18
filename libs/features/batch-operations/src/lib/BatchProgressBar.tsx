@@ -1,20 +1,20 @@
-import { useRestateContext } from '@restate/features/restate-context';
-import { Button } from '@restate/ui/button';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Button } from '@restate/ui-button';
 import {
   DropdownItem,
   DropdownMenu,
   DropdownSection,
-} from '@restate/ui/dropdown';
-import { ErrorBanner } from '@restate/ui/error';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { HoverTooltip } from '@restate/ui/tooltip';
+} from '@restate/ui-dropdown';
+import { ErrorBanner } from '@restate/ui-error';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Spinner } from '@restate/ui-loading';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   formatNumber,
   formatPercentageWithoutFraction,
-} from '@restate/util/intl';
-import { tv } from '@restate/util/styles';
+} from '@restate/util-intl';
+import { tv } from '@restate/util-styles';
 import { PropsWithChildren } from 'react';
 export const MAX_FAILED_INVOCATIONS = 100;
 

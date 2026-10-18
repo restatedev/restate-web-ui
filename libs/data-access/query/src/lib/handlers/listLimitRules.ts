@@ -1,6 +1,6 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { limitPage, limitPageSize } from './limitPagination';
-import { quoteSqlString, type QueryContext } from './shared';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { limitPage, limitPageSize } from './limitPagination.js';
+import { quoteSqlString, type QueryContext } from './shared.js';
 
 const LIMIT_RULE_LIST_COLUMNS = `pattern,
   concurrency,

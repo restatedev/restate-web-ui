@@ -4,26 +4,26 @@ import {
   DialogContent,
   DialogFooter,
   QueryDialog,
-} from '@restate/ui/dialog';
+} from '@restate/ui-dialog';
 import { DELETE_DEPLOYMENT_QUERY_PARAM } from './constants';
 import { Form, useLocation, useNavigate, useSearchParams } from 'react-router';
-import { Button, SubmitButton } from '@restate/ui/button';
-import { ErrorBanner } from '@restate/ui/error';
-import { FormFieldInput } from '@restate/ui/form-field';
+import { Button, SubmitButton } from '@restate/ui-button';
+import { ErrorBanner } from '@restate/ui-error';
+import { FormFieldInput } from '@restate/ui-form-field';
 import { FormEvent, PropsWithChildren, useId, useState } from 'react';
-import { getEndpoint } from '@restate/data-access/admin-api-spec';
+import { getEndpoint } from '@restate/data-access-admin-api-spec';
 import {
   useDeleteDeployment,
   useListDeployments,
-} from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { useRestateContext } from '@restate/features/restate-context';
-import { ONBOARDING_QUERY_PARAM } from '@restate/util/feature-flag';
-import { TruncateWithTooltip } from '@restate/ui/tooltip';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
-import { Link } from '@restate/ui/link';
-import { deploymentHref } from '@restate/util/panel';
+} from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { useRestateContext } from '@restate/features-restate-context';
+import { ONBOARDING_QUERY_PARAM } from '@restate/util-feature-flag';
+import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
+import { Link } from '@restate/ui-link';
+import { deploymentHref } from '@restate/util-panel';
 
 const warningStyles = tv({
   base: 'flex gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-0.5xs text-orange-600',

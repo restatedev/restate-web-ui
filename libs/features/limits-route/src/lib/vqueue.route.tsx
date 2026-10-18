@@ -1,28 +1,28 @@
 import {
   useGetVqueue,
   useGetVqueueEntries,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import type {
   FilterItem,
   VqueueEntryStage,
   VqueueSnapshot,
-} from '@restate/data-access/admin-api-spec';
-import { useBatchOperations } from '@restate/features/batch-operations';
-import { InvocationStatusBadge } from '@restate/features/invocation-ui';
-import { useRestateContext } from '@restate/features/restate-context';
-import { ServiceTarget } from '@restate/features/service-target';
-import { BlockedStatus, LimitKey, Scope } from '@restate/features/vqueue-ui';
-import { Breadcrumbs } from '@restate/ui/breadcrumbs';
-import { Button } from '@restate/ui/button';
-import { CardGrid } from '@restate/ui/card';
-import { ChipGroup } from '@restate/ui/chip';
+} from '@restate/data-access-admin-api-spec';
+import { useBatchOperations } from '@restate/features-batch-operations';
+import { InvocationStatusBadge } from '@restate/features-invocation-ui';
+import { useRestateContext } from '@restate/features-restate-context';
+import { ServiceTarget } from '@restate/features-service-target';
+import { BlockedStatus, LimitKey, Scope } from '@restate/features-vqueue-ui';
+import { Breadcrumbs } from '@restate/ui-breadcrumbs';
+import { Button } from '@restate/ui-button';
+import { CardGrid } from '@restate/ui-card';
+import { ChipGroup } from '@restate/ui-chip';
 import {
   ContentPanel,
   ContentPanelBody,
   ContentPanelSection,
   ContentPanelToolbar,
   type ContentPanelTabs,
-} from '@restate/ui/content-panel';
+} from '@restate/ui-content-panel';
 import {
   Dropdown,
   DropdownItem,
@@ -30,21 +30,21 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { EmptyState } from '@restate/ui/empty-state';
-import { ErrorBanner } from '@restate/ui/error';
-import { Header } from '@restate/ui/header';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Spinner } from '@restate/ui/loading';
+} from '@restate/ui-dropdown';
+import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
+import { Header } from '@restate/ui-header';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Spinner } from '@restate/ui-loading';
 import type {
   QueryClauseSchema,
   QueryClauseType,
-} from '@restate/ui/query-builder';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui/tooltip';
-import { formatNumber } from '@restate/util/intl';
-import { serviceHref } from '@restate/util/panel';
-import { SnapshotTimeProvider } from '@restate/util/snapshot-time';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-query-builder';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui-tooltip';
+import { formatNumber } from '@restate/util-intl';
+import { serviceHref } from '@restate/util-panel';
+import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
+import { tv } from '@restate/util-styles';
 import { useMemo, type ReactNode } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { VQueueActivityCard, VQueueDurationsCard } from './VQueueCards';

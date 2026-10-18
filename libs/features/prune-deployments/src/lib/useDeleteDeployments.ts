@@ -1,5 +1,5 @@
-import { adminApi, useAdminBaseUrl } from '@restate/data-access/admin-api';
-import { invalidateListServices } from '@restate/data-access/admin-api-hooks';
+import { adminApi, useAdminBaseUrl } from '@restate/data-access-admin-api';
+import { invalidateListServices } from '@restate/data-access-admin-api-hooks';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 

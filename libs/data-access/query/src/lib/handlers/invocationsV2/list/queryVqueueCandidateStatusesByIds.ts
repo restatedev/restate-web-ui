@@ -1,5 +1,5 @@
-import type { QueryContext } from '../../shared';
-import { sqlStringList } from '../shared';
+import type { QueryContext } from '../../shared.js';
+import { sqlStringList } from '../shared.js';
 
 export function queryVqueueCandidateStatusesByIds(
   context: QueryContext,

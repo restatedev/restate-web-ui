@@ -1,7 +1,7 @@
 import {
   getEndpoint,
   type Deployment,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import type { SortDescriptor } from 'react-aria-components';
 
 export type DeploymentStatus = 'active' | 'drained';

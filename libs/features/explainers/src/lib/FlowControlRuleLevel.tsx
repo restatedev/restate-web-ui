@@ -1,5 +1,5 @@
-import { InlineTooltip } from '@restate/ui/tooltip';
-import { tv } from '@restate/util/styles';
+import { InlineTooltip } from '@restate/ui-tooltip';
+import { tv } from '@restate/util-styles';
 import type { PropsWithChildren } from 'react';
 
 export type FlowControlRuleLevel = 'scope' | 'level1' | 'level2';

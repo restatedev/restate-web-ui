@@ -1,6 +1,6 @@
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import { type ReactNode } from 'react';
 
 const filteredResultsCaptionStyles = tv({

@@ -1,4 +1,4 @@
-import { Button } from '@restate/ui/button';
+import { Button } from '@restate/ui-button';
 import {
   Dropdown,
   DropdownItem,
@@ -6,11 +6,11 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
-import { Icon, IconName } from '@restate/ui/icons';
-import { tv } from '@restate/util/styles';
+} from '@restate/ui-dropdown';
+import { Icon, IconName } from '@restate/ui-icons';
+import { tv } from '@restate/util-styles';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
-import { entryTablesSupportFilters } from '@restate/data-access/query';
+import { entryTablesSupportFilters } from '@restate/data-access-query';
 import {
   isSortFieldAvailable,
   SORT_COLUMN_KEYS,

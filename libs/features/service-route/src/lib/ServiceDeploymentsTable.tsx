@@ -1,19 +1,19 @@
 import {
   useListDeployments,
   useListDrainedDeployments,
-} from '@restate/data-access/admin-api-hooks';
+} from '@restate/data-access-admin-api-hooks';
 import {
   Deployment,
   DeploymentStatusBadge,
   Revision,
-} from '@restate/features/deployment';
-import { useRestateContext } from '@restate/features/restate-context';
-import { Badge } from '@restate/ui/badge';
-import { EmptyState } from '@restate/ui/empty-state';
-import { IconName } from '@restate/ui/icons';
-import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui/table';
-import { RelativeDate } from '@restate/ui/tooltip';
-import { deploymentHref } from '@restate/util/panel';
+} from '@restate/features-deployment';
+import { useRestateContext } from '@restate/features-restate-context';
+import { Badge } from '@restate/ui-badge';
+import { EmptyState } from '@restate/ui-empty-state';
+import { IconName } from '@restate/ui-icons';
+import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
+import { RelativeDate } from '@restate/ui-tooltip';
+import { deploymentHref } from '@restate/util-panel';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 

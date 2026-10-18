@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode, type PropsWithChildren } from 'react';
-import { RestateError } from '@restate/util/errors';
+import { RestateError } from '@restate/util-errors';
 import { useSqlQuery } from './hooks';
 
 const { fetchQuery, adminApiInit } = vi.hoisted(() => ({
@@ -9,7 +9,7 @@ const { fetchQuery, adminApiInit } = vi.hoisted(() => ({
   adminApiInit: vi.fn(),
 }));
 
-vi.mock('@restate/data-access/admin-api', () => ({
+vi.mock('@restate/data-access-admin-api', () => ({
   useAPIStatus: () => true,
   useAdminBaseUrl: () => 'http://localhost:9070',
   adminApi: (

@@ -1,9 +1,9 @@
-import type { QueryContext } from '../../shared';
+import type { QueryContext } from '../../shared.js';
 import {
   sqlString,
   sqlStringList,
   VQUEUE_SERVICE_QUEUE_LIMIT,
-} from '../shared';
+} from '../shared.js';
 
 type DueRow = {
   service_name?: string;

@@ -1,7 +1,7 @@
-import type { components } from '@restate/data-access/admin-api-spec';
-import { limitPage, limitPageSize } from './limitPagination';
-import { quoteSqlString, type QueryContext } from './shared';
-import { quoteSqlContainsPattern } from './structuredStringFilters';
+import type { components } from '@restate/data-access-admin-api-spec';
+import { limitPage, limitPageSize } from './limitPagination.js';
+import { quoteSqlString, type QueryContext } from './shared.js';
+import { quoteSqlContainsPattern } from './structuredStringFilters.js';
 
 const USER_LIMITS_COLUMNS =
   'scope, l1, l2, level, usage, concurrency_limit, rule_pattern, available, num_waiters';

@@ -7,7 +7,7 @@ import {
   useRef,
 } from 'react';
 import { GridList as AriaGridList } from 'react-aria-components';
-import { tv } from '@restate/util/styles';
+import { tv } from '@restate/util-styles';
 import { NavContext } from './NavContext';
 import {
   Dropdown,
@@ -15,16 +15,16 @@ import {
   DropdownMenu,
   DropdownPopover,
   DropdownTrigger,
-} from '@restate/ui/dropdown';
+} from '@restate/ui-dropdown';
 import {
   NavButtonItem,
   NavItem,
   NavSearchItem,
   useGetHrefFromSearch,
 } from './NavItem';
-import { Button } from '@restate/ui/button';
+import { Button } from '@restate/ui-button';
 import { useLocation } from 'react-router';
-import { Icon, IconName } from '@restate/ui/icons';
+import { Icon, IconName } from '@restate/ui-icons';
 
 interface NavProps {
   className?: string;

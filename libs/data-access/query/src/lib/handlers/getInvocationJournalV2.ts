@@ -2,26 +2,29 @@ import type {
   JournalEntryV2,
   JournalRawEntry,
   operations,
-} from '@restate/data-access/admin-api-spec';
-import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
-import { convertInvocationV2, type TransientError } from '../convertInvocation';
-import { convertJournalV2 } from '../convertJournalV2';
+} from '@restate/data-access-admin-api-spec';
+import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util-errors';
+import {
+  convertInvocationV2,
+  type TransientError,
+} from '../convertInvocation.js';
+import { convertJournalV2 } from '../convertJournalV2.js';
 import {
   createFutureEntries,
   createFutureEntriesRegistry,
-} from '../futureEntries';
+} from '../futureEntries.js';
 import {
   type JournalEntryConversionContext,
   type JournalRawEntryWithCommandIndex,
   lifeCycles,
-} from '@restate/features/service-protocol';
+} from '@restate/features-service-protocol';
 import {
   type QueryContext,
   SYS_INVOCATION_SELECT_COLUMNS,
   quoteSqlString,
-} from './shared';
-import { fetchVqueueStatuses } from './vqueue';
-import { getVqueueSnapshot } from './getVqueue';
+} from './shared.js';
+import { fetchVqueueStatuses } from './vqueue.js';
+import { getVqueueSnapshot } from './getVqueue.js';
 
 type InvocationJournalV2Response =
   operations['get_invocation_journal_v2']['responses']['200']['content']['application/json'];

@@ -1,11 +1,11 @@
-import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util/errors';
-import { convertInvocation } from '../convertInvocation';
+import { ERROR_CODES, UI_ERROR_CODES } from '@restate/util-errors';
+import { convertInvocation } from '../convertInvocation.js';
 import {
   type QueryContext,
   SYS_INVOCATION_SELECT_COLUMNS,
   quoteSqlString,
-} from './shared';
-import { fetchVqueueStatuses } from './vqueue';
+} from './shared.js';
+import { fetchVqueueStatuses } from './vqueue.js';
 
 export async function getInvocation(this: QueryContext, invocationId: string) {
   const [invocationRows, vqueueStatuses] = await Promise.all([

@@ -2,7 +2,7 @@ import { PropsWithChildren, useMemo } from 'react';
 import {
   BreadcrumbsProvider as BaseBreadcrumbsProvider,
   type PageDefinition,
-} from '@restate/ui/breadcrumbs';
+} from '@restate/ui-breadcrumbs';
 import { BREADCRUMB_PAGES, createBreadcrumbPages } from './pages';
 
 export function BreadcrumbsProvider({

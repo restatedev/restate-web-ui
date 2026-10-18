@@ -1,21 +1,21 @@
 import type {
   InvocationFuture,
   JournalEntryV2,
-} from '@restate/data-access/admin-api-spec';
-import { Button } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui/popover';
-import { DropdownSection } from '@restate/ui/dropdown';
-import { Spinner } from '@restate/ui/loading';
+} from '@restate/data-access-admin-api-spec';
+import { Button } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { DropdownSection } from '@restate/ui-dropdown';
+import { Spinner } from '@restate/ui-loading';
 import { Entry } from '../Entry';
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access/admin-api-hooks';
-import { tv } from '@restate/util/styles';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import { tv } from '@restate/util-styles';
 import {
   JournalEntriesContext,
   useJournalEntriesContext,
 } from '../JournalContext';
 import { useMemo } from 'react';
-import { formatPlurals } from '@restate/util/intl';
+import { formatPlurals } from '@restate/util-intl';
 
 type Invocation = ReturnType<
   typeof useGetInvocationJournalWithInvocationV2

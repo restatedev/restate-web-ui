@@ -4,7 +4,7 @@ import {
   DialogContent,
   DialogFooter,
   QueryDialog,
-} from '@restate/ui/dialog';
+} from '@restate/ui-dialog';
 import { SERVICE_TIMEOUT_EDIT } from './constants';
 import { FormEvent, useId } from 'react';
 import { Form, useSearchParams } from 'react-router';
@@ -12,19 +12,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useModifyService,
   useServiceDetails,
-} from '@restate/data-access/admin-api-hooks';
-import { showSuccessNotification } from '@restate/ui/notification';
-import { InlineTooltip } from '@restate/ui/tooltip';
-import { HUMANTIME_PATTERN_INPUT } from '@restate/util/humantime';
-import { Link } from '@restate/ui/link';
-import { ErrorBanner } from '@restate/ui/error';
-import { Button, SubmitButton } from '@restate/ui/button';
-import { Icon, IconName } from '@restate/ui/icons';
+} from '@restate/data-access-admin-api-hooks';
+import { showSuccessNotification } from '@restate/ui-notification';
+import { InlineTooltip } from '@restate/ui-tooltip';
+import { HUMANTIME_PATTERN_INPUT } from '@restate/util-humantime';
+import { Link } from '@restate/ui-link';
+import { ErrorBanner } from '@restate/ui-error';
+import { Button, SubmitButton } from '@restate/ui-button';
+import { Icon, IconName } from '@restate/ui-icons';
 import {
   AbortTimeoutIllustration,
   InactivityTimeoutIllustration,
 } from './illustrations';
-import { FormFieldCombobox } from '@restate/ui/form-field';
+import { FormFieldCombobox } from '@restate/ui-form-field';
 import { useFilter } from 'react-aria';
 import { timeoutOptions } from './durationOptions';
 import { useDialogDraft } from './useDialogDraft';

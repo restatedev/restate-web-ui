@@ -1,13 +1,13 @@
 import { fromBinary } from '@bufbuild/protobuf';
-import { AwakeableEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
-import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
-import { RestateError } from '@restate/util/errors';
+import { AwakeableEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
+import { toUnit8Array } from '../toUni8Array.js';
+import { decode } from '../decoder.js';
+import { RestateError } from '@restate/util-errors';
 import {
   Invocation,
   JournalEntryV2,
   JournalRawEntry,
-} from '@restate/data-access/admin-api-spec';
+} from '@restate/data-access-admin-api-spec';
 import {
   getEntryName,
   getCompletionEntry,
@@ -15,7 +15,7 @@ import {
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 function awakeableV1(
   entry: JournalRawEntry,
