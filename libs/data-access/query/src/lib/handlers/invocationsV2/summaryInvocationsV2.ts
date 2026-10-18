@@ -2,24 +2,24 @@ import type {
   FilterItem,
   components,
 } from '@restate/data-access-admin-api-spec';
-import type { QueryContext } from '../shared';
+import type { QueryContext } from '../shared.js';
 import {
   badRequest,
   resolveInvocationModeV2,
   validateInvocationFiltersV2,
-} from './shared';
-import { queryInvocationSummaryFromInvocationStatusAndState } from './summary/queryInvocationSummaryFromInvocationStatusAndState';
-import { queryInvocationSummaryFromVqueues } from './summary/queryInvocationSummaryFromVqueues';
-import type { InvocationSummaryQueryResult } from './summary/types';
-import { createInvocationSummaryQueryPlan } from './summary/createInvocationSummaryQueryPlan';
-import { queryInvocationCountV2 } from './summary/queryInvocationCountV2';
+} from './shared.js';
+import { queryInvocationSummaryFromInvocationStatusAndState } from './summary/queryInvocationSummaryFromInvocationStatusAndState.js';
+import { queryInvocationSummaryFromVqueues } from './summary/queryInvocationSummaryFromVqueues.js';
+import type { InvocationSummaryQueryResult } from './summary/types.js';
+import { createInvocationSummaryQueryPlan } from './summary/createInvocationSummaryQueryPlan.js';
+import { queryInvocationCountV2 } from './summary/queryInvocationCountV2.js';
 import {
   queryInvocationCountFromStats,
   queryInvocationDeploymentBucketsFromStats,
   queryInvocationSummaryFromStats,
-} from './summary/statsSources';
-import { countInvocationsFromIndexes } from './list/indexedInvocationCandidates';
-import { matchesStringFilter } from './summary/matchesStringFilter';
+} from './summary/statsSources.js';
+import { countInvocationsFromIndexes } from './list/indexedInvocationCandidates.js';
+import { matchesStringFilter } from './summary/matchesStringFilter.js';
 
 export type SummaryInvocationsV2Args =
   components['schemas']['SummaryInvocationsV2RequestBody'];

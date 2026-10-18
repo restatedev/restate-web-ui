@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listUserLimits } from './listUserLimits';
-import type { QueryContext } from './shared';
+import { listUserLimits } from './listUserLimits.js';
+import type { QueryContext } from './shared.js';
 
 const counter = {
   scope: 'tenant',

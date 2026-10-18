@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { queryState } from './queryState';
-import type { QueryContext } from './shared';
+import { queryState } from './queryState.js';
+import type { QueryContext } from './shared.js';
 
 function createContext() {
   const query = vi.fn<

@@ -1,5 +1,5 @@
 import { hexToBase64 } from '@restate/util-binary';
-import { quoteSqlString, type QueryContext } from './shared';
+import { quoteSqlString, type QueryContext } from './shared.js';
 
 // Values above this limit stay out of the page payload (only name + size are
 // returned); the UI lazy-loads them one at a time via getState with a stateKey.

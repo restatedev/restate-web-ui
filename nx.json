@@ -93,5 +93,13 @@
       }
     }
   },
-  "analytics": false
+  "analytics": false,
+  "targetDefaults": {
+    "test": {
+      "dependsOn": ["^build"],
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
 }

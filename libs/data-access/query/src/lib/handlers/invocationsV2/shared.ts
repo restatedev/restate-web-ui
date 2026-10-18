@@ -6,14 +6,14 @@ import { INVOCATION_SUMMARY_STAGES as SHARED_INVOCATION_SUMMARY_STAGES } from '@
 import {
   INVOCATION_STATUSES,
   type InvocationStatus,
-} from '../../invocationStatuses';
+} from '../../invocationStatuses.js';
 import {
   getInvocationListField,
   isInvocationListFieldAvailableOnTable,
   type InvocationListTable,
-} from './invocationListFields';
+} from './invocationListFields.js';
 
-export { INVOCATION_STATUSES } from '../../invocationStatuses';
+export { INVOCATION_STATUSES } from '../../invocationStatuses.js';
 
 export const INVOCATIONS_V2_LIMIT = 250;
 export const DEFAULT_SAMPLE_SIZE = 50_000;

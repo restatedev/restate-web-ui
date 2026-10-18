@@ -1,23 +1,23 @@
-import { INVOCATION_STATUS_DEFINITIONS } from '../../../invocationStatuses';
+import { INVOCATION_STATUS_DEFINITIONS } from '../../../invocationStatuses.js';
 import {
   BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
   type QueryContext,
-} from '../../shared';
-import { INVOCATION_LIST_FIELDS } from '../invocationListFields';
+} from '../../shared.js';
+import { INVOCATION_LIST_FIELDS } from '../invocationListFields.js';
 import {
   STATUSES_RESOLVED_FROM_VQUEUE,
   sqlStringList,
   type ResolvedInvocationModeV2,
-} from '../shared';
+} from '../shared.js';
 import {
   invocationStatusColumnForField,
   invocationStatusColumnName,
   invocationStatusFilterClauses,
-} from './invocationStatusFilters';
+} from './invocationStatusFilters.js';
 import type {
   BestEffortSysInvocationStatusQueryPlan,
   InvocationCandidateRow,
-} from './types';
+} from './types.js';
 
 function storedStatusPredicate(query: BestEffortSysInvocationStatusQueryPlan) {
   const storedStatuses = query.statuses.map(

@@ -1,13 +1,13 @@
 import type { components } from '@restate/data-access-admin-api-spec';
-import { limitPage, limitPageSize } from './limitPagination';
-import { quoteSqlString, type QueryContext } from './shared';
-import { quoteSqlContainsPattern } from './structuredStringFilters';
+import { limitPage, limitPageSize } from './limitPagination.js';
+import { quoteSqlString, type QueryContext } from './shared.js';
+import { quoteSqlContainsPattern } from './structuredStringFilters.js';
 import {
   parseVqueueBlockedResource,
   parseVqueueSchedulingStatus,
-} from './vqueueScheduler';
-import { usesIndexesV1 } from '../uiFeatures';
-import { BUSY_VQUEUE, selectFromIndex } from './indexes';
+} from './vqueueScheduler.js';
+import { usesIndexesV1 } from '../uiFeatures.js';
+import { BUSY_VQUEUE, selectFromIndex } from './indexes/index.js';
 
 const VQUEUE_COLUMNS =
   'id, queue_is_paused, service_name, scope, limit_key, lock_name, last_enqueued_at, last_start_at, last_attempt_at, last_finish_at, avg_queue_duration, avg_inbox_duration, avg_run_duration, avg_suspension_duration, avg_end_to_end_duration, avg_blocked_on_concurrency_rules, avg_blocked_on_invoker_concurrency, avg_blocked_on_invoker_throttling, avg_blocked_on_lock, num_inbox, num_running, num_suspended, num_paused, num_finished';

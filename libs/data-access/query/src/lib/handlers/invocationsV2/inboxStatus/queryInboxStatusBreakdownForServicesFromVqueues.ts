@@ -1,5 +1,5 @@
-import type { QueryContext } from '../../shared';
-import { sqlStringList, VQUEUE_SERVICE_QUEUE_LIMIT } from '../shared';
+import type { QueryContext } from '../../shared.js';
+import { sqlStringList, VQUEUE_SERVICE_QUEUE_LIMIT } from '../shared.js';
 
 type StatusRow = {
   service_name?: string;

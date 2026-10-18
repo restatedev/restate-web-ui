@@ -3,7 +3,7 @@ import {
   InvocationFuture,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
-import { JournalRawEntryWithCommandIndex, parseEntryJson } from './util';
+import { JournalRawEntryWithCommandIndex, parseEntryJson } from './util.js';
 import { RestateError } from '@restate/util-errors';
 
 export function event(

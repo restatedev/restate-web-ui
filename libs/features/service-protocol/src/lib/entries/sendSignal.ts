@@ -7,7 +7,7 @@ import {
   getEntryResultV2,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 export function sendSignal(
   entry: JournalRawEntryWithCommandIndex,

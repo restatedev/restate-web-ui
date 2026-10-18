@@ -1,14 +1,14 @@
-import type { QueryContext } from '../../shared';
+import type { QueryContext } from '../../shared.js';
 import {
   INVOCATIONS_V2_LIMIT,
   type ResolvedInvocationModeV2,
   VQUEUE_SERVICE_QUEUE_LIMIT,
-} from '../shared';
+} from '../shared.js';
 import type {
   InvocationCandidateRow,
   SysVqueueMetaAndVqueuesQueryPlan,
   VqueueListPartialResult,
-} from './types';
+} from './types.js';
 import {
   vqueueColumnForSort,
   vqueueFilterClauses,
@@ -16,7 +16,7 @@ import {
   vqueueSampleColumns,
   vqueueStagePredicate,
   vqueueStatusPredicate,
-} from './vqueueFilters';
+} from './vqueueFilters.js';
 
 /**
  * Runs when queue-level filters need sys_vqueue_meta for either the whole plan

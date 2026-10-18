@@ -13,25 +13,34 @@
 
 ## Library Generation
 
-Libs live in `libs/<type>/<NAME>` (`<type>` is `ui`, `features`, `data-access` or `util`) and are workspace packages named `@restate/<type>-<NAME>`. `nx.json` sets the generator defaults (no bundler, no per-lib linter, Vitest, no root dependency changes).
+Every lib is created by an Nx generator and kept exactly as the generator writes it: no cleanup or hand-edits afterwards. All existing libs have that shape, so a new lib looks like the others. The generator options are defaults in `nx.json`, so the commands below are complete.
 
-**React library**
+Libs live in `libs/<type>/<NAME>`, where `<type>` is `ui`, `features`, `data-access` or `util`. Each lib is a workspace package named `@restate/<type>-<NAME>`, which is also its Nx project name.
+
+**React library** (anything that uses React: components, hooks, routes)
 
 ```bash
 pnpm nx g @nx/react:lib libs/<type>/<NAME> --importPath=@restate/<type>-<NAME>
 ```
 
-**JS library**
+**JS library** (no React)
 
 ```bash
 pnpm nx g @nx/js:library libs/<type>/<NAME> --importPath=@restate/<type>-<NAME>
 ```
 
-Then clean up what the generators still add:
+Example: `pnpm nx g @nx/react:lib libs/ui/badge --importPath=@restate/ui-badge` creates the project `@restate/ui-badge`.
 
-1. Revert their edit to the root `nx.json` (a `targetDefaults.test` entry) and, for React libs, to the root `package.json` (`@swc/helpers`).
-2. React libs only: delete the lib's `.babelrc` and add `"private": true` and `"type": "module"` to its `package.json`.
-3. Run `pnpm install` to link the new package, then `pnpm nx sync`.
+- **What you get:** a `package.json` with no dependencies (they all live in the root), composite tsconfigs, a Vitest config, and a sample component or function with a spec. Replace the sample with your code in `src/`.
+- **Using it:** the package is linked into `node_modules` right away, so other libs can import it as `@restate/<type>-<NAME>`. `pnpm nx sync` adds the project references; Nx also runs it automatically before tasks in an interactive terminal.
+- **Tests:** a lib without specs is fine, because `nx test` passes when there are no test files.
+- **JS libs use `nodenext`:** relative imports need an explicit `.js` extension (`export * from './lib/foo.js'`), and JSON imports need `with { type: 'json' }`.
+- **Generator leftovers stay:** the React generator writes a `.babelrc` and adds `@swc/helpers` to the root `package.json`, and both generators add the `test` → `^build` target default in `nx.json`. Nothing uses them, but keep them so new generations don't change shared files.
+- **Don't pass:**
+  - `--bundler`, `--buildable` or `--publishable`, which add build targets nothing uses;
+  - `--compiler=swc`, which switches the Vite plugin;
+  - `--unitTestRunner=none`, because adding tests later with `@nx/vitest:configuration` produces a spec tsconfig without the reference to the lib's tsconfig, which fails typecheck;
+  - `--useProjectJson`, which brings back the old layout.
 
 ## Code Style
 
@@ -43,7 +52,7 @@ Then clean up what the generators still add:
 - **Styling**: Tailwind CSS, use `tv()` from `@restate/util-styles` for component variants. Never use string interpolation for dynamic Tailwind classes (e.g., `${isVoid ? 'text-zinc-400' : 'text-gray-500'}`). Always use `tv()` with variants instead.
 - **Components**: React 19, React Aria Components for UI primitives, use `forwardRef` for refs
 - **Types**: Define props interfaces explicitly, use `PropsWithChildren` when needed
-- **Testing**: Vitest + Testing Library, test files use `.spec.tsx` suffix
+- **Testing**: Vitest + Testing Library, test files use `.spec.tsx` suffix (`.spec.ts` in JS libs)
 - **Comments**: NEVER add comments unless explicitly requested by the user
 - **Code reuse**: Avoid duplication. When creating similar hooks or components, look for opportunities to reuse existing logic (e.g., if two hooks fetch from the same endpoint, use one hook and access the full response data).
 

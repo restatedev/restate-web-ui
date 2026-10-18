@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listVqueues } from './listVqueues';
-import type { QueryContext } from './shared';
+import { listVqueues } from './listVqueues.js';
+import type { QueryContext } from './shared.js';
 
 const vqueue = {
   id: 'vq_checkout',

@@ -1,5 +1,5 @@
-import type { VqueueStage } from '../../invocationStatuses';
-import { defineIndexTable } from './shared';
+import type { VqueueStage } from '../../invocationStatuses.js';
+import { defineIndexTable } from './shared.js';
 
 export type EntryKind = 'invocation' | 'state-mutation';
 

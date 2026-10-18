@@ -1,6 +1,6 @@
-export { query, routes } from './lib/query';
-export { entryTablesSupportFilters } from './lib/handlers/invocationsV2/list/transitionSort';
-export { canSummarizeInvocationsFromStats } from './lib/handlers/invocationsV2/summary/statsSources';
+export { query, routes } from './lib/query.js';
+export { entryTablesSupportFilters } from './lib/handlers/invocationsV2/list/transitionSort.js';
+export { canSummarizeInvocationsFromStats } from './lib/handlers/invocationsV2/summary/statsSources.js';
 export {
   INDEXES_V1_UI_FEATURE,
   STATS_SERVER_FEATURE,
@@ -9,20 +9,20 @@ export {
   usesIndexesV1,
   usesStatsTables,
   withUiFeatures,
-} from './lib/uiFeatures';
+} from './lib/uiFeatures.js';
 export {
   QUERY_CLIENT,
   QUERY_CLIENT_HEADER,
   QUERY_LEVEL_HEADER,
   QUERY_ORIGIN_HEADER,
   type QueryOrigin,
-} from './lib/queryOrigin';
-export { RESTATE_FEATURES_HEADER } from './lib/getFeatures';
+} from './lib/queryOrigin.js';
+export { RESTATE_FEATURES_HEADER } from './lib/getFeatures.js';
 export {
   QUERY_DEFINITIONS,
   type QueryDefinition,
   type QueryId,
-} from './lib/queryDefinitions';
+} from './lib/queryDefinitions.js';
 export {
   clearQueryStats,
   describeQueryPage,
@@ -38,4 +38,4 @@ export {
   type QueryPageRef,
   type QueryPageStat,
   type QueryStat,
-} from './lib/queryStats';
+} from './lib/queryStats.js';

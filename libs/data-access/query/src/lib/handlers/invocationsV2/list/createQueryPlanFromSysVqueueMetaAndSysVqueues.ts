@@ -2,9 +2,9 @@ import {
   type InvocationFilterV2,
   type InvocationSortV2,
   type InvocationStatusV2,
-} from '../shared';
-import { isInvocationListFieldAvailableOnTable } from '../invocationListFields';
-import type { SysVqueueMetaAndVqueuesSourcePlan } from './types';
+} from '../shared.js';
+import { isInvocationListFieldAvailableOnTable } from '../invocationListFields.js';
+import type { SysVqueueMetaAndVqueuesSourcePlan } from './types.js';
 
 /** Reports whether bounded queue metadata plus entries can satisfy the query. */
 export function createQueryPlanFromSysVqueueMetaAndSysVqueues(

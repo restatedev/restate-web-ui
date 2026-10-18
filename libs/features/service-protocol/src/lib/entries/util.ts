@@ -1,5 +1,5 @@
 import { RestateError } from '@restate/util-errors';
-import { decode } from '../decoder';
+import { decode } from '../decoder.js';
 import type {
   Invocation,
   JournalEntryV2,

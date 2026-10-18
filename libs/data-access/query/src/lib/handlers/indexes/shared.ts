@@ -1,5 +1,5 @@
-import type { QueryId } from '../../queryDefinitions';
-import { quoteSqlString, type QueryContext } from '../shared';
+import type { QueryId } from '../../queryDefinitions.js';
+import { quoteSqlString, type QueryContext } from '../shared.js';
 
 export type IndexQueryContext = Pick<QueryContext, 'query'>;
 

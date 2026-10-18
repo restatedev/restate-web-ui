@@ -8,7 +8,7 @@ import {
   JournalRawEntryWithCommandIndex,
   getCompletionEntry,
   getEntryResultV2,
-} from './util';
+} from './util.js';
 
 function attachInvocationV2(
   entry: JournalRawEntryWithCommandIndex,

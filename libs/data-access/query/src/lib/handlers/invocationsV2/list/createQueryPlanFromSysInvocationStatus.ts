@@ -3,9 +3,9 @@ import {
   type InvocationFilterV2,
   type InvocationSortV2,
   type InvocationStatusV2,
-} from '../shared';
-import { isInvocationListFieldAvailableOnTable } from '../invocationListFields';
-import type { SysInvocationStatusSourcePlan } from './types';
+} from '../shared.js';
+import { isInvocationListFieldAvailableOnTable } from '../invocationListFields.js';
+import type { SysInvocationStatusSourcePlan } from './types.js';
 
 /** Reports the statuses that invocation status can resolve without VQueue data. */
 export function createQueryPlanFromSysInvocationStatus(

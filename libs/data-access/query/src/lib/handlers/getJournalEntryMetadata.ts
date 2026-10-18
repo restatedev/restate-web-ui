@@ -1,5 +1,5 @@
-import { convertJournalV2 } from '../convertJournalV2';
-import type { QueryContext } from './shared';
+import { convertJournalV2 } from '../convertJournalV2.js';
+import type { QueryContext } from './shared.js';
 
 export async function getJournalEntryMetadata(
   this: QueryContext,

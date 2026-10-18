@@ -3,109 +3,34 @@
   "files": [],
   "references": [
     {
-      "path": "./libs/features/virtual-object-instance"
+      "path": "./apps/web-ui-e2e"
     },
     {
-      "path": "./libs/features/virtual-objects-route"
-    },
-    {
-      "path": "./libs/features/handler-input-output"
-    },
-    {
-      "path": "./libs/features/introspection-route"
-    },
-    {
-      "path": "./libs/features/register-deployment"
+      "path": "./apps/web-ui"
     },
     {
       "path": "./libs/data-access/admin-api-hooks"
     },
     {
-      "path": "./libs/features/state-object-route"
-    },
-    {
       "path": "./libs/data-access/admin-api-spec"
-    },
-    {
-      "path": "./libs/features/invocations-route"
-    },
-    {
-      "path": "./libs/features/prune-deployments"
-    },
-    {
-      "path": "./libs/features/query-stats-route"
-    },
-    {
-      "path": "./libs/features/batch-operations"
-    },
-    {
-      "path": "./libs/features/deployment-route"
-    },
-    {
-      "path": "./libs/features/invocation-route"
-    },
-    {
-      "path": "./libs/features/service-protocol"
-    },
-    {
-      "path": "./libs/features/getting-started"
-    },
-    {
-      "path": "./libs/features/restate-context"
-    },
-    {
-      "path": "./libs/features/service-details"
-    },
-    {
-      "path": "./libs/features/user-preference"
-    },
-    {
-      "path": "./libs/features/workflows-route"
-    },
-    {
-      "path": "./libs/features/features-route"
-    },
-    {
-      "path": "./libs/features/overview-route"
-    },
-    {
-      "path": "./libs/features/service-target"
-    },
-    {
-      "path": "./libs/features/invocation-ui"
-    },
-    {
-      "path": "./libs/features/service-route"
-    },
-    {
-      "path": "./libs/features/system-health"
     },
     {
       "path": "./libs/data-access/admin-api"
     },
     {
-      "path": "./libs/util/invocation-links"
+      "path": "./libs/data-access/query"
     },
     {
-      "path": "./libs/features/limits-route"
-    },
-    {
-      "path": "./libs/features/status-chart"
-    },
-    {
-      "path": "./libs/features/workflow-run"
+      "path": "./libs/features/batch-operations"
     },
     {
       "path": "./libs/features/breadcrumbs"
     },
     {
-      "path": "./libs/ui/metric-comparison"
+      "path": "./libs/features/codec"
     },
     {
-      "path": "./libs/features/state-route"
-    },
-    {
-      "path": "./libs/features/tenant-view"
+      "path": "./libs/features/deployment-route"
     },
     {
       "path": "./libs/features/deployment"
@@ -117,172 +42,124 @@
       "path": "./libs/features/explainers"
     },
     {
-      "path": "./libs/util/snapshot-time"
+      "path": "./libs/features/features-route"
     },
     {
-      "path": "./libs/features/vqueue-ui"
+      "path": "./libs/features/getting-started"
     },
     {
-      "path": "./libs/ui/filter-builder"
-    },
-    {
-      "path": "./libs/data-access/query"
-    },
-    {
-      "path": "./libs/ui/restate-server"
-    },
-    {
-      "path": "./libs/util/feature-flag"
-    },
-    {
-      "path": "./libs/ui/wave-animation"
-    },
-    {
-      "path": "./libs/ui/content-panel"
-    },
-    {
-      "path": "./libs/features/options"
-    },
-    {
-      "path": "./libs/ui/query-builder"
-    },
-    {
-      "path": "./libs/features/service"
-    },
-    {
-      "path": "./libs/util/sidebar-nav"
-    },
-    {
-      "path": "./libs/features/support"
-    },
-    {
-      "path": "./libs/ui/timeline-zoom"
-    },
-    {
-      "path": "./libs/util/react-query"
-    },
-    {
-      "path": "./libs/features/version"
-    },
-    {
-      "path": "./libs/util/api-config"
+      "path": "./libs/features/handler-input-output"
     },
     {
       "path": "./libs/features/health"
     },
     {
-      "path": "./libs/ui/issue-banner"
+      "path": "./libs/features/introspection-route"
     },
     {
-      "path": "./libs/ui/notification"
+      "path": "./libs/features/invocation-route"
     },
     {
-      "path": "./libs/ui/split-button"
+      "path": "./libs/features/invocation-ui"
     },
     {
-      "path": "./libs/util/playwright"
+      "path": "./libs/features/invocations-route"
+    },
+    {
+      "path": "./libs/features/limits-route"
+    },
+    {
+      "path": "./libs/features/options"
+    },
+    {
+      "path": "./libs/features/overview-route"
+    },
+    {
+      "path": "./libs/features/prune-deployments"
+    },
+    {
+      "path": "./libs/features/query-stats-route"
+    },
+    {
+      "path": "./libs/features/register-deployment"
+    },
+    {
+      "path": "./libs/features/restate-context"
+    },
+    {
+      "path": "./libs/features/service-details"
+    },
+    {
+      "path": "./libs/features/service-protocol"
+    },
+    {
+      "path": "./libs/features/service-route"
+    },
+    {
+      "path": "./libs/features/service-target"
+    },
+    {
+      "path": "./libs/features/service"
+    },
+    {
+      "path": "./libs/features/state-object-route"
+    },
+    {
+      "path": "./libs/features/state-route"
+    },
+    {
+      "path": "./libs/features/status-chart"
+    },
+    {
+      "path": "./libs/features/support"
+    },
+    {
+      "path": "./libs/features/system-health"
+    },
+    {
+      "path": "./libs/features/tenant-view"
+    },
+    {
+      "path": "./libs/features/user-preference"
+    },
+    {
+      "path": "./libs/features/version"
+    },
+    {
+      "path": "./libs/features/virtual-object-instance"
+    },
+    {
+      "path": "./libs/features/virtual-objects-route"
+    },
+    {
+      "path": "./libs/features/vqueue-ui"
+    },
+    {
+      "path": "./libs/features/workflow-run"
+    },
+    {
+      "path": "./libs/features/workflows-route"
     },
     {
       "path": "./libs/ui/action-text"
     },
     {
-      "path": "./libs/ui/breadcrumbs"
-    },
-    {
-      "path": "./libs/features/codec"
-    },
-    {
-      "path": "./libs/ui/empty-state"
-    },
-    {
-      "path": "./libs/util/humantime"
-    },
-    {
-      "path": "./libs/ui/radio-group"
-    },
-    {
-      "path": "./libs/ui/form-field"
-    },
-    {
-      "path": "./libs/util/binary"
-    },
-    {
-      "path": "./libs/ui/dropdown"
-    },
-    {
-      "path": "./libs/ui/keyboard"
-    },
-    {
-      "path": "./libs/util/styles"
-    },
-    {
-      "path": "./libs/util/errors"
-    },
-    {
-      "path": "./libs/ui/details"
-    },
-    {
-      "path": "./libs/ui/listbox"
-    },
-    {
-      "path": "./libs/ui/loading"
-    },
-    {
-      "path": "./libs/util/panel"
-    },
-    {
-      "path": "./libs/ui/popover"
-    },
-    {
-      "path": "./libs/ui/section"
-    },
-    {
-      "path": "./libs/ui/tooltip"
-    },
-    {
-      "path": "./libs/util/remix"
-    },
-    {
-      "path": "./libs/ui/button"
-    },
-    {
-      "path": "./libs/ui/charts"
-    },
-    {
-      "path": "./libs/ui/dialog"
-    },
-    {
-      "path": "./libs/ui/editor"
-    },
-    {
-      "path": "./libs/ui/header"
-    },
-    {
-      "path": "./libs/util/intl"
-    },
-    {
-      "path": "./libs/ui/layout"
-    },
-    {
-      "path": "./libs/ui/portal"
+      "path": "./libs/ui/api"
     },
     {
       "path": "./libs/ui/badge"
     },
     {
-      "path": "./libs/ui/error"
+      "path": "./libs/ui/breadcrumbs"
     },
     {
-      "path": "./libs/ui/focus"
-    },
-    {
-      "path": "./libs/ui/icons"
-    },
-    {
-      "path": "./libs/ui/table"
+      "path": "./libs/ui/button"
     },
     {
       "path": "./libs/ui/card"
+    },
+    {
+      "path": "./libs/ui/charts"
     },
     {
       "path": "./libs/ui/chip"
@@ -291,25 +168,148 @@
       "path": "./libs/ui/code"
     },
     {
+      "path": "./libs/ui/content-panel"
+    },
+    {
       "path": "./libs/ui/copy"
+    },
+    {
+      "path": "./libs/ui/details"
+    },
+    {
+      "path": "./libs/ui/dialog"
+    },
+    {
+      "path": "./libs/ui/dropdown"
+    },
+    {
+      "path": "./libs/ui/editor"
+    },
+    {
+      "path": "./libs/ui/empty-state"
+    },
+    {
+      "path": "./libs/ui/error"
+    },
+    {
+      "path": "./libs/ui/filter-builder"
+    },
+    {
+      "path": "./libs/ui/focus"
+    },
+    {
+      "path": "./libs/ui/form-field"
+    },
+    {
+      "path": "./libs/ui/header"
+    },
+    {
+      "path": "./libs/ui/icons"
+    },
+    {
+      "path": "./libs/ui/issue-banner"
+    },
+    {
+      "path": "./libs/ui/keyboard"
+    },
+    {
+      "path": "./libs/ui/layout"
     },
     {
       "path": "./libs/ui/link"
     },
     {
-      "path": "./libs/ui/tabs"
+      "path": "./libs/ui/listbox"
     },
     {
-      "path": "./libs/ui/api"
+      "path": "./libs/ui/loading"
+    },
+    {
+      "path": "./libs/ui/metric-comparison"
     },
     {
       "path": "./libs/ui/nav"
     },
     {
-      "path": "./apps/web-ui-e2e"
+      "path": "./libs/ui/notification"
     },
     {
-      "path": "./apps/web-ui"
+      "path": "./libs/ui/popover"
+    },
+    {
+      "path": "./libs/ui/portal"
+    },
+    {
+      "path": "./libs/ui/query-builder"
+    },
+    {
+      "path": "./libs/ui/radio-group"
+    },
+    {
+      "path": "./libs/ui/restate-server"
+    },
+    {
+      "path": "./libs/ui/section"
+    },
+    {
+      "path": "./libs/ui/split-button"
+    },
+    {
+      "path": "./libs/ui/table"
+    },
+    {
+      "path": "./libs/ui/tabs"
+    },
+    {
+      "path": "./libs/ui/timeline-zoom"
+    },
+    {
+      "path": "./libs/ui/tooltip"
+    },
+    {
+      "path": "./libs/ui/wave-animation"
+    },
+    {
+      "path": "./libs/util/api-config"
+    },
+    {
+      "path": "./libs/util/binary"
+    },
+    {
+      "path": "./libs/util/errors"
+    },
+    {
+      "path": "./libs/util/feature-flag"
+    },
+    {
+      "path": "./libs/util/humantime"
+    },
+    {
+      "path": "./libs/util/intl"
+    },
+    {
+      "path": "./libs/util/invocation-links"
+    },
+    {
+      "path": "./libs/util/panel"
+    },
+    {
+      "path": "./libs/util/playwright"
+    },
+    {
+      "path": "./libs/util/react-query"
+    },
+    {
+      "path": "./libs/util/remix"
+    },
+    {
+      "path": "./libs/util/sidebar-nav"
+    },
+    {
+      "path": "./libs/util/snapshot-time"
+    },
+    {
+      "path": "./libs/util/styles"
     }
   ]
 }

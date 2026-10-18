@@ -3,8 +3,8 @@ import type {
   Service,
 } from '@restate/data-access-admin-api-spec';
 import { describe, expect, it, vi } from 'vitest';
-import { getVirtualObjectInbox } from './getVirtualObjectInbox';
-import type { QueryContext } from './shared';
+import { getVirtualObjectInbox } from './getVirtualObjectInbox.js';
+import type { QueryContext } from './shared.js';
 
 const serviceMetadata = {
   handlers: [

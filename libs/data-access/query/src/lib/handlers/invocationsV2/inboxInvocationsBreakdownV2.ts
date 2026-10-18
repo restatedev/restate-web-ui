@@ -4,15 +4,15 @@ import {
   INVOCATION_STATUSES,
   resolveInvocationModeV2,
   type InvocationStatusV2,
-} from './shared';
-import { getInvocationStatusFromVqueue } from '../../invocationStatuses';
-import type { QueryContext } from '../shared';
-import { SERVICE_STATS, selectFromIndex } from '../indexes';
-import { usesStatsTables } from '../../uiFeatures';
-import { queryOverallInboxDueBreakdownFromVqueues } from './inboxDue/queryOverallInboxDueBreakdownFromVqueues';
-import { queryInboxDueBreakdownForServicesFromVqueues } from './inboxDue/queryInboxDueBreakdownForServicesFromVqueues';
-import { queryOverallInboxStatusBreakdownFromVqueues } from './inboxStatus/queryOverallInboxStatusBreakdownFromVqueues';
-import { queryInboxStatusBreakdownForServicesFromVqueues } from './inboxStatus/queryInboxStatusBreakdownForServicesFromVqueues';
+} from './shared.js';
+import { getInvocationStatusFromVqueue } from '../../invocationStatuses.js';
+import type { QueryContext } from '../shared.js';
+import { SERVICE_STATS, selectFromIndex } from '../indexes/index.js';
+import { usesStatsTables } from '../../uiFeatures.js';
+import { queryOverallInboxDueBreakdownFromVqueues } from './inboxDue/queryOverallInboxDueBreakdownFromVqueues.js';
+import { queryInboxDueBreakdownForServicesFromVqueues } from './inboxDue/queryInboxDueBreakdownForServicesFromVqueues.js';
+import { queryOverallInboxStatusBreakdownFromVqueues } from './inboxStatus/queryOverallInboxStatusBreakdownFromVqueues.js';
+import { queryInboxStatusBreakdownForServicesFromVqueues } from './inboxStatus/queryInboxStatusBreakdownForServicesFromVqueues.js';
 
 export type InboxInvocationsBreakdownV2Args =
   components['schemas']['InboxInvocationsBreakdownV2RequestBody'];

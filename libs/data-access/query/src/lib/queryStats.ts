@@ -7,7 +7,7 @@ import {
   QUERY_DEFINITIONS,
   type QueryDefinition,
   type QueryId,
-} from './queryDefinitions';
+} from './queryDefinitions.js';
 
 export type QueryOutcome = 'success' | 'timeout' | 'error' | 'aborted';
 

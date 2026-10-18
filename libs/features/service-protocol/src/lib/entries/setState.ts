@@ -1,7 +1,7 @@
 import { fromBinary } from '@bufbuild/protobuf';
-import { SetStateEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
-import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
+import { SetStateEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
+import { toUnit8Array } from '../toUni8Array.js';
+import { decode } from '../decoder.js';
 import {
   Invocation,
   JournalEntryV2,
@@ -14,7 +14,7 @@ import {
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 import { binaryToUtf8 } from '@restate/util-binary';
 
 function setStateV1(

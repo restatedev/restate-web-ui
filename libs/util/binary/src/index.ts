@@ -1,1 +1,1 @@
-export * from './lib/binary';
+export * from './lib/binary.js';

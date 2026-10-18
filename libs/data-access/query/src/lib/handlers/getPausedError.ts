@@ -1,4 +1,4 @@
-import { type QueryContext } from './shared';
+import { type QueryContext } from './shared.js';
 
 interface PausedEventJson {
   ty: 'Paused';

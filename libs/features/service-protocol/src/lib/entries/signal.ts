@@ -8,7 +8,7 @@ import {
   type JournalEntryConversionContext,
   type JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 export function signal(
   entry: JournalRawEntryWithCommandIndex,

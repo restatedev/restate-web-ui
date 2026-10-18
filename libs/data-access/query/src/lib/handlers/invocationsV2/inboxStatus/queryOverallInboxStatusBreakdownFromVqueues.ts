@@ -1,5 +1,5 @@
-import type { QueryContext } from '../../shared';
-import type { ResolvedInvocationModeV2 } from '../shared';
+import type { QueryContext } from '../../shared.js';
+import type { ResolvedInvocationModeV2 } from '../shared.js';
 
 /**
  * Returns exact overall inbox counts grouped only by raw VQueue status. It does

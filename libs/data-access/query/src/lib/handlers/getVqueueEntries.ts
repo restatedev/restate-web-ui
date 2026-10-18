@@ -2,11 +2,11 @@ import type {
   components,
   VqueueEntryStage,
 } from '@restate/data-access-admin-api-spec';
-import { quoteSqlString, type QueryContext } from './shared';
+import { quoteSqlString, type QueryContext } from './shared.js';
 import {
   getVirtualObjectEntryDetails,
   type VirtualObjectEntryRow,
-} from './virtualObjectEntries';
+} from './virtualObjectEntries.js';
 
 const ENTRY_LIMIT = 25;
 const ENTRY_QUERY_LIMIT = ENTRY_LIMIT + 1;

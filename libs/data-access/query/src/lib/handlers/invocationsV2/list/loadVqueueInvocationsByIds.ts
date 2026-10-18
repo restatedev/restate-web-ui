@@ -1,22 +1,22 @@
 import type { RawInvocation } from '@restate/data-access-admin-api-spec';
-import { convertInvocationV2 } from '../../../convertInvocation';
-import { getInvocationStatusFromVqueue } from '../../../invocationStatuses';
-import { toVqueueEntry } from '../../virtualObjectEntries';
-import { entryTablesSupportFilters } from './transitionSort';
-import { isInvocationId, type QueryContext } from '../../shared';
-import { getInvocationListFieldOnTable } from '../invocationListFields';
+import { convertInvocationV2 } from '../../../convertInvocation.js';
+import { getInvocationStatusFromVqueue } from '../../../invocationStatuses.js';
+import { toVqueueEntry } from '../../virtualObjectEntries.js';
+import { entryTablesSupportFilters } from './transitionSort.js';
+import { isInvocationId, type QueryContext } from '../../shared.js';
+import { getInvocationListFieldOnTable } from '../invocationListFields.js';
 import {
   STATUSES_RESOLVED_FROM_VQUEUE,
   type InvocationFilterV2,
   type InvocationSortV2,
-} from '../shared';
-import { queryInvocationRowsByIds } from './queryInvocationRowsByIds';
-import { queryVqueueEntryStatusRowsByIds } from './queryVqueueEntryStatusRowsByIds';
+} from '../shared.js';
+import { queryInvocationRowsByIds } from './queryInvocationRowsByIds.js';
+import { queryVqueueEntryStatusRowsByIds } from './queryVqueueEntryStatusRowsByIds.js';
 import type {
   InvocationCandidate,
   InvocationStatusSelection,
   VqueueRow,
-} from './types';
+} from './types.js';
 
 /** Loads details and VQueue overlays in parallel, then rechecks every filter. */
 export async function loadVqueueInvocationsByIds(

@@ -8,7 +8,7 @@ import {
   JournalRawEntryWithCommandIndex,
   getEntryResultV2,
   getCompletionEntry,
-} from './util';
+} from './util.js';
 
 function getLazyStateKeysV2(
   entry: JournalRawEntryWithCommandIndex,

@@ -1,9 +1,9 @@
 import type { components } from '@restate/data-access-admin-api-spec';
-import { DEFAULT_SAMPLE_SIZE, MAX_SAMPLE_SIZE } from '../shared';
+import { DEFAULT_SAMPLE_SIZE, MAX_SAMPLE_SIZE } from '../shared.js';
 import {
   TERMINAL_INVOCATION_STATUSES,
   type TerminalInvocationStatus,
-} from '../../../invocationStatuses';
+} from '../../../invocationStatuses.js';
 
 export type Outcome = TerminalInvocationStatus;
 export type OutcomeRow = { status?: string; count?: number | string };

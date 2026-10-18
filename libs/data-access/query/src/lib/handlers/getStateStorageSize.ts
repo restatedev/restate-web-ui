@@ -1,4 +1,4 @@
-import { type QueryContext } from './shared';
+import { type QueryContext } from './shared.js';
 
 const STATE_STORAGE_SIZE_QUERY = `SELECT service_name, COALESCE(SUM(value_length), 0) AS size
   FROM state

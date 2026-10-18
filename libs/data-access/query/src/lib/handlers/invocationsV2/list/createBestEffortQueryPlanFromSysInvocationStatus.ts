@@ -1,11 +1,11 @@
-import { isInvocationListFieldAvailableOnTable } from '../invocationListFields';
+import { isInvocationListFieldAvailableOnTable } from '../invocationListFields.js';
 import {
   STATUSES_RESOLVED_FROM_VQUEUE,
   type InvocationFilterV2,
   type InvocationSortV2,
   type InvocationStatusV2,
-} from '../shared';
-import type { BestEffortSysInvocationStatusSourcePlan } from './types';
+} from '../shared.js';
+import type { BestEffortSysInvocationStatusSourcePlan } from './types.js';
 
 /**
  * Reports whether invocation status can drive one bounded, best-effort

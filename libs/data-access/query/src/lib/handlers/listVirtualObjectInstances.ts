@@ -1,17 +1,17 @@
 import type { components } from '@restate/data-access-admin-api-spec';
-import { createVirtualObjectLockHolder } from './getVirtualObjectLock';
-import { quoteSqlString, type QueryContext } from './shared';
+import { createVirtualObjectLockHolder } from './getVirtualObjectLock.js';
+import { quoteSqlString, type QueryContext } from './shared.js';
 import {
   parseStructuredStringFilters,
   structuredStringFilterClause,
   type StructuredStringFilter,
-} from './structuredStringFilters';
+} from './structuredStringFilters.js';
 import {
   identityCandidateMatches,
   normalizeIdentityCandidates,
-} from './identityCandidates';
-import { usesStatsTables } from '../uiFeatures';
-import { VIRTUAL_OBJECT_STATS } from './indexes';
+} from './identityCandidates.js';
+import { usesStatsTables } from '../uiFeatures.js';
+import { VIRTUAL_OBJECT_STATS } from './indexes/index.js';
 
 const INSTANCE_LIMIT = 50;
 const BACKLOG_DESC_SORT = { field: 'backlog', order: 'DESC' } as const;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { convertFilters } from './convertFilters';
+import { convertFilters } from './convertFilters.js';
 
 describe('convertFilters', () => {
   it('escapes quotes in string, list and pattern values', () => {

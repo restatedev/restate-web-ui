@@ -62,8 +62,8 @@ import {
   type ListWorkflowRunsArgs,
   getWorkflowRun,
   getWorkflowRunStats,
-} from './handlers';
-import { getFeatures } from './getFeatures';
+} from './handlers/index.js';
+import { getFeatures } from './getFeatures.js';
 
 type BoundHandlers = {
   listInvocationsV2: (args: ListInvocationsV2Args) => Promise<Response>;

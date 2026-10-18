@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./out-tsc/vitest",
     "types": [
@@ -8,7 +8,14 @@
       "vite/client",
       "node",
       "vitest"
-    ]
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "vite.config.ts",

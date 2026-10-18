@@ -34,6 +34,11 @@ export default defineConfig(({ mode }) => {
                 '../../dist/apps/web-ui',
                 'vendor.LICENSE.txt',
               ),
+              template: (dependencies) =>
+                dependencies
+                  .filter(({ name }) => !name?.startsWith('@restate/'))
+                  .map((dependency) => dependency.text())
+                  .join('\n\n---\n\n'),
             },
           },
         }),

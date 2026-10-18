@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listDrainedDeployments } from './listDrainedDeployments';
-import type { QueryContext } from './shared';
+import { listDrainedDeployments } from './listDrainedDeployments.js';
+import type { QueryContext } from './shared.js';
 
 function querySql(query: ReturnType<typeof vi.fn>) {
   return query.mock.calls.map(([sql]) => sql);

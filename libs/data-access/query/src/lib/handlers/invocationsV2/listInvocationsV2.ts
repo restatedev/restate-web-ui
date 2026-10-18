@@ -1,9 +1,9 @@
 import type { components } from '@restate/data-access-admin-api-spec';
-import type { QueryContext } from '../shared';
-import { enrichInvocationFlowControl } from './list/enrichInvocationFlowControl';
-import { loadVqueueInvocationsByIds } from './list/loadVqueueInvocationsByIds';
-import { selectInvocationCandidatesV2 } from './selectInvocationCandidatesV2';
-import { badRequest, INVOCATIONS_V2_LIMIT } from './shared';
+import type { QueryContext } from '../shared.js';
+import { enrichInvocationFlowControl } from './list/enrichInvocationFlowControl.js';
+import { loadVqueueInvocationsByIds } from './list/loadVqueueInvocationsByIds.js';
+import { selectInvocationCandidatesV2 } from './selectInvocationCandidatesV2.js';
+import { badRequest, INVOCATIONS_V2_LIMIT } from './shared.js';
 
 export type ListInvocationsV2Args =
   components['schemas']['ListInvocationsV2RequestBody'];

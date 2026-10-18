@@ -2,9 +2,9 @@ import { fromBinary } from '@bufbuild/protobuf';
 import {
   CompletePromiseEntryMessage,
   CompletePromiseEntryMessageSchema,
-} from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
-import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
+} from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
+import { toUnit8Array } from '../toUni8Array.js';
+import { decode } from '../decoder.js';
 import { RestateError } from '@restate/util-errors';
 import {
   Invocation,
@@ -18,7 +18,7 @@ import {
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 function getCompletion(completion: CompletePromiseEntryMessage['completion']) {
   switch (completion.case) {

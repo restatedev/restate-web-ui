@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createQueryContext } from './shared';
+import { createQueryContext } from './shared.js';
 
 describe('createQueryContext', () => {
   afterEach(() => vi.unstubAllGlobals());

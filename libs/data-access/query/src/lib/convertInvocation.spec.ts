@@ -4,7 +4,7 @@ import {
   convertInvocation,
   getInvocationStatusFromVqueue,
   type VqueueStatus,
-} from './convertInvocation';
+} from './convertInvocation.js';
 
 function rawInvocation(overrides: Partial<RawInvocation> = {}): RawInvocation {
   return {

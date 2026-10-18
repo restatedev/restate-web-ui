@@ -2,14 +2,18 @@ import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import {
   getInvocationListFieldOnTable,
   type InvocationListField,
-} from '../invocationListFields';
-import { filterToSql, sqlStringList, type InvocationFilterV2 } from '../shared';
+} from '../invocationListFields.js';
+import {
+  filterToSql,
+  sqlStringList,
+  type InvocationFilterV2,
+} from '../shared.js';
 import {
   INVOCATION_STATUS_DEFINITIONS,
   INVOCATION_STATUSES,
   TERMINAL_INVOCATION_STATUSES,
   type InvocationStatus,
-} from '../../../invocationStatuses';
+} from '../../../invocationStatuses.js';
 
 type InvocationFilterSource =
   | { type: 'invocation'; alias: string }

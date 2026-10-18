@@ -1,6 +1,6 @@
-import adminSpec from './lib/output.json';
+import adminSpec from './lib/output.json' with { type: 'json' };
 
-export type * from './lib/index';
-export type * from './lib/type';
-export * from './lib/type';
+export type * from './lib/index.js';
+export type * from './lib/type.js';
+export * from './lib/type.js';
 export const spec = adminSpec;

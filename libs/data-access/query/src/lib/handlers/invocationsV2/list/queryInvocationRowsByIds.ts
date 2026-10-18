@@ -2,17 +2,17 @@ import type { FilterItem } from '@restate/data-access-admin-api-spec';
 import {
   SYS_INVOCATION_LIST_SELECT_COLUMNS,
   type QueryContext,
-} from '../../shared';
-import { getInvocationListFieldOnTable } from '../invocationListFields';
+} from '../../shared.js';
+import { getInvocationListFieldOnTable } from '../invocationListFields.js';
 import {
   type InvocationFilterV2,
   type InvocationSortV2,
   sqlStringList,
-} from '../shared';
+} from '../shared.js';
 import {
   fieldFilterClause,
   statusFilterClause,
-} from './invocationStatusFilters';
+} from './invocationStatusFilters.js';
 
 /**
  * Runs after any candidate source, or directly for ID filters, to load complete

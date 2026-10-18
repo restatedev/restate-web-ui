@@ -1,7 +1,7 @@
 import { fromBinary } from '@bufbuild/protobuf';
-import { OneWayCallEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
-import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
+import { OneWayCallEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
+import { toUnit8Array } from '../toUni8Array.js';
+import { decode } from '../decoder.js';
 import {
   Invocation,
   JournalEntryV2,
@@ -16,7 +16,7 @@ import {
   getTarget,
   JournalRawEntryWithCommandIndex,
   parseEntryJson,
-} from './util';
+} from './util.js';
 
 function oneWayCallV1(
   entry: JournalRawEntry,

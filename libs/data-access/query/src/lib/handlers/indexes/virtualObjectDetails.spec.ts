@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getVirtualObjectInvocations } from '../getVirtualObjectInvocations';
-import { getVirtualObjectInbox } from '../getVirtualObjectInbox';
-import type { QueryContext } from '../shared';
+import { getVirtualObjectInvocations } from '../getVirtualObjectInvocations.js';
+import { getVirtualObjectInbox } from '../getVirtualObjectInbox.js';
+import type { QueryContext } from '../shared.js';
 
 function createContext(responder: (sql: string) => Record<string, unknown>[]) {
   const query = vi.fn(async (sql: string) => ({ rows: responder(sql) }));

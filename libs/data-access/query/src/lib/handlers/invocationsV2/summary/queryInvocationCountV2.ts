@@ -1,26 +1,29 @@
-import { TERMINAL_INVOCATION_STATUSES } from '../../../invocationStatuses';
-import type { QueryContext } from '../../shared';
-import type { InvocationFilterV2, ResolvedInvocationModeV2 } from '../shared';
-import { createVqueueListQueryPlan } from '../list/createVqueueListQueryPlan';
-import { sourcePlansToExecute } from '../list/selectVqueueInvocationCandidates';
+import { TERMINAL_INVOCATION_STATUSES } from '../../../invocationStatuses.js';
+import type { QueryContext } from '../../shared.js';
+import type {
+  InvocationFilterV2,
+  ResolvedInvocationModeV2,
+} from '../shared.js';
+import { createVqueueListQueryPlan } from '../list/createVqueueListQueryPlan.js';
+import { sourcePlansToExecute } from '../list/selectVqueueInvocationCandidates.js';
 import type {
   ExecutableInvocationCandidateSourcePlan,
   SysInvocationStatusQueryPlan,
   SysVqueueMetaAndVqueuesQueryPlan,
   SysVqueuesQueryPlan,
-} from '../list/types';
+} from '../list/types.js';
 import {
   invocationStatusFilterClauses,
   invocationStatusPredicate,
-} from '../list/invocationStatusFilters';
-import { invocationStatusSampleColumns } from '../list/invocationStatusPlan';
+} from '../list/invocationStatusFilters.js';
+import { invocationStatusSampleColumns } from '../list/invocationStatusPlan.js';
 import {
   vqueueFilterClauses,
   vqueueMetadataPredicates,
   vqueueSampleColumns,
   vqueueStatusPredicate,
-} from '../list/vqueueFilters';
-import { queryInvocationCountFromInvocationStatusAndState } from './queryInvocationSummaryFromInvocationStatusAndState';
+} from '../list/vqueueFilters.js';
+import { queryInvocationCountFromInvocationStatusAndState } from './queryInvocationSummaryFromInvocationStatusAndState.js';
 
 type CountRow = {
   count?: number | string;

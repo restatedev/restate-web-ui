@@ -2,7 +2,7 @@ import type {
   BatchInvocationsResponse,
   BatchOperationResult,
 } from '@restate/data-access-admin-api-spec';
-import { isInvocationId } from './shared';
+import { isInvocationId } from './shared.js';
 
 type ProcessorResult = {
   invocationId: string;

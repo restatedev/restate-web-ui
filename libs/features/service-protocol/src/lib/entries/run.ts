@@ -1,7 +1,7 @@
 import { fromBinary } from '@bufbuild/protobuf';
-import { RunEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb';
-import { toUnit8Array } from '../toUni8Array';
-import { decode } from '../decoder';
+import { RunEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
+import { toUnit8Array } from '../toUni8Array.js';
+import { decode } from '../decoder.js';
 import { RestateError } from '@restate/util-errors';
 import {
   Invocation,
@@ -15,7 +15,7 @@ import {
   getEntryResultV2,
   getCompletionEntry,
   getLastFailureV1,
-} from './util';
+} from './util.js';
 
 function runV1(
   entry: JournalRawEntry,

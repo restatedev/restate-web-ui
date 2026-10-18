@@ -2,11 +2,11 @@ import type {
   InvocationFilterV2,
   InvocationSortV2,
   InvocationStatusV2,
-} from '../shared';
-import type { VqueueStatus } from '../../../convertInvocation';
-import type { VqueueStage } from '../../../invocationStatuses';
+} from '../shared.js';
+import type { VqueueStatus } from '../../../convertInvocation.js';
+import type { VqueueStage } from '../../../invocationStatuses.js';
 
-export type { VqueueStage } from '../../../invocationStatuses';
+export type { VqueueStage } from '../../../invocationStatuses.js';
 
 export type InvocationCandidateRow = {
   id: string;

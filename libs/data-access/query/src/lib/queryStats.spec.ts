@@ -7,7 +7,7 @@ import {
   normalizeQueryPage,
   recordQuery,
   subscribeToQueryStats,
-} from './queryStats';
+} from './queryStats.js';
 
 function record(
   overrides: Partial<Parameters<typeof recordQuery>[0]> = {},
@@ -264,7 +264,7 @@ describe('persistence', () => {
       addEventListener: vi.fn(),
     });
     vi.resetModules();
-    return import('./queryStats');
+    return import('./queryStats.js');
   }
 
   beforeEach(() => {

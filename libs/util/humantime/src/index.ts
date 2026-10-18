@@ -1,1 +1,1 @@
-export * from './lib/humantime';
+export * from './lib/humantime.js';

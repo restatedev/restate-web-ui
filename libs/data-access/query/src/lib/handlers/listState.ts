@@ -1,5 +1,5 @@
 import { hexToBase64 } from '@restate/util-binary';
-import { quoteSqlString, type QueryContext } from './shared';
+import { quoteSqlString, type QueryContext } from './shared.js';
 
 export interface ListStateItem {
   key: string;

@@ -1,20 +1,20 @@
 import {
   BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT,
   type QueryContext,
-} from '../shared';
+} from '../shared.js';
 import {
   getInvocationStatusFromVqueue,
   type InvocationStatus,
-} from '../../invocationStatuses';
-import { createVqueueListQueryPlan } from './list/createVqueueListQueryPlan';
-import { selectVqueueInvocationCandidates } from './list/selectVqueueInvocationCandidates';
-import { queryVqueueCandidateStatusesByIds } from './list/queryVqueueCandidateStatusesByIds';
-import { selectInvocationCandidatesFromIndexes } from './list/indexedInvocationCandidates';
+} from '../../invocationStatuses.js';
+import { createVqueueListQueryPlan } from './list/createVqueueListQueryPlan.js';
+import { selectVqueueInvocationCandidates } from './list/selectVqueueInvocationCandidates.js';
+import { queryVqueueCandidateStatusesByIds } from './list/queryVqueueCandidateStatusesByIds.js';
+import { selectInvocationCandidatesFromIndexes } from './list/indexedInvocationCandidates.js';
 import type {
   InvocationCandidate,
   InvocationStatusSelection,
   VqueueListPartialResult,
-} from './list/types';
+} from './list/types.js';
 import {
   INVOCATIONS_V2_LIMIT,
   resolveInvocationModeV2,
@@ -25,7 +25,7 @@ import {
   validateInvocationFieldsForServer,
   validateInvocationFiltersV2,
   validateInvocationSortV2,
-} from './shared';
+} from './shared.js';
 
 type SelectInvocationCandidatesV2Args = {
   filters?: InvocationFilterV2[];

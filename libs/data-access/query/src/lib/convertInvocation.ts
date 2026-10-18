@@ -7,10 +7,10 @@ import type {
 import {
   getComputedInvocationStatus,
   type InvocationWithComputedStatus,
-} from './getComputedInvocationStatus';
-import { getInvocationStatusFromVqueue } from './invocationStatuses';
+} from './getComputedInvocationStatus.js';
+import { getInvocationStatusFromVqueue } from './invocationStatuses.js';
 
-export { getInvocationStatusFromVqueue } from './invocationStatuses';
+export { getInvocationStatusFromVqueue } from './invocationStatuses.js';
 
 // Live state for a single invocation read from the VQueue entry tables.
 export type VqueueStatus = Partial<

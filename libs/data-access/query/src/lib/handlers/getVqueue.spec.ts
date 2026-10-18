@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createInvocationV2QueryTestHarness,
   rawInvocation,
-} from './invocationsV2/tests/testUtils';
+} from './invocationsV2/tests/testUtils.js';
 
 describe('GET /query/vqueues/:vqueueId', () => {
   const { get, setResponder, sql } = createInvocationV2QueryTestHarness();

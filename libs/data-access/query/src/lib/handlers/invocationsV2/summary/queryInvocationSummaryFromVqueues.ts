@@ -4,22 +4,22 @@ import {
   INVOCATION_SUMMARY_STAGES,
   type FilterItem,
 } from '@restate/data-access-admin-api-spec';
-import type { QueryContext } from '../../shared';
+import type { QueryContext } from '../../shared.js';
 import {
   getInvocationStatusFromVqueue,
   type InvocationStatus,
-} from '../../../invocationStatuses';
+} from '../../../invocationStatuses.js';
 import {
   filterToSql,
   VQUEUE_SERVICE_QUEUE_LIMIT,
   type InvocationFilterV2,
   type ResolvedInvocationModeV2,
-} from '../shared';
-import { getInvocationListFieldOnTable } from '../invocationListFields';
+} from '../shared.js';
+import { getInvocationListFieldOnTable } from '../invocationListFields.js';
 import type {
   InvocationStatusSummaryBucket,
   InvocationSummaryQueryResult,
-} from './types';
+} from './types.js';
 
 type MetaRow = {
   service_name?: string;

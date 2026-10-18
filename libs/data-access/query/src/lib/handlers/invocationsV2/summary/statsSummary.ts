@@ -6,20 +6,20 @@ import {
   getInvocationStatusFromVqueue,
   type InvocationStatus,
   type VqueueStage,
-} from '../../../invocationStatuses';
-import type { InvocationFilterV2 } from '../shared';
-import { resolveInvocationStatusSelection } from '../list/createVqueueListQueryPlan';
-import { matchesStringFilter } from './matchesStringFilter';
+} from '../../../invocationStatuses.js';
+import type { InvocationFilterV2 } from '../shared.js';
+import { resolveInvocationStatusSelection } from '../list/createVqueueListQueryPlan.js';
+import { matchesStringFilter } from './matchesStringFilter.js';
 import {
   LIVE_BUCKETS,
   SERVICE_STAGE_BUCKETS,
   STAGE_LABELS,
   TERMINAL_BUCKETS,
-} from './queryInvocationSummaryFromVqueues';
+} from './queryInvocationSummaryFromVqueues.js';
 import type {
   InvocationStageSummaryBucket,
   InvocationSummaryQueryResult,
-} from './types';
+} from './types.js';
 
 const STAGES: VqueueStage[] = [
   'inbox',

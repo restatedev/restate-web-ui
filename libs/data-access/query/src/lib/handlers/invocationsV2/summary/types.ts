@@ -1,5 +1,5 @@
-import type { InvocationStatus } from '../../../invocationStatuses';
-import type { InvocationSummaryStageV2 } from '../shared';
+import type { InvocationStatus } from '../../../invocationStatuses.js';
+import type { InvocationSummaryStageV2 } from '../shared.js';
 
 export type InvocationStatusSummaryBucket = {
   key: string;

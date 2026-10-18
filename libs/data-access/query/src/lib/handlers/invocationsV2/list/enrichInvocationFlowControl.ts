@@ -1,11 +1,11 @@
 import type { components } from '@restate/data-access-admin-api-spec';
-import { durationBetween } from '../../../convertInvocation';
-import type { QueryContext } from '../../shared';
+import { durationBetween } from '../../../convertInvocation.js';
+import type { QueryContext } from '../../shared.js';
 import {
   parseVqueueBlockedResource,
   parseVqueueSchedulingStatus,
-} from '../../vqueueScheduler';
-import { sqlStringList } from '../shared';
+} from '../../vqueueScheduler.js';
+import { sqlStringList } from '../shared.js';
 
 type ListRow =
   components['schemas']['ListInvocationsV2Response']['rows'][number];

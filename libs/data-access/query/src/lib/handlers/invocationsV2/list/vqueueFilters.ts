@@ -1,18 +1,18 @@
 import type { FilterItem } from '@restate/data-access-admin-api-spec';
-import { INVOCATION_STATUS_DEFINITIONS } from '../../../invocationStatuses';
+import { INVOCATION_STATUS_DEFINITIONS } from '../../../invocationStatuses.js';
 import {
   getInvocationListField,
   getInvocationListFieldOnTable,
   type InvocationListTable,
-} from '../invocationListFields';
+} from '../invocationListFields.js';
 import {
   filterToSql,
   sqlStringList,
   type InvocationFilterV2,
   type InvocationSortV2,
   type InvocationStatusV2,
-} from '../shared';
-import type { VqueueStage } from './types';
+} from '../shared.js';
+import type { VqueueStage } from './types.js';
 
 /** Maps API statuses to their VQueue stage/status predicates. */
 export function vqueueStatusPredicate(

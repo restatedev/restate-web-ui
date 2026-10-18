@@ -2,18 +2,18 @@ import type {
   components,
   RawInvocation,
 } from '@restate/data-access-admin-api-spec';
-import { convertInvocation } from '../convertInvocation';
+import { convertInvocation } from '../convertInvocation.js';
 import {
   SYS_INVOCATION_LIST_SELECT_COLUMNS,
   isInvocationId,
   quoteSqlString,
   targetServiceKeyClause,
   type QueryContext,
-} from './shared';
-import { fetchVqueueStatuses } from './vqueue';
-import { toVqueueEntry } from './virtualObjectEntries';
-import { ENTRY_BY_VIRTUAL_OBJECT, selectFromIndex } from './indexes';
-import { usesIndexesV1 } from '../uiFeatures';
+} from './shared.js';
+import { fetchVqueueStatuses } from './vqueue.js';
+import { toVqueueEntry } from './virtualObjectEntries.js';
+import { ENTRY_BY_VIRTUAL_OBJECT, selectFromIndex } from './indexes/index.js';
+import { usesIndexesV1 } from '../uiFeatures.js';
 
 const RECENT_INVOCATION_LIMIT = 50;
 const RECENT_INVOCATION_QUERY_LIMIT = RECENT_INVOCATION_LIMIT + 1;

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { classifyHealthFailure } from './classifyHealthFailure';
-import { RestateError } from './RestateError';
-import { UnauthorizedError } from './UnauthorizedError';
+import { classifyHealthFailure } from './classifyHealthFailure.js';
+import { RestateError } from './RestateError.js';
+import { UnauthorizedError } from './UnauthorizedError.js';
 
 describe('classifyHealthFailure', () => {
   afterEach(() => {

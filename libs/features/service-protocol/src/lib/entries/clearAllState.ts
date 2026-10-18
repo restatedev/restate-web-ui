@@ -8,7 +8,7 @@ import {
   getEntryResultV2,
   getLastFailureV1,
   JournalRawEntryWithCommandIndex,
-} from './util';
+} from './util.js';
 
 function clearAllStateV1(
   entry: JournalRawEntry,

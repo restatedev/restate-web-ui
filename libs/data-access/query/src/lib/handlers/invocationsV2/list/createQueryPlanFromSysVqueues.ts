@@ -2,9 +2,9 @@ import {
   type InvocationFilterV2,
   type InvocationSortV2,
   type InvocationStatusV2,
-} from '../shared';
-import { isInvocationListFieldAvailableOnTable } from '../invocationListFields';
-import type { SysVqueuesSourcePlan } from './types';
+} from '../shared.js';
+import { isInvocationListFieldAvailableOnTable } from '../invocationListFields.js';
+import type { SysVqueuesSourcePlan } from './types.js';
 
 /** Reports whether VQueue entries can satisfy the complete candidate query. */
 export function createQueryPlanFromSysVqueues(
