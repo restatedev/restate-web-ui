@@ -1,5 +1,7 @@
 # Napkin
 
+- 2026-10-19 Overview service-row Playground link (user): a service with exactly one handler deep-links to `#/operations/<handler>`; others open the Elements overview. #748 (cards → `ServicesTable`) dropped this by accident, so Cloud onboarding landed on the overview. Don't drop it again. Count handlers, not OpenAPI operations: "run (with scope)" is the scoped path of the same handler. Handlers load after the rows (bulk `GET /services`, #772), so the href switches to the handler once they arrive. Handler rows never get the onboarding guide; `PlaygroundLink` wraps it only when `OnboardingGuide` is passed.
+
 - 2026-10-16 Monaco 0.57 without monaco-sql-languages (user):
   - **Where Monaco comes from:** editors import it from `@restate/ui/editor/monaco` (`libs/ui/editor/src/lib/.client/monaco.ts`: workers, `features/register.all`, the `sql` and `json` registrations, and a re-export of `monaco-editor/editor`). Importing plain `monaco-editor` in a runtime module pulls in all languages and emits the TypeScript, CSS and HTML workers into `dist`. Type-only imports are fine.
   - **SQL autocomplete:** the caret context comes from `getSqlCompletionContext` (pure, spec'd).

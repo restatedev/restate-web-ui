@@ -230,7 +230,7 @@ function PlaygroundLink({
   serviceName: string;
   handlerName?: string;
   isOnboarding?: boolean;
-  OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
+  OnboardingGuide?: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
   const link = (
     <PlaygroundIconLink
@@ -240,7 +240,7 @@ function PlaygroundLink({
     />
   );
 
-  if (!OnboardingGuide || handlerName) {
+  if (!OnboardingGuide) {
     return link;
   }
 
@@ -293,6 +293,10 @@ function ServiceIdentity({
       />
       <PlaygroundLink
         serviceName={row.name}
+        // Open a single-handler service on its handler, not the overview.
+        handlerName={
+          row.handlers?.length === 1 ? row.handlers[0]?.name : undefined
+        }
         isOnboarding={isOnboarding}
         OnboardingGuide={OnboardingGuide}
       />
@@ -310,11 +314,9 @@ function ServiceIdentity({
 function HandlerIdentity({
   service,
   handler,
-  OnboardingGuide,
 }: {
   service: OverviewService;
   handler: Handler;
-  OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
   const styles = tableStyles();
   return (
@@ -328,11 +330,7 @@ function HandlerIdentity({
         compact
         className={styles.handler()}
       />
-      <PlaygroundLink
-        serviceName={service.name}
-        handlerName={handler.name}
-        OnboardingGuide={OnboardingGuide}
-      />
+      <PlaygroundLink serviceName={service.name} handlerName={handler.name} />
     </div>
   );
 }
@@ -350,7 +348,6 @@ function renderHandlerCell({
   column,
   baseUrl,
   linkParams,
-  OnboardingGuide,
   handlerInvocations,
 }: {
   service: OverviewService;
@@ -358,18 +355,13 @@ function renderHandlerCell({
   column: PanelTableColumn;
   baseUrl: string;
   linkParams?: URLSearchParams;
-  OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
   handlerInvocations: HandlerInvocations;
 }) {
   const styles = tableStyles();
   if (column.id === 'name') {
     return (
       <Cell className={styles.identityCell()}>
-        <HandlerIdentity
-          service={service}
-          handler={row.handler}
-          OnboardingGuide={OnboardingGuide}
-        />
+        <HandlerIdentity service={service} handler={row.handler} />
       </Cell>
     );
   }
@@ -448,14 +440,12 @@ function HandlerRows({
   columns,
   baseUrl,
   linkParams,
-  OnboardingGuide,
   handlerInvocations,
 }: {
   service: OverviewServiceTableRow;
   columns: PanelTableColumn[];
   baseUrl: string;
   linkParams?: URLSearchParams;
-  OnboardingGuide: ReturnType<typeof useRestateContext>['OnboardingGuide'];
   handlerInvocations: HandlerInvocations;
 }) {
   const styles = tableStyles();
@@ -467,13 +457,7 @@ function HandlerRows({
   return (
     <Collection
       items={handlers}
-      dependencies={[
-        columns,
-        baseUrl,
-        linkParams,
-        OnboardingGuide,
-        handlerInvocations,
-      ]}
+      dependencies={[columns, baseUrl, linkParams, handlerInvocations]}
     >
       {(row) => (
         <Row
@@ -490,7 +474,6 @@ function HandlerRows({
               column,
               baseUrl,
               linkParams,
-              OnboardingGuide,
               handlerInvocations,
             })
           }
@@ -775,7 +758,6 @@ export function ServicesTable() {
           columns={columns}
           baseUrl={baseUrl}
           linkParams={linkParams}
-          OnboardingGuide={OnboardingGuide}
           handlerInvocations={handlerInvocations}
         />
       )}
