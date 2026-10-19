@@ -75,7 +75,6 @@ Example: `pnpm nx g @nx/react:lib libs/ui/badge --importPath=@restate/ui-badge` 
 - **Branch names**: Only use the `release-` prefix for branches meant to publish a release.
 - **Reference doc**: Follow the Releasing section in `README.md`.
 
-
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
@@ -97,6 +96,5 @@ Example: `pnpm nx g @nx/react:lib libs/ui/badge --importPath=@restate/ui-badge` 
 - USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
 - DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
-
 
 <!-- nx configuration end-->
