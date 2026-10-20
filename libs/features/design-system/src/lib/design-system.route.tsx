@@ -54,8 +54,10 @@ const BG_GROUPS: {
         'Frames of floating layers: popovers, menus, selects, dialogs',
       ],
       ['surface', 'Panels and cards on the page, menu sections, dialog bodies'],
-      ['raised', 'Controls on a surface: secondary buttons, chips'],
-      ['selected', 'The selected thumb of a segmented control or tab strip'],
+      [
+        'raised',
+        'Controls: secondary buttons, chips, the selected thumb of a segmented control',
+      ],
     ],
   },
   {
@@ -129,8 +131,8 @@ const QUESTIONS: [question: string, answers: string[], note: string][] = [
   ],
   [
     'Is it a control someone presses?',
-    ['raised', 'selected'],
-    'Raised for secondary buttons and chips, selected for the active thumb of a segmented control.',
+    ['raised'],
+    'Secondary buttons, chips, and the selected thumb of a segmented control, tab strip or nav indicator.',
   ],
   [
     'Is it an input or an inset field?',
@@ -140,7 +142,7 @@ const QUESTIONS: [question: string, answers: string[], note: string][] = [
   [
     'Is it a hover or pressed state?',
     ['tint-subtle', 'tint', 'tint-strong'],
-    'Translucent, so the same classes work on any layer. On a plain surface, hover:bg-muted pressed:bg-emphasis is also fine.',
+    'On a raised control, layer the tint over its fill: hover:wash-tint pressed:wash-tint-strong. On mixed backgrounds, hover:bg-tint-subtle pressed:bg-tint. On a plain surface, hover:bg-muted pressed:bg-emphasis.',
   ],
   [
     'Is it a status?',
@@ -156,9 +158,12 @@ const INTERNAL_OWNERS: [prefix: string, owner: string][] = [
   ],
   ['--raised-on-tint', 'Header: controls on a status-tinted bar'],
   ['--raised-text', 'Header chips: text tiers on raised controls'],
-  ['--raised-', 'ChipSegment tones, secondary Button and Link hover'],
+  ['--raised-', 'ChipSegment tones'],
   ['--queued-swatch', 'swatch utility: legend dots'],
-  ['--sheen', 'Gradient sheens on Card, ContentPanel tabs and tables'],
+  [
+    '--sheen',
+    'Gradient sheens on Card, ContentPanel tabs and tables; --sheen-strength is the knob',
+  ],
 ];
 
 const tokenByName = (name: string) =>
@@ -255,6 +260,12 @@ const stateStyles = tv({
         label: 'text-subtle',
         target:
           'w-fit px-1.5 text-tertiary hover:bg-tint pressed:bg-tint-strong',
+      },
+      raised: {
+        tile: 'bg-surface',
+        label: 'text-subtle',
+        target:
+          'w-fit border border-tint bg-raised text-primary shadow-xs hover:wash-tint pressed:wash-tint-strong',
       },
       inverse: {
         tile: 'border-inverse bg-inverse',
@@ -484,6 +495,11 @@ function Surfaces() {
     ],
     ['icon', 'Icon buttons', 'hover:bg-tint pressed:bg-tint-strong'],
     [
+      'raised',
+      'Raised control',
+      'bg-raised hover:wash-tint pressed:wash-tint-strong',
+    ],
+    [
       'inverse',
       'On an inverse surface',
       'hover:bg-inverse-tint pressed:bg-inverse-tint-strong',
@@ -546,7 +562,7 @@ function Surfaces() {
           </div>
         ))}
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {states.map(([on, title, recipe]) => {
           const styles = stateStyles({ on });
           return (

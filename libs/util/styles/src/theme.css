@@ -8,7 +8,6 @@
     var(--background-color-emphasis) 50%,
     var(--background-color-canvas)
   );
-  --background-color-selected: var(--background-color-surface);
   --background-color-raised: var(--background-color-surface);
   --background-color-hatch: color-mix(
     in oklab,
@@ -312,20 +311,29 @@
     --mix-blend-tone: luminosity;
     --raised-subtle: var(--background-color-subtle);
     --raised-muted: var(--background-color-muted);
-    --raised-hover: var(--background-color-muted);
-    --raised-pressed: var(--background-color-emphasis);
     --raised-on-tint: var(--background-color-raised);
     --raised-on-tint-subtle: var(--raised-subtle);
     --raised-on-tint-muted: var(--raised-muted);
-    --raised-on-tint-hover: var(--raised-hover);
-    --raised-on-tint-pressed: var(--raised-pressed);
     --queued-swatch-start: var(--background-color-queued-start);
     --queued-swatch-mid: var(--background-color-queued-mid);
     --queued-swatch: var(--background-color-queued);
     --queued-swatch-end: var(--background-color-queued-end);
-    --sheen: var(--background-color-surface);
-    --sheen-muted: var(--background-color-muted);
-    --sheen-emphasis: var(--background-color-emphasis);
+    --sheen-strength: 100%;
+    --sheen: color-mix(
+      in oklab,
+      var(--background-color-surface) var(--sheen-strength),
+      var(--background-color-subtle)
+    );
+    --sheen-muted: color-mix(
+      in oklab,
+      var(--background-color-muted) var(--sheen-strength),
+      var(--background-color-subtle)
+    );
+    --sheen-emphasis: color-mix(
+      in oklab,
+      var(--background-color-emphasis) var(--sheen-strength),
+      var(--background-color-muted)
+    );
     --raised-text: var(--text-color-tertiary);
     --raised-text-muted: var(--text-color-muted);
     --raised-text-subtle: var(--text-color-subtle);
@@ -357,6 +365,27 @@
 
 @utility mix-blend-burn {
   mix-blend-mode: var(--mix-blend-burn);
+}
+
+@utility wash-tint-subtle {
+  background-image: linear-gradient(
+    var(--background-color-tint-subtle),
+    var(--background-color-tint-subtle)
+  );
+}
+
+@utility wash-tint {
+  background-image: linear-gradient(
+    var(--background-color-tint),
+    var(--background-color-tint)
+  );
+}
+
+@utility wash-tint-strong {
+  background-image: linear-gradient(
+    var(--background-color-tint-strong),
+    var(--background-color-tint-strong)
+  );
 }
 
 @utility swatch {

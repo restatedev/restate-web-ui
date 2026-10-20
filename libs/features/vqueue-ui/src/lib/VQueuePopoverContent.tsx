@@ -213,8 +213,7 @@ const stageSummaryStyles = tv({
     presentation: {
       connected:
         'z-10 -mr-px rounded-l-lg rounded-r-none border border-r-0 border-tint bg-surface text-primary',
-      focused:
-        'rounded-lg border border-tint bg-selected text-primary shadow-xs',
+      focused: 'rounded-lg border border-tint bg-raised text-primary shadow-xs',
       default: 'rounded-lg',
     },
   },

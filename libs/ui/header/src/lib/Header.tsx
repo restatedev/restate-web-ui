@@ -31,7 +31,7 @@ export type HeaderProps = PropsWithChildren<
 
 const headerStyles = tv({
   slots: {
-    base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-overlay/80 bg-linear-to-r px-3 py-2.5 shadow-[0_1px_2px_-0.5px_--theme(--box-shadow-color-default/3%),0_12px_28px_-10px_--theme(--box-shadow-color-default/6%),inset_0_2px_0_0_--theme(--box-shadow-color-edge/47.5%)] backdrop-blur-xl backdrop-saturate-150 transition-colors [--background-color-raised:var(--raised-on-tint)] [--raised-hover:var(--raised-on-tint-hover)] [--raised-muted:var(--raised-on-tint-muted)] [--raised-pressed:var(--raised-on-tint-pressed)] [--raised-subtle:var(--raised-on-tint-subtle)] sm:top-6',
+    base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-overlay/80 bg-linear-to-r px-3 py-2.5 shadow-[0_1px_2px_-0.5px_--theme(--box-shadow-color-default/3%),0_12px_28px_-10px_--theme(--box-shadow-color-default/6%),inset_0_2px_0_0_--theme(--box-shadow-color-edge/47.5%)] backdrop-blur-xl backdrop-saturate-150 transition-colors [--background-color-raised:var(--raised-on-tint)] [--raised-muted:var(--raised-on-tint-muted)] [--raised-subtle:var(--raised-on-tint-subtle)] sm:top-6',
     icon: '-my-1 -ml-5 flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-[0.6875rem] bg-accent-subtle text-accent shadow-xs ring-1 ring-accent-muted lg:w-auto lg:px-2.5',
     iconGlyph: 'h-4.5 w-4.5',
     iconLabelText:

@@ -50,7 +50,7 @@ const styles = tv({
       button:
         'inline-block rounded-xl border border-tint bg-linear-to-b from-accent/90 to-accent px-5 py-2 text-center text-sm text-inverse no-underline shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)] drop-shadow-xs hover:from-accent-hover hover:to-accent-hover hover:shadow-none pressed:from-accent-pressed pressed:to-accent-pressed pressed:shadow-none',
       'secondary-button':
-        'inline-block rounded-xl border bg-raised px-5 py-2 text-center text-sm text-primary no-underline shadow-xs hover:bg-(--raised-hover) pressed:bg-(--raised-pressed)',
+        'inline-block rounded-xl border bg-raised px-5 py-2 text-center text-sm text-primary no-underline shadow-xs hover:wash-tint pressed:wash-tint-strong',
       'destructive-button':
         'inline-block rounded-xl border border-tint bg-linear-to-b from-danger/95 to-danger px-5 py-2 text-center text-sm text-inverse no-underline shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/15%)] drop-shadow-xs hover:from-danger-hover hover:to-danger-hover hover:shadow-none pressed:from-danger-pressed pressed:to-danger-pressed pressed:shadow-none',
       primary: 'text-accent decoration-accent/60 hover:decoration-accent',

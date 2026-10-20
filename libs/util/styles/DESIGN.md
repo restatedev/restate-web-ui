@@ -43,22 +43,22 @@ Answer in order and stop at the first yes. The design-system page shows the same
 1. **Does it float above the page?** `bg-overlay`: popover, dropdown, select, combobox and dialog frames (`bg-overlay/90` when frosted). The sections inside them are `bg-surface`.
 2. **Is it the page, or a rail beside it?** `bg-canvas` for the page and in-page frames (`Section`, toolbar strips, fades into the page); `bg-sunken` for the sidebar and docked side panel.
 3. **Is it a panel or card on the page?** `bg-surface`; `bg-subtle` for quiet areas inside it (card bodies, content-panel bodies, the active sidebar item).
-4. **Is it a control someone presses?** `bg-raised` for secondary buttons, button-styled links and chips; `bg-selected` for the selected thumb of a segmented control, tab strip or nav indicator.
+4. **Is it a control someone presses?** `bg-raised`: secondary buttons, button-styled links, chips, and the selected thumb of a segmented control, tab strip or nav indicator.
 5. **Is it an input or inset field?** `bg-muted`.
 6. **Is it hover or pressed?** See [hover and pressed](#hover-and-pressed).
 7. **Is it a status?** Use a [status family](#status-families), not a neutral layer.
 
 ### All neutral backgrounds
 
-| Group       | Tokens (back to front)                                                   | Notes                                                                                     |
-| ----------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| Layers      | `sunken`, `canvas`, `subtle`, `overlay`, `surface`, `raised`, `selected` | Opaque areas. Pick by what the area is, not by how light it looks                         |
-| Fills       | `muted`, `emphasis`, `strong`, `neutral`, `neutral-strong`               | Opaque fills inside a layer: fields, pressed states, skeletons, solid neutral marks       |
-| Translucent | `tint-subtle`, `tint`, `tint-strong`, `backdrop`                         | Show what's underneath; hover, pressed and edges on any background; `backdrop` for scrims |
-| Effects     | `highlight`, `shade`                                                     | White and black in both themes, only with an opacity on colored fills                     |
-| Inverse     | `inverse`, `inverse-muted/-emphasis/-strong`, `inverse-tint*`            | Only on [inverse surfaces](#inverse-surfaces)                                             |
+| Group       | Tokens (back to front)                                        | Notes                                                                                     |
+| ----------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Layers      | `sunken`, `canvas`, `subtle`, `overlay`, `surface`, `raised`  | Opaque areas. Pick by what the area is, not by how light it looks                         |
+| Fills       | `muted`, `emphasis`, `strong`, `neutral`, `neutral-strong`    | Opaque fills inside a layer: fields, pressed states, skeletons, solid neutral marks       |
+| Translucent | `tint-subtle`, `tint`, `tint-strong`, `backdrop`              | Show what's underneath; hover, pressed and edges on any background; `backdrop` for scrims |
+| Effects     | `highlight`, `shade`                                          | White and black in both themes, only with an opacity on colored fills                     |
+| Inverse     | `inverse`, `inverse-muted/-emphasis/-strong`, `inverse-tint*` | Only on [inverse surfaces](#inverse-surfaces)                                             |
 
-`bg-canvas`, `bg-overlay` and `bg-muted` are all gray-100 in the light theme, and `bg-surface`, `bg-raised` and `bg-selected` are all white, but in dark mode each is a different layer, so pick by role. A fade or mask that should blend into the toolbar or page behind it must use that layer's token (`from-canvas`), never a token that only happens to match in light.
+`bg-canvas`, `bg-overlay` and `bg-muted` are all gray-100 in the light theme, and `bg-surface` and `bg-raised` are both white, but in dark mode each is a different layer, so pick by role. A fade or mask that should blend into the toolbar or page behind it must use that layer's token (`from-canvas`), never a token that only happens to match in light.
 
 ### Contexts
 
@@ -67,12 +67,13 @@ Some components change what a token means for their content instead of adding pu
 - **`ChipSegment tone`:** `raised` (default look of a chip), `subtle` and `muted` for quieter segments such as a key or scope value. Pick a tone instead of a background.
 - **`Header`:** points `bg-raised` and the chip tones at the on-tint values, so chips and buttons sit correctly on a status-tinted bar. Header chips also brighten their text tiers.
 - **`swatch` utility:** on legend dots, points the queued fills at lighter swatch variants.
-- **Sheens:** `Card`, `ContentPanel` tabs and tables start their gradients from `--sheen*`, which is the lighter stop in light and the flat fill in dark. Don't add new sheens; use a flat layer.
+- **Sheens:** `Card`, `ContentPanel` tabs and tables start their gradients from `--sheen*`, mixes of the lighter stop and the flat fill set by one knob, `--sheen-strength` (100% in light, 0% in dark, so dark surfaces are flat). Don't add new sheens; use a flat layer.
 
 ### Hover and pressed
 
 | Where                                      | Rest            | Hover                    | Pressed                          |
 | ------------------------------------------ | --------------- | ------------------------ | -------------------------------- |
+| Raised controls (secondary buttons, chips) | `bg-raised`     | `hover:wash-tint`        | `pressed:wash-tint-strong`       |
 | Item on `bg-surface` / `bg-subtle`         | —               | `hover:bg-muted`         | `pressed:bg-emphasis`            |
 | Nav items, rows on mixed backgrounds       | —               | `hover:bg-tint-subtle`   | `pressed:bg-tint`                |
 | Icon buttons                               | —               | `hover:bg-tint`          | `pressed:bg-tint-strong`         |
@@ -80,7 +81,7 @@ Some components change what a token means for their content instead of adding pu
 | Items on an inverse surface                | —               | `hover:bg-inverse-tint`  | `pressed:bg-inverse-tint-strong` |
 | Tinted rows (e.g. warning journal entries) | —               | `hover:bg-warning-muted` | `pressed:bg-warning-emphasis/50` |
 
-`tint-*` tokens are translucent (black in light mode, white in dark), so they work on any background. Use them when you don't control what's underneath.
+`tint-*` tokens are translucent (black in light mode, white in dark), so they work on any background. Use them when you don't control what's underneath. The `wash-tint-subtle`, `wash-tint` and `wash-tint-strong` utilities layer the same tint over an element's own fill (as a background image), so an opaque control darkens in light and lightens in dark without a separate hover token per layer. Don't combine them with a background gradient.
 
 ### Borders
 

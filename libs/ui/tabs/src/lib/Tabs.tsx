@@ -88,7 +88,7 @@ const tabStyles = tv({
 });
 
 const selectionIndicatorStyles = tv({
-  base: 'absolute inset-0 -z-10 rounded-xl border border-tint bg-selected shadow-xs motion-safe:transition-[translate,width,height] motion-safe:duration-300 motion-safe:ease-out',
+  base: 'absolute inset-0 -z-10 rounded-xl border border-tint bg-raised shadow-xs motion-safe:transition-[translate,width,height] motion-safe:duration-300 motion-safe:ease-out',
 });
 
 const tabPanelsStyles = tv({
