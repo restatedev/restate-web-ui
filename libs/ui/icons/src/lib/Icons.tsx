@@ -107,6 +107,9 @@ import {
   Scan,
   Funnel,
   SlidersHorizontal,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { tv } from '@restate/util-styles';
@@ -267,6 +270,9 @@ export const enum IconName {
   VirtualObject = 'VirtualObject',
   Scope = 'Scope',
   ScanBox = 'ScanBox',
+  Sun = 'Sun',
+  Moon = 'Moon',
+  Monitor = 'Monitor',
 }
 export interface IconsProps {
   name: IconName;
@@ -408,6 +414,9 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.VirtualObject]: ComponentIcon,
   [IconName.Scope]: Focus,
   [IconName.ScanBox]: Scan,
+  [IconName.Sun]: Sun,
+  [IconName.Moon]: Moon,
+  [IconName.Monitor]: Monitor,
 };
 
 const styles = tv({

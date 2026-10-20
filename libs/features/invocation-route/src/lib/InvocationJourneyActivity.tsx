@@ -54,7 +54,7 @@ const activityGroupStyles = tv({
 });
 
 const activityButtonStyles = tv({
-  base: 'inline-flex h-4 items-center gap-0.5 rounded-sm border border-strong/70 bg-surface py-0 pr-0.5 pl-1 text-2xs leading-none font-medium tabular-nums shadow-xs hover:border-neutral/70 hover:bg-surface pressed:bg-subtle',
+  base: 'inline-flex h-4 items-center gap-0.5 rounded-sm border border-strong/70 bg-raised py-0 pr-0.5 pl-1 text-2xs leading-none font-medium tabular-nums shadow-xs hover:border-neutral/70 pressed:wash-tint-subtle',
   variants: {
     kind: {
       errorBackoffs: 'text-warning-strong',
@@ -66,7 +66,7 @@ const activityButtonStyles = tv({
 });
 
 const activityCountStyles = tv({
-  base: 'inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded-sm border border-tint-subtle bg-surface/70 px-1 text-2xs leading-none font-medium tabular-nums',
+  base: 'inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded-sm border border-tint-subtle bg-raised/70 px-1 text-2xs leading-none font-medium tabular-nums',
   variants: {
     kind: {
       errorBackoffs: 'text-warning-strong',

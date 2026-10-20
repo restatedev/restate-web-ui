@@ -160,6 +160,8 @@ const INTERNAL_OWNERS: [prefix: string, owner: string][] = [
   ['--raised-text', 'Header chips: text tiers on raised controls'],
   ['--raised-', 'ChipSegment tones'],
   ['--queued-swatch', 'swatch utility: legend dots'],
+  ['--lens-', 'Journal ViewportSelector: the selected time window'],
+  ['--overlay-', 'PopoverOverlay: edge and shadow of floating layers'],
   [
     '--sheen',
     'Gradient sheens on Card, ContentPanel tabs and tables; --sheen-strength is the knob',

@@ -156,6 +156,12 @@
       "path": "../../libs/util/sidebar-nav/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/util/styles/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/features/theme/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/ui/tooltip/tsconfig.lib.json"
     },
     {

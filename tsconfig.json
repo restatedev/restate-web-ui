@@ -313,6 +313,9 @@
     },
     {
       "path": "./libs/features/design-system"
+    },
+    {
+      "path": "./libs/features/theme"
     }
   ]
 }

@@ -1,3 +1,5 @@
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @theme static {
   --background-color-canvas: var(--color-gray-100);
   --background-color-surface: var(--color-white);
@@ -306,6 +308,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --mix-blend-tint: multiply;
     --mix-blend-burn: color-burn;
     --mix-blend-tone: luminosity;
@@ -318,6 +321,54 @@
     --queued-swatch-mid: var(--background-color-queued-mid);
     --queued-swatch: var(--background-color-queued);
     --queued-swatch-end: var(--background-color-queued-end);
+    --lens-fill: color-mix(
+      in oklab,
+      var(--background-color-raised) 50%,
+      transparent
+    );
+    --lens-shadow:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 20%,
+          transparent
+        ),
+      0 1px 3px 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 8%,
+          transparent
+        );
+    --lens-shadow-hover:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 30%,
+          transparent
+        ),
+      0 1px 5px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 10%,
+          transparent
+        );
+    --lens-shadow-active:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 40%,
+          transparent
+        ),
+      0 2px 6px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 12%,
+          transparent
+        );
+    --overlay-edge: var(--border-color-tint);
+    --overlay-shadow:
+      0 10px 15px -3px --alpha(var(--color-black) / 10%),
+      0 4px 6px -4px --alpha(var(--color-black) / 10%);
     --sheen-strength: 100%;
     --sheen: color-mix(
       in oklab,
@@ -339,6 +390,462 @@
     --raised-text-subtle: var(--text-color-subtle);
     --raised-text-quiet: var(--text-color-tertiary);
     --raised-on-tint-border: var(--border-color-surface);
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+    --mix-blend-tint: screen;
+    --mix-blend-burn: color-dodge;
+    --mix-blend-tone: normal;
+
+    --background-color-canvas: oklch(0.225 0 0);
+    --background-color-surface: oklch(0.305 0 0);
+    --background-color-subtle: oklch(0.275 0 0);
+    --background-color-sunken: oklch(0.2 0 0);
+    --background-color-overlay: oklch(0.29 0 0);
+    --background-color-raised: oklch(0.375 0 0);
+    --raised-subtle: oklch(0.35 0 0);
+    --raised-muted: oklch(0.33 0 0);
+    --raised-on-tint: --alpha(var(--color-black) / 30%);
+    --raised-on-tint-subtle: --alpha(var(--color-black) / 22%);
+    --raised-on-tint-muted: --alpha(var(--color-black) / 16%);
+    --background-color-hatch: --alpha(var(--color-white) / 8%);
+    --background-color-hatch-pending: --alpha(var(--color-black) / 18%);
+    --background-color-queued-start: color-mix(
+      in oklab,
+      var(--color-yellow-400) 55%,
+      var(--background-color-surface)
+    );
+    --background-color-queued-mid: color-mix(
+      in oklab,
+      var(--color-yellow-400) 57%,
+      var(--background-color-surface)
+    );
+    --background-color-queued: color-mix(
+      in oklab,
+      var(--color-yellow-400) 63%,
+      var(--background-color-surface)
+    );
+    --background-color-queued-end: color-mix(
+      in oklab,
+      var(--color-yellow-400) 68%,
+      var(--background-color-surface)
+    );
+    --queued-swatch-start: color-mix(
+      in oklab,
+      var(--color-yellow-400) 30%,
+      transparent
+    );
+    --queued-swatch-mid: color-mix(
+      in oklab,
+      var(--color-yellow-400) 32%,
+      transparent
+    );
+    --queued-swatch: color-mix(
+      in oklab,
+      var(--color-yellow-400) 36%,
+      transparent
+    );
+    --queued-swatch-end: color-mix(
+      in oklab,
+      var(--color-yellow-400) 40%,
+      transparent
+    );
+    --lens-fill: --alpha(var(--color-white) / 10%);
+    --lens-shadow:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 55%,
+          transparent
+        ),
+      0 1px 4px 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 18%,
+          transparent
+        );
+    --lens-shadow-hover:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 70%,
+          transparent
+        ),
+      0 1px 5px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 22%,
+          transparent
+        );
+    --lens-shadow-active:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 85%,
+          transparent
+        ),
+      0 2px 6px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 26%,
+          transparent
+        );
+    --overlay-edge: --alpha(var(--color-white) / 12%);
+    --overlay-shadow:
+      0 10px 24px -6px --alpha(var(--color-black) / 32%),
+      0 2px 6px -2px --alpha(var(--color-black) / 24%);
+    --sheen-strength: 0%;
+    --background-color-muted: oklch(0.34 0 0);
+    --background-color-emphasis: oklch(0.385 0 0);
+    --background-color-strong: oklch(0.44 0 0);
+    --background-color-neutral: oklch(0.54 0 0);
+    --background-color-neutral-strong: oklch(0.65 0 0);
+    --background-color-tint-subtle: --alpha(var(--color-white) / 3%);
+    --background-color-tint: --alpha(var(--color-white) / 6%);
+    --background-color-tint-strong: --alpha(var(--color-white) / 10%);
+    --background-color-backdrop: --alpha(var(--color-black) / 60%);
+    --background-color-inverse: oklch(0.36 0 0);
+    --background-color-inverse-muted: oklch(0.41 0 0);
+    --background-color-inverse-emphasis: oklch(0.47 0 0);
+    --background-color-inverse-strong: oklch(0.53 0 0);
+
+    --background-color-accent-subtle: color-mix(
+      in oklab,
+      var(--color-blue-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-muted: color-mix(
+      in oklab,
+      var(--color-blue-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-emphasis: color-mix(
+      in oklab,
+      var(--color-blue-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-strong: color-mix(
+      in oklab,
+      var(--color-blue-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-vivid: var(--color-blue-500);
+    --background-color-accent: var(--color-blue-600);
+    --background-color-accent-hover: var(--color-blue-500);
+    --background-color-accent-pressed: var(--color-blue-700);
+
+    --background-color-info-subtle: color-mix(
+      in oklab,
+      var(--color-blue-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-info-muted: color-mix(
+      in oklab,
+      var(--color-blue-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-info-emphasis: color-mix(
+      in oklab,
+      var(--color-blue-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-info-strong: color-mix(
+      in oklab,
+      var(--color-blue-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-info-vivid: var(--color-blue-500);
+    --background-color-info: var(--color-blue-500);
+
+    --background-color-success-subtle: color-mix(
+      in oklab,
+      var(--color-green-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-success-muted: color-mix(
+      in oklab,
+      var(--color-green-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-success-emphasis: color-mix(
+      in oklab,
+      var(--color-green-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-success-strong: color-mix(
+      in oklab,
+      var(--color-green-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-success-vivid: var(--color-green-500);
+    --background-color-success: var(--color-green-500);
+
+    --background-color-warning-subtle: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-muted: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-emphasis: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-strong: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-vivid: oklch(0.79 0.17 64);
+    --background-color-warning: oklch(0.79 0.17 64);
+
+    --background-color-danger-subtle: color-mix(
+      in oklab,
+      var(--color-red-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-muted: color-mix(
+      in oklab,
+      var(--color-red-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-emphasis: color-mix(
+      in oklab,
+      var(--color-red-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-strong: color-mix(
+      in oklab,
+      var(--color-red-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-vivid: var(--color-red-500);
+    --background-color-danger: var(--color-red-600);
+    --background-color-danger-hover: var(--color-red-500);
+    --background-color-danger-pressed: var(--color-red-700);
+
+    --background-color-pending-subtle: color-mix(
+      in oklab,
+      var(--color-amber-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-muted: color-mix(
+      in oklab,
+      var(--color-amber-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-emphasis: color-mix(
+      in oklab,
+      var(--color-amber-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-strong: color-mix(
+      in oklab,
+      var(--color-amber-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-vivid: var(--color-amber-500);
+    --background-color-pending: var(--color-amber-500);
+
+    --background-color-category-1-emphasis: color-mix(
+      in oklab,
+      var(--color-blue-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-1: color-mix(
+      in oklab,
+      var(--color-blue-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-2-emphasis: color-mix(
+      in oklab,
+      var(--color-violet-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-2: color-mix(
+      in oklab,
+      var(--color-violet-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-3-emphasis: color-mix(
+      in oklab,
+      var(--color-amber-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-3: color-mix(
+      in oklab,
+      var(--color-amber-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-4-emphasis: color-mix(
+      in oklab,
+      var(--color-emerald-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-4: color-mix(
+      in oklab,
+      var(--color-emerald-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-5-emphasis: color-mix(
+      in oklab,
+      var(--color-pink-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-5: color-mix(
+      in oklab,
+      var(--color-pink-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-6-emphasis: color-mix(
+      in oklab,
+      var(--color-slate-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-6: color-mix(
+      in oklab,
+      var(--color-slate-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-7-emphasis: color-mix(
+      in oklab,
+      var(--color-orange-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-7: color-mix(
+      in oklab,
+      var(--color-orange-500) 85%,
+      var(--background-color-surface)
+    );
+
+    --text-color-primary: oklch(0.955 0 0);
+    --text-color-secondary: oklch(0.885 0 0);
+    --text-color-tertiary: oklch(0.8 0 0);
+    --text-color-muted: oklch(0.71 0 0);
+    --text-color-subtle: oklch(0.615 0 0);
+    --text-color-faint: oklch(0.5 0 0);
+    --raised-text: var(--text-color-primary);
+    --raised-text-muted: var(--text-color-tertiary);
+    --raised-text-subtle: var(--text-color-muted);
+
+    --text-color-accent-subtle: oklch(
+      from var(--color-blue-400) l calc(c * 0.95) h
+    );
+    --text-color-accent: oklch(from var(--color-blue-400) l calc(c * 0.95) h);
+    --text-color-accent-strong: oklch(
+      from var(--color-blue-300) l calc(c * 0.95) h
+    );
+    --text-color-on-accent: var(--color-blue-950);
+    --text-color-info-subtle: oklch(
+      from var(--color-blue-400) l calc(c * 0.95) h
+    );
+    --text-color-info: oklch(from var(--color-blue-400) l calc(c * 0.95) h);
+    --text-color-info-strong: oklch(
+      from var(--color-blue-300) l calc(c * 0.95) h
+    );
+    --text-color-on-info: var(--color-blue-950);
+    --text-color-success-subtle: oklch(
+      from var(--color-green-400) l calc(c * 0.95) h
+    );
+    --text-color-success: oklch(from var(--color-green-400) l calc(c * 0.95) h);
+    --text-color-success-strong: oklch(
+      from var(--color-green-300) l calc(c * 0.95) h
+    );
+    --text-color-on-success: var(--color-green-950);
+    --text-color-warning-subtle: oklch(0.8 0.17 64);
+    --text-color-warning: oklch(0.8 0.17 64);
+    --text-color-warning-strong: oklch(0.86 0.145 64);
+    --text-color-on-warning: var(--color-orange-950);
+    --text-color-danger-subtle: oklch(
+      from var(--color-red-400) l calc(c * 0.95) h
+    );
+    --text-color-danger: oklch(from var(--color-red-400) l calc(c * 0.95) h);
+    --text-color-danger-strong: oklch(
+      from var(--color-red-300) l calc(c * 0.95) h
+    );
+    --text-color-on-danger: var(--color-red-950);
+    --text-color-pending-subtle: oklch(
+      from var(--color-amber-400) l calc(c * 0.95) h
+    );
+    --text-color-pending: oklch(from var(--color-amber-400) l calc(c * 0.95) h);
+    --text-color-pending-strong: oklch(
+      from var(--color-amber-400) 0.74 calc(c * 0.55) h
+    );
+    --text-color-on-pending: var(--color-amber-950);
+
+    --border-color-muted: --alpha(var(--color-white) / 3.5%);
+    --border-color-default: --alpha(var(--color-white) / 5.5%);
+    --border-color-strong: --alpha(var(--color-white) / 9%);
+    --border-color-neutral: oklch(0.55 0 0);
+    --border-color-neutral-strong: oklch(0.67 0 0);
+    --border-color-tint-subtle: --alpha(var(--color-white) / 4%);
+    --border-color-tint: --alpha(var(--color-white) / 7%);
+    --border-color-surface: var(--background-color-surface);
+    --raised-on-tint-border: --alpha(var(--color-white) / 9%);
+    --border-color-queued: var(--color-yellow-400);
+    --border-color-ripple: --alpha(var(--color-white) / 3%);
+    --border-color-inverse: --alpha(var(--color-white) / 6%);
+
+    --border-color-accent: color-mix(
+      in oklab,
+      var(--color-blue-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-accent-strong: var(--color-blue-500);
+    --border-color-info: color-mix(
+      in oklab,
+      var(--color-blue-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-info-strong: var(--color-blue-500);
+    --border-color-success: color-mix(
+      in oklab,
+      var(--color-green-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-success-strong: var(--color-green-500);
+    --border-color-warning: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-warning-strong: oklch(0.79 0.17 64);
+    --border-color-danger: color-mix(
+      in oklab,
+      var(--color-red-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-danger-strong: var(--color-red-500);
+    --border-color-pending: color-mix(
+      in oklab,
+      var(--color-amber-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-pending-strong: var(--color-amber-500);
+
+    --text-color-syntax-key: oklch(
+      from var(--color-blue-300) l calc(c * 0.85) h
+    );
+    --text-color-syntax-string: oklch(
+      from var(--color-orange-300) l calc(c * 0.85) h
+    );
+    --text-color-syntax-number: oklch(
+      from var(--color-green-300) l calc(c * 0.85) h
+    );
+    --text-color-syntax-keyword: oklch(
+      from var(--color-blue-400) l calc(c * 0.85) h
+    );
+    --ring-color-focus: var(--color-blue-400);
+    --outline-color-focus: var(--color-blue-500);
+    --box-shadow-color-default: var(--color-black);
+    --box-shadow-color-highlight: --alpha(var(--color-white) / 30%);
+    --box-shadow-color-edge: --alpha(var(--color-white) / 2%);
+    --box-shadow-color-inverse-edge: --alpha(var(--color-white) / 6%);
   }
 
   html {

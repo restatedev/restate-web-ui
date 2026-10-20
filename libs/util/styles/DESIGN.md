@@ -1,6 +1,6 @@
 # Design system
 
-Every color in Restate UI comes from a role token in [`src/theme.css`](src/theme.css), which apps import as `@restate/util-styles/theme.css`. A theme only changes token values, so anything built from tokens works in every theme without `dark:` variants.
+Every color in Restate UI comes from a role token in [`src/theme.css`](src/theme.css), which apps import as `@restate/util-styles/theme.css`. A theme only changes token values, so anything built from tokens works in light and dark without `dark:` variants.
 
 Don't use Tailwind's palette (`bg-gray-100`, `text-blue-600`, `border-black/10`, `var(--color-zinc-200)`). The `restate/no-palette-colors` lint rule rejects it.
 
@@ -11,7 +11,20 @@ The dev server renders every token and the shared components at `/ui/design-syst
 1. **Use a component.** `@restate/ui-*` already covers buttons (`Button`, `Link` variants), badges, cards, chips, form fields, dropdowns, popovers, dialogs, tooltips, tabs, sections, tables and notifications. Reuse them and pass `className` for layout only.
 2. **Copy a recipe.** If you need something new, start from the [recipes](#recipes) below.
 3. **Pick a tier, not an opacity.** To make a color lighter or darker, choose another tier (`text-muted` instead of `text-secondary/60`). Use opacity modifiers only when something must show through: frosted surfaces with `backdrop-blur`, glows that fade to transparent, overlapping layers.
-4. **Don't invent colors.** If no token fits, add a token to `theme.css` named by role or tier, never by hue (`blue`) or component (`button`). It shows up on the design-system page automatically.
+4. **Don't invent colors.** If no token fits, add a token to `theme.css` named by role or tier, never by hue (`blue`) or component (`button`), and give it a dark value (see [themes](#themes)). It shows up on the design-system page automatically.
+
+## Themes
+
+The light values live in `@theme static`; the `[data-theme='dark']` block in `theme.css` overrides them for dark mode. Tokens that point at another token (`--fill-surface: var(--background-color-surface)`) follow automatically, so the dark block only lists base values.
+
+- **Switching:** `data-theme` is always `light` or `dark` on `<html>`. `THEME_SCRIPT` from `@restate/features-theme` sets it before first paint from the stored preference (System, Light or Dark) and the OS setting. `ThemeSwitch` renders the menu; `useThemePreference()` keeps a System preference in sync with the OS. Render the script first in the document `<head>`, put `suppressHydrationWarning` on `<html>` and on that `<script>` (the attribute is set before React hydrates), and call the hook once in the root layout.
+- **One theme per page:** the attribute only works on `<html>`, because the alias tokens resolve there. Don't set it on a subtree.
+- **`dark:` variant:** it exists for the rare non-color case. If you reach for it to change a color, add or fix a token instead.
+- **How the dark palette is built:** the page is never pure black and text is never pure white. Neutrals are plain greys (oklch chroma 0). Adjacent layers differ by 0.03–0.05 oklch lightness, about the contrast of well-made dark UIs. Borders are faint white alphas (`border-default` is 5.5%), about 0.05 above the layer they edge, the same contrast a light-mode border has; the fill difference does most of the separating. The inset top edge (`--box-shadow-color-edge`) is a white sheen in light but nearly invisible in dark, because a border plus a bright edge reads as a heavy double line there. Elevation means lighter: `sunken` < `canvas` < `subtle` < `overlay` < `surface` < `muted` < `raised`. Text tiers sit higher than a straight mirror of light (tertiary 0.80, muted 0.71), because the same lightness gap reads as less contrast on dark. Floating frames sit just below `surface`, so the sections and buttons inside them stay raised as they do in light mode. Family tiers are the 500 tone mixed into the surface (14% for `-subtle` up to 80% for `-strong`; `-vivid` is the plain 500), the mirror of the light theme's pastels, so tinted panels sit at panel lightness while bars, arcs and dots stay vivid; text tiers are the 300–400 tones. Glossy sheens (`--box-shadow-color-highlight`, which also strokes the arc chart's inner edge) drop to 30% white in dark, because a bright inner line next to a colored border reads as a double outline. Avoid stacking translucent fills on dark: each layer of alpha pulls the result back toward the page color.
+- **Blend modes:** `mix-blend-multiply` darkens text on dark backgrounds until it disappears. Use `mix-blend-tint` (multiply in light, screen in dark) for wells that pick up the tint of what's behind them, and `mix-blend-burn` instead of `mix-blend-color-burn`. Overlay, luminosity and normal work in both themes.
+- **Status hues in dark:** dark tiers are built from each family's 500 tone, except `warning`, which uses a brighter amber-orange (`oklch(0.79 0.17 64)`) so paused, backing-off and blocked read clearly and stay apart from red; and `text-pending-strong`, which is a calmer amber so a pending badge never outshines a paused one.
+- **Tinted headers:** chips on tinted headers use `mix-blend-tone` (luminosity in light, so they pick up the header's hue; normal in dark, where luminosity turns them into murky tinted greys). The header chip group also remaps `text-tertiary`, `text-muted` and `text-subtle` to `--raised-text`, `--raised-text-muted` and `--raised-text-subtle` for its descendants: the same tiers in light, brighter in dark (primary, tertiary and muted); a scope value inside a header target uses `--raised-text-quiet` so the service name stays the brightest, because a raised control in dark is lighter than the panel and needs brighter text to keep the light-mode contrast. The sticky `Header` also points `bg-raised` and the `--raised-*` context values at `--raised-on-tint*`, and header chips use `--raised-on-tint-border`. In light these equal the raised tokens; in dark they are translucent black (30% for the main segment, 22% and 16% for the quieter ones; hover and pressed lighten), so chips and action buttons sit inset in the bar with near-white text and pick up its status hue. Use the same remap for any other control row on a status-tinted background.
+- **Check both:** open the design-system page and the screens you touched in both themes. Every swatch on the page shows light and dark side by side.
 
 ## Naming
 
@@ -62,11 +75,13 @@ Answer in order and stop at the first yes. The design-system page shows the same
 
 ### Contexts
 
-Some components change what a token means for their content instead of adding public tokens. The values they read are private CSS variables in `theme.css` (`--raised-*`, `--raised-on-tint*`, `--raised-text*`, `--queued-swatch*`, `--sheen*`), listed under Internals on the design-system page. They have no utility class; never use them outside their owner.
+Some components change what a token means for their content instead of adding public tokens. The values they read are private CSS variables in `theme.css` (`--raised-*`, `--raised-on-tint*`, `--raised-text*`, `--queued-swatch*`, `--sheen*`, `--overlay-*`, `--lens-*`), listed under Internals on the design-system page. They have no utility class; never use them outside their owner.
 
 - **`ChipSegment tone`:** `raised` (default look of a chip), `subtle` and `muted` for quieter segments such as a key or scope value. Pick a tone instead of a background.
 - **`Header`:** points `bg-raised` and the chip tones at the on-tint values, so chips and buttons sit correctly on a status-tinted bar. Header chips also brighten their text tiers.
 - **`swatch` utility:** on legend dots, points the queued fills at lighter swatch variants.
+- **Floating layers:** `PopoverOverlay` reads `--overlay-edge` and `--overlay-shadow`. Light keeps `border-tint` and `shadow-lg`; dark uses a brighter white edge and a deeper but soft shadow, because a translucent frame over dark content needs both to separate.
+- **Viewport selector:** the journal's selected time window reads `--lens-fill` and `--lens-shadow*`, so its outline can be stronger in dark.
 - **Sheens:** `Card`, `ContentPanel` tabs and tables start their gradients from `--sheen*`, mixes of the lighter stop and the flat fill set by one knob, `--sheen-strength` (100% in light, 0% in dark, so dark surfaces are flat). Don't add new sheens; use a flat layer.
 
 ### Hover and pressed
