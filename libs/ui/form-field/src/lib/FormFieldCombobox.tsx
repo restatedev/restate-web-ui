@@ -142,7 +142,7 @@ export function FormFieldCombobox({
         </div>
       </Group>
       <FormFieldError>{errorMessage}</FormFieldError>
-      <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-elevated/90">
+      <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-overlay/90">
         <ListBox
           className="max-h-[inherit] overflow-auto border-none p-1 outline-0"
           renderEmptyState={

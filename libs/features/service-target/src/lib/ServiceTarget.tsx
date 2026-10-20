@@ -36,10 +36,10 @@ const styles = tv({
     handlerChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
     trailingChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
     chip: 'max-w-full text-xs font-medium text-tertiary',
-    service: 'min-w-0 bg-raised pl-2 font-medium text-tertiary',
-    key: 'min-w-0 bg-raised-subtle pr-2.5 pl-2 font-mono text-[90%] text-muted',
-    handler: 'min-w-0 bg-raised-muted pr-2 pl-1 font-medium text-muted italic',
-    trailing: 'min-w-0 bg-raised-muted px-1.5 text-muted',
+    service: 'min-w-0 pl-2 font-medium text-tertiary',
+    key: 'min-w-0 pr-2.5 pl-2 font-mono text-[90%] text-muted',
+    handler: 'min-w-0 pr-2 pl-1 font-medium text-muted italic',
+    trailing: 'min-w-0 px-1.5 text-muted',
     endContent: 'ml-1 flex shrink-0 items-center',
     serviceIcon: 'h-3 w-3 shrink-0 text-subtle',
     icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
@@ -49,7 +49,7 @@ const styles = tv({
     isHeader: {
       true: {
         group:
-          'mix-blend-normal! [&>[data-chip]]:mix-blend-tone [&>[data-scope]]:mix-blend-normal! [&>[data-scope]]:[--text-color-tertiary:var(--text-color-on-raised-quiet)]',
+          'mix-blend-normal! [&>[data-chip]]:mix-blend-tone [&>[data-scope]]:mix-blend-normal! [&>[data-scope]]:[--text-color-tertiary:var(--raised-text-quiet)]',
       },
       false: {},
     },
@@ -333,7 +333,7 @@ export function ServiceTargetContent({
       href={serviceLink?.href}
       aria-label={serviceLink?.ariaLabel}
     >
-      <ChipSegment className={serviceStyle()}>
+      <ChipSegment tone="raised" className={serviceStyle()}>
         <Icon name={IconName.Box} className={serviceIcon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
         {identityChevronSegment === 'service' && <TargetLinkChevron />}
@@ -358,7 +358,7 @@ export function ServiceTargetContent({
       href={handlerLink?.href}
       aria-label={handlerLink?.ariaLabel}
     >
-      <ChipSegment className={handlerStyle()}>
+      <ChipSegment tone="muted" className={handlerStyle()}>
         <Icon name={IconName.Function} className={handlerIcon()} />
         <TruncateTooltipTrigger>{handler}()</TruncateTooltipTrigger>
         {handlerLink && <TargetLinkChevron />}
@@ -386,7 +386,7 @@ export function ServiceTargetContent({
       href={serviceKeyLink?.href}
       aria-label={serviceKeyLink?.ariaLabel}
     >
-      <ChipSegment className={key()}>
+      <ChipSegment tone="subtle" className={key()}>
         {keyIcon && <Icon name={keyIcon} className={icon()} />}
         <TruncateTooltipTrigger>
           {serviceKey || <>&nbsp;</>}
@@ -436,7 +436,7 @@ export function ServiceTargetContent({
               className={chip({ className: chipClassName })}
               containerClassName={trailingChip()}
             >
-              <ChipSegment className={trailing()}>
+              <ChipSegment tone="muted" className={trailing()}>
                 {children}
                 {endContent && (
                   <span

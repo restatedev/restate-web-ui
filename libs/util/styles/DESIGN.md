@@ -36,26 +36,38 @@ In arbitrary values, use the variable: `shadow-[inset_0_1px_0_var(--background-c
 
 ## Surfaces
 
-Layers stack from back to front:
+### Which background?
 
-| Token                                   | Use for                                                                                                                                                                                             |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bg-sunken`                             | Rails below the page: the sidebar and docked side panels                                                                                                                                            |
-| `bg-canvas`                             | The page, plus in-page frames that hold surfaces: `Section`, toolbar strips, fades into the page                                                                                                    |
-| `bg-elevated`                           | Frames of floating layers: popovers, dropdowns, selects, comboboxes, dialogs (`bg-elevated/90` when frosted), and the base of the sticky page `Header`                                              |
-| `bg-surface`                            | Content on the canvas: panels, menu sections, dialog bodies, secondary buttons, the selected tab pill                                                                                               |
-| `bg-raised`                             | Resting controls that sit on a surface: secondary buttons and links styled as buttons, chips. White in light, clearly above `bg-surface` in dark so controls stand out on panels and tinted headers |
-| `bg-raised-subtle` / `bg-raised-muted`  | Quieter segments inside a chip (a key, a scope label). In light they equal `bg-subtle` / `bg-muted`; in dark they stay just below `bg-raised` instead of dropping under the surface                 |
-| `bg-raised-hover` / `bg-raised-pressed` | Hover and pressed states of raised controls: darker in light, lighter in dark                                                                                                                       |
-| `bg-selected`                           | The selected thumb of a segmented control, tab strip or nav indicator, on a `bg-tint-subtle` track. White in light, a clearly lighter grey in dark                                                  |
-| `bg-subtle`                             | Quiet areas: card bodies, content-panel bodies, the active sidebar item                                                                                                                             |
-| `bg-muted`                              | Inset controls on a surface: inputs, selects, code fields, chips, disabled controls                                                                                                                 |
-| `bg-emphasis`                           | Pressed state on a surface, switch track, skeleton loaders (`animate-pulse bg-emphasis/70`)                                                                                                         |
-| `bg-strong`                             | Stronger neutral fill: pressed switch track, thin dividers drawn with `bg-*`                                                                                                                        |
-| `bg-neutral(-strong)`                   | Solid neutral marks: resize handles, tiny solid labels with `text-inverse`                                                                                                                          |
-| `bg-backdrop`                           | Modal and drawer scrims                                                                                                                                                                             |
+Answer in order and stop at the first yes. The design-system page shows the same guide with light and dark swatches.
 
-`bg-canvas`, `bg-elevated` and `bg-muted` are all gray-100 in the light theme, but in dark mode they are three different layers, so pick by role: an in-page frame (canvas), a floating frame (elevated) or an inset control (muted)? A fade or mask that should blend into the toolbar or page behind it must use that layer's token (`from-canvas`), never a token that only happens to match in light.
+1. **Does it float above the page?** `bg-overlay`: popover, dropdown, select, combobox and dialog frames (`bg-overlay/90` when frosted). The sections inside them are `bg-surface`.
+2. **Is it the page, or a rail beside it?** `bg-canvas` for the page and in-page frames (`Section`, toolbar strips, fades into the page); `bg-sunken` for the sidebar and docked side panel.
+3. **Is it a panel or card on the page?** `bg-surface`; `bg-subtle` for quiet areas inside it (card bodies, content-panel bodies, the active sidebar item).
+4. **Is it a control someone presses?** `bg-raised` for secondary buttons, button-styled links and chips; `bg-selected` for the selected thumb of a segmented control, tab strip or nav indicator.
+5. **Is it an input or inset field?** `bg-muted`.
+6. **Is it hover or pressed?** See [hover and pressed](#hover-and-pressed).
+7. **Is it a status?** Use a [status family](#status-families), not a neutral layer.
+
+### All neutral backgrounds
+
+| Group       | Tokens (back to front)                                                   | Notes                                                                                     |
+| ----------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Layers      | `sunken`, `canvas`, `subtle`, `overlay`, `surface`, `raised`, `selected` | Opaque areas. Pick by what the area is, not by how light it looks                         |
+| Fills       | `muted`, `emphasis`, `strong`, `neutral`, `neutral-strong`               | Opaque fills inside a layer: fields, pressed states, skeletons, solid neutral marks       |
+| Translucent | `tint-subtle`, `tint`, `tint-strong`, `backdrop`                         | Show what's underneath; hover, pressed and edges on any background; `backdrop` for scrims |
+| Effects     | `highlight`, `shade`                                                     | White and black in both themes, only with an opacity on colored fills                     |
+| Inverse     | `inverse`, `inverse-muted/-emphasis/-strong`, `inverse-tint*`            | Only on [inverse surfaces](#inverse-surfaces)                                             |
+
+`bg-canvas`, `bg-overlay` and `bg-muted` are all gray-100 in the light theme, and `bg-surface`, `bg-raised` and `bg-selected` are all white, but in dark mode each is a different layer, so pick by role. A fade or mask that should blend into the toolbar or page behind it must use that layer's token (`from-canvas`), never a token that only happens to match in light.
+
+### Contexts
+
+Some components change what a token means for their content instead of adding public tokens. The values they read are private CSS variables in `theme.css` (`--raised-*`, `--raised-on-tint*`, `--raised-text*`, `--queued-swatch*`, `--sheen*`), listed under Internals on the design-system page. They have no utility class; never use them outside their owner.
+
+- **`ChipSegment tone`:** `raised` (default look of a chip), `subtle` and `muted` for quieter segments such as a key or scope value. Pick a tone instead of a background.
+- **`Header`:** points `bg-raised` and the chip tones at the on-tint values, so chips and buttons sit correctly on a status-tinted bar. Header chips also brighten their text tiers.
+- **`swatch` utility:** on legend dots, points the queued fills at lighter swatch variants.
+- **Sheens:** `Card`, `ContentPanel` tabs and tables start their gradients from `--sheen*`, which is the lighter stop in light and the flat fill in dark. Don't add new sheens; use a flat layer.
 
 ### Hover and pressed
 
@@ -135,6 +147,10 @@ Every family has the same tiers (shown here as `F`):
 
 `text-on-F` colors the glyph inside a filled icon: `fill-warning text-on-warning`.
 
+### Status data
+
+Status charts fill queued work (the inbox stage, pending invocations) from `--background-color-queued-start` through `-mid` and `queued` to `-end`, and stripe it with `--background-color-hatch-pending`; queued neutral statuses (scheduled, ready, yielded) use `--background-color-hatch`. Pattern: `repeating-linear-gradient(-45deg, transparent 0 4px, <stripe> 4px 6px)`. Arc slices take the same stripe through the `hatchColor` prop on `<Slice>` in `@restate/ui-charts`, inbox and pending edges use `border-queued`, and legend dots add the `swatch` utility. These are data colors: read them through the status styles in `@restate/features-status-chart`, never use them for surfaces.
+
 ## Recipes
 
 These are the most common combinations in the codebase. Prefer the component when one exists.
@@ -148,7 +164,7 @@ These are the most common combinations in the codebase. Prefer the component whe
 | Status badge           | `<Badge variant="…">`. Hand-rolled: `border border-F-strong/20 bg-F-subtle text-F-strong`                                                                                                                     |
 | Banner / callout       | `rounded-xl border border-F bg-F-subtle text-F`, icon `fill-F text-on-F`                                                                                                                                      |
 | Neutral chip           | `rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary`                                                                                                                                              |
-| Menu / popover         | Frame `bg-elevated`, sections `rounded-xl border bg-surface`, selected item `bg-accent text-inverse`                                                                                                          |
+| Menu / popover         | Frame `bg-overlay`, sections `rounded-xl border bg-surface`, selected item `bg-accent text-inverse`                                                                                                           |
 | Buttons                | `<Button variant="primary" \| "secondary" \| "destructive" \| "icon">`                                                                                                                                        |
 | Text link              | `<Link>`, which renders `text-accent decoration-accent/60 hover:decoration-accent`                                                                                                                            |
 | Focus                  | Extend `focusRing` from `@restate/ui-focus` (`outline-focus`); fields use `focus:outline-2 focus:outline-focus`                                                                                               |
@@ -165,14 +181,13 @@ Colored fills (buttons, bars, legend dots, stripes) often get a white sheen or a
 | `bg-shade` / `--background-color-shade`         | Dark shading on colored fills: stripes, the key chip inside a primary button |
 
 Highlight and shade stay white and black in dark mode, which is what a colored fill needs. For stripes or sheens over neutral backgrounds, use `tint` or `surface` with an opacity instead, so they flip with the theme.
-| `--box-shadow-color-highlight` | Inset top sheen on colored fills (buttons, bars): `shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)]` |
-| `--box-shadow-color-edge` | Inset top edge on neutral panels, headers and cards: `shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%)]` |
-| `--box-shadow-color-inverse-edge` | Inset top edge on inverse panels: `shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)]` |
-| `--box-shadow-color-default` | Every other shadow color: `shadow-default/5`, `--theme(--box-shadow-color-default/3%)` |
 
-Legend dots and other small swatches of a status add the `swatch` utility, which points the queued fills at lighter, translucent `queued-swatch*` variants in dark (identical in light), so a dot reads as a yellow marker rather than a muddy blob. Inbox and pending edges use `border-queued`. Queued work (the inbox stage, pending invocations) fills from `--background-color-queued-start` through `-mid` and `queued` to `-end`; status charts read `queued` and `queued-end` as the pending fill. In light these are the neutral-to-pale-amber stops used before; in dark they are a filled yellow, so the largest bar on most pages reads as yellow rather than brown. Hatched fills mark queued work: `repeating-linear-gradient(-45deg, transparent 0 4px, <stripe> 4px 6px)`. Use `--background-color-hatch-pending` for inbox and pending fills and `--background-color-hatch` for neutral statuses (scheduled, ready, yielded). Both are a white sheen in light; in dark the pending stripe is an amber tint, because a neutral stripe over a dark amber fill reads as brown. Arc slices take the same stripe through the `hatchColor` prop on `<Slice>` in `@restate/ui-charts`.
-
-Decorative gradients start from a sheen token: `from-sheen to-subtle` (tabs, panel headers), `before:from-sheen` radials on cards, `from-sheen-muted to-subtle` (tables) and `from-sheen-emphasis/70 to-muted/80` (floating table and panel headers). In light the sheen tokens equal `surface`, `muted` and `emphasis`; in dark they equal the gradient's other stop, so dark surfaces render as flat fills.
+| Shadow color                      | Use for                                                                                                                |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `--box-shadow-color-highlight`    | Inset top sheen on colored fills (buttons, bars): `shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)]` |
+| `--box-shadow-color-edge`         | Inset top edge on neutral panels, headers and cards: `shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%)]`   |
+| `--box-shadow-color-inverse-edge` | Inset top edge on inverse panels: `shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)]`                      |
+| `--box-shadow-color-default`      | Every other shadow color: `shadow-default/5`, `--theme(--box-shadow-color-default/3%)`                                 |
 
 Mask gradients (`mask-[…]`) keep black and white, because there they mean opacity, not color. The lint rule also rejects `white` and `black` inside `color-mix()` and gradients; mix toward `--background-color-surface` (lighter in light, darker in dark) or use highlight/shade.
 

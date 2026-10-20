@@ -42,7 +42,7 @@ interface TableProps extends Pick<
 }
 
 const tableStyles = tv({
-  base: 'overflow-hidden rounded-xl border bg-linear-to-b from-sheen-muted to-subtle shadow-xs shadow-default/5 [&:has([data-table-empty=true])]:bg-subtle/50 [&:has([data-table-empty=true])]:shadow-none',
+  base: 'overflow-hidden rounded-xl border bg-linear-to-b from-(--sheen-muted) to-subtle shadow-xs shadow-default/5 [&:has([data-table-empty=true])]:bg-subtle/50 [&:has([data-table-empty=true])]:shadow-none',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (

@@ -12,7 +12,7 @@ const styles = tv({
     root: 'inline-flex w-fit max-w-full min-w-0 align-middle',
     chip: 'max-w-full bg-raised font-mono text-tertiary',
     segment: 'max-w-full px-1.5',
-    nestedSegment: 'bg-raised-subtle text-muted',
+    nestedSegment: 'text-muted',
     icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
     copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
   },
@@ -94,7 +94,7 @@ export function LimitKey({
         )}
       </ChipSegment>
       {secondLevel !== undefined && (
-        <ChipSegment className={nestedSegment()}>
+        <ChipSegment tone="subtle" className={nestedSegment()}>
           <TruncateTooltipTrigger>{secondLevel}</TruncateTooltipTrigger>
           {copyButton}
           {showChevron && (

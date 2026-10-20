@@ -66,7 +66,7 @@ const modalStyles = tv({
 });
 
 const dialogStyles = tv({
-  base: 'relative flex max-h-full w-full flex-col bg-elevated p-1.5 outline outline-0 [[data-placement]>&]:p-4',
+  base: 'relative flex max-h-full w-full flex-col bg-overlay p-1.5 outline outline-0 [[data-placement]>&]:p-4',
   variants: {
     variant: {
       sheet: 'rounded-t-[1.125rem] pb-0',

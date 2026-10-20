@@ -153,7 +153,18 @@ const segmentStyles = tv({
     wrap: 'relative my-(--chip-inset) flex max-w-full min-w-0 items-stretch',
     inner: 'flex min-w-0 flex-auto items-center gap-1 truncate px-2.5',
   },
+  variants: {
+    tone: {
+      inherit: {},
+      raised: { inner: 'bg-raised' },
+      subtle: { inner: 'bg-(--raised-subtle)' },
+      muted: { inner: 'bg-(--raised-muted)' },
+    },
+  },
+  defaultVariants: { tone: 'inherit' },
 });
+
+export type ChipSegmentTone = 'inherit' | 'raised' | 'subtle' | 'muted';
 
 const groupStyles = tv({
   base: 'inline-flex max-w-full min-w-0 gap-x-0 rounded-lg transition-none hover:brightness-100 pressed:brightness-100 [&_[data-chip-root]]:transition-none [&_[data-chip]]:transition-none',
@@ -161,7 +172,7 @@ const groupStyles = tv({
     variant: {
       default: '',
       header: [
-        'mix-blend-tone [--chip-border-color:var(--border-color-raised-on-tint)] [--text-color-muted:var(--text-color-on-raised-muted)] [--text-color-subtle:var(--text-color-on-raised-subtle)] [--text-color-tertiary:var(--text-color-on-raised)]',
+        'mix-blend-tone [--chip-border-color:var(--raised-on-tint-border)] [--text-color-muted:var(--raised-text-muted)] [--text-color-subtle:var(--raised-text-subtle)] [--text-color-tertiary:var(--raised-text)]',
         '[&_[data-chip]]:[--chip-height:1.75rem] [&_[data-chip]]:[--chip-inset:2px] [&_[data-chip]]:[--chip-radius:0.625rem] [&_[data-chip]]:[--chip-slope:5px]',
         '[&_[data-chip-root]]:text-sm',
         '[&>[data-chip]:not(:first-child)]:-ml-px [&>a:not(:first-child)]:-ml-px',
@@ -231,8 +242,9 @@ export function ChipGroup({
 export function ChipSegment({
   className,
   children,
-}: PropsWithChildren<{ className?: string }>) {
-  const { wrap, inner } = segmentStyles();
+  tone,
+}: PropsWithChildren<{ className?: string; tone?: ChipSegmentTone }>) {
+  const { wrap, inner } = segmentStyles({ tone });
   return (
     <div data-chip-segment className={wrap()}>
       <div data-chip-segment-inner className={inner({ className })}>

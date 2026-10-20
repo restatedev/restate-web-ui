@@ -18,14 +18,151 @@ import {
   FAMILIES,
   NAMESPACES,
   familyOf,
+  hasDarkTheme,
   isInverse,
+  parseInternals,
   parseThemeTokens,
+  themeScopeCss,
   tierOf,
   type Family,
   type ThemeToken,
 } from './tokens';
 
 const TOKENS = parseThemeTokens(themeCss);
+const INTERNALS = parseInternals(themeCss);
+const HAS_DARK = hasDarkTheme(themeCss);
+const SCOPE_CSS = themeScopeCss(themeCss, {
+  light: '.ds-light',
+  dark: '.ds-dark',
+});
+const SCOPES = HAS_DARK ? (['light', 'dark'] as const) : (['light'] as const);
+
+const BG_GROUPS: {
+  title: string;
+  note: string;
+  tokens: [name: string, use: string][];
+}[] = [
+  {
+    title: 'Layers',
+    note: 'Opaque areas, listed from back to front. Pick by what the area is, not by how light it looks.',
+    tokens: [
+      ['sunken', 'Rails beside the page: sidebar, docked side panel'],
+      ['canvas', 'The page, and in-page frames: sections, toolbar strips'],
+      ['subtle', 'Quiet areas inside a panel: card bodies'],
+      [
+        'overlay',
+        'Frames of floating layers: popovers, menus, selects, dialogs',
+      ],
+      ['surface', 'Panels and cards on the page, menu sections, dialog bodies'],
+      ['raised', 'Controls on a surface: secondary buttons, chips'],
+      ['selected', 'The selected thumb of a segmented control or tab strip'],
+    ],
+  },
+  {
+    title: 'Fills',
+    note: 'Opaque neutral fills inside a layer.',
+    tokens: [
+      ['muted', 'Inputs, inset fields, disabled controls'],
+      ['emphasis', 'Pressed state on a surface, switch track, skeletons'],
+      ['strong', 'Stronger neutral fill, thin dividers drawn with bg-*'],
+      ['neutral', 'Solid neutral marks: resize handles'],
+      ['neutral-strong', 'Solid marks under text-inverse'],
+    ],
+  },
+  {
+    title: 'Translucent',
+    note: 'Let the layer underneath show through, so they work on any background: hover, pressed, frosted edges.',
+    tokens: [
+      ['tint-subtle', 'Hover on mixed backgrounds, nav items'],
+      ['tint', 'Pressed on mixed backgrounds, icon-button hover'],
+      ['tint-strong', 'Icon-button pressed'],
+      ['backdrop', 'Modal and drawer scrims'],
+    ],
+  },
+  {
+    title: 'Effects',
+    note: 'Stay white and black in both themes. Use them with an opacity on colored fills only.',
+    tokens: [
+      ['highlight', 'Sheen and stripes on colored fills'],
+      ['shade', 'Shading on colored fills'],
+    ],
+  },
+  {
+    title: 'Inverse panels',
+    note: 'Only on tooltips, the floating query bar and issue pills.',
+    tokens: [
+      ['inverse', 'Panel'],
+      ['inverse-muted', 'Inner chips'],
+      ['inverse-emphasis', 'Stronger inner fill'],
+      ['inverse-strong', 'Strongest inner fill'],
+      ['inverse-tint-subtle', 'Hover on inverse'],
+      ['inverse-tint', 'Hover on inverse'],
+      ['inverse-tint-strong', 'Pressed on inverse'],
+    ],
+  },
+];
+
+const STATUS_DATA: [name: string, use: string][] = [
+  ['queued-start', 'Inbox fill, left end'],
+  ['queued-mid', 'Inbox fill, 22% stop'],
+  ['queued', 'Inbox and pending fill'],
+  ['queued-end', 'Inbox fill, right end; pending dark fill'],
+  ['hatch', 'Stripes on queued neutral statuses'],
+  ['hatch-pending', 'Stripes on inbox and pending fills'],
+];
+
+const QUESTIONS: [question: string, answers: string[], note: string][] = [
+  [
+    'Does it float above the page?',
+    ['overlay'],
+    'Popover, dropdown, select, combobox and dialog frames. The sections inside them are surface.',
+  ],
+  [
+    'Is it the page itself, or a rail beside it?',
+    ['canvas', 'sunken'],
+    'Canvas also frames in-page groups (Section, toolbar strips). Sunken is the sidebar and docked side panel.',
+  ],
+  [
+    'Is it a panel or card on the page?',
+    ['surface', 'subtle'],
+    'Surface for the panel, subtle for quiet areas inside it such as card bodies.',
+  ],
+  [
+    'Is it a control someone presses?',
+    ['raised', 'selected'],
+    'Raised for secondary buttons and chips, selected for the active thumb of a segmented control.',
+  ],
+  [
+    'Is it an input or an inset field?',
+    ['muted'],
+    'Inputs, code fields, disabled controls. Emphasis and strong are stronger neutral fills.',
+  ],
+  [
+    'Is it a hover or pressed state?',
+    ['tint-subtle', 'tint', 'tint-strong'],
+    'Translucent, so the same classes work on any layer. On a plain surface, hover:bg-muted pressed:bg-emphasis is also fine.',
+  ],
+  [
+    'Is it a status?',
+    ['danger-subtle', 'success-vivid'],
+    'Use a status family (below), never a neutral layer with a colored border.',
+  ],
+];
+
+const INTERNAL_OWNERS: [prefix: string, owner: string][] = [
+  [
+    '--mix-blend-',
+    'mix-blend-tint, mix-blend-burn and mix-blend-tone utilities',
+  ],
+  ['--raised-on-tint', 'Header: controls on a status-tinted bar'],
+  ['--raised-text', 'Header chips: text tiers on raised controls'],
+  ['--raised-', 'ChipSegment tones, secondary Button and Link hover'],
+  ['--queued-swatch', 'swatch utility: legend dots'],
+  ['--sheen', 'Gradient sheens on Card, ContentPanel tabs and tables'],
+];
+
+const tokenByName = (name: string) =>
+  TOKENS.find((token) => token.utility === 'bg' && token.name === name);
 
 const BG_TIERS = [
   'subtle',
@@ -48,6 +185,7 @@ const FAMILY_MEANING: Record<Family, string> = {
 };
 
 const SECTIONS = [
+  ['choose', 'Which background?'],
   ['surfaces', 'Surfaces'],
   ['text', 'Text'],
   ['families', 'Status families'],
@@ -60,12 +198,35 @@ const CHECKER =
   'repeating-conic-gradient(var(--background-color-emphasis) 0 25%, var(--background-color-surface) 0 50%) 0 0 / 10px 10px';
 
 const swatchStyles = tv({
-  base: 'flex h-12 w-full items-center justify-center rounded-lg border border-tint-subtle text-lg font-semibold',
+  slots: {
+    frame:
+      'flex h-12 w-full overflow-hidden rounded-lg border border-tint-subtle',
+    half: 'flex flex-1 items-center justify-center text-lg font-semibold',
+  },
   variants: {
     backdrop: {
-      surface: 'bg-surface',
-      inverse: 'bg-inverse',
-      none: '',
+      surface: { half: 'bg-surface' },
+      inverse: { half: 'bg-inverse' },
+      none: {},
+    },
+    scope: {
+      light: { half: 'ds-light' },
+      dark: { half: 'ds-dark' },
+    },
+    size: {
+      default: {},
+      small: { frame: 'h-8 w-20 shrink-0' },
+    },
+  },
+  defaultVariants: { size: 'default' },
+});
+
+const scopeStyles = tv({
+  base: 'flex flex-col gap-2 rounded-2xl text-primary',
+  variants: {
+    scope: {
+      light: 'ds-light',
+      dark: 'ds-dark',
     },
   },
 });
@@ -126,12 +287,13 @@ function cssVar(token: ThemeToken) {
   return `var(${token.variable})`;
 }
 
-function formatValue(token: ThemeToken) {
-  if (token.alias) {
-    return `→ ${token.alias}`;
+function formatValue(value = '', alias?: string) {
+  if (alias) {
+    return `→ ${alias}`;
   }
-  return token.value
+  return value
     .replace(/var\(--color-([a-z0-9-]+)\)/g, '$1')
+    .replace(/var\(--background-color-([a-z0-9-]+)\)/g, '$1')
     .replace(/^--alpha\((.+)\)$/, '$1');
 }
 
@@ -160,23 +322,42 @@ function swatchStyle(token: ThemeToken): CSSProperties {
   }
 }
 
-function Swatch({ token }: { token: ThemeToken }) {
+function Swatch({
+  token,
+  size,
+}: {
+  token: ThemeToken;
+  size?: 'default' | 'small';
+}) {
   const isText = token.utility === 'text' || token.utility === 'decoration';
   const isFilled =
     !isText && !['border', 'ring', 'outline', 'stroke'].includes(token.utility);
+  const backdrop = isFilled ? 'none' : isInverse(token) ? 'inverse' : 'surface';
+  const { frame } = swatchStyles({ size });
   return (
-    <span
-      className={swatchStyles({
-        backdrop: isFilled ? 'none' : isInverse(token) ? 'inverse' : 'surface',
-      })}
-      style={swatchStyle(token)}
-    >
-      {isText ? 'Aa' : null}
+    <span className={frame()} title={HAS_DARK ? 'Light | Dark' : undefined}>
+      {SCOPES.map((scope) => (
+        <span
+          key={scope}
+          className={swatchStyles({ backdrop, scope }).half()}
+          style={swatchStyle(token)}
+        >
+          {isText ? 'Aa' : null}
+        </span>
+      ))}
     </span>
   );
 }
 
-function TokenCard({ token, label }: { token: ThemeToken; label?: string }) {
+function TokenCard({
+  token,
+  label,
+  description,
+}: {
+  token: ThemeToken;
+  label?: string;
+  description?: string;
+}) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <Swatch token={token} />
@@ -187,11 +368,86 @@ function TokenCard({ token, label }: { token: ThemeToken; label?: string }) {
         >
           {label ?? token.className}
         </code>
-        <span className="truncate font-mono text-2xs text-subtle">
-          {formatValue(token)}
+        {description && (
+          <span className="text-2xs leading-4 text-muted">{description}</span>
+        )}
+        <span
+          className="truncate font-mono text-2xs text-subtle"
+          title={token.value}
+        >
+          {formatValue(token.value, token.alias)}
         </span>
+        {HAS_DARK && token.darkValue !== token.value && (
+          <span
+            className="truncate font-mono text-2xs text-subtle"
+            title={token.darkValue}
+          >
+            dark: {formatValue(token.darkValue, token.darkAlias)}
+          </span>
+        )}
       </div>
     </div>
+  );
+}
+
+function TokenGrid({ tokens }: { tokens: [name: string, use: string][] }) {
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-x-3 gap-y-4 rounded-xl border bg-surface p-4 shadow-xs">
+      {tokens.map(([name, use]) => {
+        const token = tokenByName(name);
+        return token ? (
+          <TokenCard key={name} token={token} description={use} />
+        ) : null;
+      })}
+    </div>
+  );
+}
+
+function Choose() {
+  return (
+    <Block
+      id="choose"
+      title="Which background?"
+      description={
+        <>
+          Answer these in order and stop at the first yes. Swatches show light
+          and dark side by side
+          {HAS_DARK ? '' : ' once the dark theme is defined'}.
+        </>
+      }
+    >
+      <ol className="flex flex-col divide-y divide-muted overflow-hidden rounded-xl border bg-surface shadow-xs">
+        {QUESTIONS.map(([question, answers, note], index) => (
+          <li
+            key={question}
+            className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center"
+          >
+            <span className="w-6 shrink-0 font-mono text-sm text-subtle">
+              {index + 1}
+            </span>
+            <div className="flex min-w-0 flex-auto flex-col gap-0.5">
+              <span className="text-sm font-medium text-primary">
+                {question}
+              </span>
+              <span className="text-0.5xs text-muted">{note}</span>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-3">
+              {answers.map((name) => {
+                const token = tokenByName(name);
+                return token ? (
+                  <div key={name} className="flex items-center gap-2">
+                    <Swatch token={token} size="small" />
+                    <code className="font-mono text-xs text-secondary">
+                      bg-{name}
+                    </code>
+                  </div>
+                ) : null;
+              })}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Block>
   );
 }
 
@@ -237,40 +493,58 @@ function Surfaces() {
     <Block
       id="surfaces"
       title="Surfaces"
-      description="Layers stack from sunken rails and the page canvas to raised surfaces and floating frames, then quiet and inset areas. Hover the examples below to see the matching interaction states."
+      description="Every neutral background, grouped by role. The nested example shows how the layers stack in each theme; hover the tiles at the bottom to see the interaction states."
     >
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border bg-sunken p-3">
-          <Label>bg-sunken · sidebar and docked rails</Label>
+      {BG_GROUPS.map((group) => (
+        <div key={group.title} className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-3">
+            <h3 className="text-sm font-semibold text-secondary">
+              {group.title}
+            </h3>
+            <p className="text-0.5xs text-muted">{group.note}</p>
+          </div>
+          <TokenGrid tokens={group.tokens} />
         </div>
-        <div className="rounded-2xl border bg-elevated p-3 shadow-lg">
-          <Label>bg-elevated · popover, menu and dialog frames</Label>
-        </div>
-      </div>
-      <div className="rounded-2xl border bg-canvas p-3 sm:p-4">
-        <Label>bg-canvas · page and in-page frames</Label>
-        <div className="mt-2 rounded-xl border bg-surface p-3 shadow-xs">
-          <Label>bg-surface · panels, menu sections, dialog bodies</Label>
-          <div className="mt-2 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border bg-subtle p-3">
-              <Label>bg-subtle · card bodies, quiet areas</Label>
-              <p className="mt-1 text-sm text-tertiary">
-                Rows and values sit here with text-tertiary.
-              </p>
+      ))}
+      <div className="grid gap-3 lg:grid-cols-2">
+        {SCOPES.map((scope) => (
+          <div key={scope} className={scopeStyles({ scope })}>
+            <Label>{scope}</Label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border bg-sunken p-3">
+                <Label>bg-sunken · sidebar and docked rails</Label>
+              </div>
+              <div className="rounded-2xl border bg-overlay p-3 shadow-lg">
+                <Label>bg-overlay · popover, menu and dialog frames</Label>
+              </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <span className="rounded-lg border border-default bg-muted px-2 py-1.5 text-sm text-primary">
-                bg-muted · inputs and chips
-              </span>
-              <span className="rounded-lg bg-emphasis px-2 py-1.5 text-sm text-secondary">
-                bg-emphasis · pressed, skeletons
-              </span>
-              <span className="rounded-lg bg-strong px-2 py-1.5 text-sm text-secondary">
-                bg-strong · stronger neutral fill
-              </span>
+            <div className="rounded-2xl border bg-canvas p-3 sm:p-4">
+              <Label>bg-canvas · page and in-page frames</Label>
+              <div className="mt-2 rounded-xl border bg-surface p-3 shadow-xs">
+                <Label>bg-surface · panels, menu sections, dialog bodies</Label>
+                <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border bg-subtle p-3">
+                    <Label>bg-subtle · card bodies, quiet areas</Label>
+                    <p className="mt-1 text-sm text-tertiary">
+                      Rows and values sit here with text-tertiary.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="rounded-lg border border-default bg-muted px-2 py-1.5 text-sm text-primary">
+                      bg-muted · inputs and chips
+                    </span>
+                    <span className="rounded-lg bg-emphasis px-2 py-1.5 text-sm text-secondary">
+                      bg-emphasis · pressed, skeletons
+                    </span>
+                    <span className="rounded-lg bg-strong px-2 py-1.5 text-sm text-secondary">
+                      bg-strong · stronger neutral fill
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {states.map(([on, title, recipe]) => {
@@ -429,6 +703,17 @@ function Families() {
         {FAMILIES.map((family) => (
           <FamilyRow key={family} family={family} />
         ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-baseline gap-x-3">
+          <h3 className="text-sm font-semibold text-secondary">Status data</h3>
+          <p className="text-0.5xs text-muted">
+            Fills for queued work in status charts. Charts read them through the
+            status styles in @restate/features-status-chart; don't use them for
+            surfaces.
+          </p>
+        </div>
+        <TokenGrid tokens={STATUS_DATA} />
       </div>
     </Block>
   );
@@ -624,6 +909,49 @@ function AllTokens() {
           </div>
         );
       })}
+      <details className="group rounded-xl border bg-surface shadow-xs">
+        <summary className="cursor-default px-4 py-3 text-sm font-semibold text-secondary">
+          Internals · {INTERNALS.length} context values
+          <span className="ml-2 font-normal text-muted">
+            Not utilities. Components that own a context read them; don't use
+            them directly.
+          </span>
+        </summary>
+        <div className="overflow-x-auto border-t">
+          <table className="w-full text-left text-0.5xs">
+            <thead className="text-muted">
+              <tr>
+                <th className="px-4 py-2 font-medium">Variable</th>
+                <th className="px-4 py-2 font-medium">Light</th>
+                {HAS_DARK && <th className="px-4 py-2 font-medium">Dark</th>}
+                <th className="px-4 py-2 font-medium">Owner</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-muted">
+              {INTERNALS.map((internal) => (
+                <tr key={internal.variable}>
+                  <td className="px-4 py-1.5 font-mono text-primary">
+                    {internal.variable}
+                  </td>
+                  <td className="px-4 py-1.5 font-mono text-subtle">
+                    {formatValue(internal.value)}
+                  </td>
+                  {HAS_DARK && (
+                    <td className="px-4 py-1.5 font-mono text-subtle">
+                      {formatValue(internal.darkValue)}
+                    </td>
+                  )}
+                  <td className="px-4 py-1.5 text-muted">
+                    {INTERNAL_OWNERS.find(([prefix]) =>
+                      internal.variable.startsWith(prefix),
+                    )?.[1] ?? '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </Block>
   );
 }
@@ -631,6 +959,7 @@ function AllTokens() {
 function Component() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 pb-16 sm:px-6">
+      <style>{SCOPE_CSS}</style>
       <div className="flex flex-col gap-3">
         <ListPageHeader
           icon={IconName.Layers}
@@ -653,6 +982,7 @@ function Component() {
           ))}
         </nav>
       </div>
+      <Choose />
       <Surfaces />
       <TextTokens />
       <Families />

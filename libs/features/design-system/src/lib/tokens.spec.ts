@@ -1,6 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { FAMILIES, familyOf, parseThemeTokens, tierOf } from './tokens';
+import {
+  FAMILIES,
+  NAMESPACES,
+  familyOf,
+  hasDarkTheme,
+  parseInternals,
+  parseThemeTokens,
+  themeScopeCss,
+  tierOf,
+} from './tokens';
 
 const themeCss = readFileSync(
   createRequire(import.meta.url).resolve('@restate/util-styles/theme.css'),
@@ -55,6 +64,94 @@ describe('parseThemeTokens', () => {
         expect(tiers(family, utility)).toEqual(expected);
       }
     }
+  });
+
+  it('reads dark values from the dark theme block', () => {
+    const tokens = parseThemeTokens(`@theme static {
+  --background-color-surface: var(--color-white);
+  --background-color-muted: var(--color-white);
+  --fill-surface: var(--background-color-surface);
+}
+
+@layer base {
+  [data-theme='dark'] {
+    --background-color-surface: var(--color-black);
+    --fill-surface: var(--background-color-muted);
+  }
+}`);
+
+    expect(tokens.map((token) => token.darkValue)).toEqual([
+      'var(--color-black)',
+      'var(--color-white)',
+      'var(--background-color-muted)',
+    ]);
+    expect(tokens[2]?.alias).toBe('bg-surface');
+    expect(tokens[2]?.darkAlias).toBe('bg-muted');
+  });
+
+  it('only overrides tokens and internals that exist', () => {
+    const variables = new Set([
+      ...parseThemeTokens(themeCss).map((token) => token.variable),
+      ...parseInternals(themeCss).map((internal) => internal.variable),
+    ]);
+    const dark =
+      themeCss.match(/\[data-theme='dark'\]\s*\{([\s\S]*?)\n\s*\}/)?.[1] ?? '';
+    for (const [, variable] of dark.matchAll(/(--[a-z0-9-]+):/g)) {
+      expect(variables).toContain(variable);
+    }
+  });
+
+  it('keeps context internals out of the utility namespaces', () => {
+    const internals = parseInternals(`@layer base {
+  :root {
+    --raised-subtle: var(--background-color-subtle);
+  }
+
+  [data-theme='dark'] {
+    --raised-subtle: var(--color-white);
+  }
+}`);
+    expect(internals).toEqual([
+      {
+        variable: '--raised-subtle',
+        value: 'var(--background-color-subtle)',
+        darkValue: 'var(--color-white)',
+      },
+    ]);
+    for (const internal of parseInternals(themeCss)) {
+      expect(
+        NAMESPACES.some(({ prefix }) =>
+          internal.variable.startsWith(`--${prefix}`),
+        ),
+      ).toBe(false);
+    }
+  });
+
+  it('builds light and dark scopes with runtime colors', () => {
+    const scopes = themeScopeCss(
+      `@theme static {
+  --background-color-tint: --alpha(var(--color-black) / 5%);
+  --fill-surface: var(--background-color-surface);
+}
+
+@layer base {
+  :root {
+    --sheen: var(--background-color-surface);
+  }
+
+  [data-theme='dark'] {
+    --background-color-tint: --alpha(var(--color-white) / 6%);
+  }
+}`,
+      { light: '.l', dark: '.d' },
+    ).split('\n');
+    expect(scopes[0]).toBe(
+      '.l{--background-color-tint:color-mix(in oklab, var(--color-black) 5%, transparent);--fill-surface:var(--background-color-surface);--sheen:var(--background-color-surface);}',
+    );
+    expect(scopes[1]).toContain(
+      '--background-color-tint:color-mix(in oklab, var(--color-white) 6%, transparent);}',
+    );
+    expect(hasDarkTheme('@theme static {\n}')).toBe(false);
   });
 
   it('only aliases tokens that exist', () => {

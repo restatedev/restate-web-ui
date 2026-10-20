@@ -115,7 +115,7 @@ const styles = tv({
     cardFrame:
       'relative min-h-4 rounded-t-2xl border-x border-t border-default',
     headerSlot:
-      'mx-2 mt-2 rounded-xl border border-default bg-linear-to-b from-sheen-emphasis/70 to-muted/80 shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%),0_2px_5px_-1px_--theme(--box-shadow-color-default/8%),0_4px_10px_-3px_--theme(--box-shadow-color-default/6%)] backdrop-blur-3xl backdrop-saturate-200 [&:empty]:hidden',
+      'mx-2 mt-2 rounded-xl border border-default bg-linear-to-b from-(--sheen-emphasis)/70 to-muted/80 shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%),0_2px_5px_-1px_--theme(--box-shadow-color-default/8%),0_4px_10px_-3px_--theme(--box-shadow-color-default/6%)] backdrop-blur-3xl backdrop-saturate-200 [&:empty]:hidden',
     body: 'relative flex min-h-0 flex-1 flex-col',
     sectionRoot: 'relative flex flex-col',
     sectionFade:
@@ -136,7 +136,7 @@ const styles = tv({
 
 const tabStyles = tv({
   extend: focusRing,
-  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-muted transition forced-color-adjust-none select-none [-webkit-tap-highlight-color:transparent] hover:bg-emphasis/70 hover:text-secondary disabled:text-subtle selected:z-10 selected:border-default selected:bg-linear-to-b selected:from-sheen selected:to-subtle selected:text-primary selected:shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-edge/95%),0_-1px_3px_-1px_--theme(--box-shadow-color-default/4%),0_-3px_8px_-3px_--theme(--box-shadow-color-default/3%)] [&_svg]:fill-muted [&_svg]:transition hover:[&_svg]:fill-emphasis selected:[&_svg]:fill-muted',
+  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-muted transition forced-color-adjust-none select-none [-webkit-tap-highlight-color:transparent] hover:bg-emphasis/70 hover:text-secondary disabled:text-subtle selected:z-10 selected:border-default selected:bg-linear-to-b selected:from-(--sheen) selected:to-subtle selected:text-primary selected:shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-edge/95%),0_-1px_3px_-1px_--theme(--box-shadow-color-default/4%),0_-3px_8px_-3px_--theme(--box-shadow-color-default/3%)] [&_svg]:fill-muted [&_svg]:transition hover:[&_svg]:fill-emphasis selected:[&_svg]:fill-muted',
   variants: {
     isDisabled: {
       true: 'text-subtle',
@@ -153,10 +153,10 @@ const headerContentStyles = tv({
 });
 
 const mobileTabStyles = tv({
-  base: 'relative z-10 flex w-full min-w-0 flex-row items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-default bg-linear-to-b from-sheen to-subtle px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-primary shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-edge/95%),0_-1px_3px_-1px_--theme(--box-shadow-color-default/4%),0_-3px_8px_-3px_--theme(--box-shadow-color-default/3%)]',
+  base: 'relative z-10 flex w-full min-w-0 flex-row items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-default bg-linear-to-b from-(--sheen) to-subtle px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-primary shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-edge/95%),0_-1px_3px_-1px_--theme(--box-shadow-color-default/4%),0_-3px_8px_-3px_--theme(--box-shadow-color-default/3%)]',
   variants: {
     interactive: {
-      true: 'hover:!bg-linear-to-b hover:from-sheen hover:to-subtle',
+      true: 'hover:!bg-linear-to-b hover:from-(--sheen) hover:to-subtle',
       false: 'cursor-default',
     },
   },

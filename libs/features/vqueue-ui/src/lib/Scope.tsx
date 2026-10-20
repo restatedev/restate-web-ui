@@ -11,8 +11,7 @@ const styles = tv({
   slots: {
     root: 'inline-flex max-w-full min-w-0 items-center align-middle',
     chip: 'max-w-full text-xs font-medium text-tertiary',
-    segment:
-      'max-w-[22rem] bg-raised-muted pl-1 font-mono text-[90%] text-tertiary',
+    segment: 'max-w-[22rem] pl-1 font-mono text-[90%] text-tertiary',
     inline:
       'inline-flex max-w-full min-w-0 items-center gap-1 font-mono text-[90%] text-tertiary',
     label:
@@ -147,7 +146,10 @@ export function Scope({
       href={href}
       aria-label={ariaLabel}
     >
-      <ChipSegment className={segment({ className: segmentClassName })}>
+      <ChipSegment
+        tone="muted"
+        className={segment({ className: segmentClassName })}
+      >
         {content}
       </ChipSegment>
     </Chip>

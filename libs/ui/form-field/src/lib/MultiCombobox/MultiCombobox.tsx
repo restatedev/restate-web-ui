@@ -164,7 +164,7 @@ const tagGroupStyles = tv({
 });
 
 const popoverStyles = tv({
-  base: 'w-(--trigger-width) min-w-fit bg-elevated/90 p-0',
+  base: 'w-(--trigger-width) min-w-fit bg-overlay/90 p-0',
 });
 
 const inputStyles = tv({

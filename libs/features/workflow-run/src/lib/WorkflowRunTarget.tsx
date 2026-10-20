@@ -23,17 +23,15 @@ const targetStyles = tv({
     serviceLink:
       'inline-flex max-w-full min-w-0 no-underline transition-[filter] hover:brightness-[0.98] pressed:brightness-[0.96]',
     chip: 'max-w-full text-xs font-medium text-tertiary',
-    service: 'max-w-[18rem] bg-raised pl-1.5 font-medium text-tertiary',
-    workflowId:
-      'max-w-[28rem] bg-raised-subtle font-mono text-[90%] text-muted',
+    service: 'max-w-[18rem] pl-1.5 font-medium text-tertiary',
+    workflowId: 'max-w-[28rem] font-mono text-[90%] text-muted',
     icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
   },
   variants: {
     showService: {
       true: {},
       false: {
-        workflowId:
-          'bg-raised pl-1.5 font-sans text-xs font-medium text-tertiary',
+        workflowId: 'pl-1.5 font-sans text-xs font-medium text-tertiary',
       },
     },
     hasLeadingScope: {
@@ -97,7 +95,7 @@ export function WorkflowRunTarget({
       size="lg"
       className={chip({ className })}
     >
-      <ChipSegment className={serviceStyle()}>
+      <ChipSegment tone="raised" className={serviceStyle()}>
         <Icon name={IconName.Box} className={icon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
       </ChipSegment>
@@ -139,7 +137,10 @@ export function WorkflowRunTarget({
           size="lg"
           className={chip({ className })}
         >
-          <ChipSegment className={workflowId()}>
+          <ChipSegment
+            tone={showService ? 'subtle' : 'raised'}
+            className={workflowId()}
+          >
             <Icon name={IconName.Workflow} className={icon()} />
             <TruncateTooltipTrigger>{id || <>&nbsp;</>}</TruncateTooltipTrigger>
             {href && (

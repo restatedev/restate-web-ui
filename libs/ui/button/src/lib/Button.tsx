@@ -32,7 +32,7 @@ const styles = tv({
       primary:
         'bg-linear-to-b from-accent/90 to-accent text-inverse shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)] drop-shadow-xs hover:from-accent-hover hover:to-accent-hover hover:shadow-none disabled:shadow-none disabled:drop-shadow-none pressed:from-accent-pressed pressed:to-accent-pressed pressed:shadow-none',
       secondary:
-        'bg-raised text-primary hover:bg-raised-hover pressed:bg-raised-pressed',
+        'bg-raised text-primary hover:bg-(--raised-hover) pressed:bg-(--raised-pressed)',
       destructive:
         'bg-linear-to-b from-danger/95 to-danger text-inverse shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/15%)] drop-shadow-xs hover:from-danger-hover hover:to-danger-hover hover:shadow-none pressed:from-danger-pressed pressed:to-danger-pressed pressed:shadow-none',
       icon: 'flex items-center justify-center border-0 p-1 text-tertiary shadow-none hover:bg-tint disabled:bg-transparent pressed:bg-tint-strong',

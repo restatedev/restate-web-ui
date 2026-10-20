@@ -90,7 +90,7 @@ const styles = tv({
     stickyHeaderWrapper:
       'sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)+0.5rem-var(--cp-toolbar-tuck,0px))] z-40 mx-2 mt-[calc(0.5rem+var(--cp-toolbar-tuck,0px))] -mb-9 h-9',
     stickyHeaderBackdrop:
-      'pointer-events-none absolute inset-0 rounded-xl border border-default bg-linear-to-b from-sheen-emphasis/70 to-muted/80 shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%),0_2px_5px_-1px_--theme(--box-shadow-color-default/8%),0_4px_10px_-3px_--theme(--box-shadow-color-default/6%)] backdrop-blur-3xl backdrop-saturate-200',
+      'pointer-events-none absolute inset-0 rounded-xl border border-default bg-linear-to-b from-(--sheen-emphasis)/70 to-muted/80 shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%),0_2px_5px_-1px_--theme(--box-shadow-color-default/8%),0_4px_10px_-3px_--theme(--box-shadow-color-default/6%)] backdrop-blur-3xl backdrop-saturate-200',
     stickyHeaderContent: 'relative h-full w-full overflow-hidden',
     stickyHeaderScroll:
       'relative h-full [scrollbar-width:none] overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden',
