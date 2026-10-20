@@ -5,7 +5,6 @@
 @import '@restate/util-styles/theme.css';
 @import '@restate/ui-api/elements-theme.css';
 
-@custom-variant dark (&:where(.dark, .dark *));
 @custom-variant @tall (@media (min-height: 47rem));
 
 @source '../../../libs';
