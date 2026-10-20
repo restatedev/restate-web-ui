@@ -15,7 +15,7 @@ function isFormattableJson(value?: string) {
 }
 
 const styles = tv({
-  base: 'h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden!',
+  base: 'h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden! [&_.monaco-editor_.native-edit-context]:caret-transparent!',
   variants: {
     applyTheme: {
       true: '[&_.monaco-editor]:[--vscode-editor-background:transparent]! [&_.monaco-editor]:[--vscode-editorGutter-background:transparent]! [&_.monaco-editor]:[--vscode-editorLineNumber-activeForeground:var(--text-color-muted)]! [&_.monaco-editor]:[--vscode-editorLineNumber-foreground:var(--text-color-muted)]! [&_.monaco-editor]:[--vscode-focusBorder:transparent]!',
