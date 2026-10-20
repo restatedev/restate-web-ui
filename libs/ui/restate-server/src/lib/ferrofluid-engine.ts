@@ -37,13 +37,15 @@ const STATUS_PARAMS: Record<FerrofluidStatus, StatusParams> = {
   danger: { spread: 1.8, speedMul: 0.8, noiseAmp: 14, noiseSpeed: 0.7 },
 };
 
-const STATUS_HUE: Record<FerrofluidStatus, number> = {
-  idle: 235,
-  active: 235,
-  pause: 235,
-  warning: 35,
-  danger: 0,
+const STATUS_TOKEN: Record<FerrofluidStatus, string> = {
+  idle: '--background-color-accent-vivid',
+  active: '--background-color-accent-vivid',
+  pause: '--background-color-accent-vivid',
+  warning: '--background-color-warning-vivid',
+  danger: '--background-color-danger-vivid',
 };
+
+const TOKEN_REFRESH_FRAMES = 30;
 
 const SPRING = 0.012;
 const DAMPING = 0.965;
@@ -56,28 +58,14 @@ const FIELD_DETAIL = 0.5;
 const SHAPE_SATURATION = 20;
 const SHAPE_LIGHTNESS = 65;
 
-function hslToRgb(h: number, s: number, l: number): [number, number, number] {
-  const hue = ((h % 360) + 360) % 360;
-  const sat = s / 100;
-  const light = l / 100;
-  const c = (1 - Math.abs(2 * light - 1)) * sat;
-  const hp = hue / 60;
-  const x = c * (1 - Math.abs((hp % 2) - 1));
-  let r = 0;
-  let g = 0;
-  let b = 0;
-  if (hp < 1) [r, g, b] = [c, x, 0];
-  else if (hp < 2) [r, g, b] = [x, c, 0];
-  else if (hp < 3) [r, g, b] = [0, c, x];
-  else if (hp < 4) [r, g, b] = [0, x, c];
-  else if (hp < 5) [r, g, b] = [x, 0, c];
-  else [r, g, b] = [c, 0, x];
-  const m = light - c / 2;
-  return [
-    Math.round((r + m) * 255),
-    Math.round((g + m) * 255),
-    Math.round((b + m) * 255),
-  ];
+function shade(
+  color: string,
+  hueShift: number,
+  saturation: number,
+  lightness: number,
+  alpha = 1,
+) {
+  return `hsl(from ${color} calc(h + ${hueShift.toFixed(2)}) ${saturation}% ${lightness}% / ${alpha})`;
 }
 
 export class FerrofluidEngine {
@@ -100,8 +88,11 @@ export class FerrofluidEngine {
   private curSpeed = STATUS_PARAMS.idle.speedMul;
   private curNoiseAmp = STATUS_PARAMS.idle.noiseAmp;
   private curNoiseSpeed = STATUS_PARAMS.idle.noiseSpeed;
-  private curHue = STATUS_HUE.idle;
-  hues: Record<FerrofluidStatus, number> = { ...STATUS_HUE };
+  private fromColor = '';
+  private toColor = '';
+  private colorMix = 1;
+  private colorStatus: FerrofluidStatus | null = null;
+  private frame = 0;
   private nextJolt = 0;
   private fieldCanvas: HTMLCanvasElement | null = null;
   private fieldCtx: CanvasRenderingContext2D | null = null;
@@ -324,6 +315,7 @@ export class FerrofluidEngine {
   private loop(timestamp: number) {
     if (!this.shapeCtx || !this.colorCtx) return;
     this.time = timestamp * 0.001;
+    this.frame += 1;
     this.interpolateParams();
     this.updatePhysics();
     this.draw();
@@ -337,8 +329,34 @@ export class FerrofluidEngine {
     this.curSpeed += (t.speedMul - this.curSpeed) * LERP;
     this.curNoiseAmp += (t.noiseAmp - this.curNoiseAmp) * LERP;
     this.curNoiseSpeed += (t.noiseSpeed - this.curNoiseSpeed) * LERP;
-    const targetHue = this.hues[this._status];
-    this.curHue += (targetHue - this.curHue) * 0.08;
+    if (
+      this.colorStatus !== this._status ||
+      this.frame % TOKEN_REFRESH_FRAMES === 0
+    ) {
+      this.refreshColor();
+    }
+    this.colorMix += (1 - this.colorMix) * 0.08;
+    if (this.colorMix > 0.995) {
+      this.colorMix = 1;
+      this.fromColor = this.toColor;
+    }
+  }
+
+  private refreshColor() {
+    if (!this.shapeCanvas) return;
+    this.colorStatus = this._status;
+    const color = getComputedStyle(this.shapeCanvas)
+      .getPropertyValue(STATUS_TOKEN[this._status])
+      .trim();
+    if (!color || color === this.toColor) return;
+    this.fromColor = this.toColor || color;
+    this.toColor = color;
+    this.colorMix = this.fromColor === color ? 1 : 0;
+  }
+
+  private get color() {
+    if (this.colorMix >= 1) return this.toColor;
+    return `color-mix(in oklch, ${this.toColor} ${(this.colorMix * 100).toFixed(1)}%, ${this.fromColor})`;
   }
 
   private updatePhysics() {
@@ -457,11 +475,6 @@ export class FerrofluidEngine {
       invR2s[i] = 1 / r2s[i]!;
     }
 
-    const [red, green, blue] = hslToRgb(
-      this.curHue,
-      SHAPE_SATURATION,
-      SHAPE_LIGHTNESS,
-    );
     const invRange = 1 / (GOO_THRESHOLD_HIGH - GOO_THRESHOLD_LOW);
     const data = image.data;
     let p = 0;
@@ -482,9 +495,9 @@ export class FerrofluidEngine {
         }
         let a = (field - GOO_THRESHOLD_LOW) * invRange;
         a = a <= 0 ? 0 : a >= 1 ? 1 : a * a * (3 - 2 * a);
-        data[p] = red;
-        data[p + 1] = green;
-        data[p + 2] = blue;
+        data[p] = 255;
+        data[p + 1] = 255;
+        data[p + 2] = 255;
         data[p + 3] = (a * 255) | 0;
         p += 4;
       }
@@ -493,6 +506,12 @@ export class FerrofluidEngine {
     fieldCtx.putImageData(image, 0, 0);
     ctx.clearRect(0, 0, this._logicalSize, this._logicalSize);
     ctx.drawImage(fieldCanvas, 0, 0, this._logicalSize, this._logicalSize);
+    if (this.color) {
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.fillStyle = shade(this.color, 0, SHAPE_SATURATION, SHAPE_LIGHTNESS);
+      ctx.fillRect(0, 0, this._logicalSize, this._logicalSize);
+      ctx.globalCompositeOperation = 'source-over';
+    }
   }
 
   private drawColor() {
@@ -503,11 +522,13 @@ export class FerrofluidEngine {
 
     ctx.clearRect(0, 0, size, size);
 
-    const baseHue = this.curHue + Math.sin(time * 0.15) * 8;
+    const color = this.color;
+    if (!color) return;
+    const wobble = Math.sin(time * 0.15) * 8;
 
     for (const b of metaballs) {
       const h =
-        baseHue +
+        wobble +
         ((b.hueOffset % 25) - 12) +
         Math.sin(time * 0.3 + b.noisePhase) * 6;
       const grad = ctx.createRadialGradient(
@@ -518,9 +539,9 @@ export class FerrofluidEngine {
         b.y,
         b.radius * 1.1,
       );
-      grad.addColorStop(0, `hsla(${h}, 65%, 55%, 0.85)`);
-      grad.addColorStop(0.6, `hsla(${h + 8}, 55%, 48%, 0.4)`);
-      grad.addColorStop(1, `hsla(${h + 15}, 45%, 42%, 0)`);
+      grad.addColorStop(0, shade(color, h, 65, 55, 0.85));
+      grad.addColorStop(0.6, shade(color, h + 8, 55, 48, 0.4));
+      grad.addColorStop(1, shade(color, h + 15, 45, 42, 0));
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(b.x, b.y, b.radius * 1.1, 0, TWO_PI);
@@ -528,9 +549,9 @@ export class FerrofluidEngine {
     }
 
     const meshHues = [
-      baseHue,
-      baseHue + 20 + Math.sin(time * 0.2) * 10,
-      baseHue - 12 + Math.cos(time * 0.18) * 8,
+      wobble,
+      wobble + 20 + Math.sin(time * 0.2) * 10,
+      wobble - 12 + Math.cos(time * 0.18) * 8,
     ];
     const maxExtent = size * 0.47;
 
@@ -551,8 +572,8 @@ export class FerrofluidEngine {
         py = cy + (dy / dist) * maxDist;
       }
       const grad = ctx.createRadialGradient(px, py, 0, px, py, radius);
-      grad.addColorStop(0, `hsla(${hue}, 75%, 58%, ${alpha})`);
-      grad.addColorStop(1, `hsla(${hue}, 75%, 58%, 0)`);
+      grad.addColorStop(0, shade(color, hue, 75, 58, alpha));
+      grad.addColorStop(1, shade(color, hue, 75, 58, 0));
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(px, py, radius, 0, TWO_PI);

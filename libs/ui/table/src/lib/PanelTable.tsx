@@ -1,4 +1,3 @@
-import { useResolvedColors } from '@restate/util-theme';
 import {
   CSSProperties,
   ReactElement,
@@ -83,11 +82,6 @@ export interface PanelTableProps<
 
 const SELECTION_WIDTH = 36;
 const SPACER_WIDTH = 8;
-
-const SKELETON_COLORS = {
-  bar: 'var(--background-color-emphasis)',
-  line: 'var(--border-color-default)',
-};
 const LEFT_SPACER_ID = '__panel_table_spacer_left__';
 const RIGHT_SPACER_ID = '__panel_table_spacer_right__';
 
@@ -119,7 +113,7 @@ const styles = tv({
     virtualized: {
       true: {
         dataTableInner:
-          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]>[role=presentation]]:bg-subtle [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
+          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:relative [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:linear-gradient(to_top,var(--border-color-default)_1px,transparent_1px)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]]:before:pointer-events-none [&_[role=rowgroup]]:before:absolute [&_[role=rowgroup]]:before:inset-0 [&_[role=rowgroup]]:before:bg-emphasis/70 [&_[role=rowgroup]]:before:[mask-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:before:[mask-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:before:[mask-repeat:repeat-y] [&_[role=rowgroup]]:before:content-[""] [&_[role=rowgroup]>[role=presentation]]:bg-subtle [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
       },
     },
   },
@@ -410,7 +404,6 @@ export function PanelTable<
     () => ({ estimatedRowHeight, headingHeight: bodyHeadingHeight }),
     [bodyHeadingHeight, estimatedRowHeight],
   );
-  const skeletonColors = useResolvedColors(SKELETON_COLORS);
   const skeletonStyle = useMemo(() => {
     if (!isVirtualized) return undefined;
     const height = estimatedRowHeight;
@@ -435,7 +428,7 @@ export function PanelTable<
       x += width;
     }
     const total = Math.ceil(x + SPACER_WIDTH);
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${total}' height='${height}'><g fill='${skeletonColors.bar}' fill-opacity='0.7'>${shapes.join('')}</g><rect y='${height - 1}' width='${total}' height='1' fill='${skeletonColors.line}'/></svg>`;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${total}' height='${height}'><g fill='black'>${shapes.join('')}</g></svg>`;
     return {
       '--panel-table-skeleton': `url("data:image/svg+xml,${encodeURIComponent(svg)}")`,
       '--panel-table-skeleton-size': `${total}px ${height}px`,
@@ -446,7 +439,6 @@ export function PanelTable<
     dataTableSelectionWidth,
     columns,
     columnWidths,
-    skeletonColors,
   ]);
   const bodyHeadingStyle = {
     '--panel-table-body-heading-height': `${bodyHeadingHeight}px`,

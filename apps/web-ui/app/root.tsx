@@ -193,13 +193,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className="h-full scrollbar-gutter-stable overflow-y-scroll bg-gray-100 dark:bg-gray-900"
+      className="h-full scrollbar-gutter-stable overflow-y-scroll bg-canvas"
     >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="msapplication-TileColor" content="#222452" />
-        <meta name="theme-color" content="#f3f4f6"></meta>
         <meta name="version" content={globalThis.env.VERSION} />
         <title>Restate</title>
         <Meta />
@@ -298,7 +297,7 @@ function SidebarHeaderContent() {
       <div className="flex max-h-20 max-w-full min-w-0 flex-1 flex-col items-start gap-0 overflow-hidden opacity-100 transition-[max-width,max-height,opacity] duration-300 group-data-[collapsed=false]/sidebar:max-h-20 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-h-0 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-h-0 max-xl:max-w-0 max-xl:opacity-0">
         <div className="flex h-[1.5em] min-w-0 items-center gap-1.5 self-stretch pl-1">
           <HealthIndicator mini />
-          <span className="block min-w-0 flex-auto truncate text-sm font-medium text-gray-700">
+          <span className="block min-w-0 flex-auto truncate text-sm font-medium text-secondary">
             Restate server
           </span>
         </div>
@@ -328,12 +327,12 @@ function SidebarFooterContent() {
             preserveQueryParams={false}
             target="_blank"
             rel="noreferrer noopener"
-            className="flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-0.5xs text-gray-500 no-underline outline-offset-2 outline-blue-600 transition-all duration-300 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 hover:bg-black/3 hover:text-gray-700 focus-visible:outline-2 max-xl:w-fit max-xl:translate-x-[5px] max-xl:gap-0"
+            className="flex w-full items-center gap-2 rounded-xl border border-transparent p-0.5 text-0.5xs text-muted no-underline outline-offset-2 outline-focus transition-all duration-300 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 hover:bg-tint-subtle hover:text-secondary focus-visible:outline-2 max-xl:w-fit max-xl:translate-x-[5px] max-xl:gap-0"
           >
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
               <Icon
                 name={item.icon}
-                className="h-4.5 w-4.5 shrink-0 text-zinc-400"
+                className="h-4.5 w-4.5 shrink-0 text-subtle"
               />
             </span>
             <span className="max-w-full min-w-0 flex-auto truncate overflow-hidden pr-1 text-left opacity-100 transition-[max-width,opacity,padding] duration-300 group-data-[collapsed=false]/sidebar:max-w-full group-data-[collapsed=false]/sidebar:pr-1 group-data-[collapsed=false]/sidebar:opacity-100 group-data-[collapsed=true]/sidebar:max-w-0 group-data-[collapsed=true]/sidebar:pr-0 group-data-[collapsed=true]/sidebar:opacity-0 max-xl:max-w-0 max-xl:pr-0 max-xl:opacity-0">

@@ -12,7 +12,6 @@ import { useApplyOption } from './hooks/useApplyOption';
 import { usePie } from './hooks/usePie';
 import { useChartEvents } from './hooks/useChartEvents';
 import invariant from 'tiny-invariant';
-import { resolveColorsDeep, useThemeVersion } from '@restate/util-theme';
 
 export function Chart<T extends object>({
   data,
@@ -20,9 +19,7 @@ export function Chart<T extends object>({
   height = '100%',
   style,
   className,
-  theme = 'light',
   timeZone = 'system',
-  renderer,
   children,
   ref,
 }: ChartProps<T>) {
@@ -84,19 +81,13 @@ export function Chart<T extends object>({
     parsed.legend,
   ]);
 
-  const chartRef = useEchartsInit(containerRef, theme, renderer);
+  const chartRef = useEchartsInit(containerRef);
   echartsInstanceRef.current = chartRef.current;
-  const themeVersion = useThemeVersion();
-  const resolvedOption = useMemo(() => {
-    void themeVersion;
-    return resolveColorsDeep(option, ['dataset', 'source']);
-  }, [option, themeVersion]);
-  useApplyOption(chartRef, resolvedOption);
+  useApplyOption(chartRef, option);
   useChartEvents(chartRef, {
     data: data ?? [],
     pie: parsed.pie,
     series: parsed.series,
-    resetKey: `${theme}:${renderer ?? 'svg'}`,
     pieHighlightSeriesIndex: parsed.pie?.gradient ? 1 : undefined,
     linkedHoverSeriesIndices: parsed.series.flatMap((s, index) =>
       s.type === 'bar-time' ? [index] : [],
@@ -106,10 +97,7 @@ export function Chart<T extends object>({
   useImperativeHandle(ref, () => ({
     getInstance: () => chartRef.current,
     setOption: (chartOptions, setOptions) =>
-      chartRef.current?.setOption(
-        resolveColorsDeep(chartOptions, ['dataset', 'source']),
-        setOptions,
-      ),
+      chartRef.current?.setOption(chartOptions, setOptions),
     resize: () => chartRef.current?.resize(),
   }));
 

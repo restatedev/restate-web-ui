@@ -1,6 +1,5 @@
 import { RefObject, useEffect, useState } from 'react';
 import * as monaco from '@restate/ui-editor/monaco';
-import { resolveColor } from '@restate/util-theme';
 
 export function ValueMonaco({
   value,
@@ -13,19 +12,11 @@ export function ValueMonaco({
 
   useEffect(() => {
     if (el && !editorRef.current) {
-      monaco.editor.defineTheme('restate', {
-        base: 'vs',
-        colors: {
-          focusBorder: resolveColor('transparent', 'hex'),
-        },
-        rules: [],
-        inherit: true,
-      });
       editorRef.current = monaco.editor.create(el, {
         value: formatValue(value),
         language: 'json',
         folding: false,
-        theme: 'restate',
+        theme: 'vs',
         readOnly: true,
         formatOnPaste: true,
         formatOnType: true,
@@ -75,7 +66,12 @@ export function ValueMonaco({
   if (typeof value === 'undefined') {
     return null;
   }
-  return <div ref={setEl} className="h-full min-h-4 max-w-full min-w-24" />;
+  return (
+    <div
+      ref={setEl}
+      className="h-full min-h-4 max-w-full min-w-24 [&_.monaco-editor]:[--vscode-focusBorder:transparent]!"
+    />
+  );
 }
 
 function formatValue(value?: string) {

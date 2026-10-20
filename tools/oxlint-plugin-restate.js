@@ -30,7 +30,7 @@ export default {
           useToken:
             "'{{ color }}' uses the Tailwind palette directly. Use a theme token from @restate/util-styles/theme.css instead.",
           useTokenForLiteral:
-            "'{{ color }}' is a hardcoded color. Use a theme token (var(--…)) from @restate/util-styles/theme.css, and resolveColor from @restate/util-theme where a concrete value is required.",
+            "'{{ color }}' is a hardcoded color. Use a theme token (var(--…)) from @restate/util-styles/theme.css; canvas code can read one with getComputedStyle(element).getPropertyValue('--…').",
         },
       },
       create(context) {

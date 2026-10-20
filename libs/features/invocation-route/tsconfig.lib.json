@@ -156,9 +156,6 @@
       "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
     },
     {
-      "path": "../../util/theme/tsconfig.lib.json"
-    },
-    {
       "path": "../../ui/editor/tsconfig.lib.json"
     },
     {

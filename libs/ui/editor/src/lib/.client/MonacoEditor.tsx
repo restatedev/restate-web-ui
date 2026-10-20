@@ -1,4 +1,5 @@
 import { RefObject, useEffect, useState } from 'react';
+import { tv } from '@restate/util-styles';
 import * as monaco from './monaco';
 import { showFoldedArrayLengths } from './foldedArrayLengths';
 
@@ -13,7 +14,15 @@ function isFormattableJson(value?: string) {
   }
 }
 
-const MONACO_EDITOR_THEME = 'restate-editor';
+const styles = tv({
+  base: 'h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden!',
+  variants: {
+    applyTheme: {
+      true: '[&_.monaco-editor]:[--vscode-editor-background:transparent]! [&_.monaco-editor]:[--vscode-editorGutter-background:transparent]! [&_.monaco-editor]:[--vscode-editorLineNumber-activeForeground:var(--text-color-muted)]! [&_.monaco-editor]:[--vscode-editorLineNumber-foreground:var(--text-color-muted)]! [&_.monaco-editor]:[--vscode-focusBorder:transparent]!',
+      false: '',
+    },
+  },
+});
 
 export function MonacoEditor({
   value,
@@ -29,7 +38,6 @@ export function MonacoEditor({
   applyTheme?: boolean;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
-
   useEffect(() => {
     if (!el || editorRef.current) {
       return;
@@ -38,25 +46,11 @@ export function MonacoEditor({
     const isLargeValue = (value?.length ?? 0) > MAX_EDITOR_FORMAT_LENGTH;
     const shouldFormat = !isLargeValue && isFormattableJson(value);
 
-    if (applyTheme) {
-      monaco.editor.defineTheme(MONACO_EDITOR_THEME, {
-        base: 'vs',
-        colors: {
-          'editor.background': '#00000000',
-          'editorGutter.background': '#00000000',
-          'editorLineNumber.foreground': '#00000080',
-          'editorLineNumber.activeForeground': '#00000080',
-          focusBorder: '#00000000',
-        },
-        rules: [],
-        inherit: true,
-      });
-    }
     const editor = monaco.editor.create(el, {
       value,
       language: 'json',
       folding: true,
-      ...(applyTheme && { theme: MONACO_EDITOR_THEME }),
+      ...(applyTheme && { theme: 'vs' }),
       formatOnPaste: shouldFormat,
       formatOnType: shouldFormat,
       minimap: { enabled: false },
@@ -185,7 +179,7 @@ export function MonacoEditor({
     <div
       ref={setEl}
       style={{ height: `clamp(2.625rem, ${value.length / 100}px, 45vh)` }}
-      className="h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden!"
+      className={styles({ applyTheme })}
     />
   );
 }

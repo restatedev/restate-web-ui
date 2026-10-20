@@ -33,7 +33,7 @@ export function StatusArcEcharts({
 
   return (
     <div className={chartContainerStyles({ isLoading })}>
-      <Chart width="100%" height="100%" theme="light" renderer="canvas">
+      <Chart width="100%" height="100%">
         <Tooltip
           trigger="item"
           formatValue={(value) =>

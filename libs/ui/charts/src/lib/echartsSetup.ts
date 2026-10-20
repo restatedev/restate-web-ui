@@ -7,7 +7,7 @@ import {
   LegendComponent,
   MarkLineComponent,
 } from 'echarts/components';
-import { CanvasRenderer, SVGRenderer } from 'echarts/renderers';
+import { SVGRenderer } from 'echarts/renderers';
 
 let registered = false;
 
@@ -24,7 +24,6 @@ export function ensureEchartsRegistered() {
     LegendComponent,
     MarkLineComponent,
     SVGRenderer,
-    CanvasRenderer,
   ]);
   registered = true;
 }

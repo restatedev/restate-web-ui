@@ -3,26 +3,23 @@ import type { PieConfig } from '../types';
 import type { PieSeriesOption } from 'echarts/charts';
 import type { CustomSeriesOption } from 'echarts/charts';
 import type { EChartsType } from 'echarts/core';
-import { resolveColor } from '@restate/util-theme';
+import { hoverColor } from '../hoverColor';
 
 const highlight = (percent: number) =>
-  resolveColor(
-    `color-mix(in oklab, var(--background-color-highlight) ${percent}%, transparent)`,
-  );
+  `color-mix(in oklab, var(--background-color-highlight) ${percent}%, transparent)`;
 
-const highlightStroke = () =>
-  ({
-    type: 'linear',
-    x: 0,
-    y: 0,
-    x2: 0,
-    y2: 1,
-    colorStops: [
-      { offset: 0, color: highlight(70) },
-      { offset: 0.5, color: highlight(35) },
-      { offset: 1, color: highlight(5) },
-    ],
-  }) as unknown as string;
+const HIGHLIGHT_STROKE = {
+  type: 'linear',
+  x: 0,
+  y: 0,
+  x2: 0,
+  y2: 1,
+  colorStops: [
+    { offset: 0, color: highlight(70) },
+    { offset: 0.5, color: highlight(35) },
+    { offset: 1, color: highlight(5) },
+  ],
+} as unknown as string;
 
 export function usePie(
   pieCfg: PieConfig | undefined,
@@ -46,10 +43,8 @@ export function usePie(
         : undefined,
       label: { show: pieCfg.showLabel ?? true },
       labelLine: { show: pieCfg.showLabel ?? true },
-      data: pieCfg.slices.map((slice) => ({
-        name: slice.name,
-        value: slice.value,
-        itemStyle: {
+      data: pieCfg.slices.map((slice) => {
+        const itemStyle = {
           color: slice.color,
           borderColor: slice.borderColor,
           borderWidth: slice.borderWidth,
@@ -59,8 +54,18 @@ export function usePie(
           shadowBlur: slice.shadowBlur,
           shadowColor: slice.shadowColor,
           shadowOffsetY: slice.shadowOffsetY,
-        },
-      })),
+        };
+        return {
+          name: slice.name,
+          value: slice.value,
+          itemStyle,
+          ...(slice.color && {
+            emphasis: {
+              itemStyle: { ...itemStyle, color: hoverColor(slice.color) },
+            },
+          }),
+        };
+      }),
     };
 
     if (!pieCfg.gradient || !chartRef) return [pie];
@@ -116,7 +121,7 @@ export function usePie(
               id: `highlight-${params.dataIndex}`,
               style: {
                 fill: 'transparent',
-                stroke: highlightStroke(),
+                stroke: HIGHLIGHT_STROKE,
                 lineWidth: 1,
                 opacity: 1,
                 transition: ['opacity'],
@@ -131,7 +136,7 @@ export function usePie(
               id: `highlight-emphasis-${params.dataIndex}`,
               style: {
                 fill: 'transparent',
-                stroke: highlightStroke(),
+                stroke: HIGHLIGHT_STROKE,
                 lineWidth: 1,
                 opacity: 0,
                 transition: ['opacity'],

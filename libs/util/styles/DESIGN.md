@@ -166,11 +166,13 @@ Mask gradients (`mask-[…]`) keep black and white, because there they mean opac
 
 ## Colors in JavaScript
 
-Every color must come from a token, including the ones handed to charts, canvases and editors.
+Every color must come from a token, including the ones handed to charts, editors and canvases, and every one of them stays CSS-driven, so a theme switch needs no JavaScript.
 
-- **DOM and inline styles:** use the variable directly, `style={{ backgroundColor: 'var(--background-color-info-subtle)' }}`, `color-mix(in oklab, var(--background-color-highlight) 35%, transparent)`. SVG gradient stops take `style={{ stopColor: 'var(--…)' }}`; the `stopColor`/`fill` attributes can't read variables.
-- **Charts:** pass `var(--…)` strings anywhere in `@restate/ui-charts` props. `Chart` resolves every color in its options and re-renders when the theme changes. Custom `renderItem` code calls `resolveColor()`.
-- **Canvas, Monaco, SVG data URIs:** use `@restate/util-theme`. `resolveColor(color, 'rgb' | 'hex')` returns a concrete value, `useResolvedColors({ … }, 'hex')` re-resolves on theme change (Monaco themes re-run `defineTheme` from it), `resolveHue()` feeds procedural colors such as the server ferrofluid, and `useThemeVersion()` re-runs anything else.
-- **Stoplight Elements:** `@restate/ui-api/elements-theme.css` maps Elements' own `--color-*` variables to our tokens, so the playground follows the theme too.
+- **DOM and inline styles:** use the variable directly, `style={{ backgroundColor: 'var(--background-color-info-subtle)' }}`, `color-mix(in oklab, var(--background-color-highlight) 35%, transparent)`. SVG gradient stops take `style={{ stopColor: 'var(--…)' }}`.
+- **Charts:** `@restate/ui-charts` only renders SVG, and ECharts writes colors into SVG attributes untouched, so pass `var(--…)` anywhere. ECharts can't brighten a `var()` on hover by itself; `hoverColor()` in the charts lib does it with relative color syntax.
+- **Monaco:** don't define theme colors. Set Monaco's CSS variables on a wrapper (`[&_.monaco-editor]:[--vscode-editor-background:transparent]`, `--vscode-editorLineNumber-foreground`, `--vscode-focusBorder`, …). The SQL editor highlights syntax with decorations from `monaco.editor.tokenize()` and colors their classes with tokens.
+- **Canvas:** read the token with `getComputedStyle(canvas).getPropertyValue('--background-color-accent-vivid')`. Canvas accepts the result, and `color-mix()` / relative colors such as `hsl(from <token> calc(h + 8) 55% 48% / 0.4)` built on it. Re-read it periodically so theme switches apply; the server ferrofluid does this.
+- **Images:** a data-URI SVG can't see the page's variables, so draw only shapes and use it as a `mask-image` on an element painted with a token (see the `PanelTable` skeleton).
+- **Stoplight Elements:** `@restate/ui-api/elements-theme.css` maps Elements' own `--color-*` variables to our tokens.
 
 The lint rule also rejects hex, `rgb()`, `hsl()` and `oklch()` literals. The only exemption is `apps/web-ui/app/root.tsx`, for the brand color the OS uses on pinned tabs and tiles.

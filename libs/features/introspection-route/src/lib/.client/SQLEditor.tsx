@@ -1,5 +1,6 @@
 import { RefObject, useCallback, useEffect } from 'react';
 import { useFocusShortcut } from '@restate/ui-keyboard';
+import { tv } from '@restate/util-styles';
 import * as monaco from '@restate/ui-editor/monaco';
 import {
   AGG_APPROXIMATE_FUNCTIONS,
@@ -26,8 +27,42 @@ import {
 import { getQueryHistory } from '../queryHistory';
 import { getSqlCompletionContext } from '../sqlCompletionContext';
 
-const SQL_EDITOR_THEME = 'restate-sql';
 const SQL_LANGUAGE_ID = 'sql';
+
+const styles = tv({
+  base: '[&_.monaco-editor]:[--vscode-editor-background:transparent]! [&_.monaco-editor]:[--vscode-editor-foreground:var(--text-color-inverse)]! [&_.monaco-editor]:[--vscode-focusBorder:transparent]! [&_.monaco-editor_.bracket-highlighting-0]:text-accent-subtle! [&_.monaco-editor_.bracket-highlighting-1]:text-accent-subtle! [&_.monaco-editor_.bracket-highlighting-2]:text-accent-subtle! [&_.monaco-editor_.bracket-highlighting-3]:text-accent-subtle! [&_.monaco-editor_.bracket-highlighting-4]:text-accent-subtle! [&_.monaco-editor_.bracket-highlighting-5]:text-accent-subtle! [&_.monaco-editor_.sql-comment]:text-inverse-muted! [&_.monaco-editor_.sql-keyword]:text-accent-subtle! [&_.monaco-editor_.sql-literal]:text-inverse-secondary! [&_.monaco-editor_.sql-text]:text-inverse!',
+});
+
+const SQL_TOKEN_CLASSES = [
+  ['delimiter.parenthesis', 'sql-keyword'],
+  ['keyword', 'sql-keyword'],
+  ['string', 'sql-literal'],
+  ['number', 'sql-literal'],
+  ['comment', 'sql-comment'],
+] as const;
+
+function getSqlDecorations(
+  model: monaco.editor.ITextModel,
+): monaco.editor.IModelDeltaDecoration[] {
+  return monaco.editor
+    .tokenize(model.getValue(), SQL_LANGUAGE_ID)
+    .flatMap((tokens, line) =>
+      tokens.map((token, index) => ({
+        range: new monaco.Range(
+          line + 1,
+          token.offset + 1,
+          line + 1,
+          (tokens[index + 1]?.offset ?? model.getLineLength(line + 1)) + 1,
+        ),
+        options: {
+          inlineClassName:
+            SQL_TOKEN_CLASSES.find(([type]) =>
+              token.type.startsWith(type),
+            )?.[1] ?? 'sql-text',
+        },
+      })),
+    );
+}
 
 type CompletionItem = Omit<monaco.languages.CompletionItem, 'range'>;
 
@@ -232,33 +267,14 @@ export function SQLEditor({
           triggerCharacters: [' ', '.'],
           provideCompletionItems,
         });
-      monaco.editor.defineTheme(SQL_EDITOR_THEME, {
-        base: 'vs-dark',
-        colors: {
-          'editor.background': '#00000000',
-          'editor.foreground': '#ffffff',
-          'editor.lineHighlightBorder': '#00000000',
-          'editorBracketHighlight.foreground1': '#60a5fa',
-          focusBorder: '#00000000',
-        },
-        rules: [
-          { token: 'keyword.sql', foreground: '60a5fa' },
-          { token: 'delimiter.parenthesis.sql', foreground: '60a5fa' },
-          { token: 'identifier.sql', foreground: 'ffffff' },
-          { token: 'string.sql', foreground: 'cbd5e1' },
-          { token: 'number.sql', foreground: 'cbd5e1' },
-          { token: 'operator.sql', foreground: 'ffffff' },
-          { token: 'predefined.sql', foreground: 'ffffff' },
-        ],
-        inherit: true,
-      });
       editorRef.current = monaco.editor.create(hostRef.current, {
         value: initialQuery,
         language: SQL_LANGUAGE_ID,
         lineNumbers: 'off',
         lineDecorationsWidth: 0,
         folding: false,
-        theme: SQL_EDITOR_THEME,
+        theme: 'vs-dark',
+        renderLineHighlight: 'none',
         minimap: { enabled: false },
         fontSize: 14,
         fontFamily: 'mono',
@@ -314,12 +330,22 @@ export function SQLEditor({
 
       updateStyles();
 
+      const decorations = editorRef.current.createDecorationsCollection();
+      const highlight = () => {
+        const model = editorRef.current?.getModel();
+        if (model) {
+          decorations.set(getSqlDecorations(model));
+        }
+      };
+      highlight();
+
       editorRef.current.onDidDispose(() => {
         completionProvider.dispose();
       });
 
       editorRef.current.onDidChangeModelContent(() => {
         updateStyles();
+        highlight();
       });
 
       editorRef.current.addCommand(
@@ -382,5 +408,5 @@ export function SQLEditor({
 
   useFocusShortcut({ onFocus: focusEditor });
 
-  return <div ref={hostRef} className={className} />;
+  return <div ref={hostRef} className={styles({ className })} />;
 }

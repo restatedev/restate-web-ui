@@ -1,4 +1,4 @@
-import { resolveColor } from '@restate/util-theme';
+import { hoverColor } from './hoverColor';
 import type {
   ECOption,
   AnySeriesCfg,
@@ -29,6 +29,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
     };
     if (series.color) {
       bar.itemStyle = { color: series.color };
+      bar.emphasis = { itemStyle: { color: hoverColor(series.color) } };
     }
     if (series.stack) {
       bar.stack = series.stack;
@@ -91,16 +92,12 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
 
         if (barWidth <= 0 || height <= 0) return;
 
-        const fill = resolveColor(
-          hasValue
-            ? String(series.fillColor ?? series.color ?? api.visual('color'))
-            : 'var(--background-color-tint-strong)',
-        );
-        const stroke = resolveColor(
-          hasValue
-            ? String(series.color ?? api.visual('color'))
-            : 'var(--background-color-tint-strong)',
-        );
+        const fill = hasValue
+          ? String(series.fillColor ?? series.color ?? api.visual('color'))
+          : 'var(--background-color-tint-strong)';
+        const stroke = hasValue
+          ? String(series.color ?? api.visual('color'))
+          : 'var(--background-color-tint-strong)';
         const x = x0 + (width - barWidth) / 2;
         const outerRadius = Math.min(5, barWidth / 2, height / 2);
         const baselineRadius = Math.min(1, barWidth / 2, height / 2);
@@ -112,11 +109,9 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
           series.liveIndex != null && params.dataIndex === series.liveIndex;
         const opacity = isLive ? 1 : 0.92;
         const liveFillOpacity = 0.62;
-        const shadowColor = resolveColor(
-          down
-            ? 'color-mix(in oklab, var(--background-color-danger) 18%, transparent)'
-            : 'color-mix(in oklab, var(--background-color-success) 16%, transparent)',
-        );
+        const shadowColor = down
+          ? 'color-mix(in oklab, var(--background-color-danger) 18%, transparent)'
+          : 'color-mix(in oklab, var(--background-color-success) 16%, transparent)';
         const segmentShape = {
           x,
           y: top,
@@ -177,7 +172,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
                 y2: coordBottom,
               },
               style: {
-                stroke: resolveColor('var(--background-color-shade)'),
+                stroke: 'var(--background-color-shade)',
                 lineWidth: 1,
                 lineDash: [4, 2],
                 opacity: 0,
@@ -250,9 +245,8 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
               name: 'highlight',
               shape: { ...highlightShape, transition: ['y1', 'y2'] },
               style: {
-                stroke: resolveColor(
+                stroke:
                   'color-mix(in oklab, var(--background-color-highlight) 55%, transparent)',
-                ),
                 lineCap: 'round',
                 lineWidth: 1,
                 opacity: 1,

@@ -38,9 +38,6 @@
   "references": [
     {
       "path": "../../util/intl/tsconfig.lib.json"
-    },
-    {
-      "path": "../../util/theme/tsconfig.lib.json"
     }
   ]
 }
