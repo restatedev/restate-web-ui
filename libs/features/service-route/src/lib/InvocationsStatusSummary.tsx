@@ -15,7 +15,7 @@ import type { useInvocationsTab } from './useInvocationsTab';
 const styles = tv({
   slots: {
     frame:
-      'relative z-20 -mb-1 border-b border-gray-200/80 px-1 pt-[calc(var(--cp-section-pt,0px)+0.5rem)] pb-1.5',
+      'relative z-20 -mb-1 border-b border-default/80 px-1 pt-[calc(var(--cp-section-pt,0px)+0.5rem)] pb-1.5',
     content:
       'flex w-full min-w-0 flex-col items-stretch gap-2.5 px-4 pt-0 pb-1',
   },

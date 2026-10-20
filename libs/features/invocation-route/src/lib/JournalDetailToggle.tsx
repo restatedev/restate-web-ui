@@ -25,27 +25,27 @@ import {
 const styles = tv({
   slots: {
     container:
-      'inline-flex items-stretch rounded-xl border-[0.5px] border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      'inline-flex items-stretch rounded-xl border-[0.5px] border-tint-subtle bg-tint-subtle shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]',
     compact:
-      'rounded-xl border border-transparent px-2.5 py-1 font-sans text-xs text-gray-600 shadow-none',
+      'rounded-xl border border-transparent px-2.5 py-1 font-sans text-xs text-tertiary shadow-none',
     pill: 'flex items-stretch rounded-xl border border-transparent',
-    body: 'gap-1 rounded-xl rounded-r-none px-2.5 py-1 font-sans text-xs text-gray-600 shadow-none',
+    body: 'gap-1 rounded-xl rounded-r-none px-2.5 py-1 font-sans text-xs text-tertiary shadow-none',
     chevron:
-      'rounded-xl rounded-l-none border-l border-transparent px-1 py-1 text-gray-500 shadow-none',
+      'rounded-xl rounded-l-none border-l border-transparent px-1 py-1 text-muted shadow-none',
     count:
-      'rounded bg-gray-200/70 px-1 text-2xs font-medium text-gray-500 tabular-nums',
+      'rounded bg-emphasis/70 px-1 text-2xs font-medium text-muted tabular-nums',
   },
   variants: {
     isCompact: {
-      true: { compact: 'border-black/10 bg-white text-gray-800 shadow-xs' },
+      true: { compact: 'border-tint bg-raised text-primary shadow-xs' },
       false: {},
     },
     isDetailed: {
       true: {
-        pill: 'border-black/10 bg-white shadow-xs',
-        body: 'text-gray-800',
-        chevron: 'border-black/[0.07]',
-        count: 'bg-blue-50 text-blue-600',
+        pill: 'border-tint bg-raised shadow-xs',
+        body: 'text-primary',
+        chevron: 'border-tint-subtle',
+        count: 'bg-accent-subtle text-accent',
       },
       false: {},
     },

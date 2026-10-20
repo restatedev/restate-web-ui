@@ -125,8 +125,8 @@ const headBlockedDetailsStyles = tv({
   slots: {
     root: 'max-w-80',
     details: 'grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-xs',
-    term: 'text-zinc-400',
-    value: 'min-w-0 text-right break-all text-zinc-700 tabular-nums',
+    term: 'text-subtle',
+    value: 'min-w-0 text-right break-all text-secondary tabular-nums',
   },
 });
 
@@ -231,7 +231,7 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
         tooltipContent={
           <InvocationsBreakdownTooltipContent
             title={
-              <div className="text-base! leading-7 font-medium text-gray-300!">
+              <div className="text-base! leading-7 font-medium text-inverse-tertiary!">
                 Unfinished entries
               </div>
             }
@@ -275,7 +275,7 @@ function LockHolderTarget({
     );
   }
   return (
-    <code className="block max-w-full truncate text-2xs text-zinc-600">
+    <code className="block max-w-full truncate text-2xs text-tertiary">
       {lockHolder.id}
     </code>
   );
@@ -464,15 +464,15 @@ function RelativeActivity({ activity }: { activity: Activity }) {
       >
         <time
           dateTime={activity.value}
-          className="font-medium text-zinc-600 tabular-nums"
+          className="font-medium text-tertiary tabular-nums"
         >
           {duration} ago
         </time>
       </DateTooltip>
-      <span aria-hidden className="text-zinc-300">
+      <span aria-hidden className="text-faint">
         ·
       </span>
-      <span className="min-w-0 truncate font-normal text-zinc-500/80">
+      <span className="min-w-0 truncate font-normal text-subtle">
         {activity.label}
       </span>
     </span>
@@ -525,7 +525,7 @@ function renderCell(
               className="w-full"
             />
           ) : (
-            <span className="text-zinc-300">Unknown</span>
+            <span className="text-faint">Unknown</span>
           )}
         </Cell>
       );
@@ -547,7 +547,7 @@ function renderCell(
               />
             </ChipGroup>
           ) : (
-            <span className="text-zinc-300">—</span>
+            <span className="text-faint">—</span>
           )}
         </Cell>
       );

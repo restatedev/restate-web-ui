@@ -222,10 +222,10 @@ export function AddQueryTrigger({
       overflowPrefix={
         <Icon
           name={IconName.ListFilter}
-          className="h-3.5 w-3.5 shrink-0 text-blue-600"
+          className="h-3.5 w-3.5 shrink-0 text-accent"
         />
       }
-      overflowClassName="border-gray-200 bg-gray-50 font-medium text-zinc-700 shadow-xs hover:bg-gray-100 pressed:bg-gray-200"
+      overflowClassName="border-default bg-subtle font-medium text-secondary shadow-xs hover:bg-muted pressed:bg-emphasis"
     />
   );
 }

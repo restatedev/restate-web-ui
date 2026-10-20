@@ -141,7 +141,7 @@ function compareStats(a: QueryStat, b: QueryStat, column: StatsColumn): number {
 }
 
 const HOVER_INDICATOR_CLASS =
-  'inline cursor-help underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-4 hover:decoration-zinc-500';
+  'inline cursor-help underline decoration-subtle decoration-dashed decoration-from-font underline-offset-4 hover:decoration-muted';
 
 // A one-line skeleton of the full shape: the tables plus the clauses that
 // drive performance. Cheap point lookups (id = ?, id IN (…)) are spelled out
@@ -233,7 +233,7 @@ function QueryTooltipContent({ stat }: { stat: QueryStat }) {
   return (
     <div className="flex max-w-[64rem] flex-col gap-3 whitespace-normal">
       <div>
-        <div className="mb-1 font-sans text-2xs! font-medium text-gray-400!">
+        <div className="mb-1 font-sans text-2xs! font-medium text-inverse-muted!">
           Query pattern
         </div>
         <div className="font-mono whitespace-pre">
@@ -245,12 +245,12 @@ function QueryTooltipContent({ stat }: { stat: QueryStat }) {
         </div>
       </div>
       {stat.max?.sql && (
-        <div className="border-t border-zinc-600/80 pt-3">
+        <div className="border-t border-neutral-strong/80 pt-3">
           <div className="mb-1 flex items-center gap-2 font-sans">
-            <span className="text-2xs! font-medium text-gray-400!">
+            <span className="text-2xs! font-medium text-inverse-muted!">
               Slowest recorded query
             </span>
-            <span className="text-2xs! text-gray-500! tabular-nums">
+            <span className="text-2xs! text-inverse-subtle! tabular-nums">
               {formatMs(stat.max.durationMs)}
               {stat.max.timedOut ? ' · Timed out' : ''}
             </span>
@@ -400,7 +400,7 @@ function QueryActions({
             variant="secondary"
             disabled={isDisabled}
             onClick={() => run(false)}
-            className="invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 text-0.5xs whitespace-nowrap text-gray-600 drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible"
+            className="invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 text-0.5xs whitespace-nowrap text-tertiary drop-shadow-[-20px_2px_4px_--theme(--background-color-muted/50%)] group-hover:visible"
           >
             <Icon
               name={IconName.ScanSearch}
@@ -479,7 +479,7 @@ function renderStatsCell(
       return (
         <Cell>
           <div className="flex min-w-0 items-baseline gap-2">
-            <span className="max-w-[65%] min-w-0 shrink-0 font-mono text-xs text-gray-700">
+            <span className="max-w-[65%] min-w-0 shrink-0 font-mono text-xs text-secondary">
               <TruncateWithTooltip
                 alwaysShow
                 size="lg"
@@ -499,7 +499,7 @@ function renderStatsCell(
                 </span>
               </TruncateWithTooltip>
             </span>
-            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-2xs text-gray-400">
+            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-2xs text-subtle">
               <TruncateWithTooltip hideCopy tooltipContent={stat.description}>
                 {stat.description}
               </TruncateWithTooltip>
@@ -538,7 +538,7 @@ function renderStatsCell(
                   </span>
                 }
               >
-                <span className="shrink-0 text-gray-400">+{rest.length}</span>
+                <span className="shrink-0 text-subtle">+{rest.length}</span>
               </HoverTooltip>
             )}
           </div>
@@ -571,7 +571,7 @@ function renderStatsCell(
             {stat.max?.timedOut && (
               <Icon
                 name={IconName.TriangleAlert}
-                className="h-3 w-3 shrink-0 text-amber-500"
+                className="h-3 w-3 shrink-0 text-pending-subtle"
               />
             )}
           </span>
@@ -583,8 +583,8 @@ function renderStatsCell(
           <span
             className={
               stat.timeouts > 0
-                ? 'font-medium text-amber-700 tabular-nums'
-                : 'text-zinc-300 tabular-nums'
+                ? 'font-medium text-pending-strong tabular-nums'
+                : 'text-faint tabular-nums'
             }
           >
             {formatNumber(stat.timeouts)}
@@ -595,7 +595,7 @@ function renderStatsCell(
       return (
         <Cell>
           <span
-            className="text-xs whitespace-nowrap text-gray-500"
+            className="text-xs whitespace-nowrap text-muted"
             title={new Date(stat.lastExecutedAt).toLocaleString()}
           >
             {formatAgo(now, stat.lastExecutedAt)}
@@ -714,7 +714,7 @@ function Component() {
                 inputPrefix={
                   <Icon
                     name={IconName.Search}
-                    className="h-4 w-4 shrink-0 text-gray-400"
+                    className="h-4 w-4 shrink-0 text-subtle"
                   />
                 }
                 tagsPlacement="outside"
@@ -723,10 +723,10 @@ function Component() {
                 tagGroupClassName="min-w-0 flex-nowrap"
                 showSectionTitle={false}
                 popoverPlacement="bottom start"
-                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
-                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
-                className="min-h-6.5 w-full justify-end text-gray-800"
-                inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+                popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
+                optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-accent-subtle data-[focused]:text-accent-strong hover:bg-accent-subtle hover:text-accent-strong"
+                className="min-h-6.5 w-full justify-end text-primary"
+                inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
               >
                 {(props) => (
                   <FilterChip

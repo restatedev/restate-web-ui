@@ -131,15 +131,15 @@ const mainButtonStyles = tv({
   base: 'flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap',
   variants: {
     mini: {
-      true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
+      true: 'invisible absolute right-full z-2 drop-shadow-[-20px_2px_4px_--theme(--background-color-muted/50%)] group-hover:visible',
       false: '',
       // Responsive: hide the primary button below md so only the chevron
       // (dropdown) shows; full split button at md+.
       md: 'max-md:hidden',
     },
     destructive: {
-      true: 'text-red-500',
-      false: 'text-blue-700',
+      true: 'text-danger',
+      false: 'text-accent',
     },
   },
 });

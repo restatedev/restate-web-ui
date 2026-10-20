@@ -18,24 +18,24 @@ const VISUAL_GROWTH = 1.35;
 const styles = tv({
   slots: {
     strip:
-      'flex items-start overflow-hidden text-[0.65625rem] whitespace-nowrap text-gray-500',
+      'flex items-start overflow-hidden text-[0.65625rem] whitespace-nowrap text-muted',
     attempt: 'flex w-4 shrink-0 flex-col items-center',
     topRow: 'flex h-4 items-end justify-center pb-[3px]',
     factorTag:
-      'inline-flex h-3 items-center rounded-[3px] border border-zinc-300/80 bg-white px-[3px] text-[0.5rem] leading-none font-semibold text-zinc-500',
+      'inline-flex h-3 items-center rounded-[3px] border border-strong/80 bg-surface px-[3px] text-[0.5rem] leading-none font-semibold text-muted',
     markRow: 'flex h-4 w-full items-center justify-center',
-    dot: 'h-2.5 w-2.5 rounded-[3px] bg-blue-400/80',
-    number: 'h-4 pt-[3px] leading-none font-medium text-zinc-600 tabular-nums',
+    dot: 'h-2.5 w-2.5 rounded-[3px] bg-accent-vivid/80',
+    number: 'h-4 pt-[3px] leading-none font-medium text-tertiary tabular-nums',
     gap: 'flex shrink-0 flex-col items-center px-px',
     gapLabel:
-      'flex h-4 items-end justify-center gap-1 pb-[3px] leading-none text-zinc-600 tabular-nums',
+      'flex h-4 items-end justify-center gap-1 pb-[3px] leading-none text-tertiary tabular-nums',
     gapTag:
-      'inline-flex h-3 items-center rounded-[3px] border border-zinc-300/80 bg-white px-[3px] text-[0.4375rem] leading-none font-semibold tracking-[0.03em] text-zinc-500 uppercase',
-    gapDash: 'w-full border-t border-dashed border-slate-300',
+      'inline-flex h-3 items-center rounded-[3px] border border-strong/80 bg-surface px-[3px] text-[0.4375rem] leading-none font-semibold tracking-[0.03em] text-muted uppercase',
+    gapDash: 'w-full border-t border-dashed border-strong',
     ellipsis:
-      'mt-4 flex h-4 shrink-0 items-center px-1 leading-none text-gray-400',
+      'mt-4 flex h-4 shrink-0 items-center px-1 leading-none text-subtle',
     terminal:
-      'mt-4 ml-1.5 flex h-4 shrink-0 items-center gap-1 leading-none text-gray-500',
+      'mt-4 ml-1.5 flex h-4 shrink-0 items-center gap-1 leading-none text-muted',
     badge: 'h-4 rounded px-[5px] text-[0.53125rem] leading-none',
   },
 });
@@ -188,7 +188,7 @@ export function RetryPolicyIllustration({
     />
   ) : (
     <>
-      <Icon name={IconName.Retry} className="h-3 w-3 text-gray-400" />
+      <Icon name={IconName.Retry} className="h-3 w-3 text-subtle" />
       until it succeeds
     </>
   );

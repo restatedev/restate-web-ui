@@ -93,14 +93,14 @@ describe('invocation last journal entry', () => {
       name: /Show last journal entry/,
     });
     expect(trigger.className).toContain('bg-transparent');
-    expect(trigger.className).toContain('hover:bg-black/5');
-    expect(trigger.className).toContain('pressed:bg-black/10');
+    expect(trigger.className).toContain('hover:bg-tint');
+    expect(trigger.className).toContain('pressed:bg-tint-strong');
     expect(
       screen.getByRole('button', { name: /Show last journal entry/ })
         .textContent,
     ).toContain('journal updated');
     expect(screen.getByText(', journal updated').className).toContain(
-      'text-zinc-500/80',
+      'text-subtle',
     );
 
     await user.click(

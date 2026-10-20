@@ -15,7 +15,7 @@ const containerStyles = tv({
 });
 
 const buttonStyles = tv({
-  base: 'group flex h-[124px] w-[124px] border-none bg-none px-0 py-0 shadow-none drop-shadow-none transition-all duration-300 hover:scale-[1.025] hover:bg-transparent focus:outline-hidden pressed:scale-[0.98] pressed:bg-transparent [&:hover:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/6%))_drop-shadow(0_10px_8px_--theme(--color-blue-400/12%))_drop-shadow(0_24px_18px_--theme(--color-blue-400/8%))]',
+  base: 'group flex h-[124px] w-[124px] border-none bg-none px-0 py-0 shadow-none drop-shadow-none transition-all duration-300 hover:scale-[1.025] hover:bg-transparent focus:outline-hidden pressed:scale-[0.98] pressed:bg-transparent [&:hover:has([data-status=active])_.server]:filter-[drop-shadow(0_4px_3px_--theme(--box-shadow-color-default/6%))_drop-shadow(0_10px_8px_--theme(--background-color-accent-strong/12%))_drop-shadow(0_24px_18px_--theme(--background-color-accent-strong/8%))]',
   variants: {
     isEmpty: {
       true: 'relative m-[4px]',
@@ -29,9 +29,9 @@ const shellStyles = tv({
   variants: {
     appearance: {
       ghost:
-        'opacity-0 filter-[drop-shadow(0_1px_1px_--theme(--color-zinc-800/5%))_drop-shadow(0_8px_16px_--theme(--color-zinc-800/6%))] group-hover/server:opacity-100 group-hover/server:filter-[drop-shadow(0_1px_1px_--theme(--color-zinc-800/6%))_drop-shadow(0_12px_20px_--theme(--color-zinc-800/8%))]',
+        'opacity-0 filter-[drop-shadow(0_1px_1px_--theme(--box-shadow-color-default/5%))_drop-shadow(0_8px_16px_--theme(--box-shadow-color-default/6%))] group-hover/server:opacity-100 group-hover/server:filter-[drop-shadow(0_1px_1px_--theme(--box-shadow-color-default/6%))_drop-shadow(0_12px_20px_--theme(--box-shadow-color-default/8%))]',
       solid:
-        'opacity-100 filter-[drop-shadow(0_1px_1px_--theme(--color-zinc-800/7%))_drop-shadow(0_9px_16px_--theme(--color-zinc-800/8%))_drop-shadow(0_20px_26px_--theme(--color-zinc-800/5%))] group-hover/server:filter-[drop-shadow(0_1px_1px_--theme(--color-zinc-800/8%))_drop-shadow(0_12px_22px_--theme(--color-zinc-800/10%))_drop-shadow(0_24px_32px_--theme(--color-zinc-800/6%))]',
+        'opacity-100 filter-[drop-shadow(0_1px_1px_--theme(--box-shadow-color-default/7%))_drop-shadow(0_9px_16px_--theme(--box-shadow-color-default/8%))_drop-shadow(0_20px_26px_--theme(--box-shadow-color-default/5%))] group-hover/server:filter-[drop-shadow(0_1px_1px_--theme(--box-shadow-color-default/8%))_drop-shadow(0_12px_22px_--theme(--box-shadow-color-default/10%))_drop-shadow(0_24px_32px_--theme(--box-shadow-color-default/6%))]',
     },
   },
   defaultVariants: { appearance: 'ghost' },
@@ -41,8 +41,8 @@ const shellStrokeStyles = tv({
   base: 'fill-none',
   variants: {
     appearance: {
-      ghost: 'stroke-gray-300/35',
-      solid: 'stroke-gray-300/65',
+      ghost: 'stroke-strong/30',
+      solid: 'stroke-strong/60',
     },
   },
   defaultVariants: { appearance: 'ghost' },
@@ -72,13 +72,13 @@ const overlayStyles = tv({
 });
 
 const serverIconStyles = tv({
-  base: 'server absolute inset-0 group-pressed:[filter:drop-shadow(0_2px_2px_theme(colors.zinc.800/3%))_drop-shadow(0_1px_1px_theme(colors.zinc.800/5%))]',
+  base: 'server absolute inset-0 group-pressed:[filter:drop-shadow(0_2px_2px_--theme(--box-shadow-color-default/3%))_drop-shadow(0_1px_1px_--theme(--box-shadow-color-default/5%))]',
   variants: {
     appearance: {
       ghost:
-        'filter-none transition-[filter] duration-300 group-hover/server:filter-[drop-shadow(0_4px_3px_--theme(--color-zinc-800/3%))_drop-shadow(0_2px_2px_--theme(--color-zinc-800/5%))]',
+        'filter-none transition-[filter] duration-300 group-hover/server:filter-[drop-shadow(0_4px_3px_--theme(--box-shadow-color-default/3%))_drop-shadow(0_2px_2px_--theme(--box-shadow-color-default/5%))]',
       solid:
-        'filter-[drop-shadow(0_6px_5px_--theme(--color-zinc-800/4%))_drop-shadow(0_3px_2px_--theme(--color-zinc-800/8%))]',
+        'filter-[drop-shadow(0_6px_5px_--theme(--box-shadow-color-default/4%))_drop-shadow(0_3px_2px_--theme(--box-shadow-color-default/8%))]',
     },
   },
   defaultVariants: { appearance: 'ghost' },
@@ -88,8 +88,8 @@ const innerGlassStyles = tv({
   base: 'background backdrop-blur-xl backdrop-saturate-200 transition-[fill] duration-300',
   variants: {
     appearance: {
-      ghost: 'fill-white/20 group-hover/server:fill-white/35',
-      solid: 'fill-white/38 group-hover/server:fill-white/48',
+      ghost: 'fill-surface/20 group-hover/server:fill-surface/30',
+      solid: 'fill-surface/40 group-hover/server:fill-surface/50',
     },
   },
   defaultVariants: { appearance: 'ghost' },
@@ -100,8 +100,8 @@ const serverFillStyles = tv({
   variants: {
     appearance: {
       ghost:
-        'fill-gray-100/85 transition-[fill] duration-300 group-hover/server:fill-white/70',
-      solid: 'fill-white/62',
+        'fill-muted/80 transition-[fill] duration-300 group-hover/server:fill-surface/70',
+      solid: 'fill-surface/60',
     },
   },
   defaultVariants: { appearance: 'ghost' },
@@ -126,17 +126,17 @@ const serverGlyphStyles = tv({
     {
       appearance: 'solid',
       status: ['idle', 'active', 'pause'],
-      class: 'fill-indigo-500/68 group-hover/server:fill-indigo-500/76',
+      class: 'fill-accent/70 group-hover/server:fill-accent/80',
     },
     {
       appearance: 'solid',
       status: 'warning',
-      class: 'fill-amber-500/72 group-hover/server:fill-amber-500/80',
+      class: 'fill-pending/70 group-hover/server:fill-pending/80',
     },
     {
       appearance: 'solid',
       status: 'danger',
-      class: 'fill-red-500/70 group-hover/server:fill-red-500/78',
+      class: 'fill-danger/70 group-hover/server:fill-danger/80',
     },
   ],
   defaultVariants: { appearance: 'ghost' },
@@ -213,9 +213,21 @@ export function RestateServer({
               y2="120"
               gradientUnits="userSpaceOnUse"
             >
-              <stop offset="0" stopColor="white" stopOpacity="0.9" />
-              <stop offset="0.54" stopColor="#f8fafc" stopOpacity="0.7" />
-              <stop offset="1" stopColor="#e5e7eb" stopOpacity="0.72" />
+              <stop
+                offset="0"
+                style={{ stopColor: 'var(--background-color-surface)' }}
+                stopOpacity="0.9"
+              />
+              <stop
+                offset="0.54"
+                style={{ stopColor: 'var(--background-color-subtle)' }}
+                stopOpacity="0.7"
+              />
+              <stop
+                offset="1"
+                style={{ stopColor: 'var(--background-color-emphasis)' }}
+                stopOpacity="0.72"
+              />
             </linearGradient>
           </defs>
           <path
@@ -230,7 +242,7 @@ export function RestateServer({
             fillRule="evenodd"
             clipRule="evenodd"
             d="M60 4C15.531 4 4 15.531 4 60C4 104.469 15.531 116 60 116C104.469 116 116 104.469 116 60C116 15.531 104.469 4 60 4Z"
-            className="fill-none stroke-white/65"
+            className="fill-none stroke-surface/60"
             strokeWidth="1"
           />
         </svg>

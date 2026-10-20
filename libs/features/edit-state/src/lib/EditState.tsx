@@ -50,26 +50,26 @@ const styles = tv({
   variants: {
     isWarning: {
       true: {
-        banner: 'border border-orange-200 bg-orange-50 text-orange-600',
-        bannerIcon: 'fill-orange-600 text-orange-100',
+        banner: 'border border-warning bg-warning-subtle text-warning',
+        bannerIcon: 'fill-warning text-on-warning',
       },
       false: {
-        banner: 'border border-blue-200 bg-blue-50 text-blue-600',
-        bannerIcon: 'fill-blue-600 text-blue-100',
+        banner: 'border border-info bg-info-subtle text-info',
+        bannerIcon: 'fill-info text-on-info',
       },
     },
   },
 });
 
 const valueFormatStyles = tv({
-  base: 'shrink-0 [&_button]:gap-1 [&_button]:border-none [&_button]:bg-transparent [&_button]:px-1.5 [&_button]:py-1 [&_button]:text-xs [&_button]:font-normal [&_button]:text-gray-500 [&_button]:shadow-none [&_button_[data-description]]:hidden [&_button:hover]:bg-black/3 [&_button:hover]:text-gray-700 [&>div]:rounded-lg [&>div]:border-none [&>div]:bg-transparent [&>div]:p-0 [&>div]:shadow-none',
+  base: 'shrink-0 [&_button]:gap-1 [&_button]:border-none [&_button]:bg-transparent [&_button]:px-1.5 [&_button]:py-1 [&_button]:text-xs [&_button]:font-normal [&_button]:text-muted [&_button]:shadow-none [&_button_[data-description]]:hidden [&_button:hover]:bg-tint-subtle [&_button:hover]:text-secondary [&>div]:rounded-lg [&>div]:border-none [&>div]:bg-transparent [&>div]:p-0 [&>div]:shadow-none',
 });
 
 const codeStyles = tv({
   base: 'mt-2 overflow-auto font-mono',
   variants: {
     isPending: {
-      true: '[&_.view-line>span]:animate-scanlineSweep [&_.view-line>span]:[background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] [&_.view-line>span]:[background-size:250%_100%] [&_.view-line>span]:bg-clip-text [&_.view-line>span]:[background-position:100%_0] [&_.view-line>span]:bg-no-repeat [&_.view-line>span]:[-webkit-text-fill-color:transparent]',
+      true: '[&_.view-line>span]:animate-scanlineSweep [&_.view-line>span]:[background-image:linear-gradient(90deg,var(--text-color-secondary)_0%,var(--text-color-secondary)_42%,var(--text-color-subtle)_50%,var(--text-color-secondary)_58%,var(--text-color-secondary)_100%)] [&_.view-line>span]:[background-size:250%_100%] [&_.view-line>span]:bg-clip-text [&_.view-line>span]:[background-position:100%_0] [&_.view-line>span]:bg-no-repeat [&_.view-line>span]:[-webkit-text-fill-color:transparent]',
     },
   },
 });
@@ -312,7 +312,7 @@ function EditStateInner({
         subtitle={
           <>
             <span className="flex min-w-0 items-center gap-1.5">
-              <span className="text-gray-500">in</span>
+              <span className="text-muted">in</span>
               <Badge
                 size="sm"
                 className="max-w-[20ch] min-w-0 align-middle font-mono"
@@ -322,11 +322,11 @@ function EditStateInner({
                 </TruncateWithTooltip>
               </Badge>
             </span>
-            <span aria-hidden className="text-gray-400">
+            <span aria-hidden className="text-subtle">
               ·
             </span>
             <span className="flex min-w-0 items-center gap-1.5">
-              <span className="text-gray-500">key</span>
+              <span className="text-muted">key</span>
               <Badge
                 size="sm"
                 className="max-w-[20ch] min-w-0 align-middle font-mono"
@@ -338,11 +338,11 @@ function EditStateInner({
             </span>
             {scope !== undefined && (
               <>
-                <span aria-hidden className="text-gray-400">
+                <span aria-hidden className="text-subtle">
                   ·
                 </span>
                 <span className="flex min-w-0 items-center gap-1.5">
-                  <span className="text-gray-500">scope</span>
+                  <span className="text-muted">scope</span>
                   <Badge
                     size="sm"
                     className="max-w-[20ch] min-w-0 align-middle font-mono"
@@ -359,7 +359,7 @@ function EditStateInner({
       >
         {isDeleting && (
           <>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted">
               Please confirm to proceed or close to keep the state.
             </p>
             <FormFieldInput
@@ -382,11 +382,11 @@ function EditStateInner({
           </>
         )}
         {query.isPending && !isDeleting && !query.data && (
-          <div className="min-h-20 w-full animate-pulse rounded-lg border border-gray-200 bg-slate-200 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]" />
+          <div className="min-h-20 w-full animate-pulse rounded-lg border border-default bg-emphasis shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]" />
         )}
         {query.data && !isDeleting && !isPartial && (
           <>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted">
               Please update the current keys and values:
             </p>
             {decodedValues && (
@@ -404,7 +404,7 @@ function EditStateInner({
         {query.data && !isDeleting && isPartial && (
           <>
             <div className="mt-2 flex items-center justify-between gap-2">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted">
                 Please update the current value:
               </p>
               {isPartial && (
@@ -460,7 +460,7 @@ function StateFormRows({
     <>
       <div
         ref={rowsRef}
-        className="mt-2 flex max-h-[50vh] flex-col gap-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 p-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]"
+        className="mt-2 flex max-h-[50vh] flex-col gap-1 overflow-y-auto rounded-xl border border-default bg-muted p-1 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]"
       >
         {stateRows.map((row) => (
           <StateFormRow
@@ -493,7 +493,7 @@ function StateFormRows({
           ]);
           scrollRowsToBottom();
         }}
-        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border-dashed bg-transparent px-3 py-1.5 text-sm text-gray-500 shadow-none hover:bg-gray-50"
+        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border-dashed bg-transparent px-3 py-1.5 text-sm text-muted shadow-none hover:bg-subtle"
       >
         <Icon name={IconName.Plus} className="h-3.5 w-3.5" /> Add key
       </Button>
@@ -538,7 +538,7 @@ function StateFormRow({
           setHasMountedEditor(true);
         }
       }}
-      className="group shrink-0 overflow-hidden rounded-[0.625rem] border border-gray-200 bg-white shadow-xs"
+      className="group shrink-0 overflow-hidden rounded-[0.625rem] border border-default bg-surface shadow-xs"
     >
       <input type="hidden" name="state-row" value={field} />
       <div className="relative flex items-center gap-1.5 py-1.5 pr-2 pl-1.5">
@@ -547,10 +547,10 @@ function StateFormRow({
           variant="icon"
           type="button"
           aria-label="Toggle value"
-          className="absolute inset-0 z-0 h-full w-full rounded-none border-0 p-0 hover:bg-gray-50/80 pressed:bg-gray-100"
+          className="absolute inset-0 z-0 h-full w-full rounded-none border-0 p-0 hover:bg-subtle/80 pressed:bg-muted"
         />
-        <div className="relative z-10 flex max-w-[48ch] shrink-0 cursor-text items-center rounded-lg border border-transparent transition-[background-color,border-color,box-shadow] focus-within:border-gray-200 focus-within:bg-gray-100 focus-within:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] hover:border-gray-200 hover:bg-gray-100 hover:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
-          <span className="shrink-0 border-r border-gray-200/80 py-1 pr-2 pl-1.5 text-0.5xs font-medium text-gray-400 uppercase">
+        <div className="relative z-10 flex max-w-[48ch] shrink-0 cursor-text items-center rounded-lg border border-transparent transition-[background-color,border-color,box-shadow] focus-within:border-default focus-within:bg-muted focus-within:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] hover:border-default hover:bg-muted hover:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+          <span className="shrink-0 border-r border-default/80 py-1 pr-2 pl-1.5 text-0.5xs font-medium text-subtle uppercase">
             key
           </span>
           <div className="min-w-0 shrink-0" onFocusCapture={expandRow}>
@@ -572,7 +572,7 @@ function StateFormRow({
         />
         <span
           aria-hidden
-          className="pointer-events-none relative z-10 shrink-0 rounded-md p-1.5 text-gray-400 group-hover:text-gray-700"
+          className="pointer-events-none relative z-10 shrink-0 rounded-md p-1.5 text-subtle group-hover:text-secondary"
         >
           <Icon
             name={IconName.ChevronDown}
@@ -584,12 +584,12 @@ function StateFormRow({
           type="button"
           onClick={onRemove}
           aria-label={name ? `Remove ${name}` : 'Remove key'}
-          className="relative z-10 shrink-0 rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+          className="relative z-10 shrink-0 rounded-md p-1.5 text-subtle hover:bg-danger-subtle hover:text-danger"
         >
           <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
         </Button>
       </div>
-      <DisclosurePanel className="border-t border-gray-200/75 bg-gray-50">
+      <DisclosurePanel className="border-t border-default/70 bg-subtle">
         <FormFieldCode
           name={`state-value-${field}`}
           value={value}
@@ -709,12 +709,12 @@ function StateDialogContent({
           <Heading
             slot="title"
             level={3}
-            className="text-lg leading-6 font-medium text-gray-900"
+            className="text-lg leading-6 font-medium text-primary"
           >
             {title}
           </Heading>
           {subtitle && (
-            <div className="flex flex-wrap items-center gap-1.5 text-0.5xs text-gray-600">
+            <div className="flex flex-wrap items-center gap-1.5 text-0.5xs text-tertiary">
               {subtitle}
             </div>
           )}
@@ -722,7 +722,7 @@ function StateDialogContent({
         <div className={banner()}>
           {isFetching ? (
             <div className="h-5 w-5 shrink-0 px-0.5">
-              <Spinner className="h-full w-full text-orange-500" />
+              <Spinner className="h-full w-full text-warning-subtle" />
             </div>
           ) : (
             <Icon

@@ -24,11 +24,11 @@ const styles = tv({
     },
     atCapacity: {
       false: {
-        identityIcon: 'text-zinc-400 [&_path:first-child]:rotate-[-75deg]',
+        identityIcon: 'text-subtle [&_path:first-child]:rotate-[-75deg]',
       },
       true: {
         identityIcon:
-          'text-amber-600 [&_path:first-child]:rotate-[75deg] [&_path:first-child]:animate-gaugePressure motion-reduce:[&_path:first-child]:animate-none',
+          'text-pending [&_path:first-child]:rotate-[75deg] [&_path:first-child]:animate-gaugePressure motion-reduce:[&_path:first-child]:animate-none',
       },
     },
   },

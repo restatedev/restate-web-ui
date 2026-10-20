@@ -23,7 +23,7 @@ export function useTooltip(
       const formattedValue =
         typeof value === 'number' ? yFormatter(value) : String(value ?? '');
 
-      const colorStr = String(color ?? '#ccc');
+      const colorStr = String(color ?? 'var(--background-color-strong)');
 
       const dot = document.createElement('span');
       dot.style.display = 'inline-block';
@@ -31,25 +31,25 @@ export function useTooltip(
       dot.style.height = '12px';
       dot.style.borderRadius = '50%';
       dot.style.backgroundColor = colorStr;
-      dot.style.border = `1.5px solid color-mix(in srgb, ${colorStr} 70%, black)`;
-      dot.style.boxShadow = `inset 0 1px 0 0 rgba(255,255,255,0.35)`;
+      dot.style.border = `1.5px solid color-mix(in srgb, ${colorStr} 70%, var(--background-color-shade))`;
+      dot.style.boxShadow = `inset 0 1px 0 0 color-mix(in oklab, var(--box-shadow-color-highlight) 35%, transparent)`;
       dot.style.marginRight = '8px';
       dot.style.flexShrink = '0';
 
       const label = document.createElement('span');
       label.textContent = name ?? '';
-      label.style.color = 'rgba(255,255,255,0.7)';
+      label.style.color = 'var(--text-color-inverse-muted)';
       label.style.marginRight = '8px';
 
       const val = document.createElement('span');
       val.textContent = formattedValue;
       val.style.fontWeight = '600';
-      val.style.color = 'rgba(255,255,255,0.95)';
+      val.style.color = 'var(--text-color-inverse)';
       val.style.marginLeft = 'auto';
 
       const pct = document.createElement('span');
       pct.textContent = percent != null ? ` (${percent}%)` : '';
-      pct.style.color = 'rgba(255,255,255,0.85)';
+      pct.style.color = 'var(--text-color-inverse-secondary)';
       pct.style.fontWeight = '500';
       pct.style.marginLeft = '4px';
 
@@ -107,7 +107,7 @@ export function useTooltip(
       const container = document.createElement('div');
       const header = document.createElement('div');
       header.textContent = systemRange;
-      header.style.color = 'rgba(255,255,255,0.9)';
+      header.style.color = 'var(--text-color-inverse-secondary)';
       header.style.fontWeight = '500';
 
       const subheader = document.createElement('div');
@@ -117,7 +117,7 @@ export function useTooltip(
       const separator = document.createElement('hr');
       separator.style.marginLeft = '-16px';
       separator.style.marginRight = '-16px';
-      separator.style.backgroundColor = 'white';
+      separator.style.backgroundColor = 'var(--background-color-highlight)';
       separator.style.opacity = '0.2';
       separator.style.marginTop = '16px';
       separator.style.marginBottom = '16px';
@@ -138,7 +138,7 @@ export function useTooltip(
           row.style.display = 'flex';
           row.style.alignItems = 'center';
 
-          const dotColor = descriptor.color ?? '#ccc';
+          const dotColor = descriptor.color ?? 'var(--background-color-strong)';
           const dot = document.createElement('span');
           dot.style.display = 'inline-block';
           dot.style.width = '12px';
@@ -147,18 +147,19 @@ export function useTooltip(
           dot.style.flexShrink = '0';
           dot.style.marginRight = '8px';
           dot.style.backgroundColor = dotColor;
-          dot.style.border = `1.5px solid color-mix(in srgb, ${dotColor} 70%, black)`;
-          dot.style.boxShadow = 'inset 0 1px 0 0 rgba(255,255,255,0.35)';
+          dot.style.border = `1.5px solid color-mix(in srgb, ${dotColor} 70%, var(--background-color-shade))`;
+          dot.style.boxShadow =
+            'inset 0 1px 0 0 color-mix(in oklab, var(--box-shadow-color-highlight) 35%, transparent)';
 
           const val = document.createElement('span');
           val.textContent = typeof raw === 'number' ? yFormatter(raw) : '';
           val.style.fontWeight = '600';
-          val.style.color = 'rgba(255,255,255,0.95)';
+          val.style.color = 'var(--text-color-inverse)';
           val.style.marginRight = '8px';
 
           const label = document.createElement('span');
           label.textContent = descriptor.label ?? '';
-          label.style.color = 'rgba(255,255,255,0.7)';
+          label.style.color = 'var(--text-color-inverse-muted)';
 
           row.appendChild(dot);
           row.appendChild(val);
@@ -174,8 +175,8 @@ export function useTooltip(
         body.style.fontWeight = '400';
         body.style.color =
           typeof yValue === 'number'
-            ? 'rgba(255,255,255,0.9)'
-            : 'rgba(255,255,255,0.6)';
+            ? 'var(--text-color-inverse-secondary)'
+            : 'var(--text-color-inverse-muted)';
         container.appendChild(body);
       }
 
@@ -188,20 +189,19 @@ export function useTooltip(
       appendTo: 'body',
       axisPointer: { type: trigger === 'axis' ? 'shadow' : 'line' },
       formatter: (p) => defaultFormatter(p),
-      backgroundColor: 'oklab(0.274 0.00165715 -0.00576662 / 0.9)',
+      backgroundColor:
+        'color-mix(in oklab, var(--background-color-inverse) 90%, transparent)',
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: 'oklab(0.21 0.00164225 -0.00577088 / 0.8)',
+      borderColor: 'var(--border-color-inverse)',
       padding: 16,
       extraCssText: `
       backdrop-filter: blur(24px);
-      filter: drop-shadow(0 9px 7px rgb(0 0 0 / 0.1));
-      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
-        rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px,
-        oklch(0.551 0.027 264.364) 0px 1px 0px 0px inset;
+      filter: drop-shadow(0 9px 7px color-mix(in oklab, var(--box-shadow-color-default) 10%, transparent));
+      box-shadow: var(--box-shadow-color-inverse-edge) 0px 1px 0px 0px inset;
       `,
       textStyle: {
-        color: 'oklch(87.2% 0.01 258.338)',
+        color: 'var(--text-color-inverse-secondary)',
         fontFamily: 'InterVariable, sans-serif',
       },
     };

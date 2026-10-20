@@ -11,8 +11,8 @@ export interface DropdownSectionProps extends PropsWithChildren<object> {
 const styles = tv({
   slots: {
     container: 'px-1',
-    header: 'truncate px-4 py-1 pt-2 text-sm font-semibold text-gray-500',
-    menu: 'rounded-xl border bg-white last:mb-1 [&_.dropdown-item]:rounded-lg [&:not(:has(*))]:hidden',
+    header: 'truncate px-4 py-1 pt-2 text-sm font-semibold text-muted',
+    menu: 'rounded-xl border bg-surface last:mb-1 [&_.dropdown-item]:rounded-lg [&:not(:has(*))]:hidden',
   },
 });
 export function DropdownSection({

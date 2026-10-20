@@ -7,7 +7,7 @@ import {
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'min-w-0 shrink truncate font-sans text-2xs font-normal text-zinc-400',
+  base: 'min-w-0 shrink truncate font-sans text-2xs font-normal text-subtle',
 });
 
 // Subtle relative time for journal lifecycle/notification rows. The duration is
@@ -45,7 +45,7 @@ export function RelativeTime({
     <span className={styles({ className })}>
       {leading ? `${leading} ` : ''}
       <DateTooltip date={new Date(date)} title={tooltipTitle}>
-        <span className="font-medium text-zinc-500/90">{duration}</span>
+        <span className="font-medium text-muted">{duration}</span>
       </DateTooltip>
       {trailing ? ` ${trailing}` : ''}
     </span>
@@ -88,7 +88,7 @@ export function PhaseDuration({
     <span className={styles({ className })}>
       {'for '}
       <DateTooltip date={startDate} title={tooltipTitle}>
-        <span className="font-medium text-zinc-500/90">{duration}</span>
+        <span className="font-medium text-muted">{duration}</span>
       </DateTooltip>
     </span>
   );

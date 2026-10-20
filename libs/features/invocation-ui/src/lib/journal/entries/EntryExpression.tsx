@@ -131,7 +131,7 @@ export function EntryExpression({
               JSON.stringify(paramValue)
             )
           ) : (
-            <span className="block bg-white">{param.placeholderLabel}</span>
+            <span className="block bg-surface">{param.placeholderLabel}</span>
           );
         return (
           <InputOutput

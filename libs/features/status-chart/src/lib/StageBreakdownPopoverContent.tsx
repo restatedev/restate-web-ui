@@ -9,7 +9,7 @@ import {
 import { tv } from '@restate/util-styles';
 
 const bulletStyles = tv({
-  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)] swatch',
   variants: {
     borderType: {
       dashed: 'border-dashed',
@@ -23,10 +23,10 @@ const bulletStyles = tv({
 });
 
 const countStyles = tv({
-  base: 'ml-auto inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums',
+  base: 'ml-auto inline-block shrink-0 rounded-xs bg-subtle/60 px-1 py-px text-xs font-medium text-muted tabular-nums',
   variants: {
     loading: {
-      true: 'animate-pulse bg-gray-200 text-transparent',
+      true: 'animate-pulse bg-emphasis text-transparent',
       false: '',
     },
   },
@@ -64,14 +64,14 @@ export function StageBreakdownPopoverContent({
   return (
     <div className="p-3">
       <div className="mb-2">
-        <div className="text-sm font-medium text-gray-800">{label}</div>
+        <div className="text-sm font-medium text-primary">{label}</div>
         {isLoading ? (
           <span
-            className="mt-1 inline-block h-3 w-16 animate-pulse rounded bg-gray-200"
+            className="mt-1 inline-block h-3 w-16 animate-pulse rounded bg-emphasis"
             aria-label={`${label} count loading`}
           />
         ) : !countIsUnknown ? (
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-muted">
             {countIsPartial && '~'}
             {formatNumber(count, true)}{' '}
             {formatPlurals(count, {
@@ -82,7 +82,7 @@ export function StageBreakdownPopoverContent({
         ) : null}
       </div>
       {isError && (
-        <div className="rounded-lg bg-red-50 px-2.5 py-2 text-xs text-red-700">
+        <div className="rounded-lg bg-danger-subtle px-2.5 py-2 text-xs text-danger-strong">
           Could not load this breakdown.
         </div>
       )}
@@ -102,7 +102,7 @@ export function StageBreakdownPopoverContent({
               href={item.href}
               preserveQueryParams={false}
               variant="secondary"
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-gray-700 no-underline hover:bg-black/5"
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-secondary no-underline hover:bg-tint"
               aria-label={
                 percentage
                   ? `${item.label}: ${percentage} of ${label}`
@@ -127,7 +127,7 @@ export function StageBreakdownPopoverContent({
               )}
               <Icon
                 name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                className="h-3.5 w-3.5 shrink-0 text-subtle"
               />
             </Link>
           );

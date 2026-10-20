@@ -2,8 +2,9 @@
 @plugin 'tailwindcss-react-aria-components';
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/forms';
+@import '@restate/util-styles/theme.css';
+@import '@restate/ui-api/elements-theme.css';
 
-@custom-variant dark (&:where(.dark, .dark *));
 @custom-variant @tall (@media (min-height: 47rem));
 
 @source '../../../libs';
@@ -14,18 +15,6 @@
   }
   body {
     padding-left: calc(100vw - 100%);
-  }
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
-
-  input::placeholder,
-  textarea::placeholder {
-    color: var(--color-gray-400);
   }
   *[tabindex='0']:not(:has(*)) {
     outline: none;
@@ -42,7 +31,7 @@
 
 @theme {
   --default-ring-width: 3px;
-  --default-ring-color: var(--color-blue-500);
+  --default-ring-color: var(--ring-color-focus);
 
   --text-3xs: 0.625rem;
   --text-2xs: 0.6875rem;
@@ -52,7 +41,7 @@
 
   --font-sans: InterVariable, sans-serif;
   --font-mono: JetBrainsMonoVariable, monospace;
-  --pulse-color: color-mix(in srgb, var(--color-blue-500) 25%, transparent);
+  --pulse-color: color-mix(in srgb, var(--ring-color-focus) 25%, transparent);
 
   @keyframes ripple {
     0% {

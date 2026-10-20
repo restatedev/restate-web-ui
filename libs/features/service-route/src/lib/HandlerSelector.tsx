@@ -18,15 +18,15 @@ const ALL_HANDLERS = '__all__';
 const styles = tv({
   slots: {
     trigger:
-      '-mx-1.5 flex h-full min-w-0 items-center gap-1 rounded-sm px-1.5 py-0 text-inherit shadow-none hover:bg-black/4 pressed:bg-black/8',
+      '-mx-1.5 flex h-full min-w-0 items-center gap-1 rounded-sm px-1.5 py-0 text-inherit shadow-none hover:bg-tint-subtle pressed:bg-tint-strong',
     label: 'min-w-0 truncate italic',
-    icon: 'h-4 w-4 shrink-0 text-zinc-400',
-    chevron: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+    icon: 'h-4 w-4 shrink-0 text-subtle',
+    chevron: 'h-3.5 w-3.5 shrink-0 text-subtle',
   },
   variants: {
     hasSelection: {
-      true: { label: 'font-medium text-zinc-600' },
-      false: { label: 'font-normal text-zinc-400' },
+      true: { label: 'font-medium text-tertiary' },
+      false: { label: 'font-normal text-subtle' },
     },
   },
 });

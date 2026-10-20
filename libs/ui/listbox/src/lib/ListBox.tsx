@@ -6,7 +6,7 @@ import {
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'flex flex-col gap-1 rounded-md border border-gray-300 p-1 outline-0',
+  base: 'flex flex-col gap-1 rounded-md border border-strong p-1 outline-0',
 });
 
 export function StyledListBox<T extends object>({

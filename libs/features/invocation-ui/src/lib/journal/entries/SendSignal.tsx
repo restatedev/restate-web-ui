@@ -22,7 +22,7 @@ export function SendSignal({
             <InvocationId
               id={entry.invocationId}
               size="md"
-              className="max-w-[15ch] truncate px-0.5 text-2xs font-semibold text-gray-500 not-italic"
+              className="max-w-[15ch] truncate px-0.5 text-2xs font-semibold text-muted not-italic"
             />
           )}
           {entry.invocationId && entry.signalName && ', '}

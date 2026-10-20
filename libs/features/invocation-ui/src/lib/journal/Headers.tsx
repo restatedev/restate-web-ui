@@ -13,7 +13,7 @@ export function Headers({
 }) {
   return (
     <>
-      <div className="mt-px grid grid-cols-[1fr_2fr] rounded-t-[calc(0.75rem-0.125rem)] border bg-zinc-50 pt-1 pb-4 text-xs font-medium text-gray-400">
+      <div className="mt-px grid grid-cols-[1fr_2fr] rounded-t-[calc(0.75rem-0.125rem)] border bg-subtle pt-1 pb-4 text-xs font-medium text-subtle">
         <div className="pl-4">Name</div>
         <div className="pr-4 pl-2">Value</div>
       </div>
@@ -26,7 +26,7 @@ export function Headers({
         <InPortal id={String(portalId)}>
           <Copy
             copyText={JSON.stringify(headers ?? [])}
-            className="ml-3 h-5.5 w-5.5 rounded-lg border bg-white p-1 text-gray-800 shadow-xs"
+            className="ml-3 h-5.5 w-5.5 rounded-lg border bg-surface p-1 text-primary shadow-xs"
           />
         </InPortal>
       )}
@@ -36,7 +36,7 @@ export function Headers({
 
 function Header({ name, value }: { name: string; value: string }) {
   return (
-    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-white px-4 py-0 text-0.5xs text-zinc-600 not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
+    <div className="grid grid-cols-[1fr_2fr] items-center gap-1 truncate bg-surface px-4 py-0 text-0.5xs text-tertiary not-last:border-b first:rounded-t-[calc(0.75rem-0.125rem)] last:rounded-b-[calc(0.75rem-0.125rem)]">
       <div className="relative flex min-w-0 items-start border-r py-1 pr-1">
         <TruncateWithTooltip copyText={name}>{name}</TruncateWithTooltip>
       </div>

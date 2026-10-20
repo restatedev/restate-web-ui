@@ -2,11 +2,7 @@ import { RefObject, useEffect, useRef } from 'react';
 import { init, type EChartsType } from 'echarts/core';
 import { ensureEchartsRegistered } from '../echartsSetup';
 
-export function useEchartsInit(
-  container: RefObject<HTMLDivElement | null>,
-  theme?: 'light' | 'dark',
-  renderer: 'canvas' | 'svg' = 'svg',
-) {
+export function useEchartsInit(container: RefObject<HTMLDivElement | null>) {
   const chartRef = useRef<EChartsType | null>(null);
 
   useEffect(() => {
@@ -14,11 +10,7 @@ export function useEchartsInit(
 
     ensureEchartsRegistered();
 
-    const inst = init(
-      container.current,
-      theme === 'dark' ? 'dark' : undefined,
-      { renderer },
-    );
+    const inst = init(container.current, undefined, { renderer: 'svg' });
     chartRef.current = inst;
 
     const ro = new ResizeObserver(() => inst.resize());
@@ -29,7 +21,7 @@ export function useEchartsInit(
       inst.dispose();
       chartRef.current = null;
     };
-  }, [container, theme, renderer]);
+  }, [container]);
 
   return chartRef;
 }

@@ -8,7 +8,7 @@ import { useTooltipWithHover } from './useTooltipWithHover';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-300 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5 hover:decoration-zinc-400',
+  base: 'mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-faint decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-tint hover:decoration-subtle',
 });
 export function DateTooltip({
   date,
@@ -52,22 +52,20 @@ export function DateTooltip({
       <TooltipContent size="sm" offset={5} triggerRef={triggerRef}>
         <div
           ref={contentRef}
-          className="flex items-start gap-4 py-1 break-all **:text-xs **:text-gray-200"
+          className="flex items-start gap-4 py-1 break-all **:text-xs **:text-inverse-secondary"
         >
           <div className="flex flex-col items-start gap-1">
-            <h6 className="mb-2 text-sm font-semibold text-gray-100">
-              {title}
-            </h6>
-            <div className="rounded-sm bg-zinc-700 px-1 font-mono">
+            <h6 className="mb-2 text-sm font-semibold text-inverse">{title}</h6>
+            <div className="rounded-sm bg-inverse-muted px-1 font-mono">
               {formatDateTime(date, 'system')}
             </div>
-            <div className="rounded-sm bg-zinc-700 px-1 font-mono">
+            <div className="rounded-sm bg-inverse-muted px-1 font-mono">
               {formatDateTime(date, 'UTC')}
             </div>
           </div>
           <Copy
             copyText={formatDateToISO(date)}
-            className="-m-1 -mt-0.5 rounded-xs bg-transparent p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
+            className="-m-1 -mt-0.5 rounded-xs bg-transparent p-1 hover:bg-inverse-emphasis pressed:bg-inverse-strong [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-inverse-secondary"
           />
         </div>
       </TooltipContent>

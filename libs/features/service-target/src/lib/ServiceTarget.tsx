@@ -35,22 +35,21 @@ const styles = tv({
     keyChip: 'flex-[0_2_auto] [&>[data-chip-root]]:w-full',
     handlerChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
     trailingChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
-    chip: 'max-w-full text-xs font-medium text-zinc-600',
-    service: 'min-w-0 bg-white pl-2 font-medium text-zinc-600',
-    key: 'min-w-0 bg-zinc-50 pr-2.5 pl-2 font-mono text-[90%] text-zinc-500',
-    handler:
-      'min-w-0 bg-zinc-100 pr-2 pl-1 font-medium text-zinc-600/80 italic',
-    trailing: 'min-w-0 bg-zinc-100 px-1.5 text-zinc-600/80',
+    chip: 'max-w-full text-xs font-medium text-tertiary',
+    service: 'min-w-0 pl-2 font-medium text-tertiary',
+    key: 'min-w-0 pr-2.5 pl-2 font-mono text-[90%] text-muted',
+    handler: 'min-w-0 pr-2 pl-1 font-medium text-muted italic',
+    trailing: 'min-w-0 px-1.5 text-muted',
     endContent: 'ml-1 flex shrink-0 items-center',
-    serviceIcon: 'h-3 w-3 shrink-0 text-zinc-400',
-    icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
-    handlerIcon: '-mr-1 h-5 w-5 shrink-0 text-zinc-400',
+    serviceIcon: 'h-3 w-3 shrink-0 text-subtle',
+    icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
+    handlerIcon: '-mr-1 h-5 w-5 shrink-0 text-subtle',
   },
   variants: {
     isHeader: {
       true: {
         group:
-          'mix-blend-normal! [&>[data-chip]]:mix-blend-luminosity [&>[data-scope]]:mix-blend-normal!',
+          'mix-blend-normal! [&>[data-chip]]:mix-blend-tone [&>[data-scope]]:mix-blend-normal! [&>[data-scope]]:[--text-color-tertiary:var(--raised-text-quiet)]',
       },
       false: {},
     },
@@ -112,7 +111,7 @@ function TargetLinkChevron() {
   return (
     <Icon
       name={IconName.ChevronRight}
-      className="-mr-1 h-3.5 w-3.5 shrink-0 text-zinc-400"
+      className="-mr-1 h-3.5 w-3.5 shrink-0 text-subtle"
     />
   );
 }
@@ -334,7 +333,7 @@ export function ServiceTargetContent({
       href={serviceLink?.href}
       aria-label={serviceLink?.ariaLabel}
     >
-      <ChipSegment className={serviceStyle()}>
+      <ChipSegment tone="raised" className={serviceStyle()}>
         <Icon name={IconName.Box} className={serviceIcon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
         {identityChevronSegment === 'service' && <TargetLinkChevron />}
@@ -359,7 +358,7 @@ export function ServiceTargetContent({
       href={handlerLink?.href}
       aria-label={handlerLink?.ariaLabel}
     >
-      <ChipSegment className={handlerStyle()}>
+      <ChipSegment tone="muted" className={handlerStyle()}>
         <Icon name={IconName.Function} className={handlerIcon()} />
         <TruncateTooltipTrigger>{handler}()</TruncateTooltipTrigger>
         {handlerLink && <TargetLinkChevron />}
@@ -387,7 +386,7 @@ export function ServiceTargetContent({
       href={serviceKeyLink?.href}
       aria-label={serviceKeyLink?.ariaLabel}
     >
-      <ChipSegment className={key()}>
+      <ChipSegment tone="subtle" className={key()}>
         {keyIcon && <Icon name={keyIcon} className={icon()} />}
         <TruncateTooltipTrigger>
           {serviceKey || <>&nbsp;</>}
@@ -437,7 +436,7 @@ export function ServiceTargetContent({
               className={chip({ className: chipClassName })}
               containerClassName={trailingChip()}
             >
-              <ChipSegment className={trailing()}>
+              <ChipSegment tone="muted" className={trailing()}>
                 {children}
                 {endContent && (
                   <span

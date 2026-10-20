@@ -11,8 +11,8 @@ export interface VQueueEntryIdProps {
 
 const styles = tv({
   slots: {
-    root: 'relative inline-flex w-fit max-w-full min-w-0 items-center font-mono text-zinc-600',
-    icon: 'mr-1.5 shrink-0 rounded-lg border bg-white',
+    root: 'relative inline-flex w-fit max-w-full min-w-0 items-center font-mono text-tertiary',
+    icon: 'mr-1.5 shrink-0 rounded-lg border bg-surface',
     text: 'min-w-0 truncate',
   },
   variants: {
@@ -68,7 +68,7 @@ export function VQueueEntryId({
       <span className={entryStyles.icon()}>
         <Icon
           name={isStateMutation ? IconName.Database : IconName.History}
-          className="h-full w-full p-1 text-zinc-500"
+          className="h-full w-full p-1 text-muted"
         />
       </span>
       <TruncateWithTooltip

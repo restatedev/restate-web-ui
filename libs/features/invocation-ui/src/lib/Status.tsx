@@ -67,22 +67,22 @@ const styles = tv({
       success: '',
       danger: '',
       warning: '',
-      default: 'bg-zinc-100',
+      default: 'bg-muted',
       info: '',
     },
     status: {
       pending:
-        'border-dashed border-amber-300/90 bg-transparent text-amber-700',
-      scheduled: 'border-dashed border-zinc-400/60 bg-transparent',
-      ready: 'border-dashed border-zinc-300 bg-transparent text-zinc-500',
-      yielded: 'border-dashed border-zinc-300 bg-transparent text-zinc-500',
+        'border-dashed border-pending bg-transparent text-pending-strong',
+      scheduled: 'border-dashed border-neutral/60 bg-transparent',
+      ready: 'border-dashed border-strong bg-transparent text-muted',
+      yielded: 'border-dashed border-strong bg-transparent text-muted',
       running: 'border-dashed',
-      suspended: 'border-dashed border-zinc-400/60 bg-zinc-200/40',
+      suspended: 'border-dashed border-neutral/60 bg-emphasis/40',
       succeeded: '',
       failed: 'py-0.5 pr-0.5',
       cancelled: '',
       killed: '',
-      'backing-off': 'border border-dashed border-orange-300/80',
+      'backing-off': 'border border-dashed border-warning',
       paused: 'border-dashed',
     },
     isRetrying: {
@@ -323,7 +323,7 @@ const lastErrorStyles = tv({
   base: '',
   slots: {
     trigger:
-      'flex h-5 items-center gap-1 truncate rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs shadow-none',
+      'flex h-5 items-center gap-1 truncate rounded-md border-default/80 bg-surface/70 px-1.5 py-0.5 text-2xs shadow-none',
     errorIcon: 'h-3 w-3 shrink-0',
     errorBanner:
       'max-h-full max-w-[min(80rem,90vw)] flex-auto resize overflow-auto rounded-xl',
@@ -331,10 +331,10 @@ const lastErrorStyles = tv({
   variants: {
     isRetrying: {
       true: {
-        trigger: 'text-orange-700',
-        errorIcon: 'text-orange-600',
+        trigger: 'text-warning-strong',
+        errorIcon: 'text-warning',
       },
-      false: { trigger: 'text-red-500', errorIcon: 'text-red-500/90' },
+      false: { trigger: 'text-danger', errorIcon: 'text-danger-subtle' },
     },
     hasStack: {
       true: {
@@ -442,7 +442,7 @@ export function LastError({
           {canOpen && (
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3 w-3 shrink-0 text-gray-500"
+              className="h-3 w-3 shrink-0 text-muted"
             />
           )}
         </Button>
@@ -459,7 +459,7 @@ export function LastError({
               role="status"
               className={errorBanner({
                 className:
-                  'flex min-h-20 items-center justify-center gap-2 p-4 text-xs text-zinc-500',
+                  'flex min-h-20 items-center justify-center gap-2 p-4 text-xs text-muted',
               })}
             >
               <Spinner className="h-4 w-4" />

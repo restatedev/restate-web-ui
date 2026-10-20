@@ -12,9 +12,9 @@ export function LimitListTruncation({
   if (!hasMore) return null;
 
   return (
-    <div className="w-full pt-3 pr-4 pb-2 pl-2 text-xs text-gray-500/80">
+    <div className="w-full pt-3 pr-4 pb-2 pl-2 text-xs text-subtle">
       Showing the first{' '}
-      <span className="font-medium text-gray-500 tabular-nums">
+      <span className="font-medium text-muted tabular-nums">
         {formatNumber(totalItems)}
       </span>{' '}
       {label}. More match this query.

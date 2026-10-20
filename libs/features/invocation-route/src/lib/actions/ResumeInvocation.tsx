@@ -106,10 +106,10 @@ function ResumeInvocationContent() {
                 key={deployment?.id}
               >
                 <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
-                  <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+                  <div className="h-6 w-6 shrink-0 rounded-md border bg-surface shadow-xs">
                     <Icon
                       name={icon}
-                      className="h-full w-full p-1 text-zinc-400"
+                      className="h-full w-full p-1 text-subtle"
                     />
                   </div>
                   {isTunnel && (
@@ -137,7 +137,7 @@ function ResumeInvocationContent() {
                   )}
                   <Revision
                     revision={revision}
-                    className="z-2 ml-auto bg-white"
+                    className="z-2 ml-auto bg-surface"
                   />
                 </div>
               </ListBoxItem>
@@ -224,7 +224,7 @@ export const ResumeInvocation = withConfirmation({
   title: 'Resume Invocation',
   icon: IconName.Resume,
   description: (
-    <p className="mt-2 text-sm text-gray-500">
+    <p className="mt-2 text-sm text-muted">
       Select the deployment you'd like to run this invocation on, then resume
       execution.
     </p>

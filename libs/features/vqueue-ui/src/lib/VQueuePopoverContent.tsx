@@ -54,27 +54,27 @@ const STAGES: Array<{ stage: VQueueStage; label: string }> = [
 
 const styles = tv({
   slots: {
-    root: 'w-full min-w-0 bg-gray-100 px-0.5 pt-0.5 text-zinc-700',
+    root: 'w-full min-w-0 bg-muted px-0.5 pt-0.5 text-secondary',
     header: 'flex min-w-0 flex-nowrap items-center justify-between gap-2',
     identity: 'flex min-w-0 flex-1 items-center gap-2',
     stageSummaryContent:
       'flex w-full min-w-0 items-center gap-1.5 font-sans text-2xs',
     stageSummaryLabel: 'min-w-0 flex-1 truncate text-left text-inherit',
     stageSummaryStats:
-      'flex shrink-0 items-baseline gap-1 font-medium text-zinc-800 tabular-nums selected:text-zinc-950',
+      'flex shrink-0 items-baseline gap-1 font-medium text-primary tabular-nums selected:text-primary',
     stageSummaryAverageValue:
-      'font-normal text-gray-400 tabular-nums selected:text-zinc-500',
-    panelBody: 'flex min-h-32 items-start bg-white px-4 py-3',
+      'font-normal text-subtle tabular-nums selected:text-muted',
+    panelBody: 'flex min-h-32 items-start bg-surface px-4 py-3',
     head: 'flex w-fit min-w-0 flex-nowrap items-center gap-1.5',
     headIdentity: 'flex min-w-0 shrink items-center gap-1.5',
     entryIdentity: 'max-w-44 min-w-0 shrink',
-    entryId: 'max-w-32 min-w-0 truncate font-mono text-2xs text-zinc-600',
+    entryId: 'max-w-32 min-w-0 truncate font-mono text-2xs text-tertiary',
     headStatus:
       'flex min-w-0 flex-1 flex-nowrap items-center gap-x-1.5 text-2xs',
     statusTime:
-      'inline-flex shrink-0 items-baseline gap-1 text-2xs font-normal whitespace-nowrap text-zinc-500/80',
+      'inline-flex shrink-0 items-baseline gap-1 text-2xs font-normal whitespace-nowrap text-subtle',
     blockComparison:
-      'inline-flex shrink-0 items-baseline gap-1 text-3xs whitespace-nowrap text-zinc-500',
+      'inline-flex shrink-0 items-baseline gap-1 text-3xs whitespace-nowrap text-muted',
   },
 });
 
@@ -100,7 +100,7 @@ const orderFlowStyles = tv({
 });
 
 const orderColumnStyles = tv({
-  base: 'relative w-full min-w-0 before:pointer-events-none before:absolute before:inset-y-0 before:left-3 before:w-px before:-translate-x-1/2 before:bg-linear-to-t before:from-gray-300/10 before:via-gray-300/40 before:to-gray-300/75 before:content-["_"]',
+  base: 'relative w-full min-w-0 before:pointer-events-none before:absolute before:inset-y-0 before:left-3 before:w-px before:-translate-x-1/2 before:bg-linear-to-t before:from-strong/10 before:via-strong/40 before:to-strong/70 before:content-["_"]',
 });
 
 const orderSlotContainerStyles = tv({
@@ -112,10 +112,10 @@ const orderSlotsStyles = tv({
 });
 
 const orderSlotStyles = tv({
-  base: 'relative z-10 h-2 w-6 shrink-0 rounded-full border shadow-[inset_0_1px_0_0_rgba(255,255,255,0.45)]',
+  base: 'relative z-10 h-2 w-6 shrink-0 rounded-full border shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/45%)]',
   variants: {
     focus: {
-      true: "after:pointer-events-none after:absolute after:inset-px after:animate-pulse after:rounded-full after:bg-amber-400/70 after:content-[''] motion-reduce:after:animate-none",
+      true: "after:pointer-events-none after:absolute after:inset-px after:animate-pulse after:rounded-full after:bg-pending-vivid/70 after:content-[''] motion-reduce:after:animate-none",
       false: '',
     },
   },
@@ -126,23 +126,23 @@ const orderGapStyles = tv({
 });
 
 const orderGapMarkStyles = tv({
-  base: 'flex h-4 w-6 shrink-0 items-center justify-center bg-white text-xs leading-none text-gray-400',
+  base: 'flex h-4 w-6 shrink-0 items-center justify-center bg-surface text-xs leading-none text-subtle',
 });
 
 const orderGapCountStyles = tv({
-  base: 'text-3xs leading-none font-normal whitespace-nowrap text-gray-400 tabular-nums',
+  base: 'text-3xs leading-none font-normal whitespace-nowrap text-subtle tabular-nums',
 });
 
 const emptyOrderSlotStyles = tv({
-  base: 'relative z-10 h-2 w-6 shrink-0 rounded-full border border-dashed border-gray-200 bg-white/70',
+  base: 'relative z-10 h-2 w-6 shrink-0 rounded-full border border-dashed border-default bg-surface/70',
 });
 
 const emptyOrderLabelStyles = tv({
-  base: 'text-3xs leading-none font-normal whitespace-nowrap text-gray-300 tabular-nums',
+  base: 'text-3xs leading-none font-normal whitespace-nowrap text-faint tabular-nums',
 });
 
 const orderDirectionStyles = tv({
-  base: 'relative z-10 ml-3 h-4 w-px shrink-0 -translate-x-1/2 text-gray-300/75 [&_svg]:absolute [&_svg]:-top-0.5 [&_svg]:left-1/2 [&_svg]:h-2.5 [&_svg]:w-3 [&_svg]:-translate-x-1/2',
+  base: 'relative z-10 ml-3 h-4 w-px shrink-0 -translate-x-1/2 text-faint [&_svg]:absolute [&_svg]:-top-0.5 [&_svg]:left-1/2 [&_svg]:h-2.5 [&_svg]:w-3 [&_svg]:-translate-x-1/2',
 });
 
 const orderFocusDetailsStyles = tv({
@@ -165,18 +165,18 @@ const orderFocusPositionStyles = tv({
   base: 'inline-flex h-4 min-w-0 items-center gap-1 text-3xs leading-none font-normal tabular-nums',
   variants: {
     timing: {
-      scheduled: 'text-gray-500',
-      waiting: 'text-amber-700',
+      scheduled: 'text-muted',
+      waiting: 'text-pending-strong',
     },
   },
 });
 
 const orderFocusAverageStyles = tv({
-  base: 'inline-flex items-baseline gap-1 text-3xs leading-none font-normal text-gray-400 tabular-nums',
+  base: 'inline-flex items-baseline gap-1 text-3xs leading-none font-normal text-subtle tabular-nums',
 });
 
 const orderFocusEntryIdStyles = tv({
-  base: 'max-w-64 truncate text-3xs leading-none font-normal text-zinc-500',
+  base: 'max-w-64 truncate text-3xs leading-none font-normal text-muted',
 });
 
 const headIdentityAnchorStyles = tv({
@@ -188,7 +188,7 @@ const headOnlyGroupStyles = tv({
 });
 
 const stageLayoutStyles = tv({
-  base: 'min-w-0 items-stretch gap-0 bg-white',
+  base: 'min-w-0 items-stretch gap-0 bg-surface',
   variants: {
     hasInboxDetails: {
       true: 'grid w-max max-w-[min(47rem,calc(100vw-3rem))] grid-cols-[13rem_fit-content(34rem)]',
@@ -201,27 +201,26 @@ const stageListStyles = tv({
   base: 'flex flex-col gap-1 p-1.5',
   variants: {
     hasInboxDetails: {
-      true: 'w-52 shrink-0 rounded-l-xl rounded-r-none border-r border-gray-200 bg-gray-100/80 pr-0',
-      false: 'w-full rounded-xl bg-white',
+      true: 'w-52 shrink-0 rounded-l-xl rounded-r-none border-r border-default bg-muted/80 pr-0',
+      false: 'w-full rounded-xl bg-surface',
     },
   },
 });
 
 const stageSummaryStyles = tv({
-  base: 'z-0 flex min-w-0 cursor-default items-center justify-start px-3 py-2 text-zinc-600',
+  base: 'z-0 flex min-w-0 cursor-default items-center justify-start px-3 py-2 text-tertiary',
   variants: {
     presentation: {
       connected:
-        'z-10 -mr-px rounded-l-lg rounded-r-none border border-r-0 border-black/10 bg-white text-zinc-950',
-      focused:
-        'rounded-lg border border-black/10 bg-white text-zinc-950 shadow-xs',
+        'z-10 -mr-px rounded-l-lg rounded-r-none border border-r-0 border-tint bg-surface text-primary',
+      focused: 'rounded-lg border border-tint bg-raised text-primary shadow-xs',
       default: 'rounded-lg',
     },
   },
 });
 
 const stageDetailsStyles = tv({
-  base: 'max-w-[min(34rem,calc(100vw-16rem))] min-w-max overflow-visible bg-white',
+  base: 'max-w-[min(34rem,calc(100vw-16rem))] min-w-max overflow-visible bg-surface',
 });
 
 const stageMarkStyles = tv({
@@ -381,7 +380,7 @@ function SelectedEntryMarker({
                   queueAverage && (
                     <span className={orderFocusAverageStyles()}>
                       <span aria-hidden="true">·</span> avg queue{' '}
-                      <span className="font-semibold text-zinc-600">
+                      <span className="font-semibold text-tertiary">
                         {queueAverage}
                       </span>
                     </span>
@@ -478,7 +477,7 @@ export function VQueueHeadBlockedStatus({
       {showComparison && !duration && average && (
         <span className={styles().blockComparison()}>
           <span>Typical block</span>
-          <span className="font-medium text-zinc-600 tabular-nums">
+          <span className="font-medium text-tertiary tabular-nums">
             {average}
           </span>
         </span>
@@ -748,7 +747,7 @@ function Head({
       variant="secondary"
       className={styles().entryId({
         className:
-          'block rounded no-underline outline-offset-1 hover:bg-black/3',
+          'block rounded no-underline outline-offset-1 hover:bg-tint-subtle',
       })}
     >
       <span title={entryId}>{formatIdentifier(entryId)}</span>
@@ -867,7 +866,7 @@ function VQueuePopoverHeader({ data }: { data: VqueueSnapshot }) {
         />
         <Copy
           copyText={data.identity.vqueueId}
-          className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+          className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-muted"
         />
         {data.identity.isPaused && (
           <Badge variant="warning" size="xs">
@@ -897,7 +896,7 @@ function VQueueInboxPopoverHeader({ data }: { data: VqueueSnapshot }) {
         }}
       />
       <span>Inbox</span>
-      <span className="font-medium text-zinc-700 tabular-nums">
+      <span className="font-medium text-secondary tabular-nums">
         {formatNumber(data.counts.inbox, true)}
       </span>
     </div>
@@ -919,7 +918,7 @@ export function VQueueInboxPopoverContent({
         headerClassName="px-3"
         title={<VQueueInboxPopoverHeader data={data} />}
       >
-        <div className="w-max max-w-[min(34rem,calc(100vw-3rem))] bg-white">
+        <div className="w-max max-w-[min(34rem,calc(100vw-3rem))] bg-surface">
           <InboxOverview
             data={data}
             renderEntryId={renderEntryId}

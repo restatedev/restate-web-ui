@@ -110,11 +110,11 @@ function DateValue({ col, value }: { col: string; value: string }) {
 
   return (
     <>
-      <span className="font-normal text-zinc-500">{!isPast && 'in '}</span>
+      <span className="font-normal text-muted">{!isPast && 'in '}</span>
       <DateTooltip date={date} title={col}>
         {duration}
       </DateTooltip>
-      <span className="font-normal text-zinc-500">{isPast && ' ago'}</span>
+      <span className="font-normal text-muted">{isPast && ' ago'}</span>
     </>
   );
 }

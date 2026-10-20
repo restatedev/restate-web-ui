@@ -103,7 +103,7 @@ function TenantInvocationContent({ invocationId }: { invocationId: string }) {
         {isPending && (
           <div
             role="status"
-            className="flex items-center gap-2 text-sm text-zinc-500"
+            className="flex items-center gap-2 text-sm text-muted"
           >
             <Spinner />
             Loading invocation…

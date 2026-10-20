@@ -261,23 +261,20 @@ function Footnote({
   }
 
   return (
-    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-subtle">
       {(data || failed) && (
         <div className="ml-auto">
           {failed ? (
             'Query failed'
           ) : data?.rows && data.rows.length > 0 ? (
             <>
-              <span className="font-medium text-gray-500">
-                {data.rows.length}
-              </span>{' '}
+              <span className="font-medium text-muted">{data.rows.length}</span>{' '}
               results
             </>
           ) : (
             'No results found'
           )}{' '}
-          as of{' '}
-          <span className="font-medium text-gray-500">{duration} ago</span>
+          as of <span className="font-medium text-muted">{duration} ago</span>
         </div>
       )}
       {durationMs !== undefined && (
@@ -289,7 +286,7 @@ function Footnote({
         <Download
           data={data}
           query={query}
-          className="block rounded-md bg-zinc-50 px-1.5 py-1.5 text-gray-600"
+          className="block rounded-md bg-subtle px-1.5 py-1.5 text-tertiary"
         />
       </div>
     </div>

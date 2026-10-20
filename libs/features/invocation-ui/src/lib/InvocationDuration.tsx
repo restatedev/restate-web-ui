@@ -31,7 +31,7 @@ export function InvocationDuration({ invocation }: InvocationDurationProps) {
   return (
     <Badge className="w-full border-none bg-transparent pl-0">
       <HoverTooltip
-        className="mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-zinc-400 decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-black/5"
+        className="mx-[-0.1em] max-w-full truncate rounded-xs px-[0.1em] underline decoration-subtle decoration-dashed decoration-from-font underline-offset-[0.2em] hover:bg-tint"
         content={
           <div className="flex flex-col gap-3">
             <div className="text-base font-semibold capitalize">Duration</div>

@@ -41,7 +41,7 @@ const darkChipStyles = tv({
 });
 
 const darkChipButtonStyles = tv({
-  base: 'flex min-w-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30',
+  base: 'flex min-w-0 items-center gap-[0.7ch] rounded-lg bg-inverse-tint px-1.5 py-1 text-xs text-inverse hover:bg-inverse-tint-strong pressed:bg-inverse-tint-strong',
 });
 
 const darkChipValueStyles = tv({
@@ -63,7 +63,7 @@ const lightValueStyles = tv({
         '[&_[data-chip]_[data-chip-segment]:first-child_[data-chip-segment-inner]]:pl-0.5',
         '[&_[data-chip]_[data-chip-segment]:first-child_[data-chip-segment-inner]:has(svg)]:pl-1.5',
       ],
-      false: 'max-w-28 font-mono text-zinc-800',
+      false: 'max-w-28 font-mono text-primary',
     },
   },
   defaultVariants: { isRichValue: false },
@@ -162,17 +162,17 @@ export function FilterChip({
               />
             }
           >
-            <ChipSegment className="gap-1 bg-blue-50 px-1.5">
+            <ChipSegment className="gap-1 bg-accent-subtle px-1.5">
               <Icon
                 name={IconName.ListFilter}
-                className="h-3 w-3 shrink-0 text-blue-600"
+                className="h-3 w-3 shrink-0 text-accent"
               />
-              <span className="shrink-0 font-medium whitespace-nowrap text-blue-900/80">
+              <span className="shrink-0 font-medium whitespace-nowrap text-accent-strong">
                 {item.label}
               </span>
             </ChipSegment>
             {item.operationLabel && (
-              <ChipSegment className="bg-gray-50 px-1.5 font-mono text-zinc-400">
+              <ChipSegment className="bg-subtle px-1.5 font-mono text-subtle">
                 {item.operationLabel}
               </ChipSegment>
             )}
@@ -187,7 +187,7 @@ export function FilterChip({
               </span>
               <Icon
                 name={IconName.ChevronDown}
-                className="h-3 w-3 shrink-0 text-zinc-400"
+                className="h-3 w-3 shrink-0 text-subtle"
               />
             </ChipSegment>
           </Chip>
@@ -199,7 +199,7 @@ export function FilterChip({
                 type="button"
                 variant="icon"
                 aria-label={`Remove ${item.label} filter`}
-                className="h-full w-full rounded-[inherit] rounded-l-none py-0 pr-1 pl-2 text-zinc-400 shadow-none hover:bg-red-50 hover:text-red-600 pressed:bg-red-100"
+                className="h-full w-full rounded-[inherit] rounded-l-none py-0 pr-1 pl-2 text-subtle shadow-none hover:bg-danger-subtle hover:text-danger pressed:bg-danger-muted"
                 onClick={() => {
                   onRemove();
                   submit();
@@ -257,7 +257,7 @@ export function FilterChip({
           type="button"
           variant="icon"
           aria-label={`Remove ${item.label} filter`}
-          className="min-h-[1.625rem] self-stretch rounded-l-none rounded-r-lg px-1 py-0 text-zinc-50/70 hover:bg-white/20 hover:text-zinc-50 pressed:bg-white/25"
+          className="min-h-[1.625rem] self-stretch rounded-l-none rounded-r-lg px-1 py-0 text-inverse-muted hover:bg-inverse-tint hover:text-inverse pressed:bg-inverse-tint-strong"
           onClick={() => {
             onRemove();
             submit();
@@ -423,7 +423,7 @@ function EditFilterTrigger({
             {onRemove ? (
               <Button
                 variant="destructive"
-                className="border-transparent bg-transparent bg-none px-4 py-1 text-red-700 shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-white hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-white pressed:drop-shadow-xs"
+                className="border-transparent bg-transparent bg-none px-4 py-1 text-danger-strong shadow-none drop-shadow-none hover:bg-linear-to-b hover:text-inverse hover:drop-shadow-xs pressed:bg-linear-to-b pressed:text-inverse pressed:drop-shadow-xs"
                 onClick={() => {
                   onRemove();
                   finish();
@@ -690,7 +690,7 @@ function RelativeDateOptions({
     <DropdownMenu
       autoFocus={!range}
       shouldCloseOnSelect={false}
-      className={range ? 'border-t border-gray-100 pt-1' : undefined}
+      className={range ? 'border-t border-muted pt-1' : undefined}
       onSelect={(selectedValue) => {
         const multiplier: Record<string, number> = {
           '1m': 1,

@@ -1,3 +1,4 @@
+import { hoverColor } from './hoverColor';
 import type {
   ECOption,
   AnySeriesCfg,
@@ -28,6 +29,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
     };
     if (series.color) {
       bar.itemStyle = { color: series.color };
+      bar.emphasis = { itemStyle: { color: hoverColor(series.color) } };
     }
     if (series.stack) {
       bar.stack = series.stack;
@@ -91,11 +93,11 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         if (barWidth <= 0 || height <= 0) return;
 
         const fill = hasValue
-          ? (series.fillColor ?? series.color ?? api.visual('color'))
-          : 'rgba(0,0,0,0.1)';
+          ? String(series.fillColor ?? series.color ?? api.visual('color'))
+          : 'var(--background-color-tint-strong)';
         const stroke = hasValue
-          ? (series.color ?? api.visual('color'))
-          : 'rgba(0,0,0,0.1)';
+          ? String(series.color ?? api.visual('color'))
+          : 'var(--background-color-tint-strong)';
         const x = x0 + (width - barWidth) / 2;
         const outerRadius = Math.min(5, barWidth / 2, height / 2);
         const baselineRadius = Math.min(1, barWidth / 2, height / 2);
@@ -108,8 +110,8 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
         const opacity = isLive ? 1 : 0.92;
         const liveFillOpacity = 0.62;
         const shadowColor = down
-          ? 'rgba(239,68,68,0.18)'
-          : 'rgba(34,197,94,0.16)';
+          ? 'color-mix(in oklab, var(--background-color-danger) 18%, transparent)'
+          : 'color-mix(in oklab, var(--background-color-success) 16%, transparent)';
         const segmentShape = {
           x,
           y: top,
@@ -157,7 +159,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
               type: 'rect',
               name: 'hit-area',
               shape: hitAreaShape,
-              style: { fill: 'rgba(0,0,0,0)' },
+              style: { fill: 'transparent' },
             },
             {
               type: 'line',
@@ -170,7 +172,7 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
                 y2: coordBottom,
               },
               style: {
-                stroke: '#000',
+                stroke: 'var(--background-color-shade)',
                 lineWidth: 1,
                 lineDash: [4, 2],
                 opacity: 0,
@@ -243,7 +245,8 @@ export const seriesBuilders: Record<'bar' | 'bar-time', SeriesBuilder> = {
               name: 'highlight',
               shape: { ...highlightShape, transition: ['y1', 'y2'] },
               style: {
-                stroke: 'rgba(255,255,255,0.55)',
+                stroke:
+                  'color-mix(in oklab, var(--background-color-highlight) 55%, transparent)',
                 lineCap: 'round',
                 lineWidth: 1,
                 opacity: 1,

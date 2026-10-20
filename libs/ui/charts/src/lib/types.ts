@@ -154,6 +154,7 @@ export type SliceConfig = {
   shadowBlur?: number;
   shadowColor?: string;
   shadowOffsetY?: number;
+  hatchColor?: string;
   onSelect?: SliceSelectHandler;
 };
 
@@ -187,9 +188,7 @@ export type ChartProps<T extends object> = {
   height?: number | string;
   style?: CSSProperties;
   className?: string;
-  theme?: 'light' | 'dark';
   timeZone?: 'system' | 'UTC';
-  renderer?: 'canvas' | 'svg';
   children: ReactNode;
   ref?: Ref<ChartHandle>;
 };

@@ -16,10 +16,10 @@ const RETURN_LINE_TOP = '4.125rem';
 const styles = tv({
   slots: {
     story:
-      'grid grid-cols-[6.25rem_11.5rem_6.25rem] items-start gap-2 px-3 pt-3 pb-2.5 text-[0.65625rem] text-gray-500',
+      'grid grid-cols-[6.25rem_11.5rem_6.25rem] items-start gap-2 px-3 pt-3 pb-2.5 text-[0.65625rem] text-muted',
     keyChips: 'flex gap-[3px]',
     keyChip:
-      'inline-flex h-3 items-center rounded-[3px] border border-blue-700/10 bg-blue-50 px-[4px] font-mono text-[0.4375rem] leading-none font-semibold text-blue-700',
+      'inline-flex h-3 items-center rounded-[3px] border border-accent-strong/10 bg-accent-subtle px-[4px] font-mono text-[0.4375rem] leading-none font-semibold text-accent',
   },
 });
 

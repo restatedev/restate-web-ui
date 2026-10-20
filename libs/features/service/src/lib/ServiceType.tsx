@@ -9,7 +9,7 @@ const styles = tv({
     variant: {
       default: '',
       subtle:
-        'shrink-0 border-zinc-200/80 bg-zinc-100/70 px-1.5 py-0 text-2xs font-normal whitespace-nowrap text-zinc-500',
+        'shrink-0 border-default bg-muted/70 px-1.5 py-0 text-2xs font-normal whitespace-nowrap text-muted',
     },
   },
   defaultVariants: { variant: 'default' },

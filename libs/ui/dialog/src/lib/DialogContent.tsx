@@ -9,7 +9,7 @@ import { tv } from '@restate/util-styles';
 import { DialogFooterContainer } from './DialogFooter';
 
 const overlayStyles = tv({
-  base: 'fixed top-0 left-0 isolate z-100 flex h-screen min-h-screen w-full bg-gray-800/30 text-center backdrop-blur-[0.5px] transition-opacity',
+  base: 'fixed top-0 left-0 isolate z-100 flex h-screen min-h-screen w-full bg-backdrop text-center backdrop-blur-[0.5px] transition-opacity',
   variants: {
     isEntering: {
       true: 'duration-200 ease-out animate-in fade-in',
@@ -26,7 +26,7 @@ const overlayStyles = tv({
 });
 
 const modalStyles = tv({
-  base: 'flex max-h-full overflow-auto border border-black/5 bg-white text-left align-middle text-slate-700',
+  base: 'flex max-h-full overflow-auto border border-tint-subtle bg-surface text-left align-middle text-secondary',
   variants: {
     isEntering: {
       true: 'duration-200 ease-out animate-in',
@@ -66,7 +66,7 @@ const modalStyles = tv({
 });
 
 const dialogStyles = tv({
-  base: 'relative flex max-h-full w-full flex-col bg-gray-100 p-1.5 outline outline-0 [[data-placement]>&]:p-4',
+  base: 'relative flex max-h-full w-full flex-col bg-overlay p-1.5 outline outline-0 [[data-placement]>&]:p-4',
   variants: {
     variant: {
       sheet: 'rounded-t-[1.125rem] pb-0',
@@ -77,7 +77,7 @@ const dialogStyles = tv({
 });
 
 const contentStyles = tv({
-  base: 'max-h-[inherit] overflow-auto border bg-white',
+  base: 'max-h-[inherit] overflow-auto border bg-surface',
   variants: {
     variant: {
       sheet: 'h-full rounded-t-xl border-b-0',

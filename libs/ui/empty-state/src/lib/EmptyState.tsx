@@ -26,31 +26,31 @@ const styles = tv({
     badge:
       'flex h-14 w-14 items-center justify-center rounded-2xl border shadow-xs',
     icon: 'h-7 w-7 drop-shadow-md',
-    title: 'text-base font-semibold text-zinc-800',
-    description: 'mt-2 text-sm leading-relaxed text-zinc-500',
+    title: 'text-base font-semibold text-primary',
+    description: 'mt-2 text-sm leading-relaxed text-muted',
     actions: 'mt-6 flex w-full flex-col items-center gap-4',
   },
   variants: {
     intent: {
       neutral: {
-        badge: 'border-gray-200 bg-white',
-        icon: 'text-zinc-400',
+        badge: 'border-default bg-surface',
+        icon: 'text-subtle',
       },
       danger: {
-        badge: 'border-red-200 bg-red-50/40',
-        icon: 'fill-red-100 text-red-500',
+        badge: 'border-danger bg-danger-subtle/40',
+        icon: 'fill-danger-muted text-danger',
       },
       warning: {
-        badge: 'border-orange-200 bg-orange-50/40',
-        icon: 'fill-orange-100 text-orange-500',
+        badge: 'border-warning bg-warning-subtle/40',
+        icon: 'fill-warning-muted text-warning-subtle',
       },
       info: {
-        badge: 'border-blue-200 bg-blue-50/40',
-        icon: 'fill-blue-100 text-blue-500',
+        badge: 'border-accent bg-accent-subtle/40',
+        icon: 'fill-accent-muted text-accent',
       },
       success: {
-        badge: 'border-green-200 bg-green-50/40',
-        icon: 'fill-green-100 text-green-500',
+        badge: 'border-success bg-success-subtle/40',
+        icon: 'fill-success-muted text-success-subtle',
       },
     },
     hasIcon: {

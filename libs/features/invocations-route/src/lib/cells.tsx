@@ -137,7 +137,7 @@ const SERVICE_TYPE_NAME: Record<Invocation['target_service_ty'], ServiceType> =
 function Type({ invocation }: CellProps) {
   const type = SERVICE_TYPE_NAME[invocation.target_service_ty];
   return (
-    <Badge className="max-w-full bg-zinc-100/80">
+    <Badge className="max-w-full bg-muted/80">
       <span className="truncate">{type}</span>
       <ServiceTypeExplainer
         type={type}
@@ -159,7 +159,7 @@ function InvokedBy({ invocation }: CellProps) {
         {invocation.restarted_from && (
           <InvocationId
             id={invocation.restarted_from}
-            className="w-[20ch] max-w-full min-w-0 pr-1 pl-1.5 text-zinc-500"
+            className="w-[20ch] max-w-full min-w-0 pr-1 pl-1.5 text-muted"
           />
         )}
       </div>
@@ -169,7 +169,7 @@ function InvokedBy({ invocation }: CellProps) {
       <div className="flex w-full flex-col items-center gap-0.5">
         <div className="flex w-full items-center gap-0.5">
           <Badge className="border-none">Subscription</Badge>
-          <span className="text-normal inline-block flex-auto truncate font-mono text-2xs text-gray-500">
+          <span className="text-normal inline-block flex-auto truncate font-mono text-2xs text-muted">
             {invocation.invoked_by_subscription_id && (
               <TruncateWithTooltip>
                 {invocation.invoked_by_subscription_id}
@@ -179,7 +179,7 @@ function InvokedBy({ invocation }: CellProps) {
         </div>
         <Badge
           size="xs"
-          className="mr-1 ml-1 max-w-full truncate bg-white font-mono"
+          className="mr-1 ml-1 max-w-full truncate bg-surface font-mono"
         >
           <TruncateWithTooltip copyText={invocation.invoked_by_subscription_id}>
             {
@@ -199,7 +199,7 @@ function InvokedBy({ invocation }: CellProps) {
         {invocation.invoked_by_id && (
           <InvocationId
             id={invocation.invoked_by_id}
-            className="w-[20ch] max-w-full min-w-0 pr-1 pl-1.5 text-zinc-500"
+            className="w-[20ch] max-w-full min-w-0 pr-1 pl-1.5 text-muted"
             size="sm"
           />
         )}
@@ -222,7 +222,7 @@ function withCell(Component: ComponentType<CellProps>, id: ColumnKey) {
         {isVisible ? (
           <Component {...props} />
         ) : (
-          <div className="min-h-6 w-fit max-w-full truncate rounded-md bg-slate-200/70 text-transparent">
+          <div className="min-h-6 w-fit max-w-full truncate rounded-md bg-emphasis/70 text-transparent">
             {key && props.invocation[key]}
           </div>
         )}
@@ -246,8 +246,8 @@ const lastEntryIconStyles = tv({
   base: 'h-3 w-3 shrink-0',
   variants: {
     result: {
-      success: 'text-zinc-400',
-      failure: 'text-orange-600',
+      success: 'text-subtle',
+      failure: 'text-warning',
     },
   },
   defaultVariants: {
@@ -275,12 +275,12 @@ function LastJournalEntry({
   const isCompletion = entry.category === 'notification';
 
   return (
-    <div className="flex max-w-full items-center gap-1 p-3 text-xs text-zinc-500/80">
+    <div className="flex max-w-full items-center gap-1 p-3 text-xs text-subtle">
       <Icon
         name={IconName.CornerDownRight}
-        className="h-3 w-3 shrink-0 text-zinc-400"
+        className="h-3 w-3 shrink-0 text-subtle"
       />
-      <span className="truncate font-mono font-medium text-zinc-500/90 italic">
+      <span className="truncate font-mono font-medium text-muted italic">
         {name}
         <span className="opacity-70">()</span>
         {entry.category === 'command' && (
@@ -331,7 +331,7 @@ function LastJournalEntryPopoverContent({
   return (
     <DropdownSection title="Last journal entry">
       {isPending ? (
-        <div className="flex items-center gap-2 p-3 text-sm text-zinc-500">
+        <div className="flex items-center gap-2 p-3 text-sm text-muted">
           <Spinner className="h-4 w-4" />
           Loading last journal entry…
         </div>
@@ -340,7 +340,7 @@ function LastJournalEntryPopoverContent({
       ) : data && fnName ? (
         <LastJournalEntry entry={data} name={fnName} />
       ) : (
-        <div className="p-3 text-sm text-zinc-500">
+        <div className="p-3 text-sm text-muted">
           No last journal entry details are available.
         </div>
       )}
@@ -356,7 +356,7 @@ function LastJournalEntryPopover({ invocation }: { invocation: Invocation }) {
       <PopoverTrigger>
         <Button
           variant="icon"
-          className="-ml-1 flex h-auto w-fit max-w-full min-w-0 items-center gap-0 rounded-md border-0 bg-transparent px-1 py-0.5 text-2xs font-normal text-zinc-500 shadow-none hover:bg-black/5 hover:text-zinc-700 pressed:bg-black/10 [&_.badge]:w-auto [&_.badge]:min-w-0 [&_.badge]:rounded-none [&_.badge]:p-0"
+          className="-ml-1 flex h-auto w-fit max-w-full min-w-0 items-center gap-0 rounded-md border-0 bg-transparent px-1 py-0.5 text-2xs font-normal text-muted shadow-none hover:bg-tint hover:text-secondary pressed:bg-tint-strong [&_.badge]:w-auto [&_.badge]:min-w-0 [&_.badge]:rounded-none [&_.badge]:p-0"
         >
           <span className="sr-only">Show last journal entry. </span>
           <span className="shrink-0">
@@ -365,12 +365,12 @@ function LastJournalEntryPopover({ invocation }: { invocation: Invocation }) {
               tooltipTitle="Modified at"
             />
           </span>
-          <span className="min-w-0 truncate text-zinc-500/80">
+          <span className="min-w-0 truncate text-subtle">
             , journal updated
           </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="ml-1 h-3 w-3 shrink-0 text-zinc-400"
+            className="ml-1 h-3 w-3 shrink-0 text-subtle"
           />
         </Button>
       </PopoverTrigger>
@@ -418,7 +418,7 @@ function JournalCell({ invocation }: CellProps) {
         <PopoverTrigger>
           <Button
             variant="icon"
-            className="gap-1 rounded-md px-1.5 py-0 text-2xs leading-6 text-zinc-500"
+            className="gap-1 rounded-md px-1.5 py-0 text-2xs leading-6 text-muted"
           >
             {invocation.journal_commands_size || invocation.journal_size}{' '}
             {formatPlurals(invocation.journal_size, {
@@ -427,7 +427,7 @@ function JournalCell({ invocation }: CellProps) {
             })}
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3 w-3 shrink-0 text-gray-500"
+              className="h-3 w-3 shrink-0 text-muted"
             />
           </Button>
         </PopoverTrigger>
@@ -458,7 +458,7 @@ function JournalCell({ invocation }: CellProps) {
                 </Link>
               </div>
             }
-            className="overflow-hidden rounded-2xl bg-gray-50"
+            className="overflow-hidden rounded-2xl bg-subtle"
           >
             <JournalV2
               invocationId={invocation.id}

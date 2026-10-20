@@ -7,7 +7,7 @@ interface SectionProps {
 }
 
 const styles = tv({
-  base: 'section flex flex-col rounded-xl bg-gray-100 p-0.5',
+  base: 'section flex flex-col rounded-xl bg-canvas p-0.5',
 });
 export function Section({
   children,
@@ -30,9 +30,9 @@ const stylesSectionTitle = tv({
   base: '',
   variants: {
     variant: {
-      standard: 'px-2 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase',
+      standard: 'px-2 pt-2 pb-1 text-xs font-semibold text-subtle uppercase',
       settings:
-        'mb-2 flex flex-col gap-0.5 px-2 text-base leading-7 font-semibold text-gray-900 sm:pt-3 [&_a]:text-gray-500 [&_p]:text-sm [&_p]:leading-6 [&_p]:font-normal [&_p]:text-gray-500 [&+*]:pt-0',
+        'mb-2 flex flex-col gap-0.5 px-2 text-base leading-7 font-semibold text-primary sm:pt-3 [&_a]:text-muted [&_p]:text-sm [&_p]:leading-6 [&_p]:font-normal [&_p]:text-muted [&+*]:pt-0',
     },
   },
   defaultVariants: {
@@ -53,7 +53,7 @@ const stylesSectionContent = tv({
   base: 'rounded-[calc(0.75rem-0.125rem)] p-3 text-sm',
   variants: {
     raised: {
-      true: 'border bg-white shadow-xs',
+      true: 'border bg-surface shadow-xs',
       false: '',
     },
   },

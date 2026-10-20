@@ -17,7 +17,7 @@ import { internalCellKey } from './keys';
 
 const rowStyles = tv({
   extend: focusRing,
-  base: 'group/row relative transform cursor-default text-sm text-gray-900 -outline-offset-2 transition [content-visibility:auto] hover:bg-gray-100 disabled:text-gray-300 selected:bg-blue-100/50 selected:hover:bg-blue-100',
+  base: 'group/row relative transform cursor-default text-sm text-primary -outline-offset-2 transition [content-visibility:auto] hover:bg-muted disabled:text-faint selected:bg-accent-subtle selected:hover:bg-accent-muted',
 });
 
 export type RowDataAttributes = { [key: `data-${string}`]: string };
@@ -97,7 +97,7 @@ export function Row<T extends { id?: string }>({
 
 const cellStyles = tv({
   extend: focusRing,
-  base: 'content-center truncate border-b py-2 pl-2 align-middle text-xs font-medium text-zinc-600 -outline-offset-2 [--selected-border:var(--color-blue-200)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border) [&.align-baseline]:content-start [&.align-bottom]:content-end [&.align-top]:content-start',
+  base: 'content-center truncate border-b py-2 pl-2 align-middle text-xs font-medium text-tertiary -outline-offset-2 [--selected-border:var(--border-color-accent)] group-last/row:border-b-0 group-selected/row:border-[--selected-border] last:pr-2 focus-visible:outline-2 in-[:has(+[data-selected])]:border-(--selected-border) [&.align-baseline]:content-start [&.align-bottom]:content-end [&.align-top]:content-start',
 });
 
 interface CellProps extends Pick<AriaCellProps, 'id'> {

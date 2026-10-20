@@ -5,14 +5,14 @@ import { tv } from '@restate/util-styles';
 
 const styles = tv({
   slots: {
-    link: 'relative shrink-0 border-none bg-gray-50 px-1 py-1 align-middle shadow-none',
-    icon: 'ml-px h-3 w-3 fill-blue-300 text-blue-700/0',
+    link: 'relative shrink-0 border-none bg-subtle px-1 py-1 align-middle shadow-none',
+    icon: 'ml-px h-3 w-3 fill-accent-strong text-accent-subtle/5',
   },
   variants: {
     isHighlighted: {
       true: {
-        link: 'animate-pulseButton bg-blue-50',
-        icon: 'fill-blue-500',
+        link: 'animate-pulseButton bg-accent-subtle',
+        icon: 'fill-accent',
       },
     },
   },

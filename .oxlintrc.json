@@ -27,6 +27,7 @@
       }
     ],
     "restate/no-classname-template-literal": "error",
+    "restate/no-palette-colors": "error",
     "no-case-declarations": "error",
     "no-empty": "error",
     "no-empty-function": "error",
@@ -61,6 +62,10 @@
     {
       "files": ["**/*.d.ts"],
       "rules": { "no-var": "off" }
+    },
+    {
+      "files": ["apps/web-ui/app/root.tsx"],
+      "rules": { "restate/no-palette-colors": "off" }
     }
   ]
 }

@@ -85,7 +85,7 @@ export function LifeCycle({
 
     const hasError = Boolean(entry.code || entry.message || entry.error);
     return (
-      <div className="-order-1 mr-2 flex items-center gap-2 font-sans text-zinc-500">
+      <div className="-order-1 mr-2 flex items-center gap-2 font-sans text-muted">
         <span className="shrink-0">
           {hasError ? ENTRY_EVENTS_ENTRY_LABELS['Paused'] : 'Paused'}
         </span>
@@ -99,7 +99,7 @@ export function LifeCycle({
               <Popover>
                 <PopoverTrigger>
                   <Button
-                    className="-my-1 translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
+                    className="-my-1 translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-subtle"
                     variant="secondary"
                   >
                     <div className="flex h-5 items-center">#{commandIndex}</div>
@@ -109,7 +109,7 @@ export function LifeCycle({
                   <DropdownSection
                     className="relative px-3 py-2 pr-8 text-0.5xs"
                     title={
-                      <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
+                      <span className="text-2xs text-subtle uppercase">{`Command #${commandIndex}`}</span>
                     }
                   >
                     {CommandComponent && (
@@ -141,7 +141,7 @@ export function LifeCycle({
                 .filter(Boolean)
                 .join('\n\n')}
               isRetrying
-              className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
+              className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 shadow-none hover:bg-warning-muted pressed:bg-warning-emphasis/50"
             />
           </Badge>
         )}
@@ -168,7 +168,7 @@ export function LifeCycle({
     Boolean(entry.end);
 
   return (
-    <div className="mr-2 flex items-baseline gap-[0.5ch] font-sans text-zinc-500">
+    <div className="mr-2 flex items-baseline gap-[0.5ch] font-sans text-muted">
       <span className="shrink-0">
         {{ ...ENTRY_EVENTS_ENTRY_LABELS }[String(entry.type)]}
       </span>
@@ -205,7 +205,7 @@ const invocationIdStyles = tv({
 function CreatedSource({ invocation }: { invocation?: Invocation }) {
   if (!invocation) {
     return (
-      <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+      <div className="mr-2 flex items-center gap-2 font-sans text-muted">
         <span className="shrink-0">{ENTRY_EVENTS_ENTRY_LABELS['Created']}</span>
       </div>
     );
@@ -215,7 +215,7 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
   const restartedFromValue = invocation.restarted_from;
 
   return (
-    <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+    <div className="mr-2 flex items-center gap-2 font-sans text-muted">
       {isRestartedFrom ? (
         <>
           <span className="shrink-0">Restarted from</span>

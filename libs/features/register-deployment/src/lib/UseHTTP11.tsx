@@ -6,7 +6,7 @@ export function UseHTTP11() {
 
   return (
     <div>
-      <div slot="title" className="mb-2 text-sm font-medium text-gray-700">
+      <div slot="title" className="mb-2 text-sm font-medium text-secondary">
         Use <code>HTTP1.1</code>
       </div>
       <FormFieldCheckbox
@@ -18,7 +18,7 @@ export function UseHTTP11() {
       >
         <span
           slot="description"
-          className="block text-0.5xs leading-5 text-gray-500"
+          className="block text-0.5xs leading-5 text-muted"
         >
           <code>HTTP1.1</code> will be used for service registration.
         </span>

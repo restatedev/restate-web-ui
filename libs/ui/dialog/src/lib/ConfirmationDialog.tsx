@@ -23,12 +23,12 @@ const styles = tv({
   variants: {
     type: {
       warning: {
-        container: 'border border-orange-200 bg-orange-50 text-orange-600',
-        icon: 'fill-orange-600 text-orange-100',
+        container: 'border border-warning bg-warning-subtle text-warning',
+        icon: 'fill-warning text-on-warning',
       },
       info: {
-        container: 'border border-blue-200 bg-blue-50 text-blue-600',
-        icon: 'fill-blue-600 text-blue-100',
+        container: 'border border-info bg-info-subtle text-info',
+        icon: 'fill-info text-on-info',
       },
     },
   },
@@ -71,7 +71,7 @@ export interface ConfirmationDialogProps {
 }
 
 const iconStyles = tv({
-  base: '-ml-2 h-10 w-10 p-1.5 text-blue-400 drop-shadow-md',
+  base: '-ml-2 h-10 w-10 p-1.5 text-info-subtle drop-shadow-md',
 });
 export function ConfirmationQueryDialog({
   queryParam,
@@ -135,7 +135,7 @@ function ConfirmationDialogContent({
         <Heading
           slot="title"
           level={3}
-          className="flex items-center gap-1 text-lg leading-6 font-medium text-gray-900"
+          className="flex items-center gap-1 text-lg leading-6 font-medium text-primary"
         >
           {icon && (
             <Icon
@@ -145,7 +145,7 @@ function ConfirmationDialogContent({
           )}
           {title}
         </Heading>
-        <div className="flex flex-col gap-2 text-sm text-gray-500">
+        <div className="flex flex-col gap-2 text-sm text-muted">
           {description}
           {alertType && alertContent && (
             <AlertBanner type={alertType}>{alertContent}</AlertBanner>

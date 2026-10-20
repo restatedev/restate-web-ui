@@ -33,7 +33,7 @@ export function StatusArcEcharts({
 
   return (
     <div className={chartContainerStyles({ isLoading })}>
-      <Chart width="100%" height="100%" theme="light" renderer="canvas">
+      <Chart width="100%" height="100%">
         <Tooltip
           trigger="item"
           formatValue={(value) =>
@@ -66,8 +66,13 @@ export function StatusArcEcharts({
                 borderCap={s.borderCap}
                 borderRadius={6}
                 shadowBlur={4}
-                shadowColor="rgba(0,0,0,0.15)"
+                shadowColor="color-mix(in oklab, var(--box-shadow-color-default) 15%, transparent)"
                 shadowOffsetY={1}
+                hatchColor={
+                  s.name === 'inbox' || s.name === 'pending'
+                    ? 'var(--background-color-hatch-pending)'
+                    : undefined
+                }
                 onSelect={() => navigate(s.href)}
               />
             ))
@@ -75,8 +80,8 @@ export function StatusArcEcharts({
             <Slice
               name="Loading"
               value={1}
-              color="rgba(215,219,225,0.55)"
-              borderColor="rgba(199,203,209,0.6)"
+              color="color-mix(in oklab, var(--background-color-strong) 55%, transparent)"
+              borderColor="color-mix(in oklab, var(--border-color-strong) 60%, transparent)"
               borderWidth={1}
               borderRadius={6}
             />

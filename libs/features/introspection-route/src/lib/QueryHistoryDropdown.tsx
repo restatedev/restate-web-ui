@@ -30,7 +30,7 @@ export function QueryHistoryDropdown({
           <Button
             variant="icon"
             disabled={isEmpty}
-            className="h-full rounded-lg bg-white/10 px-2 text-gray-200 hover:bg-white/20 disabled:text-gray-400 pressed:bg-white/25"
+            className="h-full rounded-lg bg-inverse-tint-subtle px-2 text-inverse-secondary hover:bg-inverse-tint disabled:text-inverse-muted pressed:bg-inverse-tint-strong"
           >
             <Icon name={IconName.History} className="h-4 w-4 shrink-0" />
           </Button>

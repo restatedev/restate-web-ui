@@ -272,7 +272,7 @@ export function WorkflowRuns({
               inputPrefix={
                 <Icon
                   name={IconName.Search}
-                  className="h-4 w-4 shrink-0 text-gray-400"
+                  className="h-4 w-4 shrink-0 text-subtle"
                 />
               }
               tagsPlacement="outside"
@@ -281,10 +281,10 @@ export function WorkflowRuns({
               tagGroupClassName="min-w-0 flex-nowrap"
               showSectionTitle={false}
               popoverPlacement="bottom start"
-              popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
-              optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
-              className="min-h-6.5 w-full justify-end text-gray-800"
-              inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+              popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
+              optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-accent-subtle data-[focused]:text-accent-strong hover:bg-accent-subtle hover:text-accent-strong"
+              className="min-h-6.5 w-full justify-end text-primary"
+              inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
             >
               {(props) => (
                 <FilterChip
@@ -453,18 +453,18 @@ export function WorkflowRuns({
             />
           </SnapshotTimeProvider>
           {data && (
-            <div className="flex justify-end px-4 pt-3 pb-2 text-xs text-gray-500/80">
+            <div className="flex justify-end px-4 pt-3 pb-2 text-xs text-subtle">
               {data.truncated ? (
                 <span>
                   Showing the{' '}
-                  <span className="font-medium text-gray-600">
+                  <span className="font-medium text-tertiary">
                     {data.rows.length}
                   </span>{' '}
                   most recent runs; more exist.
                 </span>
               ) : (
                 <span>
-                  <span className="font-medium text-gray-600">
+                  <span className="font-medium text-tertiary">
                     {data.rows.length}
                   </span>{' '}
                   {data.rows.length === 1 ? 'run' : 'runs'}

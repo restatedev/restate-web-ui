@@ -189,7 +189,7 @@ function EntryContent({
               entry.error?.stack,
             )
           }
-          className="mb-1 w-full rounded-md bg-white/5 [&_*]:text-orange-300! [&_code]:border-transparent [&_code]:bg-zinc-800/30 [&_code]:mix-blend-normal [&_svg]:h-3.5 [&_svg]:w-3.5"
+          className="mb-1 w-full rounded-md bg-inverse-tint-subtle [&_*]:text-warning-subtle! [&_code]:border-transparent [&_code]:bg-backdrop [&_code]:mix-blend-normal [&_svg]:h-3.5 [&_svg]:w-3.5"
         />
       )}
     </div>

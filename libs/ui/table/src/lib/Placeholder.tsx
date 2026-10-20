@@ -25,7 +25,7 @@ export function LoadingRows({
                 }}
               >
                 <div
-                  className="min-h-full w-full animate-pulse rounded-md bg-slate-200 motion-reduce:animate-none"
+                  className="min-h-full w-full animate-pulse rounded-md bg-emphasis motion-reduce:animate-none"
                   style={{
                     animationDelay: `-${(index * 160 + i * 90) % 1600}ms`,
                     animationDuration: '2s',

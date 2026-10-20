@@ -16,10 +16,10 @@ function FeatureFlagRow({ flag }: { flag: FeatureFlag }) {
     <div className="flex items-start gap-4 px-4 py-3.5">
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-800">{title}</span>
+          <span className="text-sm font-medium text-primary">{title}</span>
         </div>
-        <p className="text-sm text-gray-500">{description}</p>
-        <code className="mt-0.5 font-mono text-2xs text-gray-400">
+        <p className="text-sm text-muted">{description}</p>
+        <code className="mt-0.5 font-mono text-2xs text-subtle">
           {flag}
           {serverFeature && ` · requires server feature ${serverFeature}`}
         </code>
@@ -38,20 +38,20 @@ function Component() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-2 sm:px-6">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-white shadow-xs">
-          <Icon name={IconName.Sparkles} className="h-5 w-5 text-gray-500" />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border bg-surface shadow-xs">
+          <Icon name={IconName.Sparkles} className="h-5 w-5 text-muted" />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-xl font-semibold text-gray-800">
+          <h1 className="text-xl font-semibold text-primary">
             Restate UI Labs
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted">
             Turn UI experimental features on or off. Preferences are saved in
             this browser only.
           </p>
         </div>
       </div>
-      <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border bg-white shadow-xs">
+      <div className="divide-y divide-muted overflow-hidden rounded-2xl border bg-surface shadow-xs">
         {FEATURE_FLAGS.map((flag) => (
           <FeatureFlagRow key={flag} flag={flag} />
         ))}

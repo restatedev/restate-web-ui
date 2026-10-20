@@ -10,15 +10,15 @@ const styles = tv({
 });
 
 const panAreaStyles = tv({
-  base: 'h-full cursor-grab rounded-md shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_1px_3px_1px_rgba(96,165,250,0.08)] backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-[0_0_0_1px_rgba(96,165,250,0.3),0_1px_5px_2px_rgba(96,165,250,0.1)] active:shadow-[0_0_0_1px_rgba(96,165,250,0.4),0_2px_6px_2px_rgba(96,165,250,0.12)]',
+  base: 'h-full cursor-grab rounded-md bg-(--lens-fill) shadow-(--lens-shadow) backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-(--lens-shadow-hover) active:shadow-(--lens-shadow-active)',
 });
 
 const overlayStyles = tv({
   base: 'pointer-events-none absolute inset-y-0',
   variants: {
     side: {
-      left: 'rounded-l-md bg-gray-100/60',
-      right: 'rounded-r-md bg-gray-100/60',
+      left: 'rounded-l-md bg-muted/60',
+      right: 'rounded-r-md bg-muted/60',
     },
     animate: {
       true: 'transition-[width] duration-300 ease-out',
@@ -290,7 +290,7 @@ export function ViewportSelector({
           left: `calc(${leftPercent}% + ${PADDING}px)`,
         }}
       >
-        <div className="absolute inset-y-1 left-0.5 w-0.5 rounded-full bg-gray-400/40 transition-colors duration-150 ease-out group-hover:bg-blue-400/80" />
+        <div className="absolute inset-y-1 left-0.5 w-0.5 rounded-full bg-neutral/40 transition-colors duration-150 ease-out group-hover:bg-accent-vivid/80" />
       </div>
 
       {/* Selection box - for panning */}
@@ -318,7 +318,7 @@ export function ViewportSelector({
           />
         </div>
         <TooltipContent size="sm" triggerRef={panRef}>
-          <div className="flex items-start gap-4 py-0 break-all **:text-xs **:text-gray-200">
+          <div className="flex items-start gap-4 py-0 break-all **:text-xs **:text-inverse-secondary">
             <div className="flex flex-col items-start gap-1">
               {tooltipContent}
             </div>
@@ -335,7 +335,7 @@ export function ViewportSelector({
           right: `calc(${rightPercent}% + ${PADDING}px)`,
         }}
       >
-        <div className="absolute inset-y-1 right-0.5 w-0.5 rounded-full bg-gray-400/40 transition-colors duration-150 ease-out group-hover:bg-blue-400/80" />
+        <div className="absolute inset-y-1 right-0.5 w-0.5 rounded-full bg-neutral/40 transition-colors duration-150 ease-out group-hover:bg-accent-vivid/80" />
       </div>
     </div>
   );

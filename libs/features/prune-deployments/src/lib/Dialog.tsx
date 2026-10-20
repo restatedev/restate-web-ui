@@ -47,18 +47,18 @@ function DeploymentListSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
-        <div className="h-4 w-5/6 animate-pulse rounded-md bg-gray-200" />
-        <div className="h-4 w-3/5 animate-pulse rounded-md bg-gray-200" />
+        <div className="h-4 w-5/6 animate-pulse rounded-md bg-emphasis" />
+        <div className="h-4 w-3/5 animate-pulse rounded-md bg-emphasis" />
       </div>
-      <div className="max-h-80 overflow-auto rounded-2xl border border-black/10 bg-gray-200/50 p-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div className="max-h-80 overflow-auto rounded-2xl border border-tint bg-emphasis/50 p-1 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
         <div className="flex flex-col gap-1">
           {Array.from({ length: 4 }, (_, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-2"
+              className="flex items-center gap-3 rounded-xl border border-tint bg-surface p-2"
             >
-              <div className="h-6 w-6 animate-pulse rounded-lg bg-gray-200" />
-              <div className="h-5 w-2/5 animate-pulse rounded-md bg-gray-200" />
+              <div className="h-6 w-6 animate-pulse rounded-lg bg-emphasis" />
+              <div className="h-5 w-2/5 animate-pulse rounded-md bg-emphasis" />
             </div>
           ))}
         </div>
@@ -84,12 +84,12 @@ function DeploymentList({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="max-h-80 overflow-auto rounded-2xl border border-black/10 bg-gray-200/50 p-1 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div className="max-h-80 overflow-auto rounded-2xl border border-tint bg-emphasis/50 p-1 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
         <div className="flex flex-col gap-1">
           {visibleDeploymentIds.map((deploymentId) => (
             <div
               key={deploymentId}
-              className="rounded-xl border border-black/10 bg-white p-2"
+              className="rounded-xl border border-tint bg-surface p-2"
             >
               <Deployment deploymentId={deploymentId} showLink={false} />
             </div>
@@ -97,7 +97,7 @@ function DeploymentList({
         </div>
       </div>
       {hiddenCount > 0 && (
-        <div className="flex items-center justify-between gap-4 text-0.5xs text-gray-500">
+        <div className="flex items-center justify-between gap-4 text-0.5xs text-muted">
           <span>
             Showing {formatNumber(visibleDeploymentIds.length)} of{' '}
             {formatNumber(deploymentIds.length)} {listLabel}{' '}
@@ -248,7 +248,7 @@ function DeleteDeploymentsDialogContent({
           <Heading
             slot="title"
             level={3}
-            className="text-lg leading-6 font-medium text-gray-900"
+            className="text-lg leading-6 font-medium text-primary"
           >
             {isSelectedMode
               ? 'Delete selected deployments'
@@ -260,14 +260,14 @@ function DeleteDeploymentsDialogContent({
             <ErrorBanner error={loadError} />
           ) : !run ? (
             availableDeploymentIds.length === 0 ? (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted">
                 {isSelectedMode
                   ? 'There are no selected deployments to delete.'
                   : 'There are no drained deployments to delete right now.'}
               </p>
             ) : (
               <>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted">
                   {isSelectedMode ? (
                     <>
                       Review the {formatNumber(availableDeploymentIds.length)}{' '}
@@ -305,7 +305,7 @@ function DeleteDeploymentsDialogContent({
                       rel="noopener noreferrer"
                       target="_blank"
                       href="https://docs.restate.dev/services/versioning#removing-a-service"
-                      className="text-orange-700 decoration-orange-700"
+                      className="text-warning-strong decoration-warning-strong"
                     >
                       Learn more…
                     </Link>

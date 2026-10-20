@@ -8,7 +8,7 @@ const styles = tv({
   variants: {
     status: {
       active: '',
-      drained: 'bg-zinc-100 text-zinc-600',
+      drained: 'bg-muted text-tertiary',
     },
   },
 });
@@ -17,8 +17,8 @@ const dotStyles = tv({
   base: 'absolute h-2 w-2 rounded-full',
   variants: {
     status: {
-      active: 'bg-emerald-500',
-      drained: 'bg-zinc-400',
+      active: 'bg-success',
+      drained: 'bg-neutral',
     },
     layer: {
       solid: '',

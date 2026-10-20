@@ -254,10 +254,10 @@ function RestartInvocationContent() {
                 key={deployment?.id}
               >
                 <div className="flex w-full min-w-0 flex-auto items-center gap-2 truncate">
-                  <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
+                  <div className="h-6 w-6 shrink-0 rounded-md border bg-surface shadow-xs">
                     <Icon
                       name={icon}
-                      className="h-full w-full p-1 text-zinc-400"
+                      className="h-full w-full p-1 text-subtle"
                     />
                   </div>
                   {isTunnel && (
@@ -285,7 +285,7 @@ function RestartInvocationContent() {
                   )}
                   <Revision
                     revision={revision}
-                    className="z-2 ml-auto bg-white"
+                    className="z-2 ml-auto bg-surface"
                   />
                 </div>
               </ListBoxItem>

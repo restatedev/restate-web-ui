@@ -22,18 +22,18 @@ const targetStyles = tv({
   slots: {
     serviceLink:
       'inline-flex max-w-full min-w-0 no-underline transition-[filter] hover:brightness-[0.98] pressed:brightness-[0.96]',
-    chip: 'max-w-full text-xs font-medium text-zinc-600',
-    service: 'max-w-[18rem] bg-white pl-1.5 font-medium text-zinc-600',
-    key: 'max-w-[28rem] bg-zinc-50 font-mono text-[90%] text-zinc-500',
-    serviceIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
-    instanceIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
-    chevron: '-mr-1.5 h-3.5 w-3.5 shrink-0 text-zinc-400',
+    chip: 'max-w-full text-xs font-medium text-tertiary',
+    service: 'max-w-[18rem] pl-1.5 font-medium text-tertiary',
+    key: 'max-w-[28rem] font-mono text-[90%] text-muted',
+    serviceIcon: 'h-3.5 w-3.5 shrink-0 text-subtle',
+    instanceIcon: 'h-3.5 w-3.5 shrink-0 text-subtle',
+    chevron: '-mr-1.5 h-3.5 w-3.5 shrink-0 text-subtle',
   },
   variants: {
     showService: {
       true: {},
       false: {
-        key: 'bg-white pl-1.5 font-sans text-xs font-medium text-zinc-600',
+        key: 'pl-1.5 font-sans text-xs font-medium text-tertiary',
       },
     },
     hasLeadingScope: {
@@ -102,7 +102,7 @@ export function VirtualObjectInstanceTarget({
       size="lg"
       className={chip({ className })}
     >
-      <ChipSegment className={serviceStyle()}>
+      <ChipSegment tone="raised" className={serviceStyle()}>
         <Icon name={IconName.Box} className={serviceIcon()} />
         <TruncateTooltipTrigger>{service}</TruncateTooltipTrigger>
         {serviceHref && (
@@ -142,7 +142,10 @@ export function VirtualObjectInstanceTarget({
             : undefined
         }
       >
-        <ChipSegment className={keyStyle()}>
+        <ChipSegment
+          tone={showService ? 'subtle' : 'raised'}
+          className={keyStyle()}
+        >
           {showKeyIcon && (
             <Icon name={IconName.VirtualObject} className={instanceIcon()} />
           )}

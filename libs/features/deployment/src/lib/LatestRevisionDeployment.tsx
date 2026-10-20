@@ -54,12 +54,12 @@ export function AllRevisions({ serviceName }: { serviceName: string }) {
       <DropdownTrigger>
         <Button
           variant="icon"
-          className="relative inline-flex items-center gap-1 rounded-xl px-1 py-0.5 text-0.5xs hover:bg-black/3"
+          className="relative inline-flex items-center gap-1 rounded-xl px-1 py-0.5 text-0.5xs hover:bg-tint-subtle"
         >
           <Revision revision={latest.revision} />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 text-gray-400"
+            className="h-3.5 w-3.5 text-subtle"
           />
         </Button>
       </DropdownTrigger>
@@ -76,7 +76,7 @@ export function AllRevisions({ serviceName }: { serviceName: string }) {
                   deploymentId={id}
                   revision={revision}
                   showLink={false}
-                  className="[&_.badge]:bg-black/3 [&>*]:text-inherit"
+                  className="[&_.badge]:bg-tint-subtle [&>*]:text-inherit"
                 />
               </DropdownItem>
             ))}

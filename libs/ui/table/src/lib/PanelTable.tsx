@@ -90,19 +90,19 @@ const styles = tv({
     stickyHeaderWrapper:
       'sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)+0.5rem-var(--cp-toolbar-tuck,0px))] z-40 mx-2 mt-[calc(0.5rem+var(--cp-toolbar-tuck,0px))] -mb-9 h-9',
     stickyHeaderBackdrop:
-      'pointer-events-none absolute inset-0 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] backdrop-blur-3xl backdrop-saturate-200',
+      'pointer-events-none absolute inset-0 rounded-xl border border-default bg-linear-to-b from-(--sheen-emphasis)/70 to-muted/80 shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%),0_2px_5px_-1px_--theme(--box-shadow-color-default/8%),0_4px_10px_-3px_--theme(--box-shadow-color-default/6%)] backdrop-blur-3xl backdrop-saturate-200',
     stickyHeaderContent: 'relative h-full w-full overflow-hidden',
     stickyHeaderScroll:
       'relative h-full [scrollbar-width:none] overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden',
     stickyHeaderTable: 'w-full border-separate border-spacing-0',
     stickyHeaderInner:
-      'static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_.checkbox]:border-gray-200! [&_.checkbox]:shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]!',
+      'static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_.checkbox]:border-default! [&_.checkbox]:shadow-[inset_0_0.5px_0.5px_0px_--theme(--box-shadow-color-default/8%)]!',
     stickyHeaderTrailingResizerHidden:
       '[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible',
     stickyToolbarWrapper:
       'sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)+3.25rem-var(--cp-toolbar-tuck,0px))] z-30 mx-2 mt-11 -mb-8 h-8',
     stickyToolbar:
-      'relative flex h-full min-w-0 items-center gap-1.5 border-y border-blue-100 bg-blue-50/90 px-2 text-xs backdrop-blur-3xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-blue-50',
+      'relative flex h-full min-w-0 items-center gap-1.5 border-y border-accent bg-accent-subtle/90 px-2 text-xs backdrop-blur-3xl backdrop-saturate-200 supports-[-moz-appearance:none]:bg-accent-subtle',
     dataTableScroll:
       'relative [scrollbar-width:thin] overflow-x-auto overflow-y-hidden',
     dataTableInner: 'w-full border-separate border-spacing-0',
@@ -113,7 +113,7 @@ const styles = tv({
     virtualized: {
       true: {
         dataTableInner:
-          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]>[role=presentation]]:bg-gray-50 [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
+          'block [&_[role=columnheader]]:box-border [&_[role=columnheader]]:h-full [&_[role=columnheader]]:w-full [&_[role=gridcell]]:box-border [&_[role=gridcell]]:h-full [&_[role=gridcell]]:min-h-[43px] [&_[role=gridcell]]:w-full [&_[role=gridcell]]:border-b! [&_[role=row]]:h-[inherit] [&_[role=row]]:w-[inherit] [&_[role=rowgroup]]:relative [&_[role=rowgroup]]:h-[inherit] [&_[role=rowgroup]]:w-[inherit] [&_[role=rowgroup]]:[background-image:linear-gradient(to_top,var(--border-color-default)_1px,transparent_1px)] [&_[role=rowgroup]]:[background-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:[background-repeat:repeat-y] [&_[role=rowgroup]]:before:pointer-events-none [&_[role=rowgroup]]:before:absolute [&_[role=rowgroup]]:before:inset-0 [&_[role=rowgroup]]:before:bg-emphasis/70 [&_[role=rowgroup]]:before:[mask-image:var(--panel-table-skeleton)] [&_[role=rowgroup]]:before:[mask-size:var(--panel-table-skeleton-size)] [&_[role=rowgroup]]:before:[mask-repeat:repeat-y] [&_[role=rowgroup]]:before:content-[""] [&_[role=rowgroup]>[role=presentation]]:bg-subtle [&_[role=rowheader]]:box-border [&_[role=rowheader]]:h-full [&_[role=rowheader]]:min-h-[43px] [&_[role=rowheader]]:w-full [&_[role=rowheader]]:border-b!',
       },
     },
   },
@@ -428,7 +428,7 @@ export function PanelTable<
       x += width;
     }
     const total = Math.ceil(x + SPACER_WIDTH);
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${total}' height='${height}'><g fill='#e2e8f0' fill-opacity='0.7'>${shapes.join('')}</g><rect y='${height - 1}' width='${total}' height='1' fill='#e5e7eb'/></svg>`;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${total}' height='${height}'><g fill='black'>${shapes.join('')}</g></svg>`;
     return {
       '--panel-table-skeleton': `url("data:image/svg+xml,${encodeURIComponent(svg)}")`,
       '--panel-table-skeleton-size': `${total}px ${height}px`,

@@ -100,7 +100,7 @@ export function SidebarProvider({ children }: PropsWithChildren) {
 const sidebarStyles = tv({
   slots: {
     aside:
-      'peer group/sidebar @container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-gray-200/50 shadow-[inset_-1px_0px_0px_0px_rgba(0,0,0,0.03),0_100vh_0_0_--theme(--color-gray-200/50%),0_-100vh_0_0_--theme(--color-gray-200/50%)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out has-[[data-variant=hidden]]:hidden max-md:data-[collapsed=false]:ml-0 md:ml-0 md:w-[4.25rem] md:data-[collapsed=false]:w-[16rem] xl:w-[16rem] xl:data-[collapsed=true]:w-[4.25rem]',
+      'peer group/sidebar @container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-sunken shadow-[inset_-1px_0px_0px_0px_--theme(--box-shadow-color-default/3%),0_100vh_0_0_var(--background-color-sunken),0_-100vh_0_0_var(--background-color-sunken)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out has-[[data-variant=hidden]]:hidden max-md:data-[collapsed=false]:ml-0 md:ml-0 md:w-[4.25rem] md:data-[collapsed=false]:w-[16rem] xl:w-[16rem] xl:data-[collapsed=true]:w-[4.25rem]',
     asideInner: 'relative h-full w-full overflow-hidden',
     // Cloud/sky backdrop: a non-scrolling layer pinned to the full rail with
     // NO padding (so the w-screen cloud stays pixel-aligned with the page
@@ -135,7 +135,7 @@ const sidebarStyles = tv({
     footerSlot:
       'pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col px-3 pt-1 pb-3 [&>*]:pointer-events-auto',
     toggleButton:
-      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-white p-0 text-gray-500 shadow-xs transition-[left,transform] duration-300 ease-in-out peer-has-[[data-variant=hidden]]:hidden peer-data-[collapsed=false]:left-[16rem] peer-data-[collapsed=false]:-translate-x-1/2 peer-data-[collapsed=false]:rotate-180 hover:bg-gray-50 hover:text-gray-700 md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[collapsed=true]:left-[4.25rem] xl:peer-data-[collapsed=true]:rotate-0',
+      'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-surface p-0 text-muted shadow-xs transition-[left,transform] duration-300 ease-in-out peer-has-[[data-variant=hidden]]:hidden peer-data-[collapsed=false]:left-[16rem] peer-data-[collapsed=false]:-translate-x-1/2 peer-data-[collapsed=false]:rotate-180 hover:bg-subtle hover:text-secondary md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[collapsed=true]:left-[4.25rem] xl:peer-data-[collapsed=true]:rotate-0',
   },
 });
 

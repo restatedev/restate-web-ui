@@ -60,7 +60,7 @@ export const KillInvocation = withConfirmation({
 
   title: 'Kill Invocation',
   icon: IconName.Kill,
-  iconClassName: 'text-red-400',
+  iconClassName: 'text-danger-subtle',
   description: <p>Are you sure you want to kill this invocation?</p>,
   alertType: 'warning',
   alertContent: (
@@ -72,7 +72,7 @@ export const KillInvocation = withConfirmation({
       <Link
         href="https://docs.restate.dev/services/invocation/managing-invocations#kill"
         variant="secondary"
-        className="text-orange-600"
+        className="text-warning"
         target="_blank"
         rel="noopener noreferrer"
       >

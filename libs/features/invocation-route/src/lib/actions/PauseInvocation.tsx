@@ -59,9 +59,9 @@ export const PauseInvocation = withConfirmation({
 
   title: 'Pause Invocation',
   icon: IconName.Pause,
-  iconClassName: 'text-red-400 ',
+  iconClassName: 'text-danger-subtle ',
   description: (
-    <p className="mt-2 text-sm text-gray-500">
+    <p className="mt-2 text-sm text-muted">
       Do you want to pause a this invocation? The pause may not take effect
       right away.
     </p>

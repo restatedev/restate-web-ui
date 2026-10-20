@@ -83,7 +83,7 @@ export const JsonSchemaViewer = ({
 
   if (!isDefined) {
     return (
-      <div className="flex items-center gap-1.5 py-2 text-sm text-zinc-500">
+      <div className="flex items-center gap-1.5 py-2 text-sm text-muted">
         <Spinner className="h-4 w-4" />
         Loading…
       </div>

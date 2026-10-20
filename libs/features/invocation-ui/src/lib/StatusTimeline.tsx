@@ -8,7 +8,7 @@ import { Retention } from './Retention';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-zinc-500/80',
+  base: 'max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-subtle',
 });
 export function Duration({
   prefix,
@@ -31,7 +31,7 @@ export function Duration({
       <span className="truncate">
         {prefix && `${prefix} `}
         <DateTooltip date={new Date(date)} title={tooltipTitle}>
-          <span className="font-medium text-zinc-500/90">{duration}</span>
+          <span className="font-medium text-muted">{duration}</span>
         </DateTooltip>
         {suffix && ` ${suffix}`}
       </span>

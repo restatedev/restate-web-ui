@@ -119,9 +119,9 @@ const deploymentTableStyles = tv({
     row: 'cursor-pointer [content-visibility:auto]',
     identity: 'flex min-w-0 items-center gap-1.5 py-0.5',
     deployment:
-      'min-w-0 flex-[0_1_auto] text-[0.8125rem] font-medium text-zinc-600 [&_div:has(>svg)]:h-6 [&_div:has(>svg)]:w-6',
+      'min-w-0 flex-[0_1_auto] text-[0.8125rem] font-medium text-tertiary [&_div:has(>svg)]:h-6 [&_div:has(>svg)]:w-6',
     deploymentId:
-      'block max-w-full min-w-0 truncate rounded-md border border-zinc-200/80 bg-zinc-50/80 px-1.5 py-0.5 font-mono text-2xs font-normal text-zinc-400',
+      'block max-w-full min-w-0 truncate rounded-md border border-default bg-subtle/80 px-1.5 py-0.5 font-mono text-2xs font-normal text-subtle',
   },
 });
 
@@ -171,9 +171,7 @@ function DeploymentServices({
   const { baseUrl } = useRestateContext();
   const services = sortDeploymentServices(deployment.services);
   if (services.length === 0) {
-    return (
-      <span className="text-xs font-normal text-zinc-400">No services</span>
-    );
+    return <span className="text-xs font-normal text-subtle">No services</span>;
   }
 
   return (
@@ -183,7 +181,7 @@ function DeploymentServices({
           variant="secondary"
           className="relative inline-flex items-center gap-1 rounded-lg py-1 pr-1 pl-2 text-xs font-medium tabular-nums"
         >
-          <Icon name={IconName.Box} className="h-3.5 w-3.5 text-zinc-500/80" />
+          <Icon name={IconName.Box} className="h-3.5 w-3.5 text-subtle" />
           {formatNumber(services.length, true)}{' '}
           <span className="opacity-80">
             {formatPlurals(services.length, {
@@ -193,7 +191,7 @@ function DeploymentServices({
           </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 text-gray-400"
+            className="h-3.5 w-3.5 text-subtle"
           />
         </Button>
       </DropdownTrigger>
@@ -209,7 +207,7 @@ function DeploymentServices({
                 <MiniService
                   service={service}
                   showLink={false}
-                  className="flex-auto [&_*:not(svg)]:text-inherit [&_.badge]:bg-black/3"
+                  className="flex-auto [&_*:not(svg)]:text-inherit [&_.badge]:bg-tint-subtle"
                 />
               </DropdownItem>
             ))}
@@ -228,7 +226,7 @@ function RegisteredAt({ value }: { value: string }) {
     <DateTooltip date={new Date(value)} title="Registered at">
       <time
         dateTime={value}
-        className="text-xs font-normal text-zinc-500 tabular-nums"
+        className="text-xs font-normal text-muted tabular-nums"
       >
         {isPast ? `${duration} ago` : `in ${duration}`}
       </time>
@@ -390,7 +388,7 @@ export function DeploymentsTable() {
         toolbar={
           selectedDeploymentIds.size > 0 ? (
             <>
-              <span className="text-sm font-medium text-red-800 tabular-nums">
+              <span className="text-sm font-medium text-danger-strong tabular-nums">
                 {formatNumber(selectedDeploymentIds.size)}{' '}
                 {formatPlurals(selectedDeploymentIds.size, {
                   one: 'deployment',
@@ -400,7 +398,7 @@ export function DeploymentsTable() {
               </span>
               <Button
                 variant="secondary"
-                className="ml-auto flex items-center gap-1.5 rounded-lg border-red-200 bg-white/90 px-2.5 py-1 text-xs text-red-700 shadow-none hover:border-red-300 hover:bg-red-100 pressed:bg-red-200"
+                className="ml-auto flex items-center gap-1.5 rounded-lg border-danger bg-surface/90 px-2.5 py-1 text-xs text-danger-strong shadow-none hover:border-danger-strong/40 hover:bg-danger-muted pressed:bg-danger-emphasis"
                 onClick={openDeleteSelectedDeployments}
               >
                 <Icon name={IconName.Trash} className="h-3.5 w-3.5" />
@@ -410,7 +408,7 @@ export function DeploymentsTable() {
           ) : undefined
         }
         toolbarWrapperClassName="h-11 -mb-10"
-        toolbarClassName="mt-0.5 h-9 rounded-xl border border-red-200/90 bg-red-50/90 pr-1 pl-3 shadow-none supports-[-moz-appearance:none]:bg-red-50"
+        toolbarClassName="mt-0.5 h-9 rounded-xl border border-danger/90 bg-danger-subtle/90 pr-1 pl-3 shadow-none supports-[-moz-appearance:none]:bg-danger-subtle"
         emptyPlaceholder={
           <EmptyState
             icon={IconName.Search}
@@ -447,7 +445,7 @@ export function DeploymentsTable() {
             return (
               <Cell>
                 {isDeploymentStatusLoading ? (
-                  <span className="block h-6 w-20 shrink-0 animate-pulse rounded-full bg-gray-200/70" />
+                  <span className="block h-6 w-20 shrink-0 animate-pulse rounded-full bg-emphasis/70" />
                 ) : (
                   <DeploymentStatusBadge status={deployment.status} />
                 )}

@@ -40,12 +40,12 @@ function invocationCount(
 ) {
   const sampledWithoutMatches = count === 0 && isLowerBound;
   const label = (
-    <span className="font-medium text-gray-700">
+    <span className="font-medium text-secondary">
       {count === undefined ? (
         <span
           role="status"
           aria-label="Loading invocation count"
-          className="inline-block h-[0.8em] w-[3.5em] animate-pulse rounded-sm bg-gray-300 align-[-0.05em]"
+          className="inline-block h-[0.8em] w-[3.5em] animate-pulse rounded-sm bg-strong align-[-0.05em]"
         />
       ) : sampledWithoutMatches ? null : (
         <>
@@ -85,7 +85,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     title: 'Cancel Invocations',
     submitText: 'Confirm',
     icon: IconName.Cancel,
-    iconClassName: 'text-red-400',
+    iconClassName: 'text-danger-subtle',
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/cancel',
@@ -109,7 +109,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     title: 'Pause Invocations',
     submitText: 'Pause',
     icon: IconName.Pause,
-    iconClassName: 'text-red-400',
+    iconClassName: 'text-danger-subtle',
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/pause',
@@ -203,7 +203,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
     title: 'Kill Invocations',
     submitText: 'Kill',
     icon: IconName.Kill,
-    iconClassName: 'text-red-400',
+    iconClassName: 'text-danger-subtle',
     submitVariant: 'destructive',
     formMethod: 'POST',
     formAction: '/query/invocations/kill',
@@ -226,7 +226,7 @@ export const OPERATION_CONFIG: Record<OperationType, OperationConfig> = {
   purge: {
     title: 'Purge Invocations',
     icon: IconName.Trash,
-    iconClassName: 'text-red-400',
+    iconClassName: 'text-danger-subtle',
     submitText: 'Purge',
     submitVariant: 'destructive',
     formMethod: 'POST',

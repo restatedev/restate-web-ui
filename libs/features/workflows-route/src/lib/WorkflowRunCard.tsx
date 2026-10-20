@@ -33,16 +33,16 @@ export function WorkflowRunUnavailableBanner() {
   return (
     <div
       role="status"
-      className="relative z-40 mx-5 mt-3 flex min-h-12 items-center gap-3 rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 shadow-xs"
+      className="relative z-40 mx-5 mt-3 flex min-h-12 items-center gap-3 rounded-xl border border-pending/80 bg-pending-subtle px-3 py-2 shadow-xs"
     >
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-pending-muted text-pending">
         <Icon name={IconName.ClockAlert} className="h-4 w-4" />
       </span>
       <div className="min-w-0">
-        <div className="text-xs font-medium text-zinc-700">
+        <div className="text-xs font-medium text-secondary">
           Run invocation not found
         </div>
-        <div className="text-2xs text-zinc-500">
+        <div className="text-2xs text-muted">
           It may have been removed after its retention period elapsed.
         </div>
       </div>
@@ -64,7 +64,7 @@ export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
         labelAction={
           <Copy
             copyText={invocation.id}
-            className="ml-0 p-1 text-zinc-400 [&_svg]:h-3.5 [&_svg]:w-3.5"
+            className="ml-0 p-1 text-subtle [&_svg]:h-3.5 [&_svg]:w-3.5"
           />
         }
         label={
@@ -72,7 +72,7 @@ export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
             id={invocation.id}
             popover={false}
             link={false}
-            className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-zinc-400"
+            className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-subtle"
           />
         }
       >
@@ -87,7 +87,7 @@ export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
             id={invocation.vqueue?.vqueue_id ?? invocation.vqueue_id}
             size="md"
             truncateInMiddle
-            className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
+            className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-subtle"
           />
         </CardRow>
       )} */}
@@ -101,7 +101,7 @@ export function WorkflowRunCard({ invocation, stats }: WorkflowRunCardProps) {
       )}
       {stats?.waitingToStartDuration && (
         <CardRow label="Waiting to start">
-          <span className="text-xs text-zinc-600 tabular-nums">
+          <span className="text-xs text-tertiary tabular-nums">
             {formatDuration(stats.waitingToStartDuration)}
           </span>
         </CardRow>

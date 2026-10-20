@@ -48,7 +48,7 @@ export function CompletionNotification({
           <Popover>
             <PopoverTrigger>
               <Button
-                className="my-[-0.5px] translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
+                className="my-[-0.5px] translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-subtle"
                 variant="secondary"
               >
                 <div className="flex h-5 items-center">#{commandIndex}</div>
@@ -58,7 +58,7 @@ export function CompletionNotification({
               <DropdownSection
                 className="relative px-3 py-2 pr-8 text-0.5xs"
                 title={
-                  <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
+                  <span className="text-2xs text-subtle uppercase">{`Command #${commandIndex}`}</span>
                 }
               >
                 {CommandComponent && (
@@ -80,7 +80,7 @@ export function CompletionNotification({
           <LazyJournalEntryPayload.Failure
             invocationId={invocation?.id}
             entry={entry}
-            className="my-[-2px] border-none bg-transparent py-0 text-2xs shadow-none hover:bg-red-100 pressed:bg-red-200/70 [&_button]:h-5"
+            className="my-[-2px] border-none bg-transparent py-0 text-2xs shadow-none hover:bg-danger-muted pressed:bg-danger-emphasis/70 [&_button]:h-5"
           />
         ) : (
           <div className="mr-2">Completed</div>

@@ -15,7 +15,7 @@ function createRing(origin: HTMLElement, delay: number) {
   ring.style.top = `${cy - size / 2}px`;
   ring.style.borderRadius = '50%';
   ring.style.pointerEvents = 'none';
-  ring.style.border = '3px solid rgba(255,255,255,0.35)';
+  ring.style.border = '3px solid var(--border-color-ripple)';
   ring.style.zIndex = '-1';
   document.body.appendChild(ring);
 
@@ -45,7 +45,7 @@ function createSweep(card: HTMLElement, delay: number) {
   sweep.style.right = '-20%';
   sweep.style.height = '120%';
   sweep.style.background =
-    'linear-gradient(180deg, transparent 0%, rgba(59,130,246,0.008) 20%, rgba(59,130,246,0.02) 45%, rgba(59,130,246,0.03) 50%, rgba(59,130,246,0.02) 55%, rgba(59,130,246,0.008) 80%, transparent 100%)';
+    'linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--background-color-accent) 0.8%, transparent) 20%, color-mix(in oklab, var(--background-color-accent) 2.0%, transparent) 45%, color-mix(in oklab, var(--background-color-accent) 3.0%, transparent) 50%, color-mix(in oklab, var(--background-color-accent) 2.0%, transparent) 55%, color-mix(in oklab, var(--background-color-accent) 0.8%, transparent) 80%, transparent 100%)';
   overlay.appendChild(sweep);
 
   sweep.animate(

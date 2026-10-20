@@ -53,12 +53,12 @@ export function InlineTooltip({
       >
         <div className="flex flex-col items-start gap-2">
           {title && (
-            <h6 className="text-sm font-semibold text-gray-100">{title}</h6>
+            <h6 className="text-sm font-semibold text-inverse">{title}</h6>
           )}
           {description}
           {learnMoreHref && (
             <Link
-              className="mt-2 inline-flex items-center gap-2 rounded-lg bg-zinc-600 px-2 py-1 text-sm text-gray-100 hover:bg-zinc-500 pressed:bg-zinc-400"
+              className="mt-2 inline-flex items-center gap-2 rounded-lg bg-inverse-emphasis px-2 py-1 text-sm text-inverse hover:bg-inverse-strong pressed:bg-inverse-muted"
               rel="noopener noreferrer"
               target="_blank"
               variant="button"
@@ -91,7 +91,7 @@ const HelpTooltipTrigger = forwardRef<
       {...focusableProps}
       className={helpStyles({ className })}
     >
-      <span className="mx-[-0.1em] rounded-xs px-[0.1em] group-hover/tooltip:bg-black/5">
+      <span className="mx-[-0.1em] rounded-xs px-[0.1em] group-hover/tooltip:bg-tint">
         {children}{' '}
       </span>
       <sup className="-mr-[0.4em] -ml-[0.1em]">

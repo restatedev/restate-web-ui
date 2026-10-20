@@ -462,7 +462,7 @@ function Component() {
               placeholder={`Filter state…`}
               prefix={<ServiceSelector />}
               title="Filters"
-              className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
+              className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-focus [&_input]:min-w-[25ch] [&_input]:placeholder:text-subtle [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
             >
               {(props) =>
                 props.item.schema.metadata?.persistent ? (
@@ -482,7 +482,7 @@ function Component() {
           <SubmitButton
             ref={submitRef}
             isPending={isFetching}
-            className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-gray-400 disabled:text-gray-200"
+            className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-neutral disabled:text-inverse-secondary"
           >
             Query
             <SubmitShortcutKey />
@@ -522,12 +522,12 @@ function Footnote({
   const count = data?.items.length ?? 0;
 
   return (
-    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-subtle">
       {data && (
         <div className="ml-auto">
           {count > 0 ? (
             <>
-              <span className="font-medium text-gray-500">
+              <span className="font-medium text-muted">
                 {count}
                 {data.truncated ? '+' : ''}
               </span>{' '}
@@ -536,8 +536,7 @@ function Footnote({
           ) : (
             'No instances found'
           )}{' '}
-          as of{' '}
-          <span className="font-medium text-gray-500">{duration} ago</span>
+          as of <span className="font-medium text-muted">{duration} ago</span>
         </div>
       )}
     </div>

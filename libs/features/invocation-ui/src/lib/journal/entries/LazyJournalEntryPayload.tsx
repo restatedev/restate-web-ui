@@ -57,9 +57,9 @@ function useTargetInvocationCodecOptions(type: 'Input' | 'Output') {
 }
 
 const styles = tv({
-  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
+  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-secondary',
   slots: {
-    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
+    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-muted',
     content:
       'mb-1 w-[90vw] max-w-[min(90vw,600px)] min-w-80 overflow-auto py-0 pr-0 pl-4',
     trigger:
@@ -70,11 +70,11 @@ const styles = tv({
     isVoid: {
       true: {
         trigger:
-          'pointer-events-none mx-0 w-fit border-transparent bg-transparent font-mono text-0.5xs leading-5 font-normal text-zinc-400',
+          'pointer-events-none mx-0 w-fit border-transparent bg-transparent font-mono text-0.5xs leading-5 font-normal text-subtle',
         triggerLabel: 'mx-1.5',
       },
       false: {
-        trigger: 'text-gray-500',
+        trigger: 'text-muted',
       },
     },
   },
@@ -316,7 +316,7 @@ function PayloadPopover({
                 {!isVoid && detail.size && (
                   <PayloadSizeBadge
                     size={size}
-                    className="text-3xs font-normal text-gray-400"
+                    className="text-3xs font-normal text-subtle"
                   />
                 )}
                 <span className="inline-block w-3" />
@@ -335,7 +335,7 @@ function PayloadPopover({
                           key={tab}
                           isActive={tabs.active === tab}
                           onClick={() => tabs.onChange(tab)}
-                          className="px-4 [&:not([data-active=true])]:text-gray-500"
+                          className="px-4 [&:not([data-active=true])]:text-muted"
                         >
                           {tab.charAt(0).toUpperCase() + tab.slice(1)}
                         </NavButtonItem>
@@ -347,7 +347,7 @@ function PayloadPopover({
                   {!isVoid && (
                     <PayloadSizeBadge
                       size={size}
-                      className="text-2xs font-medium text-gray-500"
+                      className="text-2xs font-medium text-muted"
                     />
                   )}
                   <div className="ml-auto">{waterMark}</div>
@@ -376,7 +376,7 @@ function PayloadContent({
   return (
     <>
       {isPending && (
-        <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-zinc-500">
+        <div className="flex items-center gap-1.5 py-2.5 pr-4 text-sm text-muted">
           <Spinner className="h-4 w-4" />
           Loading…
         </div>
@@ -461,7 +461,7 @@ function LazyValue({
           </StaticCodecOptionsProvider>
         ) : (
           isVoid && (
-            <div className="py-2 text-xs text-zinc-500">
+            <div className="py-2 text-xs text-muted">
               No value returned (void)
             </div>
           )
@@ -533,7 +533,7 @@ function LazyInput({
             </StaticCodecOptionsProvider>
           ) : (
             isLoaded && (
-              <div className="py-2 text-xs text-zinc-500">No parameters</div>
+              <div className="py-2 text-xs text-muted">No parameters</div>
             )
           )
         ) : headersData && headersData.length > 0 ? (
@@ -544,7 +544,7 @@ function LazyInput({
           />
         ) : (
           isLoaded && (
-            <div className="rounded-xl border bg-white px-4 py-2 text-xs text-zinc-500 shadow-xs">
+            <div className="rounded-xl border bg-surface px-4 py-2 text-xs text-muted shadow-xs">
               No headers
             </div>
           )
@@ -585,7 +585,7 @@ function LazyKeys({
             portalId="expression-value"
           />
         ) : (
-          isLoaded && <div className="py-2 text-xs text-zinc-500">No keys</div>
+          isLoaded && <div className="py-2 text-xs text-muted">No keys</div>
         )}
       </PayloadContent>
     </PayloadPopover>

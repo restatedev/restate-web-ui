@@ -200,7 +200,7 @@ const sampleScanToggleStyles = tv({
     // container's height matches the segment (and the neighboring buttons)
     // exactly instead of growing by the border width.
     container:
-      'inline-flex items-stretch self-end rounded-lg bg-black/3 shadow-[inset_0_0_0_0.5px_rgba(39,39,42,0.06),inset_0_1px_0_0_rgba(0,0,0,0.03)]',
+      'inline-flex items-stretch self-end rounded-lg bg-tint-subtle shadow-[inset_0_0_0_0.5px_--theme(--box-shadow-color-default/6%),inset_0_1px_0_0_--theme(--box-shadow-color-default/3%)]',
     // Match the Columns/Actions secondary buttons exactly (rounded-lg, p-0.5
     // px-2, text-0.5xs) so heights/text/corners line up. The active segment
     // keeps the secondary white/border/shadow look; the inactive one goes
@@ -209,10 +209,10 @@ const sampleScanToggleStyles = tv({
   },
   variants: {
     active: {
-      true: {},
+      true: { segment: 'bg-raised' },
       false: {
         segment:
-          'border-transparent bg-transparent text-gray-600 shadow-none hover:bg-black/5',
+          'border-transparent bg-transparent text-tertiary shadow-none hover:bg-tint',
       },
     },
   },
@@ -271,14 +271,14 @@ const queryLoadingOverlayStyles = tv({
     details:
       'pointer-events-auto absolute top-32 left-1/2 z-10 flex w-[min(32rem,calc(100%-2rem))] -translate-x-1/2 flex-col items-center gap-2 text-center duration-500 animate-in fade-in slide-in-from-bottom-1 motion-reduce:animate-none',
     title:
-      'flex items-center justify-center gap-2 text-sm font-semibold text-gray-800',
+      'flex items-center justify-center gap-2 text-sm font-semibold text-primary',
     scanner: 'relative h-5 w-8 shrink-0',
     scannerMemory:
       'absolute top-1 right-0 flex h-3 w-4 flex-col justify-between',
-    scannerMemoryLine: 'h-0.5 w-full rounded-full bg-indigo-200',
+    scannerMemoryLine: 'h-0.5 w-full rounded-full bg-accent-emphasis',
     scannerLens:
-      'absolute top-0.5 left-0 h-4 w-4 animate-memoryScan text-indigo-600 drop-shadow-[0_1px_1px_--theme(--color-indigo-950/10%)] motion-reduce:animate-none',
-    veil: 'pointer-events-none absolute -inset-x-20 -inset-y-8 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(249,250,251,0.98)_0%,rgba(249,250,251,0.88)_45%,rgba(249,250,251,0.45)_65%,transparent_78%)]',
+      'absolute top-0.5 left-0 h-4 w-4 animate-memoryScan text-accent drop-shadow-[0_1px_1px_--theme(--box-shadow-color-default/10%)] motion-reduce:animate-none',
+    veil: 'pointer-events-none absolute -inset-x-20 -inset-y-8 -z-10 bg-[radial-gradient(ellipse_at_center,--theme(--background-color-subtle/98%)_0%,--theme(--background-color-subtle/88%)_45%,--theme(--background-color-subtle/45%)_65%,transparent_78%)]',
   },
 });
 
@@ -317,7 +317,7 @@ function SlowQueryOverlay({
           </span>
           <span>Hang tight — this is taking a moment</span>
         </div>
-        <p className="max-w-sm text-xs text-gray-500">
+        <p className="max-w-sm text-xs text-muted">
           {isComplete
             ? 'A complete scan reads every invocation, which can take a while on large datasets. You can switch to a faster partial view, or keep waiting for exact results.'
             : 'Larger datasets can take a little longer to load — thanks for your patience.'}
@@ -338,7 +338,7 @@ function SlowQueryOverlay({
                 href={dashboardUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-xs hover:bg-gray-50"
+                className="inline-flex items-center gap-1 rounded-lg border border-default bg-surface px-3 py-1 text-xs font-medium text-secondary shadow-xs hover:bg-subtle"
               >
                 Open the dashboard
                 <Icon
@@ -681,7 +681,7 @@ function Component() {
       aria-busy={isQueryNavigationPending || isSummaryFetching}
     >
       {isSummaryError && summaryData && (
-        <p role="status" className="text-xs text-gray-500">
+        <p role="status" className="text-xs text-muted">
           Could not refresh invocation counts. Showing previous counts.
         </p>
       )}
@@ -787,7 +787,7 @@ function Component() {
             />
           </ContentPanelToolbar>
           <ContentPanelBody className="pb-32">
-            <div className="-mb-1 border-b border-gray-200/80 px-1 pt-9 pb-1.5">
+            <div className="-mb-1 border-b border-default/80 px-1 pt-9 pb-1.5">
               {summaryContent}
             </div>
             <ContentPanelSection flush>
@@ -1006,14 +1006,14 @@ function InvocationsForm({
             />
           }
           title="Filters"
-          className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-blue-500 [&_input]:min-w-[25ch] [&_input]:placeholder-zinc-400 [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
+          className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-focus [&_input]:min-w-[25ch] [&_input]:placeholder:text-subtle [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
         >
           {FilterChip}
         </AddFilterTrigger>
       </FilterBuilder>
       <div className="absolute right-0 bottom-0 left-0 flex h-8 w-full overflow-hidden rounded-b-xl mask-[linear-gradient(to_right,transparent_0,black_6px,black_calc(100%-192px),transparent_calc(100%-100px))]">
         <div className="flex [scrollbar-width:thin] items-center gap-2 overflow-auto pb-0.5 pl-1.5">
-          <div className="ml-1 flex h-full shrink-0 items-center text-xs text-white/70">
+          <div className="ml-1 flex h-full shrink-0 items-center text-xs text-inverse-muted">
             Quick Filters:
           </div>
           <FilterShortcuts schema={schema} />
@@ -1068,18 +1068,18 @@ function Footnote({
   const isTruncated = visibleCount > 0 && visibleCount < totalCount;
 
   return (
-    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-gray-500/80">
+    <div className="flex w-full flex-row-reverse flex-wrap items-center gap-2 pt-3 pr-4 pb-2 pl-2 text-center text-xs text-subtle">
       {data && (
         <div className="ml-auto">
           {statusChangedCount > 0 ? (
             <>
-              <span className="font-medium text-gray-500">
+              <span className="font-medium text-muted">
                 {totalAccuracy === 'estimate' && '~'}
                 {formatNumber(totalCount, true)}
                 {totalAccuracy === 'lower-bound' && '+'}
               </span>{' '}
               currently matching ·{' '}
-              <span className="font-medium text-gray-500">
+              <span className="font-medium text-muted">
                 {formatNumber(statusChangedCount)}
               </span>{' '}
               changed status
@@ -1088,7 +1088,7 @@ function Footnote({
             'No invocations found'
           ) : totalAccuracy === 'lower-bound' ? (
             <>
-              <span className="font-medium text-gray-500">
+              <span className="font-medium text-muted">
                 {formatNumber(visibleCount)}+
               </span>{' '}
               {hasActiveFilters && 'matching '}
@@ -1101,13 +1101,13 @@ function Footnote({
             <>
               {(isTruncated || totalAccuracy === 'estimate') && (
                 <>
-                  <span className="font-medium text-gray-500">
+                  <span className="font-medium text-muted">
                     {formatNumber(visibleCount)}
                   </span>
                   {' shown of '}
                 </>
               )}
-              <span className="font-medium text-gray-500">
+              <span className="font-medium text-muted">
                 {totalAccuracy === 'estimate' && '~'}
                 {formatNumber(totalCount, true)}
               </span>{' '}
@@ -1118,8 +1118,7 @@ function Footnote({
               })}
             </>
           )}{' '}
-          as of{' '}
-          <span className="font-medium text-gray-500">{duration} ago</span>
+          as of <span className="font-medium text-muted">{duration} ago</span>
         </div>
       )}
     </div>

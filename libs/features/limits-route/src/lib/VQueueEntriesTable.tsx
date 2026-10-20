@@ -62,7 +62,7 @@ const rowStyles = tv({
   base: 'cursor-default [content-visibility:auto]',
   variants: {
     isBlocked: {
-      true: 'bg-amber-50/60',
+      true: 'bg-pending-subtle',
       false: 'bg-transparent',
     },
   },
@@ -291,7 +291,7 @@ export function VQueueEntriesTable({
         }
       />
       {data?.truncated && (
-        <div className="px-4 pt-3 text-xs text-zinc-500">
+        <div className="px-4 pt-3 text-xs text-muted">
           Showing {formatNumber(data.limit)} {stage} entries.
         </div>
       )}

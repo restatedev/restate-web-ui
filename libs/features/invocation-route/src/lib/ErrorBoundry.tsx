@@ -34,14 +34,14 @@ export class ErrorBoundary extends Component<
         <div className={errorStyles({ className: this.props.className })}>
           <Popover>
             <PopoverTrigger>
-              <Button variant="icon" className="font-sans text-xs text-red-500">
+              <Button variant="icon" className="font-sans text-xs text-danger">
                 <Icon name={IconName.CircleX} className="mr-1 h-3 w-3" />{' '}
                 {this.props.entry?.type}
               </Button>
             </PopoverTrigger>
             <PopoverContent>
               <DropdownSection title="Error">
-                <div className="px-4 py-2 text-sm text-red-500">
+                <div className="px-4 py-2 text-sm text-danger">
                   Failed to display {this.props.entry?.category}:
                   {this.props.entry?.type} entry
                 </div>

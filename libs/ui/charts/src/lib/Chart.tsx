@@ -19,9 +19,7 @@ export function Chart<T extends object>({
   height = '100%',
   style,
   className,
-  theme = 'light',
   timeZone = 'system',
-  renderer,
   children,
   ref,
 }: ChartProps<T>) {
@@ -62,7 +60,7 @@ export function Chart<T extends object>({
     return {
       animation: true,
       dataset: [{ id: 'main', source: datasetSource }],
-      color: '#51a2ff',
+      color: 'var(--background-color-accent-vivid)',
       grid,
       tooltip,
       xAxis,
@@ -83,14 +81,13 @@ export function Chart<T extends object>({
     parsed.legend,
   ]);
 
-  const chartRef = useEchartsInit(containerRef, theme, renderer);
+  const chartRef = useEchartsInit(containerRef);
   echartsInstanceRef.current = chartRef.current;
   useApplyOption(chartRef, option);
   useChartEvents(chartRef, {
     data: data ?? [],
     pie: parsed.pie,
     series: parsed.series,
-    resetKey: `${theme}:${renderer ?? 'svg'}`,
     pieHighlightSeriesIndex: parsed.pie?.gradient ? 1 : undefined,
     linkedHoverSeriesIndices: parsed.series.flatMap((s, index) =>
       s.type === 'bar-time' ? [index] : [],

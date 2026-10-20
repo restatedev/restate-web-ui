@@ -79,7 +79,7 @@ describe('VQueuePopoverContent', () => {
     const running = screen.getByRole('listitem', { name: /Running/ });
 
     expect(running.className).not.toContain('shadow-xs');
-    expect(running.className).not.toContain('border-black/10');
+    expect(running.className).not.toContain('border-tint');
   });
 
   it('renders the Inbox queue without the stage summary rail', () => {

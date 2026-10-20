@@ -26,7 +26,7 @@ import { Link } from '@restate/ui-link';
 import { deploymentHref } from '@restate/util-panel';
 
 const warningStyles = tv({
-  base: 'flex gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-0.5xs text-orange-600',
+  base: 'flex gap-2 rounded-xl border border-warning bg-warning-subtle px-3 py-2 text-0.5xs text-warning',
 });
 export function Warning({
   title,
@@ -36,7 +36,7 @@ export function Warning({
   return (
     <p className={warningStyles({ className })}>
       <Icon
-        className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+        className="h-5 w-5 shrink-0 fill-warning text-on-warning"
         name={IconName.TriangleAlert}
       />
       <span className="inline-block">
@@ -117,13 +117,13 @@ export function DeleteDeployment() {
           <Heading
             slot="title"
             level={3}
-            className="text-lg leading-6 font-medium text-gray-900"
+            className="text-lg leading-6 font-medium text-primary"
           >
             Confirm Deployment deletion
           </Heading>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted">
             Are you sure you want to delete this deployment?
-            <code className="my-1 block max-w-fit rounded-md bg-red-50 p-0.5 text-red-700 ring-red-600/10">
+            <code className="my-1 block max-w-fit rounded-md bg-danger-subtle p-0.5 text-danger-strong ring-danger/10">
               <TruncateWithTooltip>{deploymentEndpoint}</TruncateWithTooltip>
             </code>
           </p>
@@ -134,7 +134,7 @@ export function DeleteDeployment() {
               rel="noopener noreferrer"
               target="_blank"
               href="https://docs.restate.dev/services/versioning#removing-a-service"
-              className="text-orange-700 decoration-orange-700"
+              className="text-warning-strong decoration-warning-strong"
             >
               Learn more…
             </Link>
@@ -145,7 +145,7 @@ export function DeleteDeployment() {
             action={`/deployments/${deploymentId}`}
             onSubmit={submitHandler}
           >
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted">
               Please confirm to proceed or close to keep the Deployment.
             </p>
             <FormFieldInput

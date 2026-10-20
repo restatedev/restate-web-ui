@@ -7,8 +7,8 @@ const surfaceStyles = tv({
   base: 'text-2xs',
   variants: {
     surface: {
-      gray: '[--illustration-bg:var(--color-gray-100)]',
-      white: '[--illustration-bg:var(--color-white)]',
+      gray: '[--illustration-bg:var(--background-color-muted)]',
+      white: '[--illustration-bg:var(--background-color-surface)]',
     },
   },
   defaultVariants: { surface: 'gray' },
@@ -25,11 +25,11 @@ export function IllustrationSurfaceRoot({
 }
 
 export const explanationItemStyles = tv({
-  base: 'font-normal text-gray-50/90',
+  base: 'font-normal text-inverse-secondary',
   variants: {
     surface: {
       dark: '',
-      light: 'text-gray-500 [&_strong]:text-gray-700',
+      light: 'text-muted [&_strong]:text-secondary',
     },
     muted: {
       true: 'opacity-70',

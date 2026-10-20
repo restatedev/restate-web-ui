@@ -57,7 +57,7 @@ function EndpointChip({
               <code className="ml-1 inline-block">{tunnelName}</code>
               <Copy
                 copyText={tunnelName}
-                className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
+                className="ml-4 h-5 w-5 rounded-xs bg-inverse/90 p-1 hover:bg-inverse-emphasis pressed:bg-inverse-strong"
               />
             </p>
           }
@@ -80,12 +80,12 @@ function EndpointChip({
         <ChipGroup variant="header" className="w-full">
           <Chip
             size="lg"
-            className="max-w-full text-xs font-medium text-zinc-600"
+            className="max-w-full text-xs font-medium text-tertiary"
             containerClassName="w-full [&>[data-chip-root]]:w-full"
           >
-            <ChipSegment className="min-w-0 bg-white pr-1 pl-2 font-mono text-[90%] text-zinc-600">
+            <ChipSegment className="min-w-0 bg-surface pr-1 pl-2 font-mono text-[90%] text-tertiary">
               {isPending ? (
-                <span className="inline-block h-3.5 w-48 animate-pulse rounded bg-zinc-200" />
+                <span className="inline-block h-3.5 w-48 animate-pulse rounded bg-emphasis" />
               ) : (
                 <>
                   <TruncateTooltipTrigger>{endpoint}</TruncateTooltipTrigger>

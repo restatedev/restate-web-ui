@@ -60,7 +60,7 @@ export const PurgeInvocation = withConfirmation({
 
   title: 'Purge Invocation',
   description: <p>Are you sure you want to purge this invocation?</p>,
-  iconClassName: 'text-red-400',
+  iconClassName: 'text-danger-subtle',
   icon: IconName.Trash,
   alertType: 'info',
   alertContent: (
@@ -71,7 +71,7 @@ export const PurgeInvocation = withConfirmation({
       <Link
         href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
         variant="secondary"
-        className="text-blue-600"
+        className="text-accent"
         target="_blank"
         rel="noopener noreferrer"
       >

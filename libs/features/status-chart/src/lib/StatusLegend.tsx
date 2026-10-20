@@ -48,11 +48,11 @@ export const legendStyles = tv({
 });
 
 const legendItemStyles = tv({
-  base: 'flex items-center gap-1.5 px-1.5 py-0.5 outline-offset-2 outline-blue-600 transition',
+  base: 'flex items-center gap-1.5 px-1.5 py-0.5 outline-offset-2 outline-focus transition',
   variants: {
     state: {
       success:
-        'cursor-pointer rounded-md text-gray-700 no-underline hover:bg-black/5 focus-visible:outline-2',
+        'cursor-pointer rounded-md text-secondary no-underline hover:bg-tint focus-visible:outline-2',
       loading: 'cursor-default outline-none',
       error: 'cursor-default opacity-50 outline-none',
     },
@@ -98,14 +98,15 @@ const ALL_STATUSES = STATUS_ORDER.map((name) => ({
 }));
 
 const bulletStyles = tv({
-  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px]',
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] swatch',
   variants: {
     borderType: {
       dashed: 'border-dashed',
       solid: 'border-solid',
     },
     state: {
-      success: 'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
+      success:
+        'shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)]',
       loading: 'opacity-40',
       error: '',
     },
@@ -126,8 +127,8 @@ const labelStyles = tv({
       false: '',
     },
     tone: {
-      normal: 'text-gray-600',
-      muted: 'text-gray-400',
+      normal: 'text-tertiary',
+      muted: 'text-subtle',
     },
   },
   compoundVariants: [
@@ -309,7 +310,7 @@ export function StatusLegend({
             href={resolveHref(breakdownRow)}
             preserveQueryParams={false}
             variant="secondary"
-            className="flex min-w-0 items-center gap-1.5 text-gray-700 no-underline outline-offset-2 outline-blue-600 focus-visible:outline-2"
+            className="flex min-w-0 items-center gap-1.5 text-secondary no-underline outline-offset-2 outline-focus focus-visible:outline-2"
             disabled={state !== 'success'}
           >
             <span
@@ -325,7 +326,7 @@ export function StatusLegend({
             <span className={labelStyles({ orientation, compact })}>
               {breakdownRow.label}
             </span>
-            <span className="inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+            <span className="inline-block shrink-0 rounded-xs bg-subtle/60 px-1 py-px text-xs font-medium text-muted tabular-nums">
               {formatChip(breakdownRow)}
             </span>
           </Link>
@@ -339,7 +340,7 @@ export function StatusLegend({
               >
                 <Icon
                   name={IconName.ChevronsUpDown}
-                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                  className="h-3.5 w-3.5 shrink-0 text-subtle"
                 />
               </Button>
             </PopoverTrigger>
@@ -381,15 +382,15 @@ export function StatusLegend({
                     : 'normal',
             })}
           >
-            <span className="text-xs text-gray-600">All statuses</span>
+            <span className="text-xs text-tertiary">All statuses</span>
             {!allItemIsSampled && (
-              <span className="inline-block rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+              <span className="inline-block rounded-xs bg-subtle/60 px-1 py-px text-xs font-medium text-muted tabular-nums">
                 {formatNumber(allItem.count, true)}
               </span>
             )}
             <Icon
               name={IconName.ChevronRight}
-              className="h-3.5 w-3.5 shrink-0 text-gray-400"
+              className="h-3.5 w-3.5 shrink-0 text-subtle"
             />
           </AriaGridListItem>
         )}
@@ -433,17 +434,17 @@ export function StatusLegend({
                   {row.label}
                 </span>
                 {count > 0 ? (
-                  <span className="inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                  <span className="inline-block shrink-0 rounded-xs bg-subtle/60 px-1 py-px text-xs font-medium text-muted tabular-nums">
                     {formatChip(row)}
                   </span>
                 ) : (
-                  <span className="shrink-0 animate-pulse rounded bg-gray-200 px-1 py-px text-xs font-medium text-transparent tabular-nums">
+                  <span className="shrink-0 animate-pulse rounded bg-emphasis px-1 py-px text-xs font-medium text-transparent tabular-nums">
                     {formatChip(row)}
                   </span>
                 )}
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                  className="h-3.5 w-3.5 shrink-0 text-subtle"
                 />
               </AriaGridListItem>
             );
@@ -487,14 +488,14 @@ export function StatusLegend({
                 {row.label}
               </span>
               {!isErrorState && (
-                <span className="inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px text-xs font-medium text-gray-500 tabular-nums">
+                <span className="inline-block shrink-0 rounded-xs bg-subtle/60 px-1 py-px text-xs font-medium text-muted tabular-nums">
                   {formatChip(row)}
                 </span>
               )}
               {!isErrorState && (
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                  className="h-3.5 w-3.5 shrink-0 text-subtle"
                 />
               )}
             </AriaGridListItem>

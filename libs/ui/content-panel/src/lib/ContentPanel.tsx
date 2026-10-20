@@ -106,23 +106,23 @@ const styles = tv({
   slots: {
     root: 'relative isolate grid min-h-0 w-full flex-1 grid-cols-1 grid-rows-1 [--cp-content-top:calc(var(--cp-toolbar-top,0px)+var(--cp-sticky-area-height,0px)-var(--cp-toolbar-tuck,0px))] [--cp-section-pt:calc(var(--cp-sticky-area-height,0px)-var(--cp-toolbar-height,0px)+var(--cp-toolbar-tuck,0px))]',
     bodyCell:
-      'col-start-1 row-start-1 mt-[calc(var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] flex min-h-0 flex-col border-x border-gray-200 bg-gray-50',
+      'col-start-1 row-start-1 mt-[calc(var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] flex min-h-0 flex-col border-x border-default bg-subtle',
     stickyArea:
       'sticky top-[calc(var(--cp-toolbar-top,0px)-var(--cp-toolbar-tuck,0px))] z-30 col-start-1 row-start-1 flex flex-col self-start',
     toolbarSlot:
-      'flex min-h-16 w-full items-end bg-gray-100 [padding-top:var(--cp-toolbar-tuck,0px)]',
+      'flex min-h-16 w-full items-end bg-canvas [padding-top:var(--cp-toolbar-tuck,0px)]',
 
     cardFrame:
-      'relative min-h-4 rounded-t-2xl border-x border-t border-gray-200',
+      'relative min-h-4 rounded-t-2xl border-x border-t border-default',
     headerSlot:
-      'mx-2 mt-2 rounded-xl border border-gray-200 bg-linear-to-b from-gray-200/70 to-gray-100/85 shadow-[inset_0_2px_0_0_--theme(--color-white/95%),0_2px_5px_-1px_--theme(--color-zinc-800/8%),0_4px_10px_-3px_--theme(--color-zinc-800/6%)] backdrop-blur-3xl backdrop-saturate-200 [&:empty]:hidden',
+      'mx-2 mt-2 rounded-xl border border-default bg-linear-to-b from-(--sheen-emphasis)/70 to-muted/80 shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%),0_2px_5px_-1px_--theme(--box-shadow-color-default/8%),0_4px_10px_-3px_--theme(--box-shadow-color-default/6%)] backdrop-blur-3xl backdrop-saturate-200 [&:empty]:hidden',
     body: 'relative flex min-h-0 flex-1 flex-col',
     sectionRoot: 'relative flex flex-col',
     sectionFade:
-      'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-gray-50 to-transparent backdrop-blur-lg backdrop-saturate-150',
+      'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-subtle to-transparent backdrop-blur-lg backdrop-saturate-150',
     sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
     tabsWrapper:
-      'relative flex min-h-16 w-full items-end gap-3 bg-gray-100 px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
+      'relative flex min-h-16 w-full items-end gap-3 bg-canvas px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
     tabList: 'relative flex h-full max-w-full items-end gap-1 px-1',
     tabsToolbarSlot:
       'flex flex-1 items-end justify-end self-stretch pb-0 has-[form]:min-w-0',
@@ -136,10 +136,10 @@ const styles = tv({
 
 const tabStyles = tv({
   extend: focusRing,
-  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-500 transition forced-color-adjust-none select-none [-webkit-tap-highlight-color:transparent] hover:bg-gray-200/70 hover:text-zinc-700 disabled:text-zinc-400 selected:z-10 selected:border-gray-200 selected:bg-linear-to-b selected:from-white selected:to-gray-50 selected:text-zinc-950 selected:shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)] [&_svg]:fill-zinc-100 [&_svg]:transition hover:[&_svg]:fill-zinc-200 selected:[&_svg]:fill-zinc-100',
+  base: 'group relative isolate -mb-px flex min-h-0 cursor-default items-center gap-1.5 rounded-t-xl border border-b-0 border-transparent px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-muted transition forced-color-adjust-none select-none [-webkit-tap-highlight-color:transparent] hover:bg-emphasis/70 hover:text-secondary disabled:text-subtle selected:z-10 selected:border-default selected:bg-linear-to-b selected:from-(--sheen) selected:to-subtle selected:text-primary selected:shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-edge/95%),0_-1px_3px_-1px_--theme(--box-shadow-color-default/4%),0_-3px_8px_-3px_--theme(--box-shadow-color-default/3%)] [&_svg]:fill-muted [&_svg]:transition hover:[&_svg]:fill-emphasis selected:[&_svg]:fill-muted',
   variants: {
     isDisabled: {
-      true: 'text-zinc-400',
+      true: 'text-subtle',
     },
   },
 });
@@ -153,10 +153,10 @@ const headerContentStyles = tv({
 });
 
 const mobileTabStyles = tv({
-  base: 'relative z-10 flex w-full min-w-0 flex-row items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-gray-200 bg-linear-to-b from-white to-gray-50 px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-zinc-950 shadow-[inset_0_1px_0_0_--theme(--color-white/95%),0_-1px_3px_-1px_--theme(--color-zinc-800/4%),0_-3px_8px_-3px_--theme(--color-zinc-800/3%)]',
+  base: 'relative z-10 flex w-full min-w-0 flex-row items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-default bg-linear-to-b from-(--sheen) to-subtle px-3.5 pt-2 pb-1.5 text-sm whitespace-nowrap text-primary shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-edge/95%),0_-1px_3px_-1px_--theme(--box-shadow-color-default/4%),0_-3px_8px_-3px_--theme(--box-shadow-color-default/3%)]',
   variants: {
     interactive: {
-      true: 'hover:!bg-linear-to-b hover:from-white hover:to-gray-50',
+      true: 'hover:!bg-linear-to-b hover:from-(--sheen) hover:to-subtle',
       false: 'cursor-default',
     },
   },
@@ -557,9 +557,9 @@ function Tabs({
             type="button"
             onClick={() => scrollByDelta(-220)}
             aria-label="Scroll tabs left"
-            className="group absolute bottom-0 left-0 z-20 flex h-9 w-12 items-end justify-start bg-linear-to-r from-gray-100 from-40% to-transparent pb-0.5 pl-1 text-gray-500"
+            className="group absolute bottom-0 left-0 z-20 flex h-9 w-12 items-end justify-start bg-linear-to-r from-canvas from-40% to-transparent pb-0.5 pl-1 text-muted"
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full transition group-hover:bg-zinc-200/70 group-hover:text-zinc-800 group-active:scale-90 group-active:bg-zinc-300/70 group-active:text-zinc-900">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full transition group-hover:bg-emphasis/70 group-hover:text-primary group-active:scale-90 group-active:bg-strong/70 group-active:text-primary">
               <Icon name={IconName.ChevronLeft} className="h-3.5 w-3.5" />
             </span>
           </button>
@@ -569,9 +569,9 @@ function Tabs({
             type="button"
             onClick={() => scrollByDelta(220)}
             aria-label="Scroll tabs right"
-            className="group absolute right-0 bottom-0 z-20 flex h-9 w-12 items-end justify-end bg-linear-to-l from-gray-100 from-40% to-transparent pr-1 pb-0.5 text-gray-500"
+            className="group absolute right-0 bottom-0 z-20 flex h-9 w-12 items-end justify-end bg-linear-to-l from-canvas from-40% to-transparent pr-1 pb-0.5 text-muted"
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full transition group-hover:bg-zinc-200/70 group-hover:text-zinc-800 group-active:scale-90 group-active:bg-zinc-300/70 group-active:text-zinc-900">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full transition group-hover:bg-emphasis/70 group-hover:text-primary group-active:scale-90 group-active:bg-strong/70 group-active:text-primary">
               <Icon name={IconName.ChevronRight} className="h-3.5 w-3.5" />
             </span>
           </button>
@@ -586,7 +586,7 @@ function Tabs({
           <DropdownTrigger>
             <Button
               variant="icon"
-              className="hidden items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-transparent px-3 py-1.5 text-sm text-zinc-500 shadow-none hover:bg-gray-200/40 hover:text-zinc-700 sm:flex"
+              className="hidden items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-transparent px-3 py-1.5 text-sm text-muted shadow-none hover:bg-emphasis/40 hover:text-secondary sm:flex"
             >
               More
               <Icon
@@ -746,7 +746,7 @@ function ContentPanelCornerMasks() {
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="shrink-0 fill-gray-100"
+        className="shrink-0 fill-canvas"
       >
         <path d="M16 0A16 16 0 0 0 0 16V0H16Z" />
       </svg>
@@ -756,7 +756,7 @@ function ContentPanelCornerMasks() {
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="ml-auto shrink-0 -scale-x-100 fill-gray-100"
+        className="ml-auto shrink-0 -scale-x-100 fill-canvas"
       >
         <path d="M16 0A16 16 0 0 0 0 16V0H16Z" />
       </svg>

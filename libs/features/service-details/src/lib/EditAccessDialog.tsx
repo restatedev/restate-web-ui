@@ -90,17 +90,17 @@ export function EditAccessDialog() {
           <Heading
             slot="title"
             level={3}
-            className="text-lg leading-6 font-medium text-gray-900"
+            className="text-lg leading-6 font-medium text-primary"
           >
             Ingress access for{' '}
-            <span className="rounded-sm bg-gray-100 px-[0.5ch] font-mono">
+            <span className="rounded-sm bg-muted px-[0.5ch] font-mono">
               {service}
             </span>
           </Heading>
-          <div className="flex flex-col gap-2 text-sm text-gray-500">
-            <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">
+          <div className="flex flex-col gap-2 text-sm text-muted">
+            <p className="mt-2 flex gap-2 rounded-xl bg-warning-subtle p-3 text-sm text-0.5xs text-warning">
               <Icon
-                className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+                className="h-5 w-5 shrink-0 fill-warning text-on-warning"
                 name={IconName.TriangleAlert}
               />
               <span className="inline-block">
@@ -131,7 +131,7 @@ export function EditAccessDialog() {
                   Choose how your service should be accessed:
                 </span>
               </FormFieldLabel>
-              <div className="mt-0 flex flex-col gap-1 rounded-lg border border-gray-200 bg-gray-100 px-1 py-1 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+              <div className="mt-0 flex flex-col gap-1 rounded-lg border border-default bg-muted px-1 py-1 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
                 <CustomRadio
                   value="true"
                   label="Public"
@@ -177,19 +177,19 @@ const customRadioStyles = tv({
   base: 'group relative flex cursor-default rounded-lg border bg-clip-padding px-4 py-3 shadow-none outline-none',
   variants: {
     isFocusVisible: {
-      true: 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80',
+      true: 'ring-2 ring-focus ring-offset-1 ring-offset-surface/80',
     },
     isSelected: {
-      true: 'border text-gray-800 shadow-sm',
-      false: 'border-transparent text-gray-500',
+      true: 'border text-primary shadow-sm',
+      false: 'border-transparent text-muted',
     },
     isPressed: { true: '', false: '' },
   },
   compoundVariants: [
-    { isSelected: true, isPressed: true, className: 'bg-gray-50' },
-    { isSelected: true, isPressed: false, className: 'bg-white' },
-    { isSelected: false, isPressed: true, className: 'bg-gray-100' },
-    { isSelected: false, isPressed: false, className: 'bg-white/50' },
+    { isSelected: true, isPressed: true, className: 'bg-subtle' },
+    { isSelected: true, isPressed: false, className: 'bg-surface' },
+    { isSelected: false, isPressed: true, className: 'bg-muted' },
+    { isSelected: false, isPressed: false, className: 'bg-surface/50' },
   ],
 });
 
@@ -212,7 +212,7 @@ function CustomRadio({
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex flex-1 flex-col gap-1">
           <div className="text-sm font-medium">{label}</div>
-          <div className="inline text-sm font-normal text-gray-500">
+          <div className="inline text-sm font-normal text-muted">
             {description}
           </div>
         </div>

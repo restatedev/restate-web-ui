@@ -1045,9 +1045,9 @@ describe('InvocationFlowControlCard', () => {
     expect(blockedPhase?.className).toContain('pl-5.5');
     expect(blockedPhase?.className).toContain('-mt-1');
     expect(queued.nextElementSibling?.textContent).toBe('for');
-    expect(queued.nextElementSibling?.className).toContain('text-gray-400');
+    expect(queued.nextElementSibling?.className).toContain('text-subtle');
     expect(blocked.nextElementSibling?.textContent).toBe('for');
-    expect(blocked.nextElementSibling?.className).toContain('text-gray-400');
+    expect(blocked.nextElementSibling?.className).toContain('text-subtle');
     expect(blocked.parentElement?.className).toContain('text-xs');
     expect(attempt?.textContent).toContain('Lasted10s');
     expect(attempt?.textContent).not.toContain('blocked for');

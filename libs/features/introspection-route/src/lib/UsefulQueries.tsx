@@ -9,7 +9,7 @@ export function UsefulQueries({
 }) {
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3">
-      <div className="flex items-center gap-1.5 pl-1 text-xs font-medium text-gray-500">
+      <div className="flex items-center gap-1.5 pl-1 text-xs font-medium text-muted">
         <Icon name={IconName.HatGlasses} className="h-3.5 w-3.5" />
         Useful queries
       </div>
@@ -20,14 +20,14 @@ export function UsefulQueries({
               key={query.id}
               variant="secondary"
               onClick={() => onSelect(query.query)}
-              className="flex flex-col items-start gap-1 border-transparent bg-black/3 px-4 py-3 text-left shadow-none hover:bg-black/6 pressed:bg-black/10"
+              className="flex flex-col items-start gap-1 border-transparent bg-tint-subtle px-4 py-3 text-left shadow-none hover:bg-tint pressed:bg-tint-strong"
             >
               <span className="flex w-full min-w-0 items-center gap-2">
                 <span className="truncate text-sm font-medium">
                   {query.title}
                 </span>
               </span>
-              <span className="text-xs text-gray-500">{query.description}</span>
+              <span className="text-xs text-muted">{query.description}</span>
             </Button>
           );
         })}

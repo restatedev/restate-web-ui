@@ -4,7 +4,7 @@ import { tv } from '@restate/util-styles';
 import { type ReactNode } from 'react';
 
 const filteredResultsCaptionStyles = tv({
-  base: 'mx-2 mt-11 -mb-8 flex h-8 min-w-0 items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50 px-2 text-xs',
+  base: 'mx-2 mt-11 -mb-8 flex h-8 min-w-0 items-center gap-1.5 rounded-lg border border-accent bg-accent-subtle px-2 text-xs',
 });
 
 export interface FilteredResultsCaptionProps {
@@ -24,19 +24,19 @@ export function FilteredResultsCaption({
     <div className={filteredResultsCaptionStyles({ className })}>
       <Icon
         name={IconName.ListFilter}
-        className="h-3.5 w-3.5 shrink-0 text-blue-500"
+        className="h-3.5 w-3.5 shrink-0 text-accent"
       />
-      <span className="shrink-0 font-medium text-gray-700">
+      <span className="shrink-0 font-medium text-secondary">
         Filtered results
       </span>
-      <span className="min-w-0 truncate text-zinc-500">
+      <span className="min-w-0 truncate text-muted">
         Only matching {noun} are shown.{notice ? <> {notice}</> : null}
       </span>
       <Button
         type="button"
         variant="icon"
         aria-label={`Reset ${noun} filters`}
-        className="ml-auto h-6 shrink-0 rounded-md px-1.5 py-0 text-xs font-medium text-blue-700 hover:bg-blue-100 pressed:bg-blue-200"
+        className="ml-auto h-6 shrink-0 rounded-md px-1.5 py-0 text-xs font-medium text-accent hover:bg-accent-muted pressed:bg-accent-emphasis"
         onClick={onClear}
       >
         Reset

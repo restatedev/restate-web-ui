@@ -70,7 +70,7 @@ function TimelineShading({
         {cancelEvent && (
           <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 overflow-hidden px-2 transition-all duration-300">
             <div
-              className="pointer-events-none h-full w-full border-l-2 border-black/8 mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--color-black/0.05),--theme(--color-black/0.05)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]"
+              className="pointer-events-none h-full w-full border-l-2 border-tint mix-blend-tint transition-all duration-300 [background:repeating-linear-gradient(-45deg,var(--background-color-tint),var(--background-color-tint)_2px,transparent_2px,transparent_4px)]"
               style={{
                 marginLeft: `calc(${
                   ((new Date(String(cancelEvent.start)).getTime() - start) /
@@ -91,7 +91,7 @@ function TimelineShading({
                 : undefined,
             }}
           >
-            <div className="pointer-events-none absolute inset-0 mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--color-white/.6),--theme(--color-white/.6)_2px,--theme(--color-white/0)_2px,--theme(--color-white/0)_4px)]" />
+            <div className="pointer-events-none absolute inset-0 mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--background-color-surface/60%),--theme(--background-color-surface/60%)_2px,transparent_2px,transparent_4px)]" />
           </div>
         )}
       </div>
@@ -188,8 +188,8 @@ export function ScrollableTimeline({
           />
         </div>
         {shouldPinNowMarker && (
-          <div className="pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500">
-            <div className="pointer-events-none absolute left-px z-4 mt-0.5 -translate-x-full rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white">
+          <div className="pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-surface/80 font-sans text-2xs text-muted">
+            <div className="pointer-events-none absolute left-px z-4 mt-0.5 -translate-x-full rounded-sm border border-surface bg-neutral-strong px-1 text-2xs text-inverse">
               Now
             </div>
           </div>

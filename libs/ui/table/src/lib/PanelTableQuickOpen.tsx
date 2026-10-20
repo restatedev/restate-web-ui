@@ -46,11 +46,11 @@ export function PanelTableQuickOpen({
         if (isValid) onOpen();
       }}
     >
-      <span className="flex shrink-0 items-center gap-1.5 font-medium text-zinc-700">
-        <Icon name={iconName} className="h-3.5 w-3.5 text-zinc-400" />
+      <span className="flex shrink-0 items-center gap-1.5 font-medium text-secondary">
+        <Icon name={iconName} className="h-3.5 w-3.5 text-subtle" />
         {label}
       </span>
-      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-zinc-300/80" />
+      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-strong/80" />
       <ChipGroup className="w-full max-w-xl flex-1 items-center">
         {scope && (
           <Chip
@@ -58,10 +58,10 @@ export function PanelTableQuickOpen({
             right="angled"
             size="lg"
             className="w-full focus-within:outline-none [&>[data-chip-segment]]:flex-1"
-            containerClassName="w-48 shrink-0 has-[input[data-focused=true]]:[--chip-border-color:var(--color-blue-400)] has-[input[data-focus-visible=true]]:filter-[drop-shadow(0_0_2px_--theme(--color-blue-400/35%))]"
+            containerClassName="w-48 shrink-0 has-[input[data-focused=true]]:[--chip-border-color:var(--border-color-accent-strong)] has-[input[data-focus-visible=true]]:filter-[drop-shadow(0_0_2px_--theme(--border-color-accent-strong/35%))]"
           >
-            <ChipSegment className="w-full bg-zinc-100 pr-0 pl-1.5">
-              <span className="inline-flex h-4 shrink-0 items-center rounded border border-zinc-300/80 bg-white/80 px-1 text-[0.5625rem] leading-none font-semibold tracking-[0.02em] text-zinc-500">
+            <ChipSegment className="w-full bg-muted pr-0 pl-1.5">
+              <span className="inline-flex h-4 shrink-0 items-center rounded border border-strong/80 bg-surface/80 px-1 text-[0.5625rem] leading-none font-semibold tracking-[0.02em] text-muted">
                 SCOPE
               </span>
               <TextField
@@ -73,7 +73,7 @@ export function PanelTableQuickOpen({
                 <Label className="sr-only">Scope (optional)</Label>
                 <Input
                   placeholder="optional"
-                  className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-3 pl-0 font-mono text-xs text-zinc-700 outline-none placeholder:font-sans placeholder:text-zinc-400 focus:ring-0 focus:outline-hidden disabled:text-zinc-400"
+                  className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-3 pl-0 font-mono text-xs text-secondary outline-none placeholder:font-sans placeholder:text-subtle focus:ring-0 focus:outline-hidden disabled:text-subtle"
                 />
               </TextField>
             </ChipSegment>
@@ -84,12 +84,12 @@ export function PanelTableQuickOpen({
           right="straight"
           size="lg"
           className="w-full shadow-none focus-within:outline-none [&>[data-chip-segment]]:flex-1"
-          containerClassName="min-w-48 max-w-80 flex-1 has-[input[data-focused=true]]:[--chip-border-color:var(--color-blue-400)] has-[input[data-focus-visible=true]]:filter-[drop-shadow(0_0_2px_--theme(--color-blue-400/35%))]"
+          containerClassName="min-w-48 max-w-80 flex-1 has-[input[data-focused=true]]:[--chip-border-color:var(--border-color-accent-strong)] has-[input[data-focus-visible=true]]:filter-[drop-shadow(0_0_2px_--theme(--border-color-accent-strong/35%))]"
         >
-          <ChipSegment className="w-full bg-white pr-0 pl-3">
+          <ChipSegment className="w-full bg-surface pr-0 pl-3">
             <Icon
               name={iconName}
-              className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+              className="h-3.5 w-3.5 shrink-0 text-subtle"
             />
             <TextField
               className="flex min-w-0 flex-1 items-center"
@@ -101,7 +101,7 @@ export function PanelTableQuickOpen({
               <Label className="sr-only">{inputLabel}</Label>
               <Input
                 placeholder={placeholder}
-                className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-2.5 pl-0 font-mono text-xs text-zinc-700 outline-none placeholder:font-sans placeholder:text-zinc-400 focus:ring-0 focus:outline-hidden disabled:text-zinc-400"
+                className="h-full w-full min-w-0 border-0 bg-transparent py-0 pr-2.5 pl-0 font-mono text-xs text-secondary outline-none placeholder:font-sans placeholder:text-subtle focus:ring-0 focus:outline-hidden disabled:text-subtle"
               />
             </TextField>
           </ChipSegment>
@@ -135,7 +135,7 @@ export function PanelTableQuickOpenCaption({
       className="mx-4 mt-11 mb-1 flex min-w-0 flex-col gap-1"
     >
       {notice}
-      <div className="flex h-9 w-full shrink-0 items-center rounded-xl bg-zinc-200/30 px-2.5 text-xs supports-[-moz-appearance:none]:bg-zinc-200/45">
+      <div className="flex h-9 w-full shrink-0 items-center rounded-xl bg-emphasis/30 px-2.5 text-xs supports-[-moz-appearance:none]:bg-emphasis/40">
         {children}
       </div>
     </div>

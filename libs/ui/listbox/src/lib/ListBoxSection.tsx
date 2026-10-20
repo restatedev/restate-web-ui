@@ -15,10 +15,10 @@ export interface ListBoxSectionProps extends PropsWithChildren<object> {
 const styles = tv({
   slots: {
     container:
-      'relative mt-8 rounded-xl border bg-white px-1 py-1 [&_.dropdown-item]:rounded-lg',
+      'relative mt-8 rounded-xl border bg-surface px-1 py-1 [&_.dropdown-item]:rounded-lg',
     header:
-      'absolute -top-8 w-full truncate px-2 py-1 pt-2 text-sm font-semibold text-gray-400',
-    description: 'px-2 py-1 text-xs text-gray-400',
+      'absolute -top-8 w-full truncate px-2 py-1 pt-2 text-sm font-semibold text-subtle',
+    description: 'px-2 py-1 text-xs text-subtle',
   },
 });
 

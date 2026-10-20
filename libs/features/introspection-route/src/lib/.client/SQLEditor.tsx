@@ -1,5 +1,6 @@
 import { RefObject, useCallback, useEffect } from 'react';
 import { useFocusShortcut } from '@restate/ui-keyboard';
+import { editorColors } from '@restate/ui-editor';
 import * as monaco from '@restate/ui-editor/monaco';
 import {
   AGG_APPROXIMATE_FUNCTIONS,
@@ -26,7 +27,6 @@ import {
 import { getQueryHistory } from '../queryHistory';
 import { getSqlCompletionContext } from '../sqlCompletionContext';
 
-const SQL_EDITOR_THEME = 'restate-sql';
 const SQL_LANGUAGE_ID = 'sql';
 
 type CompletionItem = Omit<monaco.languages.CompletionItem, 'range'>;
@@ -232,33 +232,14 @@ export function SQLEditor({
           triggerCharacters: [' ', '.'],
           provideCompletionItems,
         });
-      monaco.editor.defineTheme(SQL_EDITOR_THEME, {
-        base: 'vs-dark',
-        colors: {
-          'editor.background': '#00000000',
-          'editor.foreground': '#ffffff',
-          'editor.lineHighlightBorder': '#00000000',
-          'editorBracketHighlight.foreground1': '#60a5fa',
-          focusBorder: '#00000000',
-        },
-        rules: [
-          { token: 'keyword.sql', foreground: '60a5fa' },
-          { token: 'delimiter.parenthesis.sql', foreground: '60a5fa' },
-          { token: 'identifier.sql', foreground: 'ffffff' },
-          { token: 'string.sql', foreground: 'cbd5e1' },
-          { token: 'number.sql', foreground: 'cbd5e1' },
-          { token: 'operator.sql', foreground: 'ffffff' },
-          { token: 'predefined.sql', foreground: 'ffffff' },
-        ],
-        inherit: true,
-      });
       editorRef.current = monaco.editor.create(hostRef.current, {
         value: initialQuery,
         language: SQL_LANGUAGE_ID,
         lineNumbers: 'off',
         lineDecorationsWidth: 0,
         folding: false,
-        theme: SQL_EDITOR_THEME,
+        theme: monaco.MONACO_THEME,
+        renderLineHighlight: 'none',
         minimap: { enabled: false },
         fontSize: 14,
         fontFamily: 'mono',
@@ -382,5 +363,10 @@ export function SQLEditor({
 
   useFocusShortcut({ onFocus: focusEditor });
 
-  return <div ref={hostRef} className={className} />;
+  return (
+    <div
+      ref={hostRef}
+      className={editorColors({ surface: 'inverse', className })}
+    />
+  );
 }

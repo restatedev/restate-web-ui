@@ -166,7 +166,7 @@ function CounterSummaryExplainer() {
       title="Limit counters"
       ariaLabel="Explain backlogged limit counters"
       description={
-        <p className="max-w-72 text-xs leading-4 text-zinc-300">
+        <p className="max-w-72 text-xs leading-4 text-faint">
           A backlogged limit counter currently has at least one VQueue waiting
           for capacity. The ratio compares backlogged limit counters with all
           concrete limit counters governed by this rule.
@@ -181,8 +181,8 @@ function CounterSummaryExplainer() {
 const counterValueStyles = tv({
   variants: {
     hasWaiters: {
-      true: 'text-amber-700',
-      false: 'text-zinc-300',
+      true: 'text-pending-strong',
+      false: 'text-faint',
     },
   },
 });
@@ -197,12 +197,12 @@ const refreshIconStyles = tv({
 });
 
 const ruleActionButtonStyles = tv({
-  base: 'flex translate-x-px items-center gap-1 rounded-r-none whitespace-nowrap text-gray-600',
+  base: 'flex translate-x-px items-center gap-1 rounded-r-none whitespace-nowrap text-tertiary',
   variants: {
     alwaysVisible: {
       true: 'rounded-l-lg px-2 py-0.5 [font-size:inherit] [line-height:inherit] max-md:hidden',
       false:
-        'invisible absolute right-full z-2 rounded-l-md px-2.5 py-0.5 text-0.5xs drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
+        'invisible absolute right-full z-2 rounded-l-md px-2.5 py-0.5 text-0.5xs drop-shadow-[-20px_2px_4px_--theme(--background-color-muted/50%)] group-hover:visible',
     },
   },
   defaultVariants: { alwaysVisible: false },
@@ -245,10 +245,10 @@ function CounterSummaryCell({
       aria-label={`${label}. View matching limit counters`}
       className="flex w-full max-w-48 items-center gap-2 no-underline"
     >
-      <div className="flex h-3 min-w-0 flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5">
+      <div className="flex h-3 min-w-0 flex-1 overflow-hidden rounded-lg border border-default bg-muted p-0.5">
         {affected > 0 && (
           <div
-            className="h-full rounded-full bg-amber-200 outline-1 outline-amber-300 transition-all"
+            className="h-full rounded-full bg-pending-emphasis outline-1 outline-pending-strong transition-all"
             style={{ width: `${percentage}%`, minWidth: 2 }}
           />
         )}
@@ -260,12 +260,12 @@ function CounterSummaryCell({
         <span className={counterValueStyles({ hasWaiters: affected > 0 })}>
           {formatNumber(affected)}
         </span>
-        <span className="text-zinc-300">/</span>
-        <span className="text-zinc-500">{formatNumber(total)}</span>
+        <span className="text-faint">/</span>
+        <span className="text-muted">{formatNumber(total)}</span>
       </span>
       <Icon
         name={IconName.ChevronRight}
-        className="mr-1 h-3 w-3 shrink-0 text-zinc-400"
+        className="mr-1 h-3 w-3 shrink-0 text-subtle"
       />
     </Link>
   );
@@ -392,7 +392,7 @@ function renderRuleCell(
               {row.description}
             </TruncateWithTooltip>
           ) : (
-            <span className="text-zinc-400">No description</span>
+            <span className="text-subtle">No description</span>
           )}
         </Cell>
       );
@@ -458,7 +458,7 @@ function RuleTextField({
         className={
           hideLabel
             ? 'sr-only'
-            : 'text-sm font-medium text-gray-700 data-[disabled]:text-gray-400'
+            : 'text-sm font-medium text-secondary data-[disabled]:text-subtle'
         }
       >
         {label}
@@ -467,12 +467,12 @@ function RuleTextField({
         placeholder={placeholder}
         min={type === 'number' ? 1 : undefined}
         spellCheck={false}
-        className="mt-0 h-9 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-100 px-2.5 py-1.5 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] outline-offset-2 placeholder:text-gray-500/70 invalid:border-red-500 invalid:bg-red-50 read-only:text-gray-600 focus:border-gray-200 focus:bg-white focus:ring-0 focus:outline-2 focus:outline-blue-600 disabled:border-gray-100 disabled:text-gray-400 disabled:shadow-none disabled:placeholder:text-gray-300 [&[readonly]]:bg-gray-100"
+        className="mt-0 h-9 w-full min-w-0 rounded-lg border border-default bg-muted px-2.5 py-1.5 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] outline-offset-2 placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-subtle read-only:text-tertiary focus:border-default focus:bg-surface focus:ring-0 focus:outline-2 focus:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint [&[readonly]]:bg-muted"
       />
       {description && (
-        <span className="text-2xs leading-4 text-gray-500">{description}</span>
+        <span className="text-2xs leading-4 text-muted">{description}</span>
       )}
-      <FieldError className="text-2xs leading-4 text-red-600" />
+      <FieldError className="text-2xs leading-4 text-danger" />
     </TextField>
   );
 }
@@ -545,18 +545,18 @@ export function RuleFormDialog({
           onSubmit={submit}
         >
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-xs">
-              <Icon name={IconName.Filters} className="h-5 w-5 text-blue-500" />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-default bg-surface shadow-xs">
+              <Icon name={IconName.Filters} className="h-5 w-5 text-accent" />
             </span>
             <div className="min-w-0 flex-1">
               <Heading
                 slot="title"
                 level={2}
-                className="text-lg font-semibold text-gray-900"
+                className="text-lg font-semibold text-primary"
               >
                 {isEditing ? 'Edit rule' : 'Create rule'}
               </Heading>
-              <p className="text-sm leading-5 text-gray-500">
+              <p className="text-sm leading-5 text-muted">
                 {isEditing
                   ? 'Update this rule’s capacity and settings. Its limit counter level cannot be changed.'
                   : 'Choose the limit counter level, then define which values it matches.'}
@@ -564,27 +564,27 @@ export function RuleFormDialog({
             </div>
           </div>
 
-          <section className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50/50 p-3.5">
+          <section className="flex flex-col gap-3 rounded-xl border border-default bg-subtle/50 p-3.5">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-1">
-                  <h3 className="text-sm font-semibold text-zinc-800">
+                  <h3 className="text-sm font-semibold text-primary">
                     Rule pattern
                   </h3>
                   <RuleLevelExplainer
                     label=""
                     activeLevel={ruleLevel}
-                    className="text-[0.6875rem] text-zinc-500"
+                    className="text-[0.6875rem] text-muted"
                   />
                 </div>
-                <p className="text-2xs leading-4 text-zinc-500">
+                <p className="text-2xs leading-4 text-muted">
                   Start with a scope, then optionally add Level 1 and Level 2 to
                   narrow the limit.
                 </p>
               </div>
               {ruleLevel && (
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <span className="text-2xs text-zinc-400">Rule level</span>
+                  <span className="text-2xs text-subtle">Rule level</span>
                   <RuleLevelBadge level={ruleLevel} />
                 </div>
               )}
@@ -595,13 +595,13 @@ export function RuleFormDialog({
               disabled={isEditing}
             />
             {isEditing && (
-              <p className="text-2xs text-zinc-400">
+              <p className="text-2xs text-subtle">
                 The hierarchy and rule level cannot be changed after creation.
               </p>
             )}
           </section>
 
-          <section className="flex flex-col gap-3 border-t border-gray-100 pt-5">
+          <section className="flex flex-col gap-3 border-t border-muted pt-5">
             <div className="grid gap-4 md:grid-cols-[11rem_minmax(0,1fr)]">
               <RuleTextField
                 label="Concurrency"
@@ -624,7 +624,7 @@ export function RuleFormDialog({
             <div>
               <div
                 slot="title"
-                className="mb-2 text-sm font-medium text-gray-700"
+                className="mb-2 text-sm font-medium text-secondary"
               >
                 Enabled
               </div>
@@ -638,7 +638,7 @@ export function RuleFormDialog({
               >
                 <span
                   slot="description"
-                  className="block text-0.5xs leading-5 text-gray-500"
+                  className="block text-0.5xs leading-5 text-muted"
                 >
                   Enforce this rule.
                 </span>
@@ -691,7 +691,7 @@ export function DeleteRuleDialog({
       onOpenChange={onOpenChange}
       title="Delete limit rule"
       icon={IconName.Trash}
-      iconClassName="text-red-500"
+      iconClassName="text-danger"
       description={
         <span className="flex flex-col items-start gap-1.5">
           <span className="flex items-center gap-1.5">
@@ -929,7 +929,7 @@ function Component() {
             inputPrefix={
               <Icon
                 name={IconName.Search}
-                className="h-4 w-4 shrink-0 text-gray-400"
+                className="h-4 w-4 shrink-0 text-subtle"
               />
             }
             tagsPlacement="outside"
@@ -938,10 +938,10 @@ function Component() {
             tagGroupClassName="min-w-0 flex-nowrap"
             showSectionTitle={false}
             popoverPlacement="bottom start"
-            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-white/95 p-1"
-            optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-blue-50 data-[focused]:text-blue-900 hover:bg-blue-50 hover:text-blue-900"
-            className="min-h-6.5 w-full justify-end text-gray-800"
-            inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-white/70 shadow-xs hover:bg-white [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-gray-500/75"
+            popoverClassName="w-80 min-w-80 max-w-[calc(100vw-2rem)] bg-surface/95 p-1"
+            optionClassName="gap-2 px-2.5 py-1.5 data-[focused]:bg-accent-subtle data-[focused]:text-accent-strong hover:bg-accent-subtle hover:text-accent-strong"
+            className="min-h-6.5 w-full justify-end text-primary"
+            inputClassName="min-h-6.5 max-w-[38ch] flex-[0_1_38ch] bg-surface/70 shadow-xs hover:bg-surface [&_input]:h-6 [&_input]:min-h-6 [&_input]:py-0.5 [&_input]:placeholder:text-subtle"
           >
             {(props) => (
               <FilterChip

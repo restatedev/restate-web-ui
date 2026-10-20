@@ -45,10 +45,10 @@ export const FLOW_CONTROL_RULE_LEVEL_META: Record<
 const RULE_LEVELS: FlowControlRuleLevel[] = ['scope', 'level1', 'level2'];
 
 const rowStyles = tv({
-  base: 'grid grid-cols-[3.5rem_minmax(0,1fr)] gap-4 border-b border-zinc-600/70 px-2.5 py-2 last:border-b-0',
+  base: 'grid grid-cols-[3.5rem_minmax(0,1fr)] gap-4 border-b border-neutral-strong/70 px-2.5 py-2 last:border-b-0',
   variants: {
     active: {
-      true: 'bg-zinc-700/70',
+      true: 'bg-inverse-muted/70',
       false: 'bg-transparent',
     },
   },
@@ -70,10 +70,10 @@ export function FlowControlRuleLevelExplainer({
       ariaLabel="Explain flow-control rule levels"
       description={
         <div className="w-80">
-          <p className="text-xs leading-4 text-zinc-400">
+          <p className="text-xs leading-4 text-subtle">
             Pattern depth chooses the limit counter this rule limits.
           </p>
-          <div className="mt-2 overflow-hidden rounded-lg border border-zinc-600/70">
+          <div className="mt-2 overflow-hidden rounded-lg border border-neutral-strong/70">
             {RULE_LEVELS.map((level) => {
               const meta = FLOW_CONTROL_RULE_LEVEL_META[level];
               return (
@@ -82,26 +82,26 @@ export function FlowControlRuleLevelExplainer({
                   className={rowStyles({ active: level === activeLevel })}
                 >
                   <div>
-                    <div className="text-xs font-semibold text-zinc-100">
+                    <div className="text-xs font-semibold text-inverse">
                       {meta.shortLabel}
                     </div>
-                    <code className="text-[0.5625rem] text-zinc-400">
+                    <code className="text-[0.5625rem] text-subtle">
                       {meta.pattern}
                     </code>
                   </div>
-                  <p className="text-xs leading-4 text-zinc-300">
+                  <p className="text-xs leading-4 text-faint">
                     {meta.description}
                   </p>
                 </div>
               );
             })}
           </div>
-          <p className="mt-2.5 text-xs leading-4 text-zinc-300">
+          <p className="mt-2.5 text-xs leading-4 text-faint">
             A rule defines only its own level. An invocation must have capacity
             at every configured matching level it touches; at L2, that can mean
             Scope, L1, and L2 simultaneously.
           </p>
-          <p className="mt-2 text-xs leading-4 text-zinc-400">
+          <p className="mt-2 text-xs leading-4 text-subtle">
             At the same level, the most specific matching pattern wins.
           </p>
         </div>

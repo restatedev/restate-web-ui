@@ -1,0 +1,907 @@
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme static {
+  --background-color-canvas: var(--color-gray-100);
+  --background-color-surface: var(--color-white);
+  --background-color-subtle: var(--color-gray-50);
+  --background-color-overlay: var(--background-color-canvas);
+  --background-color-sunken: color-mix(
+    in srgb,
+    var(--background-color-emphasis) 50%,
+    var(--background-color-canvas)
+  );
+  --background-color-raised: var(--background-color-surface);
+  --background-color-hatch: color-mix(
+    in oklab,
+    var(--background-color-surface) 28%,
+    transparent
+  );
+  --background-color-hatch-pending: var(--background-color-hatch);
+  --background-color-queued-start: var(--background-color-emphasis);
+  --background-color-queued-mid: var(--background-color-muted);
+  --background-color-queued: var(--background-color-pending-muted);
+  --background-color-queued-end: var(--background-color-pending-emphasis);
+  --background-color-muted: var(--color-gray-100);
+  --background-color-emphasis: var(--color-gray-200);
+  --background-color-strong: var(--color-gray-300);
+  --background-color-neutral: var(--color-gray-400);
+  --background-color-neutral-strong: var(--color-gray-500);
+  --background-color-tint-subtle: --alpha(var(--color-black) / 3%);
+  --background-color-tint: --alpha(var(--color-black) / 5%);
+  --background-color-tint-strong: --alpha(var(--color-black) / 10%);
+  --background-color-backdrop: --alpha(var(--color-gray-800) / 30%);
+  --background-color-inverse: var(--color-zinc-800);
+  --background-color-inverse-muted: var(--color-zinc-700);
+  --background-color-inverse-emphasis: var(--color-zinc-600);
+  --background-color-inverse-strong: var(--color-zinc-500);
+  --background-color-inverse-tint-subtle: --alpha(var(--color-white) / 10%);
+  --background-color-inverse-tint: --alpha(var(--color-white) / 20%);
+  --background-color-inverse-tint-strong: --alpha(var(--color-white) / 30%);
+  --background-color-highlight: var(--color-white);
+  --background-color-shade: var(--color-black);
+
+  --background-color-accent-subtle: var(--color-blue-50);
+  --background-color-accent-muted: var(--color-blue-100);
+  --background-color-accent-emphasis: var(--color-blue-200);
+  --background-color-accent-strong: var(--color-blue-300);
+  --background-color-accent-vivid: var(--color-blue-400);
+  --background-color-accent: var(--color-blue-600);
+  --background-color-accent-hover: var(--color-blue-700);
+  --background-color-accent-pressed: var(--color-blue-800);
+
+  --background-color-info-subtle: var(--color-blue-50);
+  --background-color-info-muted: var(--color-blue-100);
+  --background-color-info-emphasis: var(--color-blue-200);
+  --background-color-info-strong: var(--color-blue-300);
+  --background-color-info-vivid: var(--color-blue-400);
+  --background-color-info: var(--color-blue-500);
+
+  --background-color-success-subtle: var(--color-green-50);
+  --background-color-success-muted: var(--color-green-100);
+  --background-color-success-emphasis: var(--color-green-200);
+  --background-color-success-strong: var(--color-green-300);
+  --background-color-success-vivid: var(--color-green-400);
+  --background-color-success: var(--color-green-500);
+
+  --background-color-warning-subtle: var(--color-orange-50);
+  --background-color-warning-muted: var(--color-orange-100);
+  --background-color-warning-emphasis: var(--color-orange-200);
+  --background-color-warning-strong: var(--color-orange-300);
+  --background-color-warning-vivid: var(--color-orange-400);
+  --background-color-warning: var(--color-orange-500);
+
+  --background-color-danger-subtle: var(--color-red-50);
+  --background-color-danger-muted: var(--color-red-100);
+  --background-color-danger-emphasis: var(--color-red-200);
+  --background-color-danger-strong: var(--color-red-300);
+  --background-color-danger-vivid: var(--color-red-400);
+  --background-color-danger: var(--color-red-600);
+  --background-color-danger-hover: var(--color-red-700);
+  --background-color-danger-pressed: var(--color-red-800);
+
+  --background-color-pending-subtle: var(--color-amber-50);
+  --background-color-pending-muted: var(--color-amber-100);
+  --background-color-pending-emphasis: var(--color-amber-200);
+  --background-color-pending-strong: var(--color-amber-300);
+  --background-color-pending-vivid: var(--color-amber-400);
+  --background-color-pending: var(--color-amber-500);
+
+  --background-color-category-1-emphasis: var(--color-blue-200);
+  --background-color-category-1: var(--color-blue-500);
+  --background-color-category-2-emphasis: var(--color-violet-300);
+  --background-color-category-2: var(--color-violet-500);
+  --background-color-category-3-emphasis: var(--color-amber-300);
+  --background-color-category-3: var(--color-amber-500);
+  --background-color-category-4-emphasis: var(--color-emerald-200);
+  --background-color-category-4: var(--color-emerald-500);
+  --background-color-category-5-emphasis: var(--color-pink-200);
+  --background-color-category-5: var(--color-pink-500);
+  --background-color-category-6-emphasis: var(--color-slate-300);
+  --background-color-category-6: var(--color-slate-500);
+  --background-color-category-7-emphasis: var(--color-orange-200);
+  --background-color-category-7: var(--color-orange-500);
+
+  --text-color-primary: var(--color-gray-900);
+  --text-color-secondary: var(--color-gray-700);
+  --text-color-tertiary: var(--color-gray-600);
+  --text-color-muted: var(--color-gray-500);
+  --text-color-subtle: var(--color-gray-400);
+  --text-color-faint: var(--color-gray-300);
+  --text-color-inverse: var(--color-white);
+  --text-color-inverse-secondary: var(--color-gray-200);
+  --text-color-inverse-tertiary: var(--color-gray-300);
+  --text-color-inverse-muted: var(--color-zinc-400);
+  --text-color-inverse-subtle: var(--color-zinc-500);
+
+  --text-color-accent-subtle: var(--color-blue-400);
+  --text-color-accent: var(--color-blue-600);
+  --text-color-accent-strong: var(--color-blue-800);
+  --text-color-on-accent: var(--color-blue-100);
+  --text-color-info-subtle: var(--color-blue-400);
+  --text-color-info: var(--color-blue-600);
+  --text-color-info-strong: var(--color-blue-700);
+  --text-color-on-info: var(--color-blue-100);
+  --text-color-success-subtle: var(--color-green-400);
+  --text-color-success: var(--color-green-600);
+  --text-color-success-strong: var(--color-green-700);
+  --text-color-on-success: var(--color-green-50);
+  --text-color-warning-subtle: var(--color-orange-400);
+  --text-color-warning: var(--color-orange-600);
+  --text-color-warning-strong: var(--color-orange-700);
+  --text-color-on-warning: var(--color-orange-100);
+  --text-color-danger-subtle: var(--color-red-400);
+  --text-color-danger: var(--color-red-600);
+  --text-color-danger-strong: var(--color-red-700);
+  --text-color-on-danger: var(--color-red-50);
+  --text-color-pending-subtle: var(--color-amber-400);
+  --text-color-pending: var(--color-amber-600);
+  --text-color-pending-strong: var(--color-amber-800);
+  --text-color-on-pending: var(--color-amber-50);
+
+  --border-color-muted: var(--color-gray-100);
+  --border-color-default: var(--color-gray-200);
+  --border-color-strong: var(--color-gray-300);
+  --border-color-neutral: var(--color-gray-400);
+  --border-color-neutral-strong: var(--color-gray-600);
+  --border-color-tint-subtle: --alpha(var(--color-black) / 5%);
+  --border-color-tint: --alpha(var(--color-black) / 10%);
+  --border-color-surface: var(--color-white);
+  --border-color-queued: var(--background-color-pending-vivid);
+  --border-color-ripple: color-mix(
+    in oklab,
+    var(--background-color-highlight) 35%,
+    transparent
+  );
+  --border-color-inverse: --alpha(var(--color-zinc-900) / 80%);
+  --border-color-inverse-tint: --alpha(var(--color-white) / 10%);
+
+  --border-color-accent: var(--color-blue-200);
+  --border-color-accent-strong: var(--color-blue-500);
+  --border-color-info: var(--color-blue-200);
+  --border-color-info-strong: var(--color-blue-600);
+  --border-color-success: var(--color-green-200);
+  --border-color-success-strong: var(--color-green-600);
+  --border-color-warning: var(--color-orange-200);
+  --border-color-warning-strong: var(--color-orange-600);
+  --border-color-danger: var(--color-red-200);
+  --border-color-danger-strong: var(--color-red-600);
+  --border-color-pending: var(--color-amber-200);
+  --border-color-pending-strong: var(--color-amber-600);
+
+  --fill-canvas: var(--background-color-canvas);
+  --fill-surface: var(--background-color-surface);
+  --fill-muted: var(--background-color-muted);
+  --fill-emphasis: var(--background-color-emphasis);
+  --fill-neutral: var(--background-color-neutral);
+  --fill-neutral-strong: var(--background-color-neutral-strong);
+  --fill-inverse: var(--background-color-inverse);
+  --fill-accent-muted: var(--background-color-accent-muted);
+  --fill-accent-emphasis: var(--background-color-accent-emphasis);
+  --fill-accent-strong: var(--background-color-accent-strong);
+  --fill-accent-vivid: var(--background-color-accent-vivid);
+  --fill-accent: var(--text-color-accent);
+  --fill-info-muted: var(--background-color-info-muted);
+  --fill-info-emphasis: var(--background-color-info-emphasis);
+  --fill-info-strong: var(--background-color-info-strong);
+  --fill-info-vivid: var(--background-color-info-vivid);
+  --fill-info: var(--text-color-info);
+  --fill-success-muted: var(--background-color-success-muted);
+  --fill-success-emphasis: var(--background-color-success-emphasis);
+  --fill-success-strong: var(--background-color-success-strong);
+  --fill-success-vivid: var(--background-color-success-vivid);
+  --fill-success: var(--text-color-success);
+  --fill-warning-muted: var(--background-color-warning-muted);
+  --fill-warning-emphasis: var(--background-color-warning-emphasis);
+  --fill-warning-strong: var(--background-color-warning-strong);
+  --fill-warning-vivid: var(--background-color-warning-vivid);
+  --fill-warning: var(--text-color-warning);
+  --fill-danger-muted: var(--background-color-danger-muted);
+  --fill-danger-emphasis: var(--background-color-danger-emphasis);
+  --fill-danger-strong: var(--background-color-danger-strong);
+  --fill-danger-vivid: var(--background-color-danger-vivid);
+  --fill-danger: var(--text-color-danger);
+  --fill-pending-muted: var(--background-color-pending-muted);
+  --fill-pending-emphasis: var(--background-color-pending-emphasis);
+  --fill-pending-strong: var(--background-color-pending-strong);
+  --fill-pending-vivid: var(--background-color-pending-vivid);
+  --fill-pending: var(--text-color-pending);
+
+  --stroke-strong: var(--border-color-strong);
+  --stroke-surface: var(--border-color-surface);
+  --stroke-inverse: var(--border-color-inverse);
+  --stroke-accent-strong: var(--background-color-accent-strong);
+  --stroke-accent-vivid: var(--background-color-accent-vivid);
+  --stroke-accent: var(--text-color-accent);
+  --stroke-info-strong: var(--background-color-info-strong);
+  --stroke-info-vivid: var(--background-color-info-vivid);
+  --stroke-info: var(--text-color-info);
+  --stroke-success-strong: var(--background-color-success-strong);
+  --stroke-success-vivid: var(--background-color-success-vivid);
+  --stroke-success: var(--text-color-success);
+  --stroke-warning-strong: var(--background-color-warning-strong);
+  --stroke-warning-vivid: var(--background-color-warning-vivid);
+  --stroke-warning: var(--text-color-warning);
+  --stroke-danger-strong: var(--background-color-danger-strong);
+  --stroke-danger-vivid: var(--background-color-danger-vivid);
+  --stroke-danger: var(--text-color-danger);
+  --stroke-pending-strong: var(--background-color-pending-strong);
+  --stroke-pending-vivid: var(--background-color-pending-vivid);
+  --stroke-pending: var(--text-color-pending);
+
+  --ring-color-focus: var(--color-blue-500);
+  --ring-color-default: var(--border-color-default);
+  --ring-color-strong: var(--border-color-strong);
+  --ring-color-tint-subtle: var(--border-color-tint-subtle);
+  --ring-color-tint: var(--border-color-tint);
+  --ring-color-surface: var(--border-color-surface);
+  --ring-offset-color-surface: var(--background-color-surface);
+  --ring-color-accent-muted: var(--background-color-accent-muted);
+  --ring-color-accent-emphasis: var(--background-color-accent-emphasis);
+  --ring-color-accent: var(--text-color-accent);
+  --ring-color-info-muted: var(--background-color-info-muted);
+  --ring-color-info-emphasis: var(--background-color-info-emphasis);
+  --ring-color-info: var(--text-color-info);
+  --ring-color-success-muted: var(--background-color-success-muted);
+  --ring-color-success-emphasis: var(--background-color-success-emphasis);
+  --ring-color-success: var(--text-color-success);
+  --ring-color-warning-muted: var(--background-color-warning-muted);
+  --ring-color-warning-emphasis: var(--background-color-warning-emphasis);
+  --ring-color-warning: var(--text-color-warning);
+  --ring-color-danger-muted: var(--background-color-danger-muted);
+  --ring-color-danger-emphasis: var(--background-color-danger-emphasis);
+  --ring-color-danger: var(--text-color-danger);
+  --ring-color-pending-muted: var(--background-color-pending-muted);
+  --ring-color-pending-emphasis: var(--background-color-pending-emphasis);
+  --ring-color-pending: var(--text-color-pending);
+
+  --outline-color-focus: var(--color-blue-600);
+  --outline-color-accent-strong: var(--background-color-accent-strong);
+  --outline-color-accent-vivid: var(--background-color-accent-vivid);
+  --outline-color-info-strong: var(--background-color-info-strong);
+  --outline-color-info-vivid: var(--background-color-info-vivid);
+  --outline-color-success-strong: var(--background-color-success-strong);
+  --outline-color-success-vivid: var(--background-color-success-vivid);
+  --outline-color-warning-strong: var(--background-color-warning-strong);
+  --outline-color-warning-vivid: var(--background-color-warning-vivid);
+  --outline-color-danger-strong: var(--background-color-danger-strong);
+  --outline-color-danger-vivid: var(--background-color-danger-vivid);
+  --outline-color-pending-strong: var(--background-color-pending-strong);
+  --outline-color-pending-vivid: var(--background-color-pending-vivid);
+
+  --text-decoration-color-primary: var(--text-color-primary);
+  --text-decoration-color-secondary: var(--text-color-secondary);
+  --text-decoration-color-tertiary: var(--text-color-tertiary);
+  --text-decoration-color-muted: var(--text-color-muted);
+  --text-decoration-color-subtle: var(--text-color-subtle);
+  --text-decoration-color-faint: var(--text-color-faint);
+  --text-decoration-color-accent-subtle: var(--text-color-accent-subtle);
+  --text-decoration-color-accent: var(--text-color-accent);
+  --text-decoration-color-accent-strong: var(--text-color-accent-strong);
+  --text-decoration-color-info-subtle: var(--text-color-info-subtle);
+  --text-decoration-color-info: var(--text-color-info);
+  --text-decoration-color-info-strong: var(--text-color-info-strong);
+  --text-decoration-color-success-subtle: var(--text-color-success-subtle);
+  --text-decoration-color-success: var(--text-color-success);
+  --text-decoration-color-success-strong: var(--text-color-success-strong);
+  --text-decoration-color-warning-subtle: var(--text-color-warning-subtle);
+  --text-decoration-color-warning: var(--text-color-warning);
+  --text-decoration-color-warning-strong: var(--text-color-warning-strong);
+  --text-decoration-color-danger-subtle: var(--text-color-danger-subtle);
+  --text-decoration-color-danger: var(--text-color-danger);
+  --text-decoration-color-danger-strong: var(--text-color-danger-strong);
+  --text-decoration-color-pending-subtle: var(--text-color-pending-subtle);
+  --text-decoration-color-pending: var(--text-color-pending);
+  --text-decoration-color-pending-strong: var(--text-color-pending-strong);
+
+  --text-color-syntax-key: var(--color-blue-800);
+  --text-color-syntax-string: var(--color-red-800);
+  --text-color-syntax-number: var(--color-green-700);
+  --text-color-syntax-keyword: var(--color-blue-700);
+  --text-color-syntax-punctuation: var(--text-color-primary);
+  --text-color-syntax-comment: var(--text-color-muted);
+
+  --box-shadow-color-default: var(--color-zinc-800);
+  --box-shadow-color-highlight: var(--background-color-highlight);
+  --box-shadow-color-edge: var(--background-color-surface);
+  --box-shadow-color-inverse-edge: var(--background-color-inverse-strong);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --mix-blend-tint: multiply;
+    --mix-blend-burn: color-burn;
+    --mix-blend-tone: luminosity;
+    --raised-subtle: var(--background-color-subtle);
+    --raised-muted: var(--background-color-muted);
+    --raised-on-tint: var(--background-color-raised);
+    --raised-on-tint-subtle: var(--raised-subtle);
+    --raised-on-tint-muted: var(--raised-muted);
+    --queued-swatch-start: var(--background-color-queued-start);
+    --queued-swatch-mid: var(--background-color-queued-mid);
+    --queued-swatch: var(--background-color-queued);
+    --queued-swatch-end: var(--background-color-queued-end);
+    --lens-fill: color-mix(
+      in oklab,
+      var(--background-color-raised) 50%,
+      transparent
+    );
+    --lens-shadow:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 20%,
+          transparent
+        ),
+      0 1px 3px 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 8%,
+          transparent
+        );
+    --lens-shadow-hover:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 30%,
+          transparent
+        ),
+      0 1px 5px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 10%,
+          transparent
+        );
+    --lens-shadow-active:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 40%,
+          transparent
+        ),
+      0 2px 6px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 12%,
+          transparent
+        );
+    --overlay-edge: var(--border-color-tint);
+    --overlay-shadow:
+      0 10px 15px -3px --alpha(var(--color-black) / 10%),
+      0 4px 6px -4px --alpha(var(--color-black) / 10%);
+    --sheen-strength: 100%;
+    --sheen: color-mix(
+      in oklab,
+      var(--background-color-surface) var(--sheen-strength),
+      var(--background-color-subtle)
+    );
+    --sheen-muted: color-mix(
+      in oklab,
+      var(--background-color-muted) var(--sheen-strength),
+      var(--background-color-subtle)
+    );
+    --sheen-emphasis: color-mix(
+      in oklab,
+      var(--background-color-emphasis) var(--sheen-strength),
+      var(--background-color-muted)
+    );
+    --raised-text: var(--text-color-tertiary);
+    --raised-text-muted: var(--text-color-muted);
+    --raised-text-subtle: var(--text-color-subtle);
+    --raised-text-quiet: var(--text-color-tertiary);
+    --raised-on-tint-border: var(--border-color-surface);
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+    --mix-blend-tint: screen;
+    --mix-blend-burn: color-dodge;
+    --mix-blend-tone: normal;
+
+    --background-color-canvas: oklch(0.225 0.022 264);
+    --background-color-surface: oklch(0.305 0.022 264);
+    --background-color-subtle: oklch(0.275 0.022 264);
+    --background-color-sunken: oklch(0.2 0.022 264);
+    --background-color-overlay: oklch(0.29 0.022 264);
+    --background-color-raised: oklch(0.375 0.022 264);
+    --raised-subtle: oklch(0.35 0.022 264);
+    --raised-muted: oklch(0.33 0.022 264);
+    --raised-on-tint: --alpha(var(--color-black) / 30%);
+    --raised-on-tint-subtle: --alpha(var(--color-black) / 22%);
+    --raised-on-tint-muted: --alpha(var(--color-black) / 16%);
+    --background-color-hatch: --alpha(var(--color-white) / 8%);
+    --background-color-hatch-pending: --alpha(var(--color-black) / 18%);
+    --background-color-queued-start: color-mix(
+      in oklab,
+      var(--color-yellow-400) 55%,
+      var(--background-color-surface)
+    );
+    --background-color-queued-mid: color-mix(
+      in oklab,
+      var(--color-yellow-400) 57%,
+      var(--background-color-surface)
+    );
+    --background-color-queued: color-mix(
+      in oklab,
+      var(--color-yellow-400) 63%,
+      var(--background-color-surface)
+    );
+    --background-color-queued-end: color-mix(
+      in oklab,
+      var(--color-yellow-400) 68%,
+      var(--background-color-surface)
+    );
+    --queued-swatch-start: color-mix(
+      in oklab,
+      var(--color-yellow-400) 30%,
+      transparent
+    );
+    --queued-swatch-mid: color-mix(
+      in oklab,
+      var(--color-yellow-400) 32%,
+      transparent
+    );
+    --queued-swatch: color-mix(
+      in oklab,
+      var(--color-yellow-400) 36%,
+      transparent
+    );
+    --queued-swatch-end: color-mix(
+      in oklab,
+      var(--color-yellow-400) 40%,
+      transparent
+    );
+    --lens-fill: --alpha(var(--color-white) / 10%);
+    --lens-shadow:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 55%,
+          transparent
+        ),
+      0 1px 4px 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 18%,
+          transparent
+        );
+    --lens-shadow-hover:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 70%,
+          transparent
+        ),
+      0 1px 5px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 22%,
+          transparent
+        );
+    --lens-shadow-active:
+      0 0 0 1px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 85%,
+          transparent
+        ),
+      0 2px 6px 2px
+        color-mix(
+          in oklab,
+          var(--background-color-accent-vivid) 26%,
+          transparent
+        );
+    --overlay-edge: --alpha(var(--color-white) / 12%);
+    --overlay-shadow:
+      0 10px 24px -6px --alpha(var(--color-black) / 32%),
+      0 2px 6px -2px --alpha(var(--color-black) / 24%);
+    --sheen-strength: 0%;
+    --background-color-muted: oklch(0.34 0.022 264);
+    --background-color-emphasis: oklch(0.385 0.022 264);
+    --background-color-strong: oklch(0.44 0.022 264);
+    --background-color-neutral: oklch(0.54 0.0132 264);
+    --background-color-neutral-strong: oklch(0.65 0.0132 264);
+    --background-color-tint-subtle: --alpha(var(--color-white) / 3%);
+    --background-color-tint: --alpha(var(--color-white) / 6%);
+    --background-color-tint-strong: --alpha(var(--color-white) / 10%);
+    --background-color-backdrop: --alpha(var(--color-black) / 60%);
+    --background-color-inverse: oklch(0.36 0.022 264);
+    --background-color-inverse-muted: oklch(0.41 0.022 264);
+    --background-color-inverse-emphasis: oklch(0.47 0.022 264);
+    --background-color-inverse-strong: oklch(0.53 0.0132 264);
+
+    --background-color-accent-subtle: color-mix(
+      in oklab,
+      var(--color-blue-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-muted: color-mix(
+      in oklab,
+      var(--color-blue-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-emphasis: color-mix(
+      in oklab,
+      var(--color-blue-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-strong: color-mix(
+      in oklab,
+      var(--color-blue-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-accent-vivid: var(--color-blue-500);
+    --background-color-accent: var(--color-blue-600);
+    --background-color-accent-hover: var(--color-blue-500);
+    --background-color-accent-pressed: var(--color-blue-700);
+
+    --background-color-info-subtle: color-mix(
+      in oklab,
+      var(--color-blue-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-info-muted: color-mix(
+      in oklab,
+      var(--color-blue-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-info-emphasis: color-mix(
+      in oklab,
+      var(--color-blue-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-info-strong: color-mix(
+      in oklab,
+      var(--color-blue-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-info-vivid: var(--color-blue-500);
+    --background-color-info: var(--color-blue-500);
+
+    --background-color-success-subtle: color-mix(
+      in oklab,
+      var(--color-green-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-success-muted: color-mix(
+      in oklab,
+      var(--color-green-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-success-emphasis: color-mix(
+      in oklab,
+      var(--color-green-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-success-strong: color-mix(
+      in oklab,
+      var(--color-green-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-success-vivid: var(--color-green-500);
+    --background-color-success: var(--color-green-500);
+
+    --background-color-warning-subtle: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-muted: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-emphasis: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-strong: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-warning-vivid: oklch(0.79 0.17 64);
+    --background-color-warning: oklch(0.79 0.17 64);
+
+    --background-color-danger-subtle: color-mix(
+      in oklab,
+      var(--color-red-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-muted: color-mix(
+      in oklab,
+      var(--color-red-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-emphasis: color-mix(
+      in oklab,
+      var(--color-red-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-strong: color-mix(
+      in oklab,
+      var(--color-red-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-danger-vivid: var(--color-red-500);
+    --background-color-danger: var(--color-red-600);
+    --background-color-danger-hover: var(--color-red-500);
+    --background-color-danger-pressed: var(--color-red-700);
+
+    --background-color-pending-subtle: color-mix(
+      in oklab,
+      var(--color-amber-500) 14%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-muted: color-mix(
+      in oklab,
+      var(--color-amber-500) 22%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-emphasis: color-mix(
+      in oklab,
+      var(--color-amber-500) 34%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-strong: color-mix(
+      in oklab,
+      var(--color-amber-500) 80%,
+      var(--background-color-surface)
+    );
+    --background-color-pending-vivid: var(--color-amber-500);
+    --background-color-pending: var(--color-amber-500);
+
+    --background-color-category-1-emphasis: color-mix(
+      in oklab,
+      var(--color-blue-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-1: color-mix(
+      in oklab,
+      var(--color-blue-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-2-emphasis: color-mix(
+      in oklab,
+      var(--color-violet-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-2: color-mix(
+      in oklab,
+      var(--color-violet-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-3-emphasis: color-mix(
+      in oklab,
+      var(--color-amber-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-3: color-mix(
+      in oklab,
+      var(--color-amber-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-4-emphasis: color-mix(
+      in oklab,
+      var(--color-emerald-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-4: color-mix(
+      in oklab,
+      var(--color-emerald-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-5-emphasis: color-mix(
+      in oklab,
+      var(--color-pink-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-5: color-mix(
+      in oklab,
+      var(--color-pink-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-6-emphasis: color-mix(
+      in oklab,
+      var(--color-slate-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-6: color-mix(
+      in oklab,
+      var(--color-slate-500) 85%,
+      var(--background-color-surface)
+    );
+    --background-color-category-7-emphasis: color-mix(
+      in oklab,
+      var(--color-orange-500) 40%,
+      var(--background-color-surface)
+    );
+    --background-color-category-7: color-mix(
+      in oklab,
+      var(--color-orange-500) 85%,
+      var(--background-color-surface)
+    );
+
+    --text-color-primary: oklch(0.955 0.0055 264);
+    --text-color-secondary: oklch(0.885 0.0055 264);
+    --text-color-tertiary: oklch(0.8 0.0055 264);
+    --text-color-muted: oklch(0.71 0.0055 264);
+    --text-color-subtle: oklch(0.615 0.0055 264);
+    --text-color-faint: oklch(0.5 0.0055 264);
+    --raised-text: var(--text-color-primary);
+    --raised-text-muted: var(--text-color-tertiary);
+    --raised-text-subtle: var(--text-color-muted);
+
+    --text-color-accent-subtle: oklch(
+      from var(--color-blue-400) l calc(c * 0.95) h
+    );
+    --text-color-accent: oklch(from var(--color-blue-400) l calc(c * 0.95) h);
+    --text-color-accent-strong: oklch(
+      from var(--color-blue-300) l calc(c * 0.95) h
+    );
+    --text-color-on-accent: var(--color-blue-950);
+    --text-color-info-subtle: oklch(
+      from var(--color-blue-400) l calc(c * 0.95) h
+    );
+    --text-color-info: oklch(from var(--color-blue-400) l calc(c * 0.95) h);
+    --text-color-info-strong: oklch(
+      from var(--color-blue-300) l calc(c * 0.95) h
+    );
+    --text-color-on-info: var(--color-blue-950);
+    --text-color-success-subtle: oklch(
+      from var(--color-green-400) l calc(c * 0.95) h
+    );
+    --text-color-success: oklch(from var(--color-green-400) l calc(c * 0.95) h);
+    --text-color-success-strong: oklch(
+      from var(--color-green-300) l calc(c * 0.95) h
+    );
+    --text-color-on-success: var(--color-green-950);
+    --text-color-warning-subtle: oklch(0.8 0.17 64);
+    --text-color-warning: oklch(0.8 0.17 64);
+    --text-color-warning-strong: oklch(0.86 0.145 64);
+    --text-color-on-warning: var(--color-orange-950);
+    --text-color-danger-subtle: oklch(
+      from var(--color-red-400) l calc(c * 0.95) h
+    );
+    --text-color-danger: oklch(from var(--color-red-400) l calc(c * 0.95) h);
+    --text-color-danger-strong: oklch(
+      from var(--color-red-300) l calc(c * 0.95) h
+    );
+    --text-color-on-danger: var(--color-red-950);
+    --text-color-pending-subtle: oklch(
+      from var(--color-amber-400) l calc(c * 0.95) h
+    );
+    --text-color-pending: oklch(from var(--color-amber-400) l calc(c * 0.95) h);
+    --text-color-pending-strong: oklch(
+      from var(--color-amber-400) 0.74 calc(c * 0.55) h
+    );
+    --text-color-on-pending: var(--color-amber-950);
+
+    --border-color-muted: --alpha(var(--color-white) / 3.5%);
+    --border-color-default: --alpha(var(--color-white) / 5.5%);
+    --border-color-strong: --alpha(var(--color-white) / 9%);
+    --border-color-neutral: oklch(0.55 0.0132 264);
+    --border-color-neutral-strong: oklch(0.67 0.0132 264);
+    --border-color-tint-subtle: --alpha(var(--color-white) / 4%);
+    --border-color-tint: --alpha(var(--color-white) / 7%);
+    --border-color-surface: var(--background-color-surface);
+    --raised-on-tint-border: --alpha(var(--color-white) / 9%);
+    --border-color-queued: var(--color-yellow-400);
+    --border-color-ripple: --alpha(var(--color-white) / 3%);
+    --border-color-inverse: --alpha(var(--color-white) / 6%);
+
+    --border-color-accent: color-mix(
+      in oklab,
+      var(--color-blue-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-accent-strong: var(--color-blue-500);
+    --border-color-info: color-mix(
+      in oklab,
+      var(--color-blue-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-info-strong: var(--color-blue-500);
+    --border-color-success: color-mix(
+      in oklab,
+      var(--color-green-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-success-strong: var(--color-green-500);
+    --border-color-warning: color-mix(
+      in oklab,
+      oklch(0.79 0.17 64) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-warning-strong: oklch(0.79 0.17 64);
+    --border-color-danger: color-mix(
+      in oklab,
+      var(--color-red-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-danger-strong: var(--color-red-500);
+    --border-color-pending: color-mix(
+      in oklab,
+      var(--color-amber-500) 26%,
+      var(--background-color-surface)
+    );
+    --border-color-pending-strong: var(--color-amber-500);
+
+    --text-color-syntax-key: oklch(
+      from var(--color-blue-300) l calc(c * 0.85) h
+    );
+    --text-color-syntax-string: oklch(
+      from var(--color-orange-300) l calc(c * 0.85) h
+    );
+    --text-color-syntax-number: oklch(
+      from var(--color-green-300) l calc(c * 0.85) h
+    );
+    --text-color-syntax-keyword: oklch(
+      from var(--color-blue-400) l calc(c * 0.85) h
+    );
+    --ring-color-focus: var(--color-blue-400);
+    --outline-color-focus: var(--color-blue-500);
+    --box-shadow-color-default: var(--color-black);
+    --box-shadow-color-highlight: --alpha(var(--color-white) / 30%);
+    --box-shadow-color-edge: --alpha(var(--color-white) / 2%);
+    --box-shadow-color-inverse-edge: --alpha(var(--color-white) / 6%);
+  }
+
+  html {
+    color: var(--text-color-primary);
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border-color-default, currentColor);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-color-subtle);
+  }
+}
+
+@utility mix-blend-tint {
+  mix-blend-mode: var(--mix-blend-tint);
+}
+
+@utility mix-blend-burn {
+  mix-blend-mode: var(--mix-blend-burn);
+}
+
+@utility wash-tint-subtle {
+  background-image: linear-gradient(
+    var(--background-color-tint-subtle),
+    var(--background-color-tint-subtle)
+  );
+}
+
+@utility wash-tint {
+  background-image: linear-gradient(
+    var(--background-color-tint),
+    var(--background-color-tint)
+  );
+}
+
+@utility wash-tint-strong {
+  background-image: linear-gradient(
+    var(--background-color-tint-strong),
+    var(--background-color-tint-strong)
+  );
+}
+
+@utility swatch {
+  --background-color-queued-start: var(--queued-swatch-start);
+  --background-color-queued-mid: var(--queued-swatch-mid);
+  --background-color-queued: var(--queued-swatch);
+  --background-color-queued-end: var(--queued-swatch-end);
+}
+
+@utility mix-blend-tone {
+  mix-blend-mode: var(--mix-blend-tone);
+}

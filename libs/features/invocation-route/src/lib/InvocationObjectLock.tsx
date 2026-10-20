@@ -76,7 +76,7 @@ export function InvocationObjectLockHolderTarget({
     );
   }
   return (
-    <code className="block max-w-full truncate text-2xs text-zinc-600">
+    <code className="block max-w-full truncate text-2xs text-tertiary">
       {lockHolder.id}
     </code>
   );

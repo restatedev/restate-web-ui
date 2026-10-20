@@ -40,7 +40,7 @@ const queryButtonStyles = tv({
     variant: {
       filterBar: {
         button:
-          'min-w-0 gap-[0.7ch] bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30',
+          'min-w-0 gap-[0.7ch] bg-inverse-tint px-1.5 py-1 text-xs text-inverse hover:bg-inverse-tint-strong pressed:bg-inverse-tint-strong',
         value: 'truncate',
         chevron: 'ml-2',
       },
@@ -140,7 +140,7 @@ export function Sort({
               <DropdownItem key={item} value={item}>
                 {SORT_FIELD_LABELS[item]}
                 {item === 'transitioned_at' && isTransitionSortUnavailable && (
-                  <span className="ml-2 text-xs text-gray-400">
+                  <span className="ml-2 text-xs text-subtle">
                     Not available with these filters
                   </span>
                 )}

@@ -15,7 +15,7 @@ export function RuleLevelBadge({ level }: { level: RuleLevel }) {
   return (
     <Badge
       size="sm"
-      className="shrink-0 border-blue-200 bg-blue-50 font-medium text-blue-700"
+      className="shrink-0 border-accent bg-accent-subtle font-medium text-accent"
     >
       {RULE_LEVEL_META[level].label}
     </Badge>
@@ -27,7 +27,7 @@ export function RuleLevelValue({ level }: { level: RuleLevel }) {
   return (
     <span
       title={meta.label}
-      className="text-xs font-medium text-zinc-500 tabular-nums"
+      className="text-xs font-medium text-muted tabular-nums"
     >
       {meta.shortLabel}
     </span>

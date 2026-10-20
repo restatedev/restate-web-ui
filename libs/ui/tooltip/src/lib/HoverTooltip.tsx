@@ -27,7 +27,7 @@ function markScrollSuppressed() {
 }
 
 const contentStyles = tv({
-  base: '"flex **:text-gray-200" items-start gap-4 py-0 break-all **:text-xs',
+  base: '"flex **:text-inverse-secondary" items-start gap-4 py-0 break-all **:text-xs',
 });
 
 export function HoverTooltip({

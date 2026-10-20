@@ -54,7 +54,7 @@ export function hasGithubMetadata(metadata?: Record<string, string>) {
 }
 
 const githubStyles = tv({
-  base: 'flex items-center px-1.5 py-1 text-0.5xs font-medium text-gray-500',
+  base: 'flex items-center px-1.5 py-1 text-0.5xs font-medium text-muted',
 });
 export function GithubMetadata({
   metadata,
@@ -100,7 +100,7 @@ export function GithubMetadata({
               target="_blank"
               rel="noopener noreferrer"
               variant="icon"
-              className="bg-blue-50 text-blue-600"
+              className="bg-accent-subtle text-accent"
             >
               <Icon name={IconName.GitGraph} className="h-4 w-4" />
             </Link>
@@ -113,7 +113,7 @@ export function GithubMetadata({
               target="_blank"
               rel="noopener noreferrer"
               variant="icon"
-              className="bg-blue-50 text-blue-600"
+              className="bg-accent-subtle text-accent"
             >
               <Icon name={IconName.CirclePlay} className="h-4 w-4" />
             </Link>
@@ -167,7 +167,7 @@ export function MiniGithubMetadata({
             target="_blank"
             rel="noopener noreferrer"
             variant="icon"
-            className="text-blue-600"
+            className="text-accent"
           >
             <Icon name={IconName.GitGraph} className="h-3.5 w-3.5" />
           </Link>
@@ -180,7 +180,7 @@ export function MiniGithubMetadata({
             target="_blank"
             rel="noopener noreferrer"
             variant="icon"
-            className="text-blue-600"
+            className="text-accent"
           >
             <Icon name={IconName.CirclePlay} className="h-3.5 w-3.5" />
           </Link>

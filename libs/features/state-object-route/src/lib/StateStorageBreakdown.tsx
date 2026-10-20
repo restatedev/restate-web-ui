@@ -17,64 +17,57 @@ import { getStateServiceHref } from './ServiceSelector';
 
 const MAX_VISIBLE_STORAGE_SERVICES = 10;
 
-const STORAGE_SEGMENT_COLORS = [
-  '#1d4ed8',
-  '#2f6fe1',
-  '#4488e9',
-  '#5d9ef0',
-  '#76b2f5',
-  '#91c3f8',
-  '#abd3fa',
-  '#c2e0fc',
-  '#d8ebfd',
-  '#e7f3fe',
-  '#f3f8ff',
-];
+const STORAGE_SEGMENT_COLORS = Array.from(
+  { length: 11 },
+  (_, index) =>
+    `color-mix(in oklab, var(--background-color-accent-hover) ${100 - index * 10}%, var(--background-color-accent-subtle))`,
+);
 
 const styles = tv({
   slots: {
     root: 'flex w-full flex-col items-stretch gap-2',
-    skeleton: 'h-9 w-full animate-pulse rounded-md bg-slate-200',
+    skeleton: 'h-9 w-full animate-pulse rounded-md bg-emphasis',
     empty:
-      'h-9 rounded-md border-[1.5px] border-dashed border-gray-300/70 bg-gray-200/70 shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.04)]',
+      'h-9 rounded-md border-[1.5px] border-dashed border-strong/70 bg-emphasis/70 shadow-[inset_0_1px_2px_0_--theme(--box-shadow-color-default/4%)]',
     bar: 'relative flex h-9 w-full items-stretch gap-[2.5px] py-1',
     segmentWrap:
       'h-full min-w-[6px] transition-[flex-grow] duration-300 ease-out',
     segment:
-      'relative h-full w-full rounded-md border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_1px_4px_0_rgba(0,0,0,0.15)] transition hover:brightness-[1.03]',
+      'relative h-full w-full rounded-md border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/40%),0_1px_4px_0_--theme(--box-shadow-color-default/15%)] transition hover:brightness-[1.03]',
     legend:
       'mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1',
     legendItem:
-      'flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs text-gray-500 no-underline outline-offset-2 transition',
-    legendItemLink: 'hover:bg-black/5 focus-visible:outline-2',
+      'flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs text-muted no-underline outline-offset-2 transition',
+    legendItemLink: 'hover:bg-tint focus-visible:outline-2',
     totalLegendItem:
-      'flex min-w-0 items-baseline gap-1.5 px-1.5 py-0.5 text-xs text-gray-500',
-    totalValue: 'text-base font-semibold text-gray-700 tabular-nums',
-    totalLabel: 'text-xs font-semibold text-gray-600',
-    totalMeta: 'text-xs text-gray-400',
+      'flex min-w-0 items-baseline gap-1.5 px-1.5 py-0.5 text-xs text-muted',
+    totalValue: 'text-base font-semibold text-secondary tabular-nums',
+    totalLabel: 'text-xs font-semibold text-tertiary',
+    totalMeta: 'text-xs text-subtle',
     legendSwatch:
-      'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
-    legendName: 'max-w-36 truncate text-xs font-semibold text-gray-600',
-    legendMeta: 'text-xs text-gray-400',
+      'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)]',
+    legendName: 'max-w-36 truncate text-xs font-semibold text-tertiary',
+    legendMeta: 'text-xs text-subtle',
     tooltip: 'flex min-w-64 flex-col',
-    tooltipTitle: 'text-base! leading-7 font-medium text-gray-300!',
-    tooltipMeta: 'text-sm! text-gray-400!',
-    tooltipValue: 'text-xl! text-gray-50!',
-    tooltipDivider: '-mx-3 my-2 border-t border-white/10',
+    tooltipTitle: 'text-base! leading-7 font-medium text-inverse-tertiary!',
+    tooltipMeta: 'text-sm! text-inverse-muted!',
+    tooltipValue: 'text-xl! text-inverse!',
+    tooltipDivider: '-mx-3 my-2 border-t border-inverse-tint',
     tooltipSummary:
-      '-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 text-inherit! no-underline shadow-none hover:bg-white/10',
+      '-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 text-inherit! no-underline shadow-none hover:bg-inverse-tint-subtle',
     tooltipTable: 'flex min-w-96 flex-col gap-0.5',
     tooltipHead:
-      'grid grid-cols-[minmax(0,1fr)_auto_auto_12px] gap-x-3 px-2 text-2xs! font-medium tracking-wide text-gray-400! uppercase',
+      'grid grid-cols-[minmax(0,1fr)_auto_auto_12px] gap-x-3 px-2 text-2xs! font-medium tracking-wide text-inverse-muted! uppercase',
     tooltipRow:
-      '-mx-2 grid grid-cols-[minmax(0,1fr)_auto_auto_12px] items-center gap-x-3 rounded-lg border-none bg-transparent px-2 py-1.5 text-inherit! no-underline shadow-none transition hover:bg-white/10',
-    tooltipCell: 'min-w-0 truncate text-0.5xs! text-gray-300!',
-    tooltipNumeric: 'text-right text-0.5xs! text-gray-100! tabular-nums',
-    tooltipMutedNumeric: 'text-right text-0.5xs! text-gray-300! tabular-nums',
+      '-mx-2 grid grid-cols-[minmax(0,1fr)_auto_auto_12px] items-center gap-x-3 rounded-lg border-none bg-transparent px-2 py-1.5 text-inherit! no-underline shadow-none transition hover:bg-inverse-tint-subtle',
+    tooltipCell: 'min-w-0 truncate text-0.5xs! text-inverse-tertiary!',
+    tooltipNumeric: 'text-right text-0.5xs! text-inverse! tabular-nums',
+    tooltipMutedNumeric:
+      'text-right text-0.5xs! text-inverse-tertiary! tabular-nums',
     popoverContent:
       'max-w-7xl [&_[role=dialog]]:bg-transparent [&_[role=dialog]]:shadow-none',
     popoverSurface:
-      'max-h-[70vh] overflow-auto rounded-xl border border-zinc-900/80 bg-zinc-800/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl',
+      'max-h-[70vh] overflow-auto rounded-xl border border-inverse bg-inverse/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] drop-shadow-xl backdrop-blur-xl',
   },
 });
 
@@ -152,7 +145,7 @@ function StorageTooltipContent({
           <span className={tooltipMeta()}>· {percentage}</span>
           <Icon
             name={IconName.ChevronRight}
-            className="ml-auto h-3.5 w-3.5 shrink-0 text-zinc-500!"
+            className="ml-auto h-3.5 w-3.5 shrink-0 text-inverse-subtle!"
           />
         </Link>
       </div>
@@ -196,7 +189,7 @@ function StorageTooltipContent({
             </span>
             <Icon
               name={IconName.ChevronRight}
-              className="h-3 w-3 shrink-0 text-zinc-500!"
+              className="h-3 w-3 shrink-0 text-inverse-subtle!"
             />
           </Link>
         ))}
@@ -304,8 +297,8 @@ export function StateStorageBreakdown() {
                   className={segment()}
                   style={{
                     backgroundColor: color,
-                    backgroundImage: `linear-gradient(to bottom, color-mix(in srgb, white 22%, ${color}), ${color})`,
-                    borderColor: `color-mix(in srgb, black 16%, ${color})`,
+                    backgroundImage: `linear-gradient(to bottom, color-mix(in srgb, var(--background-color-highlight) 22%, ${color}), ${color})`,
+                    borderColor: `color-mix(in srgb, var(--background-color-shade) 16%, ${color})`,
                   }}
                 >
                   {href && (
@@ -343,7 +336,7 @@ export function StateStorageBreakdown() {
                 className={legendSwatch()}
                 style={{
                   backgroundColor: color,
-                  borderColor: `color-mix(in srgb, black 16%, ${color})`,
+                  borderColor: `color-mix(in srgb, var(--background-color-shade) 16%, ${color})`,
                 }}
               />
               <span className={legendName()} title={entry.name}>
@@ -365,7 +358,7 @@ export function StateStorageBreakdown() {
                 {content}
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                  className="h-3.5 w-3.5 shrink-0 text-subtle"
                 />
               </Link>
             );
@@ -386,7 +379,7 @@ export function StateStorageBreakdown() {
                     {content}
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-3.5 w-3.5 shrink-0 text-gray-400"
+                      className="h-3.5 w-3.5 shrink-0 text-subtle"
                     />
                   </Button>
                 </PopoverTrigger>

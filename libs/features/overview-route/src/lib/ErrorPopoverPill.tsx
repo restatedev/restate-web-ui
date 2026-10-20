@@ -15,16 +15,16 @@ export function ErrorPopoverPill({
       <PopoverTrigger>
         <Button
           variant="secondary"
-          className="flex shrink-0 items-center gap-1.5 rounded-xl border-red-200/80 bg-red-50/80 px-3 py-1 text-xs text-red-600 shadow-none hover:bg-red-100/80"
+          className="flex shrink-0 items-center gap-1.5 rounded-xl border-danger/80 bg-danger-subtle px-3 py-1 text-xs text-danger shadow-none hover:bg-danger-muted/80"
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="h-3.5 w-3.5 fill-red-200 text-red-500"
+            className="h-3.5 w-3.5 fill-danger-emphasis text-danger"
           />
           {label}
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 text-red-400"
+            className="h-3.5 w-3.5 text-danger-subtle"
           />
         </Button>
       </PopoverTrigger>

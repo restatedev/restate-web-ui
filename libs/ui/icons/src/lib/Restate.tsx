@@ -7,7 +7,7 @@ export function Restate({ className }: { className?: string }) {
   return (
     <div className={styles({ className })}>
       <svg
-        className="absolute inset-0 fill-white/50 drop-shadow-sm"
+        className="absolute inset-0 fill-surface/50 drop-shadow-sm"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -19,7 +19,7 @@ export function Restate({ className }: { className?: string }) {
         />
       </svg>
       <svg
-        className="absolute inset-px fill-white"
+        className="absolute inset-px fill-surface"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +42,7 @@ export function Restate({ className }: { className?: string }) {
             fillRule="evenodd"
             clipRule="evenodd"
             d="M12 0C2.118 0 0 2.118 0 12C0 21.882 2.118 24 12 24C21.882 24 24 21.882 24 12C24 2.118 21.882 0 12 0ZM6.24846 7.69097C6.08657 7.92905 6 8.2103 6 8.49821V16.6582C6 16.9353 6.31282 17.0968 6.53876 16.9364L7.36274 16.3514C7.59072 16.1895 7.72616 15.9272 7.72616 15.6476V9.9758C7.72616 9.63762 8.10734 9.43989 8.3838 9.63467L11.6294 11.9213C11.7867 12.0322 11.7846 12.2662 11.6252 12.3741L10.5371 13.1113C10.139 13.381 10.0401 13.9249 10.3177 14.3175C10.5896 14.7021 11.1207 14.7956 11.5077 14.5272L13.2866 13.2931C13.6677 13.0287 13.8951 12.5943 13.8951 12.1304C13.8951 11.6756 13.6764 11.2484 13.3075 10.9825L8.03886 7.18448C7.46678 6.83496 6.72109 6.99592 6.34412 7.55029L6.24846 7.69097ZM11.7368 7.36754C11.4632 7.75457 11.5526 8.28986 11.9373 8.56688L16.3686 11.7584C16.5951 11.9215 16.6007 12.2567 16.3798 12.4273L12.7092 15.2628C12.3383 15.5494 12.2632 16.0793 12.54 16.4576C12.8264 16.8489 13.3786 16.9282 13.7635 16.6333L18.1448 13.2769C18.5145 12.9937 18.7313 12.5544 18.7313 12.0887C18.7313 11.6067 18.4992 11.1542 18.1078 10.873L12.9458 7.16477C12.5564 6.88504 12.0137 6.97607 11.7368 7.36754Z"
-            fill="white"
+            style={{ fill: 'var(--background-color-highlight)' }}
           />
           <path
             fillRule="evenodd"
@@ -52,7 +52,7 @@ export function Restate({ className }: { className?: string }) {
           />
           <path
             d="M12 0C21.882 0 24 2.118 24 12C24 21.882 21.882 24 12 24C2.118 24 0 21.882 0 12C0 2.118 2.118 0 12 0ZM12 1C9.55232 1 7.65353 1.13284 6.17285 1.46191C4.70364 1.78846 3.70752 2.29443 3.00098 3.00098C2.29443 3.70752 1.78846 4.70364 1.46191 6.17285C1.13284 7.65353 1 9.55232 1 12C1 14.4477 1.13284 16.3465 1.46191 17.8271C1.78846 19.2964 2.29443 20.2925 3.00098 20.999C3.70752 21.7056 4.70364 22.2115 6.17285 22.5381C7.65353 22.8672 9.55232 23 12 23C14.4477 23 16.3465 22.8672 17.8271 22.5381C19.2964 22.2115 20.2925 21.7056 20.999 20.999C21.7056 20.2925 22.2115 19.2964 22.5381 17.8271C22.8672 16.3465 23 14.4477 23 12C23 9.55232 22.8672 7.65353 22.5381 6.17285C22.2115 4.70364 21.7056 3.70752 20.999 3.00098C20.2925 2.29443 19.2964 1.78846 17.8271 1.46191C16.3465 1.13284 14.4477 1 12 1Z"
-            fill="black"
+            style={{ fill: 'var(--background-color-shade)' }}
             fillOpacity="0.2"
           />
           <path
@@ -70,8 +70,14 @@ export function Restate({ className }: { className?: string }) {
             y2="24"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="#155DFC" stopOpacity="0.8" />
-            <stop offset="1" stopColor="#155DFC" />
+            <stop
+              style={{ stopColor: 'var(--background-color-accent)' }}
+              stopOpacity="0.8"
+            />
+            <stop
+              offset="1"
+              style={{ stopColor: 'var(--background-color-accent)' }}
+            />
           </linearGradient>
           <linearGradient
             id="paint1_linear_32_2"
@@ -81,8 +87,12 @@ export function Restate({ className }: { className?: string }) {
             y2="12"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="white" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
+            <stop style={{ stopColor: 'var(--background-color-highlight)' }} />
+            <stop
+              offset="1"
+              style={{ stopColor: 'var(--background-color-highlight)' }}
+              stopOpacity="0"
+            />
           </linearGradient>
           <clipPath id="clip0_32_2">
             <rect width="24" height="24" fill="white" />

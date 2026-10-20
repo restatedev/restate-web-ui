@@ -58,10 +58,10 @@ export function VirtualObjectStatsCard({
       />
       <CardRow variant="hero">
         <div className="min-w-0 flex-auto">
-          <div className="text-0.5xs font-medium text-gray-500">
+          <div className="text-0.5xs font-medium text-muted">
             Average time inboxed
           </div>
-          <div className="mt-0.5 text-2xs text-gray-400">
+          <div className="mt-0.5 text-2xs text-subtle">
             {inboxDuration
               ? `Across ${formatNumber(inboxDuration.vqueueCount)} ${inboxDuration.vqueueCount === 1 ? 'VQueue' : 'VQueues'}`
               : 'No sampled VQueues'}
@@ -72,7 +72,7 @@ export function VirtualObjectStatsCard({
         </CardHeroValue>
       </CardRow>
       <CardRow label="Inbox">
-        <span className="text-xs text-zinc-600 tabular-nums">
+        <span className="text-xs text-tertiary tabular-nums">
           {formatNumber(stats.numInbox ?? 0)} entries
         </span>
       </CardRow>
@@ -88,7 +88,7 @@ export function VirtualObjectStatsCard({
         {lastEnqueuedAt ? (
           <RelativeDate date={lastEnqueuedAt} title="Last enqueued at" />
         ) : (
-          <span className="text-xs text-zinc-600">Never</span>
+          <span className="text-xs text-tertiary">Never</span>
         )}
       </CardRow>
     </Card>

@@ -13,14 +13,14 @@ interface FormFieldGroupProps extends Pick<
 export const fieldBorderStyles = tv({
   variants: {
     isFocusWithin: {
-      false: 'border-gray-300 dark:border-zinc-500',
-      true: 'rounded-[0.625rem] border-gray-600 outline-offset-8 outline-transparent dark:border-zinc-300',
+      false: 'border-strong',
+      true: 'rounded-[0.625rem] border-neutral-strong outline-offset-8 outline-transparent',
     },
     isInvalid: {
-      true: 'border-red-600 dark:border-red-600 forced-colors:border-[Mark]',
+      true: 'border-danger-strong forced-colors:border-[Mark]',
     },
     isDisabled: {
-      true: 'border-gray-200 dark:border-zinc-700 forced-colors:border-[GrayText]',
+      true: 'border-default forced-colors:border-[GrayText]',
     },
   },
 });

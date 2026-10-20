@@ -14,11 +14,15 @@ const PARTICLES = [
 ];
 
 const STATUS_PARTICLE_COLOR: Record<FerrofluidStatus, string> = {
-  idle: 'rgba(129,140,248,0.6)',
-  active: 'rgba(129,140,248,0.7)',
-  pause: 'rgba(129,140,248,0.4)',
-  warning: 'rgba(251,191,36,0.7)',
-  danger: 'rgba(248,113,113,0.7)',
+  idle: 'color-mix(in oklab, var(--background-color-accent-vivid) 60%, transparent)',
+  active:
+    'color-mix(in oklab, var(--background-color-accent-vivid) 70%, transparent)',
+  pause:
+    'color-mix(in oklab, var(--background-color-accent-vivid) 40%, transparent)',
+  warning:
+    'color-mix(in oklab, var(--background-color-warning-vivid) 70%, transparent)',
+  danger:
+    'color-mix(in oklab, var(--background-color-danger-vivid) 70%, transparent)',
 };
 
 const INTENSITY_CONFIG: Record<
@@ -96,11 +100,11 @@ const ringStyle = tv({
   base: 'absolute top-1/2 left-1/2 h-28 w-28 -translate-1/2 rounded-full border',
   variants: {
     status: {
-      idle: 'border-indigo-300/30',
-      active: 'border-indigo-300/30',
-      pause: 'border-indigo-300/20',
-      warning: 'border-amber-300/30',
-      danger: 'border-red-300/30',
+      idle: 'border-accent/30',
+      active: 'border-accent/30',
+      pause: 'border-accent/20',
+      warning: 'border-pending/30',
+      danger: 'border-danger/30',
     },
   },
   defaultVariants: { status: 'idle' },

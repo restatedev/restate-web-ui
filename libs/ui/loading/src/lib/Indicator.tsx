@@ -12,15 +12,15 @@ const miniStyles = tv({
   variants: {
     status: {
       WARNING: {
-        container: 'text-yellow-500',
+        container: 'text-pending-subtle',
         animation: 'animate-ping',
       },
       DANGER: {
-        container: 'text-yellow-500',
+        container: 'text-pending-subtle',
         animation: 'animate-ping',
       },
-      SUCCESS: { container: 'text-green-500', animation: 'animate-ping' },
-      INFO: { container: 'text-blue-400', animation: 'animate-ping' },
+      SUCCESS: { container: 'text-success-subtle', animation: 'animate-ping' },
+      INFO: { container: 'text-info-subtle', animation: 'animate-ping' },
     },
   },
 });

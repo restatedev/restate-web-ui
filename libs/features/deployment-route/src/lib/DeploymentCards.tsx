@@ -25,19 +25,19 @@ import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 
 const valueStyles = tv({
-  base: 'text-xs text-zinc-600 tabular-nums',
+  base: 'text-xs text-tertiary tabular-nums',
 });
 
 const skeletonStyles = tv({
-  base: 'inline-block h-4 w-32 animate-pulse rounded-full bg-gray-200/70',
+  base: 'inline-block h-4 w-32 animate-pulse rounded-full bg-emphasis/70',
 });
 
 const captionStyles = tv({
-  base: 'flex min-w-0 items-center gap-1 text-2xs font-medium text-gray-400',
+  base: 'flex min-w-0 items-center gap-1 text-2xs font-medium text-subtle',
   variants: {
     tone: {
       default: '',
-      warning: 'text-orange-700',
+      warning: 'text-warning-strong',
     },
   },
   defaultVariants: { tone: 'default' },

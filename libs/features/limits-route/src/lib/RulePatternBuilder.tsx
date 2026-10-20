@@ -22,19 +22,19 @@ import { RULE_LEVEL_META, RuleLevelBadge } from './RuleLevel';
 
 const fillStyles = tv({
   slots: {
-    wrap: '-ml-1 flex-1 filter-[drop-shadow(-1px_0px_0px_var(--color-zinc-300))]',
+    wrap: '-ml-1 flex-1 filter-[drop-shadow(-1px_0px_0px_var(--border-color-strong))]',
     level1:
       'h-full flex-1 [clip-path:polygon(0_0,100%_0,calc(100%-4px)_100%,0_100%)]',
     level2: 'h-full w-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)]',
   },
   variants: {
     level1Disabled: {
-      true: { level1: 'bg-zinc-50' },
-      false: { level1: 'bg-white' },
+      true: { level1: 'bg-subtle' },
+      false: { level1: 'bg-surface' },
     },
     level2Disabled: {
-      true: { level2: 'bg-zinc-100' },
-      false: { level2: 'bg-white' },
+      true: { level2: 'bg-muted' },
+      false: { level2: 'bg-surface' },
     },
   },
 });
@@ -43,21 +43,21 @@ const segmentStyles = tv({
   slots: {
     root: 'relative flex h-full min-w-0 flex-1 items-center',
     input:
-      'h-full w-full min-w-0 border-0 bg-transparent pr-2 pl-2.5 text-left font-mono text-xs text-gray-700 outline-none placeholder:font-sans placeholder:text-gray-400 focus:ring-0 disabled:text-gray-300 disabled:placeholder:text-gray-300',
+      'h-full w-full min-w-0 border-0 bg-transparent pr-2 pl-2.5 text-left font-mono text-xs text-secondary outline-none placeholder:font-sans placeholder:text-subtle focus:ring-0 disabled:text-faint disabled:placeholder:text-faint',
   },
   variants: {
     wildcard: {
-      true: { input: 'font-semibold text-blue-600' },
+      true: { input: 'font-semibold text-accent' },
     },
   },
 });
 
 const labelStyles = tv({
-  base: 'flex min-w-0 flex-col gap-0.5 text-xs font-medium text-gray-700',
+  base: 'flex min-w-0 flex-col gap-0.5 text-xs font-medium text-secondary',
 });
 
 const fieldGroupStyles = tv({
-  base: 'relative flex h-10 min-w-0 items-stretch rounded-xl border border-gray-200 bg-white shadow-xs transition focus-within:border-gray-200 focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus-within:outline-2 focus-within:outline-blue-600',
+  base: 'relative flex h-10 min-w-0 items-stretch rounded-xl border border-default bg-surface shadow-xs transition focus-within:border-default focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus-within:outline-2 focus-within:outline-focus',
 });
 
 const ANY = '__restate_any_value__';
@@ -134,7 +134,7 @@ function PatternSegment({
       className={root()}
     >
       {icon && (
-        <span className="flex shrink-0 items-center pl-3 text-gray-400">
+        <span className="flex shrink-0 items-center pl-3 text-subtle">
           {icon}
         </span>
       )}
@@ -145,7 +145,7 @@ function PatternSegment({
           spellCheck={false}
         />
       </Group>
-      <PopoverOverlay className="w-(--trigger-width) min-w-36 bg-gray-100/90">
+      <PopoverOverlay className="w-(--trigger-width) min-w-36 bg-overlay/90">
         <ListBox className="max-h-[inherit] overflow-auto border-none p-1 outline-0">
           <ListBoxItem value={ANY}>
             <AsteriskGlyph className="h-3.5 w-3.5 shrink-0" />
@@ -193,20 +193,20 @@ export function RulePatternBuilder({
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2">
         <span className={labelStyles()}>
           <span>Scope</span>
-          <span className="text-2xs font-normal text-gray-400">
+          <span className="text-2xs font-normal text-subtle">
             Top-level limit counter · required
           </span>
         </span>
         <div className="grid min-w-0 grid-cols-2">
           <span className={labelStyles()}>
             <span>Level 1</span>
-            <span className="text-2xs font-normal text-gray-400">
+            <span className="text-2xs font-normal text-subtle">
               First limit-key value
             </span>
           </span>
           <span className={labelStyles()}>
             <span>Level 2</span>
-            <span className="text-2xs font-normal text-gray-400">
+            <span className="text-2xs font-normal text-subtle">
               Second limit-key value
             </span>
           </span>
@@ -327,8 +327,8 @@ const exampleGroupStyles = tv({
 const exampleIconStyles = tv({
   variants: {
     tone: {
-      match: 'h-3.5 w-3.5 shrink-0 text-green-600',
-      no: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+      match: 'h-3.5 w-3.5 shrink-0 text-success',
+      no: 'h-3.5 w-3.5 shrink-0 text-subtle',
     },
   },
 });
@@ -407,12 +407,12 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
     examples.matching.length > 0 || examples.notMatching.length > 0;
 
   return (
-    <div className="rounded-xl border border-sky-300/30 bg-sky-50/40 p-2.5 text-sky-800 transition-all">
+    <div className="rounded-xl border border-info/30 bg-info-subtle/40 p-2.5 text-info-strong transition-all">
       <div className="mb-2.5 flex items-center gap-1.5 px-0.5 font-sans text-sm">
         <Icon name={IconName.Eye} className="h-4 w-4" />
         Preview
         {pattern && <RuleLevelBadge level={level} />}
-        <span className="ml-auto text-0.5xs font-normal text-sky-600/80">
+        <span className="ml-auto text-0.5xs font-normal text-info-subtle">
           {pattern
             ? `Test which keys are governed at ${levelLabel}`
             : 'Complete Scope to test a key'}
@@ -421,7 +421,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
 
       <div className="flex items-center gap-2">
         <div className="relative flex min-w-0 flex-1 items-center">
-          <span className="pointer-events-none absolute left-2.5 text-2xs font-medium text-sky-500/90">
+          <span className="pointer-events-none absolute left-2.5 text-2xs font-medium text-info-subtle">
             Test
           </span>
           <input
@@ -434,12 +434,12 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
             aria-label="Test a key against this rule"
             spellCheck={false}
             disabled={!pattern}
-            className="h-8 w-full rounded-lg border border-sky-200 bg-white pr-2.5 pl-11 font-mono text-xs text-gray-700 shadow-xs transition outline-none placeholder:font-sans placeholder:text-gray-400 focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-white/50 disabled:text-gray-400 disabled:shadow-none"
+            className="h-8 w-full rounded-lg border border-info bg-surface pr-2.5 pl-11 font-mono text-xs text-secondary shadow-xs transition outline-none placeholder:font-sans placeholder:text-subtle focus:border-info-strong focus:ring-2 focus:ring-info-muted disabled:bg-surface/50 disabled:text-subtle disabled:shadow-none"
           />
         </div>
         {test.trim() &&
           (key === null ? (
-            <Badge size="sm" className="shrink-0 text-gray-400">
+            <Badge size="sm" className="shrink-0 text-subtle">
               invalid key
             </Badge>
           ) : result ? (
@@ -448,7 +448,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
               applies at {levelLabel}
             </Badge>
           ) : (
-            <Badge size="sm" className="shrink-0 gap-1 text-gray-500">
+            <Badge size="sm" className="shrink-0 gap-1 text-muted">
               <Icon name={IconName.Cancel} className="h-3 w-3" />
               no match
             </Badge>
@@ -458,10 +458,10 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
       {hasExamples && (
         <div className="relative">
           <div className={previewBodyStyles({ open: isOpen })}>
-            <div className="mt-2.5 border-t border-sky-300/25 pt-2.5" />
+            <div className="mt-2.5 border-t border-info/25 pt-2.5" />
             {examples.matching.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="w-20 shrink-0 text-2xs font-medium text-sky-700/80">
+                <span className="w-20 shrink-0 text-2xs font-medium text-info-subtle">
                   Applies
                 </span>
                 <div className={exampleGroupStyles()}>
@@ -478,7 +478,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
             )}
             {examples.notMatching.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="w-20 shrink-0 text-2xs font-medium text-sky-700/80">
+                <span className="w-20 shrink-0 text-2xs font-medium text-info-subtle">
                   Doesn't apply
                 </span>
                 <div className={exampleGroupStyles()}>
@@ -498,7 +498,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
             <Button
               variant="icon"
               type="button"
-              className="mt-1 flex w-full items-center justify-center gap-1 text-0.5xs text-sky-600"
+              className="mt-1 flex w-full items-center justify-center gap-1 text-0.5xs text-info"
               onClick={() => setOpen(true)}
             >
               <Icon name={IconName.ChevronDown} className="h-4 w-4" />

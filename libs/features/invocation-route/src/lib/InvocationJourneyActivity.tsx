@@ -42,12 +42,10 @@ const activityGroupStyles = tv({
   base: 'inline-flex h-5 items-center gap-1 rounded-md border py-0 pr-px pl-1.5 text-2xs font-medium',
   variants: {
     kind: {
-      errorBackoffs:
-        'border-dashed border-orange-300/60 bg-transparent text-orange-700/80',
-      yields:
-        'border-dashed border-zinc-300/70 bg-transparent text-zinc-500/90',
-      pauses: 'border-orange-200/60 bg-orange-50/30 text-orange-700/80',
-      suspensions: 'border-zinc-300/70 bg-zinc-100/50 text-zinc-500',
+      errorBackoffs: 'border-dashed border-warning bg-transparent text-warning',
+      yields: 'border-dashed border-strong/70 bg-transparent text-muted',
+      pauses: 'border-warning/60 bg-warning-subtle/30 text-warning',
+      suspensions: 'border-strong/70 bg-muted/50 text-muted',
     },
     countFirst: {
       true: 'pr-1.5 pl-px',
@@ -56,25 +54,25 @@ const activityGroupStyles = tv({
 });
 
 const activityButtonStyles = tv({
-  base: 'inline-flex h-4 items-center gap-0.5 rounded-sm border border-zinc-300/70 bg-white py-0 pr-0.5 pl-1 text-2xs leading-none font-medium tabular-nums shadow-xs hover:border-zinc-400/70 hover:bg-white pressed:bg-zinc-50',
+  base: 'inline-flex h-4 items-center gap-0.5 rounded-sm border border-strong/70 bg-raised py-0 pr-0.5 pl-1 text-2xs leading-none font-medium tabular-nums shadow-xs hover:border-neutral/70 pressed:wash-tint-subtle',
   variants: {
     kind: {
-      errorBackoffs: 'text-orange-800',
-      yields: 'text-zinc-600',
-      pauses: 'text-orange-800',
-      suspensions: 'text-zinc-600',
+      errorBackoffs: 'text-warning-strong',
+      yields: 'text-tertiary',
+      pauses: 'text-warning-strong',
+      suspensions: 'text-tertiary',
     },
   },
 });
 
 const activityCountStyles = tv({
-  base: 'inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded-sm border border-zinc-600/5 bg-white/70 px-1 text-2xs leading-none font-medium tabular-nums',
+  base: 'inline-flex h-3.5 min-w-3.5 shrink-0 items-center justify-center rounded-sm border border-tint-subtle bg-raised/70 px-1 text-2xs leading-none font-medium tabular-nums',
   variants: {
     kind: {
-      errorBackoffs: 'text-orange-800',
-      yields: 'text-zinc-600',
-      pauses: 'text-orange-800',
-      suspensions: 'text-zinc-600',
+      errorBackoffs: 'text-warning-strong',
+      yields: 'text-tertiary',
+      pauses: 'text-warning-strong',
+      suspensions: 'text-tertiary',
     },
   },
 });
@@ -207,7 +205,7 @@ function ActivityHistoryButton({
           <span>{visibleCount}</span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-2.5 w-2.5 shrink-0 text-gray-500 opacity-70"
+            className="h-2.5 w-2.5 shrink-0 text-muted opacity-70"
           />
         </Button>
       </PopoverTrigger>
@@ -224,17 +222,17 @@ function ActivityHistoryButton({
           className="max-h-80 overflow-y-auto"
         >
           {details?.summary && (
-            <p className="border-b border-gray-100 px-3 py-2 text-2xs leading-4 text-gray-500">
+            <p className="border-b border-muted px-3 py-2 text-2xs leading-4 text-muted">
               {details.summary}
             </p>
           )}
           {details?.items.length ? (
             <ActivityJournalRows details={details} />
           ) : (
-            <p className="px-3 py-3 text-xs text-gray-400">{emptyMessage}</p>
+            <p className="px-3 py-3 text-xs text-subtle">{emptyMessage}</p>
           )}
           {details && details.totalItems > details.items.length && (
-            <p className="border-t border-gray-100 px-3 py-2 text-2xs text-gray-400">
+            <p className="border-t border-muted px-3 py-2 text-2xs text-subtle">
               Showing the latest {formatNumber(details.items.length)} of{' '}
               {formatNumber(details.totalItems)} {details.itemNoun ?? 'events'}.
             </p>
@@ -324,7 +322,7 @@ function RetryActivityBranch({
         />
       )}
       {!countFirst && retries > 0 && backoffs > 0 && (
-        <span aria-hidden="true" className="text-gray-300">
+        <span aria-hidden="true" className="text-faint">
           ·
         </span>
       )}
@@ -400,7 +398,7 @@ export function JourneyActivityRows({
         {visible.map(({ key, label, singular, plural }, index) => (
           <Fragment key={key}>
             {!inline && (hasRetryActivity || index > 0) && (
-              <span aria-hidden="true" className="self-center text-gray-300">
+              <span aria-hidden="true" className="self-center text-faint">
                 ·
               </span>
             )}
