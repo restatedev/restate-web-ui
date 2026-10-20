@@ -437,7 +437,7 @@ export function JournalV2({
             >
               {withTimeline && (
                 <ContentPanelToolbar className="relative">
-                  <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-muted via-muted to-surface/5 pl-10">
+                  <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-canvas via-canvas to-canvas/5 pl-10">
                     <JournalDetailToggle
                       availableCategories={journalDetail.availableCategories}
                       selectedCategories={journalDetail.selectedCategories}

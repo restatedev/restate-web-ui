@@ -191,8 +191,8 @@ function DurationBar({
           minWidth: width > 0 ? 2 : 0,
           background:
             color.background ??
-            `color-mix(in srgb, ${color.fillLight} 78%, white)`,
-          boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${color.stroke} 62%, white)`,
+            `color-mix(in srgb, ${color.fillLight} 78%, var(--background-color-surface))`,
+          boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${color.stroke} 62%, var(--background-color-surface))`,
         }}
       />
     </div>
@@ -227,14 +227,16 @@ function BlockBreakdownTooltip({
   return (
     <div className="flex flex-col">
       <div className="mb-2">
-        <div className="text-base! leading-7 font-medium text-faint!">
+        <div className="text-base! leading-7 font-medium text-inverse-tertiary!">
           Blocked
         </div>
         <div className={totalStyles()}>
           <span className="!text-xl !text-inverse tabular-nums">
             {formatMilliseconds(total)}
           </span>
-          <span className="!text-sm !text-subtle">per dispatch attempt</span>
+          <span className="!text-sm !text-inverse-muted">
+            per dispatch attempt
+          </span>
         </div>
       </div>
       <div className="-mx-3 border-t border-inverse-tint" />
@@ -250,11 +252,13 @@ function BlockBreakdownTooltip({
                   'inset 0 1px 0 0 color-mix(in oklab, var(--box-shadow-color-highlight) 35%, transparent)',
               }}
             />
-            <span className="pr-2 !text-0.5xs !text-faint">{block.label}</span>
+            <span className="pr-2 !text-0.5xs !text-inverse-tertiary">
+              {block.label}
+            </span>
             <span className="ml-auto !text-0.5xs font-semibold !text-inverse tabular-nums">
               {formatMilliseconds(block.milliseconds)}
             </span>
-            <span className="!text-0.5xs font-medium !text-faint">
+            <span className="!text-0.5xs font-medium !text-inverse-tertiary">
               (
               {total > 0
                 ? formatPercentageWithoutFraction(block.milliseconds / total)
@@ -294,7 +298,7 @@ function BlockDurationBar({
             className="h-full min-w-px first:rounded-l-full last:rounded-r-full"
             style={{
               width: `${(block.milliseconds / total) * 100}%`,
-              backgroundColor: `color-mix(in srgb, ${block.fillLight} 70%, white)`,
+              backgroundColor: `color-mix(in srgb, ${block.fillLight} 70%, var(--background-color-surface))`,
               boxShadow: `inset 0 0 0 1px ${block.stroke}`,
             }}
           />

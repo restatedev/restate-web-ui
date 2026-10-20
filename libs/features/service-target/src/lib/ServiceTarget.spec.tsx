@@ -85,7 +85,7 @@ describe('ServiceTarget', () => {
     );
     expect(scopeGroup?.getAttribute('class')).toContain('mix-blend-normal!');
     expect(scopeGroup?.getAttribute('class')).toContain(
-      '[&>[data-chip]]:mix-blend-luminosity',
+      '[&>[data-chip]]:mix-blend-tone',
     );
     expect(scopeGroup?.getAttribute('class')).toContain(
       '[&>[data-chip]:not(:first-child)]:-ml-px',

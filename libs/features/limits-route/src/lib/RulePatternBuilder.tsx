@@ -145,7 +145,7 @@ function PatternSegment({
           spellCheck={false}
         />
       </Group>
-      <PopoverOverlay className="w-(--trigger-width) min-w-36 bg-canvas/90">
+      <PopoverOverlay className="w-(--trigger-width) min-w-36 bg-elevated/90">
         <ListBox className="max-h-[inherit] overflow-auto border-none p-1 outline-0">
           <ListBoxItem value={ANY}>
             <AsteriskGlyph className="h-3.5 w-3.5 shrink-0" />

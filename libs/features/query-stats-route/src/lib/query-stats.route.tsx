@@ -233,7 +233,7 @@ function QueryTooltipContent({ stat }: { stat: QueryStat }) {
   return (
     <div className="flex max-w-[64rem] flex-col gap-3 whitespace-normal">
       <div>
-        <div className="mb-1 font-sans text-2xs! font-medium text-subtle!">
+        <div className="mb-1 font-sans text-2xs! font-medium text-inverse-muted!">
           Query pattern
         </div>
         <div className="font-mono whitespace-pre">
@@ -247,10 +247,10 @@ function QueryTooltipContent({ stat }: { stat: QueryStat }) {
       {stat.max?.sql && (
         <div className="border-t border-neutral-strong/80 pt-3">
           <div className="mb-1 flex items-center gap-2 font-sans">
-            <span className="text-2xs! font-medium text-subtle!">
+            <span className="text-2xs! font-medium text-inverse-muted!">
               Slowest recorded query
             </span>
-            <span className="text-2xs! text-muted! tabular-nums">
+            <span className="text-2xs! text-inverse-subtle! tabular-nums">
               {formatMs(stat.max.durationMs)}
               {stat.max.timedOut ? ' · Timed out' : ''}
             </span>

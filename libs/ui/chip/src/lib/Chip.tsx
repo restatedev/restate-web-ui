@@ -64,7 +64,7 @@ const styles = tv({
     outer:
       'group/chip relative inline-flex max-w-full min-w-0 [--chip-border-color:var(--border-color-default)] [--chip-inner-radius:var(--chip-radius)] [--chip-inset:1px] [--chip-radius:0.5rem] [--chip-seam-color:var(--border-color-default)]',
     root: [
-      'relative z-1 inline-flex h-(--chip-height) max-w-full min-w-0 items-stretch bg-surface text-xs font-medium text-tertiary transition-all',
+      'relative z-1 inline-flex h-(--chip-height) max-w-full min-w-0 items-stretch bg-raised text-xs font-medium text-tertiary transition-all',
       SHAPED_SEAM,
       '[&>[data-chip-segment]:not(:last-child)>[data-chip-segment-inner]]:[clip-path:polygon(0_0,100%_0,calc(100%-4px)_100%,0_100%)]',
       '[&>[data-chip-segment]:not(:first-child)>[data-chip-segment-inner]]:[clip-path:polygon(4px_0,100%_0,100%_100%,0_100%)]',
@@ -161,7 +161,7 @@ const groupStyles = tv({
     variant: {
       default: '',
       header: [
-        'mix-blend-luminosity [--chip-border-color:white]',
+        'mix-blend-tone [--chip-border-color:var(--border-color-raised-on-tint)] [--text-color-muted:var(--text-color-on-raised-muted)] [--text-color-subtle:var(--text-color-on-raised-subtle)] [--text-color-tertiary:var(--text-color-on-raised)]',
         '[&_[data-chip]]:[--chip-height:1.75rem] [&_[data-chip]]:[--chip-inset:2px] [&_[data-chip]]:[--chip-radius:0.625rem] [&_[data-chip]]:[--chip-slope:5px]',
         '[&_[data-chip-root]]:text-sm',
         '[&>[data-chip]:not(:first-child)]:-ml-px [&>a:not(:first-child)]:-ml-px',

@@ -117,7 +117,7 @@ const recipes = tv({
       'w-fit rounded-md border border-danger-strong/10 bg-danger-subtle px-1.5 py-0.5 text-xs font-medium text-danger-strong',
     chip: 'w-fit rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary',
     inverse:
-      'rounded-xl border border-inverse bg-inverse/90 px-3 py-2 text-sm text-inverse-secondary shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] backdrop-blur-xl',
+      'rounded-xl border border-inverse bg-inverse/90 px-3 py-2 text-sm text-inverse-secondary shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] backdrop-blur-xl',
     skeleton: 'h-5 w-32 animate-pulse rounded-full bg-emphasis/70',
   },
 });
@@ -237,12 +237,20 @@ function Surfaces() {
     <Block
       id="surfaces"
       title="Surfaces"
-      description="Layers stack from the page canvas to raised surfaces, then quiet and inset areas. Hover the examples below to see the matching interaction states."
+      description="Layers stack from sunken rails and the page canvas to raised surfaces and floating frames, then quiet and inset areas. Hover the examples below to see the matching interaction states."
     >
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border bg-sunken p-3">
+          <Label>bg-sunken · sidebar and docked rails</Label>
+        </div>
+        <div className="rounded-2xl border bg-elevated p-3 shadow-lg">
+          <Label>bg-elevated · popover, menu and dialog frames</Label>
+        </div>
+      </div>
       <div className="rounded-2xl border bg-canvas p-3 sm:p-4">
-        <Label>bg-canvas · page and frames</Label>
+        <Label>bg-canvas · page and in-page frames</Label>
         <div className="mt-2 rounded-xl border bg-surface p-3 shadow-xs">
-          <Label>bg-surface · panels, menus, dialog bodies</Label>
+          <Label>bg-surface · panels, menu sections, dialog bodies</Label>
           <div className="mt-2 grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border bg-subtle p-3">
               <Label>bg-subtle · card bodies, quiet areas</Label>
@@ -295,7 +303,7 @@ function TextTokens() {
     <Block
       id="text"
       title="Text"
-      description="Six levels on light surfaces, four on inverse surfaces. Pick a lower level instead of adding opacity."
+      description="Six levels on regular surfaces, four on inverse surfaces. Pick a lower level instead of adding opacity."
     >
       <div className="grid gap-3 lg:grid-cols-[3fr_2fr]">
         <div className="divide-y divide-muted overflow-hidden rounded-xl border bg-surface">

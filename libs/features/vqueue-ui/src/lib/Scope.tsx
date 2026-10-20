@@ -11,11 +11,12 @@ const styles = tv({
   slots: {
     root: 'inline-flex max-w-full min-w-0 items-center align-middle',
     chip: 'max-w-full text-xs font-medium text-tertiary',
-    segment: 'max-w-[22rem] bg-muted pl-1 font-mono text-[90%] text-tertiary',
+    segment:
+      'max-w-[22rem] bg-raised-muted pl-1 font-mono text-[90%] text-tertiary',
     inline:
       'inline-flex max-w-full min-w-0 items-center gap-1 font-mono text-[90%] text-tertiary',
     label:
-      'inline-flex h-4 shrink-0 items-center rounded border border-strong/80 bg-surface/80 px-1 font-sans text-[0.5625rem] leading-none font-semibold tracking-[0.02em] text-muted',
+      'inline-flex h-4 shrink-0 items-center rounded border border-strong/80 bg-raised/80 px-1 font-sans text-[0.5625rem] leading-none font-semibold tracking-[0.02em] text-muted',
     labelText: 'inline-flex h-full items-center',
     relationship: 'h-px w-3 shrink-0 bg-strong',
     copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',

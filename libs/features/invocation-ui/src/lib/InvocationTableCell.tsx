@@ -156,7 +156,7 @@ export function InvocationHandler({
             service ? serviceHref(baseUrl, { service, handler }) : undefined
           }
           aria-label={service ? `Open ${service}/${handler}` : undefined}
-          className="max-w-full bg-surface text-tertiary italic shadow-none"
+          className="max-w-full bg-raised text-tertiary italic shadow-none"
         >
           <ChipSegment className="max-w-[18rem] px-1.5">
             <Icon

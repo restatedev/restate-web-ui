@@ -36,10 +36,10 @@ const styles = tv({
     handlerChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
     trailingChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
     chip: 'max-w-full text-xs font-medium text-tertiary',
-    service: 'min-w-0 bg-surface pl-2 font-medium text-tertiary',
-    key: 'min-w-0 bg-subtle pr-2.5 pl-2 font-mono text-[90%] text-muted',
-    handler: 'min-w-0 bg-muted pr-2 pl-1 font-medium text-muted italic',
-    trailing: 'min-w-0 bg-muted px-1.5 text-muted',
+    service: 'min-w-0 bg-raised pl-2 font-medium text-tertiary',
+    key: 'min-w-0 bg-raised-subtle pr-2.5 pl-2 font-mono text-[90%] text-muted',
+    handler: 'min-w-0 bg-raised-muted pr-2 pl-1 font-medium text-muted italic',
+    trailing: 'min-w-0 bg-raised-muted px-1.5 text-muted',
     endContent: 'ml-1 flex shrink-0 items-center',
     serviceIcon: 'h-3 w-3 shrink-0 text-subtle',
     icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
@@ -49,7 +49,7 @@ const styles = tv({
     isHeader: {
       true: {
         group:
-          'mix-blend-normal! [&>[data-chip]]:mix-blend-luminosity [&>[data-scope]]:mix-blend-normal!',
+          'mix-blend-normal! [&>[data-chip]]:mix-blend-tone [&>[data-scope]]:mix-blend-normal! [&>[data-scope]]:[--text-color-tertiary:var(--text-color-on-raised-quiet)]',
       },
       false: {},
     },

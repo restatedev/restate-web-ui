@@ -68,6 +68,11 @@ export function StatusArcEcharts({
                 shadowBlur={4}
                 shadowColor="color-mix(in oklab, var(--box-shadow-color-default) 15%, transparent)"
                 shadowOffsetY={1}
+                hatchColor={
+                  s.name === 'inbox' || s.name === 'pending'
+                    ? 'var(--background-color-hatch-pending)'
+                    : undefined
+                }
                 onSelect={() => navigate(s.href)}
               />
             ))

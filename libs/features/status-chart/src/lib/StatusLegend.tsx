@@ -98,7 +98,7 @@ const ALL_STATUSES = STATUS_ORDER.map((name) => ({
 }));
 
 const bulletStyles = tv({
-  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px]',
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] swatch',
   variants: {
     borderType: {
       dashed: 'border-dashed',

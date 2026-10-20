@@ -66,7 +66,7 @@ const styles = tv({
         close: '',
       },
       tooltip: {
-        base: 'border border-inverse bg-inverse/90 text-inverse-secondary shadow-[inset_0_0.5px_0_0_var(--background-color-inverse-strong)]! drop-shadow-xl',
+        base: 'border border-inverse bg-inverse/90 text-inverse-secondary shadow-[inset_0_0.5px_0_0_var(--box-shadow-color-inverse-edge)]! drop-shadow-xl',
         content: '',
         icon: '',
         close: '',

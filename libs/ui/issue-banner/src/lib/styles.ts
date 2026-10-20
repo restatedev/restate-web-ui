@@ -33,7 +33,7 @@ export const issueDotStyles = tv({
 });
 
 export const issueBannerStyles = tv({
-  base: 'flex items-center gap-2 rounded-xl border border-inverse bg-inverse/90 px-3 py-1 text-xs text-inverse-secondary shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] drop-shadow-xl backdrop-blur-3xl',
+  base: 'flex items-center gap-2 rounded-xl border border-inverse bg-inverse/90 px-3 py-1 text-xs text-inverse-secondary shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] drop-shadow-xl backdrop-blur-3xl',
   variants: {
     interactive: {
       true: 'hover:bg-inverse-muted/90 pressed:bg-inverse',

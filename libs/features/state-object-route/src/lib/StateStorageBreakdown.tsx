@@ -49,24 +49,25 @@ const styles = tv({
     legendName: 'max-w-36 truncate text-xs font-semibold text-tertiary',
     legendMeta: 'text-xs text-subtle',
     tooltip: 'flex min-w-64 flex-col',
-    tooltipTitle: 'text-base! leading-7 font-medium text-faint!',
-    tooltipMeta: 'text-sm! text-subtle!',
+    tooltipTitle: 'text-base! leading-7 font-medium text-inverse-tertiary!',
+    tooltipMeta: 'text-sm! text-inverse-muted!',
     tooltipValue: 'text-xl! text-inverse!',
     tooltipDivider: '-mx-3 my-2 border-t border-inverse-tint',
     tooltipSummary:
       '-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 text-inherit! no-underline shadow-none hover:bg-inverse-tint-subtle',
     tooltipTable: 'flex min-w-96 flex-col gap-0.5',
     tooltipHead:
-      'grid grid-cols-[minmax(0,1fr)_auto_auto_12px] gap-x-3 px-2 text-2xs! font-medium tracking-wide text-subtle! uppercase',
+      'grid grid-cols-[minmax(0,1fr)_auto_auto_12px] gap-x-3 px-2 text-2xs! font-medium tracking-wide text-inverse-muted! uppercase',
     tooltipRow:
       '-mx-2 grid grid-cols-[minmax(0,1fr)_auto_auto_12px] items-center gap-x-3 rounded-lg border-none bg-transparent px-2 py-1.5 text-inherit! no-underline shadow-none transition hover:bg-inverse-tint-subtle',
-    tooltipCell: 'min-w-0 truncate text-0.5xs! text-faint!',
+    tooltipCell: 'min-w-0 truncate text-0.5xs! text-inverse-tertiary!',
     tooltipNumeric: 'text-right text-0.5xs! text-inverse! tabular-nums',
-    tooltipMutedNumeric: 'text-right text-0.5xs! text-faint! tabular-nums',
+    tooltipMutedNumeric:
+      'text-right text-0.5xs! text-inverse-tertiary! tabular-nums',
     popoverContent:
       'max-w-7xl [&_[role=dialog]]:bg-transparent [&_[role=dialog]]:shadow-none',
     popoverSurface:
-      'max-h-[70vh] overflow-auto rounded-xl border border-inverse bg-inverse/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] drop-shadow-xl backdrop-blur-xl',
+      'max-h-[70vh] overflow-auto rounded-xl border border-inverse bg-inverse/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] drop-shadow-xl backdrop-blur-xl',
   },
 });
 
@@ -144,7 +145,7 @@ function StorageTooltipContent({
           <span className={tooltipMeta()}>· {percentage}</span>
           <Icon
             name={IconName.ChevronRight}
-            className="ml-auto h-3.5 w-3.5 shrink-0 text-muted!"
+            className="ml-auto h-3.5 w-3.5 shrink-0 text-inverse-subtle!"
           />
         </Link>
       </div>
@@ -188,7 +189,7 @@ function StorageTooltipContent({
             </span>
             <Icon
               name={IconName.ChevronRight}
-              className="h-3 w-3 shrink-0 text-muted!"
+              className="h-3 w-3 shrink-0 text-inverse-subtle!"
             />
           </Link>
         ))}
@@ -296,8 +297,8 @@ export function StateStorageBreakdown() {
                   className={segment()}
                   style={{
                     backgroundColor: color,
-                    backgroundImage: `linear-gradient(to bottom, color-mix(in srgb, white 22%, ${color}), ${color})`,
-                    borderColor: `color-mix(in srgb, black 16%, ${color})`,
+                    backgroundImage: `linear-gradient(to bottom, color-mix(in srgb, var(--background-color-highlight) 22%, ${color}), ${color})`,
+                    borderColor: `color-mix(in srgb, var(--background-color-shade) 16%, ${color})`,
                   }}
                 >
                   {href && (
@@ -335,7 +336,7 @@ export function StateStorageBreakdown() {
                 className={legendSwatch()}
                 style={{
                   backgroundColor: color,
-                  borderColor: `color-mix(in srgb, black 16%, ${color})`,
+                  borderColor: `color-mix(in srgb, var(--background-color-shade) 16%, ${color})`,
                 }}
               />
               <span className={legendName()} title={entry.name}>

@@ -34,7 +34,7 @@ export function OverrideBreaking() {
         >
           The new service revision conflicts with an existing revision and
           cannot be registered automatically:
-          <code className="mt-2 block rounded-lg border bg-emphasis/30 p-2 text-xs mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_--theme(--box-shadow-color-default/8%)]">
+          <code className="mt-2 block rounded-lg border bg-emphasis/30 p-2 text-xs mix-blend-tint shadow-[inset_0_0.5px_0.5px_0px_--theme(--box-shadow-color-default/8%)]">
             {error?.message?.split('[META0006]').at(-1)?.trim()}
           </code>
         </span>

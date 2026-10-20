@@ -154,6 +154,7 @@ export type SliceConfig = {
   shadowBlur?: number;
   shadowColor?: string;
   shadowOffsetY?: number;
+  hatchColor?: string;
   onSelect?: SliceSelectHandler;
 };
 

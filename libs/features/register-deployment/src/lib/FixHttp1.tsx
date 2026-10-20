@@ -7,7 +7,7 @@ import { ERROR_CODES } from '@restate/util-errors';
 import Markdown from 'react-markdown';
 
 const styles = tv({
-  base: 'mb-2 flex items-center gap-4 rounded-xl border border-inverse bg-inverse/90 py-1.5 pr-1.5 pl-2 text-sm text-inverse-secondary shadow-[inset_0_0.5px_0_0_var(--background-color-inverse-strong)] drop-shadow-xl backdrop-blur-xl',
+  base: 'mb-2 flex items-center gap-4 rounded-xl border border-inverse bg-inverse/90 py-1.5 pr-1.5 pl-2 text-sm text-inverse-secondary shadow-[inset_0_0.5px_0_0_var(--box-shadow-color-inverse-edge)] drop-shadow-xl backdrop-blur-xl',
 });
 export function FixHttp1({
   formId,

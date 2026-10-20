@@ -1,5 +1,6 @@
 import { RefObject, useEffect, useState } from 'react';
 import { tv } from '@restate/util-styles';
+import { editorColors } from '../editorColors';
 import * as monaco from './monaco';
 import { showFoldedArrayLengths } from './foldedArrayLengths';
 
@@ -16,12 +17,6 @@ function isFormattableJson(value?: string) {
 
 const styles = tv({
   base: 'h-full min-h-4 w-full max-w-full min-w-24 transform transition-all [&_.monaco-editor]:outline-hidden! [&_.monaco-editor_.native-edit-context]:caret-transparent!',
-  variants: {
-    applyTheme: {
-      true: '[&_.monaco-editor]:[--vscode-editor-background:transparent]! [&_.monaco-editor]:[--vscode-editorGutter-background:transparent]! [&_.monaco-editor]:[--vscode-editorLineNumber-activeForeground:var(--text-color-muted)]! [&_.monaco-editor]:[--vscode-editorLineNumber-foreground:var(--text-color-muted)]! [&_.monaco-editor]:[--vscode-focusBorder:transparent]!',
-      false: '',
-    },
-  },
 });
 
 export function MonacoEditor({
@@ -50,7 +45,7 @@ export function MonacoEditor({
       value,
       language: 'json',
       folding: true,
-      ...(applyTheme && { theme: 'vs' }),
+      ...(applyTheme && { theme: monaco.MONACO_THEME }),
       formatOnPaste: shouldFormat,
       formatOnType: shouldFormat,
       minimap: { enabled: false },
@@ -179,7 +174,9 @@ export function MonacoEditor({
     <div
       ref={setEl}
       style={{ height: `clamp(2.625rem, ${value.length / 100}px, 45vh)` }}
-      className={styles({ applyTheme })}
+      className={styles({
+        className: applyTheme ? editorColors() : undefined,
+      })}
     />
   );
 }

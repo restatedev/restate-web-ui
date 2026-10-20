@@ -273,7 +273,7 @@ function serviceTabLabel(
       content={
         <InvocationsBreakdownTooltipContent
           title={
-            <div className="text-base! leading-7 font-medium text-faint!">
+            <div className="text-base! leading-7 font-medium text-inverse-tertiary!">
               {service.id}
             </div>
           }

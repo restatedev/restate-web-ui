@@ -89,7 +89,7 @@ export function StackedStatusBar({
             className="h-full rounded-[1px] transition-all first:rounded-l-full last:rounded-r-full"
             style={{
               width: `${(status.count / total) * 100}%`,
-              backgroundColor: `color-mix(in srgb, ${status.fillLight} 60%, white)`,
+              backgroundColor: `color-mix(in srgb, ${status.fillLight} 60%, var(--background-color-surface))`,
               outline: `1px ${status.borderType ? 'dashed' : 'solid'} ${status.stroke}`,
               minWidth: status.count > 0 ? 4 : 0,
             }}
@@ -192,23 +192,23 @@ export function ServiceStatusBar({
 
   const title = (
     <>
-      <div className="text-base! leading-7 font-medium text-faint!">
-        <span className="text-base! leading-7 font-medium text-faint!">
+      <div className="text-base! leading-7 font-medium text-inverse-tertiary!">
+        <span className="text-base! leading-7 font-medium text-inverse-tertiary!">
           {serviceName}
         </span>
         {handlerName && (
           <>
-            <span className="text-base! leading-7 font-medium text-faint! opacity-60">
+            <span className="text-base! leading-7 font-medium text-inverse-tertiary! opacity-60">
               {' '}
               /{' '}
             </span>
-            <span className="text-base! leading-7 font-medium text-faint! italic">
+            <span className="text-base! leading-7 font-medium text-inverse-tertiary! italic">
               {handlerName}()
             </span>
           </>
         )}
       </div>
-      <div className="text-0.5xs! font-normal text-subtle!">
+      <div className="text-0.5xs! font-normal text-inverse-muted!">
         {rangeLabel ?? getRangeLabel(range)}
       </div>
     </>
@@ -277,11 +277,11 @@ export function DeploymentStatusBar({
     <StatusBar
       title={
         <>
-          <div className="text-base! leading-7 font-medium text-faint!">
+          <div className="text-base! leading-7 font-medium text-inverse-tertiary!">
             {label}
           </div>
           {rangeLabel && (
-            <div className="text-0.5xs! font-normal text-subtle!">
+            <div className="text-0.5xs! font-normal text-inverse-muted!">
               {rangeLabel}
             </div>
           )}

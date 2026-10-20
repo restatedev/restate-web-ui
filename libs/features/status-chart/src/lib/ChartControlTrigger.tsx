@@ -4,7 +4,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { tv } from '@restate/util-styles';
 
 const chartControlStyles = tv({
-  base: 'inline-flex shrink-0 items-baseline rounded-lg border border-tint-subtle bg-inverse-tint-strong px-1.5 py-0.5 text-2xs font-medium text-muted',
+  base: 'inline-flex shrink-0 items-baseline rounded-lg border border-tint-subtle bg-surface/30 px-1.5 py-0.5 text-2xs font-medium text-muted',
   variants: {
     interactive: {
       true: 'group/chart-control gap-0.5 transition-colors hover:border-tint hover:bg-surface/70 hover:text-secondary focus-visible:text-secondary pressed:bg-surface/90',

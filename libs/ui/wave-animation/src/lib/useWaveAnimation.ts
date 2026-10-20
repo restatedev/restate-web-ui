@@ -15,8 +15,7 @@ function createRing(origin: HTMLElement, delay: number) {
   ring.style.top = `${cy - size / 2}px`;
   ring.style.borderRadius = '50%';
   ring.style.pointerEvents = 'none';
-  ring.style.border =
-    '3px solid color-mix(in oklab, var(--background-color-highlight) 35%, transparent)';
+  ring.style.border = '3px solid var(--border-color-ripple)';
   ring.style.zIndex = '-1';
   document.body.appendChild(ring);
 

@@ -6,7 +6,7 @@ import type { EChartsType } from 'echarts/core';
 import { hoverColor } from '../hoverColor';
 
 const highlight = (percent: number) =>
-  `color-mix(in oklab, var(--background-color-highlight) ${percent}%, transparent)`;
+  `color-mix(in oklab, var(--box-shadow-color-highlight) ${percent}%, transparent)`;
 
 const HIGHLIGHT_STROKE = {
   type: 'linear',
@@ -20,6 +20,31 @@ const HIGHLIGHT_STROKE = {
     { offset: 1, color: highlight(5) },
   ],
 } as unknown as string;
+
+const HATCH_SPACING = 6;
+const HATCH_WIDTH = 2;
+
+function hatchLines(
+  shape: { cx: number; cy: number; r: number },
+  color: string,
+  id: string,
+) {
+  const step = HATCH_SPACING * Math.SQRT2;
+  const left = shape.cx - shape.r;
+  const right = shape.cx + shape.r;
+  const min = left + shape.cy - shape.r;
+  const max = right + shape.cy + shape.r;
+  const lines = [];
+  for (let c = min; c <= max; c += step) {
+    lines.push({
+      type: 'line' as const,
+      id: `${id}-${lines.length}`,
+      shape: { x1: left, y1: c - left, x2: right, y2: c - right },
+      style: { stroke: color, lineWidth: HATCH_WIDTH },
+    });
+  }
+  return lines;
+}
 
 export function usePie(
   pieCfg: PieConfig | undefined,
@@ -111,10 +136,23 @@ export function usePie(
           r: layout.r - inset + scaleSize,
         };
 
+        const hatchColor = pieCfg.slices[params.dataIndex]?.hatchColor;
+        const hatchId = `hatch-${params.dataIndex}`;
+
         return {
           type: 'group' as const,
           id: `highlight-group-${params.dataIndex}`,
           children: [
+            ...(hatchColor
+              ? [
+                  {
+                    type: 'group' as const,
+                    id: hatchId,
+                    clipPath: { type: 'sector' as const, shape: baseShape },
+                    children: hatchLines(baseShape, hatchColor, hatchId),
+                  },
+                ]
+              : []),
             {
               type: 'sector' as const,
               shape: baseShape,

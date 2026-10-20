@@ -19,7 +19,7 @@ export function PopoverContent({
 }>) {
   return (
     <PopoverOverlay {...props} className={styles({ className })}>
-      <AriaDialog className="relative overflow-auto rounded-2xl bg-canvas outline-hidden">
+      <AriaDialog className="relative overflow-auto rounded-2xl bg-elevated outline-hidden">
         {children}
       </AriaDialog>
     </PopoverOverlay>

@@ -27,7 +27,7 @@ const CardIntentContext = createContext<CardIntent>('none');
 const cardStyles = tv({
   slots: {
     wrapper: 'flex max-w-full min-w-0 flex-col',
-    box: "relative isolate flex max-w-full min-w-0 flex-auto flex-col divide-y divide-default overflow-hidden rounded-xl border bg-subtle shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[800px_400px_at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_var(--background-color-surface)]",
+    box: "relative isolate flex max-w-full min-w-0 flex-auto flex-col divide-y divide-default overflow-hidden rounded-xl border bg-subtle shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[800px_400px_at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_var(--box-shadow-color-edge)]",
   },
   variants: {
     intent: {
@@ -36,9 +36,9 @@ const cardStyles = tv({
       warning: { box: 'border-warning/70 before:from-warning-vivid/20' },
       pending: { box: 'border-pending/70 before:from-pending-vivid/20' },
       info: { box: 'border-info/70 before:from-info-vivid/20' },
-      default: { box: 'border-default/70 before:from-surface' },
+      default: { box: 'border-default/70 before:from-sheen' },
       none: {
-        box: 'border-default ring-1 ring-surface/50 ring-inset before:from-surface',
+        box: 'border-default ring-1 ring-surface/50 ring-inset before:from-sheen',
       },
     } satisfies Record<CardIntent, { box: string }>,
     span: {
@@ -111,12 +111,12 @@ const cardHeaderStyles = tv({
         title: 'text-info-strong',
       },
       default: {
-        tab: 'border-default/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-surface to-transparent to-50%',
+        tab: 'border-default/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-sheen to-transparent to-50%',
         icon: 'text-muted',
         title: 'text-tertiary',
       },
       none: {
-        tab: 'border-default bg-radial-[800px_400px_at_-0.625rem_100%] from-surface to-transparent to-50%',
+        tab: 'border-default bg-radial-[800px_400px_at_-0.625rem_100%] from-sheen to-transparent to-50%',
         icon: 'text-muted',
         title: 'text-tertiary',
       },

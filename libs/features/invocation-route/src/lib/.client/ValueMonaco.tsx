@@ -1,5 +1,6 @@
 import { RefObject, useEffect, useState } from 'react';
 import * as monaco from '@restate/ui-editor/monaco';
+import { editorColors } from '@restate/ui-editor';
 
 export function ValueMonaco({
   value,
@@ -16,7 +17,7 @@ export function ValueMonaco({
         value: formatValue(value),
         language: 'json',
         folding: false,
-        theme: 'vs',
+        theme: monaco.MONACO_THEME,
         readOnly: true,
         formatOnPaste: true,
         formatOnType: true,
@@ -69,7 +70,9 @@ export function ValueMonaco({
   return (
     <div
       ref={setEl}
-      className="h-full min-h-4 max-w-full min-w-24 [&_.monaco-editor]:[--vscode-focusBorder:transparent]!"
+      className={editorColors({
+        className: 'h-full min-h-4 max-w-full min-w-24',
+      })}
     />
   );
 }

@@ -59,7 +59,7 @@ describe('Chip', () => {
       </ChipGroup>,
     );
     const group = container.querySelector('[data-chip-group]');
-    expect(group?.className).toContain('mix-blend-luminosity');
+    expect(group?.className).toContain('mix-blend-tone');
     expect(group?.className).toContain('[--chip-radius:0.625rem]');
     expect(group?.className).toContain('[--chip-slope:5px]');
     expect(group?.className).toContain(

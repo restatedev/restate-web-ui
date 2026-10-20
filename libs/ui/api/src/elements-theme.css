@@ -133,3 +133,33 @@
   --color-danger-darker: var(--background-color-danger-hover);
   --color-danger-light: var(--background-color-danger-strong);
 }
+
+.stoplight .token:is(.comment, .prolog, .doctype, .cdata) {
+  color: var(--text-color-syntax-comment) !important;
+}
+
+.stoplight .token:is(.punctuation, .operator) {
+  color: var(--text-color-syntax-punctuation) !important;
+}
+
+.stoplight
+  .token:is(.property, .tag, .attr-name, .selector, .namespace, .class-name) {
+  color: var(--text-color-syntax-key) !important;
+}
+
+.stoplight .token:is(.boolean, .number, .constant, .symbol) {
+  color: var(--text-color-syntax-number) !important;
+}
+
+.stoplight .token:is(.string, .char, .attr-value, .url, .regex, .inserted) {
+  color: var(--text-color-syntax-string) !important;
+}
+
+.stoplight
+  .token:is(.keyword, .atrule, .function, .builtin, .important, .variable) {
+  color: var(--text-color-syntax-keyword) !important;
+}
+
+.stoplight .token.deleted {
+  color: var(--text-color-danger) !important;
+}

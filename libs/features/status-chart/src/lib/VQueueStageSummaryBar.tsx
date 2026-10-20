@@ -27,10 +27,12 @@ export type VQueueStatusSummaryEntry = StatusEntry & {
   statuses: string[];
 };
 
-const INBOX_PATTERN =
-  'repeating-linear-gradient(-45deg, transparent 0 4px, color-mix(in oklab, var(--background-color-highlight) 28%, transparent) 4px 6px)';
+const hatchPattern = (color: string) =>
+  `repeating-linear-gradient(-45deg, transparent 0 4px, ${color} 4px 6px)`;
+const INBOX_PATTERN = hatchPattern('var(--background-color-hatch-pending)');
+const NEUTRAL_HATCH_PATTERN = hatchPattern('var(--background-color-hatch)');
 const INBOX_HIGHLIGHT =
-  'linear-gradient(to bottom, color-mix(in oklab, var(--background-color-highlight) 12%, transparent), transparent 60%)';
+  'linear-gradient(to bottom, color-mix(in oklab, var(--box-shadow-color-highlight) 12%, transparent), transparent 60%)';
 const styles = tv({
   slots: {
     container:
@@ -104,7 +106,7 @@ const segmentStyles = tv({
 });
 
 const tooltipDotStyles = tv({
-  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)]',
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)] swatch',
   variants: {
     borderType: {
       dashed: 'border-dashed',
@@ -349,9 +351,11 @@ export function VQueueStageSummaryBar({
                   borderColor: style.stroke,
                 }}
               />
-              <span className="mr-2 ml-2 text-base! text-faint!">{label}</span>
+              <span className="mr-2 ml-2 text-base! text-inverse-tertiary!">
+                {label}
+              </span>
               {segmentIsLoading ? (
-                <span className="text-sm! font-medium text-faint!">
+                <span className="text-sm! font-medium text-inverse-tertiary!">
                   Loading
                 </span>
               ) : approximate ? (
@@ -359,7 +363,7 @@ export function VQueueStageSummaryBar({
                   <span className="text-base! font-semibold text-inverse!">
                     {percentage}
                   </span>
-                  <span className="ml-1 text-sm! font-medium text-faint!">
+                  <span className="ml-1 text-sm! font-medium text-inverse-tertiary!">
                     {percentageScope}
                   </span>
                 </>
@@ -390,7 +394,7 @@ export function VQueueStageSummaryBar({
                 segment.name === 'inbox'
                   ? `${INBOX_PATTERN}, ${INBOX_HIGHLIGHT}, ${INBOX_STAGE_GRADIENT}`
                   : isGrouped && isInboxStatus
-                    ? `${INBOX_PATTERN}, ${backgroundGradient}`
+                    ? `${segment.name === 'pending' ? INBOX_PATTERN : NEUTRAL_HATCH_PATTERN}, ${backgroundGradient}`
                     : backgroundGradient,
               borderColor: style.stroke,
               borderLeftWidth:

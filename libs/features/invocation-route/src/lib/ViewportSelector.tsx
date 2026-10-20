@@ -10,7 +10,7 @@ const styles = tv({
 });
 
 const panAreaStyles = tv({
-  base: 'h-full cursor-grab rounded-md shadow-[0_0_0_1px_--theme(--background-color-accent-vivid/20%),0_1px_3px_1px_--theme(--background-color-accent-vivid/8%)] backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-[0_0_0_1px_--theme(--background-color-accent-vivid/30%),0_1px_5px_2px_--theme(--background-color-accent-vivid/10%)] active:shadow-[0_0_0_1px_--theme(--background-color-accent-vivid/40%),0_2px_6px_2px_--theme(--background-color-accent-vivid/12%)]',
+  base: 'h-full cursor-grab rounded-md bg-selected/50 shadow-[0_0_0_1px_--theme(--background-color-accent-vivid/20%),0_1px_3px_1px_--theme(--background-color-accent-vivid/8%)] backdrop-brightness-110 backdrop-saturate-[1.1] transition-shadow duration-[140ms] ease-out hover:shadow-[0_0_0_1px_--theme(--background-color-accent-vivid/30%),0_1px_5px_2px_--theme(--background-color-accent-vivid/10%)] active:shadow-[0_0_0_1px_--theme(--background-color-accent-vivid/40%),0_2px_6px_2px_--theme(--background-color-accent-vivid/12%)]',
 });
 
 const overlayStyles = tv({

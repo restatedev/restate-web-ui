@@ -42,7 +42,7 @@ const styles = tv({
   base: 'flex items-center gap-0',
   slots: {
     indicator:
-      'absolute rounded-xl border border-tint bg-surface shadow-xs transition-all duration-300 ease-in-out [&:not(:has(~*_[data-active=true]))]:hidden',
+      'absolute rounded-xl border border-tint bg-selected shadow-xs transition-all duration-300 ease-in-out [&:not(:has(~*_[data-active=true]))]:hidden',
     container:
       'relative rounded-xl border-[0.5px] border-transparent [&:has(:focus)]:border-[0.5px] [&:has(:focus)]:border-tint-subtle [&:has(:focus)]:bg-tint-subtle [&:has(:focus)]:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] [&:has(:hover)]:border-[0.5px] [&:has(:hover)]:border-tint-subtle [&:has(:hover)]:bg-tint-subtle [&:has(:hover)]:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]',
     dropdown: '',

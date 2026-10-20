@@ -64,7 +64,7 @@ const outputStyles = tv({
 });
 
 const terminalStyles = tv({
-  base: 'relative block max-h-80 min-w-0 flex-auto [scrollbar-gutter:stable] overflow-auto rounded-xl border bg-emphasis/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_--theme(--box-shadow-color-default/8%)]',
+  base: 'relative block max-h-80 min-w-0 flex-auto [scrollbar-gutter:stable] overflow-auto rounded-xl border bg-emphasis/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-tint shadow-[inset_0_0.5px_0.5px_0px_--theme(--box-shadow-color-default/8%)]',
   variants: {
     isTransient: {
       true: 'text-warning-strong',

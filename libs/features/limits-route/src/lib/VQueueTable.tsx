@@ -231,7 +231,7 @@ function StageBars({ row }: { row: VQueueMetaRow }) {
         tooltipContent={
           <InvocationsBreakdownTooltipContent
             title={
-              <div className="text-base! leading-7 font-medium text-faint!">
+              <div className="text-base! leading-7 font-medium text-inverse-tertiary!">
                 Unfinished entries
               </div>
             }

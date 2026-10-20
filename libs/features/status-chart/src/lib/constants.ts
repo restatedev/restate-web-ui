@@ -14,10 +14,10 @@ export {
 };
 
 export const INBOX_STAGE_GRADIENT =
-  'linear-gradient(to right, var(--background-color-emphasis) 0%, var(--background-color-muted) 22%, var(--background-color-pending-muted) 65%, var(--background-color-pending-emphasis) 100%)';
+  'linear-gradient(to right, var(--background-color-queued-start) 0%, var(--background-color-queued-mid) 22%, var(--background-color-queued) 65%, var(--background-color-queued-end) 100%)';
 
 export const INBOX_STAGE_LEGEND_GRADIENT =
-  'linear-gradient(to right, var(--background-color-emphasis) 0 50%, var(--background-color-pending-muted) 50% 100%)';
+  'linear-gradient(to right, var(--background-color-queued-start) 0 50%, var(--background-color-queued) 50% 100%)';
 
 export const COMPLETED_STAGE_LEGEND_GRADIENT =
   'linear-gradient(to right, var(--background-color-success-strong) 0 50%, var(--background-color-danger-strong) 50% 100%)';
@@ -35,10 +35,10 @@ export const STATUS_STYLE: Record<
   }
 > = {
   inbox: {
-    fill: 'var(--background-color-pending-muted)',
-    fillLight: 'var(--background-color-pending-muted)',
-    fillDark: 'var(--background-color-pending-emphasis)',
-    stroke: 'var(--background-color-pending-vivid)',
+    fill: 'var(--background-color-queued)',
+    fillLight: 'var(--background-color-queued)',
+    fillDark: 'var(--background-color-queued-end)',
+    stroke: 'var(--border-color-queued)',
     ...DASHED,
     color: 'var(--background-color-pending)',
   },
@@ -59,10 +59,10 @@ export const STATUS_STYLE: Record<
     color: 'var(--background-color-info)',
   },
   pending: {
-    fill: 'var(--background-color-pending-muted)',
-    fillLight: 'var(--background-color-pending-muted)',
-    fillDark: 'var(--background-color-pending-emphasis)',
-    stroke: 'var(--background-color-pending-vivid)',
+    fill: 'var(--background-color-queued)',
+    fillLight: 'var(--background-color-queued)',
+    fillDark: 'var(--background-color-queued-end)',
+    stroke: 'var(--border-color-queued)',
     ...DASHED,
     color: 'var(--background-color-pending)',
   },

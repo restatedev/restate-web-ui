@@ -5,7 +5,7 @@ import { Badge } from '@restate/ui-badge';
 import { Link } from '@restate/ui-link';
 
 const styles = tv({
-  base: 'relative flex transform flex-col overflow-hidden rounded-2xl border bg-linear-to-b from-surface to-subtle px-3 py-3 shadow-lg shadow-default/5 transition-all',
+  base: 'relative flex transform flex-col overflow-hidden rounded-2xl border bg-linear-to-b from-sheen to-subtle px-3 py-3 shadow-lg shadow-default/5 transition-all',
 });
 export interface GettingStartedCardProps {
   type?: string;

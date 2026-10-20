@@ -16,8 +16,17 @@ function findPaletteColor(value) {
   return value.match(PALETTE_CLASS)?.[1] ?? value.match(PALETTE_VAR)?.[1];
 }
 
+const NAMED_COLOR =
+  /(?:color-mix\(in [a-z]+,\s*|%,\s*|,\s*)((?:white|black)\b(?:\s+\d+%)?)/;
+
 function findLiteralColor(value) {
-  return value.replace(/mask-\[[^\]]*\]/g, '').match(LITERAL_COLOR)?.[1];
+  const unmasked = value.replace(/mask-\[[^\]]*\]/g, '');
+  return (
+    unmasked.match(LITERAL_COLOR)?.[1] ??
+    (/(?:color-mix|gradient)\(|%,/.test(unmasked)
+      ? unmasked.match(NAMED_COLOR)?.[1]
+      : undefined)
+  );
 }
 
 export default {

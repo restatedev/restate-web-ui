@@ -7,7 +7,7 @@ import {
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'max-w-[90%] overflow-auto rounded-xl border border-tint bg-canvas/80 bg-clip-padding text-secondary shadow-lg backdrop-blur-xl backdrop-saturate-200',
+  base: 'max-w-[90%] overflow-auto rounded-xl border border-tint bg-elevated/80 bg-clip-padding text-secondary shadow-lg backdrop-blur-xl backdrop-saturate-200',
   variants: {
     isEntering: {
       true: 'duration-200 ease-out animate-in fade-in placement-left:slide-in-from-right-1 placement-right:slide-in-from-left-1 placement-top:slide-in-from-bottom-1 placement-bottom:slide-in-from-top-1',

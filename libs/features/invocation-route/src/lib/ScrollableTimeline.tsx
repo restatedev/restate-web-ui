@@ -70,7 +70,7 @@ function TimelineShading({
         {cancelEvent && (
           <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 overflow-hidden px-2 transition-all duration-300">
             <div
-              className="pointer-events-none h-full w-full border-l-2 border-tint mix-blend-multiply transition-all duration-300 [background:repeating-linear-gradient(-45deg,--theme(--background-color-shade/5%),--theme(--background-color-shade/5%)_2px,--theme(--background-color-highlight/0%)_2px,--theme(--background-color-highlight/0%)_4px)]"
+              className="pointer-events-none h-full w-full border-l-2 border-tint mix-blend-tint transition-all duration-300 [background:repeating-linear-gradient(-45deg,var(--background-color-tint),var(--background-color-tint)_2px,transparent_2px,transparent_4px)]"
               style={{
                 marginLeft: `calc(${
                   ((new Date(String(cancelEvent.start)).getTime() - start) /
@@ -91,7 +91,7 @@ function TimelineShading({
                 : undefined,
             }}
           >
-            <div className="pointer-events-none absolute inset-0 mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--background-color-highlight/60%),--theme(--background-color-highlight/60%)_2px,--theme(--background-color-highlight/0%)_2px,--theme(--background-color-highlight/0%)_4px)]" />
+            <div className="pointer-events-none absolute inset-0 mix-blend-screen [background:repeating-linear-gradient(-45deg,--theme(--background-color-surface/60%),--theme(--background-color-surface/60%)_2px,transparent_2px,transparent_4px)]" />
           </div>
         )}
       </div>

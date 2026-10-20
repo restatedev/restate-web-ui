@@ -214,7 +214,7 @@ const stageSummaryStyles = tv({
       connected:
         'z-10 -mr-px rounded-l-lg rounded-r-none border border-r-0 border-tint bg-surface text-primary',
       focused:
-        'rounded-lg border border-tint bg-surface text-primary shadow-xs',
+        'rounded-lg border border-tint bg-selected text-primary shadow-xs',
       default: 'rounded-lg',
     },
   },

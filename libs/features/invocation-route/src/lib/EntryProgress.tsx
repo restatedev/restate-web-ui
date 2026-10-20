@@ -112,7 +112,7 @@ const lineStyles = tv({
         line: 'from-info-strong to-info-strong',
       },
       default: {
-        line: 'h-3 border-dashed border-neutral-strong/40 bg-transparent *:mix-blend-color-burn',
+        line: 'h-3 border-dashed border-neutral-strong/40 bg-transparent *:mix-blend-burn',
       },
       idleWarning: {
         line: 'h-3 border-dashed border-warning-strong/60 from-warning-vivid/10 to-warning-vivid/10',

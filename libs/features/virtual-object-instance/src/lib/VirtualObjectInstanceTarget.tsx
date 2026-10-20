@@ -23,8 +23,8 @@ const targetStyles = tv({
     serviceLink:
       'inline-flex max-w-full min-w-0 no-underline transition-[filter] hover:brightness-[0.98] pressed:brightness-[0.96]',
     chip: 'max-w-full text-xs font-medium text-tertiary',
-    service: 'max-w-[18rem] bg-surface pl-1.5 font-medium text-tertiary',
-    key: 'max-w-[28rem] bg-subtle font-mono text-[90%] text-muted',
+    service: 'max-w-[18rem] bg-raised pl-1.5 font-medium text-tertiary',
+    key: 'max-w-[28rem] bg-raised-subtle font-mono text-[90%] text-muted',
     serviceIcon: 'h-3.5 w-3.5 shrink-0 text-subtle',
     instanceIcon: 'h-3.5 w-3.5 shrink-0 text-subtle',
     chevron: '-mr-1.5 h-3.5 w-3.5 shrink-0 text-subtle',
@@ -33,7 +33,7 @@ const targetStyles = tv({
     showService: {
       true: {},
       false: {
-        key: 'bg-surface pl-1.5 font-sans text-xs font-medium text-tertiary',
+        key: 'bg-raised pl-1.5 font-sans text-xs font-medium text-tertiary',
       },
     },
     hasLeadingScope: {

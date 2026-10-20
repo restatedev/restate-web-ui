@@ -100,7 +100,7 @@ export function SidebarProvider({ children }: PropsWithChildren) {
 const sidebarStyles = tv({
   slots: {
     aside:
-      'peer group/sidebar @container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-emphasis/50 shadow-[inset_-1px_0px_0px_0px_--theme(--box-shadow-color-default/3%),0_100vh_0_0_--theme(--background-color-emphasis/50%),0_-100vh_0_0_--theme(--background-color-emphasis/50%)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out has-[[data-variant=hidden]]:hidden max-md:data-[collapsed=false]:ml-0 md:ml-0 md:w-[4.25rem] md:data-[collapsed=false]:w-[16rem] xl:w-[16rem] xl:data-[collapsed=true]:w-[4.25rem]',
+      'peer group/sidebar @container/sidebar sticky top-0 z-50 -ml-[16rem] flex h-screen w-[16rem] shrink-0 flex-col border-r bg-sunken shadow-[inset_-1px_0px_0px_0px_--theme(--box-shadow-color-default/3%),0_100vh_0_0_var(--background-color-sunken),0_-100vh_0_0_var(--background-color-sunken)] backdrop-blur-xl backdrop-saturate-200 transition-[width,margin] duration-300 ease-in-out has-[[data-variant=hidden]]:hidden max-md:data-[collapsed=false]:ml-0 md:ml-0 md:w-[4.25rem] md:data-[collapsed=false]:w-[16rem] xl:w-[16rem] xl:data-[collapsed=true]:w-[4.25rem]',
     asideInner: 'relative h-full w-full overflow-hidden',
     // Cloud/sky backdrop: a non-scrolling layer pinned to the full rail with
     // NO padding (so the w-screen cloud stays pixel-aligned with the page

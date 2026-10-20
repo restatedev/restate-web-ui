@@ -27,10 +27,10 @@ const styles = tv({
       true: 'duration-150 ease-in animate-out fade-out placement-left:slide-out-to-right-0.5 placement-right:slide-out-to-left-0.5 placement-top:slide-out-to-bottom-0.5 placement-bottom:slide-out-to-top-0.5',
     },
     size: {
-      sm: 'rounded-md bg-inverse px-2 py-1 text-xs shadow-[inset_0_0.5px_0_0_var(--background-color-inverse-strong)] [&_.content]:max-w-full [&_.content]:break-all',
-      lg: 'max-w-7xl overflow-auto rounded-xl bg-inverse/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] backdrop-blur-xl',
+      sm: 'rounded-md bg-inverse px-2 py-1 text-xs shadow-[inset_0_0.5px_0_0_var(--box-shadow-color-inverse-edge)] [&_.content]:max-w-full [&_.content]:break-all',
+      lg: 'max-w-7xl overflow-auto rounded-xl bg-inverse/90 px-3 py-2 text-sm whitespace-pre shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] backdrop-blur-xl',
       default:
-        'rounded-2xl bg-inverse/90 p-4 text-sm shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] backdrop-blur-xl',
+        'rounded-2xl bg-inverse/90 p-4 text-sm shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)] backdrop-blur-xl',
     },
   },
   defaultVariants: {

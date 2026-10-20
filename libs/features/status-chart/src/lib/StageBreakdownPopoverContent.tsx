@@ -9,7 +9,7 @@ import {
 import { tv } from '@restate/util-styles';
 
 const bulletStyles = tv({
-  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)]',
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)] swatch',
   variants: {
     borderType: {
       dashed: 'border-dashed',

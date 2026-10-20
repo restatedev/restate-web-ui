@@ -37,12 +37,12 @@ const styles = tv({
   },
   variants: {
     isCompact: {
-      true: { compact: 'border-tint bg-surface text-primary shadow-xs' },
+      true: { compact: 'border-tint bg-selected text-primary shadow-xs' },
       false: {},
     },
     isDetailed: {
       true: {
-        pill: 'border-tint bg-surface shadow-xs',
+        pill: 'border-tint bg-selected shadow-xs',
         body: 'text-primary',
         chevron: 'border-tint-subtle',
         count: 'bg-accent-subtle text-accent',

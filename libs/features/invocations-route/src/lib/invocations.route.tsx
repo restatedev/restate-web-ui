@@ -209,7 +209,7 @@ const sampleScanToggleStyles = tv({
   },
   variants: {
     active: {
-      true: {},
+      true: { segment: 'bg-selected' },
       false: {
         segment:
           'border-transparent bg-transparent text-tertiary shadow-none hover:bg-tint',

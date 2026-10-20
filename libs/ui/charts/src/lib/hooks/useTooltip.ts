@@ -117,7 +117,7 @@ export function useTooltip(
       const separator = document.createElement('hr');
       separator.style.marginLeft = '-16px';
       separator.style.marginRight = '-16px';
-      separator.style.backgroundColor = 'white';
+      separator.style.backgroundColor = 'var(--background-color-highlight)';
       separator.style.opacity = '0.2';
       separator.style.marginTop = '16px';
       separator.style.marginBottom = '16px';
@@ -198,7 +198,7 @@ export function useTooltip(
       extraCssText: `
       backdrop-filter: blur(24px);
       filter: drop-shadow(0 9px 7px color-mix(in oklab, var(--box-shadow-color-default) 10%, transparent));
-      box-shadow: var(--background-color-inverse-strong) 0px 1px 0px 0px inset;
+      box-shadow: var(--box-shadow-color-inverse-edge) 0px 1px 0px 0px inset;
       `,
       textStyle: {
         color: 'var(--text-color-inverse-secondary)',

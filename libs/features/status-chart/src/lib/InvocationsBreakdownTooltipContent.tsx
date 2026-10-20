@@ -180,7 +180,7 @@ export function InvocationsBreakdownTooltipContent({
               })}
             >
               <div
-                className="h-3.5 w-3.5 shrink-0 rounded-full"
+                className="h-3.5 w-3.5 shrink-0 rounded-full swatch"
                 style={{
                   backgroundColor: s.fillLight,
                   border: `1.5px solid ${s.stroke}`,
