@@ -8,10 +8,10 @@ const styles = tv({
   slots: {
     root: 'flex min-w-0 flex-row flex-wrap items-baseline gap-0.5',
     status:
-      'relative inline-flex max-w-full gap-2 border-dashed border-zinc-400/60 bg-transparent',
+      'relative inline-flex max-w-full gap-2 border-dashed border-neutral/60 bg-transparent',
     timing:
-      'max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-zinc-500/80',
-    value: 'font-medium text-zinc-500/90',
+      'max-w-full truncate border-none bg-transparent py-0 text-2xs font-normal text-subtle',
+    value: 'font-medium text-muted',
   },
 });
 

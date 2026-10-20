@@ -60,7 +60,7 @@ export const CancelInvocation = withConfirmation({
 
   title: 'Cancel Invocation',
   icon: IconName.Cancel,
-  iconClassName: 'text-red-400 ',
+  iconClassName: 'text-danger-subtle ',
   description: <p>Are you sure you want to cancel this invocation?</p>,
   alertType: 'info',
   alertContent: (
@@ -72,7 +72,7 @@ export const CancelInvocation = withConfirmation({
       <Link
         href="https://docs.restate.dev/services/invocation/managing-invocations#cancel"
         variant="secondary"
-        className="text-blue-600"
+        className="text-accent"
         target="_blank"
         rel="noopener noreferrer"
       >

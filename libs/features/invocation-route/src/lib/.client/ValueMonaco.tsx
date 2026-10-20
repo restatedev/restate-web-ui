@@ -1,5 +1,6 @@
 import { RefObject, useEffect, useState } from 'react';
 import * as monaco from '@restate/ui-editor/monaco';
+import { resolveColor } from '@restate/util-theme';
 
 export function ValueMonaco({
   value,
@@ -15,7 +16,7 @@ export function ValueMonaco({
       monaco.editor.defineTheme('restate', {
         base: 'vs',
         colors: {
-          focusBorder: '#00000000',
+          focusBorder: resolveColor('transparent', 'hex'),
         },
         rules: [],
         inherit: true,

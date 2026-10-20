@@ -42,11 +42,11 @@ export function useAxes<T extends object>(
       position: xAxisCfg?.position,
       axisLabel: {
         fontFamily: 'InterVariable, sans-serif',
-        color: 'oklch(55.1% .027 264.364)',
+        color: 'var(--text-color-muted)',
       },
       axisLine: {
         lineStyle: {
-          color: 'oklch(92.8% .006 264.531)',
+          color: 'var(--border-color-default)',
           type: 'solid',
           width: 2,
         },
@@ -86,7 +86,7 @@ export function useAxes<T extends object>(
       position: yAxisPosition,
       axisLabel: {
         fontFamily: 'InterVariable, sans-serif',
-        color: 'oklch(55.1% .027 264.364)',
+        color: 'var(--text-color-muted)',
         align: yAxisLabelInside
           ? yAxisPosition === 'right'
             ? 'right'
@@ -102,7 +102,7 @@ export function useAxes<T extends object>(
         show: yAxisSplitLine ?? true,
         lineStyle: {
           type: 'dashed',
-          color: 'rgba(0,0,0,0.1)',
+          color: 'var(--border-color-tint)',
         },
       },
       splitNumber: 2,

@@ -82,9 +82,9 @@ function BatchOperationContent({
       <div className="flex flex-col gap-2">
         <p>No invocations match your criteria.</p>
         <Filters showScope={showScope} state={state} className="mt-0" />
-        <div className="mt-2 flex gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3 text-0.5xs text-blue-600">
+        <div className="mt-2 flex gap-2 rounded-xl border border-info bg-info-subtle p-3 text-0.5xs text-info">
           <Icon
-            className="h-5 w-5 shrink-0 fill-blue-600 text-blue-100"
+            className="h-5 w-5 shrink-0 fill-info text-on-info"
             name={IconName.Info}
           />
           <div className="flex flex-col gap-1">
@@ -109,7 +109,7 @@ function BatchOperationContent({
 }
 
 const filterStyles = tv({
-  base: 'mt-4 flex w-full flex-wrap gap-1 overflow-auto rounded-lg border bg-gray-200/50 p-0.5 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+  base: 'mt-4 flex w-full flex-wrap gap-1 overflow-auto rounded-lg border bg-emphasis/50 p-0.5 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]',
 });
 function Filters({
   state,
@@ -185,7 +185,7 @@ function Filters({
         return (
           <div
             key={index}
-            className="flex min-w-0 items-baseline gap-[0.75ch] rounded-md border bg-white px-2 py-1 text-xs shadow-xs"
+            className="flex min-w-0 items-baseline gap-[0.75ch] rounded-md border bg-surface px-2 py-1 text-xs shadow-xs"
           >
             <span className="shrink-0 whitespace-nowrap">
               {queryClause?.label || filter.field}

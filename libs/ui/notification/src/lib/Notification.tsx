@@ -19,7 +19,7 @@ interface NotificationProps {
 }
 
 const styles = tv({
-  base: 'peer absolute top-0 right-0 left-0 z-80 mx-10 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 animate-in outline-none fade-in slide-in-from-top-16 zoom-in-95 [&.closing]:duration-250 [&.closing]:animate-out [&.closing]:fade-out [&.closing]:slide-out-to-top-16',
+  base: 'peer absolute top-0 right-0 left-0 z-80 mx-10 flex min-h-10 flex-auto shrink-0 transform items-center gap-2 rounded-xl border py-1 pr-1 pl-3 text-sm shadow-lg shadow-default/5 backdrop-blur-xl backdrop-saturate-200 transition duration-300 animate-in outline-none fade-in slide-in-from-top-16 zoom-in-95 [&.closing]:duration-250 [&.closing]:animate-out [&.closing]:fade-out [&.closing]:slide-out-to-top-16',
   slots: {
     content: 'flex-auto',
     close: 'ml-auto text-inherit',
@@ -30,53 +30,53 @@ const styles = tv({
   variants: {
     type: {
       error: {
-        base: 'border-red-300/30 bg-red-200/90 text-red-800',
+        base: 'border-danger/30 bg-danger-emphasis/90 text-danger-strong',
         content: '',
         icon: '',
         close: '',
       },
       info: {
-        base: 'border-sky-300/30 bg-sky-200/90 text-sky-800',
+        base: 'border-info/30 bg-info-emphasis/90 text-info-strong',
         content: '',
         icon: '',
         close: '',
       },
       progress: {
-        base: 'border-sky-300/30 bg-sky-200/90 text-sky-800',
+        base: 'border-info/30 bg-info-emphasis/90 text-info-strong',
         content: '',
         icon: '',
         close: '',
       },
       pending: {
-        base: 'border-orange-300/30 bg-orange-200/90 text-orange-800',
+        base: 'border-warning/30 bg-warning-emphasis/90 text-warning-strong',
         content: '',
         icon: '',
         close: '',
       },
       success: {
-        base: 'border-green-400/30 bg-green-200/90 text-green-800',
+        base: 'border-success/30 bg-success-emphasis/90 text-success-strong',
         content: '',
         icon: '',
         close: '',
       },
       warning: {
-        base: 'border-orange-300/30 bg-orange-200/90 text-orange-800',
+        base: 'border-warning/30 bg-warning-emphasis/90 text-warning-strong',
         content: '',
         icon: '',
         close: '',
       },
       tooltip: {
-        base: 'border border-zinc-900/80 bg-zinc-800/90 text-gray-300 shadow-[inset_0_0.5px_0_0_var(--color-gray-500)]! shadow-gray-500 drop-shadow-xl',
+        base: 'border border-inverse bg-inverse/90 text-inverse-secondary shadow-[inset_0_0.5px_0_0_var(--background-color-inverse-strong)]! drop-shadow-xl',
         content: '',
         icon: '',
         close: '',
       },
       countdown: {
-        base: 'overflow-hidden border-sky-300/30 bg-sky-200/90 text-sky-800',
+        base: 'overflow-hidden border-info/30 bg-info-emphasis/90 text-info-strong',
         content: '',
         icon: '',
         close: '',
-        animation: 'animate-countdown bg-sky-600/50 duration-3000',
+        animation: 'animate-countdown bg-info/50 duration-3000',
       },
     },
   },

@@ -268,7 +268,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
                 className="mx-4 mt-4 rounded-xl"
               />
             )}
-            <div className="border-b border-gray-200/80 px-5 pt-8 pb-4">
+            <div className="border-b border-default/80 px-5 pt-8 pb-4">
               <div className="flex w-full flex-col gap-3">
                 <VQueueStageSummaryBar
                   {...chartProps}
@@ -360,7 +360,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
               />
             </ContentPanelSection>
             {data && (
-              <p role="status" className="px-4 pt-3 text-xs text-zinc-500">
+              <p role="status" className="px-4 pt-3 text-xs text-muted">
                 {data.isPartial || rows.length >= data.limit
                   ? `Showing ${rows.length} invocations. Narrow your filters to find older results.`
                   : `${rows.length} invocations`}

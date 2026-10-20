@@ -26,14 +26,14 @@ export type StatusBarEntry = {
 const totalItemStyles = tv({
   base: '-mx-2 flex items-baseline gap-1 rounded-lg border-none bg-transparent px-2 py-1 !text-inherit no-underline shadow-none',
   variants: {
-    linked: { true: 'hover:bg-white/10' },
+    linked: { true: 'hover:bg-inverse-tint-subtle' },
   },
 });
 
 const statusItemStyles = tv({
   base: '-mx-2 flex items-center gap-2.5 rounded-lg border-none bg-transparent px-2 py-1.5 !text-inherit no-underline shadow-none transition',
   variants: {
-    linked: { true: 'hover:bg-white/10' },
+    linked: { true: 'hover:bg-inverse-tint-subtle' },
     dimmed: { true: 'opacity-40 saturate-50' },
   },
 });
@@ -122,30 +122,32 @@ export function InvocationsBreakdownTooltipContent({
           {isSampled ? (
             total === 0 ? (
               <>
-                <span className="!text-xl !text-gray-50">No</span>
-                <span className="!text-sm !text-gray-400">{noun.other}</span>
+                <span className="!text-xl !text-inverse">No</span>
+                <span className="!text-sm !text-inverse-muted">
+                  {noun.other}
+                </span>
               </>
             ) : (
               <>
-                <span className="!text-xl !text-gray-50">
+                <span className="!text-xl !text-inverse">
                   {filteredShare ?? 'All'}
                 </span>
-                <span className="!text-sm !text-gray-400">
+                <span className="!text-sm !text-inverse-muted">
                   {filteredShare ? `of ${noun.other}` : noun.other}
                 </span>
               </>
             )
           ) : (
             <>
-              <span className="!text-xl !text-gray-50">
+              <span className="!text-xl !text-inverse">
                 {formatNumber(showFiltered ? filteredTotal : total, true)}
               </span>
               {showFiltered && (
-                <span className="!text-sm !text-gray-500">
+                <span className="!text-sm !text-inverse-subtle">
                   /{formatNumber(total, true)}
                 </span>
               )}
-              <span className="!text-sm !text-gray-400">
+              <span className="!text-sm !text-inverse-muted">
                 {formatPlurals(showFiltered ? filteredTotal : total, noun)}
               </span>
             </>
@@ -153,13 +155,13 @@ export function InvocationsBreakdownTooltipContent({
           {totalLink && (
             <Icon
               name={IconName.ChevronRight}
-              className="ml-auto h-3.5 w-3.5 shrink-0 !text-zinc-500"
+              className="ml-auto h-3.5 w-3.5 shrink-0 !text-inverse-subtle"
             />
           )}
         </TooltipItem>
       </div>
       {statuses.length > 0 && (
-        <div className="-mx-3 border-t border-white/10" />
+        <div className="-mx-3 border-t border-inverse-tint" />
       )}
       <div className="mt-2 flex flex-col empty:mt-0">
         {statuses.map((s) => {
@@ -182,10 +184,11 @@ export function InvocationsBreakdownTooltipContent({
                 style={{
                   backgroundColor: s.fillLight,
                   border: `1.5px solid ${s.stroke}`,
-                  boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.35)',
+                  boxShadow:
+                    'inset 0 1px 0 0 color-mix(in oklab, var(--box-shadow-color-highlight) 35%, transparent)',
                 }}
               />
-              <span className="pr-2 !text-0.5xs !text-gray-300">
+              <span className="pr-2 !text-0.5xs !text-inverse-secondary">
                 {s.label ?? STATUS_LABELS[s.name] ?? s.name}
               </span>
               <span className="ml-auto flex items-center gap-1.5">
@@ -197,15 +200,15 @@ export function InvocationsBreakdownTooltipContent({
                 )}
               </span>
               {isSampled ? (
-                <span className="!text-0.5xs font-semibold !text-gray-100 tabular-nums">
+                <span className="!text-0.5xs font-semibold !text-inverse tabular-nums">
                   {formatApproxPercentage(s.count / total)}
                 </span>
               ) : (
                 <>
-                  <span className="!text-0.5xs font-semibold !text-gray-100 tabular-nums">
+                  <span className="!text-0.5xs font-semibold !text-inverse tabular-nums">
                     {formatNumber(s.count, true)}
                   </span>
-                  <span className="!text-0.5xs font-medium !text-gray-300">
+                  <span className="!text-0.5xs font-medium !text-inverse-secondary">
                     ({percentage})
                   </span>
                 </>
@@ -213,7 +216,7 @@ export function InvocationsBreakdownTooltipContent({
               {statusLink && (
                 <Icon
                   name={IconName.ChevronRight}
-                  className="h-3 w-3 shrink-0 !text-zinc-500"
+                  className="h-3 w-3 shrink-0 !text-inverse-subtle"
                 />
               )}
             </TooltipItem>
@@ -221,10 +224,10 @@ export function InvocationsBreakdownTooltipContent({
         })}
       </div>
       {isSampled && statuses.length > 0 && (
-        <div className="-mx-3 mt-2 border-t border-white/10" />
+        <div className="-mx-3 mt-2 border-t border-inverse-tint" />
       )}
       {isSampled && (
-        <div className="mt-2 !text-2xs !text-gray-400">
+        <div className="mt-2 !text-2xs !text-inverse-muted">
           Estimated from a sample.
         </div>
       )}

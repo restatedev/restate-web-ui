@@ -25,14 +25,14 @@ const COLUMNS = [
 ] satisfies PanelTableColumn<ColumnId>[];
 
 const invocationsLinkStyles = tv({
-  base: 'relative z-10 inline-flex items-center gap-0.5 rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-zinc-500 no-underline shadow-none hover:bg-black/3 hover:text-zinc-700',
+  base: 'relative z-10 inline-flex items-center gap-0.5 rounded-lg border-none bg-transparent px-1.5 py-0.5 text-0.5xs text-muted no-underline shadow-none hover:bg-tint-subtle hover:text-secondary',
 });
 
 const rowStyles = tv({
   base: 'cursor-pointer [content-visibility:auto]',
   variants: {
     isSelected: {
-      true: 'bg-blue-50/60',
+      true: 'bg-accent-subtle/60',
       false: '',
     },
   },

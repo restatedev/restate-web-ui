@@ -12,7 +12,7 @@ export interface ErrorProps {
 }
 
 const styles = tv({
-  base: 'rounded-xl bg-red-100 p-3 text-sm',
+  base: 'rounded-xl bg-danger-muted p-3 text-sm',
 });
 
 function SingleError({
@@ -51,11 +51,11 @@ function SingleError({
       <div className="flex items-start gap-2">
         <div className="shrink-0">
           <Icon
-            className="h-5 w-5 fill-red-500 text-red-500"
+            className="h-5 w-5 fill-danger text-danger"
             name={IconName.CircleX}
           />
         </div>
-        <output className="max-h-28 flex-auto overflow-auto px-2 [word-break:break-word] text-red-700">
+        <output className="max-h-28 flex-auto overflow-auto px-2 [word-break:break-word] text-danger-strong">
           {typeof error === 'string' ? error : error.message}
         </output>
         {children && <div className="shrink-0">{children}</div>}
@@ -103,15 +103,15 @@ export function ErrorBanner({
       <div className="flex">
         <div className="shrink-0">
           <Icon
-            className="h-5 w-5 fill-red-500 text-red-500"
+            className="h-5 w-5 fill-danger text-danger"
             name={IconName.CircleX}
           />
         </div>
         <div className="ml-3 flex flex-col gap-2">
-          <h3 className="font-medium text-red-800">
+          <h3 className="font-medium text-danger-strong">
             There were {filteredErrors.length} errors:
           </h3>
-          <output className="max-h-20 overflow-auto [word-break:break-word] text-red-700">
+          <output className="max-h-20 overflow-auto [word-break:break-word] text-danger-strong">
             <ul className="list-disc space-y-1 pl-5">
               {filteredErrors.map((error) => (
                 <li key={typeof error === 'string' ? error : error?.message}>

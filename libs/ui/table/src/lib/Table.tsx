@@ -42,7 +42,7 @@ interface TableProps extends Pick<
 }
 
 const tableStyles = tv({
-  base: 'overflow-hidden rounded-xl border bg-linear-to-b from-gray-100 to-gray-50 shadow-xs shadow-zinc-800/5 [&:has([data-table-empty=true])]:bg-gray-50/50 [&:has([data-table-empty=true])]:shadow-none',
+  base: 'overflow-hidden rounded-xl border bg-linear-to-b from-muted to-subtle shadow-xs shadow-default/5 [&:has([data-table-empty=true])]:bg-subtle/50 [&:has([data-table-empty=true])]:shadow-none',
 });
 export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
   return (
@@ -51,7 +51,7 @@ export function Table({ className, ...props }: PropsWithChildren<TableProps>) {
         <ResizableTableContainer>
           <AriaTable
             {...props}
-            className="border-collapse border-spacing-0 rounded-xl bg-gray-50"
+            className="border-collapse border-spacing-0 rounded-xl bg-subtle"
           />
         </ResizableTableContainer>
       </div>
@@ -68,19 +68,19 @@ const sortArrowStyles = tv({
   base: '-my-0.5 h-2.5 w-2.5 transition-colors',
   variants: {
     isActive: {
-      true: 'text-gray-700 dark:text-zinc-200 forced-colors:text-[ButtonText]',
-      false: 'text-gray-400 dark:text-zinc-500 forced-colors:text-[GrayText]',
+      true: 'text-secondary forced-colors:text-[ButtonText]',
+      false: 'text-subtle forced-colors:text-[GrayText]',
     },
   },
 });
 
 const resizerStyles = tv({
   extend: focusRing,
-  base: 'resizer absolute right-0 box-content h-5 w-px cursor-col-resize rounded-sm bg-gray-400 bg-clip-content px-[8px] py-1 -outline-offset-2 resizing:w-[2px] resizing:bg-blue-600 resizing:pl-[7px]',
+  base: 'resizer absolute right-0 box-content h-5 w-px cursor-col-resize rounded-sm bg-neutral bg-clip-content px-[8px] py-1 -outline-offset-2 resizing:w-[2px] resizing:bg-accent resizing:pl-[7px]',
 });
 
 const columnStyles = tv({
-  base: 'py-2 pl-2 text-start text-sm font-semibold text-gray-700 last:pr-2 focus-within:z-20 [&:hover]:z-20 [&:not(:last-child)_.resizer]:translate-x-[10px]',
+  base: 'py-2 pl-2 text-start text-sm font-semibold text-secondary last:pr-2 focus-within:z-20 [&:hover]:z-20 [&:not(:last-child)_.resizer]:translate-x-[10px]',
   variants: {
     allowsSorting: {
       true: 'cursor-pointer',
@@ -153,7 +153,7 @@ export function Column({
 }
 
 const tableHeaderStyles = tv({
-  base: 'sticky top-0 z-10 bg-gray-100/80 drop-shadow-[0px_1px_0px_rgba(0,0,0,0.1)] backdrop-blur-xl backdrop-saturate-200 [box-shadow2:0_1px_0px_0px_rgba(0,0,0,0.1)] supports-[-moz-appearance:none]:bg-gray-100',
+  base: 'sticky top-0 z-10 bg-muted/80 drop-shadow-[0px_1px_0px_--theme(--box-shadow-color-default/10%)] backdrop-blur-xl backdrop-saturate-200 [box-shadow2:0_1px_0px_0px_--theme(--box-shadow-color-default/10%)] supports-[-moz-appearance:none]:bg-muted',
 });
 
 interface TableHeaderProps<T extends object> extends Pick<

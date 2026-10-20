@@ -56,8 +56,8 @@ export function IssueBadge({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-lg">
-        <div className="flex flex-col gap-1 rounded-2xl border border-zinc-900/80 bg-zinc-800/90 p-3 pb-1.5 shadow-[inset_0_1px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl">
-          <div className="text-0.5xs font-medium text-zinc-400">
+        <div className="flex flex-col gap-1 rounded-2xl border border-inverse bg-inverse/90 p-3 pb-1.5 shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] drop-shadow-xl backdrop-blur-xl">
+          <div className="text-0.5xs font-medium text-inverse-muted">
             {issues.length}{' '}
             {formatPlurals(issues.length, {
               one: 'issue',
@@ -86,7 +86,7 @@ export function IssueBadge({
                   {href && (
                     <Icon
                       name={IconName.ChevronRight}
-                      className="ml-auto h-3.5 w-3.5 shrink-0 text-zinc-300"
+                      className="ml-auto h-3.5 w-3.5 shrink-0 text-inverse-secondary"
                     />
                   )}
                 </>
@@ -96,14 +96,14 @@ export function IssueBadge({
                   key={i}
                   href={href}
                   variant="secondary"
-                  className="-mx-2 flex items-center gap-2 rounded-lg border-none bg-transparent px-2 py-1 text-0.5xs text-zinc-300 no-underline shadow-none hover:bg-white/10 pressed:bg-white/15"
+                  className="-mx-2 flex items-center gap-2 rounded-lg border-none bg-transparent px-2 py-1 text-0.5xs text-inverse-secondary no-underline shadow-none hover:bg-inverse-tint-subtle pressed:bg-inverse-tint"
                 >
                   {content}
                 </Link>
               ) : (
                 <div
                   key={i}
-                  className="flex items-center gap-2 py-1 text-0.5xs text-zinc-300"
+                  className="flex items-center gap-2 py-1 text-0.5xs text-inverse-secondary"
                 >
                   {content}
                 </div>

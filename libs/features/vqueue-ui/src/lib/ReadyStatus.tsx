@@ -2,7 +2,7 @@ import { Badge } from '@restate/ui-badge';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'relative inline-flex max-w-full gap-2 border-dashed border-zinc-300 bg-transparent text-zinc-500',
+  base: 'relative inline-flex max-w-full gap-2 border-dashed border-strong bg-transparent text-muted',
 });
 
 export interface ReadyStatusProps {

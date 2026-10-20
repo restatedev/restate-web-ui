@@ -21,10 +21,10 @@ const styles = tv({
   slots: {
     root: 'inline-flex min-w-0 shrink-0 items-baseline gap-1.5 whitespace-nowrap tabular-nums',
     valueGroup: 'inline-flex items-baseline gap-1',
-    value: 'font-medium text-zinc-600',
-    qualifier: 'font-normal text-gray-400',
+    value: 'font-medium text-tertiary',
+    qualifier: 'font-normal text-subtle',
     visual:
-      'inline-flex shrink-0 items-baseline gap-[0.28em] rounded-[0.35em] border px-[0.3em] py-[0.12em] text-[1em] leading-none outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500/30',
+      'inline-flex shrink-0 items-baseline gap-[0.28em] rounded-[0.35em] border px-[0.3em] py-[0.12em] text-[1em] leading-none outline-hidden focus-visible:ring-2 focus-visible:ring-focus/30',
     icon: 'h-[0.88em] w-[0.88em] shrink-0 self-center stroke-2',
     approximation: 'self-center text-[0.82em] leading-none font-medium',
     measure: 'inline-flex items-baseline gap-[0.04em]',
@@ -43,16 +43,16 @@ const styles = tv({
     },
     tone: {
       faster: {
-        visual: 'border-sky-200/80 bg-sky-50/70 text-sky-700',
+        visual: 'border-info/80 bg-info-subtle text-info-strong',
       },
       typical: {
-        visual: 'border-zinc-200 bg-zinc-50/80 text-zinc-600',
+        visual: 'border-default bg-subtle/80 text-tertiary',
       },
       slower: {
-        visual: 'border-amber-200/80 bg-amber-50/70 text-amber-700',
+        visual: 'border-pending/80 bg-pending-subtle text-pending-strong',
       },
       slowest: {
-        visual: 'border-orange-200/80 bg-orange-50/70 text-orange-700',
+        visual: 'border-warning/80 bg-warning-subtle text-warning-strong',
       },
     },
   },

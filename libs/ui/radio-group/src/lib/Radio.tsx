@@ -11,18 +11,17 @@ interface RadioProps {
 
 const styles = tv({
   extend: focusRing,
-  base: 'h-5 w-5 rounded-full border-2 bg-white transition-all dark:bg-zinc-900',
+  base: 'h-5 w-5 rounded-full border-2 bg-surface transition-all',
   variants: {
     isSelected: {
-      false:
-        'border-gray-400 group-pressed:border-gray-500 dark:border-zinc-400 dark:group-pressed:border-zinc-300',
-      true: 'border-[7px] border-gray-700 group-pressed:border-gray-800 dark:border-slate-300 dark:group-pressed:border-slate-200 forced-colors:border-[Highlight]!',
+      false: 'border-neutral group-pressed:border-neutral-strong',
+      true: 'border-[7px] border-neutral-strong group-pressed:border-neutral-strong forced-colors:border-[Highlight]!',
     },
     isInvalid: {
-      true: 'border-red-700 group-pressed:border-red-800 dark:border-red-600 dark:group-pressed:border-red-700 forced-colors:border-[Mark]!',
+      true: 'border-danger-strong group-pressed:border-danger-strong forced-colors:border-[Mark]!',
     },
     isDisabled: {
-      true: 'border-gray-200 dark:border-zinc-700 forced-colors:border-[GrayText]!',
+      true: 'border-default forced-colors:border-[GrayText]!',
     },
   },
 });
@@ -36,7 +35,7 @@ export function Radio({
   return (
     <AriaRadio
       {...props}
-      className="group flex items-center gap-2 text-sm text-gray-800 transition disabled:text-gray-300 dark:text-zinc-200 dark:disabled:text-zinc-600 forced-colors:disabled:text-[GrayText]"
+      className="group flex items-center gap-2 text-sm text-primary transition disabled:text-faint forced-colors:disabled:text-[GrayText]"
     >
       {(renderProps) => (
         <>

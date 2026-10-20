@@ -37,7 +37,7 @@ function getIssuesByStatus(serviceIssues: ServiceIssue[]) {
 }
 
 const styles = tv({
-  base: 'flex h-3 gap-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5',
+  base: 'flex h-3 gap-1 overflow-hidden rounded-lg border border-default bg-muted p-0.5',
   variants: {
     isLoading: {
       true: 'animate-pulse',
@@ -192,23 +192,23 @@ export function ServiceStatusBar({
 
   const title = (
     <>
-      <div className="text-base! leading-7 font-medium text-gray-300!">
-        <span className="text-base! leading-7 font-medium text-gray-300!">
+      <div className="text-base! leading-7 font-medium text-faint!">
+        <span className="text-base! leading-7 font-medium text-faint!">
           {serviceName}
         </span>
         {handlerName && (
           <>
-            <span className="text-base! leading-7 font-medium text-gray-300! opacity-60">
+            <span className="text-base! leading-7 font-medium text-faint! opacity-60">
               {' '}
               /{' '}
             </span>
-            <span className="text-base! leading-7 font-medium text-gray-300! italic">
+            <span className="text-base! leading-7 font-medium text-faint! italic">
               {handlerName}()
             </span>
           </>
         )}
       </div>
-      <div className="text-0.5xs! font-normal text-gray-400!">
+      <div className="text-0.5xs! font-normal text-subtle!">
         {rangeLabel ?? getRangeLabel(range)}
       </div>
     </>
@@ -277,11 +277,11 @@ export function DeploymentStatusBar({
     <StatusBar
       title={
         <>
-          <div className="text-base! leading-7 font-medium text-gray-300!">
+          <div className="text-base! leading-7 font-medium text-faint!">
             {label}
           </div>
           {rangeLabel && (
-            <div className="text-0.5xs! font-normal text-gray-400!">
+            <div className="text-0.5xs! font-normal text-subtle!">
               {rangeLabel}
             </div>
           )}

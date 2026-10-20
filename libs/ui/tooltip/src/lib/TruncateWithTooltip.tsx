@@ -56,7 +56,7 @@ const contentStyles = tv({
 });
 
 const tooltipContentStyles = tv({
-  base: 'flex items-start gap-4 whitespace-pre-wrap **:text-xs **:text-gray-200',
+  base: 'flex items-start gap-4 whitespace-pre-wrap **:text-xs **:text-inverse-secondary',
 });
 export function TruncateWithTooltip({
   children,
@@ -149,7 +149,7 @@ export function TruncateWithTooltip({
           {!hideCopy && (
             <Copy
               copyText={copyTextProp ?? triggerRef.current?.textContent ?? ''}
-              className="sticky top-0 right-0 translate-x-1 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500 [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-gray-200"
+              className="sticky top-0 right-0 translate-x-1 rounded-xs bg-inverse/90 p-1 hover:bg-inverse-emphasis pressed:bg-inverse-strong [&_svg]:h-3 [&_svg]:w-3 [&_svg]:text-inverse-secondary"
             />
           )}
         </div>

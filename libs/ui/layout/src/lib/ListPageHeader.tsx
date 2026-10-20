@@ -11,9 +11,9 @@ const styles = tv({
     root: 'flex w-full flex-col gap-2.5 px-6 pt-8 pb-6',
     heading: 'flex items-center',
     title:
-      'inline-flex h-8 items-center gap-1.5 rounded-[0.625rem] bg-blue-50/90 px-2.5 text-sm font-semibold tracking-[-0.01em] text-blue-900/75 shadow-xs ring-1 ring-blue-200/60',
-    icon: 'h-4 w-4 text-blue-600/90',
-    description: 'max-w-[68ch] text-sm leading-6 text-zinc-500',
+      'inline-flex h-8 items-center gap-1.5 rounded-[0.625rem] bg-accent-subtle px-2.5 text-sm font-semibold tracking-[-0.01em] text-accent-strong/80 shadow-xs ring-1 ring-accent-muted',
+    icon: 'h-4 w-4 text-accent',
+    description: 'max-w-[68ch] text-sm leading-6 text-muted',
   },
 });
 

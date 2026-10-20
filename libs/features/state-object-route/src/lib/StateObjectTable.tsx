@@ -94,39 +94,39 @@ const stateObjectStyles = tv({
     objectKeyCell: '[&&&]:overflow-visible',
     objectKey: 'flex min-w-0 items-center gap-2',
     chevron:
-      'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
+      'h-5 w-5 shrink-0 rounded-md p-0.5 text-subtle group-data-[expanded=true]/row:rotate-90',
     objectIcon:
-      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white text-zinc-500 shadow-xs',
-    stateKeyCell: 'bg-gray-50/35',
+      'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-surface text-muted shadow-xs',
+    stateKeyCell: 'bg-subtle/30',
     valueButton:
-      'group/value flex w-full min-w-0 items-center justify-start rounded-lg border-0 bg-transparent! px-1.5 py-0.5 text-left font-mono text-xs text-zinc-500 shadow-none! hover:bg-transparent! pressed:bg-transparent!',
+      'group/value flex w-full min-w-0 items-center justify-start rounded-lg border-0 bg-transparent! px-1.5 py-0.5 text-left font-mono text-xs text-muted shadow-none! hover:bg-transparent! pressed:bg-transparent!',
     valueButtonContent:
-      'inline-flex max-w-full min-w-0 items-center gap-1 overflow-hidden rounded-lg px-1.5 py-0.5 group-hover/value:bg-gray-100 group-pressed/value:bg-gray-200',
-    valueButtonMeta: 'shrink-0 font-sans text-0.5xs text-zinc-400',
-    valueStatus: 'px-3 py-2 text-xs text-zinc-500',
+      'inline-flex max-w-full min-w-0 items-center gap-1 overflow-hidden rounded-lg px-1.5 py-0.5 group-hover/value:bg-muted group-pressed/value:bg-emphasis',
+    valueButtonMeta: 'shrink-0 font-sans text-0.5xs text-subtle',
+    valueStatus: 'px-3 py-2 text-xs text-muted',
     sizeText:
-      'block max-w-full truncate font-mono text-xs whitespace-nowrap text-zinc-500',
+      'block max-w-full truncate font-mono text-xs whitespace-nowrap text-muted',
     collapsedPreview:
-      'flex max-w-full min-w-0 items-baseline gap-1 overflow-hidden font-mono text-xs whitespace-nowrap text-zinc-500',
+      'flex max-w-full min-w-0 items-baseline gap-1 overflow-hidden font-mono text-xs whitespace-nowrap text-muted',
     collapsedPreviewPair: 'inline-flex max-w-full min-w-0 items-baseline gap-1',
     collapsedPreviewKey:
-      'inline-block max-w-[18ch] min-w-0 truncate align-bottom font-medium text-zinc-600',
+      'inline-block max-w-[18ch] min-w-0 truncate align-bottom font-medium text-tertiary',
     collapsedPreviewValue:
-      'inline-block max-w-[28ch] truncate align-bottom text-zinc-500',
-    collapsedPreviewPunctuation: 'shrink-0 text-zinc-400',
+      'inline-block max-w-[28ch] truncate align-bottom text-muted',
+    collapsedPreviewPunctuation: 'shrink-0 text-subtle',
     previewSkeleton:
-      'block h-4 w-44 max-w-full animate-pulse rounded-md bg-gray-200/80',
+      'block h-4 w-44 max-w-full animate-pulse rounded-md bg-emphasis/80',
     refreshingStatus:
-      'flex min-w-0 items-center gap-1.5 text-xs text-zinc-400 italic',
-    childStatus: 'flex min-w-0 items-center gap-1.5 text-xs text-gray-500',
+      'flex min-w-0 items-center gap-1.5 text-xs text-subtle italic',
+    childStatus: 'flex min-w-0 items-center gap-1.5 text-xs text-muted',
     actionsCell: '[&&&]:overflow-visible',
     actions: 'flex min-w-0 items-center justify-end gap-1.5',
     objectActionButton:
       'invisible absolute right-full z-2 translate-x-px rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] group-focus-within:visible group-hover:visible',
-    childObjectCell: 'bg-gray-50/35',
-    childRow: 'bg-white hover:bg-gray-50',
-    childRowLast: '[&_td]:border-b! [&_td]:border-gray-200',
-    loadMoreCell: 'bg-gray-50/60',
+    childObjectCell: 'bg-subtle/30',
+    childRow: 'bg-surface hover:bg-subtle',
+    childRowLast: '[&_td]:border-b! [&_td]:border-default',
+    loadMoreCell: 'bg-subtle/60',
   },
 });
 
@@ -841,7 +841,7 @@ function StateChildCell({
               <Button
                 variant="secondary"
                 onClick={onRetry}
-                className="rounded-lg px-2 py-0.5 text-xs font-normal text-gray-600"
+                className="rounded-lg px-2 py-0.5 text-xs font-normal text-tertiary"
               >
                 Retry
               </Button>
@@ -853,7 +853,7 @@ function StateChildCell({
     if (col.id === 'value' && child.status === 'error') {
       return (
         <Cell className={loadMoreCell()}>
-          <span className="block max-w-full truncate text-xs text-red-600">
+          <span className="block max-w-full truncate text-xs text-danger">
             {error?.message}
           </span>
         </Cell>
@@ -909,7 +909,7 @@ function StateLoadMoreCell({
         variant="secondary"
         onClick={onLoadMore}
         disabled={isFetchingNextPage}
-        className="flex w-fit max-w-full items-center gap-1.5 truncate rounded-lg px-2 py-1 text-xs font-normal text-gray-600"
+        className="flex w-fit max-w-full items-center gap-1.5 truncate rounded-lg px-2 py-1 text-xs font-normal text-tertiary"
       >
         {isFetchingNextPage ? (
           <>
@@ -1063,13 +1063,13 @@ function StateValuePreview({
                 className="shrink-0"
               />
             )}
-            <span className="block min-w-0 truncate font-mono text-xs text-zinc-500">
+            <span className="block min-w-0 truncate font-mono text-xs text-muted">
               {isValueLoaded ? (
                 <StaticCodecOptionsProvider options={stateCodecOptions}>
                   <DecodedValue value={resolvedValue} isBase64 />
                 </StaticCodecOptionsProvider>
               ) : (
-                <span className="text-gray-500">Load value</span>
+                <span className="text-muted">Load value</span>
               )}
             </span>
             {!isValueLoaded ? (
@@ -1130,11 +1130,11 @@ function StateValuePreview({
 }
 
 const stylesKey = tv({
-  base: 'relative -ml-1 max-w-full min-w-0 font-mono text-zinc-600',
+  base: 'relative -ml-1 max-w-full min-w-0 font-mono text-tertiary',
   slots: {
     container: 'block max-w-full min-w-0 pl-1 align-middle',
     button:
-      'relative -ml-1 block max-w-full min-w-0 rounded-md border-0 bg-transparent p-0 text-left font-mono text-zinc-600 shadow-none hover:bg-gray-100 pressed:bg-gray-200',
+      'relative -ml-1 block max-w-full min-w-0 rounded-md border-0 bg-transparent p-0 text-left font-mono text-tertiary shadow-none hover:bg-muted pressed:bg-emphasis',
   },
 });
 

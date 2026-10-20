@@ -21,38 +21,38 @@ const styles = tv({
     status:
       'relative inline-flex max-w-full min-w-0 shrink items-center gap-1.5 border-dashed py-0.5',
     reason:
-      'flex h-5 min-w-0 items-center gap-1 rounded-md border border-gray-200/80 bg-white px-1.5 py-0.5 text-2xs text-orange-700 shadow-none',
-    alert: 'h-3 w-3 shrink-0 text-orange-600',
+      'flex h-5 min-w-0 items-center gap-1 rounded-md border border-default/80 bg-surface px-1.5 py-0.5 text-2xs text-warning-strong shadow-none',
+    alert: 'h-3 w-3 shrink-0 text-warning',
     label: 'truncate',
-    chevrons: 'h-3 w-3 shrink-0 text-gray-500',
+    chevrons: 'h-3 w-3 shrink-0 text-muted',
     popover: 'w-[min(34rem,calc(100vw-2rem))]',
     details: 'px-3 py-2.5',
-    facts: 'divide-y divide-zinc-200/70',
+    facts: 'divide-y divide-default',
     fact: 'grid grid-cols-[7rem_minmax(0,1fr)] items-center gap-3 py-2 first:pt-0 last:pb-0',
     targetFact: 'flex flex-col items-stretch gap-2 py-2.5 first:pt-0 last:pb-0',
     factHeading: 'flex min-w-0 flex-wrap items-center gap-2',
-    term: 'text-xs text-zinc-400',
-    factLevel: 'text-xs font-medium text-zinc-600',
-    factSeparator: 'text-xs text-zinc-300',
+    term: 'text-xs text-subtle',
+    factLevel: 'text-xs font-medium text-tertiary',
+    factSeparator: 'text-xs text-faint',
     factMeta: 'flex shrink-0 items-center gap-2',
-    value: 'min-w-0 text-right text-xs text-zinc-700',
-    targetValue: 'w-full min-w-0 text-left text-xs text-zinc-700',
+    value: 'min-w-0 text-right text-xs text-secondary',
+    targetValue: 'w-full min-w-0 text-left text-xs text-secondary',
     technical: 'font-mono text-2xs break-all',
     target: 'flex w-full min-w-0 justify-start',
     relationship: 'flex flex-col',
     relationshipSource: 'flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1',
     relationshipSourceValue: 'relative flex min-w-0 items-center',
-    relationshipJoiner: 'text-2xs text-zinc-400',
+    relationshipJoiner: 'text-2xs text-subtle',
     relationshipTarget: 'flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1',
     relationshipConnector:
       'absolute top-full left-0 flex h-9 w-6 min-w-0 shrink-0 items-center justify-start overflow-visible',
     relationshipConnectorSpacer: 'h-9',
     relationshipLine:
-      'absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-amber-200/80',
+      'absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-pending-emphasis/80',
     relationshipVerb: 'relative -translate-y-0.5 rounded-md whitespace-nowrap',
     relationshipArrow:
-      'absolute -bottom-0.5 left-1/2 h-3 w-3 -translate-x-1/2 bg-white text-amber-600',
-    fallback: 'px-4 py-3 text-xs text-zinc-600',
+      'absolute -bottom-0.5 left-1/2 h-3 w-3 -translate-x-1/2 bg-surface text-pending',
+    fallback: 'px-4 py-3 text-xs text-tertiary',
   },
   variants: {
     showReason: {
@@ -487,11 +487,11 @@ export function BlockedStatus({
   const popoverTitle = model ? (
     <span className="flex min-w-0 items-baseline gap-1">
       <span className="shrink-0">Blocked on</span>
-      <span className="truncate text-orange-700">{model.heading}</span>
+      <span className="truncate text-warning-strong">{model.heading}</span>
       {formattedBlockedDuration && (
         <>
-          <span className="shrink-0 font-normal text-zinc-400">for</span>
-          <span className="shrink-0 text-zinc-700 tabular-nums">
+          <span className="shrink-0 font-normal text-subtle">for</span>
+          <span className="shrink-0 text-secondary tabular-nums">
             {formattedBlockedDuration}
           </span>
         </>

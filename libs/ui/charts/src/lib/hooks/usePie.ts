@@ -3,19 +3,26 @@ import type { PieConfig } from '../types';
 import type { PieSeriesOption } from 'echarts/charts';
 import type { CustomSeriesOption } from 'echarts/charts';
 import type { EChartsType } from 'echarts/core';
+import { resolveColor } from '@restate/util-theme';
 
-const HIGHLIGHT_STROKE = {
-  type: 'linear',
-  x: 0,
-  y: 0,
-  x2: 0,
-  y2: 1,
-  colorStops: [
-    { offset: 0, color: 'rgba(255,255,255,0.7)' },
-    { offset: 0.5, color: 'rgba(255,255,255,0.35)' },
-    { offset: 1, color: 'rgba(255,255,255,0.05)' },
-  ],
-} as unknown as string;
+const highlight = (percent: number) =>
+  resolveColor(
+    `color-mix(in oklab, var(--background-color-highlight) ${percent}%, transparent)`,
+  );
+
+const highlightStroke = () =>
+  ({
+    type: 'linear',
+    x: 0,
+    y: 0,
+    x2: 0,
+    y2: 1,
+    colorStops: [
+      { offset: 0, color: highlight(70) },
+      { offset: 0.5, color: highlight(35) },
+      { offset: 1, color: highlight(5) },
+    ],
+  }) as unknown as string;
 
 export function usePie(
   pieCfg: PieConfig | undefined,
@@ -109,7 +116,7 @@ export function usePie(
               id: `highlight-${params.dataIndex}`,
               style: {
                 fill: 'transparent',
-                stroke: HIGHLIGHT_STROKE,
+                stroke: highlightStroke(),
                 lineWidth: 1,
                 opacity: 1,
                 transition: ['opacity'],
@@ -124,7 +131,7 @@ export function usePie(
               id: `highlight-emphasis-${params.dataIndex}`,
               style: {
                 fill: 'transparent',
-                stroke: HIGHLIGHT_STROKE,
+                stroke: highlightStroke(),
                 lineWidth: 1,
                 opacity: 0,
                 transition: ['opacity'],

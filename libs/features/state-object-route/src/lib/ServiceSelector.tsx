@@ -210,7 +210,7 @@ export function ServiceSelector() {
       <DropdownTrigger>
         <Button
           variant="secondary"
-          className="flex min-w-0 shrink-0 items-center gap-[0.7ch] rounded-lg bg-white/25 px-1.5 py-1 text-xs text-zinc-50 hover:bg-white/30 pressed:bg-white/30"
+          className="flex min-w-0 shrink-0 items-center gap-[0.7ch] rounded-lg bg-inverse-tint px-1.5 py-1 text-xs text-inverse hover:bg-inverse-tint-strong pressed:bg-inverse-tint-strong"
         >
           <span className="shrink-0 whitespace-nowrap">
             {virtualObjects.includes(serviceParam)
@@ -305,7 +305,7 @@ function DropDownVirtualObject({
             <span className="truncate">{service}</span>
             <StateOnlyServiceWarningIcon tooltip={false} />
           </span>
-          <span className="group-focused:text-blue-100 truncate text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="group-focused:text-on-accent truncate text-xs text-muted">
             {stateOnlyServiceWarning}
           </span>
         </span>

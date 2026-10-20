@@ -10,11 +10,11 @@ import { DateTooltip } from '@restate/ui-tooltip';
 import { CSSProperties } from 'react';
 
 const intervalBoundaryStyles = tv({
-  base: 'pointer-events-none absolute inset-y-0 right-0 border-r border-dotted border-black/10',
+  base: 'pointer-events-none absolute inset-y-0 right-0 border-r border-dotted border-tint',
 });
 
 const intervalLabelStyles = tv({
-  base: 'pointer-events-none absolute top-0 right-0 pt-0 pr-0.5 text-right font-sans text-2xs whitespace-nowrap text-gray-500',
+  base: 'pointer-events-none absolute top-0 right-0 pt-0 pr-0.5 text-right font-sans text-2xs whitespace-nowrap text-muted',
 });
 
 const tickContainerStyles = tv({
@@ -49,7 +49,7 @@ const intervalBackgroundStyles = tv({
   base: 'pointer-events-none absolute inset-0',
   variants: {
     isEven: {
-      true: 'bg-gray-400/5',
+      true: 'bg-tint-subtle',
       false: '',
     },
   },
@@ -60,7 +60,7 @@ const startDateTimeStyles = tv({
 });
 
 const nowLabelStyles = tv({
-  base: 'pointer-events-none absolute z-4 mt-0.5 rounded-sm border border-white bg-zinc-500 px-1 text-2xs text-white',
+  base: 'pointer-events-none absolute z-4 mt-0.5 rounded-sm border border-surface bg-neutral-strong px-1 text-2xs text-inverse',
   variants: {
     side: {
       right: 'left-px',
@@ -70,7 +70,7 @@ const nowLabelStyles = tv({
 });
 
 const nowMarkerStyles = tv({
-  base: 'pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] bottom-0 z-20 w-0 border-l-2 border-white/80 font-sans text-2xs text-gray-500',
+  base: 'pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] bottom-0 z-20 w-0 border-l-2 border-surface/80 font-sans text-2xs text-muted',
   variants: {
     animateLeft: {
       true: 'linear transition-[left] duration-300',
@@ -134,7 +134,7 @@ export function Units({
 
   return (
     <div className={className} style={style}>
-      <div className="pointer-events-none absolute top-0 bottom-0 left-2 border-l border-dashed border-gray-500/40" />
+      <div className="pointer-events-none absolute top-0 bottom-0 left-2 border-l border-dashed border-strong" />
       {shouldShowNow && (
         <div
           style={{
@@ -242,7 +242,7 @@ export function StartDateTimeUnit({
 }) {
   return (
     <div className={startDateTimeStyles({ className })}>
-      <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-gray-500/40 font-sans text-2xs text-gray-500">
+      <div className="absolute -top-8 bottom-0 left-2 border-l border-dashed border-strong font-sans text-2xs text-muted">
         <div className="pointer-events-auto ml-1 flex w-28 -translate-y-3 flex-col justify-start text-left">
           <DateTooltip date={new Date(start)} title="">
             {new Date(start).toLocaleDateString('en', {

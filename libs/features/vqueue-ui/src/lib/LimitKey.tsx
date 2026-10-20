@@ -10,10 +10,10 @@ import { tv } from '@restate/util-styles';
 const styles = tv({
   slots: {
     root: 'inline-flex w-fit max-w-full min-w-0 align-middle',
-    chip: 'max-w-full bg-white font-mono text-zinc-600',
+    chip: 'max-w-full bg-surface font-mono text-tertiary',
     segment: 'max-w-full px-1.5',
-    nestedSegment: 'bg-zinc-50 text-zinc-500',
-    icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+    nestedSegment: 'bg-subtle text-muted',
+    icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
     copy: '-mr-1 ml-0.5 shrink-0 p-1 [&_svg]:h-2.5 [&_svg]:w-2.5',
   },
   variants: {

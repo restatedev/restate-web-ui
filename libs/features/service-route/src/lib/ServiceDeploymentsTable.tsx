@@ -98,7 +98,7 @@ export function ServiceDeploymentsTable({ service }: { service: string }) {
                 deploymentId={row.deploymentId}
                 showLink={false}
                 showEndpointCopyButton
-                className="w-max max-w-full min-w-0 text-[0.8125rem] font-medium text-zinc-600"
+                className="w-max max-w-full min-w-0 text-[0.8125rem] font-medium text-tertiary"
               />
             </Cell>
           );
@@ -129,7 +129,7 @@ export function ServiceDeploymentsTable({ service }: { service: string }) {
                   }
                 />
               ) : isStatusPending ? (
-                <span className="block h-5 w-16 animate-pulse rounded-full bg-gray-200/70" />
+                <span className="block h-5 w-16 animate-pulse rounded-full bg-emphasis/70" />
               ) : null}
             </Cell>
           );

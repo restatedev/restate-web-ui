@@ -27,18 +27,18 @@ const CardIntentContext = createContext<CardIntent>('none');
 const cardStyles = tv({
   slots: {
     wrapper: 'flex max-w-full min-w-0 flex-col',
-    box: "relative isolate flex max-w-full min-w-0 flex-auto flex-col divide-y divide-gray-200 overflow-hidden rounded-xl border bg-gray-50 shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[800px_400px_at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_white]",
+    box: "relative isolate flex max-w-full min-w-0 flex-auto flex-col divide-y divide-default overflow-hidden rounded-xl border bg-subtle shadow-xs before:pointer-events-none before:absolute before:inset-0 before:bg-radial-[800px_400px_at_0%_0%] before:to-transparent before:to-50% before:content-[''] [&>*]:relative [&>*]:z-1 [&>*+*]:shadow-[inset_0_1px_0_var(--background-color-surface)]",
   },
   variants: {
     intent: {
-      success: { box: 'border-green-200/70 before:from-green-400/20' },
-      danger: { box: 'border-red-200/70 before:from-red-400/20' },
-      warning: { box: 'border-orange-200/70 before:from-orange-400/20' },
-      pending: { box: 'border-amber-200/70 before:from-amber-400/20' },
-      info: { box: 'border-blue-200/70 before:from-blue-400/20' },
-      default: { box: 'border-gray-200/70 before:from-white' },
+      success: { box: 'border-success/70 before:from-success-vivid/20' },
+      danger: { box: 'border-danger/70 before:from-danger-vivid/20' },
+      warning: { box: 'border-warning/70 before:from-warning-vivid/20' },
+      pending: { box: 'border-pending/70 before:from-pending-vivid/20' },
+      info: { box: 'border-info/70 before:from-info-vivid/20' },
+      default: { box: 'border-default/70 before:from-surface' },
       none: {
-        box: 'border-gray-200 ring-1 ring-white/50 ring-inset before:from-white',
+        box: 'border-default ring-1 ring-surface/50 ring-inset before:from-surface',
       },
     } satisfies Record<CardIntent, { box: string }>,
     span: {
@@ -79,46 +79,46 @@ export function Card({
 const cardHeaderStyles = tv({
   slots: {
     base: 'flex min-w-0 items-center gap-2 pr-2 pl-2.5',
-    tab: 'relative z-1 -mb-px flex h-8 min-w-0 shrink-0 items-center gap-1.5 self-end rounded-t-lg border border-b-0 bg-gray-50 px-2.5',
+    tab: 'relative z-1 -mb-px flex h-8 min-w-0 shrink-0 items-center gap-1.5 self-end rounded-t-lg border border-b-0 bg-subtle px-2.5',
     icon: 'h-3.5 w-3.5 shrink-0',
     title: 'truncate text-xs leading-none font-semibold',
   },
   variants: {
     intent: {
       success: {
-        tab: 'border-green-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-green-400/20 to-transparent to-50%',
-        icon: 'text-green-600',
-        title: 'text-green-800/80',
+        tab: 'border-success/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-success-vivid/20 to-transparent to-50%',
+        icon: 'text-success',
+        title: 'text-success-strong',
       },
       danger: {
-        tab: 'border-red-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-red-400/20 to-transparent to-50%',
-        icon: 'text-red-600',
-        title: 'text-red-800/80',
+        tab: 'border-danger/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-danger-vivid/20 to-transparent to-50%',
+        icon: 'text-danger',
+        title: 'text-danger-strong',
       },
       warning: {
-        tab: 'border-orange-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-orange-400/20 to-transparent to-50%',
-        icon: 'text-orange-600',
-        title: 'text-orange-800/80',
+        tab: 'border-warning/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-warning-vivid/20 to-transparent to-50%',
+        icon: 'text-warning',
+        title: 'text-warning-strong',
       },
       pending: {
-        tab: 'border-amber-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-amber-400/20 to-transparent to-50%',
-        icon: 'text-amber-600',
-        title: 'text-amber-800/80',
+        tab: 'border-pending/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-pending-vivid/20 to-transparent to-50%',
+        icon: 'text-pending',
+        title: 'text-pending-strong',
       },
       info: {
-        tab: 'border-blue-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-blue-400/20 to-transparent to-50%',
-        icon: 'text-blue-600',
-        title: 'text-blue-800/80',
+        tab: 'border-info/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-info-vivid/20 to-transparent to-50%',
+        icon: 'text-info',
+        title: 'text-info-strong',
       },
       default: {
-        tab: 'border-gray-200/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-white to-transparent to-50%',
-        icon: 'text-zinc-500',
-        title: 'text-zinc-600',
+        tab: 'border-default/70 bg-radial-[800px_400px_at_-0.625rem_100%] from-surface to-transparent to-50%',
+        icon: 'text-muted',
+        title: 'text-tertiary',
       },
       none: {
-        tab: 'border-gray-200 bg-radial-[800px_400px_at_-0.625rem_100%] from-white to-transparent to-50%',
-        icon: 'text-zinc-500',
-        title: 'text-zinc-600',
+        tab: 'border-default bg-radial-[800px_400px_at_-0.625rem_100%] from-surface to-transparent to-50%',
+        icon: 'text-muted',
+        title: 'text-tertiary',
       },
     },
   },
@@ -172,7 +172,7 @@ export function CardHeaderLink({
       href={href}
       variant="secondary"
       aria-label={ariaLabel}
-      className="group flex items-center gap-0.5 text-2xs font-medium text-gray-400 no-underline transition-colors hover:text-gray-600"
+      className="group flex items-center gap-0.5 text-2xs font-medium text-subtle no-underline transition-colors hover:text-tertiary"
     >
       {children}
       <Icon
@@ -195,11 +195,11 @@ const cardRowStyles = tv({
     variant: {
       hero: {
         base: 'min-h-13 py-2.5',
-        label: 'text-0.5xs text-gray-500',
+        label: 'text-0.5xs text-muted',
       },
       default: {
         base: 'min-h-8.5 py-1',
-        label: 'text-2xs text-gray-400',
+        label: 'text-2xs text-subtle',
       },
     },
   },
@@ -226,7 +226,7 @@ export function CardRow({
 }
 
 const cardHeroValueStyles = tv({
-  base: 'shrink-0 text-xl font-semibold tracking-tight text-zinc-800 tabular-nums',
+  base: 'shrink-0 text-xl font-semibold tracking-tight text-primary tabular-nums',
 });
 
 export function CardHeroValue({
@@ -272,7 +272,7 @@ export function CardLinkRow({
   const chevron = showChevron ? (
     <Icon
       name={IconName.ChevronRight}
-      className="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-150 group-hover:translate-x-0.5"
+      className="h-4 w-4 shrink-0 text-subtle transition-transform duration-150 group-hover:translate-x-0.5"
     />
   ) : null;
   const rowContent = (
@@ -285,7 +285,7 @@ export function CardLinkRow({
   );
   const rowClassName = styles.base({
     className: [
-      'group rounded-none no-underline -outline-offset-2 transition-colors hover:bg-gray-100/70 pressed:bg-gray-200/70',
+      'group rounded-none no-underline -outline-offset-2 transition-colors hover:bg-muted/70 pressed:bg-emphasis/70',
       className,
     ]
       .filter(Boolean)
@@ -327,7 +327,7 @@ export function CardLinkRow({
       <div
         className={[
           rowClassName,
-          'relative isolate has-[[data-pressed]]:bg-gray-200/70',
+          'relative isolate has-[[data-pressed]]:bg-emphasis/70',
         ].join(' ')}
       >
         {label && stretchedLink}
@@ -356,11 +356,11 @@ const cardButtonRowStyles = tv({
   slots: {
     shell: 'flex min-w-0',
     button:
-      'group w-full justify-start rounded-none text-left font-normal shadow-none -outline-offset-2 transition-colors hover:bg-gray-100/70 pressed:bg-gray-200/70',
+      'group w-full justify-start rounded-none text-left font-normal shadow-none -outline-offset-2 transition-colors hover:bg-muted/70 pressed:bg-emphasis/70',
     chevron:
-      'h-4 w-4 shrink-0 text-gray-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-gray-500',
+      'h-4 w-4 shrink-0 text-faint transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-muted',
     stretchedRow:
-      'group relative isolate transition-colors hover:bg-gray-100/70 has-[[data-pressed]]:bg-gray-200/70',
+      'group relative isolate transition-colors hover:bg-muted/70 has-[[data-pressed]]:bg-emphasis/70',
     stretchedButton:
       'justify-start rounded-none border-0 p-0 text-left font-medium shadow-none -outline-offset-2 after:absolute after:inset-0 after:z-0 after:content-[""] hover:bg-transparent pressed:bg-transparent',
     interactiveChildren:

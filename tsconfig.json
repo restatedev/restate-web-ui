@@ -310,6 +310,12 @@
     },
     {
       "path": "./libs/util/styles"
+    },
+    {
+      "path": "./libs/features/design-system"
+    },
+    {
+      "path": "./libs/util/theme"
     }
   ]
 }

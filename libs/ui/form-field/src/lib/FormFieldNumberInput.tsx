@@ -18,7 +18,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Button } from '@restate/ui-button';
 
 const inputStyles = tv({
-  base: 'relative mt-0 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-100 px-10 py-1.5 text-center text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] placeholder:text-gray-500/70 invalid:border-red-600 invalid:bg-red-100/70 read-only:shadow-none focus:border-gray-200 focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus:outline-2 focus:outline-blue-600 disabled:border-gray-100 disabled:text-gray-500/80 disabled:shadow-none disabled:placeholder:text-gray-300 [&[readonly]]:bg-gray-100 [&[readonly]]:text-gray-500/80',
+  base: 'relative mt-0 w-full min-w-0 rounded-lg border border-default bg-muted px-10 py-1.5 text-center text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-muted/70 read-only:shadow-none focus:border-default focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus:outline-2 focus:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint [&[readonly]]:bg-muted [&[readonly]]:text-subtle',
 });
 const containerStyles = tv({
   base: 'group flex flex-col gap-1',

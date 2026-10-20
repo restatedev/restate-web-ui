@@ -178,7 +178,7 @@ function tokenize(sql: string, tables: ReadonlySet<string>): Token[] {
 }
 
 // Token colors come from the theme CSS variables via inline styles because
-// the tooltip content styles repaint every descendant with `**:text-gray-200`,
+// the tooltip content styles repaint every descendant with `**:text-inverse-secondary`,
 // which would override utility classes.
 const TOKEN_STYLES: Record<
   'light' | 'dark' | 'neutral',
@@ -187,25 +187,28 @@ const TOKEN_STYLES: Record<
   // Monochrome variant for table cells: hierarchy via shade and weight only,
   // so the highlighting doesn't compete with the rest of the table.
   neutral: {
-    keyword: { color: 'var(--color-gray-500)' },
-    string: { color: 'var(--color-gray-600)' },
-    number: { color: 'var(--color-gray-700)' },
-    table: { color: 'var(--color-gray-800)', fontWeight: 500 },
-    placeholder: { color: 'var(--color-gray-400)', fontStyle: 'italic' },
+    keyword: { color: 'var(--text-color-muted)' },
+    string: { color: 'var(--text-color-tertiary)' },
+    number: { color: 'var(--text-color-secondary)' },
+    table: { color: 'var(--text-color-primary)', fontWeight: 500 },
+    placeholder: { color: 'var(--text-color-subtle)', fontStyle: 'italic' },
   },
   light: {
-    keyword: { color: 'var(--color-blue-700)' },
-    string: { color: 'var(--color-amber-700)' },
-    number: { color: 'var(--color-emerald-700)' },
-    table: { color: 'var(--color-sky-700)', fontWeight: 500 },
-    placeholder: { color: 'var(--color-gray-400)', fontStyle: 'italic' },
+    keyword: { color: 'var(--text-color-accent-strong)' },
+    string: { color: 'var(--text-color-pending-strong)' },
+    number: { color: 'var(--text-color-success-strong)' },
+    table: { color: 'var(--text-color-primary)', fontWeight: 500 },
+    placeholder: { color: 'var(--text-color-subtle)', fontStyle: 'italic' },
   },
   dark: {
-    keyword: { color: 'var(--color-blue-300)' },
-    string: { color: 'var(--color-amber-300)' },
-    number: { color: 'var(--color-emerald-300)' },
-    table: { color: 'var(--color-sky-300)', fontWeight: 500 },
-    placeholder: { color: 'var(--color-gray-400)', fontStyle: 'italic' },
+    keyword: { color: 'var(--text-color-accent-subtle)' },
+    string: { color: 'var(--text-color-pending-subtle)' },
+    number: { color: 'var(--text-color-success-subtle)' },
+    table: { color: 'var(--text-color-inverse)', fontWeight: 500 },
+    placeholder: {
+      color: 'var(--text-color-inverse-muted)',
+      fontStyle: 'italic',
+    },
   },
 };
 

@@ -24,13 +24,13 @@ function Container({
 }: PropsWithChildren<{ title: ReactNode }>) {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="relative rounded-xl border border-sky-300/30 bg-sky-50/40 p-2.5 text-sky-800 transition-all">
+    <div className="relative rounded-xl border border-info/30 bg-info-subtle/40 p-2.5 text-info-strong transition-all">
       {title}
       <div className={containerStyles({ isOpen })}>{children}</div>
       {!isOpen && (
         <Button
           variant="icon"
-          className="absolute bottom-1 left-1/2 -mb-0.5 -translate-x-1/2 px-4 text-0.5xs text-sky-600"
+          className="absolute bottom-1 left-1/2 -mb-0.5 -translate-x-1/2 px-4 text-0.5xs text-info"
           onClick={() => setIsOpen(true)}
         >
           <Icon name={IconName.ChevronDown} className="mr-1 h-4 w-4" />
@@ -103,7 +103,7 @@ function ScriptSnippet({
   language?: 'bash' | 'typescript';
 }) {
   return (
-    <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
+    <Code className="relative rounded-sm bg-tint-subtle py-1.5! text-xs">
       <Snippet language={language}>
         {script}
         <SnippetCopy copyText={script} />
@@ -167,7 +167,7 @@ export function Helper({
                   target="_blank"
                   href={gcpServiceAccount.url}
                   variant="secondary"
-                  className="text-sky-600"
+                  className="text-info"
                 >
                   Learn more…
                 </Link>
@@ -177,16 +177,16 @@ export function Helper({
         >
           {!googleAuth ? (
             <>
-              <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+              <div className="mb-3 px-1.5 font-sans text-0.5xs text-muted">
                 For a private Cloud Run service, turn on{' '}
-                <span className="font-medium text-gray-600">
+                <span className="font-medium text-tertiary">
                   Authenticate with Google ID token
                 </span>{' '}
                 above so Restate can mint OIDC tokens to invoke it.
               </div>
               {identityKey && (
                 <>
-                  <div className="mb-2 px-1.5 font-sans text-0.5xs text-gray-500">
+                  <div className="mb-2 px-1.5 font-sans text-0.5xs text-muted">
                     For a public service, use the identity key below so your
                     service only accepts requests from your Restate environment:
                   </div>
@@ -202,13 +202,13 @@ export function Helper({
             </>
           ) : impersonateServiceAccount ? (
             <>
-              <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+              <div className="mb-3 px-1.5 font-sans text-0.5xs text-muted">
                 Restate will mint tokens as{' '}
                 <code>{impersonateServiceAccount}</code> (the account you
                 entered). Two grants are needed:
               </div>
-              <div className="mb-2 px-1.5 font-sans text-0.5xs text-gray-500">
-                <span className="font-medium text-gray-600">1.</span> Let your
+              <div className="mb-2 px-1.5 font-sans text-0.5xs text-muted">
+                <span className="font-medium text-tertiary">1.</span> Let your
                 environment mint tokens as it — grant{' '}
                 <code>roles/iam.serviceAccountOpenIdTokenCreator</code> on{' '}
                 <code>{impersonateServiceAccount}</code> to Restate's own
@@ -220,8 +220,8 @@ export function Helper({
                   envServiceAccount,
                 )}
               />
-              <div className="mt-3 mb-2 px-1.5 font-sans text-0.5xs text-gray-500">
-                <span className="font-medium text-gray-600">2.</span> Let it
+              <div className="mt-3 mb-2 px-1.5 font-sans text-0.5xs text-muted">
+                <span className="font-medium text-tertiary">2.</span> Let it
                 invoke your service — grant <code>roles/run.invoker</code> to{' '}
                 <code>{impersonateServiceAccount}</code>:
               </div>
@@ -231,7 +231,7 @@ export function Helper({
             </>
           ) : (
             <>
-              <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+              <div className="mb-3 px-1.5 font-sans text-0.5xs text-muted">
                 Grant <code>roles/run.invoker</code> to Restate's own service
                 account so it can invoke your private service:
               </div>
@@ -261,7 +261,7 @@ export function Helper({
                   target="_blank"
                   href={identityKey.url}
                   variant="secondary"
-                  className="text-sky-600"
+                  className="text-info"
                 >
                   Learn more…
                 </Link>
@@ -269,11 +269,11 @@ export function Helper({
             </div>
           }
         >
-          <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+          <div className="mb-3 px-1.5 font-sans text-0.5xs text-muted">
             Use the provided identity key to ensure your service only accepts
             requests from your Restate environment. {getDescription(targetType)}
           </div>
-          <Code className="relative rounded-sm bg-black/4 py-1.5! text-xs">
+          <Code className="relative rounded-sm bg-tint-subtle py-1.5! text-xs">
             <Snippet language="typescript">
               {getHttpScript(targetType).replace(
                 'IDENTITY_KEY',
@@ -300,7 +300,7 @@ export function Helper({
                   target="_blank"
                   href={awsRolePolicy.url}
                   variant="secondary"
-                  className="text-sky-600"
+                  className="text-info"
                 >
                   Learn more…
                 </Link>
@@ -308,12 +308,12 @@ export function Helper({
             </div>
           }
         >
-          <div className="mb-3 px-1.5 font-sans text-0.5xs text-gray-500">
+          <div className="mb-3 px-1.5 font-sans text-0.5xs text-muted">
             Create a role in your AWS account that can be assumed, has
             permission to invoke your Lambda, and includes the trust policy
             below.
           </div>
-          <Code className="relative rounded-sm bg-black/4 py-2! text-xs">
+          <Code className="relative rounded-sm bg-tint-subtle py-2! text-xs">
             <Snippet language="json">
               {awsRolePolicy.value}
               <SnippetCopy

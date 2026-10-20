@@ -189,7 +189,7 @@ export function BatchOperationsProvider({
                     </span>
                     {failed > 0 && (
                       <>
-                        <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-sky-800/40" />
+                        <span className="mx-1 inline-block h-4 w-px translate-y-1 bg-info-strong" />
                         <span className="">
                           {formatNumber(failed)}{' '}
                           <span className="text-xs font-normal opacity-80">

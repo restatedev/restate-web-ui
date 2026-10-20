@@ -19,11 +19,11 @@ describe('Chip', () => {
   it('should apply segment className to the segment background element', () => {
     const { container } = render(
       <Chip>
-        <ChipSegment className="bg-blue-50">llm</ChipSegment>
+        <ChipSegment className="bg-accent-subtle">llm</ChipSegment>
       </Chip>,
     );
     const inner = container.querySelector('[data-chip-segment-inner]');
-    expect(inner?.className).toContain('bg-blue-50');
+    expect(inner?.className).toContain('bg-accent-subtle');
   });
 
   it('should render the whole chip as a link when href is provided', () => {

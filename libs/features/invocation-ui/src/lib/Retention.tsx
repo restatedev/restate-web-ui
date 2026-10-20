@@ -12,7 +12,7 @@ import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'w-full border-none bg-transparent pl-0 text-2xs font-normal text-zinc-500/80',
+  base: 'w-full border-none bg-transparent pl-0 text-2xs font-normal text-subtle',
 });
 export function Retention({
   invocation,
@@ -58,7 +58,7 @@ export function Retention({
             <>
               <DateTooltip
                 date={date}
-                className="value font-medium text-zinc-500/90"
+                className="value font-medium text-muted"
                 title={`${type === 'completion' ? 'Completion' : 'Journal'} retained until`}
               >
                 {duration}
@@ -78,7 +78,7 @@ export function Retention({
       <Badge className={styles({ className })}>
         <span className="w-full truncate">
           <span className="">{prefixForInProgress}for </span>
-          <span className="value font-medium text-zinc-500/90">
+          <span className="value font-medium text-muted">
             {formatDurations(durationObject)}{' '}
           </span>
           <span className="">

@@ -105,7 +105,7 @@ export function Call({
         />
         {entry.invocationId && (
           <>
-            <div className="-ml-1.5 text-gray-400">,</div>
+            <div className="-ml-1.5 text-subtle">,</div>
             <InvocationId
               id={entry.invocationId}
               className="mr-2 -ml-1"
@@ -132,7 +132,7 @@ export function Call({
                 }
               }}
               variant="icon"
-              className="z-10 bg-black/3"
+              className="z-10 bg-tint-subtle"
             >
               {invokedIsPending ? (
                 <Spinner />

@@ -21,7 +21,7 @@ import {
 } from './VQueuePopoverContent';
 
 const triggerStyles = tv({
-  base: 'max-w-full min-w-0 justify-start gap-1 rounded-lg p-0 pr-1 text-left text-xs font-medium shadow-none hover:bg-black/5 pressed:bg-black/10',
+  base: 'max-w-full min-w-0 justify-start gap-1 rounded-lg p-0 pr-1 text-left text-xs font-medium shadow-none hover:bg-tint pressed:bg-tint-strong',
   variants: {
     size: {
       sm: '',
@@ -37,7 +37,7 @@ const triggerStyles = tv({
 
 const linkStyles = tv({
   slots: {
-    root: 'inline-flex max-w-full min-w-0 items-center rounded-lg text-zinc-500 outline-offset-0 hover:bg-black/3 pressed:bg-black/5',
+    root: 'inline-flex max-w-full min-w-0 items-center rounded-lg text-muted outline-offset-0 hover:bg-tint-subtle pressed:bg-tint',
     icon: 'shrink-0 text-current',
   },
   variants: {
@@ -85,7 +85,7 @@ function VQueueFallbackContent({
   message,
 }: VQueueFallbackContentProps) {
   return (
-    <div className="w-full min-w-0 bg-gray-100 px-0.5 pt-0.5 text-zinc-700">
+    <div className="w-full min-w-0 bg-muted px-0.5 pt-0.5 text-secondary">
       <DropdownSection
         className="overflow-hidden"
         headerClassName="pr-1 pl-2"
@@ -98,14 +98,14 @@ function VQueueFallbackContent({
             />
             <Copy
               copyText={id}
-              className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+              className="ml-0 h-5 w-5 shrink-0 rounded-md p-1 text-muted"
             />
           </div>
         }
       >
         <div
           role={loading ? 'status' : undefined}
-          className="flex min-h-12 items-center justify-start gap-2 bg-white px-4 py-3 text-xs text-gray-500"
+          className="flex min-h-12 items-center justify-start gap-2 bg-surface px-4 py-3 text-xs text-muted"
         >
           {loading && <Spinner className="h-4 w-4 shrink-0" />}
           <span>{message}</span>
@@ -149,7 +149,7 @@ function VQueueIdWithPopover({
           />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3 w-3 shrink-0 text-zinc-400"
+            className="h-3 w-3 shrink-0 text-subtle"
           />
         </Button>
       </PopoverTrigger>

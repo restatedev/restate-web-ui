@@ -161,7 +161,7 @@ export function withConfirmation<
       >
         {ContentComponent && <ContentComponent />}
         {config.shouldShowSkipConfirmation ? (
-          <FormFieldLabel className="mt-2 mb-0 flex w-full translate-y-1 flex-row gap-0.5 rounded-xl border bg-zinc-50 py-1.5 pr-1.5 pl-2 text-sm text-gray-600 [&:not(:has(:checked)):not(:has([data-pressed]))_.checkbox]:bg-white">
+          <FormFieldLabel className="mt-2 mb-0 flex w-full translate-y-1 flex-row gap-0.5 rounded-xl border bg-subtle py-1.5 pr-1.5 pl-2 text-sm text-tertiary [&:not(:has(:checked)):not(:has([data-pressed]))_.checkbox]:bg-surface">
             <FormFieldCheckbox
               name={config.userPreferenceId}
               value="true"

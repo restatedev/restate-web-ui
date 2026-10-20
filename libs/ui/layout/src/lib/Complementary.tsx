@@ -62,10 +62,10 @@ export function ComplementaryWithSearchParam({
             ref={setHeaderElement}
             className="z-10 flex items-center justify-end gap-0.5 px-1 pb-1 3xl:px-2 3xl:pb-1.5 [&:not(:has(*))]:hidden"
           />
-          <div className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-[1.125rem] border bg-gray-50/80 p-1.5 shadow-lg shadow-zinc-800/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 3xl:overflow-visible 3xl:border-transparent 3xl:bg-transparent 3xl:p-0 3xl:shadow-none 3xl:backdrop-blur-none 3xl:backdrop-saturate-100">
+          <div className="flex max-h-[inherit] min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-[1.125rem] border bg-subtle/80 p-1.5 shadow-lg shadow-default/5 backdrop-blur-xl backdrop-saturate-200 transition-all duration-250 3xl:overflow-visible 3xl:border-transparent 3xl:bg-transparent 3xl:p-0 3xl:shadow-none 3xl:backdrop-blur-none 3xl:backdrop-saturate-100">
             <div
               data-complementary-content
-              className="relative flex max-h-[inherit] min-h-[50vh] flex-auto flex-col overflow-x-hidden overflow-y-auto rounded-xl border bg-white p-3 pt-7 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.8)] 3xl:rounded-t-2xl 3xl:rounded-b-none 3xl:border-b-0 3xl:border-gray-200 3xl:bg-gray-50"
+              className="relative flex max-h-[inherit] min-h-[50vh] flex-auto flex-col overflow-x-hidden overflow-y-auto rounded-xl border bg-surface p-3 pt-7 shadow-[inset_0_0_0_1px_--theme(--background-color-surface/80%)] 3xl:rounded-t-2xl 3xl:rounded-b-none 3xl:border-b-0 3xl:border-default 3xl:bg-subtle"
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   onClose();

@@ -49,7 +49,7 @@ export function AttachInvocation({
           input={
             <InvocationId
               id={String(entry.invocationId)}
-              className="mx-0.5 max-w-[15ch] truncate text-2xs font-semibold text-gray-500 not-italic"
+              className="mx-0.5 max-w-[15ch] truncate text-2xs font-semibold text-muted not-italic"
               size="md"
             />
           }
@@ -82,7 +82,7 @@ export function AttachInvocation({
                 }
               }}
               variant="icon"
-              className="z-10 bg-black/3"
+              className="z-10 bg-tint-subtle"
             >
               {invokedIsPending ? (
                 <Spinner />

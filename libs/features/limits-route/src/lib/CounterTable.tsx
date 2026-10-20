@@ -115,14 +115,14 @@ const capacityStyles = tv({
   slots: {
     root: 'flex w-full max-w-52 items-center gap-2 pr-2',
     track:
-      'flex h-3 min-w-0 flex-1 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 p-0.5',
+      'flex h-3 min-w-0 flex-1 overflow-hidden rounded-lg border border-default bg-muted p-0.5',
     fill: 'h-full rounded-full outline-1 transition-[width]',
-    value: 'shrink-0 text-right text-xs font-medium text-zinc-600 tabular-nums',
+    value: 'shrink-0 text-right text-xs font-medium text-tertiary tabular-nums',
   },
   variants: {
     saturated: {
-      true: { fill: 'bg-amber-200 outline-amber-300' },
-      false: { fill: 'bg-blue-200 outline-blue-300' },
+      true: { fill: 'bg-pending-emphasis outline-pending-strong' },
+      false: { fill: 'bg-accent-emphasis outline-accent-strong' },
     },
     showLimit: {
       true: { value: 'min-w-16' },
@@ -142,7 +142,7 @@ function WaitingQueuesExplainer() {
       title="VQueues waiting for capacity"
       ariaLabel="Explain waiting VQueues"
       description={
-        <p className="max-w-72 text-xs leading-4 text-zinc-300">
+        <p className="max-w-72 text-xs leading-4 text-faint">
           VQueues enter this limit counter’s waiter set after a permit check
           fails. Each VQueue waits only at its narrowest constrained limit
           counter.
@@ -240,7 +240,7 @@ function CapacityCell({
       </HoverTooltip>
       {showLimit && (
         <span className={value()} aria-hidden>
-          {formatNumber(usage)} <span className="text-zinc-300">/</span>{' '}
+          {formatNumber(usage)} <span className="text-faint">/</span>{' '}
           {limit == null ? '∞' : formatNumber(limit)}
         </span>
       )}
@@ -261,7 +261,7 @@ function WaitingQueuesCell({ value }: { value?: number | null }) {
   const count = value ?? 0;
   if (count === 0) {
     return (
-      <span className="text-xs font-medium text-zinc-300 tabular-nums">0</span>
+      <span className="text-xs font-medium text-faint tabular-nums">0</span>
     );
   }
   return (
@@ -294,7 +294,7 @@ function renderCounterCell(
               limit={row.concurrency_limit}
             />
           ) : (
-            <span className="text-zinc-400">Unknown limit counter</span>
+            <span className="text-subtle">Unknown limit counter</span>
           )}
         </Cell>
       );
@@ -333,7 +333,7 @@ function renderCounterCell(
               className="w-fit"
             />
           ) : (
-            <span className="text-zinc-300">—</span>
+            <span className="text-faint">—</span>
           )}
         </Cell>
       );

@@ -24,28 +24,28 @@ export type BreadcrumbsVariant = 'chips' | 'flat';
 const styles = tv({
   slots: {
     nav: 'flex max-w-full min-w-0 flex-wrap items-center gap-y-1',
-    chip: 'max-w-44 bg-gray-50 text-xs font-normal text-zinc-600',
+    chip: 'max-w-44 bg-subtle text-xs font-normal text-tertiary',
     current:
-      'flex max-w-full min-w-0 items-center gap-0.5 pl-1 text-xs font-normal text-zinc-500 [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
-    icon: 'h-3 w-3 shrink-0 text-zinc-400',
+      'flex max-w-full min-w-0 items-center gap-0.5 pl-1 text-xs font-normal text-muted [&_[data-crumb-label]]:overflow-visible [&_[data-crumb-label]]:break-all [&_[data-crumb-label]]:whitespace-normal',
+    icon: 'h-3 w-3 shrink-0 text-subtle',
     label: 'min-w-0 truncate',
-    ellipsisButton: 'h-full rounded-none px-1 py-0 text-zinc-500',
+    ellipsisButton: 'h-full rounded-none px-1 py-0 text-muted',
     menuItem: 'flex max-w-60 min-w-0 items-center gap-1 text-xs font-normal',
     flatItem:
-      'relative isolate flex min-w-0 items-center gap-x-0.5 px-1.5 pt-px pb-[6px] before:absolute before:inset-0 before:-z-10 before:bg-zinc-500/8 has-[[data-hovered]]:before:bg-zinc-500/13 has-[[data-pressed]]:before:bg-zinc-500/18',
+      'relative isolate flex min-w-0 items-center gap-x-0.5 px-1.5 pt-px pb-[6px] before:absolute before:inset-0 before:-z-10 before:bg-tint-subtle has-[[data-hovered]]:before:bg-tint has-[[data-pressed]]:before:bg-tint-strong',
     flatLink:
-      'flex min-w-0 items-center gap-1 rounded px-0.5 font-normal text-zinc-600 no-underline hover:text-zinc-800',
+      'flex min-w-0 items-center gap-1 rounded px-0.5 font-normal text-tertiary no-underline hover:text-primary',
     flatCurrent: 'flex min-w-0 items-center',
     flatCurrentChip:
       '[--chip-height:1.6875rem] [--chip-radius:0.375rem] [--chip-slope:6px]',
-    flatCurrentChipRoot: 'bg-gray-100 text-2xs font-normal text-zinc-500',
+    flatCurrentChipRoot: 'bg-muted text-2xs font-normal text-muted',
     flatCurrentChipSegment: 'pr-1.5 pl-2.5',
-    flatEllipsisButton: 'rounded p-0.5 text-zinc-600 hover:text-zinc-800',
+    flatEllipsisButton: 'rounded p-0.5 text-tertiary hover:text-primary',
   },
   variants: {
     variant: {
       chips: {
-        nav: 'ml-2 gap-x-0 [--chip-shadow:0_1px_2px_rgb(0_0_0/0.05)]',
+        nav: 'ml-2 gap-x-0 [--chip-shadow:0_1px_2px_--theme(--box-shadow-color-default/5%)]',
       },
       flat: {
         nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px] [&>*+*]:-ml-px',

@@ -301,7 +301,7 @@ function InboxEntriesTable({
         renderCell={renderInboxCell}
       />
       {truncated && (
-        <div className="px-4 pt-3 text-xs text-zinc-500">
+        <div className="px-4 pt-3 text-xs text-muted">
           {recent
             ? `Showing the ${limit} most recent invocations.`
             : `Showing ${limit} inbox entries.`}

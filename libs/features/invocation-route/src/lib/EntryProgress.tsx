@@ -24,24 +24,24 @@ const pointStyles = tv({
   variants: {
     variant: {
       success: {
-        line: 'bg-green-600',
-        circle: 'border-white bg-green-200',
+        line: 'bg-success',
+        circle: 'border-surface bg-success-muted',
       },
       danger: {
-        line: 'bg-red-500',
-        circle: 'border-white bg-red-50',
+        line: 'bg-danger',
+        circle: 'border-surface bg-danger-muted',
       },
       warning: {
-        line: 'bg-orange-500',
-        circle: 'border-white bg-orange-100',
+        line: 'bg-warning',
+        circle: 'border-surface bg-warning-muted',
       },
       info: {
-        line: 'bg-blue-500',
-        circle: 'border-white bg-blue-100',
+        line: 'bg-info',
+        circle: 'border-surface bg-info-muted',
       },
       default: {
-        line: 'bg-zinc-400',
-        circle: 'border-white bg-zinc-50',
+        line: 'bg-neutral',
+        circle: 'border-surface bg-subtle',
       },
     },
   },
@@ -49,7 +49,7 @@ const pointStyles = tv({
 });
 
 const pendingStyles = tv({
-  base: 'absolute top-0 right-0 bottom-0 left-[calc(100%-200px)] rounded-md mask-[linear-gradient(to_right,transparent_calc(100%-200px),black_100%)] mix-blend-overlay [background:repeating-linear-gradient(-45deg,--theme(--color-black/.15),--theme(--color-black/.15)_8px,--theme(--color-white/.40)_8px,--theme(--color-white/.40)_16px)]',
+  base: 'absolute top-0 right-0 bottom-0 left-[calc(100%-200px)] rounded-md mask-[linear-gradient(to_right,transparent_calc(100%-200px),black_100%)] mix-blend-overlay [background:repeating-linear-gradient(-45deg,--theme(--background-color-shade/15%),--theme(--background-color-shade/15%)_8px,--theme(--background-color-highlight/40%)_8px,--theme(--background-color-highlight/40%)_16px)]',
   variants: {
     isLive: {
       true: 'animate-moveAndGrow',
@@ -92,41 +92,41 @@ function Point({
 const lineStyles = tv({
   base: '',
   slots: {
-    line: 'relative h-full rounded-md border border-white/80 bg-linear-to-r via-100% shadow-xs',
+    line: 'relative h-full rounded-md border border-surface/80 bg-linear-to-r via-100% shadow-xs',
   },
   variants: {
     variant: {
       success: {
-        line: 'from-green-300 to-green-300',
+        line: 'from-success-strong to-success-strong',
       },
       danger: {
-        line: 'from-red-300 to-red-300',
+        line: 'from-danger-strong to-danger-strong',
       },
       warning: {
-        line: 'from-orange-300 to-orange-300',
+        line: 'from-warning-strong to-warning-strong',
       },
       backingOff: {
-        line: 'bg-[linear-gradient(to_right,--theme(--color-orange-300)_calc(100%-200px),--theme(--color-orange-300/0)_100%)]',
+        line: 'bg-[linear-gradient(to_right,var(--background-color-warning-strong)_calc(100%-200px),--theme(--background-color-warning-strong/0)_100%)]',
       },
       info: {
-        line: 'from-blue-300 to-blue-300',
+        line: 'from-info-strong to-info-strong',
       },
       default: {
-        line: 'h-3 border-dashed border-zinc-600/40 bg-transparent *:mix-blend-color-burn',
+        line: 'h-3 border-dashed border-neutral-strong/40 bg-transparent *:mix-blend-color-burn',
       },
       idleWarning: {
-        line: 'h-3 border-dashed border-orange-600/60 from-orange-400/10 to-orange-400/10',
+        line: 'h-3 border-dashed border-warning-strong/60 from-warning-vivid/10 to-warning-vivid/10',
       },
       idlePending: {
-        line: 'h-3 border-dashed border-amber-600/60 from-amber-400/10 to-amber-400/10',
+        line: 'h-3 border-dashed border-pending-strong/60 from-pending-vivid/10 to-pending-vivid/10',
       },
       idleNeutral: {
-        line: 'h-3 border-dashed border-zinc-600/40 from-zinc-400/20 to-zinc-400/20',
+        line: 'h-3 border-dashed border-neutral-strong/40 from-tint to-tint',
       },
     },
     isAmbiguous: {
       true: {
-        line: 'to-zinc-400/20',
+        line: 'to-tint',
       },
       false: {},
     },
@@ -136,28 +136,28 @@ const lineStyles = tv({
       variant: 'success',
       isAmbiguous: true,
       className: {
-        line: 'via-green-300',
+        line: 'via-success-strong',
       },
     },
     {
       variant: 'danger',
       isAmbiguous: true,
       className: {
-        line: 'via-red-300',
+        line: 'via-danger-strong',
       },
     },
     {
       variant: 'warning',
       isAmbiguous: true,
       className: {
-        line: 'via-orange-300',
+        line: 'via-warning-strong',
       },
     },
     {
       variant: 'info',
       isAmbiguous: true,
       className: {
-        line: 'via-blue-300',
+        line: 'via-info-strong',
       },
     },
   ],
@@ -401,7 +401,7 @@ function InnerEntryProgress({
         isCopiedFromRestart
       >
         <div className="flex w-full items-center">
-          <div className="flex-auto border-b-2 border-dotted border-gray-500/30" />
+          <div className="flex-auto border-b-2 border-dotted border-strong" />
           <div className="">
             <Point variant="default" />
           </div>
@@ -427,7 +427,7 @@ function InnerEntryProgress({
         invocation={invocation}
       >
         <div className="flex w-full items-center">
-          <div className="flex-auto border-b-2 border-dotted border-gray-500/30" />
+          <div className="flex-auto border-b-2 border-dotted border-strong" />
           <div className="">
             <Point variant="default" />
           </div>
@@ -489,7 +489,7 @@ function InnerEntryProgress({
           )}
         </div>
         {showDuration && !isPoint && (
-          <div className="ml-auto translate-y-1 font-sans text-xs leading-3 whitespace-nowrap text-gray-500">
+          <div className="ml-auto translate-y-1 font-sans text-xs leading-3 whitespace-nowrap text-muted">
             {isPending ? (
               <Ellipsis>{pendingDuration}</Ellipsis>
             ) : entryCompletionIsAmbiguous ? (
@@ -532,7 +532,7 @@ function InnerEntryProgress({
               endTransientError &&
               transientErrorTimes.length > 0 && (
                 <div
-                  className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--color-orange-300/0)_0px,--theme(--color-orange-300/1)_20px,--theme(--color-orange-300/1)_calc(100%-20px),--theme(--color-orange-300/0)_100%)] transition-all duration-300"
+                  className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--background-color-warning-strong/0)_0px,--theme(--background-color-warning-strong/1)_20px,--theme(--background-color-warning-strong/1)_calc(100%-20px),--theme(--background-color-warning-strong/0)_100%)] transition-all duration-300"
                   style={{
                     left: `max(calc(${((startTransientError - start) / (end - start)) * 100}% - 20px), 0px)`,
                     right: `max(calc(${((end - endTransientError) / (end - start)) * 100}% - 20px), ${entryEnd || unambiguousEnd ? ((end - new Date((entryEnd || unambiguousEnd)!).getTime()) / (end - start)) * 100 : 0}%, 0px)`,

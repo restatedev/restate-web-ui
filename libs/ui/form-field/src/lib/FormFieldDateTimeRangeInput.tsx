@@ -18,7 +18,7 @@ const containerStyles = tv({
 });
 
 const groupStyles = tv({
-  base: 'relative mt-0 flex min-h-8.5 w-full min-w-0 items-center overflow-hidden rounded-lg border border-gray-200 bg-gray-100 px-2 py-1.5 text-center text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] invalid:border-red-600 invalid:bg-red-100/70 focus-within:border-gray-200 focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] focus-within:outline-2 focus-within:outline-blue-600 disabled:border-gray-100 disabled:text-gray-500/80 disabled:shadow-none',
+  base: 'relative mt-0 flex min-h-8.5 w-full min-w-0 items-center overflow-hidden rounded-lg border border-default bg-muted px-2 py-1.5 text-center text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] invalid:border-danger-strong invalid:bg-danger-muted/70 focus-within:border-default focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus-within:outline-2 focus-within:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none',
 });
 
 const inputStyles = tv({
@@ -26,20 +26,20 @@ const inputStyles = tv({
 });
 
 const separatorStyles = tv({
-  base: 'px-1 text-gray-400',
+  base: 'px-1 text-subtle',
 });
 
 const segmentStyles = tv({
-  base: 'inline rounded-sm p-0.5 text-gray-800 caret-transparent outline outline-0 forced-color-adjust-none dark:text-zinc-200 forced-colors:text-[ButtonText] type-literal:px-0',
+  base: 'inline rounded-sm p-0.5 text-primary caret-transparent outline outline-0 forced-color-adjust-none forced-colors:text-[ButtonText] type-literal:px-0',
   variants: {
     isPlaceholder: {
-      true: 'text-gray-600 italic dark:text-zinc-400',
+      true: 'text-tertiary italic',
     },
     isDisabled: {
-      true: 'text-gray-200 dark:text-zinc-600 forced-colors:text-[GrayText]',
+      true: 'text-inverse-secondary forced-colors:text-[GrayText]',
     },
     isFocused: {
-      true: 'bg-blue-600 text-white dark:text-white forced-colors:bg-[Highlight] forced-colors:text-[HighlightText]',
+      true: 'bg-accent text-inverse forced-colors:bg-[Highlight] forced-colors:text-[HighlightText]',
     },
   },
 });

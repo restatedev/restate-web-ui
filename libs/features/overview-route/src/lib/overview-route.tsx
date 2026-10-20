@@ -170,7 +170,7 @@ function PerspectiveLines({
   return (
     <svg
       ref={svgRef}
-      className="pointer-events-none absolute inset-x-0 top-0 z-[25] hidden h-full w-full text-slate-400 @min-[64rem]/hero:block"
+      className="pointer-events-none absolute inset-x-0 top-0 z-[25] hidden h-full w-full text-subtle @min-[64rem]/hero:block"
       viewBox={viewBox}
       fill="none"
     >
@@ -314,7 +314,7 @@ function FlowConnectors({
             cy={segment.y}
             opacity="0"
             r={i % 2 === 0 ? 1.8 : 1.2}
-            fill="rgb(129 140 248 / 0.85)"
+            className="fill-accent-vivid/85"
           />
         )),
       )}
@@ -323,10 +323,10 @@ function FlowConnectors({
 }
 
 const emptyServerStyles = tv({
-  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-gray-200/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] ring-1 ring-white/80 @tall:pt-10 @tall:pb-40',
+  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-emphasis/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] ring-1 ring-surface/80 @tall:pt-10 @tall:pb-40',
   variants: {
     isError: {
-      true: '[&>svg:first-child>path]:fill-red-100',
+      true: '[&>svg:first-child>path]:fill-danger-muted',
       false: '',
     },
   },
@@ -341,11 +341,11 @@ function TabCount({
 }) {
   if (isLoading) {
     return (
-      <span className="ml-1 inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
+      <span className="ml-1 inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
     );
   }
   return (
-    <span className="ml-1 rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
+    <span className="ml-1 rounded bg-muted px-1 py-px text-2xs font-medium text-muted tabular-nums">
       {formatNumber(count, true)}
     </span>
   );
@@ -356,10 +356,10 @@ const gaugeStyles = tv({
 });
 
 const gaugeLabelStyles = tv({
-  base: 'text-xs text-gray-500',
+  base: 'text-xs text-muted',
   variants: {
     textOnly: {
-      true: 'text-sm font-medium text-gray-400',
+      true: 'text-sm font-medium text-subtle',
       false: 'mt-1',
     },
   },
@@ -412,24 +412,24 @@ function HeroGauge({
           </div>
         )}
         {isLoading ? (
-          <div className="h-7 w-14 animate-pulse rounded-lg bg-gray-200 sm:h-8" />
+          <div className="h-7 w-14 animate-pulse rounded-lg bg-emphasis sm:h-8" />
         ) : isError ? (
-          <span className="text-xl font-semibold text-gray-300">–</span>
+          <span className="text-xl font-semibold text-faint">–</span>
         ) : (
           <Link
             href={href}
             variant="icon"
             preserveQueryParams={false}
-            className="pointer-events-auto relative flex flex-col items-center gap-0 rounded-xl px-2 py-1 leading-none hover:bg-black/[0.03]"
+            className="pointer-events-auto relative flex flex-col items-center gap-0 rounded-xl px-2 py-1 leading-none hover:bg-tint-subtle"
           >
             {!textOnly && (
-              <span className="text-2xl font-semibold text-gray-800 tabular-nums">
+              <span className="text-2xl font-semibold text-primary tabular-nums">
                 {valueLabel ?? formatNumber(count, true)}
               </span>
             )}
             <span className={gaugeLabelStyles({ textOnly })}>{label}</span>
             {sublabel && (
-              <span className="absolute top-full left-1/2 mt-0 hidden -translate-x-1/2 text-2xs whitespace-nowrap text-gray-400 tabular-nums @min-[40rem]/hero:block">
+              <span className="absolute top-full left-1/2 mt-0 hidden -translate-x-1/2 text-2xs whitespace-nowrap text-subtle tabular-nums @min-[40rem]/hero:block">
                 {sublabel}
               </span>
             )}
@@ -538,11 +538,11 @@ function OverviewContent() {
         <Button
           aria-label="Could not load invocation data"
           variant="secondary"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-red-200/80 bg-red-50/90 p-0 text-red-600 shadow-none hover:bg-red-100/90"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-danger/80 bg-danger-subtle p-0 text-danger shadow-none hover:bg-danger-muted"
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="h-4 w-4 fill-red-200 text-red-600"
+            className="h-4 w-4 fill-danger-emphasis text-danger"
           />
         </Button>
       </PopoverTrigger>
@@ -603,7 +603,7 @@ function OverviewContent() {
                 error={error}
                 label="Could not load the overview"
               />
-              <p className="max-w-md px-4 text-sm text-gray-500">
+              <p className="max-w-md px-4 text-sm text-muted">
                 This may be a temporary issue.
               </p>
             </div>
@@ -818,24 +818,24 @@ function OverviewContent() {
             value={filter}
             onChange={setFilter}
             enterKeyHint="search"
-            className="group flex min-h-6.5 max-w-[38ch] min-w-0 flex-[1_1_38ch] items-center rounded-lg border border-gray-200 bg-white/70 text-gray-800 shadow-xs hover:bg-white has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500"
+            className="group flex min-h-6.5 max-w-[38ch] min-w-0 flex-[1_1_38ch] items-center rounded-lg border border-default bg-surface/70 text-primary shadow-xs hover:bg-surface has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-focus"
           >
             <Label className="sr-only">{searchPlaceholder}</Label>
             <Icon
               name={IconName.Search}
-              className="ml-1.5 h-4 w-4 shrink-0 text-gray-400"
+              className="ml-1.5 h-4 w-4 shrink-0 text-subtle"
             />
             <AriaInput
               ref={filterRef}
               placeholder={searchPlaceholder}
-              className="h-6 min-h-6 w-full min-w-0 border-0 bg-transparent py-0.5 pr-1 pl-1 text-sm text-current shadow-none outline-none placeholder:text-gray-500/75 focus:border-0 focus:ring-0 focus:outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+              className="h-6 min-h-6 w-full min-w-0 border-0 bg-transparent py-0.5 pr-1 pl-1 text-sm text-current shadow-none outline-none placeholder:text-subtle focus:border-0 focus:ring-0 focus:outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             />
             {filter ? (
               <Button
                 type="button"
                 variant="icon"
                 aria-label="Clear search"
-                className="mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-gray-400 shadow-none hover:bg-gray-100 hover:text-gray-600 pressed:bg-gray-200"
+                className="mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis"
                 onClick={() => setFilter('')}
               >
                 <Icon name={IconName.X} className="h-3.5 w-3.5" />

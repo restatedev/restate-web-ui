@@ -170,7 +170,7 @@ const makeShortcuts: (
 };
 
 const itemStyles = tv({
-  base: 'max-h-5 shrink-0 rounded-full border border-white/20 bg-transparent px-3 py-0.5 text-xs text-white/80 hover:bg-white/15 pressed:bg-white/20',
+  base: 'max-h-5 shrink-0 rounded-full border border-inverse-tint bg-transparent px-3 py-0.5 text-xs text-inverse-secondary hover:bg-inverse-tint-subtle pressed:bg-inverse-tint',
 });
 
 // Quick-filter pills shown inline before the "More" overflow dropdown.

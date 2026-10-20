@@ -19,7 +19,7 @@ export function Authentication({ className }: { className?: string }) {
 
   return (
     <div className={styles({ className })}>
-      <div className="-m-3 rounded-xl p-3 hover:bg-gray-50 has-pressed:bg-gray-100">
+      <div className="-m-3 rounded-xl p-3 hover:bg-subtle has-pressed:bg-muted">
         <FormFieldCheckbox
           name="auth"
           className="relative self-baseline [&_label]:before:absolute [&_label]:before:inset-0 [&_label]:before:content-['']"
@@ -30,12 +30,12 @@ export function Authentication({ className }: { className?: string }) {
           autoFocus
           onChange={(checked) => updateGoogleAuth?.(checked ? {} : undefined)}
         >
-          <span slot="title" className="text-sm font-medium text-gray-700">
+          <span slot="title" className="text-sm font-medium text-secondary">
             Authenticate with Google ID token
           </span>
           <span
             slot="description"
-            className="block text-0.5xs leading-5 text-gray-500"
+            className="block text-0.5xs leading-5 text-muted"
           >
             Restate mints a Google-signed OIDC ID token for each request and
             attaches it as <code>X-Serverless-Authorization</code>, for invoking

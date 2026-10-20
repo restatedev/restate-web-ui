@@ -4,8 +4,8 @@ const styles = tv({
   base: 'rounded-sm px-1.5 text-sm',
   variants: {
     variant: {
-      dark: 'bg-zinc-600 text-zinc-400',
-      light: 'bg-gray-200/60 text-gray-400/60',
+      dark: 'bg-inverse-emphasis text-inverse-muted',
+      light: 'bg-emphasis/60 text-faint',
     },
   },
   defaultVariants: {

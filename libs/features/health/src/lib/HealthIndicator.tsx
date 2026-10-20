@@ -12,20 +12,20 @@ const styles = tv({
   variants: {
     status: {
       PENDING: {
-        container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
-        icon: 'text-yellow-500',
+        container: 'bg-pending-subtle text-pending-strong ring-pending/20',
+        icon: 'text-pending-subtle',
       },
       DEGRADED: {
-        container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
-        icon: 'text-yellow-500',
+        container: 'bg-pending-subtle text-pending-strong ring-pending/20',
+        icon: 'text-pending-subtle',
       },
       UNREACHABLE: {
-        container: 'bg-yellow-50 text-yellow-800 ring-yellow-600/20',
-        icon: 'text-yellow-500',
+        container: 'bg-pending-subtle text-pending-strong ring-pending/20',
+        icon: 'text-pending-subtle',
       },
       HEALTHY: {
-        container: 'bg-green-50 text-green-700 ring-green-600/20',
-        icon: 'fill-green-500',
+        container: 'bg-success-subtle text-success-strong ring-success/20',
+        icon: 'fill-success-vivid',
       },
     },
   },

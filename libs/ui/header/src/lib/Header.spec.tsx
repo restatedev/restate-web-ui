@@ -7,9 +7,7 @@ describe('Header', () => {
   it('renders the neutral header by default', () => {
     render(<Header>Identity</Header>);
 
-    expect(screen.getByRole('banner').className).toContain(
-      'border-gray-300/60',
-    );
+    expect(screen.getByRole('banner').className).toContain('border-default');
     expect(screen.getByText('Identity')).toBeTruthy();
   });
 
@@ -22,17 +20,17 @@ describe('Header', () => {
 
     const nameplate = screen.getByRole('img', { name: 'Virtual Object' });
     expect(nameplate).toBeTruthy();
-    expect(nameplate.className).toContain('bg-blue-50/90');
+    expect(nameplate.className).toContain('bg-accent-subtle');
     expect(nameplate.textContent).toContain('Virtual Object');
   });
 
   it('renders a status-aware background', () => {
     render(<Header variant="warning">Backing off</Header>);
 
+    expect(screen.getByRole('banner').className).toContain('border-warning');
     expect(screen.getByRole('banner').className).toContain(
-      'border-orange-300/60',
+      'from-warning-muted',
     );
-    expect(screen.getByRole('banner').className).toContain('from-orange-100');
   });
 
   it('renders the trail ledge above the bar and drops the bar top margin', () => {

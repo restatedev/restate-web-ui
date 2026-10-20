@@ -13,14 +13,14 @@ interface NavItemProps {
 }
 
 const styles = tv({
-  base: 'group isolate flex cursor-default rounded-xl px-3 py-1.5 text-center text-sm no-underline outline-offset-2 outline-blue-600 transition hover:bg-black/3 focus-visible:outline-2 pressed:bg-gray-200',
+  base: 'group isolate flex cursor-default rounded-xl px-3 py-1.5 text-center text-sm no-underline outline-offset-2 outline-focus transition hover:bg-tint-subtle focus-visible:outline-2 pressed:bg-emphasis',
   variants: {
     isCurrent: {
-      true: 'font-medium text-gray-700',
-      false: 'text-gray-500',
+      true: 'font-medium text-secondary',
+      false: 'text-muted',
     },
     isDisabled: {
-      true: 'text-gray-400',
+      true: 'text-subtle',
       false: '',
     },
   },
@@ -125,11 +125,11 @@ interface NavButtonItemProps {
   className?: string;
 }
 const buttonStyles = tv({
-  base: 'group isolate flex cursor-default rounded-xl border-none bg-transparent px-3 py-1.5 text-center font-sans text-xs no-underline shadow-none transition hover:bg-black/3 pressed:bg-black/[0.06]',
+  base: 'group isolate flex cursor-default rounded-xl border-none bg-transparent px-3 py-1.5 text-center font-sans text-xs no-underline shadow-none transition hover:bg-tint-subtle pressed:bg-tint',
   variants: {
     isActive: {
-      true: 'text-gray-800',
-      false: 'text-gray-600',
+      true: 'text-primary',
+      false: 'text-tertiary',
     },
   },
   defaultVariants: {

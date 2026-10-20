@@ -25,21 +25,21 @@ export function VqueueEntryIdentity({
 
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-surface shadow-xs">
         <Icon
           name={
             iconName ?? (isStateMutation ? IconName.Database : IconName.History)
           }
-          className="h-full w-full p-1 text-zinc-500"
+          className="h-full w-full p-1 text-muted"
         />
       </div>
       <div className="flex min-w-0 items-baseline gap-2">
         {!isStateMutation && (
-          <span className="shrink-0 text-sm font-medium text-zinc-700">
+          <span className="shrink-0 text-sm font-medium text-secondary">
             Other entry
           </span>
         )}
-        <code className="truncate text-xs text-zinc-600">{entry.id}</code>
+        <code className="truncate text-xs text-tertiary">{entry.id}</code>
       </div>
     </div>
   );

@@ -35,16 +35,15 @@ const styles = tv({
     keyChip: 'flex-[0_2_auto] [&>[data-chip-root]]:w-full',
     handlerChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
     trailingChip: 'flex-[0_1_auto] [&>[data-chip-root]]:w-full',
-    chip: 'max-w-full text-xs font-medium text-zinc-600',
-    service: 'min-w-0 bg-white pl-2 font-medium text-zinc-600',
-    key: 'min-w-0 bg-zinc-50 pr-2.5 pl-2 font-mono text-[90%] text-zinc-500',
-    handler:
-      'min-w-0 bg-zinc-100 pr-2 pl-1 font-medium text-zinc-600/80 italic',
-    trailing: 'min-w-0 bg-zinc-100 px-1.5 text-zinc-600/80',
+    chip: 'max-w-full text-xs font-medium text-tertiary',
+    service: 'min-w-0 bg-surface pl-2 font-medium text-tertiary',
+    key: 'min-w-0 bg-subtle pr-2.5 pl-2 font-mono text-[90%] text-muted',
+    handler: 'min-w-0 bg-muted pr-2 pl-1 font-medium text-muted italic',
+    trailing: 'min-w-0 bg-muted px-1.5 text-muted',
     endContent: 'ml-1 flex shrink-0 items-center',
-    serviceIcon: 'h-3 w-3 shrink-0 text-zinc-400',
-    icon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
-    handlerIcon: '-mr-1 h-5 w-5 shrink-0 text-zinc-400',
+    serviceIcon: 'h-3 w-3 shrink-0 text-subtle',
+    icon: 'h-3.5 w-3.5 shrink-0 text-subtle',
+    handlerIcon: '-mr-1 h-5 w-5 shrink-0 text-subtle',
   },
   variants: {
     isHeader: {
@@ -112,7 +111,7 @@ function TargetLinkChevron() {
   return (
     <Icon
       name={IconName.ChevronRight}
-      className="-mr-1 h-3.5 w-3.5 shrink-0 text-zinc-400"
+      className="-mr-1 h-3.5 w-3.5 shrink-0 text-subtle"
     />
   );
 }

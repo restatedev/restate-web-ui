@@ -24,7 +24,7 @@ export function IssueBannerPill({
       {details && (
         <Icon
           name={IconName.Info}
-          className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+          className="h-3.5 w-3.5 shrink-0 text-subtle"
         />
       )}
     </div>
@@ -46,7 +46,7 @@ export function IssueBannerPill({
           <span className="min-w-0 truncate">{children}</span>
           <Icon
             name={IconName.Info}
-            className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+            className="h-3.5 w-3.5 shrink-0 text-subtle"
           />
         </Button>
       </PopoverTrigger>
@@ -54,7 +54,7 @@ export function IssueBannerPill({
         {details instanceof Error ? (
           <ErrorBanner error={details} className="rounded-2xl" />
         ) : (
-          <div className="p-3 text-xs text-zinc-700">{details}</div>
+          <div className="p-3 text-xs text-secondary">{details}</div>
         )}
       </PopoverContent>
     </Popover>

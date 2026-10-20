@@ -42,9 +42,9 @@ const styles = tv({
   base: 'flex items-center gap-0',
   slots: {
     indicator:
-      'absolute rounded-xl border border-black/10 bg-white shadow-xs transition-all duration-300 ease-in-out [&:not(:has(~*_[data-active=true]))]:hidden',
+      'absolute rounded-xl border border-tint bg-surface shadow-xs transition-all duration-300 ease-in-out [&:not(:has(~*_[data-active=true]))]:hidden',
     container:
-      'relative rounded-xl border-[0.5px] border-transparent [&:has(:focus)]:border-[0.5px] [&:has(:focus)]:border-zinc-800/5 [&:has(:focus)]:bg-black/3 [&:has(:focus)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] [&:has(:hover)]:border-[0.5px] [&:has(:hover)]:border-zinc-800/5 [&:has(:hover)]:bg-black/3 [&:has(:hover)]:shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]',
+      'relative rounded-xl border-[0.5px] border-transparent [&:has(:focus)]:border-[0.5px] [&:has(:focus)]:border-tint-subtle [&:has(:focus)]:bg-tint-subtle [&:has(:focus)]:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] [&:has(:hover)]:border-[0.5px] [&:has(:hover)]:border-tint-subtle [&:has(:hover)]:bg-tint-subtle [&:has(:hover)]:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]',
     dropdown: '',
   },
   variants: {
@@ -189,7 +189,7 @@ export function Nav({
               })}
               <Icon
                 name={IconName.ChevronsUpDown}
-                className="h-4 w-4 text-gray-500"
+                className="h-4 w-4 text-muted"
               />
             </Button>
           </DropdownTrigger>

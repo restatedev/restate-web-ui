@@ -54,9 +54,9 @@ export function DeploymentDetails({
             <span className="flex items-center gap-1.5">
               Services
               {isPending ? (
-                <span className="inline-block h-3 w-5 animate-pulse rounded bg-zinc-200" />
+                <span className="inline-block h-3 w-5 animate-pulse rounded bg-emphasis" />
               ) : (
-                <span className="rounded bg-zinc-100 px-1 py-px text-2xs font-medium text-zinc-500 tabular-nums">
+                <span className="rounded bg-muted px-1 py-px text-2xs font-medium text-muted tabular-nums">
                   {formatNumber(services.length, true)}
                 </span>
               )}

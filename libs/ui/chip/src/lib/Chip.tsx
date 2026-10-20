@@ -12,7 +12,7 @@ const SHAPED_BORDER = [
   'h-(--chip-height) bg-(--chip-border-color) p-px',
   '[--chip-inner-radius:calc(var(--chip-radius)-1px)]',
   '[clip-path:var(--chip-clip)]',
-  '[box-shadow:inset_0_-1px_1px_rgb(0_0_0/0.06)]',
+  '[box-shadow:inset_0_-1px_1px_--theme(--box-shadow-color-default/6%)]',
 ];
 
 const SHAPED_SEAM = [
@@ -62,15 +62,15 @@ const CLIP_BOTH_ROUNDED = [
 const styles = tv({
   slots: {
     outer:
-      'group/chip relative inline-flex max-w-full min-w-0 [--chip-border-color:var(--color-zinc-200)] [--chip-inner-radius:var(--chip-radius)] [--chip-inset:1px] [--chip-radius:0.5rem] [--chip-seam-color:var(--color-zinc-200)]',
+      'group/chip relative inline-flex max-w-full min-w-0 [--chip-border-color:var(--border-color-default)] [--chip-inner-radius:var(--chip-radius)] [--chip-inset:1px] [--chip-radius:0.5rem] [--chip-seam-color:var(--border-color-default)]',
     root: [
-      'relative z-1 inline-flex h-(--chip-height) max-w-full min-w-0 items-stretch bg-white text-xs font-medium text-zinc-600 transition-all',
+      'relative z-1 inline-flex h-(--chip-height) max-w-full min-w-0 items-stretch bg-surface text-xs font-medium text-tertiary transition-all',
       SHAPED_SEAM,
       '[&>[data-chip-segment]:not(:last-child)>[data-chip-segment-inner]]:[clip-path:polygon(0_0,100%_0,calc(100%-4px)_100%,0_100%)]',
       '[&>[data-chip-segment]:not(:first-child)>[data-chip-segment-inner]]:[clip-path:polygon(4px_0,100%_0,100%_100%,0_100%)]',
       '[&>[data-chip-segment]:not(:first-child):not(:last-child)>[data-chip-segment-inner]]:[clip-path:polygon(4px_0,100%_0,calc(100%-4px)_100%,0_100%)]',
     ],
-    link: 'absolute inset-0 z-2 no-underline outline-offset-0 before:absolute before:inset-0 before:content-[""] hover:before:bg-black/4 pressed:before:bg-black/6',
+    link: 'absolute inset-0 z-2 no-underline outline-offset-0 before:absolute before:inset-0 before:content-[""] hover:before:bg-tint-subtle pressed:before:bg-tint',
   },
   variants: {
     left: {
@@ -110,7 +110,7 @@ const styles = tv({
       left: 'straight',
       right: 'straight',
       class: {
-        root: 'shadow-xs ring-1 ring-gray-200 ring-inset group-has-[[data-pressed=true]]/chip:shadow-none',
+        root: 'shadow-xs ring-1 ring-default ring-inset group-has-[[data-pressed=true]]/chip:shadow-none',
       },
     },
     {
@@ -287,7 +287,7 @@ export function Chip({
           data-chip-overlay
           className={link({
             className:
-              'has-[[data-pressed]]:before:bg-black/6 [&>button]:absolute [&>button]:inset-0',
+              'has-[[data-pressed]]:before:bg-tint [&>button]:absolute [&>button]:inset-0',
           })}
         >
           {overlay}

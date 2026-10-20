@@ -6,15 +6,15 @@ export function CircularRefWarning() {
   return (
     <Popover>
       <PopoverTrigger>
-        <Button variant="icon" className="z-[2] text-amber-500">
+        <Button variant="icon" className="z-[2] text-pending-subtle">
           <Icon
             name={IconName.TriangleAlert}
-            className="h-5 w-5 shrink-0 fill-amber-500 text-white"
+            className="h-5 w-5 shrink-0 fill-pending-vivid text-inverse"
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-xs">
-        <div className="m-3 text-sm text-amber-800">
+        <div className="m-3 text-sm text-pending-strong">
           This entry references an invocation that already appears earlier in
           the call tree. This typically indicates a deadlock.
         </div>

@@ -63,6 +63,9 @@
       "path": "../../libs/features/features-route/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/features/design-system/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/features/deployment-route/tsconfig.lib.json"
     },
     {
@@ -151,6 +154,9 @@
     },
     {
       "path": "../../libs/util/sidebar-nav/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/util/theme/tsconfig.lib.json"
     },
     {
       "path": "../../libs/ui/tooltip/tsconfig.lib.json"

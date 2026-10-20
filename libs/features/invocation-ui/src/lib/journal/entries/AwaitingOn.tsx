@@ -166,10 +166,10 @@ function FutureNode({
   if (group) {
     return (
       <>
-        <div className="pl-2 font-mono text-xs font-medium text-zinc-400">
+        <div className="pl-2 font-mono text-xs font-medium text-subtle">
           {GROUP_LABELS[group.type]}
         </div>
-        <div className="ml-2 flex flex-col gap-0.5 border-l border-zinc-200 pl-1">
+        <div className="ml-2 flex flex-col gap-0.5 border-l border-default pl-1">
           {group.children.map((child, i) => (
             <FutureNode
               key={i}
@@ -192,7 +192,7 @@ function FutureNode({
 
   if (!entry) {
     return (
-      <div className="font-mono text-2xs text-zinc-500">
+      <div className="font-mono text-2xs text-muted">
         {single && fallbackLabel(single)}
       </div>
     );
@@ -202,11 +202,11 @@ function FutureNode({
 }
 
 const triggerStyles = tv({
-  base: 'flex h-5 items-center gap-1 truncate rounded-md bg-white/70 px-1.5 py-0.5 text-2xs font-normal',
+  base: 'flex h-5 items-center gap-1 truncate rounded-md bg-surface/70 px-1.5 py-0.5 text-2xs font-normal',
   variants: {
     state: {
-      suspended: 'text-zinc-700',
-      running: 'text-blue-700',
+      suspended: 'text-secondary',
+      running: 'text-info-strong',
     },
   },
 });
@@ -233,7 +233,7 @@ function AwaitingOnContent({
 
   if (isLoading && !data) {
     return (
-      <div className="flex items-center gap-1.5 p-2 text-2xs text-zinc-500">
+      <div className="flex items-center gap-1.5 p-2 text-2xs text-muted">
         <Spinner className="h-3 w-3" />
         Loading…
       </div>
@@ -319,14 +319,14 @@ export function AwaitingOn({
           {label}
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3 w-3 shrink-0 text-gray-500"
+            className="h-3 w-3 shrink-0 text-muted"
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-w-2xl">
         <DropdownSection
           title={title}
-          className="overflow-hidden rounded-2xl bg-gray-50 *:text-xs"
+          className="overflow-hidden rounded-2xl bg-subtle *:text-xs"
         >
           {invocation ? (
             <AwaitingOnEntries

@@ -110,7 +110,7 @@ function DeploymentRecentLabel({ deploymentId }: { deploymentId: string }) {
   const { label, endpoint, isPending } = useDeploymentLabel(deploymentId);
 
   if (isPending) {
-    return <span className="h-3 w-24 animate-pulse rounded bg-zinc-200" />;
+    return <span className="h-3 w-24 animate-pulse rounded bg-emphasis" />;
   }
   return (
     <RecentTooltip full={endpoint ?? deploymentId}>
@@ -135,7 +135,7 @@ function OverviewRecentLabel({ recent }: { recent: OverviewRecent }) {
         <span className="min-w-0 flex-1 truncate">{recent.service}</span>
         {recent.handler && (
           <>
-            <span className="shrink-0 text-zinc-400">/</span>
+            <span className="shrink-0 text-subtle">/</span>
             <span className="max-w-24 shrink-0 truncate font-mono">
               {recent.handler}
             </span>

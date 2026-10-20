@@ -24,7 +24,7 @@ export function AdditionalHeaders() {
   return (
     <FormFieldGroup className="flex h-auto flex-col items-start gap-1">
       <FormFieldLabel>
-        <span slot="title" className="text-sm font-medium text-gray-700">
+        <span slot="title" className="text-sm font-medium text-secondary">
           Additional headers
         </span>
         <span slot="description" className="block text-0.5xs leading-5">

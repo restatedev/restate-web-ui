@@ -31,11 +31,11 @@ export type HeaderProps = PropsWithChildren<
 
 const headerStyles = tv({
   slots: {
-    base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-2.5 shadow-[0_1px_2px_-0.5px_--theme(--color-zinc-800/3%),0_12px_28px_-10px_--theme(--color-zinc-800/6%),inset_0_2px_0_0_--theme(--color-white/47.5%)] backdrop-blur-xl backdrop-saturate-150 transition-colors sm:top-6',
-    icon: '-my-1 -ml-5 flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-[0.6875rem] bg-blue-50/90 text-blue-600/90 shadow-xs ring-1 ring-blue-200/60 lg:w-auto lg:px-2.5',
+    base: 'sticky top-3 z-50 mx-5 mt-2 flex min-h-12 items-center gap-3.5 rounded-2xl border bg-linear-to-r px-3 py-2.5 shadow-[0_1px_2px_-0.5px_--theme(--box-shadow-color-default/3%),0_12px_28px_-10px_--theme(--box-shadow-color-default/6%),inset_0_2px_0_0_--theme(--background-color-surface/47.5%)] backdrop-blur-xl backdrop-saturate-150 transition-colors sm:top-6',
+    icon: '-my-1 -ml-5 flex h-9 w-9 shrink-0 items-center justify-center gap-1.5 rounded-[0.6875rem] bg-accent-subtle text-accent shadow-xs ring-1 ring-accent-muted lg:w-auto lg:px-2.5',
     iconGlyph: 'h-4.5 w-4.5',
     iconLabelText:
-      'hidden text-[0.8125rem] leading-none font-semibold tracking-[-0.01em] whitespace-nowrap text-blue-900/75 lg:block',
+      'hidden text-[0.8125rem] leading-none font-semibold tracking-[-0.01em] whitespace-nowrap text-accent-strong/80 lg:block',
     trailRow:
       'relative z-40 mx-5 mt-8 hidden min-w-0 px-4 has-[nav]:flex md:mt-0',
     trailShelf: '-mb-1 flex min-w-0 items-center',
@@ -43,22 +43,22 @@ const headerStyles = tv({
   variants: {
     variant: {
       success: {
-        base: 'border-green-300/60 from-green-100/90 from-0% via-white/75 via-50% to-green-50/60',
+        base: 'border-success from-success-muted/90 from-0% via-surface/70 via-50% to-success-subtle/60',
       },
       danger: {
-        base: 'border-red-300/60 from-red-100/90 from-0% via-white/75 via-50% to-red-50/60',
+        base: 'border-danger from-danger-muted/90 from-0% via-surface/70 via-50% to-danger-subtle/60',
       },
       warning: {
-        base: 'border-orange-300/60 from-orange-100/90 from-0% via-white/75 via-50% to-orange-50/60',
+        base: 'border-warning from-warning-muted/90 from-0% via-surface/70 via-50% to-warning-subtle/60',
       },
       pending: {
-        base: 'border-amber-300/60 from-amber-100/90 from-0% via-white/75 via-50% to-amber-50/60',
+        base: 'border-pending from-pending-muted/90 from-0% via-surface/70 via-50% to-pending-subtle/60',
       },
       info: {
-        base: 'border-blue-300/60 from-blue-100/90 from-0% via-white/75 via-50% to-blue-50/60',
+        base: 'border-info from-info-muted/90 from-0% via-surface/70 via-50% to-info-subtle/60',
       },
       default: {
-        base: 'border-gray-300/60 from-gray-100/90 from-0% via-white/75 via-50% to-gray-50/60',
+        base: 'border-default from-muted/90 from-0% via-surface/70 via-50% to-subtle/60',
       },
     } satisfies Record<HeaderVariant, { base: string }>,
     hasIcon: {

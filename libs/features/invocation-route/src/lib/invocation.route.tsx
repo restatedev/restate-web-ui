@@ -48,8 +48,8 @@ const lastFailureContent = tv({
   base: 'flex-auto rounded-2xl border shadow-xs',
   variants: {
     isFailed: {
-      true: 'border-red-200 bg-red-50',
-      false: 'border-orange-200 bg-orange-50',
+      true: 'border-danger bg-danger-subtle',
+      false: 'border-warning bg-warning-subtle',
     },
   },
 });
@@ -60,8 +60,8 @@ const lastFailureNotch = tv({
   base: 'pointer-events-none absolute bottom-0 h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 rotate-45 border-r border-b',
   variants: {
     isFailed: {
-      true: 'border-red-200 bg-red-50',
-      false: 'border-orange-200 bg-orange-50',
+      true: 'border-danger bg-danger-subtle',
+      false: 'border-warning bg-warning-subtle',
     },
   },
 });
@@ -201,8 +201,8 @@ function Component() {
         >
           {isPending ? (
             <>
-              <div className="min-h-28 w-full animate-pulse rounded-xl bg-slate-200" />
-              <div className="min-h-28 w-full animate-pulse rounded-xl bg-slate-200" />
+              <div className="min-h-28 w-full animate-pulse rounded-xl bg-emphasis" />
+              <div className="min-h-28 w-full animate-pulse rounded-xl bg-emphasis" />
             </>
           ) : (
             <>
@@ -348,10 +348,10 @@ function InvocationUnavailable({
       description={help}
     >
       {id && (
-        <div className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-gray-200 bg-white py-1 pr-1 pl-2.5 font-mono text-xs text-gray-600 shadow-xs">
+        <div className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-default bg-surface py-1 pr-1 pl-2.5 font-mono text-xs text-tertiary shadow-xs">
           <Icon
             name={IconName.Invocation}
-            className="h-3.5 w-3.5 shrink-0 fill-blue-50 text-blue-500"
+            className="h-3.5 w-3.5 shrink-0 fill-accent-muted text-accent"
           />
           <span className="min-w-0 truncate">{id}</span>
           <Copy
@@ -380,12 +380,12 @@ const anchorStyles = tv({
   slots: {
     line: 'invisible absolute top-0 right-0 left-1/2 z-10 border-l',
     anchor:
-      'absolute bottom-0 left-0 z-10 h-2 w-2 -translate-x-1/2 rounded-full border-2 border-white/60',
+      'absolute bottom-0 left-0 z-10 h-2 w-2 -translate-x-1/2 rounded-full border-2 border-surface/60',
   },
   variants: {
     isFailed: {
-      true: { line: 'border-red-400/50', anchor: 'bg-red-400' },
-      false: { line: 'border-orange-400/50', anchor: 'bg-orange-400' },
+      true: { line: 'border-danger', anchor: 'bg-danger-vivid' },
+      false: { line: 'border-warning', anchor: 'bg-warning-vivid' },
     },
   },
 });
@@ -414,8 +414,7 @@ function Anchor({
       document.querySelector('[data-last-failure=true]') ??
       document.querySelector('[data-last-failure-fallback]');
     const topElement = () => document.querySelector('#last-failure-section');
-    const dividerElement = () =>
-      document.querySelector('[data-panel-resize-handle-id]');
+    const dividerElement = () => document.querySelector('[data-separator]');
     const updateStyles = () => {
       const bottomRect = bottomElement()?.getBoundingClientRect();
       const topRect = topElement()?.getBoundingClientRect();

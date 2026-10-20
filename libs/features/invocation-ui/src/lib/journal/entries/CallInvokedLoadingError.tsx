@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'text-red-500',
+  base: 'text-danger',
 });
 export function CallInvokedLoadingError({
   error,
@@ -24,7 +24,7 @@ export function CallInvokedLoadingError({
         <Button variant="icon" className={styles({ className })}>
           <Icon
             name={IconName.CircleX}
-            className="h-4 w-4 shrink-0 text-red-500"
+            className="h-4 w-4 shrink-0 text-danger"
           />
         </Button>
       </PopoverTrigger>

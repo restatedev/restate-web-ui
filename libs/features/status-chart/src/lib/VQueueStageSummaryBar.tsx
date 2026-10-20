@@ -28,22 +28,22 @@ export type VQueueStatusSummaryEntry = StatusEntry & {
 };
 
 const INBOX_PATTERN =
-  'repeating-linear-gradient(-45deg, transparent 0 4px, rgba(255, 255, 255, 0.28) 4px 6px)';
+  'repeating-linear-gradient(-45deg, transparent 0 4px, color-mix(in oklab, var(--background-color-highlight) 28%, transparent) 4px 6px)';
 const INBOX_HIGHLIGHT =
-  'linear-gradient(to bottom, rgba(255, 255, 255, 0.12), transparent 60%)';
+  'linear-gradient(to bottom, color-mix(in oklab, var(--background-color-highlight) 12%, transparent), transparent 60%)';
 const styles = tv({
   slots: {
     container:
       'grid w-full grid-cols-1 items-center gap-y-2.5 md:grid-cols-[auto_minmax(0,1fr)]',
     tabs: 'contents',
     focusRow:
-      'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-zinc-500 md:row-start-1 md:mx-0 md:justify-self-start',
+      'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-muted md:row-start-1 md:mx-0 md:justify-self-start',
     breakdownControl:
       'col-start-1 row-start-1 justify-self-center md:col-start-2 md:self-center md:justify-self-end md:pr-1',
     focusTabList:
-      'gap-0 rounded-xl border-[0.5px] border-zinc-800/5 bg-black/3 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.03)]',
+      'gap-0 rounded-xl border-[0.5px] border-tint-subtle bg-tint-subtle shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-default/3%)]',
     focusTab: 'items-baseline gap-1.5 px-3 py-1.5 font-sans text-xs',
-    focusCount: 'font-medium text-gray-500 tabular-nums',
+    focusCount: 'font-medium text-muted tabular-nums',
     panels:
       'col-start-1 row-start-3 w-full overflow-visible md:col-span-2 md:row-start-2',
     panel: 'outline-none',
@@ -60,11 +60,11 @@ const styles = tv({
 });
 
 const skeletonStyles = tv({
-  base: 'h-7 w-full animate-pulse rounded-md bg-slate-200',
+  base: 'h-7 w-full animate-pulse rounded-md bg-emphasis',
 });
 
 const emptyStyles = tv({
-  base: 'h-full w-full rounded-md border-[1.5px] border-dashed border-gray-300/70 bg-gray-200/70 shadow-[inset_0_1px_2px_0_rgba(0,0,0,0.04)]',
+  base: 'h-full w-full rounded-md border-[1.5px] border-dashed border-strong/70 bg-emphasis/70 shadow-[inset_0_1px_2px_0_--theme(--box-shadow-color-default/4%)]',
 });
 
 const segmentWrapStyles = tv({
@@ -76,7 +76,7 @@ const segmentGroupStyles = tv({
 });
 
 const segmentStyles = tv({
-  base: 'relative h-full w-full min-w-[6px] overflow-hidden border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),0_1px_4px_0_rgba(0,0,0,0.15)] transition hover:brightness-[1.03]',
+  base: 'relative h-full w-full min-w-[6px] overflow-hidden border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/40%),0_1px_4px_0_--theme(--box-shadow-color-default/15%)] transition hover:brightness-[1.03]',
   variants: {
     borderType: {
       dashed: 'border-dashed',
@@ -104,7 +104,7 @@ const segmentStyles = tv({
 });
 
 const tooltipDotStyles = tv({
-  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)]',
   variants: {
     borderType: {
       dashed: 'border-dashed',
@@ -324,7 +324,7 @@ export function VQueueStageSummaryBar({
     const segmentAriaLabel = segmentIsLoading
       ? `${label} distribution loading`
       : ariaLabel;
-    const backgroundGradient = `linear-gradient(to bottom, color-mix(in srgb, white 22%, ${style.fillLight}), ${style.fillLight})`;
+    const backgroundGradient = `linear-gradient(to bottom, color-mix(in srgb, var(--background-color-highlight) 22%, ${style.fillLight}), ${style.fillLight})`;
     const isGrouped = groupPosition !== 'standalone';
 
     return (
@@ -349,29 +349,27 @@ export function VQueueStageSummaryBar({
                   borderColor: style.stroke,
                 }}
               />
-              <span className="mr-2 ml-2 text-base! text-gray-300!">
-                {label}
-              </span>
+              <span className="mr-2 ml-2 text-base! text-faint!">{label}</span>
               {segmentIsLoading ? (
-                <span className="text-sm! font-medium text-gray-300!">
+                <span className="text-sm! font-medium text-faint!">
                   Loading
                 </span>
               ) : approximate ? (
                 <>
-                  <span className="text-base! font-semibold text-gray-50!">
+                  <span className="text-base! font-semibold text-inverse!">
                     {percentage}
                   </span>
-                  <span className="ml-1 text-sm! font-medium text-gray-300!">
+                  <span className="ml-1 text-sm! font-medium text-faint!">
                     {percentageScope}
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-base! font-semibold text-gray-50!">
+                  <span className="text-base! font-semibold text-inverse!">
                     {formatNumber(matchingCount)} /{' '}
                     {formatNumber(segmentPopulationCount)}
                   </span>
-                  <span className="ml-1 text-base! font-medium text-gray-200!">
+                  <span className="ml-1 text-base! font-medium text-inverse-secondary!">
                     ({percentage})
                   </span>
                 </>
@@ -480,7 +478,7 @@ export function VQueueStageSummaryBar({
       }
     >
       {focusedCountUnavailable ? (
-        <span role="status" className="self-center text-xs text-gray-500">
+        <span role="status" className="self-center text-xs text-muted">
           {isError || isBreakdownError?.('finished')
             ? 'Could not load invocation counts.'
             : 'Invocation counts are unavailable.'}
@@ -515,7 +513,7 @@ export function VQueueStageSummaryBar({
     !showFocusCounts ? null : state === 'loading' ? (
       <span
         className={focusCount({
-          class: 'h-3 w-7 animate-pulse rounded bg-gray-200',
+          class: 'h-3 w-7 animate-pulse rounded bg-emphasis',
         })}
         aria-label={`${label} count loading`}
       />

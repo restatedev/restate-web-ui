@@ -7,7 +7,7 @@ import { ERROR_CODES } from '@restate/util-errors';
 import Markdown from 'react-markdown';
 
 const styles = tv({
-  base: 'mb-2 flex items-center gap-4 rounded-xl border border-zinc-900/80 bg-zinc-800/90 py-1.5 pr-1.5 pl-2 text-sm text-gray-200 shadow-[inset_0_0.5px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-xl',
+  base: 'mb-2 flex items-center gap-4 rounded-xl border border-inverse bg-inverse/90 py-1.5 pr-1.5 pl-2 text-sm text-inverse-secondary shadow-[inset_0_0.5px_0_0_var(--background-color-inverse-strong)] drop-shadow-xl backdrop-blur-xl',
 });
 export function FixHttp1({
   formId,
@@ -44,7 +44,7 @@ export function FixHttp1({
         autoFocus
         value={FIX_HTTP_ACTION}
         variant="icon"
-        className="flex h-7 shrink-0 items-center gap-2 rounded-md bg-white/20 px-3 py-0 pr-1.5 text-0.5xs text-white outline-blue-300 hover:bg-white/25 pressed:bg-white/30"
+        className="flex h-7 shrink-0 items-center gap-2 rounded-md bg-inverse-tint px-3 py-0 pr-1.5 text-0.5xs text-inverse outline-accent-strong hover:bg-inverse-tint-strong pressed:bg-inverse-tint-strong"
       >
         Switch to HTTP/1.1
         <Icon name={IconName.ChevronRight} className="h-4 w-4" />

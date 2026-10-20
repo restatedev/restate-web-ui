@@ -11,7 +11,7 @@ interface SectionProps {
 }
 
 const styles = tv({
-  base: 'group section flex flex-col rounded-xl bg-gray-100 p-0.5',
+  base: 'group section flex flex-col rounded-xl bg-canvas p-0.5',
 });
 export function CollapsibleSection({
   children,
@@ -35,7 +35,7 @@ interface SectionTitleProps {
 }
 
 const stylesSectionTitle = tv({
-  base: 'relative px-2 py-2 text-xs font-semibold text-gray-400 uppercase',
+  base: 'relative px-2 py-2 text-xs font-semibold text-subtle uppercase',
 });
 export function CollapsibleSectionTitle({
   children,
@@ -46,7 +46,7 @@ export function CollapsibleSectionTitle({
       <Button
         variant="icon"
         slot="trigger"
-        className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-zinc-400 hover:bg-black/3 pressed:bg-black/5"
+        className="absolute inset-0 justify-end rounded-[calc(0.75rem-0.175rem)] p-2 text-sm text-subtle hover:bg-tint-subtle pressed:bg-tint"
       >
         <Icon
           name={IconName.ChevronDown}
@@ -62,7 +62,7 @@ const stylesSectionContent = tv({
   base: 'rounded-[calc(0.75rem-0.125rem)] p-3 text-sm',
   variants: {
     raised: {
-      true: 'border bg-white shadow-xs',
+      true: 'border bg-surface shadow-xs',
       false: '',
     },
   },

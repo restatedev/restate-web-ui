@@ -4,10 +4,10 @@ export const issuePingStyles = tv({
   base: 'absolute inline-flex h-full w-full animate-ping opacity-50',
   variants: {
     severity: {
-      // `!` so descendant fill overrides (e.g. tabStyles' [&_svg]:fill-zinc-100)
+      // `!` so descendant fill overrides (e.g. tabStyles' [&_svg]:fill-muted)
       // don't clobber the alert color when nested inside one.
-      high: 'fill-red-300! text-red-300',
-      low: 'fill-orange-300! text-orange-300',
+      high: 'fill-danger-strong! text-danger-subtle',
+      low: 'fill-warning-strong! text-warning-subtle',
     },
   },
 });
@@ -16,8 +16,8 @@ export const issueIconStyles = tv({
   base: 'relative inline-flex h-full w-full',
   variants: {
     severity: {
-      high: 'fill-red-400/80 text-red-400/80',
-      low: 'fill-orange-400/80 text-orange-400/80',
+      high: 'fill-danger-vivid/80 text-danger-subtle',
+      low: 'fill-warning-vivid/80 text-warning-subtle',
     },
   },
 });
@@ -26,17 +26,17 @@ export const issueDotStyles = tv({
   base: 'relative inline-flex h-2 w-2 rounded-full',
   variants: {
     severity: {
-      high: 'bg-red-300',
-      low: 'bg-orange-300',
+      high: 'bg-danger-strong',
+      low: 'bg-warning-strong',
     },
   },
 });
 
 export const issueBannerStyles = tv({
-  base: 'flex items-center gap-2 rounded-xl border border-zinc-900/80 bg-zinc-800/90 px-3 py-1 text-xs text-gray-200 shadow-[inset_0_1px_0_0_var(--color-gray-500)] drop-shadow-xl backdrop-blur-3xl',
+  base: 'flex items-center gap-2 rounded-xl border border-inverse bg-inverse/90 px-3 py-1 text-xs text-inverse-secondary shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] drop-shadow-xl backdrop-blur-3xl',
   variants: {
     interactive: {
-      true: 'hover:bg-zinc-700/90 pressed:bg-zinc-900',
+      true: 'hover:bg-inverse-muted/90 pressed:bg-inverse',
       false: '',
     },
     elevated: {
@@ -59,8 +59,8 @@ export const issueButtonStyles = tv({
   base: 'relative z-10 flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-medium',
   variants: {
     severity: {
-      high: 'border-red-200 bg-red-50 text-red-600',
-      low: 'border-orange-200 bg-orange-50 text-orange-600',
+      high: 'border-danger bg-danger-subtle text-danger',
+      low: 'border-warning bg-warning-subtle text-warning',
     },
   },
   defaultVariants: {
@@ -73,9 +73,9 @@ export const issueAlertIconStyles = tv({
   variants: {
     severity: {
       // `!` (important) so descendant fill overrides on containers like the
-      // tabs (`[&_svg]:fill-zinc-100`) can't clobber the alert color.
-      high: 'fill-red-300! stroke-red-300',
-      low: 'fill-orange-300! stroke-orange-300',
+      // tabs (`[&_svg]:fill-muted`) can't clobber the alert color.
+      high: 'fill-danger-strong! stroke-danger-strong',
+      low: 'fill-warning-strong! stroke-warning-strong',
     },
   },
 });

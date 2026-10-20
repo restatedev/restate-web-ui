@@ -43,7 +43,7 @@ import { mergeRefs, useObjectRef } from 'react-aria';
 
 const tagStyles = tv({
   extend: focusRing,
-  base: 'flex max-w-fit cursor-default items-center gap-x-1 rounded-md border bg-white/90 py-0.5 pl-1.5 text-xs font-medium text-zinc-800 shadow-xs outline-0 transition',
+  base: 'flex max-w-fit cursor-default items-center gap-x-1 rounded-md border bg-surface/90 py-0.5 pl-1.5 text-xs font-medium text-primary shadow-xs outline-0 transition',
 });
 function DefaultTag<
   T extends {
@@ -132,7 +132,7 @@ const multiSelectStyles = tv({
   variants: {
     tagsPlacement: {
       inside:
-        'has-[input[data-invalid=true]]:border-destructive rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500',
+        'has-[input[data-invalid=true]]:border-destructive rounded-lg border has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-focus has-[input[data-invalid=true][data-focused=true]]:border-accent-strong',
       outside: 'flex-nowrap gap-1.5',
     },
   },
@@ -144,7 +144,7 @@ const comboBoxStyles = tv({
     tagsPlacement: {
       inside: '',
       outside:
-        'has-[input[data-invalid=true]]:border-destructive min-w-48 rounded-lg border has-[input[data-focused=true]]:border-blue-500 has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-blue-500 has-[input[data-invalid=true][data-focused=true]]:border-blue-500',
+        'has-[input[data-invalid=true]]:border-destructive min-w-48 rounded-lg border has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-1 has-[input[data-focused=true]]:ring-focus has-[input[data-invalid=true][data-focused=true]]:border-accent-strong',
     },
   },
 });
@@ -164,7 +164,7 @@ const tagGroupStyles = tv({
 });
 
 const popoverStyles = tv({
-  base: 'w-(--trigger-width) min-w-fit bg-gray-100/90 p-0',
+  base: 'w-(--trigger-width) min-w-fit bg-canvas/90 p-0',
 });
 
 const inputStyles = tv({
@@ -172,7 +172,7 @@ const inputStyles = tv({
 });
 
 const overflowStyles = tv({
-  base: 'flex h-6.5 shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs text-zinc-600',
+  base: 'flex h-6.5 shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs text-tertiary',
 });
 
 const overflowMeasureStyles = tv({
@@ -651,12 +651,12 @@ export function FormFieldMultiCombobox<
                   )}
                 </ListBox>
               ) : (
-                <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
+                <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-muted">
                   You can apply only one filter at a time.
                 </div>
               )}
               {items.some((item) => item.allowCustomValue) && (
-                <div className="mb-2 -translate-y-1 px-5 text-xs text-gray-400">
+                <div className="mb-2 -translate-y-1 px-5 text-xs text-subtle">
                   Select an option or enter a custom value.
                 </div>
               )}

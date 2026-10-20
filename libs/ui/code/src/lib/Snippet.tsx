@@ -141,7 +141,7 @@ export function SnippetTabs({
         className,
       })}
     >
-      <div className="absolute top-0 right-0 rounded-xl bg-black/3">
+      <div className="absolute top-0 right-0 rounded-xl bg-tint-subtle">
         <Nav ariaCurrentValue="true" className="gap-0">
           {languages.map((language) => (
             <NavButtonItem

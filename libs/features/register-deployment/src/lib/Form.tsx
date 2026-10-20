@@ -39,11 +39,11 @@ const customRadioStyles = tv({
   base: 'group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden',
   variants: {
     isFocusVisible: {
-      true: 'ring-2 ring-blue-600 ring-offset-1 ring-offset-white/80',
+      true: 'ring-2 ring-focus ring-offset-1 ring-offset-surface/80',
     },
     isSelected: {
-      true: 'z-10 scale-105 border text-gray-800 shadow-xs',
-      false: 'border-transparent text-gray-500',
+      true: 'z-10 scale-105 border text-primary shadow-xs',
+      false: 'border-transparent text-muted',
     },
     isPressed: { true: '', false: '' },
     isDisabled: {
@@ -51,10 +51,10 @@ const customRadioStyles = tv({
     },
   },
   compoundVariants: [
-    { isSelected: true, isPressed: true, className: 'bg-gray-50' },
-    { isSelected: true, isPressed: false, className: 'bg-white' },
-    { isSelected: false, isPressed: true, className: 'bg-gray-100' },
-    { isSelected: false, isPressed: false, className: 'bg-white/50' },
+    { isSelected: true, isPressed: true, className: 'bg-subtle' },
+    { isSelected: true, isPressed: false, className: 'bg-surface' },
+    { isSelected: false, isPressed: true, className: 'bg-muted' },
+    { isSelected: false, isPressed: false, className: 'bg-surface/50' },
   ],
 });
 
@@ -101,12 +101,12 @@ function Container({
       <Heading
         slot="title"
         level={3}
-        className="text-lg leading-6 font-medium text-gray-900"
+        className="text-lg leading-6 font-medium text-primary"
       >
         {title}
       </Heading>
       {description ? (
-        <p className="text-sm text-gray-500">{description}</p>
+        <p className="text-sm text-muted">{description}</p>
       ) : (
         <div className="mt-2" />
       )}
@@ -127,7 +127,7 @@ export function RegistrationForm() {
           title={
             <>
               Register{' '}
-              <ServiceDeploymentExplainer className="decoration-gray-400">
+              <ServiceDeploymentExplainer className="decoration-subtle">
                 service deployment
               </ServiceDeploymentExplainer>
             </>
@@ -179,7 +179,7 @@ export function UpdateForm() {
           title={
             <>
               Update{' '}
-              <ServiceDeploymentExplainer className="decoration-gray-400">
+              <ServiceDeploymentExplainer className="decoration-subtle">
                 service deployment
               </ServiceDeploymentExplainer>
             </>
@@ -193,7 +193,7 @@ export function UpdateForm() {
               href="https://docs.restate.dev/services/versioning#deploying-new-service-versions"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-orange-700"
+              className="text-warning-strong"
             >
               Learn more.
             </Link>
@@ -204,29 +204,29 @@ export function UpdateForm() {
           {isLambda && <AssumeARNRole className="" />}
 
           {/* <div className="mt-2">
-            <div className="relative mb-2 rounded-xl border border-orange-200 bg-orange-50 [&_.error]:absolute [&_.error]:bottom-[-1.5em]">
-              <div className="rounded-t-xl bg-white/60 p-3">
+            <div className="relative mb-2 rounded-xl border border-warning bg-warning-subtle [&_.error]:absolute [&_.error]:bottom-[-1.5em]">
+              <div className="rounded-t-xl bg-surface/60 p-3">
                 <FormFieldCheckbox
                   name="force"
-                  className="[--checkbox-bg:var(--color-white)] [&_label]:before:absolute [&_label]:before:inset-0 [&_label]:before:content-['']"
+                  className="[--checkbox-bg:var(--background-color-surface)] [&_label]:before:absolute [&_label]:before:inset-0 [&_label]:before:content-['']"
                   value="true"
                   checked={shouldForce}
                   onChange={updateShouldForce}
                   autoFocus
                 >
-                  <div className="flex items-center gap-1 text-0.5xs font-medium text-orange-600">
+                  <div className="flex items-center gap-1 text-0.5xs font-medium text-warning">
                     Overwrite existing services
                   </div>
                 </FormFieldCheckbox>
               </div>
-              <div className="border-t border-orange-200" />
-              <p className="flex gap-2 p-3 text-0.5xs font-medium text-orange-600">
+              <div className="border-t border-warning" />
+              <p className="flex gap-2 p-3 text-0.5xs font-medium text-warning">
                 <Icon
-                  className="mb-1 inline-block h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+                  className="mb-1 inline-block h-5 w-5 shrink-0 fill-warning text-on-warning"
                   name={IconName.TriangleAlert}
                 />
 
-                <span className="text-0.5xs font-normal text-orange-500">
+                <span className="text-0.5xs font-normal text-warning-subtle">
                   <span className="font-semibold">Caution: </span>This will
                   replace your current service and handler definitions with
                   whatever is currently exposed at this deployment. This may
@@ -345,7 +345,7 @@ function EndpointForm() {
         </FormFieldLabel>
         <div
           onKeyDownCapture={onKeyDown}
-          className="relative my-2 flex rounded-lg border border-gray-200 bg-gray-100 px-0.5 text-sm text-gray-900 shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)] outline-2 outline-offset-2 outline-transparent has-[input[data-focused=true2]]:outline-blue-500 has-[input[data-focused=true]]:[box-shadow:inset_0_1px_0px_0px_rgba(0,0,0,0.03)] has-[input[data-focused=true]]:outline-blue-600"
+          className="relative my-2 flex rounded-lg border border-default bg-muted px-0.5 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] outline-2 outline-offset-2 outline-transparent has-[input[data-focused=true2]]:outline-focus has-[input[data-focused=true]]:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] has-[input[data-focused=true]]:outline-focus"
         >
           <FocusScope>
             <FormFieldInput
@@ -365,7 +365,7 @@ function EndpointForm() {
               }}
             />
             {isTunnel && !isCliTunnel && (
-              <div className="-my-px h-full min-h-9 w-[2px] shrink-0 bg-white" />
+              <div className="-my-px h-full min-h-9 w-[2px] shrink-0 bg-surface" />
             )}
             <FormFieldInput
               autoFocus={!isOnboarding}
@@ -441,7 +441,7 @@ function EndpointForm() {
               }}
             />
           </FocusScope>
-          <div className="w-28 shrink-0 py-0.5 [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-black/2.5">
+          <div className="w-28 shrink-0 py-0.5 [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-tint-subtle">
             <RadioGroup
               value={
                 isLambda

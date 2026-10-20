@@ -66,7 +66,7 @@ export function StatusArcEcharts({
                 borderCap={s.borderCap}
                 borderRadius={6}
                 shadowBlur={4}
-                shadowColor="rgba(0,0,0,0.15)"
+                shadowColor="color-mix(in oklab, var(--box-shadow-color-default) 15%, transparent)"
                 shadowOffsetY={1}
                 onSelect={() => navigate(s.href)}
               />
@@ -75,8 +75,8 @@ export function StatusArcEcharts({
             <Slice
               name="Loading"
               value={1}
-              color="rgba(215,219,225,0.55)"
-              borderColor="rgba(199,203,209,0.6)"
+              color="color-mix(in oklab, var(--background-color-strong) 55%, transparent)"
+              borderColor="color-mix(in oklab, var(--border-color-strong) 60%, transparent)"
               borderWidth={1}
               borderRadius={6}
             />

@@ -18,7 +18,7 @@ export function TenantSidebar({ scope, header }: TenantSidebarProps) {
             <span className="shrink-0">
               <Restate />
             </span>
-            <span className="truncate text-sm font-medium text-zinc-700 group-data-[collapsed=true]/sidebar:hidden">
+            <span className="truncate text-sm font-medium text-secondary group-data-[collapsed=true]/sidebar:hidden">
               {scope}
             </span>
           </div>

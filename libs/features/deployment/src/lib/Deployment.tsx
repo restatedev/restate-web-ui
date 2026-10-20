@@ -38,7 +38,7 @@ const copyButtonStyles = tv({
 });
 
 const iconContainerStyles = tv({
-  base: 'shrink-0 border bg-white shadow-xs',
+  base: 'shrink-0 border bg-surface shadow-xs',
   variants: {
     variant: {
       secondary: 'mr-1.5 h-6 w-6 rounded-md',
@@ -54,8 +54,8 @@ const iconStyles = tv({
   base: 'h-full w-full p-1',
   variants: {
     variant: {
-      secondary: 'text-zinc-400',
-      primary: 'fill-blue-50 text-blue-400 drop-shadow-md',
+      secondary: 'text-subtle',
+      primary: 'fill-accent-muted text-accent-subtle drop-shadow-md',
     },
   },
   defaultVariants: {
@@ -64,7 +64,7 @@ const iconStyles = tv({
 });
 
 const bodyStyles = tv({
-  base: 'min-w-[6ch] flex-auto text-zinc-600',
+  base: 'min-w-[6ch] flex-auto text-tertiary',
   variants: {
     variant: {
       secondary: 'mr-2',
@@ -81,7 +81,7 @@ const endpointStyles = tv({
   variants: {
     variant: {
       secondary: '',
-      primary: 'text-base font-medium text-zinc-700',
+      primary: 'text-base font-medium text-secondary',
     },
   },
   defaultVariants: {
@@ -133,7 +133,7 @@ export function Deployment({
               <TruncateWithTooltip
                 copyText={deploymentId}
                 triggerRef={linkRef}
-                className="[&_.badge]:bg-gray-700"
+                className="[&_.badge]:bg-inverse-muted"
               >
                 {deploymentId}
               </TruncateWithTooltip>
@@ -145,11 +145,11 @@ export function Deployment({
               aria-label={deploymentId}
               variant="secondary"
               href={deploymentHref(baseUrl, { deployment: deploymentId })}
-              className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+              className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
             >
               <Icon
                 name={IconName.ChevronRight}
-                className="h-4 w-4 text-gray-400"
+                className="h-4 w-4 text-subtle"
               />
             </Link>
           )}
@@ -175,17 +175,17 @@ export function Deployment({
         <Popover>
           <PopoverTrigger>
             <Button
-              className="z-[2] mr-1.5 rounded-md border-orange-200 bg-orange-50 p-1"
+              className="z-[2] mr-1.5 rounded-md border-warning bg-warning-subtle p-1"
               variant="secondary"
             >
               <Icon
                 name={IconName.TriangleAlert}
-                className="h-3.5 w-3.5 text-orange-500"
+                className="h-3.5 w-3.5 text-warning-subtle"
               />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="max-w-md">
-            <div className="p-4 text-0.5xs text-orange-600">
+            <div className="p-4 text-0.5xs text-warning">
               <span className="font-semibold">Unsupported SDK Version:</span>{' '}
               This deployment uses an obsolete SDK version (Service Protocol{' '}
               {deployment.max_protocol_version}) that is no longer supported.
@@ -209,7 +209,7 @@ export function Deployment({
                   <code className="ml-1 inline-block">{tunnelName}</code>
                   <Copy
                     copyText={String(tunnelName)}
-                    className="ml-4 h-5 w-5 rounded-xs bg-zinc-800/90 p-1 hover:bg-zinc-600 pressed:bg-zinc-500"
+                    className="ml-4 h-5 w-5 rounded-xs bg-inverse/90 p-1 hover:bg-inverse-emphasis pressed:bg-inverse-strong"
                   />
                 </p>
               }
@@ -228,7 +228,7 @@ export function Deployment({
               copyText={deploymentEndpoint}
               triggerRef={linkRef}
               hideCopy={showEndpointCopyButton}
-              className="[&_.badge]:bg-gray-700"
+              className="[&_.badge]:bg-inverse-muted"
             >
               {showEndpoint ? deploymentEndpoint : deploymentId}
             </TruncateWithTooltip>
@@ -245,7 +245,7 @@ export function Deployment({
       {showSdk && (
         <MiniSDK
           sdkVersion={deployment.sdk_version}
-          className="z-[2] text-gray-500"
+          className="z-[2] text-muted"
         />
       )}
       {showGithubMetadata && (
@@ -258,12 +258,9 @@ export function Deployment({
           aria-label={deploymentEndpoint}
           variant="secondary"
           href={deploymentHref(baseUrl, { deployment: deployment.id })}
-          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
         >
-          <Icon
-            name={IconName.ChevronRight}
-            className="h-4 w-4 text-gray-400"
-          />
+          <Icon name={IconName.ChevronRight} className="h-4 w-4 text-subtle" />
         </Link>
       )}
     </div>

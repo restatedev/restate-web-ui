@@ -22,8 +22,8 @@ const styles = tv({
   base: 'relative flex max-h-[28rem] min-h-0 w-full flex-auto flex-col gap-2 overflow-auto rounded-xl p-3 text-sm',
   variants: {
     isTransient: {
-      true: 'bg-orange-50',
-      false: 'bg-red-50',
+      true: 'bg-warning-subtle',
+      false: 'bg-danger-subtle',
     },
   },
 });
@@ -32,8 +32,9 @@ const copyButtonStyles = tv({
   base: 'top-2 right-2 rounded-md border-transparent bg-transparent p-1.5 shadow-none transition-colors [&_svg]:h-3.5 [&_svg]:w-3.5',
   variants: {
     isTransient: {
-      true: 'text-orange-600/60 hover:bg-orange-200/50 hover:text-orange-700',
-      false: 'text-red-600/60 hover:bg-red-200/50 hover:text-red-700',
+      true: 'text-warning-subtle hover:bg-warning-muted hover:text-warning-strong',
+      false:
+        'text-danger-subtle hover:bg-danger-muted hover:text-danger-strong',
     },
   },
 });
@@ -46,8 +47,8 @@ const iconStyles = tv({
   base: 'h-4 w-4',
   variants: {
     isTransient: {
-      true: 'fill-orange-500 text-orange-500',
-      false: 'fill-red-500 text-red-500',
+      true: 'fill-warning-vivid text-warning-subtle',
+      false: 'fill-danger text-danger',
     },
   },
 });
@@ -56,18 +57,18 @@ const outputStyles = tv({
   base: 'max-h-28 min-w-0 flex-auto overflow-auto pr-8 [word-break:break-word]',
   variants: {
     isTransient: {
-      true: 'text-orange-700',
-      false: 'text-red-700',
+      true: 'text-warning-strong',
+      false: 'text-danger-strong',
     },
   },
 });
 
 const terminalStyles = tv({
-  base: 'relative block max-h-80 min-w-0 flex-auto [scrollbar-gutter:stable] overflow-auto rounded-xl border bg-gray-200/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_rgba(0,0,0,0.08)]',
+  base: 'relative block max-h-80 min-w-0 flex-auto [scrollbar-gutter:stable] overflow-auto rounded-xl border bg-emphasis/50 p-3 font-mono text-xs [overflow-wrap:anywhere] mix-blend-multiply shadow-[inset_0_0.5px_0.5px_0px_--theme(--box-shadow-color-default/8%)]',
   variants: {
     isTransient: {
-      true: 'text-orange-700',
-      false: 'text-red-700',
+      true: 'text-warning-strong',
+      false: 'text-danger-strong',
     },
   },
 });
@@ -86,8 +87,8 @@ const causeStyles = tv({
   base: 'min-w-0 flex-auto text-xs [word-break:break-word]',
   variants: {
     isTransient: {
-      true: 'text-orange-700',
-      false: 'text-red-700',
+      true: 'text-warning-strong',
+      false: 'text-danger-strong',
     },
   },
 });
@@ -96,8 +97,8 @@ const causeIconStyles = tv({
   base: 'h-3.5 w-3.5',
   variants: {
     isTransient: {
-      true: 'fill-orange-500 text-orange-500',
-      false: 'fill-red-500 text-red-500',
+      true: 'fill-warning-vivid text-warning-subtle',
+      false: 'fill-danger text-danger',
     },
   },
 });
@@ -106,8 +107,8 @@ const separatorStyles = tv({
   base: '-mx-3 flex items-center gap-2 text-[0.6875rem] font-semibold tracking-wider uppercase',
   variants: {
     isTransient: {
-      true: 'text-orange-700/70',
-      false: 'text-red-700/70',
+      true: 'text-warning-subtle',
+      false: 'text-danger-subtle',
     },
   },
 });
@@ -120,8 +121,8 @@ const separatorLineStyles = tv({
       long: 'flex-auto',
     },
     isTransient: {
-      true: 'bg-orange-300/50',
-      false: 'bg-red-300/50',
+      true: 'bg-warning-strong/50',
+      false: 'bg-danger-strong/50',
     },
   },
 });
@@ -130,8 +131,8 @@ const metadataListStyles = tv({
   base: 'flex min-h-0 flex-col pr-1 text-xs [word-break:break-word]',
   variants: {
     isTransient: {
-      true: 'text-orange-700',
-      false: 'text-red-700',
+      true: 'text-warning-strong',
+      false: 'text-danger-strong',
     },
   },
 });
@@ -140,8 +141,8 @@ const metadataTriggerStyles = tv({
   base: 'flex w-full cursor-pointer items-start gap-3 rounded-md py-0.5 text-left outline-none',
   variants: {
     isTransient: {
-      true: 'hover:bg-orange-100/60 focus-visible:bg-orange-100/60',
-      false: 'hover:bg-red-100/60 focus-visible:bg-red-100/60',
+      true: 'hover:bg-warning-subtle focus-visible:bg-warning-subtle',
+      false: 'hover:bg-danger-subtle focus-visible:bg-danger-subtle',
     },
   },
 });
@@ -150,8 +151,8 @@ const metadataChevronStyles = tv({
   base: 'h-3 w-3 transition-transform group-expanded:rotate-90',
   variants: {
     isTransient: {
-      true: 'fill-orange-700/70 text-orange-700/70',
-      false: 'fill-red-700/70 text-red-700/70',
+      true: 'fill-warning/70 text-warning-subtle',
+      false: 'fill-danger/70 text-danger-subtle',
     },
   },
 });
@@ -160,8 +161,8 @@ const metadataKeyStyles = tv({
   base: 'w-40 shrink-0 truncate font-semibold group-expanded:overflow-visible group-expanded:[overflow-wrap:anywhere] group-expanded:text-clip group-expanded:whitespace-normal',
   variants: {
     isTransient: {
-      true: 'text-orange-700/70',
-      false: 'text-red-700/70',
+      true: 'text-warning-subtle',
+      false: 'text-danger-subtle',
     },
   },
 });

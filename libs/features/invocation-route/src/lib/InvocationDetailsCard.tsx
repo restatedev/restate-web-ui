@@ -30,7 +30,7 @@ function EntityChevron() {
   return (
     <Icon
       name={IconName.ChevronRight}
-      className="-mr-1 h-3.5 w-3.5 text-zinc-400"
+      className="-mr-1 h-3.5 w-3.5 text-subtle"
     />
   );
 }

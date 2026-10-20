@@ -114,14 +114,14 @@ export function EditRetentionDialog() {
           <Heading
             slot="title"
             level={3}
-            className="text-lg leading-6 font-medium text-gray-900"
+            className="text-lg leading-6 font-medium text-primary"
           >
             Retention configuration for{' '}
-            <span className="rounded-sm bg-gray-100 px-[0.5ch] font-mono">
+            <span className="rounded-sm bg-muted px-[0.5ch] font-mono">
               {service}
             </span>
           </Heading>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted">
             Adjust how long metadata and journals from completed invocations are
             kept.
             <Link
@@ -135,10 +135,10 @@ export function EditRetentionDialog() {
               <Icon name={IconName.ExternalLink} className="h-[1em] w-[1em]" />
             </Link>
           </p>
-          <div className="flex flex-col gap-2 text-sm text-gray-500">
-            <p className="mt-2 flex gap-2 rounded-xl bg-orange-50 p-3 text-sm text-0.5xs text-orange-600">
+          <div className="flex flex-col gap-2 text-sm text-muted">
+            <p className="mt-2 flex gap-2 rounded-xl bg-warning-subtle p-3 text-sm text-0.5xs text-warning">
               <Icon
-                className="h-5 w-5 shrink-0 fill-orange-600 text-orange-100"
+                className="h-5 w-5 shrink-0 fill-warning text-on-warning"
                 name={IconName.TriangleAlert}
               />
               <span className="inline-block">
@@ -164,7 +164,7 @@ export function EditRetentionDialog() {
                 allowsCustomValue
                 defaultFilter={startsWith}
                 disabled={isPendingOrSubmitting}
-                className="[&_label]:text-zinc-500"
+                className="[&_label]:text-muted"
                 defaultValue={data?.workflow_completion_retention ?? ''}
                 onChange={(value) =>
                   setDraft((old) => ({ ...old, workflow: value }))
@@ -198,7 +198,7 @@ export function EditRetentionDialog() {
                 </IdempotencyRetentionExplainer>
               }
               name="idempotency_retention"
-              className="[&_label]:text-zinc-500"
+              className="[&_label]:text-muted"
               placeholder="1day"
             />
             <FormFieldCombobox
@@ -217,10 +217,10 @@ export function EditRetentionDialog() {
                 </JournalRetentionExplainer>
               }
               name="journal_retention"
-              className="[&_label]:text-zinc-500"
+              className="[&_label]:text-muted"
               placeholder="1day"
             />
-            <div className="rounded-xl bg-gray-100 px-3 py-3">
+            <div className="rounded-xl bg-muted px-3 py-3">
               <RetentionIllustration
                 journal={draft.journal ?? data?.journal_retention}
                 idempotency={draft.idempotency ?? data?.idempotency_retention}

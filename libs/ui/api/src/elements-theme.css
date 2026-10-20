@@ -1,0 +1,135 @@
+.stoplight {
+  --color-text-heading: var(--text-color-primary);
+  --color-text: var(--text-color-primary);
+  --color-text-paragraph: var(--text-color-secondary);
+  --color-text-muted: var(--text-color-tertiary);
+  --color-text-light: var(--text-color-muted);
+  --color-text-disabled: var(--text-color-subtle);
+
+  --color-canvas: var(--background-color-surface);
+  --color-canvas-pure: var(--background-color-surface);
+  --color-canvas-dialog: var(--background-color-surface);
+  --color-canvas-tint: var(--background-color-subtle);
+  --color-canvas-50: var(--background-color-subtle);
+  --color-canvas-100: var(--background-color-muted);
+  --color-canvas-200: var(--background-color-emphasis);
+  --color-canvas-300: var(--background-color-emphasis);
+  --color-canvas-400: var(--background-color-strong);
+  --color-canvas-500: var(--background-color-strong);
+  --color-canvas-dark: var(--background-color-inverse);
+
+  --color-border-dark: var(--border-color-strong);
+  --color-border: var(--border-color-default);
+  --color-border-light: var(--border-color-muted);
+  --color-border-input: var(--border-color-strong);
+  --color-border-button: var(--border-color-tint);
+
+  --color-text-primary: var(--text-color-accent);
+  --color-primary: var(--background-color-accent);
+  --color-primary-dark: var(--background-color-accent-hover);
+  --color-primary-darker: var(--background-color-accent-pressed);
+  --color-primary-light: var(--background-color-accent-vivid);
+  --color-primary-tint: color-mix(
+    in oklab,
+    var(--background-color-accent-vivid) 25%,
+    transparent
+  );
+  --color-on-primary: var(--text-color-inverse);
+
+  --color-text-success: var(--text-color-success);
+  --color-success: var(--background-color-success);
+  --color-success-dark: var(--text-color-success);
+  --color-success-darker: var(--text-color-success-strong);
+  --color-success-light: var(--background-color-success-vivid);
+  --color-success-tint: color-mix(
+    in oklab,
+    var(--background-color-success-vivid) 25%,
+    transparent
+  );
+  --color-on-success: var(--text-color-inverse);
+
+  --color-text-warning: var(--text-color-warning);
+  --color-warning: var(--background-color-warning);
+  --color-warning-dark: var(--text-color-warning);
+  --color-warning-darker: var(--text-color-warning-strong);
+  --color-warning-light: var(--background-color-warning-vivid);
+  --color-warning-tint: color-mix(
+    in oklab,
+    var(--background-color-warning-vivid) 25%,
+    transparent
+  );
+  --color-on-warning: var(--text-color-inverse);
+
+  --color-text-danger: var(--text-color-danger);
+  --color-danger: var(--background-color-danger);
+  --color-danger-dark: var(--background-color-danger-hover);
+  --color-danger-darker: var(--background-color-danger-pressed);
+  --color-danger-light: var(--background-color-danger-vivid);
+  --color-danger-tint: color-mix(
+    in oklab,
+    var(--background-color-danger-vivid) 25%,
+    transparent
+  );
+  --color-on-danger: var(--text-color-inverse);
+}
+
+.stoplight .sl-inverted {
+  --color-text-heading: var(--text-color-inverse);
+  --color-text: var(--text-color-inverse-secondary);
+  --color-text-paragraph: var(--text-color-inverse-secondary);
+  --color-text-muted: var(--text-color-inverse-muted);
+  --color-text-light: var(--text-color-inverse-subtle);
+  --color-text-disabled: var(--text-color-inverse-subtle);
+
+  --color-canvas: var(--background-color-inverse);
+  --color-canvas-pure: var(--background-color-inverse);
+  --color-canvas-dialog: var(--background-color-inverse-muted);
+  --color-canvas-tint: var(--background-color-inverse-tint-subtle);
+  --color-canvas-50: var(--background-color-inverse-emphasis);
+  --color-canvas-100: var(--background-color-inverse-muted);
+  --color-canvas-200: var(--background-color-inverse);
+  --color-canvas-300: var(--background-color-inverse);
+  --color-canvas-400: var(--background-color-inverse);
+  --color-canvas-500: var(--background-color-inverse);
+  --color-canvas-dark: var(--background-color-inverse-muted);
+
+  --color-border-dark: var(--border-color-inverse-tint);
+  --color-border: var(--border-color-inverse-tint);
+  --color-border-light: var(--border-color-inverse-tint);
+  --color-border-input: var(--border-color-inverse-tint);
+  --color-border-button: color-mix(
+    in oklab,
+    var(--background-color-highlight) 50%,
+    transparent
+  );
+
+  --color-text-primary: var(--text-color-accent-subtle);
+  --color-primary: var(--background-color-accent);
+  --color-primary-dark: var(--background-color-accent-hover);
+  --color-primary-darker: var(--background-color-accent-pressed);
+  --color-primary-light: var(--background-color-accent-strong);
+  --color-primary-tint: color-mix(
+    in oklab,
+    var(--background-color-accent-vivid) 25%,
+    transparent
+  );
+  --color-on-primary: var(--text-color-inverse);
+
+  --color-text-success: var(--text-color-success-subtle);
+  --color-success: var(--background-color-success-vivid);
+  --color-success-dark: var(--background-color-success);
+  --color-success-darker: var(--text-color-success);
+  --color-success-light: var(--background-color-success-strong);
+
+  --color-text-warning: var(--text-color-warning-subtle);
+  --color-warning: var(--background-color-warning-vivid);
+  --color-warning-dark: var(--background-color-warning);
+  --color-warning-darker: var(--text-color-warning);
+  --color-warning-light: var(--background-color-warning-strong);
+
+  --color-text-danger: var(--text-color-danger-subtle);
+  --color-danger: var(--background-color-danger-vivid);
+  --color-danger-dark: var(--background-color-danger);
+  --color-danger-darker: var(--background-color-danger-hover);
+  --color-danger-light: var(--background-color-danger-strong);
+}

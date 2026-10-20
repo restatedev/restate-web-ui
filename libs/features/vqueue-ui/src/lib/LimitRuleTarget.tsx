@@ -16,7 +16,7 @@ const styles = tv({
   slots: {
     root: 'inline-flex max-w-full min-w-0 items-center align-middle',
     identity: 'min-w-0',
-    identityIcon: 'h-3.5 w-3.5 shrink-0 text-zinc-400',
+    identityIcon: 'h-3.5 w-3.5 shrink-0 text-subtle',
   },
   variants: {
     variant: {

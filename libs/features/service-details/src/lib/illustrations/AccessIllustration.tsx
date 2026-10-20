@@ -7,32 +7,32 @@ import { Section, timelineStyles } from './timeline';
 const styles = tv({
   slots: {
     story:
-      'grid grid-cols-[auto_minmax(10rem,1fr)_auto] grid-rows-[auto_auto_auto] items-center gap-x-2 gap-y-2 px-3 pt-3 pb-2.5 text-[0.65625rem] text-gray-500',
-    card: 'flex h-7 min-w-[7.5rem] items-center gap-1.5 rounded-lg border bg-gray-50 px-2 text-[0.65625rem] leading-tight font-medium whitespace-nowrap text-zinc-600 shadow-xs',
-    cardIcon: 'h-3 w-3 shrink-0 text-zinc-400',
+      'grid grid-cols-[auto_minmax(10rem,1fr)_auto] grid-rows-[auto_auto_auto] items-center gap-x-2 gap-y-2 px-3 pt-3 pb-2.5 text-[0.65625rem] text-muted',
+    card: 'flex h-7 min-w-[7.5rem] items-center gap-1.5 rounded-lg border bg-subtle px-2 text-[0.65625rem] leading-tight font-medium whitespace-nowrap text-tertiary shadow-xs',
+    cardIcon: 'h-3 w-3 shrink-0 text-subtle',
     cardName: 'truncate',
     target: 'row-span-2 self-center',
     lane: 'relative row-span-2 min-w-0 self-stretch',
     topOut:
-      'absolute top-[0.875rem] right-[1.5rem] -left-2 h-[0.375rem] rounded-tr-md border-t border-r border-dashed border-slate-300',
+      'absolute top-[0.875rem] right-[1.5rem] -left-2 h-[0.375rem] rounded-tr-md border-t border-r border-dashed border-strong',
     topIn:
-      'absolute top-[1.25rem] -right-2 left-[calc(100%-1.5rem)] h-[0.375rem] rounded-bl-md border-b border-l border-dashed border-slate-300',
+      'absolute top-[1.25rem] -right-2 left-[calc(100%-1.5rem)] h-[0.375rem] rounded-bl-md border-b border-l border-dashed border-strong',
     bottomOut:
-      'absolute right-[1.5rem] bottom-[0.875rem] -left-2 h-[0.375rem] rounded-br-md border-r border-b border-dashed border-slate-300',
+      'absolute right-[1.5rem] bottom-[0.875rem] -left-2 h-[0.375rem] rounded-br-md border-r border-b border-dashed border-strong',
     bottomIn:
-      'absolute top-[2.375rem] -right-2 left-[calc(100%-1.5rem)] h-[0.375rem] rounded-tl-md border-t border-l border-dashed border-slate-300',
+      'absolute top-[2.375rem] -right-2 left-[calc(100%-1.5rem)] h-[0.375rem] rounded-tl-md border-t border-l border-dashed border-strong',
     arrowBottomEdge:
-      'absolute right-0 bottom-[-3px] h-[5px] w-[5px] rotate-45 border-t border-r border-slate-400',
+      'absolute right-0 bottom-[-3px] h-[5px] w-[5px] rotate-45 border-t border-r border-neutral',
     arrowTopEdge:
-      'absolute top-[-3px] right-0 h-[5px] w-[5px] rotate-45 border-t border-r border-slate-400',
+      'absolute top-[-3px] right-0 h-[5px] w-[5px] rotate-45 border-t border-r border-neutral',
     blockedWire:
-      'absolute top-[0.875rem] -left-2 w-[55%] border-t border-dashed border-slate-300/70',
-    stop: 'absolute top-[-5px] right-0 h-[11px] w-px bg-slate-400',
+      'absolute top-[0.875rem] -left-2 w-[55%] border-t border-dashed border-strong/70',
+    stop: 'absolute top-[-5px] right-0 h-[11px] w-px bg-neutral',
     badge:
       'absolute top-[-4px] left-1/2 h-3.5 -translate-x-1/2 -translate-y-full gap-[3px] rounded px-1 text-[0.4375rem] leading-none font-semibold tracking-[0.03em] uppercase',
     badgeIcon: 'h-2 w-2 shrink-0',
     caption:
-      'col-start-2 row-start-3 text-center text-[0.59375rem] leading-tight text-gray-400',
+      'col-start-2 row-start-3 text-center text-[0.59375rem] leading-tight text-subtle',
   },
 });
 

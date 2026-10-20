@@ -20,14 +20,14 @@ export function NoDeploymentPlaceholder({
     <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
       <div className="flex min-h-5 items-center justify-center">
         {isRefreshing ? (
-          <p className="flex items-center gap-2 text-sm text-gray-500">
+          <p className="flex items-center gap-2 text-sm text-muted">
             <Spinner />
             Refreshing…
           </p>
         ) : error ? (
           <ErrorPopoverPill error={error} label="Could not load deployments" />
         ) : (
-          <h3 className="text-sm font-semibold text-gray-600">
+          <h3 className="text-sm font-semibold text-tertiary">
             No{' '}
             <ServiceDeploymentExplainer>
               service deployments
@@ -35,7 +35,7 @@ export function NoDeploymentPlaceholder({
           </h3>
         )}
       </div>
-      <p className="max-w-md px-4 text-sm text-gray-500">
+      <p className="max-w-md px-4 text-sm text-muted">
         Point Restate to your deployed services so Restate can register your{' '}
         <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>

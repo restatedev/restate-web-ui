@@ -26,11 +26,11 @@ export function MiniService({
 
   return (
     <div className={styles({ className })}>
-      <div className="h-6 w-6 shrink-0 rounded-md border bg-white shadow-xs">
-        <Icon name={IconName.Box} className="h-full w-full p-1 text-zinc-400" />
+      <div className="h-6 w-6 shrink-0 rounded-md border bg-surface shadow-xs">
+        <Icon name={IconName.Box} className="h-full w-full p-1 text-subtle" />
       </div>
 
-      <div className="flex flex-auto flex-row items-center gap-2 truncate text-0.5xs font-medium text-zinc-600">
+      <div className="flex flex-auto flex-row items-center gap-2 truncate text-0.5xs font-medium text-tertiary">
         {showLink ? (
           <TruncateWithTooltip copyText={service.name} triggerRef={linkRef}>
             {service.name}
@@ -46,12 +46,9 @@ export function MiniService({
           aria-label={service.name}
           variant="secondary"
           href={serviceHref(baseUrl, { service: service.name })}
-          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5"
+          className="m-1 ml-0 rounded-full outline-offset-0 before:absolute before:inset-0 before:rounded-lg before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint"
         >
-          <Icon
-            name={IconName.ChevronRight}
-            className="h-4 w-4 text-gray-400"
-          />
+          <Icon name={IconName.ChevronRight} className="h-4 w-4 text-subtle" />
         </Link>
       )}
     </div>

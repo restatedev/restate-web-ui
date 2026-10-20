@@ -51,16 +51,16 @@ export function Expression({
   const showOutput = (isPending || !hideOutput) && output;
   return (
     <div className={styles({ className, isFunction })}>
-      <div className="text-inherits min-w-0 text-zinc-600">
+      <div className="text-inherits min-w-0 text-tertiary">
         <span className="flex min-w-0 items-center">
           {prefix && (
-            <span className="shrink-0 font-normal text-blue-500">{prefix}</span>
+            <span className="shrink-0 font-normal text-accent">{prefix}</span>
           )}
           <span className="flex max-w-fit min-w-0 shrink-0 items-center font-medium">
             {isHandler && (
               <Icon
                 name={IconName.Function}
-                className="-ml-1 h-4 w-4 shrink-0 text-zinc-400"
+                className="-ml-1 h-4 w-4 shrink-0 text-subtle"
               />
             )}
             <TruncateWithTooltip copyText={name}>
@@ -70,20 +70,20 @@ export function Expression({
           </span>
 
           {isFunction && (
-            <span className="ml-[0.2ch] shrink-0 text-zinc-400">{'('}</span>
+            <span className="ml-[0.2ch] shrink-0 text-subtle">{'('}</span>
           )}
           {input}
-          <span className="shrink-0 text-zinc-400">{isFunction && ')'}</span>
+          <span className="shrink-0 text-subtle">{isFunction && ')'}</span>
           {chain && (
             <span className="base-20 min-w-0 truncate">
-              <span className="text-zinc-600">{chain}</span>
+              <span className="text-tertiary">{chain}</span>
               {typeof chain === 'string' ? '()' : null}
             </span>
           )}
           {showOutput && (
             <>
-              <span className="shrink-0 text-zinc-400">
-                <span className="mx-[0.5ch] font-sans text-zinc-500">
+              <span className="shrink-0 text-subtle">
+                <span className="mx-[0.5ch] font-sans text-muted">
                   {operationSymbol}
                 </span>
               </span>
@@ -97,9 +97,9 @@ export function Expression({
 }
 
 const inputOutputStyles = tv({
-  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
+  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-secondary',
   slots: {
-    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
+    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-muted',
     content:
       'mb-1 w-[90vw] max-w-[min(90vw,600px)] min-w-80 overflow-auto py-0 pr-0 pl-4',
   },
@@ -128,7 +128,7 @@ export function InputOutput({
         <span
           className={value({
             className:
-              'max-w-fit truncate px-0.5 py-0 font-sans text-xs leading-5 font-normal text-zinc-600 not-italic',
+              'max-w-fit truncate px-0.5 py-0 font-sans text-xs leading-5 font-normal text-tertiary not-italic',
           })}
         >
           <span className="truncate px-0.5">{name}</span>
@@ -144,7 +144,7 @@ export function InputOutput({
           {isValueHidden ? (
             <PopoverTrigger>
               <Button
-                className="mx-0.5 my-0.5 flex h-5 min-w-6 items-center justify-center gap-0 rounded-xl p-0 font-sans text-2xs font-medium text-gray-500 shadow-none outline-offset-0"
+                className="mx-0.5 my-0.5 flex h-5 min-w-6 items-center justify-center gap-0 rounded-xl p-0 font-sans text-2xs font-medium text-muted shadow-none outline-offset-0"
                 variant="secondary"
               >
                 <Icon name={IconName.Eye} className="mx-1.5 h-3 w-3 shrink-0" />

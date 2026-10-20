@@ -45,14 +45,14 @@ function MissingDeployment({
     return (
       <CardRow variant="hero" className="flex-wrap gap-y-2">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-pending-subtle text-pending">
             <Icon name={IconName.TriangleAlert} className="h-3.5 w-3.5" />
           </span>
           <div className="min-w-0">
-            <div className="text-xs font-medium text-zinc-600">
+            <div className="text-xs font-medium text-tertiary">
               Deployment not found
             </div>
-            <div className="text-2xs text-zinc-400">
+            <div className="text-2xs text-subtle">
               It may have been removed.
             </div>
           </div>
@@ -65,7 +65,7 @@ function MissingDeployment({
 
   return (
     <div className="flex h-9 w-full min-w-0 items-center px-1.5 py-1">
-      <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-gray-500">
+      <span className="flex-auto shrink-0 pl-1 text-0.5xs font-medium text-muted">
         Deployment not found
       </span>
       <DeploymentId deploymentId={deploymentId} />
@@ -146,7 +146,7 @@ export function InvocationDeployment({
                     deployment.sdk_version ??
                     undefined
                   }
-                  className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-xs font-medium text-zinc-600"
+                  className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-xs font-medium text-tertiary"
                 />
               </CardRow>
             )}
@@ -184,7 +184,7 @@ export function InvocationDeployment({
                   deployment.sdk_version ??
                   undefined
                 }
-                className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-xs font-medium text-zinc-600"
+                className="-mt-0.5 max-w-[calc(100%-1.75rem)] gap-2 text-xs font-medium text-tertiary"
               />
             </div>
           )}

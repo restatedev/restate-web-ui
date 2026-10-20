@@ -10,18 +10,18 @@ const primaryStyles = tv({
   base: '',
   variants: {
     variant: {
-      row: 'invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap drop-shadow-[-20px_2px_4px_--theme(--color-gray-100/0.5)] group-hover:visible',
+      row: 'invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap drop-shadow-[-20px_2px_4px_--theme(--background-color-muted/50%)] group-hover:visible',
       header:
         'flex translate-x-px items-center gap-1 rounded-l-lg rounded-r-none px-2 py-0.5 text-[0.9375rem] [line-height:inherit] whitespace-nowrap max-md:hidden',
     },
     destructive: {
       true: '',
-      false: 'text-blue-700',
+      false: 'text-accent',
     },
   },
   compoundVariants: [
-    { variant: 'row', destructive: true, className: 'text-red-600' },
-    { variant: 'header', destructive: true, className: 'text-red-500' },
+    { variant: 'row', destructive: true, className: 'text-danger' },
+    { variant: 'header', destructive: true, className: 'text-danger' },
   ],
 });
 

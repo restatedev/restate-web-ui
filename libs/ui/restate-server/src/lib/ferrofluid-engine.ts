@@ -101,6 +101,7 @@ export class FerrofluidEngine {
   private curNoiseAmp = STATUS_PARAMS.idle.noiseAmp;
   private curNoiseSpeed = STATUS_PARAMS.idle.noiseSpeed;
   private curHue = STATUS_HUE.idle;
+  hues: Record<FerrofluidStatus, number> = { ...STATUS_HUE };
   private nextJolt = 0;
   private fieldCanvas: HTMLCanvasElement | null = null;
   private fieldCtx: CanvasRenderingContext2D | null = null;
@@ -336,7 +337,7 @@ export class FerrofluidEngine {
     this.curSpeed += (t.speedMul - this.curSpeed) * LERP;
     this.curNoiseAmp += (t.noiseAmp - this.curNoiseAmp) * LERP;
     this.curNoiseSpeed += (t.noiseSpeed - this.curNoiseSpeed) * LERP;
-    const targetHue = STATUS_HUE[this._status];
+    const targetHue = this.hues[this._status];
     this.curHue += (targetHue - this.curHue) * 0.08;
   }
 

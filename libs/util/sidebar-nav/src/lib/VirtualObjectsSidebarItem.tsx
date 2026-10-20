@@ -97,7 +97,7 @@ function VirtualObjectInstanceSidebarLabel({
           />
         )}
         <span className="min-w-0 flex-1 truncate">{identity.service}</span>
-        <span className="shrink-0 text-zinc-400">/</span>
+        <span className="shrink-0 text-subtle">/</span>
         <span className="max-w-24 shrink-0 truncate font-mono">
           {identity.key}
         </span>

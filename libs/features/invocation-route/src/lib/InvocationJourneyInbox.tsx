@@ -107,7 +107,7 @@ export function JourneyInboxPosition({
   const isInitialWait = scenario.attempts === 0;
   if (position === undefined) {
     return (
-      <span className="inline-flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-gray-400">
+      <span className="inline-flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-subtle">
         <span>is waiting for</span>
         {isInitialWait ? (
           <MetricComparison
@@ -116,7 +116,7 @@ export function JourneyInboxPosition({
             label="Current queue time"
           />
         ) : (
-          <span className="font-medium text-zinc-600 tabular-nums">
+          <span className="font-medium text-tertiary tabular-nums">
             {inbox.waiting}
           </span>
         )}
@@ -130,21 +130,21 @@ export function JourneyInboxPosition({
   const entriesLabel = entriesAhead === 1 ? 'entry' : 'entries';
 
   return (
-    <span className="inline-flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-gray-400">
+    <span className="inline-flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-subtle">
       <span>is waiting behind</span>
       <Popover>
         <PopoverTrigger>
           <Button
             variant="secondary"
             aria-label={`Open Inbox order: ${formatNumber(entriesAhead)} ${entriesLabel} ahead, waiting for ${inbox.waiting}`}
-            className="inline-flex h-5 min-w-0 items-center gap-1 rounded-md border-gray-200/80 bg-white/70 px-1.5 py-0.5 text-2xs font-medium text-zinc-700 shadow-none"
+            className="inline-flex h-5 min-w-0 items-center gap-1 rounded-md border-default/80 bg-surface/70 px-1.5 py-0.5 text-2xs font-medium text-secondary shadow-none"
           >
             <span className="tabular-nums">
               {formatNumber(entriesAhead)} {entriesLabel}
             </span>
             <Icon
               name={IconName.ChevronsUpDown}
-              className="h-3 w-3 shrink-0 text-gray-400"
+              className="h-3 w-3 shrink-0 text-subtle"
             />
           </Button>
         </PopoverTrigger>
@@ -160,7 +160,7 @@ export function JourneyInboxPosition({
           label="Current queue time"
         />
       ) : (
-        <span className="font-medium text-zinc-600 tabular-nums">
+        <span className="font-medium text-tertiary tabular-nums">
           {inbox.waiting}
         </span>
       )}

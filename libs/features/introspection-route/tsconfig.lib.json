@@ -97,6 +97,9 @@
     },
     {
       "path": "../../ui/keyboard/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/theme/tsconfig.lib.json"
     }
   ]
 }

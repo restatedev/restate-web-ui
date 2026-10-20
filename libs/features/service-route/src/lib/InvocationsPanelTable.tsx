@@ -168,7 +168,7 @@ export function InvocationsPanelTable({
         }
       />
       {isTruncated && (
-        <div className="px-4 pt-3 text-xs text-zinc-500">
+        <div className="px-4 pt-3 text-xs text-muted">
           {!sort
             ? `Showing ${formatNumber(data.limit)} matching invocations, in no particular order.`
             : sort.order === 'DESC'

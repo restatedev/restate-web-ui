@@ -12,6 +12,7 @@ import { useApplyOption } from './hooks/useApplyOption';
 import { usePie } from './hooks/usePie';
 import { useChartEvents } from './hooks/useChartEvents';
 import invariant from 'tiny-invariant';
+import { resolveColorsDeep, useThemeVersion } from '@restate/util-theme';
 
 export function Chart<T extends object>({
   data,
@@ -62,7 +63,7 @@ export function Chart<T extends object>({
     return {
       animation: true,
       dataset: [{ id: 'main', source: datasetSource }],
-      color: '#51a2ff',
+      color: 'var(--background-color-accent-vivid)',
       grid,
       tooltip,
       xAxis,
@@ -85,7 +86,12 @@ export function Chart<T extends object>({
 
   const chartRef = useEchartsInit(containerRef, theme, renderer);
   echartsInstanceRef.current = chartRef.current;
-  useApplyOption(chartRef, option);
+  const themeVersion = useThemeVersion();
+  const resolvedOption = useMemo(() => {
+    void themeVersion;
+    return resolveColorsDeep(option, ['dataset', 'source']);
+  }, [option, themeVersion]);
+  useApplyOption(chartRef, resolvedOption);
   useChartEvents(chartRef, {
     data: data ?? [],
     pie: parsed.pie,
@@ -100,7 +106,10 @@ export function Chart<T extends object>({
   useImperativeHandle(ref, () => ({
     getInstance: () => chartRef.current,
     setOption: (chartOptions, setOptions) =>
-      chartRef.current?.setOption(chartOptions, setOptions),
+      chartRef.current?.setOption(
+        resolveColorsDeep(chartOptions, ['dataset', 'source']),
+        setOptions,
+      ),
     resize: () => chartRef.current?.resize(),
   }));
 

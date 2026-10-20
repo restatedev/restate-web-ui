@@ -64,7 +64,7 @@ export function TransientError({
             <Popover>
               <PopoverTrigger>
                 <Button
-                  className="my-[-0.5px] translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-gray-400"
+                  className="my-[-0.5px] translate-x-[-0.5px] rounded-md px-1 py-0 font-mono text-xs text-subtle"
                   variant="secondary"
                 >
                   <div className="flex h-5 items-center">#{commandIndex}</div>
@@ -74,7 +74,7 @@ export function TransientError({
                 <DropdownSection
                   className="relative px-3 py-2 pr-8 text-0.5xs"
                   title={
-                    <span className="text-2xs text-gray-400 uppercase">{`Command #${commandIndex}`}</span>
+                    <span className="text-2xs text-subtle uppercase">{`Command #${commandIndex}`}</span>
                   }
                 >
                   {CommandComponent && (
@@ -106,7 +106,7 @@ export function TransientError({
               .filter(Boolean)
               .join('\n\n')}
             isRetrying
-            className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 text-2xs shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
+            className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 text-2xs shadow-none hover:bg-warning-muted pressed:bg-warning-emphasis/50"
           />
         </Badge>
       </div>
@@ -155,7 +155,7 @@ export function NoCommandTransientError({
               .filter(Boolean)
               .join('\n\n')}
             isRetrying
-            className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 text-2xs shadow-none hover:bg-orange-100 pressed:bg-orange-200/50"
+            className="my-[-2px] ml-0 h-5 rounded-md border-none bg-transparent py-0 text-2xs shadow-none hover:bg-warning-muted pressed:bg-warning-emphasis/50"
           />
         </Badge>
       </div>

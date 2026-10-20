@@ -1,5 +1,6 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { tv } from '@restate/util-styles';
+import { resolveHue, useThemeVersion } from '@restate/util-theme';
 import { FerrofluidEngine, type FerrofluidStatus } from './ferrofluid-engine';
 
 export type { FerrofluidStatus };
@@ -15,6 +16,14 @@ const styles = tv({
 
 const canvasStyles = 'absolute inset-0 h-full w-full';
 
+const STATUS_COLOR: Record<FerrofluidStatus, string> = {
+  idle: 'var(--background-color-accent-vivid)',
+  active: 'var(--background-color-accent-vivid)',
+  pause: 'var(--background-color-accent-vivid)',
+  warning: 'var(--background-color-warning-vivid)',
+  danger: 'var(--background-color-danger-vivid)',
+};
+
 export function FerrofluidCanvas({
   status,
   className,
@@ -29,6 +38,17 @@ export function FerrofluidCanvas({
   const [engine] = useState(() => new FerrofluidEngine());
 
   engine.status = status;
+
+  const themeVersion = useThemeVersion();
+  useEffect(() => {
+    void themeVersion;
+    for (const [key, color] of Object.entries(STATUS_COLOR)) {
+      const hue = resolveHue(color);
+      if (hue !== undefined) {
+        engine.hues[key as FerrofluidStatus] = hue;
+      }
+    }
+  }, [engine, themeVersion]);
 
   useImperativeHandle(
     ref,

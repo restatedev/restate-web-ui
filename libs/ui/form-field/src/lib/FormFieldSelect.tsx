@@ -62,20 +62,20 @@ export function FormFieldSelect({
     >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
-      <div className="rounded-xl border border-gray-200 bg-gray-100 p-px shadow-[inset_0_1px_0px_0px_rgba(0,0,0,0.03)]">
+      <div className="rounded-xl border border-default bg-muted p-px shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
         <Button
           autoFocus={autoFocus}
           variant="secondary"
-          className="flex w-full items-center gap-2 rounded-[0.625rem] px-2 py-1.5 text-sm group-invalid:border-red-600 group-invalid:bg-red-100/70"
+          className="flex w-full items-center gap-2 rounded-[0.625rem] px-2 py-1.5 text-sm group-invalid:border-danger-strong group-invalid:bg-danger-muted/70"
         >
-          <SelectValue className="min-w-0 flex-auto text-left placeholder-shown:text-gray-500" />
+          <SelectValue className="min-w-0 flex-auto text-left placeholder-shown:text-muted" />
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-[1.25em] w-[1.25em] shrink-0 text-gray-500"
+            className="h-[1.25em] w-[1.25em] shrink-0 text-muted"
           />
         </Button>
       </div>
-      <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-gray-100/90 p-0">
+      <PopoverOverlay className="w-(--trigger-width) min-w-fit bg-canvas/90 p-0">
         <ListBox className="m-0 rounded-xl border-none" selectable multiple>
           {children}
         </ListBox>

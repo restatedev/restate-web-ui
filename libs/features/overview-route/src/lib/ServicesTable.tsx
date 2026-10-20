@@ -111,21 +111,21 @@ const COLUMNS: PanelTableColumn<ServiceColumn>[] = [
 const tableStyles = tv({
   slots: {
     row: 'cursor-pointer [content-visibility:auto]',
-    childRow: 'cursor-pointer bg-gray-50/35 hover:bg-gray-100/80',
+    childRow: 'cursor-pointer bg-subtle/30 hover:bg-muted/80',
     identityCell: '[&&&]:overflow-visible',
     serviceIdentity: 'flex min-w-0 items-center gap-2',
     serviceTarget:
       'min-w-0 flex-[0_1_auto] [&_[data-chip-root]]:text-[0.8125rem] [&_[data-chip-segment-inner]>svg]:h-3.5 [&_[data-chip-segment-inner]>svg]:w-3.5',
     serviceType: 'ml-auto',
     chevron:
-      'h-5 w-5 shrink-0 rounded-md p-0.5 text-gray-400 group-data-[expanded=true]/row:rotate-90',
-    chevronLoading: 'h-5 w-5 shrink-0 p-[3px] text-gray-400',
+      'h-5 w-5 shrink-0 rounded-md p-0.5 text-subtle group-data-[expanded=true]/row:rotate-90',
+    chevronLoading: 'h-5 w-5 shrink-0 p-[3px] text-subtle',
     handlerIdentity: 'flex min-w-0 items-center gap-1.5 pl-7',
     handler: 'max-w-fit min-w-0 pr-0 pl-0',
     handlerInvocationCell: 'p-0!',
     handlerInvocationTooltip: 'h-full w-full',
     handlerInvocationLink:
-      'h-full w-full justify-start rounded-none border-none bg-transparent px-2 py-2 text-gray-400/80 shadow-none hover:bg-black/3 hover:text-gray-500',
+      'h-full w-full justify-start rounded-none border-none bg-transparent px-2 py-2 text-subtle shadow-none hover:bg-tint-subtle hover:text-muted',
     handlerInvocationIcon: 'h-4 w-4',
     handlerInvocationBar: 'ml-auto min-w-3',
   },
@@ -714,7 +714,7 @@ export function ServicesTable() {
           return (
             <Cell className="[&&&]:overflow-visible">
               {isServiceSummaryLoading ? (
-                <span className="block h-5 w-16 animate-pulse rounded-full bg-gray-200/70" />
+                <span className="block h-5 w-16 animate-pulse rounded-full bg-emphasis/70" />
               ) : issues.length > 0 ? (
                 <IssueBadge
                   issues={issues}

@@ -88,11 +88,11 @@ export function OneWayCall({
       )}
       {duration && invokeTime && !isPast && (
         <div className="ml-auto inline-flex items-center gap-[0.5ch] truncate font-sans text-xs">
-          {!isPast && <span className="font-normal text-zinc-500">in </span>}
+          {!isPast && <span className="font-normal text-muted">in </span>}
           <DateTooltip date={new Date(invokeTime)} title={'Call scheduled at'}>
             {duration}
           </DateTooltip>
-          {isPast && <span className="font-normal text-zinc-500"> ago</span>}
+          {isPast && <span className="font-normal text-muted"> ago</span>}
         </div>
       )}
     </div>

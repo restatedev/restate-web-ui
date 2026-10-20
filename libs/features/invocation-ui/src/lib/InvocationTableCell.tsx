@@ -156,18 +156,18 @@ export function InvocationHandler({
             service ? serviceHref(baseUrl, { service, handler }) : undefined
           }
           aria-label={service ? `Open ${service}/${handler}` : undefined}
-          className="max-w-full bg-white text-zinc-600 italic shadow-none"
+          className="max-w-full bg-surface text-tertiary italic shadow-none"
         >
           <ChipSegment className="max-w-[18rem] px-1.5">
             <Icon
               name={IconName.Function}
-              className="-mr-0.5 h-4 w-4 shrink-0 text-zinc-400"
+              className="-mr-0.5 h-4 w-4 shrink-0 text-subtle"
             />
             <TruncateTooltipTrigger>{handler}</TruncateTooltipTrigger>
             {service && (
               <Icon
                 name={IconName.ChevronRight}
-                className="h-3.5 w-3.5 shrink-0 text-zinc-400"
+                className="h-3.5 w-3.5 shrink-0 text-subtle"
               />
             )}
           </ChipSegment>
@@ -196,13 +196,13 @@ export function InvocationTableDate({
   return (
     <Badge className="w-full border-none bg-transparent pl-0">
       <span className="w-full truncate">
-        <span className="font-normal text-zinc-500">
+        <span className="font-normal text-muted">
           {isPast ? pastPrefix : 'in '}
         </span>
         <DateTooltip date={new Date(value)} title={tooltipTitle}>
           {duration}
         </DateTooltip>
-        <span className="text-2xs font-normal text-zinc-500/80">
+        <span className="text-2xs font-normal text-subtle">
           {isPast && ' ago'}
         </span>
       </span>
@@ -280,7 +280,7 @@ export function InvocationTableCell({
       {isVisible ? (
         visibleCellContent(column, row, invocation)
       ) : (
-        <div className="min-h-6 w-fit max-w-full truncate rounded-md bg-slate-200/70 text-transparent">
+        <div className="min-h-6 w-fit max-w-full truncate rounded-md bg-emphasis/70 text-transparent">
           {value}
         </div>
       )}

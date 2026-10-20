@@ -24,19 +24,19 @@ export function StateStatsCard({
       <CardHeader title="State" icon={IconName.Database} />
       <CardRow variant="hero">
         <div className="min-w-0 flex-auto">
-          <div className="text-0.5xs font-medium text-gray-500">Keys</div>
-          <div className="mt-0.5 text-2xs text-gray-400">{description}</div>
+          <div className="text-0.5xs font-medium text-muted">Keys</div>
+          <div className="mt-0.5 text-2xs text-subtle">{description}</div>
         </div>
         <CardHeroValue>{formatNumber(numKeys)}</CardHeroValue>
       </CardRow>
       <CardRow label="Total value size">
-        <span className="text-xs text-zinc-600 tabular-nums">
+        <span className="text-xs text-tertiary tabular-nums">
           {formatBytes(totalSize)}
         </span>
       </CardRow>
       {stateHref && (
         <CardLinkRow href={stateHref} aria-label="View state">
-          <span className="text-xs font-medium text-zinc-600">View state</span>
+          <span className="text-xs font-medium text-tertiary">View state</span>
         </CardLinkRow>
       )}
     </Card>

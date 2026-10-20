@@ -22,10 +22,10 @@ const menuTriggerStyles = tv({
       md: '',
     },
     variant: {
-      primary: 'text-white/90',
-      secondary: 'text-gray-600',
-      icon: 'text-gray-600',
-      destructive: 'text-white/90',
+      primary: 'text-inverse-secondary',
+      secondary: 'text-tertiary',
+      icon: 'text-tertiary',
+      destructive: 'text-inverse-secondary',
     },
   },
 });

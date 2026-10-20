@@ -17,7 +17,7 @@ export function Cancel({
       input={
         <InvocationId
           id={String(entry.invocationId)}
-          className="mx-0.5 max-w-[15ch] truncate text-2xs font-semibold text-gray-500 not-italic"
+          className="mx-0.5 max-w-[15ch] truncate text-2xs font-semibold text-muted not-italic"
           size="md"
         />
       }

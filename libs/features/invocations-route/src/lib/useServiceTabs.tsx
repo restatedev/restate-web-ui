@@ -131,11 +131,11 @@ function badgeText(badge: TabBadge | undefined) {
 
 const countStyles = tv({
   slots: {
-    base: 'rounded bg-zinc-100 px-1 py-px text-2xs font-medium whitespace-nowrap text-zinc-500 tabular-nums',
+    base: 'rounded bg-muted px-1 py-px text-2xs font-medium whitespace-nowrap text-muted tabular-nums',
     denominator: 'opacity-55',
   },
   variants: {
-    loading: { true: { base: 'animate-pulse bg-zinc-200 text-transparent' } },
+    loading: { true: { base: 'animate-pulse bg-emphasis text-transparent' } },
   },
 });
 
@@ -273,7 +273,7 @@ function serviceTabLabel(
       content={
         <InvocationsBreakdownTooltipContent
           title={
-            <div className="text-base! leading-7 font-medium text-gray-300!">
+            <div className="text-base! leading-7 font-medium text-faint!">
               {service.id}
             </div>
           }

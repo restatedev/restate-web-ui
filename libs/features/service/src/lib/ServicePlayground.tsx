@@ -68,7 +68,7 @@ function Attribution() {
         focusable="false"
         data-prefix="fas"
         data-icon="bolt"
-        className="svg-inline--fa fa-bolt sl-icon fa-fw mr-1 text-[rgb(144,97,249)]"
+        className="svg-inline--fa fa-bolt sl-icon fa-fw mr-1 text-accent"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 384 512"
       >
@@ -289,7 +289,7 @@ function ServicePlaygroundComplementaryContent() {
             >
               <Icon
                 name={IconName.Maximize}
-                className="h-3.5 w-3.5 text-gray-500"
+                className="h-3.5 w-3.5 text-muted"
               />
             </Button>
           </TooltipTrigger>
@@ -325,32 +325,32 @@ function ServicePlaygroundComplementaryContent() {
           <TooltipContent size="sm">Close</TooltipContent>
         </Tooltip>
       </ComplementaryHeader>
-      <div className="flex min-h-full flex-col [&_.sl-elements-api>*:first-child]:hidden! [&_.sl-elements-api>*:nth-child(2)]:px-2! [&_.sl-elements-api>*:nth-child(2)>*]:pt-2! [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full! [&_.sl-inverted_input]:text-gray-700! [&_.sl-pt-8]:pt-2! [&_.sl-rounded-lg]:rounded-xl! [&_.sl-stack--5]:gap-2! [&_.sl-stack--8]:gap-6! [&_.sl-text-lg]:text-0.5xs! [&_[dir=ltr]>[dir=ltr]]:hidden! [&_elements-api_h2]:text-xl! [&_h1]:mb-2! [&_h1]:hidden! [&_h1]:text-2xl! [&_h3]:text-lg! [&_input]:text-sm! [&_p]:text-sm!">
-        <h2 className="mb-0.5 flex items-center gap-2 text-lg leading-6 font-medium text-gray-900">
-          <div className="h-10 w-10 shrink-0 text-blue-400">
+      <div className="flex min-h-full flex-col [&_.sl-elements-api>*:first-child]:hidden! [&_.sl-elements-api>*:nth-child(2)]:px-2! [&_.sl-elements-api>*:nth-child(2)>*]:pt-2! [&_.sl-elements-api>*:nth-child(2)>*>*>*:last-child]:flex-col-reverse! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:mx-0! [&_.sl-elements-api>*:nth-child(2)>*>*>*>*]:w-full! [&_.sl-inverted_input]:text-secondary! [&_.sl-pt-8]:pt-2! [&_.sl-rounded-lg]:rounded-xl! [&_.sl-stack--5]:gap-2! [&_.sl-stack--8]:gap-6! [&_.sl-text-lg]:text-0.5xs! [&_[dir=ltr]>[dir=ltr]]:hidden! [&_elements-api_h2]:text-xl! [&_h1]:mb-2! [&_h1]:hidden! [&_h1]:text-2xl! [&_h3]:text-lg! [&_input]:text-sm! [&_p]:text-sm!">
+        <h2 className="mb-0.5 flex items-center gap-2 text-lg leading-6 font-medium text-primary">
+          <div className="h-10 w-10 shrink-0 text-accent-subtle">
             <Icon
               name={IconName.Function}
-              className="h-full w-full fill-blue-50 p-0.5 text-blue-400 drop-shadow-md"
+              className="h-full w-full fill-accent-muted p-0.5 text-accent-subtle drop-shadow-md"
             />
           </div>{' '}
           <div className="flex min-w-0 flex-auto flex-col items-start gap-1">
             <div className="flex w-full items-center pr-3">
-              <span className="mr-[0.5ch] block min-w-0 truncate text-gray-500">
+              <span className="mr-[0.5ch] block min-w-0 truncate text-muted">
                 {service}
               </span>
-              <span className="shrink-0 text-gray-500">/</span>
+              <span className="shrink-0 text-muted">/</span>
               <Dropdown>
                 <DropdownTrigger>
                   <Button
                     variant="icon"
                     className="flex min-w-0 grow-0 items-center justify-center gap-2 px-1.5 text-lg italic"
                   >
-                    <span className="block min-w-0 truncate font-medium text-gray-900">
+                    <span className="block min-w-0 truncate font-medium text-primary">
                       {selectedName?.name}
                     </span>
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-4 w-4 text-gray-500"
+                      className="h-4 w-4 text-muted"
                     />
                   </Button>
                 </DropdownTrigger>
@@ -377,7 +377,7 @@ function ServicePlaygroundComplementaryContent() {
                           <DropdownItem key={id} value={id}>
                             <span className="font-mono">
                               <Badge size="sm">
-                                <span className="text-gray-500 uppercase">
+                                <span className="text-muted uppercase">
                                   {method}
                                 </span>
                               </Badge>{' '}
@@ -419,7 +419,7 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
     <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
       <DialogContent
         variant={'sheet'}
-        className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-gray-700 [&_input]:text-sm'
+        className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-secondary [&_input]:text-sm'
       >
         {apiSpec ? (
           <API apiDescriptionDocument={apiSpec} tryItFetcher={tryItFetcher} />
@@ -431,7 +431,7 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
         )}
         {!apiSpec && isFetching && (
           <div className="flex h-full w-full items-center justify-center">
-            <div className="flex items-center gap-2.5 text-lg text-zinc-500">
+            <div className="flex items-center gap-2.5 text-lg text-muted">
               <Spinner className="h-6 w-6" />
               Loading…
             </div>

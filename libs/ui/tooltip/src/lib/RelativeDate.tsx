@@ -4,7 +4,7 @@ import { tv } from '@restate/util-styles';
 import { DateTooltip } from './DateTooltip';
 
 const styles = tv({
-  base: 'text-xs text-zinc-600 tabular-nums',
+  base: 'text-xs text-tertiary tabular-nums',
 });
 
 export function RelativeDate({

@@ -6,12 +6,9 @@ export function ResultsNotice({ message }: { message: string }) {
   return (
     <div
       role="status"
-      className="flex min-h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs text-zinc-600"
+      className="flex min-h-9 w-full shrink-0 items-center gap-2 rounded-xl border border-default bg-subtle px-2.5 py-2 text-xs text-tertiary"
     >
-      <Icon
-        name={IconName.Info}
-        className="h-3.5 w-3.5 shrink-0 text-zinc-400"
-      />
+      <Icon name={IconName.Info} className="h-3.5 w-3.5 shrink-0 text-subtle" />
       <span>{message}</span>
     </div>
   );

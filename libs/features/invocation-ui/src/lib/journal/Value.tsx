@@ -24,7 +24,7 @@ const styles = tv({
       ready: {},
       pending: {
         editor:
-          '[&_.view-line>span]:animate-scanlineSweep [&_.view-line>span]:[background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] [&_.view-line>span]:[background-size:250%_100%] [&_.view-line>span]:bg-clip-text [&_.view-line>span]:[background-position:100%_0] [&_.view-line>span]:bg-no-repeat [&_.view-line>span]:[-webkit-text-fill-color:transparent]',
+          '[&_.view-line>span]:animate-scanlineSweep [&_.view-line>span]:[background-image:linear-gradient(90deg,var(--text-color-secondary)_0%,var(--text-color-secondary)_42%,var(--text-color-subtle)_50%,var(--text-color-secondary)_58%,var(--text-color-secondary)_100%)] [&_.view-line>span]:[background-size:250%_100%] [&_.view-line>span]:bg-clip-text [&_.view-line>span]:[background-position:100%_0] [&_.view-line>span]:bg-no-repeat [&_.view-line>span]:[-webkit-text-fill-color:transparent]',
       },
     },
   },
@@ -73,7 +73,7 @@ export function Value({
               <Button
                 variant="icon"
                 aria-label="Decoding error"
-                className="absolute top-2.5 right-1.5 z-10 h-5.5 w-5.5 rounded-lg border border-amber-200/80 bg-amber-50 p-1 text-amber-700 shadow-xs hover:bg-amber-100"
+                className="absolute top-2.5 right-1.5 z-10 h-5.5 w-5.5 rounded-lg border border-pending/80 bg-pending-subtle p-1 text-pending-strong shadow-xs hover:bg-pending-muted"
               >
                 <Icon name={IconName.TriangleAlert} className="h-full w-full" />
               </Button>
@@ -88,7 +88,7 @@ export function Value({
         <InPortal id={String(portalId)}>
           <Copy
             copyText={displayValue}
-            className="ml-3 h-5.5 w-5.5 rounded-lg border bg-white p-1 text-gray-800 shadow-xs"
+            className="ml-3 h-5.5 w-5.5 rounded-lg border bg-surface p-1 text-primary shadow-xs"
           />
         </InPortal>
       )}
@@ -102,7 +102,7 @@ const decodedValueStyles = tv({
     state: {
       ready: '',
       pending:
-        'animate-scanlineSweep [background-image:linear-gradient(90deg,--theme(--color-zinc-700)_0%,--theme(--color-zinc-700)_42%,--theme(--color-zinc-400)_50%,--theme(--color-zinc-700)_58%,--theme(--color-zinc-700)_100%)] [background-size:250%_100%] bg-clip-text [background-position:100%_0] bg-no-repeat [-webkit-text-fill-color:transparent]',
+        'animate-scanlineSweep [background-image:linear-gradient(90deg,var(--text-color-secondary)_0%,var(--text-color-secondary)_42%,var(--text-color-subtle)_50%,var(--text-color-secondary)_58%,var(--text-color-secondary)_100%)] [background-size:250%_100%] bg-clip-text [background-position:100%_0] bg-no-repeat [-webkit-text-fill-color:transparent]',
     },
   },
   defaultVariants: {

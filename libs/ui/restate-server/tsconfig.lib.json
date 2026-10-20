@@ -40,6 +40,9 @@
       "path": "../button/tsconfig.lib.json"
     },
     {
+      "path": "../../util/theme/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/styles/tsconfig.lib.json"
     }
   ]

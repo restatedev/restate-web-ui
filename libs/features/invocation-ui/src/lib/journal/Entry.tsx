@@ -129,12 +129,12 @@ const styles = tv({
   base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
   variants: {
     awaiting: {
-      suspended: 'bg-gray-200/40',
-      running: 'bg-blue-50',
+      suspended: 'bg-emphasis/40',
+      running: 'bg-info-subtle',
       none: '',
     },
     hasError: {
-      true: 'bg-orange-50',
+      true: 'bg-warning-subtle',
       false: '',
     },
   },
@@ -281,16 +281,16 @@ export const Entry = memo(function Entry({
       >
         <div
           style={{ width: compact ? '2ch' : `${numOfDigits + 2}ch` }}
-          className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-gray-400/70"
+          className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-faint"
         >
           <div
             data-border
-            className="absolute top-0 bottom-0 left-0 border-dashed border-gray-400/40"
+            className="absolute top-0 bottom-0 left-0 border-dashed border-strong"
           />
           {entry?.category === 'command' ? (
             (entry?.commandIndex ?? entry?.index ?? 0)
           ) : (
-            <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-gray-400/30" />
+            <div className="mt-0.5 mr-1 hidden w-full border-b border-dashed border-neutral/30" />
           )}
         </div>
 
@@ -323,7 +323,7 @@ export const Entry = memo(function Entry({
           )}
         </div>
         <div className="relative min-w-20 flex-auto">
-          <div className="absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-gray-300/70" />
+          <div className="absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-strong/70" />
         </div>
       </div>
     </EntryCodecProvider>

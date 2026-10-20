@@ -37,11 +37,11 @@ const itemStyles = tv({
 });
 
 const linkStyles = tv({
-  base: 'flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-gray-700 no-underline outline-offset-2 outline-blue-600 hover:bg-black/5 focus-visible:outline-2',
+  base: 'flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-secondary no-underline outline-offset-2 outline-focus hover:bg-tint focus-visible:outline-2',
 });
 
 const bulletStyles = tv({
-  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.35)]',
+  base: 'h-3 w-3 shrink-0 rounded-full border-[1.5px] shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/35%)]',
   variants: {
     borderType: {
       dashed: 'border-dashed',
@@ -55,10 +55,10 @@ const bulletStyles = tv({
 });
 
 const countStyles = tv({
-  base: 'inline-block shrink-0 rounded-xs bg-gray-50/60 px-1 py-px font-medium whitespace-nowrap text-gray-500 tabular-nums',
+  base: 'inline-block shrink-0 rounded-xs bg-subtle/60 px-1 py-px font-medium whitespace-nowrap text-muted tabular-nums',
   variants: {
     loading: {
-      true: 'animate-pulse bg-gray-100 text-gray-400',
+      true: 'animate-pulse bg-muted text-subtle',
       false: '',
     },
   },
@@ -260,7 +260,7 @@ export function VQueueStageLegend({
                   >
                     <Icon
                       name={IconName.ChevronsUpDown}
-                      className="h-3.5 w-3.5 text-gray-400"
+                      className="h-3.5 w-3.5 text-subtle"
                     />
                   </Button>
                 </PopoverTrigger>
@@ -285,7 +285,7 @@ export function VQueueStageLegend({
         );
       })}
       {focus !== 'not-completed' && isBreakdownError?.('finished') && (
-        <span className="text-xs text-red-700">
+        <span className="text-xs text-danger-strong">
           Could not load the completed breakdown.
         </span>
       )}

@@ -22,9 +22,9 @@ type HandlerInputOutputJsonSchemaPopoverView = Extract<
 >;
 
 const inputOutputStyles = tv({
-  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-zinc-700',
+  base: 'contents items-center gap-1 rounded-md py-0 pl-0.5 text-2xs text-secondary',
   slots: {
-    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-zinc-500',
+    value: 'mr-0.5 contents font-mono leading-5 font-semibold text-muted',
   },
   variants: {
     hasSchema: {
@@ -123,7 +123,7 @@ function HandlerInputOutputContentTypePopoverContent({
   contentType: string;
 }) {
   return (
-    <div className="flex items-center gap-2 py-2 font-mono text-0.5xs text-zinc-500">
+    <div className="flex items-center gap-2 py-2 font-mono text-0.5xs text-muted">
       Content-Type:<Badge size="sm">{contentType}</Badge>
     </div>
   );

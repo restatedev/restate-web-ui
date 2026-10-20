@@ -62,7 +62,7 @@ export const RetryNowInvocation = withConfirmation({
   title: 'Retry Invocation now',
   icon: IconName.RetryNow,
   description: (
-    <p className="mt-2 text-sm text-gray-500">
+    <p className="mt-2 text-sm text-muted">
       This invocation is currently backing off after failed retries. Do you want
       to trigger a retry immediately?
     </p>

@@ -60,6 +60,9 @@
     },
     {
       "path": "../../util/styles/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/theme/tsconfig.lib.json"
     }
   ]
 }

@@ -15,12 +15,12 @@ import {
 import { InvocationPopoverContent } from './InvocationPopoverContent';
 
 const styles = tv({
-  base: 'relative font-mono text-zinc-600',
+  base: 'relative font-mono text-tertiary',
   slots: {
-    icon: 'mr-1.5 shrink-0 rounded-lg border bg-white',
+    icon: 'mr-1.5 shrink-0 rounded-lg border bg-surface',
     text: '',
     container: 'inline-flex w-full items-center align-middle',
-    link: "ml-0 rounded-full text-zinc-500 outline-offset-0 before:absolute before:inset-0 before:content-[''] hover:before:bg-black/3 pressed:before:bg-black/5",
+    link: "ml-0 rounded-full text-muted outline-offset-0 before:absolute before:inset-0 before:content-[''] hover:before:bg-tint-subtle pressed:before:bg-tint",
     linkIcon: 'shrink-0 text-current',
   },
   variants: {
@@ -129,7 +129,7 @@ export function InvocationId({
     <div className={base({ className })}>
       <div className={container({})}>
         <div className={icon()}>
-          <Icon name={iconName} className="h-full w-full p-1 text-zinc-500" />
+          <Icon name={iconName} className="h-full w-full p-1 text-muted" />
         </div>
 
         {!isIcon &&

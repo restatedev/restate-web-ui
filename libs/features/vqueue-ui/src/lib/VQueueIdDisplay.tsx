@@ -3,9 +3,9 @@ import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'relative font-mono text-zinc-600',
+  base: 'relative font-mono text-tertiary',
   slots: {
-    icon: 'mr-1.5 shrink-0 rounded-lg border bg-white',
+    icon: 'mr-1.5 shrink-0 rounded-lg border bg-surface',
     text: '',
     container: 'inline-flex w-full min-w-0 items-center align-middle',
   },
@@ -68,7 +68,7 @@ export function VQueueIdDisplay({
       <span className={icon()}>
         <Icon
           name={IconName.Layers}
-          className="h-full w-full rotate-90 p-1 text-zinc-500"
+          className="h-full w-full rotate-90 p-1 text-muted"
         />
       </span>
       {!isIcon && (

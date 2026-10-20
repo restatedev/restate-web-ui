@@ -112,7 +112,7 @@ export function DeploymentServicesTable({
                     Latest
                   </Badge>
                 ) : row.latestRevision !== undefined ? (
-                  <span className="truncate text-2xs text-zinc-500">
+                  <span className="truncate text-2xs text-muted">
                     superseded by rev. {row.latestRevision}
                   </span>
                 ) : null}

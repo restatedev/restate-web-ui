@@ -26,12 +26,12 @@ export function WorkflowInteractionTooltip({
         <HoverTooltip
           content={
             <span className="flex flex-col items-start gap-2">
-              <span className="font-semibold text-gray-100">
+              <span className="font-semibold text-inverse">
                 Workflow interactions
               </span>
               <span>{description}</span>
               <Link
-                className="mt-2 inline-flex items-center gap-2 rounded-lg bg-zinc-600 px-2 py-1 text-sm text-gray-100 hover:bg-zinc-500 pressed:bg-zinc-400"
+                className="mt-2 inline-flex items-center gap-2 rounded-lg bg-inverse-emphasis px-2 py-1 text-sm text-inverse hover:bg-inverse-strong pressed:bg-inverse-muted"
                 rel="noopener noreferrer"
                 target="_blank"
                 variant="button"
@@ -52,7 +52,7 @@ export function WorkflowInteractionTooltip({
           <span
             role="img"
             aria-label="About Workflow interactions"
-            className="inline-flex text-zinc-400"
+            className="inline-flex text-inverse-muted"
           >
             <Icon
               name={IconName.Info}

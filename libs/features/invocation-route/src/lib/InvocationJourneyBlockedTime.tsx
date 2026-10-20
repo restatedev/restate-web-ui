@@ -9,14 +9,14 @@ import type { JourneyBlockedTime } from './InvocationJourneyModel';
 const styles = tv({
   slots: {
     root: 'inline-flex min-w-0 items-baseline gap-1.5 text-xs leading-4 whitespace-nowrap',
-    phrase: 'font-normal text-gray-400',
-    phaseLabel: 'font-medium text-zinc-500',
+    phrase: 'font-normal text-subtle',
+    phaseLabel: 'font-medium text-muted',
     button:
-      'inline-flex h-4 items-center gap-0.5 self-baseline rounded-md px-0.5 py-0 text-xs leading-4 shadow-none hover:bg-zinc-100 pressed:bg-zinc-100',
-    chevrons: 'h-3 w-3 shrink-0 text-gray-400',
+      'inline-flex h-4 items-center gap-0.5 self-baseline rounded-md px-0.5 py-0 text-xs leading-4 shadow-none hover:bg-muted pressed:bg-muted',
+    chevrons: 'h-3 w-3 shrink-0 text-subtle',
     popover: 'w-[min(24rem,calc(100vw-2rem))]',
     row: 'flex items-center justify-between gap-6 px-3 py-2 text-xs',
-    gate: 'text-zinc-600 capitalize',
+    gate: 'text-tertiary capitalize',
   },
 });
 
@@ -49,7 +49,7 @@ export function JourneyBlockedTimeSummary({
       <Popover>
         <PopoverTrigger>
           <Button variant="icon" aria-label={ariaLabel} className={button()}>
-            <span className="font-medium text-zinc-600 tabular-nums">
+            <span className="font-medium text-tertiary tabular-nums">
               {value.duration}
             </span>
             <Icon name={IconName.ChevronsUpDown} className={chevrons()} />
@@ -60,13 +60,13 @@ export function JourneyBlockedTimeSummary({
             title={
               <span className="inline-flex items-baseline gap-1.5">
                 <span>{title}</span>
-                <span className="text-xs font-medium text-zinc-600 tabular-nums">
+                <span className="text-xs font-medium text-tertiary tabular-nums">
                   {value.duration}
                 </span>
               </span>
             }
           >
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-muted">
               {value.breakdown.map((item) => (
                 <div key={item.gate} className={row()}>
                   <span className={gate()}>{item.label}</span>

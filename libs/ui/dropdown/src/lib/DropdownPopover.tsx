@@ -19,7 +19,7 @@ export function DropdownPopover({
 }: PropsWithChildren<DropdownPopoverProps>) {
   return (
     <PopoverOverlay className={styles({ className })} {...props}>
-      <div className="relative overflow-auto rounded-2xl bg-gray-100 outline-hidden">
+      <div className="relative overflow-auto rounded-2xl bg-canvas outline-hidden">
         {children}
       </div>
     </PopoverOverlay>

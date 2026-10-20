@@ -13,18 +13,18 @@ const miniStyles = tv({
   variants: {
     status: {
       PENDING: {
-        container: 'text-yellow-500',
+        container: 'text-pending-subtle',
         animation: 'animate-ping',
       },
       DEGRADED: {
-        container: 'text-yellow-500',
+        container: 'text-pending-subtle',
         animation: 'animate-ping',
       },
       UNREACHABLE: {
-        container: 'text-yellow-500',
+        container: 'text-pending-subtle',
         animation: 'animate-ping',
       },
-      HEALTHY: { container: 'text-green-500', animation: 'animate-ping' },
+      HEALTHY: { container: 'text-success-subtle', animation: 'animate-ping' },
     },
   },
 });

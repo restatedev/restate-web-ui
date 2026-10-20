@@ -21,15 +21,15 @@ export function WorkflowInteractionsCard({
         title="Interactions"
         icon={IconName.Invocation}
         titleAddon={
-          <WorkflowInteractionTooltip className="ml-0.5 text-xs text-gray-400" />
+          <WorkflowInteractionTooltip className="ml-0.5 text-xs text-subtle" />
         }
       />
       <CardRow variant="hero">
         <div className="min-w-0 flex-auto">
-          <div className="text-0.5xs font-medium text-gray-500">
+          <div className="text-0.5xs font-medium text-muted">
             Last interaction
           </div>
-          <div className="mt-0.5 text-2xs text-gray-400">
+          <div className="mt-0.5 text-2xs text-subtle">
             Most recent retained interaction
           </div>
         </div>
@@ -37,14 +37,14 @@ export function WorkflowInteractionsCard({
           <RelativeDate
             date={stats.lastInteractionAt}
             title="Last interaction at"
-            className="text-xl font-semibold tracking-tight text-zinc-800"
+            className="text-xl font-semibold tracking-tight text-primary"
           />
         ) : (
-          <span className="text-xs text-zinc-600">None</span>
+          <span className="text-xs text-tertiary">None</span>
         )}
       </CardRow>
       <CardRow label="Pending promises">
-        <span className="text-xs text-zinc-600 tabular-nums">
+        <span className="text-xs text-tertiary tabular-nums">
           {formatNumber(stats.pendingPromiseCount ?? 0)}
         </span>
       </CardRow>

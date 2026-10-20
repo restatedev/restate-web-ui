@@ -48,16 +48,15 @@ const styles = tv({
   variants: {
     variant: {
       button:
-        'inline-block rounded-xl border border-black/10 bg-linear-to-b from-blue-600/90 to-blue-600 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] drop-shadow-xs hover:from-blue-700 hover:to-blue-700 hover:shadow-none pressed:from-blue-800 pressed:to-blue-800 pressed:shadow-none',
+        'inline-block rounded-xl border border-tint bg-linear-to-b from-accent/90 to-accent px-5 py-2 text-center text-sm text-inverse no-underline shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)] drop-shadow-xs hover:from-accent-hover hover:to-accent-hover hover:shadow-none pressed:from-accent-pressed pressed:to-accent-pressed pressed:shadow-none',
       'secondary-button':
-        'inline-block rounded-xl border bg-white px-5 py-2 text-center text-sm text-gray-800 no-underline shadow-xs hover:bg-gray-100 pressed:bg-gray-200',
+        'inline-block rounded-xl border bg-surface px-5 py-2 text-center text-sm text-primary no-underline shadow-xs hover:bg-muted pressed:bg-emphasis',
       'destructive-button':
-        'inline-block rounded-xl border border-black/10 bg-linear-to-b from-red-700/95 to-red-700 px-5 py-2 text-center text-sm text-white no-underline shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)] drop-shadow-xs hover:from-red-800 hover:to-red-800 hover:shadow-none pressed:from-red-900 pressed:to-red-900 pressed:shadow-none',
-      primary:
-        'text-blue-600 decoration-blue-600/60 hover:decoration-blue-600 dark:text-blue-500',
+        'inline-block rounded-xl border border-tint bg-linear-to-b from-danger/95 to-danger px-5 py-2 text-center text-sm text-inverse no-underline shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/15%)] drop-shadow-xs hover:from-danger-hover hover:to-danger-hover hover:shadow-none pressed:from-danger-pressed pressed:to-danger-pressed pressed:shadow-none',
+      primary: 'text-accent decoration-accent/60 hover:decoration-accent',
       secondary:
-        'text-gray-700 decoration-gray-700/50 hover:decoration-gray-700 dark:text-zinc-300',
-      icon: 'flex items-center justify-center border-0 p-1 text-gray-600 no-underline shadow-none hover:bg-black/5 disabled:bg-transparent pressed:bg-black/10',
+        'text-secondary decoration-secondary/50 hover:decoration-secondary',
+      icon: 'flex items-center justify-center border-0 p-1 text-tertiary no-underline shadow-none hover:bg-tint disabled:bg-transparent pressed:bg-tint-strong',
     },
   },
   defaultVariants: {

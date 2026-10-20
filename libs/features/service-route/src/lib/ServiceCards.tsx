@@ -53,7 +53,7 @@ import { useSearchParams } from 'react-router';
 import { formatConfigDuration, type ServiceConfig } from './serviceConfig';
 
 const skeletonStyles = tv({
-  base: 'inline-block animate-pulse rounded-full bg-gray-200/70',
+  base: 'inline-block animate-pulse rounded-full bg-emphasis/70',
   variants: {
     variant: {
       hero: 'h-6 w-16',
@@ -64,11 +64,11 @@ const skeletonStyles = tv({
 });
 
 const captionStyles = tv({
-  base: 'flex min-w-0 items-center gap-1 text-2xs font-medium text-gray-400',
+  base: 'flex min-w-0 items-center gap-1 text-2xs font-medium text-subtle',
   variants: {
     tone: {
       default: '',
-      warning: 'text-orange-700',
+      warning: 'text-warning-strong',
     },
   },
   defaultVariants: { tone: 'default' },
@@ -87,9 +87,9 @@ function HeroText({
 }) {
   return (
     <div className="min-w-0 flex-auto">
-      <div className="text-0.5xs font-medium text-gray-500">{title}</div>
+      <div className="text-0.5xs font-medium text-muted">{title}</div>
       {description && (
-        <div className="mt-0.5 truncate text-2xs text-gray-400">
+        <div className="mt-0.5 truncate text-2xs text-subtle">
           {description}
         </div>
       )}
@@ -110,7 +110,7 @@ export function CardEditAction({
   return (
     <Button
       variant="icon"
-      className="flex h-6 items-center gap-1 rounded-md px-1.5 text-2xs font-medium text-gray-400 hover:bg-transparent hover:text-gray-600"
+      className="flex h-6 items-center gap-1 rounded-md px-1.5 text-2xs font-medium text-subtle hover:bg-transparent hover:text-tertiary"
       onClick={() =>
         setSearchParams(
           (old) => {
@@ -150,10 +150,10 @@ export function DeploymentSdkRow({
       {deployment.sdk_version ? (
         <SDK
           lastAttemptServer={deployment.sdk_version}
-          className="-mt-0.5 min-w-0 flex-auto gap-2 text-xs font-medium text-zinc-600"
+          className="-mt-0.5 min-w-0 flex-auto gap-2 text-xs font-medium text-tertiary"
         />
       ) : (
-        <span className="flex-auto text-xs text-gray-500">
+        <span className="flex-auto text-xs text-muted">
           No SDK version reported
         </span>
       )}
@@ -194,7 +194,7 @@ export function DeploymentProtocolRows({
             Protocol
             <ProtocolTypeExplainer
               variant="indicator-button"
-              className="text-gray-400"
+              className="text-subtle"
             />
           </span>
         }
@@ -249,7 +249,7 @@ export function RegisteredCaption({ date }: { date?: string }) {
       <RelativeDate
         date={date}
         title="Registered at"
-        className="text-2xs font-medium text-gray-500"
+        className="text-2xs font-medium text-muted"
       />
     </span>
   );
@@ -311,32 +311,32 @@ export function DeploymentCard({
 
 const configChipStyles = tv({
   slots: {
-    chip: 'inline-flex h-5 max-w-full min-w-0 items-stretch overflow-hidden rounded-md border border-gray-200 bg-white text-xs font-medium text-zinc-600 shadow-xs',
-    tag: 'flex shrink-0 items-center border-r border-gray-200 bg-zinc-100/80 px-1 text-[8.5px] leading-none font-semibold tracking-[0.04em] text-zinc-500 uppercase',
+    chip: 'inline-flex h-5 max-w-full min-w-0 items-stretch overflow-hidden rounded-md border border-default bg-surface text-xs font-medium text-tertiary shadow-xs',
+    tag: 'flex shrink-0 items-center border-r border-default bg-muted/80 px-1 text-[8.5px] leading-none font-semibold tracking-[0.04em] text-muted uppercase',
     value:
-      'flex min-w-0 items-center gap-1 px-1.5 font-mono text-[11px] text-zinc-700',
+      'flex min-w-0 items-center gap-1 px-1.5 font-mono text-[11px] text-secondary',
     valueText: 'min-w-0 truncate',
-    icon: 'h-3 w-3 shrink-0 text-zinc-400',
-    warningIcon: 'h-3 w-3 shrink-0 text-orange-500',
+    icon: 'h-3 w-3 shrink-0 text-subtle',
+    warningIcon: 'h-3 w-3 shrink-0 text-warning-subtle',
   },
   variants: {
     hue: {
       neutral: {},
       blue: {
-        tag: 'bg-blue-50/70 text-blue-700/90',
-        icon: 'text-blue-500/80',
+        tag: 'bg-accent-subtle text-accent',
+        icon: 'text-accent',
       },
       green: {
-        tag: 'bg-green-50/80 text-green-700/90',
-        icon: 'text-green-600/80',
+        tag: 'bg-success-subtle text-success-strong',
+        icon: 'text-success',
       },
       amber: {
-        tag: 'bg-amber-50/80 text-amber-800/90',
-        icon: 'text-amber-600/80',
+        tag: 'bg-pending-subtle text-pending-strong',
+        icon: 'text-pending',
       },
       gray: {
-        tag: 'bg-zinc-200/50 text-zinc-600',
-        icon: 'text-zinc-500',
+        tag: 'bg-emphasis/50 text-tertiary',
+        icon: 'text-muted',
       },
     },
     tone: {
@@ -345,8 +345,8 @@ const configChipStyles = tv({
         chip: 'border-dashed',
       },
       warning: {
-        tag: 'bg-red-50 text-red-700',
-        icon: 'text-red-500',
+        tag: 'bg-danger-subtle text-danger-strong',
+        icon: 'text-danger',
       },
     },
   },
@@ -416,7 +416,7 @@ const configPopoverIllustrationStyles = tv({
   base: 'mx-2 flex flex-col',
   variants: {
     frame: {
-      boxed: 'gap-6 rounded-xl border bg-white px-3 pt-3 pb-2.5',
+      boxed: 'gap-6 rounded-xl border bg-surface px-3 pt-3 pb-2.5',
       none: 'gap-3',
     },
     trailing: {
@@ -453,11 +453,11 @@ function ConfigPopover({
   return (
     <div className={configPopoverStyles({ size })}>
       <div className="flex items-center gap-2 px-4 pt-3 pb-2">
-        <span className="text-sm font-semibold text-gray-500">{title}</span>
+        <span className="text-sm font-semibold text-muted">{title}</span>
         {editParam && !isReadonly && (
           <Button
             variant="icon"
-            className="-my-1 ml-auto flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-normal text-gray-500 hover:text-gray-700"
+            className="-my-1 ml-auto flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-normal text-muted hover:text-secondary"
             onClick={() => {
               close?.();
               setSearchParams(
@@ -477,11 +477,11 @@ function ConfigPopover({
       {warnings?.map((warning, index) => (
         <div
           key={index}
-          className="mx-2 mb-2 flex gap-2 rounded-lg border border-orange-200 bg-orange-50 p-2.5 text-xs text-orange-700"
+          className="mx-2 mb-2 flex gap-2 rounded-lg border border-warning bg-warning-subtle p-2.5 text-xs text-warning-strong"
         >
           <Icon
             name={IconName.TriangleAlert}
-            className="mt-px h-3.5 w-3.5 shrink-0 text-orange-500"
+            className="mt-px h-3.5 w-3.5 shrink-0 text-warning-subtle"
           />
           <span>{warning}</span>
         </div>
@@ -719,7 +719,7 @@ export function ConfigurationCard({
             title="Service configuration"
             description="Access decides whether the ingress may call this service. Retention sets how long completed invocations and idempotency keys are kept. Timeouts govern when an inactive handler is suspended or aborted. The retry policy applies to failing invocations."
             learnMoreHref="https://docs.restate.dev/services/configuration"
-            className="ml-0.5 text-xs text-gray-400"
+            className="ml-0.5 text-xs text-subtle"
           />
         }
       >

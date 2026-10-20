@@ -26,7 +26,7 @@ function InvocationCrumbContent({ crumb }: BreadcrumbComponentProps) {
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
         />
       )}
     </>
@@ -41,7 +41,7 @@ function DeploymentCrumbContent({ crumb }: BreadcrumbComponentProps) {
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
         />
       )}
     </>
@@ -57,7 +57,7 @@ function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
     <>
       <Icon
         name={crumb.icon}
-        className="h-3 w-3 shrink-0 rotate-90 text-zinc-400"
+        className="h-3 w-3 shrink-0 rotate-90 text-subtle"
       />
       <span data-crumb-label className="min-w-0 truncate">
         {crumb.label}
@@ -65,7 +65,7 @@ function VQueueCrumbContent({ crumb }: BreadcrumbComponentProps) {
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
         />
       )}
     </>
@@ -97,7 +97,7 @@ function VirtualObjectInstanceCrumbContent({
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
-        <span className="shrink-0 text-zinc-400">/</span>
+        <span className="shrink-0 text-subtle">/</span>
         <span className="min-w-0 truncate font-mono text-[90%]">
           {crumb.params['key'] ?? ''}
         </span>
@@ -105,7 +105,7 @@ function VirtualObjectInstanceCrumbContent({
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
         />
       )}
     </>
@@ -134,12 +134,12 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
         )}
         <Icon
           name={IconName.Workflow}
-          className="h-3 w-3 shrink-0 text-zinc-400"
+          className="h-3 w-3 shrink-0 text-subtle"
         />
         <span className="min-w-0 truncate">
           {crumb.params['service'] ?? ''}
         </span>
-        <span className="shrink-0 text-zinc-400">/</span>
+        <span className="shrink-0 text-subtle">/</span>
         <span className="min-w-0 truncate font-mono text-[90%]">
           {crumb.params['workflowId'] ?? ''}
         </span>
@@ -147,7 +147,7 @@ function WorkflowRunCrumbContent({ crumb }: BreadcrumbComponentProps) {
       {crumb.isCurrent && (
         <Copy
           copyText={crumb.label}
-          className="h-5 w-5 shrink-0 rounded-md p-1 text-gray-500"
+          className="h-5 w-5 shrink-0 rounded-md p-1 text-muted"
         />
       )}
     </>

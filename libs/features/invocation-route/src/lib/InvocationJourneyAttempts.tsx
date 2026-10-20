@@ -44,10 +44,10 @@ export function JourneyAttemptEndpoint({
     <div className="relative z-10 flex min-h-8 min-w-0 items-center gap-2">
       <span
         aria-hidden="true"
-        className="h-3 w-3 shrink-0 rounded-full border border-zinc-300 bg-white shadow-xs"
+        className="h-3 w-3 shrink-0 rounded-full border border-strong bg-surface shadow-xs"
       />
       <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5 gap-y-1 text-xs">
-        <span className="font-medium text-zinc-700 tabular-nums">
+        <span className="font-medium text-secondary tabular-nums">
           {label ?? `${formatOrdinals(number)} attempt`}
         </span>
         {timing && <JourneyNodeTime timing={timing} />}
@@ -56,8 +56,8 @@ export function JourneyAttemptEndpoint({
         )}
         {duration && durationLabel && (
           <span className="inline-flex shrink-0 items-baseline gap-1.5">
-            <span className="text-gray-400">{durationLabel}</span>
-            <span className="font-medium text-zinc-600 tabular-nums">
+            <span className="text-subtle">{durationLabel}</span>
+            <span className="font-medium text-tertiary tabular-nums">
               {duration}
             </span>
           </span>
@@ -75,11 +75,11 @@ export function JourneyAttemptEndpoint({
 }
 
 const attemptGroupStyles = tv({
-  base: '-ml-2.5 min-w-0 overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-[0_1px_3px_rgba(24,24,27,0.04)]',
+  base: '-ml-2.5 min-w-0 overflow-hidden rounded-xl border border-default/80 bg-surface shadow-[0_1px_3px_--theme(--box-shadow-color-default/4%)]',
 });
 
 const attemptGroupHeaderStyles = tv({
-  base: 'relative flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-gray-100 py-2 text-xs',
+  base: 'relative flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-muted py-2 text-xs',
   variants: {
     isCollapsible: {
       true: 'pr-8 pl-5.5',
@@ -119,35 +119,35 @@ function AttemptGroupHeader({
             slot="trigger"
             variant="icon"
             aria-label={`Toggle ${attemptLabel}`}
-            className="relative h-full w-full justify-end rounded-xl py-0 pr-2.5 pl-0 text-2xs hover:bg-zinc-50/70 pressed:bg-zinc-100/70"
+            className="relative h-full w-full justify-end rounded-xl py-0 pr-2.5 pl-0 text-2xs hover:bg-subtle/70 pressed:bg-muted/70"
           >
             <Icon
               name={IconName.ChevronDown}
-              className="h-3 w-3 shrink-0 text-gray-500 transition-transform group-expanded:rotate-180"
+              className="h-3 w-3 shrink-0 text-muted transition-transform group-expanded:rotate-180"
             />
           </Button>
         </Heading>
       )}
       <div className={attemptGroupSummaryStyles({ isCollapsible })}>
-        <span className="shrink-0 font-medium text-zinc-600">
+        <span className="shrink-0 font-medium text-tertiary">
           {attemptLabel}
         </span>
         {attemptsDuration && (
           <>
-            <span className="shrink-0 text-gray-400">over</span>
+            <span className="shrink-0 text-subtle">over</span>
             <span
               aria-label={`Attempts duration: ${attemptsDuration}${isActive ? ' so far' : ''}`}
-              className="shrink-0 font-medium text-zinc-600 tabular-nums"
+              className="shrink-0 font-medium text-tertiary tabular-nums"
             >
               {attemptsDuration}
             </span>
-            {isActive && <span className="shrink-0 text-gray-400">so far</span>}
+            {isActive && <span className="shrink-0 text-subtle">so far</span>}
           </>
         )}
       </div>
       {activitySummary && (
         <>
-          <span className="pointer-events-none relative z-10 text-gray-400">
+          <span className="pointer-events-none relative z-10 text-subtle">
             with
           </span>
           <div className="relative z-10">{activitySummary}</div>
@@ -185,11 +185,11 @@ function AttemptGroupContent({
       />
       {scenario.attempts > 1 && (
         <>
-          <div className="relative ml-1.5 h-4 border-l border-gray-200">
+          <div className="relative ml-1.5 h-4 border-l border-default">
             {scenario.attempts > 2 && (
               <span
                 aria-hidden="true"
-                className="absolute top-1/2 -left-[0.2rem] z-10 -translate-y-1/2 bg-white px-0.5 text-2xs leading-none text-gray-300"
+                className="absolute top-1/2 -left-[0.2rem] z-10 -translate-y-1/2 bg-surface px-0.5 text-2xs leading-none text-faint"
               >
                 ⋮
               </span>

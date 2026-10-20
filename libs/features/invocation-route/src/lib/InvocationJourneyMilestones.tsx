@@ -63,10 +63,10 @@ function JourneyMilestone({
     <div className="relative z-10 flex min-h-8 min-w-0 items-center gap-2">
       <span
         aria-hidden="true"
-        className="h-3 w-3 shrink-0 rounded-full border border-zinc-300 bg-white shadow-xs"
+        className="h-3 w-3 shrink-0 rounded-full border border-strong bg-surface shadow-xs"
       />
       <div className="flex min-w-0 flex-1 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
-        <span className="font-medium text-zinc-600">{label}</span>
+        <span className="font-medium text-tertiary">{label}</span>
         {timing && <JourneyNodeTime timing={timing} />}
       </div>
     </div>
@@ -86,8 +86,8 @@ function QueueWaitSummary({
 
   return (
     <div className="flex min-w-0 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
-      <span className="font-medium text-zinc-500">{label}</span>
-      <span className="font-normal text-gray-400">for</span>
+      <span className="font-medium text-muted">{label}</span>
+      <span className="font-normal text-subtle">for</span>
       <MetricComparison
         value={value.duration}
         qualifier={live ? 'so far' : undefined}
@@ -104,8 +104,8 @@ const queueWaitLeadStyles = tv({
   base: 'relative ml-1.5 flex min-h-8 min-w-0 items-center border-l pl-5.5',
   variants: {
     live: {
-      true: 'border-dashed border-gray-300',
-      false: 'border-gray-200',
+      true: 'border-dashed border-strong',
+      false: 'border-default',
     },
     followsPhase: {
       true: '-mt-1',
@@ -168,7 +168,7 @@ export function JourneyStart({
       )}
       {scenario.runnableIn !== undefined && (
         <>
-          <div className="ml-1.5 h-3 border-l border-dashed border-gray-300" />
+          <div className="ml-1.5 h-3 border-l border-dashed border-strong" />
           <JourneyMilestone
             label="Scheduled to run"
             timing={{ value: `in ${scenario.runnableIn}` }}
@@ -203,7 +203,7 @@ export function JourneyComparisonSummary({
 
   return (
     <span className="inline-flex min-w-0 items-baseline gap-1.5 text-xs whitespace-nowrap">
-      <span className="font-normal text-gray-400">
+      <span className="font-normal text-subtle">
         {comparison.isFinished ? 'completed in' : 'has taken'}
       </span>{' '}
       <MetricComparison
@@ -234,19 +234,19 @@ export function PendingTail({
   if (!pendingAttempt && !inboxState) return null;
 
   return (
-    <div className="relative ml-1.5 flex min-h-8 min-w-0 items-center border-l border-dashed border-gray-300 pl-3.5">
+    <div className="relative ml-1.5 flex min-h-8 min-w-0 items-center border-l border-dashed border-strong pl-3.5">
       <span
         aria-hidden="true"
-        className="absolute top-1/2 -left-1.5 h-3 w-3 -translate-y-1/2 rounded-full border border-dashed border-zinc-400 bg-white"
+        className="absolute top-1/2 -left-1.5 h-3 w-3 -translate-y-1/2 rounded-full border border-dashed border-neutral bg-surface"
       />
       {pendingAttempt ? (
         <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
-          <span className="shrink-0 font-medium text-zinc-600">
+          <span className="shrink-0 font-medium text-tertiary">
             Next attempt
           </span>
           <PendingAttemptBlockedStatus pendingAttempt={pendingAttempt} />
           {pendingAttempt.duration && (
-            <span className="inline-flex shrink-0 items-baseline gap-x-1.5 text-gray-400">
+            <span className="inline-flex shrink-0 items-baseline gap-x-1.5 text-subtle">
               <span>for</span>
               <MetricComparison
                 value={pendingAttempt.duration}
@@ -258,14 +258,14 @@ export function PendingTail({
         </div>
       ) : inboxState ? (
         <div className="flex min-w-0 items-center gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
-          <span className="shrink-0 font-medium text-zinc-600">
+          <span className="shrink-0 font-medium text-tertiary">
             Next attempt
           </span>
           {inboxState === 'pending' && (
             <InvocationStatusBadge status={currentStatus ?? 'pending'} />
           )}
           {currentStatus === 'backing-off' && currentStatusDuration && (
-            <span className="shrink-0 text-zinc-500 tabular-nums">
+            <span className="shrink-0 text-muted tabular-nums">
               for {currentStatusDuration}
             </span>
           )}
@@ -286,15 +286,15 @@ export function CurrentStateTail({
   duration?: string;
 }) {
   return (
-    <div className="relative ml-1.5 flex min-h-8 min-w-0 items-center border-l border-dashed border-gray-300 pl-3.5">
+    <div className="relative ml-1.5 flex min-h-8 min-w-0 items-center border-l border-dashed border-strong pl-3.5">
       <span
         aria-hidden="true"
-        className="absolute top-1/2 -left-1.5 h-3 w-3 -translate-y-1/2 rounded-full border border-dashed border-zinc-400 bg-white"
+        className="absolute top-1/2 -left-1.5 h-3 w-3 -translate-y-1/2 rounded-full border border-dashed border-neutral bg-surface"
       />
       <div className="flex min-w-0 items-center gap-1.5 overflow-hidden text-xs whitespace-nowrap">
         <Status invocation={statusInvocation} timeline={false} />
         {duration && (
-          <span className="shrink-0 text-zinc-500 tabular-nums">
+          <span className="shrink-0 text-muted tabular-nums">
             for {duration}
           </span>
         )}
@@ -320,7 +320,7 @@ export function TerminalEndpoint({
       />
       <span
         aria-hidden="true"
-        className="h-3 w-3 shrink-0 rounded-full border border-zinc-300 bg-white shadow-xs"
+        className="h-3 w-3 shrink-0 rounded-full border border-strong bg-surface shadow-xs"
       />
       <div className="flex min-w-0 flex-1 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
         <InvocationStatusBadge status={status} />
@@ -339,27 +339,27 @@ export function PurgeEndpoint({ timing }: { timing: string }) {
       />
       <span
         aria-hidden="true"
-        className="h-3 w-3 shrink-0 rounded-full border border-dashed border-zinc-400 bg-white"
+        className="h-3 w-3 shrink-0 rounded-full border border-dashed border-neutral bg-surface"
       />
       <div className="flex min-w-0 flex-1 items-baseline gap-x-1.5 overflow-hidden text-xs whitespace-nowrap">
-        <span className="font-medium text-zinc-500">
+        <span className="font-medium text-muted">
           Will be purged from storage
         </span>
-        <span className="text-gray-400 tabular-nums">· {timing}</span>
+        <span className="text-subtle tabular-nums">· {timing}</span>
       </div>
     </div>
   );
 }
 
 const endpointConnectorStyles = tv({
-  base: 'absolute bottom-[calc(50%+0.375rem)] left-1.5 border-l border-gray-200',
+  base: 'absolute bottom-[calc(50%+0.375rem)] left-1.5 border-l border-default',
   variants: {
     source: {
       'attempt-group': 'top-0',
       milestone: '-top-2.5',
     },
     dashed: {
-      true: 'border-dashed border-gray-300',
+      true: 'border-dashed border-strong',
       false: '',
     },
   },
@@ -373,8 +373,8 @@ const journeyContinuationStyles = tv({
   base: 'ml-1.5 min-h-3 flex-1 border-l',
   variants: {
     active: {
-      true: 'border-dashed border-gray-300',
-      false: 'border-gray-200',
+      true: 'border-dashed border-strong',
+      false: 'border-default',
     },
   },
 });

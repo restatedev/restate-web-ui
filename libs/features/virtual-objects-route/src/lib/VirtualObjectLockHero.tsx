@@ -20,12 +20,12 @@ type VirtualObjectLockHolder = components['schemas']['VirtualObjectLockHolder'];
 function LockHandler({ handler }: { handler: string }) {
   return (
     <span className="flex min-w-0 items-center gap-1.5">
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-white shadow-xs">
-        <Icon name={IconName.Function} className="h-4.5 w-4.5 text-zinc-400" />
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border bg-surface shadow-xs">
+        <Icon name={IconName.Function} className="h-4.5 w-4.5 text-subtle" />
       </span>
-      <span className="truncate text-xs text-zinc-600 italic">
+      <span className="truncate text-xs text-tertiary italic">
         {handler}
-        <span className="font-mono text-2xs text-zinc-400">()</span>
+        <span className="font-mono text-2xs text-subtle">()</span>
       </span>
     </span>
   );
@@ -80,7 +80,7 @@ export function VirtualObjectLockHero({
           labelAction={
             <Copy
               copyText={lockHolder.id}
-              className="ml-0 p-1 text-zinc-400 [&_svg]:h-3.5 [&_svg]:w-3.5"
+              className="ml-0 p-1 text-subtle [&_svg]:h-3.5 [&_svg]:w-3.5"
             />
           }
           label={
@@ -88,7 +88,7 @@ export function VirtualObjectLockHero({
               id={lockHolder.id}
               popover={false}
               link={false}
-              className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-zinc-400"
+              className="w-fit max-w-full min-w-0 text-sm font-normal [&_svg]:text-subtle"
             />
           }
         >
@@ -109,10 +109,10 @@ export function VirtualObjectLockHero({
                   ? IconName.Database
                   : IconName.Security
               }
-              className="h-4 w-4 shrink-0 text-zinc-400"
+              className="h-4 w-4 shrink-0 text-subtle"
             />
             {lockHolder.kind === 'state-mutation' && (
-              <span className="shrink-0 text-xs text-zinc-600">
+              <span className="shrink-0 text-xs text-tertiary">
                 State mutation
               </span>
             )}
@@ -120,7 +120,7 @@ export function VirtualObjectLockHero({
               tooltipContent={lockHolder.id}
               copyText={lockHolder.id}
             >
-              <code className="block max-w-72 truncate text-xs text-zinc-700">
+              <code className="block max-w-72 truncate text-xs text-secondary">
                 {lockHolder.id}
               </code>
             </TruncateWithTooltip>
@@ -142,7 +142,7 @@ export function VirtualObjectLockHero({
             id={lockHolder.vqueueId ?? invocation?.vqueue_id}
             size="md"
             truncateInMiddle
-            className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-zinc-400"
+            className="ml-1 w-fit max-w-full min-w-0 [&_svg]:text-subtle"
           />
         </CardRow>
       )} */}

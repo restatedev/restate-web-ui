@@ -9,9 +9,9 @@ export function CancelSignal({
   Extract<JournalEntryV2, { type?: 'Cancel'; category?: 'notification' }>
 >) {
   return (
-    <div className="mr-2 flex items-center gap-2 font-sans text-zinc-500">
+    <div className="mr-2 flex items-center gap-2 font-sans text-muted">
       <span className="shrink-0">
-        <span className="font-medium text-gray-600">Cancellation</span> signal
+        <span className="font-medium text-tertiary">Cancellation</span> signal
         received.
       </span>
       <RelativeTime

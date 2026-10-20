@@ -57,11 +57,11 @@ const activityTimelineStyles = tv({
       'grid w-full min-w-0 grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-1.5',
     timeline: 'relative h-full w-full min-w-0',
     item: 'relative grid min-h-8 grid-cols-[1rem_minmax(0,1fr)_auto] items-center gap-1.5',
-    rail: 'absolute top-[1.625rem] bottom-0 left-5 w-px -translate-x-1/2 bg-gray-200',
-    dot: 'relative z-1 flex h-2.5 w-2.5 items-center justify-center justify-self-center rounded-full border border-white shadow-xs',
+    rail: 'absolute top-[1.625rem] bottom-0 left-5 w-px -translate-x-1/2 bg-emphasis',
+    dot: 'relative z-1 flex h-2.5 w-2.5 items-center justify-center justify-self-center rounded-full border border-surface shadow-xs',
     dotCenter: 'h-1 w-1 rounded-full',
-    label: 'min-w-0 truncate text-xs font-normal text-zinc-600',
-    heroLabel: 'min-w-0 truncate text-0.5xs font-medium text-gray-500',
+    label: 'min-w-0 truncate text-xs font-normal text-tertiary',
+    heroLabel: 'min-w-0 truncate text-0.5xs font-medium text-muted',
   },
 });
 
@@ -99,13 +99,34 @@ const FIRST_START_WAIT = {
 } as const;
 
 const BLOCK_COLORS = [
-  { fillLight: '#bfdbfe', stroke: '#3b82f6' },
-  { fillLight: '#c4b5fd', stroke: '#8b5cf6' },
-  { fillLight: '#fcd34d', stroke: '#f59e0b' },
-  { fillLight: '#a7f3d0', stroke: '#10b981' },
-  { fillLight: '#fbcfe8', stroke: '#ec4899' },
-  { fillLight: '#cbd5e1', stroke: '#64748b' },
-  { fillLight: '#fed7aa', stroke: '#f97316' },
+  {
+    fillLight: 'var(--background-color-category-1-emphasis)',
+    stroke: 'var(--background-color-category-1)',
+  },
+  {
+    fillLight: 'var(--background-color-category-2-emphasis)',
+    stroke: 'var(--background-color-category-2)',
+  },
+  {
+    fillLight: 'var(--background-color-category-3-emphasis)',
+    stroke: 'var(--background-color-category-3)',
+  },
+  {
+    fillLight: 'var(--background-color-category-4-emphasis)',
+    stroke: 'var(--background-color-category-4)',
+  },
+  {
+    fillLight: 'var(--background-color-category-5-emphasis)',
+    stroke: 'var(--background-color-category-5)',
+  },
+  {
+    fillLight: 'var(--background-color-category-6-emphasis)',
+    stroke: 'var(--background-color-category-6)',
+  },
+  {
+    fillLight: 'var(--background-color-category-7-emphasis)',
+    stroke: 'var(--background-color-category-7)',
+  },
 ] as const;
 
 const KNOWN_BLOCK_COLOR_INDEX: Record<string, number> = {
@@ -126,7 +147,7 @@ const KNOWN_BLOCK_COLOR_INDEX: Record<string, number> = {
 const durationBarStyles = tv({
   slots: {
     track:
-      'relative h-2 min-w-0 overflow-hidden rounded-full border border-zinc-200 bg-zinc-100',
+      'relative h-2 min-w-0 overflow-hidden rounded-full border border-default bg-muted',
     fill: 'absolute inset-y-0 left-0 rounded-full',
   },
 });
@@ -206,17 +227,17 @@ function BlockBreakdownTooltip({
   return (
     <div className="flex flex-col">
       <div className="mb-2">
-        <div className="text-base! leading-7 font-medium text-gray-300!">
+        <div className="text-base! leading-7 font-medium text-faint!">
           Blocked
         </div>
         <div className={totalStyles()}>
-          <span className="!text-xl !text-gray-50 tabular-nums">
+          <span className="!text-xl !text-inverse tabular-nums">
             {formatMilliseconds(total)}
           </span>
-          <span className="!text-sm !text-gray-400">per dispatch attempt</span>
+          <span className="!text-sm !text-subtle">per dispatch attempt</span>
         </div>
       </div>
-      <div className="-mx-3 border-t border-white/10" />
+      <div className="-mx-3 border-t border-inverse-tint" />
       <div className="mt-2 flex flex-col">
         {blocks.map((block) => (
           <div key={block.gate} className={row()}>
@@ -225,16 +246,15 @@ function BlockBreakdownTooltip({
               style={{
                 backgroundColor: block.fillLight,
                 border: `1.5px solid ${block.stroke}`,
-                boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.35)',
+                boxShadow:
+                  'inset 0 1px 0 0 color-mix(in oklab, var(--box-shadow-color-highlight) 35%, transparent)',
               }}
             />
-            <span className="pr-2 !text-0.5xs !text-gray-300">
-              {block.label}
-            </span>
-            <span className="ml-auto !text-0.5xs font-semibold !text-gray-100 tabular-nums">
+            <span className="pr-2 !text-0.5xs !text-faint">{block.label}</span>
+            <span className="ml-auto !text-0.5xs font-semibold !text-inverse tabular-nums">
               {formatMilliseconds(block.milliseconds)}
             </span>
-            <span className="!text-0.5xs font-medium !text-gray-300">
+            <span className="!text-0.5xs font-medium !text-faint">
               (
               {total > 0
                 ? formatPercentageWithoutFraction(block.milliseconds / total)
@@ -346,17 +366,15 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
             title="Each timing averages its own events"
             description="End to end measures entries that complete normally. Stage timings measure exits. Queue measures the wait before the first start. Blocked measures waits sampled at dispatch attempts. These averages do not add up."
             ariaLabel="Explain how timings are averaged"
-            className="ml-0.5 text-xs text-gray-400"
+            className="ml-0.5 text-xs text-subtle"
           />
         }
       />
       <CardRow variant="hero">
         <div className={durationRowStyles()}>
           <div className="min-w-0">
-            <div className="text-0.5xs font-medium text-gray-500">
-              End to end
-            </div>
-            <div className="text-2xs text-gray-400">Completed entries</div>
+            <div className="text-0.5xs font-medium text-muted">End to end</div>
+            <div className="text-2xs text-subtle">Completed entries</div>
           </div>
           <DurationBar
             milliseconds={endToEndMilliseconds}
@@ -373,7 +391,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
         <Fragment key={row.key}>
           <CardRow>
             <div className={durationRowStyles()}>
-              <span className="min-w-0 text-2xs font-medium text-gray-400">
+              <span className="min-w-0 text-2xs font-medium text-subtle">
                 {row.label}
               </span>
               <DurationBar
@@ -381,7 +399,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
                 maximum={maximum}
                 color={row.color}
               />
-              <span className="text-right text-xs text-zinc-600 tabular-nums">
+              <span className="text-right text-xs text-tertiary tabular-nums">
                 {formatVqueueDuration(row.value) ?? '—'}
               </span>
             </div>
@@ -389,7 +407,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
           {row.key === 'queue' && blocks.length > 0 && (
             <CardRow>
               <div className={durationRowStyles()}>
-                <span className="min-w-0 text-2xs font-medium text-gray-400">
+                <span className="min-w-0 text-2xs font-medium text-subtle">
                   Blocked
                 </span>
                 <BlockDurationBar
@@ -397,7 +415,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
                   total={blockTotal}
                   maximum={maximum}
                 />
-                <span className="text-right text-xs text-zinc-600 tabular-nums">
+                <span className="text-right text-xs text-tertiary tabular-nums">
                   {formatMilliseconds(blockTotal)}
                 </span>
               </div>
@@ -443,7 +461,7 @@ export function VQueueActivityCard({ data }: { data: VqueueSnapshot }) {
                 <RelativeDate
                   date={created.date}
                   title={`${created.title} at`}
-                  className="text-sm font-semibold whitespace-nowrap text-zinc-700"
+                  className="text-sm font-semibold whitespace-nowrap text-secondary"
                   tooltipClassName="max-w-none! overflow-visible!"
                 />
               </div>
@@ -474,10 +492,10 @@ export function VQueueActivityCard({ data }: { data: VqueueSnapshot }) {
       ) : (
         <CardRow className="flex-1">
           <div className="flex w-full items-center justify-between gap-3">
-            <span className="text-2xs font-medium text-gray-400">
+            <span className="text-2xs font-medium text-subtle">
               No recorded activity
             </span>
-            <span className="text-xs text-zinc-400">Never</span>
+            <span className="text-xs text-subtle">Never</span>
           </div>
         </CardRow>
       )}

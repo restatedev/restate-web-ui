@@ -13,14 +13,14 @@ export const listBoxItemStyles = tv({
   base: 'peer relative flex cursor-default items-center gap-8 rounded-md px-2.5 py-1.5 text-sm will-change-transform select-none',
   variants: {
     isSelected: {
-      false: 'text-gray-700 hover:bg-blue-600 hover:text-white',
-      true: 'peer-hover:bg-transparent peer-hover:text-gray-700 peer-focus:bg-transparent peer-focus:text-gray-700 hover:text-white focus:bg-blue-600',
+      false: 'text-secondary hover:bg-accent hover:text-inverse',
+      true: 'peer-hover:bg-transparent peer-hover:text-secondary peer-focus:bg-transparent peer-focus:text-secondary hover:text-inverse focus:bg-accent',
     },
     isDisabled: {
-      true: 'text-slate-400',
+      true: 'text-subtle',
     },
     isFocused: {
-      true: 'bg-blue-600 text-white',
+      true: 'bg-accent text-inverse',
     },
   },
 });

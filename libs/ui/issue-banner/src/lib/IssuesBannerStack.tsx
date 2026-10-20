@@ -52,23 +52,23 @@ export function IssuesBannerStack({ className }: { className?: string }) {
           <span className="relative flex h-4 w-4 shrink-0">
             <Icon
               name={IconName.TriangleAlert}
-              className="absolute h-4 w-4 animate-ping fill-amber-300 text-amber-800 opacity-60"
+              className="absolute h-4 w-4 animate-ping fill-pending-strong text-pending-strong opacity-60"
             />
             <Icon
               name={IconName.TriangleAlert}
-              className="relative h-4 w-4 fill-amber-300 text-amber-800"
+              className="relative h-4 w-4 fill-pending-strong text-pending-strong"
             />
           </span>
           <span>
-            <span className="font-semibold text-white">Attention</span>
-            <span className="mx-1.5 text-zinc-500">—</span>
+            <span className="font-semibold text-inverse">Attention</span>
+            <span className="mx-1.5 text-inverse-subtle">—</span>
             {issues.length}{' '}
             {formatPlurals(issues.length, { one: 'issue', other: 'issues' })}{' '}
             detected that may need your attention
           </span>
           <Icon
             name={IconName.ChevronsUpDown}
-            className="h-3.5 w-3.5 shrink-0 text-zinc-300"
+            className="h-3.5 w-3.5 shrink-0 text-inverse-secondary"
           />
         </Button>
         {Array.from({ length: stackCount - 1 }, (_, i) => {

@@ -80,7 +80,7 @@ const LazySeparator = lazy(() =>
 );
 
 const liveStyles = tv({
-  base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-gray-500 uppercase',
+  base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-muted uppercase',
   variants: {
     isLive: {
       true: '',
@@ -383,7 +383,7 @@ export function JournalV2({
 
   if (isPending[invocationId]) {
     const loading = (
-      <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-zinc-500">
+      <div className="flex items-center gap-1.5 px-4 py-2 text-sm text-muted">
         <Spinner className="h-4 w-4" />
         Loading…
       </div>
@@ -428,7 +428,7 @@ export function JournalV2({
             <Suspense
               fallback={
                 <ContentPanelSection>
-                  <div className="flex items-center gap-1.5 p-4 text-sm text-zinc-500">
+                  <div className="flex items-center gap-1.5 p-4 text-sm text-muted">
                     <Spinner className="h-4 w-4" />
                     Loading…
                   </div>
@@ -437,7 +437,7 @@ export function JournalV2({
             >
               {withTimeline && (
                 <ContentPanelToolbar className="relative">
-                  <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-gray-100 via-gray-100 to-gray-100/0 pl-10">
+                  <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-muted via-muted to-surface/5 pl-10">
                     <JournalDetailToggle
                       availableCategories={journalDetail.availableCategories}
                       selectedCategories={journalDetail.selectedCategories}
@@ -575,7 +575,7 @@ export function JournalV2({
                               data={data}
                             />
                             {journalAndInvocationData && (
-                              <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-gray-500">
+                              <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">
                                 <Retention
                                   invocation={journalAndInvocationData}
                                   type="journal"
@@ -587,13 +587,13 @@ export function JournalV2({
                           </ContentPanelSection>
                         </LazyPanel>
                         <LazySeparator className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
-                          <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-blue-500" />
+                          <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-accent" />
                         </LazySeparator>
                         {/* Right panel - grid container for overlapping Units */}
                         <LazyPanel
                           id={TIMELINE_PANEL_ID}
                           defaultSize={`${timelineWidth * 100}%`}
-                          className="relative hidden overflow-x-clip bg-black/3 md:grid"
+                          className="relative hidden overflow-x-clip bg-tint-subtle md:grid"
                           minSize="20%"
                           style={{
                             overflow: 'visible',
@@ -609,7 +609,7 @@ export function JournalV2({
                           <ContentPanelSection
                             className="relative z-[2] col-start-1 row-start-1 h-full"
                             style={{ minHeight: totalSize }}
-                            fadeClassName="from-gray-100"
+                            fadeClassName="from-muted"
                           >
                             <ScrollableTimeline
                               cancelEvent={
@@ -676,7 +676,7 @@ export function JournalV2({
                     <Link
                       variant="icon"
                       href={`${baseUrl}/invocations/${invocationId}`}
-                      className="flex items-center justify-center gap-1 py-3 text-xs text-blue-600 hover:text-blue-700"
+                      className="flex items-center justify-center gap-1 py-3 text-xs text-accent hover:text-accent-strong"
                     >
                       View all entries
                       <Icon name={IconName.ChevronRight} className="h-3 w-3" />
@@ -925,7 +925,7 @@ const TimelineContainer = memo(function TimelineContainer({
 }) {
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
-      <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-gray-300/70" />
+      <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-strong/70" />
       <EntryProgress
         entry={entry}
         invocation={invocation}
@@ -938,11 +938,11 @@ const TimelineContainer = memo(function TimelineContainer({
 function JournalPurgedMessage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-      <Icon name={IconName.Trash} className="h-5 w-5 text-zinc-400" />
-      <div className="text-sm font-medium text-zinc-700">
+      <Icon name={IconName.Trash} className="h-5 w-5 text-subtle" />
+      <div className="text-sm font-medium text-secondary">
         Journal was purged
       </div>
-      <div className="max-w-md text-xs text-zinc-500">
+      <div className="max-w-md text-xs text-muted">
         Entries for this invocation are no longer available — the journal
         retention has elapsed or it was cleared.
       </div>
@@ -951,7 +951,7 @@ function JournalPurgedMessage() {
 }
 
 const hiddenEntriesChipStyles = tv({
-  base: 'inline-flex shrink-0 cursor-help items-center gap-1 rounded-md bg-zinc-500/10 px-1.5 py-0.5 font-sans text-xs font-normal text-gray-500 tabular-nums',
+  base: 'inline-flex shrink-0 cursor-help items-center gap-1 rounded-md bg-tint px-1.5 py-0.5 font-sans text-xs font-normal text-muted tabular-nums',
 });
 
 // Compact, passive indicator that some entries are hidden in the current view.
@@ -986,12 +986,12 @@ function HiddenEntriesChip({
             <Link
               variant="icon"
               href={href}
-              className="text-blue-300 underline hover:text-blue-200"
+              className="text-accent-subtle underline hover:text-on-accent"
             >
               Show in detailed view
             </Link>
           ) : (
-            <span className="text-gray-400">
+            <span className="text-subtle">
               Switch to the Detailed view to see them.
             </span>
           )}
@@ -999,7 +999,7 @@ function HiddenEntriesChip({
       }
     >
       <span className={hiddenEntriesChipStyles()}>
-        <Icon name={IconName.EyeOff} className="h-3 w-3 text-gray-400" />
+        <Icon name={IconName.EyeOff} className="h-3 w-3 text-subtle" />
         {count}
       </span>
     </HoverTooltip>
