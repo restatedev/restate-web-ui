@@ -14,6 +14,7 @@ import {
   type CreateScheduleRequest,
   type CronProject,
   type CronSchedule,
+  type UpdateScheduleRequest,
   useMuxToken,
 } from './cronApi';
 
@@ -48,7 +49,7 @@ export function useCronProject(scope: string) {
 
 function useCronMutation<TVariables, TData>(
   scope: string,
-  handler: 'create' | 'delete',
+  handler: 'create' | 'update' | 'delete',
   options?: { onSuccess?: (data: TData) => void },
 ) {
   const { ingressMuxUrl = '' } = useRestateContext();
@@ -56,12 +57,11 @@ function useCronMutation<TVariables, TData>(
   return useMutation({
     mutationFn: (body: TVariables) =>
       callCron<TData>({ muxUrl: ingressMuxUrl, scope, handler, body }),
-    onSuccess: (data) => {
-      void queryClient.invalidateQueries({
+    onSuccess: (data) => options?.onSuccess?.(data),
+    onSettled: () =>
+      queryClient.invalidateQueries({
         queryKey: cronQueryKey(ingressMuxUrl, scope),
-      });
-      options?.onSuccess?.(data);
-    },
+      }),
   });
 }
 
@@ -72,6 +72,17 @@ export function useCreateSchedule(
   return useCronMutation<CreateScheduleRequest, CronSchedule>(
     scope,
     'create',
+    options,
+  );
+}
+
+export function useUpdateSchedule(
+  scope: string,
+  options?: { onSuccess?: (schedule: CronSchedule) => void },
+) {
+  return useCronMutation<UpdateScheduleRequest, CronSchedule>(
+    scope,
+    'update',
     options,
   );
 }

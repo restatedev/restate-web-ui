@@ -87,7 +87,7 @@ const columns: PanelTableColumn<Column>[] = [
   { id: 'next_run', name: 'Next run', defaultWidth: 120 },
   { id: 'created_at', name: 'Created', defaultWidth: 120 },
   { id: 'last_runs', name: 'Last runs', minWidth: 260 },
-  { id: 'actions', name: 'Actions', width: 40, hideLabel: true },
+  { id: 'actions', name: 'Actions', width: 72, hideLabel: true },
 ];
 
 const COMPLETED_STATUSES = new Set<string>(TERMINAL_INVOCATION_STATUSES);
@@ -141,6 +141,7 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
   const [isTokenDialogDismissed, setTokenDialogDismissed] = useState(false);
   const [isNewScheduleOpen, setNewScheduleOpen] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState<CronSchedule>();
+  const [scheduleToEdit, setScheduleToEdit] = useState<CronSchedule>();
   const project = useCronProject(scope);
   const runs = useCronRunInvocations(scope, project.data);
   const lock = useCronLock(scope);
@@ -351,10 +352,21 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
                     case 'created_at':
                       return (
                         <Cell>
-                          <EpochTime
-                            value={schedule.createdAt}
-                            title="Created"
-                          />
+                          <div className="flex flex-col">
+                            <EpochTime
+                              value={schedule.createdAt}
+                              title="Created"
+                            />
+                            {schedule.updatedAt !== undefined && (
+                              <span className="text-2xs text-subtle">
+                                updated{' '}
+                                <EpochTime
+                                  value={schedule.updatedAt}
+                                  title="Updated"
+                                />
+                              </span>
+                            )}
+                          </div>
                         </Cell>
                       );
                     case 'last_runs':
@@ -371,19 +383,34 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
                     default:
                       return (
                         <Cell className="[&&&]:overflow-visible">
-                          <HoverTooltip content="Delete schedule">
-                            <Button
-                              variant="icon"
-                              aria-label={`Delete schedule ${schedule.id}`}
-                              className="flex h-6.5 w-6.5 items-center justify-center rounded-lg p-0 text-subtle hover:text-danger"
-                              onClick={() => setScheduleToDelete(schedule)}
-                            >
-                              <Icon
-                                name={IconName.Trash}
-                                className="h-3.5 w-3.5"
-                              />
-                            </Button>
-                          </HoverTooltip>
+                          <div className="flex items-center gap-0.5">
+                            <HoverTooltip content="Edit schedule">
+                              <Button
+                                variant="icon"
+                                aria-label={`Edit schedule ${schedule.id}`}
+                                className="flex h-6.5 w-6.5 items-center justify-center rounded-lg p-0 text-subtle hover:text-secondary"
+                                onClick={() => setScheduleToEdit(schedule)}
+                              >
+                                <Icon
+                                  name={IconName.Pencil}
+                                  className="h-3.5 w-3.5"
+                                />
+                              </Button>
+                            </HoverTooltip>
+                            <HoverTooltip content="Delete schedule">
+                              <Button
+                                variant="icon"
+                                aria-label={`Delete schedule ${schedule.id}`}
+                                className="flex h-6.5 w-6.5 items-center justify-center rounded-lg p-0 text-subtle hover:text-danger"
+                                onClick={() => setScheduleToDelete(schedule)}
+                              >
+                                <Icon
+                                  name={IconName.Trash}
+                                  className="h-3.5 w-3.5"
+                                />
+                              </Button>
+                            </HoverTooltip>
+                          </div>
                         </Cell>
                       );
                   }
@@ -407,6 +434,16 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
         scope={scope}
         open={isNewScheduleOpen && !isTokenMissing}
         onOpenChange={setNewScheduleOpen}
+      />
+      <NewScheduleDialog
+        scope={scope}
+        schedule={scheduleToEdit}
+        open={Boolean(scheduleToEdit) && !isTokenMissing}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setScheduleToEdit(undefined);
+          }
+        }}
       />
       <DeleteScheduleDialog
         scope={scope}

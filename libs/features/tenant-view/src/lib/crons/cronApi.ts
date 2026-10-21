@@ -26,6 +26,7 @@ export interface CronSchedule {
     timezone: string;
   };
   createdAt: number;
+  updatedAt?: number;
   nextRunAt: number;
   lastRuns: CronRun[];
 }
@@ -40,6 +41,10 @@ export interface CreateScheduleRequest {
   timezone: string;
   target: CronTarget;
   payload?: unknown;
+}
+
+export interface UpdateScheduleRequest extends CreateScheduleRequest {
+  id: string;
 }
 
 export interface MuxTokenState {
@@ -135,7 +140,7 @@ export async function callCron<T>({
 }: {
   muxUrl: string;
   scope: string;
-  handler: 'list' | 'create' | 'delete';
+  handler: 'list' | 'create' | 'update' | 'delete';
   body?: unknown;
   signal?: AbortSignal;
 }): Promise<T> {

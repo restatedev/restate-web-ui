@@ -17,8 +17,8 @@ import {
 import { type FormEvent, useId, useMemo, useState } from 'react';
 import { useFilter } from 'react-aria';
 import { Heading } from 'react-aria-components';
-import type { CreateScheduleRequest } from './cronApi';
-import { useCreateSchedule } from './useCrons';
+import type { CreateScheduleRequest, CronSchedule } from './cronApi';
+import { useCreateSchedule, useUpdateSchedule } from './useCrons';
 
 const TIMEZONES = [
   'UTC',
@@ -38,17 +38,23 @@ function parsePayload(value: string): { payload?: unknown; error?: string } {
 
 export function NewScheduleDialog({
   scope,
+  schedule,
   open,
   onOpenChange,
 }: {
   scope: string;
+  schedule?: CronSchedule;
   open: boolean;
   onOpenChange: (isOpen: boolean) => void;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {open && (
-        <NewScheduleDialogContent scope={scope} onOpenChange={onOpenChange} />
+        <NewScheduleDialogContent
+          scope={scope}
+          schedule={schedule}
+          onOpenChange={onOpenChange}
+        />
       )}
     </Dialog>
   );
@@ -56,20 +62,26 @@ export function NewScheduleDialog({
 
 function NewScheduleDialogContent({
   scope,
+  schedule,
   onOpenChange,
 }: {
   scope: string;
+  schedule?: CronSchedule;
   onOpenChange: (isOpen: boolean) => void;
 }) {
   const formId = useId();
   const { contains } = useFilter({ sensitivity: 'base' });
   const registry = useSchemaRegistry();
   const { data: services } = useListServices({ enabled: Boolean(registry) });
-  const [service, setService] = useState('');
+  const [service, setService] = useState(schedule?.target.service ?? '');
   const [payloadError, setPayloadError] = useState<string>();
   const create = useCreateSchedule(scope, {
     onSuccess: () => onOpenChange(false),
   });
+  const update = useUpdateSchedule(scope, {
+    onSuccess: () => onOpenChange(false),
+  });
+  const mutation = schedule ? update : create;
   const serviceOptions = useMemo(
     () =>
       Array.from(services.values())
@@ -102,7 +114,11 @@ function NewScheduleDialogContent({
       target: { service: field('service'), handler: field('handler') },
       ...(payload !== undefined && { payload }),
     };
-    create.mutate(request);
+    if (schedule) {
+      update.mutate({ ...request, id: schedule.id });
+    } else {
+      create.mutate(request);
+    }
   };
 
   return (
@@ -113,7 +129,7 @@ function NewScheduleDialogContent({
           level={3}
           className="text-lg leading-6 font-medium text-primary"
         >
-          New schedule
+          {schedule ? 'Edit schedule' : 'New schedule'}
         </Heading>
         <p className="text-sm text-muted">
           The tenant’s cron calls the target handler in{' '}
@@ -130,6 +146,7 @@ function NewScheduleDialogContent({
               name="cron"
               label="Cron expression"
               placeholder="*/5 * * * *"
+              defaultValue={schedule?.cron.expression}
               required
               autoFocus
             />
@@ -137,7 +154,7 @@ function NewScheduleDialogContent({
               name="timezone"
               label="Timezone"
               options={TIMEZONES}
-              defaultValue="UTC"
+              defaultValue={schedule?.cron.timezone ?? 'UTC'}
               defaultFilter={contains}
               allowsCustomValue
             />
@@ -147,6 +164,7 @@ function NewScheduleDialogContent({
               name="service"
               label="Service"
               options={serviceOptions}
+              defaultValue={schedule?.target.service}
               defaultFilter={contains}
               onChange={setService}
               allowsCustomValue
@@ -158,6 +176,11 @@ function NewScheduleDialogContent({
               name="handler"
               label="Handler"
               options={handlerOptions}
+              defaultValue={
+                service === schedule?.target.service
+                  ? schedule.target.handler
+                  : undefined
+              }
               defaultFilter={contains}
               allowsCustomValue
               allowsEmptyCollection
@@ -171,24 +194,32 @@ function NewScheduleDialogContent({
                 Optional JSON sent as the handler’s input on every run.
               </span>
             </FormFieldLabel>
-            <FormFieldCode name="payload" value="" className="h-28" />
+            <FormFieldCode
+              name="payload"
+              value={
+                schedule?.payload === undefined
+                  ? ''
+                  : JSON.stringify(schedule.payload, null, 2)
+              }
+              className="h-28"
+            />
           </div>
         </form>
         <DialogFooter>
           <div className="flex flex-col gap-2">
-            {(payloadError || create.error) && (
+            {(payloadError || mutation.error) && (
               <ErrorBanner
-                error={payloadError ? new Error(payloadError) : create.error}
+                error={payloadError ? new Error(payloadError) : mutation.error}
               />
             )}
             <div className="grid grid-cols-2 gap-2">
               <DialogClose>
-                <Button variant="secondary" disabled={create.isPending}>
+                <Button variant="secondary" disabled={mutation.isPending}>
                   Close
                 </Button>
               </DialogClose>
-              <SubmitButton form={formId} isPending={create.isPending}>
-                Create
+              <SubmitButton form={formId} isPending={mutation.isPending}>
+                {schedule ? 'Save' : 'Create'}
               </SubmitButton>
             </div>
           </div>

@@ -43,12 +43,14 @@ const project: CronProject = {
     {
       id: 'sched-1',
       target: { service: 'checkout', handler: 'run' },
+      payload: { cart: 'c1' },
       cron: {
         expression: '*/5 * * * *',
         normalized: '0 */5 * * * *',
         timezone: 'UTC',
       },
       createdAt: Date.now() - 3_600_000,
+      updatedAt: Date.now() - 120_000,
       nextRunAt: Date.now() + 60_000,
       lastRuns: [
         { runId: 'run-1', invocationId: 'inv_run1', at: Date.now() - 60_000 },
@@ -59,14 +61,14 @@ const project: CronProject = {
 
 type Requests = { url: string; init?: RequestInit }[];
 
-function mockMux(
-  handlers: Partial<Record<'list' | 'create' | 'delete', () => Response>>,
-) {
+type Handler = 'list' | 'create' | 'update' | 'delete';
+
+function mockMux(handlers: Partial<Record<Handler, () => Response>>) {
   const requests: Requests = [];
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input);
     requests.push({ url, init });
-    const handler = url.split('/').at(-1) as 'list' | 'create' | 'delete';
+    const handler = url.split('/').at(-1) as Handler;
     return handlers[handler]?.() ?? Response.json(project);
   });
   return requests;
@@ -231,6 +233,81 @@ describe('TenantCrons', () => {
       timezone: 'UTC',
       target: { service: 'checkout', handler: 'run' },
     });
+  }, 20_000);
+
+  it('edits a schedule with its whole definition, pre-filled', async () => {
+    const user = userEvent.setup();
+    setMuxToken('operator-secret');
+    const requests = mockMux({
+      update: () => Response.json({ ...project.schedules[0] }),
+    });
+    renderCrons();
+
+    expect(await screen.findByText(/^updated/)).toBeTruthy();
+    await user.click(
+      await screen.findByRole('button', { name: 'Edit schedule sched-1' }),
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'Edit schedule' }),
+    ).toBeTruthy();
+    const cron = screen.getByLabelText('Cron expression') as HTMLInputElement;
+    expect(cron.value).toBe('*/5 * * * *');
+    expect(
+      (screen.getByRole('combobox', { name: 'Service' }) as HTMLInputElement)
+        .value,
+    ).toBe('checkout');
+    await user.clear(cron);
+    await user.type(cron, '0 * * * *');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('heading', { name: 'Edit schedule' }),
+      ).toBeNull(),
+    );
+    const update = requests.find(({ url }) => url.endsWith('/update'));
+    expect(update?.url).toBe(
+      'http://mux.test/restate/scope/acme/call/cron/default/update',
+    );
+    expect(JSON.parse(String(update?.init?.body))).toEqual({
+      id: 'sched-1',
+      cron: '0 * * * *',
+      timezone: 'UTC',
+      target: { service: 'checkout', handler: 'run' },
+      payload: { cart: 'c1' },
+    });
+    await waitFor(() =>
+      expect(requests.filter(({ url }) => url.endsWith('/list')).length).toBe(
+        2,
+      ),
+    );
+  }, 20_000);
+
+  it('shows a deleted-meanwhile schedule and refreshes the list', async () => {
+    const user = userEvent.setup();
+    setMuxToken('operator-secret');
+    const requests = mockMux({
+      update: () =>
+        Response.json(
+          { code: 404, message: 'schedule "sched-1" not found' },
+          { status: 404 },
+        ),
+    });
+    renderCrons();
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Edit schedule sched-1' }),
+    );
+    await user.click(await screen.findByRole('button', { name: 'Save' }));
+
+    expect(
+      await screen.findByText('schedule "sched-1" not found'),
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(requests.filter(({ url }) => url.endsWith('/list')).length).toBe(
+        2,
+      ),
+    );
   }, 20_000);
 
   it('deletes a schedule after confirmation', async () => {
