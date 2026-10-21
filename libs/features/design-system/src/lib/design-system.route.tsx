@@ -283,7 +283,7 @@ const recipes = tv({
   slots: {
     panel: 'rounded-2xl border bg-surface p-4 text-sm text-tertiary shadow-xs',
     field:
-      'w-full rounded-lg border border-default bg-muted px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] placeholder:text-subtle focus:outline-2 focus:outline-focus',
+      'w-full rounded-lg border border-inset bg-inset px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] placeholder:text-placeholder focus:outline-2 focus:outline-focus',
     banner:
       'flex gap-2 rounded-xl border border-warning bg-warning-subtle p-3 text-0.5xs text-warning',
     bannerIcon: 'h-5 w-5 shrink-0 fill-warning text-on-warning',
@@ -548,8 +548,11 @@ function Surfaces() {
                     </p>
                   </div>
                   <div className="flex flex-col gap-2">
+                    <span className="rounded-lg border border-inset bg-inset px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
+                      bg-inset · inputs and wells
+                    </span>
                     <span className="rounded-lg border border-default bg-muted px-2 py-1.5 text-sm text-primary">
-                      bg-muted · inputs and chips
+                      bg-muted · chips and hover fills
                     </span>
                     <span className="rounded-lg bg-emphasis px-2 py-1.5 text-sm text-secondary">
                       bg-emphasis · pressed, skeletons

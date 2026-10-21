@@ -188,7 +188,7 @@ export function ScrollableTimeline({
           />
         </div>
         {shouldPinNowMarker && (
-          <div className="pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-surface/80 font-sans text-2xs text-muted">
+          <div className="pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] right-0 bottom-0 z-20 w-0 border-l-2 border-neutral font-sans text-2xs text-muted">
             <div className="pointer-events-none absolute left-px z-4 mt-0.5 -translate-x-full rounded-sm border border-surface bg-neutral-strong px-1 text-2xs text-inverse">
               Now
             </div>

@@ -109,7 +109,7 @@ function BatchOperationContent({
 }
 
 const filterStyles = tv({
-  base: 'mt-4 flex w-full flex-wrap gap-1 overflow-auto rounded-lg border bg-emphasis/50 p-0.5 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]',
+  base: 'mt-4 flex w-full flex-wrap gap-1 overflow-auto rounded-lg border bg-inset p-0.5 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]',
 });
 function Filters({
   state,

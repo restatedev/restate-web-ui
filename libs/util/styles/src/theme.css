@@ -557,7 +557,7 @@
     );
     --background-color-info-strong: color-mix(
       in oklab,
-      var(--color-blue-500) 80%,
+      var(--color-blue-500) 62%,
       var(--background-color-surface)
     );
     --background-color-info-vivid: var(--color-blue-500);
@@ -580,7 +580,7 @@
     );
     --background-color-success-strong: color-mix(
       in oklab,
-      var(--color-green-500) 80%,
+      var(--color-green-500) 62%,
       var(--background-color-surface)
     );
     --background-color-success-vivid: var(--color-green-500);
@@ -603,7 +603,7 @@
     );
     --background-color-warning-strong: color-mix(
       in oklab,
-      oklch(0.79 0.17 64) 85%,
+      oklch(0.79 0.17 64) 66%,
       var(--background-color-surface)
     );
     --background-color-warning-vivid: oklch(0.79 0.17 64);
@@ -626,7 +626,7 @@
     );
     --background-color-danger-strong: color-mix(
       in oklab,
-      var(--color-red-500) 80%,
+      var(--color-red-500) 62%,
       var(--background-color-surface)
     );
     --background-color-danger-vivid: var(--color-red-500);
@@ -651,7 +651,7 @@
     );
     --background-color-pending-strong: color-mix(
       in oklab,
-      var(--color-amber-500) 80%,
+      var(--color-amber-500) 62%,
       var(--background-color-surface)
     );
     --background-color-pending-vivid: var(--color-amber-500);
