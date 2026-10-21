@@ -171,6 +171,20 @@ describe('TenantCrons', () => {
     ]);
   }, 20_000);
 
+  it('marks runs whose status can’t be read as unknown', async () => {
+    setMuxToken('operator-secret');
+    hooks.list.mockReturnValue({
+      data: undefined,
+      isPending: false,
+      error: new Error('non valid invocation id'),
+    });
+    mockMux({});
+    renderCrons();
+
+    expect(await screen.findByText('Unknown')).toBeTruthy();
+    expect(screen.queryByText('non valid invocation id')).toBeNull();
+  }, 20_000);
+
   it('asks again when the mux rejects the token', async () => {
     setMuxToken('stale');
     mockMux({ list: () => new Response(null, { status: 401 }) });

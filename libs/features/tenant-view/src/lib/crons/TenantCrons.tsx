@@ -241,11 +241,8 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
             </Button>
           </ContentPanelToolbar>
           <ContentPanelBody className="pb-8">
-            {(listError || runs.error) && (
-              <ErrorBanner
-                error={listError ?? runs.error}
-                className="mx-4 mt-4 rounded-xl"
-              />
+            {listError && (
+              <ErrorBanner error={listError} className="mx-4 mt-4 rounded-xl" />
             )}
             <ContentPanelSection flush>
               <PanelTable
@@ -254,6 +251,12 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
                 items={schedules}
                 isLoading={!isTokenMissing && project.isPending}
                 numOfRows={4}
+                bodyDependencies={[
+                  runs.invocations,
+                  runs.isPending,
+                  runs.error,
+                ]}
+                rowDependencies={[runs.invocations, runs.isPending, runs.error]}
                 emptyPlaceholder={
                   isTokenMissing ? (
                     <EmptyState
@@ -355,6 +358,7 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
                             runs={schedule.lastRuns}
                             invocations={runs.invocations}
                             isPending={runs.isPending}
+                            isError={Boolean(runs.error)}
                           />
                         </Cell>
                       );
@@ -425,10 +429,12 @@ function LastRuns({
   runs,
   invocations,
   isPending,
+  isError,
 }: {
   runs: CronRun[];
   invocations: Map<string, InvocationV2>;
   isPending: boolean;
+  isError: boolean;
 }) {
   const s = styles();
   if (runs.length === 0) {
@@ -442,6 +448,7 @@ function LastRuns({
           run={run}
           invocation={invocations.get(run.invocationId)}
           isPending={isPending}
+          isError={isError}
         />
       ))}
     </div>
@@ -452,10 +459,12 @@ function RunLink({
   run,
   invocation,
   isPending,
+  isError,
 }: {
   run: CronRun;
   invocation?: InvocationV2;
   isPending: boolean;
+  isError: boolean;
 }) {
   const { baseUrl } = useRestateContext();
   const s = styles();
@@ -484,7 +493,7 @@ function RunLink({
         ) : isPending ? (
           <span className="block h-5 w-16 animate-pulse rounded-full bg-emphasis/70" />
         ) : (
-          <Badge size="sm">Not retained</Badge>
+          <Badge size="sm">{isError ? 'Unknown' : 'Not retained'}</Badge>
         )}
       </Link>
     </HoverTooltip>
