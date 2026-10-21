@@ -53,6 +53,9 @@
       "path": "../../ui/breadcrumbs/tsconfig.lib.json"
     },
     {
+      "path": "../../data-access/admin-api/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/panel/tsconfig.lib.json"
     },
     {

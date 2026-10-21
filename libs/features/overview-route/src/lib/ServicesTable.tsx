@@ -8,6 +8,7 @@ import {
   LatestRevisionDeployment,
 } from '@restate/features-deployment';
 import { useRestateContext } from '@restate/features-restate-context';
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import {
   Handler as ServiceHandler,
   PlaygroundIconLink,
@@ -505,6 +506,14 @@ export function ServicesTable() {
   } = useOverviewContext();
   const { OnboardingGuide } = useRestateContext();
   const isOnboarding = useOnboarding();
+  const isReadOnly = useIsReadOnly();
+  const columns = useMemo(
+    () =>
+      isReadOnly
+        ? COLUMNS.filter(({ id }) => id !== 'invocations' && id !== 'health')
+        : COLUMNS,
+    [isReadOnly],
+  );
   const navigate = useNavigate();
   const notCompletedInvocationCounts = useMemo(
     () =>
@@ -591,7 +600,7 @@ export function ServicesTable() {
   return (
     <PanelTable
       aria-label="Services and handlers"
-      columns={COLUMNS}
+      columns={columns}
       items={rows}
       isLoading={isDeploymentsFetching || isServicesPending}
       numOfRows={Math.max(rows.length, 6)}

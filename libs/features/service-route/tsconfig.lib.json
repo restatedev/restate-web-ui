@@ -104,6 +104,9 @@
       "path": "../batch-operations/tsconfig.lib.json"
     },
     {
+      "path": "../../data-access/admin-api/tsconfig.lib.json"
+    },
+    {
       "path": "../status-chart/tsconfig.lib.json"
     },
     {

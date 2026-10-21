@@ -1,3 +1,4 @@
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import {
   useListDeployments,
   useServiceDetails,
@@ -34,6 +35,7 @@ function Component() {
     staleTime: 0,
   });
   const { dataUpdatedAt: deploymentsUpdatedAt } = useListDeployments();
+  const isReadOnly = useIsReadOnly();
   const handlers = data?.handlers ?? [];
   const handler = useMemo(
     () => handlers.find(({ name }) => name === requestedHandler),
@@ -84,9 +86,14 @@ function Component() {
               className="h-6 shrink-0 text-xs"
             />
           )}
-          <div className="ml-auto flex shrink-0 items-center">
-            <ServiceEditActions service={service} isReadonly={isHandlerMode} />
-          </div>
+          {!isReadOnly && (
+            <div className="ml-auto flex shrink-0 items-center">
+              <ServiceEditActions
+                service={service}
+                isReadonly={isHandlerMode}
+              />
+            </div>
+          )}
         </Header>
         {error && !data ? (
           <div className="px-5 py-20">

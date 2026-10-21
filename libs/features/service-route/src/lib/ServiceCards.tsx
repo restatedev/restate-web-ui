@@ -1,3 +1,4 @@
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import { useListDeployments } from '@restate/data-access-admin-api-hooks';
 import {
   getProtocolType,
@@ -107,6 +108,10 @@ export function CardEditAction({
   label?: string;
 }) {
   const [, setSearchParams] = useSearchParams();
+  const isReadOnly = useIsReadOnly();
+  if (isReadOnly) {
+    return null;
+  }
   return (
     <Button
       variant="icon"
@@ -450,11 +455,12 @@ function ConfigPopover({
 }) {
   const { close } = usePopover();
   const [, setSearchParams] = useSearchParams();
+  const isCatalogReadOnly = useIsReadOnly();
   return (
     <div className={configPopoverStyles({ size })}>
       <div className="flex items-center gap-2 px-4 pt-3 pb-2">
         <span className="text-sm font-semibold text-muted">{title}</span>
-        {editParam && !isReadonly && (
+        {editParam && !isReadonly && !isCatalogReadOnly && (
           <Button
             variant="icon"
             className="-my-1 ml-auto flex h-6 shrink-0 items-center gap-1 rounded-md px-1.5 text-xs font-normal text-muted hover:text-secondary"

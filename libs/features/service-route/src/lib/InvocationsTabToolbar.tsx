@@ -1,3 +1,4 @@
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import { InvocationBatchActions } from '@restate/features-batch-operations';
 import { RefreshButton, Sort } from '@restate/features-invocations-route';
 import { ContentPanelToolbar } from '@restate/ui-content-panel';
@@ -10,9 +11,12 @@ export function InvocationsTabToolbar({
   invocationsTab: ReturnType<typeof useInvocationsTab>;
 }) {
   const { list, summary } = invocationsTab;
+  const isReadOnly = useIsReadOnly();
   return (
     <ContentPanelToolbar className="justify-end gap-1 px-1 pb-1">
-      <ViewInInvocationsLink href={invocationsTab.invocationsPageHref} />
+      {!isReadOnly && (
+        <ViewInInvocationsLink href={invocationsTab.invocationsPageHref} />
+      )}
       <Sort
         variant="toolbar"
         sortParams={invocationsTab.sortParams}

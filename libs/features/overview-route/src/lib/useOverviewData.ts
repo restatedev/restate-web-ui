@@ -13,7 +13,10 @@ import {
   useProgressiveInvocationSummaryV2,
   useServiceCatalog,
 } from '@restate/data-access-admin-api-hooks';
-import { getOverviewRefreshMeta } from '@restate/data-access-admin-api';
+import {
+  getOverviewRefreshMeta,
+  useIsReadOnly,
+} from '@restate/data-access-admin-api';
 import {
   getServiceIssues,
   MIN_TRAFFIC_THRESHOLD,
@@ -50,6 +53,7 @@ export function useOverviewData({
         : ({ type: 'exact' } as const),
   };
   const isSummaryFromStats = useCanSummarizeInvocationsFromStats({});
+  const isReadOnly = useIsReadOnly();
   const overviewRefetchIntervalRef = useRef<number>(undefined);
   const overviewRefetchInterval = useCallback(
     () =>
@@ -97,6 +101,7 @@ export function useOverviewData({
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     meta: getOverviewRefreshMeta(),
+    enabled: !isReadOnly,
   });
   const inboxCount = getInvocationSummaryStageCount(summary.data, 'inbox');
 

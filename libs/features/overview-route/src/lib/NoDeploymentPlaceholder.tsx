@@ -1,4 +1,5 @@
 import { useRestateContext } from '@restate/features-restate-context';
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import {
   ServiceDeploymentExplainer,
   ServiceExplainer,
@@ -15,6 +16,7 @@ export function NoDeploymentPlaceholder({
   isRefreshing?: boolean;
 }) {
   const { OnboardingGuide } = useRestateContext();
+  const isReadOnly = useIsReadOnly();
 
   return (
     <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
@@ -35,16 +37,20 @@ export function NoDeploymentPlaceholder({
           </h3>
         )}
       </div>
-      <p className="max-w-md px-4 text-sm text-muted">
-        Point Restate to your deployed services so Restate can register your{' '}
-        <ServiceExplainer>services</ServiceExplainer> and handlers
-      </p>
-      <div className="mt-4 flex gap-2">
-        <TriggerRegisterDeploymentDialog />
-        {OnboardingGuide && (
-          <OnboardingGuide stage="register-deployment-trigger" />
-        )}
-      </div>
+      {!isReadOnly && (
+        <>
+          <p className="max-w-md px-4 text-sm text-muted">
+            Point Restate to your deployed services so Restate can register your{' '}
+            <ServiceExplainer>services</ServiceExplainer> and handlers
+          </p>
+          <div className="mt-4 flex gap-2">
+            <TriggerRegisterDeploymentDialog />
+            {OnboardingGuide && (
+              <OnboardingGuide stage="register-deployment-trigger" />
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

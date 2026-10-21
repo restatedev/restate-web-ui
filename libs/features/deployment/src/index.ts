@@ -6,3 +6,4 @@ export * from './lib/SDK';
 export * from './lib/constants';
 export * from './lib/DeploymentStatusBadge';
 export * from './lib/deploymentLabel';
+export * from './lib/DeploymentScopeBadge';

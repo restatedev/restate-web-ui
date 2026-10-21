@@ -4,6 +4,7 @@ import {
 } from '@restate/data-access-admin-api-spec';
 import {
   Deployment,
+  DeploymentScopeBadge,
   DeploymentStatusBadge,
 } from '@restate/features-deployment';
 import {
@@ -15,6 +16,7 @@ import { useRestateContext } from '@restate/features-restate-context';
 import {
   getOverviewRefreshMeta,
   useFeatures,
+  useIsReadOnly,
 } from '@restate/data-access-admin-api';
 import { useSummaryInvocationsV2 } from '@restate/data-access-admin-api-hooks';
 import { usesStatsTables } from '@restate/data-access-query';
@@ -236,7 +238,8 @@ function RegisteredAt({ value }: { value: string }) {
 
 function useDeploymentStageCounts() {
   const { overviewRefetchInterval } = useOverviewContext();
-  const isEnabled = usesStatsTables({ features: useFeatures() });
+  const isReadOnly = useIsReadOnly();
+  const isEnabled = usesStatsTables({ features: useFeatures() }) && !isReadOnly;
   const summary = useSummaryInvocationsV2(
     {
       view: 'deployments',
@@ -288,6 +291,7 @@ export function DeploymentsTable() {
     linkParams,
   } = useOverviewContext();
   const deploymentInvocations = useDeploymentStageCounts();
+  const isReadOnly = useIsReadOnly();
   const invocationCounts = useMemo(
     () =>
       new Map(
@@ -300,10 +304,12 @@ export function DeploymentsTable() {
   );
   const columns = useMemo(
     () =>
-      deploymentInvocations.isEnabled
-        ? COLUMNS
-        : COLUMNS.filter(({ id }) => id !== 'invocations'),
-    [deploymentInvocations.isEnabled],
+      COLUMNS.filter(
+        ({ id }) =>
+          (deploymentInvocations.isEnabled || id !== 'invocations') &&
+          (!isReadOnly || (id !== 'status' && id !== 'actions')),
+      ),
+    [deploymentInvocations.isEnabled, isReadOnly],
   );
   const deployments = useMemo(
     () =>
@@ -359,7 +365,7 @@ export function DeploymentsTable() {
         aria-label="Deployments"
         columns={columns}
         items={deployments}
-        selectionMode="multiple"
+        selectionMode={isReadOnly ? 'none' : 'multiple'}
         selectedKeys={selectedDeploymentIds}
         onSelectionChange={(keys) =>
           setSelectedDeploymentIds(keys as Set<string>)
@@ -437,6 +443,7 @@ export function DeploymentsTable() {
                       ID {deployment.id}
                     </code>
                   </TruncateWithTooltip>
+                  <DeploymentScopeBadge metadata={deployment.metadata} />
                 </div>
               </Cell>
             );
@@ -503,10 +510,12 @@ export function DeploymentsTable() {
           );
         }}
       />
-      <DeleteSelectedDeploymentsDialog
-        deploymentIds={Array.from(selectedDeploymentIds)}
-        onDeleted={() => setSelectedDeploymentIds(new Set())}
-      />
+      {!isReadOnly && (
+        <DeleteSelectedDeploymentsDialog
+          deploymentIds={Array.from(selectedDeploymentIds)}
+          onDeleted={() => setSelectedDeploymentIds(new Set())}
+        />
+      )}
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import { useListDeployments } from '@restate/data-access-admin-api-hooks';
 import type { Handler, ServiceType } from '@restate/data-access-admin-api-spec';
 import {
@@ -88,6 +89,7 @@ export function ServiceDetails({
   error: Error | null;
 }) {
   const { data: deploymentsData } = useListDeployments();
+  const isReadOnly = useIsReadOnly();
   const deploymentsCount = useMemo(() => {
     const serviceDeployments = deploymentsData?.services.get(service);
     if (!deploymentsData) {
@@ -102,11 +104,15 @@ export function ServiceDetails({
       0,
     );
   }, [deploymentsData, service]);
-  const keyedTab =
-    keyedServiceTab(serviceType) ??
-    (!serviceType && (tab === 'runs' || tab === 'instances') ? tab : undefined);
+  const keyedTab = isReadOnly
+    ? undefined
+    : (keyedServiceTab(serviceType) ??
+      (!serviceType && (tab === 'runs' || tab === 'instances')
+        ? tab
+        : undefined));
   const activeTab =
-    (tab === 'runs' || tab === 'instances') && tab !== keyedTab
+    ((tab === 'runs' || tab === 'instances') && tab !== keyedTab) ||
+    (isReadOnly && tab === 'playground')
       ? 'invocations'
       : tab;
   const invocationsTab = useServiceInvocationsTab(
@@ -152,7 +158,7 @@ export function ServiceDetails({
             </TabLabel>
           ),
         },
-        { id: 'playground', label: 'Playground' },
+        ...(isReadOnly ? [] : [{ id: 'playground', label: 'Playground' }]),
       ],
       defaultId: 'invocations',
       queryParam: TAB_QUERY_PARAM,
@@ -162,6 +168,7 @@ export function ServiceDetails({
       deploymentsCount,
       handlers.length,
       isPending,
+      isReadOnly,
       keyedTab,
       tabBadge,
       isTabBadgeLoading,

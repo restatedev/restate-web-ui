@@ -1,3 +1,4 @@
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
 import { HoverTooltip } from '@restate/ui-tooltip';
@@ -31,7 +32,11 @@ export function PlaygroundIconLink({
   preserveQueryParams?: boolean;
   className?: string;
 }) {
+  const isReadOnly = useIsReadOnly();
   const s = styles({ isHighlighted });
+  if (isReadOnly) {
+    return null;
+  }
   return (
     <HoverTooltip content="Playground" disabled={isHighlighted}>
       <Link

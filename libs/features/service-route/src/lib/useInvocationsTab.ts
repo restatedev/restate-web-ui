@@ -1,3 +1,4 @@
+import { useSchemaRegistry } from '@restate/data-access-admin-api';
 import {
   useCanSortInvocationsByTransition,
   useListInvocationsV2,
@@ -66,6 +67,7 @@ export function useInvocationsTab(
   { enabled, isActive }: { enabled: boolean; isActive: boolean },
 ) {
   const { baseUrl } = useRestateContext();
+  const scope = useSchemaRegistry()?.scope;
   const [searchParams, setSearchParams] = useSearchParams();
   const canSortByTransition = useCanSortInvocationsByTransition();
   const sortParams = deriveSortFromUrl(
@@ -102,10 +104,20 @@ export function useInvocationsTab(
   );
   const filters = useMemo<FilterItem[]>(
     () => [
+      ...(scope !== undefined
+        ? [
+            {
+              field: 'scope',
+              type: 'STRING',
+              operation: 'EQUALS',
+              value: scope,
+            } satisfies FilterItem,
+          ]
+        : []),
       ...baseFilters,
       ...(statusFilter ? [statusFilter as FilterItem] : []),
     ],
-    [baseFilters, statusFilter],
+    [baseFilters, scope, statusFilter],
   );
   const [countMode, setCountMode] = useState<'estimate' | 'exact'>('estimate');
   const summary = useInvocationSummary({

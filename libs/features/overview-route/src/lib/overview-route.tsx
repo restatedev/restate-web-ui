@@ -6,6 +6,7 @@ import { tv } from '@restate/util-styles';
 import { Link } from '@restate/ui-link';
 import { RestateServer } from '@restate/ui-restate-server';
 import { useRestateContext } from '@restate/features-restate-context';
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import { PruneDrainedDeploymentsDialog } from '@restate/features-prune-deployments';
 import { useIsMutating } from '@tanstack/react-query';
 import { useFocusShortcut, FocusShortcutKey } from '@restate/ui-keyboard';
@@ -473,6 +474,7 @@ function OverviewContent() {
   const isOverviewRefreshing = isSummaryLoading || isDeploymentsFetching;
 
   const { GettingStarted, status } = useRestateContext();
+  const isReadOnly = useIsReadOnly();
 
   const adminQueryPredicate = {
     predicate(query: { meta?: Record<string, unknown> }) {
@@ -511,7 +513,7 @@ function OverviewContent() {
   const linesSvgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelEl, setPanelEl] = useState<HTMLDivElement | null>(null);
-  const heroReady = !isInitialLoading && !isBare && !isEmpty;
+  const heroReady = !isInitialLoading && !isBare && !isEmpty && !isReadOnly;
   const { paths, viewBox, fadeStart, fadeEnd } = usePerspectiveLines(
     linesSvgRef,
     serverRef,
@@ -627,7 +629,9 @@ function OverviewContent() {
             error={isError ? error : null}
             isRefreshing={isDeploymentsFetching}
           />
-          {GettingStarted && <GettingStarted className="hidden @tall:block" />}
+          {GettingStarted && !isReadOnly && (
+            <GettingStarted className="hidden @tall:block" />
+          )}
         </RestateServer>
       </div>
     );
@@ -638,139 +642,148 @@ function OverviewContent() {
       ref={containerRef}
       className="@container/hero relative mx-auto flex min-h-0 w-full flex-1 flex-col items-center gap-0"
     >
-      <PerspectiveLines
-        svgRef={linesSvgRef}
-        paths={paths}
-        viewBox={viewBox}
-        fadeStart={fadeStart}
-        fadeEnd={fadeEnd}
-      />
-      {!isSummaryEmpty && (
+      {!isReadOnly && (
+        <PerspectiveLines
+          svgRef={linesSvgRef}
+          paths={paths}
+          viewBox={viewBox}
+          fadeStart={fadeStart}
+          fadeEnd={fadeEnd}
+        />
+      )}
+      {!isSummaryEmpty && !isReadOnly && (
         <FlowConnectors
           segments={flowConnectors.segments}
           viewBox={flowConnectors.viewBox}
         />
       )}
-      <div className="relative z-30 grid w-full grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 px-4 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[minmax(8rem,1fr)_auto_auto_auto_minmax(8rem,1fr)] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(12rem,1fr)_auto_auto_auto_minmax(12rem,1fr)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_auto_auto_minmax(16rem,1fr)] @min-[108rem]/hero:px-8 @min-[108rem]/hero:pt-20">
-        <div className="hidden w-full min-w-0 self-center justify-self-end @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block">
-          {showHeroLegends && (
-            <StatusLegend
-              items={inFlightChart.legendSegments}
-              isLoading={isSummaryLoading}
-              orientation="vertical"
-              className="w-full min-w-0 justify-items-end"
-              breakdown={{
-                name: 'inbox',
-                items: inFlightChart.inboxBreakdownSegments,
-                isLoading: inFlightChart.isInboxBreakdownLoading,
-                isError: inFlightChart.isInboxBreakdownError,
-                isSampled: inFlightChart.isSampled,
-              }}
-            />
-          )}
-        </div>
-        <HeroGauge
-          ref={gaugeRef}
-          className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-2"
-          segments={inFlightChart.segments}
-          valueFormat={
-            inFlightChart.isSampled ? 'approximate-percentage' : 'count'
-          }
-          count={inFlightChart.total}
-          label={
-            inFlightChart.total > 0 ? (
-              <Ellipsis>In-flight / scheduled</Ellipsis>
-            ) : (
-              'In-flight'
-            )
-          }
-          href={inFlightChart.href}
-          isLoading={isSummaryLoading}
-          isError={isSummaryError}
-          eyebrow={<ChartContextValue>Overall</ChartContextValue>}
-        />
-        <EngineCore
-          className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mx-10 @min-[64rem]/hero:flex"
-          serverRef={serverRef}
-          status={ferrofluidStatus}
-          onPress={onRefresh}
-          belowServer={
-            showsBreakdownMode || summaryErrorIndicator ? (
-              <div className="flex items-center gap-2">
-                {showsBreakdownMode && (
-                  <BreakdownMode
-                    mode={breakdownMode}
-                    onChange={setBreakdownMode}
-                    format="sentence"
-                  />
-                )}
-                {summaryErrorIndicator}
-              </div>
-            ) : undefined
-          }
-        />
-        <HeroGauge
-          ref={logsRef}
-          className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0"
-          segments={completionChart.segments}
-          count={completionChart.total}
-          valueFormat={
-            completionChart.isSampled ? 'approximate-percentage' : 'count'
-          }
-          valueLabel={completionChart.successRateLabel}
-          label={
-            completionChart.isEmpty ? 'No completed' : completionChart.label
-          }
-          sublabel={completionChart.sublabel}
-          textOnly={completionChart.isEmpty}
-          href={completionChart.href}
-          isLoading={completionChart.isLoading}
-          isError={completionChart.isError}
-          eyebrow={
-            <CompletionTimeRangeToggle
-              value={completionChart.timeRange}
-              onChange={completionChart.setTimeRange}
-            />
-          }
-        />
-        <div className="hidden w-full min-w-0 flex-col gap-1 self-center justify-self-start @min-[64rem]/hero:col-start-5 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex">
-          <StatusLegend
-            items={completionChart.segments}
-            isLoading={completionChart.isLoading}
-            isError={completionChart.isRangeError}
-            orientation="vertical"
-            className="min-w-0 place-items-start"
-            isSampled={completionChart.isSampled}
-            totalCount={completionChart.total}
-          />
-        </div>
-        <div data-overview-refresh-bounce="" className={summaryStackStyles()}>
-          <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
-            {showsBreakdownMode && (
-              <span className="@min-[64rem]/hero:hidden">
-                <BreakdownMode
-                  mode={breakdownMode}
-                  onChange={setBreakdownMode}
-                  format="sentence"
+      {!isReadOnly && (
+        <>
+          <div className="relative z-30 grid w-full grid-cols-[minmax(4.75rem,1fr)_auto_minmax(4.75rem,1fr)] items-center justify-center justify-items-center gap-x-2 gap-y-0 px-4 pt-20 @min-[40rem]/hero:pt-8 @min-[64rem]/hero:grid-cols-[minmax(8rem,1fr)_auto_auto_auto_minmax(8rem,1fr)] @min-[64rem]/hero:gap-x-4 @min-[64rem]/hero:pt-16 @min-[76rem]/hero:grid-cols-[minmax(12rem,1fr)_auto_auto_auto_minmax(12rem,1fr)] @min-[108rem]/hero:grid-cols-[minmax(16rem,1fr)_auto_auto_auto_minmax(16rem,1fr)] @min-[108rem]/hero:px-8 @min-[108rem]/hero:pt-20">
+            <div className="hidden w-full min-w-0 self-center justify-self-end @min-[64rem]/hero:col-start-1 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:block">
+              {showHeroLegends && (
+                <StatusLegend
+                  items={inFlightChart.legendSegments}
+                  isLoading={isSummaryLoading}
+                  orientation="vertical"
+                  className="w-full min-w-0 justify-items-end"
+                  breakdown={{
+                    name: 'inbox',
+                    items: inFlightChart.inboxBreakdownSegments,
+                    isLoading: inFlightChart.isInboxBreakdownLoading,
+                    isError: inFlightChart.isInboxBreakdownError,
+                    isSampled: inFlightChart.isSampled,
+                  }}
                 />
-              </span>
-            )}
-            {summaryErrorIndicator && (
-              <span className="@min-[64rem]/hero:hidden">
-                {summaryErrorIndicator}
-              </span>
-            )}
+              )}
+            </div>
+            <HeroGauge
+              ref={gaugeRef}
+              className="col-start-2 row-start-1 @min-[64rem]/hero:col-start-2"
+              segments={inFlightChart.segments}
+              valueFormat={
+                inFlightChart.isSampled ? 'approximate-percentage' : 'count'
+              }
+              count={inFlightChart.total}
+              label={
+                inFlightChart.total > 0 ? (
+                  <Ellipsis>In-flight / scheduled</Ellipsis>
+                ) : (
+                  'In-flight'
+                )
+              }
+              href={inFlightChart.href}
+              isLoading={isSummaryLoading}
+              isError={isSummaryError}
+              eyebrow={<ChartContextValue>Overall</ChartContextValue>}
+            />
+            <EngineCore
+              className="pointer-events-auto z-20 hidden @min-[64rem]/hero:col-start-3 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mx-10 @min-[64rem]/hero:flex"
+              serverRef={serverRef}
+              status={ferrofluidStatus}
+              onPress={onRefresh}
+              belowServer={
+                showsBreakdownMode || summaryErrorIndicator ? (
+                  <div className="flex items-center gap-2">
+                    {showsBreakdownMode && (
+                      <BreakdownMode
+                        mode={breakdownMode}
+                        onChange={setBreakdownMode}
+                        format="sentence"
+                      />
+                    )}
+                    {summaryErrorIndicator}
+                  </div>
+                ) : undefined
+              }
+            />
+            <HeroGauge
+              ref={logsRef}
+              className="col-start-2 row-start-2 mt-3 @min-[64rem]/hero:col-start-4 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:mt-0"
+              segments={completionChart.segments}
+              count={completionChart.total}
+              valueFormat={
+                completionChart.isSampled ? 'approximate-percentage' : 'count'
+              }
+              valueLabel={completionChart.successRateLabel}
+              label={
+                completionChart.isEmpty ? 'No completed' : completionChart.label
+              }
+              sublabel={completionChart.sublabel}
+              textOnly={completionChart.isEmpty}
+              href={completionChart.href}
+              isLoading={completionChart.isLoading}
+              isError={completionChart.isError}
+              eyebrow={
+                <CompletionTimeRangeToggle
+                  value={completionChart.timeRange}
+                  onChange={completionChart.setTimeRange}
+                />
+              }
+            />
+            <div className="hidden w-full min-w-0 flex-col gap-1 self-center justify-self-start @min-[64rem]/hero:col-start-5 @min-[64rem]/hero:row-start-1 @min-[64rem]/hero:flex">
+              <StatusLegend
+                items={completionChart.segments}
+                isLoading={completionChart.isLoading}
+                isError={completionChart.isRangeError}
+                orientation="vertical"
+                className="min-w-0 place-items-start"
+                isSampled={completionChart.isSampled}
+                totalCount={completionChart.total}
+              />
+            </div>
+            <div
+              data-overview-refresh-bounce=""
+              className={summaryStackStyles()}
+            >
+              <div className="pointer-events-auto flex items-center justify-center gap-2 whitespace-nowrap @max-[30rem]/hero:scale-90">
+                {showsBreakdownMode && (
+                  <span className="@min-[64rem]/hero:hidden">
+                    <BreakdownMode
+                      mode={breakdownMode}
+                      onChange={setBreakdownMode}
+                      format="sentence"
+                    />
+                  </span>
+                )}
+                {summaryErrorIndicator && (
+                  <span className="@min-[64rem]/hero:hidden">
+                    {summaryErrorIndicator}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div
-        data-overview-refresh-bounce=""
-        className="relative z-40 mt-3 -mb-8 flex flex-col items-center"
-      >
-        <IssuesBannerStack />
-        <div className="h-5" />
-      </div>
+          <div
+            data-overview-refresh-bounce=""
+            className="relative z-40 mt-3 -mb-8 flex flex-col items-center"
+          >
+            <IssuesBannerStack />
+            <div className="h-5" />
+          </div>
+        </>
+      )}
 
       <div ref={setPanelEl} aria-hidden className="h-0 w-full shrink-0" />
       <ContentPanel
@@ -844,7 +857,7 @@ function OverviewContent() {
               <FocusShortcutKey variant="light" className="mr-1 shrink-0" />
             )}
           </SearchField>
-          <DeploymentActions />
+          {!isReadOnly && <DeploymentActions />}
           <Tooltip>
             <TooltipTrigger>
               <Button
@@ -894,8 +907,11 @@ function Component() {
 
 function OverviewDialogs() {
   const { mode } = useOverviewContext();
+  const isReadOnly = useIsReadOnly();
 
-  return mode === 'deployments' ? <PruneDrainedDeploymentsDialog /> : null;
+  return mode === 'deployments' && !isReadOnly ? (
+    <PruneDrainedDeploymentsDialog />
+  ) : null;
 }
 
 export const overview = { Component };

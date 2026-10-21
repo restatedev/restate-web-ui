@@ -1,9 +1,11 @@
+import { useIsReadOnly } from '@restate/data-access-admin-api';
 import {
   useDeploymentDetails,
   useListDeployments,
   useListDrainedDeployments,
 } from '@restate/data-access-admin-api-hooks';
 import {
+  DeploymentScopeBadge,
   DeploymentStatusBadge,
   MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   resolveDeploymentEndpoint,
@@ -123,6 +125,7 @@ function Component() {
   const { data: deploymentsData, dataUpdatedAt: deploymentsUpdatedAt } =
     useListDeployments();
   const { data: drainedDeploymentIds } = useListDrainedDeployments();
+  const isReadOnly = useIsReadOnly();
   const listedDeployment = deploymentsData?.deployments.get(deploymentId);
   const services = data?.services ?? [];
   const isDrained = drainedDeploymentIds
@@ -160,7 +163,8 @@ function Component() {
               className="shrink-0"
             />
           )}
-          {data && (
+          {data && <DeploymentScopeBadge metadata={data.metadata} />}
+          {data && !isReadOnly && (
             <div className="ml-auto flex shrink-0 items-center">
               <DeploymentActions deploymentId={deploymentId} variant="header" />
             </div>
