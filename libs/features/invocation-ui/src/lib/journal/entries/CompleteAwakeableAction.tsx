@@ -128,8 +128,6 @@ function CompleteAwakeableForm({
           </Badge>
         </span>
       }
-      alertType="info"
-      alertContent="Restate accepts the request without checking that the awakeable is still pending. The invocation continues once it receives the result."
       submitText={isResolve ? 'Resolve' : 'Reject'}
       closeText="Cancel"
       autoFocusClose={false}
