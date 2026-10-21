@@ -3,6 +3,7 @@ import { EntryProps } from './types';
 import { Expression } from '../Expression';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
+import { CompleteAwakeableAction } from './CompleteAwakeableAction';
 
 export function CompleteAwakeable({
   entry,
@@ -54,26 +55,37 @@ export function CompleteAwakeableNotification({
   >
 >) {
   return (
-    <EntryExpression
-      entry={entry}
-      invocation={invocation}
-      inputParams={[
-        {
-          paramName: 'id',
-          title: 'Id',
-          placeholderLabel: 'id',
-          shouldStringified: true,
-        },
-      ]}
-      output={
-        <LazyJournalEntryPayload.Value
-          invocationId={invocation?.id}
-          entry={entry}
-          title="Result"
-          isBase64
-          hideWhenEntryIsPending
-        />
-      }
-    />
+    <>
+      <EntryExpression
+        entry={entry}
+        invocation={invocation}
+        inputParams={[
+          {
+            paramName: 'id',
+            title: 'Id',
+            placeholderLabel: 'id',
+            shouldStringified: true,
+          },
+        ]}
+        output={
+          <LazyJournalEntryPayload.Value
+            invocationId={invocation?.id}
+            entry={entry}
+            title="Result"
+            isBase64
+            hideWhenEntryIsPending
+          />
+        }
+      />
+      {entry.isPending &&
+        entry.id &&
+        invocation?.id &&
+        !invocation.completed_at && (
+          <CompleteAwakeableAction
+            awakeableId={entry.id}
+            invocationId={invocation.id}
+          />
+        )}
+    </>
   );
 }

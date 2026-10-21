@@ -7,6 +7,7 @@ export { DialogFooter } from './lib/DialogFooter';
 export * from './lib/withConfirmation';
 export {
   ConfirmationDialog,
+  ConfirmationDialogBody,
   ConfirmationQueryDialog,
 } from './lib/ConfirmationDialog';
 export type { ConfirmationDialogProps } from './lib/ConfirmationDialog';

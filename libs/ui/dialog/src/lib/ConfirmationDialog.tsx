@@ -108,6 +108,17 @@ export function ConfirmationDialog({
 }
 
 function ConfirmationDialogContent({
+  surface,
+  ...bodyProps
+}: PropsWithChildren<Omit<ConfirmationDialogProps, 'queryParam' | 'onClose'>>) {
+  return (
+    <DialogContent className="max-w-lg" surface={surface}>
+      <ConfirmationDialogBody {...bodyProps} />
+    </DialogContent>
+  );
+}
+
+export function ConfirmationDialogBody({
   title,
   icon,
   iconClassName,
@@ -125,67 +136,66 @@ function ConfirmationDialogContent({
   footer,
   isSubmitDisabled,
   closeText = 'Close',
-  surface,
-}: PropsWithChildren<Omit<ConfirmationDialogProps, 'queryParam' | 'onClose'>>) {
+}: PropsWithChildren<
+  Omit<ConfirmationDialogProps, 'queryParam' | 'onClose' | 'surface'>
+>) {
   const formId = useId();
 
   return (
-    <DialogContent className="max-w-lg" surface={surface}>
-      <div className="flex flex-col gap-2">
-        <Heading
-          slot="title"
-          level={3}
-          className="flex items-center gap-1 text-lg leading-6 font-medium text-primary"
-        >
-          {icon && (
-            <Icon
-              name={icon}
-              className={iconStyles({ className: iconClassName })}
-            />
-          )}
-          {title}
-        </Heading>
-        <div className="flex flex-col gap-2 text-sm text-muted">
-          {description}
-          {alertType && alertContent && (
-            <AlertBanner type={alertType}>{alertContent}</AlertBanner>
-          )}
-        </div>
-        <Form
-          id={formId}
-          method={formMethod}
-          action={formAction}
-          onSubmit={onSubmit}
-        >
-          {children}
-          <DialogFooter>
-            <div className="flex flex-col gap-2">
-              {footer}
-              {error && <ErrorBanner error={error} />}
-              <div className="grid grid-cols-2 gap-2">
-                <DialogClose>
-                  <Button
-                    variant="secondary"
-                    className=""
-                    disabled={isPending}
-                    autoFocus
-                  >
-                    {closeText}
-                  </Button>
-                </DialogClose>
-                <SubmitButton
-                  variant={submitVariant}
-                  form={formId}
-                  className=""
-                  disabled={isSubmitDisabled}
-                >
-                  {submitText}
-                </SubmitButton>
-              </div>
-            </div>
-          </DialogFooter>
-        </Form>
+    <div className="flex flex-col gap-2">
+      <Heading
+        slot="title"
+        level={3}
+        className="flex items-center gap-1 text-lg leading-6 font-medium text-primary"
+      >
+        {icon && (
+          <Icon
+            name={icon}
+            className={iconStyles({ className: iconClassName })}
+          />
+        )}
+        {title}
+      </Heading>
+      <div className="flex flex-col gap-2 text-sm text-muted">
+        {description}
+        {alertType && alertContent && (
+          <AlertBanner type={alertType}>{alertContent}</AlertBanner>
+        )}
       </div>
-    </DialogContent>
+      <Form
+        id={formId}
+        method={formMethod}
+        action={formAction}
+        onSubmit={onSubmit}
+      >
+        {children}
+        <DialogFooter>
+          <div className="flex flex-col gap-2">
+            {footer}
+            {error && <ErrorBanner error={error} />}
+            <div className="grid grid-cols-2 gap-2">
+              <DialogClose>
+                <Button
+                  variant="secondary"
+                  className=""
+                  disabled={isPending}
+                  autoFocus
+                >
+                  {closeText}
+                </Button>
+              </DialogClose>
+              <SubmitButton
+                variant={submitVariant}
+                form={formId}
+                className=""
+                disabled={isSubmitDisabled}
+              >
+                {submitText}
+              </SubmitButton>
+            </div>
+          </div>
+        </DialogFooter>
+      </Form>
+    </div>
   );
 }
