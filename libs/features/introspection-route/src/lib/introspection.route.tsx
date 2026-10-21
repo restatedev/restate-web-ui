@@ -30,11 +30,11 @@ import { Toolbar } from './Toolbar';
 import { addQueryToHistory } from './queryHistory';
 import { UsefulQueries } from './UsefulQueries';
 
-const QUERY_PARAM = 'query';
+export const INTROSPECTION_QUERY_PARAM = 'query';
 
 function Component() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get(QUERY_PARAM) ?? '';
+  const query = searchParams.get(INTROSPECTION_QUERY_PARAM) ?? '';
   const { isFetching, data, dataUpdatedAt, error, errorUpdatedAt } =
     useSqlQuery(query, {
       enabled: Boolean(query),
@@ -61,9 +61,9 @@ function Component() {
       setSearchParams((old) => {
         const searchParams = new URLSearchParams(old);
         if (query) {
-          searchParams.set(QUERY_PARAM, query);
+          searchParams.set(INTROSPECTION_QUERY_PARAM, query);
         } else {
-          searchParams.delete(QUERY_PARAM);
+          searchParams.delete(INTROSPECTION_QUERY_PARAM);
         }
         return searchParams;
       });
@@ -215,7 +215,7 @@ function Component() {
       <Toolbar
         setQuery={setQuery}
         isPending={isQueryFetching}
-        initialQuery={searchParams.get(QUERY_PARAM) ?? ''}
+        initialQuery={searchParams.get(INTROSPECTION_QUERY_PARAM) ?? ''}
         selectQueryRef={selectQueryRef}
       />
     </SnapshotTimeProvider>

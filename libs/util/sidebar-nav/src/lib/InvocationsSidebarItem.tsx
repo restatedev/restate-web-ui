@@ -212,6 +212,28 @@ export function getInvocationPresetSearch(
   return shortcut ? shortcutSearch(shortcut, canSortByTransition) : '';
 }
 
+export interface InvocationPresetDefinition {
+  id: string;
+  label: string;
+  filters: InvocationShortcut['filters'];
+  search: string;
+}
+
+export function listInvocationPresets(
+  canSortByTransition: boolean,
+): InvocationPresetDefinition[] {
+  return [
+    ...INVOCATION_SHORTCUTS.slice(0, 3),
+    ALL_INVOCATIONS_SHORTCUT,
+    ...INVOCATION_SHORTCUTS.slice(3),
+  ].map((shortcut) => ({
+    id: shortcut.id,
+    label: shortcut.label,
+    filters: shortcut.filters,
+    search: shortcutSearch(shortcut, canSortByTransition),
+  }));
+}
+
 // Module-level mirror of RestateContext's `defaultInvocationsPreset`, so the
 // /invocations route loader (a plain module function that can't read React
 // context) can apply it. Synced by InvocationsSidebarItem on render. On a cold

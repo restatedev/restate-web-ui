@@ -78,6 +78,9 @@
       "path": "../../libs/ui/editor/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/features/command-palette/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/features/batch-operations/tsconfig.lib.json"
     },
     {
