@@ -4,7 +4,6 @@ import {
 } from '@restate/data-access-admin-api-spec';
 import {
   Deployment,
-  DeploymentScopeBadge,
   DeploymentStatusBadge,
 } from '@restate/features-deployment';
 import {
@@ -443,7 +442,6 @@ export function DeploymentsTable() {
                       ID {deployment.id}
                     </code>
                   </TruncateWithTooltip>
-                  <DeploymentScopeBadge metadata={deployment.metadata} />
                 </div>
               </Cell>
             );

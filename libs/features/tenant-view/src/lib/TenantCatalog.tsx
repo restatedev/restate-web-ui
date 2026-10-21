@@ -24,8 +24,8 @@ export function TenantOverview({ scope }: TenantCatalogProps) {
     <TenantSchemaRegistry scope={scope}>
       <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
         <ListPageHeader icon={IconName.Box} title="Services and deployments">
-          What <span className="font-mono">{scope}</span> sees in the schema
-          registry: its own deployments and the shared ones.
+          The deployments and services registered for{' '}
+          <span className="font-mono">{scope}</span> in the schema registry.
         </ListPageHeader>
         <SchemaRegistryError className="mx-4 mb-4 rounded-xl" />
         <overview.Component />

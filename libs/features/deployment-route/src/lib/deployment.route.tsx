@@ -5,7 +5,6 @@ import {
   useListDrainedDeployments,
 } from '@restate/data-access-admin-api-hooks';
 import {
-  DeploymentScopeBadge,
   DeploymentStatusBadge,
   MIN_SUPPORTED_SERVICE_PROTOCOL_VERSION,
   resolveDeploymentEndpoint,
@@ -163,7 +162,6 @@ function Component() {
               className="shrink-0"
             />
           )}
-          {data && <DeploymentScopeBadge metadata={data.metadata} />}
           {data && !isReadOnly && (
             <div className="ml-auto flex shrink-0 items-center">
               <DeploymentActions deploymentId={deploymentId} variant="header" />

@@ -41,9 +41,6 @@
       "path": "../../ui/dropdown/tsconfig.lib.json"
     },
     {
-      "path": "../../data-access/admin-api/tsconfig.lib.json"
-    },
-    {
       "path": "../options/tsconfig.lib.json"
     },
     {
