@@ -1222,6 +1222,33 @@ export function useDeleteDeployment(
   });
 }
 
+export function useBulkDeleteDeployments(
+  options?: Omit<
+    HookMutationOptions<'/deployments/bulk-delete', 'post'>,
+    'onSettled'
+  >,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = options ?? {};
+
+  return useMutation({
+    ...adminApi('mutate', '/deployments/bulk-delete', 'post', {
+      baseUrl,
+    }),
+    ...rest,
+    onSuccess(data, variables, context, meta) {
+      invalidateListServices(queryClient, baseUrl);
+      onSuccess?.(data, variables, context, meta);
+      data?.succeeded.forEach((deployment) =>
+        queryClient.removeQueries({
+          queryKey: [`/deployments/${deployment}`],
+        }),
+      );
+    },
+  });
+}
+
 export function useServiceOpenApi(
   service: string,
   options?: HookQueryOptions<'/services/{service}/openapi', 'get'>,
