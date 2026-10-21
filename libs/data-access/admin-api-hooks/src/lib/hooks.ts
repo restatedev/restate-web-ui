@@ -39,7 +39,12 @@ import type {
 } from '@restate/data-access-admin-api';
 import { useCallback, useMemo } from 'react';
 import { RestateError } from '@restate/util-errors';
-import { useAPIStatus } from '@restate/data-access-admin-api';
+import {
+  useAPIStatus,
+  useCatalogAPIStatus,
+  useCatalogBaseUrl,
+  useSchemaRegistry,
+} from '@restate/data-access-admin-api';
 import { useRestateContext } from '@restate/features-restate-context';
 import { base64ToUint8Array } from '@restate/util-binary';
 import { getAuthToken } from '@restate/util-api-config';
@@ -294,7 +299,8 @@ function invalidateServiceCatalog(queryClient: QueryClient, baseUrl: string) {
 function useServiceCatalogQuery<TData = ServiceCatalogRow[]>(
   select?: (rows: ServiceCatalogRow[]) => TData,
 ) {
-  const enabled = useAPIStatus();
+  const isRegistry = Boolean(useSchemaRegistry());
+  const enabled = useAPIStatus() && !isRegistry;
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
   const { queryFn, ...queryOptions } = getServiceCatalogAdminApi(baseUrl);
@@ -330,21 +336,23 @@ function useServiceCatalogQuery<TData = ServiceCatalogRow[]>(
 }
 
 export function useServiceCatalog() {
+  const isRegistry = Boolean(useSchemaRegistry());
   const catalog = useServiceCatalogQuery(serviceCatalogSelector);
-  const fullServices = useListServices({ enabled: catalog.isError });
+  const usesFullServices = isRegistry || catalog.isError;
+  const fullServices = useListServices({ enabled: usesFullServices });
   const data =
     catalog.data ?? (fullServices.isSuccess ? fullServices.data : undefined);
 
   return {
     data: data ?? EMPTY_SERVICE_SUMMARIES,
-    isPending: !data && !(catalog.isError && fullServices.isError),
-    error: catalog.isError ? fullServices.error : null,
+    isPending: !data && !(usesFullServices && fullServices.isError),
+    error: usesFullServices ? fullServices.error : null,
   };
 }
 
 export function useListDeployments(options?: ListDeploymentsOptions) {
-  const apiEnabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
+  const apiEnabled = useCatalogAPIStatus();
+  const baseUrl = useCatalogBaseUrl();
   const queryOptions = getListDeploymentsQueryOptions(baseUrl, options);
   useServiceCatalogQuery();
 
@@ -410,7 +418,8 @@ export function useSqlQuery(
 export function useListDrainedDeployments(
   options?: HookQueryOptions<'/query/deployments/drained', 'get'>,
 ) {
-  const enabled = useAPIStatus();
+  const isRegistry = Boolean(useSchemaRegistry());
+  const enabled = useAPIStatus() && !isRegistry;
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/query/deployments/drained', 'get', {
     baseUrl,
@@ -925,8 +934,8 @@ export function useServiceDetails(
   service: string,
   options?: HookQueryOptions<'/services/{service}', 'get'>,
 ) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
+  const enabled = useCatalogAPIStatus();
+  const baseUrl = useCatalogBaseUrl();
   const { queryFn, ...queryOptions } = getServiceAdminApi({
     baseUrl,
     parameters: { path: { service } },
@@ -956,8 +965,8 @@ export function useServiceDetails(
 export function useListServices(
   options?: Omit<HookQueryOptions<'/services', 'get'>, 'select'>,
 ) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
+  const enabled = useCatalogAPIStatus();
+  const baseUrl = useCatalogBaseUrl();
   const queryOptions = getListServicesAdminApi(baseUrl);
   useServiceCatalogQuery();
 
@@ -976,8 +985,8 @@ export function useDeploymentDetails(
   deployment: string,
   options?: HookQueryOptions<'/deployments/{deployment}', 'get'>,
 ) {
-  const enabled = useAPIStatus();
-  const baseUrl = useAdminBaseUrl();
+  const enabled = useCatalogAPIStatus();
+  const baseUrl = useCatalogBaseUrl();
   const queryOptions = adminApi('query', '/deployments/{deployment}', 'get', {
     baseUrl,
     resolvedPath: `/deployments/${deployment}`,
@@ -1253,7 +1262,8 @@ export function useServiceOpenApi(
   service: string,
   options?: HookQueryOptions<'/services/{service}/openapi', 'get'>,
 ) {
-  const enabled = useAPIStatus();
+  const isRegistry = Boolean(useSchemaRegistry());
+  const enabled = useAPIStatus() && !isRegistry;
   const baseUrl = useAdminBaseUrl();
   const queryOptions = adminApi('query', '/services/{service}/openapi', 'get', {
     baseUrl,

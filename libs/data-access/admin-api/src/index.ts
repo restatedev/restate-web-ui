@@ -6,6 +6,7 @@ export * from './lib/api/adminApi';
 export * from './lib/api/meta';
 export * from './lib/AdminBaseUrlProvider';
 export * from './lib/APIStatusProvider';
+export * from './lib/SchemaRegistryProvider';
 export * from './lib/api/basicHooks';
 export * from './lib/api/hookTypes';
 export * from './lib/api/serviceSerde';
