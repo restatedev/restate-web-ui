@@ -62,7 +62,7 @@
       "path": "../../ui/tooltip/tsconfig.lib.json"
     },
     {
-      "path": "../feature-flag/tsconfig.lib.json"
+      "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
     },
     {
       "path": "../../data-access/admin-api-spec/tsconfig.lib.json"

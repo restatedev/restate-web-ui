@@ -6,7 +6,10 @@ import {
   useQueryHandlerFeatures,
   type HookQueryOptions,
 } from '@restate/data-access-admin-api';
-import { canSummarizeInvocationsFromStats } from '@restate/data-access-query';
+import {
+  canSummarizeInvocationsFromStats,
+  usesIndexesV1,
+} from '@restate/data-access-query';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { alignInvocationSummaryBreakdowns } from './invocationSummaryBreakdowns';
@@ -186,6 +189,10 @@ export function useCanSummarizeInvocationsFromStats({
     { features },
     filters.filter(({ field }) => !highlighted.has(field)),
   );
+}
+
+export function useCanSortInvocationsByTransition() {
+  return usesIndexesV1({ features: useQueryHandlerFeatures() });
 }
 
 export function useProgressiveInvocationSummaryV2(

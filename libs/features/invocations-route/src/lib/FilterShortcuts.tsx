@@ -28,12 +28,9 @@ import {
 import { tv } from '@restate/util-styles';
 import { Icon, IconName } from '@restate/ui-icons';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
-import {
-  getDefaultSortField,
-  SORT_QUERY_PREFIX,
-  SORT_NONE,
-} from './useInvocationsQueryFilters';
+import { SORT_QUERY_PREFIX, SORT_NONE } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util-sidebar-nav';
+import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-api-hooks';
 
 interface FilterShortcut {
   columns: ColumnKey[];
@@ -186,6 +183,7 @@ export function FilterShortcuts({
   const overflowShortcuts = shortcuts.slice(VISIBLE_SHORTCUTS_COUNT);
   const [searchParams, setSearchParams] = useInvocationSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
+  const canSortByTransition = useCanSortInvocationsByTransition();
 
   const setFilter = (item: FilterShortcut) => {
     const newSearchParams = writeFilterClauses(searchParams, item.filters);
@@ -200,8 +198,7 @@ export function FilterShortcuts({
       newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
     } else if (item.sort) {
       const sort =
-        item.sort.field === 'created_at' &&
-        getDefaultSortField() === 'transitioned_at'
+        item.sort.field === 'created_at' && canSortByTransition
           ? { field: 'transitioned_at', order: 'DESC' }
           : item.sort;
       newSearchParams.set(SORT_QUERY_PREFIX + 'field', sort.field);

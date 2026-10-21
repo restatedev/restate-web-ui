@@ -51,13 +51,13 @@ export interface UserSort {
   order: 'ASC' | 'DESC';
 }
 
-export function getUserLastSort(): UserSort | null {
+export function getUserLastSort(canSortByTransition: boolean): UserSort | null {
   const parsed = safeParse<UserSort>(localStorage.getItem(USER_SORT_KEY));
   if (!parsed) return null;
   if (
     typeof parsed.field !== 'string' ||
     !SORT_COLUMN_KEYS.includes(parsed.field) ||
-    !isSortFieldAvailable(parsed.field)
+    !isSortFieldAvailable(parsed.field, canSortByTransition)
   )
     return null;
   if (parsed.order !== 'ASC' && parsed.order !== 'DESC') return null;

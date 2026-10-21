@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useInvocationsRecent } from './useInvocationsMemory';
 import { TERMINAL_INVOCATION_STATUSES } from '@restate/data-access-admin-api-spec';
-import { isFeatureEnabled } from '@restate/util-feature-flag';
+import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-api-hooks';
 
 // ─────────────────────────────────────────────────────────────
 // Preset definitions
@@ -143,17 +143,23 @@ const ALL_INVOCATIONS_SHORTCUT: InvocationShortcut = {
   columns: DEFAULT_PRESET_COLUMNS,
 };
 
-function shortcutSort(s: InvocationShortcut): InvocationShortcut['sort'] {
+function shortcutSort(
+  s: InvocationShortcut,
+  canSortByTransition: boolean,
+): InvocationShortcut['sort'] {
   return s.sort !== SORT_NONE &&
     s.sort?.field === 'created_at' &&
-    isFeatureEnabled('FEATURE_INDEXES_V1')
+    canSortByTransition
     ? { field: 'transitioned_at', order: 'DESC' }
     : s.sort;
 }
 
-function shortcutSearch(s: InvocationShortcut): string {
+function shortcutSearch(
+  s: InvocationShortcut,
+  canSortByTransition: boolean,
+): string {
   const params = new URLSearchParams();
-  const sort = shortcutSort(s);
+  const sort = shortcutSort(s, canSortByTransition);
   for (const f of s.filters) {
     params.set(
       `filter_${f.id}`,
@@ -178,8 +184,12 @@ function shortcutSearch(s: InvocationShortcut): string {
   return params.toString();
 }
 
-function shortcutHref(path: string, s: InvocationShortcut): string {
-  return `${path}?${shortcutSearch(s)}`;
+function shortcutHref(
+  path: string,
+  s: InvocationShortcut,
+  canSortByTransition: boolean,
+): string {
+  return `${path}?${shortcutSearch(s, canSortByTransition)}`;
 }
 
 const FALLBACK_INVOCATIONS_PRESET = 'processing';
@@ -191,12 +201,15 @@ let configuredDefaultInvocationsPreset: string | undefined =
  * navigate/redirect to a preset without a path (e.g. the /invocations route
  * loader). Empty for unknown ids.
  */
-export function getInvocationPresetSearch(id: string): string {
+export function getInvocationPresetSearch(
+  id: string,
+  canSortByTransition: boolean,
+): string {
   const shortcut =
     id === ALL_INVOCATIONS_SHORTCUT.id
       ? ALL_INVOCATIONS_SHORTCUT
       : INVOCATION_SHORTCUTS.find((s) => s.id === id);
-  return shortcut ? shortcutSearch(shortcut) : '';
+  return shortcut ? shortcutSearch(shortcut, canSortByTransition) : '';
 }
 
 // Module-level mirror of RestateContext's `defaultInvocationsPreset`, so the
@@ -378,6 +391,7 @@ export function InvocationsSidebarItem({
   const path = `${baseUrl}/invocations`;
   const { recent } = useInvocationsRecent();
   const { defaultInvocationsPreset } = useRestateContext();
+  const canSortByTransition = useCanSortInvocationsByTransition();
   const location = useLocation();
   const shortcuts = INVOCATION_SHORTCUTS;
 
@@ -406,7 +420,7 @@ export function InvocationsSidebarItem({
     classifyInvocationsUrl(path, loc.pathname, loc.searchParams);
 
   const presetSubItems: SidebarSubItem[] = shortcuts.map((s) => ({
-    href: shortcutHref(path, s),
+    href: shortcutHref(path, s, canSortByTransition),
     label: s.label,
     match: ((loc) => {
       const k = classify(loc);
@@ -415,7 +429,7 @@ export function InvocationsSidebarItem({
     preserveSearchParams,
   }));
   const allSubItem: SidebarSubItem = {
-    href: shortcutHref(path, ALL_INVOCATIONS_SHORTCUT),
+    href: shortcutHref(path, ALL_INVOCATIONS_SHORTCUT, canSortByTransition),
     label: 'All',
     match: (loc) => classify(loc)?.kind === 'all',
     preserveSearchParams,
@@ -464,7 +478,7 @@ export function InvocationsSidebarItem({
     if (preset) {
       const presetId = preset.id;
       extraSubItems.push({
-        href: shortcutHref(path, preset),
+        href: shortcutHref(path, preset, canSortByTransition),
         label: preset.label,
         match: (loc) => {
           const k = classify(loc);
@@ -496,7 +510,7 @@ export function InvocationsSidebarItem({
 
   return (
     <SidebarNavItem
-      href={shortcutHref(path, defaultShortcut)}
+      href={shortcutHref(path, defaultShortcut, canSortByTransition)}
       icon={IconName.Invocation}
       label="Invocations"
       preserveSearchParams={preserveSearchParams}
