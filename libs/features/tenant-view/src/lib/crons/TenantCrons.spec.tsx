@@ -31,6 +31,31 @@ vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
     typeof import('@restate/data-access-admin-api-hooks')
   >()),
   useListInvocationsV2: hooks.list,
+  useListServices: () => ({
+    data: new Map([
+      [
+        'onboarding',
+        {
+          name: 'onboarding',
+          ty: 'Service',
+          metadata: { 'restate.dev/integration': 'tanstack-workflow' },
+          handlers: [
+            {
+              name: 'run',
+              input_json_schema: {
+                type: 'object',
+                properties: { userId: { type: 'string' } },
+              },
+            },
+          ],
+        },
+      ],
+      [
+        'checkout',
+        { name: 'checkout', ty: 'Service', handlers: [{ name: 'run' }] },
+      ],
+    ]),
+  }),
   useGetVirtualObjectLock: () => ({ data: undefined }),
   useGetPausedError: () => ({}),
   useGetTransientError: () => ({}),
@@ -223,6 +248,42 @@ describe('TenantCrons', () => {
       cron: 'nope',
       timezone: 'UTC',
       target: { service: 'checkout', handler: 'run' },
+    });
+  }, 20_000);
+
+  it('targets run without a handler field for a TanStack workflow', async () => {
+    const user = userEvent.setup();
+    const requests = mockMux({
+      list: () => Response.json({ timer: null, schedules: [] }),
+      create: () => Response.json(project.schedules[0]),
+    });
+    renderCrons();
+
+    await user.click(
+      (await screen.findAllByRole('button', { name: /New schedule/ }))[0]!,
+    );
+    await user.type(
+      await screen.findByLabelText('Cron expression'),
+      '0 9 * * *',
+    );
+    await user.type(
+      screen.getByRole('combobox', { name: 'Service' }),
+      'onboarding',
+    );
+    await user.tab();
+
+    expect(screen.queryByRole('combobox', { name: 'Handler' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    await waitFor(() =>
+      expect(requests.some(({ url }) => url.endsWith('/create'))).toBe(true),
+    );
+    const create = requests.find(({ url }) => url.endsWith('/create'));
+    expect(JSON.parse(String(create?.init?.body))).toEqual({
+      cron: '0 9 * * *',
+      timezone: 'UTC',
+      target: { service: 'onboarding', handler: 'run' },
+      payload: { userId: '' },
     });
   }, 20_000);
 

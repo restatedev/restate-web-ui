@@ -38,13 +38,10 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
-      "path": "../../util/styles/tsconfig.lib.json"
+      "path": "../../data-access/ingress-mux/tsconfig.lib.json"
     },
     {
       "path": "../../util/intl/tsconfig.lib.json"
-    },
-    {
-      "path": "../../util/errors/tsconfig.lib.json"
     },
     {
       "path": "../../ui/link/tsconfig.lib.json"
@@ -54,6 +51,9 @@
     },
     {
       "path": "../virtual-objects-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../../util/styles/tsconfig.lib.json"
     },
     {
       "path": "../../ui/form-field/tsconfig.lib.json"
@@ -117,6 +117,9 @@
     },
     {
       "path": "../service-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../service/tsconfig.lib.json"
     },
     {
       "path": "../restate-context/tsconfig.lib.json"

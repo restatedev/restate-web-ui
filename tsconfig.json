@@ -319,6 +319,9 @@
     },
     {
       "path": "./libs/features/command-palette"
+    },
+    {
+      "path": "./libs/data-access/ingress-mux"
     }
   ]
 }

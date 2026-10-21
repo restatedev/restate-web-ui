@@ -14,11 +14,25 @@ import {
   FormFieldInput,
   FormFieldLabel,
 } from '@restate/ui-form-field';
-import { type FormEvent, useId, useMemo, useState } from 'react';
+import {
+  getWorkflowRunHandler,
+  isTanstackWorkflow,
+  TANSTACK_WORKFLOW_RUN_HANDLER,
+  workflowPayloadSkeleton,
+} from '@restate/features-service';
+import { tv } from '@restate/util-styles';
+import { type FormEvent, useId, useMemo, useRef, useState } from 'react';
 import { useFilter } from 'react-aria';
 import { Heading } from 'react-aria-components';
 import type { CreateScheduleRequest, CronSchedule } from './cronApi';
 import { useCreateSchedule, useUpdateSchedule } from './useCrons';
+
+const targetStyles = tv({
+  base: 'grid gap-2',
+  variants: {
+    isWorkflow: { true: 'grid-cols-1', false: 'grid-cols-2' },
+  },
+});
 
 const TIMEZONES = [
   'UTC',
@@ -75,6 +89,27 @@ function NewScheduleDialogContent({
   const { data: services } = useListServices({ enabled: Boolean(registry) });
   const [service, setService] = useState(schedule?.target.service ?? '');
   const [payloadError, setPayloadError] = useState<string>();
+  const [payloadValue, setPayloadValue] = useState(() =>
+    schedule?.payload === undefined
+      ? ''
+      : JSON.stringify(schedule.payload, null, 2),
+  );
+  const isPayloadEdited = useRef(schedule?.payload !== undefined);
+  const isWorkflow = isTanstackWorkflow(services.get(service));
+  const onServiceChange = (name: string) => {
+    setService(name);
+    if (isPayloadEdited.current) {
+      return;
+    }
+    const target = services.get(name);
+    setPayloadValue(
+      isTanstackWorkflow(target)
+        ? workflowPayloadSkeleton(
+            getWorkflowRunHandler(target?.handlers)?.input_json_schema,
+          )
+        : '',
+    );
+  };
   const create = useCreateSchedule(scope, {
     onSuccess: () => onOpenChange(false),
   });
@@ -159,33 +194,41 @@ function NewScheduleDialogContent({
               allowsCustomValue
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={targetStyles({ isWorkflow })}>
             <FormFieldCombobox
               name="service"
               label="Service"
               options={serviceOptions}
               defaultValue={schedule?.target.service}
               defaultFilter={contains}
-              onChange={setService}
+              onChange={onServiceChange}
               allowsCustomValue
               allowsEmptyCollection
               required
             />
-            <FormFieldCombobox
-              key={service}
-              name="handler"
-              label="Handler"
-              options={handlerOptions}
-              defaultValue={
-                service === schedule?.target.service
-                  ? schedule.target.handler
-                  : undefined
-              }
-              defaultFilter={contains}
-              allowsCustomValue
-              allowsEmptyCollection
-              required
-            />
+            {isWorkflow ? (
+              <input
+                type="hidden"
+                name="handler"
+                value={TANSTACK_WORKFLOW_RUN_HANDLER}
+              />
+            ) : (
+              <FormFieldCombobox
+                key={service}
+                name="handler"
+                label="Handler"
+                options={handlerOptions}
+                defaultValue={
+                  service === schedule?.target.service
+                    ? schedule.target.handler
+                    : undefined
+                }
+                defaultFilter={contains}
+                allowsCustomValue
+                allowsEmptyCollection
+                required
+              />
+            )}
           </div>
           <div className="flex flex-col">
             <FormFieldLabel>
@@ -196,11 +239,10 @@ function NewScheduleDialogContent({
             </FormFieldLabel>
             <FormFieldCode
               name="payload"
-              value={
-                schedule?.payload === undefined
-                  ? ''
-                  : JSON.stringify(schedule.payload, null, 2)
-              }
+              value={payloadValue}
+              onInput={() => {
+                isPayloadEdited.current = true;
+              }}
               className="h-28"
             />
           </div>

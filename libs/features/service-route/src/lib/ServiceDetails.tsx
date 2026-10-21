@@ -73,6 +73,7 @@ function TabLabel({
 
 export function ServiceDetails({
   service,
+  hasHandlersTab = true,
   serviceType,
   handlers,
   selectedHandler,
@@ -81,6 +82,7 @@ export function ServiceDetails({
   error,
 }: {
   service: string;
+  hasHandlersTab?: boolean;
   serviceType?: ServiceType;
   handlers: Handler[];
   selectedHandler?: string;
@@ -112,7 +114,8 @@ export function ServiceDetails({
         : undefined));
   const activeTab =
     ((tab === 'runs' || tab === 'instances') && tab !== keyedTab) ||
-    (isReadOnly && tab === 'playground')
+    (isReadOnly && tab === 'playground') ||
+    (!hasHandlersTab && tab === 'handlers')
       ? 'invocations'
       : tab;
   const invocationsTab = useServiceInvocationsTab(
@@ -136,17 +139,21 @@ export function ServiceDetails({
         ...(keyedTab
           ? [{ id: keyedTab, label: KEYED_TAB_LABELS[keyedTab] }]
           : []),
-        {
-          id: 'handlers',
-          label: (
-            <TabLabel
-              count={isPending ? undefined : handlers.length}
-              isPending={isPending}
-            >
-              Handlers
-            </TabLabel>
-          ),
-        },
+        ...(hasHandlersTab
+          ? [
+              {
+                id: 'handlers',
+                label: (
+                  <TabLabel
+                    count={isPending ? undefined : handlers.length}
+                    isPending={isPending}
+                  >
+                    Handlers
+                  </TabLabel>
+                ),
+              },
+            ]
+          : []),
         {
           id: 'deployments',
           label: (
@@ -167,6 +174,7 @@ export function ServiceDetails({
     [
       deploymentsCount,
       handlers.length,
+      hasHandlersTab,
       isPending,
       isReadOnly,
       keyedTab,

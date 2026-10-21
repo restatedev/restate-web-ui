@@ -38,6 +38,12 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../ui/form-field/tsconfig.lib.json"
+    },
+    {
+      "path": "../../data-access/ingress-mux/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/loading/tsconfig.lib.json"
     },
     {

@@ -11,8 +11,10 @@ import { useRestateContext } from '@restate/features-restate-context';
 import { useIsReadOnly } from '@restate/data-access-admin-api';
 import {
   Handler as ServiceHandler,
+  isTanstackWorkflow,
   PlaygroundIconLink,
   ServiceType,
+  TriggerWorkflowButton,
 } from '@restate/features-service';
 import { ServiceTarget } from '@restate/features-service-target';
 import {
@@ -304,10 +306,12 @@ function ServiceIdentity({
       {row.ty && (
         <ServiceType
           type={row.ty}
+          metadata={row.metadata}
           variant="subtle"
           className={styles.serviceType()}
         />
       )}
+      {isTanstackWorkflow(row) && <TriggerWorkflowButton service={row.name} />}
     </div>
   );
 }
@@ -510,7 +514,11 @@ export function ServicesTable() {
   const columns = useMemo(
     () =>
       isReadOnly
-        ? COLUMNS.filter(({ id }) => id !== 'invocations' && id !== 'health')
+        ? COLUMNS.filter(
+            ({ id }) => id !== 'invocations' && id !== 'health',
+          ).map((column) =>
+            column.id === 'name' ? { ...column, name: 'Service' } : column,
+          )
         : COLUMNS,
     [isReadOnly],
   );

@@ -4,6 +4,7 @@ import { deploymentRoute } from '@restate/features-deployment-route';
 import { InvocationActions } from '@restate/features-invocation-route';
 import { overview } from '@restate/features-overview-route';
 import { useRestateContext } from '@restate/features-restate-context';
+import { TriggerWorkflowDialog } from '@restate/features-service';
 import { serviceRoute } from '@restate/features-service-route';
 import { ServiceTargetProvider } from '@restate/features-service-target';
 import { IconName } from '@restate/ui-icons';
@@ -30,6 +31,7 @@ export function TenantOverview({ scope }: TenantCatalogProps) {
         <SchemaRegistryError className="mx-4 mb-4 rounded-xl" />
         <overview.Component />
       </div>
+      <TriggerWorkflowDialog />
     </TenantSchemaRegistry>
   );
 }
@@ -49,6 +51,7 @@ function TenantDetailsPage({
           </BatchOperationsProvider>
         </BreadcrumbsProvider>
         <InvocationActions />
+        <TriggerWorkflowDialog />
       </ServiceTargetProvider>
     </TenantSchemaRegistry>
   );

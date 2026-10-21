@@ -1,6 +1,4 @@
-import { RestateError } from '@restate/util-errors';
-
-export const TENANT_HEADER = 'x-restate-tenant';
+import { muxPost } from '@restate/data-access-ingress-mux';
 export const CRON_SERVICE = 'cron';
 export const CRON_KEY = 'default';
 
@@ -46,35 +44,7 @@ export interface UpdateScheduleRequest extends CreateScheduleRequest {
   id: string;
 }
 
-export function cronHandlerUrl(muxUrl: string, handler: string) {
-  return `${muxUrl.replace(/\/+$/, '')}/restate/call/${CRON_SERVICE}/${CRON_KEY}/${handler}`;
-}
-
-async function toError(response: Response) {
-  const text = await response.text();
-  let message = text;
-  let code: string | undefined;
-  try {
-    const body = JSON.parse(text) as { message?: unknown; code?: unknown };
-    if (typeof body.message === 'string') {
-      message = body.message;
-    }
-    if (body.code !== undefined && body.code !== null) {
-      code = String(body.code);
-    }
-  } catch {
-    message = text;
-  }
-  return new RestateError(
-    message || `The ingress mux answered ${response.status}`,
-    code,
-    undefined,
-    undefined,
-    response.status,
-  );
-}
-
-export async function callCron<T>({
+export function callCron<T>({
   muxUrl,
   scope,
   handler,
@@ -87,19 +57,11 @@ export async function callCron<T>({
   body?: unknown;
   signal?: AbortSignal;
 }): Promise<T> {
-  const response = await fetch(cronHandlerUrl(muxUrl, handler), {
-    method: 'POST',
+  return muxPost<T>({
+    muxUrl,
+    scope,
+    path: `/restate/call/${CRON_SERVICE}/${CRON_KEY}/${handler}`,
+    body,
     signal,
-    headers: {
-      accept: 'application/json',
-      [TENANT_HEADER]: scope,
-      ...(body !== undefined && { 'content-type': 'application/json' }),
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (!response.ok) {
-    throw await toError(response);
-  }
-  const text = await response.text();
-  return (text ? JSON.parse(text) : undefined) as T;
 }

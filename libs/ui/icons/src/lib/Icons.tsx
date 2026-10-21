@@ -129,6 +129,7 @@ import { Go } from './custom-icons/Go';
 import { Java } from './custom-icons/Java';
 import { Kotlin } from './custom-icons/Kotlin';
 import { Typescript } from './custom-icons/Typescript';
+import { TanStack } from './custom-icons/TanStack';
 import { Rust } from './custom-icons/Rust';
 import { Python } from './custom-icons/Python';
 import { Tunnel } from './custom-icons/Tunnel';
@@ -187,6 +188,7 @@ export const enum IconName {
   Go = 'Go',
   Rust = 'Rust',
   Typescript = 'Typescript',
+  TanStack = 'TanStack',
   Java = 'Java',
   Python = 'Python',
   Kotlin = 'Kotlin',
@@ -330,6 +332,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.Go]: Go,
   [IconName.Rust]: Rust,
   [IconName.Typescript]: Typescript,
+  [IconName.TanStack]: TanStack,
   [IconName.Java]: Java,
   [IconName.Python]: Python,
   [IconName.Ellipsis]: Ellipsis,

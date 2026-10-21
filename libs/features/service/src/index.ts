@@ -6,3 +6,5 @@ export * from './lib/ServicePlaygroundEmbed';
 export * from './lib/ServicePlaygroundSidebarAction';
 export * from './lib/ServiceType';
 export * from './lib/constants';
+export * from './lib/tanstackWorkflow';
+export * from './lib/TriggerWorkflow';

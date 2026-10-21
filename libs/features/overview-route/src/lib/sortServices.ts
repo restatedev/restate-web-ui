@@ -6,7 +6,10 @@ import {
   type ServiceIssue,
 } from '@restate/features-system-health';
 
-export type OverviewService = ServiceSummary & { handlers?: Handler[] };
+export type OverviewService = ServiceSummary & {
+  handlers?: Handler[];
+  metadata?: Record<string, string> | null;
+};
 
 export function sortServices<T extends ServiceSummary>(
   services: T[],

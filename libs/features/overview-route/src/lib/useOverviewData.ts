@@ -23,6 +23,7 @@ import {
   type ServiceIssue,
 } from '@restate/features-system-health';
 import { useRestateContext } from '@restate/features-restate-context';
+import { getListedHandlers } from '@restate/features-service';
 import {
   getUserBreakdownCountMode,
   setUserBreakdownCountMode,
@@ -75,15 +76,19 @@ export function useOverviewData({
   const servicesMap = useMemo(
     () =>
       new Map<string, OverviewService>(
-        Array.from(serviceSummaries, ([name, service]) => [
-          name,
-          {
-            ...service,
-            handlers: isHandlersPending
-              ? undefined
-              : (fullServices.get(name)?.handlers ?? []),
-          },
-        ]),
+        Array.from(serviceSummaries, ([name, service]) => {
+          const fullService = fullServices.get(name);
+          return [
+            name,
+            {
+              ...service,
+              metadata: fullService?.metadata,
+              handlers: isHandlersPending
+                ? undefined
+                : getListedHandlers(fullService, fullService?.handlers ?? []),
+            },
+          ];
+        }),
       ),
     [fullServices, isHandlersPending, serviceSummaries],
   );

@@ -3,7 +3,12 @@ import {
   useListDeployments,
   useServiceDetails,
 } from '@restate/data-access-admin-api-hooks';
-import { ServiceType } from '@restate/features-service';
+import {
+  getListedHandlers,
+  isTanstackWorkflow,
+  ServiceType,
+  TriggerWorkflowButton,
+} from '@restate/features-service';
 import { ServiceTarget } from '@restate/features-service-target';
 import { Badge } from '@restate/ui-badge';
 import { Breadcrumbs } from '@restate/ui-breadcrumbs';
@@ -36,7 +41,10 @@ function Component() {
   });
   const { dataUpdatedAt: deploymentsUpdatedAt } = useListDeployments();
   const isReadOnly = useIsReadOnly();
-  const handlers = data?.handlers ?? [];
+  const handlers = useMemo(
+    () => getListedHandlers(data, data?.handlers ?? []),
+    [data],
+  );
   const handler = useMemo(
     () => handlers.find(({ name }) => name === requestedHandler),
     [handlers, requestedHandler],
@@ -66,9 +74,17 @@ function Component() {
             variant="header"
             className="min-w-0 flex-[0_1_auto]"
           >
-            <HandlerSelector handlers={handlers} selected={handler?.name} />
+            {(handlers.length > 0 || !isTanstackWorkflow(data)) && (
+              <HandlerSelector handlers={handlers} selected={handler?.name} />
+            )}
           </ServiceTarget>
-          {data?.ty && <ServiceType type={data.ty} className="shrink-0" />}
+          {data?.ty && (
+            <ServiceType
+              type={data.ty}
+              metadata={data.metadata}
+              className="shrink-0"
+            />
+          )}
           {isPrivate && (
             <Badge variant="warning" size="sm" className="shrink-0 gap-1">
               <Icon name={IconName.EyeOff} className="h-3 w-3" />
@@ -85,6 +101,11 @@ function Component() {
               messages={schemaWarnings.map((warning) => warning.message)}
               className="h-6 shrink-0 text-xs"
             />
+          )}
+          {isTanstackWorkflow(data) && (
+            <div className="ml-auto flex shrink-0 items-center">
+              <TriggerWorkflowButton service={service} variant="header" />
+            </div>
           )}
           {!isReadOnly && (
             <div className="ml-auto flex shrink-0 items-center">
@@ -128,6 +149,7 @@ function Component() {
             </CardGrid>
             <ServiceDetails
               service={service}
+              hasHandlersTab={handlers.length > 0 || !isTanstackWorkflow(data)}
               serviceType={data?.ty}
               handlers={handlers}
               selectedHandler={handler?.name}
