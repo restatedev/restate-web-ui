@@ -30,6 +30,7 @@
   --background-color-tint: --alpha(var(--color-black) / 5%);
   --background-color-tint-strong: --alpha(var(--color-black) / 10%);
   --background-color-backdrop: --alpha(var(--color-gray-800) / 30%);
+  --background-color-inset: --alpha(var(--color-gray-200) / 50%);
   --background-color-inverse: var(--color-zinc-800);
   --background-color-inverse-muted: var(--color-zinc-700);
   --background-color-inverse-emphasis: var(--color-zinc-600);
@@ -107,6 +108,7 @@
   --text-color-muted: var(--color-gray-500);
   --text-color-subtle: var(--color-gray-400);
   --text-color-faint: var(--color-gray-300);
+  --text-color-placeholder: var(--text-color-subtle);
   --text-color-inverse: var(--color-white);
   --text-color-inverse-secondary: var(--color-gray-200);
   --text-color-inverse-tertiary: var(--color-gray-300);
@@ -145,6 +147,7 @@
   --border-color-neutral-strong: var(--color-gray-600);
   --border-color-tint-subtle: --alpha(var(--color-black) / 5%);
   --border-color-tint: --alpha(var(--color-black) / 10%);
+  --border-color-inset: var(--border-color-default);
   --border-color-surface: var(--color-white);
   --border-color-queued: var(--background-color-pending-vivid);
   --border-color-ripple: color-mix(
@@ -303,6 +306,7 @@
   --box-shadow-color-default: var(--color-zinc-800);
   --box-shadow-color-highlight: var(--background-color-highlight);
   --box-shadow-color-edge: var(--background-color-surface);
+  --box-shadow-color-inset: --alpha(var(--box-shadow-color-default) / 3%);
   --box-shadow-color-inverse-edge: var(--background-color-inverse-strong);
 }
 
@@ -505,6 +509,7 @@
     --background-color-tint: --alpha(var(--color-white) / 6%);
     --background-color-tint-strong: --alpha(var(--color-white) / 10%);
     --background-color-backdrop: --alpha(var(--color-black) / 60%);
+    --background-color-inset: --alpha(var(--color-black) / 26%);
     --background-color-inverse: oklch(0.36 0.022 264);
     --background-color-inverse-muted: oklch(0.41 0.022 264);
     --background-color-inverse-emphasis: oklch(0.47 0.022 264);
@@ -729,6 +734,7 @@
     --text-color-muted: oklch(0.71 0.0055 264);
     --text-color-subtle: oklch(0.615 0.0055 264);
     --text-color-faint: oklch(0.5 0.0055 264);
+    --text-color-placeholder: oklch(0.66 0.0055 264);
     --raised-text: var(--text-color-primary);
     --raised-text-muted: var(--text-color-tertiary);
     --raised-text-subtle: var(--text-color-muted);
@@ -785,6 +791,7 @@
     --border-color-neutral-strong: oklch(0.67 0.0132 264);
     --border-color-tint-subtle: --alpha(var(--color-white) / 4%);
     --border-color-tint: --alpha(var(--color-white) / 7%);
+    --border-color-inset: --alpha(var(--color-white) / 7%);
     --border-color-surface: var(--background-color-surface);
     --raised-on-tint-border: --alpha(var(--color-white) / 9%);
     --border-color-queued: var(--color-yellow-400);
@@ -845,6 +852,7 @@
     --box-shadow-color-default: var(--color-black);
     --box-shadow-color-highlight: --alpha(var(--color-white) / 30%);
     --box-shadow-color-edge: --alpha(var(--color-white) / 2%);
+    --box-shadow-color-inset: --alpha(var(--color-black) / 28%);
     --box-shadow-color-inverse-edge: --alpha(var(--color-white) / 6%);
   }
 
@@ -862,7 +870,7 @@
 
   input::placeholder,
   textarea::placeholder {
-    color: var(--text-color-subtle);
+    color: var(--text-color-placeholder);
   }
 }
 

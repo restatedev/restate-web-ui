@@ -57,19 +57,19 @@ Answer in order and stop at the first yes. The design-system page shows the same
 2. **Is it the page, or a rail beside it?** `bg-canvas` for the page and in-page frames (`Section`, toolbar strips, fades into the page); `bg-sunken` for the sidebar and docked side panel.
 3. **Is it a panel or card on the page?** `bg-surface`; `bg-subtle` for quiet areas inside it (card bodies, content-panel bodies, the active sidebar item).
 4. **Is it a control someone presses?** `bg-raised`: secondary buttons, button-styled links, chips, and the selected thumb of a segmented control, tab strip or nav indicator.
-5. **Is it an input or inset field?** `bg-muted`.
+5. **Is it an input or an inset well?** `bg-inset` with `border-inset`: text fields, selects, comboboxes, code fields, field groups, and wells that hold content inside a panel or dialog (code snippets, lists, filter summaries). It's translucent in both themes, so a well is always recessed into whatever it sits on.
 6. **Is it hover or pressed?** See [hover and pressed](#hover-and-pressed).
 7. **Is it a status?** Use a [status family](#status-families), not a neutral layer.
 
 ### All neutral backgrounds
 
-| Group       | Tokens (back to front)                                        | Notes                                                                                     |
-| ----------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Layers      | `sunken`, `canvas`, `subtle`, `overlay`, `surface`, `raised`  | Opaque areas. Pick by what the area is, not by how light it looks                         |
-| Fills       | `muted`, `emphasis`, `strong`, `neutral`, `neutral-strong`    | Opaque fills inside a layer: fields, pressed states, skeletons, solid neutral marks       |
-| Translucent | `tint-subtle`, `tint`, `tint-strong`, `backdrop`              | Show what's underneath; hover, pressed and edges on any background; `backdrop` for scrims |
-| Effects     | `highlight`, `shade`                                          | White and black in both themes, only with an opacity on colored fills                     |
-| Inverse     | `inverse`, `inverse-muted/-emphasis/-strong`, `inverse-tint*` | Only on [inverse surfaces](#inverse-surfaces)                                             |
+| Group       | Tokens (back to front)                                        | Notes                                                                                                                   |
+| ----------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Layers      | `sunken`, `canvas`, `subtle`, `overlay`, `surface`, `raised`  | Opaque areas. Pick by what the area is, not by how light it looks                                                       |
+| Fills       | `muted`, `emphasis`, `strong`, `neutral`, `neutral-strong`    | Opaque fills inside a layer: chips, pressed states, skeletons, solid neutral marks                                      |
+| Translucent | `tint-subtle`, `tint`, `tint-strong`, `backdrop`, `inset`     | Show what's underneath; hover, pressed and edges on any background; `backdrop` for scrims; `inset` for fields and wells |
+| Effects     | `highlight`, `shade`                                          | White and black in both themes, only with an opacity on colored fills                                                   |
+| Inverse     | `inverse`, `inverse-muted/-emphasis/-strong`, `inverse-tint*` | Only on [inverse surfaces](#inverse-surfaces)                                                                           |
 
 `bg-canvas`, `bg-overlay` and `bg-muted` are all gray-100 in the light theme, and `bg-surface` and `bg-raised` are both white, but in dark mode each is a different layer, so pick by role. A fade or mask that should blend into the toolbar or page behind it must use that layer's token (`from-canvas`), never a token that only happens to match in light.
 
@@ -104,6 +104,7 @@ Some components change what a token means for their content instead of adding pu
 | ------------------------- | --------------------------------------------------------------------------------- |
 | `border-default`          | The default edge. A bare `border` already uses it, so you rarely need to write it |
 | `border-muted`            | Very light separators, disabled fields                                            |
+| `border-inset`            | Edge of fields and inset wells, paired with `bg-inset`                            |
 | `border-strong`           | Dashed placeholders, edges that must show on `bg-muted`                           |
 | `border-neutral(-strong)` | Control outlines: radios, a focused group                                         |
 | `border-tint(-subtle)`    | Translucent edges on raised controls: buttons, the tab indicator, floating panels |
@@ -120,10 +121,10 @@ Use `divide-default` or `divide-muted` between rows.
 | `text-secondary` | Field labels, emphasized body text                               |
 | `text-tertiary`  | Regular body text in tables and cards, inactive tabs             |
 | `text-muted`     | Descriptions, secondary metadata                                 |
-| `text-subtle`    | Hints, icons, placeholders, disabled text                        |
+| `text-subtle`    | Hints, icons, disabled text                                      |
 | `text-faint`     | Decorative chevrons and separators, the lowest-emphasis marks    |
 
-Placeholders: `placeholder:text-subtle`. Disabled: `disabled:text-subtle`.
+Placeholders: `placeholder:text-placeholder` (`text-subtle` in light, a little brighter in dark so empty fields stay readable on the darker inset fill). Disabled: `disabled:text-subtle`.
 
 Code uses `text-syntax-key`, `-string`, `-number`, `-keyword`, `-punctuation` and `-comment`. The editors, the playground's code samples and `@restate/ui-code` snippets (highlight.js, themed in `syntaxTheme.css`) are colored from them, so use them for any hand-rendered JSON or SQL too.
 
@@ -171,21 +172,22 @@ Status charts fill queued work (the inbox stage, pending invocations) from `--ba
 
 These are the most common combinations in the codebase. Prefer the component when one exists.
 
-| Pattern                | Classes                                                                                                                                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Panel on the page      | `rounded-2xl border bg-surface shadow-xs`                                                                                                                                                                     |
-| Card                   | `<Card intent="…">` with `<CardHeader>`                                                                                                                                                                       |
-| Section                | `<Section>` + `<SectionTitle>` + `<SectionContent>`: a canvas frame around raised surfaces                                                                                                                    |
-| Text field             | `<FormFieldInput>`. Hand-rolled: `rounded-lg border border-default bg-muted text-primary placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-muted/70 focus:outline-2 focus:outline-focus` |
-| Status badge           | `<Badge variant="…">`. Hand-rolled: `border border-F-strong/20 bg-F-subtle text-F-strong`                                                                                                                     |
-| Banner / callout       | `rounded-xl border border-F bg-F-subtle text-F`, icon `fill-F text-on-F`                                                                                                                                      |
-| Neutral chip           | `rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary`                                                                                                                                              |
-| Menu / popover         | Frame `bg-overlay`, sections `rounded-xl border bg-surface`, selected item `bg-accent text-inverse`                                                                                                           |
-| Buttons                | `<Button variant="primary" \| "secondary" \| "destructive" \| "icon">`                                                                                                                                        |
-| Text link              | `<Link>`, which renders `text-accent decoration-accent/60 hover:decoration-accent`                                                                                                                            |
-| Focus                  | Extend `focusRing` from `@restate/ui-focus` (`outline-focus`); fields use `focus:outline-2 focus:outline-focus`                                                                                               |
-| Skeleton               | `animate-pulse rounded-full bg-emphasis/70`                                                                                                                                                                   |
-| Floating inverse panel | `rounded-xl border border-inverse bg-inverse/90 text-inverse-secondary shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] backdrop-blur-xl`                                                      |
+| Pattern                | Classes                                                                                                                                                                                                                                                                     |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Panel on the page      | `rounded-2xl border bg-surface shadow-xs`                                                                                                                                                                                                                                   |
+| Card                   | `<Card intent="…">` with `<CardHeader>`                                                                                                                                                                                                                                     |
+| Section                | `<Section>` + `<SectionTitle>` + `<SectionContent>`: a canvas frame around raised surfaces                                                                                                                                                                                  |
+| Text field             | `<FormFieldInput>`. Hand-rolled: `rounded-lg border border-inset bg-inset text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] placeholder:text-placeholder invalid:border-danger-strong invalid:bg-danger-muted/70 focus:outline-2 focus:outline-focus` |
+| Inset well             | `rounded-xl border bg-inset shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]`: code snippets, lists and summaries inside a panel or dialog                                                                                                                        |
+| Status badge           | `<Badge variant="…">`. Hand-rolled: `border border-F-strong/20 bg-F-subtle text-F-strong`                                                                                                                                                                                   |
+| Banner / callout       | `rounded-xl border border-F bg-F-subtle text-F`, icon `fill-F text-on-F`                                                                                                                                                                                                    |
+| Neutral chip           | `rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary`                                                                                                                                                                                                            |
+| Menu / popover         | Frame `bg-overlay`, sections `rounded-xl border bg-surface`, selected item `bg-accent text-inverse`                                                                                                                                                                         |
+| Buttons                | `<Button variant="primary" \| "secondary" \| "destructive" \| "icon">`                                                                                                                                                                                                      |
+| Text link              | `<Link>`, which renders `text-accent decoration-accent/60 hover:decoration-accent`                                                                                                                                                                                          |
+| Focus                  | Extend `focusRing` from `@restate/ui-focus` (`outline-focus`); fields use `focus:outline-2 focus:outline-focus`                                                                                                                                                             |
+| Skeleton               | `animate-pulse rounded-full bg-emphasis/70`                                                                                                                                                                                                                                 |
+| Floating inverse panel | `rounded-xl border border-inverse bg-inverse/90 text-inverse-secondary shadow-[inset_0_1px_0_0_var(--background-color-inverse-strong)] backdrop-blur-xl`                                                                                                                    |
 
 ## Highlight, shade and shadows
 
@@ -198,12 +200,13 @@ Colored fills (buttons, bars, legend dots, stripes) often get a white sheen or a
 
 Highlight and shade stay white and black in dark mode, which is what a colored fill needs. For stripes or sheens over neutral backgrounds, use `tint` or `surface` with an opacity instead, so they flip with the theme.
 
-| Shadow color                      | Use for                                                                                                                |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `--box-shadow-color-highlight`    | Inset top sheen on colored fills (buttons, bars): `shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)]` |
-| `--box-shadow-color-edge`         | Inset top edge on neutral panels, headers and cards: `shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%)]`   |
-| `--box-shadow-color-inverse-edge` | Inset top edge on inverse panels: `shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)]`                      |
-| `--box-shadow-color-default`      | Every other shadow color: `shadow-default/5`, `--theme(--box-shadow-color-default/3%)`                                 |
+| Shadow color                      | Use for                                                                                                                                |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `--box-shadow-color-highlight`    | Inset top sheen on colored fills (buttons, bars): `shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-highlight/20%)]`                 |
+| `--box-shadow-color-edge`         | Inset top edge on neutral panels, headers and cards: `shadow-[inset_0_2px_0_0_--theme(--box-shadow-color-edge/95%)]`                   |
+| `--box-shadow-color-inverse-edge` | Inset top edge on inverse panels: `shadow-[inset_0_1px_0_0_var(--box-shadow-color-inverse-edge)]`                                      |
+| `--box-shadow-color-inset`        | Recess shadow of fields and inset wells: `shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]` (faint in light, deeper in dark) |
+| `--box-shadow-color-default`      | Every other shadow color: `shadow-default/5`, `--theme(--box-shadow-color-default/3%)`                                                 |
 
 Mask gradients (`mask-[…]`) keep black and white, because there they mean opacity, not color. The lint rule also rejects `white` and `black` inside `color-mix()` and gradients; mix toward `--background-color-surface` (lighter in light, darker in dark) or use highlight/shade.
 

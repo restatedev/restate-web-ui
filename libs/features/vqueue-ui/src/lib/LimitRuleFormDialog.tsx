@@ -106,7 +106,7 @@ function RuleTextField({
         placeholder={placeholder}
         min={type === 'number' ? 1 : undefined}
         spellCheck={false}
-        className="mt-0 h-9 w-full min-w-0 rounded-lg border border-default bg-muted px-2.5 py-1.5 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] outline-offset-2 placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-subtle read-only:text-tertiary focus:border-default focus:bg-surface focus:ring-0 focus:outline-2 focus:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint [&[readonly]]:bg-muted"
+        className="mt-0 h-9 w-full min-w-0 rounded-lg border border-inset bg-inset px-2.5 py-1.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] outline-offset-2 placeholder:text-placeholder invalid:border-danger-strong invalid:bg-danger-subtle read-only:text-tertiary focus:border-inset focus:ring-0 focus:outline-2 focus:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint [&[readonly]]:bg-inset"
       />
       {description && (
         <span className="text-2xs leading-4 text-muted">{description}</span>

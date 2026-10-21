@@ -63,7 +63,7 @@ export function RegisterDeploymentResults() {
   const { services = [] } = useRegisterDeploymentContext();
   if (services.length === 0) {
     return (
-      <div className="relative mt-6 flex w-full flex-col items-center justify-center gap-2 rounded-xl border bg-emphasis/50 p-4 text-center shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+      <div className="relative mt-6 flex w-full flex-col items-center justify-center gap-2 rounded-xl border bg-inset p-4 text-center shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
         <h3 className="text-sm font-semibold text-tertiary">No services</h3>
         <p className="max-w-md px-4 text-sm text-muted">
           This deployment does not expose any services.
@@ -92,7 +92,7 @@ function Service({
   defaultExpanded?: boolean;
 }) {
   return (
-    <div className="w-full rounded-xl border bg-emphasis/50 p-0.5 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+    <div className="w-full rounded-xl border bg-inset p-0.5 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
       <Disclosure
         defaultExpanded={defaultExpanded}
         className={({ isExpanded }) =>

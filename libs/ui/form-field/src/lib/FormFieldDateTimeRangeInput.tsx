@@ -18,7 +18,7 @@ const containerStyles = tv({
 });
 
 const groupStyles = tv({
-  base: 'relative mt-0 flex min-h-8.5 w-full min-w-0 items-center overflow-hidden rounded-lg border border-default bg-muted px-2 py-1.5 text-center text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] invalid:border-danger-strong invalid:bg-danger-muted/70 focus-within:border-default focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus-within:outline-2 focus-within:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none',
+  base: 'relative mt-0 flex min-h-8.5 w-full min-w-0 items-center overflow-hidden rounded-lg border border-inset bg-inset px-2 py-1.5 text-center text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] invalid:border-danger-strong invalid:bg-danger-muted/70 focus-within:border-inset focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_2px_0px_var(--box-shadow-color-inset)] focus-within:outline-2 focus-within:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none',
 });
 
 const inputStyles = tv({

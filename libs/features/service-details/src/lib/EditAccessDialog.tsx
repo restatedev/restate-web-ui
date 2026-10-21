@@ -131,7 +131,7 @@ export function EditAccessDialog() {
                   Choose how your service should be accessed:
                 </span>
               </FormFieldLabel>
-              <div className="mt-0 flex flex-col gap-1 rounded-lg border border-default bg-muted px-1 py-1 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+              <div className="mt-0 flex flex-col gap-1 rounded-lg border border-inset bg-inset px-1 py-1 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
                 <CustomRadio
                   value="true"
                   label="Public"
