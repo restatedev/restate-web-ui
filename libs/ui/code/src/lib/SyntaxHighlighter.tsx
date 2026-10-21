@@ -6,7 +6,7 @@ import go from 'highlight.js/lib/languages/go';
 import bash from 'highlight.js/lib/languages/bash';
 import json from 'highlight.js/lib/languages/json';
 import kotlin from 'highlight.js/lib/languages/kotlin';
-import 'highlight.js/styles/mono-blue.css';
+import './syntaxTheme.css';
 
 hljs.registerLanguage('typescript', typescript);
 hljs.registerLanguage('bash', bash);

@@ -1,0 +1,64 @@
+.hljs {
+  color: var(--text-color-syntax-punctuation);
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-title,
+.hljs-section,
+.hljs-doctag,
+.hljs-name,
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-comment,
+.hljs-meta,
+.hljs-doctag,
+.hljs-quote {
+  color: var(--text-color-syntax-comment);
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-char.escape_ {
+  color: var(--text-color-syntax-string);
+}
+
+.hljs-number,
+.hljs-literal {
+  color: var(--text-color-syntax-number);
+}
+
+.hljs-keyword,
+.hljs-built_in,
+.hljs-type,
+.hljs-selector-tag,
+.hljs-name,
+.hljs-tag {
+  color: var(--text-color-syntax-keyword);
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-property,
+.hljs-title,
+.hljs-section,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-symbol,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-link,
+.hljs-bullet {
+  color: var(--text-color-syntax-key);
+}
+
+.hljs-deletion {
+  color: var(--text-color-danger);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}

@@ -10,7 +10,7 @@ const PALETTE_VAR = new RegExp(
 );
 
 const LITERAL_COLOR =
-  /(?:^|[\s"'`(,:=_])(#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])|(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^()]*\))/;
+  /(?:^|[\s"'`(,:=_[])(#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![\w-])|(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^()]*\))/;
 
 function findPaletteColor(value) {
   return value.match(PALETTE_CLASS)?.[1] ?? value.match(PALETTE_VAR)?.[1];

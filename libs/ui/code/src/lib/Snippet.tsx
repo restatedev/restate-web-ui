@@ -39,7 +39,7 @@ function SyntaxHighlighter({
 }) {
   return (
     <span
-      className=""
+      className="hljs"
       dangerouslySetInnerHTML={{
         __html: syntaxHighlighter.highlight(code, {
           language,

@@ -125,7 +125,7 @@ Use `divide-default` or `divide-muted` between rows.
 
 Placeholders: `placeholder:text-subtle`. Disabled: `disabled:text-subtle`.
 
-Code uses `text-syntax-key`, `-string`, `-number`, `-keyword`, `-punctuation` and `-comment`. The editors and the playground's code samples are colored from them, so use them for any hand-rendered JSON or SQL too.
+Code uses `text-syntax-key`, `-string`, `-number`, `-keyword`, `-punctuation` and `-comment`. The editors, the playground's code samples and `@restate/ui-code` snippets (highlight.js, themed in `syntaxTheme.css`) are colored from them, so use them for any hand-rendered JSON or SQL too.
 
 ## Inverse surfaces
 
