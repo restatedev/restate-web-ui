@@ -38,6 +38,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../data-access/admin-api/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/table/tsconfig.lib.json"
     },
     {
@@ -45,9 +48,6 @@
     },
     {
       "path": "../../ui/tooltip/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/layout/tsconfig.lib.json"
     },
     {
       "path": "../../ui/filter-builder/tsconfig.lib.json"
@@ -59,9 +59,6 @@
       "path": "../../ui/button/tsconfig.lib.json"
     },
     {
-      "path": "../batch-operations/tsconfig.lib.json"
-    },
-    {
       "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
     },
     {
@@ -69,12 +66,6 @@
     },
     {
       "path": "../../ui/loading/tsconfig.lib.json"
-    },
-    {
-      "path": "../breadcrumbs/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/icons/tsconfig.lib.json"
     },
     {
       "path": "../../ui/card/tsconfig.lib.json"
@@ -86,19 +77,40 @@
       "path": "../../ui/content-panel/tsconfig.lib.json"
     },
     {
-      "path": "../service-target/tsconfig.lib.json"
-    },
-    {
       "path": "../invocation-ui/tsconfig.lib.json"
-    },
-    {
-      "path": "../invocation-route/tsconfig.lib.json"
     },
     {
       "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/layout/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/icons/tsconfig.lib.json"
+    },
+    {
+      "path": "../service-target/tsconfig.lib.json"
+    },
+    {
+      "path": "../service-route/tsconfig.lib.json"
+    },
+    {
       "path": "../restate-context/tsconfig.lib.json"
+    },
+    {
+      "path": "../overview-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../invocation-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../deployment-route/tsconfig.lib.json"
+    },
+    {
+      "path": "../breadcrumbs/tsconfig.lib.json"
+    },
+    {
+      "path": "../batch-operations/tsconfig.lib.json"
     }
   ]
 }
