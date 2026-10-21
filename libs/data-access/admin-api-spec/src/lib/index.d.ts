@@ -270,6 +270,30 @@ export interface paths {
     patch: operations['resume_invocation'];
     trace?: never;
   };
+  '/invocations/{invocation_id}/signals/{signal_name}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Send a signal to an invocation
+     * @description Resolves or rejects the named signal of an invocation. A request body with content type
+     *     `application/vnd.restate.failure+json` rejects the signal with the given failure, any other
+     *     request body resolves the signal using the body as payload.
+     *
+     *     Signals sent to invocations that don't exist or are already completed are ignored.
+     */
+    post: operations['send_invocation_signal'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/kafka-clusters': {
     parameters: {
       query?: never;
@@ -2706,6 +2730,20 @@ export interface components {
     };
     /** @enum {string} */
     ServiceType: 'Service' | 'VirtualObject' | 'Workflow';
+    /** @description Failure used to reject a signal. */
+    SignalFailure: {
+      /**
+       * Format: int32
+       * @description Failure code. Defaults to 500.
+       */
+      code?: number | null;
+      /** @description Failure message. */
+      message: string;
+      /** @description Failure metadata. */
+      metadata?: {
+        [key: string]: string;
+      };
+    };
     /** @description Kafka cluster simple response. */
     SimpleKafkaClusterResponse: {
       /**
@@ -5889,6 +5927,53 @@ export interface operations {
       };
       /** @description The invocation is either inboxed or scheduled. An invocation can be resumed only when running, paused or suspended. */
       425: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+      /** @description Error when routing the request within restate. */
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorDescriptionResponse'];
+        };
+      };
+    };
+  };
+  send_invocation_signal: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Invocation identifier. */
+        invocation_id: string;
+        /** @description Signal name. */
+        signal_name: string;
+      };
+      cookie?: never;
+    };
+    /** @description Signal payload to resolve the signal, or a failure to reject it. */
+    requestBody: {
+      content: {
+        'application/octet-stream': unknown;
+        'application/vnd.restate.failure+json': components['schemas']['SignalFailure'];
+      };
+    };
+    responses: {
+      /** @description Signal accepted */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description A request field is invalid. */
+      400: {
         headers: {
           [name: string]: unknown;
         };

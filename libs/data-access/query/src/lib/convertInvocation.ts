@@ -110,7 +110,7 @@ export function convertInvocation(
     ...rest
   } = merged;
   const canParseInvocationFuture =
-    merged.pinned_service_protocol_version !== undefined &&
+    merged.pinned_service_protocol_version === undefined ||
     merged.pinned_service_protocol_version > 6;
 
   const computedStatus = getComputedInvocationStatus(
