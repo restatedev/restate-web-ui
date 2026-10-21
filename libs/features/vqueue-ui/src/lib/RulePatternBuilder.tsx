@@ -1,6 +1,7 @@
 import { Badge } from '@restate/ui-badge';
 import { Button } from '@restate/ui-button';
-import { LimitKey, Scope } from '@restate/features-vqueue-ui';
+import { LimitKey } from './LimitKey';
+import { Scope } from './Scope';
 import { ChipGroup } from '@restate/ui-chip';
 import { Icon, IconName } from '@restate/ui-icons';
 import { ListBox, ListBoxItem } from '@restate/ui-listbox';
@@ -17,7 +18,7 @@ import {
   parseConcreteKey,
   patternMatchesKey,
   type PatternFields,
-} from './pattern';
+} from './limitRulePattern';
 import { RULE_LEVEL_META, RuleLevelBadge } from './RuleLevel';
 
 const fillStyles = tv({

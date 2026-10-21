@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseConcreteKey, patternMatchesKey } from './pattern';
+import { parseConcreteKey, patternMatchesKey } from './limitRulePattern';
 
 describe('patternMatchesKey', () => {
   it.each([

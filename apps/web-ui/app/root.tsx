@@ -75,6 +75,7 @@ import { setQueryClient } from '@restate/util-react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
 import { PortalProvider } from '@restate/ui-portal';
 import { BatchOperationsProvider } from '@restate/features-batch-operations';
+import { CreateRuleDialog } from '@restate/features-vqueue-ui';
 import {
   CommandPaletteProvider,
   CommandPaletteTrigger,
@@ -506,6 +507,7 @@ function AppContent() {
                     <InvocationActions />
                     <RegisterDeploymentDialog />
                     <UpdateDeploymentDialog />
+                    <CreateRuleDialog />
                     <MonacoWarmup />
                   </CommandPaletteProvider>
                 </EditState>

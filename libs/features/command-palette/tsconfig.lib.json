@@ -67,9 +67,6 @@
       "path": "../prune-deployments/tsconfig.lib.json"
     },
     {
-      "path": "../limits-route/tsconfig.lib.json"
-    },
-    {
       "path": "../introspection-route/tsconfig.lib.json"
     },
     {

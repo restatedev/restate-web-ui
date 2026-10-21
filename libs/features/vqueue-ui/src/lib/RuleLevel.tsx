@@ -4,7 +4,7 @@ import {
 } from '@restate/features-explainers';
 import { Badge } from '@restate/ui-badge';
 import { tv } from '@restate/util-styles';
-import type { RuleLevel } from './pattern';
+import type { RuleLevel } from './limitRulePattern';
 
 export const RULE_LEVEL_META = FLOW_CONTROL_RULE_LEVEL_META;
 export const RULE_LEVEL_COLUMN_WIDTH = 96;
