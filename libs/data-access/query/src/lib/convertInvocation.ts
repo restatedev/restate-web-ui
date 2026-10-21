@@ -85,7 +85,10 @@ function parseInvocationFuture(value?: string): InvocationFuture | undefined {
   }
 
   try {
-    return JSON.parse(value) as InvocationFuture;
+    const future: unknown = JSON.parse(value);
+    return future && typeof future === 'object'
+      ? (future as InvocationFuture)
+      : undefined;
   } catch {
     return undefined;
   }
