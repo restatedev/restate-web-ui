@@ -599,7 +599,7 @@ function StateFormRow({
           className={codeStyles({
             isPending,
             className:
-              'mt-0 rounded-none border-none bg-transparent shadow-none',
+              'mt-0 rounded-none border-none bg-transparent shadow-none focus-within:outline-none',
           })}
         />
       </DisclosurePanel>

@@ -68,6 +68,7 @@ export interface ConfirmationDialogProps {
   onClose?: VoidFunction;
   onCloseQueryParam?: (searchParams: URLSearchParams) => URLSearchParams;
   surface?: string;
+  autoFocusClose?: boolean;
 }
 
 const iconStyles = tv({
@@ -136,6 +137,7 @@ export function ConfirmationDialogBody({
   footer,
   isSubmitDisabled,
   closeText = 'Close',
+  autoFocusClose = true,
 }: PropsWithChildren<
   Omit<ConfirmationDialogProps, 'queryParam' | 'onClose' | 'surface'>
 >) {
@@ -179,7 +181,7 @@ export function ConfirmationDialogBody({
                   variant="secondary"
                   className=""
                   disabled={isPending}
-                  autoFocus
+                  autoFocus={autoFocusClose}
                 >
                   {closeText}
                 </Button>

@@ -1,12 +1,10 @@
-import { focusRing } from '@restate/ui-focus';
 import { useCallback, useEffect, useRef } from 'react';
 import { tv } from '@restate/util-styles';
 import type { editor } from 'monaco-editor';
 import { Editor } from '@restate/ui-editor';
 
 const inputStyles = tv({
-  extend: focusRing,
-  base: 'mt-0 block w-full min-w-0 flex-1 rounded-lg border border-default bg-muted py-0 pl-2 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-muted/70 focus:border-default focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus:outline-2 focus:outline-focus disabled:border-muted disabled:bg-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint',
+  base: 'mt-0 block w-full min-w-0 flex-1 rounded-lg border border-default bg-muted py-0 pl-2 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-muted/70 focus-within:border-default focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus-within:outline-2 focus-within:outline-focus disabled:border-muted disabled:bg-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint',
 });
 
 export function FormFieldCode({
@@ -55,6 +53,7 @@ export function FormFieldCode({
           editorRef={editorRef}
           onInput={onContentChange}
           readonly={readonly}
+          autoFocus={autoFocus}
         />
       )}
       <input

@@ -41,9 +41,6 @@
       "path": "../../ui/nav/tsconfig.lib.json"
     },
     {
-      "path": "../../util/binary/tsconfig.lib.json"
-    },
-    {
       "path": "../../ui/radio-group/tsconfig.lib.json"
     },
     {

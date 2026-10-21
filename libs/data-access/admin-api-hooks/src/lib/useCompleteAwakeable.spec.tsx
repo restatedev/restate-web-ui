@@ -51,33 +51,83 @@ describe('useCompleteAwakeable', () => {
     );
   }
 
-  async function complete(variables: CompleteAwakeableVariables) {
-    const { result } = renderHook(() => useCompleteAwakeable('inv_1'), {
-      wrapper,
-    });
+  async function complete(
+    variables: CompleteAwakeableVariables,
+    encode?: (value: string) => Promise<string> | string,
+  ) {
+    const { result } = renderHook(
+      () => useCompleteAwakeable('inv_1', { encode }),
+      { wrapper },
+    );
     await act(() => result.current.mutateAsync(variables));
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] ?? [];
     return { url, init, headers: new Headers(init?.headers) };
   }
 
-  it('posts the value bytes to the ingress resolve endpoint', async () => {
-    const value = new TextEncoder().encode('{"approved":true}');
-
+  it('posts the UTF-8 value to the ingress resolve endpoint', async () => {
     const { url, init } = await complete({
       awakeableId: AWAKEABLE_ID,
       action: 'resolve',
-      value,
+      value: '{"approved":true}',
     });
 
     expect(url).toBe(
       `http://localhost:8080/restate/awakeables/${AWAKEABLE_ID}/resolve`,
     );
-    expect(init).toMatchObject({
-      credentials: 'include',
-      method: 'POST',
-      body: value,
-    });
+    expect(init).toMatchObject({ credentials: 'include', method: 'POST' });
+    expect(new TextDecoder().decode(init?.body as Uint8Array)).toBe(
+      '{"approved":true}',
+    );
+  });
+
+  it('posts the bytes produced by the encode option', async () => {
+    const encode = vi.fn(async (value: string) => btoa(`encoded:${value}`));
+
+    const { init } = await complete(
+      { awakeableId: AWAKEABLE_ID, action: 'resolve', value: 'v' },
+      encode,
+    );
+
+    expect(encode).toHaveBeenCalledWith('v');
+    expect(new TextDecoder().decode(init?.body as Uint8Array)).toBe(
+      'encoded:v',
+    );
+  });
+
+  it('fails without calling the ingress when encoding fails', async () => {
+    const { result } = renderHook(
+      () =>
+        useCompleteAwakeable('inv_1', {
+          encode: () => Promise.reject(new Error('Codec failed')),
+        }),
+      { wrapper },
+    );
+
+    const error = await act(() =>
+      result.current
+        .mutateAsync({
+          awakeableId: AWAKEABLE_ID,
+          action: 'resolve',
+          value: 'v',
+        })
+        .catch((error: unknown) => error),
+    );
+
+    expect(error).toMatchObject({ message: 'Codec failed' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('does not encode the reject message', async () => {
+    const encode = vi.fn((value: string) => btoa(value));
+
+    const { init } = await complete(
+      { awakeableId: AWAKEABLE_ID, action: 'reject', message: 'nope' },
+      encode,
+    );
+
+    expect(encode).not.toHaveBeenCalled();
+    expect(init?.body).toBe('nope');
   });
 
   it('posts the failure message to the ingress reject endpoint', async () => {

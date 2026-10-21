@@ -2326,6 +2326,81 @@ export function useRestartWorkflowAsNew(
   });
 }
 
+export type CompleteAwakeableVariables = { awakeableId: string } & (
+  | { action: 'resolve'; value: string }
+  | { action: 'reject'; message: string }
+);
+
+async function getIngressError(response: Response) {
+  const body: string | { message?: string } | undefined = response.headers
+    .get('content-type')
+    ?.includes('json')
+    ? await response.json().catch(() => undefined)
+    : await response.text().catch(() => undefined);
+  const message = typeof body === 'object' ? body?.message : body;
+
+  return new RestateError(
+    message || 'An unexpected error occurred. Please try again later.',
+    undefined,
+    undefined,
+    undefined,
+    response.status,
+  );
+}
+
+export function useCompleteAwakeable(
+  invocationId: string,
+  {
+    encode,
+    ...options
+  }: MutationOptions<
+    void,
+    RestateError | Error,
+    CompleteAwakeableVariables,
+    unknown
+  > & {
+    encode?: (value: string) => Promise<string> | string;
+  } = {},
+) {
+  const { ingressUrl } = useRestateContext();
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [`/invocations/${invocationId}/awakeables`],
+    mutationFn: async (variables: CompleteAwakeableVariables) => {
+      const url = `${ingressUrl.replace(/\/$/, '')}/restate/awakeables/${encodeURIComponent(variables.awakeableId)}/${variables.action}`;
+      const headers = new Headers();
+      const token = getAuthToken();
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+
+      const body =
+        variables.action === 'reject'
+          ? variables.message
+          : encode
+            ? base64ToUint8Array(await encode(variables.value))
+            : new TextEncoder().encode(variables.value);
+
+      const response = await fetch(url, {
+        credentials: 'include',
+        method: 'POST',
+        headers,
+        body,
+      });
+      if (!response.ok) {
+        throw await getIngressError(response);
+      }
+    },
+    ...options,
+    onSuccess(data, variables, context, meta) {
+      void invalidateInvocationV2Query(queryClient, baseUrl, invocationId);
+      options?.onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
 export function useResumeInvocation(
   invocationId: string,
   options?: HookMutationOptions<'/invocations/{invocation_id}/resume', 'patch'>,

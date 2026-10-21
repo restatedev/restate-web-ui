@@ -22,6 +22,7 @@ export function Editor({
   readonly,
   onInput,
   applyTheme,
+  autoFocus,
 }: {
   value?: string;
   className?: string;
@@ -29,6 +30,7 @@ export function Editor({
   readonly?: boolean;
   onInput?: (value: string) => void;
   applyTheme?: boolean;
+  autoFocus?: boolean;
 }) {
   const hydrated = useHydrated();
   if (typeof value === 'undefined') {
@@ -56,6 +58,7 @@ export function Editor({
               readonly={readonly}
               onInput={onInput}
               applyTheme={applyTheme}
+              autoFocus={autoFocus}
             />
           </Suspense>
         ) : (
