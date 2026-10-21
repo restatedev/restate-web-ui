@@ -15,7 +15,6 @@ import {
   type CronProject,
   type CronSchedule,
   type UpdateScheduleRequest,
-  useMuxToken,
 } from './cronApi';
 
 type InvocationV2 = components['schemas']['InvocationV2'];
@@ -28,7 +27,6 @@ function cronQueryKey(muxUrl: string, scope: string) {
 
 export function useCronProject(scope: string) {
   const { ingressMuxUrl = '' } = useRestateContext();
-  const { token } = useMuxToken();
   return useQuery({
     queryKey: [...cronQueryKey(ingressMuxUrl, scope), 'list'],
     queryFn: ({ signal }) =>
@@ -38,7 +36,7 @@ export function useCronProject(scope: string) {
         handler: 'list',
         signal,
       }),
-    enabled: Boolean(ingressMuxUrl && token),
+    enabled: Boolean(ingressMuxUrl),
     refetchInterval: POLL_INTERVAL,
     refetchOnWindowFocus: false,
     refetchOnMount: true,

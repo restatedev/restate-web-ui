@@ -6,7 +6,6 @@ import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CronProject } from './cronApi';
-import { MUX_TOKEN_STORAGE_KEY, setMuxToken } from './cronApi';
 import { TenantCrons } from './TenantCrons';
 
 function AriaRouter({ children }: PropsWithChildren) {
@@ -75,7 +74,6 @@ function mockMux(handlers: Partial<Record<Handler, () => Response>>) {
 }
 
 beforeEach(() => {
-  setMuxToken(undefined);
   Element.prototype.getAnimations = () => [];
   Element.prototype.scrollTo = vi.fn();
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1600);
@@ -129,32 +127,21 @@ function renderCrons() {
   );
 }
 
-async function saveToken(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(
-    await screen.findByLabelText('Operator token'),
-    'operator-secret',
-  );
-  await user.click(screen.getByRole('button', { name: 'Save' }));
-}
-
 describe('TenantCrons', () => {
-  it('asks for the operator token, then lists the cron through the mux', async () => {
-    const user = userEvent.setup();
+  it('lists the cron through the mux as the page’s tenant', async () => {
     const requests = mockMux({});
     renderCrons();
 
-    expect(requests).toHaveLength(0);
-    await saveToken(user);
-
     expect(await screen.findByText('*/5 * * * *')).toBeTruthy();
-    expect(localStorage.getItem(MUX_TOKEN_STORAGE_KEY)).toBe('operator-secret');
     expect(requests[0]?.url).toBe(
-      'http://mux.test/restate/scope/acme/call/cron/default/list',
+      'http://mux.test/restate/call/cron/default/list',
     );
     expect(requests[0]?.init).toMatchObject({
       method: 'POST',
-      headers: { authorization: 'Bearer operator-secret' },
+      headers: { 'x-restate-tenant': 'acme' },
     });
+    expect(requests[0]?.init?.headers).not.toHaveProperty('authorization');
+    expect(screen.queryByLabelText('Operator token')).toBeNull();
     expect(
       screen
         .getByRole('link', { name: 'Open run inv_run1' })
@@ -174,7 +161,6 @@ describe('TenantCrons', () => {
   }, 20_000);
 
   it('marks runs whose status can’t be read as unknown', async () => {
-    setMuxToken('operator-secret');
     hooks.list.mockReturnValue({
       data: undefined,
       isPending: false,
@@ -187,20 +173,25 @@ describe('TenantCrons', () => {
     expect(screen.queryByText('non valid invocation id')).toBeNull();
   }, 20_000);
 
-  it('asks again when the mux rejects the token', async () => {
-    setMuxToken('stale');
-    mockMux({ list: () => new Response(null, { status: 401 }) });
+  it('shows the mux’s answer when it rejects the tenant header', async () => {
+    mockMux({
+      list: () =>
+        Response.json(
+          { message: 'missing or invalid x-restate-tenant header' },
+          { status: 400 },
+        ),
+    });
     renderCrons();
 
     expect(
-      await screen.findByText(/The ingress mux rejected the token/),
-    ).toBeTruthy();
-    expect(localStorage.getItem(MUX_TOKEN_STORAGE_KEY)).toBeNull();
+      (await screen.findAllByText('missing or invalid x-restate-tenant header'))
+        .length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText('Could not load schedules')).toBeTruthy();
   }, 20_000);
 
   it('shows the cron’s validation error when creating a schedule', async () => {
     const user = userEvent.setup();
-    setMuxToken('operator-secret');
     const requests = mockMux({
       list: () => Response.json({ timer: null, schedules: [] }),
       create: () =>
@@ -237,7 +228,6 @@ describe('TenantCrons', () => {
 
   it('edits a schedule with its whole definition, pre-filled', async () => {
     const user = userEvent.setup();
-    setMuxToken('operator-secret');
     const requests = mockMux({
       update: () => Response.json({ ...project.schedules[0] }),
     });
@@ -267,7 +257,7 @@ describe('TenantCrons', () => {
     );
     const update = requests.find(({ url }) => url.endsWith('/update'));
     expect(update?.url).toBe(
-      'http://mux.test/restate/scope/acme/call/cron/default/update',
+      'http://mux.test/restate/call/cron/default/update',
     );
     expect(JSON.parse(String(update?.init?.body))).toEqual({
       id: 'sched-1',
@@ -285,7 +275,6 @@ describe('TenantCrons', () => {
 
   it('shows a deleted-meanwhile schedule and refreshes the list', async () => {
     const user = userEvent.setup();
-    setMuxToken('operator-secret');
     const requests = mockMux({
       update: () =>
         Response.json(
@@ -312,7 +301,6 @@ describe('TenantCrons', () => {
 
   it('deletes a schedule after confirmation', async () => {
     const user = userEvent.setup();
-    setMuxToken('operator-secret');
     const requests = mockMux({ delete: () => new Response(null) });
     renderCrons();
 

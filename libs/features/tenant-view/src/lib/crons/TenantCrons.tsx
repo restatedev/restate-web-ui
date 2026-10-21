@@ -43,7 +43,6 @@ import {
   HoverTooltip,
   TruncateWithTooltip,
 } from '@restate/ui-tooltip';
-import { isUnauthorizedError } from '@restate/util-errors';
 import { formatDateTime, formatDurations } from '@restate/util-intl';
 import {
   SnapshotTimeProvider,
@@ -57,9 +56,7 @@ import {
   CRON_SERVICE,
   type CronRun,
   type CronSchedule,
-  useMuxToken,
 } from './cronApi';
-import { MuxTokenDialog } from './MuxTokenDialog';
 import { NewScheduleDialog } from './NewScheduleDialog';
 import {
   useCronLock,
@@ -136,9 +133,6 @@ export function TenantCrons({ scope }: TenantCronsProps) {
 
 function TenantCronsContent({ scope }: TenantCronsProps) {
   const { ingressMuxUrl } = useRestateContext();
-  const { token, isRejected } = useMuxToken();
-  const [isTokenDialogOpen, setTokenDialogOpen] = useState(false);
-  const [isTokenDialogDismissed, setTokenDialogDismissed] = useState(false);
   const [isNewScheduleOpen, setNewScheduleOpen] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState<CronSchedule>();
   const [scheduleToEdit, setScheduleToEdit] = useState<CronSchedule>();
@@ -170,15 +164,7 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
     }),
   );
   const lockHolder = lock.data?.lockHolder;
-  const openTokenDialog = () => {
-    setTokenDialogDismissed(false);
-    setTokenDialogOpen(true);
-  };
-  const isTokenMissing = !token;
-  const listError =
-    project.error && !isUnauthorizedError(project.error)
-      ? project.error
-      : undefined;
+  const listError = project.error ?? undefined;
   const s = styles();
 
   return (
@@ -210,22 +196,12 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
               {project.data &&
                 `${schedules.length} ${schedules.length === 1 ? 'schedule' : 'schedules'}`}
             </span>
-            <HoverTooltip content="Ingress mux token">
-              <Button
-                variant="icon"
-                aria-label="Ingress mux token"
-                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
-                onClick={openTokenDialog}
-              >
-                <Icon name={IconName.ApiKey} className="h-4 w-4" />
-              </Button>
-            </HoverTooltip>
             <HoverTooltip content="Refresh crons">
               <Button
                 variant="icon"
                 aria-label="Refresh crons"
                 className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg p-0"
-                disabled={isTokenMissing || project.isFetching}
+                disabled={project.isFetching}
                 onClick={() => void refresh()}
               >
                 <Icon
@@ -239,9 +215,7 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
             <Button
               variant="primary"
               className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-0.5xs"
-              onClick={() =>
-                isTokenMissing ? openTokenDialog() : setNewScheduleOpen(true)
-              }
+              onClick={() => setNewScheduleOpen(true)}
             >
               <Icon name={IconName.Plus} className="h-3.5 w-3.5" />
               New schedule
@@ -256,7 +230,7 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
                 aria-label="Cron schedules"
                 columns={columns}
                 items={schedules}
-                isLoading={!isTokenMissing && project.isPending}
+                isLoading={project.isPending}
                 numOfRows={4}
                 bodyDependencies={[
                   runs.invocations,
@@ -265,38 +239,26 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
                 ]}
                 rowDependencies={[runs.invocations, runs.isPending, runs.error]}
                 emptyPlaceholder={
-                  isTokenMissing ? (
-                    <EmptyState
-                      icon={IconName.ApiKey}
-                      title="Ingress mux token needed"
-                      description="The tenant’s cron is reached through the ingress mux with the operator token."
-                    >
-                      <Button variant="secondary" onClick={openTokenDialog}>
-                        Set token
+                  <EmptyState
+                    icon={IconName.Timer}
+                    title={
+                      listError ? 'Could not load schedules' : 'No schedules'
+                    }
+                    description={
+                      listError
+                        ? undefined
+                        : 'Schedules created for this tenant will appear here.'
+                    }
+                  >
+                    {!listError && (
+                      <Button
+                        variant="secondary"
+                        onClick={() => setNewScheduleOpen(true)}
+                      >
+                        New schedule
                       </Button>
-                    </EmptyState>
-                  ) : (
-                    <EmptyState
-                      icon={IconName.Timer}
-                      title={
-                        listError ? 'Could not load schedules' : 'No schedules'
-                      }
-                      description={
-                        listError
-                          ? undefined
-                          : 'Schedules created for this tenant will appear here.'
-                      }
-                    >
-                      {!listError && (
-                        <Button
-                          variant="secondary"
-                          onClick={() => setNewScheduleOpen(true)}
-                        >
-                          New schedule
-                        </Button>
-                      )}
-                    </EmptyState>
-                  )
+                    )}
+                  </EmptyState>
                 }
                 renderCell={(schedule, column) => {
                   switch (column.id) {
@@ -420,25 +382,15 @@ function TenantCronsContent({ scope }: TenantCronsProps) {
           </ContentPanelBody>
         </ContentPanel>
       </div>
-      <MuxTokenDialog
-        open={isTokenDialogOpen || (isTokenMissing && !isTokenDialogDismissed)}
-        isRejected={isRejected}
-        onOpenChange={(isOpen) => {
-          setTokenDialogOpen(isOpen);
-          if (!isOpen) {
-            setTokenDialogDismissed(true);
-          }
-        }}
-      />
       <NewScheduleDialog
         scope={scope}
-        open={isNewScheduleOpen && !isTokenMissing}
+        open={isNewScheduleOpen}
         onOpenChange={setNewScheduleOpen}
       />
       <NewScheduleDialog
         scope={scope}
         schedule={scheduleToEdit}
-        open={Boolean(scheduleToEdit) && !isTokenMissing}
+        open={Boolean(scheduleToEdit)}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
             setScheduleToEdit(undefined);
