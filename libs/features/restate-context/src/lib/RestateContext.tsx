@@ -83,6 +83,8 @@ type RestateContext = {
   version?: string;
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
+  schemaRegistryUrl?: string;
+  ingressMuxUrl?: string;
   baseUrl: string;
   observabilityDashboardUrl?: string;
   // Preset applied when landing on /invocations without an explicit query (e.g.
@@ -126,6 +128,8 @@ function InternalRestateContextProvider({
   isPending,
   systemHealthMonitor,
   ingressUrl,
+  schemaRegistryUrl,
+  ingressMuxUrl,
   baseUrl = '',
   observabilityDashboardUrl,
   defaultInvocationsPreset,
@@ -143,6 +147,8 @@ function InternalRestateContextProvider({
 }: PropsWithChildren<{
   isPending?: boolean;
   ingressUrl?: string;
+  schemaRegistryUrl?: string;
+  ingressMuxUrl?: string;
   baseUrl?: string;
   observabilityDashboardUrl?: string;
   defaultInvocationsPreset?: string;
@@ -173,6 +179,10 @@ function InternalRestateContextProvider({
   const releasedVersion = version?.split('-')?.at(0);
   const resolvedIngress =
     ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
+  const resolvedSchemaRegistryUrl =
+    schemaRegistryUrl || data?.schema_registry_endpoint || undefined;
+  const resolvedIngressMuxUrl =
+    ingressMuxUrl || data?.ingress_mux_endpoint || undefined;
 
   // During retries the query's `error` is still null but `failureReason`
   // already holds the last attempt's error, so classify from either.
@@ -229,6 +239,8 @@ function InternalRestateContextProvider({
         status,
         healthFailure,
         ingressUrl: resolvedIngress,
+        schemaRegistryUrl: resolvedSchemaRegistryUrl,
+        ingressMuxUrl: resolvedIngressMuxUrl,
         isVersionGte,
         baseUrl,
         observabilityDashboardUrl,
@@ -256,6 +268,8 @@ export function RestateContextProvider({
   children,
   adminBaseUrl,
   ingressUrl,
+  schemaRegistryUrl,
+  ingressMuxUrl,
   isPending,
   baseUrl,
   observabilityDashboardUrl,
@@ -275,6 +289,8 @@ export function RestateContextProvider({
 }: PropsWithChildren<{
   adminBaseUrl?: string;
   ingressUrl?: string;
+  schemaRegistryUrl?: string;
+  ingressMuxUrl?: string;
   isPending?: boolean;
   baseUrl?: string;
   observabilityDashboardUrl?: string;
@@ -300,6 +316,8 @@ export function RestateContextProvider({
     <AdminBaseURLProvider baseUrl={adminBaseUrl}>
       <InternalRestateContextProvider
         ingressUrl={ingressUrl}
+        schemaRegistryUrl={schemaRegistryUrl}
+        ingressMuxUrl={ingressMuxUrl}
         isPending={isPending}
         baseUrl={baseUrl}
         observabilityDashboardUrl={observabilityDashboardUrl}

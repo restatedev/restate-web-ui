@@ -3505,6 +3505,14 @@
               }
             ]
           },
+          "schema_registry_endpoint": {
+            "type": "string",
+            "description": "# Schema registry endpoint\n\nExternal schema registry endpoint that the Web UI should use, if configured."
+          },
+          "ingress_mux_endpoint": {
+            "type": "string",
+            "description": "# Ingress mux endpoint\n\nIngress mux endpoint that the Web UI should use, if configured."
+          },
           "max_admin_api_version": {
             "type": "integer",
             "format": "int32",

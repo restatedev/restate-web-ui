@@ -9,8 +9,14 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const ADMIN_BASE_URL = env['ADMIN_BASE_URL'] || '';
+  const SCHEMA_REGISTRY_URL = env['SCHEMA_REGISTRY_URL'] || '';
+  const INGRESS_MUX_URL = env['INGRESS_MUX_URL'] || '';
   const SERVER_HEADERS = {
-    'Set-Cookie': `adminBaseUrl=${ADMIN_BASE_URL}; SameSite=Strict; Path=/`,
+    'Set-Cookie': [
+      `adminBaseUrl=${ADMIN_BASE_URL}; SameSite=Strict; Path=/`,
+      `schemaRegistryUrl=${SCHEMA_REGISTRY_URL}; SameSite=Strict; Path=/`,
+      `ingressMuxUrl=${INGRESS_MUX_URL}; SameSite=Strict; Path=/`,
+    ],
   };
   const ADMIN_PROXY = {
     '^(?!/ui)': {

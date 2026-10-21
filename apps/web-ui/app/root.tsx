@@ -474,6 +474,8 @@ function AppContent() {
       <PortalProvider>
         <RestateContextProvider
           adminBaseUrl={getCookieValue('adminBaseUrl')}
+          schemaRegistryUrl={getCookieValue('schemaRegistryUrl')}
+          ingressMuxUrl={getCookieValue('ingressMuxUrl')}
           baseUrl={
             tenantMatch
               ? `/tenants/${encodeURIComponent(tenantMatch.params.scope ?? '')}`

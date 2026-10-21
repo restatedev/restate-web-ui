@@ -2948,6 +2948,18 @@ export interface components {
         | components['schemas']['AdvertisedAddress_HttpIngressPort']
         | null;
       /**
+       * @description # Schema registry endpoint
+       *
+       *     External schema registry endpoint that the Web UI should use, if configured.
+       */
+      schema_registry_endpoint?: string;
+      /**
+       * @description # Ingress mux endpoint
+       *
+       *     Ingress mux endpoint that the Web UI should use, if configured.
+       */
+      ingress_mux_endpoint?: string;
+      /**
        * Format: int32
        * @description # Max admin API version
        *
