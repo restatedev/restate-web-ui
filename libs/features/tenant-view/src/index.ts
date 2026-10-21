@@ -14,3 +14,4 @@ export {
   TenantDeployment,
   type TenantCatalogProps,
 } from './lib/TenantCatalog';
+export { TenantCrons, type TenantCronsProps } from './lib/crons/TenantCrons';
