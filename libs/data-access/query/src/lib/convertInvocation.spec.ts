@@ -217,3 +217,69 @@ describe('convertInvocation VQueue overlay', () => {
     ).toMatchObject({ status: 'succeeded' });
   });
 });
+
+describe('convertInvocation futures', () => {
+  const future = {
+    FirstCompleted: [
+      { Single: { SignalIndex: 1 } },
+      {
+        AllSucceededOrFirstFailed: [
+          { Single: { SignalName: 'first' } },
+          { Single: { SignalName: 'second' } },
+        ],
+      },
+    ],
+  };
+
+  it('parses the waiting future of a protocol v7 invocation', () => {
+    const invocation = convertInvocation(
+      rawInvocation({
+        status: 'suspended',
+        suspended_waiting_future_json: JSON.stringify(future),
+      }),
+    );
+
+    expect(invocation.suspended_waiting_future_json).toEqual(future);
+  });
+
+  it('parses the waiting future before a deployment is pinned', () => {
+    const invocation = convertInvocation(
+      rawInvocation({
+        status: 'suspended',
+        pinned_service_protocol_version: undefined,
+        suspended_waiting_future_json: JSON.stringify(future),
+      }),
+    );
+
+    expect(invocation.suspended_waiting_future_json).toEqual(future);
+  });
+
+  it.each([undefined, '', 'not json', 'null', '42', '"text"'])(
+    'returns no future for an unpinned invocation with %j',
+    (value) => {
+      const invocation = convertInvocation(
+        rawInvocation({
+          status: 'pending',
+          pinned_service_protocol_version: undefined,
+          suspended_waiting_future_json: value,
+          last_awaiting_on_future_json: value,
+        }),
+      );
+
+      expect(invocation.suspended_waiting_future_json).toBeUndefined();
+      expect(invocation.last_awaiting_on_future_json).toBeUndefined();
+    },
+  );
+
+  it('ignores the waiting future of an invocation pinned to an older protocol', () => {
+    const invocation = convertInvocation(
+      rawInvocation({
+        status: 'suspended',
+        pinned_service_protocol_version: 6,
+        suspended_waiting_future_json: JSON.stringify(future),
+      }),
+    );
+
+    expect(invocation.suspended_waiting_future_json).toBeUndefined();
+  });
+});

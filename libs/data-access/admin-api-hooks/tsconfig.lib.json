@@ -38,6 +38,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../util/react-query/tsconfig.lib.json"
+    },
+    {
       "path": "../../util/feature-flag/tsconfig.lib.json"
     },
     {

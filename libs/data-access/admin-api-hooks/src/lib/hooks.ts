@@ -2326,10 +2326,27 @@ export function useRestartWorkflowAsNew(
   });
 }
 
+type ResolveVariables = { action: 'resolve'; value: string };
+
+type EncodeValue = (value: string) => Promise<string> | string;
+
+const MAX_FAILURE_CODE = 65535;
+
 export type CompleteAwakeableVariables = { awakeableId: string } & (
-  | { action: 'resolve'; value: string }
+  | ResolveVariables
   | { action: 'reject'; message: string }
 );
+
+export type SendInvocationSignalVariables = { signalName: string } & (
+  | ResolveVariables
+  | { action: 'reject'; message: string; code?: number }
+);
+
+async function encodeResolveValue(value: string, encode?: EncodeValue) {
+  return encode
+    ? base64ToUint8Array(await encode(value))
+    : new TextEncoder().encode(value);
+}
 
 async function getIngressError(response: Response) {
   const body: string | { message?: string } | undefined = response.headers
@@ -2359,7 +2376,7 @@ export function useCompleteAwakeable(
     CompleteAwakeableVariables,
     unknown
   > & {
-    encode?: (value: string) => Promise<string> | string;
+    encode?: EncodeValue;
   } = {},
 ) {
   const { ingressUrl } = useRestateContext();
@@ -2379,9 +2396,7 @@ export function useCompleteAwakeable(
       const body =
         variables.action === 'reject'
           ? variables.message
-          : encode
-            ? base64ToUint8Array(await encode(variables.value))
-            : new TextEncoder().encode(variables.value);
+          : await encodeResolveValue(variables.value, encode);
 
       const response = await fetch(url, {
         credentials: 'include',
@@ -2392,6 +2407,90 @@ export function useCompleteAwakeable(
       if (!response.ok) {
         throw await getIngressError(response);
       }
+    },
+    ...options,
+    onSuccess(data, variables, context, meta) {
+      void invalidateInvocationV2Query(queryClient, baseUrl, invocationId);
+      options?.onSuccess?.(data, variables, context, meta);
+    },
+  });
+}
+
+export function useSendInvocationSignal(
+  invocationId: string,
+  {
+    encode,
+    ...options
+  }: MutationOptions<
+    void,
+    RestateError | Error,
+    SendInvocationSignalVariables,
+    unknown
+  > & {
+    encode?: EncodeValue;
+  } = {},
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  const resolveSignal = adminApi(
+    'mutate',
+    '/invocations/{invocation_id}/signals/{signal_name}',
+    'post',
+    {
+      baseUrl,
+      headers: { 'Content-Type': 'application/octet-stream' },
+    },
+  );
+  const rejectSignal = adminApi(
+    'mutate',
+    '/invocations/{invocation_id}/signals/{signal_name}',
+    'post',
+    {
+      baseUrl,
+      headers: { 'Content-Type': 'application/vnd.restate.failure+json' },
+    },
+  );
+
+  return useMutation({
+    mutationKey: [`/invocations/${invocationId}/signals`],
+    mutationFn: async (variables: SendInvocationSignalVariables) => {
+      const parameters = {
+        path: {
+          invocation_id: invocationId,
+          signal_name: variables.signalName,
+        },
+      };
+
+      if (variables.action === 'reject') {
+        if (
+          variables.code !== undefined &&
+          !(
+            Number.isInteger(variables.code) &&
+            variables.code >= 0 &&
+            variables.code <= MAX_FAILURE_CODE
+          )
+        ) {
+          throw new RestateError(
+            `The failure code must be a whole number between 0 and ${MAX_FAILURE_CODE}.`,
+          );
+        }
+        await rejectSignal.mutationFn(
+          {
+            parameters,
+            body: { message: variables.message, code: variables.code },
+          },
+          { client: queryClient, meta: rejectSignal.meta },
+        );
+        return;
+      }
+
+      await resolveSignal.mutationFn(
+        {
+          parameters,
+          body: await encodeResolveValue(variables.value, encode),
+        },
+        { client: queryClient, meta: resolveSignal.meta },
+      );
     },
     ...options,
     onSuccess(data, variables, context, meta) {

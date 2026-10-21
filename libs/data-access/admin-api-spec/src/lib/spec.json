@@ -10,7 +10,7 @@
       "name": "MIT",
       "url": "https://opensource.org/license/mit"
     },
-    "version": "1.8.1"
+    "version": "1.8.2-dev"
   },
   "paths": {
     "/deployments": {
@@ -897,6 +897,71 @@
           },
           "425": {
             "description": "The invocation is either inboxed or scheduled. An invocation can be resumed only when running, paused or suspended.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error when routing the request within restate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDescriptionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invocations/{invocation_id}/signals/{signal_name}": {
+      "post": {
+        "tags": ["invocation"],
+        "summary": "Send a signal to an invocation",
+        "description": "Resolves or rejects the named signal of an invocation. A request body with content type\n`application/vnd.restate.failure+json` rejects the signal with the given failure, any other\nrequest body resolves the signal using the body as payload.\n\nSignals sent to invocations that don't exist or are already completed are ignored.",
+        "operationId": "send_invocation_signal",
+        "parameters": [
+          {
+            "name": "invocation_id",
+            "in": "path",
+            "description": "Invocation identifier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "signal_name",
+            "in": "path",
+            "description": "Signal name.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Signal payload to resolve the signal, or a failure to reject it.",
+          "content": {
+            "application/octet-stream": {},
+            "application/vnd.restate.failure+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignalFailure"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Signal accepted"
+          },
+          "400": {
+            "description": "A request field is invalid.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3163,6 +3228,33 @@
       "ServiceType": {
         "type": "string",
         "enum": ["Service", "VirtualObject", "Workflow"]
+      },
+      "SignalFailure": {
+        "type": "object",
+        "description": "Failure used to reject a signal.",
+        "required": ["message"],
+        "properties": {
+          "code": {
+            "type": ["integer", "null"],
+            "format": "int32",
+            "description": "Failure code. Defaults to 500.",
+            "minimum": 0
+          },
+          "message": {
+            "type": "string",
+            "description": "Failure message."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Failure metadata.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "type": "string"
+            }
+          }
+        }
       },
       "SimpleKafkaClusterResponse": {
         "type": "object",

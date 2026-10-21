@@ -85,7 +85,10 @@ function parseInvocationFuture(value?: string): InvocationFuture | undefined {
   }
 
   try {
-    return JSON.parse(value) as InvocationFuture;
+    const future: unknown = JSON.parse(value);
+    return future && typeof future === 'object'
+      ? (future as InvocationFuture)
+      : undefined;
   } catch {
     return undefined;
   }
@@ -110,7 +113,7 @@ export function convertInvocation(
     ...rest
   } = merged;
   const canParseInvocationFuture =
-    merged.pinned_service_protocol_version !== undefined &&
+    merged.pinned_service_protocol_version === undefined ||
     merged.pinned_service_protocol_version > 6;
 
   const computedStatus = getComputedInvocationStatus(

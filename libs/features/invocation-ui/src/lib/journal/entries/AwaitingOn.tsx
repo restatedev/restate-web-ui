@@ -80,13 +80,17 @@ function countFutureLeaves(future: InvocationFuture): number {
 }
 
 // The runtime wraps the user's awaitable in an implicit FirstCompleted with a
-// cancellation signal (SignalIndex 1) so cancellation can preempt it. That
-// wrapper is plumbing, not user-facing intent — strip it from the tree.
+// cancellation signal (SignalIndex 1) so cancellation can preempt it. Before
+// protocol v7 the same set arrives as a flat Unknown group, which the runtime
+// also treats as first-completed. That wrapper is plumbing, not user-facing
+// intent — strip it from the tree.
 // TODO: surface the cancel pathway as an explicit "can be cancelled" affordance
 // elsewhere in the UI instead of silently hiding it here.
 function unwrapCancelWrapper(future: InvocationFuture): InvocationFuture[] {
   const group = getFutureGroup(future);
-  if (group?.type !== 'FirstCompleted') return [future];
+  if (group?.type !== 'FirstCompleted' && group?.type !== 'Unknown') {
+    return [future];
+  }
 
   const hasCancel = group.children.some(
     (child) => getSingleRef(child)?.SignalIndex === 1,
