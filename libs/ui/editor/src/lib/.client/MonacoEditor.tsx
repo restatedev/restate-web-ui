@@ -25,12 +25,14 @@ export function MonacoEditor({
   readonly,
   onInput,
   applyTheme = true,
+  autoFocus,
 }: {
   value?: string;
   editorRef: RefObject<monaco.editor.IStandaloneCodeEditor | null>;
   readonly?: boolean;
   onInput?: (value: string) => void;
   applyTheme?: boolean;
+  autoFocus?: boolean;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -90,6 +92,9 @@ export function MonacoEditor({
       }),
     });
     editorRef.current = editor;
+    if (autoFocus) {
+      editor.focus();
+    }
 
     const updateStyles = () => {
       const contentWidth = editor.getContentWidth();
@@ -146,7 +151,7 @@ export function MonacoEditor({
       editor.dispose();
       editorRef.current = null;
     };
-  }, [value, el, editorRef, readonly, onInput, applyTheme]);
+  }, [value, el, editorRef, readonly, onInput, applyTheme, autoFocus]);
 
   useEffect(() => {
     const editor = editorRef.current;

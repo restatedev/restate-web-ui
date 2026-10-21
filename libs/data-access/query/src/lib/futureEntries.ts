@@ -6,6 +6,7 @@ import type {
 } from '@restate/data-access-admin-api-spec';
 import {
   assignGroupIds,
+  getAwakeableId,
   type GroupIds,
   type JournalEntryConversionContext,
 } from '@restate/features-service-protocol';
@@ -51,6 +52,7 @@ export type FutureEntriesRegistry = {
   completionGroupIdsById: Map<number, GroupIds>;
   signalIndexGroupIdsByIndex: Map<number, GroupIds>;
   signalNameRefs: FutureSignalNameRef[];
+  invocationId: string;
 };
 type AllocateSyntheticIndex = () => number;
 
@@ -233,6 +235,7 @@ export function createFutureEntriesRegistry(
       collection.signalIndexRefs,
     ),
     signalNameRefs: collection.signalNameRefs,
+    invocationId: invocation.id,
   };
 }
 
@@ -240,6 +243,7 @@ function createPendingSignalIndexEntry(
   index: number,
   signalIndex: number,
   signalIndexGroupIds: GroupIds,
+  invocationId: string,
 ): CompleteAwakeableNotificationEntry {
   return {
     isPending: true,
@@ -257,7 +261,7 @@ function createPendingSignalIndexEntry(
     value: undefined,
     resultType: undefined,
     index,
-    id: undefined,
+    id: getAwakeableId(invocationId, signalIndex),
     signalIndex,
   } as CompleteAwakeableNotificationEntry;
 }
@@ -305,6 +309,7 @@ function createPendingSignalEntries(
         allocateSyntheticIndex(),
         signalIndex,
         groupIds,
+        registry.invocationId,
       );
       pendingEntries.push(pendingEntry);
       signalIndexEntryByIndex.set(signalIndex, pendingEntry);

@@ -9,6 +9,7 @@ import {
   type JournalRawEntryWithCommandIndex,
   parseEntryJson,
 } from './util.js';
+import { getAwakeableId } from '../awakeableId.js';
 
 export function signal(
   entry: JournalRawEntryWithCommandIndex,
@@ -133,7 +134,7 @@ export function signal(
       error,
       value,
       resultType,
-      id: undefined,
+      id: invocation?.id ? getAwakeableId(invocation.id, id) : undefined,
       signalIndex: id,
     } as Extract<
       JournalEntryV2,

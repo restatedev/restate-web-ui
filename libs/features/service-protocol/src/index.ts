@@ -22,6 +22,7 @@ export * from './lib/entries/sendSignal.js';
 export * from './lib/entries/event.js';
 export * from './lib/entries/lifeCycles.js';
 export * from './lib/decoder.js';
+export * from './lib/awakeableId.js';
 export { assignGroupIds } from './lib/entries/util.js';
 export type {
   GroupIds,

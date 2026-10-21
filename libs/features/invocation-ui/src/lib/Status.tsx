@@ -79,13 +79,17 @@ const styles = tv({
       running: 'border-dashed',
       suspended: 'border-dashed border-neutral/60 bg-emphasis/40',
       succeeded: '',
-      failed: 'py-0.5 pr-0.5',
+      failed: '',
       cancelled: '',
       killed: '',
       'backing-off': 'border border-dashed border-warning',
       paused: 'border-dashed',
     },
     isRetrying: {
+      true: 'py-0.5 pr-0.5',
+      false: '',
+    },
+    hasError: {
       true: 'py-0.5 pr-0.5',
       false: '',
     },
@@ -139,6 +143,7 @@ export function InvocationStatusBadge({
   status,
   className,
   isRetrying = false,
+  hasError = false,
   hasPausedError = false,
   hasAwaitingOn = false,
   mini = false,
@@ -147,6 +152,7 @@ export function InvocationStatusBadge({
   status: InvocationComputedStatus2;
   className?: string;
   isRetrying?: boolean;
+  hasError?: boolean;
   hasPausedError?: boolean;
   hasAwaitingOn?: boolean;
   mini?: boolean | 'md';
@@ -159,6 +165,7 @@ export function InvocationStatusBadge({
         className,
         status,
         isRetrying,
+        hasError,
         hasPausedError,
         variant,
         mini,
@@ -192,6 +199,7 @@ export function Status({
         status={status}
         className={className}
         isRetrying={Boolean(invocation.isRetrying)}
+        hasError={status === 'failed'}
         hasPausedError={isPaused}
         mini={mini}
         hasAwaitingOn={Boolean(
