@@ -171,7 +171,7 @@ function NewScheduleDialogContent({
                 Optional JSON sent as the handler’s input on every run.
               </span>
             </FormFieldLabel>
-            <FormFieldCode name="payload" className="min-h-24" />
+            <FormFieldCode name="payload" value="" className="h-28" />
           </div>
         </form>
         <DialogFooter>

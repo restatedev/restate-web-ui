@@ -5,6 +5,7 @@ import {
 } from '@restate/data-access-admin-api-spec';
 import { InvocationActions } from '@restate/features-invocation-route';
 import {
+  getInvocationStatusIntent,
   InvocationId,
   InvocationStatusBadge,
   Status,
@@ -92,11 +93,16 @@ const columns: PanelTableColumn<Column>[] = [
 const COMPLETED_STATUSES = new Set<string>(TERMINAL_INVOCATION_STATUSES);
 
 const styles = tv({
+  variants: {
+    compact: {
+      true: { runLink: 'flex h-5 w-4 items-center justify-center' },
+    },
+  },
   slots: {
     scheduleId:
       'block max-w-full min-w-0 truncate rounded-md border border-default bg-subtle/80 px-1.5 py-0.5 font-mono text-2xs text-subtle',
     expression: 'truncate font-mono text-xs text-tertiary',
-    runs: 'flex min-w-0 items-center gap-1 overflow-hidden',
+    runs: 'flex min-w-0 items-center gap-1.5',
     runLink: 'shrink-0 rounded-full no-underline outline-offset-2',
     muted: 'text-xs text-subtle',
   },
@@ -437,42 +443,76 @@ function LastRuns({
   isError: boolean;
 }) {
   const s = styles();
-  if (runs.length === 0) {
+  const [latest, ...older] = runs;
+  if (!latest) {
     return <span className={s.muted()}>No runs yet</span>;
   }
   return (
     <div className={s.runs()}>
-      {runs.map((run) => (
+      <RunLink
+        run={latest}
+        invocation={invocations.get(latest.invocationId)}
+        isPending={isPending}
+        isError={isError}
+      />
+      {older.map((run) => (
         <RunLink
           key={run.runId}
           run={run}
           invocation={invocations.get(run.invocationId)}
           isPending={isPending}
           isError={isError}
+          compact
         />
       ))}
     </div>
   );
 }
 
+const runDotStyles = tv({
+  base: 'block h-2.5 w-2.5 rounded-full border border-surface',
+  variants: {
+    intent: {
+      success: 'bg-success-vivid',
+      danger: 'bg-danger-vivid',
+      warning: 'bg-warning-vivid',
+      info: 'bg-info-vivid',
+      pending: 'bg-pending-vivid',
+      default: 'bg-neutral',
+      unknown: 'border-strong bg-transparent',
+    },
+  },
+});
+
 function RunLink({
   run,
   invocation,
   isPending,
   isError,
+  compact = false,
 }: {
   run: CronRun;
   invocation?: InvocationV2;
   isPending: boolean;
   isError: boolean;
+  compact?: boolean;
 }) {
   const { baseUrl } = useRestateContext();
   const s = styles();
+  const label = invocation
+    ? invocation.status
+    : isPending
+      ? 'loading'
+      : isError
+        ? 'unknown'
+        : 'not retained';
   return (
     <HoverTooltip
       content={
         <span className="flex flex-col">
-          <span>Due {formatDateTime(new Date(run.at), 'system')}</span>
+          <span>
+            Due {formatDateTime(new Date(run.at), 'system')} · {label}
+          </span>
           <span className="font-mono">{run.invocationId}</span>
         </span>
       }
@@ -482,9 +522,17 @@ function RunLink({
         preserveQueryParams={false}
         variant="secondary"
         aria-label={`Open run ${run.invocationId}`}
-        className={s.runLink()}
+        className={s.runLink({ compact })}
       >
-        {invocation ? (
+        {compact ? (
+          <span
+            className={runDotStyles({
+              intent: invocation
+                ? getInvocationStatusIntent(invocation)
+                : 'unknown',
+            })}
+          />
+        ) : invocation ? (
           <InvocationStatusBadge
             status={invocation.status}
             isRetrying={Boolean(invocation.isRetrying)}
