@@ -13,7 +13,7 @@ import { useSchema } from './useSchema';
 import { COLUMN_QUERY_PREFIX, ColumnKey } from './columns';
 import { setUserLastSort } from './userPreferences';
 import { useInvocationsLastQuery } from '@restate/util-sidebar-nav';
-import { isFeatureEnabled } from '@restate/util-feature-flag';
+import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-api-hooks';
 
 export const SORT_QUERY_PREFIX = 'sort_';
 
@@ -26,14 +26,17 @@ export const SORT_COLUMN_KEYS = [
 ] as const satisfies readonly InvocationV2Sort['field'][];
 type InvocationUiSortField = (typeof SORT_COLUMN_KEYS)[number];
 
-export function isSortFieldAvailable(field: string) {
-  return field !== 'transitioned_at' || isFeatureEnabled('FEATURE_INDEXES_V1');
+export function isSortFieldAvailable(
+  field: string,
+  canSortByTransition: boolean,
+) {
+  return field !== 'transitioned_at' || canSortByTransition;
 }
 
-export function getDefaultSortField(): InvocationUiSortField {
-  return isFeatureEnabled('FEATURE_INDEXES_V1')
-    ? 'transitioned_at'
-    : 'created_at';
+export function getDefaultSortField(
+  canSortByTransition: boolean,
+): InvocationUiSortField {
+  return canSortByTransition ? 'transitioned_at' : 'created_at';
 }
 
 // Sentinel sort field meaning "don't sort": the list query then omits its
@@ -48,14 +51,17 @@ export function isNoSort(searchParams: URLSearchParams) {
   return searchParams.get(SORT_QUERY_PREFIX + 'field') === SORT_NONE;
 }
 
-export function isSortValid(searchParams: URLSearchParams) {
+export function isSortValid(
+  searchParams: URLSearchParams,
+  canSortByTransition: boolean,
+) {
   const field = searchParams.get(
     SORT_QUERY_PREFIX + 'field',
   ) as InvocationV2Sort['field'];
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order') || '';
   return (
     SORT_COLUMN_KEYS.some((sortField) => sortField === field) &&
-    isSortFieldAvailable(field) &&
+    isSortFieldAvailable(field, canSortByTransition) &&
     ['ASC', 'DESC'].includes(String(order))
   );
 }
@@ -67,20 +73,30 @@ export function setSort(searchParams: URLSearchParams, sort: InvocationV2Sort) {
   return searchParams;
 }
 
-export function setDefaultSort(searchParams: URLSearchParams) {
-  return setSort(searchParams, { field: getDefaultSortField(), order: 'DESC' });
+export function setDefaultSort(
+  searchParams: URLSearchParams,
+  canSortByTransition: boolean,
+) {
+  return setSort(searchParams, {
+    field: getDefaultSortField(canSortByTransition),
+    order: 'DESC',
+  });
 }
 
 export function deriveSortFromUrl(
   searchParams: URLSearchParams,
-  fallback: SortSelection = { field: getDefaultSortField(), order: 'DESC' },
+  canSortByTransition: boolean,
+  fallback: SortSelection = {
+    field: getDefaultSortField(canSortByTransition),
+    order: 'DESC',
+  },
 ): SortSelection {
   if (isNoSort(searchParams)) {
     return { field: SORT_NONE, order: 'DESC' };
   }
   const field = searchParams.get(SORT_QUERY_PREFIX + 'field');
   const order = searchParams.get(SORT_QUERY_PREFIX + 'order');
-  if (isSortValid(searchParams) && field && order) {
+  if (isSortValid(searchParams, canSortByTransition) && field && order) {
     return { field, order } as SortSelection;
   }
   return fallback;
@@ -94,6 +110,7 @@ export function deriveSortFromUrl(
 export function useListInvocationsParameters() {
   const [searchParams] = useInvocationSearchParams();
   const { schema, isLoading } = useSchema();
+  const canSortByTransition = useCanSortInvocationsByTransition();
   const searchString = searchParams.toString();
 
   const listInvocationsParameters = useMemo<
@@ -112,13 +129,13 @@ export function useListInvocationsParameters() {
         } as InvocationV2Filter,
       ];
     });
-    const selection = deriveSortFromUrl(searchParams);
+    const selection = deriveSortFromUrl(searchParams, canSortByTransition);
     const sort =
       selection.field === SORT_NONE
         ? undefined
         : (selection as InvocationV2Sort);
     return { filters, sort };
-  }, [searchString, schema, isLoading]);
+  }, [searchString, schema, isLoading, canSortByTransition]);
 
   return { schema, isLoading, listInvocationsParameters };
 }
@@ -126,8 +143,9 @@ export function useListInvocationsParameters() {
 /**
  * Form state for the invocations query toolbar. Initial state is derived
  * from the URL on mount; callers should re-mount this hook (via a `key`
- * keyed off the URL) so the form snaps to the current URL whenever it
- * changes externally (e.g. sidebar navigation). Editing inside the form
+ * keyed off the URL and `useCanSortInvocationsByTransition`) so the form
+ * snaps to the current URL whenever it changes externally (e.g. sidebar
+ * navigation) or the server's features arrive. Editing inside the form
  * does not change the URL until `commitQuery` is called.
  */
 export function useInvocationsForm({
@@ -141,9 +159,10 @@ export function useInvocationsForm({
 }) {
   const [searchParams, setSearchParams] = useInvocationSearchParams();
   const { saveLastQuery } = useInvocationsLastQuery();
+  const canSortByTransition = useCanSortInvocationsByTransition();
 
   const [sortParams, _setSortParams] = useState<SortSelection>(() =>
-    deriveSortFromUrl(searchParams),
+    deriveSortFromUrl(searchParams, canSortByTransition),
   );
   const sortManuallyChangedRef = useRef(false);
   const setSortParams = useCallback<typeof _setSortParams>((value) => {

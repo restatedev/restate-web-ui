@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getInvocationPresetSearch } from './InvocationsSidebarItem';
 
 function sort(search: string) {
@@ -7,28 +7,25 @@ function sort(search: string) {
 }
 
 describe('invocation shortcut sorting', () => {
-  afterEach(() => localStorage.clear());
-
-  it('keeps created_at sorts when indexes are off', () => {
-    expect(sort(getInvocationPresetSearch('inflight'))).toEqual([
+  it('keeps created_at sorts when the transition sort is unavailable', () => {
+    expect(sort(getInvocationPresetSearch('inflight', false))).toEqual([
       'created_at',
       'DESC',
     ]);
-    expect(sort(getInvocationPresetSearch('stuck'))).toEqual([
+    expect(sort(getInvocationPresetSearch('stuck', false))).toEqual([
       'created_at',
       'ASC',
     ]);
   });
 
-  it('sorts by last transition descending when indexes are on', () => {
-    localStorage.setItem('FEATURE_INDEXES_V1', 'true');
+  it('sorts by last transition descending when the transition sort is available', () => {
     for (const id of ['inflight', 'stuck', 'all', 'completed', 'scheduled']) {
-      expect(sort(getInvocationPresetSearch(id))).toEqual([
+      expect(sort(getInvocationPresetSearch(id, true))).toEqual([
         'transitioned_at',
         'DESC',
       ]);
     }
-    expect(sort(getInvocationPresetSearch('processing'))).toEqual([
+    expect(sort(getInvocationPresetSearch('processing', true))).toEqual([
       'none',
       null,
     ]);

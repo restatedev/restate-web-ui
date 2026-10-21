@@ -90,9 +90,11 @@ import {
 } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+  useCanSortInvocationsByTransition,
   useListDeployments,
   useListInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
+import { isFeatureEnabled } from '@restate/util-feature-flag';
 import { useRestateContext } from '@restate/features-restate-context';
 import {
   VQueueStageLegend,
@@ -380,6 +382,7 @@ function Component() {
   const submitRef = useSubmitShortcut();
   const { schema, isLoading, listInvocationsParameters } =
     useListInvocationsParameters();
+  const canSortByTransition = useCanSortInvocationsByTransition();
 
   const [openInvocationId, setOpenInvocationId] = useState('');
 
@@ -935,7 +938,7 @@ function Component() {
       </div>
       <LayoutOutlet zone={LayoutZone.Toolbar}>
         <InvocationsForm
-          key={getFormUrlSignature(searchParams)}
+          key={`${getFormUrlSignature(searchParams)}|${canSortByTransition}`}
           schema={schema}
           isLoading={isLoading}
           selectedColumns={selectedColumns}
@@ -1127,6 +1130,7 @@ function Footnote({
 
 export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   const url = new URL(request.url);
+  const canSortByTransition = isFeatureEnabled('FEATURE_INDEXES_V1');
   let params = new URLSearchParams(url.searchParams);
   const originalParams = new URLSearchParams(url.searchParams);
   originalParams.sort();
@@ -1150,7 +1154,10 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
   if (originalSearch === '') {
     const preset = getDefaultInvocationsPreset();
     if (preset && preset !== 'all') {
-      const presetSearch = getInvocationPresetSearch(preset);
+      const presetSearch = getInvocationPresetSearch(
+        preset,
+        canSortByTransition,
+      );
       if (presetSearch) {
         return redirect(`?${presetSearch}`);
       }
@@ -1202,15 +1209,15 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
     }
   }
 
-  if (!isSortValid(params) && !isNoSort(params)) {
-    const userSort = getUserLastSort();
+  if (!isSortValid(params, canSortByTransition) && !isNoSort(params)) {
+    const userSort = getUserLastSort(canSortByTransition);
     if (userSort) {
       params = setSort(params, {
         field: userSort.field,
         order: userSort.order,
       });
     } else {
-      params = setDefaultSort(params);
+      params = setDefaultSort(params, canSortByTransition);
     }
   }
 

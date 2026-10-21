@@ -1,9 +1,11 @@
-import { useListInvocationsV2 } from '@restate/data-access-admin-api-hooks';
+import {
+  useCanSortInvocationsByTransition,
+  useListInvocationsV2,
+} from '@restate/data-access-admin-api-hooks';
 import type { components } from '@restate/data-access-admin-api-spec';
 import {
   deriveSortFromUrl,
   doInvocationCountsDisagree,
-  getDefaultSortField,
   formatServiceTabBadge,
   getListRowCounts,
   getResultsNoticeMessage,
@@ -65,11 +67,11 @@ export function useInvocationsTab(
 ) {
   const { baseUrl } = useRestateContext();
   const [searchParams, setSearchParams] = useSearchParams();
+  const canSortByTransition = useCanSortInvocationsByTransition();
   const sortParams = deriveSortFromUrl(
     searchParams,
-    getDefaultSortField() === 'transitioned_at'
-      ? { field: 'transitioned_at', order: 'DESC' }
-      : NO_SORT,
+    canSortByTransition,
+    canSortByTransition ? { field: 'transitioned_at', order: 'DESC' } : NO_SORT,
   );
   const sort =
     sortParams.field === SORT_NONE
@@ -81,7 +83,7 @@ export function useInvocationsTab(
         const next = new URLSearchParams(prev);
         const selection =
           typeof action === 'function'
-            ? action(deriveSortFromUrl(prev, NO_SORT))
+            ? action(deriveSortFromUrl(prev, canSortByTransition, NO_SORT))
             : action;
         next.delete(SORT_QUERY_PREFIX + 'field');
         next.delete(SORT_QUERY_PREFIX + 'order');

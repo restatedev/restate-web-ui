@@ -6,49 +6,51 @@ import {
 } from './useInvocationsQueryFilters';
 import { getUserLastSort, setUserLastSort } from './userPreferences';
 
-function enableIndexes() {
-  localStorage.setItem('FEATURE_INDEXES_V1', 'true');
-}
-
 describe('invocation sort defaults', () => {
   afterEach(() => localStorage.clear());
 
-  it('defaults to created_at when indexes are off', () => {
-    const params = setDefaultSort(new URLSearchParams());
+  it('defaults to created_at when the transition sort is unavailable', () => {
+    const params = setDefaultSort(new URLSearchParams(), false);
     expect(params.get('sort_field')).toBe('created_at');
-    expect(deriveSortFromUrl(new URLSearchParams())).toEqual({
+    expect(deriveSortFromUrl(new URLSearchParams(), false)).toEqual({
       field: 'created_at',
       order: 'DESC',
     });
   });
 
-  it('defaults to transitioned_at when indexes are on', () => {
-    enableIndexes();
-    const params = setDefaultSort(new URLSearchParams());
+  it('defaults to transitioned_at when the transition sort is available', () => {
+    const params = setDefaultSort(new URLSearchParams(), true);
     expect(params.get('sort_field')).toBe('transitioned_at');
     expect(params.get('sort_order')).toBe('DESC');
   });
 
-  it('offers transitioned_at only while indexes are on, created_at always', () => {
+  it('offers transitioned_at only while the transition sort is available, created_at always', () => {
     const transitioned = new URLSearchParams(
       'sort_field=transitioned_at&sort_order=DESC',
     );
     const created = new URLSearchParams('sort_field=created_at&sort_order=ASC');
-    expect(isSortValid(transitioned)).toBe(false);
-    expect(isSortValid(created)).toBe(true);
-    enableIndexes();
-    expect(isSortValid(transitioned)).toBe(true);
-    expect(isSortValid(created)).toBe(true);
+    expect(isSortValid(transitioned, false)).toBe(false);
+    expect(isSortValid(created, false)).toBe(true);
+    expect(isSortValid(transitioned, true)).toBe(true);
+    expect(isSortValid(created, true)).toBe(true);
   });
 
-  it('ignores a saved transitioned_at sort once indexes are off', () => {
-    enableIndexes();
+  it('falls back from a transitioned_at URL sort when the transition sort is unavailable', () => {
+    const transitioned = new URLSearchParams(
+      'sort_field=transitioned_at&sort_order=DESC',
+    );
+    expect(deriveSortFromUrl(transitioned, false)).toEqual({
+      field: 'created_at',
+      order: 'DESC',
+    });
+  });
+
+  it('ignores a saved transitioned_at sort when the transition sort is unavailable', () => {
     setUserLastSort({ field: 'transitioned_at', order: 'DESC' });
-    expect(getUserLastSort()).toEqual({
+    expect(getUserLastSort(true)).toEqual({
       field: 'transitioned_at',
       order: 'DESC',
     });
-    localStorage.removeItem('FEATURE_INDEXES_V1');
-    expect(getUserLastSort()).toBeNull();
+    expect(getUserLastSort(false)).toBeNull();
   });
 });

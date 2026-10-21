@@ -11,6 +11,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { tv } from '@restate/util-styles';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 import { entryTablesSupportFilters } from '@restate/data-access-query';
+import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-api-hooks';
 import {
   isSortFieldAvailable,
   SORT_COLUMN_KEYS,
@@ -90,6 +91,7 @@ export function Sort({
   filterFields?: Iterable<string>;
 }) {
   const isNone = sortParams.field === SORT_NONE;
+  const canSortByTransition = useCanSortInvocationsByTransition();
   const isTransitionSortUnavailable = !entryTablesSupportFilters(filterFields);
   return (
     <Dropdown>
@@ -136,7 +138,9 @@ export function Sort({
             <DropdownItem key={SORT_NONE} value={SORT_NONE}>
               No sorting
             </DropdownItem>
-            {SORT_COLUMN_KEYS.filter(isSortFieldAvailable).map((item) => (
+            {SORT_COLUMN_KEYS.filter((field) =>
+              isSortFieldAvailable(field, canSortByTransition),
+            ).map((item) => (
               <DropdownItem key={item} value={item}>
                 {SORT_FIELD_LABELS[item]}
                 {item === 'transitioned_at' && isTransitionSortUnavailable && (
