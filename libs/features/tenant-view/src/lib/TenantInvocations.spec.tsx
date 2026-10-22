@@ -189,6 +189,36 @@ describe('TenantInvocations', () => {
       value: 'acme',
     });
   });
+  it('hides the cron by default and shows it once the service filter is removed', async () => {
+    const user = userEvent.setup();
+    hooks.summary.mockReturnValue({ refetch: vi.fn() });
+    hooks.list.mockReturnValue({
+      data: { rows: [invocation], limit: 50 },
+      dataUpdatedAt: Date.now(),
+      refetch: vi.fn(),
+    });
+    renderInvocations('/tenants/acme/invocations');
+    expect(hooks.list.mock.lastCall?.[0].filters).toEqual([
+      { field: 'scope', type: 'STRING', operation: 'EQUALS', value: 'acme' },
+      {
+        field: 'target_service_name',
+        type: 'STRING',
+        operation: 'NOT_EQUALS',
+        value: 'cron',
+      },
+    ]);
+    expect(hooks.summary.mock.lastCall?.[0].filters).toContainEqual(
+      expect.objectContaining({ operation: 'NOT_EQUALS', value: 'cron' }),
+    );
+    await user.click(
+      screen.getByRole('button', { name: 'Remove Service filter' }),
+    );
+    await waitFor(() =>
+      expect(hooks.list.mock.lastCall?.[0].filters).toEqual([
+        { field: 'scope', type: 'STRING', operation: 'EQUALS', value: 'acme' },
+      ]),
+    );
+  });
   it('cancels an invocation after confirmation', async () => {
     const user = userEvent.setup();
     hooks.summary.mockReturnValue({ refetch: vi.fn() });
@@ -296,7 +326,8 @@ describe('TenantInvocations', () => {
           expect(dialog.getByText('Greeter')).toBeTruthy();
           expect(dialog.getByText('Running')).toBeTruthy();
         } else {
-          expect(dialog.getAllByText('Any')).toHaveLength(2);
+          expect(dialog.getByText('cron')).toBeTruthy();
+          expect(dialog.getAllByText('Any')).toHaveLength(1);
         }
       }
       expect(hooks.batchCancel).not.toHaveBeenCalled();
@@ -328,7 +359,14 @@ describe('TenantInvocations', () => {
                     value: ['running'],
                   },
                 ]
-              : []),
+              : [
+                  {
+                    field: 'target_service_name',
+                    type: 'STRING',
+                    operation: 'NOT_EQUALS',
+                    value: 'cron',
+                  },
+                ]),
           ]),
         );
       }

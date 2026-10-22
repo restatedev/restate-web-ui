@@ -1,4 +1,5 @@
 import { TenantServiceTarget } from './TenantServiceTarget';
+import { CRON_SERVICE } from './crons/cronApi';
 import { ServiceTargetProvider } from '@restate/features-service-target';
 import {
   BatchOperationsProvider,
@@ -79,7 +80,10 @@ const serviceSchema: QueryClauseSchema<'STRING'> = {
   id: 'service',
   label: 'Service',
   type: 'STRING',
-  operations: [{ value: 'EQUALS', label: 'is' }],
+  operations: [
+    { value: 'EQUALS', label: 'is' },
+    { value: 'NOT_EQUALS', label: 'is not' },
+  ],
 };
 const statusSchema: QueryClauseSchema<'STRING_LIST'> = {
   id: 'status',
@@ -102,6 +106,31 @@ const batchSchema: QueryClauseSchema<'STRING_LIST'>[] = [
   statusSchema,
 ];
 
+interface ServiceFilter {
+  operation: 'EQUALS' | 'NOT_EQUALS';
+  value: string;
+}
+
+function getServiceFilter(searchParams: URLSearchParams): ServiceFilter {
+  if (!searchParams.has('service') && !searchParams.has('service_not')) {
+    return { operation: 'NOT_EQUALS', value: CRON_SERVICE };
+  }
+  const excluded = searchParams.get('service_not')?.trim();
+  return excluded
+    ? { operation: 'NOT_EQUALS', value: excluded }
+    : { operation: 'EQUALS', value: searchParams.get('service')?.trim() ?? '' };
+}
+
+function setServiceFilter(
+  searchParams: URLSearchParams,
+  { operation, value }: ServiceFilter,
+) {
+  searchParams.set(
+    operation === 'NOT_EQUALS' && value ? 'service_not' : 'service',
+    value,
+  );
+}
+
 export interface TenantInvocationsProps {
   scope: string;
 }
@@ -115,6 +144,7 @@ export function TenantInvocations({ scope }: TenantInvocationsProps) {
           key={JSON.stringify([
             scope,
             searchParams.get('service'),
+            searchParams.get('service_not'),
             searchParams.get('status'),
           ])}
           scope={scope}
@@ -130,7 +160,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
   const { baseUrl } = useRestateContext();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const service = searchParams.get('service')?.trim() ?? '';
+  const service = getServiceFilter(searchParams);
   const status: string[] = INVOCATION_STATUSES.filter((value) =>
     searchParams.get('status')?.split(',').includes(value),
   );
@@ -146,12 +176,12 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
   const filters: components['schemas']['InvocationV2FilterItem'][] = [
     { field: 'scope', type: 'STRING', operation: 'EQUALS', value: scope },
   ];
-  if (service) {
+  if (service.value) {
     filters.push({
       field: 'target_service_name',
       type: 'STRING',
-      operation: 'EQUALS',
-      value: service,
+      operation: service.operation,
+      value: service.value,
     });
   }
   if (status.length > 0) {
@@ -216,7 +246,7 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
     rows.filter((row) => selectedIds.has(row.id)).map((row) => row.id),
   );
   const listSearch = new URLSearchParams();
-  if (service) listSearch.set('service', service);
+  setServiceFilter(listSearch, service);
   if (status.length > 0) listSearch.set('status', status.join(','));
 
   return (
@@ -229,13 +259,15 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
         <ContentPanel>
           <ContentPanelToolbar className="items-center gap-2 px-3 pb-1">
             <TenantFilters
-              key={`${service}:${status.join(',')}`}
+              key={JSON.stringify([service, status])}
               service={service}
               status={status}
               onApply={(selectedService, selectedStatus) => {
                 const next = new URLSearchParams();
-                if (selectedService.trim())
-                  next.set('service', selectedService.trim());
+                setServiceFilter(next, {
+                  ...selectedService,
+                  value: selectedService.value.trim(),
+                });
                 if (selectedStatus.length > 0)
                   next.set('status', selectedStatus.join(','));
                 setSearchParams(next, { preventScrollReset: true });
@@ -374,16 +406,15 @@ function TenantInvocationsContent({ scope }: { scope: string }) {
 }
 
 interface TenantFiltersProps {
-  service: string;
+  service: ServiceFilter;
   status: string[];
-  onApply: (service: string, status: string[]) => void;
+  onApply: (service: ServiceFilter, status: string[]) => void;
 }
 
 function TenantFilters({ service, status, onApply }: TenantFiltersProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [serviceClause, setServiceClause] = useState(
-    () =>
-      new QueryClause(serviceSchema, { operation: 'EQUALS', value: service }),
+    () => new QueryClause(serviceSchema, service),
   );
   const [statusClause, setStatusClause] = useState(
     () => new QueryClause(statusSchema, { operation: 'IN', value: status }),
@@ -395,7 +426,13 @@ function TenantFilters({ service, status, onApply }: TenantFiltersProps) {
       onSubmit={(event) => {
         event.preventDefault();
         onApply(
-          String(serviceClause.value.value ?? ''),
+          {
+            operation:
+              serviceClause.value.operation === 'NOT_EQUALS'
+                ? 'NOT_EQUALS'
+                : 'EQUALS',
+            value: String(serviceClause.value.value ?? ''),
+          },
           statusClause.value.value ?? [],
         );
       }}
@@ -410,13 +447,13 @@ function TenantFilters({ service, status, onApply }: TenantFiltersProps) {
         onUpdate={(clause) =>
           setServiceClause(
             new QueryClause(serviceSchema, {
-              operation: 'EQUALS',
+              operation: clause.value.operation,
               value: String(clause.value.value ?? ''),
             }),
           )
         }
-        showRemove={Boolean(service)}
-        onRemove={() => onApply('', status)}
+        showRemove={Boolean(service.value)}
+        onRemove={() => onApply({ operation: 'EQUALS', value: '' }, status)}
       />
       <FilterChip
         item={statusClause}
