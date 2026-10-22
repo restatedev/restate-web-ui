@@ -84,6 +84,7 @@ export function MonacoEditor({
       scrollBeyondLastLine: false,
       scrollBeyondLastColumn: 0,
       tabSize: 2,
+      tabFocusMode: true,
       renderLineHighlight: 'none',
       renderValidationDecorations: 'off',
       ...(readonly && {
