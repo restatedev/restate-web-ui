@@ -13,7 +13,6 @@ import {
   SearchField,
   Text,
 } from 'react-aria-components';
-import { useNavigate } from 'react-router';
 import { Icon, IconName } from '@restate/ui-icons';
 import { tv } from '@restate/util-styles';
 import type { Command, PalettePage } from './types';
@@ -120,13 +119,7 @@ function Kbd({ children }: { children: string }) {
   return <kbd className={styles.kbd()}>{children}</kbd>;
 }
 
-function CommandItem({
-  command,
-  isDefault,
-}: {
-  command: Command;
-  isDefault: boolean;
-}) {
+function CommandItem({ command }: { command: Command }) {
   return (
     <MenuItem
       id={command.id}
@@ -135,14 +128,14 @@ function CommandItem({
       target={command.target}
       className={({ isFocused }) =>
         itemStyles({
-          isFocused: isFocused || isDefault,
+          isFocused,
           isDestructive: command.destructive,
         }).item()
       }
     >
       {({ isFocused }) => {
         const s = itemStyles({
-          isFocused: isFocused || isDefault,
+          isFocused,
           isDestructive: command.destructive,
           isMonospace: command.monospace,
           isIconRotated: command.rotateIcon,
@@ -196,56 +189,70 @@ const PAGES: Record<
   queries: { label: 'Queries', placeholder: 'Pick a query…' },
 };
 
+const TYPING_INPUT_TYPES = new Set([
+  'insertText',
+  'insertCompositionText',
+  'insertFromComposition',
+]);
+
 function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState<PalettePage>('root');
   const sections = useCommandSections(query, page);
   const subPage = page === 'root' ? undefined : PAGES[page];
-  const navigate = useNavigate();
+  const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [hasActiveItem, setHasActiveItem] = useState(false);
-  const firstCommand = sections[0]?.items[0];
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const input = inputRef.current;
-    if (!input) {
+    const panel = panelRef.current;
+    if (!panel) {
       return;
     }
-    const observer = new MutationObserver(() =>
-      setHasActiveItem(input.hasAttribute('aria-activedescendant')),
-    );
-    observer.observe(input, {
-      attributes: true,
-      attributeFilter: ['aria-activedescendant'],
+    const keepFocusOnFirstItem = (event: Event) => {
+      if (
+        event instanceof InputEvent &&
+        event.target === inputRef.current &&
+        !TYPING_INPUT_TYPES.has(event.inputType)
+      ) {
+        event.stopPropagation();
+      }
+    };
+    panel.addEventListener('beforeinput', keepFocusOnFirstItem, {
+      capture: true,
     });
-    return () => observer.disconnect();
+    return () =>
+      panel.removeEventListener('beforeinput', keepFocusOnFirstItem, {
+        capture: true,
+      });
   }, []);
 
+  const focusFirstItem = () => {
+    menuRef.current?.dispatchEvent(
+      new CustomEvent('react-aria-focus', {
+        cancelable: true,
+        bubbles: true,
+        detail: { focusStrategy: 'first' },
+      }),
+    );
+  };
+
+  const changeQuery = (value: string) => {
+    focusFirstItem();
+    setQuery(value);
+  };
+
   const openPage = (next: PalettePage) => {
+    focusFirstItem();
     setPage(next);
     setQuery('');
-    setHasActiveItem(false);
     inputRef.current?.focus();
   };
 
-  const runCommand = (command: Command) => {
-    if (command.page) {
-      openPage(command.page);
-      return;
-    }
-    onClose();
-    if (command.onAction) {
-      setTimeout(command.onAction, 200);
-    } else if (command.href && command.target === '_blank') {
-      window.open(command.href, '_blank', 'noopener,noreferrer');
-    } else if (command.href) {
-      navigate(command.href);
-    }
-  };
-
   return (
-    <Autocomplete inputValue={query} onInputChange={setQuery}>
+    <Autocomplete inputValue={query} onInputChange={changeQuery}>
       <div
+        ref={panelRef}
         className={styles.panel()}
         onKeyDownCapture={(event) => {
           if (page !== 'root' && event.key === 'Escape') {
@@ -279,16 +286,6 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
                 event.preventDefault();
                 event.stopPropagation();
                 openPage('root');
-                return;
-              }
-              if (
-                event.key === 'Enter' &&
-                !event.nativeEvent.isComposing &&
-                !event.currentTarget.hasAttribute('aria-activedescendant') &&
-                firstCommand
-              ) {
-                event.preventDefault();
-                runCommand(firstCommand);
               }
             }}
           />
@@ -297,9 +294,10 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
           </span>
         </SearchField>
         <Menu
+          ref={menuRef}
           aria-label="Commands"
           items={sections}
-          dependencies={[hasActiveItem, firstCommand]}
+          autoFocus="first"
           className={styles.menu()}
           renderEmptyState={() => <EmptyState />}
           onAction={(key) => {
@@ -322,16 +320,8 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
               <Header className={styles.sectionHeader()}>
                 {section.title}
               </Header>
-              <Collection
-                items={section.items}
-                dependencies={[hasActiveItem, firstCommand]}
-              >
-                {(command) => (
-                  <CommandItem
-                    command={command}
-                    isDefault={!hasActiveItem && command === firstCommand}
-                  />
-                )}
+              <Collection items={section.items}>
+                {(command) => <CommandItem command={command} />}
               </Collection>
             </MenuSection>
           )}
