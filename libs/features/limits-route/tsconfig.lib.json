@@ -47,6 +47,9 @@
       "path": "../../ui/header/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/error/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/breadcrumbs/tsconfig.lib.json"
     },
     {
@@ -56,19 +59,19 @@
       "path": "../../ui/split-button/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/form-field/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/error/tsconfig.lib.json"
-    },
-    {
       "path": "../../ui/dropdown/tsconfig.lib.json"
     },
     {
       "path": "../../ui/dialog/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/button/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/filter-builder/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/chip/tsconfig.lib.json"
     },
     {
       "path": "../service-target/tsconfig.lib.json"
@@ -104,28 +107,7 @@
       "path": "../../data-access/admin-api-spec/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/popover/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/listbox/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/chip/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/button/tsconfig.lib.json"
-    },
-    {
-      "path": "../explainers/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/link/tsconfig.lib.json"
-    },
-    {
       "path": "../../ui/layout/tsconfig.lib.json"
-    },
-    {
-      "path": "../../ui/icons/tsconfig.lib.json"
     },
     {
       "path": "../../ui/content-panel/tsconfig.lib.json"
@@ -141,6 +123,12 @@
     },
     {
       "path": "../../ui/table/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/link/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/icons/tsconfig.lib.json"
     },
     {
       "path": "../../ui/badge/tsconfig.lib.json"

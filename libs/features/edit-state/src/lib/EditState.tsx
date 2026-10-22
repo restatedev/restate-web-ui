@@ -382,7 +382,7 @@ function EditStateInner({
           </>
         )}
         {query.isPending && !isDeleting && !query.data && (
-          <div className="min-h-20 w-full animate-pulse rounded-lg border border-default bg-emphasis shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]" />
+          <div className="min-h-20 w-full animate-pulse rounded-lg border border-default bg-emphasis shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]" />
         )}
         {query.data && !isDeleting && !isPartial && (
           <>
@@ -460,7 +460,7 @@ function StateFormRows({
     <>
       <div
         ref={rowsRef}
-        className="mt-2 flex max-h-[50vh] flex-col gap-1 overflow-y-auto rounded-xl border border-default bg-muted p-1 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]"
+        className="mt-2 flex max-h-[50vh] flex-col gap-1 overflow-y-auto rounded-xl border border-inset bg-inset p-1 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]"
       >
         {stateRows.map((row) => (
           <StateFormRow
@@ -549,7 +549,7 @@ function StateFormRow({
           aria-label="Toggle value"
           className="absolute inset-0 z-0 h-full w-full rounded-none border-0 p-0 hover:bg-subtle/80 pressed:bg-muted"
         />
-        <div className="relative z-10 flex max-w-[48ch] shrink-0 cursor-text items-center rounded-lg border border-transparent transition-[background-color,border-color,box-shadow] focus-within:border-default focus-within:bg-muted focus-within:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] hover:border-default hover:bg-muted hover:shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+        <div className="relative z-10 flex max-w-[48ch] shrink-0 cursor-text items-center rounded-lg border border-transparent transition-[background-color,border-color,box-shadow] focus-within:border-inset focus-within:bg-inset focus-within:shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] hover:border-default hover:bg-muted hover:shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
           <span className="shrink-0 border-r border-default/80 py-1 pr-2 pl-1.5 text-0.5xs font-medium text-subtle uppercase">
             key
           </span>

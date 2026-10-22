@@ -316,6 +316,9 @@
     },
     {
       "path": "./libs/features/theme"
+    },
+    {
+      "path": "./libs/features/command-palette"
     }
   ]
 }

@@ -345,7 +345,7 @@ function EndpointForm() {
         </FormFieldLabel>
         <div
           onKeyDownCapture={onKeyDown}
-          className="relative my-2 flex rounded-lg border border-default bg-muted px-0.5 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] outline-2 outline-offset-2 outline-transparent has-[input[data-focused=true2]]:outline-focus has-[input[data-focused=true]]:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] has-[input[data-focused=true]]:outline-focus"
+          className="relative my-2 flex rounded-lg border border-inset bg-inset px-0.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] outline-2 outline-offset-2 outline-transparent has-[input[data-focused=true2]]:outline-focus has-[input[data-focused=true]]:[box-shadow:inset_0_1px_2px_0px_var(--box-shadow-color-inset)] has-[input[data-focused=true]]:outline-focus"
         >
           <FocusScope>
             <FormFieldInput

@@ -50,7 +50,7 @@ function DeploymentListSkeleton() {
         <div className="h-4 w-5/6 animate-pulse rounded-md bg-emphasis" />
         <div className="h-4 w-3/5 animate-pulse rounded-md bg-emphasis" />
       </div>
-      <div className="max-h-80 overflow-auto rounded-2xl border border-tint bg-emphasis/50 p-1 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+      <div className="max-h-80 overflow-auto rounded-2xl border border-tint bg-inset p-1 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
         <div className="flex flex-col gap-1">
           {Array.from({ length: 4 }, (_, index) => (
             <div
@@ -84,7 +84,7 @@ function DeploymentList({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="max-h-80 overflow-auto rounded-2xl border border-tint bg-emphasis/50 p-1 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+      <div className="max-h-80 overflow-auto rounded-2xl border border-tint bg-inset p-1 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
         <div className="flex flex-col gap-1">
           {visibleDeploymentIds.map((deploymentId) => (
             <div

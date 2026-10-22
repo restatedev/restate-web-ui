@@ -1,6 +1,7 @@
 import { Badge } from '@restate/ui-badge';
 import { Button } from '@restate/ui-button';
-import { LimitKey, Scope } from '@restate/features-vqueue-ui';
+import { LimitKey } from './LimitKey';
+import { Scope } from './Scope';
 import { ChipGroup } from '@restate/ui-chip';
 import { Icon, IconName } from '@restate/ui-icons';
 import { ListBox, ListBoxItem } from '@restate/ui-listbox';
@@ -17,33 +18,18 @@ import {
   parseConcreteKey,
   patternMatchesKey,
   type PatternFields,
-} from './pattern';
+} from './limitRulePattern';
 import { RULE_LEVEL_META, RuleLevelBadge } from './RuleLevel';
 
-const fillStyles = tv({
-  slots: {
-    wrap: '-ml-1 flex-1 filter-[drop-shadow(-1px_0px_0px_var(--border-color-strong))]',
-    level1:
-      'h-full flex-1 [clip-path:polygon(0_0,100%_0,calc(100%-4px)_100%,0_100%)]',
-    level2: 'h-full w-full [clip-path:polygon(4px_0,100%_0,100%_100%,0%_100%)]',
-  },
-  variants: {
-    level1Disabled: {
-      true: { level1: 'bg-subtle' },
-      false: { level1: 'bg-surface' },
-    },
-    level2Disabled: {
-      true: { level2: 'bg-muted' },
-      false: { level2: 'bg-surface' },
-    },
-  },
+const seamStyles = tv({
+  base: 'pointer-events-none absolute inset-y-0 left-[calc(50%-2px)] w-1 bg-[linear-gradient(to_bottom_right,transparent_calc(50%-0.5px),var(--border-color-strong)_calc(50%-0.5px),var(--border-color-strong)_calc(50%+0.5px),transparent_calc(50%+0.5px))]',
 });
 
 const segmentStyles = tv({
   slots: {
     root: 'relative flex h-full min-w-0 flex-1 items-center',
     input:
-      'h-full w-full min-w-0 border-0 bg-transparent pr-2 pl-2.5 text-left font-mono text-xs text-secondary outline-none placeholder:font-sans placeholder:text-subtle focus:ring-0 disabled:text-faint disabled:placeholder:text-faint',
+      'h-full w-full min-w-0 border-0 bg-transparent pr-2 pl-2.5 text-left font-mono text-xs text-secondary outline-none placeholder:font-sans placeholder:text-placeholder focus:ring-0 disabled:text-faint disabled:placeholder:text-faint',
   },
   variants: {
     wildcard: {
@@ -57,7 +43,7 @@ const labelStyles = tv({
 });
 
 const fieldGroupStyles = tv({
-  base: 'relative flex h-10 min-w-0 items-stretch rounded-xl border border-default bg-surface shadow-xs transition focus-within:border-default focus-within:shadow-none focus-within:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus-within:outline-2 focus-within:outline-focus',
+  base: 'relative flex h-10 min-w-0 items-stretch rounded-xl border border-inset bg-inset shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] transition focus-within:outline-2 focus-within:outline-focus',
 });
 
 const ANY = '__restate_any_value__';
@@ -176,7 +162,6 @@ export function RulePatternBuilder({
   const level1Empty = !fields.level1.trim();
   const level1Disabled = disabled || scopeEmpty;
   const level2Disabled = disabled || scopeEmpty || level1Empty;
-  const fill = fillStyles({ level1Disabled, level2Disabled });
   const update = (patch: Partial<PatternFields>) => {
     const next = { ...fields, ...patch };
     if (!next.scope.trim()) {
@@ -224,12 +209,7 @@ export function RulePatternBuilder({
           />
         </div>
         <div className={fieldGroupStyles()}>
-          <div className="pointer-events-none absolute inset-0 flex items-stretch overflow-hidden rounded-[inherit]">
-            <div className={fill.level1()} />
-            <div className={fill.wrap()}>
-              <div className={fill.level2()} />
-            </div>
-          </div>
+          <div className={seamStyles()} aria-hidden />
           <div className="relative z-10 flex min-w-0 flex-1 items-stretch">
             <PatternSegment
               label="Limit key level 1"
@@ -434,7 +414,7 @@ export function RuleMatchPreview({ pattern }: { pattern: string }) {
             aria-label="Test a key against this rule"
             spellCheck={false}
             disabled={!pattern}
-            className="h-8 w-full rounded-lg border border-info bg-surface pr-2.5 pl-11 font-mono text-xs text-secondary shadow-xs transition outline-none placeholder:font-sans placeholder:text-subtle focus:border-info-strong focus:ring-2 focus:ring-info-muted disabled:bg-surface/50 disabled:text-subtle disabled:shadow-none"
+            className="h-8 w-full rounded-lg border border-info bg-surface pr-2.5 pl-11 font-mono text-xs text-secondary shadow-xs transition outline-none placeholder:font-sans placeholder:text-placeholder focus:border-info-strong focus:ring-2 focus:ring-info-muted disabled:bg-surface/50 disabled:text-subtle disabled:shadow-none"
           />
         </div>
         {test.trim() &&

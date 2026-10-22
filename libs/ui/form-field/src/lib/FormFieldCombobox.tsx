@@ -53,7 +53,7 @@ export interface ComboBoxProps {
 }
 
 const inputStyles = tv({
-  base: 'mt-0 w-full min-w-0 rounded-lg border border-default bg-muted px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-muted/70 read-only:shadow-none focus:border-default focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus:outline-2 focus:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint [&[readonly]]:bg-muted [&[readonly]]:text-subtle',
+  base: 'mt-0 w-full min-w-0 rounded-lg border border-inset bg-inset px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] placeholder:text-placeholder invalid:border-danger-strong invalid:bg-danger-muted/70 read-only:shadow-none focus:border-inset focus:shadow-none focus:[box-shadow:inset_0_1px_2px_0px_var(--box-shadow-color-inset)] focus:outline-2 focus:outline-focus disabled:border-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint [&[readonly]]:bg-inset [&[readonly]]:text-subtle',
 });
 
 const containerStyles = tv({

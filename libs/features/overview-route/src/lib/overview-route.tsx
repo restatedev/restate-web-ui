@@ -323,7 +323,7 @@ function FlowConnectors({
 }
 
 const emptyServerStyles = tv({
-  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-emphasis/50 pt-24 pb-8 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] ring-1 ring-surface/80 @tall:pt-10 @tall:pb-40',
+  base: 'flex w-full flex-auto flex-col items-center justify-center overflow-hidden rounded-xl border bg-inset pt-24 pb-8 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] ring-1 ring-surface/80 @tall:pt-10 @tall:pb-40',
   variants: {
     isError: {
       true: '[&>svg:first-child>path]:fill-danger-muted',

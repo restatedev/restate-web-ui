@@ -70,7 +70,7 @@ const nowLabelStyles = tv({
 });
 
 const nowMarkerStyles = tv({
-  base: 'pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] bottom-0 z-20 w-0 border-l-2 border-surface/80 font-sans text-2xs text-muted',
+  base: 'pointer-events-none absolute top-[calc(var(--timeline-units-header-offset,3rem)+2px)] bottom-0 z-20 w-0 border-l-2 border-neutral font-sans text-2xs text-muted',
   variants: {
     animateLeft: {
       true: 'linear transition-[left] duration-300',

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { RulePatternBuilder } from './RulePatternBuilder';
-import type { PatternFields } from './pattern';
+import type { PatternFields } from './limitRulePattern';
 
 function PatternBuilderHarness({
   initialFields = { scope: '', level1: '', level2: '' },

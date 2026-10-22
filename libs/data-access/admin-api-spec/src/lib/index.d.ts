@@ -282,7 +282,7 @@ export interface paths {
     /**
      * Send a signal to an invocation
      * @description Resolves or rejects the named signal of an invocation. A request body with content type
-     *     `application/vnd.restate.failure+json` rejects the signal with the given failure, any other
+     *     `application/vnd.restate.error+json` rejects the signal with the given failure, any other
      *     request body resolves the signal using the body as payload.
      *
      *     Signals sent to invocations that don't exist or are already completed are ignored.
@@ -5961,7 +5961,7 @@ export interface operations {
     requestBody: {
       content: {
         'application/octet-stream': unknown;
-        'application/vnd.restate.failure+json': components['schemas']['SignalFailure'];
+        'application/vnd.restate.error+json': components['schemas']['SignalFailure'];
       };
     };
     responses: {

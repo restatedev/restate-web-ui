@@ -1,10 +1,17 @@
 import type { UserLimitRow } from '@restate/data-access-admin-api-hooks';
 import {
+  createLimitRuleHref,
   LimitCounterTarget,
   LimitRuleTarget,
   LimitValue,
+  RULE_LEVEL_COLUMN_WIDTH,
+  RuleLevelExplainer,
+  RuleLevelValue,
+  type RuleLevel,
 } from '@restate/features-vqueue-ui';
 import { Badge } from '@restate/ui-badge';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import { Cell, PanelTable, type PanelTableColumn } from '@restate/ui-table';
 import { HoverTooltip, InlineTooltip } from '@restate/ui-tooltip';
 import {
@@ -20,13 +27,7 @@ import {
   type LimitCounterIdentity,
   vqueuesForLimitCounterHref,
 } from './navigation';
-import type { RuleLevel } from './pattern';
 import { getCounterUsageRatio } from './counterUsage';
-import {
-  RULE_LEVEL_COLUMN_WIDTH,
-  RuleLevelExplainer,
-  RuleLevelValue,
-} from './RuleLevel';
 
 type CounterColumn =
   | 'counter'
@@ -332,6 +333,19 @@ function renderCounterCell(
               variant="table"
               className="w-fit"
             />
+          ) : row.identity ? (
+            <Link
+              href={createLimitRuleHref(
+                [row.identity.scope, row.identity.l1, row.identity.l2]
+                  .filter(Boolean)
+                  .join('/'),
+              )}
+              variant="secondary"
+              className="inline-flex items-center gap-1 text-0.5xs text-muted no-underline hover:text-secondary"
+            >
+              <Icon name={IconName.Plus} className="h-3 w-3" />
+              Create rule
+            </Link>
           ) : (
             <span className="text-faint">—</span>
           )}

@@ -2447,7 +2447,7 @@ export function useSendInvocationSignal(
     'post',
     {
       baseUrl,
-      headers: { 'Content-Type': 'application/vnd.restate.failure+json' },
+      headers: { 'Content-Type': 'application/vnd.restate.error+json' },
     },
   );
 

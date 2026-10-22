@@ -157,7 +157,7 @@ export function CompleteForm({
             setAction(value as CompleteActionType);
             onReset();
           }}
-          className="grid grid-cols-2 gap-1 rounded-lg border border-default bg-muted p-1 shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]"
+          className="grid grid-cols-2 gap-1 rounded-lg border border-inset bg-inset p-1 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]"
         >
           <ActionRadio
             value="resolve"

@@ -75,6 +75,11 @@ import { setQueryClient } from '@restate/util-react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
 import { PortalProvider } from '@restate/ui-portal';
 import { BatchOperationsProvider } from '@restate/features-batch-operations';
+import { CreateRuleDialog } from '@restate/features-vqueue-ui';
+import {
+  CommandPaletteProvider,
+  CommandPaletteTrigger,
+} from '@restate/features-command-palette';
 import { MonacoWarmup } from '@restate/ui-editor';
 import { elementsCssUrl, elementsJsUrl } from '@restate/ui-api/assets';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
@@ -389,6 +394,7 @@ function SidebarPanels() {
         <SidebarHeaderContent />
       </SidebarHeader>
       <SidebarNav>
+        <CommandPaletteTrigger />
         <OverviewSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
         <InvocationsSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
         <WorkflowsSidebarItem preserveSearchParams={PRESERVED_QUERY_PARAMS} />
@@ -487,20 +493,23 @@ function AppContent() {
             ) : (
               <BatchOperationsProvider>
                 <EditState>
-                  <BreadcrumbsProvider>
-                    <LayoutOutlet zone={LayoutZone.Content}>
-                      <Outlet />
-                    </LayoutOutlet>
-                  </BreadcrumbsProvider>
-                  <SidebarPanels />
-                  <TopbarPanels />
-                  <DeleteDeployment />
-                  <ServicePlayground />
-                  <EditService />
-                  <InvocationActions />
-                  <RegisterDeploymentDialog />
-                  <UpdateDeploymentDialog />
-                  <MonacoWarmup />
+                  <CommandPaletteProvider>
+                    <BreadcrumbsProvider>
+                      <LayoutOutlet zone={LayoutZone.Content}>
+                        <Outlet />
+                      </LayoutOutlet>
+                    </BreadcrumbsProvider>
+                    <SidebarPanels />
+                    <TopbarPanels />
+                    <DeleteDeployment />
+                    <ServicePlayground />
+                    <EditService />
+                    <InvocationActions />
+                    <RegisterDeploymentDialog />
+                    <UpdateDeploymentDialog />
+                    <CreateRuleDialog />
+                    <MonacoWarmup />
+                  </CommandPaletteProvider>
                 </EditState>
               </BatchOperationsProvider>
             )}

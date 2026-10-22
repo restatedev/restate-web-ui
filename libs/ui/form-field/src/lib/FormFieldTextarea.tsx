@@ -10,7 +10,7 @@ import { ComponentProps, ReactNode } from 'react';
 import { FormFieldLabel } from './FormFieldLabel';
 
 const inputStyles = tv({
-  base: 'mt-0 w-full min-w-0 flex-1 rounded-lg border border-default bg-muted px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] placeholder:text-subtle invalid:border-danger-strong invalid:bg-danger-muted/70 focus:border-default focus:shadow-none focus:[box-shadow:inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)] focus:outline-2 focus:outline-focus disabled:border-muted disabled:bg-muted disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint',
+  base: 'mt-0 w-full min-w-0 flex-1 rounded-lg border border-inset bg-inset px-2 py-1.5 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)] placeholder:text-placeholder invalid:border-danger-strong invalid:bg-danger-muted/70 focus:border-inset focus:shadow-none focus:[box-shadow:inset_0_1px_2px_0px_var(--box-shadow-color-inset)] focus:outline-2 focus:outline-focus disabled:border-muted disabled:bg-inset disabled:text-subtle disabled:shadow-none disabled:placeholder:text-faint',
 });
 const containerStyles = tv({
   base: 'flex flex-col',

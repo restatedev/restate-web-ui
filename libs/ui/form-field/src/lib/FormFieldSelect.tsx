@@ -62,7 +62,7 @@ export function FormFieldSelect({
     >
       {!label && <Label className="sr-only">{placeholder}</Label>}
       {label && <FormFieldLabel>{label}</FormFieldLabel>}
-      <div className="rounded-xl border border-default bg-muted p-px shadow-[inset_0_1px_0px_0px_--theme(--box-shadow-color-default/3%)]">
+      <div className="rounded-xl border border-inset bg-inset p-px shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
         <Button
           autoFocus={autoFocus}
           variant="secondary"

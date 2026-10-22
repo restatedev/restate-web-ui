@@ -6,8 +6,12 @@ export {
   getInvocationPresetSearch,
   getDefaultInvocationsPreset,
   setDefaultInvocationsPreset,
+  listInvocationPresets,
 } from './lib/InvocationsSidebarItem';
-export type { InvocationPreset } from './lib/InvocationsSidebarItem';
+export type {
+  InvocationPreset,
+  InvocationPresetDefinition,
+} from './lib/InvocationsSidebarItem';
 export type { InvocationsRecent } from './lib/invocationsRecent';
 export { getInvocationsLastQuery } from './lib/invocationsLastQuery';
 export {
