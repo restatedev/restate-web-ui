@@ -26,6 +26,7 @@ export function matchScore(
 
   let score = 0;
   for (const token of normalizedQuery.split(/\s+/)) {
+    const matchesInsideWords = token.length > 1;
     let best = 0;
     if (labelWords.includes(token)) {
       best = 30;
@@ -33,11 +34,14 @@ export function matchScore(
       best = 20;
     } else if (keywordWords.includes(token)) {
       best = 15;
-    } else if (normalizedLabel.includes(token)) {
+    } else if (matchesInsideWords && normalizedLabel.includes(token)) {
       best = 12;
     } else if (keywordWords.some((word) => word.startsWith(token))) {
       best = 10;
-    } else if (normalizedKeywords.some((keyword) => keyword.includes(token))) {
+    } else if (
+      matchesInsideWords &&
+      normalizedKeywords.some((keyword) => keyword.includes(token))
+    ) {
       best = 6;
     }
     if (best === 0) {

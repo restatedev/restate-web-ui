@@ -24,6 +24,7 @@ export interface CommandSection {
   title: string;
   items: Command[];
   searchOnly?: boolean;
+  hiddenCount?: number;
 }
 
 export interface CommandPaletteStep {
