@@ -3,6 +3,8 @@ import { usePurgeInvocation } from '@restate/data-access-admin-api-hooks';
 import { showSuccessNotification } from '@restate/ui-notification';
 import { Link } from '@restate/ui-link';
 import { IconName } from '@restate/ui-icons';
+import { useRestateContext } from '@restate/features-restate-context';
+import { useLocation } from 'react-router';
 import {
   getInvocationActionFormData,
   getInvocationActionId,
@@ -86,8 +88,16 @@ export const PurgeInvocation = withConfirmation({
 
   Content: PurgeInvocationContent,
 
-  onSuccess: (_data, variables) => {
+  useHelpers: () => {
+    const { baseUrl } = useRestateContext();
+    const { pathname } = useLocation();
+    return { baseUrl, pathname };
+  },
+  onSuccess: (_data, variables, _context, { navigate, baseUrl, pathname }) => {
     const id = String(variables.parameters?.path.invocation_id);
+    if (pathname === `${baseUrl}/invocations/${id}`) {
+      navigate(`${baseUrl}/invocations?restore=1`, { replace: true });
+    }
     showSuccessNotification(
       <>
         <InvocationActionId value={id} /> has been successfully purged.
