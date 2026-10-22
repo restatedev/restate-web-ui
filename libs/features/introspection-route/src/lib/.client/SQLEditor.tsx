@@ -271,6 +271,7 @@ export function SQLEditor({
         },
         wordWrap: 'on',
         scrollBeyondLastColumn: 0,
+        tabFocusMode: true,
       });
 
       function updateStyles() {

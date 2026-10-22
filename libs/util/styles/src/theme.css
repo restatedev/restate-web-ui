@@ -406,7 +406,7 @@
     --background-color-surface: oklch(0.305 0.022 264);
     --background-color-subtle: oklch(0.275 0.022 264);
     --background-color-sunken: oklch(0.2 0.022 264);
-    --background-color-overlay: oklch(0.29 0.022 264);
+    --background-color-overlay: oklch(0.25 0.022 264);
     --background-color-raised: oklch(0.375 0.022 264);
     --raised-subtle: oklch(0.35 0.022 264);
     --raised-muted: oklch(0.33 0.022 264);

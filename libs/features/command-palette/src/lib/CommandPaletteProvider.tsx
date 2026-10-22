@@ -10,6 +10,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import type { CommandPaletteExtensionComponent } from './types';
 
 const CommandPaletteDialog = lazy(() => import('./CommandPaletteDialog'));
 
@@ -39,7 +40,10 @@ function getServerShortcut() {
   return '⌘K';
 }
 
-export function CommandPaletteProvider({ children }: PropsWithChildren) {
+export function CommandPaletteProvider({
+  children,
+  Extension,
+}: PropsWithChildren<{ Extension?: CommandPaletteExtensionComponent }>) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
   const shortcut = useSyncExternalStore(
@@ -85,7 +89,11 @@ export function CommandPaletteProvider({ children }: PropsWithChildren) {
       {children}
       {hasOpened && (
         <Suspense fallback={null}>
-          <CommandPaletteDialog isOpen={isOpen} onOpenChange={setIsOpen} />
+          <CommandPaletteDialog
+            isOpen={isOpen}
+            onOpenChange={setIsOpen}
+            Extension={Extension}
+          />
         </Suspense>
       )}
     </CommandPaletteContext>

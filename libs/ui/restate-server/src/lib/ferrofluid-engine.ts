@@ -55,8 +55,10 @@ const GOO_INFLUENCE = 1.6;
 const GOO_THRESHOLD_LOW = 0.39;
 const GOO_THRESHOLD_HIGH = 0.46;
 const FIELD_DETAIL = 0.5;
-const SHAPE_SATURATION = 20;
-const SHAPE_LIGHTNESS = 65;
+const SHAPE_SHADE = {
+  light: { saturation: 20, lightness: 65 },
+  dark: { saturation: 35, lightness: 30 },
+};
 
 function shade(
   color: string,
@@ -90,6 +92,7 @@ export class FerrofluidEngine {
   private curNoiseSpeed = STATUS_PARAMS.idle.noiseSpeed;
   private fromColor = '';
   private toColor = '';
+  private isDark = false;
   private colorMix = 1;
   private colorStatus: FerrofluidStatus | null = null;
   private frame = 0;
@@ -345,9 +348,9 @@ export class FerrofluidEngine {
   private refreshColor() {
     if (!this.shapeCanvas) return;
     this.colorStatus = this._status;
-    const color = getComputedStyle(this.shapeCanvas)
-      .getPropertyValue(STATUS_TOKEN[this._status])
-      .trim();
+    const style = getComputedStyle(this.shapeCanvas);
+    this.isDark = style.colorScheme === 'dark';
+    const color = style.getPropertyValue(STATUS_TOKEN[this._status]).trim();
     if (!color || color === this.toColor) return;
     this.fromColor = this.toColor || color;
     this.toColor = color;
@@ -508,7 +511,9 @@ export class FerrofluidEngine {
     ctx.drawImage(fieldCanvas, 0, 0, this._logicalSize, this._logicalSize);
     if (this.color) {
       ctx.globalCompositeOperation = 'source-in';
-      ctx.fillStyle = shade(this.color, 0, SHAPE_SATURATION, SHAPE_LIGHTNESS);
+      const { saturation, lightness } =
+        SHAPE_SHADE[this.isDark ? 'dark' : 'light'];
+      ctx.fillStyle = shade(this.color, 0, saturation, lightness);
       ctx.fillRect(0, 0, this._logicalSize, this._logicalSize);
       ctx.globalCompositeOperation = 'source-over';
     }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Autocomplete,
   Collection,
@@ -15,7 +15,11 @@ import {
 } from 'react-aria-components';
 import { Icon, IconName } from '@restate/ui-icons';
 import { tv } from '@restate/util-styles';
-import type { Command, PalettePage } from './types';
+import type {
+  Command,
+  CommandPaletteExtension,
+  CommandPaletteExtensionComponent,
+} from './types';
 import { useCommandSections } from './useCommandSections';
 
 const overlayStyles = tv({
@@ -156,7 +160,7 @@ function CommandItem({ command }: { command: Command }) {
               )}
             </span>
             {command.hint && <span className={s.hint()}>{command.hint}</span>}
-            {command.page && (
+            {command.step && (
               <Icon name={IconName.ChevronRight} className={s.chevron()} />
             )}
           </>
@@ -178,28 +182,32 @@ function EmptyState() {
   );
 }
 
-const PAGES: Record<
-  Exclude<PalettePage, 'root'>,
-  { label: string; placeholder: string }
-> = {
-  playground: {
-    label: 'Playground',
-    placeholder: 'Pick a service or handler…',
-  },
-  queries: { label: 'Queries', placeholder: 'Pick a query…' },
-};
-
 const TYPING_INPUT_TYPES = new Set([
   'insertText',
   'insertCompositionText',
   'insertFromComposition',
 ]);
 
-function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
+const NO_EXTENSION: CommandPaletteExtension = {};
+
+function NoExtension({
+  children,
+}: {
+  children: (extension: CommandPaletteExtension) => ReactNode;
+}) {
+  return children(NO_EXTENSION);
+}
+
+function CommandPaletteContent({
+  onClose,
+  extension,
+}: {
+  onClose: VoidFunction;
+  extension: CommandPaletteExtension;
+}) {
   const [query, setQuery] = useState('');
-  const [page, setPage] = useState<PalettePage>('root');
-  const sections = useCommandSections(query, page);
-  const subPage = page === 'root' ? undefined : PAGES[page];
+  const [stepId, setStepId] = useState<string>();
+  const { sections, step } = useCommandSections(query, stepId, extension);
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -242,9 +250,9 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
     setQuery(value);
   };
 
-  const openPage = (next: PalettePage) => {
+  const openStep = (next: string | undefined) => {
     focusFirstItem();
-    setPage(next);
+    setStepId(next);
     setQuery('');
     inputRef.current?.focus();
   };
@@ -255,10 +263,10 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
         ref={panelRef}
         className={styles.panel()}
         onKeyDownCapture={(event) => {
-          if (page !== 'root' && event.key === 'Escape') {
+          if (step && event.key === 'Escape') {
             event.preventDefault();
             event.stopPropagation();
-            openPage('root');
+            openStep(undefined);
           }
         }}
       >
@@ -268,24 +276,22 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
           className={styles.searchField()}
         >
           <Icon name={IconName.Search} className={styles.searchIcon()} />
-          {subPage && (
-            <span className={styles.pageChip()}>{subPage.label}</span>
-          )}
+          {step && <span className={styles.pageChip()}>{step.label}</span>}
           <Input
             ref={inputRef}
             placeholder={
-              subPage?.placeholder ?? 'Search, or paste an ID, endpoint or SQL…'
+              step?.placeholder ?? 'Search, or paste an ID, endpoint or SQL…'
             }
             className={styles.input()}
             onKeyDown={(event) => {
               if (
-                page !== 'root' &&
+                step &&
                 !event.currentTarget.value &&
                 event.key === 'Backspace'
               ) {
                 event.preventDefault();
                 event.stopPropagation();
-                openPage('root');
+                openStep(undefined);
               }
             }}
           />
@@ -304,12 +310,15 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
             const command = sections
               .flatMap((section) => section.items)
               .find((item) => item.id === key);
-            if (command?.page) {
-              openPage(command.page);
+            if (command?.step) {
+              openStep(command.step);
               return;
             }
+            if (command?.onAction && command.runImmediately) {
+              command.onAction();
+            }
             onClose();
-            if (command?.onAction) {
+            if (command?.onAction && !command.runImmediately) {
               const run = command.onAction;
               setTimeout(run, 200);
             }
@@ -337,7 +346,7 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
           <Kbd>↵</Kbd>
           to open
         </span>
-        {subPage && (
+        {step && (
           <span className={styles.footerHint()}>
             <Kbd>⌫</Kbd>
             to go back
@@ -351,9 +360,11 @@ function CommandPaletteContent({ onClose }: { onClose: VoidFunction }) {
 export default function CommandPaletteDialog({
   isOpen,
   onOpenChange,
+  Extension = NoExtension,
 }: {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  Extension?: CommandPaletteExtensionComponent;
 }) {
   return (
     <ModalOverlay
@@ -374,7 +385,14 @@ export default function CommandPaletteDialog({
           data-ignore-shortcut="true"
           className={styles.frame()}
         >
-          <CommandPaletteContent onClose={() => onOpenChange(false)} />
+          <Extension>
+            {(extension) => (
+              <CommandPaletteContent
+                onClose={() => onOpenChange(false)}
+                extension={extension}
+              />
+            )}
+          </Extension>
         </Dialog>
       </Modal>
     </ModalOverlay>

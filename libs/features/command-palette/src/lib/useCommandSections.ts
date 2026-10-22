@@ -47,12 +47,24 @@ import { matchScore } from './matchScore';
 import { normalizeEndpoint, parseInput } from './parseInput';
 import type {
   Command,
+  CommandPaletteExtension,
+  CommandPaletteStep,
   CommandSection,
-  CommandSectionId,
-  PalettePage,
 } from './types';
 
-const SECTION_TITLES: Record<CommandSectionId, string> = {
+type SectionId =
+  | 'matches'
+  | 'actions'
+  | 'services'
+  | 'handlers'
+  | 'deployments'
+  | 'pages'
+  | 'invocations'
+  | 'flowControl'
+  | 'recentQueries'
+  | 'usefulQueries';
+
+const SECTION_TITLES: Record<SectionId, string> = {
   matches: 'Matches',
   actions: 'Actions',
   services: 'Services',
@@ -65,9 +77,9 @@ const SECTION_TITLES: Record<CommandSectionId, string> = {
   usefulQueries: 'Useful queries',
 };
 
-const SECTION_LIMITS: Record<CommandSectionId, number> = {
+const SECTION_LIMITS: Record<SectionId, number> = {
   matches: 20,
-  actions: 8,
+  actions: 10,
   services: 5,
   handlers: 5,
   deployments: 5,
@@ -154,7 +166,12 @@ function firstLine(text: string) {
   return text.trim().split('\n')[0] ?? '';
 }
 
-function section(id: CommandSectionId, items: Command[]): CommandSection {
+const EXTENSION_SECTION_LIMIT = 6;
+const NO_COMMANDS: Command[] = [];
+const NO_SECTIONS: CommandSection[] = [];
+const NO_STEPS: CommandPaletteStep[] = [];
+
+function section(id: SectionId, items: Command[]): CommandSection {
   return {
     id,
     title: SECTION_TITLES[id],
@@ -166,10 +183,40 @@ function nonEmpty(sections: CommandSection[]) {
   return sections.filter(({ items }) => items.length > 0);
 }
 
+function browsable(items: Command[]) {
+  return items.filter(({ searchOnly }) => !searchOnly);
+}
+
+function browsableSections(sections: CommandSection[]) {
+  return sections
+    .filter(({ searchOnly }) => !searchOnly)
+    .map((browsableSection) => ({
+      ...browsableSection,
+      items: browsable(browsableSection.items),
+    }));
+}
+
+function stepSections(step: CommandPaletteStep, query: string) {
+  return nonEmpty(
+    query
+      ? step.sections.map((stepSection) => ({
+          ...stepSection,
+          items: rank(query, stepSection.items, Infinity),
+        }))
+      : browsableSections(step.sections),
+  );
+}
+
+export interface CommandSectionsResult {
+  sections: CommandSection[];
+  step?: Pick<CommandPaletteStep, 'label' | 'placeholder'>;
+}
+
 export function useCommandSections(
   query: string,
-  page: PalettePage,
-): CommandSection[] {
+  stepId: string | undefined,
+  extension: CommandPaletteExtension,
+): CommandSectionsResult {
   const { baseUrl, tunnel } = useRestateContext();
   const [searchParams] = useSearchParams();
   const { data: services } = useListServices();
@@ -340,14 +387,14 @@ export function useCommandSections(
         label: 'Open playground…',
         icon: IconName.Play,
         keywords: ['playground', 'invoke', 'call', 'try', 'service', 'handler'],
-        page: 'playground',
+        step: 'playground',
       },
       {
         id: 'action:queries',
         label: 'Run a query…',
         icon: IconName.ScanSearch,
         keywords: ['introspection', 'sql', 'useful', 'recent', 'query'],
-        page: 'queries',
+        step: 'queries',
       },
       {
         id: 'action:create-rule',
@@ -428,52 +475,70 @@ export function useCommandSections(
     queryHistory,
   ]);
 
-  return useMemo(() => {
+  const extensionActions = extension.actions ?? NO_COMMANDS;
+  const extensionSections = extension.sections ?? NO_SECTIONS;
+  const extensionSteps = extension.steps ?? NO_STEPS;
+  const steps = useMemo<CommandPaletteStep[]>(
+    () => [
+      {
+        id: 'playground',
+        label: 'Playground',
+        placeholder: 'Pick a service or handler…',
+        sections: [
+          {
+            id: 'services',
+            title: SECTION_TITLES.services,
+            items: catalog.playgroundServices,
+          },
+          {
+            id: 'handlers',
+            title: SECTION_TITLES.handlers,
+            items: catalog.playgroundHandlers,
+            searchOnly: true,
+          },
+        ],
+      },
+      {
+        id: 'queries',
+        label: 'Queries',
+        placeholder: 'Pick a query…',
+        sections: [
+          {
+            id: 'recentQueries',
+            title: SECTION_TITLES.recentQueries,
+            items: catalog.recentQueries,
+          },
+          {
+            id: 'usefulQueries',
+            title: SECTION_TITLES.usefulQueries,
+            items: catalog.usefulQueries,
+          },
+        ],
+      },
+      ...extensionSteps,
+    ],
+    [catalog, extensionSteps],
+  );
+
+  const step = steps.find(({ id }) => id === stepId);
+
+  const sections = useMemo(() => {
     const trimmed = query.trim();
 
-    if (page === 'playground') {
-      return nonEmpty(
-        trimmed
-          ? [
-              section(
-                'services',
-                rank(trimmed, catalog.playgroundServices, Infinity),
-              ),
-              section(
-                'handlers',
-                rank(trimmed, catalog.playgroundHandlers, Infinity),
-              ),
-            ]
-          : [{ ...section('services', []), items: catalog.playgroundServices }],
-      );
-    }
-
-    if (page === 'queries') {
-      return nonEmpty(
-        trimmed
-          ? [
-              section(
-                'recentQueries',
-                rank(trimmed, catalog.recentQueries, Infinity),
-              ),
-              section(
-                'usefulQueries',
-                rank(trimmed, catalog.usefulQueries, Infinity),
-              ),
-            ]
-          : [
-              section('recentQueries', catalog.recentQueries),
-              section('usefulQueries', catalog.usefulQueries),
-            ],
-      );
+    if (step) {
+      return stepSections(step, trimmed);
     }
 
     if (!trimmed) {
       return nonEmpty([
-        section('actions', catalog.mainActions),
+        section(
+          'actions',
+          browsable([...catalog.mainActions, ...extensionActions]),
+        ),
         section('pages', catalog.pages),
         section('invocations', catalog.invocationPages),
         section('flowControl', catalog.flowControlPages),
+        ...browsableSections(extensionSections),
       ]);
     }
 
@@ -799,6 +864,10 @@ export function useCommandSections(
       ),
       section('invocations', rank(trimmed, catalog.invocationPages, Infinity)),
       section('flowControl', rank(trimmed, catalog.flowControlPages, Infinity)),
+      ...extensionSections.map((extensionSection) => ({
+        ...extensionSection,
+        items: rank(trimmed, extensionSection.items, EXTENSION_SECTION_LIMIT),
+      })),
       section(
         'actions',
         rank(
@@ -806,6 +875,7 @@ export function useCommandSections(
           [
             ...batchActions,
             ...catalog.mainActions,
+            ...extensionActions,
             ...playgroundActions,
             ...catalog.usefulQueries.map((command) => ({
               ...command,
@@ -825,8 +895,10 @@ export function useCommandSections(
     ]);
   }, [
     query,
-    page,
+    step,
     catalog,
+    extensionActions,
+    extensionSections,
     services,
     deployments,
     baseUrl,
@@ -836,4 +908,12 @@ export function useCommandSections(
     invocationFilterSchema,
     canSortByTransition,
   ]);
+
+  return useMemo(
+    () => ({
+      sections,
+      step: step && { label: step.label, placeholder: step.placeholder },
+    }),
+    [sections, step],
+  );
 }

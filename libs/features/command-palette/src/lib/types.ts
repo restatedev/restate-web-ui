@@ -1,18 +1,5 @@
+import type { ComponentType, ReactNode } from 'react';
 import type { IconName } from '@restate/ui-icons';
-
-export type PalettePage = 'root' | 'playground' | 'queries';
-
-export type CommandSectionId =
-  | 'matches'
-  | 'actions'
-  | 'services'
-  | 'handlers'
-  | 'deployments'
-  | 'pages'
-  | 'invocations'
-  | 'flowControl'
-  | 'recentQueries'
-  | 'usefulQueries';
 
 export interface Command {
   id: string;
@@ -25,13 +12,33 @@ export interface Command {
   href?: string;
   target?: '_blank';
   onAction?: VoidFunction;
-  page?: PalettePage;
+  runImmediately?: boolean;
+  step?: string;
   monospace?: boolean;
   destructive?: boolean;
+  searchOnly?: boolean;
 }
 
 export interface CommandSection {
-  id: CommandSectionId;
+  id: string;
   title: string;
   items: Command[];
+  searchOnly?: boolean;
 }
+
+export interface CommandPaletteStep {
+  id: string;
+  label: string;
+  placeholder: string;
+  sections: CommandSection[];
+}
+
+export interface CommandPaletteExtension {
+  actions?: Command[];
+  sections?: CommandSection[];
+  steps?: CommandPaletteStep[];
+}
+
+export type CommandPaletteExtensionComponent = ComponentType<{
+  children: (extension: CommandPaletteExtension) => ReactNode;
+}>;

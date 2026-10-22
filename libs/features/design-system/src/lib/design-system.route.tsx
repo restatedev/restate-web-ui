@@ -11,6 +11,7 @@ import {
 import { Icon, IconName } from '@restate/ui-icons';
 import { ListPageHeader } from '@restate/ui-layout';
 import { Link } from '@restate/ui-link';
+import { RadioCard, RadioCards, RadioGroup } from '@restate/ui-radio-group';
 import { Section, SectionContent, SectionTitle } from '@restate/ui-section';
 import type { CSSProperties, PropsWithChildren, ReactNode } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
@@ -822,6 +823,22 @@ function Components() {
             Checkbox
           </FormFieldCheckbox>
           <Switch defaultSelected>Switch</Switch>
+        </Group>
+        <Group title="Option cards">
+          <RadioGroup name="option-cards" defaultValue="first">
+            <RadioCards className="grid w-96 grid-cols-2">
+              <RadioCard
+                value="first"
+                label="Selected"
+                description="Raised, accent dot"
+              />
+              <RadioCard
+                value="second"
+                label="Option"
+                description="Flat in the well"
+              />
+            </RadioCards>
+          </RadioGroup>
         </Group>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
