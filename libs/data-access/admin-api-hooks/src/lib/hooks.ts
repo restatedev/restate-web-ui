@@ -2349,10 +2349,10 @@ async function encodeResolveValue(value: string, encode?: EncodeValue) {
 }
 
 async function getIngressError(response: Response) {
-  const body: string | { message?: string } | undefined = response.headers
-    .get('content-type')
-    ?.includes('json')
-    ? await response.json().catch(() => undefined)
+  const body = response.headers.get('content-type')?.includes('json')
+    ? ((await response.json().catch(() => undefined)) as
+        | { message?: string }
+        | undefined)
     : await response.text().catch(() => undefined);
   const message = typeof body === 'object' ? body?.message : body;
 
