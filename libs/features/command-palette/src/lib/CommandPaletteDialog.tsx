@@ -54,6 +54,7 @@ const styles = tv({
     menu: 'min-h-0 flex-auto overflow-auto p-1.5 outline-0',
     section: 'not-first:mt-1.5',
     sectionHeader: 'px-2 pt-1 pb-1 text-xs font-medium text-muted',
+    more: 'cursor-default py-1 pr-2 pl-12 text-xs text-subtle outline-0 select-none',
     empty: 'flex flex-col items-center gap-1 px-6 py-10 text-center',
     emptyTitle: 'text-sm font-medium text-secondary',
     emptyDescription: 'text-xs text-muted',
@@ -332,6 +333,16 @@ function CommandPaletteContent({
               <Collection items={section.items}>
                 {(command) => <CommandItem command={command} />}
               </Collection>
+              {section.hiddenCount ? (
+                <MenuItem
+                  id={`${section.id}:more`}
+                  isDisabled
+                  textValue={`${section.hiddenCount} more`}
+                  className={styles.more()}
+                >
+                  {section.hiddenCount} more, type to narrow
+                </MenuItem>
+              ) : null}
             </MenuSection>
           )}
         </Menu>

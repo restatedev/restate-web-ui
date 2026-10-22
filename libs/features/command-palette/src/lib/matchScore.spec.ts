@@ -64,4 +64,23 @@ describe('matchScore', () => {
       }),
     ).toBe(0);
   });
+
+  it('matches a single character only at the start of a word', () => {
+    expect(matchScore('a', { label: 'Admin API' })).toBeGreaterThan(0);
+    expect(matchScore('a', { label: 'Greeter/add' })).toBeGreaterThan(0);
+    expect(matchScore('a', { label: 'Overview' })).toBe(0);
+    expect(
+      matchScore('a', { label: 'Overview', keywords: ['dashboard'] }),
+    ).toBe(0);
+    expect(
+      matchScore('d', { label: 'Overview', keywords: ['dashboard'] }),
+    ).toBeGreaterThan(0);
+  });
+
+  it('matches two or more characters inside words', () => {
+    expect(matchScore('vi', { label: 'Overview' })).toBeGreaterThan(0);
+    expect(
+      matchScore('sh', { label: 'Overview', keywords: ['dashboard'] }),
+    ).toBeGreaterThan(0);
+  });
 });

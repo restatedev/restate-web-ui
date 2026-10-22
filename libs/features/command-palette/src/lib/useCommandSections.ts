@@ -137,12 +137,11 @@ const BATCH_ACTIONS: Record<
   purge: { verb: 'Purge', icon: IconName.Trash, destructive: true },
 };
 
-function rank(query: string, commands: Command[], limit: number) {
+function rank(query: string, commands: Command[]) {
   return commands
     .map((command) => ({ command, score: matchScore(query, command) }))
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
     .map(({ command }) => command);
 }
 
@@ -167,16 +166,24 @@ function firstLine(text: string) {
 }
 
 const EXTENSION_SECTION_LIMIT = 6;
+const STEP_SECTION_LIMIT = 50;
 const NO_COMMANDS: Command[] = [];
 const NO_SECTIONS: CommandSection[] = [];
 const NO_STEPS: CommandPaletteStep[] = [];
 
+function capped(commandSection: CommandSection, limit: number): CommandSection {
+  const hiddenCount = commandSection.items.length - limit;
+  return hiddenCount > 0
+    ? {
+        ...commandSection,
+        items: commandSection.items.slice(0, limit),
+        hiddenCount,
+      }
+    : commandSection;
+}
+
 function section(id: SectionId, items: Command[]): CommandSection {
-  return {
-    id,
-    title: SECTION_TITLES[id],
-    items: items.slice(0, SECTION_LIMITS[id]),
-  };
+  return capped({ id, title: SECTION_TITLES[id], items }, SECTION_LIMITS[id]);
 }
 
 function nonEmpty(sections: CommandSection[]) {
@@ -198,12 +205,13 @@ function browsableSections(sections: CommandSection[]) {
 
 function stepSections(step: CommandPaletteStep, query: string) {
   return nonEmpty(
-    query
+    (query
       ? step.sections.map((stepSection) => ({
           ...stepSection,
-          items: rank(query, stepSection.items, Infinity),
+          items: rank(query, stepSection.items),
         }))
-      : browsableSections(step.sections),
+      : browsableSections(step.sections)
+    ).map((stepSection) => capped(stepSection, STEP_SECTION_LIMIT)),
   );
 }
 
@@ -852,22 +860,27 @@ export function useCommandSections(
 
     return nonEmpty([
       section('matches', matches),
-      section('services', rank(trimmed, serviceCommands, Infinity)),
+      section('services', rank(trimmed, serviceCommands)),
       section(
         'handlers',
-        parsed.servicePath ? [] : rank(trimmed, handlerCommands, Infinity),
+        parsed.servicePath ? [] : rank(trimmed, handlerCommands),
       ),
       section('deployments', deploymentCommands),
       section(
         'pages',
-        rank(trimmed, [...catalog.pages, ...catalog.statePages], Infinity),
+        rank(trimmed, [...catalog.pages, ...catalog.statePages]),
       ),
-      section('invocations', rank(trimmed, catalog.invocationPages, Infinity)),
-      section('flowControl', rank(trimmed, catalog.flowControlPages, Infinity)),
-      ...extensionSections.map((extensionSection) => ({
-        ...extensionSection,
-        items: rank(trimmed, extensionSection.items, EXTENSION_SECTION_LIMIT),
-      })),
+      section('invocations', rank(trimmed, catalog.invocationPages)),
+      section('flowControl', rank(trimmed, catalog.flowControlPages)),
+      ...extensionSections.map((extensionSection) =>
+        capped(
+          {
+            ...extensionSection,
+            items: rank(trimmed, extensionSection.items),
+          },
+          EXTENSION_SECTION_LIMIT,
+        ),
+      ),
       section(
         'actions',
         rank(
@@ -889,7 +902,6 @@ export function useCommandSections(
           ].filter(
             (action) => !matches.some((match) => match.href === action.href),
           ),
-          Infinity,
         ),
       ),
     ]);
