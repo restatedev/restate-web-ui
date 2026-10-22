@@ -101,7 +101,7 @@ describe('useSendInvocationSignal', () => {
     });
 
     expect(request.headers.get('content-type')).toBe(
-      'application/vnd.restate.failure+json',
+      'application/vnd.restate.error+json',
     );
     expect(await request.json()).toEqual({
       message: 'Rejected by operator',

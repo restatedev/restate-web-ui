@@ -914,7 +914,7 @@
       "post": {
         "tags": ["invocation"],
         "summary": "Send a signal to an invocation",
-        "description": "Resolves or rejects the named signal of an invocation. A request body with content type\n`application/vnd.restate.failure+json` rejects the signal with the given failure, any other\nrequest body resolves the signal using the body as payload.\n\nSignals sent to invocations that don't exist or are already completed are ignored.",
+        "description": "Resolves or rejects the named signal of an invocation. A request body with content type\n`application/vnd.restate.error+json` rejects the signal with the given failure, any other\nrequest body resolves the signal using the body as payload.\n\nSignals sent to invocations that don't exist or are already completed are ignored.",
         "operationId": "send_invocation_signal",
         "parameters": [
           {
@@ -940,7 +940,7 @@
           "description": "Signal payload to resolve the signal, or a failure to reject it.",
           "content": {
             "application/octet-stream": {},
-            "application/vnd.restate.failure+json": {
+            "application/vnd.restate.error+json": {
               "schema": {
                 "$ref": "#/components/schemas/SignalFailure"
               }
