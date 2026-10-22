@@ -89,7 +89,8 @@ const innerGlassStyles = tv({
   variants: {
     appearance: {
       ghost: 'fill-surface/20 group-hover/server:fill-surface/30',
-      solid: 'fill-surface/40 group-hover/server:fill-surface/50',
+      solid:
+        'fill-surface/40 group-hover/server:fill-surface/50 dark:fill-surface/10 dark:group-hover/server:fill-surface/15',
     },
   },
   defaultVariants: { appearance: 'ghost' },
@@ -101,7 +102,7 @@ const serverFillStyles = tv({
     appearance: {
       ghost:
         'fill-muted/80 transition-[fill] duration-300 group-hover/server:fill-surface/70',
-      solid: 'fill-surface/60',
+      solid: 'fill-surface/60 dark:fill-surface/45',
     },
   },
   defaultVariants: { appearance: 'ghost' },
@@ -164,6 +165,7 @@ export function RestateServer({
   const ferrofluidRef = useRef<FerrofluidHandle>(null);
   const auraRef = useRef<HTMLDivElement>(null);
   const shellGradientId = `restate-server-shell-${useId().replace(/:/g, '')}`;
+  const rimGradientId = `${shellGradientId}-rim`;
   useServerAura(auraRef, status, aura);
 
   useEffect(() => {
@@ -215,18 +217,35 @@ export function RestateServer({
             >
               <stop
                 offset="0"
-                style={{ stopColor: 'var(--background-color-surface)' }}
+                className="[stop-color:var(--background-color-surface)] dark:[stop-color:var(--background-color-raised)]"
                 stopOpacity="0.9"
               />
               <stop
                 offset="0.54"
-                style={{ stopColor: 'var(--background-color-subtle)' }}
+                className="[stop-color:var(--background-color-subtle)] dark:[stop-color:var(--background-color-surface)]"
                 stopOpacity="0.7"
               />
               <stop
                 offset="1"
-                style={{ stopColor: 'var(--background-color-emphasis)' }}
+                className="[stop-color:var(--background-color-emphasis)] dark:[stop-color:var(--background-color-subtle)]"
                 stopOpacity="0.72"
+              />
+            </linearGradient>
+            <linearGradient
+              id={rimGradientId}
+              x1="60"
+              y1="4"
+              x2="60"
+              y2="116"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop
+                offset="0"
+                className="[stop-color:var(--background-color-surface)] [stop-opacity:0.6] dark:[stop-color:var(--background-color-highlight)] dark:[stop-opacity:0.3]"
+              />
+              <stop
+                offset="1"
+                className="[stop-color:var(--background-color-surface)] [stop-opacity:0.6] dark:[stop-color:var(--background-color-highlight)] dark:[stop-opacity:0.04]"
               />
             </linearGradient>
           </defs>
@@ -242,7 +261,7 @@ export function RestateServer({
             fillRule="evenodd"
             clipRule="evenodd"
             d="M60 4C15.531 4 4 15.531 4 60C4 104.469 15.531 116 60 116C104.469 116 116 104.469 116 60C116 15.531 104.469 4 60 4Z"
-            className="fill-none stroke-surface/60"
+            stroke={`url(#${rimGradientId})`}
             strokeWidth="1"
           />
         </svg>
