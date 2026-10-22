@@ -56,10 +56,6 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       headers: SERVER_HEADERS,
-      hmr: {
-        protocol: 'ws',
-        port: 3001,
-      },
       proxy: ADMIN_PROXY,
     },
     preview: {

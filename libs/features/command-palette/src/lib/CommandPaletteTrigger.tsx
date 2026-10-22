@@ -9,7 +9,7 @@ const styles = tv({
   slots: {
     row: 'mb-1.5 flex flex-col',
     button:
-      'flex w-full min-w-0 items-center gap-2 rounded-xl border border-tint-subtle bg-surface/70 p-0.5 text-sm text-muted shadow-xs outline-offset-2 outline-focus transition-all duration-300 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] hover:bg-surface hover:text-secondary focus-visible:outline-2 pressed:bg-muted',
+      'flex w-full min-w-0 items-center gap-2 rounded-xl border border-tint-subtle bg-surface/70 p-0.5 text-sm text-muted shadow-xs outline-offset-2 outline-focus transition-all duration-300 group-data-[collapsed=false]/sidebar:w-full group-data-[collapsed=false]/sidebar:translate-x-0 group-data-[collapsed=false]/sidebar:gap-2 group-data-[collapsed=true]/sidebar:w-fit group-data-[collapsed=true]/sidebar:translate-x-[5px] group-data-[collapsed=true]/sidebar:gap-0 hover:bg-surface hover:text-secondary focus-visible:outline-2 pressed:bg-muted',
     iconBox: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
     icon: 'h-4 w-4 shrink-0 text-subtle',
     label:

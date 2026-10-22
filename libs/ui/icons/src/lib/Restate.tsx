@@ -19,7 +19,7 @@ export function Restate({ className }: { className?: string }) {
         />
       </svg>
       <svg
-        className="absolute inset-px fill-surface"
+        className="absolute inset-px fill-(--background-color-highlight)"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
