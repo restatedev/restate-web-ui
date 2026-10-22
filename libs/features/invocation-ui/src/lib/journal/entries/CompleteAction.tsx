@@ -14,7 +14,7 @@ import {
 } from '@restate/ui-form-field';
 import { Icon, IconName } from '@restate/ui-icons';
 import { showSuccessNotification } from '@restate/ui-notification';
-import { RadioGroup } from '@restate/ui-radio-group';
+import { RadioCard, RadioCards, RadioGroup } from '@restate/ui-radio-group';
 import { TruncateWithTooltip } from '@restate/ui-tooltip';
 import { tv } from '@restate/util-styles';
 import {
@@ -23,7 +23,6 @@ import {
   type ReactNode,
   useState,
 } from 'react';
-import { Radio } from 'react-aria-components';
 
 type CompleteActionType = 'resolve' | 'reject';
 
@@ -33,26 +32,6 @@ export type CompleteValues =
 
 const triggerStyles = tv({
   base: 'flex h-5 shrink-0 items-center gap-1 self-center rounded-md px-1.5 py-0 font-sans text-2xs font-normal text-secondary',
-});
-
-const actionRadioStyles = tv({
-  base: 'group relative flex cursor-default rounded-lg border bg-clip-padding px-3 py-2 shadow-none outline-none',
-  variants: {
-    isFocusVisible: {
-      true: 'ring-2 ring-focus ring-offset-1 ring-offset-surface/80',
-    },
-    isSelected: {
-      true: 'border text-primary shadow-sm',
-      false: 'border-transparent text-muted',
-    },
-    isPressed: { true: '', false: '' },
-  },
-  compoundVariants: [
-    { isSelected: true, isPressed: true, className: 'bg-subtle' },
-    { isSelected: true, isPressed: false, className: 'bg-surface' },
-    { isSelected: false, isPressed: true, className: 'bg-muted' },
-    { isSelected: false, isPressed: false, className: 'bg-surface/50' },
-  ],
 });
 
 export function CompleteActionDialog({
@@ -157,18 +136,19 @@ export function CompleteForm({
             setAction(value as CompleteActionType);
             onReset();
           }}
-          className="grid grid-cols-2 gap-1 rounded-lg border border-inset bg-inset p-1 shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]"
         >
-          <ActionRadio
-            value="resolve"
-            label="Resolve"
-            description="Complete with a value"
-          />
-          <ActionRadio
-            value="reject"
-            label="Reject"
-            description="Fail with an error"
-          />
+          <RadioCards className="grid grid-cols-2">
+            <RadioCard
+              value="resolve"
+              label="Resolve"
+              description="Complete with a value"
+            />
+            <RadioCard
+              value="reject"
+              label="Reject"
+              description="Fail with an error"
+            />
+          </RadioCards>
         </RadioGroup>
         {isResolve ? (
           <div className="flex flex-col">
@@ -243,34 +223,5 @@ function FailureMessageField({
       className={failureMessageStyles({ className })}
       label={label}
     />
-  );
-}
-
-function ActionRadio({
-  value,
-  label,
-  description,
-}: {
-  value: CompleteActionType;
-  label: string;
-  description: ReactNode;
-}) {
-  return (
-    <Radio
-      value={value}
-      className={({ isFocusVisible, isSelected, isPressed }) =>
-        actionRadioStyles({ isFocusVisible, isSelected, isPressed })
-      }
-    >
-      <div className="flex w-full items-center justify-between gap-2">
-        <div className="flex flex-1 flex-col gap-0.5">
-          <div className="text-sm font-medium">{label}</div>
-          <div className="text-0.5xs font-normal text-muted">{description}</div>
-        </div>
-        <div className="invisible flex shrink-0 items-center group-selected:visible">
-          <Icon name={IconName.Check} className="h-4 w-4" />
-        </div>
-      </div>
-    </Radio>
   );
 }

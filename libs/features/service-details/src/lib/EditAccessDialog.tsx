@@ -5,7 +5,7 @@ import {
   QueryDialog,
 } from '@restate/ui-dialog';
 import { SERVICE_ACCESS_EDIT } from './constants';
-import { FormEvent, ReactNode, useId } from 'react';
+import { FormEvent, useId } from 'react';
 import { Form, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -16,10 +16,9 @@ import { showSuccessNotification } from '@restate/ui-notification';
 import { ErrorBanner } from '@restate/ui-error';
 import { Button, SubmitButton } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
-import { Radio, Heading } from 'react-aria-components';
-import { RadioGroup } from '@restate/ui-radio-group';
+import { Heading } from 'react-aria-components';
+import { RadioCard, RadioCards, RadioGroup } from '@restate/ui-radio-group';
 import { FormFieldLabel } from '@restate/ui-form-field';
-import { tv } from '@restate/util-styles';
 
 export function EditAccessDialog() {
   const formId = useId();
@@ -131,18 +130,18 @@ export function EditAccessDialog() {
                   Choose how your service should be accessed:
                 </span>
               </FormFieldLabel>
-              <div className="mt-0 flex flex-col gap-1 rounded-lg border border-inset bg-inset px-1 py-1 text-sm text-primary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]">
-                <CustomRadio
+              <RadioCards>
+                <RadioCard
                   value="true"
                   label="Public"
                   description={<>accessible via ingress (HTTP/Kafka)</>}
                 />
-                <CustomRadio
+                <RadioCard
                   value="false"
                   label="Private"
                   description={<>only accessible from other Restate services</>}
                 />
-              </div>
+              </RadioCards>
             </RadioGroup>
           </Form>
           <DialogFooter>
@@ -170,56 +169,5 @@ export function EditAccessDialog() {
         </div>
       </DialogContent>
     </QueryDialog>
-  );
-}
-
-const customRadioStyles = tv({
-  base: 'group relative flex cursor-default rounded-lg border bg-clip-padding px-4 py-3 shadow-none outline-none',
-  variants: {
-    isFocusVisible: {
-      true: 'ring-2 ring-focus ring-offset-1 ring-offset-surface/80',
-    },
-    isSelected: {
-      true: 'border text-primary shadow-sm',
-      false: 'border-transparent text-muted',
-    },
-    isPressed: { true: '', false: '' },
-  },
-  compoundVariants: [
-    { isSelected: true, isPressed: true, className: 'bg-subtle' },
-    { isSelected: true, isPressed: false, className: 'bg-surface' },
-    { isSelected: false, isPressed: true, className: 'bg-muted' },
-    { isSelected: false, isPressed: false, className: 'bg-surface/50' },
-  ],
-});
-
-function CustomRadio({
-  value,
-  label,
-  description,
-}: {
-  value: string;
-  label: string;
-  description: ReactNode;
-}) {
-  return (
-    <Radio
-      value={value}
-      className={({ isFocusVisible, isSelected, isPressed }) =>
-        customRadioStyles({ isFocusVisible, isSelected, isPressed })
-      }
-    >
-      <div className="flex w-full items-center justify-between gap-3">
-        <div className="flex flex-1 flex-col gap-1">
-          <div className="text-sm font-medium">{label}</div>
-          <div className="inline text-sm font-normal text-muted">
-            {description}
-          </div>
-        </div>
-        <div className="invisible flex shrink-0 items-center group-selected:visible">
-          <Icon name={IconName.Check} />
-        </div>
-      </div>
-    </Radio>
   );
 }
