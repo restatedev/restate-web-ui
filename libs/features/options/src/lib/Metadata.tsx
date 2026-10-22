@@ -10,6 +10,8 @@ const COMMIT_KEYS = [
   'github_commit_sha',
   'github.sha',
   'github_sha',
+  'git.commit.sha',
+  'git_commit_sha',
 ];
 const REPO_KEYS = ['github.repository', 'github_repository'];
 const ACTION_RUN_ID_KEYS = [

@@ -8,9 +8,7 @@ import {
   getCustomMetadataEntries,
   hasGithubMetadata,
 } from '@restate/features-options';
-import { UPDATE_DEPLOYMENT_QUERY } from '@restate/features-register-deployment';
 import {
-  CardEditAction,
   DeploymentProtocolRows,
   DeploymentSdkRow,
   RegisteredCaption,
@@ -155,21 +153,13 @@ export function HeadersCard({
 
   return (
     <Card intent="none">
-      <CardHeader
-        title="Headers"
-        icon={IconName.TableProperties}
-        action={
-          <CardEditAction
-            param={UPDATE_DEPLOYMENT_QUERY}
-            value={deployment.id}
-            label="Update"
-          />
-        }
-      >
-        <span className={captionStyles()}>
-          {formatNumber(headers.length)}{' '}
-          {formatPlurals(headers.length, { one: 'header', other: 'headers' })}
-        </span>
+      <CardHeader title="Headers" icon={IconName.TableProperties}>
+        {headers.length > 0 && (
+          <span className={captionStyles()}>
+            {formatNumber(headers.length)}{' '}
+            {formatPlurals(headers.length, { one: 'header', other: 'headers' })}
+          </span>
+        )}
       </CardHeader>
       {headers.map(([name, value]) => (
         <CardRow key={name} label={<MonoLabel>{name}</MonoLabel>}>
