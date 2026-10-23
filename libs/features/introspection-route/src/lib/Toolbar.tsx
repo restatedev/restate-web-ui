@@ -122,7 +122,7 @@ export function Toolbar({
           <SubmitButton
             ref={submitRef}
             isPending={isPending}
-            className="flex items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-neutral disabled:text-inverse-secondary"
+            className="flex items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 disabled:bg-neutral disabled:text-inverse-secondary pointer-coarse:pr-4"
           >
             Query
             <SubmitShortcutKey />

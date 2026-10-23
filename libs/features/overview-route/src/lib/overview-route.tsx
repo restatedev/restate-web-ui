@@ -352,7 +352,7 @@ function TabCount({
 }
 
 const gaugeStyles = tv({
-  base: 'relative -mb-7 aspect-square w-36 shrink-0 overflow-visible @min-[26rem]/hero:w-40 @min-[40rem]/hero:w-[11.25rem] @min-[64rem]/hero:-mb-9 @min-[64rem]/hero:w-[13.2rem]',
+  base: 'relative -mb-7 aspect-square w-36 shrink-0 overflow-visible @min-[22rem]/hero:w-44 @min-[40rem]/hero:w-[11.25rem] @min-[64rem]/hero:-mb-9 @min-[64rem]/hero:w-[13.2rem]',
 });
 
 const gaugeLabelStyles = tv({

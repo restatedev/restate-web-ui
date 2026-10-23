@@ -16,6 +16,7 @@ import { LayoutOutlet } from './LayoutOutlet';
 
 const STORAGE_KEY = 'restate.sidebar.collapsed';
 const FORCE_COLLAPSED_QUERY = '(max-width: 79.99rem)';
+const DRAWER_QUERY = '(max-width: 47.99rem)';
 
 function readPersistedCollapsed(): boolean {
   return window.localStorage.getItem(STORAGE_KEY) === 'true';
@@ -33,6 +34,7 @@ function computeCollapsed(): boolean {
 interface SidebarContextValue {
   isCollapsed: boolean | undefined;
   toggle: () => void;
+  closeDrawer: () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -41,6 +43,7 @@ const noop = () => {};
 const SidebarContext = createContext<SidebarContextValue>({
   isCollapsed: undefined,
   toggle: noop,
+  closeDrawer: noop,
 });
 
 export function useSidebar(): SidebarContextValue {
@@ -83,8 +86,16 @@ export function SidebarProvider({ children }: PropsWithChildren) {
     });
   }, []);
 
+  const closeDrawer = useCallback(() => {
+    if (!window.matchMedia(DRAWER_QUERY).matches) {
+      return;
+    }
+    setIsCollapsed(true);
+    writePersistedCollapsed(true);
+  }, []);
+
   return (
-    <SidebarContext.Provider value={{ isCollapsed, toggle }}>
+    <SidebarContext.Provider value={{ isCollapsed, toggle, closeDrawer }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -134,13 +145,14 @@ const sidebarStyles = tv({
     // only the nav, leaving the footer crisp and transparent over the cloud.
     footerSlot:
       'pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col px-3 pt-1 pb-3 [&>*]:pointer-events-auto',
+    scrim: 'fixed inset-0 z-48 bg-backdrop md:hidden',
     toggleButton:
       'fixed top-4 left-3 z-50 flex h-9 w-9 items-center justify-center rounded-full border bg-surface p-0 text-muted shadow-xs transition-[left,transform] duration-300 ease-in-out peer-has-[[data-variant=hidden]]:hidden peer-data-[collapsed=false]:left-[16rem] peer-data-[collapsed=false]:-translate-x-1/2 peer-data-[collapsed=false]:rotate-180 hover:bg-subtle hover:text-secondary md:left-[4.25rem] md:h-6 md:w-6 md:-translate-x-1/2 xl:left-[16rem] xl:rotate-180 xl:peer-data-[collapsed=true]:left-[4.25rem] xl:peer-data-[collapsed=true]:rotate-0',
   },
 });
 
 export function Sidebar() {
-  const { isCollapsed, toggle } = useSidebar();
+  const { isCollapsed, toggle, closeDrawer } = useSidebar();
   const s = sidebarStyles();
 
   // Header and footer are absolute overlays (so the nav mask clips only the
@@ -208,6 +220,9 @@ export function Sidebar() {
           />
         </div>
       </aside>
+      {isCollapsed === false && (
+        <div aria-hidden className={s.scrim()} onClick={closeDrawer} />
+      )}
       <Button
         variant="secondary"
         onClick={toggle}

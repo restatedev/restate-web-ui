@@ -92,6 +92,7 @@ const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
     isRowHeader: true,
     allowsSorting: true,
     defaultWidth: '4fr',
+    minWidth: 210,
   },
   {
     id: 'level',
@@ -102,18 +103,21 @@ const RULE_COLUMNS: PanelTableColumn<RuleColumn>[] = [
     id: 'limit',
     name: 'Limit',
     defaultWidth: '2fr',
+    minWidth: 140,
     maxWidth: 160,
   },
   {
     id: 'counters',
     name: <CounterSummaryExplainer />,
     defaultWidth: '3fr',
+    minWidth: 140,
     maxWidth: 250,
   },
   {
     id: 'description',
     name: 'Description',
     defaultWidth: '4fr',
+    minWidth: 180,
   },
   {
     id: 'enabled',

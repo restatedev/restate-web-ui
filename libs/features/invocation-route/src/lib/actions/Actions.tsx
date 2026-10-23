@@ -210,7 +210,7 @@ export function Actions({
           >
             <Icon
               name={primaryAction.icon}
-              className="h-[0.9em] w-[0.9em] shrink-0 opacity-80"
+              className="h-[0.9em] w-[0.9em] shrink-0 opacity-80 max-[375px]:hidden"
             />
             <ActionText hasFollowup={primaryAction.component.hasFollowup()}>
               {primaryAction.label}

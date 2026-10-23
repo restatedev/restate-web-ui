@@ -2,15 +2,7 @@ import type {
   components,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
-import {
-  Dispatch,
-  lazy,
-  memo,
-  Suspense,
-  useCallback,
-  useRef,
-  useState,
-} from 'react';
+import { Dispatch, memo, Suspense, useCallback, useId, useState } from 'react';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { getDuration, SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { Link } from '@restate/ui-link';
@@ -64,20 +56,11 @@ import {
 } from '@restate/features-invocation-ui';
 import { JournalDetailToggle } from './JournalDetailToggle';
 import { useHiddenEntryMatchers } from './hiddenEntries';
-import type { Layout } from 'react-resizable-panels';
-
-const ENTRIES_PANEL_ID = 'journal-entries';
-const TIMELINE_PANEL_ID = 'journal-timeline';
-
-const LazyPanel = lazy(() =>
-  import('react-resizable-panels').then((m) => ({ default: m.Panel })),
-);
-const LazyGroup = lazy(() =>
-  import('react-resizable-panels').then((m) => ({ default: m.Group })),
-);
-const LazySeparator = lazy(() =>
-  import('react-resizable-panels').then((m) => ({ default: m.Separator })),
-);
+import {
+  JournalSplitSeparator,
+  journalSplitStyles,
+  useJournalSplit,
+} from './JournalSplit';
 
 const liveStyles = tv({
   base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-muted uppercase',
@@ -259,9 +242,10 @@ export function JournalV2({
   const journalAndInvocationData = data?.[invocationId];
 
   const { baseUrl } = useRestateContext();
-  const listRef = useRef<HTMLDivElement>(null);
-  const startDateOverlayRef = useRef<HTMLDivElement>(null);
-  const headerLayoutRef = useRef<HTMLDivElement>(null);
+  const split = useJournalSplit(1 - timelineWidth);
+  const entriesPanelId = useId();
+  const { columns: splitColumns, timelineOverlay: splitTimelineOverlay } =
+    journalSplitStyles();
 
   const {
     entriesWithoutInput: allEntriesWithoutInput,
@@ -347,24 +331,6 @@ export function JournalV2({
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
-  const handlePanelLayout = useCallback((layout: Layout) => {
-    const nextTimelinePanelSize = layout[TIMELINE_PANEL_ID];
-    if (
-      nextTimelinePanelSize === undefined ||
-      !Number.isFinite(nextTimelinePanelSize)
-    ) {
-      return;
-    }
-
-    if (startDateOverlayRef.current) {
-      startDateOverlayRef.current.style.marginLeft = `${100 - nextTimelinePanelSize}%`;
-      startDateOverlayRef.current.style.width = `${nextTimelinePanelSize}%`;
-    }
-
-    if (headerLayoutRef.current) {
-      headerLayoutRef.current.style.gridTemplateColumns = `${100 - nextTimelinePanelSize}% ${nextTimelinePanelSize}%`;
-    }
-  }, []);
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 
@@ -478,25 +444,20 @@ export function JournalV2({
               )}
               {withTimeline && (
                 <ContentPanelHeader className="font-mono text-0.5xs">
-                  <div className="relative h-9 w-full">
+                  <div ref={split.headerRef} className="relative h-9 w-full">
                     <div className="pointer-events-none absolute inset-0 z-30 hidden md:block">
                       <div
-                        ref={startDateOverlayRef}
-                        className="h-full"
-                        style={{
-                          marginLeft: `${(1 - timelineWidth) * 100}%`,
-                          width: `${timelineWidth * 100}%`,
-                        }}
+                        className={splitTimelineOverlay({
+                          className: 'h-full',
+                        })}
                       >
                         <StartDateTimeUnit start={start} />
                       </div>
                     </div>
                     <div
-                      ref={headerLayoutRef}
-                      className="h-full w-full md:grid"
-                      style={{
-                        gridTemplateColumns: `${(1 - timelineWidth) * 100}% ${timelineWidth * 100}%`,
-                      }}
+                      className={splitColumns({
+                        className: 'h-full w-full md:grid',
+                      })}
                     >
                       <div className="flex h-full min-w-0 items-center">
                         <Input
@@ -539,24 +500,20 @@ export function JournalV2({
                   {isJournalEmpty ? (
                     <JournalPurgedMessage />
                   ) : (
-                    <div
-                      ref={listRef}
-                      className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs"
-                    >
-                      <LazyGroup
-                        orientation="horizontal"
-                        onLayoutChange={handlePanelLayout}
-                        style={{ overflow: 'visible' }}
-                        className="min-h-full flex-1"
+                    <div className="relative isolate flex min-h-0 flex-1 flex-col font-mono text-0.5xs">
+                      <div
+                        ref={split.bodyRef}
+                        className={splitColumns({
+                          className:
+                            'relative grid min-h-full flex-1 grid-cols-1',
+                        })}
                       >
                         {/* Left panel */}
-                        <LazyPanel
-                          id={ENTRIES_PANEL_ID}
-                          defaultSize={`${(1 - timelineWidth) * 100}%`}
-                          minSize="20%"
+                        <div
+                          data-panel
+                          id={entriesPanelId}
                           className="z-[2] grid min-w-0"
                           style={{
-                            overflow: 'visible',
                             marginBottom: JOURNAL_BOTTOM_PADDING_PX,
                             minHeight: totalSize,
                             gridTemplateColumns: '1fr',
@@ -565,7 +522,7 @@ export function JournalV2({
                         >
                           {/* Content */}
                           <ContentPanelSection
-                            className="z-[2] col-start-1 row-start-1 min-w-0 border-r"
+                            className="z-[2] col-start-1 row-start-1 min-w-0 md:border-r"
                             style={{ minHeight: totalSize }}
                           >
                             <VirtualizedEntries
@@ -585,18 +542,17 @@ export function JournalV2({
                               </div>
                             )}
                           </ContentPanelSection>
-                        </LazyPanel>
-                        <LazySeparator className="group relative z-10 mx-[-5px] hidden w-2.5 cursor-col-resize items-center justify-center md:flex">
-                          <div className="absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 cursor-col-resize bg-transparent group-hover:w-0.5 group-hover:bg-accent" />
-                        </LazySeparator>
+                        </div>
+                        <JournalSplitSeparator
+                          ref={split.separatorRef}
+                          split={split}
+                          controls={entriesPanelId}
+                        />
                         {/* Right panel - grid container for overlapping Units */}
-                        <LazyPanel
-                          id={TIMELINE_PANEL_ID}
-                          defaultSize={`${timelineWidth * 100}%`}
-                          className="relative hidden overflow-x-clip bg-tint-subtle md:grid"
-                          minSize="20%"
+                        <div
+                          data-panel
+                          className="relative hidden min-w-0 bg-tint-subtle md:grid"
                           style={{
-                            overflow: 'visible',
                             minHeight: totalSize,
                             gridTemplateColumns: '1fr',
                             gridTemplateRows: '1fr',
@@ -628,8 +584,8 @@ export function JournalV2({
                               />
                             </ScrollableTimeline>
                           </ContentPanelSection>
-                        </LazyPanel>
-                      </LazyGroup>
+                        </div>
+                      </div>
                     </div>
                   )}
                   <div data-last-failure-fallback aria-hidden className="h-0" />

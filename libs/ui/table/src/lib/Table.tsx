@@ -229,7 +229,10 @@ export function TableBody<T extends object>({
       dependencies={[...dependencies, error, isLoading]}
       renderEmptyState={() => {
         return (
-          <div data-table-empty="true">
+          <div
+            data-table-empty="true"
+            className="sticky left-0 w-(--panel-table-viewport-width,100%)"
+          >
             {error ? <TableError error={error} /> : emptyPlaceholder}
           </div>
         );

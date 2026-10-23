@@ -1,7 +1,7 @@
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'rounded-sm px-1.5 text-sm',
+  base: 'rounded-sm px-1.5 text-sm pointer-coarse:hidden',
   variants: {
     variant: {
       dark: 'bg-inverse-emphasis text-inverse-muted',

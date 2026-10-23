@@ -51,6 +51,7 @@ const RULE_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     name: 'Limit counter',
     isRowHeader: true,
     defaultWidth: '3fr',
+    minWidth: 220,
   },
   {
     id: 'usage',
@@ -58,6 +59,7 @@ const RULE_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '2fr',
+    minWidth: 96,
     maxWidth: 250,
   },
   {
@@ -66,6 +68,7 @@ const RULE_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '1fr',
+    minWidth: 96,
     maxWidth: 120,
   },
 ];
@@ -76,6 +79,7 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     name: 'Limit counter',
     isRowHeader: true,
     defaultWidth: '3fr',
+    minWidth: 220,
   },
   {
     id: 'usage',
@@ -83,12 +87,14 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '2fr',
+    minWidth: 96,
     maxWidth: 150,
   },
   {
     id: 'limit',
     name: 'Limit',
     defaultWidth: '2fr',
+    minWidth: 140,
     maxWidth: 160,
   },
   {
@@ -97,6 +103,7 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '1fr',
+    minWidth: 96,
     maxWidth: 120,
   },
   {
@@ -104,6 +111,7 @@ const ALL_COUNTER_COLUMNS: PanelTableColumn<CounterColumn>[] = [
     name: 'Rule pattern',
     allowsSorting: true,
     defaultWidth: '3fr',
+    minWidth: 210,
   },
   {
     id: 'level',

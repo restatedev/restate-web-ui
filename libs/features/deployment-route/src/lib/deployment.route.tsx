@@ -141,7 +141,7 @@ function Component() {
     <SnapshotTimeProvider
       lastSnapshot={Math.max(dataUpdatedAt, deploymentsUpdatedAt)}
     >
-      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
+      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem] max-md:[--cp-toolbar-top:calc(0.75rem+var(--header-height,3.5rem)+0.5rem)] max-md:[--cp-toolbar-tuck:var(--cp-toolbar-top)]">
         <Header
           icon={icon}
           iconLabel="Deployment"

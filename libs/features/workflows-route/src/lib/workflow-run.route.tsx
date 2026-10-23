@@ -79,7 +79,7 @@ function Component() {
     <SnapshotTimeProvider
       lastSnapshot={Math.max(dataUpdatedAt, statsDataUpdatedAt)}
     >
-      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
+      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem] max-md:[--cp-toolbar-top:calc(0.75rem+var(--header-height,3.5rem)+0.5rem)] max-md:[--cp-toolbar-tuck:var(--cp-toolbar-top)]">
         <InvocationStatusHeader
           invocation={runInvocation}
           icon={IconName.Workflow}
@@ -100,9 +100,9 @@ function Component() {
             <div className="ml-auto shrink-0">
               <Actions
                 invocation={runInvocation}
-                mini="md"
+                mini={false}
                 className="rounded-l-lg text-[0.9375rem]"
-                splitClassName="rounded-lg md:rounded-l-none"
+                splitClassName="rounded-r-lg"
               />
             </div>
           )}

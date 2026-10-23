@@ -432,7 +432,7 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={lastSnapshot}>
-      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
+      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem] max-md:[--cp-toolbar-top:calc(0.75rem+var(--header-height,3.5rem)+0.5rem)] max-md:[--cp-toolbar-tuck:var(--cp-toolbar-top)]">
         <VQueueHeader data={data} trail={<Breadcrumbs variant="flat" />} />
         {data && (
           <CardGrid
@@ -474,7 +474,10 @@ function Component() {
             />
           </div>
         ) : (
-          <ContentPanel className="-mt-14" tabs={tabs}>
+          <ContentPanel
+            className="-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]"
+            tabs={tabs}
+          >
             <ContentPanelToolbar className="justify-end px-1 pb-1">
               <VQueueBatchActions
                 vqueueId={vqueueId}
