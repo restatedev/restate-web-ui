@@ -77,27 +77,27 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
     isRowHeader: true,
     allowsSorting: true,
     defaultWidth: '1.25fr',
-    minWidth: 0,
+    minWidth: 96,
   },
   {
     id: 'serviceLock',
     name: 'Service / key',
     allowsSorting: true,
     defaultWidth: '3fr',
-    minWidth: 0,
+    minWidth: 170,
   },
   {
     id: 'scope',
     name: 'Scope / limit key',
     allowsSorting: true,
     defaultWidth: '3.5fr',
-    minWidth: 0,
+    minWidth: 230,
   },
   {
     id: 'head',
     name: 'Head entry',
     defaultWidth: '3fr',
-    minWidth: 0,
+    minWidth: 220,
   },
   {
     id: 'stages',
@@ -105,7 +105,7 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '2fr',
-    minWidth: 0,
+    minWidth: 120,
   },
   {
     id: 'lastActivity',
@@ -113,7 +113,7 @@ const COLUMNS: PanelTableColumn<VQueueColumn>[] = [
     allowsSorting: true,
     preferredSortDirection: 'descending',
     defaultWidth: '2fr',
-    minWidth: 0,
+    minWidth: 150,
   },
 ];
 

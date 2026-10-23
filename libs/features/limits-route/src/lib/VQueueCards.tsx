@@ -153,7 +153,7 @@ const durationBarStyles = tv({
 });
 
 const durationRowStyles = tv({
-  base: 'grid w-full min-w-0 grid-cols-[minmax(6rem,0.8fr)_minmax(7rem,1.2fr)_8rem] items-center gap-3',
+  base: 'grid w-full min-w-0 grid-cols-[minmax(6rem,0.8fr)_minmax(7rem,1.2fr)_8rem] items-center gap-3 max-sm:grid-cols-[4.5rem_minmax(0,1fr)_8rem] max-sm:gap-2.5',
 });
 
 const blockTooltipStyles = tv({
@@ -386,7 +386,7 @@ export function VQueueDurationsCard({ data }: { data: VqueueSnapshot }) {
             color={STATUS_STYLE.finished!}
             className="h-3"
           />
-          <CardHeroValue className="text-right">
+          <CardHeroValue className="text-right whitespace-nowrap max-sm:text-lg">
             {formatVqueueDuration(data.stageAvg.endToEnd) ?? '—'}
           </CardHeroValue>
         </div>

@@ -160,7 +160,7 @@ export function SidebarNavItem({
   autoExpandSubItems = true,
   disabled,
 }: SidebarNavItemProps) {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, closeDrawer } = useSidebar();
   const navExpansion = useNavExpansion();
   const location = useSidebarLocation();
   const ownActive = !disabled && (match ?? defaultMatcher(href))(location);
@@ -234,6 +234,7 @@ export function SidebarNavItem({
             disabled={disabled}
             className={s.link()}
             aria-current={effectiveActive ? 'page' : undefined}
+            onClick={closeDrawer}
           >
             <span className={s.iconWrap()}>
               <Icon name={icon} className={s.icon()} aria-hidden />
@@ -302,6 +303,7 @@ function SidebarSubLink({
   const isActive =
     !disabled && (item.match ?? defaultMatcher(item.href))(location);
   const s = navStyles({ isSubActive: isActive, isDisabled: disabled });
+  const { closeDrawer } = useSidebar();
   return (
     <div className={s.subRow()}>
       <Link
@@ -310,6 +312,7 @@ function SidebarSubLink({
         disabled={disabled}
         className={s.subLink()}
         aria-current={isActive ? 'page' : undefined}
+        onClick={closeDrawer}
       >
         {item.label}
       </Link>
@@ -346,6 +349,7 @@ function SidebarSubLink({
 
 function SidebarOverflow({ items }: { items: SidebarSubItem[] }) {
   const s = navStyles({ isOverflowActive: false });
+  const { closeDrawer } = useSidebar();
   return (
     <Dropdown>
       <DropdownTrigger>
@@ -359,7 +363,7 @@ function SidebarOverflow({ items }: { items: SidebarSubItem[] }) {
         </Button>
       </DropdownTrigger>
       <DropdownPopover>
-        <DropdownMenu>
+        <DropdownMenu onSelect={closeDrawer}>
           {items.map((item) => (
             <DropdownItem key={item.href} href={item.href} value={item.href}>
               {item.label}

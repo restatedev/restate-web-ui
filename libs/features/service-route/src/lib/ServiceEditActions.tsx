@@ -27,7 +27,6 @@ const styles = tv({
   slots: {
     trigger:
       'flex items-center gap-1 rounded-lg px-2 py-0.5 text-[0.9375rem] text-accent disabled:text-subtle',
-    label: 'max-md:hidden',
     chevron: 'h-[1em] w-[1em] shrink-0 text-muted',
   },
 });
@@ -51,7 +50,7 @@ export function ServiceEditActions({
       disabled={isReadonly}
       aria-label="Edit configuration"
     >
-      <span className={s.label()}>Edit</span>
+      <span>Edit</span>
       <Icon name={IconName.ChevronsUpDown} className={s.chevron()} />
     </Button>
   );

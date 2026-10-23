@@ -747,13 +747,13 @@ function Component() {
               <DropdownTrigger>
                 <Button
                   variant="secondary"
-                  className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs"
+                  className="flex items-center gap-1.5 self-end rounded-lg p-0.5 px-2 text-0.5xs max-sm:py-1.25"
                 >
                   <Icon
                     name={IconName.TableProperties}
                     className="aspect-square h-3.5 w-3.5 opacity-70"
                   />
-                  Columns
+                  <span className="max-sm:sr-only">Columns</span>
                 </Button>
               </DropdownTrigger>
               <DropdownPopover>
@@ -1025,7 +1025,7 @@ function InvocationsForm({
       <SubmitButton
         ref={submitRef}
         isPending={isFetching}
-        className="absolute right-1 bottom-1 flex h-7 items-center gap-2 rounded-lg py-0 pr-0.5 pl-4"
+        className="absolute right-1 bottom-1 flex h-7 items-center gap-2 rounded-lg py-0 pr-0.5 pl-4 pointer-coarse:pr-4"
       >
         Query
         <SubmitShortcutKey />

@@ -12,7 +12,7 @@ const primaryStyles = tv({
     variant: {
       row: 'invisible absolute right-full z-2 flex translate-x-px items-center gap-1 rounded-l-md rounded-r-none px-2 py-0.5 [font-size:inherit] [line-height:inherit] whitespace-nowrap drop-shadow-[-20px_2px_4px_--theme(--background-color-muted/50%)] group-hover:visible',
       header:
-        'flex translate-x-px items-center gap-1 rounded-l-lg rounded-r-none px-2 py-0.5 text-[0.9375rem] [line-height:inherit] whitespace-nowrap max-md:hidden',
+        'flex translate-x-px items-center gap-1 rounded-l-lg rounded-r-none px-2 py-0.5 text-[0.9375rem] [line-height:inherit] whitespace-nowrap',
     },
     destructive: {
       true: '',
@@ -44,10 +44,10 @@ export function DeploymentActions({
 
   return (
     <SplitButton
-      mini={isHeader ? 'md' : true}
+      mini={!isHeader}
       variant="secondary"
       className={isHeader ? 'rounded-l-lg text-[0.9375rem]' : undefined}
-      splitClassName={isHeader ? 'rounded-lg md:rounded-l-none' : undefined}
+      splitClassName={isHeader ? 'rounded-r-lg' : undefined}
       menus={
         <>
           <DropdownItem href={updateHref}>

@@ -153,7 +153,7 @@ function Component() {
 
   return (
     <SnapshotTimeProvider lastSnapshot={dataUpdatedAt}>
-      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem]">
+      <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem] max-md:[--cp-toolbar-top:calc(0.75rem+var(--header-height,3.5rem)+0.5rem)] max-md:[--cp-toolbar-tuck:var(--cp-toolbar-top)]">
         {/* Sticky floating header: target + status stay visible while the
             page scrolls. Status-tinted gradient telegraphs invocation state
             without coloring the whole card. The breadcrumb trail docks onto
@@ -188,9 +188,9 @@ function Component() {
           <div className="ml-auto shrink-0">
             <Actions
               invocation={journalAndInvocationData}
-              mini="md"
+              mini={false}
               className="rounded-l-lg text-[0.9375rem]"
-              splitClassName="rounded-lg md:rounded-l-none"
+              splitClassName="rounded-r-lg"
             />
           </div>
         </InvocationStatusHeader>
@@ -231,7 +231,7 @@ function Component() {
             // block. A CSS media query, not :has(), because the divider stays
             // in the DOM below `md` (just display:none) so :has() always
             // matches. md:contents keeps the children as flex items at md+.
-            <div className="hidden md:contents">
+            <div className="contents">
               <Anchor
                 invocation={journalAndInvocationData}
                 hasLastFailure={Boolean(lastError)}
@@ -297,7 +297,7 @@ function Component() {
         </div>
 
         <ContentPanel
-          className="-mt-14"
+          className="-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]"
           tabs={{
             items: [
               {

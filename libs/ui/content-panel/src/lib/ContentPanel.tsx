@@ -122,7 +122,7 @@ const styles = tv({
       'pointer-events-none sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)-var(--cp-toolbar-tuck,0px))] z-10 -mb-8 h-8 bg-linear-to-b from-subtle to-transparent backdrop-blur-lg backdrop-saturate-150',
     sectionContent: 'flex-1 pt-[var(--cp-section-pt,0px)]',
     tabsWrapper:
-      'relative flex min-h-16 w-full items-end gap-3 bg-canvas px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)]',
+      'relative flex min-h-16 w-full items-end gap-3 bg-canvas px-3 [padding-top:calc(var(--cp-toolbar-tuck,0px)+0.5rem)] max-md:flex-wrap-reverse max-md:items-start max-md:gap-y-2',
     tabList: 'relative flex h-full max-w-full items-end gap-1 px-1',
     tabsToolbarSlot:
       'flex flex-1 items-end justify-end self-stretch pb-0 has-[form]:min-w-0',
@@ -586,7 +586,7 @@ function Tabs({
           <DropdownTrigger>
             <Button
               variant="icon"
-              className="hidden items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-transparent px-3 py-1.5 text-sm text-muted shadow-none hover:bg-emphasis/40 hover:text-secondary sm:flex"
+              className="hidden items-center gap-1.5 self-end rounded-t-xl rounded-b-none border border-b-0 border-transparent px-3 py-1.5 text-sm text-muted shadow-none hover:bg-emphasis/40 hover:text-secondary md:flex"
             >
               More
               <Icon
@@ -669,7 +669,7 @@ function MobileTabsDropdown({
     </span>
   );
   return (
-    <div className="relative -mb-px flex min-w-0 flex-1 self-end md:hidden">
+    <div className="relative -mb-px flex max-w-full min-w-0 flex-none self-start md:hidden">
       {items.length === 1 ? (
         <div className={mobileTabStyles({ interactive: false })}>{label}</div>
       ) : (

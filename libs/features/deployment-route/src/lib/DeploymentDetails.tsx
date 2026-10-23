@@ -81,7 +81,10 @@ export function DeploymentDetails({
   );
 
   return (
-    <ContentPanel className="-mt-14" tabs={tabs}>
+    <ContentPanel
+      className="-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]"
+      tabs={tabs}
+    >
       {tab === 'services' ? (
         <ContentPanelBody className="pb-32">
           <ContentPanelSection flush>

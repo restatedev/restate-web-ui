@@ -106,6 +106,7 @@ const styles = tv({
     dataTableScroll:
       'relative [scrollbar-width:thin] overflow-x-auto overflow-y-hidden',
     dataTableInner: 'w-full border-separate border-spacing-0',
+    dataTableCaption: 'sticky left-0',
     dataTableSpacerHeader:
       'invisible static z-auto h-(--panel-table-body-heading-height) w-[inherit] overflow-hidden bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_[role=columnheader]]:overflow-hidden [&_[role=columnheader]]:border-0 [&_[role=columnheader]]:p-0 [&_th]:h-(--panel-table-body-heading-height) [&_th]:overflow-hidden [&_th]:border-0 [&_th]:p-0',
   },
@@ -172,6 +173,7 @@ export function PanelTable<
     dataTableScroll,
     dataTableInner,
     dataTableSpacerHeader,
+    dataTableCaption,
   } = styles({ virtualized: isVirtualized });
 
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
@@ -181,6 +183,22 @@ export function PanelTable<
     useState<HTMLDivElement | null>(null);
   const [dataTableScrollEl, setDataTableScrollEl] =
     useState<HTMLDivElement | null>(null);
+
+  const dataTableScrollRef = useCallback((element: HTMLDivElement | null) => {
+    setDataTableScrollEl(element);
+    if (!element) return;
+    const observer = new ResizeObserver(() => {
+      element.style.setProperty(
+        '--panel-table-viewport-width',
+        `${element.clientWidth}px`,
+      );
+    });
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+      setDataTableScrollEl(null);
+    };
+  }, []);
 
   useEffect(() => {
     if (!stickyHeaderScrollEl || !dataTableScrollEl) return;
@@ -554,25 +572,25 @@ export function PanelTable<
       {isVirtualized ? (
         <ResizableTableContainer>
           <div
-            ref={setDataTableScrollEl}
+            ref={dataTableScrollRef}
             data-panel-table-body-scroll
             style={bodyHeadingStyle}
             className={dataTableScroll({
               className: bodyContainerClassName,
             })}
           >
-            {caption}
+            {caption && <div className={dataTableCaption()}>{caption}</div>}
             {body}
           </div>
         </ResizableTableContainer>
       ) : (
         <div
-          ref={setDataTableScrollEl}
+          ref={dataTableScrollRef}
           data-panel-table-body-scroll
           style={bodyHeadingStyle}
           className={dataTableScroll({ className: bodyContainerClassName })}
         >
-          {caption}
+          {caption && <div className={dataTableCaption()}>{caption}</div>}
           <ResizableTableContainer>{body}</ResizableTableContainer>
         </div>
       )}

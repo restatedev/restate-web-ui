@@ -28,7 +28,7 @@ import {
 } from './serviceTabs';
 
 const panelStyles = tv({
-  base: '-mt-14',
+  base: '-mt-[calc(var(--cp-toolbar-tuck,0px)-1.5rem)]',
   variants: {
     hasFilterToolbar: {
       true: 'sm:[&_[data-cp-slot=toolbar]]:min-w-[min(28rem,40vw)]',

@@ -482,7 +482,7 @@ function Component() {
           <SubmitButton
             ref={submitRef}
             isPending={isFetching}
-            className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-neutral disabled:text-inverse-secondary"
+            className="absolute top-1 right-1 bottom-1 flex items-center gap-2 rounded-lg py-0 pr-1 pl-4 disabled:bg-neutral disabled:text-inverse-secondary max-md:top-auto max-md:h-8 pointer-coarse:pr-4"
           >
             Query
             <SubmitShortcutKey />
