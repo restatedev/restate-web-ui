@@ -36,7 +36,7 @@ jobs:
       upload-url: ${{ steps.create-release.outputs.upload_url }}
       version: ${{ needs.check-version.outputs.version }}
       tag: v${{ needs.check-version.outputs.version }}
-      artifact-name: ui-v${{ needs.check-version.outputs.version }}.zip
+      artifact-name: ui-v${{ needs.check-version.outputs.version }}.tar
     steps:
       - run: echo "has-updated -- ${{ needs.check-version.outputs.has-updated }}"
       - name: Checkout
@@ -47,7 +47,8 @@ jobs:
         with:
           require-lockfile: true
       - run: pnpm nx build web-ui --skip-nx-cache
-      - run: cd dist/apps/web-ui && zip -r ../../../ui-v${{ needs.check-version.outputs.version }}.zip .
+      # restate-web-ui-crate reads this archive without a tar library, so it must stay uncompressed ustar
+      - run: cd dist/apps/web-ui && tar --format=ustar -cf ../../../ui-v${{ needs.check-version.outputs.version }}.tar .
       - name: Create a release
         id: create-release
         uses: ncipollo/release-action@v1
@@ -55,7 +56,7 @@ jobs:
           commit: ${{ github.sha }}
           makeLatest: true
           tag: v${{ needs.check-version.outputs.version }}
-          artifacts: ui-v${{ needs.check-version.outputs.version }}.zip
+          artifacts: ui-v${{ needs.check-version.outputs.version }}.tar
           generateReleaseNotes: true
   update-ui-crate:
     name: Update UI in restate-web-ui-crate repo
@@ -70,7 +71,7 @@ jobs:
           token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
           repository: restatedev/restate-web-ui-crate
       - name: Remove old artifacts
-        run: rm -f ./assets/*.zip
+        run: rm -f ./assets/*.zip ./assets/*.tar
       - name: Download artifact
         uses: dsaltares/fetch-gh-release-asset@master
         with:
