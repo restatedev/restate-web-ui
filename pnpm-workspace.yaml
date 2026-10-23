@@ -16,4 +16,5 @@ peerDependencyRules:
     openapi-typescript>typescript: '6'
 
 overrides:
+  dompurify@<=3.4.16: ^3.4.17
   'nx>undici': 7.30.0
