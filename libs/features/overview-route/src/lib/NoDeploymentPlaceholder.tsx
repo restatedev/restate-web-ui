@@ -4,9 +4,13 @@ import {
   ServiceDeploymentExplainer,
   ServiceExplainer,
 } from '@restate/features-explainers';
-import { TriggerRegisterDeploymentDialog } from '@restate/features-register-deployment';
+import {
+  REGISTER_DEPLOYMENT_QUERY,
+  TriggerRegisterDeploymentDialog,
+} from '@restate/features-register-deployment';
 import { Spinner } from '@restate/ui-loading';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
+import { OVERVIEW_MODE_PARAM } from './overviewMode';
 
 export function NoDeploymentPlaceholder({
   error,
@@ -37,20 +41,24 @@ export function NoDeploymentPlaceholder({
           </h3>
         )}
       </div>
-      {!isReadOnly && (
-        <>
-          <p className="max-w-md px-4 text-sm text-muted">
-            Point Restate to your deployed services so Restate can register your{' '}
-            <ServiceExplainer>services</ServiceExplainer> and handlers
-          </p>
-          <div className="mt-4 flex gap-2">
+      <p className="max-w-md px-4 text-sm text-muted">
+        Point Restate to your deployed services so Restate can register your{' '}
+        <ServiceExplainer>services</ServiceExplainer> and handlers
+      </p>
+      <div className="mt-4 flex gap-2">
+        {isReadOnly ? (
+          <TriggerRegisterDeploymentDialog
+            href={`?${OVERVIEW_MODE_PARAM}=deployments&${REGISTER_DEPLOYMENT_QUERY}=true`}
+          />
+        ) : (
+          <>
             <TriggerRegisterDeploymentDialog />
             {OnboardingGuide && (
               <OnboardingGuide stage="register-deployment-trigger" />
             )}
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
