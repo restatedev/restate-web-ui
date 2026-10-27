@@ -3,6 +3,7 @@ import { BreadcrumbsProvider } from '@restate/features-breadcrumbs';
 import { deploymentRoute } from '@restate/features-deployment-route';
 import { InvocationActions } from '@restate/features-invocation-route';
 import { overview } from '@restate/features-overview-route';
+import { RegisterDeploymentDialog } from '@restate/features-register-deployment';
 import { useRestateContext } from '@restate/features-restate-context';
 import { TriggerWorkflowDialog } from '@restate/features-service';
 import { serviceRoute } from '@restate/features-service-route';
@@ -32,6 +33,7 @@ export function TenantOverview({ scope }: TenantCatalogProps) {
         <overview.Component />
       </div>
       <TriggerWorkflowDialog />
+      <RegisterDeploymentDialog />
     </TenantSchemaRegistry>
   );
 }

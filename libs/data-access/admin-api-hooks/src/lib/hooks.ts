@@ -699,7 +699,7 @@ export function useRegisterDeployment(
     'mutationFn' | 'mutationKey' | 'onSettled'
   > & { retryWithHttp1?: boolean },
 ) {
-  const baseUrl = useAdminBaseUrl();
+  const baseUrl = useCatalogBaseUrl();
   const { onSuccess, retryWithHttp1, ...rest } = options ?? {};
   const queryCLient = useQueryClient();
   const mutationOptions = adminApi('mutate', '/deployments', 'post', {

@@ -52,3 +52,15 @@ export function DeploymentActions() {
     </SplitButton>
   );
 }
+
+export function RegistryDeploymentActions() {
+  return (
+    <TriggerRegisterDeploymentDialog
+      variant="button"
+      href={`?${OVERVIEW_MODE_PARAM}=deployments&${REGISTER_DEPLOYMENT_QUERY}=true`}
+      className="shrink-0 justify-center rounded-lg py-0.5 pr-2 pl-1.5 text-0.5xs [&_svg]:h-3.5 [&_svg]:w-3.5"
+    >
+      Deployment
+    </TriggerRegisterDeploymentDialog>
+  );
+}

@@ -38,7 +38,10 @@ import { useRestateServerStatus } from './useRestateServerStatus';
 import { NoDeploymentPlaceholder } from './NoDeploymentPlaceholder';
 import { EngineCore } from './EngineCluster';
 import { OVERVIEW_MODE_PARAM } from './overviewMode';
-import { DeploymentActions } from './DeploymentActions';
+import {
+  DeploymentActions,
+  RegistryDeploymentActions,
+} from './DeploymentActions';
 import { ServicesTable } from './ServicesTable';
 import { DeploymentsTable } from './DeploymentsTable';
 import { CompletionTimeRangeToggle } from './TimeRangeToggle';
@@ -858,6 +861,9 @@ function OverviewContent() {
             )}
           </SearchField>
           {!isReadOnly && <DeploymentActions />}
+          {isReadOnly && mode === 'deployments' && (
+            <RegistryDeploymentActions />
+          )}
           <Tooltip>
             <TooltipTrigger>
               <Button
