@@ -35,7 +35,7 @@ export async function muxPost<T>({
   signal,
 }: {
   muxUrl: string;
-  scope: string;
+  scope?: string;
   path: string;
   body?: unknown;
   headers?: Record<string, string>;
@@ -46,7 +46,7 @@ export async function muxPost<T>({
     signal,
     headers: {
       accept: 'application/json',
-      [TENANT_HEADER]: scope,
+      ...(scope !== undefined && { [TENANT_HEADER]: scope }),
       ...(body !== undefined && { 'content-type': 'application/json' }),
       ...headers,
     },

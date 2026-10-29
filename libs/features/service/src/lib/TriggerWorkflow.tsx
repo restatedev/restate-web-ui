@@ -101,7 +101,7 @@ function TriggerWorkflowContent({ service }: { service: string }) {
     mutationFn: ({ runId, payload }: { runId: string; payload: unknown }) =>
       muxPost<SendAnswer>({
         muxUrl: ingressMuxUrl,
-        scope: registry?.scope ?? '',
+        scope: registry?.scope,
         path: `/restate/send/${encodeURIComponent(service)}/${TANSTACK_WORKFLOW_RUN_HANDLER}`,
         body: payload,
         headers: { 'idempotency-key': runId },

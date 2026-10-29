@@ -41,6 +41,9 @@
       "path": "../service/tsconfig.lib.json"
     },
     {
+      "path": "../../ui/loading/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/code/tsconfig.lib.json"
     },
     {

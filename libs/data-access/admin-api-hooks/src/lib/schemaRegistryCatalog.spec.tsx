@@ -1,9 +1,10 @@
-import { cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 import {
   AdminBaseURLProvider,
   SchemaRegistryProvider,
+  useHasUnscopedRegistry,
   useSchemaRegistry,
 } from '@restate/data-access-admin-api';
 import { setQueryClient } from '@restate/util-react-query';
@@ -11,6 +12,8 @@ import {
   useDeploymentDetails,
   useListDeployments,
   useListDrainedDeployments,
+  useModalInfo,
+  useRegisterModalDeployment,
   useServiceCatalog,
 } from './hooks';
 
@@ -153,4 +156,123 @@ describe('catalog hooks with a schema registry', () => {
       ),
     ).toBe(true);
   }, 10_000);
+});
+
+describe('the unscoped catalog of a Restate without tenants', () => {
+  let client: QueryClient;
+  let requests: Array<{ url: string; method: string; body?: string }>;
+
+  beforeEach(() => {
+    client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    setQueryClient(client);
+    requests = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const url = requestUrl(input);
+      requests.push({
+        url: url.href,
+        method: init?.method ?? 'GET',
+        body: typeof init?.body === 'string' ? init.body : undefined,
+      });
+      switch (url.pathname) {
+        case '/v1/unscoped/health':
+          return new Response(null, { status: 200 });
+        case '/v1/unscoped/deployments':
+          return Response.json({ deployments: [deployment] });
+        case '/v1/unscoped/modal':
+          return Response.json({
+            command: ['node', 'app.js'],
+            workdir: '/app',
+            port: 9080,
+            allowed_images: [],
+          });
+        case '/v1/unscoped/modal-deployments':
+          return Response.json(
+            {
+              id: 'dp_modal',
+              services: [service],
+              min_protocol_version: 5,
+              max_protocol_version: 7,
+            },
+            { status: 201 },
+          );
+        default:
+          return Response.json({ message: 'not found' }, { status: 404 });
+      }
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    client.clear();
+    vi.restoreAllMocks();
+  });
+
+  function wrapper({ children }: PropsWithChildren) {
+    return (
+      <QueryClientProvider client={client}>
+        <AdminBaseURLProvider baseUrl="http://admin.test">
+          <SchemaRegistryProvider baseUrl="http://registry.test/">
+            {children}
+          </SchemaRegistryProvider>
+        </AdminBaseURLProvider>
+      </QueryClientProvider>
+    );
+  }
+
+  it('detects the unscoped API and reads the shared deployments', async () => {
+    const { result } = renderHook(
+      () => ({
+        unscoped: useHasUnscopedRegistry('http://registry.test'),
+        absent: useHasUnscopedRegistry(undefined),
+        deployments: useListDeployments(),
+      }),
+      { wrapper },
+    );
+
+    await waitFor(() => expect(result.current.unscoped).toBe(true));
+    await waitFor(() =>
+      expect(result.current.deployments.data?.deployments.size).toBe(1),
+    );
+    expect(result.current.absent).toBe(false);
+    expect(requests.map(({ url }) => url)).toContain(
+      'http://registry.test/v1/unscoped/deployments',
+    );
+  });
+
+  it('registers an image on Modal: a dry run, then the registration', async () => {
+    const done: Array<boolean | undefined> = [];
+    const { result } = renderHook(
+      () => ({
+        info: useModalInfo(),
+        register: useRegisterModalDeployment({
+          onSuccess: (_, body) => done.push(body.dry_run),
+        }),
+      }),
+      { wrapper },
+    );
+
+    await waitFor(() =>
+      expect(result.current.info.data?.command).toEqual(['node', 'app.js']),
+    );
+    await act(() =>
+      result.current.register.mutateAsync({
+        image: 'ghcr.io/acme/app:v1',
+        dry_run: true,
+      }),
+    );
+    await act(() =>
+      result.current.register.mutateAsync({ image: 'ghcr.io/acme/app:v1' }),
+    );
+
+    const posts = requests.filter(({ method }) => method === 'POST');
+    expect(posts.map(({ url }) => url)).toEqual([
+      'http://registry.test/v1/unscoped/modal-deployments',
+      'http://registry.test/v1/unscoped/modal-deployments',
+    ]);
+    expect(posts.map(({ body }) => JSON.parse(String(body)))).toEqual([
+      { image: 'ghcr.io/acme/app:v1', dry_run: true },
+      { image: 'ghcr.io/acme/app:v1' },
+    ]);
+    expect(done).toEqual([true, undefined]);
+  });
 });

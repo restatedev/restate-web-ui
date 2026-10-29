@@ -17,10 +17,34 @@ export function formatDeploymentLabel(endpoint: string): string {
   return endpoint.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '').replace(/\/$/, '');
 }
 
+function relayDeploymentLabel(deployment: Deployment | undefined) {
+  const metadata = deployment?.metadata;
+  const image = metadata?.['modal.image'];
+  if (image) {
+    return { label: `Modal · ${image}`, icon: IconName.Modal };
+  }
+  const relayTunnel = metadata?.['relay.tunnel'];
+  const relayVersion = metadata?.['relay.version'];
+  if (relayTunnel && relayVersion) {
+    return { label: `${relayTunnel} @ ${relayVersion}`, icon: IconName.Tunnel };
+  }
+  return undefined;
+}
+
 export function resolveDeploymentEndpoint(
   deployment: Deployment | undefined,
   tunnel: Tunnel,
 ) {
+  const relay = relayDeploymentLabel(deployment);
+  if (relay) {
+    return {
+      endpoint: relay.label,
+      label: relay.label,
+      isTunnel: false,
+      tunnelName: undefined,
+      icon: relay.icon,
+    };
+  }
   const tunnelEndpoint =
     tunnel?.isEnabled && deployment && isHttpDeployment(deployment)
       ? tunnel.fromHttp(deployment.uri)

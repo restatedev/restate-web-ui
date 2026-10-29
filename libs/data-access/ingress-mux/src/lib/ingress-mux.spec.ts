@@ -34,6 +34,19 @@ describe('muxPost', () => {
     );
   });
 
+  it('sends no tenant header when unscoped', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(''));
+
+    await muxPost({ muxUrl: 'http://mux.test', path: '/restate/send/s/h' });
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'http://mux.test/restate/send/s/h',
+      expect.objectContaining({ headers: { accept: 'application/json' } }),
+    );
+  });
+
   it('turns an error answer into an error with its message and status', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       Response.json({ message: 'missing x-restate-tenant' }, { status: 400 }),

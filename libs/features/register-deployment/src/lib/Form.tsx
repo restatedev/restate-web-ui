@@ -34,6 +34,7 @@ import { OverrideWarning } from './OverrideWarnning';
 import { OverrideBreaking } from './OverrideBreaking';
 import { Metadata } from './Metadata';
 import { Link } from '@restate/ui-link';
+import { ModalOptions, ModalPort } from './ModalOptions';
 
 const customRadioStyles = tv({
   base: 'group relative flex cursor-default justify-center rounded-lg border bg-clip-padding shadow-none outline-hidden',
@@ -277,6 +278,13 @@ const tunnelNameStyles = tv({
   },
 });
 
+const typeSwitchStyles = tv({
+  base: 'shrink-0 py-0.5 [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-tint-subtle',
+  variants: {
+    isWide: { true: 'w-36', false: 'w-28' },
+  },
+});
+
 export const CLI_TUNNEL_REGEX = /:\d+$/;
 
 function EndpointForm() {
@@ -285,6 +293,8 @@ function EndpointForm() {
     isTunnel,
     isCloudRun,
     isLambda,
+    isModal,
+    modalInfo,
     updateEndpoint,
     endpoint,
     isPending,
@@ -293,6 +303,7 @@ function EndpointForm() {
     isUpdate,
   } = useRegisterDeploymentContext();
   const { tunnel } = useRestateContext();
+  const isModalAvailable = Boolean(modalInfo) && isRegister;
 
   const focusManager = useFocusManager();
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -326,7 +337,9 @@ function EndpointForm() {
     <>
       <div className="mt-2 flex flex-col gap-0 pb-1">
         <FormFieldLabel className="mb-0 pl-0.5">
-          {isLambda ? (
+          {isModal ? (
+            'Container image (runs on Modal)'
+          ) : isLambda ? (
             'Lambda ARN'
           ) : isTunnel && tunnel?.isEnabled ? (
             <InlineTooltip
@@ -374,38 +387,48 @@ function EndpointForm() {
               value={endpoint}
               disabled={isPending}
               readonly={isOnboarding}
-              {...(isLambda
-                ? {
-                    pattern:
-                      '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
-                  }
-                : {
-                    validate: (value) => {
-                      try {
-                        if (value) {
-                          new URL(addProtocol(value));
-                          return null;
-                        } else {
-                          return null;
+              {...(isModal
+                ? {}
+                : isLambda
+                  ? {
+                      pattern:
+                        '^arn:aws:lambda:[a-z0-9\\-]+:\\d+:function:[a-zA-Z0-9\\-_]+:.+$',
+                    }
+                  : {
+                      validate: (value) => {
+                        try {
+                          if (value) {
+                            new URL(addProtocol(value));
+                            return null;
+                          } else {
+                            return null;
+                          }
+                        } catch (error) {
+                          return 'Please enter a URL.';
                         }
-                      } catch (error) {
-                        return 'Please enter a URL.';
-                      }
-                    },
-                  })}
+                      },
+                    })}
               name="endpoint"
               className={endpointStyles({ isCliTunnel })}
               placeholder={
-                isLambda
-                  ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
-                  : isTunnel
-                    ? 'Destination:  http://localhost:9080'
-                    : isCloudRun
-                      ? 'https://my-service-abc-uc.a.run.app'
-                      : 'http://localhost:9080'
+                isModal
+                  ? (modalInfo?.allowed_images[0] ?? 'ghcr.io/acme/') + 'app:v1'
+                  : isLambda
+                    ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
+                    : isTunnel
+                      ? 'Destination:  http://localhost:9080'
+                      : isCloudRun
+                        ? 'https://my-service-abc-uc.a.run.app'
+                        : 'http://localhost:9080'
               }
               onKeyDown={(e) => {
-                if (e.key === 'Tab' && !isLambda && !isTunnel && !endpoint) {
+                if (
+                  e.key === 'Tab' &&
+                  !isLambda &&
+                  !isTunnel &&
+                  !isModal &&
+                  !endpoint
+                ) {
                   updateEndpoint?.({
                     isLambda: false,
                     isTunnel: false,
@@ -417,6 +440,17 @@ function EndpointForm() {
                 }
               }}
               onChange={(value) => {
+                if (isModal) {
+                  updateEndpoint?.({
+                    isLambda: false,
+                    isTunnel: false,
+                    isCloudRun: false,
+                    isModal: true,
+                    endpoint: value,
+                    tunnelName: '',
+                  });
+                  return;
+                }
                 if (value.startsWith('tunnel://')) {
                   updateEndpoint?.({
                     isLambda: false,
@@ -441,16 +475,22 @@ function EndpointForm() {
               }}
             />
           </FocusScope>
-          <div className="w-28 shrink-0 py-0.5 [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-tint-subtle">
+          <div
+            className={typeSwitchStyles({
+              isWide: isModalAvailable && Boolean(tunnel?.isEnabled),
+            })}
+          >
             <RadioGroup
               value={
-                isLambda
-                  ? 'lambda'
-                  : isTunnel && tunnel?.isEnabled
-                    ? 'tunnel'
-                    : isCloudRun
-                      ? 'cloudrun'
-                      : 'http'
+                isModal
+                  ? 'modal'
+                  : isLambda
+                    ? 'lambda'
+                    : isTunnel && tunnel?.isEnabled
+                      ? 'tunnel'
+                      : isCloudRun
+                        ? 'cloudrun'
+                        : 'http'
               }
               name="name"
               required
@@ -461,6 +501,7 @@ function EndpointForm() {
                   isLambda: value === 'lambda',
                   isTunnel: value === 'tunnel',
                   isCloudRun: value === 'cloudrun',
+                  isModal: value === 'modal',
                   endpoint: '',
                   tunnelName: '',
                 })
@@ -528,14 +569,31 @@ function EndpointForm() {
                   </TooltipContent>
                 </Tooltip>
               )}
+              {isModalAvailable && (
+                <Tooltip>
+                  <RadioTooltipTrigger>
+                    <CustomRadio
+                      value="modal"
+                      className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                      aria-label="Modal sandbox"
+                    >
+                      <Icon name={IconName.Modal} className="h-4 w-4" />
+                    </CustomRadio>
+                  </RadioTooltipTrigger>
+                  <TooltipContent size="sm" offset={20}>
+                    Run on a Modal sandbox
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </RadioGroup>
           </div>
         </div>
       </div>
       {isLambda && <AssumeARNRole className="" />}
       {isCloudRun && <Authentication />}
+      {isModal && <ModalOptions />}
 
-      {isRegister && (
+      {isRegister && !isModal && (
         <>
           <OverrideWarning />
           <OverrideBreaking />
@@ -547,11 +605,11 @@ function EndpointForm() {
 }
 
 function AdvancedForm() {
-  const { isLambda } = useRegisterDeploymentContext();
+  const { isLambda, isModal } = useRegisterDeploymentContext();
 
   return (
     <div className="flex flex-col gap-6">
-      {isLambda ? null : <UseHTTP11 />}
+      {isModal ? <ModalPort /> : isLambda ? null : <UseHTTP11 />}
       <AdditionalHeaders />
       <Metadata />
       <OverrideWarning />

@@ -6,7 +6,7 @@ import { useAPIStatus } from './APIStatusProvider';
 
 export interface SchemaRegistry {
   baseUrl: string;
-  scope: string;
+  scope?: string;
   isHealthy: boolean;
   error: Error | null;
 }
@@ -15,15 +15,42 @@ const SchemaRegistryContext = createContext<SchemaRegistry | undefined>(
   undefined,
 );
 
-export function getSchemaRegistryScopeUrl(baseUrl: string, scope: string) {
-  return `${baseUrl.replace(/\/+$/, '')}/v1/scopes/${encodeURIComponent(scope)}`;
+export function getSchemaRegistryScopeUrl(baseUrl: string, scope?: string) {
+  const root = baseUrl.replace(/\/+$/, '');
+  return scope === undefined
+    ? `${root}/v1/unscoped`
+    : `${root}/v1/scopes/${encodeURIComponent(scope)}`;
+}
+
+export function useHasUnscopedRegistry(baseUrl?: string) {
+  const { data } = useQuery({
+    queryKey: ['schema-registry', 'unscoped', baseUrl],
+    queryFn: async ({ signal }) => {
+      if (!baseUrl) {
+        return false;
+      }
+      try {
+        const response = await fetch(
+          `${getSchemaRegistryScopeUrl(baseUrl)}/health`,
+          { signal },
+        );
+        return response.ok;
+      } catch {
+        return false;
+      }
+    },
+    enabled: Boolean(baseUrl),
+    staleTime: Infinity,
+    retry: false,
+  });
+  return Boolean(baseUrl) && data === true;
 }
 
 export function SchemaRegistryProvider({
   children,
   baseUrl,
   scope,
-}: PropsWithChildren<{ baseUrl: string; scope: string }>) {
+}: PropsWithChildren<{ baseUrl: string; scope?: string }>) {
   const scopeUrl = getSchemaRegistryScopeUrl(baseUrl, scope);
   const { isSuccess, error } = useQuery({
     ...adminApi('query', '/health', 'get', { baseUrl: scopeUrl }),

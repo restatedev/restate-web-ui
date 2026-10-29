@@ -39,12 +39,16 @@ import {
 import { RouterProvider } from 'react-aria-components';
 import { Link } from '@restate/ui-link';
 import { Button } from '@restate/ui-button';
-import { useCallback } from 'react';
+import { PropsWithChildren, useCallback } from 'react';
 import { QueryProvider } from '@restate/util-react-query';
 import { Nav, NavItem } from '@restate/ui-nav';
 import { BreadcrumbsProvider } from '@restate/features-breadcrumbs';
 import { Icon, IconName, Restate } from '@restate/ui-icons';
-import { RestateContextProvider } from '@restate/features-restate-context';
+import {
+  RestateContextProvider,
+  useRestateContext,
+} from '@restate/features-restate-context';
+import { SchemaRegistryProvider } from '@restate/data-access-admin-api';
 import { CodecRuntimeProvider } from '@restate/features-codec';
 import { createSystemHealthMonitor } from '@restate/features-system-health';
 import { Version } from '@restate/features-version';
@@ -465,6 +469,18 @@ function TopbarPanels() {
   );
 }
 
+function UnscopedCatalog({ children }: PropsWithChildren) {
+  const { schemaRegistryUrl, isUnscopedRegistry } = useRestateContext();
+  if (!schemaRegistryUrl || !isUnscopedRegistry) {
+    return children;
+  }
+  return (
+    <SchemaRegistryProvider baseUrl={schemaRegistryUrl}>
+      {children}
+    </SchemaRegistryProvider>
+  );
+}
+
 function AppContent() {
   // Tenant view uses a separate shell and URL prefix for shared invocation links.
   const tenantMatch = useMatch('/tenants/:scope/*');
@@ -493,27 +509,29 @@ function AppContent() {
                 header={<SidebarHeaderContent />}
               />
             ) : (
-              <BatchOperationsProvider>
-                <EditState>
-                  <CommandPaletteProvider>
-                    <BreadcrumbsProvider>
-                      <LayoutOutlet zone={LayoutZone.Content}>
-                        <Outlet />
-                      </LayoutOutlet>
-                    </BreadcrumbsProvider>
-                    <SidebarPanels />
-                    <TopbarPanels />
-                    <DeleteDeployment />
-                    <ServicePlayground />
-                    <EditService />
-                    <InvocationActions />
-                    <RegisterDeploymentDialog />
-                    <UpdateDeploymentDialog />
-                    <CreateRuleDialog />
-                    <MonacoWarmup />
-                  </CommandPaletteProvider>
-                </EditState>
-              </BatchOperationsProvider>
+              <UnscopedCatalog>
+                <BatchOperationsProvider>
+                  <EditState>
+                    <CommandPaletteProvider>
+                      <BreadcrumbsProvider>
+                        <LayoutOutlet zone={LayoutZone.Content}>
+                          <Outlet />
+                        </LayoutOutlet>
+                      </BreadcrumbsProvider>
+                      <SidebarPanels />
+                      <TopbarPanels />
+                      <DeleteDeployment />
+                      <ServicePlayground />
+                      <EditService />
+                      <InvocationActions />
+                      <RegisterDeploymentDialog />
+                      <UpdateDeploymentDialog />
+                      <CreateRuleDialog />
+                      <MonacoWarmup />
+                    </CommandPaletteProvider>
+                  </EditState>
+                </BatchOperationsProvider>
+              </UnscopedCatalog>
             )}
           </CodecRuntimeProvider>
         </RestateContextProvider>

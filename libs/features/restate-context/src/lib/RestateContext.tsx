@@ -5,6 +5,7 @@ import {
   useVersion,
   useQueryHealthCheck,
   useAdminBaseUrl,
+  useHasUnscopedRegistry,
 } from '@restate/data-access-admin-api';
 import {
   ComponentType,
@@ -85,6 +86,7 @@ type RestateContext = {
   ingressUrl: string;
   schemaRegistryUrl?: string;
   ingressMuxUrl?: string;
+  isUnscopedRegistry?: boolean;
   baseUrl: string;
   observabilityDashboardUrl?: string;
   // Preset applied when landing on /invocations without an explicit query (e.g.
@@ -177,12 +179,16 @@ function InternalRestateContextProvider({
   const { data } = useVersion({ enabled: !isPending && isSuccess });
   const version = data?.version;
   const releasedVersion = version?.split('-')?.at(0);
-  const resolvedIngress =
-    ingressUrl || data?.ingress_endpoint || 'http://localhost:8080';
   const resolvedSchemaRegistryUrl =
     schemaRegistryUrl || data?.schema_registry_endpoint || undefined;
   const resolvedIngressMuxUrl =
     ingressMuxUrl || data?.ingress_mux_endpoint || undefined;
+  const isUnscopedRegistry = useHasUnscopedRegistry(resolvedSchemaRegistryUrl);
+  const resolvedIngress =
+    (isUnscopedRegistry ? resolvedIngressMuxUrl : undefined) ||
+    ingressUrl ||
+    data?.ingress_endpoint ||
+    'http://localhost:8080';
 
   // During retries the query's `error` is still null but `failureReason`
   // already holds the last attempt's error, so classify from either.
@@ -241,6 +247,7 @@ function InternalRestateContextProvider({
         ingressUrl: resolvedIngress,
         schemaRegistryUrl: resolvedSchemaRegistryUrl,
         ingressMuxUrl: resolvedIngressMuxUrl,
+        isUnscopedRegistry,
         isVersionGte,
         baseUrl,
         observabilityDashboardUrl,

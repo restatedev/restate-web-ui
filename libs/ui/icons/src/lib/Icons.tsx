@@ -134,6 +134,7 @@ import { Rust } from './custom-icons/Rust';
 import { Python } from './custom-icons/Python';
 import { Tunnel } from './custom-icons/Tunnel';
 import { CloudRun } from './custom-icons/CloudRun';
+import { Modal } from './custom-icons/Modal';
 import { RestateCloud } from './custom-icons/RestateCloud';
 import { LimitKey } from './custom-icons/LimitKey';
 import { FlowControl } from './custom-icons/FlowControl';
@@ -229,6 +230,7 @@ export const enum IconName {
   TrendingDown = 'TrendingDown',
   Tunnel = 'Tunnel',
   CloudRun = 'CloudRun',
+  Modal = 'Modal',
   AtSign = 'AtSign',
   Example = 'Example',
   AiExample = 'AiExample',
@@ -374,6 +376,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   [IconName.TrendingDown]: TrendingDown,
   [IconName.Tunnel]: Tunnel,
   [IconName.CloudRun]: CloudRun,
+  [IconName.Modal]: Modal,
   [IconName.AtSign]: AtSign,
   [IconName.Example]: FileCode2,
   [IconName.AiExample]: Bot,

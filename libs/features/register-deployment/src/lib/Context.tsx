@@ -17,8 +17,11 @@ import { showSuccessNotification } from '@restate/ui-notification';
 import { RestateError } from '@restate/util-errors';
 import {
   useListDeployments,
+  useModalInfo,
   useRegisterDeployment,
+  useRegisterModalDeployment,
   useUpdateDeployment,
+  type ModalInfo,
 } from '@restate/data-access-admin-api-hooks';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useOnboarding } from '@restate/util-feature-flag';
@@ -51,6 +54,14 @@ type UpdateEndpointAction = {
     | 'isTunnel'
     | 'isCloudRun'
     | 'tunnelName'
+  > &
+    Partial<Pick<DeploymentRegistrationContextInterface, 'isModal'>>;
+};
+type UpdateModalOptionsAction = {
+  type: 'UpdateModalOptionsAction';
+  payload: Pick<
+    DeploymentRegistrationContextInterface,
+    'modalCommand' | 'modalWorkdir' | 'modalPort'
   >;
 };
 type UpdateRoleArnAction = {
@@ -89,6 +100,7 @@ type Action =
   | NavigateToConfirmAction
   | NavigateToEndpointAction
   | UpdateEndpointAction
+  | UpdateModalOptionsAction
   | UpdateRoleArnAction
   | UpdateAuthAction
   | UpdateUseHttp11Action
@@ -111,6 +123,11 @@ interface DeploymentRegistrationContextInterface {
   isLambda: boolean;
   isTunnel: boolean;
   isCloudRun: boolean;
+  isModal: boolean;
+  modalCommand?: string;
+  modalWorkdir?: string;
+  modalPort?: string;
+  modalInfo?: ModalInfo;
   formId?: string;
   additionalHeaders?: ListData<{
     key: string;
@@ -134,6 +151,7 @@ interface DeploymentRegistrationContextInterface {
   goToAdvanced?: VoidFunction;
   goToConfirm?: VoidFunction;
   updateEndpoint?: (value: UpdateEndpointAction['payload']) => void;
+  updateModalOptions?: (value: UpdateModalOptionsAction['payload']) => void;
   register?: (isDryRun: boolean) => void;
   updateAssumeRoleArn?: (value: string) => void;
   updateGoogleAuth?: (value?: GoogleAuth) => void;
@@ -151,6 +169,10 @@ type State = Pick<
   | 'tunnelName'
   | 'isTunnel'
   | 'isCloudRun'
+  | 'isModal'
+  | 'modalCommand'
+  | 'modalWorkdir'
+  | 'modalPort'
   | 'stage'
   | 'services'
   | 'assumeRoleArn'
@@ -174,6 +196,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         ...action.payload,
+        isModal: Boolean(action.payload.isModal),
         // `auth` only applies to Cloud Run; drop it when switching away.
         ...(action.payload.isCloudRun ? {} : { googleAuth: undefined }),
         ...(state.mode === 'register' && {
@@ -181,6 +204,8 @@ function reducer(state: State, action: Action): State {
           shouldAllowBreakingChange: false,
         }),
       };
+    case 'UpdateModalOptionsAction':
+      return { ...state, ...action.payload };
     case 'UpdateRoleArnAction':
       return { ...state, assumeRoleArn: action.payload.assumeRoleArn };
     case 'UpdateAuthAction':
@@ -225,6 +250,7 @@ const initialState: (args: {
     isLambda: false,
     isTunnel: false,
     isCloudRun: false,
+    isModal: false,
     error: null,
     endpoint: '',
     tunnelName: '',
@@ -427,10 +453,38 @@ export function DeploymentRegistrationState({
     },
   );
 
+  const { data: modalInfo } = useModalInfo();
+  const registerModal = useRegisterModalDeployment({
+    onSuccess(data, body) {
+      updateServices({
+        services: data?.services,
+        max_protocol_version: data?.max_protocol_version,
+        min_protocol_version: data?.min_protocol_version,
+        sdk_version: data?.sdk_version,
+      });
+      if (body.dry_run) {
+        goToConfirm();
+      } else {
+        refetch();
+        close?.();
+        showSuccessNotification(
+          <>
+            <code>{data?.id}</code> has been successfully registered on Modal.
+          </>,
+        );
+      }
+    },
+  });
+
   const isUpdate = mode === 'update';
-  const isPending = isUpdate ? update.isPending : register.isPending;
-  const error = isUpdate ? update.error : register.error;
-  const reset = isUpdate ? update.reset : register.reset;
+  const activeMutation = isUpdate
+    ? update
+    : state.isModal
+      ? registerModal
+      : register;
+  const isPending = activeMutation.isPending;
+  const error = activeMutation.error;
+  const reset = activeMutation.reset;
 
   const toHttp = tunnel?.toHttp;
   const updateEndpoint = useCallback(
@@ -445,22 +499,29 @@ export function DeploymentRegistrationState({
           /* empty */
         }
       }
-      if (!value.isLambda && !value.isTunnel && value.endpoint) {
+      if (
+        !value.isLambda &&
+        !value.isTunnel &&
+        !value.isModal &&
+        value.endpoint
+      ) {
         resolvedEndpoint = addProtocol(value.endpoint);
       }
       if (
         mode === 'register' &&
-        (state.isLambda !== value.isLambda || state.isTunnel !== value.isTunnel)
+        (state.isLambda !== value.isLambda ||
+          state.isTunnel !== value.isTunnel ||
+          state.isModal !== Boolean(value.isModal))
       ) {
         formRef.current?.reset();
       }
-      const isDuplicate = Array.from(
-        listDeployments?.deployments.values() ?? [],
-      ).some(
-        (deployment) =>
-          withoutTrailingSlash(getEndpoint(deployment)) ===
-          withoutTrailingSlash(resolvedEndpoint),
-      );
+      const isDuplicate =
+        !value.isModal &&
+        Array.from(listDeployments?.deployments.values() ?? []).some(
+          (deployment) =>
+            withoutTrailingSlash(getEndpoint(deployment)) ===
+            withoutTrailingSlash(resolvedEndpoint),
+        );
 
       // Cloud Run is an HTTP deployment; auto-upgrade when the URL is a
       // `*.run.app` host, otherwise keep whatever the caller signalled (so a
@@ -468,6 +529,7 @@ export function DeploymentRegistrationState({
       const isCloudRun =
         !value.isLambda &&
         !value.isTunnel &&
+        !value.isModal &&
         (Boolean(value.isCloudRun) || isCloudRunEndpoint(resolvedEndpoint));
 
       dispatch({
@@ -476,6 +538,7 @@ export function DeploymentRegistrationState({
           isTunnel: value.isTunnel,
           isLambda: value.isLambda,
           isCloudRun,
+          isModal: value.isModal,
           endpoint: value.endpoint,
           isDuplicate,
           tunnelName: value.tunnelName,
@@ -486,9 +549,17 @@ export function DeploymentRegistrationState({
       reset,
       state.isLambda,
       state.isTunnel,
+      state.isModal,
       listDeployments?.deployments,
       toHttp,
     ],
+  );
+  const updateModalOptions = useCallback(
+    (value: UpdateModalOptionsAction['payload']) => {
+      reset();
+      dispatch({ type: 'UpdateModalOptionsAction', payload: value });
+    },
+    [reset],
   );
   const updateAssumeRoleArn = useCallback(
     (assumeRoleArn: string) => {
@@ -557,6 +628,22 @@ export function DeploymentRegistrationState({
       },
       {},
     );
+    if (mode === 'register' && state.isModal) {
+      const command = state.modalCommand?.trim().split(/\s+/).filter(Boolean);
+      const port = Number(state.modalPort);
+      registerModal.mutate({
+        image: endpoint.trim(),
+        ...(command?.length ? { command } : {}),
+        ...(state.modalWorkdir?.trim()
+          ? { workdir: state.modalWorkdir.trim() }
+          : {}),
+        ...(state.modalPort && Number.isInteger(port) ? { port } : {}),
+        dry_run: action === 'dryRun',
+        additional_headers,
+        metadata,
+      });
+      return;
+    }
     if (mode === 'update') {
       update.mutate({
         body: {
@@ -616,6 +703,8 @@ export function DeploymentRegistrationState({
         goToConfirm,
         goToEndpoint,
         updateEndpoint,
+        updateModalOptions,
+        modalInfo,
         formId: id,
         additionalHeaders,
         updateAssumeRoleArn,
@@ -675,6 +764,12 @@ export function useRegisterDeploymentContext() {
     sdk_version,
     isTunnel,
     isCloudRun,
+    isModal,
+    modalCommand,
+    modalWorkdir,
+    modalPort,
+    modalInfo,
+    updateModalOptions,
     tunnelName,
     metadata,
     mode,
@@ -736,6 +831,12 @@ export function useRegisterDeploymentContext() {
     canSkipAdvanced,
     isTunnel,
     isCloudRun,
+    isModal,
+    modalCommand,
+    modalWorkdir,
+    modalPort,
+    modalInfo,
+    updateModalOptions,
     tunnelName,
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),

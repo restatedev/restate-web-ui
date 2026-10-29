@@ -764,6 +764,106 @@ export function useRegisterDeployment(
   });
 }
 
+export interface ModalInfo {
+  command: string[];
+  workdir: string;
+  port: number;
+  allowed_images: string[];
+}
+
+export interface RegisterModalDeploymentBody {
+  image: string;
+  command?: string[];
+  workdir?: string;
+  port?: number;
+  additional_headers?: Record<string, string>;
+  metadata?: Record<string, string>;
+  dry_run?: boolean;
+}
+
+type RegisterDeploymentData = DefaultOperationData<'/deployments', 'post'>;
+
+const MODAL_DISCOVERY_TIMEOUT_MS = 300_000;
+
+async function registryFetch<T>(url: string, init?: RequestInit) {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      accept: 'application/json',
+      ...(init?.body !== undefined && { 'content-type': 'application/json' }),
+    },
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    let message = text;
+    try {
+      const body = JSON.parse(text) as { message?: unknown };
+      if (typeof body.message === 'string') {
+        message = body.message;
+      }
+    } catch {
+      message = text;
+    }
+    throw new RestateError(
+      message || `The schema registry answered ${response.status}`,
+      undefined,
+      undefined,
+      undefined,
+      response.status,
+    );
+  }
+  return (text ? JSON.parse(text) : undefined) as T;
+}
+
+export function useModalInfo() {
+  const baseUrl = useSchemaRegistry()?.baseUrl;
+  return useQuery({
+    queryKey: ['schema-registry', 'modal', baseUrl],
+    queryFn: ({ signal }) =>
+      registryFetch<ModalInfo>(`${baseUrl}/modal`, { signal }),
+    enabled: Boolean(baseUrl),
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export function useRegisterModalDeployment(options?: {
+  onSuccess?: (
+    data: RegisterDeploymentData,
+    body: RegisterModalDeploymentBody,
+  ) => void;
+}) {
+  const baseUrl = useCatalogBaseUrl();
+  const queryClient = useQueryClient();
+  const onSuccess = options?.onSuccess;
+  return useMutation<
+    RegisterDeploymentData,
+    RestateError | Error,
+    RegisterModalDeploymentBody
+  >({
+    mutationKey: ['schema-registry', 'modal-deployments', baseUrl],
+    mutationFn: (body) =>
+      registryFetch<RegisterDeploymentData>(`${baseUrl}/modal-deployments`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(MODAL_DISCOVERY_TIMEOUT_MS),
+      }),
+    onSuccess(data, body) {
+      if (!body.dry_run) {
+        data?.services.forEach((service) => {
+          const { queryKey } = getServiceAdminApi({
+            baseUrl,
+            parameters: { path: { service: service.name } },
+          });
+          queryClient.invalidateQueries({ queryKey });
+        });
+        invalidateListServices(queryClient, baseUrl);
+      }
+      onSuccess?.(data, body);
+    },
+  });
+}
+
 export function useUpdateDeployment(
   deployment: string,
   options?: Omit<
