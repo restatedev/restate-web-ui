@@ -41,10 +41,12 @@ import {
 function EndpointChip({
   endpoint,
   tunnelName,
+  tunnelKind,
   isPending,
 }: {
   endpoint?: string;
   tunnelName?: string;
+  tunnelKind?: string;
   isPending: boolean;
 }) {
   return (
@@ -53,7 +55,7 @@ function EndpointChip({
         <HoverTooltip
           content={
             <p className="flex items-center">
-              Tunnel name:{' '}
+              {tunnelKind}:{' '}
               <code className="ml-1 inline-block">{tunnelName}</code>
               <Copy
                 copyText={tunnelName}
@@ -134,6 +136,7 @@ function Component() {
   const {
     endpoint: displayedEndpoint,
     tunnelName,
+    tunnelKind,
     icon,
   } = resolveDeploymentEndpoint(data, tunnel);
 
@@ -152,6 +155,7 @@ function Component() {
           <EndpointChip
             endpoint={displayedEndpoint}
             tunnelName={tunnelName}
+            tunnelKind={tunnelKind}
             isPending={isPending}
           />
           {isDrained !== undefined && (

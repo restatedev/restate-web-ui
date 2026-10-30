@@ -5,6 +5,7 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
   useId,
   useReducer,
   useRef,
@@ -20,7 +21,10 @@ import {
   useRegisterDeployment,
   useUpdateDeployment,
 } from '@restate/data-access-admin-api-hooks';
-import { useRestateContext } from '@restate/features-restate-context';
+import {
+  TunnelMode,
+  useRestateContext,
+} from '@restate/features-restate-context';
 import { useOnboarding } from '@restate/util-feature-flag';
 import {
   addProtocol,
@@ -51,6 +55,7 @@ type UpdateEndpointAction = {
     | 'isTunnel'
     | 'isCloudRun'
     | 'tunnelName'
+    | 'tunnelMode'
   >;
 };
 type UpdateRoleArnAction = {
@@ -104,6 +109,7 @@ export interface GoogleAuth {
 interface DeploymentRegistrationContextInterface {
   endpoint?: string;
   tunnelName: string;
+  tunnelMode: TunnelMode;
   stage: 'endpoint' | 'advanced' | 'confirm';
   assumeRoleArn?: string;
   googleAuth?: GoogleAuth;
@@ -149,6 +155,7 @@ type State = Pick<
   | 'endpoint'
   | 'isLambda'
   | 'tunnelName'
+  | 'tunnelMode'
   | 'isTunnel'
   | 'isCloudRun'
   | 'stage'
@@ -228,6 +235,7 @@ const initialState: (args: {
     error: null,
     endpoint: '',
     tunnelName: '',
+    tunnelMode: 'in-process',
     mode: args?.mode,
     ...(isEndpointValid && {
       endpoint: resolvedEndpoint,
@@ -284,6 +292,10 @@ export function DeploymentRegistrationState({
   const id = useId();
   const { tunnel, isGoogleIdTokenAuthAvailable } = useRestateContext();
   const formRef = useRef<HTMLFormElement>(null);
+  const isResettingRef = useRef(false);
+  useEffect(() => {
+    isResettingRef.current = false;
+  });
   const { refetch, data: listDeployments } = useListDeployments();
   const [searchParams] = useSearchParams();
   const [state, dispatch] = useReducer(
@@ -435,11 +447,18 @@ export function DeploymentRegistrationState({
   const toHttp = tunnel?.toHttp;
   const updateEndpoint = useCallback(
     (value: UpdateEndpointAction['payload']) => {
+      if (isResettingRef.current) {
+        return;
+      }
       reset();
       let resolvedEndpoint = value.endpoint;
-      if (value.isTunnel && value.endpoint) {
+      if (value.isTunnel && value.tunnelName) {
         try {
-          resolvedEndpoint = toHttp?.(value.tunnelName, value.endpoint);
+          resolvedEndpoint = toHttp?.(
+            value.tunnelName,
+            value.endpoint,
+            value.tunnelMode,
+          );
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
           /* empty */
@@ -452,6 +471,7 @@ export function DeploymentRegistrationState({
         mode === 'register' &&
         (state.isLambda !== value.isLambda || state.isTunnel !== value.isTunnel)
       ) {
+        isResettingRef.current = true;
         formRef.current?.reset();
       }
       const isDuplicate = Array.from(
@@ -479,6 +499,7 @@ export function DeploymentRegistrationState({
           endpoint: value.endpoint,
           isDuplicate,
           tunnelName: value.tunnelName,
+          tunnelMode: value.tunnelMode,
         },
       });
     },
@@ -526,6 +547,7 @@ export function DeploymentRegistrationState({
       shouldForce,
       isTunnel,
       tunnelName,
+      tunnelMode,
       shouldAllowBreakingChange,
     } = state;
     const auth = isGoogleIdTokenAuthAvailable
@@ -589,7 +611,13 @@ export function DeploymentRegistrationState({
             : isTunnel
               ? {
                   uri: tunnel
-                    ? String(tunnel.toHttp(tunnelName, endpoint))
+                    ? String(
+                        tunnel.toHttp(
+                          tunnelName,
+                          endpoint || undefined,
+                          tunnelMode,
+                        ),
+                      )
                     : endpoint,
                   use_http_11: false,
                 }
@@ -676,6 +704,7 @@ export function useRegisterDeploymentContext() {
     isTunnel,
     isCloudRun,
     tunnelName,
+    tunnelMode,
     metadata,
     mode,
   } = useContext(DeploymentRegistrationContext);
@@ -737,6 +766,8 @@ export function useRegisterDeploymentContext() {
     isTunnel,
     isCloudRun,
     tunnelName,
+    tunnelMode,
+    isInProcessTunnel: isTunnel && tunnelMode === 'in-process',
     isOnboarding,
     targetType: getTargetType(endpoint, tunnelName),
     isHttp1Error,
