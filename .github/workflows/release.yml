@@ -65,10 +65,20 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Generate token for restate-web-ui-crate
+        id: app-token
+        uses: actions/create-github-app-token@v3.3.0
+        with:
+          client-id: ${{ vars.WEB_UI_APP_CLIENT_ID }}
+          private-key: ${{ secrets.WEB_UI_APP_PRIVATE_KEY }}
+          owner: restatedev
+          repositories: restate-web-ui-crate
+          permission-contents: write
+          permission-pull-requests: write
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+          token: ${{ steps.app-token.outputs.token }}
           repository: restatedev/restate-web-ui-crate
       - name: Remove old artifacts
         run: rm -f ./assets/*.zip ./assets/*.tar
@@ -78,7 +88,7 @@ jobs:
           version: tags/${{ needs.release.outputs.tag }}
           file: ${{ needs.release.outputs.artifact-name }}
           target: ./assets/${{ needs.release.outputs.artifact-name }}
-          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+          token: ${{ github.token }}
       - name: Calculate SHA256 checksum and set as env var
         id: asset-hash
         run: |
@@ -94,7 +104,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+          token: ${{ steps.app-token.outputs.token }}
           branch: update-ui-${{needs.release.outputs.tag}}
           title: '[Restate UI] Update to ${{ needs.release.outputs.tag }}'
           sign-commits: true
@@ -110,6 +120,6 @@ jobs:
         if: steps.cpr.outputs.pull-request-operation == 'created'
         uses: peter-evans/enable-pull-request-automerge@v3
         with:
-          token: ${{ secrets.TOKEN_FOR_RESTATE_REPO }}
+          token: ${{ steps.app-token.outputs.token }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
           merge-method: squash
