@@ -126,8 +126,9 @@ export function Helper({
     gcpServiceAccount,
     OnboardingGuide,
     isGoogleIdTokenAuthAvailable,
+    tunnel,
   } = useRestateContext();
-  const { targetType, endpoint, isCloudRun, googleAuth } =
+  const { targetType, endpoint, isCloudRun, googleAuth, isInProcessTunnel } =
     useRegisterDeploymentContext();
   const isCloudRunWithGoogleAuth = isCloudRun && isGoogleIdTokenAuthAvailable;
   const impersonateServiceAccount = googleAuth?.impersonateServiceAccount;
@@ -147,6 +148,27 @@ export function Helper({
   ) : null;
   if (isOnboarding) {
     return null;
+  }
+
+  if (isInProcessTunnel) {
+    return (
+      <div className="rounded-xl border border-info/30 bg-info-subtle/40 p-2.5 text-0.5xs text-info-strong">
+        Running the service with <code>serve()</code> and the <code>.env</code>{' '}
+        from{' '}
+        {tunnel?.connectServiceHref ? (
+          <Link
+            href={tunnel.connectServiceHref}
+            variant="secondary"
+            className="text-info"
+          >
+            Connect a service
+          </Link>
+        ) : (
+          'Connect a service'
+        )}{' '}
+        prints its deployment name on startup. Paste it above.
+      </div>
+    );
   }
 
   if (isTunnel) {
