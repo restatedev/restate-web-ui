@@ -4,6 +4,8 @@ import {
   ServiceExplainer,
 } from '@restate/features-explainers';
 import { TriggerRegisterDeploymentDialog } from '@restate/features-register-deployment';
+import { Icon, IconName } from '@restate/ui-icons';
+import { Link } from '@restate/ui-link';
 import { Spinner } from '@restate/ui-loading';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
 
@@ -14,7 +16,7 @@ export function NoDeploymentPlaceholder({
   error?: Error | null;
   isRefreshing?: boolean;
 }) {
-  const { OnboardingGuide } = useRestateContext();
+  const { OnboardingGuide, tunnel } = useRestateContext();
 
   return (
     <div className="relative mt-6 flex w-full flex-col items-center gap-2 text-center">
@@ -39,7 +41,17 @@ export function NoDeploymentPlaceholder({
         Point Restate to your deployed services so Restate can register your{' '}
         <ServiceExplainer>services</ServiceExplainer> and handlers
       </p>
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {tunnel?.configureSdkHref && (
+          <Link
+            variant="button"
+            href={tunnel.configureSdkHref}
+            className="flex items-center gap-2 px-3"
+          >
+            <Icon name={IconName.Tunnel} className="h-4 w-4" />
+            Connect with the SDK
+          </Link>
+        )}
         <TriggerRegisterDeploymentDialog />
         {OnboardingGuide && (
           <OnboardingGuide stage="register-deployment-trigger" />
