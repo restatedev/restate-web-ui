@@ -114,7 +114,7 @@ type RestateContext = {
           mode?: TunnelMode;
         }
       | undefined;
-    connectServiceHref?: string;
+    configureSdkHref?: string;
   };
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: OnboardingComponent;

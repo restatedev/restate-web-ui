@@ -68,14 +68,14 @@ describe('resolveDeploymentEndpoint', () => {
     expect(result.label).toBe('quiet-amber-otter');
   });
 
-  it('labels a standalone deployment as a tunnel client with its destination', () => {
+  it('labels a standalone deployment as a tunnel with its destination', () => {
     const result = resolveDeploymentEndpoint(
       httpDeployment(
         'https://tunnel.example:9080/env/my-tunnel/http/localhost/9080',
       ),
       tunnel,
     );
-    expect(result.tunnelKind).toBe('Tunnel client');
+    expect(result.tunnelKind).toBe('Tunnel');
     expect(result.endpoint).toBe('localhost:9080');
     expect(result.label).toBe('localhost:9080');
   });

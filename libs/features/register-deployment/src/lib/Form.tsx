@@ -341,19 +341,19 @@ function EndpointForm() {
               <InlineTooltip
                 title="Connected service"
                 variant="indicator-button"
-                description="A connected service opens an outbound connection to Restate Cloud itself: serve() reads the connection credentials from the .env you download under Connect a service and announces itself under this deployment name. No port to expose, no tunnel process to run."
+                description="A connected service opens an outbound connection to Restate Cloud itself: restate.connect({ services, name }) with the key from Configure SDK announces itself under this deployment name. No port to expose, nothing else to run."
                 learnMoreHref="https://docs.restate.dev/cloud/connecting-services"
               >
                 Connected service
               </InlineTooltip>
             ) : (
               <InlineTooltip
-                title="Tunnel client"
+                title="Tunnel"
                 variant="indicator-button"
                 description="A tunnel client runs alongside your service (for example, in your VPC or Kubernetes cluster) and forwards traffic from Restate Cloud to the destination address, so the service stays private."
                 learnMoreHref="https://docs.restate.dev/cloud/connecting-services#3-run-the-tunnel"
               >
-                Tunnel client
+                Tunnel
               </InlineTooltip>
             )
           ) : isCloudRun ? (
@@ -440,14 +440,17 @@ function EndpointForm() {
                 }
               }}
               onChange={(value) => {
-                if (value.startsWith('tunnel://')) {
+                const prefill = value.match(/^(connect|tunnel):\/\/(.*)$/);
+                if (prefill) {
+                  const mode: TunnelMode =
+                    prefill[1] === 'connect' ? 'in-process' : 'standalone';
                   updateEndpoint?.({
                     isLambda: false,
                     isTunnel: true,
                     isCloudRun: false,
-                    endpoint: undefined,
-                    tunnelName: value.replace('tunnel://', ''),
-                    tunnelMode: 'in-process',
+                    endpoint: mode === 'in-process' ? undefined : '',
+                    tunnelName: prefill[2] ?? '',
+                    tunnelMode: mode,
                   });
                   focusManager?.focusPrevious({ wrap: true });
                   return;
@@ -611,12 +614,12 @@ function TunnelModeSelector({
       <RadioCards className="sm:flex-row [&>*]:flex-1">
         <RadioCard
           value="in-process"
-          label="In-process"
-          description="Your service runs serve() with the connection credentials from Connect a service. Only the deployment name is needed."
+          label="Connected service"
+          description="Your service calls restate.connect() with the key from Configure SDK. Only the deployment name is needed."
         />
         <RadioCard
           value="standalone"
-          label="Standalone tunnel client"
+          label="Tunnel"
           description="A tunnel client container runs next to your service and forwards traffic to the destination address."
         />
       </RadioCards>

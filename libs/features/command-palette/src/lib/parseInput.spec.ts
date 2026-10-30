@@ -42,6 +42,7 @@ describe('parseInput', () => {
     'https://my-service.example.com/restate',
     'localhost:9080',
     'tunnel://my-tunnel:9080',
+    'connect://greeter-v1',
     'arn:aws:lambda:eu-central-1:123456789012:function:greeter:1',
     'service.internal:9080',
   ])('detects the endpoint %s', (endpoint) => {

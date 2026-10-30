@@ -63,45 +63,46 @@ function open(search: string) {
 }
 
 describe('RegisterDeploymentDialog', () => {
-  it('pre-selects the in-process sub-mode for a tunnel:// prefill and registers the constant tail', async () => {
-    const user = open('?register-deployment=tunnel://quiet-amber-otter');
+  it('opens in connected-service mode for a connect:// prefill and registers the constant tail', async () => {
+    const user = open('?register-deployment=connect://greeter-v1');
 
     const name = await screen.findByPlaceholderText('Deployment name');
-    expect(name).toHaveValue('quiet-amber-otter');
+    expect(name).toHaveValue('greeter-v1');
     expect(name).toHaveFocus();
-    expect(screen.getByRole('radio', { name: /In-process/ })).toBeChecked();
+    expect(
+      screen.getByRole('radio', { name: /^Connected service/ }),
+    ).toBeChecked();
     expect(
       screen.getByRole('radio', { name: 'Connected / tunneled' }),
     ).toBeChecked();
     expect(screen.getByPlaceholderText(/Destination/)).not.toBeRequired();
-    expect(screen.getByText('Connected service')).toBeInTheDocument();
+    expect(screen.getAllByText('Connected service').length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole('button', { name: /Next/ }));
 
     expect(toHttp).toHaveBeenLastCalledWith(
-      'quiet-amber-otter',
+      'greeter-v1',
       undefined,
       'in-process',
     );
     expect(register).toHaveBeenCalledWith({
       body: expect.objectContaining({
-        uri: 'https://tunnel.example:9080/env/quiet-amber-otter/http/in-process/9080/',
+        uri: 'https://tunnel.example:9080/env/greeter-v1/http/in-process/9080/',
         use_http_11: false,
         dry_run: true,
       }),
     });
   });
 
-  it('keeps the destination for the standalone tunnel client', async () => {
+  it('opens in tunnel mode for a tunnel:// prefill and keeps the destination', async () => {
     const user = open('?register-deployment=tunnel://my-tunnel');
 
-    await user.click(
-      await screen.findByRole('radio', { name: /Standalone tunnel client/ }),
+    expect(await screen.findByRole('radio', { name: /^Tunnel/ })).toBeChecked();
+    expect(screen.getByPlaceholderText('Deployment name')).toHaveValue(
+      'my-tunnel',
     );
-
     const destination = screen.getByPlaceholderText(/Destination/);
     expect(destination).toBeRequired();
-    expect(screen.getByText('Tunnel client')).toBeInTheDocument();
     await user.type(destination, 'http://localhost:9080');
     await user.click(screen.getByRole('button', { name: /Next/ }));
 
@@ -112,17 +113,19 @@ describe('RegisterDeploymentDialog', () => {
     });
   });
 
-  it('switches to the in-process sub-mode when tunnel:// is typed in the endpoint field', async () => {
+  it('switches to connected-service mode when connect:// is typed in the endpoint field', async () => {
     const user = open('?register-deployment=true');
 
     await user.type(
       await screen.findByPlaceholderText('http://localhost:9080'),
-      'tunnel://greeter',
+      'connect://greeter',
     );
 
     expect(screen.getByPlaceholderText('Deployment name')).toHaveValue(
       'greeter',
     );
-    expect(screen.getByRole('radio', { name: /In-process/ })).toBeChecked();
+    expect(
+      screen.getByRole('radio', { name: /^Connected service/ }),
+    ).toBeChecked();
   });
 });
