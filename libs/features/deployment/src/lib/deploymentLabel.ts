@@ -37,7 +37,7 @@ export function resolveDeploymentEndpoint(
     tunnelKind: tunnelEndpoint
       ? tunnelEndpoint.mode === 'in-process'
         ? ('Connected service' as const)
-        : ('Tunnel client' as const)
+        : ('Tunnel' as const)
       : undefined,
     icon: tunnelEndpoint
       ? IconName.Tunnel

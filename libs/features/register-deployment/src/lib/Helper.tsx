@@ -153,20 +153,21 @@ export function Helper({
   if (isInProcessTunnel) {
     return (
       <div className="rounded-xl border border-info/30 bg-info-subtle/40 p-2.5 text-0.5xs text-info-strong">
-        Running the service with <code>serve()</code> and the <code>.env</code>{' '}
-        from{' '}
-        {tunnel?.connectServiceHref ? (
+        Use the name your service passes to{' '}
+        <code>restate.connect({'{ services, name }'})</code> (or sets as{' '}
+        <code>RESTATE_CONNECT_NAME</code>). The connect key comes from{' '}
+        {tunnel?.configureSdkHref ? (
           <Link
-            href={tunnel.connectServiceHref}
+            href={tunnel.configureSdkHref}
             variant="secondary"
             className="text-info"
           >
-            Connect a service
+            Configure SDK
           </Link>
         ) : (
-          'Connect a service'
-        )}{' '}
-        prints its deployment name on startup. Paste it above.
+          'Configure SDK'
+        )}
+        .
       </div>
     );
   }

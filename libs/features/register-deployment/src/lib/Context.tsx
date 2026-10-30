@@ -216,7 +216,8 @@ const initialState: (args: {
   assumeRoleArn?: string;
 }) => DeploymentRegistrationContextInterface = (args) => {
   const endpoint = args?.endpoint;
-  const isTunnel = endpoint?.startsWith('tunnel://');
+  const isConnect = endpoint?.startsWith('connect://');
+  const isTunnel = isConnect || endpoint?.startsWith('tunnel://');
   const isLambda = endpoint?.startsWith('arn:');
   const isEndpointValid =
     (!isLambda && !isTunnel && endpoint && endpoint !== 'true') ||
@@ -249,7 +250,10 @@ const initialState: (args: {
       isTunnel,
       isCloudRun:
         !isLambda && !isTunnel && isCloudRunEndpoint(resolvedEndpoint),
-      tunnelName: isTunnel ? String(endpoint)?.replace('tunnel://', '') : '',
+      tunnelName: isTunnel
+        ? String(endpoint).replace(/^(connect|tunnel):\/\//, '')
+        : '',
+      tunnelMode: isConnect ? 'in-process' : 'standalone',
     }),
     assumeRoleArn: args?.assumeRoleArn,
   };
