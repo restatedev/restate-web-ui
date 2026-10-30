@@ -63,7 +63,7 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     needs: release
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Generate token for restate-web-ui-crate
         id: app-token
