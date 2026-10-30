@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from 'react';
 import { Radio, Heading } from 'react-aria-components';
-import { RadioGroup } from '@restate/ui-radio-group';
+import { RadioCard, RadioCards, RadioGroup } from '@restate/ui-radio-group';
 import {
   DeploymentProtocolCheck,
   RegisterDeploymentResults,
@@ -25,7 +25,10 @@ import {
   RadioTooltipTrigger,
 } from '@restate/ui-tooltip';
 import { ServiceDeploymentExplainer } from '@restate/features-explainers';
-import { useRestateContext } from '@restate/features-restate-context';
+import {
+  TunnelMode,
+  useRestateContext,
+} from '@restate/features-restate-context';
 import { tv } from '@restate/util-styles';
 import { FocusScope, useFocusManager } from 'react-aria';
 import { addProtocol } from './utils';
@@ -134,7 +137,7 @@ export function RegistrationForm() {
           }
           description={
             tunnel?.isEnabled
-              ? "Please provide your service's HTTP endpoint, Lambda function version ARN, or Restate Tunnel endpoint."
+              ? "Please provide your service's HTTP endpoint, Lambda function version ARN, or the deployment name of a connected service."
               : "Please provide your service's HTTP endpoint or Lambda function version ARN."
           }
         >
@@ -257,13 +260,13 @@ const inputStyles = tv({
 const endpointStyles = tv({
   extend: inputStyles,
   variants: {
-    isCliTunnel: {
+    isHidden: {
       false: 'flex-auto basis-full',
       true: 'w-0 min-w-0 grow-0 basis-0',
     },
   },
   defaultVariants: {
-    isCliTunnel: false,
+    isHidden: false,
   },
 });
 const tunnelNameStyles = tv({
@@ -282,7 +285,9 @@ export const CLI_TUNNEL_REGEX = /:\d+$/;
 function EndpointForm() {
   const {
     tunnelName,
+    tunnelMode,
     isTunnel,
+    isInProcessTunnel,
     isCloudRun,
     isLambda,
     updateEndpoint,
@@ -320,7 +325,10 @@ function EndpointForm() {
     }
   };
 
-  const isCliTunnel = Boolean(isTunnel && tunnelName?.match(CLI_TUNNEL_REGEX));
+  const isCliTunnel = Boolean(
+    isTunnel && !isInProcessTunnel && tunnelName?.match(CLI_TUNNEL_REGEX),
+  );
+  const isDestinationHidden = isInProcessTunnel || isCliTunnel;
 
   return (
     <>
@@ -329,14 +337,25 @@ function EndpointForm() {
           {isLambda ? (
             'Lambda ARN'
           ) : isTunnel && tunnel?.isEnabled ? (
-            <InlineTooltip
-              title="Tunnel"
-              variant="indicator-button"
-              description="A tunnel lets you securely connect a service running in a private environment to Restate Cloud without exposing it to the public internet. The tunnel client runs alongside your service (for example, in your VPC or Kubernetes cluster) and forwards traffic through Restate Cloud as if your service were inside the cloud environment."
-              learnMoreHref="https://docs.restate.dev/cloud/connecting-services#3-run-the-tunnel"
-            >
-              Tunnel
-            </InlineTooltip>
+            isInProcessTunnel ? (
+              <InlineTooltip
+                title="Connected service"
+                variant="indicator-button"
+                description="A connected service opens an outbound connection to Restate Cloud itself: restate.connect({ services, name }) with the key from Configure SDK announces itself under this deployment name. No port to expose, nothing else to run."
+                learnMoreHref="https://docs.restate.dev/cloud/connecting-services"
+              >
+                Connected service
+              </InlineTooltip>
+            ) : (
+              <InlineTooltip
+                title="Tunnel"
+                variant="indicator-button"
+                description="A tunnel client runs alongside your service (for example, in your VPC or Kubernetes cluster) and forwards traffic from Restate Cloud to the destination address, so the service stays private."
+                learnMoreHref="https://docs.restate.dev/cloud/connecting-services#3-run-the-tunnel"
+              >
+                Tunnel
+              </InlineTooltip>
+            )
           ) : isCloudRun ? (
             'Google Cloud Run'
           ) : (
@@ -350,26 +369,29 @@ function EndpointForm() {
           <FocusScope>
             <FormFieldInput
               className={tunnelNameStyles({ isTunnel })}
-              placeholder="my-tunnel-name"
+              placeholder="Deployment name"
               required={isTunnel}
+              autoFocus={isTunnel && !isOnboarding}
               value={tunnelName}
               name="tunnel-name"
+              disabled={isPending}
               onChange={(value) => {
                 updateEndpoint?.({
                   isLambda: false,
                   isCloudRun: false,
                   tunnelName: value,
                   isTunnel: isTunnel,
+                  tunnelMode,
                   endpoint,
                 });
               }}
             />
-            {isTunnel && !isCliTunnel && (
+            {isTunnel && !isDestinationHidden && (
               <div className="-my-px h-full min-h-9 w-[2px] shrink-0 bg-surface" />
             )}
             <FormFieldInput
-              autoFocus={!isOnboarding}
-              required={!isCliTunnel && !isUpdate}
+              autoFocus={!isTunnel && !isOnboarding}
+              required={!isDestinationHidden && !isUpdate}
               autoComplete="url"
               value={endpoint}
               disabled={isPending}
@@ -394,7 +416,7 @@ function EndpointForm() {
                     },
                   })}
               name="endpoint"
-              className={endpointStyles({ isCliTunnel })}
+              className={endpointStyles({ isHidden: isDestinationHidden })}
               placeholder={
                 isLambda
                   ? 'arn:aws:lambda:{region}:{account}:function:{function-name}:{version}'
@@ -412,19 +434,25 @@ function EndpointForm() {
                     isCloudRun: false,
                     endpoint: 'http://localhost:9080',
                     tunnelName: '',
+                    tunnelMode,
                   });
                   e.preventDefault();
                 }
               }}
               onChange={(value) => {
-                if (value.startsWith('tunnel://')) {
+                const prefill = value.match(/^(connect|tunnel):\/\/(.*)$/);
+                if (prefill) {
+                  const mode: TunnelMode =
+                    prefill[1] === 'connect' ? 'in-process' : 'standalone';
                   updateEndpoint?.({
                     isLambda: false,
                     isTunnel: true,
                     isCloudRun: false,
-                    endpoint: undefined,
-                    tunnelName: value,
+                    endpoint: mode === 'in-process' ? undefined : '',
+                    tunnelName: prefill[2] ?? '',
+                    tunnelMode: mode,
                   });
+                  focusManager?.focusPrevious({ wrap: true });
                   return;
                 }
                 updateEndpoint?.({
@@ -437,6 +465,7 @@ function EndpointForm() {
                   isCloudRun,
                   endpoint: value,
                   tunnelName,
+                  tunnelMode,
                 });
               }}
             />
@@ -463,6 +492,7 @@ function EndpointForm() {
                   isCloudRun: value === 'cloudrun',
                   endpoint: '',
                   tunnelName: '',
+                  tunnelMode: 'in-process',
                 })
               }
               disabled={isPending}
@@ -518,13 +548,13 @@ function EndpointForm() {
                     <CustomRadio
                       value="tunnel"
                       className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                      aria-label="Tunnel"
+                      aria-label="Connected / tunneled"
                     >
                       <Icon name={IconName.Tunnel} className="h-4 w-4" />
                     </CustomRadio>
                   </RadioTooltipTrigger>
                   <TooltipContent size="sm" offset={20}>
-                    Tunnel
+                    Connected / tunneled
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -532,6 +562,22 @@ function EndpointForm() {
           </div>
         </div>
       </div>
+      {isTunnel && tunnel?.isEnabled && (
+        <TunnelModeSelector
+          value={tunnelMode}
+          disabled={isPending || isUpdate}
+          onChange={(mode) =>
+            updateEndpoint?.({
+              isLambda: false,
+              isTunnel: true,
+              isCloudRun: false,
+              endpoint: mode === 'in-process' ? undefined : '',
+              tunnelName,
+              tunnelMode: mode,
+            })
+          }
+        />
+      )}
       {isLambda && <AssumeARNRole className="" />}
       {isCloudRun && <Authentication />}
 
@@ -543,6 +589,41 @@ function EndpointForm() {
         </>
       )}
     </>
+  );
+}
+
+function TunnelModeSelector({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: TunnelMode;
+  onChange: (mode: TunnelMode) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <RadioGroup
+      name="tunnel-mode"
+      value={value}
+      disabled={disabled}
+      onChange={(mode) => onChange(mode as TunnelMode)}
+    >
+      <FormFieldLabel className="sr-only">
+        How the service connects
+      </FormFieldLabel>
+      <RadioCards className="sm:flex-row [&>*]:flex-1">
+        <RadioCard
+          value="in-process"
+          label="Connected service"
+          description="Your service calls restate.connect() with the key from Configure SDK. Only the deployment name is needed."
+        />
+        <RadioCard
+          value="standalone"
+          label="Tunnel"
+          description="A tunnel client container runs next to your service and forwards traffic to the destination address."
+        />
+      </RadioCards>
+    </RadioGroup>
   );
 }
 

@@ -34,6 +34,11 @@ export function resolveDeploymentEndpoint(
     label: endpoint ? formatDeploymentLabel(endpoint) : tunnelEndpoint?.name,
     isTunnel: Boolean(tunnelEndpoint),
     tunnelName: tunnelEndpoint?.name,
+    tunnelKind: tunnelEndpoint
+      ? tunnelEndpoint.mode === 'in-process'
+        ? ('Connected service' as const)
+        : ('Tunnel' as const)
+      : undefined,
     icon: tunnelEndpoint
       ? IconName.Tunnel
       : deployment && !isHttpDeployment(deployment)

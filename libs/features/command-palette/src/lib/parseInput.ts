@@ -22,7 +22,7 @@ const ID_PATTERN = /^(inv|dp|vq)_1[0-9A-Za-z]{10,}$/;
 const ERROR_CODE_PATTERN = /^(META|RT)\d{4}$/i;
 const SQL_PATTERN = /^(select|with|explain|describe|show)\s/i;
 const ENDPOINT_PATTERNS = [
-  /^(https?|tunnel):\/\/\S+$/i,
+  /^(https?|connect|tunnel):\/\/\S+$/i,
   /^arn:aws[\w-]*:lambda:\S+$/i,
   /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?(\/\S*)?$/i,
   /^[a-z0-9.-]+:\d+(\/\S*)?$/i,

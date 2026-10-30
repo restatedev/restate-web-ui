@@ -163,6 +163,7 @@ export function Deployment({
     endpoint: deploymentEndpoint,
     isTunnel,
     tunnelName,
+    tunnelKind,
     icon,
   } = resolveDeploymentEndpoint(deployment, tunnel);
 
@@ -205,7 +206,7 @@ export function Deployment({
             <HoverTooltip
               content={
                 <p className="flex items-center">
-                  Tunnel name:{' '}
+                  {tunnelKind}:{' '}
                   <code className="ml-1 inline-block">{tunnelName}</code>
                   <Copy
                     copyText={String(tunnelName)}
