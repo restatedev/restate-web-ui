@@ -126,9 +126,16 @@ export function Helper({
     gcpServiceAccount,
     OnboardingGuide,
     isGoogleIdTokenAuthAvailable,
+    tunnel,
   } = useRestateContext();
-  const { targetType, endpoint, isCloudRun, googleAuth } =
-    useRegisterDeploymentContext();
+  const {
+    targetType,
+    endpoint,
+    isCloudRun,
+    googleAuth,
+    isInProcessTunnel,
+    tunnelName,
+  } = useRegisterDeploymentContext();
   const isCloudRunWithGoogleAuth = isCloudRun && isGoogleIdTokenAuthAvailable;
   const impersonateServiceAccount = googleAuth?.impersonateServiceAccount;
 
@@ -147,6 +154,52 @@ export function Helper({
   ) : null;
   if (isOnboarding) {
     return null;
+  }
+
+  if (isInProcessTunnel) {
+    return (
+      <Container
+        title={
+          <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
+            <Icon name={IconName.Connect} className="h-4 w-4" />
+            Connect your service.{' '}
+            <Link
+              target="_blank"
+              href="https://docs.restate.dev/cloud/connecting-services"
+              variant="secondary"
+              className="text-info"
+            >
+              Learn more…
+            </Link>
+          </div>
+        }
+      >
+        {OnboardingGuide ? (
+          <OnboardingGuide
+            stage="view-template-connect"
+            endpoint={tunnelName}
+          />
+        ) : (
+          <div className="px-1.5 font-sans text-0.5xs text-muted">
+            Use the name your service passes to{' '}
+            <code>restate.connect({'{ services, name }'})</code> (or sets as{' '}
+            <code>RESTATE_CONNECT_NAME</code>). The connect key comes from{' '}
+            {tunnel?.configureSdkHref ? (
+              <Link
+                href={tunnel.configureSdkHref}
+                variant="secondary"
+                className="text-info"
+              >
+                Configure SDK
+              </Link>
+            ) : (
+              'Configure SDK'
+            )}
+            .
+          </div>
+        )}
+      </Container>
+    );
   }
 
   if (isTunnel) {

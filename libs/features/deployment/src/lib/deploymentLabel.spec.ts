@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { formatDeploymentLabel } from './deploymentLabel';
+import { IconName } from '@restate/ui-icons';
+import {
+  formatDeploymentLabel,
+  resolveDeploymentEndpoint,
+} from './deploymentLabel';
 
 describe('formatDeploymentLabel', () => {
   it('drops the scheme and trailing slash of an HTTP endpoint', () => {
@@ -26,5 +30,68 @@ describe('formatDeploymentLabel', () => {
     expect(formatDeploymentLabel('arn:aws:lambda:eu-central-1:123')).toBe(
       'arn:aws:lambda:eu-central-1:123',
     );
+  });
+});
+
+describe('resolveDeploymentEndpoint', () => {
+  const tunnel = {
+    isEnabled: true,
+    toHttp: () => undefined,
+    fromHttp: (url?: string) =>
+      url?.includes('/in-process/')
+        ? {
+            name: 'quiet-amber-otter',
+            tunnelUrl: '',
+            mode: 'in-process' as const,
+          }
+        : url?.includes('/http/')
+          ? {
+              name: 'my-tunnel',
+              tunnelUrl: '',
+              remoteUrl: 'localhost:9080',
+              mode: 'standalone' as const,
+            }
+          : undefined,
+  };
+  const httpDeployment = (uri: string) =>
+    ({ id: 'dp_1', uri, services: [] }) as never;
+
+  it('shows an in-process deployment as its connect:// name, without a tunnel badge', () => {
+    const result = resolveDeploymentEndpoint(
+      httpDeployment(
+        'https://tunnel.example:9080/env/quiet-amber-otter/http/in-process/9080/',
+      ),
+      tunnel,
+    );
+    expect(result.endpoint).toBe('connect://quiet-amber-otter');
+    expect(result.label).toBe('quiet-amber-otter');
+    expect(result.isConnected).toBe(true);
+    expect(result.isTunnel).toBe(false);
+    expect(result.tunnelName).toBeUndefined();
+    expect(result.icon).toBe(IconName.Connect);
+  });
+
+  it('labels a standalone deployment as a tunnel with its destination', () => {
+    const result = resolveDeploymentEndpoint(
+      httpDeployment(
+        'https://tunnel.example:9080/env/my-tunnel/http/localhost/9080',
+      ),
+      tunnel,
+    );
+    expect(result.isConnected).toBe(false);
+    expect(result.isTunnel).toBe(true);
+    expect(result.tunnelName).toBe('my-tunnel');
+    expect(result.icon).toBe(IconName.Tunnel);
+    expect(result.endpoint).toBe('localhost:9080');
+    expect(result.label).toBe('localhost:9080');
+  });
+
+  it('leaves plain HTTP deployments alone', () => {
+    const result = resolveDeploymentEndpoint(
+      httpDeployment('http://localhost:9080'),
+      tunnel,
+    );
+    expect(result.isTunnel).toBe(false);
+    expect(result.tunnelName).toBeUndefined();
   });
 });

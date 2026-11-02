@@ -25,20 +25,27 @@ export function resolveDeploymentEndpoint(
     tunnel?.isEnabled && deployment && isHttpDeployment(deployment)
       ? tunnel.fromHttp(deployment.uri)
       : undefined;
-  const endpoint = tunnelEndpoint
-    ? tunnelEndpoint.remoteUrl
-    : getEndpoint(deployment);
+  const isConnected = tunnelEndpoint?.mode === 'in-process';
+  const tunnelName = isConnected ? undefined : tunnelEndpoint?.name;
+  const endpoint = isConnected
+    ? `connect://${tunnelEndpoint.name}`
+    : tunnelEndpoint
+      ? tunnelEndpoint.remoteUrl
+      : getEndpoint(deployment);
 
   return {
     endpoint,
-    label: endpoint ? formatDeploymentLabel(endpoint) : tunnelEndpoint?.name,
-    isTunnel: Boolean(tunnelEndpoint),
-    tunnelName: tunnelEndpoint?.name,
-    icon: tunnelEndpoint
-      ? IconName.Tunnel
-      : deployment && !isHttpDeployment(deployment)
-        ? IconName.Lambda
-        : IconName.Http,
+    label: endpoint ? formatDeploymentLabel(endpoint) : tunnelName,
+    isConnected,
+    isTunnel: Boolean(tunnelName),
+    tunnelName,
+    icon: isConnected
+      ? IconName.Connect
+      : tunnelEndpoint
+        ? IconName.Tunnel
+        : deployment && !isHttpDeployment(deployment)
+          ? IconName.Lambda
+          : IconName.Http,
   };
 }
 

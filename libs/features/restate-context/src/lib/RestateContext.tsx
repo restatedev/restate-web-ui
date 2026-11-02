@@ -29,6 +29,8 @@ export type Status =
   | 'PENDING'
   | (string & {});
 
+export type TunnelMode = 'in-process' | 'standalone';
+
 type OnboardingComponent = ComponentType<{
   className?: string;
   stage:
@@ -41,7 +43,8 @@ type OnboardingComponent = ComponentType<{
     | 'delete-deployment'
     | 'view-template-http'
     | 'view-template-lambda'
-    | 'view-template-tunnel';
+    | 'view-template-tunnel'
+    | 'view-template-connect';
   endpoint?: string;
   service?: string;
   children?: ReactNode;
@@ -99,10 +102,20 @@ type RestateContext = {
   }>;
   tunnel?: {
     isEnabled?: boolean;
-    toHttp: (name: string, url?: string) => string | undefined;
-    fromHttp: (
+    toHttp: (
+      name: string,
       url?: string,
-    ) => { name: string; remoteUrl?: string; tunnelUrl: string } | undefined;
+      mode?: TunnelMode,
+    ) => string | undefined;
+    fromHttp: (url?: string) =>
+      | {
+          name: string;
+          remoteUrl?: string;
+          tunnelUrl: string;
+          mode?: TunnelMode;
+        }
+      | undefined;
+    configureSdkHref?: string;
   };
   GettingStarted?: ComponentType<{ className?: string }>;
   OnboardingGuide?: OnboardingComponent;
