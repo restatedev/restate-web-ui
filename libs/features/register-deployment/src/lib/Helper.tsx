@@ -16,31 +16,24 @@ const containerStyles = tv({
       false:
         'max-h-8 overflow-hidden mask-[linear-gradient(to_top,transparent_0rem,black_100%)] opacity-60 [&_code]:-mb-2',
     },
-    preview: {
-      line: '',
-      tall: '',
-    },
-  },
-  compoundVariants: [{ isOpen: false, preview: 'tall', className: 'max-h-40' }],
-  defaultVariants: {
-    preview: 'line',
   },
 });
 function Container({
   children,
   title,
-  preview,
-}: PropsWithChildren<{ title: ReactNode; preview?: 'line' | 'tall' }>) {
-  const [isOpen, setIsOpen] = useState(false);
+  isCollapsible = true,
+}: PropsWithChildren<{ title: ReactNode; isCollapsible?: boolean }>) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isOpen = !isCollapsible || isExpanded;
   return (
     <div className="relative rounded-xl border border-info/30 bg-info-subtle/40 p-2.5 text-info-strong transition-all">
       {title}
-      <div className={containerStyles({ isOpen, preview })}>{children}</div>
+      <div className={containerStyles({ isOpen })}>{children}</div>
       {!isOpen && (
         <Button
           variant="icon"
           className="absolute bottom-1 left-1/2 -mb-0.5 -translate-x-1/2 px-4 text-0.5xs text-info"
-          onClick={() => setIsOpen(true)}
+          onClick={() => setIsExpanded(true)}
         >
           <Icon name={IconName.ChevronDown} className="mr-1 h-4 w-4" />
           Expand{' '}
@@ -168,7 +161,7 @@ export function Helper({
   if (isInProcessTunnel) {
     return (
       <Container
-        preview="tall"
+        isCollapsible={false}
         title={
           <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
             <Icon name={IconName.Connect} className="h-4 w-4" />

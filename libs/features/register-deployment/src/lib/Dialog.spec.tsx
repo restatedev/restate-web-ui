@@ -188,6 +188,7 @@ describe('RegisterDeploymentDialog', () => {
     expect(
       await screen.findByTestId('view-template-connect'),
     ).toHaveTextContent('greeter-v1');
+    expect(screen.queryByRole('button', { name: /Expand/ })).toBeNull();
     await user.type(screen.getByPlaceholderText('Deployment name'), '-eu');
     expect(screen.getByTestId('view-template-connect')).toHaveTextContent(
       'greeter-v1-eu',

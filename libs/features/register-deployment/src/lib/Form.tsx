@@ -341,7 +341,7 @@ function EndpointForm() {
               <InlineTooltip
                 title="Connected service"
                 variant="indicator-button"
-                description="A connected service opens an outbound connection to Restate Cloud itself: restate.connect({ services, name }) with the key from Configure SDK announces itself under this deployment name. No port to expose, nothing else to run."
+                description="A connected service opens an outbound connection to Restate Cloud itself: restate.connect({ services, name }) with a connect key announces it under this deployment name. No port to expose, nothing else to run."
                 learnMoreHref="https://docs.restate.dev/cloud/connecting-services"
               >
                 Connected service
