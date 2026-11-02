@@ -339,19 +339,19 @@ export const routes = createRoutes('/query', {
     },
     lock: {
       method: 'GET',
-      pattern: '/virtual-objects/:service/instances/:key/lock',
+      pattern: '/virtual-objects/:service/instances/*key/lock',
     },
     inbox: {
       method: 'GET',
-      pattern: '/virtual-objects/:service/instances/:key/inbox',
+      pattern: '/virtual-objects/:service/instances/*key/inbox',
     },
     invocations: {
       method: 'GET',
-      pattern: '/virtual-objects/:service/instances/:key/invocations',
+      pattern: '/virtual-objects/:service/instances/*key/invocations',
     },
     stats: {
       method: 'GET',
-      pattern: '/virtual-objects/:service/instances/:key/stats',
+      pattern: '/virtual-objects/:service/instances/*key/stats',
     },
   },
   workflows: {
@@ -359,28 +359,28 @@ export const routes = createRoutes('/query', {
       list: { method: 'POST', pattern: '/workflows/:service/runs' },
       get: {
         method: 'GET',
-        pattern: '/workflows/:service/runs/:workflowId',
+        pattern: '/workflows/:service/runs/*workflowId',
       },
       stats: {
         method: 'GET',
-        pattern: '/workflows/:service/runs/:workflowId/stats',
+        pattern: '/workflows/:service/runs/*workflowId/stats',
       },
     },
   },
   services: {
     state: {
-      get: { method: 'GET', pattern: '/services/:name/keys/:key/state' },
+      get: { method: 'GET', pattern: '/services/:name/keys/*key/state' },
       query: { method: 'POST', pattern: '/services/:name/state/query' },
       list: { method: 'POST', pattern: '/services/:name/state' },
       entries: {
         method: 'POST',
-        pattern: '/services/:name/keys/:key/state/entries',
+        pattern: '/services/:name/keys/*key/state/entries',
       },
     },
     scopedState: {
       get: {
         method: 'GET',
-        pattern: '/services/:name/scopes/:scope/keys/:key/state',
+        pattern: '/services/:name/scopes/*scope/keys/*key/state',
       },
     },
   },
