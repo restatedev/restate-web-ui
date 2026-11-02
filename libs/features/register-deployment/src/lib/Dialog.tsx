@@ -131,19 +131,23 @@ export function TriggerRegisterDeploymentDialog({
   children = 'Register deployment',
   variant = 'secondary-button',
   className,
+  endpoint = 'true',
+  icon = IconName.Plus,
 }: PropsWithChildren<{
   variant?: ComponentProps<typeof Link>['variant'];
   className?: string;
+  endpoint?: string;
+  icon?: IconName;
 }>) {
   const { status } = useRestateContext();
   return (
     <Link
       variant={variant}
       className={triggerStyles({ className })}
-      href={`?${REGISTER_DEPLOYMENT_QUERY}=true`}
+      href={`?${REGISTER_DEPLOYMENT_QUERY}=${endpoint}`}
       disabled={status === 'PENDING'}
     >
-      <Icon name={IconName.Plus} className="h-4 w-4" />
+      <Icon name={icon} className="h-4 w-4" />
       {children}
     </Link>
   );

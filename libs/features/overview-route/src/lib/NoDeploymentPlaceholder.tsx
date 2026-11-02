@@ -4,8 +4,7 @@ import {
   ServiceExplainer,
 } from '@restate/features-explainers';
 import { TriggerRegisterDeploymentDialog } from '@restate/features-register-deployment';
-import { Icon, IconName } from '@restate/ui-icons';
-import { Link } from '@restate/ui-link';
+import { IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { ErrorPopoverPill } from './ErrorPopoverPill';
 
@@ -38,19 +37,27 @@ export function NoDeploymentPlaceholder({
         )}
       </div>
       <p className="max-w-md px-4 text-sm text-muted">
-        Point Restate to your deployed services so Restate can register your{' '}
-        <ServiceExplainer>services</ServiceExplainer> and handlers
+        {tunnel?.isEnabled ? (
+          <>
+            Connect a service with the SDK, or register a deployed endpoint, so
+            Restate can discover your{' '}
+            <ServiceExplainer>services</ServiceExplainer> and handlers
+          </>
+        ) : (
+          <>
+            Point Restate to your deployed services so Restate can register your{' '}
+            <ServiceExplainer>services</ServiceExplainer> and handlers
+          </>
+        )}
       </p>
       <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {tunnel?.configureSdkHref && (
-          <Link
-            variant="button"
-            href={tunnel.configureSdkHref}
-            className="flex items-center gap-2 px-3"
+        {tunnel?.isEnabled && (
+          <TriggerRegisterDeploymentDialog
+            endpoint="connect://"
+            icon={IconName.Connect}
           >
-            <Icon name={IconName.Connect} className="h-4 w-4" />
-            Connect with the SDK
-          </Link>
+            Connect your service
+          </TriggerRegisterDeploymentDialog>
         )}
         <TriggerRegisterDeploymentDialog />
         {OnboardingGuide && (

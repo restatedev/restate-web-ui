@@ -16,17 +16,26 @@ const containerStyles = tv({
       false:
         'max-h-8 overflow-hidden mask-[linear-gradient(to_top,transparent_0rem,black_100%)] opacity-60 [&_code]:-mb-2',
     },
+    preview: {
+      line: '',
+      tall: '',
+    },
+  },
+  compoundVariants: [{ isOpen: false, preview: 'tall', className: 'max-h-40' }],
+  defaultVariants: {
+    preview: 'line',
   },
 });
 function Container({
   children,
   title,
-}: PropsWithChildren<{ title: ReactNode }>) {
+  preview,
+}: PropsWithChildren<{ title: ReactNode; preview?: 'line' | 'tall' }>) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="relative rounded-xl border border-info/30 bg-info-subtle/40 p-2.5 text-info-strong transition-all">
       {title}
-      <div className={containerStyles({ isOpen })}>{children}</div>
+      <div className={containerStyles({ isOpen, preview })}>{children}</div>
       {!isOpen && (
         <Button
           variant="icon"
@@ -159,6 +168,7 @@ export function Helper({
   if (isInProcessTunnel) {
     return (
       <Container
+        preview="tall"
         title={
           <div className="z[2] mb-1.5 flex items-center gap-0.5 px-0 font-sans text-sm">
             <Icon name={IconName.Connect} className="h-4 w-4" />
