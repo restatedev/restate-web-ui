@@ -5,7 +5,10 @@ import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { RegisterDeploymentDialog } from './Dialog';
+import {
+  RegisterDeploymentDialog,
+  TriggerRegisterDeploymentDialog,
+} from './Dialog';
 
 const toHttp = vi.fn(
   (name: string, url?: string, mode?: string) =>
@@ -197,5 +200,46 @@ describe('RegisterDeploymentDialog', () => {
     expect(
       await screen.findByText(/The connect key comes from/),
     ).toBeInTheDocument();
+  });
+
+  it('opens on Connected service with an empty name for a bare connect:// prefill', async () => {
+    open('?register-deployment=connect://');
+
+    const name = await screen.findByPlaceholderText('Deployment name');
+    expect(name).toHaveValue('');
+    expect(name).toHaveFocus();
+    expect(
+      screen.getByRole('radio', { name: 'Connected service' }),
+    ).toBeChecked();
+  });
+});
+
+describe('TriggerRegisterDeploymentDialog', () => {
+  it('prefills the endpoint it is given', async () => {
+    const router = createMemoryRouter(
+      [
+        {
+          path: '*',
+          element: (
+            <TriggerRegisterDeploymentDialog endpoint="connect://">
+              Connect your service
+            </TriggerRegisterDeploymentDialog>
+          ),
+        },
+      ],
+      { initialEntries: ['/overview'] },
+    );
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      await screen.findByRole('link', { name: /Connect your service/ }),
+    ).toHaveAttribute(
+      'href',
+      expect.stringMatching(/register-deployment=connect(:|%3A)(\/|%2F){2}$/),
+    );
   });
 });
