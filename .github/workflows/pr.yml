@@ -6,10 +6,10 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     name: Build
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/setup@v3
+      - uses: pnpm/setup@v3.1.2
         with:
           require-lockfile: true
       - run: pnpm nx affected --targets=build --base=origin/main --head=HEAD
@@ -17,10 +17,10 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     name: Unit tests
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/setup@v3
+      - uses: pnpm/setup@v3.1.2
         with:
           require-lockfile: true
       - run: pnpm nx affected --targets=test --base=origin/main --head=HEAD --passWithNoTests --watch=false
@@ -28,10 +28,10 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     name: Static Analyzis
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/setup@v3
+      - uses: pnpm/setup@v3.1.2
         with:
           require-lockfile: true
       - run: pnpm nx affected --targets=lint --base=origin/main --head=HEAD
@@ -44,7 +44,7 @@ jobs:
   e2e:
     runs-on: warp-ubuntu-latest-x64-4x
     container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
     timeout-minutes: 25
     permissions:
       contents: read
@@ -53,10 +53,10 @@ jobs:
     env:
       VERSION: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/setup@v3
+      - uses: pnpm/setup@v3.1.2
         with:
           require-lockfile: true
       - run: |
@@ -64,7 +64,7 @@ jobs:
           git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - name: E2E
         run: pnpm nx affected --targets=e2e --base=origin/main --head=HEAD
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.2
         if: ${{ !cancelled() }}
         with:
           name: playwright-report

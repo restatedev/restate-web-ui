@@ -7,7 +7,7 @@ jobs:
     runs-on: warp-ubuntu-latest-x64-4x
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
       - name: Check if version is released
         id: version
         env:
@@ -40,10 +40,10 @@ jobs:
     steps:
       - run: echo "has-updated -- ${{ needs.check-version.outputs.has-updated }}"
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/setup@v3
+      - uses: pnpm/setup@v3.1.2
         with:
           require-lockfile: true
       - run: pnpm nx build web-ui --skip-nx-cache
@@ -51,7 +51,7 @@ jobs:
       - run: cd dist/apps/web-ui && tar --format=ustar -cf ../../../ui-v${{ needs.check-version.outputs.version }}.tar .
       - name: Create a release
         id: create-release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.21.0
         with:
           commit: ${{ github.sha }}
           makeLatest: true
@@ -76,7 +76,7 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
           repository: restatedev/restate-web-ui-crate
@@ -102,7 +102,7 @@ jobs:
         run: cargo build
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@v8.1.1
         with:
           token: ${{ steps.app-token.outputs.token }}
           branch: update-ui-${{needs.release.outputs.tag}}
@@ -118,7 +118,7 @@ jobs:
             sha256: ${{ env.FILE_SHA256 }}
       - name: Enable Pull Request Automerge
         if: steps.cpr.outputs.pull-request-operation == 'created'
-        uses: peter-evans/enable-pull-request-automerge@v3
+        uses: peter-evans/enable-pull-request-automerge@v3.0.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
