@@ -8,9 +8,9 @@ name: Verify actions lockfile
 on:
   pull_request:
     paths:
-      - ".github/workflows/**"
-      - "**/action.yml"
-      - "**/action.yaml"
+      - '.github/workflows/**'
+      - '**/action.yml'
+      - '**/action.yaml'
   push:
     branches:
       - main
