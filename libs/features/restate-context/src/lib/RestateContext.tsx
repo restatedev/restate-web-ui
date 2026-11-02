@@ -43,7 +43,8 @@ type OnboardingComponent = ComponentType<{
     | 'delete-deployment'
     | 'view-template-http'
     | 'view-template-lambda'
-    | 'view-template-tunnel';
+    | 'view-template-tunnel'
+    | 'view-template-connect';
   endpoint?: string;
   service?: string;
   children?: ReactNode;

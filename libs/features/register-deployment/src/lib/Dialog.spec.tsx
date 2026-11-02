@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RegisterDeploymentDialog } from './Dialog';
 
@@ -11,6 +12,9 @@ const toHttp = vi.fn(
     `https://tunnel.example:9080/env/${name}/${mode === 'in-process' ? 'http/in-process/9080/' : `http/${url}`}`,
 );
 const register = vi.fn();
+const host: {
+  OnboardingGuide?: (props: { stage: string; endpoint?: string }) => ReactNode;
+} = {};
 
 vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   ...(await importOriginal<
@@ -18,6 +22,7 @@ vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   >()),
   useRestateContext: () => ({
     tunnel: { isEnabled: true, toHttp, fromHttp: () => undefined },
+    OnboardingGuide: host.OnboardingGuide,
   }),
 }));
 
@@ -47,6 +52,7 @@ afterEach(() => {
   cleanup();
   register.mockClear();
   toHttp.mockClear();
+  host.OnboardingGuide = undefined;
 });
 
 function open(search: string) {
@@ -70,11 +76,9 @@ describe('RegisterDeploymentDialog', () => {
     expect(name).toHaveValue('greeter-v1');
     expect(name).toHaveFocus();
     expect(
-      screen.getByRole('radio', { name: /^Connected service/ }),
+      screen.getByRole('radio', { name: 'Connected service' }),
     ).toBeChecked();
-    expect(
-      screen.getByRole('radio', { name: 'Connected / tunneled' }),
-    ).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Tunnel' })).not.toBeChecked();
     expect(screen.getByPlaceholderText(/Destination/)).not.toBeRequired();
     expect(screen.getAllByText('Connected service').length).toBeGreaterThan(0);
 
@@ -97,7 +101,10 @@ describe('RegisterDeploymentDialog', () => {
   it('opens in tunnel mode for a tunnel:// prefill and keeps the destination', async () => {
     const user = open('?register-deployment=tunnel://my-tunnel');
 
-    expect(await screen.findByRole('radio', { name: /^Tunnel/ })).toBeChecked();
+    expect(await screen.findByRole('radio', { name: 'Tunnel' })).toBeChecked();
+    expect(
+      screen.getByRole('radio', { name: 'Connected service' }),
+    ).not.toBeChecked();
     expect(screen.getByPlaceholderText('Deployment name')).toHaveValue(
       'my-tunnel',
     );
@@ -125,7 +132,70 @@ describe('RegisterDeploymentDialog', () => {
       'greeter',
     );
     expect(
-      screen.getByRole('radio', { name: /^Connected service/ }),
+      screen.getByRole('radio', { name: 'Connected service' }),
     ).toBeChecked();
+  });
+
+  it('asks only for the deployment name when Connected service is picked', async () => {
+    const user = open('?register-deployment=true');
+
+    await user.click(
+      await screen.findByRole('radio', { name: 'Connected service' }),
+    );
+    await user.type(
+      screen.getByPlaceholderText('Deployment name'),
+      'greeter-v1',
+    );
+    expect(screen.getByPlaceholderText(/Destination/)).not.toBeRequired();
+    await user.click(screen.getByRole('button', { name: /Next/ }));
+
+    expect(register).toHaveBeenCalledWith({
+      body: expect.objectContaining({
+        uri: 'https://tunnel.example:9080/env/greeter-v1/http/in-process/9080/',
+      }),
+    });
+  });
+
+  it('asks for a destination when Tunnel is picked', async () => {
+    const user = open('?register-deployment=true');
+
+    await user.click(await screen.findByRole('radio', { name: 'Tunnel' }));
+    await user.type(
+      screen.getByPlaceholderText('Deployment name'),
+      'my-tunnel',
+    );
+    const destination = screen.getByPlaceholderText(/Destination/);
+    expect(destination).toBeRequired();
+    await user.type(destination, 'http://localhost:9080');
+    await user.click(screen.getByRole('button', { name: /Next/ }));
+
+    expect(register).toHaveBeenCalledWith({
+      body: expect.objectContaining({
+        uri: 'https://tunnel.example:9080/env/my-tunnel/http/http://localhost:9080',
+      }),
+    });
+  });
+
+  it('hands the connected-service setup to the host with the typed name', async () => {
+    host.OnboardingGuide = ({ stage, endpoint }) => (
+      <div data-testid={stage}>{endpoint}</div>
+    );
+    const user = open('?register-deployment=connect://greeter-v1');
+
+    expect(
+      await screen.findByTestId('view-template-connect'),
+    ).toHaveTextContent('greeter-v1');
+    await user.type(screen.getByPlaceholderText('Deployment name'), '-eu');
+    expect(screen.getByTestId('view-template-connect')).toHaveTextContent(
+      'greeter-v1-eu',
+    );
+  });
+
+  it('points to Configure SDK when the host has no connect setup', async () => {
+    open('?register-deployment=connect://greeter-v1');
+
+    expect(
+      await screen.findByText(/The connect key comes from/),
+    ).toBeInTheDocument();
   });
 });

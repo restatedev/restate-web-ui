@@ -48,7 +48,7 @@ export function NoDeploymentPlaceholder({
             href={tunnel.configureSdkHref}
             className="flex items-center gap-2 px-3"
           >
-            <Icon name={IconName.Tunnel} className="h-4 w-4" />
+            <Icon name={IconName.Connect} className="h-4 w-4" />
             Connect with the SDK
           </Link>
         )}

@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from 'react';
 import { Radio, Heading } from 'react-aria-components';
-import { RadioCard, RadioCards, RadioGroup } from '@restate/ui-radio-group';
+import { RadioGroup } from '@restate/ui-radio-group';
 import {
   DeploymentProtocolCheck,
   RegisterDeploymentResults,
@@ -470,13 +470,15 @@ function EndpointForm() {
               }}
             />
           </FocusScope>
-          <div className="w-28 shrink-0 py-0.5 [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-tint-subtle">
+          <div className="shrink-0 py-0.5 [&_.active]:rounded-[0.35rem] [&_.active]:px-2 [&_button]:rounded-[0.35rem] [&_button]:px-2 [&_ul]:rounded-[0.35rem] [&_ul]:bg-tint-subtle">
             <RadioGroup
               value={
                 isLambda
                   ? 'lambda'
                   : isTunnel && tunnel?.isEnabled
-                    ? 'tunnel'
+                    ? isInProcessTunnel
+                      ? 'connect'
+                      : 'tunnel'
                     : isCloudRun
                       ? 'cloudrun'
                       : 'http'
@@ -488,11 +490,11 @@ function EndpointForm() {
               onChange={(value) =>
                 updateEndpoint?.({
                   isLambda: value === 'lambda',
-                  isTunnel: value === 'tunnel',
+                  isTunnel: value === 'tunnel' || value === 'connect',
                   isCloudRun: value === 'cloudrun',
-                  endpoint: '',
+                  endpoint: value === 'connect' ? undefined : '',
                   tunnelName: '',
-                  tunnelMode: 'in-process',
+                  tunnelMode: value === 'tunnel' ? 'standalone' : 'in-process',
                 })
               }
               disabled={isPending}
@@ -543,41 +545,41 @@ function EndpointForm() {
                 </TooltipContent>
               </Tooltip>
               {tunnel?.isEnabled && (
-                <Tooltip>
-                  <RadioTooltipTrigger>
-                    <CustomRadio
-                      value="tunnel"
-                      className="aspect-square items-center rounded-[0.4rem] p-1.5"
-                      aria-label="Connected / tunneled"
-                    >
-                      <Icon name={IconName.Tunnel} className="h-4 w-4" />
-                    </CustomRadio>
-                  </RadioTooltipTrigger>
-                  <TooltipContent size="sm" offset={20}>
-                    Connected / tunneled
-                  </TooltipContent>
-                </Tooltip>
+                <>
+                  <Tooltip>
+                    <RadioTooltipTrigger>
+                      <CustomRadio
+                        value="connect"
+                        className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                        aria-label="Connected service"
+                      >
+                        <Icon name={IconName.Connect} className="h-4 w-4" />
+                      </CustomRadio>
+                    </RadioTooltipTrigger>
+                    <TooltipContent size="sm" offset={20}>
+                      Connected service
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <RadioTooltipTrigger>
+                      <CustomRadio
+                        value="tunnel"
+                        className="aspect-square items-center rounded-[0.4rem] p-1.5"
+                        aria-label="Tunnel"
+                      >
+                        <Icon name={IconName.Tunnel} className="h-4 w-4" />
+                      </CustomRadio>
+                    </RadioTooltipTrigger>
+                    <TooltipContent size="sm" offset={20}>
+                      Tunnel
+                    </TooltipContent>
+                  </Tooltip>
+                </>
               )}
             </RadioGroup>
           </div>
         </div>
       </div>
-      {isTunnel && tunnel?.isEnabled && (
-        <TunnelModeSelector
-          value={tunnelMode}
-          disabled={isPending || isUpdate}
-          onChange={(mode) =>
-            updateEndpoint?.({
-              isLambda: false,
-              isTunnel: true,
-              isCloudRun: false,
-              endpoint: mode === 'in-process' ? undefined : '',
-              tunnelName,
-              tunnelMode: mode,
-            })
-          }
-        />
-      )}
       {isLambda && <AssumeARNRole className="" />}
       {isCloudRun && <Authentication />}
 
@@ -589,41 +591,6 @@ function EndpointForm() {
         </>
       )}
     </>
-  );
-}
-
-function TunnelModeSelector({
-  value,
-  onChange,
-  disabled,
-}: {
-  value: TunnelMode;
-  onChange: (mode: TunnelMode) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <RadioGroup
-      name="tunnel-mode"
-      value={value}
-      disabled={disabled}
-      onChange={(mode) => onChange(mode as TunnelMode)}
-    >
-      <FormFieldLabel className="sr-only">
-        How the service connects
-      </FormFieldLabel>
-      <RadioCards className="sm:flex-row [&>*]:flex-1">
-        <RadioCard
-          value="in-process"
-          label="Connected service"
-          description="Your service calls restate.connect() with the key from Configure SDK. Only the deployment name is needed."
-        />
-        <RadioCard
-          value="standalone"
-          label="Tunnel"
-          description="A tunnel client container runs next to your service and forwards traffic to the destination address."
-        />
-      </RadioCards>
-    </RadioGroup>
   );
 }
 

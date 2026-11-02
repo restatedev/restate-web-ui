@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { IconName } from '@restate/ui-icons';
 import {
   formatDeploymentLabel,
   resolveDeploymentEndpoint,
@@ -55,17 +56,18 @@ describe('resolveDeploymentEndpoint', () => {
   const httpDeployment = (uri: string) =>
     ({ id: 'dp_1', uri, services: [] }) as never;
 
-  it('labels an in-process deployment as a connected service', () => {
+  it('shows an in-process deployment as its connect:// name, without a tunnel badge', () => {
     const result = resolveDeploymentEndpoint(
       httpDeployment(
         'https://tunnel.example:9080/env/quiet-amber-otter/http/in-process/9080/',
       ),
       tunnel,
     );
-    expect(result.isTunnel).toBe(true);
-    expect(result.tunnelName).toBe('quiet-amber-otter');
-    expect(result.tunnelKind).toBe('Connected service');
+    expect(result.endpoint).toBe('connect://quiet-amber-otter');
     expect(result.label).toBe('quiet-amber-otter');
+    expect(result.isTunnel).toBe(false);
+    expect(result.tunnelName).toBeUndefined();
+    expect(result.icon).toBe(IconName.Connect);
   });
 
   it('labels a standalone deployment as a tunnel with its destination', () => {
@@ -75,7 +77,9 @@ describe('resolveDeploymentEndpoint', () => {
       ),
       tunnel,
     );
-    expect(result.tunnelKind).toBe('Tunnel');
+    expect(result.isTunnel).toBe(true);
+    expect(result.tunnelName).toBe('my-tunnel');
+    expect(result.icon).toBe(IconName.Tunnel);
     expect(result.endpoint).toBe('localhost:9080');
     expect(result.label).toBe('localhost:9080');
   });
@@ -86,6 +90,6 @@ describe('resolveDeploymentEndpoint', () => {
       tunnel,
     );
     expect(result.isTunnel).toBe(false);
-    expect(result.tunnelKind).toBeUndefined();
+    expect(result.tunnelName).toBeUndefined();
   });
 });
