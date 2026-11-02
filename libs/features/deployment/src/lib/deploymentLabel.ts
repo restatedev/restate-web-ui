@@ -36,6 +36,7 @@ export function resolveDeploymentEndpoint(
   return {
     endpoint,
     label: endpoint ? formatDeploymentLabel(endpoint) : tunnelName,
+    isConnected,
     isTunnel: Boolean(tunnelName),
     tunnelName,
     icon: isConnected

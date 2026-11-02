@@ -65,6 +65,7 @@ describe('resolveDeploymentEndpoint', () => {
     );
     expect(result.endpoint).toBe('connect://quiet-amber-otter');
     expect(result.label).toBe('quiet-amber-otter');
+    expect(result.isConnected).toBe(true);
     expect(result.isTunnel).toBe(false);
     expect(result.tunnelName).toBeUndefined();
     expect(result.icon).toBe(IconName.Connect);
@@ -77,6 +78,7 @@ describe('resolveDeploymentEndpoint', () => {
       ),
       tunnel,
     );
+    expect(result.isConnected).toBe(false);
     expect(result.isTunnel).toBe(true);
     expect(result.tunnelName).toBe('my-tunnel');
     expect(result.icon).toBe(IconName.Tunnel);
