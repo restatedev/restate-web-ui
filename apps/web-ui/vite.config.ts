@@ -5,8 +5,23 @@ import license from 'rollup-plugin-license';
 import path from 'path';
 import { BASE_URL } from './constants.ts';
 import tailwindcss from '@tailwindcss/vite';
+import { execSync } from 'node:child_process';
 
-export default defineConfig(({ mode }) => {
+function gitBranch() {
+  try {
+    return execSync('git branch --show-current', {
+      cwd: import.meta.dirname,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .trim()
+      .replace(/.*\//, '');
+  } catch {
+    return '';
+  }
+}
+
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const ADMIN_BASE_URL = env['ADMIN_BASE_URL'] || '';
   const SERVER_HEADERS = {
@@ -65,6 +80,7 @@ export default defineConfig(({ mode }) => {
     define: {
       'globalThis.env': {
         VERSION: env.VERSION ?? 'dev',
+        GIT_BRANCH: command === 'serve' ? gitBranch() : '',
       },
     },
 

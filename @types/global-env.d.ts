@@ -1,5 +1,6 @@
 interface Env {
   VERSION: string;
+  GIT_BRANCH: string;
   [key: string]: string & {};
 }
 
