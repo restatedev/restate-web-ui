@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -24,6 +25,14 @@ import { Column, TableHeader, TableBody } from './Table';
 import { getNextSortDescriptor } from './sort';
 import { PanelTableLayout } from './PanelTableLayout';
 import { columnKey, fromColumnKey, tableBodyKeyProps } from './keys';
+import {
+  keepIfSame,
+  LEFT_SPACER_ID,
+  measureColumnWidths,
+  RIGHT_SPACER_ID,
+  SPACER_WIDTH,
+  syncDataTableColumns,
+} from './columnSync';
 
 export interface PanelTableColumn<TId extends string = string> {
   id: TId;
@@ -81,9 +90,6 @@ export interface PanelTableProps<
 }
 
 const SELECTION_WIDTH = 36;
-const SPACER_WIDTH = 8;
-const LEFT_SPACER_ID = '__panel_table_spacer_left__';
-const RIGHT_SPACER_ID = '__panel_table_spacer_right__';
 
 const styles = tv({
   slots: {
@@ -179,6 +185,7 @@ export function PanelTable<
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
     () => new Map(),
   );
+  const isResizingRef = useRef(false);
   const [stickyHeaderScrollEl, setStickyHeaderScrollEl] =
     useState<HTMLDivElement | null>(null);
   const [dataTableScrollEl, setDataTableScrollEl] =
@@ -202,56 +209,66 @@ export function PanelTable<
 
   useEffect(() => {
     if (!stickyHeaderScrollEl || !dataTableScrollEl) return;
-    const onScroll = () => {
-      stickyHeaderScrollEl.scrollLeft = dataTableScrollEl.scrollLeft;
+    const echoes = new Map<HTMLElement, number>();
+    const follow = (source: HTMLElement, target: HTMLElement) => () => {
+      const echo = echoes.get(source);
+      echoes.delete(source);
+      if (echo === source.scrollLeft) return;
+      const previous = target.scrollLeft;
+      target.scrollLeft = source.scrollLeft;
+      if (target.scrollLeft !== previous) {
+        echoes.set(target, target.scrollLeft);
+      }
     };
-    dataTableScrollEl.addEventListener('scroll', onScroll, { passive: true });
-    return () => dataTableScrollEl.removeEventListener('scroll', onScroll);
+    const onBodyScroll = follow(dataTableScrollEl, stickyHeaderScrollEl);
+    const onHeaderScroll = follow(stickyHeaderScrollEl, dataTableScrollEl);
+    dataTableScrollEl.addEventListener('scroll', onBodyScroll, {
+      passive: true,
+    });
+    stickyHeaderScrollEl.addEventListener('scroll', onHeaderScroll, {
+      passive: true,
+    });
+    onHeaderScroll();
+    return () => {
+      dataTableScrollEl.removeEventListener('scroll', onBodyScroll);
+      stickyHeaderScrollEl.removeEventListener('scroll', onHeaderScroll);
+    };
   }, [dataTableScrollEl, stickyHeaderScrollEl]);
 
   useEffect(() => {
     if (!stickyHeaderScrollEl) return;
+    const observed = new WeakSet<Element>();
     const update = () => {
-      const ths = stickyHeaderScrollEl.querySelectorAll('thead th[data-key]');
-      const next = new Map<Key, number>();
-      ths.forEach((th) => {
-        const key = th.getAttribute('data-key');
-        if (!key) return;
-        next.set(key, th.getBoundingClientRect().width);
-      });
-      setColumnWidths((prev) => {
-        if (prev.size === next.size) {
-          let same = true;
-          for (const [k, v] of next) {
-            if (prev.get(k) !== v) {
-              same = false;
-              break;
-            }
-          }
-          if (same) return prev;
-        }
-        return next;
-      });
+      stickyHeaderScrollEl
+        .querySelectorAll('table, thead th')
+        .forEach((element) => {
+          if (observed.has(element)) return;
+          observed.add(element);
+          observer.observe(element);
+        });
+      if (dataTableScrollEl) {
+        syncDataTableColumns(stickyHeaderScrollEl, dataTableScrollEl);
+      }
+      if (isResizingRef.current) return;
+      const next = measureColumnWidths(stickyHeaderScrollEl);
+      setColumnWidths((prev) => keepIfSame(prev, next));
     };
-    update();
     const observer = new ResizeObserver(update);
     observer.observe(stickyHeaderScrollEl);
-    stickyHeaderScrollEl
-      .querySelectorAll('thead th')
-      .forEach((th) => observer.observe(th));
+    update();
     return () => observer.disconnect();
-  }, [stickyHeaderScrollEl]);
+  }, [dataTableScrollEl, stickyHeaderScrollEl]);
 
-  const handleColumnResize = useCallback(
-    (widths: Map<Key, number | string>) => {
-      const numericWidths = new Map<Key, number>();
-      widths.forEach((size, key) => {
-        if (typeof size === 'number') numericWidths.set(key, size);
-      });
-      setColumnWidths(numericWidths);
-    },
-    [],
-  );
+  const handleResizeStart = useCallback(() => {
+    isResizingRef.current = true;
+  }, []);
+
+  const handleResizeEnd = useCallback(() => {
+    isResizingRef.current = false;
+    if (!stickyHeaderScrollEl) return;
+    const next = measureColumnWidths(stickyHeaderScrollEl);
+    setColumnWidths((prev) => keepIfSame(prev, next));
+  }, [stickyHeaderScrollEl]);
 
   const selectableItems = useMemo(() => {
     const disabled = new Set<Key>(disabledKeys ?? []);
@@ -514,7 +531,10 @@ export function PanelTable<
         <div aria-hidden className={stickyHeaderBackdrop()} />
         <div className={stickyHeaderContent()}>
           <div ref={setStickyHeaderScrollEl} className={stickyHeaderScroll()}>
-            <ResizableTableContainer onResize={handleColumnResize}>
+            <ResizableTableContainer
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
               <AriaTable
                 aria-label={ariaLabel ? `${ariaLabel} columns` : undefined}
                 selectionMode={selectionMode}

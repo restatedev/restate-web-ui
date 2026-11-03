@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Collection } from 'react-aria-components';
 import { vi } from 'vitest';
 import { Cell, Row } from './Row';
@@ -9,6 +9,34 @@ class ResizeObserverMock implements ResizeObserver {
   disconnect = vi.fn();
   observe = vi.fn();
   unobserve = vi.fn();
+}
+
+function stubResizeObservers() {
+  const observers: {
+    callback: ResizeObserverCallback;
+    targets: Element[];
+  }[] = [];
+  vi.stubGlobal(
+    'ResizeObserver',
+    class extends ResizeObserverMock {
+      targets: Element[] = [];
+      override observe = vi.fn((target: Element) => {
+        this.targets.push(target);
+      });
+      constructor(callback: ResizeObserverCallback) {
+        super();
+        observers.push({ callback, targets: this.targets });
+      }
+    },
+  );
+  return (target: Element) => {
+    const observer = observers.find(({ targets }) => targets.includes(target));
+    if (!observer) throw new Error('Element was not observed');
+    return {
+      targets: observer.targets,
+      notify: () => observer.callback([], new ResizeObserver(() => undefined)),
+    };
+  };
 }
 
 describe('PanelTable', () => {
@@ -66,7 +94,7 @@ describe('PanelTable', () => {
   });
 
   it('renders its virtualized body in the page flow by default', () => {
-    const items = Array.from({ length: 100 }, (_, index) => ({
+    const items = Array.from({ length: 20 }, (_, index) => ({
       id: `item-${index}`,
       name: `Item ${index}`,
     }));
@@ -380,4 +408,171 @@ describe('PanelTable', () => {
       expect(screen.getByText('Parent child')).toBeTruthy();
     },
   );
+
+  it('observes header columns added after the first render', () => {
+    const observerOf = stubResizeObservers();
+    const columns = [{ id: 'name', name: 'Name', isRowHeader: true }];
+    const props = {
+      'aria-label': 'Items',
+      items: [{ id: 'one', name: 'One' }],
+      renderCell: (row: { id: string; name: string }) => (
+        <Cell>{row.name}</Cell>
+      ),
+    };
+
+    const { rerender } = render(<PanelTable {...props} columns={columns} />);
+    rerender(
+      <PanelTable
+        {...props}
+        columns={[...columns, { id: 'status', name: 'Status' }]}
+      />,
+    );
+
+    const headerTable = screen.getByRole('grid', { name: 'Items columns' });
+    const header = observerOf(headerTable);
+    const statusHeader = Array.from(headerTable.querySelectorAll('th')).find(
+      (th) => th.textContent === 'Status',
+    );
+    if (!statusHeader) throw new Error('Status header was not rendered');
+    expect(header.targets).not.toContain(statusHeader);
+
+    act(() => header.notify());
+
+    expect(header.targets).toContain(statusHeader);
+    vi.unstubAllGlobals();
+  });
+
+  it('scrolls the header and the body together from either side', () => {
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[
+          { id: 'name', name: 'Name', isRowHeader: true },
+          { id: 'status', name: 'Status' },
+        ]}
+        items={[{ id: 'one', name: 'One' }]}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+    const header = screen
+      .getByRole('grid', { name: 'Items columns' })
+      .closest<HTMLElement>('.overflow-x-auto');
+    const body = screen
+      .getByRole('grid', { name: 'Items' })
+      .closest<HTMLElement>('[data-panel-table-body-scroll]');
+    if (!header || !body) throw new Error('Scroll containers were not found');
+
+    header.scrollLeft = 120;
+    fireEvent.scroll(header);
+    expect(body.scrollLeft).toBe(120);
+
+    header.scrollLeft = 150;
+    fireEvent.scroll(body);
+    expect(header.scrollLeft).toBe(150);
+    fireEvent.scroll(header);
+    expect(body.scrollLeft).toBe(150);
+
+    body.scrollLeft = 40;
+    fireEvent.scroll(body);
+    expect(header.scrollLeft).toBe(40);
+  });
+
+  it('keeps the header scroll position when the body is replaced', () => {
+    const props = {
+      'aria-label': 'Items',
+      columns: [
+        { id: 'name', name: 'Name', isRowHeader: true },
+        { id: 'status', name: 'Status' },
+      ],
+      renderCell: (row: { id: string; name: string }) => (
+        <Cell>{row.name}</Cell>
+      ),
+    };
+    const { rerender } = render(
+      <PanelTable {...props} items={[{ id: 'one', name: 'One' }]} />,
+    );
+    const header = screen
+      .getByRole('grid', { name: 'Items columns' })
+      .closest<HTMLElement>('.overflow-x-auto');
+    if (!header) throw new Error('Header scroll container was not found');
+
+    header.scrollLeft = 120;
+    fireEvent.scroll(header);
+    rerender(<PanelTable {...props} items={[]} />);
+    rerender(<PanelTable {...props} items={[{ id: 'two', name: 'Two' }]} />);
+
+    const body = screen
+      .getByRole('grid', { name: 'Items' })
+      .closest<HTMLElement>('[data-panel-table-body-scroll]');
+    expect(header.scrollLeft).toBe(120);
+    expect(body?.scrollLeft).toBe(120);
+  });
+
+  it('moves body columns with the header while a column is resized', () => {
+    const observerOf = stubResizeObservers();
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[
+          { id: 'name', name: 'Name', isRowHeader: true },
+          { id: 'status', name: 'Status' },
+        ]}
+        items={[{ id: 'one', name: 'One' }]}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+    const headerTable = screen.getByRole('grid', { name: 'Items columns' });
+    const body = screen.getByRole('grid', { name: 'Items' });
+    const [nameHeader, statusHeader] = Array.from(
+      headerTable.querySelectorAll('th'),
+    );
+    const resizer = headerTable.querySelector(
+      'input[aria-label="Resizer"]',
+    )?.parentElement;
+    if (!nameHeader || !statusHeader || !resizer) {
+      throw new Error('Header columns were not rendered');
+    }
+    const rects = new Map<Element, Pick<DOMRect, 'left' | 'width'>>([
+      [headerTable, { left: 100, width: 300 }],
+      [nameHeader, { left: 100, width: 120 }],
+      [statusHeader, { left: 220, width: 180 }],
+    ]);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: Element) {
+        return { left: 0, width: 0, ...rects.get(this) } as DOMRect;
+      },
+    );
+    const wrapperOf = (selector: string) =>
+      body.querySelector(selector)?.parentElement?.style;
+
+    act(() => {
+      fireEvent.pointerDown(resizer, { pointerId: 1, button: 0, clientX: 0 });
+      fireEvent.pointerMove(document, { pointerId: 1, clientX: 40 });
+    });
+    observerOf(headerTable).notify();
+
+    expect(
+      body.querySelector<HTMLElement>('[role=columnheader][aria-colindex="2"]')
+        ?.style.width,
+    ).toBe('120px');
+    expect(wrapperOf('[role=rowheader]')).toMatchObject({
+      left: '8px',
+      width: '120px',
+    });
+    expect(wrapperOf('[role=gridcell][aria-colindex="3"]')).toMatchObject({
+      left: '128px',
+      width: '180px',
+    });
+
+    act(() => {
+      fireEvent.pointerUp(document, { pointerId: 1, clientX: 40 });
+    });
+
+    expect(wrapperOf('[role=gridcell][aria-colindex="3"]')).toMatchObject({
+      left: '128px',
+      width: '180px',
+    });
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 });
