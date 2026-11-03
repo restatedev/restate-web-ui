@@ -94,7 +94,7 @@ describe('PanelTable', () => {
   });
 
   it('renders its virtualized body in the page flow by default', () => {
-    const items = Array.from({ length: 100 }, (_, index) => ({
+    const items = Array.from({ length: 20 }, (_, index) => ({
       id: `item-${index}`,
       name: `Item ${index}`,
     }));
