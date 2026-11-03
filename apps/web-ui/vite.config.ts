@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   };
   const ADMIN_PROXY = {
     '^(?!/ui)': {
-      target: 'http://127.0.0.1:9070/',
+      target: env['ADMIN_PROXY_TARGET'] || 'http://127.0.0.1:9070/',
       changeOrigin: true,
     },
   };

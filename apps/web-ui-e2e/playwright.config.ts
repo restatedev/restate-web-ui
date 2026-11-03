@@ -4,7 +4,8 @@ import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
 // For CI, you may want to set BASE_URL to the deployed application.
-const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
+const port = process.env['UI_PORT'] || 4300;
+const baseURL = process.env['BASE_URL'] || `http://localhost:${port}`;
 
 /**
  * Read environment variables from file.
@@ -29,7 +30,7 @@ export default defineConfig({
     command: 'pnpm exec nx serve web-ui',
     reuseExistingServer: !process.env.CI,
     cwd: workspaceRoot,
-    url: 'http://localhost:4300/ui/',
+    url: `http://localhost:${port}/ui/`,
   },
   projects: [
     {

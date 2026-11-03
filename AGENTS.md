@@ -2,14 +2,15 @@
 
 ## Commands
 
-- **Dev**: `pnpm nx serve web-ui` (Vite proxies the admin API to a Restate server on localhost:9070)
+- **Dev**: `pnpm nx serve web-ui` serves `localhost:4300/ui/` and proxies the admin API to a Restate server on `localhost:9070`. Set `UI_PORT` and `ADMIN_PROXY_TARGET` to change them
+- **Worktrees**: each git worktree needs its own `pnpm install` and its own `UI_PORT`, e.g. `UI_PORT=4301 pnpm nx serve web-ui`. Several worktrees can share one Restate server
 - **Build**: `pnpm nx build web-ui`
 - **Test**: `pnpm nx test <project>` (e.g., `pnpm nx test @restate/ui-button`), add `--watch` for watch mode. Lib projects are named after their package; the apps are `web-ui` and `web-ui-e2e`
 - **Single test**: `pnpm nx test <project> --testFile=<file>` or use vitest filtering
 - **Lint**: `pnpm nx lint <project>`
 - **Typecheck**: `pnpm nx typecheck <project>` (e.g., `pnpm nx typecheck web-ui`); every project runs `tsc --build tsconfig.json`, covering its runtime and spec configs, after the declarations of the projects it depends on are emitted (into each lib's `dist/`)
 - **Sync project references**: `pnpm nx sync` (CI runs `pnpm nx sync:check`)
-- **E2E**: `pnpm nx e2e web-ui-e2e`
+- **E2E**: `pnpm nx e2e web-ui-e2e`. It reuses a dev server already running on `UI_PORT` (default 4300), so in a worktree set the same `UI_PORT` as that worktree's dev server
 
 ## Library Generation
 
