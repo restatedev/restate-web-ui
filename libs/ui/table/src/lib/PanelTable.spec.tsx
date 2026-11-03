@@ -477,6 +477,37 @@ describe('PanelTable', () => {
     expect(header.scrollLeft).toBe(40);
   });
 
+  it('keeps the header scroll position when the body is replaced', () => {
+    const props = {
+      'aria-label': 'Items',
+      columns: [
+        { id: 'name', name: 'Name', isRowHeader: true },
+        { id: 'status', name: 'Status' },
+      ],
+      renderCell: (row: { id: string; name: string }) => (
+        <Cell>{row.name}</Cell>
+      ),
+    };
+    const { rerender } = render(
+      <PanelTable {...props} items={[{ id: 'one', name: 'One' }]} />,
+    );
+    const header = screen
+      .getByRole('grid', { name: 'Items columns' })
+      .closest<HTMLElement>('.overflow-x-auto');
+    if (!header) throw new Error('Header scroll container was not found');
+
+    header.scrollLeft = 120;
+    fireEvent.scroll(header);
+    rerender(<PanelTable {...props} items={[]} />);
+    rerender(<PanelTable {...props} items={[{ id: 'two', name: 'Two' }]} />);
+
+    const body = screen
+      .getByRole('grid', { name: 'Items' })
+      .closest<HTMLElement>('[data-panel-table-body-scroll]');
+    expect(header.scrollLeft).toBe(120);
+    expect(body?.scrollLeft).toBe(120);
+  });
+
   it('moves body columns with the header while a column is resized', () => {
     const observerOf = stubResizeObservers();
     render(

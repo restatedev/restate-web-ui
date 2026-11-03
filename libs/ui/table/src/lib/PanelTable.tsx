@@ -296,6 +296,7 @@ export function PanelTable<
     stickyHeaderScrollEl.addEventListener('scroll', onHeaderScroll, {
       passive: true,
     });
+    onHeaderScroll();
     return () => {
       dataTableScrollEl.removeEventListener('scroll', onBodyScroll);
       stickyHeaderScrollEl.removeEventListener('scroll', onHeaderScroll);
