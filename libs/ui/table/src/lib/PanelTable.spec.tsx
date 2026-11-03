@@ -442,6 +442,41 @@ describe('PanelTable', () => {
     vi.unstubAllGlobals();
   });
 
+  it('scrolls the header and the body together from either side', () => {
+    render(
+      <PanelTable
+        aria-label="Items"
+        columns={[
+          { id: 'name', name: 'Name', isRowHeader: true },
+          { id: 'status', name: 'Status' },
+        ]}
+        items={[{ id: 'one', name: 'One' }]}
+        renderCell={(row) => <Cell>{row.name}</Cell>}
+      />,
+    );
+    const header = screen
+      .getByRole('grid', { name: 'Items columns' })
+      .closest<HTMLElement>('.overflow-x-auto');
+    const body = screen
+      .getByRole('grid', { name: 'Items' })
+      .closest<HTMLElement>('[data-panel-table-body-scroll]');
+    if (!header || !body) throw new Error('Scroll containers were not found');
+
+    header.scrollLeft = 120;
+    fireEvent.scroll(header);
+    expect(body.scrollLeft).toBe(120);
+
+    header.scrollLeft = 150;
+    fireEvent.scroll(body);
+    expect(header.scrollLeft).toBe(150);
+    fireEvent.scroll(header);
+    expect(body.scrollLeft).toBe(150);
+
+    body.scrollLeft = 40;
+    fireEvent.scroll(body);
+    expect(header.scrollLeft).toBe(40);
+  });
+
   it('moves body columns with the header while a column is resized', () => {
     const observerOf = stubResizeObservers();
     render(

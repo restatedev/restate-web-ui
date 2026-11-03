@@ -277,11 +277,29 @@ export function PanelTable<
 
   useEffect(() => {
     if (!stickyHeaderScrollEl || !dataTableScrollEl) return;
-    const onScroll = () => {
-      stickyHeaderScrollEl.scrollLeft = dataTableScrollEl.scrollLeft;
+    const echoes = new Map<HTMLElement, number>();
+    const follow = (source: HTMLElement, target: HTMLElement) => () => {
+      const echo = echoes.get(source);
+      echoes.delete(source);
+      if (echo === source.scrollLeft) return;
+      const previous = target.scrollLeft;
+      target.scrollLeft = source.scrollLeft;
+      if (target.scrollLeft !== previous) {
+        echoes.set(target, target.scrollLeft);
+      }
     };
-    dataTableScrollEl.addEventListener('scroll', onScroll, { passive: true });
-    return () => dataTableScrollEl.removeEventListener('scroll', onScroll);
+    const onBodyScroll = follow(dataTableScrollEl, stickyHeaderScrollEl);
+    const onHeaderScroll = follow(stickyHeaderScrollEl, dataTableScrollEl);
+    dataTableScrollEl.addEventListener('scroll', onBodyScroll, {
+      passive: true,
+    });
+    stickyHeaderScrollEl.addEventListener('scroll', onHeaderScroll, {
+      passive: true,
+    });
+    return () => {
+      dataTableScrollEl.removeEventListener('scroll', onBodyScroll);
+      stickyHeaderScrollEl.removeEventListener('scroll', onHeaderScroll);
+    };
   }, [dataTableScrollEl, stickyHeaderScrollEl]);
 
   useEffect(() => {
