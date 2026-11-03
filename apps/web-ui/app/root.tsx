@@ -39,7 +39,7 @@ import {
 import { RouterProvider } from 'react-aria-components';
 import { Link } from '@restate/ui-link';
 import { Button } from '@restate/ui-button';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { QueryProvider } from '@restate/util-react-query';
 import { Nav, NavItem } from '@restate/ui-nav';
 import { BreadcrumbsProvider } from '@restate/features-breadcrumbs';
@@ -83,6 +83,7 @@ import {
 import { MonacoWarmup } from '@restate/ui-editor';
 import { elementsCssUrl, elementsJsUrl } from '@restate/ui-api/assets';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
+import { useBranchInTitle } from '@restate/features-local-dev';
 import { TenantPreview } from './TenantPreview';
 
 const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
@@ -189,26 +190,6 @@ setMetaPersister(
 
 const monitor = createSystemHealthMonitor(queryClient);
 
-function useBranchInTitle() {
-  useEffect(() => {
-    if (!globalThis.env.GIT_BRANCH) return;
-    const prefix = `${globalThis.env.GIT_BRANCH} · `;
-    const addPrefix = () => {
-      if (!document.title.startsWith(prefix)) {
-        document.title = prefix + document.title;
-      }
-    };
-    addPrefix();
-    const observer = new MutationObserver(addPrefix);
-    observer.observe(document.head, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-    return () => observer.disconnect();
-  }, []);
-}
-
 export function Layout({ children }: { children: React.ReactNode }) {
   const remixNavigate = useNavigate();
 
@@ -222,7 +203,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 
   useThemePreference();
-  useBranchInTitle();
+  useBranchInTitle(globalThis.env.GIT_BRANCH);
 
   return (
     <html
