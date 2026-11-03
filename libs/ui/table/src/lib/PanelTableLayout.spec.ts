@@ -63,9 +63,9 @@ describe('PanelTableLayout', () => {
     layout.getVisibleLayoutInfos(new Rect(0, 3200, 800, 1000));
 
     expect(visible.mock.calls.map(([rect]) => rect)).toEqual([
-      new Rect(0, 0, 800, 1000),
-      new Rect(0, 0, 800, 1000),
-      new Rect(0, 3200, 800, 1000),
+      new Rect(0, 0, Infinity, 1000),
+      new Rect(0, 0, Infinity, 1000),
+      new Rect(0, 3200, Infinity, 1000),
     ]);
   });
 
@@ -104,8 +104,8 @@ describe('PanelTableLayout', () => {
     layout.getVisibleLayoutInfos(new Rect(20, 9000, 1, 1));
 
     expect(visible.mock.calls.map(([rect]) => rect)).toEqual([
-      new Rect(0, 0, 800, 1000),
-      new Rect(0, 3000, 640, 1000),
+      new Rect(0, 0, Infinity, 1000),
+      new Rect(0, 3000, Infinity, 1000),
       new Rect(20, 9000, 1, 1),
     ]);
   });

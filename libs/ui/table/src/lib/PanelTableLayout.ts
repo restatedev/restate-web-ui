@@ -2,6 +2,9 @@ import { LayoutInfo, Rect, TableLayout } from 'react-aria-components';
 import type { LayoutNode } from 'react-stately/useVirtualizerState';
 import { afterFastScroll, isScrollingFast } from './scrollSpeed';
 
+const withAllColumns = (rect: Rect) =>
+  new Rect(0, rect.y, Infinity, rect.height);
+
 export class PanelTableLayout<T> extends TableLayout<T> {
   private pausedRect?: Rect;
   private isCatchUpScheduled = false;
@@ -27,10 +30,10 @@ export class PanelTableLayout<T> extends TableLayout<T> {
           this.virtualizer?.invalidate({ itemSizeChanged: true });
         });
       }
-      return super.getVisibleLayoutInfos(this.pausedRect.copy());
+      return super.getVisibleLayoutInfos(withAllColumns(this.pausedRect));
     }
     this.pausedRect = rect.copy();
-    return super.getVisibleLayoutInfos(rect);
+    return super.getVisibleLayoutInfos(withAllColumns(rect));
   }
 
   protected override buildCollection(): LayoutNode[] {

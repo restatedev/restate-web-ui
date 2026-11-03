@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -120,6 +121,79 @@ const styles = tv({
   },
 });
 
+function measureColumnWidths(stickyHeader: HTMLElement) {
+  const widths = new Map<Key, number>();
+  stickyHeader.querySelectorAll('thead th[data-key]').forEach((th) => {
+    const key = th.getAttribute('data-key');
+    if (key) widths.set(key, th.getBoundingClientRect().width);
+  });
+  return widths;
+}
+
+function keepIfSame(prev: Map<Key, number>, next: Map<Key, number>) {
+  if (prev.size !== next.size) return next;
+  for (const [key, width] of next) {
+    if (prev.get(key) !== width) return next;
+  }
+  return prev;
+}
+
+function syncDataTableColumns(
+  stickyHeader: HTMLElement,
+  dataTable: HTMLElement,
+) {
+  const headerTable = stickyHeader.querySelector('table');
+  if (!headerTable) return;
+  const tableRect = headerTable.getBoundingClientRect();
+  const layout = new Map([
+    [columnKey(LEFT_SPACER_ID), { left: 0, width: SPACER_WIDTH }],
+    [
+      columnKey(RIGHT_SPACER_ID),
+      { left: SPACER_WIDTH + tableRect.width, width: SPACER_WIDTH },
+    ],
+  ]);
+  stickyHeader.querySelectorAll('thead th[data-key]').forEach((th) => {
+    const rect = th.getBoundingClientRect();
+    layout.set(th.getAttribute('data-key') ?? '', {
+      left: SPACER_WIDTH + rect.left - tableRect.left,
+      width: rect.width,
+    });
+  });
+  const keysByIndex = new Map<string, string>();
+  dataTable
+    .querySelectorAll<HTMLElement>('[role=columnheader][data-key]')
+    .forEach((columnHeader) => {
+      const key = columnHeader.dataset['key'] ?? '';
+      const column = layout.get(key);
+      if (!column) return;
+      columnHeader.style.width = `${column.width}px`;
+      const index = columnHeader.getAttribute('aria-colindex');
+      if (index) keysByIndex.set(index, key);
+    });
+  dataTable.querySelectorAll('[aria-colindex]').forEach((element) => {
+    const column = layout.get(
+      keysByIndex.get(element.getAttribute('aria-colindex') ?? '') ?? '',
+    );
+    const wrapper = element.parentElement;
+    if (!column || wrapper?.style.position !== 'absolute') return;
+    wrapper.style.left = `${column.left}px`;
+    wrapper.style.width = `${column.width}px`;
+  });
+  const totalWidth = `${2 * SPACER_WIDTH + tableRect.width}px`;
+  const content = dataTable.querySelector<HTMLElement>(
+    '[role=grid] > [role=presentation]',
+  );
+  if (!content || content.style.width === totalWidth) return;
+  content.style.width = totalWidth;
+  content
+    .querySelectorAll<HTMLElement>(
+      ':scope > [role=presentation], [role=rowgroup] > [role=presentation]',
+    )
+    .forEach((wrapper) => {
+      wrapper.style.width = totalWidth;
+    });
+}
+
 export function PanelTable<
   T extends { id: string },
   TColId extends string = string,
@@ -179,6 +253,7 @@ export function PanelTable<
   const [columnWidths, setColumnWidths] = useState<Map<Key, number>>(
     () => new Map(),
   );
+  const isResizingRef = useRef(false);
   const [stickyHeaderScrollEl, setStickyHeaderScrollEl] =
     useState<HTMLDivElement | null>(null);
   const [dataTableScrollEl, setDataTableScrollEl] =
@@ -211,47 +286,38 @@ export function PanelTable<
 
   useEffect(() => {
     if (!stickyHeaderScrollEl) return;
+    const observed = new WeakSet<Element>();
     const update = () => {
-      const ths = stickyHeaderScrollEl.querySelectorAll('thead th[data-key]');
-      const next = new Map<Key, number>();
-      ths.forEach((th) => {
-        const key = th.getAttribute('data-key');
-        if (!key) return;
-        next.set(key, th.getBoundingClientRect().width);
-      });
-      setColumnWidths((prev) => {
-        if (prev.size === next.size) {
-          let same = true;
-          for (const [k, v] of next) {
-            if (prev.get(k) !== v) {
-              same = false;
-              break;
-            }
-          }
-          if (same) return prev;
-        }
-        return next;
-      });
+      stickyHeaderScrollEl
+        .querySelectorAll('table, thead th')
+        .forEach((element) => {
+          if (observed.has(element)) return;
+          observed.add(element);
+          observer.observe(element);
+        });
+      if (dataTableScrollEl) {
+        syncDataTableColumns(stickyHeaderScrollEl, dataTableScrollEl);
+      }
+      if (isResizingRef.current) return;
+      const next = measureColumnWidths(stickyHeaderScrollEl);
+      setColumnWidths((prev) => keepIfSame(prev, next));
     };
-    update();
     const observer = new ResizeObserver(update);
     observer.observe(stickyHeaderScrollEl);
-    stickyHeaderScrollEl
-      .querySelectorAll('thead th')
-      .forEach((th) => observer.observe(th));
+    update();
     return () => observer.disconnect();
-  }, [stickyHeaderScrollEl]);
+  }, [dataTableScrollEl, stickyHeaderScrollEl]);
 
-  const handleColumnResize = useCallback(
-    (widths: Map<Key, number | string>) => {
-      const numericWidths = new Map<Key, number>();
-      widths.forEach((size, key) => {
-        if (typeof size === 'number') numericWidths.set(key, size);
-      });
-      setColumnWidths(numericWidths);
-    },
-    [],
-  );
+  const handleResizeStart = useCallback(() => {
+    isResizingRef.current = true;
+  }, []);
+
+  const handleResizeEnd = useCallback(() => {
+    isResizingRef.current = false;
+    if (!stickyHeaderScrollEl) return;
+    const next = measureColumnWidths(stickyHeaderScrollEl);
+    setColumnWidths((prev) => keepIfSame(prev, next));
+  }, [stickyHeaderScrollEl]);
 
   const selectableItems = useMemo(() => {
     const disabled = new Set<Key>(disabledKeys ?? []);
@@ -514,7 +580,10 @@ export function PanelTable<
         <div aria-hidden className={stickyHeaderBackdrop()} />
         <div className={stickyHeaderContent()}>
           <div ref={setStickyHeaderScrollEl} className={stickyHeaderScroll()}>
-            <ResizableTableContainer onResize={handleColumnResize}>
+            <ResizableTableContainer
+              onResizeStart={handleResizeStart}
+              onResizeEnd={handleResizeEnd}
+            >
               <AriaTable
                 aria-label={ariaLabel ? `${ariaLabel} columns` : undefined}
                 selectionMode={selectionMode}
