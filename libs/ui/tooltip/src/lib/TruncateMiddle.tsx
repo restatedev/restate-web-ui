@@ -28,11 +28,12 @@ export function TruncateMiddle({
   }
 
   const tailIndex = text.length - end;
+  const headMinChars = Math.max(1, Math.min(start + 1, tailIndex - end));
   return (
     <span className={base({ className })}>
       <span
         className={head()}
-        style={{ minWidth: `min(${start + 1}ch, 100%)` }}
+        style={{ minWidth: `min(${headMinChars}ch, 100%)` }}
       >
         <span data-truncate-tooltip="true">{text.slice(0, tailIndex)}</span>
       </span>

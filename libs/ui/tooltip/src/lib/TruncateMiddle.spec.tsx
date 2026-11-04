@@ -30,6 +30,15 @@ describe('TruncateMiddle', () => {
     );
   });
 
+  it('lowers the head minimum for short text so the tail only drops once the head is cut', () => {
+    const { container } = render(<TruncateMiddle text="vq_0123456789ab" />);
+
+    expect(
+      container.querySelector<HTMLElement>('[data-truncate-tooltip]')
+        ?.parentElement?.style.minWidth,
+    ).toBe('min(5ch, 100%)');
+  });
+
   it('renders short text as is', () => {
     const { container } = render(<TruncateMiddle text="inv_12345678" />);
 
