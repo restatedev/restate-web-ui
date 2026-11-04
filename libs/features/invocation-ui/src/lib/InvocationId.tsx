@@ -1,6 +1,10 @@
 import { type ReactNode, useRef } from 'react';
 import { Icon, IconName } from '@restate/ui-icons';
-import { HoverTooltip, TruncateWithTooltip } from '@restate/ui-tooltip';
+import {
+  HoverTooltip,
+  TruncateMiddle,
+  TruncateWithTooltip,
+} from '@restate/ui-tooltip';
 import { Link } from '@restate/ui-link';
 import { Invocation } from '@restate/data-access-admin-api-spec';
 import { tv } from '@restate/util-styles';
@@ -115,13 +119,7 @@ export function InvocationId({
 
   const idText = (
     <span className={text()}>
-      {truncateInMiddle ? (
-        <span>
-          {id?.substring(0, 8)}…{id?.slice(-5)}
-        </span>
-      ) : (
-        id
-      )}
+      {truncateInMiddle ? <TruncateMiddle text={id} /> : id}
     </span>
   );
 

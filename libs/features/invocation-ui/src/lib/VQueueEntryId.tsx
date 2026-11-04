@@ -1,5 +1,5 @@
 import { Icon, IconName } from '@restate/ui-icons';
-import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { TruncateMiddle, TruncateWithTooltip } from '@restate/ui-tooltip';
 import { tv } from '@restate/util-styles';
 import { InvocationId } from './InvocationId';
 
@@ -37,10 +37,6 @@ const styles = tv({
   },
 });
 
-function shortId(id: string) {
-  return id.length > 14 ? `${id.slice(0, 8)}…${id.slice(-5)}` : id;
-}
-
 export function VQueueEntryId({
   id,
   className,
@@ -77,7 +73,7 @@ export function VQueueEntryId({
         alwaysShow={id.length > 14}
         containerClassName={entryStyles.text()}
       >
-        {shortId(id)}
+        <TruncateMiddle text={id} />
       </TruncateWithTooltip>
     </span>
   );

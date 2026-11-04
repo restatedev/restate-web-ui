@@ -5,6 +5,7 @@ import {
   type SidebarSubItem,
 } from '@restate/ui-layout';
 import { IconName } from '@restate/ui-icons';
+import { TruncateMiddle } from '@restate/ui-tooltip';
 import { useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { useRestateContext } from '@restate/features-restate-context';
@@ -400,11 +401,6 @@ interface InvocationsSidebarItemProps {
   preserveSearchParams?: boolean | string[];
 }
 
-function truncateId(id: string): string {
-  if (id.length <= 16) return id;
-  return `${id.slice(0, 8)}…${id.slice(-5)}`;
-}
-
 export function InvocationsSidebarItem({
   baseUrl = '',
   disabled,
@@ -481,7 +477,7 @@ export function InvocationsSidebarItem({
       href: `${path}/${id}`,
       label: (
         <span className="min-w-0 flex-auto truncate font-mono">
-          {truncateId(id)}
+          <TruncateMiddle text={id} />
         </span>
       ),
       match: (loc) => loc.pathname === `${path}/${id}`,
@@ -515,7 +511,7 @@ export function InvocationsSidebarItem({
       href: `${path}/${id}`,
       label: (
         <span className="min-w-0 flex-auto truncate font-mono">
-          {truncateId(id)}
+          <TruncateMiddle text={id} />
         </span>
       ),
       match: (loc) => loc.pathname === `${path}/${id}`,

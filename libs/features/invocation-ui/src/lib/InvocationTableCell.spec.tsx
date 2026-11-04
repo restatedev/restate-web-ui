@@ -38,4 +38,24 @@ describe('InvocationTableCell', () => {
       screen.queryByRole('button', { name: 'Open VQueue vq_table' }),
     ).toBeNull();
   });
+
+  it('renders the full invocation ID and leaves truncation to CSS', () => {
+    const id = 'inv_1234567890abcdefghijklmnopqrstuv';
+    render(
+      <MemoryRouter>
+        <Table aria-label="Invocations">
+          <TableHeader>
+            <Column isRowHeader>ID</Column>
+          </TableHeader>
+          <TableBody>
+            <Row>
+              <InvocationTableCell column="id" row={{ id }} />
+            </Row>
+          </TableBody>
+        </Table>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('rowheader').textContent).toBe(id);
+  });
 });

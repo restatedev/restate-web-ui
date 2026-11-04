@@ -84,7 +84,7 @@ const COLUMNS = [
     isRowHeader: true,
     minWidth: 320,
   },
-  { id: 'status', name: 'Status', minWidth: 190 },
+  { id: 'status', name: 'Status', defaultWidth: '1.25fr', minWidth: 190 },
   {
     id: 'createdAt',
     name: 'Created',
@@ -99,9 +99,8 @@ const COLUMNS = [
   {
     id: 'invocation',
     name: 'Invocation',
-    defaultWidth: 180,
-    minWidth: 160,
-    maxWidth: 180,
+    defaultWidth: '0.75fr',
+    minWidth: 180,
   },
   {
     id: 'actions',

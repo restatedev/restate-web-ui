@@ -193,7 +193,7 @@ export function InvocationDetailsCard({
           <VQueueIdDisplay
             id={vqueueId}
             truncateInMiddle
-            className="max-w-48 min-w-0 text-xs"
+            className="max-w-full min-w-0 text-xs"
           />
         </CardLinkRow>
       )}

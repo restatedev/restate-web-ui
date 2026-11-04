@@ -61,6 +61,19 @@ describe('VQueueId', () => {
     expect(link.querySelectorAll('svg')).toHaveLength(2);
   });
 
+  it('keeps the full id in the DOM when truncating in the middle', () => {
+    const id = 'vq_1234567890abcdefghijklmnopqrstuv';
+    render(
+      <MemoryRouter>
+        <VQueueId id={id} popover={false} truncateInMiddle />
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole('link', { name: `Open VQueue ${id}` }).textContent,
+    ).toBe(id);
+  });
+
   it('keeps the VQueue identity visible in a left-aligned loading state', async () => {
     useGetVqueue.mockReturnValue({
       data: undefined,
