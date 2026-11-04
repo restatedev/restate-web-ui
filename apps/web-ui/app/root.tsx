@@ -83,7 +83,10 @@ import {
 import { MonacoWarmup } from '@restate/ui-editor';
 import { elementsCssUrl, elementsJsUrl } from '@restate/ui-api/assets';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
-import { useBranchInTitle } from '@restate/features-local-dev';
+import {
+  useBranchFavicon,
+  useBranchInTitle,
+} from '@restate/features-local-dev';
 import { TenantPreview } from './TenantPreview';
 
 const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
@@ -204,6 +207,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   useThemePreference();
   useBranchInTitle(globalThis.env.GIT_BRANCH);
+  useBranchFavicon(globalThis.env.GIT_WORKTREE && globalThis.env.GIT_BRANCH);
 
   return (
     <html
