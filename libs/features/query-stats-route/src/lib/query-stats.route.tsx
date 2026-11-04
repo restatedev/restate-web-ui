@@ -339,6 +339,7 @@ function useExplainAnalyze() {
       const command = explainAnalyzeCommand(verbose);
       const { data } = await client.POST('/query', {
         baseUrl,
+        params: { query: { name: 'query-stats-explain' } },
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',

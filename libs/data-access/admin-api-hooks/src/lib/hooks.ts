@@ -272,6 +272,7 @@ function getServiceCatalogAdminApi(baseUrl: string) {
   return adminApi('query', '/query', 'post', {
     baseUrl,
     body: { query: SERVICE_CATALOG_QUERY },
+    parameters: { query: { name: 'service-catalog' } },
   });
 }
 
@@ -373,6 +374,7 @@ export function useSqlQuery(
   const queryOptions = adminApi('query', '/query', 'post', {
     baseUrl,
     body: { query },
+    parameters: { query: { name: 'sql-console' } },
     headers: { [QUERY_ORIGIN_HEADER]: 'user' satisfies QueryOrigin },
   });
 
