@@ -1,2 +1,2 @@
-export * from './lib/useBranchInTitle';
-export * from './lib/branchFavicon';
+export * from './lib/useWorktreeTitle';
+export * from './lib/useWorktreeFavicon';

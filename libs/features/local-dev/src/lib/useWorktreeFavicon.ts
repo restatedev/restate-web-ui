@@ -8,7 +8,7 @@ function branchCategory(branch: string) {
   return (hash % 7) + 1;
 }
 
-export function useBranchFavicon(branch?: string) {
+export function useWorktreeFavicon(branch?: string) {
   useEffect(() => {
     if (!branch) return;
     const color = getComputedStyle(document.documentElement).getPropertyValue(

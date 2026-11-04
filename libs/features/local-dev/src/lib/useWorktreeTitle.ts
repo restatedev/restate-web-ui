@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export function useBranchInTitle(branch?: string) {
+export function useWorktreeTitle(branch?: string) {
   useEffect(() => {
     if (!branch) return;
     const prefix = `${branch} · `;
