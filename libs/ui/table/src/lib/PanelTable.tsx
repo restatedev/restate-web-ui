@@ -103,8 +103,6 @@ const styles = tv({
     stickyHeaderTable: 'w-full border-separate border-spacing-0',
     stickyHeaderInner:
       'static z-auto bg-transparent drop-shadow-none backdrop-blur-none backdrop-saturate-100 supports-[-moz-appearance:none]:bg-transparent [&_.checkbox]:border-default! [&_.checkbox]:shadow-[inset_0_0.5px_0.5px_0px_--theme(--box-shadow-color-default/8%)]!',
-    stickyHeaderTrailingResizerHidden:
-      '[&_th:nth-last-child(2)_[data-resizable-direction]]:invisible',
     stickyToolbarWrapper:
       'sticky top-[calc(var(--cp-toolbar-top,0px)+var(--cp-toolbar-height,0px)+3.25rem-var(--cp-toolbar-tuck,0px))] z-30 mx-2 mt-11 -mb-8 h-8',
     stickyToolbar:
@@ -173,7 +171,6 @@ export function PanelTable<
     stickyHeaderScroll,
     stickyHeaderTable,
     stickyHeaderInner,
-    stickyHeaderTrailingResizerHidden,
     stickyToolbarWrapper,
     stickyToolbar,
     dataTableScroll,
@@ -336,8 +333,6 @@ export function PanelTable<
       : new Set<Key>();
   }, [selectedKeys, selectableItems, stickyHeaderItems]);
 
-  const lastIsFixed = columns[columns.length - 1]?.width !== undefined;
-
   const dataTableColumns = useMemo<PanelTableColumn[]>(
     () => [
       ...columns,
@@ -394,8 +389,11 @@ export function PanelTable<
   const renderColumns = (
     variant: 'stickyHeader' | 'dataTable',
     cols: PanelTableColumn[],
-  ) =>
-    cols.map((col) => {
+  ) => {
+    const lastFlexibleIndex = cols.findLastIndex(
+      (col) => typeof col.width !== 'number',
+    );
+    return cols.map((col, index) => {
       const synced = columnWidths.get(columnKey(col.id));
       const isFixed = typeof col.width === 'number';
       const widthProps: Pick<
@@ -422,6 +420,7 @@ export function PanelTable<
             col.allowsSorting
           }
           {...widthProps}
+          allowsResizing={index < lastFlexibleIndex}
           className={col.hideLabel ? 'opacity-0' : undefined}
         >
           {col.hideLabel ? (
@@ -432,6 +431,7 @@ export function PanelTable<
         </Column>
       );
     });
+  };
 
   const dataTableSelectionWidth =
     selectionMode && selectionMode !== 'none' ? SELECTION_WIDTH : undefined;
@@ -544,14 +544,7 @@ export function PanelTable<
                 onSortChange={handleSortChange}
                 className={stickyHeaderTable()}
               >
-                <TableHeader
-                  className={[
-                    stickyHeaderInner(),
-                    lastIsFixed ? stickyHeaderTrailingResizerHidden() : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                >
+                <TableHeader className={stickyHeaderInner()}>
                   {renderColumns('stickyHeader', columns)}
                 </TableHeader>
                 <AriaTableBody

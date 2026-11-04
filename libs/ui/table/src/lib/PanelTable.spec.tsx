@@ -508,6 +508,47 @@ describe('PanelTable', () => {
     expect(body?.scrollLeft).toBe(120);
   });
 
+  it.each([
+    [
+      'the last column is flexible',
+      [
+        { id: 'name', name: 'Name', isRowHeader: true },
+        { id: 'status', name: 'Status' },
+        { id: 'created_at', name: 'Created at' },
+      ],
+      ['Name', 'Status'],
+    ],
+    [
+      'fixed columns follow',
+      [
+        { id: 'name', name: 'Name', isRowHeader: true },
+        { id: 'size', name: 'Size', width: 96 },
+        { id: 'status', name: 'Status' },
+        { id: 'actions', name: 'Actions', width: 40 },
+      ],
+      ['Name'],
+    ],
+  ])(
+    'shows a resize handle only before another flexible column when %s',
+    (_, columns, resizable) => {
+      render(
+        <PanelTable
+          aria-label="Items"
+          columns={columns}
+          items={[{ id: 'one', name: 'One' }]}
+          renderCell={(row) => <Cell>{row.name}</Cell>}
+        />,
+      );
+      const headerTable = screen.getByRole('grid', { name: 'Items columns' });
+
+      expect(
+        Array.from(headerTable.querySelectorAll('th'))
+          .filter((th) => th.querySelector('input[aria-label="Resizer"]'))
+          .map((th) => th.textContent),
+      ).toEqual(resizable);
+    },
+  );
+
   it('moves body columns with the header while a column is resized', () => {
     const observerOf = stubResizeObservers();
     render(
