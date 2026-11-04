@@ -1080,8 +1080,8 @@ describe('InvocationFlowControlCard', () => {
           first_runnable_at: '2026-01-01T00:00:00.004Z',
           first_attempt_at: '2026-01-01T00:00:00.031Z',
           latest_attempt_at: '2026-01-01T00:00:55.000Z',
-          retry_attempts: 2,
-          retry_count_since_last_stored_command: 2,
+          retry_attempts: 1,
+          retry_count_since_last_stored_command: 1,
           num_attempts: 2,
         },
         { status: 'backing-off' },
@@ -1144,7 +1144,8 @@ describe('InvocationFlowControlCard', () => {
     expect(screen.getByText('3rd attempt')).toBeTruthy();
     expect(screen.getByText('Running')).toBeTruthy();
     expect(screen.getByText('Running for')).toBeTruthy();
-    expect(screen.getByRole('button', { name: '2nd attempt' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '3rd attempt' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '2nd attempt' })).toBeNull();
     expect(
       screen.getByRole('button', { name: 'awaiting 1 entry' }),
     ).toBeTruthy();
