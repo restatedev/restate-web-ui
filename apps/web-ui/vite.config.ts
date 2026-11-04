@@ -7,27 +7,24 @@ import { BASE_URL } from './constants.ts';
 import tailwindcss from '@tailwindcss/vite';
 import { execSync } from 'node:child_process';
 
-function git(args: string) {
+function worktreeBranch() {
   try {
-    return execSync(`git ${args}`, {
-      cwd: import.meta.dirname,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
+    const [gitDir, commonDir, branch = ''] = execSync(
+      'git rev-parse --path-format=absolute --git-dir --git-common-dir --abbrev-ref HEAD',
+      {
+        cwd: import.meta.dirname,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      },
+    )
+      .trim()
+      .split('\n');
+    return gitDir === commonDir || branch === 'HEAD'
+      ? ''
+      : branch.replace(/.*\//, '');
   } catch {
     return '';
   }
-}
-
-function gitBranch() {
-  return git('branch --show-current').replace(/.*\//, '');
-}
-
-function inGitWorktree() {
-  const [gitDir, commonDir] = git(
-    'rev-parse --path-format=absolute --git-dir --git-common-dir',
-  ).split('\n');
-  return Boolean(gitDir) && gitDir !== commonDir;
 }
 
 export default defineConfig(({ mode, command }) => {
@@ -89,8 +86,7 @@ export default defineConfig(({ mode, command }) => {
     define: {
       'globalThis.env': {
         VERSION: env.VERSION ?? 'dev',
-        GIT_BRANCH: command === 'serve' ? gitBranch() : '',
-        GIT_WORKTREE: command === 'serve' && inGitWorktree() ? 'true' : '',
+        WORKTREE_BRANCH: command === 'serve' ? worktreeBranch() : '',
       },
     },
 

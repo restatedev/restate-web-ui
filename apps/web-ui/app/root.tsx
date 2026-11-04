@@ -206,8 +206,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 
   useThemePreference();
-  useBranchInTitle(globalThis.env.GIT_BRANCH);
-  useBranchFavicon(globalThis.env.GIT_WORKTREE && globalThis.env.GIT_BRANCH);
+  useBranchInTitle(globalThis.env.WORKTREE_BRANCH);
+  useBranchFavicon(globalThis.env.WORKTREE_BRANCH);
 
   return (
     <html
