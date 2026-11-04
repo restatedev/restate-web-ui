@@ -136,6 +136,7 @@ function withRequestContext(method: string, url: string) {
 
 function queryFetcher(
   query: string,
+  id: QueryId,
   {
     baseUrl,
     headers = new Headers(),
@@ -148,7 +149,7 @@ function queryFetcher(
   queryHeaders.set(QUERY_CLIENT_HEADER, QUERY_CLIENT);
   queryHeaders.set(QUERY_ORIGIN_HEADER, 'built-in' satisfies QueryOrigin);
 
-  const url = `${baseUrl}/query`;
+  const url = `${baseUrl}/query?name=${id}`;
   return ky
     .post(url, {
       json: { query },
@@ -229,7 +230,7 @@ export function createQueryContext(
           baseUrl,
           page,
         });
-      return queryFetcher(sql, {
+      return queryFetcher(sql, id, {
         baseUrl,
         headers: downstreamHeaders,
         signal,
