@@ -1297,6 +1297,17 @@
         "summary": "Query journal",
         "description": "Query journal",
         "operationId": "query",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Names the query in request URLs, such as in the browser's Network tab. The server ignores it.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {

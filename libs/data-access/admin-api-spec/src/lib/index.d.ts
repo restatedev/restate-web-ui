@@ -6191,7 +6191,10 @@ export interface operations {
   };
   query: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Names the query in request URLs, such as in the browser's Network tab. The server ignores it. */
+        name?: string;
+      };
       header?: never;
       path?: never;
       cookie?: never;

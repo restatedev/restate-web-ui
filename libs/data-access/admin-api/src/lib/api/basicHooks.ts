@@ -97,7 +97,7 @@ export function useQueryHealthCheck(options?: {
   const queryOptions = adminApi('query', '/query', 'post', {
     baseUrl,
     body: { query: 'SELECT 1 FROM sys_invocation_status LIMIT 1' },
-    parameters: { query: { name: 'health-check' } } as never,
+    parameters: { query: { name: 'health-check' } },
   });
 
   return useQuery({
