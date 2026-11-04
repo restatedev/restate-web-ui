@@ -83,7 +83,7 @@ export function VQueueIdDisplay({
         <TruncateWithTooltip
           tooltipContent={id}
           copyText={id}
-          alwaysShow={!truncateInMiddle}
+          alwaysShow
           overflowVisible
         >
           {content}

@@ -70,6 +70,7 @@ export function VQueueEntryId({
       <TruncateWithTooltip
         copyText={id}
         tooltipContent={id}
+        alwaysShow={id.length > 14}
         containerClassName={entryStyles.text()}
       >
         <TruncateMiddle text={id} />

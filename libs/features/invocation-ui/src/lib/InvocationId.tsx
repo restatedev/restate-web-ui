@@ -138,6 +138,7 @@ export function InvocationId({
               copyText={id}
               triggerRef={link ? linkRef : undefined}
               tooltipContent={id}
+              alwaysShow={truncateInMiddle}
             >
               {idText}
             </TruncateWithTooltip>
