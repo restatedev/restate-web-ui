@@ -11,7 +11,7 @@
       "options": {
         "commands": [
           {
-            "command": "cd apps/web-ui && ../../node_modules/.bin/react-router dev --port=4300"
+            "command": "cd apps/web-ui && ../../node_modules/.bin/react-router dev --port=${UI_PORT:-4300} --strictPort"
           }
         ]
       }
@@ -33,7 +33,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "cd apps/web-ui && NODE_ENV=production ../../node_modules/.bin/react-router build && ../../node_modules/.bin/vite preview --port=4300"
+          "cd apps/web-ui && NODE_ENV=production ../../node_modules/.bin/react-router build && ../../node_modules/.bin/vite preview --port=${UI_PORT:-4300} --strictPort"
         ]
       }
     }

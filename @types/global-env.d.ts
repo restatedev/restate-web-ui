@@ -1,5 +1,6 @@
 interface Env {
   VERSION: string;
+  WORKTREE_BRANCH: string;
   [key: string]: string & {};
 }
 

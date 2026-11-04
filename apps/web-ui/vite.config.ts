@@ -5,8 +5,29 @@ import license from 'rollup-plugin-license';
 import path from 'path';
 import { BASE_URL } from './constants.ts';
 import tailwindcss from '@tailwindcss/vite';
+import { execSync } from 'node:child_process';
 
-export default defineConfig(({ mode }) => {
+function worktreeBranch() {
+  try {
+    const [gitDir, commonDir, branch = ''] = execSync(
+      'git rev-parse --path-format=absolute --git-dir --git-common-dir --abbrev-ref HEAD',
+      {
+        cwd: import.meta.dirname,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      },
+    )
+      .trim()
+      .split('\n');
+    return gitDir === commonDir || branch === 'HEAD'
+      ? ''
+      : branch.replace(/.*\//, '');
+  } catch {
+    return '';
+  }
+}
+
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const ADMIN_BASE_URL = env['ADMIN_BASE_URL'] || '';
   const SERVER_HEADERS = {
@@ -14,7 +35,7 @@ export default defineConfig(({ mode }) => {
   };
   const ADMIN_PROXY = {
     '^(?!/ui)': {
-      target: 'http://127.0.0.1:9070/',
+      target: env['ADMIN_PROXY_TARGET'] || 'http://127.0.0.1:9070/',
       changeOrigin: true,
     },
   };
@@ -65,6 +86,7 @@ export default defineConfig(({ mode }) => {
     define: {
       'globalThis.env': {
         VERSION: env.VERSION ?? 'dev',
+        WORKTREE_BRANCH: command === 'serve' ? worktreeBranch() : '',
       },
     },
 

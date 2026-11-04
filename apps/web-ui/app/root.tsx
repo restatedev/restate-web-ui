@@ -83,6 +83,10 @@ import {
 import { MonacoWarmup } from '@restate/ui-editor';
 import { elementsCssUrl, elementsJsUrl } from '@restate/ui-api/assets';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
+import {
+  useWorktreeFavicon,
+  useWorktreeTitle,
+} from '@restate/features-local-dev';
 import { TenantPreview } from './TenantPreview';
 
 const LAYOUT_MODE: 'appbar' | 'sidebar' = 'sidebar';
@@ -202,6 +206,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 
   useThemePreference();
+  useWorktreeTitle(globalThis.env.WORKTREE_BRANCH);
+  useWorktreeFavicon(globalThis.env.WORKTREE_BRANCH);
 
   return (
     <html

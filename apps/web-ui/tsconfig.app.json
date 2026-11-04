@@ -69,6 +69,9 @@
       "path": "../../libs/features/deployment-route/tsconfig.lib.json"
     },
     {
+      "path": "../../libs/features/local-dev/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/util/panel/tsconfig.lib.json"
     },
     {
