@@ -1,5 +1,5 @@
 import { Icon, IconName } from '@restate/ui-icons';
-import { TruncateWithTooltip } from '@restate/ui-tooltip';
+import { TruncateMiddle, TruncateWithTooltip } from '@restate/ui-tooltip';
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
@@ -58,10 +58,6 @@ export function VQueueIdDisplay({
 }: VQueueIdDisplayProps) {
   const { base, icon, text, container } = styles({ size });
   const isIcon = size === 'icon';
-  const visibleId =
-    truncateInMiddle && id.length > 14
-      ? `${id.substring(0, 8)}…${id.slice(-5)}`
-      : id;
 
   const content = (
     <span className={container()}>
@@ -73,7 +69,9 @@ export function VQueueIdDisplay({
       </span>
       {!isIcon && (
         <span className="min-w-0 truncate">
-          <span className={text()}>{visibleId}</span>
+          <span className={text()}>
+            {truncateInMiddle ? <TruncateMiddle text={id} /> : id}
+          </span>
         </span>
       )}
     </span>
@@ -85,7 +83,7 @@ export function VQueueIdDisplay({
         <TruncateWithTooltip
           tooltipContent={id}
           copyText={id}
-          alwaysShow
+          alwaysShow={!truncateInMiddle}
           overflowVisible
         >
           {content}

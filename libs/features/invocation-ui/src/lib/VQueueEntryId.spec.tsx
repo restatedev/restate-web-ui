@@ -22,4 +22,11 @@ describe('VQueueEntryId', () => {
     expect(screen.getByLabelText('State mutation mut_123')).toBeTruthy();
     expect(screen.queryByRole('link')).toBeNull();
   });
+
+  it('keeps the full id in the DOM for long entry ids', () => {
+    const id = 'mut_1234567890abcdefghijklmnopqrstuv';
+    render(<VQueueEntryId id={id} />);
+
+    expect(screen.getByLabelText(`State mutation ${id}`).textContent).toBe(id);
+  });
 });
