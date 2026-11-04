@@ -5,7 +5,7 @@ import {
   type SidebarSubItem,
 } from '@restate/ui-layout';
 import { IconName } from '@restate/ui-icons';
-import { HoverTooltip } from '@restate/ui-tooltip';
+import { HoverTooltip, TruncateMiddle } from '@restate/ui-tooltip';
 import { useLocation, useSearchParams } from 'react-router';
 import {
   useEffect,
@@ -85,11 +85,6 @@ function currentOverviewDetail(
   return undefined;
 }
 
-function truncateId(id: string): string {
-  if (id.length <= 16) return id;
-  return `${id.slice(0, 8)}…${id.slice(-5)}`;
-}
-
 function RecentTooltip({
   full,
   children,
@@ -116,7 +111,7 @@ function DeploymentRecentLabel({ deploymentId }: { deploymentId: string }) {
     <RecentTooltip full={endpoint ?? deploymentId}>
       <span className="flex min-w-0 flex-auto items-center">
         <span className="min-w-0 flex-1 truncate font-mono">
-          {label ?? truncateId(deploymentId)}
+          {label ?? <TruncateMiddle text={deploymentId} />}
         </span>
       </span>
     </RecentTooltip>

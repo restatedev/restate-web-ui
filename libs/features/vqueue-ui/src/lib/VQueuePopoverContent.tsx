@@ -19,6 +19,7 @@ import {
   formatNumber,
 } from '@restate/util-intl';
 import { useDurationSinceLastSnapshot } from '@restate/util-snapshot-time';
+import { TruncateMiddle } from '@restate/ui-tooltip';
 import { tv } from '@restate/util-styles';
 import type { ReactNode } from 'react';
 import { BlockedStatus } from './BlockedStatus';
@@ -235,10 +236,6 @@ const stageMarkStyles = tv({
   },
 });
 
-function formatIdentifier(id: string) {
-  return id.length > 22 ? `${id.slice(0, 10)}…${id.slice(-5)}` : id;
-}
-
 function getStageCount(data: VqueueSnapshot, stage: VQueueStage) {
   return data.counts[stage];
 }
@@ -392,7 +389,7 @@ function SelectedEntryMarker({
             )}
           </span>
           <span className={orderFocusEntryIdStyles()}>
-            {formatIdentifier(entryId)}
+            <TruncateMiddle text={entryId} start={10} />
           </span>
         </span>
       )}
@@ -750,11 +747,13 @@ function Head({
           'block rounded no-underline outline-offset-1 hover:bg-tint-subtle',
       })}
     >
-      <span title={entryId}>{formatIdentifier(entryId)}</span>
+      <span title={entryId}>
+        <TruncateMiddle text={entryId} start={10} />
+      </span>
     </Link>
   ) : (
     <span className={styles().entryId()} title={entryId}>
-      {formatIdentifier(entryId)}
+      <TruncateMiddle text={entryId} start={10} />
     </span>
   );
 
