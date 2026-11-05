@@ -302,6 +302,18 @@
   --text-color-syntax-keyword: var(--color-blue-700);
   --text-color-syntax-punctuation: var(--text-color-primary);
   --text-color-syntax-comment: var(--text-color-muted);
+  --text-color-inverse-syntax-key: oklch(
+    from var(--color-blue-300) l calc(c * 0.85) h
+  );
+  --text-color-inverse-syntax-string: oklch(
+    from var(--color-orange-300) l calc(c * 0.85) h
+  );
+  --text-color-inverse-syntax-number: oklch(
+    from var(--color-green-300) l calc(c * 0.85) h
+  );
+  --text-color-inverse-syntax-keyword: oklch(
+    from var(--color-blue-400) l calc(c * 0.85) h
+  );
 
   --box-shadow-color-default: var(--color-zinc-800);
   --box-shadow-color-highlight: var(--background-color-highlight);
@@ -835,18 +847,10 @@
     );
     --border-color-pending-strong: var(--color-amber-500);
 
-    --text-color-syntax-key: oklch(
-      from var(--color-blue-300) l calc(c * 0.85) h
-    );
-    --text-color-syntax-string: oklch(
-      from var(--color-orange-300) l calc(c * 0.85) h
-    );
-    --text-color-syntax-number: oklch(
-      from var(--color-green-300) l calc(c * 0.85) h
-    );
-    --text-color-syntax-keyword: oklch(
-      from var(--color-blue-400) l calc(c * 0.85) h
-    );
+    --text-color-syntax-key: var(--text-color-inverse-syntax-key);
+    --text-color-syntax-string: var(--text-color-inverse-syntax-string);
+    --text-color-syntax-number: var(--text-color-inverse-syntax-number);
+    --text-color-syntax-keyword: var(--text-color-inverse-syntax-keyword);
     --ring-color-focus: var(--color-blue-400);
     --outline-color-focus: var(--color-blue-500);
     --box-shadow-color-default: var(--color-black);

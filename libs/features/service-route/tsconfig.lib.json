@@ -41,6 +41,9 @@
       "path": "../../util/invocation-links/tsconfig.lib.json"
     },
     {
+      "path": "../../data-access/query/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/header/tsconfig.lib.json"
     },
     {

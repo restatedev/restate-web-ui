@@ -3,6 +3,7 @@ import {
   useListInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
 import type { components } from '@restate/data-access-admin-api-spec';
+import { entryTablesSupportFilters } from '@restate/data-access-query';
 import {
   deriveSortFromUrl,
   doInvocationCountsDisagree,
@@ -67,7 +68,16 @@ export function useInvocationsTab(
 ) {
   const { baseUrl } = useRestateContext();
   const [searchParams, setSearchParams] = useSearchParams();
-  const canSortByTransition = useCanSortInvocationsByTransition();
+  const statusFilter = parseStatusFilter(
+    searchParams.get(STATUS_FILTER_QUERY_PARAM),
+  );
+  const filters: FilterItem[] = [
+    ...baseFilters,
+    ...(statusFilter ? [statusFilter as FilterItem] : []),
+  ];
+  const canSortByTransition =
+    useCanSortInvocationsByTransition() &&
+    entryTablesSupportFilters(filters.map(({ field }) => field));
   const sortParams = deriveSortFromUrl(
     searchParams,
     canSortByTransition,
@@ -95,18 +105,6 @@ export function useInvocationsTab(
       { preventScrollReset: true },
     );
   };
-  const statusParam = searchParams.get(STATUS_FILTER_QUERY_PARAM);
-  const statusFilter = useMemo(
-    () => parseStatusFilter(statusParam),
-    [statusParam],
-  );
-  const filters = useMemo<FilterItem[]>(
-    () => [
-      ...baseFilters,
-      ...(statusFilter ? [statusFilter as FilterItem] : []),
-    ],
-    [baseFilters, statusFilter],
-  );
   const [countMode, setCountMode] = useState<'estimate' | 'exact'>('estimate');
   const summary = useInvocationSummary({
     filters,

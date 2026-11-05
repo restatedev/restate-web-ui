@@ -25,13 +25,10 @@ import {
   RadioTooltipTrigger,
 } from '@restate/ui-tooltip';
 import { ServiceDeploymentExplainer } from '@restate/features-explainers';
-import {
-  TunnelMode,
-  useRestateContext,
-} from '@restate/features-restate-context';
+import { useRestateContext } from '@restate/features-restate-context';
 import { tv } from '@restate/util-styles';
 import { FocusScope, useFocusManager } from 'react-aria';
-import { addProtocol } from './utils';
+import { addProtocol, parseTunnelEndpoint } from './utils';
 import { Helper } from './Helper';
 import { OverrideWarning } from './OverrideWarnning';
 import { OverrideBreaking } from './OverrideBreaking';
@@ -440,17 +437,18 @@ function EndpointForm() {
                 }
               }}
               onChange={(value) => {
-                const prefill = value.match(/^(connect|tunnel):\/\/(.*)$/);
+                const prefill = tunnel?.isEnabled
+                  ? parseTunnelEndpoint(value)
+                  : undefined;
                 if (prefill) {
-                  const mode: TunnelMode =
-                    prefill[1] === 'connect' ? 'in-process' : 'standalone';
                   updateEndpoint?.({
                     isLambda: false,
                     isTunnel: true,
                     isCloudRun: false,
-                    endpoint: mode === 'in-process' ? undefined : '',
-                    tunnelName: prefill[2] ?? '',
-                    tunnelMode: mode,
+                    endpoint:
+                      prefill.tunnelMode === 'in-process' ? undefined : '',
+                    tunnelName: prefill.tunnelName,
+                    tunnelMode: prefill.tunnelMode,
                   });
                   focusManager?.focusPrevious({ wrap: true });
                   return;

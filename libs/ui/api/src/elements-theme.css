@@ -132,6 +132,13 @@
   --color-danger-dark: var(--background-color-danger);
   --color-danger-darker: var(--background-color-danger-hover);
   --color-danger-light: var(--background-color-danger-strong);
+
+  --text-color-syntax-key: var(--text-color-inverse-syntax-key);
+  --text-color-syntax-string: var(--text-color-inverse-syntax-string);
+  --text-color-syntax-number: var(--text-color-inverse-syntax-number);
+  --text-color-syntax-keyword: var(--text-color-inverse-syntax-keyword);
+  --text-color-syntax-punctuation: var(--text-color-inverse);
+  --text-color-syntax-comment: var(--text-color-inverse-muted);
 }
 
 .stoplight .token:is(.comment, .prolog, .doctype, .cdata) {

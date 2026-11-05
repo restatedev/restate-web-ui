@@ -17,14 +17,17 @@ const toHttp = vi.fn(
 const register = vi.fn();
 const host: {
   OnboardingGuide?: (props: { stage: string; endpoint?: string }) => ReactNode;
-} = {};
+  isTunnelEnabled: boolean;
+} = { isTunnelEnabled: true };
 
 vi.mock('@restate/features-restate-context', async (importOriginal) => ({
   ...(await importOriginal<
     typeof import('@restate/features-restate-context')
   >()),
   useRestateContext: () => ({
-    tunnel: { isEnabled: true, toHttp, fromHttp: () => undefined },
+    tunnel: host.isTunnelEnabled
+      ? { isEnabled: true, toHttp, fromHttp: () => undefined }
+      : undefined,
     OnboardingGuide: host.OnboardingGuide,
   }),
 }));
@@ -56,6 +59,7 @@ afterEach(() => {
   register.mockClear();
   toHttp.mockClear();
   host.OnboardingGuide = undefined;
+  host.isTunnelEnabled = true;
 });
 
 function open(search: string) {
@@ -188,19 +192,35 @@ describe('RegisterDeploymentDialog', () => {
     expect(
       await screen.findByTestId('view-template-connect'),
     ).toHaveTextContent('greeter-v1');
-    expect(screen.queryByRole('button', { name: /Expand/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /Expand/ })).toBeInTheDocument();
     await user.type(screen.getByPlaceholderText('Deployment name'), '-eu');
     expect(screen.getByTestId('view-template-connect')).toHaveTextContent(
       'greeter-v1-eu',
     );
   });
 
-  it('points to Configure SDK when the host has no connect setup', async () => {
+  it('ignores a connect:// prefill when the host has no tunnels', async () => {
+    host.isTunnelEnabled = false;
     open('?register-deployment=connect://greeter-v1');
 
     expect(
-      await screen.findByText(/The connect key comes from/),
-    ).toBeInTheDocument();
+      await screen.findByPlaceholderText('http://localhost:9080'),
+    ).toHaveValue('');
+    expect(screen.getByPlaceholderText('Deployment name')).toHaveValue('');
+    expect(screen.queryByText(/Connect your service/)).toBeNull();
+  });
+
+  it('keeps a typed connect:// as the endpoint when the host has no tunnels', async () => {
+    host.isTunnelEnabled = false;
+    const user = open('?register-deployment=true');
+
+    const endpoint = await screen.findByPlaceholderText(
+      'http://localhost:9080',
+    );
+    await user.type(endpoint, 'connect://greeter');
+
+    expect(endpoint).toHaveValue('connect://greeter');
+    expect(screen.getByPlaceholderText('Deployment name')).toHaveValue('');
   });
 
   it('opens on Connected service with an empty name for a bare connect:// prefill', async () => {
