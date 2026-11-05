@@ -1,3 +1,5 @@
+import type { TunnelMode } from '@restate/features-restate-context';
+
 export function addProtocol(url: string): string;
 export function addProtocol(url?: undefined): undefined;
 export function addProtocol(url?: string) {
@@ -53,6 +55,19 @@ export function isCloudRunEndpoint(url?: string) {
   } catch {
     return false;
   }
+}
+
+export function parseTunnelEndpoint(
+  value?: string,
+): { tunnelMode: TunnelMode; tunnelName: string } | undefined {
+  const match = value?.match(/^(connect|tunnel):\/\/(.*)$/);
+  if (!match) {
+    return undefined;
+  }
+  return {
+    tunnelMode: match[1] === 'connect' ? 'in-process' : 'standalone',
+    tunnelName: match[2] ?? '',
+  };
 }
 
 export const FIX_HTTP_ACTION = 'fix-http-1';

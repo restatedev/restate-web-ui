@@ -135,7 +135,6 @@ export function Helper({
     gcpServiceAccount,
     OnboardingGuide,
     isGoogleIdTokenAuthAvailable,
-    tunnel,
   } = useRestateContext();
   const {
     targetType,
@@ -165,7 +164,7 @@ export function Helper({
     return null;
   }
 
-  if (isInProcessTunnel) {
+  if (isInProcessTunnel && OnboardingGuide) {
     return (
       <Container
         preview="tall"
@@ -184,30 +183,7 @@ export function Helper({
           </div>
         }
       >
-        {OnboardingGuide ? (
-          <OnboardingGuide
-            stage="view-template-connect"
-            endpoint={tunnelName}
-          />
-        ) : (
-          <div className="px-1.5 font-sans text-0.5xs text-muted">
-            Use the name your service passes to{' '}
-            <code>restate.connect({'{ services, name }'})</code> (or sets as{' '}
-            <code>RESTATE_CONNECT_NAME</code>). The connect key comes from{' '}
-            {tunnel?.configureSdkHref ? (
-              <Link
-                href={tunnel.configureSdkHref}
-                variant="secondary"
-                className="text-info"
-              >
-                Configure SDK
-              </Link>
-            ) : (
-              'Configure SDK'
-            )}
-            .
-          </div>
-        )}
+        <OnboardingGuide stage="view-template-connect" endpoint={tunnelName} />
       </Container>
     );
   }

@@ -31,6 +31,7 @@ import {
   FIX_HTTP_ACTION,
   getTargetType,
   isCloudRunEndpoint,
+  parseTunnelEndpoint,
 } from './utils';
 import { UPDATE_DEPLOYMENT_QUERY } from './constant';
 
@@ -214,10 +215,12 @@ const initialState: (args: {
   deployments?: adminApi.Deployment[];
   mode: 'update' | 'register';
   assumeRoleArn?: string;
+  isTunnelEnabled?: boolean;
 }) => DeploymentRegistrationContextInterface = (args) => {
-  const endpoint = args?.endpoint;
-  const isConnect = endpoint?.startsWith('connect://');
-  const isTunnel = isConnect || endpoint?.startsWith('tunnel://');
+  const parsedTunnel = parseTunnelEndpoint(args?.endpoint);
+  const tunnelEndpoint = args?.isTunnelEnabled ? parsedTunnel : undefined;
+  const endpoint = parsedTunnel && !tunnelEndpoint ? undefined : args?.endpoint;
+  const isTunnel = Boolean(tunnelEndpoint);
   const isLambda = endpoint?.startsWith('arn:');
   const isEndpointValid =
     (!isLambda && !isTunnel && endpoint && endpoint !== 'true') ||
@@ -250,10 +253,8 @@ const initialState: (args: {
       isTunnel,
       isCloudRun:
         !isLambda && !isTunnel && isCloudRunEndpoint(resolvedEndpoint),
-      tunnelName: isTunnel
-        ? String(endpoint).replace(/^(connect|tunnel):\/\//, '')
-        : '',
-      tunnelMode: isConnect ? 'in-process' : 'standalone',
+      tunnelName: tunnelEndpoint?.tunnelName ?? '',
+      tunnelMode: tunnelEndpoint?.tunnelMode ?? 'standalone',
     }),
     assumeRoleArn: args?.assumeRoleArn,
   };
@@ -309,6 +310,7 @@ export function DeploymentRegistrationState({
       endpoint: initialEndpoint,
       mode,
       assumeRoleArn: initialAssumeRoleArn,
+      isTunnelEnabled: tunnel?.isEnabled,
     },
     initialState,
   );

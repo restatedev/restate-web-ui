@@ -20,7 +20,10 @@ import {
   useQueryHistory,
 } from '@restate/features-introspection-route';
 import { PRUNE_DRAINED_DEPLOYMENTS_QUERY } from '@restate/features-prune-deployments';
-import { REGISTER_DEPLOYMENT_QUERY } from '@restate/features-register-deployment';
+import {
+  parseTunnelEndpoint,
+  REGISTER_DEPLOYMENT_QUERY,
+} from '@restate/features-register-deployment';
 import { useRestateContext } from '@restate/features-restate-context';
 import { virtualObjectInstanceHref } from '@restate/features-virtual-object-instance';
 import {
@@ -597,7 +600,10 @@ export function useCommandSections(
       }
     }
 
-    if (parsed.endpoint) {
+    if (
+      parsed.endpoint &&
+      (tunnel?.isEnabled || !parseTunnelEndpoint(parsed.endpoint))
+    ) {
       const normalized = normalizeEndpoint(parsed.endpoint);
       const known = deployments.find(
         ({ deployment }) =>
@@ -919,6 +925,7 @@ export function useCommandSections(
     batch,
     invocationFilterSchema,
     canSortByTransition,
+    tunnel?.isEnabled,
   ]);
 
   return useMemo(
