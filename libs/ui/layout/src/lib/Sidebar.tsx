@@ -3,7 +3,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type PropsWithChildren,
@@ -257,33 +256,16 @@ export function SidebarBackdrop({ children }: PropsWithChildren) {
   );
 }
 
-interface NavExpansionContextValue {
-  isOpen: (
-    id: string,
-    hasActiveDescendant: boolean,
-    autoExpand: boolean,
-  ) => boolean;
-  toggle: (id: string, currentlyOpen: boolean) => void;
-  clearCollapse: (id: string) => void;
-}
+const NavFitsAllContext = createContext(true);
 
-const NavExpansionContext = createContext<NavExpansionContextValue>({
-  isOpen: () => true,
-  toggle: noop,
-  clearCollapse: noop,
-});
-
-export function useNavExpansion(): NavExpansionContextValue {
-  return useContext(NavExpansionContext);
+export function useNavFitsAll(): boolean {
+  return useContext(NavFitsAllContext);
 }
 
 function NavExpansionProvider({ children }: PropsWithChildren) {
   const { isCollapsed } = useSidebar();
   const listRef = useRef<HTMLUListElement>(null);
   const [fitsAll, setFitsAll] = useState(true);
-  const [overrides, setOverrides] = useState<ReadonlyMap<string, boolean>>(
-    () => new Map(),
-  );
 
   useEffect(() => {
     const list = listRef.current;
@@ -333,40 +315,12 @@ function NavExpansionProvider({ children }: PropsWithChildren) {
     };
   }, [isCollapsed]);
 
-  const value = useMemo<NavExpansionContextValue>(
-    () => ({
-      isOpen: (id, hasActiveDescendant, autoExpand) => {
-        const override = overrides.get(id);
-        if (override !== undefined) {
-          return override;
-        }
-        return autoExpand && (hasActiveDescendant || fitsAll);
-      },
-      toggle: (id, currentlyOpen) =>
-        setOverrides((prev) => {
-          const next = new Map(prev);
-          next.set(id, !currentlyOpen);
-          return next;
-        }),
-      clearCollapse: (id) =>
-        setOverrides((prev) => {
-          if (prev.get(id) !== false) {
-            return prev;
-          }
-          const next = new Map(prev);
-          next.delete(id);
-          return next;
-        }),
-    }),
-    [overrides, fitsAll],
-  );
-
   return (
-    <NavExpansionContext.Provider value={value}>
+    <NavFitsAllContext.Provider value={fitsAll}>
       <ul ref={listRef} className="flex flex-col gap-0.5">
         {children}
       </ul>
-    </NavExpansionContext.Provider>
+    </NavFitsAllContext.Provider>
   );
 }
 

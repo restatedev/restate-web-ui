@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import { Icon, IconName } from '@restate/ui-icons';
 import { tv } from '@restate/util-styles';
@@ -12,7 +12,7 @@ import {
 } from '@restate/ui-dropdown';
 import { Button } from '@restate/ui-button';
 import { HoverTooltip } from '@restate/ui-tooltip';
-import { useNavExpansion, useSidebar } from './Sidebar';
+import { useNavFitsAll, useSidebar } from './Sidebar';
 
 export interface SidebarLocation {
   pathname: string;
@@ -161,7 +161,7 @@ export function SidebarNavItem({
   disabled,
 }: SidebarNavItemProps) {
   const { isCollapsed, closeDrawer } = useSidebar();
-  const navExpansion = useNavExpansion();
+  const fitsAll = useNavFitsAll();
   const location = useSidebarLocation();
   const ownActive = !disabled && (match ?? defaultMatcher(href))(location);
 
@@ -175,13 +175,19 @@ export function SidebarNavItem({
 
   const hasSubContent =
     (subItems?.length ?? 0) > 0 || (extraSubItems?.length ?? 0) > 0;
-  const sectionId = href.split('?')[0] || href;
+  const hasActiveDescendant =
+    defaultExpanded || anyChildActive || anyExtraActive;
+  const inSection = ownActive || hasActiveDescendant;
+  const [openByHand, setOpenByHand] = useState<boolean>();
+  const [wasInSection, setWasInSection] = useState(inSection);
+  if (wasInSection !== inSection) {
+    setWasInSection(inSection);
+    if (inSection && openByHand === false) {
+      setOpenByHand(undefined);
+    }
+  }
   const expanded = hasSubContent
-    ? navExpansion.isOpen(
-        sectionId,
-        defaultExpanded || anyChildActive || anyExtraActive,
-        autoExpandSubItems,
-      )
+    ? (openByHand ?? (autoExpandSubItems && (hasActiveDescendant || fitsAll)))
     : true;
   const sectionClosed = hasSubContent && !expanded;
   const effectiveActive =
@@ -234,10 +240,7 @@ export function SidebarNavItem({
             disabled={disabled}
             className={s.link()}
             aria-current={effectiveActive ? 'page' : undefined}
-            onClick={() => {
-              closeDrawer();
-              navExpansion.clearCollapse(sectionId);
-            }}
+            onClick={closeDrawer}
           >
             <span className={s.iconWrap()}>
               <Icon name={icon} className={s.icon()} aria-hidden />
@@ -249,7 +252,7 @@ export function SidebarNavItem({
           <Button
             variant="icon"
             type="button"
-            onClick={() => navExpansion.toggle(sectionId, expanded)}
+            onClick={() => setOpenByHand(!expanded)}
             className={s.chevron()}
             aria-label={expanded ? 'Collapse section' : 'Expand section'}
             aria-expanded={expanded}
