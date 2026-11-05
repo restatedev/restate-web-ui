@@ -91,6 +91,14 @@ export interface PanelTableProps<
 
 const SELECTION_WIDTH = 36;
 
+function isFlexible(col: PanelTableColumn) {
+  if (typeof col.width === 'number') return false;
+  return (
+    col.defaultWidth == null ||
+    (typeof col.defaultWidth === 'string' && col.defaultWidth.endsWith('fr'))
+  );
+}
+
 const styles = tv({
   slots: {
     stickyHeaderWrapper:
@@ -390,9 +398,7 @@ export function PanelTable<
     variant: 'stickyHeader' | 'dataTable',
     cols: PanelTableColumn[],
   ) => {
-    const lastFlexibleIndex = cols.findLastIndex(
-      (col) => typeof col.width !== 'number',
-    );
+    const lastFlexibleIndex = cols.findLastIndex(isFlexible);
     return cols.map((col, index) => {
       const synced = columnWidths.get(columnKey(col.id));
       const isFixed = typeof col.width === 'number';

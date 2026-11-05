@@ -528,6 +528,16 @@ describe('PanelTable', () => {
       ],
       ['Name'],
     ],
+    [
+      'pixel default widths follow',
+      [
+        { id: 'name', name: 'Name', isRowHeader: true },
+        { id: 'inbox', name: 'Inbox', defaultWidth: 220 },
+        { id: 'holder', name: 'Holder', defaultWidth: '2fr' as const },
+        { id: 'acquired', name: 'Acquired', defaultWidth: 150 },
+      ],
+      ['Name', 'Inbox'],
+    ],
   ])(
     'shows a resize handle only before another flexible column when %s',
     (_, columns, resizable) => {
