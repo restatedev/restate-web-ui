@@ -126,7 +126,7 @@ Use `divide-default` or `divide-muted` between rows.
 
 Placeholders: `placeholder:text-placeholder` (`text-subtle` in light, a little brighter in dark so empty fields stay readable on the darker inset fill). Disabled: `disabled:text-subtle`.
 
-Code uses `text-syntax-key`, `-string`, `-number`, `-keyword`, `-punctuation` and `-comment`. The editors, the playground's code samples and `@restate/ui-code` snippets (highlight.js, themed in `syntaxTheme.css`) are colored from them, so use them for any hand-rendered JSON or SQL too.
+Code uses `text-syntax-key`, `-string`, `-number`, `-keyword`, `-punctuation` and `-comment`. The editors, the playground's code samples and `@restate/ui-code` snippets (highlight.js, themed in `syntaxTheme.css`) are colored from them, so use them for any hand-rendered JSON or SQL too. On inverse panels use `text-inverse-syntax-key`, `-string`, `-number` and `-keyword`, with `text-inverse` for punctuation and `text-inverse-muted` for comments; the Elements Try It panel remaps the syntax tokens to them inside `.sl-inverted`.
 
 ## Inverse surfaces
 
