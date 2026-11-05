@@ -264,11 +264,13 @@ interface NavExpansionContextValue {
     autoExpand: boolean,
   ) => boolean;
   toggle: (id: string, currentlyOpen: boolean) => void;
+  clearCollapse: (id: string) => void;
 }
 
 const NavExpansionContext = createContext<NavExpansionContextValue>({
   isOpen: () => true,
   toggle: noop,
+  clearCollapse: noop,
 });
 
 export function useNavExpansion(): NavExpansionContextValue {
@@ -344,6 +346,15 @@ function NavExpansionProvider({ children }: PropsWithChildren) {
         setOverrides((prev) => {
           const next = new Map(prev);
           next.set(id, !currentlyOpen);
+          return next;
+        }),
+      clearCollapse: (id) =>
+        setOverrides((prev) => {
+          if (prev.get(id) !== false) {
+            return prev;
+          }
+          const next = new Map(prev);
+          next.delete(id);
           return next;
         }),
     }),

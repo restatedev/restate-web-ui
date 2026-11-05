@@ -234,7 +234,10 @@ export function SidebarNavItem({
             disabled={disabled}
             className={s.link()}
             aria-current={effectiveActive ? 'page' : undefined}
-            onClick={closeDrawer}
+            onClick={() => {
+              closeDrawer();
+              navExpansion.clearCollapse(sectionId);
+            }}
           >
             <span className={s.iconWrap()}>
               <Icon name={icon} className={s.icon()} aria-hidden />
