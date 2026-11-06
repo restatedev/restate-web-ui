@@ -75,7 +75,7 @@ describe('GET /query/invocations/:invocationId', () => {
       expect(await response.json()).toMatchObject({ status: 'cancelled' });
     });
 
-    it('marks a running VQueue retry without requiring a legacy last failure', async () => {
+    it('marks a running VQueue retry and numbers the attempt in progress without requiring a legacy last failure', async () => {
       setResponder((statement) =>
         statement.includes('FROM sys_vqueue_entry_status')
           ? [
@@ -93,7 +93,7 @@ describe('GET /query/invocations/:invocationId', () => {
 
       expect(await response.json()).toMatchObject({
         status: 'running',
-        retry_count: 1,
+        retry_count: 2,
         isRetrying: true,
       });
     });
