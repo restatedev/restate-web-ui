@@ -13,7 +13,14 @@
           {
             "command": "cd apps/web-ui && ../../node_modules/.bin/react-router dev --port=${UI_PORT:-4300} --strictPort"
           }
-        ]
+        ],
+        "env": {
+          "MIMALLOC_PURGE_DELAY": "0",
+          "MIMALLOC_ARENA_PURGE_MULT": "0",
+          "ROLLDOWN_WORKER_THREADS": "4",
+          "ROLLDOWN_MAX_BLOCKING_THREADS": "4",
+          "RAYON_NUM_THREADS": "4"
+        }
       }
     },
     "build": {
