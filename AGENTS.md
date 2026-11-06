@@ -2,7 +2,7 @@
 
 ## Commands
 
-- **Dev**: `pnpm nx serve web-ui` serves `localhost:4300/ui/` and proxies the admin API to a Restate server on `localhost:9070`. Set `UI_PORT` and `ADMIN_PROXY_TARGET` to change them
+- **Dev**: `pnpm nx serve web-ui` serves `localhost:4300/ui/` and proxies the admin API to a Restate server on `localhost:9070`. Set `UI_PORT` and `ADMIN_PROXY_TARGET` to change them. The target also sets `MIMALLOC_PURGE_DELAY`, `ROLLDOWN_WORKER_THREADS` and `RAYON_NUM_THREADS`, so Rolldown gives back the memory of its first dependency pre-bundle (rolldown/rolldown#9330). They override the shell; change them in `apps/web-ui/project.json`
 - **Worktrees**: each git worktree needs its own `pnpm install` and its own `UI_PORT`, e.g. `UI_PORT=4301 pnpm nx serve web-ui`. Several worktrees can share one Restate server
 - **Build**: `pnpm nx build web-ui`
 - **Test**: `pnpm nx test <project>` (e.g., `pnpm nx test @restate/ui-button`), add `--watch` for watch mode. Lib projects are named after their package; the apps are `web-ui` and `web-ui-e2e`

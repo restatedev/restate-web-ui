@@ -16,9 +16,7 @@
         ],
         "env": {
           "MIMALLOC_PURGE_DELAY": "0",
-          "MIMALLOC_ARENA_PURGE_MULT": "0",
           "ROLLDOWN_WORKER_THREADS": "4",
-          "ROLLDOWN_MAX_BLOCKING_THREADS": "4",
           "RAYON_NUM_THREADS": "4"
         }
       }
