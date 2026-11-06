@@ -132,7 +132,6 @@ const columns: PanelTableColumn<ColumnId>[] = [
   {
     id: 'lockHolder',
     name: 'Lock holder',
-    defaultWidth: 300,
     minWidth: 240,
   },
 ];
