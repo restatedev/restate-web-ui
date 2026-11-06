@@ -1,0 +1,1036 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cart",
+    "description": "A shopping cart keyed by user id.",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/",
+      "description": "Restate Ingress URL"
+    }
+  ],
+  "paths": {
+    "/restate/call/Cart/{key}/add": {
+      "post": {
+        "summary": "add",
+        "description": "Call Cart handler add and wait for response",
+        "operationId": "add",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/addResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Cart/{key}/add": {
+      "post": {
+        "summary": "add (with scope)",
+        "description": "Call Cart handler add within the concurrency scope and wait for response",
+        "operationId": "addScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/addResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Cart/{key}/items": {
+      "post": {
+        "summary": "items",
+        "description": "Call Cart handler items and wait for response",
+        "operationId": "items",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/itemsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Cart/{key}/items": {
+      "post": {
+        "summary": "items (with scope)",
+        "description": "Call Cart handler items within the concurrency scope and wait for response",
+        "operationId": "itemsScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/itemsResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Cart/{key}/clear": {
+      "post": {
+        "summary": "clear",
+        "description": "Call Cart handler clear and wait for response",
+        "operationId": "clear",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Cart/{key}/clear": {
+      "post": {
+        "summary": "clear (with scope)",
+        "description": "Call Cart handler clear within the concurrency scope and wait for response",
+        "operationId": "clearScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Cart/{key}/add": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "add",
+        "description": "Send request to Cart handler add",
+        "operationId": "addSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Cart/{key}/add": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "add (with scope)",
+        "description": "Send request to Cart handler add within the concurrency scope",
+        "operationId": "addSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Cart/{key}/items": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "items",
+        "description": "Send request to Cart handler items",
+        "operationId": "itemsSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Cart/{key}/items": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "items (with scope)",
+        "description": "Send request to Cart handler items within the concurrency scope",
+        "operationId": "itemsSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Cart/{key}/clear": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "clear",
+        "description": "Send request to Cart handler clear",
+        "operationId": "clearSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Cart/{key}/clear": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "clear (with scope)",
+        "description": "Send request to Cart handler clear within the concurrency scope",
+        "operationId": "clearSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/attach/{invocationId}": {
+      "get": {
+        "tags": ["Invocations output and status"],
+        "summary": "Attach to invocation by id",
+        "description": "Attach to a running invocation and wait for it to finish.",
+        "operationId": "attachInvocation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/invocationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/attach": {
+      "post": {
+        "tags": ["Invocations output and status"],
+        "summary": "Attach to invocation by target",
+        "description": "Attach to a running invocation and wait for it to finish.",
+        "operationId": "attachInvocationByTarget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestateInvocationTarget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/output/{invocationId}": {
+      "get": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation output by id",
+        "description": "Get the output of an invocation, if it has already completed.",
+        "operationId": "getInvocationOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/invocationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/output": {
+      "post": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation output by target",
+        "description": "Get the output of an invocation, if it has already completed.",
+        "operationId": "getInvocationOutputByTarget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestateInvocationTarget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/status/{invocationId}": {
+      "get": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation status by id",
+        "description": "Get the lifecycle status of an invocation.",
+        "operationId": "getInvocationStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/invocationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invocation status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestateInvocationStatus"
+                },
+                "example": {
+                  "stage": "completed",
+                  "error": {
+                    "code": 500,
+                    "message": "My user-thrown terminal error"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/status": {
+      "post": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation status by target",
+        "description": "Get the lifecycle status of an invocation.",
+        "operationId": "getInvocationStatusByTarget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestateInvocationTarget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestateInvocationStatus"
+                },
+                "example": {
+                  "stage": "completed",
+                  "error": {
+                    "code": 500,
+                    "message": "My user-thrown terminal error"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RestateError": {
+        "type": "object",
+        "title": "RestateError",
+        "description": "Generic error used by Restate to propagate Terminal errors/exceptions back to callers",
+        "properties": {
+          "code": {
+            "type": "number",
+            "title": "error code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Error message"
+          },
+          "source": {
+            "type": "string",
+            "title": "Error source",
+            "description": "Discriminates errors generated by the ingress from the terminal outcome of the invocation. 'ingress' errors carry a Restate-controlled HTTP status code following the usual HTTP semantics, while 'invocation' errors carry a user-controlled status code. Also available in the 'x-restate-error-source' response header.",
+            "enum": ["ingress", "invocation"]
+          },
+          "stacktrace": {
+            "type": "string",
+            "title": "Stacktrace of the error"
+          },
+          "metadata": {
+            "type": "object",
+            "title": "Additional metadata map",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["message", "source"],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "code": 500,
+            "message": "My user-thrown terminal error",
+            "source": "invocation",
+            "stacktrace": "TerminalError: My user-thrown terminal error\n    at greet (greeter.ts:12:11)"
+          },
+          {
+            "message": "invocation not found",
+            "source": "ingress"
+          }
+        ]
+      },
+      "RestateInvocationStatus": {
+        "type": "object",
+        "title": "RestateInvocationStatus",
+        "description": "Status of an invocation.",
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Lifecycle stage",
+            "description": "'created' (accepted but not yet started), 'started' (running), or 'completed' (finished, with either success or failure).",
+            "enum": ["created", "started", "completed"]
+          },
+          "error": {
+            "type": "object",
+            "title": "Terminal error",
+            "description": "Present only when 'stage' is 'completed' and the invocation failed; omitted otherwise.",
+            "properties": {
+              "code": {
+                "type": "number",
+                "title": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "title": "Error message"
+              },
+              "stacktrace": {
+                "type": "string",
+                "title": "Stacktrace of the error"
+              },
+              "metadata": {
+                "type": "object",
+                "title": "Additional metadata map",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["code", "message"]
+          }
+        },
+        "required": ["stage"],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "stage": "started"
+          },
+          {
+            "stage": "completed",
+            "error": {
+              "code": 500,
+              "message": "My user-thrown terminal error",
+              "stacktrace": "TerminalError: My user-thrown terminal error\n    at greet (greeter.ts:12:11)"
+            }
+          }
+        ]
+      },
+      "RestateInvocationTarget": {
+        "title": "RestateInvocationTarget",
+        "description": "Identifies an invocation, either directly by its id, or indirectly via a workflow key or an idempotency target.",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "By invocation id",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": ["invocation"]
+              },
+              "invocationId": {
+                "type": "string"
+              }
+            },
+            "required": ["target", "invocationId"]
+          },
+          {
+            "type": "object",
+            "title": "By workflow key",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": ["workflow"]
+              },
+              "scope": {
+                "type": "string"
+              },
+              "workflowName": {
+                "type": "string"
+              },
+              "workflowKey": {
+                "type": "string"
+              }
+            },
+            "required": ["target", "workflowName", "workflowKey"]
+          },
+          {
+            "type": "object",
+            "title": "By idempotency target",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": ["idempotentInvocation"]
+              },
+              "scope": {
+                "type": "string"
+              },
+              "service": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "idempotencyKey": {
+                "type": "string"
+              }
+            },
+            "required": ["target", "service", "handler", "idempotencyKey"]
+          }
+        ]
+      },
+      "addRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": ["productId", "quantity"],
+        "additionalProperties": false
+      },
+      "addResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "itemsResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "productId": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "note": {
+              "type": "string"
+            }
+          },
+          "required": ["productId", "quantity"],
+          "additionalProperties": false
+        }
+      }
+    },
+    "responses": {
+      "GenericError": {
+        "description": "Error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            },
+            "example": {
+              "code": 500,
+              "message": "Internal server error",
+              "source": "invocation"
+            }
+          }
+        }
+      },
+      "InvocationNotFoundError": {
+        "description": "Invocation not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            },
+            "example": {
+              "message": "invocation not found",
+              "source": "ingress"
+            }
+          }
+        }
+      },
+      "InvocationNotReadyError": {
+        "description": "Invocation still running, output is not ready yet",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            },
+            "example": {
+              "message": "the invocation exists but has not completed yet",
+              "source": "ingress"
+            }
+          }
+        }
+      },
+      "Send": {
+        "description": "The invocation was accepted for asynchronous execution. Inspect the `status` field to tell whether this call created a new invocation (`Accepted`) or matched one that had already been accepted, e.g. via the same idempotency key (`PreviouslyAccepted`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "title": "RestateSendResponse",
+              "properties": {
+                "invocationId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "'Accepted' if this call created a new invocation, 'PreviouslyAccepted' if it matched an invocation that had already been accepted (e.g. same idempotency key).",
+                  "enum": ["Accepted", "PreviouslyAccepted"]
+                },
+                "executionTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Time when the invocation will be executed, in case 'delay' is used"
+                }
+              },
+              "required": ["invocationId", "status"],
+              "additionalProperties": false
+            },
+            "example": {
+              "invocationId": "inv_1gdJBtdVEcM942bjcDmb1c1khoaJe11Hbz",
+              "status": "Accepted"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "delay": {
+        "name": "delay",
+        "in": "query",
+        "description": "Specify the delay to execute the operation, for more info check the [delay documentation](https://docs.restate.dev/invoke/http#sending-a-delayed-message-over-http)",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "10s"
+      },
+      "idempotencyKeyHeader": {
+        "name": "idempotency-key",
+        "in": "header",
+        "description": "Idempotency key to execute the request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "invocationId": {
+        "name": "invocationId",
+        "in": "path",
+        "description": "Invocation identifier.",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "key": {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "limitKeyHeader": {
+        "name": "x-restate-limit-key",
+        "in": "header",
+        "description": "Limit key applied within the concurrency scope, for more details checkout the [flow control documentation](https://docs.restate.dev/services/flow-control).",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "scope": {
+        "name": "scope",
+        "in": "path",
+        "description": "Concurrency scope, for more details checkout the [flow control documentation](https://docs.restate.dev/services/flow-control).",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Send to handler",
+      "description": "Send to handler",
+      "externalDocs": {
+        "url": "https://docs.restate.dev/invoke/http",
+        "description": null
+      }
+    },
+    {
+      "name": "Invocations output and status",
+      "description": "Attach to, read the output of, or check the status of an invocation",
+      "externalDocs": {
+        "url": "https://docs.restate.dev/invoke/http",
+        "description": null
+      }
+    }
+  ]
+}

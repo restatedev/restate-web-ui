@@ -6,6 +6,8 @@ import { tv } from '@restate/util-styles';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApiSpec } from './ServicePlayground';
+import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
+import { NextServicePlaygroundEmbed } from './NextServicePlayground';
 
 const OPERATION_HASH_PREFIX = '#/operations/';
 
@@ -20,7 +22,24 @@ function operationFromHash() {
     : undefined;
 }
 
-export function ServicePlaygroundEmbed({
+export function ServicePlaygroundEmbed(props: {
+  service: string;
+  handler?: string | null;
+  className?: string;
+}) {
+  const isNewPlayground = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
+  if (isNewPlayground) {
+    return (
+      <NextServicePlaygroundEmbed
+        service={props.service}
+        className={props.className}
+      />
+    );
+  }
+  return <ElementsServicePlaygroundEmbed {...props} />;
+}
+
+function ElementsServicePlaygroundEmbed({
   service,
   handler,
   className,

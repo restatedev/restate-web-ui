@@ -1,0 +1,449 @@
+{
+  "components": {
+    "parameters": {
+      "delay": {
+        "description": "Specify the delay to execute the operation, for more info check the [delay documentation](https://docs.restate.dev/invoke/http#sending-a-delayed-message-over-http)",
+        "example": "10s",
+        "in": "query",
+        "name": "delay",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "idempotencyKeyHeader": {
+        "description": "Idempotency key to execute the request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "in": "header",
+        "name": "idempotency-key",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "idempotencyKeyPath": {
+        "description": "Idempotency key used to execute the original request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "in": "path",
+        "name": "idempotencyKey",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "key": {
+        "in": "path",
+        "name": "key",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "GenericError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 500,
+              "description": "Very bad error happened",
+              "message": "Internal server error"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Error response"
+      },
+      "InvocationNotFoundError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 404,
+              "message": "Not found"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Invocation not found"
+      },
+      "InvocationNotReadyError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 470,
+              "message": "Not ready"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Invocation still running, output is not ready yet"
+      },
+      "Send": {
+        "content": {
+          "application/json": {
+            "example": {
+              "invocationId": "inv_1gdJBtdVEcM942bjcDmb1c1khoaJe11Hbz",
+              "status": "Accepted"
+            },
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "executionTime": {
+                  "description": "Time when the invocation will be executed, in case 'delay' is used",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "invocationId": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": ["Accepted", "PreviouslyAccepted"],
+                  "type": "string"
+                }
+              },
+              "required": ["invocationId", "status"],
+              "title": "RestateSendResponse",
+              "type": "object"
+            }
+          }
+        },
+        "description": "Send response"
+      }
+    },
+    "schemas": {
+      "RestateError": {
+        "additionalProperties": false,
+        "description": "Generic error used by Restate to propagate Terminal errors/exceptions back to callers",
+        "properties": {
+          "code": {
+            "title": "error code",
+            "type": "number"
+          },
+          "message": {
+            "title": "Error message",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Additional metadata map",
+            "type": "object"
+          },
+          "stacktrace": {
+            "title": "Stacktrace of the error",
+            "type": "string"
+          }
+        },
+        "required": ["message"],
+        "title": "RestateError",
+        "type": "object"
+      },
+      "confirmRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      },
+      "runRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          },
+          "marketingOptIn": {
+            "default": false,
+            "type": "boolean"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "plan": {
+            "enum": ["free", "pro", "enterprise"],
+            "type": "string"
+          }
+        },
+        "required": ["email", "name", "plan", "marketingOptIn"],
+        "type": "object"
+      },
+      "runResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "confirmed": {
+            "type": "boolean"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": ["userId", "confirmed"],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Signup",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/restate/call/Signup/{key}/confirm": {
+      "post": {
+        "description": "Call Signup handler confirm and wait for response",
+        "operationId": "confirm",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/confirmRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "confirm"
+      }
+    },
+    "/restate/call/Signup/{key}/run": {
+      "post": {
+        "description": "Call Signup handler run and wait for response",
+        "operationId": "run",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/runRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/runResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "run"
+      }
+    },
+    "/restate/send/Signup/{key}/confirm": {
+      "post": {
+        "description": "Send request to Signup handler confirm",
+        "operationId": "confirmSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/confirmRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "confirm",
+        "tags": ["Send"]
+      }
+    },
+    "/restate/send/Signup/{key}/run": {
+      "post": {
+        "description": "Send request to Signup handler run",
+        "operationId": "runSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/runRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "run",
+        "tags": ["Send"]
+      }
+    },
+    "/restate/workflow/Signup/{key}/attach": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with a workflow target to obtain an invocation id, then GET /restate/attach/{invocationId}. Attach to the running instance of Signup/run workflow and wait to finish",
+        "operationId": "runAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/runResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "run",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/workflow/Signup/{key}/output": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with a workflow target to obtain an invocation id, then GET /restate/output/{invocationId}. Get output of the Signup/run workflow",
+        "operationId": "runOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/runResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "run",
+        "tags": ["Get Output"]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Restate Ingress URL",
+      "url": "http://localhost:8080/"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Request response to handler",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Request Response"
+    },
+    {
+      "description": "Send to handler",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Send"
+    },
+    {
+      "description": "Attach to invocation",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Attach"
+    },
+    {
+      "description": "Get invocation output",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Get Output"
+    }
+  ]
+}

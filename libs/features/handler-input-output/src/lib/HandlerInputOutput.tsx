@@ -1,4 +1,7 @@
 import { JsonSchemaViewer } from '@restate/ui-api';
+import { JsonSchemaTree } from '@restate/ui-json-schema';
+import type { JsonSchema } from '@restate/util-openapi';
+import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import { Badge } from '@restate/ui-badge';
 import { Button } from '@restate/ui-button';
 import { DropdownSection } from '@restate/ui-dropdown';
@@ -109,6 +112,17 @@ function HandlerInputOutputJsonSchemaPopoverContent({
 }: {
   schema: HandlerInputOutputJsonSchemaPopoverView['jsonSchema'];
 }) {
+  const isNewPlayground = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
+
+  if (isNewPlayground) {
+    return (
+      <JsonSchemaTree
+        className="py-2"
+        schema={schema as JsonSchema}
+        mode="standalone"
+      />
+    );
+  }
   return (
     <JsonSchemaViewer
       className="font-mono [&_.JsonSchemaViewer>*>[aria-haspopup]]:mt-2 [&_.JsonSchemaViewer>[data-test='property-description']]:mt-2 [&:has([aria-haspopup])]:min-h-32"

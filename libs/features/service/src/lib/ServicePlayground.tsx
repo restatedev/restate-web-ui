@@ -35,6 +35,11 @@ import { ErrorBanner } from '@restate/ui-error';
 import { Spinner } from '@restate/ui-loading';
 import { useQueryClient } from '@tanstack/react-query';
 import { PANEL_QUERY_PARAM } from '@restate/util-panel';
+import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
+import {
+  NextServicePlaygroundPanel,
+  NextServicePlaygroundSheet,
+} from './NextServicePlayground';
 
 const DEFAULT_CATEGORY = 'DEFAULT';
 export function ServicePlayground() {
@@ -42,17 +47,31 @@ export function ServicePlayground() {
   const service = searchParams.get(SERVICE_PLAYGROUND_QUERY_PARAM);
   const isDocked =
     searchParams.get(PANEL_QUERY_PARAM) === SERVICE_PLAYGROUND_QUERY_PARAM;
+  const isNewPlayground = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
 
   return (
     <>
       <ComplementaryWithSearchParam paramName={SERVICE_PLAYGROUND_QUERY_PARAM}>
-        <ServicePlaygroundComplementaryContent />
+        {isNewPlayground ? (
+          <NextServicePlaygroundComplementaryContent />
+        ) : (
+          <ServicePlaygroundComplementaryContent />
+        )}
       </ComplementaryWithSearchParam>
-      {service && !isDocked && (
-        <ServicePlaygroundSheetContent service={service} />
-      )}
+      {service &&
+        !isDocked &&
+        (isNewPlayground ? (
+          <NextServicePlaygroundSheet service={service} />
+        ) : (
+          <ServicePlaygroundSheetContent service={service} />
+        ))}
     </>
   );
+}
+
+function NextServicePlaygroundComplementaryContent() {
+  const service = useParamValue();
+  return service ? <NextServicePlaygroundPanel service={service} /> : null;
 }
 
 function Attribution() {
