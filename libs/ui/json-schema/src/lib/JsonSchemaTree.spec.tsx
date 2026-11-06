@@ -40,7 +40,7 @@ describe('JsonSchemaTree', () => {
     expect(screen.getByText('string<uuid>')).toBeTruthy();
     expect(screen.getByText('required')).toBeTruthy();
     expect(screen.getByText('Order id')).toBeTruthy();
-    expect(screen.getByText('Allowed values')).toBeTruthy();
+    expect(screen.getByText('Allowed values:')).toBeTruthy();
     expect(screen.getAllByText('"draft"')).toHaveLength(2);
   });
 

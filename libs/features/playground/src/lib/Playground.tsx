@@ -20,12 +20,15 @@ import {
   findOperation,
   joinUrl,
   type ContractHandler,
+  type ContractInvocationTool,
   type ContractOperation,
   type HandlerMode,
+  type InvocationToolKind,
   type RestateHandlerKind,
   type ServiceContract,
 } from '@restate/util-openapi';
 import { InfoButton } from './InfoButton';
+import { toolDraftName, toolId, type InvocationLookup } from './names';
 import { OperationDocs } from './OperationDocs';
 import { TryIt } from './TryIt';
 import { usePlaygroundFetcher } from './usePlaygroundFetcher';
@@ -204,33 +207,37 @@ const modeCardsStyles = tv({
   },
 });
 
-function ModePicker({
-  modes,
+function OptionCards<T extends string>({
+  name,
+  label,
+  options,
   value,
   onChange,
 }: {
-  modes: BaseMode[];
-  value: BaseMode;
-  onChange: (mode: BaseMode) => void;
+  name: string;
+  label: string;
+  options: { value: T; label: string; description: string }[];
+  value: T;
+  onChange: (value: T) => void;
 }) {
   return (
     <RadioGroup
-      name="playground-mode"
+      name={name}
       value={value}
-      onChange={(next) => onChange(next as BaseMode)}
+      onChange={(next) => onChange(next as T)}
     >
-      <FormFieldLabel className="sr-only">How to invoke</FormFieldLabel>
+      <FormFieldLabel className="sr-only">{label}</FormFieldLabel>
       <RadioCards
         className={modeCardsStyles({
-          count: Math.min(Math.max(modes.length, 2), 4) as 2 | 3 | 4,
+          count: Math.min(Math.max(options.length, 2), 4) as 2 | 3 | 4,
         })}
       >
-        {modes.map((mode) => (
+        {options.map((option) => (
           <RadioCard
-            key={mode}
-            value={mode}
-            label={MODE_OPTIONS[mode].label}
-            description={MODE_OPTIONS[mode].description}
+            key={option.value}
+            value={option.value}
+            label={option.label}
+            description={option.description}
           />
         ))}
       </RadioCards>
@@ -345,8 +352,13 @@ function HandlerView({
           </MarkdownDescription>
         )}
         {baseModes.length > 1 && (
-          <ModePicker
-            modes={baseModes}
+          <OptionCards
+            name="playground-mode"
+            label="How to invoke"
+            options={baseModes.map((value) => ({
+              value,
+              ...MODE_OPTIONS[value],
+            }))}
             value={base}
             onChange={(next) => onModeChange(withScope(next, isScoped))}
           />
@@ -366,6 +378,102 @@ function HandlerView({
             handlerKind={handlerKind}
             serviceType={serviceType}
             mode={currentMode}
+          />
+        </div>
+        <OperationDocs operation={operation} root={contract.document} />
+      </div>
+    </div>
+  );
+}
+
+const TOOL_LABEL: Record<InvocationToolKind, string> = {
+  attach: 'Attach to invocation',
+  output: 'Get invocation output',
+  status: 'Get invocation status',
+};
+
+const LOOKUP_OPTIONS = [
+  {
+    value: 'byId' as const,
+    label: 'By ID',
+    description: 'Use the invocation ID, inv_…',
+  },
+  {
+    value: 'byTarget' as const,
+    label: 'By target',
+    description: 'Find it by handler and idempotency key, or by workflow ID',
+  },
+];
+
+function toolLabel(tool: ContractInvocationTool) {
+  return (
+    (tool.byId ?? tool.byTarget)?.summary?.replace(
+      /\s+by\s+(id|target)$/i,
+      '',
+    ) ?? TOOL_LABEL[tool.kind]
+  );
+}
+
+function toolGroups(contract: ServiceContract) {
+  return contract.invocationTools.length > 0
+    ? [{ name: 'Invocations', tools: contract.invocationTools }]
+    : [];
+}
+
+function ToolView({
+  service,
+  contract,
+  tool,
+  ingressUrl,
+  serviceType,
+}: {
+  service: string;
+  contract: ServiceContract;
+  tool: ContractInvocationTool;
+  ingressUrl: string;
+  serviceType?: ReturnType<typeof useServiceContract>['serviceType'];
+}) {
+  const fetcher = usePlaygroundFetcher(service);
+  const [lookup, setLookup] = useState<InvocationLookup>('byId');
+  const operation = tool[lookup] ?? tool.byId ?? tool.byTarget;
+  if (!operation) {
+    return null;
+  }
+  const current = operation === tool.byTarget ? 'byTarget' : 'byId';
+
+  return (
+    <div className="flex min-w-0 flex-col gap-4">
+      <div className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold text-primary">
+          {toolLabel(tool)}
+        </h2>
+        {operation.description && (
+          <MarkdownDescription className="text-sm" collapsible>
+            {operation.description}
+          </MarkdownDescription>
+        )}
+        {tool.byId && tool.byTarget && (
+          <OptionCards
+            name="playground-lookup"
+            label="Find the invocation"
+            options={LOOKUP_OPTIONS}
+            value={current}
+            onChange={setLookup}
+          />
+        )}
+        <OperationUrl operation={operation} ingressUrl={ingressUrl} />
+      </div>
+      <div className="grid min-w-0 grid-cols-1 gap-8 @5xl/playground:grid-cols-2">
+        <div className="order-first min-w-0 @5xl/playground:order-last">
+          <TryIt
+            key={toolDraftName(tool.kind, current)}
+            service={service}
+            contract={contract}
+            operation={operation}
+            ingressUrl={ingressUrl}
+            fetcher={fetcher}
+            handlerName={toolDraftName(tool.kind, current)}
+            serviceType={serviceType}
           />
         </div>
         <OperationDocs operation={operation} root={contract.document} />
@@ -445,6 +553,37 @@ function HandlerNav({
           );
         })}
       </ul>
+      {toolGroups(contract).map(({ name, tools }) => (
+        <div key={name} className="mt-2 flex flex-col gap-2">
+          <div className="px-2 text-2xs font-medium text-subtle uppercase">
+            {name}
+          </div>
+          <ul className="flex flex-col gap-0.5">
+            {tools.map((tool) => {
+              const method = (tool.byId ?? tool.byTarget)?.method;
+              return (
+                <li key={tool.kind}>
+                  <button
+                    type="button"
+                    aria-current={
+                      toolId(tool.kind) === selected ? 'page' : undefined
+                    }
+                    className={navItemStyles({
+                      isSelected: toolId(tool.kind) === selected,
+                    })}
+                    onClick={() => onSelect(toolId(tool.kind))}
+                  >
+                    {method && <Method method={method} variant="text" />}
+                    <span className="min-w-0 flex-auto truncate">
+                      {toolLabel(tool)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </nav>
   );
 }
@@ -466,10 +605,21 @@ function HandlerPicker({
         className="min-w-0 rounded-lg border border-inset bg-inset px-2 py-1 font-mono text-0.5xs text-primary focus:outline-2 focus:outline-focus"
         onChange={(event) => onSelect(event.target.value)}
       >
-        {contract.handlers.map(({ name }) => (
-          <option key={name} value={name}>
-            {name}
-          </option>
+        <optgroup label="Handlers">
+          {contract.handlers.map(({ name }) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </optgroup>
+        {toolGroups(contract).map(({ name, tools }) => (
+          <optgroup key={name} label={name}>
+            {tools.map((tool) => (
+              <option key={tool.kind} value={toolId(tool.kind)}>
+                {toolLabel(tool)}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
     </label>
@@ -596,6 +746,9 @@ export function Playground({
     startTransition(() => onSelect(next));
   };
 
+  const selectedTool = contract?.invocationTools.find(
+    (tool) => toolId(tool.kind) === selectedName,
+  );
   const selectedHandler = useMemo(
     () =>
       contract?.handlers.find(({ name }) => name === selectedName) ??
@@ -603,6 +756,9 @@ export function Playground({
       contract?.handlers[0],
     [contract, selectedName, legacy],
   );
+  const selectedId = selectedTool
+    ? toolId(selectedTool.kind)
+    : selectedHandler?.name;
   const modeFor = (handler: ContractHandler) =>
     modes[handler.name] ??
     (legacy?.handler === handler
@@ -635,30 +791,45 @@ export function Playground({
           <HandlerNav
             contract={contract}
             handlerKinds={handlerKinds}
-            selected={selectedHandler?.name}
+            selected={selectedId}
             onSelect={select}
           />
         </div>
       )}
       <div className="min-w-0 flex-auto overflow-auto">
         <div className="mx-auto flex max-w-7xl min-w-0 flex-col gap-5 p-4 @3xl/playground:p-6">
-          {showServiceHeader && (
+          {showServiceHeader ? (
             <ServiceHeader
               contract={contract}
               ingressUrl={ingressUrl}
               actions={headerActions}
             />
+          ) : (
+            contract.description && (
+              <MarkdownDescription className="text-sm" collapsible>
+                {contract.description}
+              </MarkdownDescription>
+            )
           )}
           <div
             className={showNavigation ? '@3xl/playground:hidden' : undefined}
           >
             <HandlerPicker
               contract={contract}
-              selected={selectedHandler?.name}
+              selected={selectedId}
               onSelect={select}
             />
           </div>
-          {selectedHandler ? (
+          {selectedTool ? (
+            <ToolView
+              key={toolId(selectedTool.kind)}
+              service={service}
+              contract={contract}
+              tool={selectedTool}
+              ingressUrl={ingressUrl}
+              serviceType={serviceType}
+            />
+          ) : selectedHandler ? (
             <HandlerView
               key={selectedHandler.name}
               service={service}

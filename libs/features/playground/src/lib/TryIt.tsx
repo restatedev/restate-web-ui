@@ -34,6 +34,7 @@ import {
 import { BodyEditor } from './BodyEditor';
 import { CodeSamples } from './CodeSamples';
 import { DocsSection } from './OperationDocs';
+import { toolDraftName } from './names';
 import { ParameterField } from './ParameterField';
 import {
   InvocationPanel,
@@ -119,21 +120,24 @@ function bodyModelUri(
 }
 
 function editorSchemas(service: string, contract: ServiceContract) {
-  return contract.handlers.flatMap((handler) => {
-    const body = Object.values(handler.modes).find(
-      (operation) => operation?.body,
-    )?.body;
+  const bodies = [
+    ...contract.handlers.map((handler) => ({
+      name: handler.name,
+      body: Object.values(handler.modes).find((operation) => operation?.body)
+        ?.body,
+    })),
+    ...contract.invocationTools.map((tool) => ({
+      name: toolDraftName(tool.kind, 'byTarget'),
+      body: tool.byTarget?.body,
+    })),
+  ];
+  return bodies.flatMap(({ name, body }) => {
     if (!body || !isJsonContentType(body.contentType)) {
       return [];
     }
     const schema = bundleSchema(body.schema, contract.document);
     return schema
-      ? [
-          {
-            uri: bodyModelUri(service, handler.name, body.contentType),
-            schema,
-          },
-        ]
+      ? [{ uri: bodyModelUri(service, name, body.contentType), schema }]
       : [];
   });
 }
@@ -291,7 +295,7 @@ export interface TryItProps {
   handlerName: string;
   handlerKind?: RestateHandlerKind;
   serviceType?: RestateServiceType;
-  mode: HandlerMode;
+  mode?: HandlerMode;
 }
 
 export function TryIt({
@@ -507,27 +511,28 @@ export function TryIt({
   const delay = roleValue('delay');
   const samples = {
     request: sampleRequest,
-    client: serviceType
-      ? {
-          ingressUrl: ingressUrl.replace(/\/+$/, ''),
-          serviceName: contract.name,
-          serviceType,
-          handlerName,
-          handlerKind,
-          mode,
-          key: roleValue('key'),
-          scope: roleValue('scope'),
-          idempotencyKey: roleValue('idempotencyKey') || undefined,
-          limitKey: roleValue('limitKey') || undefined,
-          delayMs: delay ? humanTimeToMs(delay) || undefined : undefined,
-          body: bodyValue?.kind === 'text' ? bodyValue.text : undefined,
-          bodyContentType: body?.contentType,
-          authorization:
-            contract.security.bearer || apiKey
-              ? `Bearer ${API_KEY_PLACEHOLDER}`
-              : undefined,
-        }
-      : undefined,
+    client:
+      serviceType && mode
+        ? {
+            ingressUrl: ingressUrl.replace(/\/+$/, ''),
+            serviceName: contract.name,
+            serviceType,
+            handlerName,
+            handlerKind,
+            mode,
+            key: roleValue('key'),
+            scope: roleValue('scope'),
+            idempotencyKey: roleValue('idempotencyKey') || undefined,
+            limitKey: roleValue('limitKey') || undefined,
+            delayMs: delay ? humanTimeToMs(delay) || undefined : undefined,
+            body: bodyValue?.kind === 'text' ? bodyValue.text : undefined,
+            bodyContentType: body?.contentType,
+            authorization:
+              contract.security.bearer || apiKey
+                ? `Bearer ${API_KEY_PLACEHOLDER}`
+                : undefined,
+          }
+        : undefined,
   };
   const deferredSamples = useDeferredValue(samples);
 
