@@ -22,4 +22,9 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
       "Use the server's secondary index tables for invocation lists sorted by last transition, virtual object details, and flow control.",
     serverFeature: 'indexes_v1',
   },
+  FEATURE_NEW_PLAYGROUND: {
+    title: 'New playground',
+    description:
+      'Use the new built-in playground and schema viewer instead of Stoplight Elements.',
+  },
 };

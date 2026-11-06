@@ -322,6 +322,15 @@
     },
     {
       "path": "./libs/features/local-dev"
+    },
+    {
+      "path": "./libs/util/openapi"
+    },
+    {
+      "path": "./libs/ui/json-schema"
+    },
+    {
+      "path": "./libs/features/playground"
     }
   ]
 }

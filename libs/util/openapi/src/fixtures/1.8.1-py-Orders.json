@@ -1,0 +1,1910 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Orders",
+    "description": "Creates and inspects orders (Python).",
+    "version": "1",
+    "x-restate-extensions": {
+      "sdk": "python",
+      "team": "commerce"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/",
+      "description": "Restate Ingress URL"
+    }
+  ],
+  "paths": {
+    "/restate/call/Orders/tree": {
+      "post": {
+        "summary": "tree",
+        "description": "Call Orders handler tree and wait for response",
+        "operationId": "tree",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/treeRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/treeResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Orders/tree": {
+      "post": {
+        "summary": "tree (with scope)",
+        "description": "Call Orders handler tree within the concurrency scope and wait for response",
+        "operationId": "treeScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/treeRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/treeResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Orders/echo": {
+      "post": {
+        "summary": "echo",
+        "description": "Call Orders handler echo and wait for response",
+        "operationId": "echo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/echoRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/echoResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Orders/echo": {
+      "post": {
+        "summary": "echo (with scope)",
+        "description": "Call Orders handler echo within the concurrency scope and wait for response",
+        "operationId": "echoScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/echoRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/echoResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Orders/upload": {
+      "post": {
+        "summary": "upload",
+        "description": "Call Orders handler upload and wait for response",
+        "operationId": "upload",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "$ref": "#/components/schemas/uploadRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/uploadResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Orders/upload": {
+      "post": {
+        "summary": "upload (with scope)",
+        "description": "Call Orders handler upload within the concurrency scope and wait for response",
+        "operationId": "uploadScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "$ref": "#/components/schemas/uploadRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/uploadResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Orders/ping": {
+      "post": {
+        "summary": "ping",
+        "description": "Call Orders handler ping and wait for response",
+        "operationId": "ping",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Orders/ping": {
+      "post": {
+        "summary": "ping (with scope)",
+        "description": "Call Orders handler ping within the concurrency scope and wait for response",
+        "operationId": "pingScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Orders/lookup": {
+      "post": {
+        "summary": "lookup",
+        "description": "Look up an order; returns null when it does not exist.",
+        "operationId": "lookup",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lookupRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lookupResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Orders/lookup": {
+      "post": {
+        "summary": "lookup (with scope)",
+        "description": "Look up an order; returns null when it does not exist.",
+        "operationId": "lookupScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lookupRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/lookupResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Orders/classify": {
+      "post": {
+        "summary": "classify",
+        "description": "Call Orders handler classify and wait for response",
+        "operationId": "classify",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classifyRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classifyResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Orders/classify": {
+      "post": {
+        "summary": "classify (with scope)",
+        "description": "Call Orders handler classify within the concurrency scope and wait for response",
+        "operationId": "classifyScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classifyRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classifyResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/call/Orders/create": {
+      "post": {
+        "summary": "create",
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "create",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "x-restate-extensions": {
+          "visibility": "public",
+          "sla": "200ms"
+        }
+      }
+    },
+    "/restate/scope/{scope}/call/Orders/create": {
+      "post": {
+        "summary": "create (with scope)",
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "createScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "x-restate-extensions": {
+          "visibility": "public",
+          "sla": "200ms"
+        }
+      }
+    },
+    "/restate/send/Orders/tree": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "tree",
+        "description": "Send request to Orders handler tree",
+        "operationId": "treeSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/treeRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Orders/tree": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "tree (with scope)",
+        "description": "Send request to Orders handler tree within the concurrency scope",
+        "operationId": "treeSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/treeRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Orders/echo": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "echo",
+        "description": "Send request to Orders handler echo",
+        "operationId": "echoSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/echoRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Orders/echo": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "echo (with scope)",
+        "description": "Send request to Orders handler echo within the concurrency scope",
+        "operationId": "echoSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/echoRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Orders/upload": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "upload",
+        "description": "Send request to Orders handler upload",
+        "operationId": "uploadSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "$ref": "#/components/schemas/uploadRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Orders/upload": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "upload (with scope)",
+        "description": "Send request to Orders handler upload within the concurrency scope",
+        "operationId": "uploadSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "$ref": "#/components/schemas/uploadRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Orders/ping": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "ping",
+        "description": "Send request to Orders handler ping",
+        "operationId": "pingSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Orders/ping": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "ping (with scope)",
+        "description": "Send request to Orders handler ping within the concurrency scope",
+        "operationId": "pingSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Orders/lookup": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "lookup",
+        "description": "Look up an order; returns null when it does not exist.",
+        "operationId": "lookupSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lookupRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Orders/lookup": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "lookup (with scope)",
+        "description": "Look up an order; returns null when it does not exist.",
+        "operationId": "lookupSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/lookupRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Orders/classify": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "classify",
+        "description": "Send request to Orders handler classify",
+        "operationId": "classifySend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classifyRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Orders/classify": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "classify (with scope)",
+        "description": "Send request to Orders handler classify within the concurrency scope",
+        "operationId": "classifySendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classifyRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/send/Orders/create": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "create",
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "createSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "x-restate-extensions": {
+          "visibility": "public",
+          "sla": "200ms"
+        }
+      }
+    },
+    "/restate/scope/{scope}/send/Orders/create": {
+      "post": {
+        "tags": ["Send to handler"],
+        "summary": "create (with scope)",
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "createSendScoped",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scope"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/limitKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "x-restate-extensions": {
+          "visibility": "public",
+          "sla": "200ms"
+        }
+      }
+    },
+    "/restate/attach/{invocationId}": {
+      "get": {
+        "tags": ["Invocations output and status"],
+        "summary": "Attach to invocation by id",
+        "description": "Attach to a running invocation and wait for it to finish.",
+        "operationId": "attachInvocation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/invocationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/attach": {
+      "post": {
+        "tags": ["Invocations output and status"],
+        "summary": "Attach to invocation by target",
+        "description": "Attach to a running invocation and wait for it to finish.",
+        "operationId": "attachInvocationByTarget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestateInvocationTarget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/output/{invocationId}": {
+      "get": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation output by id",
+        "description": "Get the output of an invocation, if it has already completed.",
+        "operationId": "getInvocationOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/invocationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/output": {
+      "post": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation output by target",
+        "description": "Get the output of an invocation, if it has already completed.",
+        "operationId": "getInvocationOutputByTarget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestateInvocationTarget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation output. The content type and body mirror the invoked handler's response."
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/status/{invocationId}": {
+      "get": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation status by id",
+        "description": "Get the lifecycle status of an invocation.",
+        "operationId": "getInvocationStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/invocationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invocation status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestateInvocationStatus"
+                },
+                "example": {
+                  "stage": "completed",
+                  "error": {
+                    "code": 500,
+                    "message": "My user-thrown terminal error"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/restate/status": {
+      "post": {
+        "tags": ["Invocations output and status"],
+        "summary": "Get invocation status by target",
+        "description": "Get the lifecycle status of an invocation.",
+        "operationId": "getInvocationStatusByTarget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestateInvocationTarget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Invocation status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestateInvocationStatus"
+                },
+                "example": {
+                  "stage": "completed",
+                  "error": {
+                    "code": 500,
+                    "message": "My user-thrown terminal error"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RestateError": {
+        "type": "object",
+        "title": "RestateError",
+        "description": "Generic error used by Restate to propagate Terminal errors/exceptions back to callers",
+        "properties": {
+          "code": {
+            "type": "number",
+            "title": "error code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Error message"
+          },
+          "source": {
+            "type": "string",
+            "title": "Error source",
+            "description": "Discriminates errors generated by the ingress from the terminal outcome of the invocation. 'ingress' errors carry a Restate-controlled HTTP status code following the usual HTTP semantics, while 'invocation' errors carry a user-controlled status code. Also available in the 'x-restate-error-source' response header.",
+            "enum": ["ingress", "invocation"]
+          },
+          "stacktrace": {
+            "type": "string",
+            "title": "Stacktrace of the error"
+          },
+          "metadata": {
+            "type": "object",
+            "title": "Additional metadata map",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["message", "source"],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "code": 500,
+            "message": "My user-thrown terminal error",
+            "source": "invocation",
+            "stacktrace": "TerminalError: My user-thrown terminal error\n    at greet (greeter.ts:12:11)"
+          },
+          {
+            "message": "invocation not found",
+            "source": "ingress"
+          }
+        ]
+      },
+      "RestateInvocationStatus": {
+        "type": "object",
+        "title": "RestateInvocationStatus",
+        "description": "Status of an invocation.",
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Lifecycle stage",
+            "description": "'created' (accepted but not yet started), 'started' (running), or 'completed' (finished, with either success or failure).",
+            "enum": ["created", "started", "completed"]
+          },
+          "error": {
+            "type": "object",
+            "title": "Terminal error",
+            "description": "Present only when 'stage' is 'completed' and the invocation failed; omitted otherwise.",
+            "properties": {
+              "code": {
+                "type": "number",
+                "title": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "title": "Error message"
+              },
+              "stacktrace": {
+                "type": "string",
+                "title": "Stacktrace of the error"
+              },
+              "metadata": {
+                "type": "object",
+                "title": "Additional metadata map",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["code", "message"]
+          }
+        },
+        "required": ["stage"],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "stage": "started"
+          },
+          {
+            "stage": "completed",
+            "error": {
+              "code": 500,
+              "message": "My user-thrown terminal error",
+              "stacktrace": "TerminalError: My user-thrown terminal error\n    at greet (greeter.ts:12:11)"
+            }
+          }
+        ]
+      },
+      "RestateInvocationTarget": {
+        "title": "RestateInvocationTarget",
+        "description": "Identifies an invocation, either directly by its id, or indirectly via a workflow key or an idempotency target.",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "By invocation id",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": ["invocation"]
+              },
+              "invocationId": {
+                "type": "string"
+              }
+            },
+            "required": ["target", "invocationId"]
+          },
+          {
+            "type": "object",
+            "title": "By workflow key",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": ["workflow"]
+              },
+              "scope": {
+                "type": "string"
+              },
+              "workflowName": {
+                "type": "string"
+              },
+              "workflowKey": {
+                "type": "string"
+              }
+            },
+            "required": ["target", "workflowName", "workflowKey"]
+          },
+          {
+            "type": "object",
+            "title": "By idempotency target",
+            "properties": {
+              "target": {
+                "type": "string",
+                "enum": ["idempotentInvocation"]
+              },
+              "scope": {
+                "type": "string"
+              },
+              "service": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "idempotencyKey": {
+                "type": "string"
+              }
+            },
+            "required": ["target", "service", "handler", "idempotencyKey"]
+          }
+        ]
+      },
+      "classifyRequest": {
+        "$defs": {
+          "ImageItem": {
+            "properties": {
+              "type": {
+                "const": "image",
+                "title": "Type",
+                "type": "string"
+              },
+              "url": {
+                "title": "Url",
+                "type": "string"
+              },
+              "width": {
+                "title": "Width",
+                "type": "integer"
+              },
+              "height": {
+                "title": "Height",
+                "type": "integer"
+              }
+            },
+            "required": ["type", "url", "width", "height"],
+            "title": "ImageItem",
+            "type": "object"
+          },
+          "TextItem": {
+            "properties": {
+              "type": {
+                "const": "text",
+                "title": "Type",
+                "type": "string"
+              },
+              "content": {
+                "title": "Content",
+                "type": "string"
+              }
+            },
+            "required": ["type", "content"],
+            "title": "TextItem",
+            "type": "object"
+          }
+        },
+        "discriminator": {
+          "mapping": {
+            "image": "#/$defs/ImageItem",
+            "text": "#/$defs/TextItem"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/classifyRequest/$defs/TextItem"
+          },
+          {
+            "$ref": "#/components/schemas/classifyRequest/$defs/ImageItem"
+          }
+        ],
+        "title": "Classification"
+      },
+      "classifyResponse": {
+        "type": "string"
+      },
+      "createRequest": {
+        "$defs": {
+          "Address": {
+            "description": "Postal address.",
+            "properties": {
+              "street": {
+                "maxLength": 200,
+                "minLength": 1,
+                "title": "Street",
+                "type": "string"
+              },
+              "city": {
+                "description": "City name",
+                "title": "City",
+                "type": "string"
+              },
+              "postal_code": {
+                "pattern": "^[0-9]{5}$",
+                "title": "Postal Code",
+                "type": "string"
+              },
+              "country": {
+                "description": "ISO 3166-1 alpha-2 country code",
+                "maxLength": 2,
+                "minLength": 2,
+                "title": "Country",
+                "type": "string"
+              }
+            },
+            "required": ["street", "city", "postal_code", "country"],
+            "title": "Address",
+            "type": "object"
+          },
+          "LineItem": {
+            "properties": {
+              "sku": {
+                "description": "Stock keeping unit",
+                "title": "Sku",
+                "type": "string"
+              },
+              "quantity": {
+                "maximum": 100,
+                "minimum": 1,
+                "title": "Quantity",
+                "type": "integer"
+              },
+              "unit_price": {
+                "exclusiveMinimum": 0,
+                "title": "Unit Price",
+                "type": "number"
+              }
+            },
+            "required": ["sku", "quantity", "unit_price"],
+            "title": "LineItem",
+            "type": "object"
+          },
+          "Status": {
+            "enum": ["draft", "submitted", "paid"],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "description": "Request to create an order.",
+        "properties": {
+          "order_id": {
+            "description": "Client-generated order id",
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "customerEmail": {
+            "examples": ["jane@example.com"],
+            "pattern": "^[^@\\s]+@[^@\\s]+$",
+            "title": "Customeremail",
+            "type": "string"
+          },
+          "placed_at": {
+            "format": "date-time",
+            "title": "Placed At",
+            "type": "string"
+          },
+          "kind": {
+            "const": "order",
+            "title": "Kind",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/createRequest/$defs/Status",
+            "default": "draft"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "maximum": 10,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Priority"
+          },
+          "gift_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gift Message"
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/createRequest/$defs/Address"
+          },
+          "billing_address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/createRequest/$defs/Address"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "items": {
+            "description": "At least one line item",
+            "items": {
+              "$ref": "#/components/schemas/createRequest/$defs/LineItem"
+            },
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          },
+          "counters": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Arbitrary named counters",
+            "title": "Counters",
+            "type": "object"
+          },
+          "discount": {
+            "default": 0,
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Discount",
+            "type": "number"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Free text notes",
+            "title": "Notes"
+          }
+        },
+        "required": [
+          "order_id",
+          "customerEmail",
+          "placed_at",
+          "kind",
+          "gift_message",
+          "shipping_address",
+          "items"
+        ],
+        "title": "CreateOrderRequest",
+        "type": "object"
+      },
+      "createResponse": {
+        "properties": {
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          },
+          "currency": {
+            "enum": ["EUR", "USD"],
+            "title": "Currency",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": ["order_id", "total", "currency", "created_at"],
+        "title": "CreateOrderResponse",
+        "type": "object"
+      },
+      "echoRequest": {
+        "type": "string"
+      },
+      "echoResponse": {
+        "type": "string"
+      },
+      "lookupRequest": {
+        "type": "string"
+      },
+      "lookupResponse": {
+        "properties": {
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          },
+          "currency": {
+            "enum": ["EUR", "USD"],
+            "title": "Currency",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": ["order_id", "total", "currency", "created_at"],
+        "title": "CreateOrderResponse",
+        "type": ["object", "null"]
+      },
+      "treeRequest": {
+        "$defs": {
+          "TreeNode": {
+            "properties": {
+              "value": {
+                "title": "Value",
+                "type": "string"
+              },
+              "children": {
+                "default": [],
+                "items": {
+                  "$ref": "#/components/schemas/treeRequest/$defs/TreeNode"
+                },
+                "title": "Children",
+                "type": "array"
+              }
+            },
+            "required": ["value"],
+            "title": "TreeNode",
+            "type": "object"
+          }
+        },
+        "$ref": "#/components/schemas/treeRequest/$defs/TreeNode"
+      },
+      "treeResponse": {
+        "type": "integer"
+      },
+      "uploadRequest": {},
+      "uploadResponse": {
+        "type": "integer"
+      }
+    },
+    "responses": {
+      "GenericError": {
+        "description": "Error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            },
+            "example": {
+              "code": 500,
+              "message": "Internal server error",
+              "source": "invocation"
+            }
+          }
+        }
+      },
+      "InvocationNotFoundError": {
+        "description": "Invocation not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            },
+            "example": {
+              "message": "invocation not found",
+              "source": "ingress"
+            }
+          }
+        }
+      },
+      "InvocationNotReadyError": {
+        "description": "Invocation still running, output is not ready yet",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            },
+            "example": {
+              "message": "the invocation exists but has not completed yet",
+              "source": "ingress"
+            }
+          }
+        }
+      },
+      "Send": {
+        "description": "The invocation was accepted for asynchronous execution. Inspect the `status` field to tell whether this call created a new invocation (`Accepted`) or matched one that had already been accepted, e.g. via the same idempotency key (`PreviouslyAccepted`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "title": "RestateSendResponse",
+              "properties": {
+                "invocationId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "'Accepted' if this call created a new invocation, 'PreviouslyAccepted' if it matched an invocation that had already been accepted (e.g. same idempotency key).",
+                  "enum": ["Accepted", "PreviouslyAccepted"]
+                },
+                "executionTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Time when the invocation will be executed, in case 'delay' is used"
+                }
+              },
+              "required": ["invocationId", "status"],
+              "additionalProperties": false
+            },
+            "example": {
+              "invocationId": "inv_1gdJBtdVEcM942bjcDmb1c1khoaJe11Hbz",
+              "status": "Accepted"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "delay": {
+        "name": "delay",
+        "in": "query",
+        "description": "Specify the delay to execute the operation, for more info check the [delay documentation](https://docs.restate.dev/invoke/http#sending-a-delayed-message-over-http)",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "example": "10s"
+      },
+      "idempotencyKeyHeader": {
+        "name": "idempotency-key",
+        "in": "header",
+        "description": "Idempotency key to execute the request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "invocationId": {
+        "name": "invocationId",
+        "in": "path",
+        "description": "Invocation identifier.",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "key": {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "limitKeyHeader": {
+        "name": "x-restate-limit-key",
+        "in": "header",
+        "description": "Limit key applied within the concurrency scope, for more details checkout the [flow control documentation](https://docs.restate.dev/services/flow-control).",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "scope": {
+        "name": "scope",
+        "in": "path",
+        "description": "Concurrency scope, for more details checkout the [flow control documentation](https://docs.restate.dev/services/flow-control).",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Send to handler",
+      "description": "Send to handler",
+      "externalDocs": {
+        "url": "https://docs.restate.dev/invoke/http",
+        "description": null
+      }
+    },
+    {
+      "name": "Invocations output and status",
+      "description": "Attach to, read the output of, or check the status of an invocation",
+      "externalDocs": {
+        "url": "https://docs.restate.dev/invoke/http",
+        "description": null
+      }
+    }
+  ]
+}
