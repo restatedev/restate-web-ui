@@ -47,6 +47,7 @@ Thumbs.db
 .nx
 **/playwright/.auth
 test-results
+test-output
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
