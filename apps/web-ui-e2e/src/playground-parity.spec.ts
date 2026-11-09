@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test as base, type Page } from '@playwright/test';
 
 const INGRESS = 'http://127.0.0.1:58080';
 const OPENAPI_FIXTURE = join(
@@ -11,6 +11,19 @@ const SERVICE_FIXTURE = join(
   import.meta.dirname,
   'fixtures/service-Orders.json',
 );
+
+const test = base.extend<{ elementsPage: Page; playgroundPage: Page }>({
+  elementsPage: async ({ browser }, provide) => {
+    const page = await browser.newPage();
+    await provide(page);
+    await page.close();
+  },
+  playgroundPage: async ({ browser }, provide) => {
+    const page = await browser.newPage();
+    await provide(page);
+    await page.close();
+  },
+});
 
 interface CapturedRequest {
   method: string;
@@ -132,10 +145,10 @@ test.describe('playground parity with Stoplight Elements', () => {
   test.describe.configure({ timeout: 120_000 });
 
   for (const { handler, mode, operationId } of CASES) {
-    test(`${handler} (${mode}) sends the same request`, async ({ browser }) => {
-      const elementsPage = await browser.newPage();
-      const playgroundPage = await browser.newPage();
-
+    test(`${handler} (${mode}) sends the same request`, async ({
+      elementsPage,
+      playgroundPage,
+    }) => {
       const fromElements = summarize(
         await sendWithElements(elementsPage, operationId),
       );
@@ -148,11 +161,9 @@ test.describe('playground parity with Stoplight Elements', () => {
   }
 
   test('string bodies are valid JSON (intended difference)', async ({
-    browser,
+    elementsPage,
+    playgroundPage,
   }) => {
-    const elementsPage = await browser.newPage();
-    const playgroundPage = await browser.newPage();
-
     const fromElements = await sendWithElements(elementsPage, 'echo');
     const fromPlayground = await sendWithPlayground(
       playgroundPage,
@@ -166,11 +177,9 @@ test.describe('playground parity with Stoplight Elements', () => {
   });
 
   test('an empty optional text body is not sent (intended difference)', async ({
-    browser,
+    elementsPage,
+    playgroundPage,
   }) => {
-    const elementsPage = await browser.newPage();
-    const playgroundPage = await browser.newPage();
-
     const fromElements = await sendWithElements(elementsPage, 'importCsv');
     const fromPlayground = await sendWithPlayground(
       playgroundPage,
