@@ -38,6 +38,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../util/feature-flag/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/loading/tsconfig.lib.json"
     },
     {
@@ -47,22 +50,25 @@
       "path": "../../ui/dropdown/tsconfig.lib.json"
     },
     {
-      "path": "../../ui/layout/tsconfig.lib.json"
-    },
-    {
       "path": "../../ui/api/tsconfig.lib.json"
     },
     {
       "path": "../codec/tsconfig.lib.json"
     },
     {
+      "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
+    },
+    {
+      "path": "../playground/tsconfig.lib.json"
+    },
+    {
+      "path": "../../ui/layout/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/dialog/tsconfig.lib.json"
     },
     {
       "path": "../../ui/button/tsconfig.lib.json"
-    },
-    {
-      "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
     },
     {
       "path": "../deployment/tsconfig.lib.json"

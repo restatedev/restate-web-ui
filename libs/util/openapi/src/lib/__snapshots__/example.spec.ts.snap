@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateExample > builds a full example for a rich Zod schema 1`] = `
+{
+  "billingAddress": {
+    "city": "string",
+    "country": "st",
+    "postalCode": "00000",
+    "street": "string",
+  },
+  "counters": {
+    "key": 0,
+  },
+  "customerEmail": "jane@example.com",
+  "discount": 0,
+  "extra": {},
+  "giftMessage": "string",
+  "items": [
+    {
+      "quantity": 1,
+      "sku": "string",
+      "unitPrice": 0.1,
+    },
+  ],
+  "kind": "order",
+  "notes": "string",
+  "orderId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "placedAt": "2026-01-01T00:00:00Z",
+  "priority": 0,
+  "shippingAddress": {
+    "city": "string",
+    "country": "st",
+    "postalCode": "00000",
+    "street": "string",
+  },
+  "status": "draft",
+}
+`;

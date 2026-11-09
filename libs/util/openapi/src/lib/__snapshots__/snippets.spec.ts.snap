@@ -1,0 +1,388 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`go SDK client > calls a workflow and a scoped service without input 1`] = `
+"// go get github.com/restatedev/sdk-go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"github.com/restatedev/sdk-go/ingress"
+)
+
+func main() {
+	client := ingress.NewClient("http://localhost:8080")
+	input := json.RawMessage(\`{
+	  "email": "jane@example.com"
+	}\`)
+	output, err := ingress.Workflow[json.RawMessage, json.RawMessage](client, "Signup", "jane", "run").
+		Request(context.Background(), input)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(output))
+}"
+`;
+
+exports[`go SDK client > calls a workflow and a scoped service without input 2`] = `
+"// go get github.com/restatedev/sdk-go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	restate "github.com/restatedev/sdk-go"
+	"github.com/restatedev/sdk-go/ingress"
+)
+
+func main() {
+	client := ingress.NewClient("http://localhost:8080")
+	input := restate.Void{}
+	output, err := ingress.Service[restate.Void, json.RawMessage](client, "acme.Orders", "ping", restate.WithScope("tenant-1")).
+		Request(context.Background(), input, restate.WithLimitKey("team-a/user-1"))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(output))
+}"
+`;
+
+exports[`go SDK client > writes a virtual object send with a delay and an idempotency key 1`] = `
+"// go get github.com/restatedev/sdk-go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"time"
+
+	restate "github.com/restatedev/sdk-go"
+	"github.com/restatedev/sdk-go/ingress"
+)
+
+func main() {
+	client := ingress.NewClient("http://localhost:8080", ingress.WithAuthKey("<API_KEY>"))
+	input := json.RawMessage(\`{
+	  "sku": "a",
+	  "note": "$5 \\\\ off",
+	  "qty": 2,
+	  "gift": null
+	}\`)
+	handle, err := ingress.ObjectSend[json.RawMessage](client, "Cart", "user/42", "add").
+		Send(context.Background(), input, restate.WithIdempotencyKey("abc"), restate.WithDelay(10*time.Second))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(handle.Id())
+}"
+`;
+
+exports[`java SDK client > calls a workflow and a scoped service without input 1`] = `
+"// implementation("dev.restate:client:2.11.0")
+import dev.restate.client.Client;
+import dev.restate.common.Request;
+import dev.restate.common.Target;
+import dev.restate.serde.Serde;
+import java.nio.charset.StandardCharsets;
+
+public class Main {
+    public static void main(String[] args) {
+        var client = Client.connect("http://localhost:8080");
+        var json = Serde.withContentType("application/json", Serde.RAW);
+        var body = """
+            {
+              "email": "jane@example.com"
+            }
+            """.getBytes(StandardCharsets.UTF_8);
+        var result = client.call(
+            Request.of(Target.workflow("Signup", "jane", "run"), json, json, body)).response();
+        System.out.println(new String(result, StandardCharsets.UTF_8));
+    }
+}"
+`;
+
+exports[`java SDK client > calls a workflow and a scoped service without input 2`] = `
+"// implementation("dev.restate:client:2.11.0")
+import dev.restate.client.Client;
+import dev.restate.common.Request;
+import dev.restate.common.Target;
+import dev.restate.serde.Serde;
+import java.nio.charset.StandardCharsets;
+
+public class Main {
+    public static void main(String[] args) {
+        var client = Client.connect("http://localhost:8080");
+        var json = Serde.withContentType("application/json", Serde.RAW);
+        var result = client.call(
+            Request.of(Target.service("tenant-1", "acme.Orders", "ping"), Serde.VOID, json, null)
+                .limitKey("team-a/user-1")).response();
+        System.out.println(new String(result, StandardCharsets.UTF_8));
+    }
+}"
+`;
+
+exports[`java SDK client > writes a virtual object send with a delay and an idempotency key 1`] = `
+"// implementation("dev.restate:client:2.11.0")
+import dev.restate.client.Client;
+import dev.restate.client.RequestOptions;
+import dev.restate.common.Request;
+import dev.restate.common.Target;
+import dev.restate.serde.Serde;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+
+public class Main {
+    public static void main(String[] args) {
+        var client = Client.connect(
+            "http://localhost:8080",
+            RequestOptions.builder().header("Authorization", "Bearer <API_KEY>").build());
+        var json = Serde.withContentType("application/json", Serde.RAW);
+        var body = """
+            {
+              "sku": "a",
+              "note": "$5 \\\\\\\\ off",
+              "qty": 2,
+              "gift": null
+            }
+            """.getBytes(StandardCharsets.UTF_8);
+        var handle = client.send(
+            Request.of(Target.virtualObject("Cart", "user/42", "add"), json, json, body)
+                .idempotencyKey("abc"),
+            Duration.ofMillis(10000L));
+        System.out.println(handle.invocationId());
+    }
+}"
+`;
+
+exports[`python SDK client > calls a workflow and a scoped service without input 1`] = `
+"# pip install "restate-sdk[client]"
+import asyncio
+import json
+
+import restate
+
+
+async def main():
+    body = json.dumps({
+        "email": "jane@example.com",
+    }).encode()
+    async with restate.create_client("http://localhost:8080") as client:
+        result = await client.generic_call(
+            "Signup",
+            "run",
+            body,
+            key="jane",
+            headers={"Content-Type": "application/json"},
+        )
+        print(json.loads(result) if result else None)
+
+
+asyncio.run(main())"
+`;
+
+exports[`python SDK client > calls a workflow and a scoped service without input 2`] = `
+"# pip install "restate-sdk[client]"
+import asyncio
+import json
+
+import restate
+
+
+async def main():
+    body = b""
+    async with restate.create_client("http://localhost:8080") as client:
+        result = await client.generic_call(
+            "acme.Orders",
+            "ping",
+            body,
+            scope="tenant-1",
+            limit_key="team-a/user-1",
+        )
+        print(json.loads(result) if result else None)
+
+
+asyncio.run(main())"
+`;
+
+exports[`python SDK client > writes a virtual object send with a delay and an idempotency key 1`] = `
+"# pip install "restate-sdk[client]"
+import asyncio
+import json
+from datetime import timedelta
+
+import restate
+
+
+async def main():
+    body = json.dumps({
+        "sku": "a",
+        "note": "$5 \\\\ off",
+        "qty": 2,
+        "gift": None,
+    }).encode()
+    async with restate.create_client(
+        "http://localhost:8080",
+        headers={"Authorization": "Bearer <API_KEY>"},
+    ) as client:
+        handle = await client.generic_send(
+            "Cart",
+            "add",
+            body,
+            key="user/42",
+            idempotency_key="abc",
+            send_delay=timedelta(milliseconds=10000),
+            headers={"Content-Type": "application/json"},
+        )
+        print(handle.invocation_id)
+
+
+asyncio.run(main())"
+`;
+
+exports[`toCurl > quotes values for the shell 1`] = `
+"curl --request POST \\
+  --url 'http://localhost:8080/restate/send/Cart/user%2F42/add?delay=10s' \\
+  --header 'Accept: application/json' \\
+  --header 'idempotency-key: it'\\''s-1' \\
+  --header 'Content-Type: application/json' \\
+  --header 'Authorization: Bearer <API_KEY>' \\
+  --data-raw '{
+  "sku": "a",
+  "qty": 2,
+  "gift": null,
+  "ok": true
+}'"
+`;
+
+exports[`toCurl > quotes values for the shell 2`] = `
+"curl --request POST \\
+  --url 'http://localhost:8080/restate/call/Orders/importCsv' \\
+  --header 'Accept: text/plain' \\
+  --header 'Content-Type: text/plain' \\
+  --data-raw 'a,b
+1,'\\''2'\\'''"
+`;
+
+exports[`toFetch > stringifies JSON bodies and reads JSON responses 1`] = `
+"const response = await fetch('http://localhost:8080/restate/send/Cart/user%2F42/add?delay=10s', {
+  method: 'POST',
+  headers: {
+    'Accept': 'application/json',
+    'idempotency-key': 'it\\'s-1',
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer <API_KEY>',
+  },
+  body: JSON.stringify({
+    "sku": "a",
+    "qty": 2,
+    "gift": null,
+    "ok": true
+  }),
+});
+const data = await response.json();"
+`;
+
+exports[`toFetch > stringifies JSON bodies and reads JSON responses 2`] = `
+"const response = await fetch('http://localhost:8080/restate/call/Orders/importCsv', {
+  method: 'POST',
+  headers: {
+    'Accept': 'text/plain',
+    'Content-Type': 'text/plain',
+  },
+  body: 'a,b\\n1,\\'2\\'',
+});
+const data = await response.text();"
+`;
+
+exports[`toPython > uses Python literals for JSON bodies 1`] = `
+"import httpx
+
+response = httpx.request(
+    "POST",
+    "http://localhost:8080/restate/send/Cart/user%2F42/add?delay=10s",
+    headers={
+        "Accept": "application/json",
+        "idempotency-key": "it's-1",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer <API_KEY>",
+    },
+    json={
+        "sku": "a",
+        "qty": 2,
+        "gift": None,
+        "ok": True,
+    },
+)
+print(response.json())"
+`;
+
+exports[`toPython > uses Python literals for JSON bodies 2`] = `
+"import httpx
+
+response = httpx.request(
+    "POST",
+    "http://localhost:8080/restate/call/Orders/importCsv",
+    headers={
+        "Accept": "text/plain",
+        "Content-Type": "text/plain",
+    },
+    content="a,b\\n1,'2'",
+)
+print(response.text)"
+`;
+
+exports[`typescript SDK client > calls a workflow and a scoped service without input 1`] = `
+"import * as clients from '@restatedev/restate-sdk-clients';
+
+const rs = clients.connect({ url: 'http://localhost:8080' });
+const result = await rs.call<unknown, unknown>({
+  service: 'Signup',
+  handler: 'run',
+  key: 'jane',
+  parameter: {
+    email: "jane@example.com"
+  },
+});
+console.log(result);"
+`;
+
+exports[`typescript SDK client > calls a workflow and a scoped service without input 2`] = `
+"import * as clients from '@restatedev/restate-sdk-clients';
+
+const rs = clients.connect({ url: 'http://localhost:8080' });
+const result = await rs.call<unknown, unknown>({
+  service: 'acme.Orders',
+  handler: 'ping',
+  parameter: undefined,
+  scope: 'tenant-1',
+  opts: clients.rpc.opts({ limitKey: 'team-a/user-1' }),
+});
+console.log(result);"
+`;
+
+exports[`typescript SDK client > writes a virtual object send with a delay and an idempotency key 1`] = `
+"import * as clients from '@restatedev/restate-sdk-clients';
+
+const rs = clients.connect({
+  url: 'http://localhost:8080',
+  headers: { Authorization: 'Bearer <API_KEY>' },
+});
+const handle = await rs.send<unknown>({
+  service: 'Cart',
+  handler: 'add',
+  key: 'user/42',
+  parameter: {
+    sku: "a",
+    note: "$5 \\\\ off",
+    qty: 2,
+    gift: null
+  },
+  opts: clients.rpc.sendOpts({ idempotencyKey: 'abc', delay: 10000 }),
+});
+console.log(handle.invocationId);"
+`;

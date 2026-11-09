@@ -1,4 +1,6 @@
 import { JsonSchemaViewer } from '@restate/ui-api';
+import type { JsonSchema } from '@restate/util-openapi';
+import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import { Badge } from '@restate/ui-badge';
 import { Button } from '@restate/ui-button';
 import { DropdownSection } from '@restate/ui-dropdown';
@@ -9,7 +11,7 @@ import {
   usePopover,
 } from '@restate/ui-popover';
 import { tv } from '@restate/util-styles';
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import type {
   HandlerInputOutputView,
   HandlerInputOutputLabel,
@@ -104,11 +106,30 @@ function HandlerInputOutputPopoverShell({
   );
 }
 
+const JsonSchemaTree = lazy(() =>
+  import('@restate/ui-json-schema').then((module) => ({
+    default: module.JsonSchemaTree,
+  })),
+);
+
 function HandlerInputOutputJsonSchemaPopoverContent({
   schema,
 }: {
   schema: HandlerInputOutputJsonSchemaPopoverView['jsonSchema'];
 }) {
+  const isNewPlayground = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
+
+  if (isNewPlayground) {
+    return (
+      <Suspense fallback={null}>
+        <JsonSchemaTree
+          className="py-2"
+          schema={schema as JsonSchema}
+          mode="standalone"
+        />
+      </Suspense>
+    );
+  }
   return (
     <JsonSchemaViewer
       className="font-mono [&_.JsonSchemaViewer>*>[aria-haspopup]]:mt-2 [&_.JsonSchemaViewer>[data-test='property-description']]:mt-2 [&:has([aria-haspopup])]:min-h-32"

@@ -1,0 +1,674 @@
+{
+  "components": {
+    "parameters": {
+      "delay": {
+        "description": "Specify the delay to execute the operation, for more info check the [delay documentation](https://docs.restate.dev/invoke/http#sending-a-delayed-message-over-http)",
+        "example": "10s",
+        "in": "query",
+        "name": "delay",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "idempotencyKeyHeader": {
+        "description": "Idempotency key to execute the request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "in": "header",
+        "name": "idempotency-key",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "idempotencyKeyPath": {
+        "description": "Idempotency key used to execute the original request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "in": "path",
+        "name": "idempotencyKey",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "key": {
+        "in": "path",
+        "name": "key",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "GenericError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 500,
+              "description": "Very bad error happened",
+              "message": "Internal server error"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Error response"
+      },
+      "InvocationNotFoundError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 404,
+              "message": "Not found"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Invocation not found"
+      },
+      "InvocationNotReadyError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 470,
+              "message": "Not ready"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Invocation still running, output is not ready yet"
+      },
+      "Send": {
+        "content": {
+          "application/json": {
+            "example": {
+              "invocationId": "inv_1gdJBtdVEcM942bjcDmb1c1khoaJe11Hbz",
+              "status": "Accepted"
+            },
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "executionTime": {
+                  "description": "Time when the invocation will be executed, in case 'delay' is used",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "invocationId": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": ["Accepted", "PreviouslyAccepted"],
+                  "type": "string"
+                }
+              },
+              "required": ["invocationId", "status"],
+              "title": "RestateSendResponse",
+              "type": "object"
+            }
+          }
+        },
+        "description": "Send response"
+      }
+    },
+    "schemas": {
+      "RestateError": {
+        "additionalProperties": false,
+        "description": "Generic error used by Restate to propagate Terminal errors/exceptions back to callers",
+        "properties": {
+          "code": {
+            "title": "error code",
+            "type": "number"
+          },
+          "message": {
+            "title": "Error message",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Additional metadata map",
+            "type": "object"
+          },
+          "stacktrace": {
+            "title": "Stacktrace of the error",
+            "type": "string"
+          }
+        },
+        "required": ["message"],
+        "title": "RestateError",
+        "type": "object"
+      },
+      "addRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "quantity": {
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": ["productId", "quantity"],
+        "type": "object"
+      },
+      "addResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "maximum": 9007199254740991,
+        "minimum": -9007199254740991,
+        "type": "integer"
+      },
+      "itemsResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "note": {
+              "type": "string"
+            },
+            "productId": {
+              "type": "string"
+            },
+            "quantity": {
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          "required": ["productId", "quantity"],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    }
+  },
+  "info": {
+    "description": "A shopping cart keyed by user id.",
+    "title": "Cart",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/restate/call/Cart/{key}/add": {
+      "post": {
+        "description": "Call Cart handler add and wait for response",
+        "operationId": "add",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/addResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "add"
+      }
+    },
+    "/restate/call/Cart/{key}/clear": {
+      "post": {
+        "description": "Call Cart handler clear and wait for response",
+        "operationId": "clear",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "clear"
+      }
+    },
+    "/restate/call/Cart/{key}/items": {
+      "post": {
+        "description": "Call Cart handler items and wait for response",
+        "operationId": "items",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/itemsResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "items"
+      }
+    },
+    "/restate/invocation/Cart/{key}/add/{idempotencyKey}/attach": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with idempotency information to obtain an invocation id, then GET /restate/attach/{invocationId}. Attach to a running instance of Cart/add using the idempotency key and wait to finish",
+        "operationId": "addAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/addResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "add",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Cart/{key}/add/{idempotencyKey}/output": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with with idempotency information to obtain an invocation id, then GET /restate/output/{invocationId}. Get output of a running instance of Cart/add using idempotency key",
+        "operationId": "addOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/addResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "add",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Cart/{key}/clear/{idempotencyKey}/attach": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with idempotency information to obtain an invocation id, then GET /restate/attach/{invocationId}. Attach to a running instance of Cart/clear using the idempotency key and wait to finish",
+        "operationId": "clearAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "clear",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Cart/{key}/clear/{idempotencyKey}/output": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with with idempotency information to obtain an invocation id, then GET /restate/output/{invocationId}. Get output of a running instance of Cart/clear using idempotency key",
+        "operationId": "clearOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {}
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "clear",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Cart/{key}/items/{idempotencyKey}/attach": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with idempotency information to obtain an invocation id, then GET /restate/attach/{invocationId}. Attach to a running instance of Cart/items using the idempotency key and wait to finish",
+        "operationId": "itemsAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/itemsResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "items",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Cart/{key}/items/{idempotencyKey}/output": {
+      "get": {
+        "deprecated": true,
+        "description": "Deprecated: use POST /restate/lookup with with idempotency information to obtain an invocation id, then GET /restate/output/{invocationId}. Get output of a running instance of Cart/items using idempotency key",
+        "operationId": "itemsOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/itemsResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "items",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/send/Cart/{key}/add": {
+      "post": {
+        "description": "Send request to Cart handler add",
+        "operationId": "addSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "add",
+        "tags": ["Send"]
+      }
+    },
+    "/restate/send/Cart/{key}/clear": {
+      "post": {
+        "description": "Send request to Cart handler clear",
+        "operationId": "clearSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "clear",
+        "tags": ["Send"]
+      }
+    },
+    "/restate/send/Cart/{key}/items": {
+      "post": {
+        "description": "Send request to Cart handler items",
+        "operationId": "itemsSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/key"
+          },
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "items",
+        "tags": ["Send"]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Restate Ingress URL",
+      "url": "http://localhost:8080/"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Request response to handler",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Request Response"
+    },
+    {
+      "description": "Send to handler",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Send"
+    },
+    {
+      "description": "Attach to invocation",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Attach"
+    },
+    {
+      "description": "Get invocation output",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Get Output"
+    }
+  ]
+}

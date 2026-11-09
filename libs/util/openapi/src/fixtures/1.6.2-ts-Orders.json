@@ -1,0 +1,1585 @@
+{
+  "components": {
+    "parameters": {
+      "delay": {
+        "description": "Specify the delay to execute the operation, for more info check the [delay documentation](https://docs.restate.dev/invoke/http#sending-a-delayed-message-over-http)",
+        "example": "10s",
+        "in": "query",
+        "name": "delay",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "idempotencyKeyHeader": {
+        "description": "Idempotency key to execute the request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "in": "header",
+        "name": "idempotency-key",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "idempotencyKeyPath": {
+        "description": "Idempotency key used to execute the original request, for more details checkout the [idempotency key documentation](https://docs.restate.dev/invoke/http#invoke-a-handler-idempotently).",
+        "in": "path",
+        "name": "idempotencyKey",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "key": {
+        "in": "path",
+        "name": "key",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "GenericError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 500,
+              "description": "Very bad error happened",
+              "message": "Internal server error"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Error response"
+      },
+      "InvocationNotFoundError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 404,
+              "message": "Not found"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Invocation not found"
+      },
+      "InvocationNotReadyError": {
+        "content": {
+          "application/json": {
+            "example": {
+              "code": 470,
+              "message": "Not ready"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/RestateError"
+            }
+          }
+        },
+        "description": "Invocation still running, output is not ready yet"
+      },
+      "Send": {
+        "content": {
+          "application/json": {
+            "example": {
+              "invocationId": "inv_1gdJBtdVEcM942bjcDmb1c1khoaJe11Hbz",
+              "status": "Accepted"
+            },
+            "schema": {
+              "additionalProperties": false,
+              "properties": {
+                "executionTime": {
+                  "description": "Time when the invocation will be executed, in case 'delay' is used",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "invocationId": {
+                  "type": "string"
+                },
+                "status": {
+                  "enum": ["Accepted", "PreviouslyAccepted"],
+                  "type": "string"
+                }
+              },
+              "required": ["invocationId", "status"],
+              "title": "RestateSendResponse",
+              "type": "object"
+            }
+          }
+        },
+        "description": "Send response"
+      }
+    },
+    "schemas": {
+      "RestateError": {
+        "additionalProperties": false,
+        "description": "Generic error used by Restate to propagate Terminal errors/exceptions back to callers",
+        "properties": {
+          "code": {
+            "title": "error code",
+            "type": "number"
+          },
+          "message": {
+            "title": "Error message",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Additional metadata map",
+            "type": "object"
+          },
+          "stacktrace": {
+            "title": "Stacktrace of the error",
+            "type": "string"
+          }
+        },
+        "required": ["message"],
+        "title": "RestateError",
+        "type": "object"
+      },
+      "classifyRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "content": {
+                "type": "string"
+              },
+              "type": {
+                "const": "text",
+                "type": "string"
+              }
+            },
+            "required": ["type", "content"],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "height": {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              "type": {
+                "const": "image",
+                "type": "string"
+              },
+              "url": {
+                "format": "uri",
+                "type": "string"
+              },
+              "width": {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              }
+            },
+            "required": ["type", "url", "width", "height"],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "empty",
+                "type": "string"
+              }
+            },
+            "required": ["type"],
+            "type": "object"
+          }
+        ]
+      },
+      "classifyResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": ["string", "number", "boolean"]
+      },
+      "createRequest": {
+        "$defs": {
+          "Address": {
+            "additionalProperties": false,
+            "description": "Postal address",
+            "properties": {
+              "city": {
+                "description": "City name",
+                "type": "string"
+              },
+              "country": {
+                "description": "ISO 3166-1 alpha-2 country code",
+                "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+              },
+              "postalCode": {
+                "pattern": "^[0-9]{5}$",
+                "type": "string"
+              },
+              "street": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": ["street", "city", "postalCode", "country"],
+            "title": "Address",
+            "type": "object"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "description": "Request to create an order",
+        "properties": {
+          "billingAddress": {
+            "$ref": "#/components/schemas/createRequest/$defs/Address"
+          },
+          "counters": {
+            "additionalProperties": {
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "description": "Arbitrary named counters",
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "customerEmail": {
+            "examples": ["jane@example.com"],
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "type": "string"
+          },
+          "discount": {
+            "default": 0,
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "extra": {},
+          "giftMessage": {
+            "type": ["string", "null"]
+          },
+          "items": {
+            "description": "At least one line item",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "quantity": {
+                  "maximum": 100,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "sku": {
+                  "description": "Stock keeping unit",
+                  "type": "string"
+                },
+                "unitPrice": {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                }
+              },
+              "required": ["sku", "quantity", "unitPrice"],
+              "type": "object"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "kind": {
+            "const": "order",
+            "type": "string"
+          },
+          "notes": {
+            "description": "Free text notes",
+            "maxLength": 500,
+            "type": "string"
+          },
+          "orderId": {
+            "description": "Client-generated order id",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "placedAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "priority": {
+            "maximum": 10,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/createRequest/$defs/Address"
+          },
+          "status": {
+            "default": "draft",
+            "enum": ["draft", "submitted", "paid"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderId",
+          "customerEmail",
+          "placedAt",
+          "kind",
+          "status",
+          "giftMessage",
+          "shippingAddress",
+          "items",
+          "counters",
+          "discount"
+        ],
+        "type": "object"
+      },
+      "createResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "currency": {
+            "enum": ["EUR", "USD"],
+            "type": "string"
+          },
+          "estimatedDelivery": {
+            "anyOf": [
+              {
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "orderId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "orderId",
+          "total",
+          "currency",
+          "estimatedDelivery",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "echoRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      },
+      "echoResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      },
+      "forestRequest": {
+        "$defs": {
+          "__schema0": {
+            "additionalProperties": false,
+            "properties": {
+              "children": {
+                "items": {
+                  "$ref": "#/components/schemas/forestRequest/$defs/__schema0"
+                },
+                "type": "array"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": ["value", "children"],
+            "type": "object"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "trees": {
+            "items": {
+              "$ref": "#/components/schemas/forestRequest/$defs/__schema0"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["label", "trees"],
+        "type": "object"
+      },
+      "forestResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "maximum": 9007199254740991,
+        "minimum": -9007199254740991,
+        "type": "integer"
+      },
+      "treeRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/treeRequest"
+            },
+            "type": "array"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": ["value", "children"],
+        "type": "object"
+      },
+      "treeResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "maximum": 9007199254740991,
+        "minimum": -9007199254740991,
+        "type": "integer"
+      },
+      "uploadResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": ["size"],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Creates and inspects orders.",
+    "title": "Orders",
+    "version": "1",
+    "x-restate-extensions": {
+      "owner": "orders@example.com",
+      "team": "commerce"
+    }
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/Orders/classify": {
+      "post": {
+        "description": "Call Orders handler classify and wait for response",
+        "operationId": "classify",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classifyRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classifyResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "classify"
+      }
+    },
+    "/Orders/classify/send": {
+      "post": {
+        "description": "Send request to Orders handler classify",
+        "operationId": "classifySend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/classifyRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "classify",
+        "tags": ["Send"]
+      }
+    },
+    "/Orders/create": {
+      "post": {
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "create",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "create",
+        "x-restate-extensions": {
+          "sla": "200ms",
+          "visibility": "public"
+        }
+      }
+    },
+    "/Orders/create/send": {
+      "post": {
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "createSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "create",
+        "tags": ["Send"],
+        "x-restate-extensions": {
+          "sla": "200ms",
+          "visibility": "public"
+        }
+      }
+    },
+    "/Orders/echo": {
+      "post": {
+        "description": "Call Orders handler echo and wait for response",
+        "operationId": "echo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/echoRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/echoResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "echo"
+      }
+    },
+    "/Orders/echo/send": {
+      "post": {
+        "description": "Send request to Orders handler echo",
+        "operationId": "echoSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/echoRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "echo",
+        "tags": ["Send"]
+      }
+    },
+    "/Orders/forest": {
+      "post": {
+        "description": "Call Orders handler forest and wait for response",
+        "operationId": "forest",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/forestRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/forestResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "forest"
+      }
+    },
+    "/Orders/forest/send": {
+      "post": {
+        "description": "Send request to Orders handler forest",
+        "operationId": "forestSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/forestRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "forest",
+        "tags": ["Send"]
+      }
+    },
+    "/Orders/importCsv": {
+      "post": {
+        "description": "Import orders from CSV; returns a plain-text report.",
+        "operationId": "importCsv",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "text/*": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {}
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "importCsv"
+      }
+    },
+    "/Orders/importCsv/send": {
+      "post": {
+        "description": "Import orders from CSV; returns a plain-text report.",
+        "operationId": "importCsvSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "text/*": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "importCsv",
+        "tags": ["Send"]
+      }
+    },
+    "/Orders/ping": {
+      "post": {
+        "description": "Call Orders handler ping and wait for response",
+        "operationId": "ping",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "ping"
+      }
+    },
+    "/Orders/ping/send": {
+      "post": {
+        "description": "Send request to Orders handler ping",
+        "operationId": "pingSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "ping",
+        "tags": ["Send"]
+      }
+    },
+    "/Orders/tree": {
+      "post": {
+        "description": "Call Orders handler tree and wait for response",
+        "operationId": "tree",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/treeRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/treeResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "tree"
+      }
+    },
+    "/Orders/tree/send": {
+      "post": {
+        "description": "Send request to Orders handler tree",
+        "operationId": "treeSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/treeRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "tree",
+        "tags": ["Send"]
+      }
+    },
+    "/Orders/upload": {
+      "post": {
+        "description": "Call Orders handler upload and wait for response",
+        "operationId": "upload",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/uploadResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "upload"
+      }
+    },
+    "/Orders/upload/send": {
+      "post": {
+        "description": "Send request to Orders handler upload",
+        "operationId": "uploadSend",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyHeader"
+          },
+          {
+            "$ref": "#/components/parameters/delay"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Send"
+          },
+          "202": {
+            "$ref": "#/components/responses/Send"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "upload",
+        "tags": ["Send"]
+      }
+    },
+    "/restate/invocation/Orders/classify/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Attach to a running instance of Orders/classify using the idempotency key and wait to finish",
+        "operationId": "classifyAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classifyResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "classify",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Orders/classify/{idempotencyKey}/output": {
+      "get": {
+        "description": "Get output of a running instance of Orders/classify using idempotency key",
+        "operationId": "classifyOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/classifyResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "classify",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Orders/create/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "createAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "create",
+        "tags": ["Attach"],
+        "x-restate-extensions": {
+          "sla": "200ms",
+          "visibility": "public"
+        }
+      }
+    },
+    "/restate/invocation/Orders/create/{idempotencyKey}/output": {
+      "get": {
+        "description": "Create a new order from a cart snapshot.",
+        "operationId": "createOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/createResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "create",
+        "tags": ["Get Output"],
+        "x-restate-extensions": {
+          "sla": "200ms",
+          "visibility": "public"
+        }
+      }
+    },
+    "/restate/invocation/Orders/echo/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Attach to a running instance of Orders/echo using the idempotency key and wait to finish",
+        "operationId": "echoAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/echoResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "echo",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Orders/echo/{idempotencyKey}/output": {
+      "get": {
+        "description": "Get output of a running instance of Orders/echo using idempotency key",
+        "operationId": "echoOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/echoResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "echo",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Orders/forest/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Attach to a running instance of Orders/forest using the idempotency key and wait to finish",
+        "operationId": "forestAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/forestResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "forest",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Orders/forest/{idempotencyKey}/output": {
+      "get": {
+        "description": "Get output of a running instance of Orders/forest using idempotency key",
+        "operationId": "forestOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/forestResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "forest",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Orders/importCsv/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Import orders from CSV; returns a plain-text report.",
+        "operationId": "importCsvAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {}
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "importCsv",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Orders/importCsv/{idempotencyKey}/output": {
+      "get": {
+        "description": "Import orders from CSV; returns a plain-text report.",
+        "operationId": "importCsvOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {}
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "importCsv",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Orders/ping/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Attach to a running instance of Orders/ping using the idempotency key and wait to finish",
+        "operationId": "pingAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty"
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "ping",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Orders/ping/{idempotencyKey}/output": {
+      "get": {
+        "description": "Get output of a running instance of Orders/ping using idempotency key",
+        "operationId": "pingOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empty"
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "ping",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Orders/tree/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Attach to a running instance of Orders/tree using the idempotency key and wait to finish",
+        "operationId": "treeAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/treeResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "tree",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Orders/tree/{idempotencyKey}/output": {
+      "get": {
+        "description": "Get output of a running instance of Orders/tree using idempotency key",
+        "operationId": "treeOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/treeResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "tree",
+        "tags": ["Get Output"]
+      }
+    },
+    "/restate/invocation/Orders/upload/{idempotencyKey}/attach": {
+      "get": {
+        "description": "Attach to a running instance of Orders/upload using the idempotency key and wait to finish",
+        "operationId": "uploadAttach",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/uploadResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "upload",
+        "tags": ["Attach"]
+      }
+    },
+    "/restate/invocation/Orders/upload/{idempotencyKey}/output": {
+      "get": {
+        "description": "Get output of a running instance of Orders/upload using idempotency key",
+        "operationId": "uploadOutput",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/idempotencyKeyPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/uploadResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "$ref": "#/components/responses/InvocationNotFoundError"
+          },
+          "470": {
+            "$ref": "#/components/responses/InvocationNotReadyError"
+          },
+          "default": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        },
+        "summary": "upload",
+        "tags": ["Get Output"]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Restate Ingress URL",
+      "url": "http://localhost:8080/"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Request response to handler",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Request Response"
+    },
+    {
+      "description": "Send to handler",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Send"
+    },
+    {
+      "description": "Attach to invocation",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Attach"
+    },
+    {
+      "description": "Get invocation output",
+      "externalDocs": {
+        "description": null,
+        "url": "https://docs.restate.dev/invoke/http"
+      },
+      "name": "Get Output"
+    }
+  ]
+}

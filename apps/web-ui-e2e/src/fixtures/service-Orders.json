@@ -1,0 +1,444 @@
+{
+  "name": "Orders",
+  "ty": "Service",
+  "handlers": [
+    {
+      "name": "hidden",
+      "public": false,
+      "input_description": "JSON string",
+      "output_description": "application/json",
+      "input_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      },
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "forest",
+      "public": true,
+      "input_description": "JSON object",
+      "output_description": "JSON integer",
+      "input_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "trees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          }
+        },
+        "required": ["label", "trees"],
+        "additionalProperties": false,
+        "$defs": {
+          "__schema0": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "children": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/__schema0"
+                }
+              }
+            },
+            "required": ["value", "children"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "output_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "echo",
+      "public": true,
+      "input_description": "JSON string",
+      "output_description": "JSON string",
+      "input_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      },
+      "output_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      },
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "ping",
+      "public": true,
+      "input_description": "none",
+      "output_description": "none",
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "upload",
+      "public": true,
+      "input_description": "application/octet-stream",
+      "output_description": "JSON object",
+      "output_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["size"],
+        "additionalProperties": false
+      },
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "tree",
+      "public": true,
+      "input_description": "JSON object",
+      "output_description": "JSON integer",
+      "input_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#"
+            }
+          }
+        },
+        "required": ["value", "children"],
+        "additionalProperties": false
+      },
+      "output_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "classify",
+      "public": true,
+      "input_description": "application/json",
+      "output_description": "application/json",
+      "input_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "text"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": ["type", "content"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "image"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "width": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "height": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": ["type", "url", "width", "height"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "empty"
+              }
+            },
+            "required": ["type"],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "output_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": ["string", "number", "boolean"]
+      },
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "create",
+      "documentation": "Create a new order from a cart snapshot.",
+      "metadata": {
+        "sla": "200ms",
+        "visibility": "public"
+      },
+      "public": true,
+      "input_description": "JSON object",
+      "output_description": "JSON object",
+      "input_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Client-generated order id"
+          },
+          "customerEmail": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "examples": ["jane@example.com"]
+          },
+          "placedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "kind": {
+            "type": "string",
+            "const": "order"
+          },
+          "status": {
+            "default": "draft",
+            "type": "string",
+            "enum": ["draft", "submitted", "paid"]
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "giftMessage": {
+            "type": ["string", "null"]
+          },
+          "shippingAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "billingAddress": {
+            "$ref": "#/$defs/Address"
+          },
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "description": "Stock keeping unit"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "unitPrice": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": ["sku", "quantity", "unitPrice"],
+              "additionalProperties": false
+            },
+            "description": "At least one line item"
+          },
+          "counters": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "description": "Arbitrary named counters"
+          },
+          "discount": {
+            "default": 0,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "notes": {
+            "description": "Free text notes",
+            "type": "string",
+            "maxLength": 500
+          },
+          "extra": {}
+        },
+        "required": [
+          "orderId",
+          "customerEmail",
+          "placedAt",
+          "kind",
+          "status",
+          "giftMessage",
+          "shippingAddress",
+          "items",
+          "counters",
+          "discount"
+        ],
+        "additionalProperties": false,
+        "description": "Request to create an order",
+        "$defs": {
+          "Address": {
+            "type": "object",
+            "properties": {
+              "street": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "city": {
+                "type": "string",
+                "description": "City name"
+              },
+              "postalCode": {
+                "type": "string",
+                "pattern": "^[0-9]{5}$"
+              },
+              "country": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 2,
+                "description": "ISO 3166-1 alpha-2 country code"
+              }
+            },
+            "required": ["street", "city", "postalCode", "country"],
+            "additionalProperties": false,
+            "description": "Postal address",
+            "title": "Address"
+          }
+        }
+      },
+      "output_json_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "total": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "enum": ["EUR", "USD"]
+          },
+          "estimatedDelivery": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "orderId",
+          "total",
+          "currency",
+          "estimatedDelivery",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "retry_policy": {
+        "max_attempts": null
+      }
+    },
+    {
+      "name": "importCsv",
+      "documentation": "Import orders from CSV; returns a plain-text report.",
+      "public": true,
+      "input_description": "text/*",
+      "output_description": "text/plain",
+      "retry_policy": {
+        "max_attempts": null
+      }
+    }
+  ],
+  "documentation": "Creates and inspects orders.",
+  "metadata": {
+    "team": "commerce",
+    "owner": "orders@example.com"
+  },
+  "deployment_id": "dp_17uo9baLfxFjqu8vhYrdfpL",
+  "revision": 1,
+  "public": true,
+  "idempotency_retention": "1d",
+  "journal_retention": "1d",
+  "inactivity_timeout": "1m",
+  "abort_timeout": "10m",
+  "enable_lazy_state": false,
+  "state_preload_policy": "All",
+  "retry_policy": {
+    "initial_interval": "500ms",
+    "exponentiation_factor": 2.0,
+    "max_attempts": 70,
+    "max_interval": "1m",
+    "on_max_attempts": "Pause"
+  }
+}

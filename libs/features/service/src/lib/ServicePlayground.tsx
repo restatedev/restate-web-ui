@@ -34,7 +34,12 @@ import { Badge } from '@restate/ui-badge';
 import { ErrorBanner } from '@restate/ui-error';
 import { Spinner } from '@restate/ui-loading';
 import { useQueryClient } from '@tanstack/react-query';
-import { PANEL_QUERY_PARAM } from '@restate/util-panel';
+import { clearPlaygroundHandler, PANEL_QUERY_PARAM } from '@restate/util-panel';
+import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
+import {
+  NextServicePlaygroundPanel,
+  NextServicePlaygroundSheet,
+} from './NextServicePlayground';
 
 const DEFAULT_CATEGORY = 'DEFAULT';
 export function ServicePlayground() {
@@ -42,17 +47,34 @@ export function ServicePlayground() {
   const service = searchParams.get(SERVICE_PLAYGROUND_QUERY_PARAM);
   const isDocked =
     searchParams.get(PANEL_QUERY_PARAM) === SERVICE_PLAYGROUND_QUERY_PARAM;
+  const isNewPlayground = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
 
   return (
     <>
-      <ComplementaryWithSearchParam paramName={SERVICE_PLAYGROUND_QUERY_PARAM}>
-        <ServicePlaygroundComplementaryContent />
+      <ComplementaryWithSearchParam
+        paramName={SERVICE_PLAYGROUND_QUERY_PARAM}
+        onCloseQueryParam={clearPlaygroundHandler}
+      >
+        {isNewPlayground ? (
+          <NextServicePlaygroundComplementaryContent />
+        ) : (
+          <ServicePlaygroundComplementaryContent />
+        )}
       </ComplementaryWithSearchParam>
-      {service && !isDocked && (
-        <ServicePlaygroundSheetContent service={service} />
-      )}
+      {service &&
+        !isDocked &&
+        (isNewPlayground ? (
+          <NextServicePlaygroundSheet service={service} />
+        ) : (
+          <ServicePlaygroundSheetContent service={service} />
+        ))}
     </>
   );
+}
+
+function NextServicePlaygroundComplementaryContent() {
+  const service = useParamValue();
+  return service ? <NextServicePlaygroundPanel service={service} /> : null;
 }
 
 function Attribution() {
@@ -416,7 +438,10 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
   const [, setSearchParams] = useSearchParams();
 
   return (
-    <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
+    <QueryDialog
+      query={SERVICE_PLAYGROUND_QUERY_PARAM}
+      onCloseQueryParam={clearPlaygroundHandler}
+    >
       <DialogContent
         variant={'sheet'}
         className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-secondary [&_input]:text-sm'

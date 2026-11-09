@@ -4,5 +4,7 @@ export const FEATURE_FLAGS = [
   'FEATURE_OPERATOR_QUERY_LEVEL',
 
   'FEATURE_INDEXES_V1',
+
+  'FEATURE_NEW_PLAYGROUND',
 ] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];
