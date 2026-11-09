@@ -24,6 +24,44 @@ describe('generateExample', () => {
     expect(requestExample('tree')).toEqual({ value: 'string', children: [] });
   });
 
+  it('ends nullable recursion with null', () => {
+    const root = {
+      $defs: {
+        Node: {
+          type: 'object',
+          properties: {
+            value: { type: 'string' },
+            next: { anyOf: [{ $ref: '#/$defs/Node' }, { type: 'null' }] },
+          },
+          required: ['value', 'next'],
+        },
+      },
+    };
+
+    expect(generateExample({ $ref: '#/$defs/Node' }, { root })).toEqual({
+      value: 'string',
+      next: null,
+    });
+  });
+
+  it('stops recursion through allOf', () => {
+    const root = {
+      $defs: {
+        Node: {
+          type: 'object',
+          properties: {
+            value: { type: 'string' },
+            left: { allOf: [{ $ref: '#/$defs/Node' }], description: 'Left' },
+          },
+        },
+      },
+    };
+
+    expect(generateExample({ $ref: '#/$defs/Node' }, { root })).toEqual({
+      value: 'string',
+    });
+  });
+
   it('takes the first branch of a union', () => {
     expect(requestExample('classify')).toEqual({
       type: 'text',

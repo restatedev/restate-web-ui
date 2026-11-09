@@ -12,7 +12,7 @@ export function useSubmitShortcut<
         // Don't interfere if focus is inside a listbox or dialog
         if (
           event.target instanceof HTMLElement &&
-          event.target.closest('[role=dialog][data-ignore-shortcut="true"]')
+          event.target.closest('[data-ignore-shortcut="true"]')
         ) {
           return;
         }

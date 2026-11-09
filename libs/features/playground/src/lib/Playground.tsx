@@ -18,6 +18,7 @@ import { useRestateContext } from '@restate/features-restate-context';
 import { tv } from '@restate/util-styles';
 import {
   findOperation,
+  HANDLER_MODES,
   type ContractHandler,
   type ContractInvocationTool,
   type ContractOperation,
@@ -71,7 +72,7 @@ function withScope(mode: BaseMode, scoped: boolean): HandlerMode {
 }
 
 function defaultMode(handler: ContractHandler): HandlerMode {
-  return (Object.keys(handler.modes)[0] as HandlerMode | undefined) ?? 'call';
+  return HANDLER_MODES.find((mode) => handler.modes[mode]) ?? 'call';
 }
 
 function readLegacyOperationId() {
@@ -807,7 +808,7 @@ const navStyles = tv({
 export interface PlaygroundProps {
   service: string;
   handler?: string | null;
-  onSelect: (handler: string) => void;
+  onSelect: (handler: string, isHandler: boolean) => void;
   showServiceName?: boolean;
   showNavigation?: boolean;
   headerActions?: ReactNode;
@@ -853,7 +854,10 @@ function ServicePlayground({
       `${window.location.pathname}${window.location.search}`,
     );
     if (legacy) {
-      onSelect(legacy.name);
+      onSelect(
+        legacy.name,
+        contract.handlers.some((handler) => handler.name === legacy.name),
+      );
     }
   }, [contract, legacyOperationId, legacy, onSelect]);
 
@@ -864,8 +868,11 @@ function ServicePlayground({
     setSelectedName(handlerName);
   }
   const select = (next: string) => {
+    const isHandler = Boolean(
+      contract?.handlers.some((handler) => handler.name === next),
+    );
     setSelectedName(next);
-    startTransition(() => onSelect(next));
+    startTransition(() => onSelect(next, isHandler));
   };
 
   const selection = contract
@@ -876,24 +883,33 @@ function ServicePlayground({
     (legacy?.name === handler.name ? legacy.mode : undefined) ??
     defaultMode(handler);
 
-  if (error) {
-    return (
-      <div className="p-4">
-        <ErrorBanner errors={[error]} />
-      </div>
-    );
-  }
   if (!contract) {
     return (
-      <div className="flex h-full min-h-40 items-center justify-center gap-2 text-sm text-muted">
-        {isPending && <Spinner className="h-4 w-4" />}
-        {isPending ? 'Loading…' : 'Select a service'}
+      <div className="flex h-full min-h-40 flex-col">
+        {headerActions && (
+          <div className="flex justify-end gap-2 px-4 pt-4">
+            {headerActions}
+          </div>
+        )}
+        {error ? (
+          <div className="p-4">
+            <ErrorBanner errors={[error]} />
+          </div>
+        ) : (
+          <div className="flex flex-auto items-center justify-center gap-2 text-sm text-muted">
+            {isPending && <Spinner className="h-4 w-4" />}
+            {isPending ? 'Loading…' : 'Select a service'}
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className={containerStyles({ scroll, className })}>
+    <div
+      className={containerStyles({ scroll, className })}
+      data-ignore-shortcut="true"
+    >
       {showNavigation && (
         <div className="hidden border-r bg-subtle @3xl/playground:flex">
           <HandlerNav
@@ -913,6 +929,7 @@ function ServicePlayground({
             showName={showServiceName}
             actions={headerActions}
           />
+          {error && <ErrorBanner errors={[error]} />}
           <div
             className={showNavigation ? '@3xl/playground:hidden' : undefined}
           >

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useGetInvocation } from '@restate/data-access-admin-api-hooks';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
@@ -20,6 +21,8 @@ type InvocationState =
   | 'succeeded'
   | 'failed'
   | 'running'
+  | 'retrying'
+  | 'paused'
   | 'scheduled'
   | 'ready';
 
@@ -60,6 +63,8 @@ const STATE_TITLE: Record<InvocationState, string> = {
   succeeded: 'Invocation succeeded',
   failed: 'Invocation failed',
   running: 'Invocation is running',
+  retrying: 'Invocation is retrying',
+  paused: 'Invocation is paused',
   scheduled: 'Invocation is scheduled',
   ready: 'Invocation is waiting to start',
 };
@@ -67,6 +72,8 @@ const STATE_TITLE: Record<InvocationState, string> = {
 const STATE_ICON: Record<Exclude<InvocationState, 'running'>, IconName> = {
   succeeded: IconName.Check,
   failed: IconName.X,
+  retrying: IconName.Retry,
+  paused: IconName.Pause,
   scheduled: IconName.Timer,
   ready: IconName.CircleDashed,
 };
@@ -81,6 +88,14 @@ const stateStyles = tv({
       succeeded: { badge: 'bg-success text-inverse', glyph: 'stroke-3' },
       failed: { badge: 'bg-danger text-inverse', glyph: 'stroke-3' },
       running: { badge: 'text-info', glyph: 'h-4 w-4' },
+      retrying: {
+        badge: 'bg-warning-subtle text-warning-strong',
+        glyph: 'h-3 w-3',
+      },
+      paused: {
+        badge: 'bg-warning-subtle text-warning-strong',
+        glyph: 'h-3 w-3',
+      },
       scheduled: { badge: 'bg-muted text-tertiary', glyph: 'h-3.5 w-3.5' },
       ready: { badge: 'bg-muted text-tertiary', glyph: 'h-3.5 w-3.5' },
     },
@@ -103,6 +118,7 @@ function StateIcon({ state }: { state: InvocationState }) {
 function invocationState(
   tracking: Tracking,
   isScheduled: boolean,
+  adminStatus?: string,
 ): InvocationState | undefined {
   if (tracking.phase === 'completed') {
     return tracking.isFailed ? 'failed' : 'succeeded';
@@ -111,7 +127,10 @@ function invocationState(
     return undefined;
   }
   if (tracking.stage === 'started') {
-    return 'running';
+    if (adminStatus === 'backing-off') {
+      return 'retrying';
+    }
+    return adminStatus === 'paused' ? 'paused' : 'running';
   }
   if (isScheduled) {
     return 'scheduled';
@@ -240,7 +259,26 @@ export function InvocationPanel({
     tracking.phase !== 'completed' &&
     tracking.phase !== 'unavailable' &&
     tracking.stage !== 'started';
-  const state = canTrack ? invocationState(tracking, isScheduled) : undefined;
+  const isStarted =
+    canTrack &&
+    (tracking.phase === 'tracking' || tracking.phase === 'paused') &&
+    tracking.stage === 'started';
+  const { data: invocation } = useGetInvocation(invocationId, {
+    enabled: isStarted,
+    refetchInterval:
+      isStarted && tracking.phase === 'tracking' ? POLL_INTERVAL_MS : false,
+  });
+  const state = canTrack
+    ? invocationState(
+        tracking,
+        isScheduled,
+        isStarted ? invocation?.status : undefined,
+      )
+    : undefined;
+  const failure =
+    state === 'retrying' || state === 'paused'
+      ? invocation?.last_failure
+      : undefined;
   const startsAt =
     isScheduled && scheduledAt !== undefined
       ? `It starts ${formatCompactDateTime(new Date(scheduledAt))}. `
@@ -262,6 +300,11 @@ export function InvocationPanel({
         </div>
         <OpenInvocationLink invocationId={invocationId} />
       </div>
+      {failure && (
+        <p className="line-clamp-3 border-t border-muted px-3 py-2.5 font-mono text-xs break-words text-danger-strong">
+          {failure}
+        </p>
+      )}
       {!canTrack ? (
         <p className="border-t border-muted px-3 py-2.5 text-xs text-muted">
           {startsAt}It runs in the background. Open it to follow its progress.

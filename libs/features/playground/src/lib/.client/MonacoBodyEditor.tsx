@@ -103,7 +103,7 @@ export function MonacoBodyEditor({
       quickSuggestions: { strings: true, other: true, comments: false },
     });
     editorRef.current = editor;
-    editor.addAction({
+    const submitAction = editor.addAction({
       id: 'restate.playground.submit',
       label: 'Send the request',
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
@@ -123,6 +123,7 @@ export function MonacoBodyEditor({
     });
 
     return () => {
+      submitAction.dispose();
       contentListener.dispose();
       changeListener.dispose();
       editor.dispose();

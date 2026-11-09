@@ -75,6 +75,24 @@ describe('buildSchemaTree', () => {
     expect(children?.children).toEqual([]);
   });
 
+  it('marks recursion through allOf-wrapped refs', () => {
+    const root = {
+      $defs: {
+        Node: {
+          type: 'object',
+          properties: {
+            left: { allOf: [{ $ref: '#/$defs/Node' }], default: null },
+            right: { allOf: [{ $ref: '#/$defs/Node' }], default: null },
+          },
+        },
+      },
+    };
+    const tree = buildSchemaTree({ $ref: '#/$defs/Node' }, { root });
+
+    expect(child(tree, 'left')?.recursiveRef).toBe('#/$defs/Node');
+    expect(child(tree, 'right')?.recursiveRef).toBe('#/$defs/Node');
+  });
+
   it('expands a reused but non-recursive ref every time', () => {
     const tree = ordersTree('create');
 

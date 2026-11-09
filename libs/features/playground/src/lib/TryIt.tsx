@@ -71,9 +71,9 @@ function isTextContentType(contentType: string) {
   return isJsonContentType(contentType) || /^text\//i.test(contentType);
 }
 
-function initialParameterValue(service: string, parameter: ContractParameter) {
+function initialParameterValue(scope: string, parameter: ContractParameter) {
   const shared = parameter.role
-    ? sharedRoleValue(service, parameter.role)
+    ? sharedRoleValue(scope, parameter.role)
     : undefined;
   if (shared) {
     return shared;
@@ -116,7 +116,8 @@ function bodyModelUri(
   handlerName: string,
   contentType: string,
 ) {
-  return `inmemory://playground/${encodeURIComponent(service)}/${encodeURIComponent(handlerName)}.${isJsonContentType(contentType) ? 'json' : 'txt'}`;
+  const segment = (name: string) => name.replace(/[^\w.-]/g, '_');
+  return `inmemory://playground/${segment(service)}/${segment(handlerName)}.${isJsonContentType(contentType) ? 'json' : 'txt'}`;
 }
 
 function editorSchemas(service: string, contract: ServiceContract) {
@@ -347,8 +348,9 @@ export function TryIt({
     }),
     [document, operation],
   );
+  const draftScope = `${ingressUrl}::${service}`;
   const [draft, setDraft] = useOperationDraft(
-    `${service}::${handlerName}`,
+    `${draftScope}::${handlerName}`,
     createInitial,
   );
   const [apiKeyState, setApiKeyState] = useApiKey(ingressUrl);
@@ -397,7 +399,7 @@ export function TryIt({
 
   const parameterValue = (parameter: ContractParameter) =>
     draft.parameters[parameter.in]?.[parameter.name] ??
-    initialParameterValue(service, parameter);
+    initialParameterValue(draftScope, parameter);
 
   const roleValue = (role: ParameterRole) => {
     const parameter = parameters.find((candidate) => candidate.role === role);
@@ -436,7 +438,7 @@ export function TryIt({
   });
 
   const setParameter = (parameter: ContractParameter, value: string) => {
-    rememberRoleValue(service, parameter.role, value);
+    rememberRoleValue(draftScope, parameter.role, value);
     setIssues((current) =>
       current.filter(({ field }) => field !== parameterField(parameter)),
     );

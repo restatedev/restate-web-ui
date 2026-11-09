@@ -118,9 +118,8 @@ public class Main {
     public static void main(String[] args) {
         var client = Client.connect("http://localhost:8080");
         var json = Serde.withContentType("application/json", Serde.RAW);
-        var body = new byte[0];
         var result = client.call(
-            Request.of(Target.service("tenant-1", "acme.Orders", "ping"), json, json, body)
+            Request.of(Target.service("tenant-1", "acme.Orders", "ping"), Serde.VOID, json, null)
                 .limitKey("team-a/user-1")).response();
         System.out.println(new String(result, StandardCharsets.UTF_8));
     }
@@ -154,7 +153,7 @@ public class Main {
         var handle = client.send(
             Request.of(Target.virtualObject("Cart", "user/42", "add"), json, json, body)
                 .idempotencyKey("abc"),
-            Duration.ofMillis(10000));
+            Duration.ofMillis(10000L));
         System.out.println(handle.invocationId());
     }
 }"
@@ -203,7 +202,6 @@ async def main():
             body,
             scope="tenant-1",
             limit_key="team-a/user-1",
-            headers={"Content-Type": "application/json"},
         )
         print(json.loads(result) if result else None)
 

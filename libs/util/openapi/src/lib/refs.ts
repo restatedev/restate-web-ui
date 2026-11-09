@@ -141,6 +141,76 @@ export function resolveSchema(
   };
 }
 
+export function schemaTypes(schema: JsonSchemaObject): string[] {
+  const type = schema['type'];
+  if (typeof type === 'string') {
+    return [type];
+  }
+  if (Array.isArray(type)) {
+    return type.filter((entry): entry is string => typeof entry === 'string');
+  }
+  if (
+    isObject(schema['properties']) ||
+    isObject(schema['patternProperties']) ||
+    isObject(schema['additionalProperties'])
+  ) {
+    return ['object'];
+  }
+  if (schema['items'] !== undefined || Array.isArray(schema['prefixItems'])) {
+    return ['array'];
+  }
+  return [];
+}
+
+export function mergeAllOf(
+  schema: JsonSchemaObject,
+  root: unknown,
+  seen: readonly string[] = [],
+): { schema: JsonSchemaObject; refs: string[] } {
+  const parts = Array.isArray(schema['allOf']) ? schema['allOf'] : [];
+  const { allOf: _allOf, ...rest } = schema;
+  let merged: JsonSchemaObject = { ...rest };
+  const refs: string[] = [];
+  for (const part of parts) {
+    const resolved = resolveSchema(root, part as JsonSchema);
+    refs.push(...resolved.refs);
+    if (
+      !isObject(resolved.schema) ||
+      resolved.refs.some((ref) => seen.includes(ref))
+    ) {
+      continue;
+    }
+    const flat = Array.isArray(resolved.schema['allOf'])
+      ? mergeAllOf(resolved.schema, root, [...seen, ...resolved.refs])
+      : { schema: resolved.schema, refs: [] };
+    refs.push(...flat.refs);
+    const required = new Set([
+      ...(Array.isArray(merged['required']) ? merged['required'] : []),
+      ...(Array.isArray(flat.schema['required'])
+        ? flat.schema['required']
+        : []),
+    ]);
+    merged = {
+      ...flat.schema,
+      ...merged,
+      properties: {
+        ...(isObject(flat.schema['properties'])
+          ? flat.schema['properties']
+          : {}),
+        ...(isObject(merged['properties']) ? merged['properties'] : {}),
+      },
+      ...(required.size > 0 && { required: Array.from(required) }),
+    };
+  }
+  if (
+    isObject(merged['properties']) &&
+    Object.keys(merged['properties']).length === 0
+  ) {
+    delete merged['properties'];
+  }
+  return { schema: merged, refs };
+}
+
 const COMPONENT_REF = /^#\/components\/([^/]+)\/([^/]+)/;
 
 export function bundleSchema(

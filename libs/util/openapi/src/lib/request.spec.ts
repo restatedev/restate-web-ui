@@ -46,6 +46,18 @@ describe('buildRequest', () => {
     });
   });
 
+  it('keeps idempotency keys in 1.7 attach paths as the server compares them', () => {
+    const request = buildRequest(
+      operation('1.7.2-ts-Orders.json', 'echo', 'attach'),
+      { parameters: { path: { idempotencyKey: 'order:42/a' } } },
+      { baseUrl },
+    );
+
+    expect(request.url).toBe(
+      'http://localhost:8080/restate/invocation/Orders/echo/order:42%2Fa/attach',
+    );
+  });
+
   it('sends no body and no Content-Type for handlers without input', () => {
     const request = buildRequest(
       operation('1.8.1-ts-Orders.json', 'ping', 'call'),

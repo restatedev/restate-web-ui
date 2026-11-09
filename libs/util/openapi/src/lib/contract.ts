@@ -442,9 +442,13 @@ export function parseServiceContract(
       Boolean,
     );
     handler.extensions = primary?.extensions ?? {};
-    const description = HANDLER_MODES.map(
-      (mode) => handler.modes[mode]?.description,
-    ).find((candidate) => !isDefaultDescription(candidate, name, handler.name));
+    const description = HANDLER_MODES.filter(
+      (mode) => mode !== 'attach' && mode !== 'output',
+    )
+      .map((mode) => handler.modes[mode]?.description)
+      .find(
+        (candidate) => !isDefaultDescription(candidate, name, handler.name),
+      );
     handler.description = description;
   }
 

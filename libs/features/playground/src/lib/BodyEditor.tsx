@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { editorColors } from '@restate/ui-editor';
+import { ErrorBoundary } from '@restate/ui-error';
 import { Spinner } from '@restate/ui-loading';
 import { useHydrated } from '@restate/util-remix';
 import { tv } from '@restate/util-styles';
@@ -44,17 +45,25 @@ export function BodyEditor({
   return (
     <div className={styles({ className: [editorColors(), className] })}>
       {hydrated ? (
-        <Suspense fallback={loading}>
-          <MonacoBodyEditor
-            modelUri={modelUri}
-            value={value}
-            language={language}
-            schemas={schemas}
-            onChange={onChange}
-            onSubmit={onSubmit}
-            ariaLabel={ariaLabel}
-          />
-        </Suspense>
+        <ErrorBoundary
+          fallback={
+            <div className="flex min-h-24 items-center px-3 text-sm text-muted">
+              Couldn’t load the editor. Reload the page to try again.
+            </div>
+          }
+        >
+          <Suspense fallback={loading}>
+            <MonacoBodyEditor
+              modelUri={modelUri}
+              value={value}
+              language={language}
+              schemas={schemas}
+              onChange={onChange}
+              onSubmit={onSubmit}
+              ariaLabel={ariaLabel}
+            />
+          </Suspense>
+        </ErrorBoundary>
       ) : (
         loading
       )}

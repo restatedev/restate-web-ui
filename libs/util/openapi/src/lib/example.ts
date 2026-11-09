@@ -1,4 +1,4 @@
-import { isObject, resolveSchema } from './refs.js';
+import { isObject, mergeAllOf, resolveSchema, schemaTypes } from './refs.js';
 import type { JsonSchema, JsonSchemaObject } from './types.js';
 
 export type ExampleMode = 'request' | 'response';
@@ -32,67 +32,25 @@ const FORMAT_EXAMPLES: Record<string, string> = {
   'json-pointer': '/',
 };
 
-function typesOf(schema: JsonSchemaObject): string[] {
-  const type = schema['type'];
-  if (typeof type === 'string') {
-    return [type];
-  }
-  if (Array.isArray(type)) {
-    return type.filter((entry): entry is string => typeof entry === 'string');
-  }
-  if (
-    isObject(schema['properties']) ||
-    isObject(schema['additionalProperties'])
-  ) {
-    return ['object'];
-  }
-  if (schema['items'] !== undefined || Array.isArray(schema['prefixItems'])) {
-    return ['array'];
-  }
-  return [];
-}
-
-function mergeAllOf(schema: JsonSchemaObject, root: unknown): JsonSchemaObject {
-  const parts = Array.isArray(schema['allOf']) ? schema['allOf'] : [];
-  const { allOf: _allOf, ...rest } = schema;
-  let merged: JsonSchemaObject = { ...rest };
-  for (const part of parts) {
-    const resolved = resolveSchema(root, part as JsonSchema).schema;
-    if (!isObject(resolved)) {
-      continue;
-    }
-    const flat = mergeAllOf(resolved, root);
-    merged = {
-      ...flat,
-      ...merged,
-      properties: {
-        ...(isObject(flat['properties']) ? flat['properties'] : {}),
-        ...(isObject(merged['properties']) ? merged['properties'] : {}),
-      },
-      required: [
-        ...(Array.isArray(flat['required']) ? flat['required'] : []),
-        ...(Array.isArray(merged['required']) ? merged['required'] : []),
-      ],
-    };
-  }
-  return merged;
-}
-
-function firstBranch(schema: JsonSchemaObject, root: unknown) {
+function firstBranch(
+  schema: JsonSchemaObject,
+  root: unknown,
+  refs: readonly string[],
+) {
   for (const keyword of ['oneOf', 'anyOf']) {
     const branches = schema[keyword];
     if (!Array.isArray(branches)) {
       continue;
     }
-    const resolved = branches.map(
-      (branch) => resolveSchema(root, branch as JsonSchema).schema,
-    );
+    const candidates = branches
+      .map((branch) => resolveSchema(root, branch as JsonSchema))
+      .filter((branch) => !branch.refs.some((ref) => refs.includes(ref)));
     return (
-      resolved.find(
-        (branch) =>
+      candidates.find(
+        ({ schema: branch }) =>
           isObject(branch) &&
           !(branch['type'] === 'null' || branch['const'] === null),
-      ) ?? resolved[0]
+      ) ?? candidates[0]
     );
   }
   return undefined;
@@ -288,9 +246,17 @@ function sample(
     return undefined;
   }
   const nextRefs = [...refs, ...chain];
-  const schema = Array.isArray(resolved['allOf'])
-    ? mergeAllOf(resolved, options.root)
-    : resolved;
+  let schema = resolved;
+  if (Array.isArray(resolved['allOf'])) {
+    const merged = mergeAllOf(resolved, options.root);
+    if (merged.refs.some((ref) => nextRefs.includes(ref))) {
+      const { allOf: _allOf, ...rest } = resolved;
+      schema = rest;
+    } else {
+      nextRefs.push(...merged.refs);
+      schema = merged.schema;
+    }
+  }
 
   const examples = schema['examples'];
   if (Array.isArray(examples) && examples.length > 0) {
@@ -308,19 +274,19 @@ function sample(
   if (Array.isArray(schema['enum']) && schema['enum'].length > 0) {
     return schema['enum'].find((value) => value !== null) ?? schema['enum'][0];
   }
-  const branch = firstBranch(schema, options.root);
+  const branch = firstBranch(schema, options.root, nextRefs);
   if (branch !== undefined) {
     const { oneOf: _oneOf, anyOf: _anyOf, ...siblings } = schema;
     const combined =
-      isObject(branch) && typesOf(siblings).length > 0
-        ? { ...siblings, ...branch }
-        : branch;
-    return sample(combined, options, depth, nextRefs);
+      isObject(branch.schema) && schemaTypes(siblings).length > 0
+        ? { ...siblings, ...branch.schema }
+        : branch.schema;
+    return sample(combined, options, depth, [...nextRefs, ...branch.refs]);
   }
 
   const type =
-    typesOf(schema).find((entry) => entry !== 'null') ??
-    (typesOf(schema).includes('null') ? 'null' : undefined);
+    schemaTypes(schema).find((entry) => entry !== 'null') ??
+    (schemaTypes(schema).includes('null') ? 'null' : undefined);
 
   switch (type) {
     case 'object': {

@@ -1,4 +1,10 @@
-import { isObject, refName, resolveSchema } from './refs.js';
+import {
+  isObject,
+  mergeAllOf,
+  refName,
+  resolveSchema,
+  schemaTypes,
+} from './refs.js';
 import type { JsonSchema, JsonSchemaObject } from './types.js';
 
 export type SchemaViewMode = 'read' | 'write' | 'standalone';
@@ -76,27 +82,6 @@ interface Context {
   maxDepth: number;
 }
 
-function schemaTypes(schema: JsonSchemaObject): string[] {
-  const type = schema['type'];
-  if (typeof type === 'string') {
-    return [type];
-  }
-  if (Array.isArray(type)) {
-    return type.filter((entry): entry is string => typeof entry === 'string');
-  }
-  if (
-    isObject(schema['properties']) ||
-    isObject(schema['patternProperties']) ||
-    isObject(schema['additionalProperties'])
-  ) {
-    return ['object'];
-  }
-  if (schema['items'] !== undefined || Array.isArray(schema['prefixItems'])) {
-    return ['array'];
-  }
-  return [];
-}
-
 function isNullSchema(schema: unknown) {
   return (
     isObject(schema) &&
@@ -112,41 +97,6 @@ function isSafeIntegerBound(value: unknown) {
   return (
     typeof value === 'number' && Math.abs(value) >= Number.MAX_SAFE_INTEGER
   );
-}
-
-function mergeAllOf(schema: JsonSchemaObject, root: unknown): JsonSchemaObject {
-  const parts = Array.isArray(schema['allOf']) ? schema['allOf'] : [];
-  const { allOf: _allOf, ...rest } = schema;
-  let merged: JsonSchemaObject = { ...rest };
-  for (const part of parts) {
-    const resolved = resolveSchema(root, part as JsonSchema).schema;
-    if (!isObject(resolved)) {
-      continue;
-    }
-    const flat = Array.isArray(resolved['allOf'])
-      ? mergeAllOf(resolved, root)
-      : resolved;
-    const required = new Set([
-      ...(Array.isArray(merged['required']) ? merged['required'] : []),
-      ...(Array.isArray(flat['required']) ? flat['required'] : []),
-    ]);
-    merged = {
-      ...flat,
-      ...merged,
-      properties: {
-        ...(isObject(flat['properties']) ? flat['properties'] : {}),
-        ...(isObject(merged['properties']) ? merged['properties'] : {}),
-      },
-      ...(required.size > 0 && { required: Array.from(required) }),
-    };
-  }
-  if (
-    isObject(merged['properties']) &&
-    Object.keys(merged['properties']).length === 0
-  ) {
-    delete merged['properties'];
-  }
-  return merged;
 }
 
 function constraintsOf(schema: JsonSchemaObject, types: string[]) {
@@ -322,9 +272,27 @@ function build(
     };
   }
   const refs = [...meta.refs, ...resolved.refs];
-  let schema = Array.isArray(resolved.schema['allOf'])
-    ? mergeAllOf(resolved.schema, context.root)
-    : resolved.schema;
+  let schema = resolved.schema;
+  if (Array.isArray(schema['allOf'])) {
+    const merged = mergeAllOf(schema, context.root);
+    const recursiveAllOf = merged.refs.find((ref) => refs.includes(ref));
+    if (recursiveAllOf) {
+      return {
+        ...base,
+        type:
+          typeof schema['title'] === 'string'
+            ? schema['title']
+            : refName(recursiveAllOf),
+        recursiveRef: recursiveAllOf,
+        description:
+          typeof schema['description'] === 'string'
+            ? schema['description']
+            : undefined,
+      };
+    }
+    refs.push(...merged.refs);
+    schema = merged.schema;
+  }
 
   let nullable = false;
   let variantRef = resolved.ref;
@@ -355,7 +323,20 @@ function build(
           }
           schema = { ...single.schema, ...siblings };
           if (Array.isArray(schema['allOf'])) {
-            schema = mergeAllOf(schema, context.root);
+            const merged = mergeAllOf(schema, context.root);
+            const recursiveAllOf = merged.refs.find((ref) =>
+              refs.includes(ref),
+            );
+            if (recursiveAllOf) {
+              return {
+                ...base,
+                type: refName(recursiveAllOf),
+                recursiveRef: recursiveAllOf,
+                nullable: true,
+              };
+            }
+            refs.push(...merged.refs);
+            schema = merged.schema;
           }
         }
       } else {

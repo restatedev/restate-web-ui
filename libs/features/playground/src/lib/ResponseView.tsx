@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Badge } from '@restate/ui-badge';
 import { Copy } from '@restate/ui-copy';
 import { Icon, IconName } from '@restate/ui-icons';
 import { bytesToBase64 } from '@restate/util-binary';
+import { formatJson } from '@restate/util-openapi';
 import { tv } from '@restate/util-styles';
 import { SegmentedControl } from './SegmentedControl';
 import { NOT_READY_STATUS, statusText } from './status';
@@ -99,14 +100,6 @@ export async function toPlaygroundResult(
   };
 }
 
-function prettyJson(text: string) {
-  try {
-    return JSON.stringify(JSON.parse(text), null, 2);
-  } catch {
-    return undefined;
-  }
-}
-
 function restateError(text?: string) {
   if (!text) {
     return undefined;
@@ -146,6 +139,13 @@ export function ResponseView({
   children?: ReactNode;
 }) {
   const [view, setView] = useState<'pretty' | 'raw' | 'headers'>('pretty');
+  const pretty = useMemo(
+    () =>
+      result.kind === 'response' && result.text !== undefined
+        ? formatJson(result.text)
+        : undefined,
+    [result],
+  );
 
   if (result.kind === 'error') {
     return (
@@ -168,8 +168,6 @@ export function ResponseView({
   }
 
   const isNotReady = result.status === NOT_READY_STATUS;
-  const pretty =
-    result.text !== undefined ? prettyJson(result.text) : undefined;
   const error =
     result.status >= 400 && !isNotReady ? restateError(result.text) : undefined;
   const bodyText =

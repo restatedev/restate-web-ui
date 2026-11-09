@@ -34,6 +34,12 @@ function parameterValue(values: RequestValues, parameter: ContractParameter) {
   return values.parameters[parameter.in]?.[parameter.name] ?? '';
 }
 
+function pathValue(parameter: ContractParameter, value: string) {
+  return parameter.role === 'idempotencyKey'
+    ? value.replace(/[/?#]/g, encodeURIComponent)
+    : encodeURIComponent(value);
+}
+
 export function parameterField(
   parameter: Pick<ContractParameter, 'in' | 'name'>,
 ) {
@@ -110,7 +116,7 @@ export function buildRequest(
         if (value.length > 0) {
           path = path.replaceAll(
             `{${parameter.name}}`,
-            encodeURIComponent(value),
+            pathValue(parameter, value),
           );
         }
         break;

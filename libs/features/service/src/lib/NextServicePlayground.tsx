@@ -1,8 +1,16 @@
-import { lazy, Suspense, useCallback, type ComponentProps } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  type ComponentProps,
+  type PropsWithChildren,
+  type ReactNode,
+} from 'react';
 import { useSearchParams } from 'react-router';
 import { useServiceOpenApi } from '@restate/data-access-admin-api-hooks';
 import { Button } from '@restate/ui-button';
 import { DialogClose, DialogContent, QueryDialog } from '@restate/ui-dialog';
+import { ErrorBoundary } from '@restate/ui-error';
 import { Icon, IconName } from '@restate/ui-icons';
 import { ComplementaryClose, ComplementaryHeader } from '@restate/ui-layout';
 import { Spinner } from '@restate/ui-loading';
@@ -21,25 +29,56 @@ const LazyPlayground = lazy(() =>
   })),
 );
 
-function Playground(props: ComponentProps<typeof LazyPlayground>) {
+function PlaygroundStatus({
+  headerActions,
+  children,
+}: PropsWithChildren<{ headerActions?: ReactNode }>) {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-auto items-center justify-center gap-2 p-8 text-sm text-muted">
-          <Spinner className="h-4 w-4" />
-          Loading playground…
-        </div>
-      }
-    >
-      <LazyPlayground {...props} />
-    </Suspense>
+    <div className="flex flex-auto flex-col">
+      {headerActions && (
+        <div className="flex justify-end gap-2 px-4 pt-4">{headerActions}</div>
+      )}
+      <div className="flex flex-auto items-center justify-center gap-2 p-8 text-sm text-muted">
+        {children}
+      </div>
+    </div>
   );
 }
 
-function usePlaygroundSelection(handlerParam: string) {
+function Playground(props: ComponentProps<typeof LazyPlayground>) {
+  return (
+    <ErrorBoundary
+      key={props.service}
+      fallback={
+        <PlaygroundStatus headerActions={props.headerActions}>
+          The playground couldn’t be displayed. Reload the page to try again.
+        </PlaygroundStatus>
+      }
+    >
+      <Suspense
+        fallback={
+          <PlaygroundStatus headerActions={props.headerActions}>
+            <Spinner className="h-4 w-4" />
+            Loading playground…
+          </PlaygroundStatus>
+        }
+      >
+        <LazyPlayground {...props} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function usePlaygroundSelection(
+  handlerParam: string,
+  { handlersOnly = false }: { handlersOnly?: boolean } = {},
+) {
   const [searchParams, setSearchParams] = useSearchParams();
   const onSelect = useCallback(
-    (handler: string) => {
+    (handler: string, isHandler: boolean) => {
+      if (handlersOnly && !isHandler) {
+        return;
+      }
       setSearchParams(
         (previous) => {
           const next = new URLSearchParams(previous);
@@ -49,7 +88,7 @@ function usePlaygroundSelection(handlerParam: string) {
         { replace: true, preventScrollReset: true },
       );
     },
-    [handlerParam, setSearchParams],
+    [handlerParam, handlersOnly, setSearchParams],
   );
   return {
     handler: searchParams.get(handlerParam),
@@ -188,7 +227,9 @@ export function NextServicePlaygroundEmbed({
   service: string;
   className?: string;
 }) {
-  const { handler, onSelect } = usePlaygroundSelection(HANDLER_QUERY_PARAM);
+  const { handler, onSelect } = usePlaygroundSelection(HANDLER_QUERY_PARAM, {
+    handlersOnly: true,
+  });
 
   return (
     <div className={className}>

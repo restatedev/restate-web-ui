@@ -97,6 +97,20 @@ describe('parseServiceContract', () => {
     }
   });
 
+  it.each(['1.6.2-ts-Orders.json', '1.7.2-ts-Orders.json'])(
+    'ignores attach and output boilerplate in %s',
+    (fixture) => {
+      const contract = parseServiceContract(loadFixture(fixture));
+      const handler = (name: string) =>
+        contract.handlers.find((candidate) => candidate.name === name);
+
+      expect(handler('echo')?.description).toBeUndefined();
+      expect(handler('create')?.description).toBe(
+        'Create a new order from a cart snapshot.',
+      );
+    },
+  );
+
   it('keeps docs, metadata and bodies', () => {
     const contract = parseServiceContract(loadFixture('1.8.1-ts-Orders.json'));
     const handler = (name: string) =>

@@ -87,7 +87,7 @@ export function toCurl(request: PlaygroundRequest) {
 }
 
 function jsString(value: string) {
-  return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')}'`;
+  return `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')}'`;
 }
 
 export function toFetch(request: PlaygroundRequest) {
@@ -359,9 +359,11 @@ export function toJavaClient(input: RestateClientSnippetInput) {
   }
   const body = call.input
     ? `"""\n${indent(jsonText(call.input).replace(/\\/g, '\\\\'), 12).replace(/^/, '            ')}\n            """.getBytes(StandardCharsets.UTF_8)`
-    : 'new byte[0]';
+    : undefined;
   const request = [
-    `Request.of(${javaTarget(call)}, json, json, body)`,
+    body
+      ? `Request.of(${javaTarget(call)}, json, json, body)`
+      : `Request.of(${javaTarget(call)}, Serde.VOID, json, null)`,
     ...(call.idempotencyKey
       ? [`.idempotencyKey(${quoted(call.idempotencyKey)})`]
       : []),
@@ -377,19 +379,21 @@ export function toJavaClient(input: RestateClientSnippetInput) {
     'import dev.restate.common.Request;',
     'import dev.restate.common.Target;',
     'import dev.restate.serde.Serde;',
-    'import java.nio.charset.StandardCharsets;',
+    ...(body || !call.isSend
+      ? ['import java.nio.charset.StandardCharsets;']
+      : []),
     ...(call.delayMs !== undefined ? ['import java.time.Duration;'] : []),
     '',
     'public class Main {',
     '    public static void main(String[] args) {',
     `        var client = ${connect}`,
     '        var json = Serde.withContentType("application/json", Serde.RAW);',
-    `        var body = ${body};`,
+    ...(body ? [`        var body = ${body};`] : []),
   ];
   if (call.isSend) {
     const delay =
       call.delayMs !== undefined
-        ? `,\n            Duration.ofMillis(${call.delayMs})`
+        ? `,\n            Duration.ofMillis(${call.delayMs}L)`
         : '';
     lines.push(
       `        var handle = client.send(\n            ${request}${delay});`,
@@ -517,7 +521,7 @@ export function toPythonClient(input: RestateClientSnippetInput) {
     ...(call.delayMs !== undefined
       ? [`send_delay=timedelta(milliseconds=${call.delayMs})`]
       : []),
-    'headers={"Content-Type": "application/json"}',
+    ...(call.input ? ['headers={"Content-Type": "application/json"}'] : []),
   ];
   const connect = call.token
     ? `restate.create_client(\n        ${quoted(call.ingressUrl)},\n        headers={"Authorization": ${quoted(`Bearer ${call.token}`)}},\n    )`
