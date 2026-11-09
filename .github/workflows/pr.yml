@@ -68,5 +68,5 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: dist/.playwright/
+          path: apps/web-ui-e2e/test-output/playwright/
           retention-days: 3
