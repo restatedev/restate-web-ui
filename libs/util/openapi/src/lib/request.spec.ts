@@ -57,6 +57,19 @@ describe('buildRequest', () => {
     expect(request.headers.map(([name]) => name)).not.toContain('Content-Type');
   });
 
+  it('does not send a whitespace-only optional JSON body', () => {
+    const request = buildRequest(
+      operation('1.8.1-ts-Cart.json', 'add', 'call'),
+      {
+        parameters: { path: { key: 'a' } },
+        body: { kind: 'text', text: ' \n ' },
+      },
+      { baseUrl },
+    );
+
+    expect(request.body).toBeUndefined();
+  });
+
   it('keeps the placeholder for an empty path parameter', () => {
     const request = buildRequest(
       operation('1.8.1-ts-Cart.json', 'add', 'call'),

@@ -1,17 +1,40 @@
-import { useCallback } from 'react';
+import { lazy, Suspense, useCallback, type ComponentProps } from 'react';
 import { useSearchParams } from 'react-router';
+import { useServiceOpenApi } from '@restate/data-access-admin-api-hooks';
 import { Button } from '@restate/ui-button';
 import { DialogClose, DialogContent, QueryDialog } from '@restate/ui-dialog';
 import { Icon, IconName } from '@restate/ui-icons';
 import { ComplementaryClose, ComplementaryHeader } from '@restate/ui-layout';
+import { Spinner } from '@restate/ui-loading';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@restate/ui-tooltip';
-import { Playground, useServiceContract } from '@restate/features-playground';
 import {
+  clearPlaygroundHandler,
   HANDLER_QUERY_PARAM,
   PANEL_QUERY_PARAM,
   PLAYGROUND_HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
 } from '@restate/util-panel';
+
+const LazyPlayground = lazy(() =>
+  import('@restate/features-playground').then((module) => ({
+    default: module.Playground,
+  })),
+);
+
+function Playground(props: ComponentProps<typeof LazyPlayground>) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-auto items-center justify-center gap-2 p-8 text-sm text-muted">
+          <Spinner className="h-4 w-4" />
+          Loading playground…
+        </div>
+      }
+    >
+      <LazyPlayground {...props} />
+    </Suspense>
+  );
+}
 
 function usePlaygroundSelection(handlerParam: string) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,7 +91,7 @@ export function NextServicePlaygroundPanel({ service }: { service: string }) {
   const { handler, onSelect, setSearchParams } = usePlaygroundSelection(
     PLAYGROUND_HANDLER_QUERY_PARAM,
   );
-  const { refetch, isFetching } = useServiceContract(service);
+  const { refetch, isFetching } = useServiceOpenApi(service);
 
   return (
     <>
@@ -119,7 +142,10 @@ export function NextServicePlaygroundSheet({ service }: { service: string }) {
   );
 
   return (
-    <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
+    <QueryDialog
+      query={SERVICE_PLAYGROUND_QUERY_PARAM}
+      onCloseQueryParam={clearPlaygroundHandler}
+    >
       <DialogContent variant="sheet" className="p-0">
         <Playground
           service={service}
@@ -166,12 +192,13 @@ export function NextServicePlaygroundEmbed({
 
   return (
     <div className={className}>
-      <div className="mx-4 mt-px mb-4 h-[calc(100dvh-var(--cp-content-top,0px)-1rem-1px)] min-h-[32rem] overflow-hidden rounded-xl border border-default bg-surface shadow-xs">
+      <div className="mx-4 mt-px mb-4 min-h-[32rem] overflow-clip rounded-xl border border-default bg-surface shadow-xs">
         <Playground
           service={service}
           handler={handler}
           onSelect={onSelect}
           showServiceName={false}
+          scroll="page"
         />
       </div>
     </div>

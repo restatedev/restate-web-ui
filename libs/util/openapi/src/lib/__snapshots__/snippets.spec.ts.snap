@@ -253,7 +253,7 @@ exports[`toCurl > quotes values for the shell 1`] = `
   --header 'idempotency-key: it'\\''s-1' \\
   --header 'Content-Type: application/json' \\
   --header 'Authorization: Bearer <API_KEY>' \\
-  --data '{
+  --data-raw '{
   "sku": "a",
   "qty": 2,
   "gift": null,
@@ -266,7 +266,7 @@ exports[`toCurl > quotes values for the shell 2`] = `
   --url 'http://localhost:8080/restate/call/Orders/importCsv' \\
   --header 'Accept: text/plain' \\
   --header 'Content-Type: text/plain' \\
-  --data 'a,b
+  --data-raw 'a,b
 1,'\\''2'\\'''"
 `;
 

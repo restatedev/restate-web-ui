@@ -25,11 +25,15 @@ const ComplementaryContext = createContext<{
   onClose: noop,
 });
 
+const keepQueryParams = (prev: URLSearchParams) => prev;
+
 export function ComplementaryWithSearchParam({
   children,
   paramName,
+  onCloseQueryParam = keepQueryParams,
 }: PropsWithChildren<{
   paramName: string;
+  onCloseQueryParam?: (prev: URLSearchParams) => URLSearchParams;
 }>) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [headerElement, setHeaderElement] = useState<HTMLElement | null>(null);
@@ -39,14 +43,14 @@ export function ComplementaryWithSearchParam({
   const onClose = useCallback(() => {
     setSearchParams(
       (prev) => {
-        const next = new URLSearchParams(prev);
+        const next = onCloseQueryParam(new URLSearchParams(prev));
         next.delete(PANEL_QUERY_PARAM);
         next.delete(paramName);
         return next;
       },
       { preventScrollReset: true },
     );
-  }, [paramName, setSearchParams]);
+  }, [onCloseQueryParam, paramName, setSearchParams]);
 
   if (!isActive || !paramValue) {
     return null;

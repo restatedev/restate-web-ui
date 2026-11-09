@@ -46,19 +46,16 @@ function getMediaType(headers: Headers) {
   return headers.get('Content-Type')?.split(';').at(0)?.trim().toLowerCase();
 }
 
-const SEND_PATH = /\/restate\/(?:scope\/[^/]+\/)?send\//;
-const STATUS_PATH = /\/restate\/status(?:\/|$)/;
+const RESTATE_METADATA_PATH =
+  /^\/restate\/(?:(?:scope\/[^/]+\/)?send\/|status(?:\/|$))/;
 
 function isRestateMetadataResponse(url: string, response: Response) {
   if (response.status === 202) {
     return true;
   }
-  const { pathname } = new URL(url);
   return (
     getMediaType(response.headers) === 'application/json' &&
-    (SEND_PATH.test(pathname) ||
-      STATUS_PATH.test(pathname) ||
-      pathname.endsWith('/send'))
+    RESTATE_METADATA_PATH.test(new URL(url).pathname)
   );
 }
 

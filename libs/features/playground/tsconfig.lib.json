@@ -50,9 +50,6 @@
       "path": "../../data-access/admin-api-hooks/tsconfig.lib.json"
     },
     {
-      "path": "../../util/humantime/tsconfig.lib.json"
-    },
-    {
       "path": "../../util/binary/tsconfig.lib.json"
     },
     {

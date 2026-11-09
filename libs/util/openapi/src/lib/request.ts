@@ -40,6 +40,11 @@ export function parameterField(
   return `${parameter.in}:${parameter.name}`;
 }
 
+export function isJsonContentType(contentType: string | undefined) {
+  const mediaType = contentType?.split(';')[0]?.trim().toLowerCase() ?? '';
+  return mediaType === 'application/json' || mediaType.endsWith('+json');
+}
+
 export function concreteContentType(contentType: string) {
   const [mediaType = '', ...parameters] = contentType.split(';');
   const [type, subtype] = mediaType.trim().split('/');
@@ -65,7 +70,10 @@ export function hasRequestBody(
   if (body.kind === 'file') {
     return true;
   }
-  return body.text.length > 0 || operation.body.required;
+  const text = isJsonContentType(operation.body.contentType)
+    ? body.text.trim()
+    : body.text;
+  return text.length > 0 || operation.body.required;
 }
 
 export function validateRequest(

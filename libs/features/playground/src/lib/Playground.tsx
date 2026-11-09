@@ -81,10 +81,14 @@ function readLegacyOperationId() {
   ) {
     return undefined;
   }
-  return decodeURIComponent(
+  const raw =
     window.location.hash.slice(LEGACY_OPERATION_HASH.length).split('#')[0] ??
-      '',
-  );
+    '';
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
 }
 
 function Metadata({ extensions }: { extensions: Record<string, string> }) {
@@ -566,21 +570,20 @@ function HandlerNav({
   handlerKinds,
   selected,
   onSelect,
+  isSticky,
 }: {
   contract: ServiceContract;
   handlerKinds: Map<string, RestateHandlerKind | undefined>;
   selected?: string;
   onSelect: (handler: string) => void;
+  isSticky: boolean;
 }) {
   const [filter, setFilter] = useState('');
   const handlers = contract.handlers.filter(({ name }) =>
     name.toLowerCase().includes(filter.trim().toLowerCase()),
   );
   return (
-    <nav
-      aria-label="Handlers"
-      className="flex w-56 shrink-0 flex-col gap-2 overflow-auto border-r bg-subtle p-3"
-    >
+    <nav aria-label="Handlers" className={navStyles({ isSticky })}>
       {contract.handlers.length > 8 && (
         <input
           type="search"
@@ -779,7 +782,26 @@ function ServiceHeader({
 }
 
 const containerStyles = tv({
-  base: '@container/playground flex h-full min-h-0 w-full min-w-0',
+  base: '@container/playground flex w-full min-w-0',
+  variants: {
+    scroll: { contained: 'h-full min-h-0', page: '' },
+  },
+});
+
+const mainStyles = tv({
+  base: 'min-w-0 flex-auto',
+  variants: {
+    scroll: { contained: 'overflow-auto', page: '' },
+  },
+});
+
+const navStyles = tv({
+  base: 'flex w-56 shrink-0 flex-col gap-2 overflow-auto p-3',
+  variants: {
+    isSticky: {
+      true: 'sticky top-(--cp-content-top,0px) max-h-[calc(100dvh-var(--cp-content-top,0px))] self-start',
+    },
+  },
 });
 
 export interface PlaygroundProps {
@@ -789,6 +811,7 @@ export interface PlaygroundProps {
   showServiceName?: boolean;
   showNavigation?: boolean;
   headerActions?: ReactNode;
+  scroll?: 'contained' | 'page';
   className?: string;
 }
 
@@ -803,6 +826,7 @@ function ServicePlayground({
   showServiceName = true,
   showNavigation = true,
   headerActions,
+  scroll = 'contained',
   className,
 }: PlaygroundProps) {
   const { contract, handlerKinds, serviceType, ingressUrl, error, isPending } =
@@ -869,18 +893,19 @@ function ServicePlayground({
   }
 
   return (
-    <div className={containerStyles({ className })}>
+    <div className={containerStyles({ scroll, className })}>
       {showNavigation && (
-        <div className="hidden @3xl/playground:flex">
+        <div className="hidden border-r bg-subtle @3xl/playground:flex">
           <HandlerNav
             contract={contract}
             handlerKinds={handlerKinds}
             selected={selection && selectionId(selection)}
             onSelect={select}
+            isSticky={scroll === 'page'}
           />
         </div>
       )}
-      <div className="min-w-0 flex-auto overflow-auto">
+      <div className={mainStyles({ scroll })}>
         <div className="mx-auto flex max-w-7xl min-w-0 flex-col gap-5 p-4 @3xl/playground:p-6">
           <ServiceHeader
             contract={contract}

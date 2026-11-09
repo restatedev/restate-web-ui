@@ -10,11 +10,13 @@ import {
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { MarkdownDescription } from '@restate/ui-json-schema';
+import { formatBytes } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
 import {
   buildRequest,
   bundleSchema,
   generateExample,
+  isJsonContentType,
   isObject,
   parameterField,
   stringifyExample,
@@ -63,11 +65,6 @@ const PENDING_DELAY_MS = 300;
 function afterPendingDelay(callback: () => void) {
   const timeout = setTimeout(callback, PENDING_DELAY_MS);
   return () => clearTimeout(timeout);
-}
-
-function isJsonContentType(contentType: string) {
-  const mediaType = contentType.split(';')[0]?.trim().toLowerCase() ?? '';
-  return mediaType === 'application/json' || mediaType.endsWith('+json');
 }
 
 function isTextContentType(contentType: string) {
@@ -170,9 +167,9 @@ function delayError(value: string) {
   if (!value) {
     return undefined;
   }
-  return durationToMs(value) > 0
-    ? undefined
-    : 'Use a duration like 10s, 5m or 1h';
+  return Number.isNaN(durationToMs(value))
+    ? 'Use a duration like 10s, 1.5h or PT5M'
+    : undefined;
 }
 
 function parameterType(parameter: ContractParameter) {
@@ -250,14 +247,27 @@ async function execute(
   if (signal.aborted) {
     return undefined;
   }
-  return 'response' in outcome
-    ? toPlaygroundResult(outcome.response, outcome.durationMs)
-    : {
+  if ('response' in outcome) {
+    try {
+      return await toPlaygroundResult(outcome.response, outcome.durationMs);
+    } catch (error) {
+      if (signal.aborted) {
+        return undefined;
+      }
+      return {
         kind: 'error',
         url: request.url,
-        message: outcome.error,
+        message: error instanceof Error ? error.message : String(error),
         durationMs: outcome.durationMs,
       };
+    }
+  }
+  return {
+    kind: 'error',
+    url: request.url,
+    message: outcome.error,
+    durationMs: outcome.durationMs,
+  };
 }
 
 function randomId() {
@@ -394,11 +404,13 @@ export function TryIt({
     return parameter ? parameterValue(parameter) : undefined;
   };
 
-  const bodyValue: RequestBodyValue | undefined = body
-    ? bodyMode === 'file' && draft.file
-      ? { kind: 'file', file: draft.file, name: draft.file.name }
-      : { kind: 'text', text: draft.body }
-    : undefined;
+  const bodyValue: RequestBodyValue | undefined = !body
+    ? undefined
+    : bodyMode === 'text'
+      ? { kind: 'text', text: draft.body }
+      : draft.file
+        ? { kind: 'file', file: draft.file, name: draft.file.name }
+        : undefined;
   const values = {
     parameters: operation.parameters.reduce<ParameterValues>(
       (current, parameter) => ({
@@ -467,6 +479,9 @@ export function TryIt({
   };
 
   const send = () => {
+    if (abortRef.current) {
+      return;
+    }
     const nextIssues = validateRequest(operation, values);
     for (const parameter of parameters) {
       const error =
@@ -476,6 +491,9 @@ export function TryIt({
       if (error) {
         nextIssues.push({ field: parameterField(parameter), message: error });
       }
+    }
+    if (body?.required && bodyMode === 'file' && !draft.file) {
+      nextIssues.push({ field: 'body', message: 'Choose a file to send' });
     }
     if (
       body &&
@@ -548,6 +566,7 @@ export function TryIt({
             limitKey: roleValue('limitKey') || undefined,
             delayMs: delay ? durationToMs(delay) || undefined : undefined,
             body: bodyValue?.kind === 'text' ? bodyValue.text : undefined,
+            hasFileBody: bodyValue?.kind === 'file',
             bodyContentType: body?.contentType,
             authorization:
               contract.security.bearer || apiKey
@@ -705,15 +724,46 @@ export function TryIt({
                     </div>
                   </div>
                   {bodyMode === 'file' ? (
-                    <input
-                      type="file"
-                      aria-label="Body file"
-                      className="rounded-lg border border-inset bg-inset px-2 py-1.5 text-xs text-secondary file:mr-2 file:rounded-md file:border-0 file:bg-raised file:px-2 file:py-0.5 file:text-xs file:text-primary"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        setDraft((previous) => ({ ...previous, file }));
-                      }}
-                    />
+                    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-inset bg-inset px-2 py-1.5">
+                      <label className="shrink-0 cursor-default rounded-md border bg-raised px-2 py-0.5 text-xs text-primary shadow-xs hover:wash-tint has-focus-visible:outline-2 has-focus-visible:outline-focus">
+                        Choose file
+                        <input
+                          type="file"
+                          aria-label="Body file"
+                          className="sr-only"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.target.value = '';
+                            if (file) {
+                              setIssues((current) =>
+                                current.filter(({ field }) => field !== 'body'),
+                              );
+                              setDraft((previous) => ({ ...previous, file }));
+                            }
+                          }}
+                        />
+                      </label>
+                      <span className="min-w-0 flex-auto truncate text-xs text-secondary">
+                        {draft.file
+                          ? `${draft.file.name} · ${formatBytes(draft.file.size)}`
+                          : 'No file chosen'}
+                      </span>
+                      {draft.file && (
+                        <Button
+                          variant="icon"
+                          aria-label="Remove file"
+                          className="shrink-0 p-1"
+                          onClick={() =>
+                            setDraft((previous) => ({
+                              ...previous,
+                              file: undefined,
+                            }))
+                          }
+                        >
+                          <Icon name={IconName.X} className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
                   ) : (
                     <BodyEditor
                       modelUri={bodyModelUri(

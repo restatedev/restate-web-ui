@@ -30,6 +30,11 @@ export function getSearchParams(search: string) {
   return '?' + searchParams.toString();
 }
 
+export function clearPlaygroundHandler(searchParams: URLSearchParams) {
+  searchParams.delete(PLAYGROUND_HANDLER_QUERY_PARAM);
+  return searchParams;
+}
+
 export function panelHref({
   playground,
   handler,

@@ -1,4 +1,4 @@
-import { panelHref } from './panel';
+import { clearPlaygroundHandler, panelHref } from './panel';
 
 describe('panelHref', () => {
   it('adds the handler as a query param and a legacy playground hash', () => {
@@ -6,5 +6,17 @@ describe('panelHref', () => {
       '?servicePlayground=Cart&playgroundHandler=add#/operations/add',
     );
     expect(panelHref({ playground: 'Cart' })).toBe('?servicePlayground=Cart');
+  });
+});
+
+describe('clearPlaygroundHandler', () => {
+  it('removes only the playground handler', () => {
+    expect(
+      clearPlaygroundHandler(
+        new URLSearchParams(
+          'servicePlayground=Cart&playgroundHandler=add&panel=servicePlayground',
+        ),
+      ).toString(),
+    ).toBe('servicePlayground=Cart&panel=servicePlayground');
   });
 });

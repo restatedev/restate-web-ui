@@ -1,5 +1,4 @@
 import { JsonSchemaViewer } from '@restate/ui-api';
-import { JsonSchemaTree } from '@restate/ui-json-schema';
 import type { JsonSchema } from '@restate/util-openapi';
 import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import { Badge } from '@restate/ui-badge';
@@ -12,7 +11,7 @@ import {
   usePopover,
 } from '@restate/ui-popover';
 import { tv } from '@restate/util-styles';
-import type { ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import type {
   HandlerInputOutputView,
   HandlerInputOutputLabel,
@@ -107,6 +106,12 @@ function HandlerInputOutputPopoverShell({
   );
 }
 
+const JsonSchemaTree = lazy(() =>
+  import('@restate/ui-json-schema').then((module) => ({
+    default: module.JsonSchemaTree,
+  })),
+);
+
 function HandlerInputOutputJsonSchemaPopoverContent({
   schema,
 }: {
@@ -116,11 +121,13 @@ function HandlerInputOutputJsonSchemaPopoverContent({
 
   if (isNewPlayground) {
     return (
-      <JsonSchemaTree
-        className="py-2"
-        schema={schema as JsonSchema}
-        mode="standalone"
-      />
+      <Suspense fallback={null}>
+        <JsonSchemaTree
+          className="py-2"
+          schema={schema as JsonSchema}
+          mode="standalone"
+        />
+      </Suspense>
     );
   }
   return (

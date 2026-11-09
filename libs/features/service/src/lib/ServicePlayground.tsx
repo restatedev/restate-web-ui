@@ -34,7 +34,7 @@ import { Badge } from '@restate/ui-badge';
 import { ErrorBanner } from '@restate/ui-error';
 import { Spinner } from '@restate/ui-loading';
 import { useQueryClient } from '@tanstack/react-query';
-import { PANEL_QUERY_PARAM } from '@restate/util-panel';
+import { clearPlaygroundHandler, PANEL_QUERY_PARAM } from '@restate/util-panel';
 import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import {
   NextServicePlaygroundPanel,
@@ -51,7 +51,10 @@ export function ServicePlayground() {
 
   return (
     <>
-      <ComplementaryWithSearchParam paramName={SERVICE_PLAYGROUND_QUERY_PARAM}>
+      <ComplementaryWithSearchParam
+        paramName={SERVICE_PLAYGROUND_QUERY_PARAM}
+        onCloseQueryParam={clearPlaygroundHandler}
+      >
         {isNewPlayground ? (
           <NextServicePlaygroundComplementaryContent />
         ) : (
@@ -435,7 +438,10 @@ function ServicePlaygroundSheetContent({ service }: { service: string }) {
   const [, setSearchParams] = useSearchParams();
 
   return (
-    <QueryDialog query={SERVICE_PLAYGROUND_QUERY_PARAM}>
+    <QueryDialog
+      query={SERVICE_PLAYGROUND_QUERY_PARAM}
+      onCloseQueryParam={clearPlaygroundHandler}
+    >
       <DialogContent
         variant={'sheet'}
         className='[&_*:has(>[data-test="mobile-top-nav"])]:w-[calc(100vw-1rem)] [&_*:has(>[data-test="mobile-top-nav"])]:rounded-t-[0.7rem] [&_.sl-inverted_input]:text-secondary [&_input]:text-sm'

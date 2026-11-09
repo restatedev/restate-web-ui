@@ -50,6 +50,31 @@ describe('toCurl', () => {
   });
 });
 
+describe('exact bodies', () => {
+  const request = (text: string) => ({
+    method: 'POST',
+    url: 'http://localhost:8080/restate/call/Orders/create',
+    headers: [['Content-Type', 'application/json']] as [string, string][],
+    body: { kind: 'text' as const, text },
+  });
+
+  it('keeps numbers that JavaScript would round', () => {
+    const big = request('{"id": 12345678901234567891}');
+    expect(toCurl(big)).toContain('12345678901234567891');
+    expect(toFetch(big)).toContain('12345678901234567891');
+    expect(toPython(big)).toContain('12345678901234567891');
+  });
+
+  it('sends a null body from Python', () => {
+    expect(toPython(request('null'))).toContain('content="null"');
+  });
+
+  it('never reads a file from a body that starts with @', () => {
+    const text = { ...request('@secrets.txt'), headers: [] };
+    expect(toCurl(text)).toContain("--data-raw '@secrets.txt'");
+  });
+});
+
 describe('toFetch', () => {
   it('stringifies JSON bodies and reads JSON responses', () => {
     expect(toFetch(jsonRequest)).toMatchSnapshot();
@@ -118,10 +143,13 @@ describe.each(Object.entries(CLIENTS))('%s SDK client', (_, toClient) => {
     expect(toClient(scopedServiceCall)).toMatchSnapshot();
   });
 
-  it('has no snippet for attach, output or non-JSON bodies', () => {
+  it('has no snippet for attach, output, non-JSON or file bodies', () => {
     expect(toClient({ ...objectSend, mode: 'attach' })).toBeUndefined();
     expect(
       toClient({ ...objectSend, bodyContentType: 'text/plain' }),
+    ).toBeUndefined();
+    expect(
+      toClient({ ...objectSend, body: undefined, hasFileBody: true }),
     ).toBeUndefined();
   });
 });

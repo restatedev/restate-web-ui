@@ -235,7 +235,11 @@ export function InvocationPanel({
     setRound((current) => current + 1);
   };
 
-  const isScheduled = scheduledAt !== undefined && scheduledAt > Date.now();
+  const isScheduled =
+    scheduledAt !== undefined &&
+    tracking.phase !== 'completed' &&
+    tracking.phase !== 'unavailable' &&
+    tracking.stage !== 'started';
   const state = canTrack ? invocationState(tracking, isScheduled) : undefined;
   const startsAt =
     isScheduled && scheduledAt !== undefined

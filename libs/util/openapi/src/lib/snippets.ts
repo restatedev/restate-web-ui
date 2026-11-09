@@ -1,21 +1,43 @@
-import type { PlaygroundRequest } from './request.js';
+import { isJsonContentType, type PlaygroundRequest } from './request.js';
 import type { HandlerMode } from './types.js';
 
 function shellQuote(value: string) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
+function minifyJson(text: string) {
+  let out = '';
+  let inString = false;
+  let isEscaped = false;
+  for (const char of text) {
+    if (inString) {
+      out += char;
+      if (isEscaped) {
+        isEscaped = false;
+      } else if (char === '\\') {
+        isEscaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+    } else if (char === '"') {
+      inString = true;
+      out += char;
+    } else if (!/\s/.test(char)) {
+      out += char;
+    }
+  }
+  return out;
+}
+
 function parseJson(text: string): { ok: true; value: unknown } | { ok: false } {
   try {
-    return { ok: true, value: JSON.parse(text) };
+    const value: unknown = JSON.parse(text);
+    return JSON.stringify(value) === minifyJson(text)
+      ? { ok: true, value }
+      : { ok: false };
   } catch {
     return { ok: false };
   }
-}
-
-function isJsonContentType(contentType: string | undefined) {
-  const mediaType = contentType?.split(';')[0]?.trim().toLowerCase() ?? '';
-  return mediaType === 'application/json' || mediaType.endsWith('+json');
 }
 
 function header(request: PlaygroundRequest, name: string) {
@@ -58,7 +80,7 @@ export function toCurl(request: PlaygroundRequest) {
   } else if (request.body?.kind === 'text') {
     const json = prettyJsonBody(request);
     lines.push(
-      `--data ${shellQuote(json ? JSON.stringify(json.value, null, 2) : request.body.text)}`,
+      `--data-raw ${shellQuote(json ? JSON.stringify(json.value, null, 2) : request.body.text)}`,
     );
   }
   return lines.join(' \\\n  ');
@@ -155,7 +177,7 @@ export function toPython(request: PlaygroundRequest) {
   } else if (request.body?.kind === 'text') {
     const json = prettyJsonBody(request);
     lines.push(
-      json
+      json && json.value !== null
         ? `    json=${pythonLiteral(json.value, 1)},`
         : `    content=${JSON.stringify(request.body.text)},`,
     );
@@ -186,6 +208,7 @@ export interface RestateClientSnippetInput {
   limitKey?: string;
   delayMs?: number;
   body?: string;
+  hasFileBody?: boolean;
   bodyContentType?: string;
   authorization?: string;
 }
@@ -208,7 +231,10 @@ interface ClientCall {
 }
 
 function clientCall(input: RestateClientSnippetInput): ClientCall | undefined {
-  if (!['call', 'send', 'scopedCall', 'scopedSend'].includes(input.mode)) {
+  if (
+    input.hasFileBody ||
+    !['call', 'send', 'scopedCall', 'scopedSend'].includes(input.mode)
+  ) {
     return undefined;
   }
   const hasInput = input.body !== undefined && input.body.trim().length > 0;

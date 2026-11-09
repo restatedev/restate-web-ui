@@ -38,7 +38,10 @@ export function usePlaygroundFetcher(service: string, handlerName?: string) {
             handler: handler ? { value: handler } : undefined,
           };
         },
-        () => {
+        (request) => {
+          if (request.method === 'GET') {
+            return;
+          }
           const invalidate = () => {
             if (
               typeof document !== 'undefined' &&

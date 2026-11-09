@@ -84,7 +84,7 @@ export async function toPlaygroundResult(
   const bytes = new Uint8Array(await response.arrayBuffer());
   const contentType = response.headers.get('content-type') ?? undefined;
   const text = decodeText(bytes, contentType);
-  const fields = acceptedFields(text);
+  const fields = response.status === 202 ? acceptedFields(text) : {};
   return {
     kind: 'response',
     status: response.status,
