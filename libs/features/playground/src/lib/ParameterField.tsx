@@ -61,6 +61,12 @@ export function ParameterField({
           aria-describedby={error ? errorId : undefined}
           className={inputStyles({ isInvalid: Boolean(error) })}
           onChange={(event) => onChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
         />
         {action}
       </div>

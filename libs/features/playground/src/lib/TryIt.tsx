@@ -5,12 +5,12 @@ import {
   useMemo,
   useRef,
   useState,
+  type ReactNode,
 } from 'react';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { MarkdownDescription } from '@restate/ui-json-schema';
-import { Spinner } from '@restate/ui-loading';
-import { humanTimeToMs } from '@restate/util-humantime';
+import { tv } from '@restate/util-styles';
 import {
   buildRequest,
   bundleSchema,
@@ -32,23 +32,26 @@ import {
   type ServiceContract,
 } from '@restate/util-openapi';
 import { BodyEditor } from './BodyEditor';
+import { durationToMs } from './duration';
 import { CodeSamples } from './CodeSamples';
-import { DocsSection } from './OperationDocs';
 import { toolDraftName } from './names';
 import { ParameterField } from './ParameterField';
+import { RequestLine } from './RequestLine';
 import {
   InvocationPanel,
   OpenInvocationLink,
+  type InvocationTool,
+} from './InvocationPanel';
+import {
   ResponseView,
   toPlaygroundResult,
-  type FollowUp,
-  type FollowUpKind,
   type PlaygroundResult,
 } from './ResponseView';
 import { SegmentedControl } from './SegmentedControl';
 import {
   rememberRoleValue,
   sharedRoleValue,
+  useApiKey,
   useOperationDraft,
   type OperationDraft,
   type ParameterValues,
@@ -164,10 +167,10 @@ function parameterPlaceholder(
 }
 
 function delayError(value: string) {
-  if (!value || /^P/i.test(value)) {
+  if (!value) {
     return undefined;
   }
-  return humanTimeToMs(value) > 0
+  return durationToMs(value) > 0
     ? undefined
     : 'Use a duration like 10s, 5m or 1h';
 }
@@ -296,6 +299,20 @@ export interface TryItProps {
   handlerKind?: RestateHandlerKind;
   serviceType?: RestateServiceType;
   mode?: HandlerMode;
+  runLabel: string;
+  toolbar?: ReactNode;
+}
+
+const requestLineStyles = tv({
+  base: 'px-3 py-2',
+  variants: { hasFields: { true: 'border-b border-muted' } },
+});
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 }
 
 export function TryIt({
@@ -308,6 +325,8 @@ export function TryIt({
   handlerKind,
   serviceType,
   mode,
+  runLabel,
+  toolbar,
 }: TryItProps) {
   const document = contract.document;
   const body = operation.body;
@@ -322,8 +341,8 @@ export function TryIt({
     `${service}::${handlerName}`,
     createInitial,
   );
-  const [apiKey, setApiKey] = useState('');
-  const [isApiKeyVisible, setIsApiKeyVisible] = useState(false);
+  const [apiKeyState, setApiKeyState] = useApiKey(ingressUrl);
+  const apiKey = apiKeyState.isVisible ? apiKeyState.value : '';
   const [bodyMode, setBodyMode] = useState<'text' | 'file'>(
     body && !isTextContentType(body.contentType) && draft.file
       ? 'file'
@@ -332,25 +351,35 @@ export function TryIt({
   const [issues, setIssues] = useState<RequestIssue[]>([]);
   const [result, setResult] = useState<PlaygroundResult>();
   const [isSending, setIsSending] = useState(false);
-  const [followUp, setFollowUp] = useState<FollowUp>();
   const [shownOperationId, setShownOperationId] = useState(operation.id);
   const abortRef = useRef<AbortController | null>(null);
-  const followUpAbortRef = useRef<AbortController | null>(null);
+  const responseRef = useRef<HTMLDivElement>(null);
 
   if (shownOperationId !== operation.id) {
     setShownOperationId(operation.id);
     setResult(undefined);
-    setFollowUp(undefined);
     setIssues([]);
   }
 
   useEffect(
     () => () => {
       abortRef.current?.abort();
-      followUpAbortRef.current?.abort();
     },
     [operation.id],
   );
+
+  useEffect(() => {
+    const element = responseRef.current;
+    if (!result || !element) {
+      return;
+    }
+    if (element.getBoundingClientRect().top > window.innerHeight - 64) {
+      element.scrollIntoView({
+        block: 'nearest',
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      });
+    }
+  }, [result]);
 
   const parameters = operation.parameters.filter(({ in: location }) =>
     ['path', 'query', 'header'].includes(location),
@@ -413,7 +442,6 @@ export function TryIt({
 
   const run = async (request: ReturnType<typeof buildRequest>) => {
     abortRef.current?.abort();
-    followUpAbortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     const cancelPending = afterPendingDelay(() => {
@@ -428,9 +456,14 @@ export function TryIt({
       setIsSending(false);
     }
     if (next) {
-      setFollowUp(undefined);
       setResult(next);
     }
+  };
+
+  const cancel = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setIsSending(false);
   };
 
   const send = () => {
@@ -471,42 +504,31 @@ export function TryIt({
     );
   };
 
-  const runFollowUp = async (kind: FollowUpKind, invocationId: string) => {
+  const runTool = (
+    kind: InvocationTool,
+    invocationId: string,
+    signal: AbortSignal,
+  ) => {
     const tool = contract.invocationTools.find(
       (candidate) => candidate.kind === kind,
     )?.byId;
-    if (!tool) {
-      return;
-    }
-    followUpAbortRef.current?.abort();
-    const controller = new AbortController();
-    followUpAbortRef.current = controller;
-    const cancelPending = afterPendingDelay(() => {
-      if (followUpAbortRef.current === controller) {
-        setFollowUp({ kind, isPending: true });
-      }
-    });
-    const next = await execute(
-      fetcher,
-      buildRequest(
-        tool,
-        { parameters: { path: { invocationId } } },
-        { baseUrl: ingressUrl, apiKey: apiKey || undefined },
-      ),
-      controller.signal,
-    );
-    cancelPending();
-    if (followUpAbortRef.current === controller) {
-      followUpAbortRef.current = null;
-    }
-    if (next) {
-      setFollowUp({ kind, isPending: false, result: next });
-    }
+    return tool
+      ? execute(
+          fetcher,
+          buildRequest(
+            tool,
+            { parameters: { path: { invocationId } } },
+            { baseUrl: ingressUrl, apiKey: apiKey || undefined },
+          ),
+          signal,
+        )
+      : Promise.resolve(undefined);
   };
-  const hasTool = (kind: FollowUpKind) =>
+  const canTrack = (['status', 'output'] as const).every((kind) =>
     contract.invocationTools.some(
       (candidate) => candidate.kind === kind && candidate.byId,
-    );
+    ),
+  );
 
   const delay = roleValue('delay');
   const samples = {
@@ -524,7 +546,7 @@ export function TryIt({
             scope: roleValue('scope'),
             idempotencyKey: roleValue('idempotencyKey') || undefined,
             limitKey: roleValue('limitKey') || undefined,
-            delayMs: delay ? humanTimeToMs(delay) || undefined : undefined,
+            delayMs: delay ? durationToMs(delay) || undefined : undefined,
             body: bodyValue?.kind === 'text' ? bodyValue.text : undefined,
             bodyContentType: body?.contentType,
             authorization:
@@ -540,201 +562,218 @@ export function TryIt({
     issues.find((issue) => issue.field === field)?.message;
   const bodyIssue = issueFor('body');
 
+  const hasFields =
+    contract.security.bearer || parameters.length > 0 || Boolean(body);
+
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <DocsSection title="Try it">
+      <div className="flex min-w-0 flex-col gap-3">
         <form
-          className="flex flex-col gap-3 rounded-xl border bg-surface p-3 shadow-xs"
+          aria-label="Request"
+          className="flex min-w-0 flex-col rounded-xl border bg-surface shadow-xs"
           onSubmit={(event) => {
             event.preventDefault();
-            send();
+            if (!isSending) {
+              send();
+            }
           }}
         >
-          {contract.security.bearer && (
-            <div className="flex flex-col gap-1.5">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                <Icon name={IconName.ApiKey} className="h-3.5 w-3.5" />
-                {isApiKeyVisible
-                  ? 'Requests use this API key. It is kept only in this tab’s memory.'
-                  : 'Requests use your current session.'}
-                <Button
-                  variant="secondary"
-                  className="ml-auto px-2 py-0.5 text-xs"
-                  onClick={() => {
-                    setIsApiKeyVisible((value) => !value);
-                    setApiKey('');
-                  }}
-                >
-                  {isApiKeyVisible ? 'Use session' : 'Use an API key'}
-                </Button>
-              </div>
-              {isApiKeyVisible && (
-                <ParameterField
-                  label="API key"
-                  type="password"
-                  value={apiKey}
-                  onChange={setApiKey}
-                  placeholder="Paste an API key"
-                />
-              )}
+          {toolbar && (
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-muted px-3 py-2">
+              {toolbar}
             </div>
           )}
-          {parameters.map((parameter) => (
-            <ParameterField
-              key={parameterField(parameter)}
-              label={parameter.name}
-              info={
-                <ParameterDetails
-                  parameter={parameter}
-                  serviceType={serviceType}
-                />
-              }
-              required={parameter.required}
-              value={parameterValue(parameter)}
-              onChange={(value) => setParameter(parameter, value)}
-              error={issueFor(parameterField(parameter))}
-              placeholder={parameterPlaceholder(parameter, serviceType)}
-              action={
-                parameter.role === 'idempotencyKey' && (
-                  <Button
-                    variant="secondary"
-                    className="shrink-0 px-2 py-1 text-xs"
-                    onClick={() => setParameter(parameter, randomId())}
-                  >
-                    Generate
-                  </Button>
-                )
-              }
+          <div className={requestLineStyles({ hasFields })}>
+            <RequestLine
+              method={operation.method}
+              url={sampleRequest.url}
+              baseUrl={ingressUrl}
+              runLabel={runLabel}
+              isSending={isSending}
+              onCancel={cancel}
             />
-          ))}
-          {body && (
-            <div className="flex flex-col gap-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-0.5xs font-medium text-secondary">
-                  Body
-                  {body.required && <span className="ml-1 text-danger">*</span>}
-                </span>
-                <code className="rounded bg-muted px-1 py-px font-mono text-2xs text-tertiary">
-                  {body.contentType}
-                </code>
-                <div className="ml-auto flex items-center gap-1.5">
-                  {!isTextContentType(body.contentType) && (
-                    <SegmentedControl
-                      label="Body input"
-                      value={bodyMode}
-                      onChange={setBodyMode}
-                      options={[
-                        { value: 'text', label: 'Text' },
-                        { value: 'file', label: 'File' },
-                      ]}
+          </div>
+          {hasFields && (
+            <div className="flex flex-col gap-3 p-3">
+              {contract.security.bearer && (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <Icon name={IconName.ApiKey} className="h-3.5 w-3.5" />
+                    {!apiKeyState.isVisible
+                      ? 'Requests use your current session.'
+                      : apiKey
+                        ? 'Requests use this API key. It is kept only in this tab’s memory.'
+                        : 'Paste an API key. Until then, requests use your current session.'}
+                    <Button
+                      variant="secondary"
+                      className="ml-auto px-2 py-0.5 text-xs"
+                      onClick={() =>
+                        setApiKeyState({
+                          isVisible: !apiKeyState.isVisible,
+                          value: '',
+                        })
+                      }
+                    >
+                      {apiKeyState.isVisible ? 'Use session' : 'Use an API key'}
+                    </Button>
+                  </div>
+                  {apiKeyState.isVisible && (
+                    <ParameterField
+                      label="API key"
+                      type="password"
+                      value={apiKeyState.value}
+                      onChange={(value) =>
+                        setApiKeyState({ isVisible: true, value })
+                      }
+                      placeholder="Paste an API key"
                     />
                   )}
-                  {bodyMode === 'text' &&
-                    isJsonContentType(body.contentType) && (
+                </div>
+              )}
+              {parameters.map((parameter) => (
+                <ParameterField
+                  key={parameterField(parameter)}
+                  label={parameter.name}
+                  info={
+                    <ParameterDetails
+                      parameter={parameter}
+                      serviceType={serviceType}
+                    />
+                  }
+                  required={parameter.required}
+                  value={parameterValue(parameter)}
+                  onChange={(value) => setParameter(parameter, value)}
+                  error={issueFor(parameterField(parameter))}
+                  placeholder={parameterPlaceholder(parameter, serviceType)}
+                  action={
+                    parameter.role === 'idempotencyKey' && (
                       <Button
                         variant="secondary"
-                        className="px-2 py-0.5 text-xs"
-                        onClick={() =>
-                          setDraft((previous) => ({
-                            ...previous,
-                            body: exampleBody(operation, document),
-                          }))
-                        }
+                        className="flex shrink-0 items-center gap-1.5 self-stretch rounded-lg px-2.5 py-1 text-xs"
+                        onClick={() => setParameter(parameter, randomId())}
                       >
-                        Reset to example
+                        <Icon name={IconName.Wand} className="h-3.5 w-3.5" />
+                        Generate
                       </Button>
-                    )}
-                </div>
-              </div>
-              {bodyMode === 'file' ? (
-                <input
-                  type="file"
-                  aria-label="Body file"
-                  className="rounded-lg border border-inset bg-inset px-2 py-1.5 text-xs text-secondary file:mr-2 file:rounded-md file:border-0 file:bg-raised file:px-2 file:py-0.5 file:text-xs file:text-primary"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    setDraft((previous) => ({ ...previous, file }));
-                  }}
-                />
-              ) : (
-                <BodyEditor
-                  modelUri={bodyModelUri(
-                    service,
-                    handlerName,
-                    body.contentType,
-                  )}
-                  value={draft.body}
-                  language={
-                    isJsonContentType(body.contentType) ? 'json' : 'plaintext'
+                    )
                   }
-                  schemas={schemas}
-                  ariaLabel="Request body"
-                  onChange={(text) => {
-                    setIssues((current) =>
-                      current.filter(({ field }) => field !== 'body'),
-                    );
-                    setDraft((previous) => ({ ...previous, body: text }));
-                  }}
                 />
-              )}
-              {bodyIssue && (
-                <div className="text-xs text-danger">{bodyIssue}</div>
+              ))}
+              {body && (
+                <div className="flex flex-col gap-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-0.5xs font-medium text-secondary">
+                      Body
+                      {body.required && (
+                        <span className="ml-1 text-danger">*</span>
+                      )}
+                    </span>
+                    <code className="rounded bg-muted px-1 py-px font-mono text-2xs text-tertiary">
+                      {body.contentType}
+                    </code>
+                    <div className="ml-auto flex items-center gap-1.5">
+                      {!isTextContentType(body.contentType) && (
+                        <SegmentedControl
+                          label="Body input"
+                          value={bodyMode}
+                          onChange={setBodyMode}
+                          options={[
+                            { value: 'text', label: 'Text' },
+                            { value: 'file', label: 'File' },
+                          ]}
+                        />
+                      )}
+                      {bodyMode === 'text' &&
+                        isJsonContentType(body.contentType) && (
+                          <Button
+                            variant="icon"
+                            className="gap-1 rounded-md px-1.5 py-0.5 text-xs"
+                            onClick={() =>
+                              setDraft((previous) => ({
+                                ...previous,
+                                body: exampleBody(operation, document),
+                              }))
+                            }
+                          >
+                            <Icon
+                              name={IconName.RetryNow}
+                              className="h-3 w-3"
+                            />
+                            Reset to example
+                          </Button>
+                        )}
+                    </div>
+                  </div>
+                  {bodyMode === 'file' ? (
+                    <input
+                      type="file"
+                      aria-label="Body file"
+                      className="rounded-lg border border-inset bg-inset px-2 py-1.5 text-xs text-secondary file:mr-2 file:rounded-md file:border-0 file:bg-raised file:px-2 file:py-0.5 file:text-xs file:text-primary"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        setDraft((previous) => ({ ...previous, file }));
+                      }}
+                    />
+                  ) : (
+                    <BodyEditor
+                      modelUri={bodyModelUri(
+                        service,
+                        handlerName,
+                        body.contentType,
+                      )}
+                      value={draft.body}
+                      language={
+                        isJsonContentType(body.contentType)
+                          ? 'json'
+                          : 'plaintext'
+                      }
+                      schemas={schemas}
+                      ariaLabel="Request body"
+                      onChange={(text) => {
+                        setIssues((current) =>
+                          current.filter(({ field }) => field !== 'body'),
+                        );
+                        setDraft((previous) => ({ ...previous, body: text }));
+                      }}
+                      onSubmit={() => {
+                        if (!isSending) {
+                          send();
+                        }
+                      }}
+                    />
+                  )}
+                  {bodyIssue && (
+                    <div className="text-xs text-danger">{bodyIssue}</div>
+                  )}
+                </div>
               )}
             </div>
           )}
-          <div className="flex items-center gap-2">
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSending}
-              className="flex items-center gap-2 px-4 py-1.5 text-sm"
-            >
-              {isSending && <Spinner className="h-3.5 w-3.5" />}
-              Send
-            </Button>
-            {isSending && (
-              <Button
-                variant="secondary"
-                className="px-3 py-1.5 text-sm"
-                onClick={() => {
-                  abortRef.current?.abort();
-                  abortRef.current = null;
-                  setIsSending(false);
-                }}
-              >
-                Cancel
-              </Button>
-            )}
-          </div>
         </form>
         {result && (
-          <ResponseView result={result}>
-            {result.kind === 'response' &&
-              result.invocationId &&
-              (result.status === 202 ? (
-                <InvocationPanel
-                  invocationId={result.invocationId}
-                  executionTime={result.executionTime}
-                  canAttach={hasTool('attach')}
-                  canGetOutput={hasTool('output')}
-                  followUp={followUp}
-                  onRun={(kind) =>
-                    void runFollowUp(kind, result.invocationId as string)
-                  }
-                  onCancel={() => {
-                    followUpAbortRef.current?.abort();
-                    followUpAbortRef.current = null;
-                    setFollowUp(undefined);
-                  }}
-                />
-              ) : (
-                <div>
-                  <OpenInvocationLink invocationId={result.invocationId} />
-                </div>
-              ))}
-          </ResponseView>
+          <div ref={responseRef} className="scroll-mt-4">
+            <ResponseView result={result}>
+              {result.kind === 'response' &&
+                result.invocationId &&
+                (result.status === 202 ? (
+                  <InvocationPanel
+                    key={result.invocationId}
+                    invocationId={result.invocationId}
+                    executionTime={result.executionTime}
+                    canTrack={canTrack}
+                    runTool={(kind, signal) =>
+                      runTool(kind, result.invocationId as string, signal)
+                    }
+                  />
+                ) : (
+                  <div>
+                    <OpenInvocationLink invocationId={result.invocationId} />
+                  </div>
+                ))}
+            </ResponseView>
+          </div>
         )}
-      </DocsSection>
+      </div>
       <CodeSamples samples={deferredSamples} />
     </div>
   );

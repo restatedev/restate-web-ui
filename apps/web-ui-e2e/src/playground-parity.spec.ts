@@ -90,8 +90,8 @@ async function sendWithPlayground(page: Page, handler: string, mode: string) {
   );
   if (mode === 'send') {
     await page
-      .getByRole('radiogroup', { name: 'How to invoke' })
-      .getByText('Send', { exact: true })
+      .getByRole('group', { name: 'How to invoke' })
+      .getByRole('button', { name: 'Send', exact: true })
       .click();
   }
   await page.locator('form button[type=submit]').click();

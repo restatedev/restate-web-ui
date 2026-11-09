@@ -107,6 +107,7 @@ import {
 } from '@restate/features-service';
 import {
   PANEL_QUERY_PARAM,
+  PLAYGROUND_HANDLER_QUERY_PARAM,
   stripTransientQueryParams,
 } from '@restate/util-panel';
 import { Sort } from './QueryButton';
@@ -170,6 +171,7 @@ function invocationRouteLocation(
   const preservedParams = new URLSearchParams();
   const paramsToPreserve = [
     SERVICE_PLAYGROUND_QUERY_PARAM,
+    PLAYGROUND_HANDLER_QUERY_PARAM,
     HANDLER_QUERY_PARAM,
     PANEL_QUERY_PARAM,
   ];

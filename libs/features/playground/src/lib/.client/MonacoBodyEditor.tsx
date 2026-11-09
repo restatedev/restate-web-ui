@@ -31,6 +31,7 @@ export function MonacoBodyEditor({
   language,
   schemas,
   onChange,
+  onSubmit,
   ariaLabel,
 }: {
   modelUri: string;
@@ -38,15 +39,18 @@ export function MonacoBodyEditor({
   language: 'json' | 'plaintext';
   schemas?: { uri: string; schema: unknown }[];
   onChange: (value: string) => void;
+  onSubmit?: () => void;
   ariaLabel: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const onChangeRef = useRef(onChange);
+  const onSubmitRef = useRef(onSubmit);
   const valueRef = useRef(value);
 
   useEffect(() => {
     onChangeRef.current = onChange;
+    onSubmitRef.current = onSubmit;
     valueRef.current = value;
   });
 
@@ -87,11 +91,24 @@ export function MonacoBodyEditor({
       hideCursorInOverviewRuler: true,
       stickyScroll: { enabled: false },
       padding: { top: 8, bottom: 8 },
-      scrollbar: { useShadows: false, alwaysConsumeMouseWheel: false },
+      scrollbar: {
+        useShadows: false,
+        alwaysConsumeMouseWheel: false,
+        verticalScrollbarSize: 10,
+        horizontalScrollbarSize: 10,
+        verticalSliderSize: 6,
+        horizontalSliderSize: 6,
+      },
       fixedOverflowWidgets: true,
       quickSuggestions: { strings: true, other: true, comments: false },
     });
     editorRef.current = editor;
+    editor.addAction({
+      id: 'restate.playground.submit',
+      label: 'Send the request',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+      run: () => onSubmitRef.current?.(),
+    });
 
     const resize = () => {
       const height = `${Math.min(Math.max(editor.getContentHeight(), 96), 420)}px`;

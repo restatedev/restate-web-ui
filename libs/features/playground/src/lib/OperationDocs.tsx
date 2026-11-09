@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { JsonSchemaTree, MarkdownDescription } from '@restate/ui-json-schema';
 import { tv } from '@restate/util-styles';
 import {
+  bundleSchema,
   generateExample,
   stringifyExample,
   type ContractOperation,
@@ -11,7 +12,7 @@ import { Copy } from '@restate/ui-copy';
 import { SegmentedControl } from './SegmentedControl';
 import { responseLabel } from './status';
 
-export function DocsSection({
+function DocsSection({
   title,
   aside,
   children,
@@ -21,8 +22,8 @@ export function DocsSection({
   children: ReactNode;
 }) {
   return (
-    <section className="flex min-w-0 flex-col gap-2">
-      <div className="flex min-h-6 items-center gap-2">
+    <section className="flex min-w-0 flex-col rounded-xl border bg-surface">
+      <div className="flex min-h-11 items-center gap-2 border-b border-muted px-3 py-1.5">
         <h3 className="text-sm font-semibold text-primary">{title}</h3>
         <div className="ml-auto flex items-center gap-2">{aside}</div>
       </div>
@@ -31,8 +32,8 @@ export function DocsSection({
   );
 }
 
-const panelStyles = tv({
-  base: 'rounded-xl border bg-surface px-3 py-2',
+const bodyStyles = tv({
+  base: 'flex min-w-0 flex-col gap-1.5 px-3 py-2',
 });
 
 function ResponseBody({
@@ -55,58 +56,68 @@ function ResponseBody({
     example !== undefined ? stringifyExample(example) : undefined;
   const hasSchema = response.schema !== undefined;
   const current = hasSchema && view === 'schema' ? 'schema' : 'example';
+  const copyText =
+    current === 'schema'
+      ? JSON.stringify(
+          bundleSchema(response.schema, root) ?? response.schema,
+          null,
+          2,
+        )
+      : exampleText;
 
   return (
-    <div className="flex flex-col gap-2">
-      {response.description && (
-        <MarkdownDescription className="text-xs">
-          {response.description}
-        </MarkdownDescription>
-      )}
-      {response.contentType ? (
-        <div className="rounded-xl border bg-surface">
-          <div className="flex min-h-9 items-center gap-2 border-b border-muted py-1 pr-1 pl-3">
-            <code className="font-mono text-2xs text-muted">
-              {response.contentType}
-            </code>
-            <div className="ml-auto flex items-center gap-1">
-              {hasSchema && exampleText !== undefined && (
-                <SegmentedControl
-                  label="Show"
-                  value={current}
-                  onChange={setView}
-                  options={[
-                    { value: 'schema', label: 'Schema' },
-                    { value: 'example', label: 'Example' },
-                  ]}
-                />
-              )}
-              {current === 'example' && exampleText !== undefined && (
-                <Copy copyText={exampleText} className="p-1.5" />
-              )}
-            </div>
-          </div>
-          <div className="px-3 py-2">
-            {current === 'schema' ? (
-              <JsonSchemaTree
-                schema={response.schema}
-                root={root}
-                mode="read"
-                emptyText="Any value"
+    <>
+      {response.contentType && (
+        <div className="flex min-h-9 items-center gap-2 border-b border-muted py-1 pr-1.5 pl-3">
+          <code className="font-mono text-2xs text-muted">
+            {response.contentType}
+          </code>
+          <div className="ml-auto flex items-center gap-1">
+            {hasSchema && exampleText !== undefined && (
+              <SegmentedControl
+                label="Show"
+                value={current}
+                onChange={setView}
+                options={[
+                  { value: 'schema', label: 'Schema' },
+                  { value: 'example', label: 'Example' },
+                ]}
               />
-            ) : exampleText !== undefined ? (
-              <pre className="max-h-72 overflow-auto font-mono text-xs text-secondary">
-                {exampleText}
-              </pre>
-            ) : (
-              <div className="text-xs text-muted">Any value</div>
+            )}
+            {copyText !== undefined && (
+              <Copy copyText={copyText} className="p-1.5" />
             )}
           </div>
         </div>
-      ) : response.description ? null : (
-        <div className="text-xs text-muted">No body</div>
       )}
-    </div>
+      <div className={bodyStyles()}>
+        {response.description && (
+          <MarkdownDescription className="text-xs">
+            {response.description}
+          </MarkdownDescription>
+        )}
+        {response.contentType ? (
+          current === 'schema' ? (
+            <JsonSchemaTree
+              schema={response.schema}
+              root={root}
+              mode="read"
+              emptyText="Any value"
+            />
+          ) : exampleText !== undefined ? (
+            <pre className="max-h-72 overflow-auto font-mono text-xs text-secondary">
+              {exampleText}
+            </pre>
+          ) : (
+            <div className="text-xs text-muted">Any value</div>
+          )
+        ) : (
+          !response.description && (
+            <div className="text-xs text-muted">No body</div>
+          )
+        )}
+      </div>
+    </>
   );
 }
 
@@ -155,7 +166,7 @@ export function OperationDocs({
   const body = operation.body;
 
   return (
-    <div className="flex min-w-0 flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-4">
       <DocsSection
         title="Request body"
         aside={
@@ -167,27 +178,31 @@ export function OperationDocs({
           )
         }
       >
-        {body ? (
-          <div className={panelStyles()}>
-            {body.description && (
-              <MarkdownDescription className="mb-1 text-xs">
-                {body.description}
-              </MarkdownDescription>
-            )}
-            <JsonSchemaTree
-              schema={body.schema}
-              root={root}
-              mode="write"
-              emptyText={
-                /json/i.test(body.contentType)
-                  ? 'Any JSON value'
-                  : `Raw ${body.contentType} content`
-              }
-            />
-          </div>
-        ) : (
-          <div className="text-xs text-muted">This handler takes no input.</div>
-        )}
+        <div className={bodyStyles()}>
+          {body ? (
+            <>
+              {body.description && (
+                <MarkdownDescription className="text-xs">
+                  {body.description}
+                </MarkdownDescription>
+              )}
+              <JsonSchemaTree
+                schema={body.schema}
+                root={root}
+                mode="write"
+                emptyText={
+                  /json/i.test(body.contentType)
+                    ? 'Any JSON value'
+                    : `Raw ${body.contentType} content`
+                }
+              />
+            </>
+          ) : (
+            <div className="text-xs text-muted">
+              This handler takes no input.
+            </div>
+          )}
+        </div>
       </DocsSection>
       <Responses
         key={operation.id}

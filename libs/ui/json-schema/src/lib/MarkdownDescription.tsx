@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Markdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { tv } from '@restate/util-styles';
 
 const COMPONENTS: Components = {
@@ -28,7 +29,71 @@ const COMPONENTS: Components = {
     </pre>
   ),
   img: () => null,
+  table: ({ children }) => (
+    <div className="my-1.5 overflow-x-auto">
+      <table className="w-full border-collapse text-left">{children}</table>
+    </div>
+  ),
+  th: ({ children }) => (
+    <th className="border-b px-2 py-1 font-medium text-secondary">
+      {children}
+    </th>
+  ),
+  td: ({ children }) => (
+    <td className="border-b border-muted px-2 py-1">{children}</td>
+  ),
 };
+
+interface MarkdownNode {
+  type: string;
+  value?: string;
+  children?: MarkdownNode[];
+}
+
+const ENTITIES: Record<string, string> = {
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  apos: "'",
+  nbsp: ' ',
+};
+
+function htmlToText(html: string) {
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&(#\d+|[a-z]+);/gi, (entity, name: string) =>
+      name.startsWith('#')
+        ? String.fromCharCode(Number(name.slice(1)))
+        : (ENTITIES[name.toLowerCase()] ?? entity),
+    )
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const FLOW_PARENTS = new Set(['root', 'blockquote', 'listItem']);
+
+function htmlAsText() {
+  const visit = (node: MarkdownNode) => {
+    node.children = node.children?.flatMap((child) => {
+      if (child.type !== 'html') {
+        visit(child);
+        return [child];
+      }
+      const text = htmlToText(child.value ?? '');
+      if (!text) {
+        return [];
+      }
+      const textNode = { type: 'text', value: text };
+      return FLOW_PARENTS.has(node.type)
+        ? [{ type: 'paragraph', children: [textNode] }]
+        : [textNode];
+    });
+  };
+  return visit;
+}
+
+const REMARK_PLUGINS = [remarkGfm, htmlAsText];
 
 const styles = tv({
   base: 'min-w-0 text-muted [&_li]:ml-4 [&_ol]:list-decimal [&_p+p]:mt-1.5 [&_ul]:list-disc',
@@ -55,7 +120,7 @@ export function MarkdownDescription({
 
   return (
     <div className={styles({ className })}>
-      <Markdown components={COMPONENTS} skipHtml>
+      <Markdown components={COMPONENTS} remarkPlugins={REMARK_PLUGINS}>
         {isExpanded || !isTruncated ? children : summary}
       </Markdown>
       {isTruncated && (

@@ -52,3 +52,24 @@ export function useOperationDraft(
   );
   return [draft, setDraft] as const;
 }
+
+export interface ApiKeyState {
+  isVisible: boolean;
+  value: string;
+}
+
+const apiKeys = new Map<string, ApiKeyState>();
+
+export function useApiKey(scope: string) {
+  const [state, setState] = useState<ApiKeyState>(
+    () => apiKeys.get(scope) ?? { isVisible: false, value: '' },
+  );
+  const update = useCallback(
+    (next: ApiKeyState) => {
+      apiKeys.set(scope, next);
+      setState(next);
+    },
+    [scope],
+  );
+  return [state, update] as const;
+}

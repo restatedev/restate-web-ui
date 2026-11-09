@@ -20,7 +20,10 @@ import {
   SERVICE_PLAYGROUND_QUERY_PARAM,
 } from '@restate/features-service';
 import { toFilterParams } from '@restate/util-invocation-links';
-import { PANEL_QUERY_PARAM } from '@restate/util-panel';
+import {
+  PANEL_QUERY_PARAM,
+  PLAYGROUND_HANDLER_QUERY_PARAM,
+} from '@restate/util-panel';
 import { useOverviewData } from './useOverviewData';
 import {
   getOverviewMode,
@@ -30,6 +33,7 @@ import {
 
 const PRESERVE_PARAMS = [
   SERVICE_PLAYGROUND_QUERY_PARAM,
+  PLAYGROUND_HANDLER_QUERY_PARAM,
   HANDLER_QUERY_PARAM,
   PANEL_QUERY_PARAM,
 ] as const;

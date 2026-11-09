@@ -1,24 +1,23 @@
 import {
+  Fragment,
   startTransition,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { Badge } from '@restate/ui-badge';
-import { Copy } from '@restate/ui-copy';
 import { ErrorBanner } from '@restate/ui-error';
-import { FormFieldLabel, Switch } from '@restate/ui-form-field';
+import { Switch } from '@restate/ui-form-field';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
 import { MarkdownDescription } from '@restate/ui-json-schema';
 import { Spinner } from '@restate/ui-loading';
-import { RadioCard, RadioCards, RadioGroup } from '@restate/ui-radio-group';
 import { useRestateContext } from '@restate/features-restate-context';
 import { tv } from '@restate/util-styles';
 import {
   findOperation,
-  joinUrl,
   type ContractHandler,
   type ContractInvocationTool,
   type ContractOperation,
@@ -28,8 +27,15 @@ import {
   type ServiceContract,
 } from '@restate/util-openapi';
 import { InfoButton } from './InfoButton';
-import { toolDraftName, toolId, type InvocationLookup } from './names';
+import {
+  operationKey,
+  toolDraftName,
+  toolId,
+  type InvocationLookup,
+} from './names';
 import { OperationDocs } from './OperationDocs';
+import { Method } from './RequestLine';
+import { SegmentedControl } from './SegmentedControl';
 import { TryIt } from './TryIt';
 import { usePlaygroundFetcher } from './usePlaygroundFetcher';
 import { useServiceContract } from './useServiceContract';
@@ -40,18 +46,9 @@ type BaseMode = 'call' | 'send' | 'attach' | 'output';
 
 const MODE_OPTIONS: Record<BaseMode, { label: string; description: string }> = {
   call: { label: 'Call', description: 'Waits for the result' },
-  send: {
-    label: 'Send',
-    description: 'Returns an invocation ID right away',
-  },
-  attach: {
-    label: 'Attach',
-    description: 'Waits for an earlier call with this idempotency key',
-  },
-  output: {
-    label: 'Get output',
-    description: 'Returns the result of an earlier call, if done',
-  },
+  send: { label: 'Send', description: 'Returns the invocation ID' },
+  attach: { label: 'Attach', description: 'Waits for an earlier call' },
+  output: { label: 'Get output', description: 'Result of an earlier call' },
 };
 
 const KIND_LABEL: Record<RestateHandlerKind, string> = {
@@ -90,95 +87,6 @@ function readLegacyOperationId() {
   );
 }
 
-const methodStyles = tv({
-  base: 'shrink-0 font-mono text-2xs font-semibold',
-  variants: {
-    method: {
-      GET: '',
-      POST: '',
-      DELETE: '',
-      other: '',
-    },
-    variant: {
-      badge: 'rounded-md border px-1.5 py-0.5',
-      text: 'w-8',
-    },
-  },
-  compoundVariants: [
-    {
-      variant: 'badge',
-      method: 'GET',
-      className:
-        'border-success-strong/20 bg-success-subtle text-success-strong',
-    },
-    {
-      variant: 'badge',
-      method: 'POST',
-      className: 'border-info-strong/20 bg-info-subtle text-info-strong',
-    },
-    {
-      variant: 'badge',
-      method: 'DELETE',
-      className: 'border-danger-strong/20 bg-danger-subtle text-danger-strong',
-    },
-    {
-      variant: 'badge',
-      method: 'other',
-      className:
-        'border-warning-strong/20 bg-warning-subtle text-warning-strong',
-    },
-    { variant: 'text', method: 'GET', className: 'text-success' },
-    { variant: 'text', method: 'POST', className: 'text-info' },
-    { variant: 'text', method: 'DELETE', className: 'text-danger' },
-    { variant: 'text', method: 'other', className: 'text-warning' },
-  ],
-});
-
-function Method({
-  method,
-  variant = 'badge',
-}: {
-  method: string;
-  variant?: 'badge' | 'text';
-}) {
-  return (
-    <span
-      className={methodStyles({
-        variant,
-        method:
-          method === 'GET' || method === 'POST' || method === 'DELETE'
-            ? method
-            : 'other',
-      })}
-    >
-      {method}
-    </span>
-  );
-}
-
-function OperationUrl({
-  operation,
-  ingressUrl,
-}: {
-  operation: ContractOperation;
-  ingressUrl: string;
-}) {
-  const fullUrl = joinUrl(ingressUrl, operation.path);
-  return (
-    <div className="flex min-w-0 items-center gap-2 rounded-xl border bg-surface py-1 pr-1 pl-1.5 shadow-xs">
-      <Method method={operation.method} />
-      <span
-        className="min-w-0 flex-auto truncate font-mono text-0.5xs select-all"
-        title={fullUrl}
-      >
-        <span className="text-subtle">{ingressUrl.replace(/\/+$/, '')}</span>
-        <span className="text-primary">{operation.path}</span>
-      </span>
-      <Copy copyText={fullUrl} className="p-1.5" />
-    </div>
-  );
-}
-
 function Metadata({ extensions }: { extensions: Record<string, string> }) {
   const entries = Object.entries(extensions);
   if (entries.length === 0) {
@@ -196,54 +104,39 @@ function Metadata({ extensions }: { extensions: Record<string, string> }) {
   );
 }
 
-const modeCardsStyles = tv({
-  base: 'grid grid-cols-2',
-  variants: {
-    count: {
-      2: '',
-      3: '@3xl/playground:grid-cols-3',
-      4: '@3xl/playground:grid-cols-4',
-    },
-  },
+const headingStyles = tv({
+  base: 'min-w-0 text-lg font-semibold break-all text-primary',
+  variants: { isCode: { true: 'font-mono' } },
 });
 
-function OptionCards<T extends string>({
-  name,
-  label,
-  options,
-  value,
-  onChange,
+function ViewHeader({
+  title,
+  isCode = false,
+  badges,
+  description,
 }: {
-  name: string;
-  label: string;
-  options: { value: T; label: string; description: string }[];
-  value: T;
-  onChange: (value: T) => void;
+  title: string;
+  isCode?: boolean;
+  badges?: ReactNode;
+  description?: string;
 }) {
   return (
-    <RadioGroup
-      name={name}
-      value={value}
-      onChange={(next) => onChange(next as T)}
-    >
-      <FormFieldLabel className="sr-only">{label}</FormFieldLabel>
-      <RadioCards
-        className={modeCardsStyles({
-          count: Math.min(Math.max(options.length, 2), 4) as 2 | 3 | 4,
-        })}
-      >
-        {options.map((option) => (
-          <RadioCard
-            key={option.value}
-            value={option.value}
-            label={option.label}
-            description={option.description}
-          />
-        ))}
-      </RadioCards>
-    </RadioGroup>
+    <div className="flex flex-col gap-1">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <h2 className={headingStyles({ isCode })}>{title}</h2>
+        {badges}
+      </div>
+      {description && (
+        <MarkdownDescription className="text-sm" collapsible>
+          {description}
+        </MarkdownDescription>
+      )}
+    </div>
   );
 }
+
+const COLUMNS =
+  'grid min-w-0 grid-cols-1 gap-8 @5xl/playground:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]';
 
 function ScopeSwitch({
   isSelected,
@@ -326,60 +219,62 @@ function HandlerView({
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <h2 className="flex min-w-0 items-center gap-2 text-lg font-semibold text-primary">
-            <span className="truncate font-mono">{handler.name}</span>
+      <ViewHeader
+        title={handler.name}
+        isCode
+        description={handler.description}
+        badges={
+          <>
             {handlerKind && <Badge size="xs">{KIND_LABEL[handlerKind]}</Badge>}
             {operation.deprecated && (
               <Badge size="xs" variant="warning">
                 deprecated
               </Badge>
             )}
-          </h2>
-          {canScope && (
-            <div className="ml-auto">
-              <ScopeSwitch
-                isSelected={isScoped}
-                onChange={(scoped) => onModeChange(withScope(base, scoped))}
-              />
-            </div>
-          )}
-        </div>
-        {handler.description && (
-          <MarkdownDescription className="text-sm" collapsible>
-            {handler.description}
-          </MarkdownDescription>
-        )}
-        {baseModes.length > 1 && (
-          <OptionCards
-            name="playground-mode"
-            label="How to invoke"
-            options={baseModes.map((value) => ({
-              value,
-              ...MODE_OPTIONS[value],
-            }))}
-            value={base}
-            onChange={(next) => onModeChange(withScope(next, isScoped))}
-          />
-        )}
-        <OperationUrl operation={operation} ingressUrl={ingressUrl} />
-        <Metadata extensions={handler.extensions} />
-      </div>
-      <div className="grid min-w-0 grid-cols-1 gap-8 @5xl/playground:grid-cols-2">
-        <div className="order-first min-w-0 @5xl/playground:order-last">
-          <TryIt
-            service={service}
-            contract={contract}
-            operation={operation}
-            ingressUrl={ingressUrl}
-            fetcher={fetcher}
-            handlerName={handler.name}
-            handlerKind={handlerKind}
-            serviceType={serviceType}
-            mode={currentMode}
-          />
-        </div>
+            <Metadata extensions={handler.extensions} />
+          </>
+        }
+      />
+      <div className={COLUMNS}>
+        <TryIt
+          service={service}
+          contract={contract}
+          operation={operation}
+          ingressUrl={ingressUrl}
+          fetcher={fetcher}
+          handlerName={handler.name}
+          handlerKind={handlerKind}
+          serviceType={serviceType}
+          mode={currentMode}
+          runLabel={MODE_OPTIONS[base].label}
+          toolbar={
+            (baseModes.length > 1 || canScope) && (
+              <>
+                {baseModes.length > 1 && (
+                  <SegmentedControl
+                    label="How to invoke"
+                    options={baseModes.map((value) => ({
+                      value,
+                      ...MODE_OPTIONS[value],
+                    }))}
+                    value={base}
+                    onChange={(next) => onModeChange(withScope(next, isScoped))}
+                  />
+                )}
+                {canScope && (
+                  <div className="ml-auto">
+                    <ScopeSwitch
+                      isSelected={isScoped}
+                      onChange={(scoped) =>
+                        onModeChange(withScope(base, scoped))
+                      }
+                    />
+                  </div>
+                )}
+              </>
+            )
+          }
+        />
         <OperationDocs operation={operation} root={contract.document} />
       </div>
     </div>
@@ -392,16 +287,22 @@ const TOOL_LABEL: Record<InvocationToolKind, string> = {
   status: 'Get invocation status',
 };
 
+const TOOL_RUN_LABEL: Record<InvocationToolKind, string> = {
+  attach: 'Attach',
+  output: 'Get output',
+  status: 'Get status',
+};
+
 const LOOKUP_OPTIONS = [
   {
     value: 'byId' as const,
     label: 'By ID',
-    description: 'Use the invocation ID, inv_…',
+    description: 'Invocation ID',
   },
   {
     value: 'byTarget' as const,
     label: 'By target',
-    description: 'Find it by handler and idempotency key, or by workflow ID',
+    description: 'Idempotency key or workflow ID',
   },
 ];
 
@@ -420,21 +321,27 @@ function toolGroups(contract: ServiceContract) {
     : [];
 }
 
+function operationLabel(operation: ContractOperation) {
+  return operation.summary ?? `${operation.method} ${operation.path}`;
+}
+
 function ToolView({
   service,
   contract,
   tool,
+  defaultLookup = 'byId',
   ingressUrl,
   serviceType,
 }: {
   service: string;
   contract: ServiceContract;
   tool: ContractInvocationTool;
+  defaultLookup?: InvocationLookup;
   ingressUrl: string;
   serviceType?: ReturnType<typeof useServiceContract>['serviceType'];
 }) {
   const fetcher = usePlaygroundFetcher(service);
-  const [lookup, setLookup] = useState<InvocationLookup>('byId');
+  const [lookup, setLookup] = useState<InvocationLookup>(defaultLookup);
   const operation = tool[lookup] ?? tool.byId ?? tool.byTarget;
   if (!operation) {
     return null;
@@ -443,43 +350,156 @@ function ToolView({
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-primary">
-          {toolLabel(tool)}
-        </h2>
-        {operation.description && (
-          <MarkdownDescription className="text-sm" collapsible>
-            {operation.description}
-          </MarkdownDescription>
-        )}
-        {tool.byId && tool.byTarget && (
-          <OptionCards
-            name="playground-lookup"
-            label="Find the invocation"
-            options={LOOKUP_OPTIONS}
-            value={current}
-            onChange={setLookup}
-          />
-        )}
-        <OperationUrl operation={operation} ingressUrl={ingressUrl} />
-      </div>
-      <div className="grid min-w-0 grid-cols-1 gap-8 @5xl/playground:grid-cols-2">
-        <div className="order-first min-w-0 @5xl/playground:order-last">
-          <TryIt
-            key={toolDraftName(tool.kind, current)}
-            service={service}
-            contract={contract}
-            operation={operation}
-            ingressUrl={ingressUrl}
-            fetcher={fetcher}
-            handlerName={toolDraftName(tool.kind, current)}
-            serviceType={serviceType}
-          />
-        </div>
+      <ViewHeader title={toolLabel(tool)} description={operation.description} />
+      <div className={COLUMNS}>
+        <TryIt
+          key={toolDraftName(tool.kind, current)}
+          service={service}
+          contract={contract}
+          operation={operation}
+          ingressUrl={ingressUrl}
+          fetcher={fetcher}
+          handlerName={toolDraftName(tool.kind, current)}
+          serviceType={serviceType}
+          runLabel={TOOL_RUN_LABEL[tool.kind]}
+          toolbar={
+            tool.byId &&
+            tool.byTarget && (
+              <SegmentedControl
+                label="Find the invocation"
+                options={LOOKUP_OPTIONS}
+                value={current}
+                onChange={setLookup}
+              />
+            )
+          }
+        />
         <OperationDocs operation={operation} root={contract.document} />
       </div>
     </div>
   );
+}
+
+function OperationView({
+  service,
+  contract,
+  operation,
+  ingressUrl,
+}: {
+  service: string;
+  contract: ServiceContract;
+  operation: ContractOperation;
+  ingressUrl: string;
+}) {
+  const fetcher = usePlaygroundFetcher(service);
+  return (
+    <div className="flex min-w-0 flex-col gap-4">
+      <ViewHeader
+        title={operationLabel(operation)}
+        description={operation.description}
+        badges={
+          operation.deprecated && (
+            <Badge size="xs" variant="warning">
+              deprecated
+            </Badge>
+          )
+        }
+      />
+      <div className={COLUMNS}>
+        <TryIt
+          service={service}
+          contract={contract}
+          operation={operation}
+          ingressUrl={ingressUrl}
+          fetcher={fetcher}
+          handlerName={operationKey(operation.id)}
+          runLabel="Send"
+        />
+        <OperationDocs operation={operation} root={contract.document} />
+      </div>
+    </div>
+  );
+}
+
+type Selection =
+  | { kind: 'handler'; handler: ContractHandler }
+  | { kind: 'tool'; tool: ContractInvocationTool }
+  | { kind: 'operation'; operation: ContractOperation };
+
+function resolveSelection(
+  contract: ServiceContract,
+  name: string | null | undefined,
+): Selection | undefined {
+  const handler = contract.handlers.find(
+    (candidate) => candidate.name === name,
+  );
+  if (handler) {
+    return { kind: 'handler', handler };
+  }
+  const tool = contract.invocationTools.find(
+    (candidate) => toolId(candidate.kind) === name,
+  );
+  if (tool) {
+    return { kind: 'tool', tool };
+  }
+  const operation = contract.otherOperations.find(
+    (candidate) => operationKey(candidate.id) === name,
+  );
+  if (operation) {
+    return { kind: 'operation', operation };
+  }
+  const first = contract.handlers[0];
+  if (first) {
+    return { kind: 'handler', handler: first };
+  }
+  const firstOperation = contract.otherOperations[0];
+  return firstOperation
+    ? { kind: 'operation', operation: firstOperation }
+    : undefined;
+}
+
+function selectionId(selection: Selection) {
+  switch (selection.kind) {
+    case 'handler':
+      return selection.handler.name;
+    case 'tool':
+      return toolId(selection.tool.kind);
+    case 'operation':
+      return operationKey(selection.operation.id);
+  }
+}
+
+interface LegacySelection {
+  name: string;
+  mode?: HandlerMode;
+  lookup?: InvocationLookup;
+}
+
+function legacySelection(
+  contract: ServiceContract,
+  operationId: string,
+): LegacySelection | undefined {
+  const handlerMatch = findOperation(contract, operationId);
+  if (handlerMatch) {
+    return {
+      name: handlerMatch.handler.name,
+      mode: (Object.entries(handlerMatch.handler.modes).find(
+        ([, operation]) => operation === handlerMatch.operation,
+      )?.[0] ?? undefined) as HandlerMode | undefined,
+    };
+  }
+  for (const tool of contract.invocationTools) {
+    if (tool.byId?.id === operationId || tool.byTarget?.id === operationId) {
+      return {
+        name: toolId(tool.kind),
+        lookup: tool.byTarget?.id === operationId ? 'byTarget' : 'byId',
+      };
+    }
+  }
+  const operation = contract.otherOperations.find(
+    ({ id }) => id === operationId,
+  );
+  return operation ? { name: operationKey(operation.id) } : undefined;
 }
 
 const navItemStyles = tv({
@@ -491,6 +511,55 @@ const navItemStyles = tv({
     },
   },
 });
+
+function NavItem({
+  id,
+  method,
+  label,
+  isCode = false,
+  hint,
+  selected,
+  onSelect,
+}: {
+  id: string;
+  method?: string;
+  label: string;
+  isCode?: boolean;
+  hint?: string;
+  selected?: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        aria-current={id === selected ? 'page' : undefined}
+        className={navItemStyles({ isSelected: id === selected })}
+        onClick={() => onSelect(id)}
+      >
+        {method && <Method method={method} variant="text" />}
+        <span className={navLabelStyles({ isCode })}>{label}</span>
+        {hint && <span className="shrink-0 text-2xs text-subtle">{hint}</span>}
+      </button>
+    </li>
+  );
+}
+
+const navLabelStyles = tv({
+  base: 'min-w-0 flex-auto truncate',
+  variants: { isCode: { true: 'font-mono' } },
+});
+
+function NavGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2 not-first:mt-2">
+      <div className="px-2 text-2xs font-medium text-subtle uppercase">
+        {title}
+      </div>
+      <ul className="flex flex-col gap-0.5">{children}</ul>
+    </div>
+  );
+}
 
 function HandlerNav({
   contract,
@@ -522,68 +591,55 @@ function HandlerNav({
           onChange={(event) => setFilter(event.target.value)}
         />
       )}
-      <div className="px-2 text-2xs font-medium text-subtle uppercase">
-        Handlers
-      </div>
-      <ul className="flex flex-col gap-0.5">
-        {handlers.map((handler) => {
-          const kind = handlerKinds.get(handler.name);
-          const method = handler.modes[defaultMode(handler)]?.method;
-          return (
-            <li key={handler.name}>
-              <button
-                type="button"
-                aria-current={handler.name === selected ? 'page' : undefined}
-                className={navItemStyles({
-                  isSelected: handler.name === selected,
-                })}
-                onClick={() => onSelect(handler.name)}
-              >
-                {method && <Method method={method} variant="text" />}
-                <span className="min-w-0 flex-auto truncate font-mono">
-                  {handler.name}
-                </span>
-                {kind && kind !== 'Exclusive' && (
-                  <span className="shrink-0 text-2xs text-subtle">
-                    {KIND_LABEL[kind]}
-                  </span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      {contract.handlers.length > 0 && (
+        <NavGroup title="Handlers">
+          {handlers.map((handler) => {
+            const kind = handlerKinds.get(handler.name);
+            return (
+              <NavItem
+                key={handler.name}
+                id={handler.name}
+                method={handler.modes[defaultMode(handler)]?.method}
+                label={handler.name}
+                isCode
+                hint={
+                  kind && kind !== 'Exclusive' ? KIND_LABEL[kind] : undefined
+                }
+                selected={selected}
+                onSelect={onSelect}
+              />
+            );
+          })}
+        </NavGroup>
+      )}
       {toolGroups(contract).map(({ name, tools }) => (
-        <div key={name} className="mt-2 flex flex-col gap-2">
-          <div className="px-2 text-2xs font-medium text-subtle uppercase">
-            {name}
-          </div>
-          <ul className="flex flex-col gap-0.5">
-            {tools.map((tool) => {
-              const method = (tool.byId ?? tool.byTarget)?.method;
-              return (
-                <li key={tool.kind}>
-                  <button
-                    type="button"
-                    aria-current={
-                      toolId(tool.kind) === selected ? 'page' : undefined
-                    }
-                    className={navItemStyles({
-                      isSelected: toolId(tool.kind) === selected,
-                    })}
-                    onClick={() => onSelect(toolId(tool.kind))}
-                  >
-                    {method && <Method method={method} variant="text" />}
-                    <span className="min-w-0 flex-auto truncate">
-                      {toolLabel(tool)}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <NavGroup key={name} title={name}>
+          {tools.map((tool) => (
+            <NavItem
+              key={tool.kind}
+              id={toolId(tool.kind)}
+              method={(tool.byId ?? tool.byTarget)?.method}
+              label={toolLabel(tool)}
+              selected={selected}
+              onSelect={onSelect}
+            />
+          ))}
+        </NavGroup>
       ))}
+      {contract.otherOperations.length > 0 && (
+        <NavGroup title="Other">
+          {contract.otherOperations.map((operation) => (
+            <NavItem
+              key={operation.id}
+              id={operationKey(operation.id)}
+              method={operation.method}
+              label={operationLabel(operation)}
+              selected={selected}
+              onSelect={onSelect}
+            />
+          ))}
+        </NavGroup>
+      )}
     </nav>
   );
 }
@@ -605,13 +661,15 @@ function HandlerPicker({
         className="min-w-0 rounded-lg border border-inset bg-inset px-2 py-1 font-mono text-0.5xs text-primary focus:outline-2 focus:outline-focus"
         onChange={(event) => onSelect(event.target.value)}
       >
-        <optgroup label="Handlers">
-          {contract.handlers.map(({ name }) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </optgroup>
+        {contract.handlers.length > 0 && (
+          <optgroup label="Handlers">
+            {contract.handlers.map(({ name }) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </optgroup>
+        )}
         {toolGroups(contract).map(({ name, tools }) => (
           <optgroup key={name} label={name}>
             {tools.map((tool) => (
@@ -621,6 +679,15 @@ function HandlerPicker({
             ))}
           </optgroup>
         ))}
+        {contract.otherOperations.length > 0 && (
+          <optgroup label="Other">
+            {contract.otherOperations.map((operation) => (
+              <option key={operation.id} value={operationKey(operation.id)}>
+                {operationLabel(operation)}
+              </option>
+            ))}
+          </optgroup>
+        )}
       </select>
     </label>
   );
@@ -638,22 +705,52 @@ function downloadSpec(contract: ServiceContract) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+function ServiceDetails({
+  contract,
+  ingressUrl,
+}: {
+  contract: ServiceContract;
+  ingressUrl: string;
+}) {
+  return (
+    <InfoButton label={contract.name}>
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1">
+        <dt className="text-muted">Ingress</dt>
+        <dd className="font-mono break-all text-secondary">{ingressUrl}</dd>
+        {Object.entries(contract.extensions).map(([key, value]) => (
+          <Fragment key={key}>
+            <dt className="text-muted">{key}</dt>
+            <dd className="font-mono break-all text-secondary">{value}</dd>
+          </Fragment>
+        ))}
+      </dl>
+    </InfoButton>
+  );
+}
+
 function ServiceHeader({
   contract,
   ingressUrl,
+  showName,
   actions,
 }: {
   contract: ServiceContract;
   ingressUrl: string;
+  showName: boolean;
   actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-2 border-b pb-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold text-primary">{contract.name}</h1>
+    <header className="flex flex-col gap-1 border-b pb-3">
+      <div className="flex min-h-7 flex-wrap items-center gap-x-2 gap-y-1">
+        {showName && (
+          <h1 className="text-lg font-semibold text-primary">
+            {contract.name}
+          </h1>
+        )}
         {contract.version && (
           <Badge size="xs">revision {contract.version}</Badge>
         )}
+        <ServiceDetails contract={contract} ingressUrl={ingressUrl} />
         <div className="ml-auto flex items-center gap-2">
           <button
             type="button"
@@ -671,11 +768,6 @@ function ServiceHeader({
           {contract.description}
         </MarkdownDescription>
       )}
-      <Metadata extensions={contract.extensions} />
-      <div className="flex items-center gap-1.5 text-xs text-muted">
-        Ingress
-        <code className="font-mono text-secondary">{ingressUrl}</code>
-      </div>
       {!contract.isSupportedVersion && (
         <div className="text-xs text-warning">
           This server returned OpenAPI {contract.openapi || 'unknown'}; the
@@ -694,17 +786,21 @@ export interface PlaygroundProps {
   service: string;
   handler?: string | null;
   onSelect: (handler: string) => void;
-  showServiceHeader?: boolean;
+  showServiceName?: boolean;
   showNavigation?: boolean;
   headerActions?: ReactNode;
   className?: string;
 }
 
-export function Playground({
+export function Playground(props: PlaygroundProps) {
+  return <ServicePlayground key={props.service} {...props} />;
+}
+
+function ServicePlayground({
   service,
   handler: handlerName,
   onSelect,
-  showServiceHeader = true,
+  showServiceName = true,
   showNavigation = true,
   headerActions,
   className,
@@ -716,22 +812,24 @@ export function Playground({
   const legacy = useMemo(
     () =>
       contract && legacyOperationId
-        ? findOperation(contract, legacyOperationId)
+        ? legacySelection(contract, legacyOperationId)
         : undefined,
     [contract, legacyOperationId],
   );
+  const isLegacyHandled = useRef(false);
 
   useEffect(() => {
-    if (!contract || !legacyOperationId) {
+    if (!contract || !legacyOperationId || isLegacyHandled.current) {
       return;
     }
+    isLegacyHandled.current = true;
     window.history.replaceState(
       window.history.state,
       '',
       `${window.location.pathname}${window.location.search}`,
     );
     if (legacy) {
-      onSelect(legacy.handler.name);
+      onSelect(legacy.name);
     }
   }, [contract, legacyOperationId, legacy, onSelect]);
 
@@ -746,26 +844,12 @@ export function Playground({
     startTransition(() => onSelect(next));
   };
 
-  const selectedTool = contract?.invocationTools.find(
-    (tool) => toolId(tool.kind) === selectedName,
-  );
-  const selectedHandler = useMemo(
-    () =>
-      contract?.handlers.find(({ name }) => name === selectedName) ??
-      legacy?.handler ??
-      contract?.handlers[0],
-    [contract, selectedName, legacy],
-  );
-  const selectedId = selectedTool
-    ? toolId(selectedTool.kind)
-    : selectedHandler?.name;
+  const selection = contract
+    ? resolveSelection(contract, selectedName ?? legacy?.name)
+    : undefined;
   const modeFor = (handler: ContractHandler) =>
     modes[handler.name] ??
-    (legacy?.handler === handler
-      ? (Object.entries(handler.modes).find(
-          ([, operation]) => operation === legacy.operation,
-        )?.[0] as HandlerMode | undefined)
-      : undefined) ??
+    (legacy?.name === handler.name ? legacy.mode : undefined) ??
     defaultMode(handler);
 
   if (error) {
@@ -791,59 +875,65 @@ export function Playground({
           <HandlerNav
             contract={contract}
             handlerKinds={handlerKinds}
-            selected={selectedId}
+            selected={selection && selectionId(selection)}
             onSelect={select}
           />
         </div>
       )}
       <div className="min-w-0 flex-auto overflow-auto">
         <div className="mx-auto flex max-w-7xl min-w-0 flex-col gap-5 p-4 @3xl/playground:p-6">
-          {showServiceHeader ? (
-            <ServiceHeader
-              contract={contract}
-              ingressUrl={ingressUrl}
-              actions={headerActions}
-            />
-          ) : (
-            contract.description && (
-              <MarkdownDescription className="text-sm" collapsible>
-                {contract.description}
-              </MarkdownDescription>
-            )
-          )}
+          <ServiceHeader
+            contract={contract}
+            ingressUrl={ingressUrl}
+            showName={showServiceName}
+            actions={headerActions}
+          />
           <div
             className={showNavigation ? '@3xl/playground:hidden' : undefined}
           >
             <HandlerPicker
               contract={contract}
-              selected={selectedId}
+              selected={selection && selectionId(selection)}
               onSelect={select}
             />
           </div>
-          {selectedTool ? (
+          {selection?.kind === 'tool' ? (
             <ToolView
-              key={toolId(selectedTool.kind)}
+              key={toolId(selection.tool.kind)}
               service={service}
               contract={contract}
-              tool={selectedTool}
+              tool={selection.tool}
+              defaultLookup={
+                legacy?.name === toolId(selection.tool.kind)
+                  ? legacy.lookup
+                  : undefined
+              }
               ingressUrl={ingressUrl}
               serviceType={serviceType}
             />
-          ) : selectedHandler ? (
-            <HandlerView
-              key={selectedHandler.name}
+          ) : selection?.kind === 'operation' ? (
+            <OperationView
+              key={selection.operation.id}
               service={service}
               contract={contract}
-              handler={selectedHandler}
-              mode={modeFor(selectedHandler)}
+              operation={selection.operation}
+              ingressUrl={ingressUrl}
+            />
+          ) : selection?.kind === 'handler' ? (
+            <HandlerView
+              key={selection.handler.name}
+              service={service}
+              contract={contract}
+              handler={selection.handler}
+              mode={modeFor(selection.handler)}
               onModeChange={(next) =>
                 setModes((previous) => ({
                   ...previous,
-                  [selectedHandler.name]: next,
+                  [selection.handler.name]: next,
                 }))
               }
               ingressUrl={ingressUrl}
-              handlerKind={handlerKinds.get(selectedHandler.name)}
+              handlerKind={handlerKinds.get(selection.handler.name)}
               serviceType={serviceType}
             />
           ) : (

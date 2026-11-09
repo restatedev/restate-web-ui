@@ -46,17 +46,24 @@ function getMediaType(headers: Headers) {
   return headers.get('Content-Type')?.split(';').at(0)?.trim().toLowerCase();
 }
 
-function isRestateSendResponse(response: Response) {
-  const restateId = response.headers.get('X-Restate-Id');
+const SEND_PATH = /\/restate\/(?:scope\/[^/]+\/)?send\//;
+const STATUS_PATH = /\/restate\/status(?:\/|$)/;
 
+function isRestateMetadataResponse(url: string, response: Response) {
+  if (response.status === 202) {
+    return true;
+  }
+  const { pathname } = new URL(url);
   return (
-    response.url.endsWith('/send') &&
     getMediaType(response.headers) === 'application/json' &&
-    restateId?.startsWith('inv_') === true
+    (SEND_PATH.test(pathname) ||
+      STATUS_PATH.test(pathname) ||
+      pathname.endsWith('/send'))
   );
 }
 
 async function getDecodedResponseBody(
+  url: string,
   response: Response,
   decoder: RestateStringCodec,
   codecOptions?: RestateCodecOptions,
@@ -64,7 +71,7 @@ async function getDecodedResponseBody(
   if (
     !response.ok ||
     [204, 205, 304].includes(response.status) ||
-    isRestateSendResponse(response)
+    isRestateMetadataResponse(url, response)
   ) {
     return response;
   }
@@ -142,7 +149,12 @@ export function createFetcherWithCodec(
     const response = await fetcher(nextRequest);
 
     try {
-      return await getDecodedResponseBody(response, decoder, codecOptions);
+      return await getDecodedResponseBody(
+        nextRequest.url,
+        response,
+        decoder,
+        codecOptions,
+      );
     } catch (error) {
       return toCodecErrorResponse(error, response);
     }

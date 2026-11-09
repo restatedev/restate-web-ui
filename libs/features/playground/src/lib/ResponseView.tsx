@@ -1,15 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { Badge } from '@restate/ui-badge';
-import { Button } from '@restate/ui-button';
 import { Copy } from '@restate/ui-copy';
 import { Icon, IconName } from '@restate/ui-icons';
-import { Link } from '@restate/ui-link';
-import { Spinner } from '@restate/ui-loading';
-import { useRestateContext } from '@restate/features-restate-context';
 import { bytesToBase64 } from '@restate/util-binary';
-import { formatCompactDateTime } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
-import { InfoButton } from './InfoButton';
 import { SegmentedControl } from './SegmentedControl';
 import { NOT_READY_STATUS, statusText } from './status';
 
@@ -32,14 +26,6 @@ export type PlaygroundResult =
       url: string;
       durationMs: number;
     };
-
-export type FollowUpKind = 'attach' | 'output';
-
-export interface FollowUp {
-  kind: FollowUpKind;
-  isPending: boolean;
-  result?: PlaygroundResult;
-}
 
 const TEXT_DECODER = new TextDecoder('utf-8', { fatal: true });
 
@@ -151,22 +137,6 @@ function statusVariant(status: number) {
 const bodyStyles = tv({
   base: 'max-h-96 overflow-auto rounded-lg border border-inset bg-inset p-2 font-mono text-xs break-all whitespace-pre-wrap text-secondary shadow-[inset_0_1px_2px_0px_var(--box-shadow-color-inset)]',
 });
-
-export function OpenInvocationLink({ invocationId }: { invocationId: string }) {
-  const { baseUrl } = useRestateContext();
-  return (
-    <Link
-      variant="secondary-button"
-      href={`${baseUrl}/invocations/${invocationId}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-1.5 px-2.5 py-1 text-xs"
-    >
-      Open invocation
-      <Icon name={IconName.ExternalLink} className="h-3 w-3" />
-    </Link>
-  );
-}
 
 export function ResponseView({
   result,
@@ -281,97 +251,6 @@ export function ResponseView({
         </>
       )}
       {children}
-    </div>
-  );
-}
-
-export function InvocationPanel({
-  invocationId,
-  executionTime,
-  canAttach,
-  canGetOutput,
-  followUp,
-  onRun,
-  onCancel,
-}: {
-  invocationId: string;
-  executionTime?: string;
-  canAttach: boolean;
-  canGetOutput: boolean;
-  followUp?: FollowUp;
-  onRun: (kind: FollowUpKind) => void;
-  onCancel: () => void;
-}) {
-  const scheduledAt = executionTime ? new Date(executionTime) : undefined;
-  return (
-    <div className="flex flex-col gap-2.5 rounded-xl border bg-surface p-3">
-      <div className="flex items-center gap-3">
-        <p className="min-w-0 flex-auto text-xs text-secondary">
-          The invocation runs in the background
-          {scheduledAt && !isNaN(scheduledAt.valueOf())
-            ? ` and is scheduled for ${formatCompactDateTime(scheduledAt)}.`
-            : '.'}
-        </p>
-        <div className="shrink-0">
-          <OpenInvocationLink invocationId={invocationId} />
-        </div>
-      </div>
-      {(canAttach || canGetOutput) && (
-        <div className="flex flex-wrap items-center gap-2">
-          {canAttach && (
-            <Button
-              variant="secondary"
-              className="px-2.5 py-1 text-xs"
-              disabled={followUp?.isPending}
-              onClick={() => onRun('attach')}
-            >
-              Wait for result
-            </Button>
-          )}
-          {canGetOutput && (
-            <Button
-              variant="secondary"
-              className="px-2.5 py-1 text-xs"
-              disabled={followUp?.isPending}
-              onClick={() => onRun('output')}
-            >
-              Check result
-            </Button>
-          )}
-          <InfoButton label="Wait or check?">
-            <p className="text-muted">
-              <span className="font-medium text-secondary">
-                Wait for result
-              </span>{' '}
-              keeps the request open until the invocation finishes, then shows
-              its result. A delayed invocation waits for its delay first.
-            </p>
-            <p className="text-muted">
-              <span className="font-medium text-secondary">Check result</span>{' '}
-              answers right away: the result if the invocation is done,
-              otherwise “not finished yet”.
-            </p>
-          </InfoButton>
-        </div>
-      )}
-      {followUp?.isPending && (
-        <div className="flex items-center gap-2 text-xs text-muted">
-          <Spinner className="h-3.5 w-3.5" />
-          {followUp.kind === 'attach'
-            ? 'Waiting for the invocation to finish…'
-            : 'Checking…'}
-          <Button
-            variant="secondary"
-            className="ml-auto px-2.5 py-1 text-xs"
-            onClick={onCancel}
-          >
-            Stop waiting
-          </Button>
-        </div>
-      )}
-      {followUp?.result && !followUp.isPending && (
-        <ResponseView result={followUp.result} />
-      )}
     </div>
   );
 }

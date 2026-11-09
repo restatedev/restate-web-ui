@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useId, useRef, useState } from 'react';
 import { Code, Snippet } from '@restate/ui-code';
 import { Copy } from '@restate/ui-copy';
 import { tv } from '@restate/util-styles';
@@ -68,7 +68,7 @@ const GROUPS: {
   {
     value: 'http',
     label: 'HTTP',
-    title: 'Send the same HTTP request as Try it',
+    title: 'Send the same request with any HTTP client',
     storageKey: 'restate.playground.sampleLanguage',
     languages: [
       {
@@ -125,6 +125,8 @@ export const CodeSamples = memo(function CodeSamples({
 }: {
   samples: SampleInput;
 }) {
+  const id = useId();
+  const tabsRef = useRef<HTMLDivElement>(null);
   const [group, setGroup] = useState<SampleGroup>(() =>
     readStored(GROUP_STORAGE_KEY) === 'http' ? 'http' : 'sdk',
   );
@@ -153,25 +155,54 @@ export const CodeSamples = memo(function CodeSamples({
     return null;
   }
 
+  const selectGroup = (value: SampleGroup) => {
+    setGroup(value);
+    writeStored(GROUP_STORAGE_KEY, value);
+  };
+  const tabId = (value: SampleGroup) => `${id}-${value}-tab`;
+  const panelId = `${id}-panel`;
+
   return (
     <section className="flex min-w-0 flex-col gap-3">
       <div className="flex items-end gap-4 border-b border-default">
         <div
+          ref={tabsRef}
           role="tablist"
           aria-label="Code sample"
           className="flex shrink-0 gap-5"
         >
-          {available.map(({ value, label, title }) => (
+          {available.map(({ value, label, title }, index) => (
             <button
               key={value}
+              id={tabId(value)}
               type="button"
               role="tab"
               title={title}
               aria-selected={value === current.value}
+              aria-controls={panelId}
+              tabIndex={value === current.value ? 0 : -1}
               className={tabStyles({ isSelected: value === current.value })}
-              onClick={() => {
-                setGroup(value);
-                writeStored(GROUP_STORAGE_KEY, value);
+              onClick={() => selectGroup(value)}
+              onKeyDown={(event) => {
+                const step =
+                  event.key === 'ArrowRight'
+                    ? 1
+                    : event.key === 'ArrowLeft'
+                      ? -1
+                      : 0;
+                if (!step) {
+                  return;
+                }
+                event.preventDefault();
+                const nextIndex =
+                  (index + step + available.length) % available.length;
+                const next = available[nextIndex];
+                if (next) {
+                  selectGroup(next.value);
+                  tabsRef.current
+                    ?.querySelectorAll<HTMLButtonElement>('[role=tab]')
+                    [nextIndex]?.focus();
+                }
               }}
             >
               {label}
@@ -200,9 +231,11 @@ export const CodeSamples = memo(function CodeSamples({
           <Copy copyText={language.code} className="p-1.5" />
         </div>
       </div>
-      <Code className="max-h-96 overflow-auto">
-        <Snippet language={language.highlight}>{language.code}</Snippet>
-      </Code>
+      <div role="tabpanel" id={panelId} aria-labelledby={tabId(current.value)}>
+        <Code className="max-h-96 overflow-auto">
+          <Snippet language={language.highlight}>{language.code}</Snippet>
+        </Code>
+      </div>
     </section>
   );
 });

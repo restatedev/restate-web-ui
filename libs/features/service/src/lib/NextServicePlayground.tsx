@@ -105,7 +105,7 @@ export function NextServicePlaygroundPanel({ service }: { service: string }) {
           service={service}
           handler={handler}
           onSelect={onSelect}
-          showServiceHeader={false}
+          showServiceName={false}
           showNavigation={false}
         />
       </div>
@@ -171,7 +171,7 @@ export function NextServicePlaygroundEmbed({
           service={service}
           handler={handler}
           onSelect={onSelect}
-          showServiceHeader={false}
+          showServiceName={false}
         />
       </div>
     </div>

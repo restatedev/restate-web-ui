@@ -135,7 +135,7 @@ const typeStyles = tv({
   base: 'font-mono break-all',
   variants: {
     isRoot: {
-      true: 'text-0.5xs font-semibold text-primary',
+      true: 'text-0.5xs font-medium text-secondary',
       false: 'text-2xs text-muted',
     },
   },
@@ -151,7 +151,7 @@ function NodeHeader({
   const label = (
     <>
       {node.name && (
-        <span className="font-mono text-0.5xs font-semibold break-all text-primary">
+        <span className="font-mono text-0.5xs font-medium break-all text-secondary">
           {node.name}
         </span>
       )}
