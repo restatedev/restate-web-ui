@@ -714,6 +714,7 @@ export async function query(req: Request) {
       const { message, code } = extractErrorPayload(error.data);
       const sentNoMessage =
         typeof error.data === 'string' ||
+        !error.response.headers.get('content-type')?.includes('json') ||
         error.response.headers.get('content-length') === '0';
       return errorResponse(
         error.response.status,

@@ -40,7 +40,7 @@ function Component() {
     );
   }
 
-  if (loadError && !defaultService) {
+  if (loadError) {
     return (
       <EmptyState
         icon={IconName.TriangleAlert}
