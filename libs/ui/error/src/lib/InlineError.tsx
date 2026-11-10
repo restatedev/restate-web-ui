@@ -16,7 +16,7 @@ export function InlineError({
   return (
     <output className={styles({ className })}>
       <Icon
-        className="h-[0.85em] w-[0.85em] text-danger group-focus:text-current"
+        className="h-[0.85em] w-[0.85em] text-danger group-highlighted:text-current"
         name={IconName.CircleX}
       />
       {children}

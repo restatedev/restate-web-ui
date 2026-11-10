@@ -10,17 +10,13 @@ import { tv } from '@restate/util-styles';
 
 export const listBoxItemStyles = tv({
   extend: focusRing,
-  base: 'peer relative flex cursor-default items-center gap-8 rounded-md px-2.5 py-1.5 text-sm will-change-transform select-none',
+  base: 'relative flex cursor-default items-center gap-8 rounded-md px-2.5 py-1.5 text-sm will-change-transform select-none highlighted:bg-accent highlighted:text-inverse',
   variants: {
     isSelected: {
-      false: 'text-secondary hover:bg-accent hover:text-inverse',
-      true: 'peer-hover:bg-transparent peer-hover:text-secondary peer-focus:bg-transparent peer-focus:text-secondary hover:text-inverse focus:bg-accent',
+      false: 'text-secondary',
     },
     isDisabled: {
       true: 'text-subtle',
-    },
-    isFocused: {
-      true: 'bg-accent text-inverse',
     },
   },
 });

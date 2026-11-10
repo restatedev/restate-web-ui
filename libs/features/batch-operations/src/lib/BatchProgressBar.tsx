@@ -119,7 +119,7 @@ export function BatchProgressBar({
                                 name={IconName.Invocation}
                                 className="h-4 w-4 rounded-sm border-none bg-transparent [&>svg]:p-px"
                               />
-                              <span className="text-muted group-focus:text-inverse-secondary">
+                              <span className="text-muted group-highlighted:text-inverse-secondary">
                                 {invocationId}
                               </span>
                               <Icon
@@ -135,7 +135,7 @@ export function BatchProgressBar({
                                       (error.length > 250 ? '…' : ''),
                                   )
                                 }
-                                className="-mt-1 overflow-auto bg-transparent pl-0 group-focus:**:text-on-danger [&_output]:max-h-fit [&_output]:whitespace-normal [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
+                                className="-mt-1 overflow-auto bg-transparent pl-0 group-highlighted:**:text-on-danger [&_output]:max-h-fit [&_output]:whitespace-normal [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
                               />
                             </HoverTooltip>
                           </div>
