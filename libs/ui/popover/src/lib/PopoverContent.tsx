@@ -1,6 +1,7 @@
 import { PropsWithChildren, RefObject } from 'react';
 import { Dialog as AriaDialog } from 'react-aria-components';
 import { PopoverOverlay } from './PopoverOverlay';
+import type { PopoverAnimation, PopoverSlideFrom } from './PopoverOverlay';
 import { tv } from '@restate/util-styles';
 import { Placement } from 'react-aria';
 
@@ -16,6 +17,8 @@ export function PopoverContent({
   triggerRef?: RefObject<Element | null>;
   placement?: Placement;
   isNonModal?: boolean;
+  animation?: PopoverAnimation;
+  slideFrom?: PopoverSlideFrom;
 }>) {
   return (
     <PopoverOverlay {...props} className={styles({ className })}>
