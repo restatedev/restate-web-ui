@@ -1,3 +1,4 @@
+import { NetworkError } from 'ky';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createQueryContext } from './shared.js';
 
@@ -49,5 +50,40 @@ describe('createQueryContext', () => {
       expect(request.headers.get('authorization')).toBe('Bearer token');
       expect(request.headers.get('x-restate-query-level')).toBe('operator');
     }
+  });
+
+  it('names a failed downstream call once', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),
+    );
+
+    await expect(
+      createQueryContext(
+        'https://restate.test',
+        new Headers(),
+        new Set(),
+      ).query('SELECT 1', 'deployments/drained'),
+    ).rejects.toThrow(
+      /^Request failed due to a network error: POST https:\/\/restate\.test\/query\?name=deployments\/drained$/,
+    );
+  });
+
+  it('treats a network error that ky does not recognize as one', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new TypeError('Connection reset')),
+    );
+
+    const failure = createQueryContext(
+      'https://restate.test',
+      new Headers(),
+      new Set(),
+    ).query('SELECT 1', 'deployments/drained');
+
+    await expect(failure).rejects.toBeInstanceOf(NetworkError);
+    await expect(failure).rejects.toThrow(
+      'Request failed due to a network error: POST https://restate.test/query?name=deployments/drained',
+    );
   });
 });

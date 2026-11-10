@@ -1,4 +1,6 @@
+import ky from 'ky';
 import { describe, expect, it, vi } from 'vitest';
+import { getState } from './handlers/index.js';
 import { query } from './query.js';
 
 vi.mock('./handlers/index.js', async (importOriginal) => {
@@ -90,4 +92,157 @@ describe('query routes with keys', () => {
       args: ['Cart', 'x/lock', null],
     });
   });
+});
+
+describe('query errors', () => {
+  it.each([
+    [
+      'a text body without a content type',
+      () =>
+        new Response(new TextEncoder().encode('Malformed environment id'), {
+          status: 400,
+        }),
+      'Malformed environment id',
+    ],
+    [
+      'a JSON body',
+      () => Response.json({ message: 'table not found' }, { status: 404 }),
+      'table not found',
+    ],
+  ])(
+    'reports the status and message of a server error with %s',
+    async (_, createResponse, message) => {
+      const response = createResponse();
+      vi.mocked(getState).mockImplementationOnce(() =>
+        ky('http://localhost:9070/query', {
+          fetch: async () => response,
+          retry: 0,
+        }).json<Response>(),
+      );
+
+      expect(await send(`/services/Cart/keys/a/state`)).toMatchObject({
+        status: response.status,
+        message,
+      });
+    },
+  );
+
+  it('says so when a server error has no message', async () => {
+    vi.mocked(getState).mockImplementationOnce(() =>
+      ky('http://localhost:9070/query', {
+        fetch: async () =>
+          new Response(null, {
+            status: 400,
+            headers: { 'content-length': '0' },
+          }),
+        retry: 0,
+      }).json<Response>(),
+    );
+
+    expect(await send(`/services/Cart/keys/a/state`)).toEqual({
+      status: 400,
+      message:
+        'The server sent no error message: GET http://localhost:9070/query',
+    });
+  });
+
+  it('says so when an empty error body has no content length', async () => {
+    vi.mocked(getState).mockImplementationOnce(() =>
+      ky('http://localhost:9070/query', {
+        fetch: async () => new Response(null, { status: 502 }),
+        retry: 0,
+      }).json<Response>(),
+    );
+
+    expect(await send(`/services/Cart/keys/a/state`)).toEqual({
+      status: 502,
+      message:
+        'The server sent no error message: GET http://localhost:9070/query',
+    });
+  });
+
+  it('says so when the error message cannot be read', async () => {
+    vi.mocked(getState).mockImplementationOnce(() =>
+      ky('http://localhost:9070/query', {
+        fetch: async () =>
+          new Response('<html>Bad gateway</html>', {
+            status: 502,
+            headers: { 'content-type': 'application/json' },
+          }),
+        retry: 0,
+      }).json<Response>(),
+    );
+
+    expect(await send(`/services/Cart/keys/a/state`)).toEqual({
+      status: 502,
+      message:
+        'Could not read the error message in the response: GET http://localhost:9070/query',
+    });
+  });
+
+  it('keeps the Restate error code of a server error', async () => {
+    vi.mocked(getState).mockImplementationOnce(() =>
+      ky('http://localhost:9070/query', {
+        fetch: async () =>
+          Response.json(
+            {
+              message: 'Cannot reach the deployment',
+              restate_code: 'META0003',
+            },
+            { status: 400 },
+          ),
+        retry: 0,
+      }).json<Response>(),
+    );
+
+    expect(await send(`/services/Cart/keys/a/state`)).toEqual({
+      status: 400,
+      message: 'Cannot reach the deployment',
+      restate_code: 'META0003',
+    });
+  });
+
+  it.each([
+    [
+      'a timeout',
+      () =>
+        ky('http://localhost:9070/query', {
+          fetch: () => new Promise<Response>(() => undefined),
+          timeout: 1,
+          retry: 0,
+        }).json<Response>(),
+      504,
+      'UI0006',
+    ],
+    [
+      'a network failure',
+      () =>
+        ky('http://localhost:9070/query', {
+          fetch: async () => {
+            throw new TypeError('Failed to fetch');
+          },
+          retry: 0,
+        }).json<Response>(),
+      500,
+      'UI0005',
+    ],
+    [
+      'a failing handler',
+      async (): Promise<Response> => {
+        throw new Error('Cannot read the rows');
+      },
+      500,
+      'UI0007',
+    ],
+  ])(
+    'marks %s with a UI error code, since no server answered',
+    async (_, handler, status, code) => {
+      vi.mocked(getState).mockImplementationOnce(handler);
+
+      expect(await send(`/services/Cart/keys/a/state`)).toMatchObject({
+        status,
+        restate_code: code,
+      });
+    },
+  );
 });

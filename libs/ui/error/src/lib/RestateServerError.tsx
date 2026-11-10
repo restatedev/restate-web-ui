@@ -215,10 +215,15 @@ export function RestateServerError({
   className?: string;
   isTransient?: boolean;
 }>) {
-  const { restate_code: code, message, stack, metadata } = error;
-  const { summary, help } = code
-    ? (ERROR_CODES[code] ?? DEFAULT_ERROR)
-    : DEFAULT_ERROR;
+  const { restate_code: code, message, stack, metadata, status } = error;
+  const { summary, help } =
+    (code ? ERROR_CODES[code] : undefined) ??
+    (typeof status === 'number'
+      ? {
+          summary: `Request failed with status ${status}${code ? ` (${code})` : ''}.`,
+          help: undefined,
+        }
+      : DEFAULT_ERROR);
   const hasServerDocs = Boolean(code) && !UI_CODES.has(code as string);
   const causeChain = collectCauseChain(error);
   const metadataEntries = metadata ?? [];

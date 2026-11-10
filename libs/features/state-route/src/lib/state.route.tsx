@@ -11,6 +11,8 @@ import {
   ContentPanelSection,
 } from '@restate/ui-content-panel';
 import { EmptyState } from '@restate/ui-empty-state';
+import { ErrorBanner } from '@restate/ui-error';
+import { useRestateContext } from '@restate/features-restate-context';
 import { Navigate } from 'react-router';
 
 const LOADING_COLUMNS: PanelTableColumn[] = [
@@ -22,9 +24,11 @@ const LOADING_COLUMNS: PanelTableColumn[] = [
 ];
 
 function Component() {
-  const { services, isPending, isUsingPlaceholderServices } =
+  const { services, isPending, isUsingPlaceholderServices, error } =
     useStateServiceCatalog();
+  const { healthError } = useRestateContext();
   const defaultService = getDefaultStateService(services);
+  const loadError = error ?? healthError;
 
   if (defaultService) {
     return (
@@ -33,6 +37,21 @@ function Component() {
         relative="path"
         replace
       />
+    );
+  }
+
+  if (loadError) {
+    return (
+      <EmptyState
+        icon={IconName.TriangleAlert}
+        intent="danger"
+        title="Couldn’t load state"
+      >
+        <ErrorBanner
+          error={loadError}
+          className="w-full rounded-xl text-left"
+        />
+      </EmptyState>
     );
   }
 

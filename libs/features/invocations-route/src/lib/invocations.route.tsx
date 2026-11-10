@@ -369,6 +369,7 @@ function Component() {
     baseUrl,
     observabilityDashboardUrl,
     invocationsListOptions,
+    healthError,
   } = useRestateContext();
   const { sampleSize, slowQueryMs, listSampledDefault } =
     invocationsListOptions;
@@ -423,9 +424,9 @@ function Component() {
     byStatus,
     hasServiceScope,
     statusFilter,
-    isLoading: isStageSummaryLoading,
+    isLoading: isStageSummaryQueryLoading,
     isFetching: isSummaryFetching,
-    isError: isSummaryError,
+    isError: isSummaryQueryError,
     refresh: refreshSummary,
     isBreakdownLoading: isVqueueBreakdownLoading,
     isBreakdownError: isVqueueBreakdownError,
@@ -441,6 +442,8 @@ function Component() {
     breakdownSampleSize,
     enabled: !isLoading,
   });
+  const isStageSummaryLoading = isStageSummaryQueryLoading && !healthError;
+  const isSummaryError = isSummaryQueryError || Boolean(healthError);
   const { data: deploymentsData } = useListDeployments();
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -474,6 +477,7 @@ function Component() {
       enabled: !isLoading,
     },
   );
+  const listError = error ?? healthError;
   const changeListMode = useCallback(
     (sampled: boolean) => {
       if (sampled === listSampled) {
@@ -537,7 +541,8 @@ function Component() {
     summaryData?.stageCountsArePartial,
   );
   const countsDisagree = doInvocationCountsDisagree({
-    isSettled: !isFetching && !isSummaryFetching && !error && !isSummaryError,
+    isSettled:
+      !isFetching && !isSummaryFetching && !listError && !isSummaryError,
     statusChangedCount,
     summaryMatchCount: summaryMatchingCount,
     listIsAvailable: data != null,
@@ -651,7 +656,7 @@ function Component() {
     ) : undefined;
   const resultsNoticeMessage = getResultsNoticeMessage({
     countsDisagree,
-    listIsSettled: !isFetching && !error,
+    listIsSettled: !isFetching && !listError,
     isPartial: listSampled || Boolean(data?.isPartial),
     statusChangedCount,
   });
@@ -839,8 +844,12 @@ function Component() {
                   }
                 }}
                 bodyKey={hash}
-                bodyDependencies={[selectedColumns, error]}
-                isLoading={isFetching || isLoading || isQueryNavigationPending}
+                bodyDependencies={[selectedColumns, listError]}
+                isLoading={
+                  isFetching ||
+                  isQueryNavigationPending ||
+                  (isLoading && !listError)
+                }
                 numOfRows={8}
                 emptyPlaceholder={
                   isTransitionSortError ? (
@@ -857,14 +866,14 @@ function Component() {
                         Sort by created at
                       </Button>
                     </EmptyState>
-                  ) : error ? (
+                  ) : listError ? (
                     <EmptyState
                       icon={IconName.TriangleAlert}
                       intent="danger"
                       title="Couldn’t load invocations"
                     >
                       <ErrorBanner
-                        error={error}
+                        error={listError}
                         className="w-full rounded-xl text-left"
                       />
                     </EmptyState>

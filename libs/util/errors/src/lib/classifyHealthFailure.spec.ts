@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { classifyHealthFailure } from './classifyHealthFailure.js';
+import {
+  classifyHealthFailure,
+  getHealthFailureMessage,
+  healthFailureToError,
+} from './classifyHealthFailure.js';
 import { RestateError } from './RestateError.js';
 import { UnauthorizedError } from './UnauthorizedError.js';
 
@@ -67,5 +71,40 @@ describe('classifyHealthFailure', () => {
       kind: 'unreachable',
       offline: true,
     });
+  });
+});
+
+describe('healthFailureToError', () => {
+  it('keeps the status, message and code of a server error', () => {
+    const error = healthFailureToError({
+      kind: 'server-error',
+      status: 400,
+      message: 'Malformed environment id',
+      restateCode: 'RT0001',
+    });
+    expect(error).toBeInstanceOf(RestateError);
+    expect(error).toMatchObject({
+      message: 'Malformed environment id',
+      status: 400,
+      restateCode: 'RT0001',
+    });
+  });
+
+  it.each([
+    [
+      { kind: 'unauthorized' } as const,
+      'Authentication with your Restate server failed.',
+    ],
+    [
+      { kind: 'unreachable', offline: false } as const,
+      'Cannot reach your Restate server. This could be a network issue. Check your connection or browser.',
+    ],
+    [
+      { kind: 'unreachable', offline: true } as const,
+      'You appear to be offline. Reconnect to access your Restate server.',
+    ],
+  ])('words %o like the health notification', (failure, message) => {
+    expect(healthFailureToError(failure).message).toBe(message);
+    expect(getHealthFailureMessage(failure)).toBe(message);
   });
 });

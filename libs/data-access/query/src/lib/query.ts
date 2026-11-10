@@ -1,11 +1,11 @@
-import { HTTPError, TimeoutError } from 'ky';
+import { HTTPError, NetworkError, TimeoutError } from 'ky';
 import type {
   FilterItem,
   BatchInvocationsRequestBody,
   components,
   VqueueEntryStage,
 } from '@restate/data-access-admin-api-spec';
-import { RestateError } from '@restate/util-errors';
+import { UI_ERROR_CODES } from '@restate/util-errors';
 import {
   createContextKey,
   createRouter,
@@ -248,37 +248,42 @@ const handlersMiddleware: Middleware<{
   return next();
 };
 
-async function extractErrorPayload(res: Response): Promise<string | undefined> {
-  const contentType = res.headers.get('content-type') || '';
-  try {
-    if (contentType.includes('application/json')) {
-      const data = (await res.json()) as unknown;
-      if (typeof data === 'string') {
-        return data.trim() || undefined;
-      }
-      if (data && typeof data === 'object') {
-        const { message, error } = data as {
-          message?: unknown;
-          error?: unknown;
-        };
-        const nestedError =
-          error && typeof error === 'object'
-            ? (error as { message?: unknown }).message
-            : error;
-        const detail = message ?? nestedError;
-        if (typeof detail === 'string' && detail.trim()) {
-          return detail.trim();
-        }
-        // JSON we don't recognize — surface it raw rather than swallow it.
-        return JSON.stringify(data);
-      }
-      return undefined;
-    }
-    return (await res.text()).trim() || undefined;
-  } catch {
-    // Body already consumed, or didn't match its declared content-type.
-    return undefined;
+function extractErrorPayload(data: unknown): {
+  message?: string;
+  code?: string;
+} {
+  if (typeof data === 'string') {
+    return { message: data.trim() || undefined };
   }
+  if (data && typeof data === 'object') {
+    const { message, error, restate_code } = data as {
+      message?: unknown;
+      error?: unknown;
+      restate_code?: unknown;
+    };
+    const nestedError =
+      error && typeof error === 'object'
+        ? (error as { message?: unknown }).message
+        : error;
+    const detail = message ?? nestedError;
+    const code =
+      typeof restate_code === 'string' && restate_code
+        ? restate_code
+        : undefined;
+    if (typeof detail === 'string' && detail.trim()) {
+      return { message: detail.trim(), code };
+    }
+    // JSON we don't recognize — surface it raw rather than swallow it.
+    return { message: JSON.stringify(data), code };
+  }
+  return {};
+}
+
+function errorResponse(status: number, message: string, code?: string) {
+  return Response.json(
+    { message, ...(code && { restate_code: code }) },
+    { status },
+  );
 }
 
 export const routes = createRoutes('/query', {
@@ -704,60 +709,38 @@ async function queryHandler(req: Request) {
 }
 
 export async function query(req: Request) {
-  return queryHandler(req).catch(async (error) => {
+  return queryHandler(req).catch((error) => {
     if (error instanceof HTTPError) {
-      const { status } = error.response;
-      const body = await extractErrorPayload(error.response);
-      // ky's HTTPError message already reads
-      // "Request failed with status code <status> <statusText>: <method> <url>",
-      // which is a better fallback than anything we'd hand-roll.
-      return new Response(
-        JSON.stringify(
-          new RestateError(
-            body || error.message,
-            undefined,
-            undefined,
-            undefined,
-            status,
-          ),
-        ),
-        {
-          status,
-          headers: { 'Content-Type': 'application/json' },
-        },
+      const { message, code } = extractErrorPayload(error.data);
+      const sentNoMessage =
+        typeof error.data === 'string' ||
+        !error.response.headers.get('content-type')?.includes('json') ||
+        error.response.headers.get('content-length') === '0';
+      return errorResponse(
+        error.response.status,
+        message ||
+          `${sentNoMessage ? 'The server sent no error message' : 'Could not read the error message in the response'}: ${error.request.method} ${error.request.url}`,
+        code,
       );
     } else if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     } else if (error instanceof TimeoutError) {
       // ky's message is "Request timed out: <method> <url>"; add the threshold.
-      const message = `${error.message} (after ${QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL})`;
-      return new Response(
-        JSON.stringify(
-          new RestateError(message, undefined, undefined, undefined, 504),
-        ),
-        {
-          status: 504,
-          headers: { 'Content-Type': 'application/json' },
-        },
+      return errorResponse(
+        504,
+        `${error.message} (after ${QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL})`,
+        UI_ERROR_CODES.queryTimeout,
       );
     } else {
       // Network failures are enriched with the real downstream call in the
       // fetchers (see withRequestContext); other errors carry their own message.
       const detail = error instanceof Error ? error.message?.trim() : undefined;
-      return new Response(
-        JSON.stringify(
-          new RestateError(
-            detail || 'Oops something went wrong!',
-            undefined,
-            undefined,
-            undefined,
-            500,
-          ),
-        ),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
+      return errorResponse(
+        500,
+        detail || 'Oops something went wrong!',
+        error instanceof NetworkError
+          ? UI_ERROR_CODES.queryUnreachable
+          : UI_ERROR_CODES.queryFailed,
       );
     }
   });
