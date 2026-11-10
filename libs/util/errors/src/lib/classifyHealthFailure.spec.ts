@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { classifyHealthFailure } from './classifyHealthFailure.js';
+import {
+  classifyHealthFailure,
+  healthFailureToError,
+} from './classifyHealthFailure.js';
 import { RestateError } from './RestateError.js';
 import { UnauthorizedError } from './UnauthorizedError.js';
 
@@ -67,5 +70,37 @@ describe('classifyHealthFailure', () => {
       kind: 'unreachable',
       offline: true,
     });
+  });
+});
+
+describe('healthFailureToError', () => {
+  it('keeps the status, message and code of a server error', () => {
+    const error = healthFailureToError({
+      kind: 'server-error',
+      status: 400,
+      message: 'Malformed environment id',
+      restateCode: 'RT0001',
+    });
+    expect(error).toBeInstanceOf(RestateError);
+    expect(error).toMatchObject({
+      message: 'Malformed environment id',
+      status: 400,
+      restateCode: 'RT0001',
+    });
+  });
+
+  it('returns an UnauthorizedError for an unauthorized failure', () => {
+    expect(healthFailureToError({ kind: 'unauthorized' })).toBeInstanceOf(
+      UnauthorizedError,
+    );
+  });
+
+  it.each([
+    [false, 'Cannot reach your Restate server.'],
+    [true, 'You appear to be offline.'],
+  ])('describes an unreachable server (offline: %s)', (offline, message) => {
+    expect(healthFailureToError({ kind: 'unreachable', offline }).message).toBe(
+      message,
+    );
   });
 });

@@ -1,4 +1,6 @@
+import ky from 'ky';
 import { describe, expect, it, vi } from 'vitest';
+import { getState } from './handlers/index.js';
 import { query } from './query.js';
 
 vi.mock('./handlers/index.js', async (importOriginal) => {
@@ -90,4 +92,38 @@ describe('query routes with keys', () => {
       args: ['Cart', 'x/lock', null],
     });
   });
+});
+
+describe('query errors', () => {
+  it.each([
+    [
+      'a text body without a content type',
+      () =>
+        new Response(new TextEncoder().encode('Malformed environment id'), {
+          status: 400,
+        }),
+      'Malformed environment id',
+    ],
+    [
+      'a JSON body',
+      () => Response.json({ message: 'table not found' }, { status: 404 }),
+      'table not found',
+    ],
+  ])(
+    'reports the status and message of a server error with %s',
+    async (_, createResponse, message) => {
+      const response = createResponse();
+      vi.mocked(getState).mockImplementationOnce(() =>
+        ky('http://localhost:9070/query', {
+          fetch: async () => response,
+          retry: 0,
+        }).json<Response>(),
+      );
+
+      expect(await send(`/services/Cart/keys/a/state`)).toMatchObject({
+        status: response.status,
+        message,
+      });
+    },
+  );
 });

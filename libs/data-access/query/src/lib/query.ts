@@ -248,37 +248,27 @@ const handlersMiddleware: Middleware<{
   return next();
 };
 
-async function extractErrorPayload(res: Response): Promise<string | undefined> {
-  const contentType = res.headers.get('content-type') || '';
-  try {
-    if (contentType.includes('application/json')) {
-      const data = (await res.json()) as unknown;
-      if (typeof data === 'string') {
-        return data.trim() || undefined;
-      }
-      if (data && typeof data === 'object') {
-        const { message, error } = data as {
-          message?: unknown;
-          error?: unknown;
-        };
-        const nestedError =
-          error && typeof error === 'object'
-            ? (error as { message?: unknown }).message
-            : error;
-        const detail = message ?? nestedError;
-        if (typeof detail === 'string' && detail.trim()) {
-          return detail.trim();
-        }
-        // JSON we don't recognize — surface it raw rather than swallow it.
-        return JSON.stringify(data);
-      }
-      return undefined;
-    }
-    return (await res.text()).trim() || undefined;
-  } catch {
-    // Body already consumed, or didn't match its declared content-type.
-    return undefined;
+function extractErrorPayload(data: unknown): string | undefined {
+  if (typeof data === 'string') {
+    return data.trim() || undefined;
   }
+  if (data && typeof data === 'object') {
+    const { message, error } = data as {
+      message?: unknown;
+      error?: unknown;
+    };
+    const nestedError =
+      error && typeof error === 'object'
+        ? (error as { message?: unknown }).message
+        : error;
+    const detail = message ?? nestedError;
+    if (typeof detail === 'string' && detail.trim()) {
+      return detail.trim();
+    }
+    // JSON we don't recognize — surface it raw rather than swallow it.
+    return JSON.stringify(data);
+  }
+  return undefined;
 }
 
 export const routes = createRoutes('/query', {
@@ -704,10 +694,10 @@ async function queryHandler(req: Request) {
 }
 
 export async function query(req: Request) {
-  return queryHandler(req).catch(async (error) => {
+  return queryHandler(req).catch((error) => {
     if (error instanceof HTTPError) {
       const { status } = error.response;
-      const body = await extractErrorPayload(error.response);
+      const body = extractErrorPayload(error.data);
       // ky's HTTPError message already reads
       // "Request failed with status code <status> <statusText>: <method> <url>",
       // which is a better fallback than anything we'd hand-roll.

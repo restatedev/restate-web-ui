@@ -1,0 +1,34 @@
+import { render, screen } from '@testing-library/react';
+import { RestateError } from '@restate/util-errors';
+import { RestateServerError } from './RestateServerError';
+
+describe('RestateServerError', () => {
+  it('shows the status of a request error without a Restate code', () => {
+    render(
+      <RestateServerError
+        error={
+          new RestateError(
+            'Malformed environment id',
+            undefined,
+            undefined,
+            undefined,
+            400,
+          )
+        }
+      />,
+    );
+
+    expect(screen.getByText('Request failed with status 400.')).toBeTruthy();
+    expect(screen.getByText('Malformed environment id')).toBeTruthy();
+  });
+
+  it('keeps the generic summary for an error without a status', () => {
+    render(<RestateServerError error={new RestateError('Boom')} />);
+
+    expect(
+      screen.getByText(
+        'An error has occurred! Check the details below for more information:',
+      ),
+    ).toBeTruthy();
+  });
+});
