@@ -1,4 +1,5 @@
 import { PopoverOverlay } from '@restate/ui-popover';
+import type { PopoverAnimation, PopoverSlideFrom } from '@restate/ui-popover';
 import type { PropsWithChildren } from 'react';
 import { Placement } from 'react-aria';
 import { tv } from '@restate/util-styles';
@@ -6,10 +7,12 @@ import { tv } from '@restate/util-styles';
 interface DropdownPopoverProps {
   className?: string;
   placement?: Placement;
+  animation?: PopoverAnimation;
+  slideFrom?: PopoverSlideFrom;
 }
 
 const styles = tv({
-  base: 'w-fit max-w-[90vw] min-w-[max(var(--trigger-width),150px)] rounded-2xl lg:max-w-[50vw]',
+  base: 'w-max max-w-[90vw] min-w-[max(var(--trigger-width),150px)] rounded-2xl lg:max-w-[50vw]',
 });
 
 export function DropdownPopover({
