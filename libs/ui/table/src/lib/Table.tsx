@@ -100,10 +100,12 @@ interface ColumnProps extends Pick<
   | 'defaultWidth'
 > {
   className?: string;
+  allowsResizing?: boolean;
 }
 
 export function Column({
   className,
+  allowsResizing = true,
   ...props
 }: PropsWithChildren<ColumnProps>) {
   return (
@@ -144,7 +146,9 @@ export function Column({
                 </span>
               )}
             </Group>
-            {!props.width && <ColumnResizer className={resizerStyles()} />}
+            {allowsResizing && !props.width && (
+              <ColumnResizer className={resizerStyles()} />
+            )}
           </div>
         ),
       )}
