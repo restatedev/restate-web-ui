@@ -1,4 +1,4 @@
-import ky, { HTTPError, TimeoutError } from 'ky';
+import ky, { HTTPError, NetworkError, TimeoutError } from 'ky';
 import type { QueryId } from '../queryDefinitions.js';
 import { RESTATE_FEATURES_HEADER } from '../getFeatures.js';
 import { UI_FEATURES_HEADER } from '../uiFeatures.js';
@@ -116,16 +116,17 @@ export function scopeClause(explicitScope?: string): string {
   return ' AND scope IS NULL';
 }
 
-// Network failures (refused connection, DNS, CORS) reject with a bare
-// `TypeError: Failed to fetch` that — unlike ky's HTTPError/TimeoutError —
-// carries no request context. Append the real downstream call so the /query
-// proxy reports what actually failed, not the in-browser /query/* route.
+// ky's HTTPError, TimeoutError and NetworkError already name the request.
+// Other failures (a network error ky doesn't recognize, an error while reading
+// the body) carry no request context, so append the real downstream call and
+// the /query proxy reports what actually failed, not the in-browser route.
 function withRequestContext(method: string, url: string) {
   return (error: unknown): never => {
     if (
       error instanceof Error &&
       !(error instanceof HTTPError) &&
       !(error instanceof TimeoutError) &&
+      !(error instanceof NetworkError) &&
       error.name !== 'AbortError'
     ) {
       error.message = `${error.message}: ${method.toUpperCase()} ${url}`;

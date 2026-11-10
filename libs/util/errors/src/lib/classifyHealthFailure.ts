@@ -1,5 +1,5 @@
 import { RestateError } from './RestateError.js';
-import { isUnauthorizedError, UnauthorizedError } from './UnauthorizedError.js';
+import { isUnauthorizedError } from './UnauthorizedError.js';
 
 export type HealthFailure =
   | {
@@ -29,23 +29,28 @@ export function classifyHealthFailure(error: unknown): HealthFailure {
   };
 }
 
-export function healthFailureToError(failure: HealthFailure): Error {
+export function getHealthFailureMessage(failure: HealthFailure): string {
   switch (failure.kind) {
     case 'server-error':
-      return new RestateError(
-        failure.message,
-        failure.restateCode,
-        undefined,
-        undefined,
-        failure.status,
-      );
+      return 'Your Restate server is currently experiencing issues.';
     case 'unauthorized':
-      return new UnauthorizedError();
+      return 'Authentication with your Restate server failed.';
     case 'unreachable':
-      return new Error(
-        failure.offline
-          ? 'You appear to be offline.'
-          : 'Cannot reach your Restate server.',
-      );
+      return failure.offline
+        ? 'You appear to be offline. Reconnect to access your Restate server.'
+        : 'Cannot reach your Restate server. This could be a network issue. Check your connection or browser.';
   }
+}
+
+export function healthFailureToError(failure: HealthFailure): Error {
+  if (failure.kind === 'server-error') {
+    return new RestateError(
+      failure.message,
+      failure.restateCode,
+      undefined,
+      undefined,
+      failure.status,
+    );
+  }
+  return new Error(getHealthFailureMessage(failure));
 }

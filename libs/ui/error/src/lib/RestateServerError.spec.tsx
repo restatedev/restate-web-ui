@@ -31,4 +31,25 @@ describe('RestateServerError', () => {
       ),
     ).toBeTruthy();
   });
+
+  it('prefers the summary of a UI error code to its status', () => {
+    render(
+      <RestateServerError
+        error={
+          new RestateError(
+            'Request failed due to a network error: POST http://localhost/query',
+            'UI0005',
+            undefined,
+            undefined,
+            500,
+          )
+        }
+      />,
+    );
+
+    expect(
+      screen.getByText('Could not reach the Restate server.'),
+    ).toBeTruthy();
+    expect(screen.queryByText('Request failed with status 500.')).toBeNull();
+  });
 });

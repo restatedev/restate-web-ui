@@ -1,11 +1,11 @@
-import { HTTPError, TimeoutError } from 'ky';
+import { HTTPError, NetworkError, TimeoutError } from 'ky';
 import type {
   FilterItem,
   BatchInvocationsRequestBody,
   components,
   VqueueEntryStage,
 } from '@restate/data-access-admin-api-spec';
-import { RestateError } from '@restate/util-errors';
+import { UI_ERROR_CODES } from '@restate/util-errors';
 import {
   createContextKey,
   createRouter,
@@ -248,27 +248,42 @@ const handlersMiddleware: Middleware<{
   return next();
 };
 
-function extractErrorPayload(data: unknown): string | undefined {
+function extractErrorPayload(data: unknown): {
+  message?: string;
+  code?: string;
+} {
   if (typeof data === 'string') {
-    return data.trim() || undefined;
+    return { message: data.trim() || undefined };
   }
   if (data && typeof data === 'object') {
-    const { message, error } = data as {
+    const { message, error, restate_code } = data as {
       message?: unknown;
       error?: unknown;
+      restate_code?: unknown;
     };
     const nestedError =
       error && typeof error === 'object'
         ? (error as { message?: unknown }).message
         : error;
     const detail = message ?? nestedError;
+    const code =
+      typeof restate_code === 'string' && restate_code
+        ? restate_code
+        : undefined;
     if (typeof detail === 'string' && detail.trim()) {
-      return detail.trim();
+      return { message: detail.trim(), code };
     }
     // JSON we don't recognize — surface it raw rather than swallow it.
-    return JSON.stringify(data);
+    return { message: JSON.stringify(data), code };
   }
-  return undefined;
+  return {};
+}
+
+function errorResponse(status: number, message: string, code?: string) {
+  return Response.json(
+    { message, ...(code && { restate_code: code }) },
+    { status },
+  );
 }
 
 export const routes = createRoutes('/query', {
@@ -696,58 +711,32 @@ async function queryHandler(req: Request) {
 export async function query(req: Request) {
   return queryHandler(req).catch((error) => {
     if (error instanceof HTTPError) {
-      const { status } = error.response;
-      const body = extractErrorPayload(error.data);
-      // ky's HTTPError message already reads
-      // "Request failed with status code <status> <statusText>: <method> <url>",
-      // which is a better fallback than anything we'd hand-roll.
-      return new Response(
-        JSON.stringify(
-          new RestateError(
-            body || error.message,
-            undefined,
-            undefined,
-            undefined,
-            status,
-          ),
-        ),
-        {
-          status,
-          headers: { 'Content-Type': 'application/json' },
-        },
+      const { message, code } = extractErrorPayload(error.data);
+      return errorResponse(
+        error.response.status,
+        message ||
+          `The server sent no error message: ${error.request.method} ${error.request.url}`,
+        code,
       );
     } else if (error instanceof DOMException && error.name === 'AbortError') {
       throw error;
     } else if (error instanceof TimeoutError) {
       // ky's message is "Request timed out: <method> <url>"; add the threshold.
-      const message = `${error.message} (after ${QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL})`;
-      return new Response(
-        JSON.stringify(
-          new RestateError(message, undefined, undefined, undefined, 504),
-        ),
-        {
-          status: 504,
-          headers: { 'Content-Type': 'application/json' },
-        },
+      return errorResponse(
+        504,
+        `${error.message} (after ${QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL})`,
+        UI_ERROR_CODES.queryTimeout,
       );
     } else {
       // Network failures are enriched with the real downstream call in the
       // fetchers (see withRequestContext); other errors carry their own message.
       const detail = error instanceof Error ? error.message?.trim() : undefined;
-      return new Response(
-        JSON.stringify(
-          new RestateError(
-            detail || 'Oops something went wrong!',
-            undefined,
-            undefined,
-            undefined,
-            500,
-          ),
-        ),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
+      return errorResponse(
+        500,
+        detail || 'Oops something went wrong!',
+        error instanceof NetworkError
+          ? UI_ERROR_CODES.queryUnreachable
+          : UI_ERROR_CODES.queryFailed,
       );
     }
   });

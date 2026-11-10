@@ -19,6 +19,7 @@ import {
 import semverGt from 'semver/functions/gte';
 import {
   classifyHealthFailure,
+  healthFailureToError,
   type HealthFailure,
 } from '@restate/util-errors';
 
@@ -83,6 +84,7 @@ const DEFAULT_INVOCATIONS_LIST_OPTIONS: InvocationsListOptions = {
 type RestateContext = {
   status: Status;
   healthFailure?: HealthFailure;
+  healthError?: Error;
   version?: string;
   isVersionGte?: (version: string) => boolean;
   ingressUrl: string;
@@ -189,10 +191,24 @@ function InternalRestateContextProvider({
 
   // During retries the query's `error` is still null but `failureReason`
   // already holds the last attempt's error, so classify from either.
-  const healthError = failureCount > 0 ? (failureReason ?? error) : null;
+  const lastHealthError = failureCount > 0 ? (failureReason ?? error) : null;
   const healthFailure = useMemo(
-    () => (healthError ? classifyHealthFailure(healthError) : undefined),
-    [healthError],
+    () =>
+      lastHealthError ? classifyHealthFailure(lastHealthError) : undefined,
+    [lastHealthError],
+  );
+  const persistentHealthFailureKey =
+    !isPending && failureCount > 1 && healthFailure
+      ? JSON.stringify(healthFailure)
+      : undefined;
+  const healthError = useMemo(
+    () =>
+      persistentHealthFailureKey
+        ? healthFailureToError(
+            JSON.parse(persistentHealthFailureKey) as HealthFailure,
+          )
+        : undefined,
+    [persistentHealthFailureKey],
   );
 
   const status: Status | undefined = isPending
@@ -241,6 +257,7 @@ function InternalRestateContextProvider({
         version,
         status,
         healthFailure,
+        healthError,
         ingressUrl: resolvedIngress,
         isVersionGte,
         baseUrl,

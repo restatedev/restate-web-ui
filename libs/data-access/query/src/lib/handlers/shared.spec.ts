@@ -50,4 +50,21 @@ describe('createQueryContext', () => {
       expect(request.headers.get('x-restate-query-level')).toBe('operator');
     }
   });
+
+  it('names a failed downstream call once', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),
+    );
+
+    await expect(
+      createQueryContext(
+        'https://restate.test',
+        new Headers(),
+        new Set(),
+      ).query('SELECT 1', 'deployments/drained'),
+    ).rejects.toThrow(
+      /^Request failed due to a network error: POST https:\/\/restate\.test\/query\?name=deployments\/drained$/,
+    );
+  });
 });

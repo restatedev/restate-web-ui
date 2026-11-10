@@ -105,8 +105,11 @@ export function getDefaultStateService(services: string[]) {
 }
 
 export function useStateServiceCatalog() {
-  const { data: serviceData, isPending: isServicesPending } =
-    useServiceCatalog();
+  const {
+    data: serviceData,
+    isPending: isServicesPending,
+    error,
+  } = useServiceCatalog();
 
   return useMemo(() => {
     const byName = new Map<string, StateRouteService>();
@@ -141,6 +144,7 @@ export function useStateServiceCatalog() {
 
     return {
       isPending: isServicesPending,
+      error,
       isUsingPlaceholderServices: false,
       services,
       serviceTypes,
@@ -148,7 +152,7 @@ export function useStateServiceCatalog() {
       workflows: workflows.map((service) => service.name),
       stateOnlyServices,
     };
-  }, [isServicesPending, serviceData]);
+  }, [isServicesPending, serviceData, error]);
 }
 
 export function useCurrentStateServiceParam() {

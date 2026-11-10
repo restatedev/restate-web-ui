@@ -3,6 +3,9 @@ export const UI_ERROR_CODES = {
   codecEncode: 'UI0002',
   deploymentFallback: 'UI0003',
   invocationNotFound: 'UI0004',
+  queryUnreachable: 'UI0005',
+  queryTimeout: 'UI0006',
+  queryFailed: 'UI0007',
 } as const;
 
 export const ERROR_CODES: Record<string, { summary: string; help?: string }> = {
@@ -19,6 +22,15 @@ export const ERROR_CODES: Record<string, { summary: string; help?: string }> = {
   UI0004: {
     summary: 'Invocation not found or no longer available.',
     help: 'The requested invocation either does not exist or has already completed and has been removed after its retention period expired. Completed invocations are only retained if a journal retention period is explicitly set, if they are part of a workflow, or if they were invoked with an idempotency key. In all cases, they are retained only for the duration of the specified retention period.',
+  },
+  UI0005: {
+    summary: 'Could not reach the Restate server.',
+  },
+  UI0006: {
+    summary: 'The Restate server did not respond in time.',
+  },
+  UI0007: {
+    summary: 'The UI failed while handling this request.',
   },
   META0003: {
     summary: 'Cannot reach the service endpoint to execute discovery',

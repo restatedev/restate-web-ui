@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   classifyHealthFailure,
+  getHealthFailureMessage,
   healthFailureToError,
 } from './classifyHealthFailure.js';
 import { RestateError } from './RestateError.js';
@@ -89,18 +90,21 @@ describe('healthFailureToError', () => {
     });
   });
 
-  it('returns an UnauthorizedError for an unauthorized failure', () => {
-    expect(healthFailureToError({ kind: 'unauthorized' })).toBeInstanceOf(
-      UnauthorizedError,
-    );
-  });
-
   it.each([
-    [false, 'Cannot reach your Restate server.'],
-    [true, 'You appear to be offline.'],
-  ])('describes an unreachable server (offline: %s)', (offline, message) => {
-    expect(healthFailureToError({ kind: 'unreachable', offline }).message).toBe(
-      message,
-    );
+    [
+      { kind: 'unauthorized' } as const,
+      'Authentication with your Restate server failed.',
+    ],
+    [
+      { kind: 'unreachable', offline: false } as const,
+      'Cannot reach your Restate server. This could be a network issue. Check your connection or browser.',
+    ],
+    [
+      { kind: 'unreachable', offline: true } as const,
+      'You appear to be offline. Reconnect to access your Restate server.',
+    ],
+  ])('words %o like the health notification', (failure, message) => {
+    expect(healthFailureToError(failure).message).toBe(message);
+    expect(getHealthFailureMessage(failure)).toBe(message);
   });
 });

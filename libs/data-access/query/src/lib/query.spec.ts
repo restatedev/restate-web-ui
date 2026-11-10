@@ -126,4 +126,85 @@ describe('query errors', () => {
       });
     },
   );
+
+  it('says so when a server error has no message', async () => {
+    vi.mocked(getState).mockImplementationOnce(() =>
+      ky('http://localhost:9070/query', {
+        fetch: async () => new Response(null, { status: 400 }),
+        retry: 0,
+      }).json<Response>(),
+    );
+
+    expect(await send(`/services/Cart/keys/a/state`)).toEqual({
+      status: 400,
+      message:
+        'The server sent no error message: GET http://localhost:9070/query',
+    });
+  });
+
+  it('keeps the Restate error code of a server error', async () => {
+    vi.mocked(getState).mockImplementationOnce(() =>
+      ky('http://localhost:9070/query', {
+        fetch: async () =>
+          Response.json(
+            {
+              message: 'Cannot reach the deployment',
+              restate_code: 'META0003',
+            },
+            { status: 400 },
+          ),
+        retry: 0,
+      }).json<Response>(),
+    );
+
+    expect(await send(`/services/Cart/keys/a/state`)).toEqual({
+      status: 400,
+      message: 'Cannot reach the deployment',
+      restate_code: 'META0003',
+    });
+  });
+
+  it.each([
+    [
+      'a timeout',
+      () =>
+        ky('http://localhost:9070/query', {
+          fetch: () => new Promise<Response>(() => undefined),
+          timeout: 1,
+          retry: 0,
+        }).json<Response>(),
+      504,
+      'UI0006',
+    ],
+    [
+      'a network failure',
+      () =>
+        ky('http://localhost:9070/query', {
+          fetch: async () => {
+            throw new TypeError('Failed to fetch');
+          },
+          retry: 0,
+        }).json<Response>(),
+      500,
+      'UI0005',
+    ],
+    [
+      'a failing handler',
+      async (): Promise<Response> => {
+        throw new Error('Cannot read the rows');
+      },
+      500,
+      'UI0007',
+    ],
+  ])(
+    'marks %s with a UI error code, since no server answered',
+    async (_, handler, status, code) => {
+      vi.mocked(getState).mockImplementationOnce(handler);
+
+      expect(await send(`/services/Cart/keys/a/state`)).toMatchObject({
+        status,
+        restate_code: code,
+      });
+    },
+  );
 });

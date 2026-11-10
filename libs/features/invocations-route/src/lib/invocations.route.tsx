@@ -69,7 +69,6 @@ import {
 } from '@restate/ui-content-panel';
 import { EmptyState } from '@restate/ui-empty-state';
 import { ErrorBanner } from '@restate/ui-error';
-import { healthFailureToError } from '@restate/util-errors';
 import {
   AddFilterTrigger,
   FilterBuilder,
@@ -370,17 +369,8 @@ function Component() {
     baseUrl,
     observabilityDashboardUrl,
     invocationsListOptions,
-    status: serverStatus,
-    healthFailure,
+    healthError,
   } = useRestateContext();
-  const serverError = useMemo(
-    () =>
-      healthFailure &&
-      (serverStatus === 'DEGRADED' || serverStatus === 'UNREACHABLE')
-        ? healthFailureToError(healthFailure)
-        : undefined,
-    [healthFailure, serverStatus],
-  );
   const { sampleSize, slowQueryMs, listSampledDefault } =
     invocationsListOptions;
   const queryClient = useQueryClient();
@@ -452,8 +442,8 @@ function Component() {
     breakdownSampleSize,
     enabled: !isLoading,
   });
-  const isStageSummaryLoading = isStageSummaryQueryLoading && !serverError;
-  const isSummaryError = isSummaryQueryError || Boolean(serverError);
+  const isStageSummaryLoading = isStageSummaryQueryLoading && !healthError;
+  const isSummaryError = isSummaryQueryError || Boolean(healthError);
   const { data: deploymentsData } = useListDeployments();
   // Href that clears filter_status — drives the legend's leading "All"
   // reset entry. Simply deletes the key; the loader doesn't auto-restore
@@ -487,7 +477,7 @@ function Component() {
       enabled: !isLoading,
     },
   );
-  const listError = error ?? serverError;
+  const listError = error ?? healthError;
   const changeListMode = useCallback(
     (sampled: boolean) => {
       if (sampled === listSampled) {

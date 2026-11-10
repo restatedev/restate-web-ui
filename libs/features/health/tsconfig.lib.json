@@ -38,6 +38,9 @@
   "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../util/errors/tsconfig.lib.json"
+    },
+    {
       "path": "../../ui/notification/tsconfig.lib.json"
     },
     {
