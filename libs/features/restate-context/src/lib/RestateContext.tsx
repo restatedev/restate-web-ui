@@ -178,11 +178,13 @@ function InternalRestateContextProvider({
   queryHealthCheckEnabled?: boolean;
   invocationsListOptions?: Partial<InvocationsListOptions>;
 }>) {
-  const { isSuccess, failureCount, error, failureReason } = useHealth({
-    enabled: !isPending,
-    retry: true,
-    refetchInterval: 1000 * 60,
-  });
+  const { isSuccess, failureCount, error, failureReason, isPaused } = useHealth(
+    {
+      enabled: !isPending,
+      retry: true,
+      refetchInterval: 1000 * 60,
+    },
+  );
   const { data } = useVersion({ enabled: !isPending && isSuccess });
   const version = data?.version;
   const releasedVersion = version?.split('-')?.at(0);
@@ -198,7 +200,9 @@ function InternalRestateContextProvider({
     [lastHealthError],
   );
   const persistentHealthFailureKey =
-    !isPending && failureCount > 1 && healthFailure
+    !isPending &&
+    (failureCount > 1 || (failureCount > 0 && isPaused)) &&
+    healthFailure
       ? JSON.stringify(healthFailure)
       : undefined;
   const healthError = useMemo(

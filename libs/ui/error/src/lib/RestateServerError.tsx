@@ -219,7 +219,10 @@ export function RestateServerError({
   const { summary, help } =
     (code ? ERROR_CODES[code] : undefined) ??
     (typeof status === 'number'
-      ? { summary: `Request failed with status ${status}.`, help: undefined }
+      ? {
+          summary: `Request failed with status ${status}${code ? ` (${code})` : ''}.`,
+          help: undefined,
+        }
       : DEFAULT_ERROR);
   const hasServerDocs = Boolean(code) && !UI_CODES.has(code as string);
   const causeChain = collectCauseChain(error);

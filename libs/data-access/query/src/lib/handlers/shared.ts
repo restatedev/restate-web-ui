@@ -117,11 +117,15 @@ export function scopeClause(explicitScope?: string): string {
 }
 
 // ky's HTTPError, TimeoutError and NetworkError already name the request.
-// Other failures (a network error ky doesn't recognize, an error while reading
-// the body) carry no request context, so append the real downstream call and
-// the /query proxy reports what actually failed, not the in-browser route.
+// fetch rejects with a TypeError when the request never got a response, so one
+// that ky didn't recognize as a network error still is one. Other failures (an
+// unparsable body) carry no request context, so append the real downstream
+// call and the /query proxy reports what actually failed.
 function withRequestContext(method: string, url: string) {
   return (error: unknown): never => {
+    if (error instanceof TypeError) {
+      throw new NetworkError(new Request(url, { method }), { cause: error });
+    }
     if (
       error instanceof Error &&
       !(error instanceof HTTPError) &&

@@ -130,7 +130,11 @@ describe('query errors', () => {
   it('says so when a server error has no message', async () => {
     vi.mocked(getState).mockImplementationOnce(() =>
       ky('http://localhost:9070/query', {
-        fetch: async () => new Response(null, { status: 400 }),
+        fetch: async () =>
+          new Response(null, {
+            status: 400,
+            headers: { 'content-length': '0' },
+          }),
         retry: 0,
       }).json<Response>(),
     );
@@ -139,6 +143,25 @@ describe('query errors', () => {
       status: 400,
       message:
         'The server sent no error message: GET http://localhost:9070/query',
+    });
+  });
+
+  it('says so when the error message cannot be read', async () => {
+    vi.mocked(getState).mockImplementationOnce(() =>
+      ky('http://localhost:9070/query', {
+        fetch: async () =>
+          new Response('<html>Bad gateway</html>', {
+            status: 502,
+            headers: { 'content-type': 'application/json' },
+          }),
+        retry: 0,
+      }).json<Response>(),
+    );
+
+    expect(await send(`/services/Cart/keys/a/state`)).toEqual({
+      status: 502,
+      message:
+        'Could not read the error message in the response: GET http://localhost:9070/query',
     });
   });
 

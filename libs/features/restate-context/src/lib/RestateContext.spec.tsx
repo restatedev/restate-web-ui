@@ -9,6 +9,7 @@ const health = vi.hoisted(() => ({
     failureCount?: number;
     error?: Error | null;
     failureReason?: Error | null;
+    isPaused?: boolean;
   },
 }));
 
@@ -70,6 +71,15 @@ describe('RestateContextProvider', () => {
     expect(latestContext()?.healthError).toMatchObject({
       message: 'Malformed environment id',
       status: 400,
+    });
+  });
+
+  it('shows the health error when retries pause after one failure', () => {
+    health.current = { ...failedAttempts(1), isPaused: true };
+    renderProvider();
+
+    expect(latestContext()?.healthError).toMatchObject({
+      message: 'Malformed environment id',
     });
   });
 

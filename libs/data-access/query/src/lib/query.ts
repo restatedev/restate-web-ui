@@ -712,10 +712,13 @@ export async function query(req: Request) {
   return queryHandler(req).catch((error) => {
     if (error instanceof HTTPError) {
       const { message, code } = extractErrorPayload(error.data);
+      const sentNoMessage =
+        typeof error.data === 'string' ||
+        error.response.headers.get('content-length') === '0';
       return errorResponse(
         error.response.status,
         message ||
-          `The server sent no error message: ${error.request.method} ${error.request.url}`,
+          `${sentNoMessage ? 'The server sent no error message' : 'Could not read the error message in the response'}: ${error.request.method} ${error.request.url}`,
         code,
       );
     } else if (error instanceof DOMException && error.name === 'AbortError') {
