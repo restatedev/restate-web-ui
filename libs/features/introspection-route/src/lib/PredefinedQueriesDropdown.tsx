@@ -49,7 +49,7 @@ export function PredefinedQueriesDropdown({
                 <DropdownItem
                   key={query.id}
                   value={query.id}
-                  className="[&[data-focused]_*:not(svg)]:!text-inherit"
+                  className="highlighted:[&_*:not(svg)]:!text-inherit"
                 >
                   <span className="flex min-w-0 flex-col gap-1 whitespace-normal">
                     <span className="flex min-w-0 items-center gap-2">

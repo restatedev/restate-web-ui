@@ -305,7 +305,7 @@ function DropDownVirtualObject({
             <span className="truncate">{service}</span>
             <StateOnlyServiceWarningIcon tooltip={false} />
           </span>
-          <span className="group-focused:text-on-accent truncate text-xs text-muted">
+          <span className="truncate text-xs text-muted group-highlighted:text-on-accent">
             {stateOnlyServiceWarning}
           </span>
         </span>

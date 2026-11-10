@@ -1,4 +1,5 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant highlighted (&:where([data-focus-visible], [data-focused][data-hovered]));
 
 @theme static {
   --background-color-canvas: var(--color-gray-100);

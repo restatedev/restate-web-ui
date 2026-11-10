@@ -98,6 +98,8 @@ Some components change what a token means for their content instead of adding pu
 
 `tint-*` tokens are translucent (black in light mode, white in dark), so they work on any background. Use them when you don't control what's underneath. The `wash-tint-subtle`, `wash-tint` and `wash-tint-strong` utilities layer the same tint over an element's own fill (as a background image), so an opaque control darkens in light and lightens in dark without a separate hover token per layer. Don't combine them with a background gradient.
 
+Menu items fill with `highlighted:bg-accent highlighted:text-inverse` (`bg-danger` for destructive ones), and content inside them recolors with `group-highlighted:`. The `highlighted` variant matches an item under the pointer or focused from the keyboard. Don't use `focus:` for this: React Aria keeps the last hovered item focused after the pointer leaves the menu, so its fill would stay lit.
+
 ### Borders
 
 | Token                     | Use for                                                                           |
@@ -183,7 +185,7 @@ These are the most common combinations in the codebase. Prefer the component whe
 | Status badge           | `<Badge variant="…">`. Hand-rolled: `border border-F-strong/20 bg-F-subtle text-F-strong`                                                                                                                                                                                   |
 | Banner / callout       | `rounded-xl border border-F bg-F-subtle text-F`, icon `fill-F text-on-F`                                                                                                                                                                                                    |
 | Neutral chip           | `rounded bg-muted px-1 py-px text-2xs font-medium text-tertiary`                                                                                                                                                                                                            |
-| Menu / popover         | Frame `bg-overlay`, sections `rounded-xl border bg-surface`, selected item `bg-accent text-inverse`                                                                                                                                                                         |
+| Menu / popover         | Frame `bg-overlay`, sections `rounded-xl border bg-surface`, highlighted item `bg-accent text-inverse`                                                                                                                                                                      |
 | Buttons                | `<Button variant="primary" \| "secondary" \| "destructive" \| "icon">`                                                                                                                                                                                                      |
 | Text link              | `<Link>`, which renders `text-accent decoration-accent/60 hover:decoration-accent`                                                                                                                                                                                          |
 | Focus                  | Extend `focusRing` from `@restate/ui-focus` (`outline-focus`); fields use `focus:outline-2 focus:outline-focus`                                                                                                                                                             |
