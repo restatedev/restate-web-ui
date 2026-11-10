@@ -129,7 +129,7 @@ export function PruneDeploymentsProgressBar({
                                     (error.length > 250 ? '…' : ''),
                                 )
                               }
-                              className="-mt-1 overflow-auto bg-transparent pl-3 group-focus:**:text-on-danger [&_output]:max-h-fit [&_output]:whitespace-normal [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
+                              className="-mt-1 overflow-auto bg-transparent pl-3 group-highlighted:**:text-on-danger [&_output]:max-h-fit [&_output]:whitespace-normal [&_svg]:mt-1 [&_svg]:h-3.5 [&_svg]:w-3.5"
                             />
                           </HoverTooltip>
                         </div>

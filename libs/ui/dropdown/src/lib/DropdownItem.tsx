@@ -9,20 +9,13 @@ import {
 import { tv } from '@restate/util-styles';
 
 const styles = tv({
-  base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none highlighted:bg-accent highlighted:text-inverse forced-colors:highlighted:bg-[Highlight] forced-colors:highlighted:text-[HighlightText]',
+  base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none highlighted:text-inverse forced-colors:highlighted:bg-[Highlight] forced-colors:highlighted:text-[HighlightText]',
   variants: {
-    isDisabled: {
-      false: 'text-primary',
-      true: 'text-faint forced-colors:text-[GrayText]',
+    destructive: {
+      false: 'text-primary highlighted:bg-accent',
+      true: 'text-danger highlighted:bg-danger',
     },
-  },
-});
-
-const destructiveStyles = tv({
-  base: 'group dropdown-item flex cursor-default items-center gap-4 rounded-xl px-3 py-2 text-sm outline outline-0 forced-color-adjust-none select-none highlighted:bg-danger highlighted:text-inverse forced-colors:highlighted:bg-[Highlight] forced-colors:highlighted:text-[HighlightText]',
-  variants: {
     isDisabled: {
-      false: 'text-danger',
       true: 'text-faint forced-colors:text-[GrayText]',
     },
   },
@@ -46,9 +39,7 @@ function StyledDropdownItem({
     <AriaMenuItem
       {...props}
       className={({ isDisabled }) =>
-        destructive
-          ? destructiveStyles({ className, isDisabled })
-          : styles({ className, isDisabled })
+        styles({ className, isDisabled, destructive: Boolean(destructive) })
       }
     >
       {composeRenderProps(
