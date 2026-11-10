@@ -193,6 +193,29 @@ describe('convertInvocation VQueue overlay', () => {
     },
   );
 
+  it.each([
+    ['success', undefined, 'succeeded'],
+    ['failure', '[500] boom', 'failed'],
+    ['failure', '[409] canceled', 'cancelled'],
+    ['failure', '[409] killed', 'killed'],
+    ['failure', '[500]', 'failed'],
+    ['failure', '[409]', 'cancelled'],
+    ['killed', undefined, 'killed'],
+  ] as const)(
+    'classifies completion %s %s as %s without a VQueue overlay',
+    (completion_result, completion_failure, status) => {
+      expect(
+        convertInvocation(
+          rawInvocation({
+            status: 'completed',
+            completion_result,
+            completion_failure,
+          }),
+        ),
+      ).toMatchObject({ status, isRetrying: false });
+    },
+  );
+
   it('keeps invocation status when a migrated invocation has no VQueue overlay', () => {
     expect(
       convertInvocation(

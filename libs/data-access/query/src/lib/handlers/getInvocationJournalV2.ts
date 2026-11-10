@@ -25,6 +25,7 @@ import {
 } from './shared.js';
 import { fetchVqueueStatuses } from './vqueue.js';
 import { getVqueueSnapshot } from './getVqueue.js';
+import { withCompletionFailureMessage } from './completionOutput.js';
 
 type InvocationJournalV2Response =
   operations['get_invocation_journal_v2']['responses']['200']['content']['application/json'];
@@ -144,14 +145,17 @@ export async function getInvocationJournalV2(
   }
 
   const rawInvocation = invocationQuery.rows.at(0);
-  const invocation = rawInvocation
-    ? convertInvocationV2(
-        rawInvocation,
-        vqueueStatuses.get(invocationId),
-        requestTime,
-        getLastTransientError(eventsQuery.rows),
-      )
-    : undefined;
+  const invocation = await withCompletionFailureMessage(
+    this,
+    rawInvocation
+      ? convertInvocationV2(
+          rawInvocation,
+          vqueueStatuses.get(invocationId),
+          requestTime,
+          getLastTransientError(eventsQuery.rows),
+        )
+      : undefined,
+  );
   if (!invocation) {
     return new Response(
       JSON.stringify({

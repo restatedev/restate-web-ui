@@ -6323,6 +6323,7 @@
 
               "Command: Input",
               "Command: Output",
+              "Command: EndMarker",
               "Command: GetState",
               "Command: GetEagerState",
               "Command: SetState",
@@ -8326,7 +8327,7 @@
           },
           "completion_result": {
             "type": "string",
-            "enum": ["success", "failure"]
+            "enum": ["success", "failure", "killed"]
           },
           "completion_failure": {
             "type": "string"
@@ -8554,7 +8555,7 @@
           },
           "completion_result": {
             "type": "string",
-            "enum": ["success", "failure"]
+            "enum": ["success", "failure", "killed"]
           },
           "completion_failure": {
             "type": "string"

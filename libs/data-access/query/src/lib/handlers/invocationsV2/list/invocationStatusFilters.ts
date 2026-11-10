@@ -9,8 +9,11 @@ import {
   type InvocationFilterV2,
 } from '../shared.js';
 import {
+  CANCELLED_COMPLETION_FAILURES,
   INVOCATION_STATUS_DEFINITIONS,
   INVOCATION_STATUSES,
+  KILLED_COMPLETION_FAILURES,
+  KILLED_COMPLETION_RESULT,
   TERMINAL_INVOCATION_STATUSES,
   type InvocationStatus,
 } from '../../../invocationStatuses.js';
@@ -24,9 +27,6 @@ type InvocationFilterSource =
     };
 
 type InvocationColumnSource = Pick<InvocationFilterSource, 'type' | 'alias'>;
-
-const KILLED_FAILURES = ['[409] killed'];
-const CANCELLED_FAILURES = ['[409] canceled', '[409] cancelled'];
 
 function statusValues(filter: FilterItem): string[] {
   if (filter.type === 'STRING_LIST') return filter.value;
@@ -45,11 +45,11 @@ function terminalStatusClause(status: string, alias: string): string {
     case 'succeeded':
       return `(${completed} AND ${alias}.completion_result = 'success')`;
     case 'killed':
-      return `(${completed} AND ${failed} AND ${normalizedFailure} IN (${sqlStringList(KILLED_FAILURES)}))`;
+      return `(${completed} AND (${alias}.completion_result = '${KILLED_COMPLETION_RESULT}' OR (${failed} AND ${normalizedFailure} IN (${sqlStringList(KILLED_COMPLETION_FAILURES)}))))`;
     case 'cancelled':
-      return `(${completed} AND ${failed} AND ${normalizedFailure} IN (${sqlStringList(CANCELLED_FAILURES)}))`;
+      return `(${completed} AND ${failed} AND ${normalizedFailure} IN (${sqlStringList(CANCELLED_COMPLETION_FAILURES)}))`;
     default:
-      return `(${completed} AND ${failed} AND COALESCE(${normalizedFailure}, '') NOT IN (${sqlStringList([...KILLED_FAILURES, ...CANCELLED_FAILURES])}))`;
+      return `(${completed} AND ${failed} AND COALESCE(${normalizedFailure}, '') NOT IN (${sqlStringList([...KILLED_COMPLETION_FAILURES, ...CANCELLED_COMPLETION_FAILURES])}))`;
   }
 }
 
