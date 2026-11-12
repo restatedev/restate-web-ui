@@ -15,6 +15,10 @@ export {
   InvocationPopoverContent,
 } from '@restate/features-invocation-ui';
 export { Target } from '@restate/features-service-target';
+export {
+  getSessionObjectStateKeyPrefix,
+  isSessionObject,
+} from './lib/sessionObjects';
 export * from './lib/invocation.route';
 export * from './lib/InvocationJourneyCard';
 // Tenant view reuses the lifecycle card without the surrounding admin page.

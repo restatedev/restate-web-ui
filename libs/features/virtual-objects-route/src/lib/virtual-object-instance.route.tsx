@@ -9,6 +9,7 @@ import {
   virtualObjectScopeFromSearch,
   type VirtualObjectInstanceIdentity,
 } from '@restate/features-virtual-object-instance';
+import { getSessionObjectStateKeyPrefix } from '@restate/features-invocation-route';
 import { ServiceTarget } from '@restate/features-service-target';
 import { vqueuesForVirtualObjectInstanceHref } from '@restate/features-limits-route';
 import { useRestateContext } from '@restate/features-restate-context';
@@ -68,6 +69,8 @@ function Component() {
   });
   const isVirtualObject = serviceMetadata?.ty === 'VirtualObject';
   const isUnavailable = !isPending && (!serviceMetadata || !isVirtualObject);
+  const sessionObjectStateKeyPrefix =
+    getSessionObjectStateKeyPrefix(serviceMetadata);
   const {
     data: inboxData,
     dataUpdatedAt: inboxDataUpdatedAt,
@@ -110,7 +113,9 @@ function Component() {
       <div className="flex min-h-0 flex-1 flex-col pt-4 [--cp-toolbar-top:5rem] [--cp-toolbar-tuck:5rem] max-md:[--cp-toolbar-top:calc(0.75rem+var(--header-height,3.5rem)+0.5rem)] max-md:[--cp-toolbar-tuck:var(--cp-toolbar-top)]">
         <Header
           icon={IconName.VirtualObject}
-          iconLabel="Virtual Object"
+          iconLabel={
+            sessionObjectStateKeyPrefix ? 'Session Object' : 'Virtual Object'
+          }
           className="min-w-0"
           trail={<Breadcrumbs variant="flat" />}
         >
@@ -178,6 +183,7 @@ function Component() {
             identity={identity}
             tab={tab}
             deploymentId={serviceMetadata?.deployment_id}
+            readOnlyStateKeyPrefix={sessionObjectStateKeyPrefix}
             inboxData={inboxData}
             inboxDataUpdatedAt={inboxDataUpdatedAt}
             inboxError={inboxError}
