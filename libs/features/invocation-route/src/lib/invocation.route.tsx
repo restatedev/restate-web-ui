@@ -479,13 +479,19 @@ function Anchor({
     };
     observePanels();
 
+    let frame = 0;
     const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          observePanels();
-          updateStyles();
-        }
+      if (
+        frame ||
+        !mutations.some((mutation) => mutation.type === 'childList')
+      ) {
+        return;
       }
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        observePanels();
+        updateStyles();
+      });
     });
 
     observer.observe(document.body, {
@@ -498,6 +504,7 @@ function Anchor({
       window.removeEventListener('resize', updateStyles);
       resizeObserver.disconnect();
       observer.disconnect();
+      cancelAnimationFrame(frame);
       root?.style.removeProperty('--failure-anchor-x');
       root?.style.removeProperty('--failure-banner-shift');
       root?.style.removeProperty('--failure-notch-x');

@@ -1,6 +1,22 @@
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 
+const cancelNotificationsByEntries = new WeakMap<
+  JournalEntryV2[],
+  JournalEntryV2[]
+>();
+
+function getCancelNotifications(entries: JournalEntryV2[] = []) {
+  let cancelNotifications = cancelNotificationsByEntries.get(entries);
+  if (!cancelNotifications) {
+    cancelNotifications = entries.filter(
+      (entry) => entry.category === 'notification' && entry.type === 'Cancel',
+    );
+    cancelNotificationsByEntries.set(entries, cancelNotifications);
+  }
+  return cancelNotifications;
+}
+
 // TODO: move to middleware
 export function isEntryCompletionAmbiguous(
   refEntry?: JournalEntryV2,
@@ -8,26 +24,28 @@ export function isEntryCompletionAmbiguous(
     typeof useGetInvocationJournalWithInvocationV2
   >['data'],
 ) {
-  const cancelledAfterEntry = invocation?.journal?.entries?.find(
-    (entry) =>
-      entry.category === 'notification' &&
-      entry.type === 'Cancel' &&
-      entry.start &&
-      refEntry?.start &&
-      entry.start > refEntry?.start,
-  );
-  const invocationIsCompleted = Boolean(invocation?.completed_at);
-  const invocationIspaused = Boolean(invocation?.status === 'paused');
-
   if (
     !refEntry ||
     !invocation ||
-    refEntry?.category !== 'command' ||
-    (refEntry.type !== 'Run' &&
-      !invocationIsCompleted &&
-      !invocationIspaused &&
-      !cancelledAfterEntry) ||
+    refEntry.category !== 'command' ||
     !refEntry.isPending
+  ) {
+    return { isAmbiguous: false };
+  }
+
+  const cancelledAfterEntry = getCancelNotifications(
+    invocation.journal?.entries,
+  ).find(
+    (entry) => entry.start && refEntry.start && entry.start > refEntry.start,
+  );
+  const invocationIsCompleted = Boolean(invocation.completed_at);
+  const invocationIspaused = Boolean(invocation.status === 'paused');
+
+  if (
+    refEntry.type !== 'Run' &&
+    !invocationIsCompleted &&
+    !invocationIspaused &&
+    !cancelledAfterEntry
   ) {
     return { isAmbiguous: false };
   }

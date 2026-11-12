@@ -11,6 +11,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -320,14 +321,21 @@ export function JournalV2({
   const areAllInvocationsCompleted = invocationIds.every(
     (id) => !data[id] || data[id]?.completed_at,
   );
-  const maxEntryTimestamp = Math.max(
-    ...entriesWithoutInputUnfiltered.map(({ entry }) =>
-      entry?.end
-        ? new Date(entry.end).getTime()
-        : entry?.start
-          ? new Date(entry.start).getTime()
-          : -1,
-    ),
+  const maxEntryTimestamp = useMemo(
+    () =>
+      entriesWithoutInputUnfiltered.reduce(
+        (max, { entry }) =>
+          Math.max(
+            max,
+            entry?.end
+              ? new Date(entry.end).getTime()
+              : entry?.start
+                ? new Date(entry.start).getTime()
+                : -1,
+          ),
+        -Infinity,
+      ),
+    [entriesWithoutInputUnfiltered],
   );
   const completedTimelineEnd =
     maxEntryTimestamp > start
@@ -351,12 +359,8 @@ export function JournalV2({
     Boolean(journalAndInvocationData) &&
     (journalAndInvocationData?.journal?.entries?.length ?? 0) === 0;
 
-  const virtualizer = useWindowVirtualizer({
-    count: entriesWithoutInput.length,
-    estimateSize: () => 36,
-    overscan: 24,
-    scrollMargin: 0,
-    getItemKey: (index) => {
+  const getItemKey = useCallback(
+    (index: number) => {
       const entry = entriesWithoutInput[index];
       return entry
         ? `${entry.invocationId}-${getJournalEntryKey(
@@ -365,6 +369,14 @@ export function JournalV2({
           )}-${entry.entry?.type}-${index}`
         : index;
     },
+    [entriesWithoutInput],
+  );
+  const virtualizer = useWindowVirtualizer({
+    count: entriesWithoutInput.length,
+    estimateSize: () => 36,
+    overscan: 24,
+    scrollMargin: 0,
+    getItemKey,
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
@@ -373,19 +385,19 @@ export function JournalV2({
   const { data: pausedErrorData } = useGetPausedError(invocationId, {
     enabled: journalAndInvocationData?.status === 'paused',
   });
-  const failureRowIndex = findCommandRow(
-    entriesWithoutInput,
-    invocationId,
+  const failureCommandIndex =
     journalAndInvocationData?.last_failure_related_command_index ??
-      pausedErrorData?.relatedCommandIndex,
+    pausedErrorData?.relatedCommandIndex;
+  const failureRowIndex = useMemo(
+    () =>
+      findCommandRow(entriesWithoutInput, invocationId, failureCommandIndex),
+    [entriesWithoutInput, invocationId, failureCommandIndex],
   );
   const failureRow =
     failureRowIndex >= 0
       ? virtualizer.measurementsCache[failureRowIndex]
       : undefined;
 
-  // Rows outside the viewport aren't rendered, so a `#command-N` link can't
-  // rely on the browser finding the element: scroll to the row's offset.
   const { hash, key: locationKey } = useLocation();
   const scrolledLocationKey = useRef<string>(undefined);
   useEffect(() => {
@@ -870,8 +882,6 @@ function VirtualizedEntries({
       }}
     >
       {failureRow && (
-        // Where the failing row is, rendered or not, so the failure marker
-        // above the journal can point at it.
         <div
           data-last-failure-position
           aria-hidden
