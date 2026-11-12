@@ -1300,12 +1300,8 @@ export function useGetInvocation(
   };
 }
 
-// A deep chain is cut off here; the topmost invocation reached stands in for
-// the root.
 const MAX_INVOCATION_ANCESTORS = 32;
 
-// Walks `invoked_by_id` up from an invocation to the one that started the
-// chain. There is no correlation ID to ask for, so it is one lookup per level.
 export function useGetRootInvocationId(invocationId?: string) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
@@ -1324,7 +1320,6 @@ export function useGetRootInvocationId(invocationId?: string) {
             }),
             staleTime: Infinity,
           })
-          // A purged ancestor ends the walk at the last one still there.
           .catch(() => undefined);
         if (!invocation?.invoked_by_id) {
           break;

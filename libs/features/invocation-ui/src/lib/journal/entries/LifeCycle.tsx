@@ -250,7 +250,6 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
   );
 }
 
-// The invocation that started the chain, when the parent isn't it already.
 function RootInvocation({ parentId }: { parentId: string }) {
   const { data: rootId } = useGetRootInvocationId(parentId);
 

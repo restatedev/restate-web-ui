@@ -16,7 +16,6 @@ import { ExpandInvocationButton } from './ExpandInvocationButton';
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5 pr-2',
   variants: {
-    // Room for the expand button on the right
     canExpand: { true: 'pr-9', false: '' },
   },
 });

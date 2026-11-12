@@ -5,8 +5,6 @@ import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';
 import { CallInvokedLoadingError } from './CallInvokedLoadingError';
 import { CircularRefWarning } from './CircularRefWarning';
 
-// Shows or hides the journal of the invocation a call, send or attach points
-// at, nested under the entry.
 export function ExpandInvocationButton({
   invocationId,
   parentInvocationId,
