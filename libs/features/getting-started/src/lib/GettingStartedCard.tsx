@@ -26,7 +26,7 @@ export function GettingStartedCard({
 }: PropsWithChildren<GettingStartedCardProps>) {
   return (
     <div className={styles({ className })}>
-      <div className="absolute inset-0 translate-x-1/3 translate-y-1/4 rotate-12 text-inverse">
+      <div className="absolute inset-0 translate-x-1/3 translate-y-1/4 rotate-12 text-(--background-color-surface)">
         <Icon name={icon} className="h-full w-full" />
       </div>
       <div className="z-[2] self-start rounded-md bg-muted p-1.5 text-muted">
