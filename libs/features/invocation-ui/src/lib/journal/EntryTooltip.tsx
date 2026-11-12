@@ -29,8 +29,6 @@ const entryTooltipStyles = tv({
   base: 'flex h-full',
 });
 
-// For a pending Call or Attach, what the invocation it waits on is doing when
-// that is why nothing moves.
 const TARGET_INVOCATION_NOTES: Partial<Record<InvocationStatus, string>> = {
   suspended: 'Waiting on a suspended invocation',
   paused: 'Waiting on a paused invocation',

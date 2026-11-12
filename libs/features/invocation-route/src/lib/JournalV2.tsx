@@ -854,8 +854,6 @@ function VirtualizedTimeline({
                 .get(entryInvocationId)
                 ?.get(entry.index)
             : undefined;
-        // A pending Call or Attach waits on another invocation, so its bar
-        // shows that invocation's status (suspended, paused, backing off…).
         const targetInvocationStatus =
           entry?.isPending &&
           isReferencedInvocationEntry(entry) &&

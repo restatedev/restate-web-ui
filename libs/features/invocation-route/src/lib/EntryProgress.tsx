@@ -326,7 +326,6 @@ export function EntryProgress(
       typeof useGetInvocationJournalWithInvocationV2
     >['data'];
     precomputedRelatedEntries?: JournalEntryV2[];
-    /** Status of the invocation a pending Call or Attach waits on */
     targetInvocationStatus?: InvocationStatus;
   }>,
 ) {
