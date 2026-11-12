@@ -1300,6 +1300,44 @@ export function useGetInvocation(
   };
 }
 
+// A deep chain is cut off here; the topmost invocation reached stands in for
+// the root.
+const MAX_INVOCATION_ANCESTORS = 32;
+
+// Walks `invoked_by_id` up from an invocation to the one that started the
+// chain. There is no correlation ID to ask for, so it is one lookup per level.
+export function useGetRootInvocationId(invocationId?: string) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: ['/query/invocations/root', { baseUrl, invocationId }],
+    queryFn: async () => {
+      let rootId = String(invocationId);
+      for (let level = 0; level < MAX_INVOCATION_ANCESTORS; level++) {
+        const invocation = await queryClient
+          .fetchQuery({
+            ...adminApi('query', '/query/invocations/{invocationId}', 'get', {
+              baseUrl,
+              parameters: { path: { invocationId: rootId } },
+            }),
+            staleTime: Infinity,
+          })
+          // A purged ancestor ends the walk at the last one still there.
+          .catch(() => undefined);
+        if (!invocation?.invoked_by_id) {
+          break;
+        }
+        rootId = invocation.invoked_by_id;
+      }
+      return rootId;
+    },
+    enabled: Boolean(invocationId) && enabled,
+    staleTime: Infinity,
+  });
+}
+
 export function useGetPausedError(
   invocationId: string,
   options?: HookQueryOptions<

@@ -42,19 +42,20 @@ type PreprocessedInvocationData = {
   lifecycleData: LifecycleData;
 };
 
-// Call/AttachInvocation commands point at another invocation whose journal
-// is also loaded; getCombinedJournal recurses into them.
+// Call/OneWayCall/AttachInvocation commands point at another invocation whose
+// journal is also loaded; getCombinedJournal recurses into them.
 function isExpandable(
   entry: JournalEntryV2,
 ): entry is
   | Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
+  | Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }>
   | Extract<
       JournalEntryV2,
       { type?: 'AttachInvocation'; category?: 'command' }
     > {
   return Boolean(
     entry.type &&
-    ['Call', 'AttachInvocation'].includes(entry.type) &&
+    ['Call', 'OneWayCall', 'AttachInvocation'].includes(entry.type) &&
     entry.category === 'command',
   );
 }
@@ -147,7 +148,7 @@ function preprocessInvocationData(
   };
 }
 
-// Walks one invocation's entries, recursing into Call/AttachInvocation
+// Walks one invocation's entries, recursing into Call/OneWayCall/AttachInvocation
 // targets depth-first so the result is a flat list spanning every loaded
 // invocation. `visited` is a cycle guard for the invocation graph: if a
 // back-edge exists (A → B → A) we'd loop forever, so revisiting bails out.

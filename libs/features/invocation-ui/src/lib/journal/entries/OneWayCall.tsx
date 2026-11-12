@@ -10,9 +10,15 @@ import { tv } from '@restate/util-styles';
 import { EntryExpression } from './EntryExpression';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 import { Value } from '../Value';
+import { useJournalEntriesContext } from '../JournalContext';
+import { ExpandInvocationButton } from './ExpandInvocationButton';
 
 const styles = tv({
   base: 'relative flex flex-auto flex-row items-center gap-1.5 pr-2',
+  variants: {
+    // Room for the expand button on the right
+    canExpand: { true: 'pr-9', false: '' },
+  },
 });
 
 export function OneWayCall({
@@ -23,6 +29,7 @@ export function OneWayCall({
   Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }>
 >) {
   const durationSinceLastSnapshot = useDurationSinceLastSnapshot();
+  const { disableExpand } = useJournalEntriesContext();
 
   const invokeTime = entry.invokeTime ?? entry.start;
   const { isPast, ...parts } = invokeTime
@@ -31,70 +38,84 @@ export function OneWayCall({
   const duration = invokeTime ? formatDurations(parts) : undefined;
 
   return (
-    <div className={styles({ className })}>
-      <EntryExpression
-        entry={entry}
-        invocation={invocation}
-        input={
-          <>
-            {entry.name && (
-              <InputOutput
-                name={JSON.stringify(entry.name)}
-                popoverTitle={'Name'}
-                popoverContent={
-                  <Value
-                    value={entry.name}
-                    className="font-mono text-xs"
-                    showCopyButton
-                    portalId="expression-value"
-                  />
-                }
-              />
-            )}
-            {entry.name && ', '}
-            {entry.serviceName && entry.handlerName && (
-              <ServiceTarget
-                scope={entry.scope}
-                service={entry.serviceName}
-                serviceKey={entry.serviceKey}
-                handler={entry.handlerName}
-                showHandler={false}
-                density="compact"
-                className="mx-0.5"
-                chipClassName="font-sans text-2xs not-italic"
-              />
-            )}
-          </>
-        }
-        chain={
-          <Expression
-            name={'.' + entry.handlerName}
-            operationSymbol=""
-            className="pr-0 [&>*>*>*]:flex-auto"
-            input={
-              <LazyJournalEntryPayload.Input
-                invocationId={invocation?.id}
-                entry={entry}
-                title="Input"
-                isBase64
-              />
-            }
-          />
-        }
-        className="min-w-0"
+    <>
+      <div
+        className={styles({
+          className,
+          canExpand: !disableExpand && Boolean(entry.invocationId),
+        })}
+      >
+        <EntryExpression
+          entry={entry}
+          invocation={invocation}
+          input={
+            <>
+              {entry.name && (
+                <InputOutput
+                  name={JSON.stringify(entry.name)}
+                  popoverTitle={'Name'}
+                  popoverContent={
+                    <Value
+                      value={entry.name}
+                      className="font-mono text-xs"
+                      showCopyButton
+                      portalId="expression-value"
+                    />
+                  }
+                />
+              )}
+              {entry.name && ', '}
+              {entry.serviceName && entry.handlerName && (
+                <ServiceTarget
+                  scope={entry.scope}
+                  service={entry.serviceName}
+                  serviceKey={entry.serviceKey}
+                  handler={entry.handlerName}
+                  showHandler={false}
+                  density="compact"
+                  className="mx-0.5"
+                  chipClassName="font-sans text-2xs not-italic"
+                />
+              )}
+            </>
+          }
+          chain={
+            <Expression
+              name={'.' + entry.handlerName}
+              operationSymbol=""
+              className="pr-0 [&>*>*>*]:flex-auto"
+              input={
+                <LazyJournalEntryPayload.Input
+                  invocationId={invocation?.id}
+                  entry={entry}
+                  title="Input"
+                  isBase64
+                />
+              }
+            />
+          }
+          className="min-w-0"
+        />
+        {entry.invocationId && (
+          <InvocationId id={entry.invocationId} className="-ml-1" size="icon" />
+        )}
+        {duration && invokeTime && !isPast && (
+          <div className="ml-auto inline-flex items-center gap-[0.5ch] truncate font-sans text-xs">
+            {!isPast && <span className="font-normal text-muted">in </span>}
+            <DateTooltip
+              date={new Date(invokeTime)}
+              title={'Call scheduled at'}
+            >
+              {duration}
+            </DateTooltip>
+            {isPast && <span className="font-normal text-muted"> ago</span>}
+          </div>
+        )}
+      </div>
+      <ExpandInvocationButton
+        invocationId={entry.invocationId}
+        parentInvocationId={invocation?.id}
       />
-      {entry.invocationId && (
-        <InvocationId id={entry.invocationId} className="-ml-1" size="icon" />
-      )}
-      {duration && invokeTime && !isPast && (
-        <div className="ml-auto inline-flex items-center gap-[0.5ch] truncate font-sans text-xs">
-          {!isPast && <span className="font-normal text-muted">in </span>}
-          <DateTooltip date={new Date(invokeTime)} title={'Call scheduled at'}>
-            {duration}
-          </DateTooltip>
-          {isPast && <span className="font-normal text-muted"> ago</span>}
-        </div>
-      )}
-    </div>
+    </>
   );
 }
