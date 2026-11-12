@@ -1,5 +1,6 @@
 import type {
   Invocation,
+  InvocationStatus,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
 import { Ellipsis } from '@restate/ui-loading';
@@ -27,18 +28,31 @@ import { RestateError } from '@restate/util-errors';
 const entryTooltipStyles = tv({
   base: 'flex h-full',
 });
+
+// For a pending Call or Attach, what the invocation it waits on is doing when
+// that is why nothing moves.
+const TARGET_INVOCATION_NOTES: Partial<Record<InvocationStatus, string>> = {
+  suspended: 'Waiting on a suspended invocation',
+  paused: 'Waiting on a paused invocation',
+  'backing-off': 'Waiting on an invocation that is backing off after a failure',
+  pending: 'Waiting on an invocation that is queued',
+  scheduled: 'Waiting on a scheduled invocation',
+};
+
 export function EntryTooltip({
   className,
   children,
   entry,
   invocation,
   isCopiedFromRestart,
+  targetInvocationStatus,
 }: {
   entry?: JournalEntryV2;
   invocation?: Invocation;
   className?: string;
   children: ReactElement<DOMAttributes<HTMLElement>, string>;
   isCopiedFromRestart?: boolean;
+  targetInvocationStatus?: InvocationStatus;
 }) {
   if (!entry) {
     return children;
@@ -51,6 +65,7 @@ export function EntryTooltip({
           entry={entry}
           invocation={invocation}
           isCopiedFromRestart={isCopiedFromRestart}
+          targetInvocationStatus={targetInvocationStatus}
         />
       }
       className={entryTooltipStyles({ className })}
@@ -67,12 +82,14 @@ function EntryContent({
   entry,
   invocation,
   isCopiedFromRestart,
+  targetInvocationStatus,
 }: {
   entry: JournalEntryV2;
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
   isCopiedFromRestart?: boolean;
+  targetInvocationStatus?: InvocationStatus;
 }) {
   const isPoint = !entry.end && !entry.isPending;
   const { isAmbiguous: entryCompletionIsAmbiguous, mode } =
@@ -92,6 +109,9 @@ function EntryContent({
           ? ENTRY_EVENTS_TITLES
           : {};
   const title = categoryTitles[String(entry.type)];
+  const targetInvocationNote = targetInvocationStatus
+    ? TARGET_INVOCATION_NOTES[targetInvocationStatus]
+    : undefined;
   return (
     <div className="flex max-w-6xl flex-col gap-3">
       <div className="text-base font-semibold">
@@ -179,6 +199,9 @@ function EntryContent({
           </div>
         </div>
       </div>
+      {targetInvocationNote && (
+        <div className="font-medium">{targetInvocationNote}</div>
+      )}
       {entry.type === 'Event: TransientError' && entry.error && (
         <ErrorBanner
           error={

@@ -1,5 +1,6 @@
 import type {
   components,
+  InvocationStatus,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
 import { Dispatch, memo, Suspense, useCallback, useId, useState } from 'react';
@@ -194,26 +195,30 @@ export function JournalV2({
   });
 
   const referencedInvocationIds = getReferencedInvocationIds(data);
-  useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
-    refetchOnMount: true,
-    staleTime: 0,
-    refetchInterval(query) {
-      if (
-        isLive &&
-        (query.state.status !== 'success' ||
-          hasNonCompletedReferencedInvocations(
-            referencedInvocationIds,
-            query.state.data?.invocations,
-          ))
-      ) {
-        return 1000;
-      }
+  const { data: referencedInvocationStatuses } = useWarmInvocationStatusDetails(
+    referencedInvocationIds,
+    invocationId,
+    {
+      refetchOnMount: true,
+      staleTime: 0,
+      refetchInterval(query) {
+        if (
+          isLive &&
+          (query.state.status !== 'success' ||
+            hasNonCompletedReferencedInvocations(
+              referencedInvocationIds,
+              query.state.data?.invocations,
+            ))
+        ) {
+          return 1000;
+        }
 
-      return false;
+        return false;
+      },
+      refetchIntervalInBackground: false,
+      refetchOnWindowFocus: false,
     },
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: false,
-  });
+  );
 
   const hiddenEntryMatchersByInvocation = useHiddenEntryMatchers(data);
 
@@ -581,6 +586,9 @@ export function JournalV2({
                                 relatedEntriesByInvocation={
                                   relatedEntriesByInvocation
                                 }
+                                referencedInvocations={
+                                  referencedInvocationStatuses?.invocations
+                                }
                               />
                             </ScrollableTimeline>
                           </ContentPanelSection>
@@ -817,12 +825,17 @@ function VirtualizedTimeline({
   entriesWithoutInput,
   data,
   relatedEntriesByInvocation,
+  referencedInvocations,
 }: {
   virtualItems: VirtualItem[];
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
+  referencedInvocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >;
 }) {
   return (
     <div
@@ -840,6 +853,15 @@ function VirtualizedTimeline({
             ? relatedEntriesByInvocation
                 .get(entryInvocationId)
                 ?.get(entry.index)
+            : undefined;
+        // A pending Call or Attach waits on another invocation, so its bar
+        // shows that invocation's status (suspended, paused, backing off…).
+        const targetInvocationStatus =
+          entry?.isPending &&
+          isReferencedInvocationEntry(entry) &&
+          entry.type !== 'OneWayCall' &&
+          entry.invocationId
+            ? referencedInvocations?.[entry.invocationId]?.status
             : undefined;
 
         return (
@@ -859,6 +881,7 @@ function VirtualizedTimeline({
               entry={entry}
               invocation={data?.[entryInvocationId]}
               precomputedRelatedEntries={relatedEntries}
+              targetInvocationStatus={targetInvocationStatus}
             />
           </div>
         );
@@ -871,6 +894,7 @@ const TimelineContainer = memo(function TimelineContainer({
   entry,
   invocation,
   precomputedRelatedEntries,
+  targetInvocationStatus,
 }: {
   invocationId: string;
   entry?: JournalEntryV2;
@@ -878,6 +902,7 @@ const TimelineContainer = memo(function TimelineContainer({
     typeof useGetInvocationsJournalWithInvocationsV2
   >['data'][string];
   precomputedRelatedEntries?: JournalEntryV2[];
+  targetInvocationStatus?: InvocationStatus;
 }) {
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
@@ -886,6 +911,7 @@ const TimelineContainer = memo(function TimelineContainer({
         entry={entry}
         invocation={invocation}
         precomputedRelatedEntries={precomputedRelatedEntries}
+        targetInvocationStatus={targetInvocationStatus}
       />
     </div>
   );

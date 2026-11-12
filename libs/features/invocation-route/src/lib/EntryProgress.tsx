@@ -1,5 +1,6 @@
 import type {
   Invocation,
+  InvocationStatus,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
@@ -263,13 +264,29 @@ function getPointVariant(entry?: JournalEntryV2) {
   }
 }
 
-function getLineVariant(entry?: JournalEntryV2, invocation?: Invocation) {
+function getLineVariant(
+  entry?: JournalEntryV2,
+  invocation?: Invocation,
+  targetInvocationStatus?: InvocationStatus,
+) {
   if (entry?.isRetrying) {
     return invocation?.status === 'backing-off' ? 'backingOff' : 'warning';
   }
 
   if (entry?.resultType === 'failure') {
     return 'danger';
+  }
+  switch (targetInvocationStatus) {
+    case 'suspended':
+      return 'idleNeutral';
+    case 'paused':
+      return 'idleWarning';
+    case 'backing-off':
+      return 'backingOff';
+    case 'pending':
+      return 'idlePending';
+    case 'scheduled':
+      return 'default';
   }
   if (
     entry?.type === 'Suspended' ||
@@ -309,6 +326,8 @@ export function EntryProgress(
       typeof useGetInvocationJournalWithInvocationV2
     >['data'];
     precomputedRelatedEntries?: JournalEntryV2[];
+    /** Status of the invocation a pending Call or Attach waits on */
+    targetInvocationStatus?: InvocationStatus;
   }>,
 ) {
   return (
@@ -340,6 +359,7 @@ function InnerEntryProgress({
   entry,
   invocation,
   precomputedRelatedEntries,
+  targetInvocationStatus,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -349,6 +369,7 @@ function InnerEntryProgress({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
   precomputedRelatedEntries?: JournalEntryV2[];
+  targetInvocationStatus?: InvocationStatus;
 }>) {
   const { dataUpdatedAt, isLive, start, end } = useJournalTimelineContext();
 
@@ -477,7 +498,11 @@ function InnerEntryProgress({
             <Point variant={getPointVariant(entry)} />
           ) : (
             <Line
-              variant={getLineVariant(entry, invocation)}
+              variant={getLineVariant(
+                entry,
+                invocation,
+                targetInvocationStatus,
+              )}
               isAmbiguous={entryCompletionIsAmbiguous}
             >
               {isPending && (
@@ -506,6 +531,7 @@ function InnerEntryProgress({
           entry={entry}
           invocation={invocation}
           className="absolute h-full w-full"
+          targetInvocationStatus={targetInvocationStatus}
         >
           <div className="h-full w-full" />
         </EntryTooltip>
