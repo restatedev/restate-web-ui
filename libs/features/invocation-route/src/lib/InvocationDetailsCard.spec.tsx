@@ -133,21 +133,18 @@ describe('InvocationDetailsCard', () => {
   });
 
   it('labels a Session Object by the metadata its SDK declares', () => {
-    services.current = new Map([
-      [
-        'notes',
-        {
-          name: 'notes',
-          ty: 'VirtualObject',
-          handlers: [],
-          revision: 1,
-          metadata: {
-            'dev.restate.tooling.journal.hidden.names': 'sync',
-            'dev.restate.tooling.journal.hidden.name.prefix': 'v22/',
-          },
-        } as Service,
-      ],
-    ]);
+    const notes: Service = {
+      name: 'notes',
+      ty: 'VirtualObject',
+      handlers: [],
+      revision: 1,
+      deployment_id: 'dp_notes',
+      metadata: {
+        'dev.restate.tooling.journal.hidden.names': 'sync',
+        'dev.restate.tooling.journal.hidden.name.prefix': 'v22/',
+      },
+    };
+    services.current = new Map([[notes.name, notes]]);
 
     render(
       <MemoryRouter>
