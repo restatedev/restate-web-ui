@@ -3,7 +3,18 @@ import type {
   InvocationStatus,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
-import { Dispatch, memo, Suspense, useCallback, useId, useState } from 'react';
+import {
+  Dispatch,
+  memo,
+  RefObject,
+  Suspense,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
+import { useLocation } from 'react-router';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { getDuration, SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { Link } from '@restate/ui-link';
@@ -30,6 +41,7 @@ import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util-styles';
 import {
   isCompletedInvocationStatus,
+  useGetPausedError,
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
@@ -131,6 +143,27 @@ function hasNonCompletedReferencedInvocations(
     const invocation = invocations?.[invocationId];
     return !isCompletedInvocationStatus(invocation?.status);
   });
+}
+
+function findCommandRow(
+  entries: CombinedJournalEntry[],
+  invocationId: string,
+  commandIndex?: number,
+) {
+  if (typeof commandIndex !== 'number') {
+    return -1;
+  }
+  return entries.findIndex(
+    ({ invocationId: entryInvocationId, entry }) =>
+      entryInvocationId === invocationId &&
+      entry?.category === 'command' &&
+      entry.commandIndex === commandIndex,
+  );
+}
+
+function getCommandIndexFromHash(hash: string) {
+  const match = /^#command-(\d+)$/.exec(hash);
+  return match ? Number(match[1]) : undefined;
 }
 
 function getJournalEntryKey(entry: JournalEntryV2 | undefined, index: number) {
@@ -335,6 +368,55 @@ export function JournalV2({
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
+  const entriesListRef = useRef<HTMLDivElement>(null);
+
+  const { data: pausedErrorData } = useGetPausedError(invocationId, {
+    enabled: journalAndInvocationData?.status === 'paused',
+  });
+  const failureRowIndex = findCommandRow(
+    entriesWithoutInput,
+    invocationId,
+    journalAndInvocationData?.last_failure_related_command_index ??
+      pausedErrorData?.relatedCommandIndex,
+  );
+  const failureRow =
+    failureRowIndex >= 0
+      ? virtualizer.measurementsCache[failureRowIndex]
+      : undefined;
+
+  // Rows outside the viewport aren't rendered, so a `#command-N` link can't
+  // rely on the browser finding the element: scroll to the row's offset.
+  const { hash, key: locationKey } = useLocation();
+  const scrolledLocationKey = useRef<string>(undefined);
+  useEffect(() => {
+    if (!withTimeline || scrolledLocationKey.current === locationKey) {
+      return;
+    }
+    const row =
+      virtualizer.measurementsCache[
+        findCommandRow(
+          entriesWithoutInput,
+          invocationId,
+          getCommandIndexFromHash(hash),
+        )
+      ];
+    const list = entriesListRef.current;
+    if (!row || !list) {
+      return;
+    }
+    scrolledLocationKey.current = locationKey;
+    const listTop = list.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: listTop + row.start + row.size / 2 - window.innerHeight / 2,
+    });
+  }, [
+    withTimeline,
+    hash,
+    locationKey,
+    entriesWithoutInput,
+    invocationId,
+    virtualizer,
+  ]);
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 
@@ -530,10 +612,12 @@ export function JournalV2({
                             style={{ minHeight: totalSize }}
                           >
                             <VirtualizedEntries
+                              ref={entriesListRef}
                               virtualItems={virtualItems}
                               totalSize={totalSize}
                               entriesWithoutInput={entriesWithoutInput}
                               data={data}
+                              failureRow={failureRow}
                             />
                             {journalAndInvocationData && (
                               <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">
@@ -762,24 +846,39 @@ function ReturnToLiveButton({
 }
 
 function VirtualizedEntries({
+  ref,
   virtualItems,
   totalSize,
   entriesWithoutInput,
   data,
+  failureRow,
 }: {
+  ref: RefObject<HTMLDivElement | null>;
   virtualItems: VirtualItem[];
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
+  failureRow?: VirtualItem;
 }) {
   return (
     <div
+      ref={ref}
       className="overflow-clip"
       style={{
         height: totalSize,
         position: 'relative',
       }}
     >
+      {failureRow && (
+        // Where the failing row is, rendered or not, so the failure marker
+        // above the journal can point at it.
+        <div
+          data-last-failure-position
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0"
+          style={{ top: failureRow.start, height: failureRow.size }}
+        />
+      )}
       {virtualItems.map((virtualItem) => {
         const combinedEntry = entriesWithoutInput[virtualItem.index];
         if (!combinedEntry) return null;

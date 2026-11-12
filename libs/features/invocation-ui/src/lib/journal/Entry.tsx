@@ -275,9 +275,10 @@ export const Entry = memo(function Entry({
               ),
             ),
         })}
-        {...(entry.category === 'command' && {
-          id: `command-${entry.commandIndex}`,
-        })}
+        {...(entry.category === 'command' &&
+          depth === 0 && {
+            id: `command-${entry.commandIndex}`,
+          })}
       >
         <div
           style={{ width: compact ? '2ch' : `${numOfDigits + 2}ch` }}

@@ -411,6 +411,7 @@ function Anchor({
     // the stem there so it continues cleanly from the notch tip to the row.
     const NOTCH_PX = 7;
     const bottomElement = () =>
+      document.querySelector('[data-last-failure-position]') ??
       document.querySelector('[data-last-failure=true]') ??
       document.querySelector('[data-last-failure-fallback]');
     const topElement = () => document.querySelector('#last-failure-section');
