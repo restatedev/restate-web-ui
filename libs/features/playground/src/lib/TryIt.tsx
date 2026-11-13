@@ -67,11 +67,14 @@ function afterPendingDelay(callback: () => void) {
   return () => clearTimeout(timeout);
 }
 
-function isTextContentType(contentType: string) {
+export function isTextContentType(contentType: string) {
   return isJsonContentType(contentType) || /^text\//i.test(contentType);
 }
 
-function initialParameterValue(scope: string, parameter: ContractParameter) {
+export function initialParameterValue(
+  scope: string,
+  parameter: ContractParameter,
+) {
   const shared = parameter.role
     ? sharedRoleValue(scope, parameter.role)
     : undefined;
@@ -111,7 +114,7 @@ export function exampleBody(
   return stringifyExample(generateExample(body.schema, { root: document }));
 }
 
-function bodyModelUri(
+export function bodyModelUri(
   service: string,
   handlerName: string,
   contentType: string,
@@ -120,7 +123,7 @@ function bodyModelUri(
   return `inmemory://playground/${segment(service)}/${segment(handlerName)}.${isJsonContentType(contentType) ? 'json' : 'txt'}`;
 }
 
-function editorSchemas(service: string, contract: ServiceContract) {
+export function editorSchemas(service: string, contract: ServiceContract) {
   const bodies = [
     ...contract.handlers.map((handler) => ({
       name: handler.name,
@@ -143,7 +146,7 @@ function editorSchemas(service: string, contract: ServiceContract) {
   });
 }
 
-function parameterPlaceholder(
+export function parameterPlaceholder(
   parameter: ContractParameter,
   serviceType?: RestateServiceType,
 ) {
@@ -164,7 +167,7 @@ function parameterPlaceholder(
   }
 }
 
-function delayError(value: string) {
+export function delayError(value: string) {
   if (!value) {
     return undefined;
   }
@@ -183,7 +186,7 @@ function parameterType(parameter: ContractParameter) {
   return 'string';
 }
 
-function roleDescription(
+export function roleDescription(
   parameter: ContractParameter,
   serviceType?: RestateServiceType,
 ) {
@@ -239,7 +242,7 @@ function ParameterDetails({
   );
 }
 
-async function execute(
+export async function execute(
   fetcher: typeof fetch,
   request: ReturnType<typeof buildRequest>,
   signal: AbortSignal,
@@ -271,7 +274,7 @@ async function execute(
   };
 }
 
-function randomId() {
+export function randomId() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;

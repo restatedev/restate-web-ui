@@ -24,6 +24,7 @@ export function BodyEditor({
   onSubmit,
   ariaLabel,
   className,
+  maxHeight,
 }: {
   modelUri: string;
   value: string;
@@ -33,6 +34,7 @@ export function BodyEditor({
   onSubmit?: () => void;
   ariaLabel: string;
   className?: string;
+  maxHeight?: number;
 }) {
   const hydrated = useHydrated();
   const loading = (
@@ -61,6 +63,7 @@ export function BodyEditor({
               onChange={onChange}
               onSubmit={onSubmit}
               ariaLabel={ariaLabel}
+              maxHeight={maxHeight}
             />
           </Suspense>
         </ErrorBoundary>

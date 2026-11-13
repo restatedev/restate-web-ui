@@ -59,7 +59,7 @@ function isNotFound(reply: PlaygroundResult) {
   return reply.kind === 'response' && reply.status === 404;
 }
 
-const STATE_TITLE: Record<InvocationState, string> = {
+export const STATE_TITLE: Record<InvocationState, string> = {
   succeeded: 'Invocation succeeded',
   failed: 'Invocation failed',
   running: 'Invocation is running',
@@ -102,7 +102,7 @@ const stateStyles = tv({
   },
 });
 
-function StateIcon({ state }: { state: InvocationState }) {
+export function StateIcon({ state }: { state: InvocationState }) {
   const styles = stateStyles({ state });
   return (
     <span className={styles.badge()}>
@@ -154,7 +154,7 @@ export function OpenInvocationLink({ invocationId }: { invocationId: string }) {
   );
 }
 
-export function InvocationPanel({
+export function useInvocationTracking({
   invocationId,
   executionTime,
   canTrack,
@@ -283,6 +283,37 @@ export function InvocationPanel({
     isScheduled && scheduledAt !== undefined
       ? `It starts ${formatCompactDateTime(new Date(scheduledAt))}. `
       : '';
+
+  return {
+    tracking,
+    state,
+    failure,
+    startsAt,
+    scheduledAt,
+    isScheduled,
+    checkAgain,
+  };
+}
+
+export type TrackingState = ReturnType<typeof useInvocationTracking>;
+export type { InvocationState };
+
+export function InvocationPanel({
+  invocationId,
+  executionTime,
+  canTrack,
+  runTool,
+}: {
+  invocationId: string;
+  executionTime?: string;
+  canTrack: boolean;
+  runTool: (
+    tool: InvocationTool,
+    signal: AbortSignal,
+  ) => Promise<PlaygroundResult | undefined>;
+}) {
+  const { tracking, state, failure, startsAt, checkAgain } =
+    useInvocationTracking({ invocationId, executionTime, canTrack, runTool });
 
   return (
     <div className="flex flex-col rounded-xl border bg-surface">

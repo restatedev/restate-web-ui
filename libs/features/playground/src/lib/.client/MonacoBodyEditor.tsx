@@ -33,6 +33,7 @@ export function MonacoBodyEditor({
   onChange,
   onSubmit,
   ariaLabel,
+  maxHeight = 420,
 }: {
   modelUri: string;
   value: string;
@@ -41,11 +42,13 @@ export function MonacoBodyEditor({
   onChange: (value: string) => void;
   onSubmit?: () => void;
   ariaLabel: string;
+  maxHeight?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const onChangeRef = useRef(onChange);
   const onSubmitRef = useRef(onSubmit);
+  const maxHeightRef = useRef(maxHeight);
   const valueRef = useRef(value);
 
   useEffect(() => {
@@ -111,7 +114,7 @@ export function MonacoBodyEditor({
     });
 
     const resize = () => {
-      const height = `${Math.min(Math.max(editor.getContentHeight(), 96), 420)}px`;
+      const height = `${Math.min(Math.max(editor.getContentHeight(), 96), maxHeightRef.current)}px`;
       if (element.style.height !== height) {
         element.style.height = height;
       }

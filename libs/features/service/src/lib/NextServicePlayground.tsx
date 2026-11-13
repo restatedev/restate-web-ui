@@ -22,10 +22,18 @@ import {
   PLAYGROUND_HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
 } from '@restate/util-panel';
+import { tv } from '@restate/util-styles';
+import { useIsPlaygroundRedesign } from './QuickRunPlayButton';
 
 const LazyPlayground = lazy(() =>
   import('@restate/features-playground').then((module) => ({
     default: module.Playground,
+  })),
+);
+
+const LazyFullPlayground = lazy(() =>
+  import('@restate/features-playground').then((module) => ({
+    default: module.FullPlayground,
   })),
 );
 
@@ -46,6 +54,8 @@ function PlaygroundStatus({
 }
 
 function Playground(props: ComponentProps<typeof LazyPlayground>) {
+  const isRedesign = useIsPlaygroundRedesign();
+  const Component = isRedesign ? LazyFullPlayground : LazyPlayground;
   return (
     <ErrorBoundary
       key={props.service}
@@ -63,7 +73,7 @@ function Playground(props: ComponentProps<typeof LazyPlayground>) {
           </PlaygroundStatus>
         }
       >
-        <LazyPlayground {...props} />
+        <Component {...props} />
       </Suspense>
     </ErrorBoundary>
   );
@@ -131,6 +141,7 @@ export function NextServicePlaygroundPanel({ service }: { service: string }) {
     PLAYGROUND_HANDLER_QUERY_PARAM,
   );
   const { refetch, isFetching } = useServiceOpenApi(service);
+  const isRedesign = useIsPlaygroundRedesign();
 
   return (
     <>
@@ -160,9 +171,11 @@ export function NextServicePlaygroundPanel({ service }: { service: string }) {
         </ComplementaryClose>
       </ComplementaryHeader>
       <div className="-mx-2 flex min-h-full flex-col">
-        <h2 className="px-4 pt-1 text-lg font-semibold text-primary">
-          {service}
-        </h2>
+        {!isRedesign && (
+          <h2 className="px-4 pt-1 text-lg font-semibold text-primary">
+            {service}
+          </h2>
+        )}
         <Playground
           service={service}
           handler={handler}
@@ -175,17 +188,26 @@ export function NextServicePlaygroundPanel({ service }: { service: string }) {
   );
 }
 
+const sheetStyles = tv({
+  base: 'p-0',
+  variants: {
+    isRedesign: { true: 'h-[76vh] lg:w-[min(60rem,88vw)]', false: '' },
+  },
+});
+
 export function NextServicePlaygroundSheet({ service }: { service: string }) {
   const { handler, onSelect, setSearchParams } = usePlaygroundSelection(
     PLAYGROUND_HANDLER_QUERY_PARAM,
   );
+
+  const isRedesign = useIsPlaygroundRedesign();
 
   return (
     <QueryDialog
       query={SERVICE_PLAYGROUND_QUERY_PARAM}
       onCloseQueryParam={clearPlaygroundHandler}
     >
-      <DialogContent variant="sheet" className="p-0">
+      <DialogContent variant="sheet" className={sheetStyles({ isRedesign })}>
         <Playground
           service={service}
           handler={handler}
@@ -220,6 +242,13 @@ export function NextServicePlaygroundSheet({ service }: { service: string }) {
   );
 }
 
+const embedStyles = tv({
+  base: 'mx-4 mt-px mb-4 overflow-clip rounded-xl border border-default bg-surface shadow-xs',
+  variants: {
+    isRedesign: { true: 'flex', false: 'min-h-[32rem]' },
+  },
+});
+
 export function NextServicePlaygroundEmbed({
   service,
   className,
@@ -230,10 +259,11 @@ export function NextServicePlaygroundEmbed({
   const { handler, onSelect } = usePlaygroundSelection(HANDLER_QUERY_PARAM, {
     handlersOnly: true,
   });
+  const isRedesign = useIsPlaygroundRedesign();
 
   return (
     <div className={className}>
-      <div className="mx-4 mt-px mb-4 min-h-[32rem] overflow-clip rounded-xl border border-default bg-surface shadow-xs">
+      <div className={embedStyles({ isRedesign })}>
         <Playground
           service={service}
           handler={handler}

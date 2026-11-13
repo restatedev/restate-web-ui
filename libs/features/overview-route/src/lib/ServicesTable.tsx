@@ -11,7 +11,9 @@ import { useRestateContext } from '@restate/features-restate-context';
 import {
   Handler as ServiceHandler,
   PlaygroundIconLink,
+  QuickRunPlayButton,
   ServiceType,
+  useIsPlaygroundRedesign,
 } from '@restate/features-service';
 import { ServiceTarget } from '@restate/features-service-target';
 import {
@@ -232,9 +234,18 @@ function PlaygroundLink({
   isOnboarding?: boolean;
   OnboardingGuide?: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
-  const link = (
+  const isQuickRun = useIsPlaygroundRedesign();
+  const label = `Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`;
+  const link = isQuickRun ? (
+    <QuickRunPlayButton
+      aria-label={label}
+      service={serviceName}
+      handler={handlerName}
+      isHighlighted={isOnboarding}
+    />
+  ) : (
     <PlaygroundIconLink
-      aria-label={`Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`}
+      aria-label={label}
       href={panelHref({ playground: serviceName, handler: handlerName })}
       isHighlighted={isOnboarding}
     />
