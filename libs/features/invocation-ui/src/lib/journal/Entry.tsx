@@ -253,8 +253,9 @@ export const Entry = memo(function Entry({
               : 'none',
           hasError:
             Boolean(
-              invocation.last_failure_related_command_index &&
-              invocation?.last_failure_related_command_index ===
+              typeof invocation.last_failure_related_command_index ===
+                'number' &&
+              invocation.last_failure_related_command_index ===
                 entry.commandIndex,
             ) ||
             Boolean(
@@ -275,9 +276,10 @@ export const Entry = memo(function Entry({
               ),
             ),
         })}
-        {...(entry.category === 'command' && {
-          id: `command-${entry.commandIndex}`,
-        })}
+        {...(entry.category === 'command' &&
+          depth === 0 && {
+            id: `command-${entry.commandIndex}`,
+          })}
       >
         <div
           style={{ width: compact ? '2ch' : `${numOfDigits + 2}ch` }}

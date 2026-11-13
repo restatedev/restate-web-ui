@@ -107,6 +107,28 @@ function Component() {
         )
       : undefined;
 
+  const currentQueryParams = useMemo(
+    () => Array.from(searchParams.keys()),
+    [searchParams],
+  );
+  const relatedCommandIndex =
+    journalAndInvocationData?.last_failure_related_command_index ??
+    pausedErrorData?.relatedCommandIndex;
+  const relatedCommand = useMemo(
+    () =>
+      typeof relatedCommandIndex === 'number'
+        ? journalAndInvocationData?.journal?.entries?.find(
+            (entry) =>
+              entry.category === 'command' &&
+              entry.commandIndex === relatedCommandIndex,
+          )
+        : undefined,
+    [journalAndInvocationData, relatedCommandIndex],
+  );
+  const hasRelatedCommandRow = Boolean(
+    relatedCommand && relatedCommand.type !== 'Input',
+  );
+
   const lastError = getRestateError(journalAndInvocationData) ?? pausedError;
   const shouldShowFailure =
     Boolean(lastError) &&
@@ -265,10 +287,7 @@ function Component() {
                   }}
                 />
               </div>
-              {Boolean(
-                journalAndInvocationData?.last_failure_related_command_index ??
-                pausedErrorData?.relatedCommandIndex,
-              ) && (
+              {hasRelatedCommandRow && (
                 <div
                   className="-translate-y-2 px-2"
                   style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
@@ -276,12 +295,10 @@ function Component() {
                   <Link
                     variant="icon"
                     className="inline-flex rounded-md px-2 text-xs"
-                    href={`#command-${journalAndInvocationData?.last_failure_related_command_index ?? pausedErrorData?.relatedCommandIndex}`}
+                    preserveQueryParams={currentQueryParams}
+                    href={`#command-${relatedCommandIndex}`}
                   >
-                    Go to the related line (#
-                    {journalAndInvocationData?.last_failure_related_command_index ??
-                      pausedErrorData?.relatedCommandIndex}
-                    )
+                    Go to the related line (#{relatedCommandIndex})
                     <Icon
                       name={IconName.ChevronDown}
                       className="ml-1 h-4 w-4"
@@ -411,6 +428,7 @@ function Anchor({
     // the stem there so it continues cleanly from the notch tip to the row.
     const NOTCH_PX = 7;
     const bottomElement = () =>
+      document.querySelector('[data-last-failure-position]') ??
       document.querySelector('[data-last-failure=true]') ??
       document.querySelector('[data-last-failure-fallback]');
     const topElement = () => document.querySelector('#last-failure-section');
@@ -478,13 +496,16 @@ function Anchor({
     };
     observePanels();
 
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          observePanels();
-          updateStyles();
-        }
+    let frame = 0;
+    const observer = new MutationObserver(() => {
+      if (frame) {
+        return;
       }
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        observePanels();
+        updateStyles();
+      });
     });
 
     observer.observe(document.body, {
@@ -497,6 +518,7 @@ function Anchor({
       window.removeEventListener('resize', updateStyles);
       resizeObserver.disconnect();
       observer.disconnect();
+      cancelAnimationFrame(frame);
       root?.style.removeProperty('--failure-anchor-x');
       root?.style.removeProperty('--failure-banner-shift');
       root?.style.removeProperty('--failure-notch-x');
