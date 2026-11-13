@@ -121,6 +121,8 @@ function findBestTickInterval(
 /**
  * Selects the next major-tick interval using hysteresis and cooldown.
  */
+const FAR_OFF_SPACING_FACTOR = 4;
+
 export function selectTickInterval(
   visibleWindowDurationMs: number,
   widthPx: number,
@@ -152,6 +154,14 @@ export function selectTickInterval(
     currentSpacingPx <= HYSTERESIS_HIGH_PX
   ) {
     return currentIntervalMs;
+  }
+
+  if (
+    currentSpacingPx * FAR_OFF_SPACING_FACTOR < lowThresholdPx ||
+    (timelineMode !== 'follow-latest' &&
+      currentSpacingPx > HYSTERESIS_HIGH_PX * FAR_OFF_SPACING_FACTOR)
+  ) {
+    return findBestTickInterval(visibleWindowDurationMs, widthPx);
   }
 
   if (!bypassCooldown && nowMs - lastChangeTimeMs < CHANGE_COOLDOWN_MS) {

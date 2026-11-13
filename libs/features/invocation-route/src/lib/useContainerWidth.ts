@@ -1,14 +1,15 @@
-import { RefObject, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export function useContainerWidth(): [
-  ref: RefObject<HTMLDivElement | null>,
+  ref: (node: HTMLDivElement | null) => void,
   width: number,
 ] {
-  const ref = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);
+  const observerRef = useRef<ResizeObserver | null>(null);
 
-  useEffect(() => {
-    const node = ref.current;
+  const ref = useCallback((node: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
     if (!node) return;
 
     const observer = new ResizeObserver((entries) => {
@@ -18,9 +19,8 @@ export function useContainerWidth(): [
       }
     });
     observer.observe(node);
+    observerRef.current = observer;
     setWidth(node.getBoundingClientRect().width);
-
-    return () => observer.disconnect();
   }, []);
 
   return [ref, width];
