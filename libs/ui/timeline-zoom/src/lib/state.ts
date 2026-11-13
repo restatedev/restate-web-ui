@@ -80,10 +80,9 @@ export function deriveTimelineFrame(
     0,
     inputs.rangeEndMs - inputs.rangeStartMs,
   );
-  const observedRangeDurationMs = Math.max(
-    state.observedRangeDurationMs,
-    rawRangeDurationMs,
-  );
+  const observedRangeDurationMs = inputs.isComplete
+    ? rawRangeDurationMs
+    : Math.max(state.observedRangeDurationMs, rawRangeDurationMs);
 
   const domainWindows = resolveDomainWindows({
     timelineMode,
@@ -378,12 +377,22 @@ export function timelineZoomReducer(
   }
 
   if (action.type === 'sync-inputs') {
-    const derived = deriveTimelineFrame(state, action.inputs);
+    const manualVisibleWindow = state.viewportController.manualVisibleWindow;
+    const viewportController =
+      action.inputs.isComplete &&
+      manualVisibleWindow &&
+      manualVisibleWindow.endMs > action.inputs.rangeEndMs
+        ? INITIAL_VIEWPORT_CONTROLLER_STATE
+        : state.viewportController;
+    const derived = deriveTimelineFrame(
+      { ...state, viewportController },
+      action.inputs,
+    );
     return commitDerivedMemory(
       state,
       derived,
       action.inputs.containerWidthPx,
-      state.viewportController,
+      viewportController,
       action.inputs,
     );
   }
