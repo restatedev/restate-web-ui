@@ -447,7 +447,10 @@ export function JournalV2({
         )
       ];
     const list = entriesListRef.current;
-    if (!row || !list) {
+    if (!list) {
+      return;
+    }
+    if (!row) {
       if (journalAndInvocationData) {
         scrolledLocationKey.current = locationKey;
       }

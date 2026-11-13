@@ -128,6 +128,34 @@ describe('isEntryCompletionAmbiguous', () => {
     });
   });
 
+  it('labels the end when the server leaves off the milliseconds', () => {
+    expect(
+      isEntryCompletionAmbiguous(
+        pendingCall,
+        invocation({
+          status: 'succeeded',
+          completed_at: '2026-11-12T10:01:00Z',
+        }),
+      ),
+    ).toEqual({
+      isAmbiguous: true,
+      mode: 'completion',
+      unambiguousEnd: '2026-11-12T10:01:00Z',
+    });
+  });
+
+  it('ignores a cancel at the entry instant written without milliseconds', () => {
+    expect(
+      isEntryCompletionAmbiguous(
+        pendingCall,
+        invocation({ status: 'running' }, [
+          { ...cancel, start: '2026-11-12T10:00:00Z' } as JournalEntryV2,
+          pendingCall,
+        ]),
+      ),
+    ).toEqual({ isAmbiguous: false });
+  });
+
   it('ends at the pause when it came before the cancel', () => {
     const modified_at = '2026-11-12T10:00:03.000Z';
     expect(

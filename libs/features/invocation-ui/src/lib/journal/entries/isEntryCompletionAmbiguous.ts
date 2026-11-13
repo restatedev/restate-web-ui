@@ -33,10 +33,16 @@ export function isEntryCompletionAmbiguous(
     return { isAmbiguous: false };
   }
 
+  const refEntryStart = refEntry.start
+    ? new Date(refEntry.start).getTime()
+    : undefined;
   const cancelledAfterEntry = getCancelNotifications(
     invocation.journal?.entries,
   ).find(
-    (entry) => entry.start && refEntry.start && entry.start > refEntry.start,
+    (entry) =>
+      entry.start &&
+      refEntryStart !== undefined &&
+      new Date(entry.start).getTime() > refEntryStart,
   );
   const invocationIsCompleted = Boolean(invocation.completed_at);
   const invocationIspaused = Boolean(invocation.status === 'paused');
@@ -62,6 +68,7 @@ export function isEntryCompletionAmbiguous(
       at: String(end!.at),
       time: new Date(String(end!.at)).getTime(),
     }))
+    .filter((end) => Number.isFinite(end.time))
     .sort((a, b) => a.time - b.time);
   const earliestEnd = ends.at(0);
 

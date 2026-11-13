@@ -38,8 +38,6 @@ import { useInvocationsRecent } from '@restate/util-sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { CardGrid } from '@restate/ui-card';
 
-const INPUT_COMMAND_INDEX = 0;
-
 const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
 });
@@ -110,15 +108,26 @@ function Component() {
       : undefined;
 
   const currentQueryParams = useMemo(
-    () => Array.from(new Set(searchParams.keys())),
+    () => Array.from(searchParams.keys()),
     [searchParams],
   );
   const relatedCommandIndex =
     journalAndInvocationData?.last_failure_related_command_index ??
     pausedErrorData?.relatedCommandIndex;
-  const hasRelatedCommandRow =
-    typeof relatedCommandIndex === 'number' &&
-    relatedCommandIndex > INPUT_COMMAND_INDEX;
+  const relatedCommand = useMemo(
+    () =>
+      typeof relatedCommandIndex === 'number'
+        ? journalAndInvocationData?.journal?.entries?.find(
+            (entry) =>
+              entry.category === 'command' &&
+              entry.commandIndex === relatedCommandIndex,
+          )
+        : undefined,
+    [journalAndInvocationData, relatedCommandIndex],
+  );
+  const hasRelatedCommandRow = Boolean(
+    relatedCommand && relatedCommand.type !== 'Input',
+  );
 
   const lastError = getRestateError(journalAndInvocationData) ?? pausedError;
   const shouldShowFailure =
