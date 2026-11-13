@@ -121,7 +121,7 @@ export function InvocationChain({
   const chevron = <Icon name={IconName.ChevronRight} className={separator()} />;
 
   return (
-    <nav aria-label="Call chain" className={base({ className })}>
+    <nav aria-label="Invoked by" className={base({ className })}>
       {!ancestors ? (
         <>
           <Placeholder />

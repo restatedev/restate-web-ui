@@ -81,7 +81,7 @@ describe('InvocationChain', () => {
     expect(url.pathname).toBe('/invocations/inv_pack');
     expect(url.searchParams.get('expand')).toBe('inv_push');
     expect(
-      screen.getByRole('navigation', { name: 'Call chain' }).textContent,
+      screen.getByRole('navigation', { name: 'Invoked by' }).textContent,
     ).toContain('Notify.push()');
   });
 

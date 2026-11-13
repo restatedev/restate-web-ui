@@ -14,7 +14,7 @@ export function InvocationChainCard({
 
   return (
     <Card intent="none" className={className}>
-      <CardHeader title="Call chain" icon={IconName.ListTree} />
+      <CardHeader title="Invoked by" icon={IconName.ListTree} />
       <InvocationChain invocation={invocation} className="px-3 py-2.5" />
     </Card>
   );
