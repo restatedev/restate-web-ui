@@ -16,13 +16,15 @@ import { ServiceTarget } from '@restate/features-service-target';
 import type {
   ContractHandler,
   HandlerMode,
+  InvocationToolKind,
   RestateHandlerKind,
   RestateServiceType,
   ServiceContract,
 } from '@restate/util-openapi';
-import { CodeSamples } from '../CodeSamples';
+import { CodeSamples } from './CodeSamples';
+import { toolId } from './names';
 import { JsonSchemaTree } from '@restate/ui-json-schema';
-import { useServiceContract } from '../useServiceContract';
+import { useServiceContract } from './useServiceContract';
 import type { HandlerRun } from './useHandlerRun';
 
 export function useServiceHandler(
@@ -38,13 +40,23 @@ export function useServiceHandler(
     setSelected(handlerName);
   }
   const handlers = loaded.contract?.handlers ?? [];
-  const handler =
-    handlers.find((candidate) => candidate.name === selected) ?? handlers[0];
+  const tool = loaded.contract?.invocationTools.find(
+    (candidate) => toolId(candidate.kind) === selected,
+  );
+  const handler = tool
+    ? undefined
+    : (handlers.find((candidate) => candidate.name === selected) ??
+      handlers[0]);
   const select = (next: string) => {
     setSelected(next);
-    startTransition(() => onSelect(next, true));
+    startTransition(() =>
+      onSelect(
+        next,
+        handlers.some((candidate) => candidate.name === next),
+      ),
+    );
   };
-  return { ...loaded, handler, select };
+  return { ...loaded, handler, tool, select };
 }
 
 export function LoadingState({
@@ -194,7 +206,7 @@ export function CodeView({
     <div className="[&_code]:text-xs [&_code]:leading-normal">
       <CodeSamples
         samples={{
-          request: runner.request,
+          request: runner.sampleRequest,
           client:
             serviceType && run.availableModes.length > 0
               ? {
@@ -294,14 +306,25 @@ const railItemStyles = tv({
   },
 });
 
+export const TOOL_LABEL: Record<InvocationToolKind, string> = {
+  attach: 'Wait for a result',
+  output: 'Get a result',
+  status: 'Check status',
+};
+
+const railGroupStyles = tv({
+  base: 'px-2.5 pt-1 text-2xs font-medium text-muted uppercase',
+  variants: { isFollowing: { true: 'mt-2', false: '' } },
+});
+
 export function HandlerRail({
   contract,
-  handler,
+  selected,
   handlerKinds,
   onSelect,
 }: {
   contract: ServiceContract;
-  handler: ContractHandler;
+  selected?: string;
   handlerKinds: Map<string, RestateHandlerKind | undefined>;
   onSelect: (name: string) => void;
 }) {
@@ -310,13 +333,11 @@ export function HandlerRail({
       aria-label="Handlers"
       className="hidden w-60 shrink-0 flex-col gap-2 overflow-auto border-r bg-subtle p-3 md:flex"
     >
-      <span className="px-2.5 pt-1 text-2xs font-medium text-muted uppercase">
-        Handlers
-      </span>
+      <span className={railGroupStyles()}>Handlers</span>
       <ul className="flex flex-col gap-0.5">
         {contract.handlers.map((candidate) => {
           const kind = handlerKinds.get(candidate.name);
-          const isSelected = candidate.name === handler.name;
+          const isSelected = candidate.name === selected;
           return (
             <li key={candidate.name}>
               <button
@@ -343,6 +364,33 @@ export function HandlerRail({
           );
         })}
       </ul>
+      {contract.invocationTools.length > 0 && (
+        <>
+          <span className={railGroupStyles({ isFollowing: true })}>
+            Invocations
+          </span>
+          <ul className="flex flex-col gap-0.5">
+            {contract.invocationTools.map((tool) => {
+              const id = toolId(tool.kind);
+              const isSelected = id === selected;
+              return (
+                <li key={tool.kind}>
+                  <button
+                    type="button"
+                    aria-current={isSelected ? 'page' : undefined}
+                    className={railItemStyles({ isSelected })}
+                    onClick={() => onSelect(id)}
+                  >
+                    <span className="truncate text-0.5xs font-medium text-primary">
+                      {TOOL_LABEL[tool.kind]}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
     </nav>
   );
 }

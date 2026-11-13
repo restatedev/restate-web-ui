@@ -6,7 +6,6 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { PopoverContent } from '@restate/ui-popover';
 import { HoverTooltip } from '@restate/ui-tooltip';
-import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import {
   PLAYGROUND_HANDLER_QUERY_PARAM,
   SERVICE_PLAYGROUND_QUERY_PARAM,
@@ -18,12 +17,6 @@ const LazyQuickRun = lazy(() =>
     default: module.QuickRun,
   })),
 );
-
-export function useIsPlaygroundRedesign() {
-  const isNew = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
-  const isRedesign = useIsFeatureFlagEnabled('FEATURE_PLAYGROUND_REDESIGN');
-  return isNew && isRedesign;
-}
 
 const playStyles = tv({
   slots: {

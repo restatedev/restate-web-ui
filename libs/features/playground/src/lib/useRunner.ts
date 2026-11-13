@@ -9,16 +9,16 @@ import {
   type RequestIssue,
   type ServiceContract,
 } from '@restate/util-openapi';
-import { durationToMs } from '../duration';
+import { durationToMs } from './duration';
 import {
   delayError,
   exampleBody as exampleBodyText,
   execute,
   initialParameterValue,
-} from '../TryIt';
-import type { InvocationTool } from '../InvocationPanel';
-import type { PlaygroundResult } from '../ResponseView';
-import { rememberRoleValue } from '../sessionState';
+} from './request';
+import type { InvocationTool } from './invocationTracking';
+import type { PlaygroundResult } from './result';
+import { rememberRoleValue } from './sessionState';
 
 export interface RunRecord {
   id: number;
@@ -37,6 +37,8 @@ export type Draft = {
   bodyMode: 'text' | 'file';
   file?: File;
 };
+
+const API_KEY_PLACEHOLDER = '<API_KEY>';
 
 const drafts = new Map<string, Draft>();
 
@@ -153,6 +155,11 @@ export function useRunner({
   const request = buildRequest(operation, values, {
     baseUrl: ingressUrl,
     apiKey: apiKey || undefined,
+  });
+  const sampleRequest = buildRequest(operation, values, {
+    baseUrl: ingressUrl,
+    apiKey:
+      contract.security.bearer || apiKey ? API_KEY_PLACEHOLDER : undefined,
   });
 
   const run = async (record: Omit<RunRecord, 'result' | 'isRunning'>) => {
@@ -278,6 +285,7 @@ export function useRunner({
     issueFor: (name: string) =>
       issues.find((issue) => issue.field === name)?.message,
     request,
+    sampleRequest,
     bodyText,
     runs,
     latestRun: runs[0],

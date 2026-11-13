@@ -7,9 +7,9 @@ import { tv } from '@restate/util-styles';
 import {
   useInvocationTracking,
   type InvocationState,
-} from '../InvocationPanel';
-import type { PlaygroundResult } from '../ResponseView';
-import { NOT_READY_STATUS } from '../status';
+} from './invocationTracking';
+import type { PlaygroundResult } from './result';
+import { NOT_READY_STATUS } from './status';
 import type { RunRecord } from './useRunner';
 import type { HandlerRun } from './useHandlerRun';
 
@@ -146,6 +146,9 @@ export function viewTone(view: RunView): Tone {
     case 'rejected':
       return 'danger';
     case 'answered':
+      if (isNotReady(view.result)) {
+        return 'neutral';
+      }
       return view.isFailed ? 'danger' : 'success';
     case 'invocation':
       if (view.state === 'succeeded') return 'success';
@@ -154,6 +157,10 @@ export function viewTone(view: RunView): Tone {
         return 'warning';
       return 'running';
   }
+}
+
+function isNotReady(result: PlaygroundResult) {
+  return result.kind === 'response' && result.status === NOT_READY_STATUS;
 }
 
 export function viewTitle(view: RunView) {
@@ -165,6 +172,9 @@ export function viewTitle(view: RunView) {
     case 'rejected':
       return 'Not accepted';
     case 'answered':
+      if (isNotReady(view.result)) {
+        return 'Not finished yet';
+      }
       return view.isFailed ? 'Failed' : 'Succeeded';
     case 'invocation':
       return view.state ? STATE_LABEL[view.state] : 'Starting…';

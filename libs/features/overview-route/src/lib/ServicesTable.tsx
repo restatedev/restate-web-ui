@@ -13,7 +13,6 @@ import {
   PlaygroundIconLink,
   QuickRunPlayButton,
   ServiceType,
-  useIsPlaygroundRedesign,
 } from '@restate/features-service';
 import { ServiceTarget } from '@restate/features-service-target';
 import {
@@ -35,7 +34,10 @@ import {
 } from '@restate/ui-table';
 import { HoverTooltip, RelativeDate } from '@restate/ui-tooltip';
 import { toServiceAndHandlerInvocationsHref } from '@restate/util-invocation-links';
-import { useOnboarding } from '@restate/util-feature-flag';
+import {
+  useIsFeatureFlagEnabled,
+  useOnboarding,
+} from '@restate/util-feature-flag';
 import { panelHref, serviceHref } from '@restate/util-panel';
 import { tv } from '@restate/util-styles';
 import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
@@ -234,7 +236,7 @@ function PlaygroundLink({
   isOnboarding?: boolean;
   OnboardingGuide?: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
-  const isQuickRun = useIsPlaygroundRedesign();
+  const isQuickRun = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
   const label = `Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`;
   const link = isQuickRun ? (
     <QuickRunPlayButton

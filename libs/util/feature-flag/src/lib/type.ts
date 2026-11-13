@@ -6,7 +6,5 @@ export const FEATURE_FLAGS = [
   'FEATURE_INDEXES_V1',
 
   'FEATURE_NEW_PLAYGROUND',
-
-  'FEATURE_PLAYGROUND_REDESIGN',
 ] as const;
 export type FeatureFlag = (typeof FEATURE_FLAGS)[number];

@@ -27,9 +27,4 @@ export const FEATURE_FLAG_METADATA: Record<FeatureFlag, FeatureFlagMetadata> = {
     description:
       'Use the new built-in playground and schema viewer instead of Stoplight Elements.',
   },
-  FEATURE_PLAYGROUND_REDESIGN: {
-    title: 'Playground redesign',
-    description:
-      'Run handlers from a quick popover on the play button, with a simpler full playground behind it. Needs the new playground.',
-  },
 };

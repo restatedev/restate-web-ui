@@ -6,18 +6,21 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { JsonSchemaTree } from '@restate/ui-json-schema';
 import { Spinner } from '@restate/ui-loading';
 import { SplitButton } from '@restate/ui-split-button';
-import { parameterField } from '@restate/util-openapi';
+import { isJsonContentType, parameterField } from '@restate/util-openapi';
+import { formatBytes } from '@restate/util-intl';
 import type {
   ContractParameter,
   RestateServiceType,
 } from '@restate/util-openapi';
 import { tv } from '@restate/util-styles';
-import { BodyEditor } from '../BodyEditor';
-import { randomId } from '../TryIt';
+import { BodyEditor } from './BodyEditor';
+import { SegmentedControl } from './SegmentedControl';
+import { bodyModelUri, isTextContentType, randomId } from './request';
 import { InfoPeek, Peek } from './floating';
-import type { BaseMode, HandlerRun } from './useHandlerRun';
+import type { BaseMode, HandlerRun, OperationRun } from './useHandlerRun';
 
 const FIELD_LABEL: Partial<Record<string, string>> = {
+  invocationId: 'Invocation ID',
   scope: 'Scope',
   limitKey: 'Limit key',
   idempotencyKey: 'Idempotency key',
@@ -25,6 +28,7 @@ const FIELD_LABEL: Partial<Record<string, string>> = {
 };
 
 const FIELD_PLACEHOLDER: Partial<Record<string, string>> = {
+  invocationId: 'inv_…',
   scope: 'e.g. tenant-a',
   limitKey: 'e.g. user-42',
   idempotencyKey: 'Any unique string',
@@ -62,13 +66,14 @@ const fieldInputStyles = tv({
 });
 
 export function ParamField({
-  run,
+  runner,
+  serviceType,
   parameter,
 }: {
-  run: HandlerRun;
+  runner: HandlerRun['runner'];
+  serviceType?: RestateServiceType;
   parameter: ContractParameter;
 }) {
-  const { runner, serviceType } = run;
   const name = parameterField(parameter);
   const error = runner.issueFor(name);
   const label = fieldLabel(parameter, serviceType);
@@ -128,19 +133,42 @@ export function ParamField({
 }
 
 export function KeyFields({ run }: { run: HandlerRun }) {
-  if (run.mainParameters.length === 0) {
+  return (
+    <ParameterFields
+      runner={run.runner}
+      serviceType={run.serviceType}
+      parameters={run.mainParameters}
+    />
+  );
+}
+
+export function ParameterFields({
+  runner,
+  serviceType,
+  parameters,
+}: {
+  runner: HandlerRun['runner'];
+  serviceType?: RestateServiceType;
+  parameters: ContractParameter[];
+}) {
+  if (parameters.length === 0) {
     return null;
   }
   return (
     <div className="flex flex-col gap-3">
-      {run.mainParameters.map((parameter) => (
-        <ParamField key={parameter.name} run={run} parameter={parameter} />
+      {parameters.map((parameter) => (
+        <ParamField
+          key={parameter.name}
+          runner={runner}
+          serviceType={serviceType}
+          parameter={parameter}
+        />
       ))}
     </div>
   );
 }
 
-export function hasInputSchema(run: HandlerRun) {
+export function hasInputSchema(run: OperationRun) {
   const body = run.operation.body;
   return (
     run.hasInput && body?.schema !== undefined && /json/i.test(body.contentType)
@@ -192,6 +220,13 @@ function fieldInfo(
           tenant
         </>
       );
+    case 'invocationId':
+      return (
+        <>
+          The ID Restate returned when the invocation started, shown on the
+          invocation’s page
+        </>
+      );
     case 'limitKey':
       return (
         <>
@@ -208,7 +243,7 @@ function Mono({ children }: { children: ReactNode }) {
   return <code className="font-mono text-[0.95em]">{children}</code>;
 }
 
-export function SchemaPeek({ run }: { run: HandlerRun }) {
+export function SchemaPeek({ run }: { run: OperationRun }) {
   if (!hasInputSchema(run)) {
     return null;
   }
@@ -231,7 +266,7 @@ const editorStyles = tv({
   base: 'min-h-24',
 });
 
-export function ResetInput({ run }: { run: HandlerRun }) {
+export function ResetInput({ run }: { run: OperationRun }) {
   const { runner } = run;
   if (
     runner.exampleBody === '' ||
@@ -259,45 +294,104 @@ export function ResetInput({ run }: { run: HandlerRun }) {
 export function JsonInput({
   run,
   className,
-  label = true,
+  label = 'Input',
   maxHeight,
 }: {
-  run: HandlerRun;
+  run: OperationRun;
   className?: string;
-  label?: boolean;
+  label?: string | false;
   maxHeight?: number;
 }) {
-  const { runner, operation, service, handler } = run;
-  if (!run.hasInput) {
+  const { runner, operation, service, draftName } = run;
+  const body = operation.body;
+  if (!run.hasInput || !body) {
     return null;
   }
-  const isJson = /json/i.test(operation.body?.contentType ?? '');
+  const isJson = isJsonContentType(body.contentType);
+  const isText = isTextContentType(body.contentType);
+  const isFileMode = runner.draft.bodyMode === 'file';
   const issue = runner.issueFor('body');
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       {label && (
         <div className="flex min-h-5 items-center gap-2">
-          <span className="text-0.5xs font-medium text-secondary">Input</span>
+          <span className="text-0.5xs font-medium text-secondary">{label}</span>
           <SchemaPeek run={run} />
-          <div className="ml-auto">
-            <ResetInput run={run} />
+          <div className="ml-auto flex items-center gap-1.5">
+            {!isFileMode && <ResetInput run={run} />}
+            {!isText && (
+              <SegmentedControl
+                label="Input source"
+                value={runner.draft.bodyMode}
+                onChange={(bodyMode) =>
+                  runner.setDraft((previous) => ({ ...previous, bodyMode }))
+                }
+                options={[
+                  { value: 'text', label: 'Text' },
+                  { value: 'file', label: 'File' },
+                ]}
+              />
+            )}
           </div>
         </div>
       )}
-      <BodyEditor
-        className={editorStyles({ className })}
-        modelUri={`inmemory://redesign/${service}/${handler.name}.${isJson ? 'json' : 'txt'}`}
-        value={runner.draft.rawBody}
-        language={isJson ? 'json' : 'plaintext'}
-        schemas={run.schemas}
-        ariaLabel="Input"
-        maxHeight={maxHeight}
-        onChange={(rawBody) =>
-          runner.setDraft((previous) => ({ ...previous, rawBody }))
-        }
-        onSubmit={run.submit}
-      />
+      {isFileMode ? (
+        <FileInput run={run} />
+      ) : (
+        <BodyEditor
+          className={editorStyles({ className })}
+          modelUri={bodyModelUri(service, draftName, body.contentType)}
+          value={runner.draft.rawBody}
+          language={isJson ? 'json' : 'plaintext'}
+          schemas={run.schemas}
+          ariaLabel="Input"
+          maxHeight={maxHeight}
+          onChange={(rawBody) =>
+            runner.setDraft((previous) => ({ ...previous, rawBody }))
+          }
+          onSubmit={run.submit}
+        />
+      )}
       {issue && <p className="text-xs text-danger">{issue}</p>}
+    </div>
+  );
+}
+
+function FileInput({ run }: { run: OperationRun }) {
+  const { runner } = run;
+  const file = runner.draft.file;
+  return (
+    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-inset bg-inset px-2 py-1.5">
+      <label className="shrink-0 cursor-default rounded-md border bg-raised px-2 py-0.5 text-xs text-primary shadow-xs hover:wash-tint has-focus-visible:outline-2 has-focus-visible:outline-focus">
+        Choose file
+        <input
+          type="file"
+          aria-label="Input file"
+          className="sr-only"
+          onChange={(event) => {
+            const next = event.target.files?.[0];
+            event.target.value = '';
+            if (next) {
+              runner.setDraft((previous) => ({ ...previous, file: next }));
+            }
+          }}
+        />
+      </label>
+      <span className="min-w-0 flex-auto truncate text-xs text-secondary">
+        {file ? `${file.name} · ${formatBytes(file.size)}` : 'No file chosen'}
+      </span>
+      {file && (
+        <Button
+          variant="icon"
+          aria-label="Remove file"
+          className="shrink-0 p-1"
+          onClick={() =>
+            runner.setDraft((previous) => ({ ...previous, file: undefined }))
+          }
+        >
+          <Icon name={IconName.X} className="h-3.5 w-3.5" />
+        </Button>
+      )}
     </div>
   );
 }
@@ -386,6 +480,53 @@ const flowControlStyles = tv({
   variants: { isWide: { true: 'col-span-2', false: '' } },
 });
 
+export function hasAdvancedOptions(run: HandlerRun) {
+  return (
+    run.advancedParameters.length > 0 || run.canScope || run.requiresApiKey
+  );
+}
+
+function ApiKeyField({ run, isWide }: { run: OperationRun; isWide: boolean }) {
+  const { apiKeyState, setApiKeyState } = run;
+  return (
+    <div
+      className={flowControlStyles({
+        isWide,
+        className: 'flex-col items-stretch gap-2',
+      })}
+    >
+      <div className="flex items-center">
+        <Switch
+          isSelected={apiKeyState.isVisible}
+          onChange={(isVisible) => setApiKeyState({ isVisible, value: '' })}
+          className="text-0.5xs"
+        >
+          Use an API key
+        </Switch>
+        <span className="ml-1 inline-flex">
+          <InfoPeek label="API key">
+            Requests use your current session unless you paste an API key, which
+            stays only in this tab’s memory
+          </InfoPeek>
+        </span>
+      </div>
+      {apiKeyState.isVisible && (
+        <input
+          type="password"
+          aria-label="API key"
+          value={apiKeyState.value}
+          placeholder="Paste an API key"
+          autoComplete="off"
+          className={fieldInputStyles()}
+          onChange={(event) =>
+            setApiKeyState({ isVisible: true, value: event.target.value })
+          }
+        />
+      )}
+    </div>
+  );
+}
+
 export function AdvancedToggle({
   run,
   isOpen,
@@ -395,7 +536,7 @@ export function AdvancedToggle({
   isOpen: boolean;
   onChange: (isOpen: boolean) => void;
 }) {
-  if (run.advancedParameters.length === 0 && !run.canScope) {
+  if (!hasAdvancedOptions(run)) {
     return null;
   }
   return (
@@ -426,13 +567,19 @@ export function AdvancedFields({
   run: HandlerRun;
   isWide?: boolean;
 }) {
-  if (run.advancedParameters.length === 0 && !run.canScope) {
+  if (!hasAdvancedOptions(run)) {
     return null;
   }
   return (
     <section aria-label="Advanced" className={advancedStyles({ isWide })}>
+      {run.requiresApiKey && <ApiKeyField run={run} isWide={isWide} />}
       {run.advancedParameters.map((parameter) => (
-        <ParamField key={parameter.name} run={run} parameter={parameter} />
+        <ParamField
+          key={parameter.name}
+          runner={run.runner}
+          serviceType={run.serviceType}
+          parameter={parameter}
+        />
       ))}
       {run.canScope && (
         <div className={flowControlStyles({ isWide })}>
@@ -453,7 +600,12 @@ export function AdvancedFields({
       )}
       {run.isScoped &&
         run.scopeParameters.map((parameter) => (
-          <ParamField key={parameter.name} run={run} parameter={parameter} />
+          <ParamField
+            key={parameter.name}
+            runner={run.runner}
+            serviceType={run.serviceType}
+            parameter={parameter}
+          />
         ))}
     </section>
   );
