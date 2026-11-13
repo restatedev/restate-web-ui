@@ -3,11 +3,7 @@ import {
   useProgressiveInvocationSummaryV2,
   useSummaryInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
-import {
-  INVOCATION_STATUS_DEFINITIONS,
-  type components,
-} from '@restate/data-access-admin-api-spec';
-import type { VQueueSummaryFocus } from '@restate/features-status-chart';
+import type { components } from '@restate/data-access-admin-api-spec';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import {
@@ -15,7 +11,10 @@ import {
   summarizeIncludedServices,
 } from './invocationSummaryFacets';
 import { countMatchingGlobalStatuses } from './invocationSummaryMatchCount';
-import { hasStatusFilter, type StatusFilter } from './statusFilter';
+import {
+  getFocusFromStatusFilter,
+  getSelectedFocusFromStatusFilter,
+} from './statusFilter';
 import { useStatusBarProps } from './useStatusBarProps';
 
 type InvocationFilter = components['schemas']['InvocationV2FilterItem'];
@@ -24,26 +23,6 @@ type InvocationStatus = components['schemas']['InvocationStatus'];
 function getStatusFilter(filters: InvocationFilter[] | undefined) {
   const filter = filters?.find(({ field }) => field === 'status');
   return filter?.type === 'STRING_LIST' ? filter : undefined;
-}
-
-function getFocusFromStatusFilter(
-  statusFilter: StatusFilter,
-): VQueueSummaryFocus {
-  if (!hasStatusFilter(statusFilter)) return 'all';
-
-  const values = new Set(statusFilter.value);
-  let includesCompleted = false;
-  let includesNotCompleted = false;
-  for (const { key, stage } of INVOCATION_STATUS_DEFINITIONS) {
-    const matches =
-      statusFilter.operation === 'IN' ? values.has(key) : !values.has(key);
-    if (!matches) continue;
-    if (stage === 'finished') includesCompleted = true;
-    else includesNotCompleted = true;
-  }
-
-  if (includesCompleted === includesNotCompleted) return 'all';
-  return includesCompleted ? 'completed' : 'not-completed';
 }
 
 function getInboxBreakdownServiceNames(
@@ -227,6 +206,7 @@ export function useInvocationSummary({
     refresh,
     matchingCount,
     focus: getFocusFromStatusFilter(statusFilter),
+    selectedFocus: getSelectedFocusFromStatusFilter(statusFilter),
     statusFilter,
     hasServiceScope: facets.hasServiceFilter,
     breakdownIsSampled: !isFromStats && countMode === 'estimate',

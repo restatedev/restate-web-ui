@@ -430,6 +430,36 @@ describe('VQueueStageSummaryBar', () => {
     ).toBeTruthy();
   });
 
+  it('selects no tab but keeps the focused rail when the filter is narrower than a lifecycle', async () => {
+    vi.stubGlobal('CSS', { escape: (value: string) => value });
+    const onFocusChange = vi.fn();
+    render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar
+          byStage={totalsByStage}
+          byStatus={[]}
+          focus="not-completed"
+          selectedFocus={null}
+          onFocusChange={onFocusChange}
+          breakdownMode="exact"
+          canSampleBreakdown={false}
+          onBreakdownModeChange={vi.fn()}
+          isBreakdownSampled={false}
+          showFocusCounts={false}
+        />
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByLabelText(
+        'Not-completed invocation distribution with current status highlighted',
+      ).children,
+    ).toHaveLength(2);
+    expect(screen.queryByRole('tab', { selected: true })).toBeNull();
+    expect(screen.queryByRole('tabpanel')).toBeNull();
+    await userEvent.click(screen.getByRole('tab', { name: 'Not completed' }));
+    expect(onFocusChange).toHaveBeenCalledWith('not-completed');
+  });
+
   it.each(['all', 'completed'] as const)(
     'does not show zero when missing completed counts fail in %s focus',
     async (focus) => {

@@ -3,16 +3,20 @@ import {
   isValidElement,
   PropsWithChildren,
   ReactNode,
+  useContext,
+  useEffect,
   useMemo,
 } from 'react';
 import {
   SelectionIndicator,
   Tab as AriaTab,
   TabList as AriaTabList,
+  TabListStateContext,
   TabPanel as AriaTabPanel,
   TabPanels as AriaTabPanels,
   Tabs as AriaTabs,
   composeRenderProps,
+  type Key,
 } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { focusRing } from '@restate/ui-focus';
@@ -20,13 +24,15 @@ import { tv } from '@restate/util-styles';
 
 export type TabId = string;
 
+const NO_SELECTED_TAB = '\u0000none';
+
 export interface TabsProps {
   className?: string;
   defaultTab?: TabId;
   orientation?: 'horizontal' | 'vertical';
   queryParam?: string;
   onTabChange?: (tab: TabId) => void;
-  selectedTab?: TabId;
+  selectedTab?: TabId | null;
 }
 
 export interface TabListProps {
@@ -164,7 +170,7 @@ function BaseTabs({
 }: PropsWithChildren<BaseTabsProps>) {
   return (
     <AriaTabs
-      selectedKey={selectedTab}
+      selectedKey={selectedTab === null ? NO_SELECTED_TAB : selectedTab}
       defaultSelectedKey={selectedTab ? undefined : defaultTab}
       disabledKeys={disabledTabs}
       onSelectionChange={(tab) => onTabChange?.(String(tab))}
@@ -264,6 +270,20 @@ export function TabList({
   className,
   ...props
 }: PropsWithChildren<TabListProps>) {
+  const state = useContext(TabListStateContext);
+
+  useEffect(() => {
+    if (!state) return;
+    const { collection, disabledKeys, selectedKey, selectionManager } = state;
+    const hasTab = (key: Key | null) =>
+      key != null && collection.getItem(key) != null;
+    if (hasTab(selectedKey) || hasTab(selectionManager.focusedKey)) return;
+    const firstTab = [...collection.getKeys()].find(
+      (key) => !disabledKeys.has(key),
+    );
+    if (firstTab != null) selectionManager.setFocusedKey(firstTab);
+  });
+
   return (
     <AriaTabList
       {...props}

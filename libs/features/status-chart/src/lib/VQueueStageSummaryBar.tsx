@@ -131,6 +131,7 @@ export function VQueueStageSummaryBar({
   byStage,
   byStatus,
   focus,
+  selectedFocus = focus,
   onFocusChange,
   breakdownMode,
   canSampleBreakdown,
@@ -154,6 +155,7 @@ export function VQueueStageSummaryBar({
   byStage: VQueueStageSummaryEntry[];
   byStatus: VQueueStatusSummaryEntry[];
   focus: VQueueSummaryFocus;
+  selectedFocus?: VQueueSummaryFocus | null;
   onFocusChange: (focus: VQueueSummaryFocus) => void;
   breakdownMode: 'estimate' | 'exact';
   canSampleBreakdown: boolean;
@@ -545,7 +547,7 @@ export function VQueueStageSummaryBar({
         </div>
       )}
       <Tabs
-        selectedTab={focus}
+        selectedTab={selectedFocus}
         onTabChange={(tab) => {
           const nextFocus = tab as VQueueSummaryFocus;
           onFocusChange(nextFocus);
@@ -596,17 +598,21 @@ export function VQueueStageSummaryBar({
             </Tab>
           </TabList>
         </div>
-        <TabPanels className={panels()}>
-          <TabPanel id="all" className={panel()}>
-            {focus === 'all' ? summaryRail : null}
-          </TabPanel>
-          <TabPanel id="not-completed" className={panel()}>
-            {focus === 'not-completed' ? summaryRail : null}
-          </TabPanel>
-          <TabPanel id="completed" className={panel()}>
-            {focus === 'completed' ? summaryRail : null}
-          </TabPanel>
-        </TabPanels>
+        {selectedFocus === focus ? (
+          <TabPanels className={panels()}>
+            <TabPanel id="all" className={panel()}>
+              {focus === 'all' ? summaryRail : null}
+            </TabPanel>
+            <TabPanel id="not-completed" className={panel()}>
+              {focus === 'not-completed' ? summaryRail : null}
+            </TabPanel>
+            <TabPanel id="completed" className={panel()}>
+              {focus === 'completed' ? summaryRail : null}
+            </TabPanel>
+          </TabPanels>
+        ) : (
+          <div className={panels()}>{summaryRail}</div>
+        )}
       </Tabs>
     </div>
   );
