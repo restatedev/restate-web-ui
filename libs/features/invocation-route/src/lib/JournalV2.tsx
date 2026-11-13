@@ -50,7 +50,6 @@ import {
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { formatDurations, formatPlurals } from '@restate/util-intl';
 import {
-  MAX_PRESENTATION_HEADROOM_MS,
   TimelineEngineProvider,
   useTimelineEngineContext,
 } from '@restate/ui-timeline-zoom';
@@ -165,6 +164,7 @@ function findCommandRow(
 }
 
 const LIVE_REFETCH_MIN_MS = 1_000;
+const LIVE_REFETCH_MAX_MS = 10_000;
 const ENTRIES_PER_REFETCH_MS = 10;
 const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
 
@@ -174,7 +174,7 @@ type JournalInvocation = ReturnType<
 
 function getLiveRefetchInterval(entryCount = 0) {
   return Math.min(
-    MAX_PRESENTATION_HEADROOM_MS,
+    LIVE_REFETCH_MAX_MS,
     Math.max(LIVE_REFETCH_MIN_MS, entryCount / ENTRIES_PER_REFETCH_MS),
   );
 }

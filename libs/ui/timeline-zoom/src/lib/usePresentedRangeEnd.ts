@@ -1,6 +1,6 @@
 import { startTransition, useEffect, useRef, useState } from 'react';
 
-export const MAX_PRESENTATION_HEADROOM_MS = 2_000;
+const MAX_PRESENTATION_HEADROOM_MS = 2_000;
 
 export function usePresentedRangeEnd({
   actualEndMs,
