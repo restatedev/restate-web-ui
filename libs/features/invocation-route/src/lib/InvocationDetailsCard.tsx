@@ -2,6 +2,7 @@ import type {
   Invocation,
   VqueueSnapshot,
 } from '@restate/data-access-admin-api-spec';
+import { useListServices } from '@restate/data-access-admin-api-hooks';
 import { useRestateContext } from '@restate/features-restate-context';
 import {
   getServiceTargetEntityLink,
@@ -13,6 +14,7 @@ import { Card, CardHeader, CardLinkRow, CardRow } from '@restate/ui-card';
 import { Copy } from '@restate/ui-copy';
 import { Icon, IconName } from '@restate/ui-icons';
 import type { ReactNode } from 'react';
+import { isSessionObject } from './sessionObjects';
 
 function CopyValue({ value }: { value: string }) {
   return (
@@ -91,6 +93,7 @@ export function InvocationDetailsCard({
   vqueueSnapshot?: VqueueSnapshot;
 }) {
   const { baseUrl } = useRestateContext();
+  const { data: services } = useListServices();
   if (!invocation) return null;
 
   const idempotencyId = invocation.idempotency_key;
@@ -112,6 +115,9 @@ export function InvocationDetailsCard({
   const isWorkflow =
     invocation.target_service_ty === 'workflow' &&
     typeof serviceKey === 'string';
+  const virtualObjectLabel = isSessionObject(services.get(service))
+    ? 'Session Object'
+    : 'Virtual Object';
   const entityLink =
     typeof serviceKey === 'string'
       ? getServiceTargetEntityLink({
@@ -142,7 +148,7 @@ export function InvocationDetailsCard({
       <CardHeader title="Details" icon={IconName.Info} />
       {isVirtualObject && entityLink && (
         <RelatedEntityRow
-          label="Virtual Object"
+          label={virtualObjectLabel}
           icon={IconName.VirtualObject}
           href={entityLink.href}
           ariaLabel={entityLink.ariaLabel}
