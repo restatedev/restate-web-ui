@@ -118,11 +118,11 @@ function findBestTickInterval(
   return best;
 }
 
+const FAR_OFF_SPACING_FACTOR = 4;
+
 /**
  * Selects the next major-tick interval using hysteresis and cooldown.
  */
-const FAR_OFF_SPACING_FACTOR = 4;
-
 export function selectTickInterval(
   visibleWindowDurationMs: number,
   widthPx: number,

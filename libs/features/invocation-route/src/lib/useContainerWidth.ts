@@ -15,12 +15,12 @@ export function useContainerWidth(): [
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
-        setWidth(entry.contentRect.width);
+        setWidth(Math.round(entry.contentRect.width));
       }
     });
     observer.observe(node);
     observerRef.current = observer;
-    setWidth(node.getBoundingClientRect().width);
+    setWidth(Math.round(node.getBoundingClientRect().width));
   }, []);
 
   return [ref, width];
