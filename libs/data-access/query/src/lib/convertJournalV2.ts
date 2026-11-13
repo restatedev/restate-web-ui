@@ -53,7 +53,10 @@ export function convertJournalV2(
       invocation,
       context,
     ) ?? (entry as JournalEntryV2);
-  if (typeof entry.raw_length === 'number') {
+  if (
+    typeof entry.raw_length === 'number' &&
+    entry.entry_type !== 'Command: EndMarker'
+  ) {
     newEntry.size = entry.raw_length;
   }
   if (typeof newEntry?.completionId === 'number') {
@@ -108,6 +111,7 @@ const JOURNAL_ENTRY_CONVERT_MAP: Partial<
 
   'Command: Input': input,
   'Command: Output': output,
+  'Command: EndMarker': output,
   'Command: GetState': getState,
   'Command: GetEagerState': getState,
   'Command: SetState': setState,

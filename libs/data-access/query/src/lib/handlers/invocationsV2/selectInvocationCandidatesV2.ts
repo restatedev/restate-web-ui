@@ -3,6 +3,7 @@ import {
   type QueryContext,
 } from '../shared.js';
 import {
+  getCompletedInvocationStatus,
   getInvocationStatusFromVqueue,
   type InvocationStatus,
 } from '../../invocationStatuses.js';
@@ -68,15 +69,11 @@ function storedCandidateStatus(
   switch (candidate.raw_status) {
     case 'inboxed':
       return 'pending';
-    case 'completed': {
-      if (candidate.completion_result === 'success') return 'succeeded';
-      const failure = candidate.completion_failure?.toLowerCase();
-      if (failure === '[409] killed') return 'killed';
-      if (failure === '[409] canceled' || failure === '[409] cancelled') {
-        return 'cancelled';
-      }
-      return candidate.completion_result === 'failure' ? 'failed' : undefined;
-    }
+    case 'completed':
+      return getCompletedInvocationStatus(
+        candidate.completion_result,
+        candidate.completion_failure,
+      );
     case 'scheduled':
     case 'suspended':
     case 'paused':

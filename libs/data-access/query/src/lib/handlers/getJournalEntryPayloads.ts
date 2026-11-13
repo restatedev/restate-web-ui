@@ -4,6 +4,7 @@ import type {
 } from '@restate/data-access-admin-api-spec';
 import { bytesToBase64, hexToUint8Array } from '@restate/util-binary';
 import type { QueryContext } from './shared.js';
+import { getCompletionOutput } from './completionOutput.js';
 import { fromBinary } from '@bufbuild/protobuf';
 import { InputEntryMessageSchema } from '@buf/restatedev_service-protocol.bufbuild_es/dev/restate/service/protocol_pb.js';
 
@@ -321,6 +322,7 @@ function extractPayloads(
     case 'Command: GetLazyState':
     case 'Command: GetLazyStateKeys':
     case 'Command: Custom':
+    case 'Command: EndMarker':
       return undefined;
 
     case 'Command: SendSignal': {
@@ -403,11 +405,10 @@ export async function getJournalEntryPayloads(
   }
 
   const entryJSON = parseEntryJson(entry.entry_json);
-  const payloads = extractPayloads(
-    entry.entry_type as EntryType,
-    entryJSON,
-    entry.raw,
-  );
+  const payloads =
+    entry.entry_type === 'Command: EndMarker'
+      ? await getCompletionOutput(this, invocationId)
+      : extractPayloads(entry.entry_type as EntryType, entryJSON, entry.raw);
 
   if (payloads === undefined) {
     return new Response(JSON.stringify({}), {

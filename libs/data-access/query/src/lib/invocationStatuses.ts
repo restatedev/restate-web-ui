@@ -88,6 +88,27 @@ export const TERMINAL_INVOCATION_STATUSES = [
 export type TerminalInvocationStatus =
   (typeof TERMINAL_INVOCATION_STATUSES)[number];
 
+export const KILLED_COMPLETION_RESULT = 'killed';
+export const KILLED_COMPLETION_FAILURES = ['[409] killed'];
+export const CANCELLED_COMPLETION_FAILURES = [
+  '[409] canceled',
+  '[409] cancelled',
+  '[409]',
+];
+
+export function getCompletedInvocationStatus(
+  completionResult?: string,
+  completionFailure?: string,
+): TerminalInvocationStatus | undefined {
+  if (completionResult === 'success') return 'succeeded';
+  if (completionResult === KILLED_COMPLETION_RESULT) return 'killed';
+  if (completionResult !== 'failure') return undefined;
+  const failure = completionFailure?.toLowerCase() ?? '';
+  if (KILLED_COMPLETION_FAILURES.includes(failure)) return 'killed';
+  if (CANCELLED_COMPLETION_FAILURES.includes(failure)) return 'cancelled';
+  return 'failed';
+}
+
 export function getInvocationStatusFromVqueue(vqueue?: {
   stage?: string;
   status?: string;
