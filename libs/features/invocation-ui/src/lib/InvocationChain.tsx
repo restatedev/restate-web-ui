@@ -17,7 +17,6 @@ const MAX_VISIBLE_ANCESTORS = 3;
 const styles = tv({
   slots: {
     base: 'flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1.5 text-xs text-muted',
-    label: 'mr-1 shrink-0',
     link: 'inline-flex max-w-[36ch] min-w-0 items-center rounded-md border bg-raised px-1.5 py-0.5 font-mono text-2xs text-secondary no-underline shadow-xs hover:wash-tint pressed:wash-tint-strong',
     linkText: 'truncate',
     current:
@@ -76,7 +75,7 @@ export function InvocationChain({
   const { data: ancestors } = useGetInvocationAncestors(
     invocation.invoked_by_id,
   );
-  const { base, label, link, linkText, current, unresolved, separator, more } =
+  const { base, link, linkText, current, unresolved, separator, more } =
     styles();
 
   if (!invocation.invoked_by_id) {
@@ -95,7 +94,6 @@ export function InvocationChain({
 
   return (
     <nav aria-label="Call chain" className={base({ className })}>
-      <span className={label()}>Call chain</span>
       {!ancestors && <Spinner className="h-3 w-3" />}
       {unresolvedTarget && (
         <>

@@ -6,11 +6,11 @@ import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
   getRestateError,
-  InvocationChain,
   InvocationStatusHeader,
   Status,
 } from '@restate/features-invocation-ui';
 import { InvocationDeploymentCard } from './InvocationDeploymentCard';
+import { InvocationChainCard } from './InvocationChainCard';
 import { InvocationDetailsCard } from './InvocationDetailsCard';
 import { InvocationFlowControlCard } from './InvocationFlowControlCard';
 import { Link } from '@restate/ui-link';
@@ -195,12 +195,6 @@ function Component() {
             />
           </div>
         </InvocationStatusHeader>
-        {journalAndInvocationData?.invoked_by_id && (
-          <InvocationChain
-            invocation={journalAndInvocationData}
-            className="relative z-40 mx-5 mt-3 px-3"
-          />
-        )}
         <CardGrid
           columns={showFlowControl ? 3 : 2}
           distribution={showFlowControl ? '5-4-2' : 'equal'}
@@ -228,6 +222,10 @@ function Component() {
             </>
           )}
         </CardGrid>
+        <InvocationChainCard
+          invocation={journalAndInvocationData}
+          className="relative z-30 mx-5 mt-2"
+        />
         <div
           className="relative z-10 flex flex-col gap-4 px-5"
           data-failure-anchor-root
