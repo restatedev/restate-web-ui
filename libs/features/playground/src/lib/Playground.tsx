@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { ServiceTarget } from '@restate/features-service-target';
-import { formatMilliseconds } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
-import { Spinner } from '@restate/ui-loading';
 import type {
   ContractHandler,
   ContractInvocationTool,
@@ -25,34 +23,19 @@ import {
   TOOL_LABEL,
   useServiceHandler,
 } from './Frame';
-import { Steps } from './Steps';
 import {
   AdvancedFields,
   AdvancedToggle,
-  JsonInput,
+  InputField,
   KeyFields,
   ParameterFields,
+  RunButton,
+  runLabel,
   SendButton,
 } from './fields';
-import { Hint, RESULT_HINT, RUN_HINT } from './floating';
-import {
-  InvocationIdLink,
-  OpenInvocation,
-  type RunView,
-  StatusDot,
-  useRunView,
-  ValueBlock,
-  viewInvocationId,
-  viewMessage,
-  viewTitle,
-  viewTone,
-  viewValue,
-} from './outcome';
-import {
-  type HandlerRun,
-  useHandlerRun,
-  useOperationRun,
-} from './useHandlerRun';
+import { Hint, runHint } from './floating';
+import { RunResult } from './outcome';
+import { useHandlerRun, useOperationRun } from './useHandlerRun';
 
 export interface PlaygroundProps {
   service: string;
@@ -106,6 +89,9 @@ export function Playground(props: PlaygroundProps) {
           key={tool.kind}
           contract={contract}
           tool={tool}
+          hasRail={showRail}
+          handlerKinds={loaded.handlerKinds}
+          onSelect={loaded.select}
           ingressUrl={loaded.ingressUrl}
           serviceType={loaded.serviceType}
           layout={layout}
@@ -119,7 +105,7 @@ export function Playground(props: PlaygroundProps) {
           handlerKinds={loaded.handlerKinds}
           ingressUrl={loaded.ingressUrl}
           serviceType={loaded.serviceType}
-          showSwitcher={!showRail}
+          hasRail={showRail}
           layout={layout}
           showDescription={props.scroll !== 'page' || !showRail}
           onSelect={loaded.select}
@@ -135,6 +121,13 @@ const cardStyles = tv({
 });
 
 type View = 'invoke' | 'code' | 'schema';
+
+const headerRowStyles = tv({
+  base: 'flex min-h-7 min-w-0 items-center gap-2',
+  variants: {
+    visibility: { always: '', narrow: 'md:hidden', never: 'hidden' },
+  },
+});
 
 type Layout = 'sheet' | 'panel' | 'embed';
 
@@ -177,29 +170,70 @@ const viewTabStyles = tv({
   },
 });
 
+function viewIds(baseId: string, value: View) {
+  return { tab: `${baseId}-tab-${value}`, panel: `${baseId}-panel` };
+}
+
 function ViewTabs({
+  baseId,
   value,
   onChange,
 }: {
+  baseId: string;
   value: View;
   onChange: (value: View) => void;
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const select = (index: number) => {
+    const next = VIEWS[(index + VIEWS.length) % VIEWS.length];
+    if (next) {
+      onChange(next.value);
+      listRef.current
+        ?.querySelector<HTMLElement>(
+          `#${CSS.escape(viewIds(baseId, next.value).tab)}`,
+        )
+        ?.focus();
+    }
+  };
   return (
     <div
+      ref={listRef}
       role="tablist"
       aria-label="View"
       className="mt-1 inline-flex gap-0.5 self-start rounded-xl bg-tint-subtle p-1"
     >
       {VIEWS.map((option) => {
-        const styles = viewTabStyles({ isSelected: option.value === value });
+        const isSelected = option.value === value;
+        const styles = viewTabStyles({ isSelected });
+        const ids = viewIds(baseId, option.value);
         return (
           <button
             key={option.value}
+            id={ids.tab}
             type="button"
             role="tab"
-            aria-selected={option.value === value}
+            aria-selected={isSelected}
+            aria-controls={ids.panel}
+            tabIndex={isSelected ? 0 : -1}
             className={styles.tab()}
             onClick={() => onChange(option.value)}
+            onKeyDown={(event) => {
+              const index = VIEWS.findIndex((option) => option.value === value);
+              const target =
+                event.key === 'ArrowRight'
+                  ? index + 1
+                  : event.key === 'ArrowLeft'
+                    ? index - 1
+                    : event.key === 'Home'
+                      ? 0
+                      : event.key === 'End'
+                        ? VIEWS.length - 1
+                        : undefined;
+              if (target !== undefined) {
+                event.preventDefault();
+                select(target);
+              }
+            }}
           >
             <Icon name={option.icon} className={styles.icon()} />
             {option.label}
@@ -216,7 +250,7 @@ function Workspace({
   handlerKinds,
   ingressUrl,
   serviceType,
-  showSwitcher,
+  hasRail,
   layout,
   showDescription,
   onSelect,
@@ -227,7 +261,7 @@ function Workspace({
   handlerKinds: Map<string, RestateHandlerKind | undefined>;
   ingressUrl: string;
   serviceType?: RestateServiceType;
-  showSwitcher: boolean;
+  hasRail: boolean;
   layout: Layout;
   showDescription: boolean;
   onSelect: (name: string) => void;
@@ -241,219 +275,177 @@ function Workspace({
     serviceType,
   });
   const [view, setView] = useState<View>('invoke');
+  const tabsId = useId();
   const isEmbedded = layout === 'embed';
   const styles = layoutStyles({ layout });
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(
     () => run.changedOptions > 0,
   );
-  const runView = useRunView(run.runner.latestRun, run.runner);
   const description = handler.description ?? contract.description;
   const serviceKey = run.runner.roleValue('key');
 
   return (
     <div className="@container/full min-h-0 min-w-0 flex-auto overflow-auto">
       <header className={styles.header()}>
-        {!isEmbedded && (
-          <div className="flex min-w-0 items-center gap-2">
-            {showSwitcher ? (
+        <div
+          className={headerRowStyles({
+            visibility: !isEmbedded ? 'always' : hasRail ? 'narrow' : 'never',
+          })}
+        >
+          {hasRail ? (
+            <>
+              <div className="flex min-w-0 md:hidden">
+                <HandlerSwitcher
+                  contract={contract}
+                  handler={handler}
+                  handlerKinds={handlerKinds}
+                  serviceType={serviceType}
+                  serviceKey={serviceKey}
+                  withTools
+                  onSelect={onSelect}
+                />
+              </div>
+              {!isEmbedded && (
+                <div className="hidden min-w-0 md:flex">
+                  <ServiceTarget
+                    service={contract.name}
+                    serviceKey={serviceKey || undefined}
+                    handler={handler.name}
+                    serviceType={serviceType}
+                    showHandler
+                    links={false}
+                    density="default"
+                    className={targetStyles()}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            !isEmbedded && (
               <HandlerSwitcher
                 contract={contract}
                 handler={handler}
                 handlerKinds={handlerKinds}
                 serviceType={serviceType}
                 serviceKey={serviceKey}
+                withTools
                 onSelect={onSelect}
               />
-            ) : (
-              <ServiceTarget
-                service={contract.name}
-                serviceKey={serviceKey || undefined}
-                handler={handler.name}
-                serviceType={serviceType}
-                showHandler
-                links={false}
-                density="default"
-                className={targetStyles()}
-              />
-            )}
-            {headerActions && (
-              <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                {headerActions}
-              </div>
-            )}
-          </div>
-        )}
+            )
+          )}
+          {headerActions && (
+            <div className="ml-auto flex shrink-0 items-center gap-1.5">
+              {headerActions}
+            </div>
+          )}
+        </div>
         {description && showDescription && (
           <p className="line-clamp-2 text-0.5xs text-muted" title={description}>
             {description}
           </p>
         )}
-        <ViewTabs value={view} onChange={setView} />
+        {!contract.isSupportedVersion && (
+          <p className="text-xs text-warning">
+            This server returned OpenAPI {contract.openapi || 'unknown'}; the
+            playground is built for 3.1 and may miss details
+          </p>
+        )}
+        <ViewTabs baseId={tabsId} value={view} onChange={setView} />
       </header>
-      {view === 'invoke' && (
-        <div className={styles.body()}>
-          <form
-            aria-label="Invoke"
-            className={cardStyles()}
-            onSubmit={(event) => {
-              event.preventDefault();
-              run.submit();
-            }}
-          >
-            <KeyFields run={run} />
-            {run.hasInput ? (
-              <JsonInput run={run} maxHeight={isEmbedded ? Infinity : 320} />
-            ) : (
-              <p className="text-sm text-muted">This handler takes no input.</p>
-            )}
-            {isAdvancedOpen && <AdvancedFields run={run} isWide />}
-            <div className="flex items-center gap-3">
-              <Hint
-                stage="playground-run"
-                service={contract.name}
-                isShown={run.runner.runs.length === 0}
-                placement="bottom start"
-                content={RUN_HINT}
-              >
-                <SendButton run={run} />
-              </Hint>
-              <span className="hidden text-2xs text-subtle @md/full:inline">
-                ⌘ or Ctrl + Enter
-              </span>
-              {run.runner.isSending && (
-                <Button
-                  variant="secondary"
-                  className="rounded-lg px-3 py-1.5 text-sm"
-                  onClick={run.runner.cancel}
-                >
-                  Cancel
-                </Button>
+      <div
+        role="tabpanel"
+        id={viewIds(tabsId, view).panel}
+        aria-labelledby={viewIds(tabsId, view).tab}
+      >
+        {view === 'invoke' && (
+          <div className={styles.body()}>
+            <form
+              aria-label="Invoke"
+              className={cardStyles()}
+              onSubmit={(event) => {
+                event.preventDefault();
+                run.submit();
+              }}
+            >
+              <KeyFields run={run} />
+              {run.hasInput ? (
+                <InputField run={run} maxHeight={isEmbedded ? Infinity : 320} />
+              ) : (
+                <p className="text-sm text-muted">
+                  This handler takes no input
+                </p>
               )}
-              <div className="ml-auto">
-                <AdvancedToggle
-                  run={run}
-                  isOpen={isAdvancedOpen}
-                  onChange={setIsAdvancedOpen}
-                />
+              {isAdvancedOpen && <AdvancedFields run={run} isWide />}
+              <div className="flex items-center gap-3">
+                <Hint
+                  stage="playground-run"
+                  service={contract.name}
+                  isShown={!run.runner.latestRun}
+                  placement="bottom start"
+                  content={runHint(runLabel(run))}
+                >
+                  <SendButton run={run} />
+                </Hint>
+                <span className="hidden text-2xs text-subtle @md/full:inline">
+                  ⌘ or Ctrl + Enter
+                </span>
+                {run.runner.isSending && (
+                  <Button
+                    variant="secondary"
+                    className="rounded-lg px-3 py-1.5 text-sm"
+                    onClick={run.runner.cancel}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <div className="ml-auto">
+                  <AdvancedToggle
+                    run={run}
+                    isOpen={isAdvancedOpen}
+                    onChange={setIsAdvancedOpen}
+                  />
+                </div>
               </div>
-            </div>
-          </form>
-          {runView && (
-            <ResultCard key={run.runner.latestRun?.id} view={runView} />
-          )}
-        </div>
-      )}
-      {view === 'code' && (
-        <div className={styles.body()}>
-          <CodeView
-            run={run}
-            ingressUrl={ingressUrl}
-            handlerKind={handlerKinds.get(handler.name)}
-          />
-        </div>
-      )}
-      {view === 'schema' && (
-        <div className={styles.body()}>
-          <SchemaView run={run} />
-        </div>
-      )}
+            </form>
+            {run.runner.latestRun && (
+              <RunResult
+                key={run.runner.latestRun.id}
+                record={run.runner.latestRun}
+                runner={run.runner}
+              />
+            )}
+          </div>
+        )}
+        {view === 'code' && (
+          <div className={styles.body()}>
+            <CodeView
+              run={run}
+              ingressUrl={ingressUrl}
+              handlerKind={handlerKinds.get(handler.name)}
+            />
+          </div>
+        )}
+        {view === 'schema' && (
+          <div className={styles.body()}>
+            <SchemaView run={run} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function ResultCard({
-  view,
-  isLookup = false,
-}: {
-  view: RunView;
-  isLookup?: boolean;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  useEffect(() => {
-    ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, []);
-  const invocationId = viewInvocationId(view);
-  const value = viewValue(view);
-  const message = viewMessage(view);
-  return (
-    <section
-      ref={ref}
-      aria-label="Result"
-      className={cardStyles({ className: 'scroll-mb-6 gap-3' })}
-    >
-      <div className="flex min-w-0 items-center gap-2">
-        <StatusDot tone={viewTone(view)} />
-        <span className="text-sm font-semibold text-primary">
-          {isLookup && viewTitle(view) === 'Succeeded'
-            ? 'Done'
-            : viewTitle(view)}
-        </span>
-        {view.phase === 'answered' && view.result.kind === 'response' && (
-          <span className="text-2xs text-subtle tabular-nums">
-            {formatMilliseconds(Math.round(view.result.durationMs))}
-          </span>
-        )}
-        {invocationId && (
-          <div className="ml-auto flex min-w-0">
-            <InvocationIdLink invocationId={invocationId} />
-          </div>
-        )}
-      </div>
-      {message && (
-        <p className="line-clamp-4 font-mono text-xs break-words text-danger-strong">
-          {message}
-        </p>
-      )}
-      {view.phase === 'invocation' && (
-        <Steps
-          invocationId={view.invocationId}
-          isDone={view.isDone}
-          note={view.note}
-        />
-      )}
-      {value && (
-        <div className="flex flex-col gap-1.5">
-          <span className="text-2xs font-medium text-muted uppercase">
-            Result
-          </span>
-          <ValueBlock result={value} />
-        </div>
-      )}
-      {(invocationId || (view.phase === 'invocation' && view.checkAgain)) && (
-        <div className="flex flex-wrap items-center gap-2">
-          {invocationId && (
-            <Hint
-              stage="playground-result"
-              placement="bottom start"
-              content={RESULT_HINT}
-            >
-              <OpenInvocation
-                invocationId={invocationId}
-                variant={
-                  view.phase === 'invocation' ? 'button' : 'secondary-button'
-                }
-                isPulsing={view.phase === 'invocation' && view.isDone}
-              />
-            </Hint>
-          )}
-          {view.phase === 'invocation' && view.checkAgain && (
-            <Button
-              variant="secondary"
-              className="rounded-lg px-3 py-1.5 text-sm"
-              onClick={view.checkAgain}
-            >
-              Check again
-            </Button>
-          )}
-        </div>
-      )}
-    </section>
-  );
-}
+const toolSwitcherStyles = tv({
+  base: 'flex min-w-0',
+  variants: { hasRail: { true: 'md:hidden', false: '' } },
+});
 
 function ToolWorkspace({
   contract,
   tool,
+  hasRail,
+  handlerKinds,
+  onSelect,
   ingressUrl,
   serviceType,
   layout,
@@ -461,6 +453,9 @@ function ToolWorkspace({
 }: {
   contract: ServiceContract;
   tool: ContractInvocationTool;
+  hasRail: boolean;
+  handlerKinds: Map<string, RestateHandlerKind | undefined>;
+  onSelect: (name: string) => void;
   ingressUrl: string;
   serviceType?: RestateServiceType;
   layout: Layout;
@@ -476,9 +471,21 @@ function ToolWorkspace({
     <div className="@container/full min-h-0 min-w-0 flex-auto overflow-auto">
       <header className={styles.header()}>
         <div className="flex min-h-7 min-w-0 items-center gap-2">
-          <h2 className="text-sm font-semibold text-primary">
-            {TOOL_LABEL[tool.kind]}
-          </h2>
+          <div className={toolSwitcherStyles({ hasRail })}>
+            <HandlerSwitcher
+              contract={contract}
+              tool={tool.kind}
+              handlerKinds={handlerKinds}
+              serviceType={serviceType}
+              withTools
+              onSelect={onSelect}
+            />
+          </div>
+          {hasRail && (
+            <h2 className="hidden text-sm font-semibold text-primary md:block">
+              {TOOL_LABEL[tool.kind]}
+            </h2>
+          )}
           {headerActions && (
             <div className="ml-auto flex shrink-0 items-center gap-1.5">
               {headerActions}
@@ -543,9 +550,7 @@ function ToolRunner({
     ingressUrl,
     serviceType,
     draftName: toolDraftName(tool.kind, lookup),
-    mode: 'other',
   });
-  const view = useRunView(run.runner.latestRun, run.runner);
   return (
     <div className={className}>
       <form
@@ -561,29 +566,30 @@ function ToolRunner({
           serviceType={serviceType}
           parameters={[...run.mainParameters, ...run.advancedParameters]}
         />
-        {run.hasInput && <JsonInput run={run} label="Target" maxHeight={240} />}
+        <InputField run={run} label="Target" maxHeight={240} />
         <div className="flex items-center gap-3">
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={run.runner.isSending}
-            aria-keyshortcuts="Meta+Enter Control+Enter"
-            className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium"
-          >
-            {run.runner.isSending ? (
-              <Spinner className="h-3.5 w-3.5" />
-            ) : (
-              <Icon name={IconName.Play} className="h-3.5 w-3.5 fill-current" />
-            )}
-            Run
-          </Button>
+          <RunButton runner={run.runner} label="Run" />
           <span className="hidden text-2xs text-subtle @md/full:inline">
             ⌘ or Ctrl + Enter
           </span>
+          {run.runner.isSending && (
+            <Button
+              variant="secondary"
+              className="rounded-lg px-3 py-1.5 text-sm"
+              onClick={run.runner.cancel}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
       </form>
-      {view && (
-        <ResultCard key={run.runner.latestRun?.id} view={view} isLookup />
+      {run.runner.latestRun && (
+        <RunResult
+          key={run.runner.latestRun.id}
+          record={run.runner.latestRun}
+          runner={run.runner}
+          isLookup
+        />
       )}
     </div>
   );

@@ -12,23 +12,13 @@ import { HandlerSwitcher, useServiceHandler } from './Frame';
 import {
   AdvancedFields,
   AdvancedToggle,
-  JsonInput,
+  InputField,
   KeyFields,
+  runLabel,
   SendButton,
 } from './fields';
-import { Hint, RESULT_HINT, RUN_HINT } from './floating';
-import {
-  InvocationIdLink,
-  OpenInvocation,
-  StatusDot,
-  useRunView,
-  ValueBlock,
-  viewInvocationId,
-  viewMessage,
-  viewTitle,
-  viewTone,
-  viewValue,
-} from './outcome';
+import { Hint, runHint } from './floating';
+import { RunResult } from './outcome';
 import { type HandlerRun, useHandlerRun } from './useHandlerRun';
 
 export interface QuickRunProps {
@@ -149,10 +139,10 @@ function QuickRunBody({
         >
           <KeyFields run={run} />
           {run.hasInput ? (
-            <JsonInput run={run} maxHeight={260} />
+            <InputField run={run} maxHeight={260} />
           ) : (
             <p className="rounded-lg border border-dashed border-strong px-3 py-2 text-xs text-muted">
-              This handler takes no input. Just send it.
+              This handler takes no input
             </p>
           )}
           {isAdvancedOpen && <AdvancedFields run={run} />}
@@ -177,7 +167,7 @@ function QuickRunBody({
                 service={contract.name}
                 isShown={!latest}
                 placement="bottom end"
-                content={RUN_HINT}
+                content={runHint(runLabel(run))}
               >
                 <SendButton run={run} />
               </Hint>
@@ -190,41 +180,17 @@ function QuickRunBody({
 }
 
 function ResultPanel({ run, onEdit }: { run: HandlerRun; onEdit: () => void }) {
-  const view = useRunView(run.runner.latestRun, run.runner);
-  if (!view) {
+  const record = run.runner.latestRun;
+  if (!record) {
     return null;
   }
-  const invocationId = viewInvocationId(view);
-  const value = viewValue(view);
-  const message = viewMessage(view);
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-2.5 rounded-xl border bg-surface p-3 shadow-xs">
-        <div className="flex min-w-0 items-center gap-2">
-          <StatusDot tone={viewTone(view)} />
-          <span className="text-sm font-semibold text-primary">
-            {viewTitle(view)}
-          </span>
-          {invocationId && (
-            <div className="ml-auto flex min-w-0">
-              <InvocationIdLink invocationId={invocationId} />
-            </div>
-          )}
-        </div>
-        {message && (
-          <p className="line-clamp-4 font-mono text-xs break-words text-danger-strong">
-            {message}
-          </p>
-        )}
-        {view.phase === 'invocation' && !view.isDone && !message && (
-          <p className="text-xs text-muted">
-            {view.note ??
-              'Restate is running it. You can close this; it keeps going.'}
-          </p>
-        )}
-        {value && <ValueBlock result={value} className="max-h-48" />}
-      </div>
-      <div className="flex items-center gap-2">
+    <RunResult
+      key={record.id}
+      record={record}
+      runner={run.runner}
+      variant="compact"
+      actions={
         <Button
           variant="secondary"
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
@@ -233,22 +199,7 @@ function ResultPanel({ run, onEdit }: { run: HandlerRun; onEdit: () => void }) {
           <Icon name={IconName.Pencil} className="h-3.5 w-3.5 text-subtle" />
           Edit and run again
         </Button>
-        {invocationId && (
-          <div className="ml-auto">
-            <Hint
-              stage="playground-result"
-              placement="bottom end"
-              content={RESULT_HINT}
-            >
-              <OpenInvocation
-                invocationId={invocationId}
-                variant="button"
-                isPulsing={view.phase === 'invocation'}
-              />
-            </Hint>
-          </div>
-        )}
-      </div>
-    </div>
+      }
+    />
   );
 }

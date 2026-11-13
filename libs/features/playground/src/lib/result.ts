@@ -1,12 +1,8 @@
-import { statusText } from './status';
-
 export type PlaygroundResult =
   | {
       kind: 'response';
       status: number;
-      statusText: string;
       durationMs: number;
-      headers: [string, string][];
       contentType?: string;
       text?: string;
       bytes: Uint8Array;
@@ -81,9 +77,7 @@ export async function toPlaygroundResult(
   return {
     kind: 'response',
     status: response.status,
-    statusText: statusText(response.status, response.statusText),
     durationMs,
-    headers: Array.from(response.headers.entries()),
     contentType,
     text,
     bytes,

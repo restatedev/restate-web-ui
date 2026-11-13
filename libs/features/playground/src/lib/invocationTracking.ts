@@ -216,5 +216,3 @@ export function useInvocationTracking({
     checkAgain,
   };
 }
-
-export type TrackingState = ReturnType<typeof useInvocationTracking>;

@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { Button } from '@restate/ui-button';
 import { DropdownItem } from '@restate/ui-dropdown';
 import { Switch } from '@restate/ui-form-field';
@@ -65,7 +65,7 @@ const fieldInputStyles = tv({
   },
 });
 
-export function ParamField({
+function ParamField({
   runner,
   serviceType,
   parameter,
@@ -75,6 +75,8 @@ export function ParamField({
   parameter: ContractParameter;
 }) {
   const name = parameterField(parameter);
+  const id = useId();
+  const errorId = `${id}-error`;
   const error = runner.issueFor(name);
   const label = fieldLabel(parameter, serviceType);
   const info = fieldInfo(parameter, serviceType);
@@ -82,7 +84,7 @@ export function ParamField({
     <div className="flex min-w-0 flex-col gap-1">
       <div className="flex min-h-5 min-w-0 items-center gap-1">
         <label
-          htmlFor={name}
+          htmlFor={id}
           className="min-w-0 truncate text-0.5xs font-medium text-secondary"
         >
           {label}
@@ -95,12 +97,13 @@ export function ParamField({
       </div>
       <div className="flex min-w-0 items-center gap-1.5">
         <input
-          id={name}
+          id={id}
           value={runner.parameterValue(parameter)}
           placeholder={fieldPlaceholder(parameter, serviceType)}
           autoComplete="off"
           spellCheck={false}
           aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
           className={fieldInputStyles({ isInvalid: Boolean(error) })}
           onKeyDown={(event) => {
             if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
@@ -124,7 +127,7 @@ export function ParamField({
         )}
       </div>
       {error && (
-        <p className="text-xs text-danger">
+        <p id={errorId} className="text-xs text-danger">
           {error === 'Required' ? `${label} is required` : error}
         </p>
       )}
@@ -168,10 +171,10 @@ export function ParameterFields({
   );
 }
 
-export function hasInputSchema(run: OperationRun) {
+function hasInputSchema(run: OperationRun) {
   const body = run.operation.body;
-  return (
-    run.hasInput && body?.schema !== undefined && /json/i.test(body.contentType)
+  return Boolean(
+    body && body.schema !== undefined && isJsonContentType(body.contentType),
   );
 }
 
@@ -179,8 +182,7 @@ function docsHref(description?: string) {
   return description?.match(/\[[^\]]+\]\((https?:[^)\s]+)\)/)?.[1];
 }
 
-export const FLOW_CONTROL_DOCS =
-  'https://docs.restate.dev/services/flow-control';
+const FLOW_CONTROL_DOCS = 'https://docs.restate.dev/services/flow-control';
 
 function fieldInfo(
   parameter: ContractParameter,
@@ -243,7 +245,7 @@ function Mono({ children }: { children: ReactNode }) {
   return <code className="font-mono text-[0.95em]">{children}</code>;
 }
 
-export function SchemaPeek({ run }: { run: OperationRun }) {
+function SchemaPeek({ run }: { run: OperationRun }) {
   if (!hasInputSchema(run)) {
     return null;
   }
@@ -266,7 +268,7 @@ const editorStyles = tv({
   base: 'min-h-24',
 });
 
-export function ResetInput({ run }: { run: OperationRun }) {
+function ResetInput({ run }: { run: OperationRun }) {
   const { runner } = run;
   if (
     runner.exampleBody === '' ||
@@ -291,7 +293,47 @@ export function ResetInput({ run }: { run: OperationRun }) {
   );
 }
 
-export function JsonInput({
+export function InputField({
+  run,
+  maxHeight,
+  label,
+}: {
+  run: OperationRun;
+  maxHeight?: number;
+  label?: string;
+}) {
+  const { draft } = run.runner;
+  const [isOpen, setIsOpen] = useState(
+    () =>
+      !run.isInputOptional || draft.rawBody !== '' || draft.bodyMode === 'file',
+  );
+  if (!run.hasInput) {
+    return null;
+  }
+  if (!isOpen) {
+    return (
+      <div className="flex min-h-7 items-center gap-2">
+        <span className="text-0.5xs font-medium text-secondary">
+          {label ?? 'Input'}
+        </span>
+        <InfoPeek label="Input">
+          This handler has no input schema, so it may take no input at all
+        </InfoPeek>
+        <Button
+          variant="secondary"
+          className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
+          onClick={() => setIsOpen(true)}
+        >
+          <Icon name={IconName.Plus} className="h-3.5 w-3.5 text-subtle" />
+          Add input
+        </Button>
+      </div>
+    );
+  }
+  return <JsonInput run={run} maxHeight={maxHeight} label={label} />;
+}
+
+function JsonInput({
   run,
   className,
   label = 'Input',
@@ -414,6 +456,37 @@ const sendStyles = tv({
   },
 });
 
+export function RunButton({
+  runner,
+  label,
+  className,
+}: {
+  runner: OperationRun['runner'];
+  label: string;
+  className?: string;
+}) {
+  return (
+    <Button
+      type="submit"
+      variant="primary"
+      disabled={runner.isSending}
+      aria-keyshortcuts="Meta+Enter Control+Enter"
+      className={sendStyles({ className })}
+    >
+      {runner.isSending ? (
+        <Spinner className="h-3.5 w-3.5" />
+      ) : (
+        <Icon name={IconName.Play} className="h-3.5 w-3.5 fill-current" />
+      )}
+      {label}
+    </Button>
+  );
+}
+
+export function runLabel(run: HandlerRun) {
+  return run.availableModes.length > 0 ? MODE_COPY[run.base].label : 'Run';
+}
+
 export function SendButton({
   run,
   className,
@@ -424,20 +497,11 @@ export function SendButton({
   const { runner, base, availableModes } = run;
   const isSplit = availableModes.length > 1;
   const button = (
-    <Button
-      type="submit"
-      variant="primary"
-      disabled={runner.isSending}
-      aria-keyshortcuts="Meta+Enter Control+Enter"
+    <RunButton
+      runner={runner}
+      label={runLabel(run)}
       className={sendStyles({ isSplit, className })}
-    >
-      {runner.isSending ? (
-        <Spinner className="h-3.5 w-3.5" />
-      ) : (
-        <Icon name={IconName.Play} className="h-3.5 w-3.5 fill-current" />
-      )}
-      {availableModes.length > 0 ? MODE_COPY[base].label : 'Run'}
-    </Button>
+    />
   );
   if (!isSplit) {
     return button;
@@ -480,7 +544,7 @@ const flowControlStyles = tv({
   variants: { isWide: { true: 'col-span-2', false: '' } },
 });
 
-export function hasAdvancedOptions(run: HandlerRun) {
+function hasAdvancedOptions(run: HandlerRun) {
   return (
     run.advancedParameters.length > 0 || run.canScope || run.requiresApiKey
   );

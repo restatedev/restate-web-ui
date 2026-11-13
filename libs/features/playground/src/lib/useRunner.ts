@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildRequest,
   isJsonContentType,
@@ -22,28 +22,23 @@ import { rememberRoleValue } from './sessionState';
 
 export interface RunRecord {
   id: number;
-  startedAt: number;
-  mode: 'call' | 'send' | 'other';
-  handlerName: string;
-  request: ReturnType<typeof buildRequest>;
-  input: unknown;
   result?: PlaygroundResult;
   isRunning: boolean;
 }
 
-export type Draft = {
+type Draft = {
   parameters: Record<string, string>;
   rawBody: string;
   bodyMode: 'text' | 'file';
   file?: File;
 };
 
-const API_KEY_PLACEHOLDER = '<API_KEY>';
+export const API_KEY_PLACEHOLDER = '<API_KEY>';
 
 const drafts = new Map<string, Draft>();
 
-function draftKey(ingressUrl: string, service: string, handler: string) {
-  return `${ingressUrl}::${service}::${handler}`;
+function draftKey(ingressUrl: string, service: string, draftName: string) {
+  return `${ingressUrl}::${service}::${draftName}`;
 }
 
 export function useRunner({
@@ -52,8 +47,7 @@ export function useRunner({
   operation,
   ingressUrl,
   fetcher,
-  handlerName,
-  mode,
+  draftName,
   apiKey,
 }: {
   service: string;
@@ -61,13 +55,12 @@ export function useRunner({
   operation: ContractOperation;
   ingressUrl: string;
   fetcher: typeof fetch;
-  handlerName: string;
-  mode: 'call' | 'send' | 'other';
+  draftName: string;
   apiKey?: string;
 }) {
   const document = contract.document;
   const body = operation.body;
-  const key = draftKey(ingressUrl, service, handlerName);
+  const key = draftKey(ingressUrl, service, draftName);
 
   const exampleBody = useMemo(
     () => (body ? exampleBodyText(operation, document) : ''),
@@ -88,8 +81,15 @@ export function useRunner({
       },
   );
 
+  const [issues, setIssues] = useState<RequestIssue[]>([]);
+  const [latestRun, setLatestRun] = useState<RunRecord>();
+  const [isSending, setIsSending] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const runIdRef = useRef(0);
+
   const setDraft = useCallback(
     (update: (previous: Draft) => Draft) => {
+      setIssues((current) => current.filter(({ field }) => field !== 'body'));
       setDraftState((previous) => {
         const next = update(previous);
         drafts.set(key, next);
@@ -99,11 +99,15 @@ export function useRunner({
     [key],
   );
 
-  const [issues, setIssues] = useState<RequestIssue[]>([]);
-  const [runs, setRuns] = useState<RunRecord[]>([]);
-  const [isSending, setIsSending] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
-  const runIdRef = useRef(0);
+  useEffect(
+    () => () => {
+      abortRef.current?.abort();
+      abortRef.current = null;
+      setIsSending(false);
+      setLatestRun((current) => (current?.isRunning ? undefined : current));
+    },
+    [operation.id],
+  );
 
   const parameterValue = (parameter: ContractParameter) =>
     draft.parameters[parameterField(parameter)] ??
@@ -162,28 +166,24 @@ export function useRunner({
       contract.security.bearer || apiKey ? API_KEY_PLACEHOLDER : undefined,
   });
 
-  const run = async (record: Omit<RunRecord, 'result' | 'isRunning'>) => {
+  const run = async (id: number) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     setIsSending(true);
-    setRuns((current) => [{ ...record, isRunning: true }, ...current]);
-    const result = await execute(fetcher, record.request, controller.signal);
+    setLatestRun({ id, isRunning: true });
+    const result = await execute(fetcher, request, controller.signal);
     if (abortRef.current === controller) {
       abortRef.current = null;
       setIsSending(false);
     }
-    if (result) {
-      setRuns((current) =>
-        current.map((entry) =>
-          entry.id === record.id
-            ? { ...entry, result, isRunning: false }
-            : entry,
-        ),
-      );
-    } else {
-      setRuns((current) => current.filter((entry) => entry.id !== record.id));
-    }
+    setLatestRun((current) =>
+      current?.id !== id
+        ? current
+        : result
+          ? { id, result, isRunning: false }
+          : undefined,
+    );
   };
 
   const submit = () => {
@@ -229,21 +229,14 @@ export function useRunner({
       return;
     }
     runIdRef.current += 1;
-    void run({
-      id: runIdRef.current,
-      startedAt: Date.now(),
-      mode,
-      handlerName,
-      request,
-      input: draft.rawBody,
-    });
+    void run(runIdRef.current);
   };
 
   const cancel = () => {
     abortRef.current?.abort();
     abortRef.current = null;
     setIsSending(false);
-    setRuns((current) => current.filter((entry) => !entry.isRunning));
+    setLatestRun((current) => (current?.isRunning ? undefined : current));
   };
 
   const runTool = useCallback(
@@ -287,9 +280,7 @@ export function useRunner({
     request,
     sampleRequest,
     bodyText,
-    runs,
-    latestRun: runs[0],
-    clearRuns: () => setRuns([]),
+    latestRun,
     isSending,
     submit,
     cancel,

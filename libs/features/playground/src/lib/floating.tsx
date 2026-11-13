@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useId,
   useRef,
   useState,
   type ReactNode,
@@ -32,11 +33,7 @@ const hintStyles = tv({
   },
 });
 
-export type HintPlacement =
-  | 'bottom start'
-  | 'bottom end'
-  | 'top start'
-  | 'top end';
+type HintPlacement = 'bottom start' | 'bottom end' | 'top start' | 'top end';
 
 type HintLayout = {
   top: number;
@@ -119,24 +116,36 @@ function useHintLayout(
   return layout;
 }
 
-function useTopLayer() {
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-  useEffect(() => {
+function useTopLayer(anchorRef: RefObject<HTMLElement | null>) {
+  const [container] = useState(() => {
+    if (typeof document === 'undefined') {
+      return null;
+    }
     const element = document.createElement('div');
     element.setAttribute('data-react-aria-top-layer', 'true');
-    document.body.appendChild(element);
-    setContainer(element);
-    return () => element.remove();
-  }, []);
+    return element;
+  });
+  useEffect(() => {
+    if (!container) {
+      return;
+    }
+    const host = anchorRef.current?.closest('[role=dialog]') ?? document.body;
+    host.appendChild(container);
+    return () => container.remove();
+  }, [anchorRef, container]);
   return container;
 }
 
-export function FloatingLayer({
+function FloatingLayer({
   anchorRef,
   placement,
   className,
   arrowClassName,
   layerRef,
+  id,
+  role,
+  ariaLabel,
+  autoFocus,
   children,
 }: {
   anchorRef: RefObject<HTMLElement | null>;
@@ -144,14 +153,24 @@ export function FloatingLayer({
   className?: string;
   arrowClassName?: string;
   layerRef?: RefObject<HTMLDivElement | null>;
+  id?: string;
+  role?: string;
+  ariaLabel?: string;
+  autoFocus?: boolean;
   children: ReactNode;
 }) {
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const container = useTopLayer();
+  const container = useTopLayer(anchorRef);
   const layout = useHintLayout(anchorRef, bubbleRef, placement);
+  const isMeasured = Boolean(layout?.isMeasured);
+  useEffect(() => {
+    if (autoFocus && isMeasured) {
+      bubbleRef.current?.focus();
+    }
+  }, [autoFocus, isMeasured]);
   const styles = hintStyles({
     side: layout?.side ?? 'bottom',
-    isMeasured: Boolean(layout?.isMeasured),
+    isMeasured,
   });
   if (!container || !layout) {
     return null;
@@ -162,7 +181,14 @@ export function FloatingLayer({
       className={styles.layer()}
       style={{ top: layout.top, left: layout.left }}
     >
-      <div ref={bubbleRef} className={className}>
+      <div
+        ref={bubbleRef}
+        id={id}
+        role={role}
+        aria-label={ariaLabel}
+        tabIndex={-1}
+        className={className}
+      >
         {arrowClassName && (
           <svg
             viewBox="0 0 10 6"
@@ -221,7 +247,9 @@ function AnchoredHint({
   );
 }
 
-export type HintStage = 'playground-run' | 'playground-result';
+type HintStage = 'playground-run' | 'playground-result';
+
+const dismissedStages = new Set<HintStage>();
 
 export function Hint({
   stage,
@@ -240,7 +268,9 @@ export function Hint({
 }) {
   const { OnboardingGuide } = useRestateContext();
   const isOnboarding = useOnboarding();
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(() =>
+    dismissedStages.has(stage),
+  );
   if (!isShown) {
     return children;
   }
@@ -258,22 +288,27 @@ export function Hint({
     <AnchoredHint
       content={content}
       placement={placement}
-      onDismiss={() => setIsDismissed(true)}
+      onDismiss={() => {
+        dismissedStages.add(stage);
+        setIsDismissed(true);
+      }}
     >
       {children}
     </AnchoredHint>
   );
 }
 
-export function Em({ children }: { children: ReactNode }) {
+function Em({ children }: { children: ReactNode }) {
   return <span className="font-medium text-inverse">{children}</span>;
 }
 
-export const RUN_HINT = (
-  <>
-    Press <Em>Send</Em> to start an <Em>invocation</Em> with this input
-  </>
-);
+export function runHint(label: string) {
+  return (
+    <>
+      Press <Em>{label}</Em> to start an <Em>invocation</Em> with this input
+    </>
+  );
+}
 
 export const RESULT_HINT = (
   <>
@@ -290,7 +325,7 @@ const peekButtonStyles = tv({
 });
 
 const peekPanelStyles = tv({
-  base: 'rounded-xl border border-tint bg-overlay p-3 shadow-lg',
+  base: 'rounded-xl border border-tint bg-overlay p-3 shadow-lg outline-hidden',
 });
 
 export function Peek({
@@ -304,8 +339,10 @@ export function Peek({
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
+  const panelId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
+  const [shouldFocus, setShouldFocus] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const schedule = (open: boolean, delay: number) => {
     clearTimeout(timer.current);
@@ -317,17 +354,25 @@ export function Peek({
       return;
     }
     const close = (event: Event) => {
-      if (event instanceof KeyboardEvent && event.key !== 'Escape') {
-        return;
+      if (event instanceof KeyboardEvent) {
+        if (event.key !== 'Escape') {
+          return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+        if (layerRef.current?.contains(document.activeElement)) {
+          triggerRef.current?.focus();
+        }
+      } else {
+        const target = event.target as Node | null;
+        if (
+          triggerRef.current?.contains(target) ||
+          layerRef.current?.contains(target)
+        ) {
+          return;
+        }
       }
-      const target = event.target as Node | null;
-      if (
-        event instanceof PointerEvent &&
-        (triggerRef.current?.contains(target) ||
-          layerRef.current?.contains(target))
-      ) {
-        return;
-      }
+      clearTimeout(timer.current);
       setIsPinned(false);
       setIsOpen(false);
     };
@@ -345,12 +390,14 @@ export function Peek({
         type="button"
         aria-label={label}
         aria-expanded={isOpen}
+        aria-controls={isOpen ? panelId : undefined}
         className={peekButtonStyles({ isOpen })}
         onPointerEnter={() => !isPinned && schedule(true, 600)}
         onPointerLeave={() => !isPinned && schedule(false, 120)}
-        onClick={() => {
+        onClick={(event) => {
           clearTimeout(timer.current);
           const next = !isPinned;
+          setShouldFocus(next && event.detail === 0);
           setIsPinned(next);
           setIsOpen(next);
         }}
@@ -362,6 +409,10 @@ export function Peek({
           anchorRef={triggerRef}
           placement="bottom start"
           layerRef={layerRef}
+          id={panelId}
+          role="dialog"
+          ariaLabel={label}
+          autoFocus={shouldFocus}
           className={peekPanelStyles({ className: panelClassName })}
         >
           <div

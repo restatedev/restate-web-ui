@@ -1,25 +1,17 @@
+import { useEffect, useState } from 'react';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { formatMilliseconds } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
 
-type StepEntry = {
-  index?: number;
-  type?: string;
-  category?: string;
-  name?: string;
-  isPending?: boolean;
-  isRetrying?: boolean;
-  resultType?: 'success' | 'failure' | 'void';
-  error?: { message?: string };
-  start?: string;
-  end?: string;
-};
-
 const HIDDEN_TYPES = new Set(['Input', 'Output']);
+const POLL_INTERVAL_MS = 1000;
+const POLL_LIMIT_MS = 5 * 60 * 1000;
+const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'killed']);
 
-function stepLabel(entry: StepEntry) {
+function stepLabel(entry: JournalEntryV2) {
   if (entry.name) return entry.name;
   switch (entry.type) {
     case 'Sleep':
@@ -38,7 +30,7 @@ function stepLabel(entry: StepEntry) {
   }
 }
 
-function stepDuration(entry: StepEntry) {
+function stepDuration(entry: JournalEntryV2) {
   if (!entry.start || !entry.end) return undefined;
   const ms = Date.parse(entry.end) - Date.parse(entry.start);
   return Number.isFinite(ms) && ms >= 0 ? formatMilliseconds(ms) : undefined;
@@ -56,7 +48,7 @@ const stepIconStyles = tv({
   },
 });
 
-function StepIcon({ entry }: { entry: StepEntry }) {
+function StepIcon({ entry }: { entry: JournalEntryV2 }) {
   const state = entry.isRetrying
     ? 'retrying'
     : entry.resultType === 'failure'
@@ -87,19 +79,33 @@ function StepIcon({ entry }: { entry: StepEntry }) {
 export function Steps({
   invocationId,
   isDone,
+  isLive,
   note,
 }: {
   invocationId: string;
   isDone: boolean;
+  isLive: boolean;
   note?: string;
 }) {
-  const { data } = useGetInvocationJournalWithInvocationV2(invocationId, {
-    refetchInterval: isDone ? false : 700,
-  });
-  const entries = (
-    (data as { journal?: { entries?: StepEntry[] } } | undefined)?.journal
-      ?.entries ?? []
-  ).filter(
+  const [startedAt] = useState(() => Date.now());
+  const { data, refetch } = useGetInvocationJournalWithInvocationV2(
+    invocationId,
+    {
+      refetchInterval: (query) =>
+        isLive &&
+        !isDone &&
+        !FINISHED.has(query.state.data?.status ?? '') &&
+        Date.now() - startedAt < POLL_LIMIT_MS
+          ? POLL_INTERVAL_MS
+          : false,
+    },
+  );
+  useEffect(() => {
+    if (isDone) {
+      void refetch();
+    }
+  }, [isDone, refetch]);
+  const entries = (data?.journal?.entries ?? []).filter(
     (entry) =>
       entry.category === 'command' && !HIDDEN_TYPES.has(entry.type ?? ''),
   );

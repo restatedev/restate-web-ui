@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { DialogTrigger } from 'react-aria-components';
 import { useSearchParams } from 'react-router';
 import { Button } from '@restate/ui-button';
+import { ErrorBoundary } from '@restate/ui-error';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { PopoverContent } from '@restate/ui-popover';
@@ -62,31 +63,39 @@ export function QuickRunPlayButton({
         </Button>
       </HoverTooltip>
       <PopoverContent placement="bottom start" className="max-w-none">
-        <Suspense
+        <ErrorBoundary
           fallback={
-            <div className="flex min-h-32 w-[30rem] items-center justify-center gap-2 text-sm text-muted">
-              <Spinner className="h-4 w-4" />
-              Loading…
-            </div>
+            <p className="w-[30rem] max-w-[calc(100vw-2rem)] p-4 text-sm text-muted">
+              Quick run couldn’t be displayed. Reload the page to try again.
+            </p>
           }
         >
-          <LazyQuickRun
-            service={service}
-            handler={handler}
-            onOpenFull={(name) => {
-              setIsOpen(false);
-              setSearchParams(
-                (previous) => {
-                  const next = new URLSearchParams(previous);
-                  next.set(SERVICE_PLAYGROUND_QUERY_PARAM, service);
-                  next.set(PLAYGROUND_HANDLER_QUERY_PARAM, name);
-                  return next;
-                },
-                { preventScrollReset: true },
-              );
-            }}
-          />
-        </Suspense>
+          <Suspense
+            fallback={
+              <div className="flex min-h-32 w-[30rem] items-center justify-center gap-2 text-sm text-muted">
+                <Spinner className="h-4 w-4" />
+                Loading…
+              </div>
+            }
+          >
+            <LazyQuickRun
+              service={service}
+              handler={handler}
+              onOpenFull={(name) => {
+                setIsOpen(false);
+                setSearchParams(
+                  (previous) => {
+                    const next = new URLSearchParams(previous);
+                    next.set(SERVICE_PLAYGROUND_QUERY_PARAM, service);
+                    next.set(PLAYGROUND_HANDLER_QUERY_PARAM, name);
+                    return next;
+                  },
+                  { preventScrollReset: true },
+                );
+              }}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </PopoverContent>
     </DialogTrigger>
   );

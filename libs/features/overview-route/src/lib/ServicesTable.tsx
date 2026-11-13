@@ -237,17 +237,17 @@ function PlaygroundLink({
   OnboardingGuide?: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
   const isQuickRun = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
-  const label = `Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`;
+  const target = handlerName ? `${serviceName}/${handlerName}` : serviceName;
   const link = isQuickRun ? (
     <QuickRunPlayButton
-      aria-label={label}
+      aria-label={`Quick run ${target}`}
       service={serviceName}
       handler={handlerName}
       isHighlighted={isOnboarding}
     />
   ) : (
     <PlaygroundIconLink
-      aria-label={label}
+      aria-label={`Open ${target} in Playground`}
       href={panelHref({ playground: serviceName, handler: handlerName })}
       isHighlighted={isOnboarding}
     />

@@ -1,7 +1,9 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
 import { useRestateContext } from '@restate/features-restate-context';
+import { formatMilliseconds } from '@restate/util-intl';
 import { formatJson } from '@restate/util-openapi';
 import { tv } from '@restate/util-styles';
 import {
@@ -9,11 +11,13 @@ import {
   type InvocationState,
 } from './invocationTracking';
 import type { PlaygroundResult } from './result';
-import { NOT_READY_STATUS } from './status';
+import { Hint, RESULT_HINT } from './floating';
+import { NOT_READY_STATUS, statusText } from './status';
+import { Steps } from './Steps';
 import type { RunRecord } from './useRunner';
-import type { HandlerRun } from './useHandlerRun';
+import type { OperationRun } from './useHandlerRun';
 
-export type RunView =
+type RunView =
   | { phase: 'sending' }
   | { phase: 'unreachable'; message: string }
   | { phase: 'rejected'; message: string; result: PlaygroundResult }
@@ -22,6 +26,7 @@ export type RunView =
       invocationId: string;
       state?: InvocationState;
       isDone: boolean;
+      isLive: boolean;
       isFailed: boolean;
       output?: PlaygroundResult;
       failure?: string;
@@ -50,9 +55,9 @@ function errorMessage(text?: string) {
   }
 }
 
-export function useRunView(
+function useRunView(
   run: RunRecord | undefined,
-  runner: HandlerRun['runner'],
+  runner: OperationRun['runner'],
 ): RunView | undefined {
   const result = run?.result;
   const sentId =
@@ -86,6 +91,7 @@ export function useRunView(
       invocationId: sentId,
       state: tracking.state,
       isDone: phase === 'completed',
+      isLive: phase === 'tracking' && tracking.state !== 'scheduled',
       isFailed: tracking.state === 'failed',
       output: phase === 'completed' ? tracking.tracking.output : undefined,
       failure: tracking.failure ?? undefined,
@@ -114,7 +120,8 @@ export function useRunView(
       phase: 'rejected',
       result,
       message:
-        errorMessage(result.text) ?? `Restate answered ${result.status}.`,
+        errorMessage(result.text) ??
+        `Restate answered ${[result.status, statusText(result.status)].filter(Boolean).join(' ')}`,
     };
   }
   return {
@@ -126,7 +133,7 @@ export function useRunView(
   };
 }
 
-export const STATE_LABEL: Record<InvocationState, string> = {
+const STATE_LABEL: Record<InvocationState, string> = {
   succeeded: 'Succeeded',
   failed: 'Failed',
   running: 'Running',
@@ -136,9 +143,9 @@ export const STATE_LABEL: Record<InvocationState, string> = {
   ready: 'Waiting to start',
 };
 
-export type Tone = 'neutral' | 'running' | 'success' | 'danger' | 'warning';
+type Tone = 'neutral' | 'running' | 'success' | 'danger' | 'warning';
 
-export function viewTone(view: RunView): Tone {
+function viewTone(view: RunView): Tone {
   switch (view.phase) {
     case 'sending':
       return 'running';
@@ -163,7 +170,7 @@ function isNotReady(result: PlaygroundResult) {
   return result.kind === 'response' && result.status === NOT_READY_STATUS;
 }
 
-export function viewTitle(view: RunView) {
+function viewTitle(view: RunView) {
   switch (view.phase) {
     case 'sending':
       return 'Sending…';
@@ -181,7 +188,7 @@ export function viewTitle(view: RunView) {
   }
 }
 
-export function viewValue(view: RunView) {
+function viewValue(view: RunView) {
   if (view.phase === 'answered') {
     return view.result;
   }
@@ -191,7 +198,7 @@ export function viewValue(view: RunView) {
   return undefined;
 }
 
-export function viewMessage(view: RunView) {
+function viewMessage(view: RunView) {
   switch (view.phase) {
     case 'unreachable':
       return `${view.message}. Check that Restate is running and reachable from this browser.`;
@@ -206,7 +213,7 @@ export function viewMessage(view: RunView) {
   }
 }
 
-export function viewInvocationId(view?: RunView) {
+function viewInvocationId(view?: RunView) {
   if (view?.phase === 'invocation') {
     return view.invocationId;
   }
@@ -229,7 +236,7 @@ const dotStyles = tv({
   },
 });
 
-export function StatusDot({ tone }: { tone: Tone }) {
+function StatusDot({ tone }: { tone: Tone }) {
   return <span className={dotStyles({ tone })} />;
 }
 
@@ -237,7 +244,7 @@ const valueStyles = tv({
   base: 'max-h-64 overflow-auto rounded-lg border border-inset bg-inset px-2.5 py-2 font-mono text-xs break-all whitespace-pre-wrap text-secondary',
 });
 
-export function ValueBlock({
+function ValueBlock({
   result,
   className,
 }: {
@@ -263,7 +270,7 @@ export function ValueBlock({
   );
 }
 
-export function invocationHref(baseUrl: string, invocationId: string) {
+function invocationHref(baseUrl: string, invocationId: string) {
   return `${baseUrl}/invocations/${invocationId}`;
 }
 
@@ -274,7 +281,7 @@ const openStyles = tv({
   },
 });
 
-export function OpenInvocation({
+function OpenInvocation({
   invocationId,
   variant = 'secondary-button',
   isPulsing = false,
@@ -302,7 +309,7 @@ export function OpenInvocation({
   );
 }
 
-export function InvocationIdLink({ invocationId }: { invocationId: string }) {
+function InvocationIdLink({ invocationId }: { invocationId: string }) {
   const { baseUrl } = useRestateContext();
   return (
     <Link
@@ -315,5 +322,172 @@ export function InvocationIdLink({ invocationId }: { invocationId: string }) {
       <span className="min-w-0 truncate">{invocationId}</span>
       <Icon name={IconName.ExternalLink} className="h-3 w-3 shrink-0" />
     </Link>
+  );
+}
+
+const runResultStyles = tv({
+  slots: {
+    root: 'flex min-w-0 flex-col',
+    box: 'flex min-w-0 flex-col rounded-xl border bg-surface shadow-xs',
+    footer: 'flex flex-wrap items-center gap-2',
+    trailing: 'flex items-center gap-2',
+  },
+  variants: {
+    variant: {
+      full: { root: 'scroll-mb-6', box: 'gap-3 p-4' },
+      compact: { root: 'gap-3', box: 'gap-2.5 p-3' },
+    },
+    hasActions: { true: { trailing: 'ml-auto' }, false: {} },
+  },
+});
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+export function RunResult({
+  record,
+  runner,
+  variant = 'full',
+  isLookup = false,
+  actions,
+}: {
+  record: RunRecord;
+  runner: OperationRun['runner'];
+  variant?: 'full' | 'compact';
+  isLookup?: boolean;
+  actions?: ReactNode;
+}) {
+  const view = useRunView(record, runner);
+  const ref = useRef<HTMLElement>(null);
+  const startedRunning = useRef(record.isRunning);
+  useEffect(() => {
+    if (variant === 'full' && startedRunning.current) {
+      ref.current?.scrollIntoView({
+        block: 'nearest',
+        behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+      });
+    }
+  }, [variant]);
+  if (!view) {
+    return null;
+  }
+  const styles = runResultStyles({ variant, hasActions: Boolean(actions) });
+  const invocationId = viewInvocationId(view);
+  const value = viewValue(view);
+  const message = viewMessage(view);
+  const title = viewTitle(view);
+  const shownTitle = isLookup && title === 'Succeeded' ? 'Done' : title;
+  const isCompact = variant === 'compact';
+  const content = (
+    <>
+      <div className="flex min-w-0 items-center gap-2">
+        <StatusDot tone={viewTone(view)} />
+        <span
+          className="text-sm font-semibold text-primary"
+          role="status"
+          aria-live="polite"
+        >
+          {shownTitle}
+        </span>
+        {!isCompact &&
+          view.phase === 'answered' &&
+          view.result.kind === 'response' && (
+            <span className="text-2xs text-subtle tabular-nums">
+              {formatMilliseconds(Math.round(view.result.durationMs))}
+            </span>
+          )}
+        {invocationId && (
+          <div className="ml-auto flex min-w-0">
+            <InvocationIdLink invocationId={invocationId} />
+          </div>
+        )}
+      </div>
+      {message && (
+        <p className="line-clamp-4 font-mono text-xs break-words text-danger-strong">
+          {message}
+        </p>
+      )}
+      {view.phase === 'invocation' &&
+        (isCompact ? (
+          !view.isDone &&
+          !message && (
+            <p className="text-xs text-muted">
+              {view.note ??
+                'Restate is running it. You can close this; it keeps going.'}
+            </p>
+          )
+        ) : (
+          <Steps
+            invocationId={view.invocationId}
+            isDone={view.isDone}
+            isLive={view.isLive}
+            note={view.note}
+          />
+        ))}
+      {value &&
+        (isCompact ? (
+          <ValueBlock result={value} className="max-h-48" />
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-2xs font-medium text-muted uppercase">
+              Result
+            </span>
+            <ValueBlock result={value} />
+          </div>
+        ))}
+    </>
+  );
+  const checkAgain = view.phase === 'invocation' ? view.checkAgain : undefined;
+  const footer = (actions || invocationId || checkAgain) && (
+    <div className={styles.footer()}>
+      {actions}
+      <div className={styles.trailing()}>
+        {checkAgain && (
+          <Button
+            variant="secondary"
+            className="rounded-lg px-3 py-1.5 text-sm"
+            onClick={checkAgain}
+          >
+            Check again
+          </Button>
+        )}
+        {invocationId && (
+          <Hint
+            stage="playground-result"
+            placement={actions ? 'bottom end' : 'bottom start'}
+            content={RESULT_HINT}
+          >
+            <OpenInvocation
+              invocationId={invocationId}
+              variant={
+                view.phase === 'invocation' || isCompact
+                  ? 'button'
+                  : 'secondary-button'
+              }
+              isPulsing={view.phase === 'invocation' && view.isDone}
+            />
+          </Hint>
+        )}
+      </div>
+    </div>
+  );
+  return (
+    <section ref={ref} aria-label="Result" className={styles.root()}>
+      {isCompact ? (
+        <>
+          <div className={styles.box()}>{content}</div>
+          {footer}
+        </>
+      ) : (
+        <div className={styles.box()}>
+          {content}
+          {footer}
+        </div>
+      )}
+    </section>
   );
 }

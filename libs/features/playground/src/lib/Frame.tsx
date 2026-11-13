@@ -13,6 +13,7 @@ import { tv } from '@restate/util-styles';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { ServiceTarget } from '@restate/features-service-target';
+import { isJsonContentType } from '@restate/util-openapi';
 import type {
   ContractHandler,
   HandlerMode,
@@ -23,6 +24,7 @@ import type {
 } from '@restate/util-openapi';
 import { CodeSamples } from './CodeSamples';
 import { toolId } from './names';
+import { API_KEY_PLACEHOLDER } from './useRunner';
 import { JsonSchemaTree } from '@restate/ui-json-schema';
 import { useServiceContract } from './useServiceContract';
 import type { HandlerRun } from './useHandlerRun';
@@ -99,19 +101,24 @@ const KIND_NOTE: Partial<Record<RestateHandlerKind, string>> = {
 export function HandlerSwitcher({
   contract,
   handler,
+  tool,
   handlerKinds,
   serviceType,
   serviceKey,
+  withTools = false,
   onSelect,
 }: {
   contract: ServiceContract;
-  handler: ContractHandler;
+  handler?: ContractHandler;
+  tool?: InvocationToolKind;
   handlerKinds: Map<string, RestateHandlerKind | undefined>;
   serviceType?: RestateServiceType;
   serviceKey?: string;
-  onSelect: (handler: string) => void;
+  withTools?: boolean;
+  onSelect: (id: string) => void;
 }) {
-  if (contract.handlers.length < 2) {
+  const tools = withTools ? contract.invocationTools : [];
+  if (handler && contract.handlers.length + tools.length < 2) {
     return (
       <ServiceTarget
         service={contract.name}
@@ -125,6 +132,8 @@ export function HandlerSwitcher({
       />
     );
   }
+  const label = handler ? `${handler.name}()` : tool ? TOOL_LABEL[tool] : '';
+  const selected = handler ? handler.name : tool ? toolId(tool) : '';
   return (
     <ServiceTarget
       service={contract.name}
@@ -139,15 +148,19 @@ export function HandlerSwitcher({
         <DropdownTrigger>
           <Button
             variant="icon"
-            aria-label={`Handler ${handler.name}, change handler`}
+            aria-label={`${label}, choose another handler`}
             className="-mx-1.5 flex h-full min-w-0 items-center gap-1 rounded-sm py-0 pr-1 pl-0.5 [font-size:inherit] [line-height:inherit] text-inherit shadow-none hover:bg-tint-subtle pressed:bg-tint-strong"
           >
-            <Icon
-              name={IconName.Function}
-              className="-mr-1 h-5 w-5 shrink-0 text-subtle"
-            />
-            <span className="min-w-0 truncate font-medium text-muted italic">
-              {handler.name}()
+            {handler && (
+              <Icon
+                name={IconName.Function}
+                className="-mr-1 h-5 w-5 shrink-0 text-subtle"
+              />
+            )}
+            <span
+              className={switcherLabelStyles({ isHandler: Boolean(handler) })}
+            >
+              {label}
             </span>
             <Icon
               name={IconName.ChevronsUpDown}
@@ -159,7 +172,7 @@ export function HandlerSwitcher({
           <DropdownSection title="Handlers">
             <DropdownMenu
               selectable
-              selectedItems={[handler.name]}
+              selectedItems={[selected]}
               onSelect={(key) => onSelect(String(key))}
             >
               {contract.handlers.map((candidate) => {
@@ -186,10 +199,45 @@ export function HandlerSwitcher({
               })}
             </DropdownMenu>
           </DropdownSection>
+          {tools.length > 0 && (
+            <DropdownSection title="Invocations">
+              <DropdownMenu
+                selectable
+                selectedItems={[selected]}
+                onSelect={(key) => onSelect(String(key))}
+              >
+                {tools.map((candidate) => (
+                  <DropdownItem
+                    key={candidate.kind}
+                    value={toolId(candidate.kind)}
+                  >
+                    {TOOL_LABEL[candidate.kind]}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </DropdownSection>
+          )}
         </DropdownPopover>
       </Dropdown>
     </ServiceTarget>
   );
+}
+
+const switcherLabelStyles = tv({
+  base: 'min-w-0 truncate font-medium text-muted',
+  variants: { isHandler: { true: 'italic', false: '' } },
+});
+
+function downloadSpec(contract: ServiceContract) {
+  const blob = new Blob([JSON.stringify(contract.document, null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `${contract.name}.openapi.json`;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 export function CodeView({
@@ -203,7 +251,15 @@ export function CodeView({
 }) {
   const { runner, serviceType, contract, handler, operation, base } = run;
   return (
-    <div className="[&_code]:text-xs [&_code]:leading-normal">
+    <div className="flex flex-col gap-2 [&_code]:text-xs [&_code]:leading-normal">
+      <button
+        type="button"
+        className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-xs text-muted outline-offset-2 outline-focus hover:bg-tint hover:text-secondary focus-visible:outline-2"
+        onClick={() => downloadSpec(contract)}
+      >
+        <Icon name={IconName.Download} className="h-3.5 w-3.5" />
+        Download OpenAPI
+      </button>
       <CodeSamples
         samples={{
           request: runner.sampleRequest,
@@ -226,8 +282,16 @@ export function CodeView({
                     runner.roleValue('idempotencyKey') || undefined,
                   limitKey: runner.roleValue('limitKey') || undefined,
                   delayMs: runner.delayMs,
-                  body: runner.bodyText || undefined,
+                  body:
+                    runner.draft.bodyMode === 'text'
+                      ? runner.bodyText || undefined
+                      : undefined,
+                  hasFileBody: runner.draft.bodyMode === 'file',
                   bodyContentType: operation.body?.contentType,
+                  authorization:
+                    run.requiresApiKey || run.apiKeyState.isVisible
+                      ? `Bearer ${API_KEY_PLACEHOLDER}`
+                      : undefined,
                 }
               : undefined,
         }}
@@ -260,13 +324,13 @@ export function SchemaView({ run }: { run: HandlerRun }) {
     <div className="flex flex-col gap-4">
       <section aria-label="Input" className={styles.section()}>
         <h3 className={styles.title()}>Input</h3>
-        {body && (body.schema !== undefined || body.required) ? (
+        {body ? (
           <JsonSchemaTree
             schema={body.schema}
             root={contract.document}
             mode="write"
             emptyText={
-              /json/i.test(body.contentType)
+              isJsonContentType(body.contentType)
                 ? 'Any JSON value'
                 : `Raw ${body.contentType} content`
             }
@@ -283,7 +347,7 @@ export function SchemaView({ run }: { run: HandlerRun }) {
             root={contract.document}
             mode="read"
             emptyText={
-              output.contentType && !/json/i.test(output.contentType)
+              output.contentType && !isJsonContentType(output.contentType)
                 ? `Raw ${output.contentType} content`
                 : 'Any JSON value'
             }
@@ -305,6 +369,12 @@ const railItemStyles = tv({
     },
   },
 });
+
+function isDeprecated(handler: ContractHandler) {
+  return Object.values(handler.modes).some(
+    (operation) => operation?.deprecated,
+  );
+}
 
 export const TOOL_LABEL: Record<InvocationToolKind, string> = {
   attach: 'Wait for a result',
@@ -352,6 +422,9 @@ export function HandlerRail({
                   </span>
                   {kind === 'Shared' && (
                     <span className="text-2xs text-subtle">shared</span>
+                  )}
+                  {isDeprecated(candidate) && (
+                    <span className="text-2xs text-warning">deprecated</span>
                   )}
                 </span>
                 {candidate.description && (

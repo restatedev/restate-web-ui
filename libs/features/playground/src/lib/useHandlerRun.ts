@@ -10,9 +10,9 @@ import type {
 import { useApiKey } from './sessionState';
 import { editorSchemas } from './request';
 import { usePlaygroundFetcher } from './usePlaygroundFetcher';
-import { useRunner, type RunRecord } from './useRunner';
+import { useRunner } from './useRunner';
 
-export function isAdvancedParameter(parameter: ContractParameter) {
+function isAdvancedParameter(parameter: ContractParameter) {
   return (
     !parameter.required &&
     parameter.role !== undefined &&
@@ -32,7 +32,6 @@ export function useOperationRun({
   serviceType,
   draftName,
   handlerName,
-  mode,
 }: {
   service: string;
   contract: ServiceContract;
@@ -41,7 +40,6 @@ export function useOperationRun({
   serviceType?: RestateServiceType;
   draftName: string;
   handlerName?: string;
-  mode: RunRecord['mode'];
 }) {
   const fetcher = usePlaygroundFetcher(service, handlerName);
   const [apiKeyState, setApiKeyState] = useApiKey(ingressUrl);
@@ -52,8 +50,7 @@ export function useOperationRun({
     operation,
     ingressUrl,
     fetcher,
-    handlerName: draftName,
-    mode,
+    draftName,
     apiKey,
   });
   const schemas = useMemo(
@@ -74,7 +71,10 @@ export function useOperationRun({
     operation,
     draftName,
     schemas,
-    hasInput: Boolean(body && (body.schema !== undefined || body.required)),
+    hasInput: Boolean(body),
+    isInputOptional: Boolean(
+      body && body.schema === undefined && !body.required,
+    ),
     mainParameters: runner.parameters.filter(
       (parameter) =>
         !isAdvancedParameter(parameter) && !isScopeParameter(parameter),
@@ -136,7 +136,6 @@ export function useHandlerRun({
     serviceType,
     draftName: handler.name,
     handlerName: handler.name,
-    mode: availableModes.length > 0 ? base : 'other',
   });
 
   return {
