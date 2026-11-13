@@ -126,7 +126,7 @@ function digitCount(n: number) {
 }
 
 const styles = tv({
-  base: "peer group relative flex h-9 min-w-0 items-center border-b-transparent [&:not(:has([data-entry]>*))]:hidden [&[data-depth='true']_[data-border]]:border-l",
+  base: 'peer group relative flex h-9 min-w-0 items-center border-b-transparent [&:not(:has([data-entry]>*))]:hidden',
   variants: {
     awaiting: {
       suspended: 'bg-emphasis/40',
@@ -143,6 +143,36 @@ const styles = tv({
     hasError: false,
   },
 });
+
+const DEPTH_INDENT_CH = 3;
+
+const depthGuideStyles = tv({
+  base: 'pointer-events-none absolute border-strong/70',
+  variants: {
+    isLast: {
+      true: 'top-0 h-1/2 w-[0.9ch] rounded-bl-md border-b border-l',
+      false: 'inset-y-0 border-l',
+    },
+  },
+});
+
+function DepthGuides({
+  depth,
+  nextDepth = 0,
+}: {
+  depth: number;
+  nextDepth?: number;
+}) {
+  return Array.from({ length: depth }, (_, index) => index + 1).map((level) => (
+    <div
+      key={level}
+      className={depthGuideStyles({
+        isLast: level === depth && nextDepth < depth,
+      })}
+      style={{ left: `${(level - 0.5) * DEPTH_INDENT_CH}ch` }}
+    />
+  ));
+}
 
 const entryContentStyles = tv({
   base: 'flex max-w-fit min-w-0 flex-auto items-baseline gap-1 [&>*]:min-w-0',
@@ -167,6 +197,7 @@ export const Entry = memo(function Entry({
   invocation,
   entry,
   depth,
+  nextDepth,
   parentCommand,
   compact = false,
   showEventTime = false,
@@ -176,6 +207,7 @@ export const Entry = memo(function Entry({
   >['data'];
   entry?: JournalEntryV2;
   depth: number;
+  nextDepth?: number;
   parentCommand?: JournalEntryV2;
   compact?: boolean;
   showEventTime?: boolean;
@@ -210,7 +242,7 @@ export const Entry = memo(function Entry({
     <EntryCodecProvider entry={entry} invocation={invocation}>
       <div
         style={{
-          paddingLeft: `${depth * 3}em`,
+          paddingLeft: `${depth * DEPTH_INDENT_CH}ch`,
         }}
         data-depth={Boolean(depth)}
         data-last-failure={
@@ -279,14 +311,11 @@ export const Entry = memo(function Entry({
           id: `command-${entry.commandIndex}`,
         })}
       >
+        <DepthGuides depth={depth} nextDepth={nextDepth} />
         <div
           style={{ width: compact ? '2ch' : `${numOfDigits + 2}ch` }}
           className="relative flex h-full shrink-0 items-center justify-center font-mono text-0.5xs text-faint"
         >
-          <div
-            data-border
-            className="absolute top-0 bottom-0 left-0 border-dashed border-strong"
-          />
           {entry?.category === 'command' ? (
             (entry?.commandIndex ?? entry?.index ?? 0)
           ) : (

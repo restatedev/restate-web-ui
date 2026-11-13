@@ -1,4 +1,5 @@
 export { InvocationId } from './lib/InvocationId';
+export * from './lib/InvocationChain';
 export { VQueueEntryId, type VQueueEntryIdProps } from './lib/VQueueEntryId';
 export {
   getInvocationStatusIntent,

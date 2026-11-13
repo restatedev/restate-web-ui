@@ -17,13 +17,14 @@ const LIFECYCLE_EVENT_TYPES = new Set([
 ]);
 
 // `depth` increases when nesting under a parent invocation
-// (Call/AttachInvocation). `parentCommand` lets non-command entries link
-// back to the command they belong to.
+// (Call/OneWayCall/AttachInvocation). `parentCommand` lets non-command entries
+// link back to the command they belong to.
 export type CombinedJournalEntry = {
   invocationId: string;
   entry?: JournalEntryV2;
   depth: number;
   parentCommand?: JournalEntryV2;
+  parentInvocationId?: string;
 };
 
 type LifecycleData = {
@@ -160,6 +161,7 @@ function getCombinedJournal(
   preprocessedData: Map<string, PreprocessedInvocationData>,
   depth = 0,
   visited: Set<string> = new Set(),
+  parentInvocationId?: string,
 ): CombinedJournalEntry[] {
   if (visited.has(invocationId)) {
     return [];
@@ -200,6 +202,7 @@ function getCombinedJournal(
       entry,
       depth,
       parentCommand,
+      parentInvocationId,
     });
 
     if (isExpandable(entry)) {
@@ -210,12 +213,26 @@ function getCombinedJournal(
         preprocessedData,
         depth + 1,
         visited,
+        invocationId,
       );
       combinedEntries.push(...nestedEntries);
     }
   }
 
   return combinedEntries;
+}
+
+function isRedundantNestedLifecycleEntry(
+  { entry, depth, invocationId, parentInvocationId }: CombinedJournalEntry,
+  data: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
+) {
+  if (depth === 0 || entry?.category !== 'event') {
+    return false;
+  }
+  if (entry.type === 'Created') {
+    return data?.[invocationId]?.invoked_by_id === parentInvocationId;
+  }
+  return entry.type === 'Pending' && !entry.isPending;
 }
 
 function shouldIncludeEntry(
@@ -333,7 +350,8 @@ export function useProcessedJournal(
           combinedEntry.parentCommand,
           detail,
           combinedEntry.depth,
-        )
+        ) ||
+        isRedundantNestedLifecycleEntry(combinedEntry, data)
       ) {
         continue;
       }

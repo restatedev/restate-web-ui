@@ -2,7 +2,17 @@ import type {
   components,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
-import { Dispatch, memo, Suspense, useCallback, useId, useState } from 'react';
+import {
+  Dispatch,
+  memo,
+  Suspense,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
+import { useSearchParams } from 'react-router';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { getDuration, SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { Link } from '@restate/ui-link';
@@ -11,7 +21,11 @@ import { Button } from '@restate/ui-button';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import { useRestateContext } from '@restate/features-restate-context';
 import { ErrorBanner } from '@restate/ui-error';
-import { JournalContextProvider } from '@restate/features-invocation-ui';
+import {
+  EXPAND_INVOCATIONS_PARAM,
+  FOCUS_INVOCATION_PARAM,
+  JournalContextProvider,
+} from '@restate/features-invocation-ui';
 import { Indicator, Spinner } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
@@ -61,6 +75,16 @@ import {
   journalSplitStyles,
   useJournalSplit,
 } from './JournalSplit';
+
+const virtualRowStyles = tv({
+  base: '',
+  variants: {
+    isFocused: {
+      true: 'bg-accent-subtle/50',
+      false: '',
+    },
+  },
+});
 
 const liveStyles = tv({
   base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-muted uppercase',
@@ -163,7 +187,15 @@ export function JournalV2({
   showIntrospection = true,
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
-  const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
+  const [searchParams] = useSearchParams();
+  const [invocationIds, setInvocationIds] = useState(() => [
+    String(invocationId),
+    ...(searchParams.get(EXPAND_INVOCATIONS_PARAM)?.split(',') ?? []).filter(
+      (id) => id && id !== invocationId,
+    ),
+  ]);
+  const focusInvocationId =
+    searchParams.get(FOCUS_INVOCATION_PARAM) ?? undefined;
   const {
     data,
     isPending,
@@ -280,16 +312,19 @@ export function JournalV2({
           new Date(dataUpdatedAt).toISOString(),
       ).getTime()
     : 0;
-  const areAllInvocationsCompleted = invocationIds.every(
-    (id) => !data[id] || data[id]?.completed_at,
-  );
+  const isInvocationCompleted = Boolean(journalAndInvocationData?.completed_at);
+  const areAllInvocationsCompleted =
+    isInvocationCompleted ||
+    invocationIds.every((id) => !data[id] || data[id]?.completed_at);
   const maxEntryTimestamp = Math.max(
-    ...entriesWithoutInputUnfiltered.map(({ entry }) =>
-      entry?.end
-        ? new Date(entry.end).getTime()
-        : entry?.start
-          ? new Date(entry.start).getTime()
-          : -1,
+    ...entriesWithoutInputUnfiltered.map(({ entry, invocationId: id }) =>
+      isInvocationCompleted && !data[id]?.completed_at
+        ? -1
+        : entry?.end
+          ? new Date(entry.end).getTime()
+          : entry?.start
+            ? new Date(entry.start).getTime()
+            : -1,
     ),
   );
   const completedTimelineEnd =
@@ -331,6 +366,28 @@ export function JournalV2({
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
+
+  const focusRowIndex = focusInvocationId
+    ? entriesWithoutInput.findIndex(
+        (entry) => entry.invocationId === focusInvocationId,
+      )
+    : -1;
+  const hasScrolledToFocus = useRef(false);
+  useEffect(() => {
+    const row = virtualizer.measurementsCache[focusRowIndex];
+    const panel = document.getElementById(entriesPanelId);
+    if (!withTimeline || hasScrolledToFocus.current || !row || !panel) {
+      return;
+    }
+    hasScrolledToFocus.current = true;
+    window.scrollTo({
+      top:
+        panel.getBoundingClientRect().top +
+        window.scrollY +
+        row.start -
+        window.innerHeight / 3,
+    });
+  }, [withTimeline, focusRowIndex, entriesPanelId, virtualizer]);
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 
@@ -530,6 +587,7 @@ export function JournalV2({
                               totalSize={totalSize}
                               entriesWithoutInput={entriesWithoutInput}
                               data={data}
+                              focusInvocationId={focusInvocationId}
                             />
                             {journalAndInvocationData && (
                               <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">
@@ -581,6 +639,7 @@ export function JournalV2({
                                 relatedEntriesByInvocation={
                                   relatedEntriesByInvocation
                                 }
+                                focusInvocationId={focusInvocationId}
                               />
                             </ScrollableTimeline>
                           </ContentPanelSection>
@@ -622,6 +681,7 @@ export function JournalV2({
                             invocation={invocation}
                             entry={entry}
                             depth={depth}
+                            nextDepth={entriesWithoutInput[index + 1]?.depth}
                             parentCommand={parentCommand}
                           />
                         </ErrorBoundary>
@@ -756,11 +816,13 @@ function VirtualizedEntries({
   totalSize,
   entriesWithoutInput,
   data,
+  focusInvocationId,
 }: {
   virtualItems: VirtualItem[];
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
+  focusInvocationId?: string;
 }) {
   return (
     <div
@@ -784,6 +846,9 @@ function VirtualizedEntries({
         return (
           <div
             key={virtualItem.key}
+            className={virtualRowStyles({
+              isFocused: entryInvocationId === focusInvocationId,
+            })}
             style={{
               position: 'absolute',
               top: 0,
@@ -801,6 +866,7 @@ function VirtualizedEntries({
                 invocation={invocation}
                 entry={entry}
                 depth={depth}
+                nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
                 parentCommand={parentCommand}
               />
             </ErrorBoundary>
@@ -817,12 +883,14 @@ function VirtualizedTimeline({
   entriesWithoutInput,
   data,
   relatedEntriesByInvocation,
+  focusInvocationId,
 }: {
   virtualItems: VirtualItem[];
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
+  focusInvocationId?: string;
 }) {
   return (
     <div
@@ -845,6 +913,9 @@ function VirtualizedTimeline({
         return (
           <div
             key={virtualItem.key}
+            className={virtualRowStyles({
+              isFocused: entryInvocationId === focusInvocationId,
+            })}
             style={{
               position: 'absolute',
               top: 0,

@@ -17,7 +17,6 @@ import { AwaitingOn } from './AwaitingOn';
 import { InvocationId } from '../../InvocationId';
 import {
   useGetInvocationJournalWithInvocationV2,
-  useGetRootInvocationId,
   useListSubscriptions,
 } from '@restate/data-access-admin-api-hooks';
 import { tv } from '@restate/util-styles';
@@ -236,7 +235,6 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
             id={invocation.invoked_by_id}
             className={invocationIdStyles()}
           />
-          <RootInvocation parentId={invocation.invoked_by_id} />
         </>
       ) : (
         <span className="shrink-0">{ENTRY_EVENTS_ENTRY_LABELS['Created']}</span>
@@ -247,21 +245,6 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
         className="shrink-0"
       />
     </div>
-  );
-}
-
-function RootInvocation({ parentId }: { parentId: string }) {
-  const { data: rootId } = useGetRootInvocationId(parentId);
-
-  if (!rootId || rootId === parentId) {
-    return null;
-  }
-
-  return (
-    <>
-      <span className="shrink-0">from root</span>
-      <InvocationId id={rootId} className={invocationIdStyles()} />
-    </>
   );
 }
 

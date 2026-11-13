@@ -31,6 +31,7 @@ import type {
   ServiceName,
   Deployment,
   FilterItem,
+  Invocation,
   Service,
 } from '@restate/data-access-admin-api-spec';
 import type {
@@ -1302,31 +1303,36 @@ export function useGetInvocation(
 
 const MAX_INVOCATION_ANCESTORS = 32;
 
-export function useGetRootInvocationId(invocationId?: string) {
+export function useGetInvocationAncestors(invocationId?: string) {
   const enabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
   const queryClient = useQueryClient();
 
   return useQuery({
-    queryKey: ['/query/invocations/root', { baseUrl, invocationId }],
+    queryKey: ['/query/invocations/ancestors', { baseUrl, invocationId }],
     queryFn: async () => {
-      let rootId = String(invocationId);
+      const ancestors: Invocation[] = [];
+      let nextId = String(invocationId);
       for (let level = 0; level < MAX_INVOCATION_ANCESTORS; level++) {
         const invocation = await queryClient
           .fetchQuery({
             ...adminApi('query', '/query/invocations/{invocationId}', 'get', {
               baseUrl,
-              parameters: { path: { invocationId: rootId } },
+              parameters: { path: { invocationId: nextId } },
             }),
             staleTime: Infinity,
           })
           .catch(() => undefined);
-        if (!invocation?.invoked_by_id) {
+        if (!invocation) {
           break;
         }
-        rootId = invocation.invoked_by_id;
+        ancestors.push(invocation);
+        if (!invocation.invoked_by_id) {
+          break;
+        }
+        nextId = invocation.invoked_by_id;
       }
-      return rootId;
+      return ancestors;
     },
     enabled: Boolean(invocationId) && enabled,
     staleTime: Infinity,
