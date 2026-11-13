@@ -420,6 +420,7 @@ function Component() {
   const {
     data: summaryData,
     focus: vqueueSummaryFocus,
+    selectedFocus: selectedVqueueSummaryFocus,
     byStage,
     byStatus,
     hasServiceScope,
@@ -700,6 +701,7 @@ function Component() {
         byStatus={matchingSummary.byStatus}
         showFocusCounts={false}
         focus={vqueueSummaryFocus}
+        selectedFocus={selectedVqueueSummaryFocus}
         onFocusChange={changeVqueueSummaryFocus}
         breakdownMode={countMode}
         canSampleBreakdown={canSampleBreakdown}
