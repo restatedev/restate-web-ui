@@ -175,3 +175,32 @@ it('asks for nothing before the invocation has loaded', () => {
   );
   expect(result.current.commandIndex).toBeUndefined();
 });
+
+it('keeps the paused query off for a non-paused invocation the caller enabled', () => {
+  pausedRelatedCommandIndex = 3;
+
+  const { result } = renderHook(() =>
+    useFailureRelatedCommandIndex(invocation({ status: 'backing-off' }), {
+      enabled: true,
+    }),
+  );
+
+  expect(apiHooks.useGetPausedError).toHaveBeenLastCalledWith(
+    'inv-1',
+    expect.objectContaining({ enabled: false }),
+  );
+  expect(result.current.commandIndex).toBeUndefined();
+});
+
+it('still reads a warm paused error when the caller disabled the query', () => {
+  pausedRelatedCommandIndex = 3;
+  servePausedErrorWhileDisabled = true;
+
+  const { result } = renderHook(() =>
+    useFailureRelatedCommandIndex(invocation({ status: 'paused' }), {
+      enabled: false,
+    }),
+  );
+
+  expect(result.current.commandIndex).toBe(3);
+});
