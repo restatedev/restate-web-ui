@@ -32,6 +32,7 @@ import {
   RunButton,
   runLabel,
   SendButton,
+  submitRun,
 } from './fields';
 import { Hint, runHint } from './floating';
 import { RunResult } from './outcome';
@@ -364,7 +365,9 @@ function Workspace({
               className={cardStyles()}
               onSubmit={(event) => {
                 event.preventDefault();
-                run.submit();
+                submitRun(run, event.currentTarget, () =>
+                  setIsAdvancedOpen(true),
+                );
               }}
             >
               <KeyFields run={run} />
@@ -558,7 +561,7 @@ function ToolRunner({
         className={cardStyles()}
         onSubmit={(event) => {
           event.preventDefault();
-          run.submit();
+          submitRun(run, event.currentTarget);
         }}
       >
         <ParameterFields

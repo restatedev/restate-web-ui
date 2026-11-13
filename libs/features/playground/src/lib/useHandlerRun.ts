@@ -88,11 +88,7 @@ export function useOperationRun({
     requiresApiKey: contract.security.bearer,
     apiKeyState,
     setApiKeyState,
-    submit: () => {
-      if (!runner.isSending) {
-        runner.submit();
-      }
-    },
+    submit: () => (runner.isSending ? [] : runner.submit()),
   };
 }
 

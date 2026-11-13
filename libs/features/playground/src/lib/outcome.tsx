@@ -28,6 +28,7 @@ type RunView =
       state?: InvocationState;
       isDone: boolean;
       isLive: boolean;
+      isUnknown: boolean;
       isFailed: boolean;
       output?: PlaygroundResult;
       failure?: string;
@@ -54,6 +55,16 @@ function errorMessage(text?: string) {
   } catch {
     return undefined;
   }
+}
+
+function replyMessage(reply: PlaygroundResult) {
+  if (reply.kind === 'error') {
+    return reply.message;
+  }
+  return (
+    errorMessage(reply.text) ??
+    `Restate answered ${[reply.status, statusText(reply.status)].filter(Boolean).join(' ')}`
+  );
 }
 
 function useRunView(
@@ -90,15 +101,20 @@ function useRunView(
   }
   if (sentId) {
     const phase = tracking.tracking.phase;
+    const reply =
+      tracking.tracking.phase === 'unavailable'
+        ? tracking.tracking.reply
+        : undefined;
     return {
       phase: 'invocation',
       invocationId: sentId,
       state: tracking.state,
       isDone: phase === 'completed',
       isLive: phase === 'tracking' && tracking.state !== 'scheduled',
+      isUnknown: phase === 'unavailable',
       isFailed: tracking.state === 'failed',
       output: phase === 'completed' ? tracking.tracking.output : undefined,
-      failure: tracking.failure ?? undefined,
+      failure: tracking.failure ?? (reply && replyMessage(reply)),
       note:
         phase === 'paused'
           ? tracking.startsAt || 'Stopped checking after 5 minutes.'
@@ -123,9 +139,7 @@ function useRunView(
     return {
       phase: 'rejected',
       result,
-      message:
-        errorMessage(result.text) ??
-        `Restate answered ${[result.status, statusText(result.status)].filter(Boolean).join(' ')}`,
+      message: replyMessage(result),
     };
   }
   return {
@@ -164,6 +178,7 @@ function viewTone(view: RunView): Tone {
       }
       return view.isFailed ? 'danger' : 'success';
     case 'invocation':
+      if (view.isUnknown) return 'neutral';
       if (view.state === 'succeeded') return 'success';
       if (view.state === 'failed') return 'danger';
       if (view.state === 'retrying' || view.state === 'paused')
@@ -192,7 +207,8 @@ function viewTitle(view: RunView) {
       }
       return view.isFailed ? 'Failed' : 'Succeeded';
     case 'invocation':
-      return view.state ? STATE_LABEL[view.state] : 'Starting…';
+      if (view.state) return STATE_LABEL[view.state];
+      return view.isUnknown ? 'Status unknown' : 'Starting…';
   }
 }
 
@@ -356,6 +372,15 @@ function prefersReducedMotion() {
   );
 }
 
+function lookupTitle(view: RunView, title: string) {
+  if (view.phase === 'rejected') {
+    return view.result.kind === 'response' && view.result.status === 404
+      ? 'Not found'
+      : 'Failed';
+  }
+  return title === 'Succeeded' ? 'Done' : title;
+}
+
 export function RunResult({
   record,
   runner,
@@ -388,7 +413,7 @@ export function RunResult({
   const value = viewValue(view);
   const message = viewMessage(view);
   const title = viewTitle(view);
-  const shownTitle = isLookup && title === 'Succeeded' ? 'Done' : title;
+  const shownTitle = isLookup ? lookupTitle(view, title) : title;
   const isCompact = variant === 'compact';
   const content = (
     <>

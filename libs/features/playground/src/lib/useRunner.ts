@@ -187,9 +187,9 @@ export function useRunner({
     );
   };
 
-  const submit = () => {
+  const submit = (): RequestIssue[] => {
     if (abortRef.current) {
-      return;
+      return [];
     }
     const nextIssues: RequestIssue[] = [];
     for (const parameter of parameters) {
@@ -227,10 +227,11 @@ export function useRunner({
     }
     setIssues(nextIssues);
     if (nextIssues.length > 0) {
-      return;
+      return nextIssues;
     }
     runIdRef.current += 1;
     void run(runIdRef.current);
+    return nextIssues;
   };
 
   const cancel = () => {

@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@restate/ui-button';
 import { DropdownItem } from '@restate/ui-dropdown';
 import { Switch } from '@restate/ui-form-field';
@@ -346,6 +346,7 @@ function JsonInput({
 }) {
   const { runner, operation, service, draftName } = run;
   const body = operation.body;
+  const containerRef = useRef<HTMLDivElement>(null);
   if (!run.hasInput || !body) {
     return null;
   }
@@ -354,7 +355,7 @@ function JsonInput({
   const isFileMode = runner.draft.bodyMode === 'file';
   const issue = runner.issueFor('body');
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
+    <div ref={containerRef} className="flex min-w-0 flex-col gap-1.5">
       {label && (
         <div className="flex min-h-5 items-center gap-2">
           <span className="text-0.5xs font-medium text-secondary">{label}</span>
@@ -391,7 +392,9 @@ function JsonInput({
           onChange={(rawBody) =>
             runner.setDraft((previous) => ({ ...previous, rawBody }))
           }
-          onSubmit={run.submit}
+          onSubmit={() =>
+            containerRef.current?.closest('form')?.requestSubmit()
+          }
         />
       )}
       {issue && <p className="text-xs text-danger">{issue}</p>}
@@ -479,6 +482,26 @@ export function RunButton({
       )}
       {label}
     </Button>
+  );
+}
+
+export function submitRun(
+  run: OperationRun,
+  form: HTMLFormElement,
+  onHiddenIssue?: () => void,
+) {
+  const issues = run.submit();
+  if (issues.length === 0) {
+    return;
+  }
+  const hidden = new Set(
+    [...run.advancedParameters, ...run.scopeParameters].map(parameterField),
+  );
+  if (onHiddenIssue && issues.some(({ field }) => hidden.has(field))) {
+    onHiddenIssue();
+  }
+  setTimeout(() =>
+    form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
   );
 }
 

@@ -16,6 +16,7 @@ import {
   KeyFields,
   runLabel,
   SendButton,
+  submitRun,
 } from './fields';
 import { Hint, runHint } from './floating';
 import { RunResult } from './outcome';
@@ -134,7 +135,7 @@ function QuickRunBody({
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault();
-            run.submit();
+            submitRun(run, event.currentTarget, () => setIsAdvancedOpen(true));
           }}
         >
           <KeyFields run={run} />
@@ -191,14 +192,24 @@ function ResultPanel({ run, onEdit }: { run: HandlerRun; onEdit: () => void }) {
       runner={run.runner}
       variant="compact"
       actions={
-        <Button
-          variant="secondary"
-          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
-          onClick={onEdit}
-        >
-          <Icon name={IconName.Pencil} className="h-3.5 w-3.5 text-subtle" />
-          Edit and run again
-        </Button>
+        record.isRunning ? (
+          <Button
+            variant="secondary"
+            className="rounded-lg px-3 py-1.5 text-sm"
+            onClick={run.runner.cancel}
+          >
+            Cancel
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
+            onClick={onEdit}
+          >
+            <Icon name={IconName.Pencil} className="h-3.5 w-3.5 text-subtle" />
+            Edit and run again
+          </Button>
+        )
       }
     />
   );
