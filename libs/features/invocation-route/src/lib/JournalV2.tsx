@@ -118,17 +118,14 @@ function isReferencedInvocationEntry(
 }
 
 function getReferencedInvocationIds(
-  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
+  rows: (CombinedJournalEntry | undefined)[],
 ) {
   return [
     ...new Set(
-      Object.values(data ?? {}).flatMap(
-        (invocation) =>
-          invocation?.journal?.entries?.flatMap((entry) =>
-            isReferencedInvocationEntry(entry) && entry.invocationId
-              ? [entry.invocationId]
-              : [],
-          ) ?? [],
+      rows.flatMap((row) =>
+        isReferencedInvocationEntry(row?.entry) && row.entry.invocationId
+          ? [row.entry.invocationId]
+          : [],
       ),
     ),
   ];
@@ -249,35 +246,6 @@ export function JournalV2({
       } else {
         return false;
       }
-    },
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: false,
-  });
-
-  const referencedInvocationIds = useMemo(
-    () => getReferencedInvocationIds(data),
-    [data],
-  );
-  const {
-    data: referencedInvocationStatuses,
-    isError: isReferencedInvocationStatusesError,
-  } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
-    refetchOnMount: true,
-    staleTime: 0,
-    refetchInterval(query) {
-      if (
-        isLive &&
-        !isScrollingRef.current &&
-        (query.state.status !== 'success' ||
-          hasNonCompletedReferencedInvocations(
-            referencedInvocationIds,
-            query.state.data?.invocations,
-          ))
-      ) {
-        return 1000;
-      }
-
-      return false;
     },
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
@@ -466,6 +434,37 @@ export function JournalV2({
     virtualizer,
     journalAndInvocationData,
   ]);
+
+  const referencedInvocationIds = virtualizer.isScrolling
+    ? []
+    : getReferencedInvocationIds(
+        withTimeline
+          ? virtualItems.map(({ index }) => entriesWithoutInput[index])
+          : entriesWithoutInput,
+      );
+  const {
+    data: referencedInvocationStatuses,
+    isError: isReferencedInvocationStatusesError,
+  } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
+    refetchOnMount: true,
+    staleTime: 0,
+    refetchInterval(query) {
+      if (
+        isLive &&
+        (query.state.status !== 'success' ||
+          hasNonCompletedReferencedInvocations(
+            referencedInvocationIds,
+            query.state.data?.invocations,
+          ))
+      ) {
+        return 1000;
+      }
+
+      return false;
+    },
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+  });
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 

@@ -1,6 +1,11 @@
 import type { RawInvocation } from '@restate/data-access-admin-api-spec';
 import { convertInvocation } from '../convertInvocation.js';
-import { isInvocationId, type QueryContext, quoteSqlString } from './shared.js';
+import {
+  chunkIds,
+  isInvocationId,
+  type QueryContext,
+  quoteSqlString,
+} from './shared.js';
 import { fetchVqueueStatuses } from './vqueue.js';
 
 export async function getInvocationsStatus(
@@ -15,11 +20,15 @@ export async function getInvocationsStatus(
     return Response.json({ invocations: {} });
   }
 
-  const [invocationResult, vqueueStatuses] = await Promise.all([
-    this.query(
-      `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id FROM sys_invocation WHERE id IN (${uniqueInvocationIds.map(quoteSqlString).join(', ')})`,
-      'invocations/statuses',
-    ),
+  const [invocationRows, vqueueStatuses] = await Promise.all([
+    Promise.all(
+      chunkIds(uniqueInvocationIds).map((ids) =>
+        this.query(
+          `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id FROM sys_invocation WHERE id IN (${ids.map(quoteSqlString).join(', ')})`,
+          'invocations/statuses',
+        ),
+      ),
+    ).then((results) => results.flatMap(({ rows }) => rows)),
     fetchVqueueStatuses(this, uniqueInvocationIds),
   ]);
 
@@ -34,7 +43,7 @@ export async function getInvocationsStatus(
       targetHandlerName?: string;
     }
   >();
-  for (const row of invocationResult.rows) {
+  for (const row of invocationRows) {
     const invocation = convertInvocation(
       row as RawInvocation,
       vqueueStatuses.get(row.id as string),

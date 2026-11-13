@@ -1181,11 +1181,7 @@ export function useGetInvocationStatusDetails(
     ...query,
     data: data as InvocationStatusDetails | undefined,
     isPending:
-      invocationId && referenceInvocationId
-        ? isCompleted
-          ? false
-          : query.isPending
-        : false,
+      invocationId && referenceInvocationId ? !data && !query.error : false,
     error:
       invocationId && referenceInvocationId
         ? isCompleted

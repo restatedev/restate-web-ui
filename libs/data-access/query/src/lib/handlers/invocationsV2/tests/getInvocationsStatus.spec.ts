@@ -51,6 +51,42 @@ describe('POST /query/invocations/statuses', () => {
       ]);
     });
 
+    it('splits long ID lists so no query body reaches the admin API’s 2 MB limit', async () => {
+      const invocationIds = Array.from(
+        { length: 50_001 },
+        (_, index) => `inv_${String(index).padStart(34, '0')}`,
+      );
+      const lastId = invocationIds.at(-1)!;
+      setResponder((statement) =>
+        statement.includes('FROM sys_vqueue_entry_status')
+          ? []
+          : statement.includes(`'${lastId}'`)
+            ? [rawInvocation(lastId, { status: 'running' })]
+            : [],
+      );
+
+      const response = await post('/invocations/statuses', { invocationIds });
+      const body = await response.json();
+
+      const idsPerQuery = (table: string) =>
+        sql
+          .filter((statement) => statement.includes(`FROM ${table} WHERE`))
+          .map((statement) => statement.match(/'inv_/g)?.length);
+      expect(idsPerQuery('sys_invocation')).toEqual([
+        10_000, 10_000, 10_000, 10_000, 10_000, 1,
+      ]);
+      expect(idsPerQuery('sys_vqueue_entry_status')).toEqual([
+        10_000, 10_000, 10_000, 10_000, 10_000, 1,
+      ]);
+      for (const statement of sql) {
+        expect(
+          new TextEncoder().encode(JSON.stringify({ query: statement })).length,
+        ).toBeLessThan(2 * 1024 * 1024);
+      }
+      expect(Object.keys(body.invocations)).toHaveLength(50_001);
+      expect(body.invocations[lastId].status).toBe('running');
+    });
+
     it('keeps invocation status when a migrated invocation has no VQueue overlay', async () => {
       setResponder((statement) =>
         statement.includes('FROM sys_vqueue_entry_status')
