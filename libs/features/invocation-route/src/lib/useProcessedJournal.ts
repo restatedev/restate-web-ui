@@ -40,6 +40,7 @@ type PreprocessedInvocationData = {
   commandByRelatedIndex: Map<number, JournalEntryV2>;
   commandByCommandIndex: Map<number, JournalEntryV2>;
   relatedEntriesMap: Map<number, JournalEntryV2[]>;
+  lastReferenceByInvocationId: Map<string, JournalEntryV2>;
   lifecycleData: LifecycleData;
 };
 
@@ -68,6 +69,7 @@ function preprocessInvocationData(
   const commandByRelatedIndex = new Map<number, JournalEntryV2>();
   const commandByCommandIndex = new Map<number, JournalEntryV2>();
   const relatedEntriesMap = new Map<number, JournalEntryV2[]>();
+  const lastReferenceByInvocationId = new Map<string, JournalEntryV2>();
 
   let createdEvent: JournalEntryV2 | undefined;
   let cancelEvent: JournalEntryV2 | undefined;
@@ -87,6 +89,9 @@ function preprocessInvocationData(
       }
       if (typeof entry.commandIndex === 'number') {
         commandByCommandIndex.set(entry.commandIndex, entry);
+      }
+      if (isExpandable(entry) && entry.invocationId) {
+        lastReferenceByInvocationId.set(entry.invocationId, entry);
       }
     }
 
@@ -141,6 +146,7 @@ function preprocessInvocationData(
     commandByRelatedIndex,
     commandByCommandIndex,
     relatedEntriesMap,
+    lastReferenceByInvocationId,
     lifecycleData: {
       createdEvent,
       lifeCycleEntries,
@@ -179,7 +185,11 @@ function getCombinedJournal(
     return [{ invocationId, depth }];
   }
 
-  const { commandByRelatedIndex, commandByCommandIndex } = processed;
+  const {
+    commandByRelatedIndex,
+    commandByCommandIndex,
+    lastReferenceByInvocationId,
+  } = processed;
 
   const combinedEntries: CombinedJournalEntry[] = [];
 
@@ -205,10 +215,13 @@ function getCombinedJournal(
       parentInvocationId,
     });
 
-    if (isExpandable(entry)) {
-      const callInvocationId = String(entry.invocationId);
+    if (
+      isExpandable(entry) &&
+      entry.invocationId &&
+      lastReferenceByInvocationId.get(entry.invocationId) === entry
+    ) {
       const nestedEntries = getCombinedJournal(
-        callInvocationId,
+        entry.invocationId,
         data,
         preprocessedData,
         depth + 1,
@@ -222,17 +235,16 @@ function getCombinedJournal(
   return combinedEntries;
 }
 
-function isRedundantNestedLifecycleEntry(
+function isRepeatedNestedCreatedEntry(
   { entry, depth, invocationId, parentInvocationId }: CombinedJournalEntry,
   data: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
 ) {
-  if (depth === 0 || entry?.category !== 'event') {
-    return false;
-  }
-  if (entry.type === 'Created') {
-    return data?.[invocationId]?.invoked_by_id === parentInvocationId;
-  }
-  return entry.type === 'Pending' && !entry.isPending;
+  return (
+    depth > 0 &&
+    entry?.category === 'event' &&
+    entry.type === 'Created' &&
+    data?.[invocationId]?.invoked_by_id === parentInvocationId
+  );
 }
 
 function shouldIncludeEntry(
@@ -351,7 +363,7 @@ export function useProcessedJournal(
           detail,
           combinedEntry.depth,
         ) ||
-        isRedundantNestedLifecycleEntry(combinedEntry, data)
+        isRepeatedNestedCreatedEntry(combinedEntry, data)
       ) {
         continue;
       }

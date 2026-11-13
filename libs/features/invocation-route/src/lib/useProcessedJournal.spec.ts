@@ -68,7 +68,7 @@ function rows(data: Data, rootId = 'inv_root') {
 }
 
 describe('useProcessedJournal', () => {
-  it('nests a sent invocation under its send without repeating how it started', () => {
+  it('nests a sent invocation under its send without repeating who invoked it', () => {
     const data = {
       inv_root: invocation('inv_root', [
         lifecycle(0, 'Created'),
@@ -94,6 +94,7 @@ describe('useProcessedJournal', () => {
       '0 inv_root Pending',
       '0 inv_root Running',
       '0 inv_root OneWayCall',
+      '1 inv_child Pending',
       '1 inv_child Running',
       '1 inv_child Run',
       '0 inv_root Output',
@@ -116,6 +117,26 @@ describe('useProcessedJournal', () => {
       '0 inv_root AttachInvocation',
       '1 inv_other Created',
       '1 inv_other Run',
+    ]);
+  });
+
+  it('nests an invocation that is sent and then attached to under the attach', () => {
+    const data = {
+      inv_root: invocation('inv_root', [
+        command(0, 1, 'OneWayCall', 'inv_wf'),
+        command(1, 2, 'Run'),
+        command(2, 3, 'AttachInvocation', 'inv_wf'),
+        command(3, 4, 'Output'),
+      ]),
+      inv_wf: invocation('inv_wf', [command(0, 1, 'Run')], 'inv_root'),
+    } as unknown as Data;
+
+    expect(rows(data)).toEqual([
+      '0 inv_root OneWayCall',
+      '0 inv_root Run',
+      '0 inv_root AttachInvocation',
+      '1 inv_wf Run',
+      '0 inv_root Output',
     ]);
   });
 

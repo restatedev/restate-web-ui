@@ -28,8 +28,11 @@ const chipStyles = tv({
     kind: {
       link: 'bg-raised text-secondary no-underline shadow-xs hover:wash-tint pressed:wash-tint-strong',
       more: 'border-dashed text-muted',
-      unresolved: 'border-dashed text-tertiary',
       placeholder: 'w-24 animate-pulse border-transparent bg-emphasis/70',
+    },
+    isUnresolved: {
+      true: 'border-dashed',
+      false: '',
     },
   },
 });
@@ -69,13 +72,23 @@ function getAncestorHref(
   return `${baseUrl}/invocations/${ancestorId}?${searchParams.toString()}`;
 }
 
-function ChainLink({ href, label }: { href: string; label: string }) {
+function ChainLink({
+  href,
+  id,
+  label,
+  isUnresolved = false,
+}: {
+  href: string;
+  id: string;
+  label: string;
+  isUnresolved?: boolean;
+}) {
   return (
-    <HoverTooltip content="Open its journal with this invocation expanded">
+    <HoverTooltip content={`Opens ${id} with this invocation expanded`}>
       <Link
         href={href}
         variant="secondary"
-        className={chipStyles({ kind: 'link' })}
+        className={chipStyles({ kind: 'link', isUnresolved })}
       >
         <span className="truncate">{label}</span>
       </Link>
@@ -100,7 +113,7 @@ export function InvocationChain({
 }) {
   const { baseUrl } = useRestateContext();
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: ancestors } = useGetInvocationAncestors(
+  const { data: ancestors, isError } = useGetInvocationAncestors(
     invocation.invoked_by_id,
   );
   const { base, current, separator } = styles();
@@ -110,85 +123,71 @@ export function InvocationChain({
   }
 
   const chain = ancestors ? [...ancestors].reverse() : [];
+  const chainIds = chain.map(({ id }) => id);
   const oldest = chain[0] ?? invocation;
-  const unresolvedTarget = oldest.invoked_by_id
-    ? oldest.invoked_by_target
-    : undefined;
   const hiddenCount =
     !isExpanded && chain.length > MAX_VISIBLE_ANCESTORS
       ? chain.length - MAX_VISIBLE_ANCESTORS
       : 0;
+  const hrefFor = (ancestorId: string, idsBelow: string[]) =>
+    getAncestorHref(
+      baseUrl,
+      ancestorId,
+      [...idsBelow, invocation.id],
+      invocation.id,
+    );
   const chevron = <Icon name={IconName.ChevronRight} className={separator()} />;
 
   return (
     <nav aria-label="Invoked by" className={base({ className })}>
-      {!ancestors ? (
+      {!ancestors && !isError && (
         <>
           <Placeholder />
           {chevron}
-          {invocation.invoked_by_target ? (
-            <ChainLink
-              href={getAncestorHref(
-                baseUrl,
-                invocation.invoked_by_id,
-                [invocation.id],
-                invocation.id,
-              )}
-              label={getTargetLabel(invocation.invoked_by_target)}
-            />
-          ) : (
-            <Placeholder />
-          )}
-          {chevron}
-        </>
-      ) : (
-        <>
-          {unresolvedTarget && (
-            <>
-              <span className={chipStyles({ kind: 'unresolved' })}>
-                <span className="truncate">
-                  {getTargetLabel(unresolvedTarget)}
-                </span>
-              </span>
-              {chevron}
-            </>
-          )}
-          {chain.map((ancestor, index) => {
-            if (hiddenCount > 0 && index > 0 && index <= hiddenCount) {
-              return index === 1 ? (
-                <Fragment key="more">
-                  <Button
-                    variant="icon"
-                    className={chipStyles({ kind: 'more' })}
-                    onClick={() => setIsExpanded(true)}
-                    aria-label={`Show ${hiddenCount} more`}
-                  >
-                    +{hiddenCount}
-                  </Button>
-                  {chevron}
-                </Fragment>
-              ) : null;
-            }
-            return (
-              <Fragment key={ancestor.id}>
-                <ChainLink
-                  href={getAncestorHref(
-                    baseUrl,
-                    ancestor.id,
-                    [
-                      ...chain.slice(index + 1).map(({ id }) => id),
-                      invocation.id,
-                    ],
-                    invocation.id,
-                  )}
-                  label={getInvocationLabel(ancestor)}
-                />
-                {chevron}
-              </Fragment>
-            );
-          })}
         </>
       )}
+      {oldest.invoked_by_id && (
+        <>
+          <ChainLink
+            href={hrefFor(oldest.invoked_by_id, chainIds)}
+            id={oldest.invoked_by_id}
+            label={
+              oldest.invoked_by_target
+                ? getTargetLabel(oldest.invoked_by_target)
+                : oldest.invoked_by_id
+            }
+            isUnresolved={Boolean(ancestors)}
+          />
+          {chevron}
+        </>
+      )}
+      {chain.map((ancestor, index) => {
+        if (hiddenCount > 0 && index > 0 && index <= hiddenCount) {
+          return index === 1 ? (
+            <Fragment key="more">
+              <Button
+                variant="icon"
+                className={chipStyles({ kind: 'more' })}
+                onClick={() => setIsExpanded(true)}
+                aria-label={`+${hiddenCount} more`}
+              >
+                +{hiddenCount}
+              </Button>
+              {chevron}
+            </Fragment>
+          ) : null;
+        }
+        return (
+          <Fragment key={ancestor.id}>
+            <ChainLink
+              href={hrefFor(ancestor.id, chainIds.slice(index + 1))}
+              id={ancestor.id}
+              label={getInvocationLabel(ancestor)}
+            />
+            {chevron}
+          </Fragment>
+        );
+      })}
       <span aria-current="page" className={current()}>
         {getInvocationLabel(invocation)}
       </span>

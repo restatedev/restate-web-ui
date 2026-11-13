@@ -104,13 +104,40 @@ describe('InvocationChain', () => {
     expect(url.searchParams.get('focus')).toBe('inv_push');
   });
 
+  it('links the parent when the chain fails to load', () => {
+    useGetInvocationAncestorsMock.mockReturnValue({
+      data: undefined,
+      isError: true,
+    });
+    const { container } = renderChain(push);
+
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(
+      ['Packing.pack()'],
+    );
+    expect(container.querySelector('span[aria-hidden="true"]')).toBeNull();
+  });
+
+  it('links the next ancestor up when the walk stops before the root', () => {
+    useGetInvocationAncestorsMock.mockReturnValue({
+      data: [packing, warehouse],
+    });
+    renderChain(push);
+
+    const href = screen
+      .getByRole('link', { name: 'Shipping.ship()' })
+      .getAttribute('href');
+    const url = new URL(String(href), 'http://localhost');
+    expect(url.pathname).toBe('/invocations/inv_ship');
+    expect(url.searchParams.get('expand')).toBe('inv_pick,inv_pack,inv_push');
+  });
+
   it('expands the hidden middle of a long chain in place', () => {
     useGetInvocationAncestorsMock.mockReturnValue({
       data: [packing, warehouse, shipping, root],
     });
     renderChain(push);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show 1 more' }));
+    fireEvent.click(screen.getByRole('button', { name: '+1 more' }));
 
     expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(
       [

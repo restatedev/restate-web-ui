@@ -5,6 +5,8 @@ import {
 import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
+  EXPAND_INVOCATIONS_PARAM,
+  FOCUS_INVOCATION_PARAM,
   getRestateError,
   InvocationStatusHeader,
   Status,
@@ -128,7 +130,9 @@ function Component() {
       if (
         key.startsWith('filter_') ||
         key.startsWith('sort_') ||
-        key === 'column'
+        key === 'column' ||
+        key === EXPAND_INVOCATIONS_PARAM ||
+        key === FOCUS_INVOCATION_PARAM
       ) {
         return;
       }

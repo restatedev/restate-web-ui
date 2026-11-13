@@ -189,13 +189,17 @@ export function JournalV2({
   const [isLive, setIsLive] = useState(true);
   const [searchParams] = useSearchParams();
   const [invocationIds, setInvocationIds] = useState(() => [
-    String(invocationId),
-    ...(searchParams.get(EXPAND_INVOCATIONS_PARAM)?.split(',') ?? []).filter(
-      (id) => id && id !== invocationId,
-    ),
+    ...new Set([
+      String(invocationId),
+      ...(withTimeline
+        ? (searchParams.get(EXPAND_INVOCATIONS_PARAM)?.split(',') ?? [])
+        : []
+      ).filter(Boolean),
+    ]),
   ]);
-  const focusInvocationId =
-    searchParams.get(FOCUS_INVOCATION_PARAM) ?? undefined;
+  const focusInvocationId = withTimeline
+    ? (searchParams.get(FOCUS_INVOCATION_PARAM) ?? undefined)
+    : undefined;
   const {
     data,
     isPending,
@@ -312,19 +316,16 @@ export function JournalV2({
           new Date(dataUpdatedAt).toISOString(),
       ).getTime()
     : 0;
-  const isInvocationCompleted = Boolean(journalAndInvocationData?.completed_at);
-  const areAllInvocationsCompleted =
-    isInvocationCompleted ||
-    invocationIds.every((id) => !data[id] || data[id]?.completed_at);
+  const areAllInvocationsCompleted = invocationIds.every(
+    (id) => !data[id] || data[id]?.completed_at,
+  );
   const maxEntryTimestamp = Math.max(
-    ...entriesWithoutInputUnfiltered.map(({ entry, invocationId: id }) =>
-      isInvocationCompleted && !data[id]?.completed_at
-        ? -1
-        : entry?.end
-          ? new Date(entry.end).getTime()
-          : entry?.start
-            ? new Date(entry.start).getTime()
-            : -1,
+    ...entriesWithoutInputUnfiltered.map(({ entry }) =>
+      entry?.end
+        ? new Date(entry.end).getTime()
+        : entry?.start
+          ? new Date(entry.start).getTime()
+          : -1,
     ),
   );
   const completedTimelineEnd =
@@ -332,6 +333,14 @@ export function JournalV2({
       ? maxEntryTimestamp +
         (maxEntryTimestamp - start) * TIMELINE_COMPLETED_END_HEADROOM_RATIO
       : maxEntryTimestamp;
+  const completedAt = journalAndInvocationData?.completed_at
+    ? new Date(journalAndInvocationData.completed_at).getTime()
+    : undefined;
+  const ownEnd =
+    completedAt !== undefined && completedAt > start
+      ? completedAt +
+        (completedAt - start) * TIMELINE_COMPLETED_END_HEADROOM_RATIO
+      : undefined;
   const end = journalAndInvocationData
     ? Math.max(
         areAllInvocationsCompleted ? completedTimelineEnd : maxEntryTimestamp,
@@ -436,6 +445,7 @@ export function JournalV2({
         isLiveEnabled={isLive}
         containerWidthPx={containerWidthPx}
       >
+        {withTimeline && <OwnSpanViewport start={start} end={ownEnd} />}
         <TimelineEngineJournalBridge
           invocationIds={invocationIds}
           addInvocationId={addInvocationId}
@@ -707,6 +717,29 @@ export function JournalV2({
       </TimelineEngineProvider>
     </PortalProvider>
   );
+}
+
+const OWN_SPAN_OVERFLOW_RATIO = 0.25;
+
+function OwnSpanViewport({ start, end }: { start: number; end?: number }) {
+  const { setViewport, coordinateStart, actualDuration } =
+    useTimelineEngineContext();
+  const hasFocused = useRef(false);
+  const rangeEnd = coordinateStart + actualDuration;
+
+  useEffect(() => {
+    if (
+      hasFocused.current ||
+      end === undefined ||
+      rangeEnd - end <= (end - start) * OWN_SPAN_OVERFLOW_RATIO
+    ) {
+      return;
+    }
+    hasFocused.current = true;
+    setViewport(start, end);
+  }, [setViewport, start, end, rangeEnd]);
+
+  return null;
 }
 
 function TimelineEngineJournalBridge({

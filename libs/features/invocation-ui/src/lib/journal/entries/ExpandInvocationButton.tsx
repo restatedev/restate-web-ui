@@ -22,14 +22,13 @@ export function ExpandInvocationButton({
   } = useJournalEntriesContext();
   const isCircularRef = useIsCircularRef(invocationId, parentInvocationId);
 
-  if (disableExpand) {
+  if (disableExpand || !invocationId) {
     return null;
   }
 
-  const isExpanded =
-    !isCircularRef && invocationId && invocationIds.includes(invocationId);
-  const invokedIsPending = isPending?.[String(invocationId)];
-  const invokedError = invocationsError?.[String(invocationId)];
+  const isExpanded = !isCircularRef && invocationIds.includes(invocationId);
+  const invokedIsPending = isPending?.[invocationId];
+  const invokedError = invocationsError?.[invocationId];
 
   return (
     <div className="absolute top-0 right-1 bottom-0 flex items-center">
@@ -40,12 +39,10 @@ export function ExpandInvocationButton({
       ) : (
         <Button
           onClick={() => {
-            if (invocationId) {
-              if (invocationIds.includes(invocationId)) {
-                removeInvocationId?.(invocationId);
-              } else {
-                addInvocationId?.(invocationId);
-              }
+            if (invocationIds.includes(invocationId)) {
+              removeInvocationId?.(invocationId);
+            } else {
+              addInvocationId?.(invocationId);
             }
           }}
           variant="icon"

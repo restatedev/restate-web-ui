@@ -39,7 +39,7 @@ import type {
   HookMutationOptions,
 } from '@restate/data-access-admin-api';
 import { useCallback, useMemo } from 'react';
-import { RestateError } from '@restate/util-errors';
+import { RestateError, UI_ERROR_CODES } from '@restate/util-errors';
 import { useAPIStatus } from '@restate/data-access-admin-api';
 import { useRestateContext } from '@restate/features-restate-context';
 import { base64ToUint8Array } from '@restate/util-binary';
@@ -1301,7 +1301,35 @@ export function useGetInvocation(
   };
 }
 
-const MAX_INVOCATION_ANCESTORS = 32;
+export const MAX_INVOCATION_ANCESTORS = 10;
+
+function isInvocationNotFound(error: unknown) {
+  return (
+    error instanceof RestateError &&
+    (error.restate_code === UI_ERROR_CODES.invocationNotFound ||
+      error.status === 404)
+  );
+}
+
+export async function walkInvocationAncestors(
+  parentId: string,
+  getInvocation: (id: string) => Promise<Invocation | undefined>,
+  maxAncestors = MAX_INVOCATION_ANCESTORS,
+) {
+  const ancestors: Invocation[] = [];
+  const seen = new Set<string>();
+  let nextId: string | undefined = parentId;
+  while (nextId && ancestors.length < maxAncestors && !seen.has(nextId)) {
+    seen.add(nextId);
+    const invocation = await getInvocation(nextId);
+    if (!invocation) {
+      break;
+    }
+    ancestors.push(invocation);
+    nextId = invocation.invoked_by_id;
+  }
+  return ancestors;
+}
 
 export function useGetInvocationAncestors(invocationId?: string) {
   const enabled = useAPIStatus();
@@ -1310,30 +1338,23 @@ export function useGetInvocationAncestors(invocationId?: string) {
 
   return useQuery({
     queryKey: ['/query/invocations/ancestors', { baseUrl, invocationId }],
-    queryFn: async () => {
-      const ancestors: Invocation[] = [];
-      let nextId = String(invocationId);
-      for (let level = 0; level < MAX_INVOCATION_ANCESTORS; level++) {
-        const invocation = await queryClient
+    queryFn: () =>
+      walkInvocationAncestors(String(invocationId), (id) =>
+        queryClient
           .fetchQuery({
             ...adminApi('query', '/query/invocations/{invocationId}', 'get', {
               baseUrl,
-              parameters: { path: { invocationId: nextId } },
+              parameters: { path: { invocationId: id } },
             }),
             staleTime: Infinity,
           })
-          .catch(() => undefined);
-        if (!invocation) {
-          break;
-        }
-        ancestors.push(invocation);
-        if (!invocation.invoked_by_id) {
-          break;
-        }
-        nextId = invocation.invoked_by_id;
-      }
-      return ancestors;
-    },
+          .catch((error: unknown) => {
+            if (isInvocationNotFound(error)) {
+              return undefined;
+            }
+            throw error;
+          }),
+      ),
     enabled: Boolean(invocationId) && enabled,
     staleTime: Infinity,
   });
