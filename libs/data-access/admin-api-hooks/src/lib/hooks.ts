@@ -39,6 +39,10 @@ import type {
 } from '@restate/data-access-admin-api';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { RestateError } from '@restate/util-errors';
+import {
+  isInvocationNotFound,
+  walkInvocationAncestors,
+} from './invocationAncestors';
 import { useAPIStatus } from '@restate/data-access-admin-api';
 import { useRestateContext } from '@restate/features-restate-context';
 import { base64ToUint8Array } from '@restate/util-binary';
@@ -1317,6 +1321,37 @@ export function useGetInvocation(
     ...results,
     queryKey: queryOptions.queryKey,
   };
+}
+
+export { MAX_INVOCATION_ANCESTORS } from './invocationAncestors';
+
+export function useGetInvocationAncestors(invocationId?: string) {
+  const enabled = useAPIStatus();
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+
+  return useQuery({
+    queryKey: ['/query/invocations/ancestors', { baseUrl, invocationId }],
+    queryFn: () =>
+      walkInvocationAncestors(String(invocationId), (id) =>
+        queryClient
+          .fetchQuery({
+            ...adminApi('query', '/query/invocations/{invocationId}', 'get', {
+              baseUrl,
+              parameters: { path: { invocationId: id } },
+            }),
+            staleTime: Infinity,
+          })
+          .catch((error: unknown) => {
+            if (isInvocationNotFound(error)) {
+              return undefined;
+            }
+            throw error;
+          }),
+      ),
+    enabled: Boolean(invocationId) && enabled,
+    staleTime: Infinity,
+  });
 }
 
 export function useGetPausedError(

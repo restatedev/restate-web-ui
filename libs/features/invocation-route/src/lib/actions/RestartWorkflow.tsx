@@ -8,6 +8,10 @@ import { showSuccessNotification } from '@restate/ui-notification';
 import { IconName } from '@restate/ui-icons';
 import { useRestateContext } from '@restate/features-restate-context';
 import { useSearchParams } from 'react-router';
+import {
+  EXPAND_INVOCATIONS_PARAM,
+  FOCUS_INVOCATION_PARAM,
+} from '@restate/features-invocation-ui';
 import { FormFieldInput } from '@restate/ui-form-field';
 
 export const RESTART_AS_NEW_WORKFLOW_QUERY_PARAM = 'restart-new-workflow';
@@ -159,6 +163,8 @@ export const RestartWorkflow = withConfirmation({
         RESTART_AS_NEW_WORKFLOW_QUERY_PARAM,
       );
       searchParams.delete(RESTART_AS_NEW_WORKFLOW_QUERY_PARAM);
+      searchParams.delete(EXPAND_INVOCATIONS_PARAM);
+      searchParams.delete(FOCUS_INVOCATION_PARAM);
       navigate(
         {
           pathname: `${baseUrl}/invocations/${newInvocationId}`,

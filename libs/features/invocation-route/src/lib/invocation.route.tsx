@@ -5,11 +5,14 @@ import {
 import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
+  EXPAND_INVOCATIONS_PARAM,
+  FOCUS_INVOCATION_PARAM,
   getRestateError,
   InvocationStatusHeader,
   Status,
 } from '@restate/features-invocation-ui';
 import { InvocationDeploymentCard } from './InvocationDeploymentCard';
+import { InvocationChainCard } from './InvocationChainCard';
 import { InvocationDetailsCard } from './InvocationDetailsCard';
 import { InvocationFlowControlCard } from './InvocationFlowControlCard';
 import { Link } from '@restate/ui-link';
@@ -149,7 +152,9 @@ function Component() {
       if (
         key.startsWith('filter_') ||
         key.startsWith('sort_') ||
-        key === 'column'
+        key === 'column' ||
+        key === EXPAND_INVOCATIONS_PARAM ||
+        key === FOCUS_INVOCATION_PARAM
       ) {
         return;
       }
@@ -243,6 +248,10 @@ function Component() {
             </>
           )}
         </CardGrid>
+        <InvocationChainCard
+          invocation={journalAndInvocationData}
+          className="relative z-30 mx-5 mt-2"
+        />
         <div
           className="relative z-10 flex flex-col gap-4 px-5"
           data-failure-anchor-root

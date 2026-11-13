@@ -16,7 +16,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { getDuration, SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { Link } from '@restate/ui-link';
@@ -63,6 +63,12 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
+import {
+  getExpandIdsToDrop,
+  getFocusInvocationId,
+  getFocusViewport,
+  getInitialInvocationIds,
+} from './journalFocus';
 import { Retention } from '@restate/features-invocation-ui';
 import {
   COMPACT_DETAIL,
@@ -76,6 +82,16 @@ import {
   journalSplitStyles,
   useJournalSplit,
 } from './JournalSplit';
+
+const virtualRowStyles = tv({
+  base: '',
+  variants: {
+    isFocused: {
+      true: 'bg-accent-subtle/50',
+      false: '',
+    },
+  },
+});
 
 const liveStyles = tv({
   base: 'flex items-center gap-1 rounded-sm px-2 text-xs font-semibold text-muted uppercase',
@@ -225,7 +241,15 @@ export function JournalV2({
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
   const isScrollingRef = useRef(false);
-  const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
+  const [searchParams] = useSearchParams();
+  const [invocationIds, setInvocationIds] = useState(() =>
+    withTimeline
+      ? getInitialInvocationIds(String(invocationId), searchParams)
+      : [String(invocationId)],
+  );
+  const focusInvocationId = withTimeline
+    ? getFocusInvocationId(searchParams)
+    : undefined;
   const {
     data,
     isPending,
@@ -469,6 +493,58 @@ export function JournalV2({
     journalAndInvocationData,
   ]);
 
+  const focusRowIndex = focusInvocationId
+    ? entriesWithoutInput.findIndex(
+        (entry) => entry.invocationId === focusInvocationId,
+      )
+    : -1;
+  const focusedInvocation = focusInvocationId
+    ? data[focusInvocationId]
+    : undefined;
+
+  const hasDecidedFocusViewport = useRef(false);
+  const pendingUrlExpandIds = useRef(invocationIds.slice(1));
+  useEffect(() => {
+    if (pendingUrlExpandIds.current.length === 0) {
+      return;
+    }
+    const unreachableIds = getExpandIdsToDrop({
+      expandIds: pendingUrlExpandIds.current,
+      invocationIds,
+      rootId: invocationId,
+      isLoaded: (id) => Boolean(data[id]),
+      isPending: (id) => Boolean(isPending[id]),
+      shownIds: new Set(
+        allEntriesWithoutInput.map((entry) => entry.invocationId),
+      ),
+    });
+    if (!unreachableIds) {
+      return;
+    }
+    pendingUrlExpandIds.current = [];
+    if (unreachableIds.length > 0) {
+      setInvocationIds((ids) =>
+        ids.filter((id) => !unreachableIds.includes(id)),
+      );
+    }
+  }, [invocationId, invocationIds, isPending, data, allEntriesWithoutInput]);
+  const hasScrolledToFocus = useRef(false);
+  useEffect(() => {
+    const row = virtualizer.measurementsCache[focusRowIndex];
+    const list = entriesListRef.current;
+    if (!withTimeline || hasScrolledToFocus.current || !row || !list) {
+      return;
+    }
+    hasScrolledToFocus.current = true;
+    window.scrollTo({
+      top:
+        list.getBoundingClientRect().top +
+        window.scrollY +
+        row.start -
+        window.innerHeight / 3,
+    });
+  }, [withTimeline, focusRowIndex, virtualizer]);
+
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 
   if (invocationApiError && showApiError && !journalAndInvocationData) {
@@ -516,6 +592,13 @@ export function JournalV2({
         isLiveEnabled={isLive}
         containerWidthPx={containerWidthPx}
       >
+        {withTimeline && focusRowIndex >= 0 && (
+          <FocusedInvocationViewport
+            decidedRef={hasDecidedFocusViewport}
+            start={getTime(focusedInvocation?.created_at)}
+            end={getTime(focusedInvocation?.completed_at)}
+          />
+        )}
         <TimelineEngineJournalBridge
           invocationIds={invocationIds}
           addInvocationId={addInvocationId}
@@ -669,6 +752,7 @@ export function JournalV2({
                               entriesWithoutInput={entriesWithoutInput}
                               data={data}
                               failureRow={failureRow}
+                              focusInvocationId={focusInvocationId}
                             />
                             {journalAndInvocationData && (
                               <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">
@@ -726,6 +810,7 @@ export function JournalV2({
                                 isReferencedInvocationsError={
                                   isReferencedInvocationStatusesError
                                 }
+                                focusInvocationId={focusInvocationId}
                               />
                             </ScrollableTimeline>
                           </ContentPanelSection>
@@ -767,6 +852,7 @@ export function JournalV2({
                             invocation={invocation}
                             entry={entry}
                             depth={depth}
+                            nextDepth={entriesWithoutInput[index + 1]?.depth}
                             parentCommand={parentCommand}
                           />
                         </ErrorBoundary>
@@ -792,6 +878,42 @@ export function JournalV2({
       </TimelineEngineProvider>
     </PortalProvider>
   );
+}
+
+function getTime(date?: string) {
+  return date ? new Date(date).getTime() : undefined;
+}
+
+function FocusedInvocationViewport({
+  decidedRef,
+  start,
+  end,
+}: {
+  decidedRef: RefObject<boolean>;
+  start?: number;
+  end?: number;
+}) {
+  const { setViewport, coordinateStart, actualDuration } =
+    useTimelineEngineContext();
+  const rangeEnd = coordinateStart + actualDuration;
+
+  useEffect(() => {
+    if (decidedRef.current) {
+      return;
+    }
+    decidedRef.current = true;
+    const viewport = getFocusViewport({
+      start,
+      end,
+      rangeStart: coordinateStart,
+      rangeEnd,
+    });
+    if (viewport) {
+      setViewport(viewport.start, viewport.end);
+    }
+  }, [decidedRef, setViewport, coordinateStart, rangeEnd, start, end]);
+
+  return null;
 }
 
 function TimelineEngineJournalBridge({
@@ -903,6 +1025,7 @@ function VirtualizedEntries({
   entriesWithoutInput,
   data,
   failureRow,
+  focusInvocationId,
 }: {
   ref: RefObject<HTMLDivElement | null>;
   virtualItems: VirtualItem[];
@@ -910,6 +1033,7 @@ function VirtualizedEntries({
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   failureRow?: VirtualItem;
+  focusInvocationId?: string;
 }) {
   return (
     <div
@@ -942,6 +1066,9 @@ function VirtualizedEntries({
         return (
           <div
             key={virtualItem.key}
+            className={virtualRowStyles({
+              isFocused: entryInvocationId === focusInvocationId,
+            })}
             style={{
               position: 'absolute',
               top: 0,
@@ -959,6 +1086,7 @@ function VirtualizedEntries({
                 invocation={invocation}
                 entry={entry}
                 depth={depth}
+                nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
                 parentCommand={parentCommand}
               />
             </ErrorBoundary>
@@ -977,6 +1105,7 @@ function VirtualizedTimeline({
   relatedEntriesByInvocation,
   referencedInvocations,
   isReferencedInvocationsError,
+  focusInvocationId,
 }: {
   virtualItems: VirtualItem[];
   totalSize: number;
@@ -988,6 +1117,7 @@ function VirtualizedTimeline({
     components['schemas']['InvocationStatusResult'] | undefined
   >;
   isReferencedInvocationsError?: boolean;
+  focusInvocationId?: string;
 }) {
   return (
     <div
@@ -1023,6 +1153,9 @@ function VirtualizedTimeline({
         return (
           <div
             key={virtualItem.key}
+            className={virtualRowStyles({
+              isFocused: entryInvocationId === focusInvocationId,
+            })}
             style={{
               position: 'absolute',
               top: 0,

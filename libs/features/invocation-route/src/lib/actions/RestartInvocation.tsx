@@ -27,6 +27,8 @@ import {
   CommandEntryType,
   ENTRY_COMMANDS_NAMES,
   EntryChain,
+  EXPAND_INVOCATIONS_PARAM,
+  FOCUS_INVOCATION_PARAM,
 } from '@restate/features-invocation-ui';
 
 export const RESTART_AS_NEW_INVOCATION_QUERY_PARAM = 'restart-new-invocation';
@@ -430,6 +432,8 @@ export const RestartInvocation = withConfirmation({
       );
       searchParams.delete(RESTART_AS_NEW_INVOCATION_QUERY_PARAM);
       searchParams.delete(RESTART_AS_NEW_INVOCATION_FROM_QUERY_PARAM);
+      searchParams.delete(EXPAND_INVOCATIONS_PARAM);
+      searchParams.delete(FOCUS_INVOCATION_PARAM);
       navigate(
         {
           pathname: `${baseUrl}/invocations/${newInvocationId}`,
