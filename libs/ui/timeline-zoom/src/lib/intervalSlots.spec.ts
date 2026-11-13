@@ -25,6 +25,50 @@ function renderSlots(mode: TimelineMode) {
 }
 
 describe('useTimelineIntervalSlots', () => {
+  it('keeps fine slots when zoomed deep into a long trace', () => {
+    const { result } = renderHook(() =>
+      useTimelineIntervalSlots({
+        durationMs: 10_000,
+        viewportStartOffsetMs: 5_000,
+        viewportEndOffsetMs: 5_030,
+        targetIntervalMs: 5,
+        mode: 'static',
+        transitionDurationMs: 0,
+      }),
+    );
+
+    expect(
+      result.current.segments.every(({ key }) => key.startsWith('5-')),
+    ).toBe(true);
+    expect(
+      result.current.segments.filter(
+        ({ startMs, endMs }) => startMs >= 5_000 && endMs <= 5_030,
+      ),
+    ).toHaveLength(6);
+  });
+
+  it('still animates a live interval that doubles', () => {
+    const { rerender, result } = renderHook(
+      ({ targetIntervalMs }: { targetIntervalMs: number }) =>
+        useTimelineIntervalSlots({
+          durationMs: 20_000,
+          viewportStartOffsetMs: 0,
+          viewportEndOffsetMs: 20_000,
+          targetIntervalMs,
+          mode: 'live-follow',
+          transitionDurationMs: 0,
+        }),
+      { initialProps: { targetIntervalMs: 1_000 } },
+    );
+
+    rerender({ targetIntervalMs: 2_000 });
+
+    expect(result.current.mergeTransition).toMatchObject({
+      fromIntervalMs: 1_000,
+      toIntervalMs: 2_000,
+    });
+  });
+
   it.each<TimelineMode>(['static', 'live-follow', 'inspect'])(
     'never renders thousands of slots when the range jumps from seconds to hours (%s)',
     (mode) => {
