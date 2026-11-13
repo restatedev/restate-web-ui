@@ -268,6 +268,7 @@ function getLineVariant(
   entry?: JournalEntryV2,
   invocation?: Invocation,
   targetInvocationStatus?: InvocationStatus,
+  isTargetInvocationStatusPending?: boolean,
 ) {
   if (entry?.isRetrying) {
     return invocation?.status === 'backing-off' ? 'backingOff' : 'warning';
@@ -275,6 +276,9 @@ function getLineVariant(
 
   if (entry?.resultType === 'failure') {
     return 'danger';
+  }
+  if (isTargetInvocationStatusPending) {
+    return 'default';
   }
   switch (targetInvocationStatus) {
     case 'suspended':
@@ -327,6 +331,7 @@ export function EntryProgress(
     >['data'];
     precomputedRelatedEntries?: JournalEntryV2[];
     targetInvocationStatus?: InvocationStatus;
+    isTargetInvocationStatusPending?: boolean;
   }>,
 ) {
   return (
@@ -359,6 +364,7 @@ function InnerEntryProgress({
   invocation,
   precomputedRelatedEntries,
   targetInvocationStatus,
+  isTargetInvocationStatusPending,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -369,6 +375,7 @@ function InnerEntryProgress({
   >['data'];
   precomputedRelatedEntries?: JournalEntryV2[];
   targetInvocationStatus?: InvocationStatus;
+  isTargetInvocationStatusPending?: boolean;
 }>) {
   const { dataUpdatedAt, isLive, start, end } = useJournalTimelineContext();
 
@@ -501,6 +508,7 @@ function InnerEntryProgress({
                 entry,
                 invocation,
                 targetInvocationStatus,
+                isTargetInvocationStatusPending,
               )}
               isAmbiguous={entryCompletionIsAmbiguous}
             >

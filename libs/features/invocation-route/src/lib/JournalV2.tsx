@@ -195,30 +195,29 @@ export function JournalV2({
   });
 
   const referencedInvocationIds = getReferencedInvocationIds(data);
-  const { data: referencedInvocationStatuses } = useWarmInvocationStatusDetails(
-    referencedInvocationIds,
-    invocationId,
-    {
-      refetchOnMount: true,
-      staleTime: 0,
-      refetchInterval(query) {
-        if (
-          isLive &&
-          (query.state.status !== 'success' ||
-            hasNonCompletedReferencedInvocations(
-              referencedInvocationIds,
-              query.state.data?.invocations,
-            ))
-        ) {
-          return 1000;
-        }
+  const {
+    data: referencedInvocationStatuses,
+    isError: isReferencedInvocationStatusesError,
+  } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
+    refetchOnMount: true,
+    staleTime: 0,
+    refetchInterval(query) {
+      if (
+        isLive &&
+        (query.state.status !== 'success' ||
+          hasNonCompletedReferencedInvocations(
+            referencedInvocationIds,
+            query.state.data?.invocations,
+          ))
+      ) {
+        return 1000;
+      }
 
-        return false;
-      },
-      refetchIntervalInBackground: false,
-      refetchOnWindowFocus: false,
+      return false;
     },
-  );
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+  });
 
   const hiddenEntryMatchersByInvocation = useHiddenEntryMatchers(data);
 
@@ -589,6 +588,9 @@ export function JournalV2({
                                 referencedInvocations={
                                   referencedInvocationStatuses?.invocations
                                 }
+                                isReferencedInvocationsError={
+                                  isReferencedInvocationStatusesError
+                                }
                               />
                             </ScrollableTimeline>
                           </ContentPanelSection>
@@ -826,6 +828,7 @@ function VirtualizedTimeline({
   data,
   relatedEntriesByInvocation,
   referencedInvocations,
+  isReferencedInvocationsError,
 }: {
   virtualItems: VirtualItem[];
   totalSize: number;
@@ -836,6 +839,7 @@ function VirtualizedTimeline({
     string,
     components['schemas']['InvocationStatusResult'] | undefined
   >;
+  isReferencedInvocationsError?: boolean;
 }) {
   return (
     <div
@@ -854,13 +858,19 @@ function VirtualizedTimeline({
                 .get(entryInvocationId)
                 ?.get(entry.index)
             : undefined;
-        const targetInvocationStatus =
+        const targetInvocationId =
           entry?.isPending &&
           isReferencedInvocationEntry(entry) &&
-          entry.type !== 'OneWayCall' &&
-          entry.invocationId
-            ? referencedInvocations?.[entry.invocationId]?.status
+          entry.type !== 'OneWayCall'
+            ? entry.invocationId
             : undefined;
+        const targetInvocation = targetInvocationId
+          ? referencedInvocations?.[targetInvocationId]
+          : undefined;
+        const isTargetInvocationStatusPending =
+          Boolean(targetInvocationId) &&
+          !targetInvocation &&
+          !isReferencedInvocationsError;
 
         return (
           <div
@@ -879,7 +889,8 @@ function VirtualizedTimeline({
               entry={entry}
               invocation={data?.[entryInvocationId]}
               precomputedRelatedEntries={relatedEntries}
-              targetInvocationStatus={targetInvocationStatus}
+              targetInvocationStatus={targetInvocation?.status}
+              isTargetInvocationStatusPending={isTargetInvocationStatusPending}
             />
           </div>
         );
@@ -893,6 +904,7 @@ const TimelineContainer = memo(function TimelineContainer({
   invocation,
   precomputedRelatedEntries,
   targetInvocationStatus,
+  isTargetInvocationStatusPending,
 }: {
   invocationId: string;
   entry?: JournalEntryV2;
@@ -901,6 +913,7 @@ const TimelineContainer = memo(function TimelineContainer({
   >['data'][string];
   precomputedRelatedEntries?: JournalEntryV2[];
   targetInvocationStatus?: InvocationStatus;
+  isTargetInvocationStatusPending?: boolean;
 }) {
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
@@ -910,6 +923,7 @@ const TimelineContainer = memo(function TimelineContainer({
         invocation={invocation}
         precomputedRelatedEntries={precomputedRelatedEntries}
         targetInvocationStatus={targetInvocationStatus}
+        isTargetInvocationStatusPending={isTargetInvocationStatusPending}
       />
     </div>
   );
