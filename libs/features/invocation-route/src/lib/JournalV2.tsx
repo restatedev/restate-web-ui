@@ -274,9 +274,7 @@ export function JournalV2({
             query.state.data?.invocations,
           ))
       ) {
-        return getLiveRefetchInterval(
-          data?.[invocationId]?.journal?.entries?.length,
-        );
+        return 1000;
       }
 
       return false;
