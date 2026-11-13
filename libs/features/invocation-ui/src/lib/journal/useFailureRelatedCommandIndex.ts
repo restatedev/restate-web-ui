@@ -12,10 +12,11 @@ export function useFailureRelatedCommandIndex(
   options?: Parameters<typeof useGetPausedError>[1],
 ) {
   const isPaused = invocation?.status === 'paused';
-  const { data: pausedError } = useGetPausedError(String(invocation?.id), {
+  const { data } = useGetPausedError(String(invocation?.id), {
     ...options,
     enabled: options?.enabled !== false && isPaused,
   });
+  const pausedError = isPaused ? data : undefined;
 
   return {
     commandIndex:

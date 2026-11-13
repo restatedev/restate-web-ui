@@ -15,6 +15,7 @@ vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
 type InvocationArg = Parameters<typeof useFailureRelatedCommandIndex>[0];
 
 let pausedRelatedCommandIndex: number | undefined;
+let servePausedErrorWhileDisabled = false;
 
 function invocation(fields: {
   status?: string;
@@ -25,9 +26,10 @@ function invocation(fields: {
 
 beforeEach(() => {
   pausedRelatedCommandIndex = undefined;
+  servePausedErrorWhileDisabled = false;
   apiHooks.useGetPausedError.mockImplementation(
     (_invocationId: string, options?: { enabled?: boolean }) =>
-      options?.enabled
+      options?.enabled || servePausedErrorWhileDisabled
         ? {
             data: {
               message: 'boom',
@@ -107,4 +109,16 @@ it('leaves the paused error query disabled when the caller disables it', () => {
     expect.objectContaining({ enabled: false }),
   );
   expect(result.current.commandIndex).toBeUndefined();
+});
+
+it('ignores a cached paused index once the invocation is resumed', () => {
+  pausedRelatedCommandIndex = 3;
+  servePausedErrorWhileDisabled = true;
+
+  const { result } = renderHook(() =>
+    useFailureRelatedCommandIndex(invocation({ status: 'running' })),
+  );
+
+  expect(result.current.commandIndex).toBeUndefined();
+  expect(result.current.pausedError).toBeUndefined();
 });
