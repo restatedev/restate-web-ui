@@ -11,6 +11,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -162,6 +163,10 @@ function findCommandRow(
   );
 }
 
+function getLiveRefetchInterval(entryCount = 0) {
+  return Math.max(1000, entryCount / 10);
+}
+
 function getCommandIndexFromHash(hash: string) {
   const match = /^#command-(\d+)$/.exec(hash);
   return match ? Number(match[1]) : undefined;
@@ -198,6 +203,7 @@ export function JournalV2({
   showIntrospection = true,
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
+  const isScrollingRef = useRef(false);
   const [invocationIds, setInvocationIds] = useState([String(invocationId)]);
   const {
     data,
@@ -211,15 +217,18 @@ export function JournalV2({
     staleTime: 0,
     refetchInterval(query) {
       if (
+        isLive &&
+        !isScrollingRef.current &&
         query.state.status === 'success' &&
         (!query.state.data?.completed_at ||
           query.state.data?.journal_commands_size !==
             query.state.data?.journal?.entries?.filter(
               (e) => e.category === 'command',
-            ).length) &&
-        isLive
+            ).length)
       ) {
-        return 1000;
+        return getLiveRefetchInterval(
+          query.state.data?.journal?.entries?.length,
+        );
       } else {
         return false;
       }
@@ -377,6 +386,9 @@ export function JournalV2({
     overscan: 24,
     scrollMargin: 0,
     getItemKey,
+  });
+  useLayoutEffect(() => {
+    isScrollingRef.current = virtualizer.isScrolling;
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();

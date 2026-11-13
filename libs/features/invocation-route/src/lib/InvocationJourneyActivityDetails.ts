@@ -58,15 +58,21 @@ function errorBackoffActivityDetails(
   const items = retainedErrors.map((entry, index) => ({
     key: `error-backoff-${entry.index ?? index}`,
     entry,
-    parentCommand: relatedCommand(entry, journalEntries),
   }));
 
-  return capActivityDetails(items, {
+  const details = capActivityDetails(items, {
     invocation,
     itemNoun: 'transient-error events',
     summary: 'Deduplicated transient errors from the invocation journal.',
     emptyMessage: 'No retained transient-error journal events are available.',
   });
+  return {
+    ...details,
+    items: details.items.map((item) => ({
+      ...item,
+      parentCommand: relatedCommand(item.entry, journalEntries),
+    })),
+  };
 }
 
 function pauseActivityDetails(
