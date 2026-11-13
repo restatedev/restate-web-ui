@@ -5,6 +5,8 @@ const DEFAULT_INTERVAL_BUFFER_RATIO = 0.35;
 const DEFAULT_INTERVAL_MIN_BUFFER_MS = 1_000;
 const DEFAULT_MERGE_PREPARE_DURATION_MS = 120;
 const DEFAULT_MERGE_REMOVE_DELAY_MS = 120;
+const MAX_INTERVAL_SLOTS = 200;
+const MAX_ANIMATED_INTERVAL_GROWTH = 4;
 
 export interface IntervalSlotAnchors {
   anchorStartMs: number;
@@ -150,10 +152,15 @@ function buildIntervalSlotSegments({
     };
   }
 
-  const firstRenderedSlotIndex = Math.floor(anchorStartMs / intervalMs);
+  let slotIntervalMs = intervalMs;
+  while ((anchorEndMs - anchorStartMs) / slotIntervalMs > MAX_INTERVAL_SLOTS) {
+    slotIntervalMs *= 2;
+  }
+
+  const firstRenderedSlotIndex = Math.floor(anchorStartMs / slotIntervalMs);
   const lastRenderedSlotIndex = Math.max(
     firstRenderedSlotIndex,
-    Math.ceil(anchorEndMs / intervalMs) - 1,
+    Math.ceil(anchorEndMs / slotIntervalMs) - 1,
   );
   const leadingSpacerPercent = (anchorStartMs / safeDurationMs) * 100;
 
@@ -163,8 +170,8 @@ function buildIntervalSlotSegments({
     slotIndex <= lastRenderedSlotIndex;
     slotIndex++
   ) {
-    const slotStartMs = slotIndex * intervalMs;
-    const slotEndMs = slotStartMs + intervalMs;
+    const slotStartMs = slotIndex * slotIntervalMs;
+    const slotEndMs = slotStartMs + slotIntervalMs;
     const segmentStartMs = Math.max(anchorStartMs, slotStartMs);
     const segmentEndMs = Math.min(anchorEndMs, slotEndMs);
     const segmentDurationMs = segmentEndMs - segmentStartMs;
@@ -179,7 +186,7 @@ function buildIntervalSlotSegments({
     segments.push({
       startMs: segmentStartMs,
       endMs: segmentEndMs,
-      key: `${intervalMs}-${slotIndex}`,
+      key: `${slotIntervalMs}-${slotIndex}`,
       gridIndex: slotIndex,
       widthPercent: (segmentDurationMs / safeDurationMs) * 100,
       isEven: slotIndex % 2 === 0,
@@ -249,7 +256,9 @@ export function useTimelineIntervalSlots({
   useEffect(() => {
     const normalizedTargetIntervalMs = normalizeInterval(targetIntervalMs);
     const nextAppliedTargetIntervalMs =
-      mode === 'live-follow' && normalizedTargetIntervalMs > intervalMs
+      mode === 'live-follow' &&
+      normalizedTargetIntervalMs > intervalMs &&
+      normalizedTargetIntervalMs <= intervalMs * MAX_ANIMATED_INTERVAL_GROWTH
         ? Math.min(normalizedTargetIntervalMs, intervalMs * 2)
         : normalizedTargetIntervalMs;
 
