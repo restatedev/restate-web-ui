@@ -21,11 +21,7 @@ import { Button } from '@restate/ui-button';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import { useRestateContext } from '@restate/features-restate-context';
 import { ErrorBanner } from '@restate/ui-error';
-import {
-  EXPAND_INVOCATIONS_PARAM,
-  FOCUS_INVOCATION_PARAM,
-  JournalContextProvider,
-} from '@restate/features-invocation-ui';
+import { JournalContextProvider } from '@restate/features-invocation-ui';
 import { Indicator, Spinner } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
@@ -62,6 +58,11 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
+import {
+  getFocusInvocationId,
+  getFocusViewport,
+  getInitialInvocationIds,
+} from './journalFocus';
 import { Retention } from '@restate/features-invocation-ui';
 import {
   COMPACT_DETAIL,
@@ -188,17 +189,13 @@ export function JournalV2({
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
   const [searchParams] = useSearchParams();
-  const [invocationIds, setInvocationIds] = useState(() => [
-    ...new Set([
-      String(invocationId),
-      ...(withTimeline
-        ? (searchParams.get(EXPAND_INVOCATIONS_PARAM)?.split(',') ?? [])
-        : []
-      ).filter(Boolean),
-    ]),
-  ]);
+  const [invocationIds, setInvocationIds] = useState(() =>
+    withTimeline
+      ? getInitialInvocationIds(String(invocationId), searchParams)
+      : [String(invocationId)],
+  );
   const focusInvocationId = withTimeline
-    ? (searchParams.get(FOCUS_INVOCATION_PARAM) ?? undefined)
+    ? getFocusInvocationId(searchParams)
     : undefined;
   const {
     data,
@@ -333,14 +330,6 @@ export function JournalV2({
       ? maxEntryTimestamp +
         (maxEntryTimestamp - start) * TIMELINE_COMPLETED_END_HEADROOM_RATIO
       : maxEntryTimestamp;
-  const completedAt = journalAndInvocationData?.completed_at
-    ? new Date(journalAndInvocationData.completed_at).getTime()
-    : undefined;
-  const ownEnd =
-    completedAt !== undefined && completedAt > start
-      ? completedAt +
-        (completedAt - start) * TIMELINE_COMPLETED_END_HEADROOM_RATIO
-      : undefined;
   const end = journalAndInvocationData
     ? Math.max(
         areAllInvocationsCompleted ? completedTimelineEnd : maxEntryTimestamp,
@@ -381,6 +370,30 @@ export function JournalV2({
         (entry) => entry.invocationId === focusInvocationId,
       )
     : -1;
+  const focusedInvocation = focusInvocationId
+    ? data[focusInvocationId]
+    : undefined;
+
+  const pendingUrlExpandIds = useRef(invocationIds.slice(1));
+  useEffect(() => {
+    const urlExpandIds = pendingUrlExpandIds.current;
+    if (
+      urlExpandIds.length === 0 ||
+      invocationIds.some((id) => isPending[id])
+    ) {
+      return;
+    }
+    pendingUrlExpandIds.current = [];
+    const shownIds = new Set(
+      allEntriesWithoutInput.map((entry) => entry.invocationId),
+    );
+    const unreachableIds = urlExpandIds.filter((id) => !shownIds.has(id));
+    if (unreachableIds.length > 0) {
+      setInvocationIds((ids) =>
+        ids.filter((id) => !unreachableIds.includes(id)),
+      );
+    }
+  }, [invocationIds, isPending, allEntriesWithoutInput]);
   const hasScrolledToFocus = useRef(false);
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
@@ -445,7 +458,12 @@ export function JournalV2({
         isLiveEnabled={isLive}
         containerWidthPx={containerWidthPx}
       >
-        {withTimeline && <OwnSpanViewport start={start} end={ownEnd} />}
+        {withTimeline && focusRowIndex >= 0 && (
+          <FocusedInvocationViewport
+            start={getTime(focusedInvocation?.created_at)}
+            end={getTime(focusedInvocation?.completed_at)}
+          />
+        )}
         <TimelineEngineJournalBridge
           invocationIds={invocationIds}
           addInvocationId={addInvocationId}
@@ -719,9 +737,17 @@ export function JournalV2({
   );
 }
 
-const OWN_SPAN_OVERFLOW_RATIO = 0.25;
+function getTime(date?: string) {
+  return date ? new Date(date).getTime() : undefined;
+}
 
-function OwnSpanViewport({ start, end }: { start: number; end?: number }) {
+function FocusedInvocationViewport({
+  start,
+  end,
+}: {
+  start?: number;
+  end?: number;
+}) {
   const { setViewport, coordinateStart, actualDuration } =
     useTimelineEngineContext();
   const hasFocused = useRef(false);
@@ -730,14 +756,23 @@ function OwnSpanViewport({ start, end }: { start: number; end?: number }) {
   useEffect(() => {
     if (
       hasFocused.current ||
+      start === undefined ||
       end === undefined ||
-      rangeEnd - end <= (end - start) * OWN_SPAN_OVERFLOW_RATIO
+      rangeEnd < end
     ) {
       return;
     }
     hasFocused.current = true;
-    setViewport(start, end);
-  }, [setViewport, start, end, rangeEnd]);
+    const viewport = getFocusViewport({
+      start,
+      end,
+      rangeStart: coordinateStart,
+      rangeEnd,
+    });
+    if (viewport) {
+      setViewport(viewport.start, viewport.end);
+    }
+  }, [setViewport, coordinateStart, rangeEnd, start, end]);
 
   return null;
 }

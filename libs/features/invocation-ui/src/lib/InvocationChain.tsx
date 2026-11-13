@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, type Ref, useEffect, useRef, useState } from 'react';
 import type { Invocation } from '@restate/data-access-admin-api-spec';
 import { useGetInvocationAncestors } from '@restate/data-access-admin-api-hooks';
 import { useRestateContext } from '@restate/features-restate-context';
@@ -73,11 +73,13 @@ function getAncestorHref(
 }
 
 function ChainLink({
+  ref,
   href,
   id,
   label,
   isUnresolved = false,
 }: {
+  ref?: Ref<HTMLAnchorElement>;
   href: string;
   id: string;
   label: string;
@@ -86,6 +88,7 @@ function ChainLink({
   return (
     <HoverTooltip content={`Opens ${id} with this invocation expanded`}>
       <Link
+        ref={ref}
         href={href}
         variant="secondary"
         className={chipStyles({ kind: 'link', isUnresolved })}
@@ -113,6 +116,12 @@ export function InvocationChain({
 }) {
   const { baseUrl } = useRestateContext();
   const [isExpanded, setIsExpanded] = useState(false);
+  const firstRevealedRef = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    if (isExpanded) {
+      firstRevealedRef.current?.focus();
+    }
+  }, [isExpanded]);
   const { data: ancestors, isError } = useGetInvocationAncestors(
     invocation.invoked_by_id,
   );
@@ -180,6 +189,7 @@ export function InvocationChain({
         return (
           <Fragment key={ancestor.id}>
             <ChainLink
+              ref={index === 1 ? firstRevealedRef : undefined}
               href={hrefFor(ancestor.id, chainIds.slice(index + 1))}
               id={ancestor.id}
               label={getInvocationLabel(ancestor)}

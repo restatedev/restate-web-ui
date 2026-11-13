@@ -47,6 +47,8 @@ export function ExpandInvocationButton({
           }}
           variant="icon"
           className="z-10 bg-tint-subtle"
+          aria-label={isExpanded ? 'Collapse invocation' : 'Expand invocation'}
+          aria-expanded={isExpanded}
         >
           {invokedIsPending ? (
             <Spinner />

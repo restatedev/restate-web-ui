@@ -139,6 +139,8 @@ describe('InvocationChain', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '+1 more' }));
 
+    expect(document.activeElement?.textContent).toBe('Shipping.ship()');
+
     expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(
       [
         'Orders.place()',
