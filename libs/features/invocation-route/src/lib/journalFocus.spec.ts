@@ -1,4 +1,5 @@
 import {
+  getExpandIdsToDrop,
   getFocusInvocationId,
   getFocusViewport,
   getInitialInvocationIds,
@@ -21,13 +22,54 @@ describe('getInitialInvocationIds', () => {
         'inv_root',
         new URLSearchParams(`expand=${ids.join(',')}`),
       ),
-    ).toHaveLength(11);
+    ).toHaveLength(12);
+  });
+
+  it('keeps the focused invocation of a chain link at maximum depth', () => {
+    const chain = Array.from({ length: 10 }, (_, i) => `inv_${i}`);
+    const ids = getInitialInvocationIds(
+      'inv_top',
+      new URLSearchParams(`expand=${[...chain, 'inv_this'].join(',')}`),
+    );
+    expect(ids.at(-1)).toBe('inv_this');
   });
 
   it('expands nothing without the param', () => {
     expect(getInitialInvocationIds('inv_root', new URLSearchParams())).toEqual([
       'inv_root',
     ]);
+  });
+});
+
+describe('getExpandIdsToDrop', () => {
+  const base = {
+    expandIds: ['inv_a', 'inv_b', 'inv_c'],
+    invocationIds: ['inv_root', 'inv_a', 'inv_b', 'inv_c'],
+    rootId: 'inv_root',
+    isPending: () => false,
+    shownIds: new Set(['inv_root', 'inv_a']),
+  };
+
+  it('drops ids that loaded but are not part of the journal', () => {
+    expect(
+      getExpandIdsToDrop({ ...base, isLoaded: (id) => id !== 'inv_c' }),
+    ).toEqual(['inv_b']);
+  });
+
+  it('waits while anything is still loading', () => {
+    expect(
+      getExpandIdsToDrop({
+        ...base,
+        isLoaded: () => true,
+        isPending: (id) => id === 'inv_b',
+      }),
+    ).toBeUndefined();
+  });
+
+  it('waits until the opened invocation has loaded', () => {
+    expect(
+      getExpandIdsToDrop({ ...base, isLoaded: (id) => id !== 'inv_root' }),
+    ).toBeUndefined();
   });
 });
 

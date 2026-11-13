@@ -60,6 +60,7 @@ import {
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
 import {
+  getExpandIdsToDrop,
   getFocusInvocationId,
   getFocusViewport,
   getInitialInvocationIds,
@@ -378,21 +379,23 @@ export function JournalV2({
   const hasDecidedFocusViewport = useRef(false);
   const pendingUrlExpandIds = useRef(invocationIds.slice(1));
   useEffect(() => {
-    const urlExpandIds = pendingUrlExpandIds.current;
-    if (
-      urlExpandIds.length === 0 ||
-      !data[invocationId] ||
-      invocationIds.some((id) => isPending[id])
-    ) {
+    if (pendingUrlExpandIds.current.length === 0) {
+      return;
+    }
+    const unreachableIds = getExpandIdsToDrop({
+      expandIds: pendingUrlExpandIds.current,
+      invocationIds,
+      rootId: invocationId,
+      isLoaded: (id) => Boolean(data[id]),
+      isPending: (id) => Boolean(isPending[id]),
+      shownIds: new Set(
+        allEntriesWithoutInput.map((entry) => entry.invocationId),
+      ),
+    });
+    if (!unreachableIds) {
       return;
     }
     pendingUrlExpandIds.current = [];
-    const shownIds = new Set(
-      allEntriesWithoutInput.map((entry) => entry.invocationId),
-    );
-    const unreachableIds = urlExpandIds.filter(
-      (id) => data[id] && !shownIds.has(id),
-    );
     if (unreachableIds.length > 0) {
       setInvocationIds((ids) =>
         ids.filter((id) => !unreachableIds.includes(id)),

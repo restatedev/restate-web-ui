@@ -243,17 +243,7 @@ function isRepeatedNestedCreatedEntry(
     depth > 0 &&
     entry?.category === 'event' &&
     entry.type === 'Created' &&
-    data?.[invocationId]?.invoked_by_id === parentInvocationId &&
-    Boolean(
-      data[invocationId]?.journal?.entries?.some(
-        (other) =>
-          other !== entry &&
-          (other.category === 'command' ||
-            (other.category === 'event' &&
-              other.type !== 'Created' &&
-              other.type !== 'Completion')),
-      ),
-    )
+    data?.[invocationId]?.invoked_by_id === parentInvocationId
   );
 }
 
@@ -364,6 +354,8 @@ export function useProcessedJournal(
     // from the list in compact mode (and shown when `detail.hidden` is on); the
     // count drives the "N entries hidden" footer either way.
     let hiddenEntriesCount = 0;
+    const repeatedCreatedEntries = new Set<CombinedJournalEntry>();
+    const shownRowCounts = new Map<string, number>();
 
     for (const combinedEntry of allCombinedEntries) {
       if (
@@ -372,8 +364,7 @@ export function useProcessedJournal(
           combinedEntry.parentCommand,
           detail,
           combinedEntry.depth,
-        ) ||
-        isRepeatedNestedCreatedEntry(combinedEntry, data)
+        )
       ) {
         continue;
       }
@@ -397,12 +388,26 @@ export function useProcessedJournal(
         }
       }
 
+      if (isRepeatedNestedCreatedEntry(combinedEntry, data)) {
+        repeatedCreatedEntries.add(combinedEntry);
+      }
+      shownRowCounts.set(
+        combinedEntry.invocationId,
+        (shownRowCounts.get(combinedEntry.invocationId) ?? 0) + 1,
+      );
       entriesWithoutInput.push(combinedEntry);
     }
 
     return {
       hiddenEntriesCount,
-      entriesWithoutInput,
+      entriesWithoutInput:
+        repeatedCreatedEntries.size === 0
+          ? entriesWithoutInput
+          : entriesWithoutInput.filter(
+              (combinedEntry) =>
+                !repeatedCreatedEntries.has(combinedEntry) ||
+                (shownRowCounts.get(combinedEntry.invocationId) ?? 0) <= 1,
+            ),
       inputEntry,
       relatedEntriesByInvocation,
       lifecycleDataByInvocation,

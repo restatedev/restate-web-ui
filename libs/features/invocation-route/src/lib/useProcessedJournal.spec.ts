@@ -149,6 +149,19 @@ describe('useProcessedJournal', () => {
     expect(rows(data)).toEqual(['0 inv_root Call', '1 inv_child Created']);
   });
 
+  it('keeps who invoked a nested invocation when its other entries are not shown', () => {
+    const data = {
+      inv_root: invocation('inv_root', [command(0, 1, 'Call', 'inv_child')]),
+      inv_child: invocation(
+        'inv_child',
+        [lifecycle(0, 'Created'), command(1, 0, 'Input')],
+        'inv_root',
+      ),
+    } as unknown as Data;
+
+    expect(rows(data)).toEqual(['0 inv_root Call', '1 inv_child Created']);
+  });
+
   it('keeps a nested invocation that is still queued', () => {
     const data = {
       inv_root: invocation('inv_root', [command(0, 1, 'Call', 'inv_child')]),

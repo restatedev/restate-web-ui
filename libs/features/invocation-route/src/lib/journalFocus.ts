@@ -18,7 +18,28 @@ export function getInitialInvocationIds(
         Boolean,
       ),
     ]),
-  ].slice(0, MAX_INVOCATION_ANCESTORS + 1);
+  ].slice(0, MAX_INVOCATION_ANCESTORS + 2);
+}
+
+export function getExpandIdsToDrop({
+  expandIds,
+  invocationIds,
+  rootId,
+  isLoaded,
+  isPending,
+  shownIds,
+}: {
+  expandIds: string[];
+  invocationIds: string[];
+  rootId: string;
+  isLoaded: (id: string) => boolean;
+  isPending: (id: string) => boolean;
+  shownIds: Set<string>;
+}) {
+  if (!isLoaded(rootId) || invocationIds.some(isPending)) {
+    return undefined;
+  }
+  return expandIds.filter((id) => isLoaded(id) && !shownIds.has(id));
 }
 
 export function getFocusInvocationId(searchParams: URLSearchParams) {

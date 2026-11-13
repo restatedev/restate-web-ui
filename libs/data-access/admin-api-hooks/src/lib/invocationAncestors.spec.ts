@@ -1,6 +1,9 @@
 import type { Invocation } from '@restate/data-access-admin-api-spec';
 import { RestateError, UI_ERROR_CODES } from '@restate/util-errors';
-import { isInvocationNotFound, walkInvocationAncestors } from './hooks';
+import {
+  isInvocationNotFound,
+  walkInvocationAncestors,
+} from './invocationAncestors';
 
 function invocation(id: string, parent?: string) {
   return { id, invoked_by_id: parent } as Invocation;
