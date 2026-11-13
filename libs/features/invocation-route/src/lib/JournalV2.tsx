@@ -163,8 +163,16 @@ function findCommandRow(
   );
 }
 
+const LIVE_REFETCH_MIN_MS = 1_000;
+const LIVE_REFETCH_MAX_MS = 10_000;
+const ENTRIES_PER_REFETCH_MS = 10;
+const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
+
 function getLiveRefetchInterval(entryCount = 0) {
-  return Math.max(1000, entryCount / 10);
+  return Math.min(
+    LIVE_REFETCH_MAX_MS,
+    Math.max(LIVE_REFETCH_MIN_MS, entryCount / ENTRIES_PER_REFETCH_MS),
+  );
 }
 
 function getCommandIndexFromHash(hash: string) {
@@ -237,7 +245,10 @@ export function JournalV2({
     refetchOnWindowFocus: false,
   });
 
-  const referencedInvocationIds = getReferencedInvocationIds(data);
+  const referencedInvocationIds = useMemo(
+    () => getReferencedInvocationIds(data),
+    [data],
+  );
   const {
     data: referencedInvocationStatuses,
     isError: isReferencedInvocationStatusesError,
@@ -247,6 +258,7 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         isLive &&
+        !isScrollingRef.current &&
         (query.state.status !== 'success' ||
           hasNonCompletedReferencedInvocations(
             referencedInvocationIds,
@@ -306,13 +318,16 @@ export function JournalV2({
     detail,
     hiddenEntryMatchersByInvocation,
   );
-  const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
     !withTimeline &&
     allEntriesWithoutInput.length > MAX_ENTRIES_WITHOUT_TIMELINE;
-  const entriesWithoutInputUnfiltered = withTimeline
-    ? allEntriesWithoutInput
-    : allEntriesWithoutInput.slice(0, MAX_ENTRIES_WITHOUT_TIMELINE);
+  const entriesWithoutInputUnfiltered = useMemo(
+    () =>
+      withTimeline
+        ? allEntriesWithoutInput
+        : allEntriesWithoutInput.slice(0, MAX_ENTRIES_WITHOUT_TIMELINE),
+    [withTimeline, allEntriesWithoutInput],
+  );
 
   const invocationApiError = apiError?.[invocationId];
   const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;
@@ -388,7 +403,20 @@ export function JournalV2({
     getItemKey,
   });
   useLayoutEffect(() => {
+    const wasScrolling = isScrollingRef.current;
     isScrollingRef.current = virtualizer.isScrolling;
+    if (
+      wasScrolling &&
+      !virtualizer.isScrolling &&
+      isLive &&
+      !areAllInvocationsCompleted &&
+      Date.now() - dataUpdatedAt >=
+        getLiveRefetchInterval(
+          journalAndInvocationData?.journal?.entries?.length,
+        )
+    ) {
+      refetch();
+    }
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();

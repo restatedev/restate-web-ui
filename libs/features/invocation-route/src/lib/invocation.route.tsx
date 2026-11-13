@@ -5,6 +5,7 @@ import {
 import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
+  DETAIL_QUERY_PARAM,
   getRestateError,
   InvocationStatusHeader,
   Status,
@@ -106,6 +107,10 @@ function Component() {
           pausedErrorData.stack,
         )
       : undefined;
+
+  const relatedCommandIndex =
+    journalAndInvocationData?.last_failure_related_command_index ??
+    pausedErrorData?.relatedCommandIndex;
 
   const lastError = getRestateError(journalAndInvocationData) ?? pausedError;
   const shouldShowFailure =
@@ -265,10 +270,7 @@ function Component() {
                   }}
                 />
               </div>
-              {Boolean(
-                journalAndInvocationData?.last_failure_related_command_index ??
-                pausedErrorData?.relatedCommandIndex,
-              ) && (
+              {typeof relatedCommandIndex === 'number' && (
                 <div
                   className="-translate-y-2 px-2"
                   style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
@@ -276,12 +278,10 @@ function Component() {
                   <Link
                     variant="icon"
                     className="inline-flex rounded-md px-2 text-xs"
-                    href={`#command-${journalAndInvocationData?.last_failure_related_command_index ?? pausedErrorData?.relatedCommandIndex}`}
+                    preserveQueryParams={[DETAIL_QUERY_PARAM]}
+                    href={`#command-${relatedCommandIndex}`}
                   >
-                    Go to the related line (#
-                    {journalAndInvocationData?.last_failure_related_command_index ??
-                      pausedErrorData?.relatedCommandIndex}
-                    )
+                    Go to the related line (#{relatedCommandIndex})
                     <Icon
                       name={IconName.ChevronDown}
                       className="ml-1 h-4 w-4"
@@ -480,11 +480,8 @@ function Anchor({
     observePanels();
 
     let frame = 0;
-    const observer = new MutationObserver((mutations) => {
-      if (
-        frame ||
-        !mutations.some((mutation) => mutation.type === 'childList')
-      ) {
+    const observer = new MutationObserver(() => {
+      if (frame) {
         return;
       }
       frame = requestAnimationFrame(() => {

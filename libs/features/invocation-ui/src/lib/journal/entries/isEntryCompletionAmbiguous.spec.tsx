@@ -94,4 +94,80 @@ describe('isEntryCompletionAmbiguous', () => {
       unambiguousEnd: completed_at,
     });
   });
+
+  it('is not ambiguous for a pending run of a running invocation', () => {
+    expect(
+      isEntryCompletionAmbiguous(
+        { ...pendingCall, type: 'Run' } as JournalEntryV2,
+        invocation({ status: 'running' }, [pendingCall]),
+      ),
+    ).toEqual({ isAmbiguous: false });
+  });
+
+  it('ends at the cancel when it came before the completion', () => {
+    expect(
+      isEntryCompletionAmbiguous(
+        pendingCall,
+        invocation(
+          { status: 'cancelled', completed_at: '2026-11-12T10:01:00.000Z' },
+          [pendingCall, cancel],
+        ),
+      ),
+    ).toEqual({
+      isAmbiguous: true,
+      mode: 'cancelled',
+      unambiguousEnd: cancel.start,
+    });
+  });
+
+  it('ends at the completion when it came before the cancel', () => {
+    const completed_at = '2026-11-12T10:00:02.000Z';
+    expect(
+      isEntryCompletionAmbiguous(
+        pendingCall,
+        invocation({ status: 'cancelled', completed_at }, [
+          pendingCall,
+          cancel,
+        ]),
+      ),
+    ).toEqual({
+      isAmbiguous: true,
+      mode: 'completion',
+      unambiguousEnd: completed_at,
+    });
+  });
+
+  it('ends at the pause when it came before the cancel', () => {
+    const modified_at = '2026-11-12T10:00:03.000Z';
+    expect(
+      isEntryCompletionAmbiguous(
+        pendingCall,
+        invocation({ status: 'paused', modified_at }, [pendingCall, cancel]),
+      ),
+    ).toEqual({
+      isAmbiguous: true,
+      mode: 'paused',
+      unambiguousEnd: modified_at,
+    });
+  });
+
+  it('keeps cached cancels per entries array', () => {
+    const withoutCancel = invocation({ status: 'running' }, [pendingCall]);
+    expect(isEntryCompletionAmbiguous(pendingCall, withoutCancel)).toEqual({
+      isAmbiguous: false,
+    });
+    expect(isEntryCompletionAmbiguous(pendingCall, withoutCancel)).toEqual({
+      isAmbiguous: false,
+    });
+    expect(
+      isEntryCompletionAmbiguous(
+        pendingCall,
+        invocation({ status: 'running' }, [pendingCall, cancel]),
+      ),
+    ).toEqual({
+      isAmbiguous: true,
+      mode: 'cancelled',
+      unambiguousEnd: cancel.start,
+    });
+  });
 });

@@ -253,8 +253,9 @@ export const Entry = memo(function Entry({
               : 'none',
           hasError:
             Boolean(
-              invocation.last_failure_related_command_index &&
-              invocation?.last_failure_related_command_index ===
+              typeof invocation.last_failure_related_command_index ===
+                'number' &&
+              invocation.last_failure_related_command_index ===
                 entry.commandIndex,
             ) ||
             Boolean(

@@ -39,10 +39,12 @@ function relatedCommand(
 function capActivityDetails(
   items: JourneyActivityDetail[],
   options: Omit<JourneyActivityDetailGroup, 'items' | 'totalItems'>,
+  decorate?: (item: JourneyActivityDetail) => JourneyActivityDetail,
 ): JourneyActivityDetailGroup {
+  const shown = items.slice(-MAX_ACTIVITY_DETAIL_ITEMS);
   return {
     ...options,
-    items: items.slice(-MAX_ACTIVITY_DETAIL_ITEMS),
+    items: decorate ? shown.map(decorate) : shown,
     totalItems: items.length,
   };
 }
@@ -60,19 +62,19 @@ function errorBackoffActivityDetails(
     entry,
   }));
 
-  const details = capActivityDetails(items, {
-    invocation,
-    itemNoun: 'transient-error events',
-    summary: 'Deduplicated transient errors from the invocation journal.',
-    emptyMessage: 'No retained transient-error journal events are available.',
-  });
-  return {
-    ...details,
-    items: details.items.map((item) => ({
+  return capActivityDetails(
+    items,
+    {
+      invocation,
+      itemNoun: 'transient-error events',
+      summary: 'Deduplicated transient errors from the invocation journal.',
+      emptyMessage: 'No retained transient-error journal events are available.',
+    },
+    (item) => ({
       ...item,
       parentCommand: relatedCommand(item.entry, journalEntries),
-    })),
-  };
+    }),
+  );
 }
 
 function pauseActivityDetails(
@@ -86,14 +88,20 @@ function pauseActivityDetails(
   const items = entries.map((entry, index) => ({
     key: `pause-${entry.index ?? index}`,
     entry,
-    parentCommand: relatedCommand(entry, journalEntries),
   }));
 
-  return capActivityDetails(items, {
-    invocation,
-    itemNoun: 'pauses',
-    emptyMessage: 'No retained pause journal events are available.',
-  });
+  return capActivityDetails(
+    items,
+    {
+      invocation,
+      itemNoun: 'pauses',
+      emptyMessage: 'No retained pause journal events are available.',
+    },
+    (item) => ({
+      ...item,
+      parentCommand: relatedCommand(item.entry, journalEntries),
+    }),
+  );
 }
 
 function suspensionActivityDetails(
