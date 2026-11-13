@@ -1,3 +1,4 @@
+import { MAX_INVOCATION_ANCESTORS } from '@restate/data-access-admin-api-hooks';
 import {
   EXPAND_INVOCATIONS_PARAM,
   FOCUS_INVOCATION_PARAM,
@@ -17,7 +18,7 @@ export function getInitialInvocationIds(
         Boolean,
       ),
     ]),
-  ];
+  ].slice(0, MAX_INVOCATION_ANCESTORS + 1);
 }
 
 export function getFocusInvocationId(searchParams: URLSearchParams) {

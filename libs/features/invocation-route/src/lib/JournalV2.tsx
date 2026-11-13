@@ -5,6 +5,7 @@ import type {
 import {
   Dispatch,
   memo,
+  RefObject,
   Suspense,
   useCallback,
   useEffect,
@@ -374,11 +375,13 @@ export function JournalV2({
     ? data[focusInvocationId]
     : undefined;
 
+  const hasDecidedFocusViewport = useRef(false);
   const pendingUrlExpandIds = useRef(invocationIds.slice(1));
   useEffect(() => {
     const urlExpandIds = pendingUrlExpandIds.current;
     if (
       urlExpandIds.length === 0 ||
+      !data[invocationId] ||
       invocationIds.some((id) => isPending[id])
     ) {
       return;
@@ -387,13 +390,15 @@ export function JournalV2({
     const shownIds = new Set(
       allEntriesWithoutInput.map((entry) => entry.invocationId),
     );
-    const unreachableIds = urlExpandIds.filter((id) => !shownIds.has(id));
+    const unreachableIds = urlExpandIds.filter(
+      (id) => data[id] && !shownIds.has(id),
+    );
     if (unreachableIds.length > 0) {
       setInvocationIds((ids) =>
         ids.filter((id) => !unreachableIds.includes(id)),
       );
     }
-  }, [invocationIds, isPending, allEntriesWithoutInput]);
+  }, [invocationId, invocationIds, isPending, data, allEntriesWithoutInput]);
   const hasScrolledToFocus = useRef(false);
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
@@ -460,6 +465,7 @@ export function JournalV2({
       >
         {withTimeline && focusRowIndex >= 0 && (
           <FocusedInvocationViewport
+            decidedRef={hasDecidedFocusViewport}
             start={getTime(focusedInvocation?.created_at)}
             end={getTime(focusedInvocation?.completed_at)}
           />
@@ -742,27 +748,23 @@ function getTime(date?: string) {
 }
 
 function FocusedInvocationViewport({
+  decidedRef,
   start,
   end,
 }: {
+  decidedRef: RefObject<boolean>;
   start?: number;
   end?: number;
 }) {
   const { setViewport, coordinateStart, actualDuration } =
     useTimelineEngineContext();
-  const hasFocused = useRef(false);
   const rangeEnd = coordinateStart + actualDuration;
 
   useEffect(() => {
-    if (
-      hasFocused.current ||
-      start === undefined ||
-      end === undefined ||
-      rangeEnd < end
-    ) {
+    if (decidedRef.current) {
       return;
     }
-    hasFocused.current = true;
+    decidedRef.current = true;
     const viewport = getFocusViewport({
       start,
       end,
@@ -772,7 +774,7 @@ function FocusedInvocationViewport({
     if (viewport) {
       setViewport(viewport.start, viewport.end);
     }
-  }, [setViewport, coordinateStart, rangeEnd, start, end]);
+  }, [decidedRef, setViewport, coordinateStart, rangeEnd, start, end]);
 
   return null;
 }

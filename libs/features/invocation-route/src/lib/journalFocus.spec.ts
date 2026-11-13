@@ -14,6 +14,16 @@ describe('getInitialInvocationIds', () => {
     ).toEqual(['inv_root', 'inv_a', 'inv_b']);
   });
 
+  it('expands at most as many invocations as a chain link can carry', () => {
+    const ids = Array.from({ length: 50 }, (_, i) => `inv_${i}`);
+    expect(
+      getInitialInvocationIds(
+        'inv_root',
+        new URLSearchParams(`expand=${ids.join(',')}`),
+      ),
+    ).toHaveLength(11);
+  });
+
   it('expands nothing without the param', () => {
     expect(getInitialInvocationIds('inv_root', new URLSearchParams())).toEqual([
       'inv_root',

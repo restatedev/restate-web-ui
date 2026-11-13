@@ -1303,7 +1303,7 @@ export function useGetInvocation(
 
 export const MAX_INVOCATION_ANCESTORS = 10;
 
-function isInvocationNotFound(error: unknown) {
+export function isInvocationNotFound(error: unknown) {
   return (
     error instanceof RestateError &&
     (error.restate_code === UI_ERROR_CODES.invocationNotFound ||

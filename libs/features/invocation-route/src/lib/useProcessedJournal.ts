@@ -243,7 +243,17 @@ function isRepeatedNestedCreatedEntry(
     depth > 0 &&
     entry?.category === 'event' &&
     entry.type === 'Created' &&
-    data?.[invocationId]?.invoked_by_id === parentInvocationId
+    data?.[invocationId]?.invoked_by_id === parentInvocationId &&
+    Boolean(
+      data[invocationId]?.journal?.entries?.some(
+        (other) =>
+          other !== entry &&
+          (other.category === 'command' ||
+            (other.category === 'event' &&
+              other.type !== 'Created' &&
+              other.type !== 'Completion')),
+      ),
+    )
   );
 }
 

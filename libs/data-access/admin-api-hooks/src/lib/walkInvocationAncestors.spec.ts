@@ -1,5 +1,6 @@
 import type { Invocation } from '@restate/data-access-admin-api-spec';
-import { walkInvocationAncestors } from './hooks';
+import { RestateError, UI_ERROR_CODES } from '@restate/util-errors';
+import { isInvocationNotFound, walkInvocationAncestors } from './hooks';
 
 function invocation(id: string, parent?: string) {
   return { id, invoked_by_id: parent } as Invocation;
@@ -60,5 +61,29 @@ describe('walkInvocationAncestors', () => {
         throw new Error('503');
       }),
     ).rejects.toThrow('503');
+  });
+});
+
+describe('isInvocationNotFound', () => {
+  it('recognises the not-found code and a 404', () => {
+    expect(
+      isInvocationNotFound(
+        new RestateError('gone', UI_ERROR_CODES.invocationNotFound),
+      ),
+    ).toBe(true);
+    expect(
+      isInvocationNotFound(
+        new RestateError('gone', undefined, undefined, undefined, 404),
+      ),
+    ).toBe(true);
+  });
+
+  it('treats other failures as errors', () => {
+    expect(
+      isInvocationNotFound(
+        new RestateError('down', undefined, undefined, undefined, 503),
+      ),
+    ).toBe(false);
+    expect(isInvocationNotFound(new Error('network'))).toBe(false);
   });
 });
