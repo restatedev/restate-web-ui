@@ -433,6 +433,7 @@ export function JournalV2({
     refetchInterval(query) {
       if (
         isLive &&
+        !isScrollingRef.current &&
         (query.state.status !== 'success' ||
           hasNonCompletedReferencedInvocations(
             referencedInvocationIds,

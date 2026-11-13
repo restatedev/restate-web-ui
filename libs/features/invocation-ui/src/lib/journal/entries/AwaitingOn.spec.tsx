@@ -3,7 +3,21 @@ import type {
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
 import { render, screen } from '@testing-library/react';
-import { AwaitingOn, getAwaitedInvocationIds } from './AwaitingOn';
+import { useWarmInvocationStatusDetails } from '@restate/data-access-admin-api-hooks';
+import {
+  AwaitingOn,
+  AwaitingOnEntries,
+  getAwaitedInvocationIds,
+} from './AwaitingOn';
+
+vi.mock('@restate/data-access-admin-api-hooks', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('@restate/data-access-admin-api-hooks')
+  >()),
+  useWarmInvocationStatusDetails: vi.fn(),
+}));
+
+vi.mock('../Entry', () => ({ Entry: () => null }));
 
 const cancel = { Single: { SignalIndex: 1 } };
 const completion = (id: number) => ({ Single: { CompletionId: id } });
@@ -68,5 +82,47 @@ describe('getAwaitedInvocationIds', () => {
         { category: 'command', type: 'Run', completionId: 2 } as JournalEntryV2,
       ]),
     ).toEqual([]);
+  });
+});
+
+describe('AwaitingOnEntries', () => {
+  it('asks for the statuses of the calls it shows', () => {
+    render(
+      <AwaitingOnEntries
+        future={
+          { AllCompleted: [completion(8), completion(9)] } as InvocationFuture
+        }
+        invocation={
+          {
+            id: 'inv_parent',
+            journal: {
+              entries: [
+                {
+                  category: 'command',
+                  type: 'Call',
+                  invocationId: 'inv_first',
+                  completionId: 8,
+                },
+                {
+                  category: 'command',
+                  type: 'Call',
+                  invocationId: 'inv_second',
+                  completionId: 9,
+                },
+              ],
+            },
+          } as NonNullable<
+            Parameters<typeof AwaitingOnEntries>[0]['invocation']
+          >
+        }
+        isPending
+      />,
+    );
+
+    expect(useWarmInvocationStatusDetails).toHaveBeenLastCalledWith(
+      ['inv_first', 'inv_second'],
+      'inv_parent',
+      expect.objectContaining({ enabled: true, refetchInterval: false }),
+    );
   });
 });

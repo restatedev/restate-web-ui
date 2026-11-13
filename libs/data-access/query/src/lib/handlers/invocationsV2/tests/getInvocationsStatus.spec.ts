@@ -56,13 +56,19 @@ describe('POST /query/invocations/statuses', () => {
         { length: 50_001 },
         (_, index) => `inv_${String(index).padStart(34, '0')}`,
       );
+      const firstId = invocationIds.at(0)!;
       const lastId = invocationIds.at(-1)!;
       setResponder((statement) =>
         statement.includes('FROM sys_vqueue_entry_status')
           ? []
-          : statement.includes(`'${lastId}'`)
-            ? [rawInvocation(lastId, { status: 'running' })]
-            : [],
+          : [
+              ...(statement.includes(`'${firstId}'`)
+                ? [rawInvocation(firstId, { status: 'suspended' })]
+                : []),
+              ...(statement.includes(`'${lastId}'`)
+                ? [rawInvocation(lastId, { status: 'running' })]
+                : []),
+            ],
       );
 
       const response = await post('/invocations/statuses', { invocationIds });
@@ -84,6 +90,7 @@ describe('POST /query/invocations/statuses', () => {
         ).toBeLessThan(2 * 1024 * 1024);
       }
       expect(Object.keys(body.invocations)).toHaveLength(50_001);
+      expect(body.invocations[firstId].status).toBe('suspended');
       expect(body.invocations[lastId].status).toBe('running');
     });
 

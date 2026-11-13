@@ -1138,6 +1138,7 @@ export function useWarmInvocationStatusDetails(
     .filter((invocationId) => !results.data?.invocations?.[invocationId])
     .join(',');
   const { refetch, isFetching } = results;
+  const queryClient = useQueryClient();
   const requestedInvocationIds = useRef<string>(undefined);
   useEffect(() => {
     if (!uncachedInvocationIds) {
@@ -1145,12 +1146,26 @@ export function useWarmInvocationStatusDetails(
     } else if (
       isEnabled &&
       !isFetching &&
+      queryClient.isFetching({
+        queryKey: getInvocationStatusDetailsQueryKey(
+          baseUrl,
+          referenceInvocationId,
+        ),
+      }) === 0 &&
       uncachedInvocationIds !== requestedInvocationIds.current
     ) {
       requestedInvocationIds.current = uncachedInvocationIds;
       void refetch({ cancelRefetch: false });
     }
-  }, [isEnabled, isFetching, refetch, uncachedInvocationIds]);
+  }, [
+    baseUrl,
+    isEnabled,
+    isFetching,
+    queryClient,
+    referenceInvocationId,
+    refetch,
+    uncachedInvocationIds,
+  ]);
 
   return {
     ...results,
