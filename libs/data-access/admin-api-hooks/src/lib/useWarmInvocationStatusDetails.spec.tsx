@@ -217,6 +217,31 @@ describe('useWarmInvocationStatusDetails', () => {
     );
   });
 
+  it('asks again for invocations a failed request left out, once another poll succeeds', async () => {
+    fetchStatuses.mockImplementationOnce(() =>
+      Promise.reject(new Error('statuses failed')),
+    );
+    const { result } = render(['inv_b']);
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(fetchStatuses).toHaveBeenCalledTimes(1);
+
+    await act(() =>
+      client.fetchQuery({
+        queryKey: result.current.queryKey,
+        queryFn: () => ({ invocations: { inv_a: { status: 'suspended' } } }),
+      }),
+    );
+
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_b']?.status).toBe(
+        'suspended',
+      ),
+    );
+    expect(fetchStatuses).toHaveBeenCalledTimes(2);
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_b']);
+  });
+
   describe('read through useGetInvocationStatusDetails', () => {
     function renderWithReader(initialInvocationIds: string[]) {
       return renderHook(
