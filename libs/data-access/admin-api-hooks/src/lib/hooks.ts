@@ -1137,20 +1137,36 @@ export function useWarmInvocationStatusDetails(
   const uncachedInvocationIds = queryInvocationIds
     .filter((invocationId) => !results.data?.invocations?.[invocationId])
     .join(',');
-  const { refetch, isFetching } = results;
+  const { refetch, isFetching, isError } = results;
+  const queryClient = useQueryClient();
   const requestedInvocationIds = useRef<string>(undefined);
   useEffect(() => {
-    if (!uncachedInvocationIds) {
+    if (!uncachedInvocationIds || isError) {
       requestedInvocationIds.current = undefined;
     } else if (
       isEnabled &&
       !isFetching &&
+      queryClient.isFetching({
+        queryKey: getInvocationStatusDetailsQueryKey(
+          baseUrl,
+          referenceInvocationId,
+        ),
+      }) === 0 &&
       uncachedInvocationIds !== requestedInvocationIds.current
     ) {
       requestedInvocationIds.current = uncachedInvocationIds;
       void refetch({ cancelRefetch: false });
     }
-  }, [isEnabled, isFetching, refetch, uncachedInvocationIds]);
+  }, [
+    baseUrl,
+    isEnabled,
+    isError,
+    isFetching,
+    queryClient,
+    referenceInvocationId,
+    refetch,
+    uncachedInvocationIds,
+  ]);
 
   return {
     ...results,
@@ -1181,11 +1197,7 @@ export function useGetInvocationStatusDetails(
     ...query,
     data: data as InvocationStatusDetails | undefined,
     isPending:
-      invocationId && referenceInvocationId
-        ? isCompleted
-          ? false
-          : query.isPending
-        : false,
+      invocationId && referenceInvocationId ? !data && !query.error : false,
     error:
       invocationId && referenceInvocationId
         ? isCompleted

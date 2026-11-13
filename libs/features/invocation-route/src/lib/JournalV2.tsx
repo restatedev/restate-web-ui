@@ -30,6 +30,7 @@ import { Indicator, Spinner } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
+import { isTargetInvocationEntry } from '@restate/features-invocation-ui';
 import { EntryProgress } from './EntryProgress';
 import {
   PortalProvider,
@@ -63,6 +64,10 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
+import {
+  getEventRelatedInvocationIds,
+  getReferencedInvocationIds,
+} from './referencedInvocations';
 import { Retention } from '@restate/features-invocation-ui';
 import {
   COMPACT_DETAIL,
@@ -97,42 +102,6 @@ const JOURNAL_BOTTOM_PADDING_PX = 50;
 // and stays consistent between the overview selector and the main timeline. Not
 // applied while live — there the now-edge/follow window governs the right side.
 const TIMELINE_COMPLETED_END_HEADROOM_RATIO = 0.05;
-
-type ReferencedInvocationEntry = Extract<
-  JournalEntryV2,
-  {
-    category?: 'command';
-    type?: 'Call' | 'OneWayCall' | 'AttachInvocation';
-  }
->;
-
-function isReferencedInvocationEntry(
-  entry?: JournalEntryV2,
-): entry is ReferencedInvocationEntry {
-  return (
-    entry?.category === 'command' &&
-    (entry.type === 'Call' ||
-      entry.type === 'OneWayCall' ||
-      entry.type === 'AttachInvocation')
-  );
-}
-
-function getReferencedInvocationIds(
-  data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
-) {
-  return [
-    ...new Set(
-      Object.values(data ?? {}).flatMap(
-        (invocation) =>
-          invocation?.journal?.entries?.flatMap((entry) =>
-            isReferencedInvocationEntry(entry) && entry.invocationId
-              ? [entry.invocationId]
-              : [],
-          ) ?? [],
-      ),
-    ),
-  ];
-}
 
 function hasNonCompletedReferencedInvocations(
   invocationIds: string[],
@@ -249,35 +218,6 @@ export function JournalV2({
       } else {
         return false;
       }
-    },
-    refetchIntervalInBackground: false,
-    refetchOnWindowFocus: false,
-  });
-
-  const referencedInvocationIds = useMemo(
-    () => getReferencedInvocationIds(data),
-    [data],
-  );
-  const {
-    data: referencedInvocationStatuses,
-    isError: isReferencedInvocationStatusesError,
-  } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
-    refetchOnMount: true,
-    staleTime: 0,
-    refetchInterval(query) {
-      if (
-        isLive &&
-        !isScrollingRef.current &&
-        (query.state.status !== 'success' ||
-          hasNonCompletedReferencedInvocations(
-            referencedInvocationIds,
-            query.state.data?.invocations,
-          ))
-      ) {
-        return 1000;
-      }
-
-      return false;
     },
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
@@ -466,6 +406,48 @@ export function JournalV2({
     virtualizer,
     journalAndInvocationData,
   ]);
+
+  const eventRelatedInvocationIds = useMemo(
+    () =>
+      getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
+    [journalAndInvocationData],
+  );
+  const referencedInvocationIds = virtualizer.isScrolling
+    ? []
+    : [
+        ...new Set([
+          ...getReferencedInvocationIds(
+            withTimeline
+              ? virtualItems.map(({ index }) => entriesWithoutInput[index])
+              : entriesWithoutInput,
+          ),
+          ...eventRelatedInvocationIds,
+        ]),
+      ];
+  const {
+    data: referencedInvocationStatuses,
+    isError: isReferencedInvocationStatusesError,
+  } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
+    refetchOnMount: true,
+    staleTime: 0,
+    refetchInterval(query) {
+      if (
+        isLive &&
+        !isScrollingRef.current &&
+        (query.state.status !== 'success' ||
+          hasNonCompletedReferencedInvocations(
+            referencedInvocationIds,
+            query.state.data?.invocations,
+          ))
+      ) {
+        return 1000;
+      }
+
+      return false;
+    },
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+  });
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 
@@ -1006,7 +988,7 @@ function VirtualizedTimeline({
             : undefined;
         const targetInvocationId =
           entry?.isPending &&
-          isReferencedInvocationEntry(entry) &&
+          isTargetInvocationEntry(entry) &&
           entry.type !== 'OneWayCall'
             ? entry.invocationId
             : undefined;

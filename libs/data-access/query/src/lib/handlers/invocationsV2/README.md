@@ -114,7 +114,7 @@ Sampled is the default mode. Time bounds are applied before `LIMIT S`.
 
 ## Point APIs
 
-All queries for one ID or a bounded ID list run in parallel.
+All queries for one ID or a bounded ID list run in parallel. `IN (...)` lists are split into queries of at most 10,000 IDs (about 420 KB of SQL), so no `/query` body reaches the admin API's 2 MB limit.
 
 | API                                | Query shape                                                                           |
 | ---------------------------------- | ------------------------------------------------------------------------------------- |
