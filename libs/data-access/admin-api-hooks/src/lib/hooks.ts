@@ -37,7 +37,7 @@ import type {
   HookQueryOptions,
   HookMutationOptions,
 } from '@restate/data-access-admin-api';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { RestateError } from '@restate/util-errors';
 import {
   isInvocationNotFound,
@@ -1052,6 +1052,7 @@ export function useWarmInvocationStatusDetails(
   options?: HookQueryOptions<'/query/invocations/statuses', 'post'>,
 ) {
   const enabled = useAPIStatus();
+  const isEnabled = options?.enabled !== false && enabled;
   const baseUrl = useAdminBaseUrl();
   const queryInvocationIds = [
     ...new Set(invocationIds.filter((invocationId) => invocationId.length > 0)),
@@ -1134,8 +1135,26 @@ export function useWarmInvocationStatusDetails(
         },
       };
     },
-    enabled: options?.enabled !== false && enabled,
+    enabled: isEnabled,
   });
+
+  const uncachedInvocationIds = queryInvocationIds
+    .filter((invocationId) => !results.data?.invocations?.[invocationId])
+    .join(',');
+  const { refetch, isFetching } = results;
+  const requestedInvocationIds = useRef<string>(undefined);
+  useEffect(() => {
+    if (!uncachedInvocationIds) {
+      requestedInvocationIds.current = undefined;
+    } else if (
+      isEnabled &&
+      !isFetching &&
+      uncachedInvocationIds !== requestedInvocationIds.current
+    ) {
+      requestedInvocationIds.current = uncachedInvocationIds;
+      void refetch({ cancelRefetch: false });
+    }
+  }, [isEnabled, isFetching, refetch, uncachedInvocationIds]);
 
   return {
     ...results,

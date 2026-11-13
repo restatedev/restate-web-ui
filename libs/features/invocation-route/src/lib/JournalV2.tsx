@@ -1,5 +1,6 @@
 import type {
   components,
+  InvocationStatus,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
 import {
@@ -10,10 +11,12 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import type { VirtualItem } from '@tanstack/react-virtual';
 import { getDuration, SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { Link } from '@restate/ui-link';
@@ -40,6 +43,7 @@ import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util-styles';
 import {
   isCompletedInvocationStatus,
+  useGetPausedError,
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
@@ -159,6 +163,52 @@ function hasNonCompletedReferencedInvocations(
   });
 }
 
+function findCommandRow(
+  entries: CombinedJournalEntry[],
+  invocationId: string,
+  commandIndex?: number,
+) {
+  if (typeof commandIndex !== 'number') {
+    return -1;
+  }
+  return entries.findIndex(
+    ({ invocationId: entryInvocationId, entry }) =>
+      entryInvocationId === invocationId &&
+      entry?.category === 'command' &&
+      entry.commandIndex === commandIndex,
+  );
+}
+
+const LIVE_REFETCH_MIN_MS = 1_000;
+const LIVE_REFETCH_MAX_MS = 10_000;
+const ENTRIES_PER_REFETCH_MS = 10;
+const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
+
+type JournalInvocation = ReturnType<
+  typeof useGetInvocationsJournalWithInvocationsV2
+>['data'][string];
+
+function getLiveRefetchInterval(entryCount = 0) {
+  return Math.min(
+    LIVE_REFETCH_MAX_MS,
+    Math.max(LIVE_REFETCH_MIN_MS, entryCount / ENTRIES_PER_REFETCH_MS),
+  );
+}
+
+function hasPendingJournalUpdates(invocation?: JournalInvocation) {
+  return (
+    !invocation?.completed_at ||
+    invocation.journal_commands_size !==
+      invocation.journal?.entries?.filter((e) => e.category === 'command')
+        .length
+  );
+}
+
+function getCommandIndexFromHash(hash: string) {
+  const match = /^#command-(\d+)$/.exec(hash);
+  return match ? Number(match[1]) : undefined;
+}
+
 function getJournalEntryKey(entry: JournalEntryV2 | undefined, index: number) {
   if (
     entry?.category === 'group' &&
@@ -190,6 +240,7 @@ export function JournalV2({
   showIntrospection = true,
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
+  const isScrollingRef = useRef(false);
   const [searchParams] = useSearchParams();
   const [invocationIds, setInvocationIds] = useState(() =>
     withTimeline
@@ -211,15 +262,14 @@ export function JournalV2({
     staleTime: 0,
     refetchInterval(query) {
       if (
+        isLive &&
+        !isScrollingRef.current &&
         query.state.status === 'success' &&
-        (!query.state.data?.completed_at ||
-          query.state.data?.journal_commands_size !==
-            query.state.data?.journal?.entries?.filter(
-              (e) => e.category === 'command',
-            ).length) &&
-        isLive
+        hasPendingJournalUpdates(query.state.data)
       ) {
-        return 1000;
+        return getLiveRefetchInterval(
+          query.state.data?.journal?.entries?.length,
+        );
       } else {
         return false;
       }
@@ -228,13 +278,20 @@ export function JournalV2({
     refetchOnWindowFocus: false,
   });
 
-  const referencedInvocationIds = getReferencedInvocationIds(data);
-  useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
+  const referencedInvocationIds = useMemo(
+    () => getReferencedInvocationIds(data),
+    [data],
+  );
+  const {
+    data: referencedInvocationStatuses,
+    isError: isReferencedInvocationStatusesError,
+  } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
     refetchOnMount: true,
     staleTime: 0,
     refetchInterval(query) {
       if (
         isLive &&
+        !isScrollingRef.current &&
         (query.state.status !== 'success' ||
           hasNonCompletedReferencedInvocations(
             referencedInvocationIds,
@@ -294,7 +351,6 @@ export function JournalV2({
     detail,
     hiddenEntryMatchersByInvocation,
   );
-  const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
   const hasMoreEntries =
     !withTimeline &&
     allEntriesWithoutInput.length > MAX_ENTRIES_WITHOUT_TIMELINE;
@@ -318,14 +374,21 @@ export function JournalV2({
   const areAllInvocationsCompleted = invocationIds.every(
     (id) => !data[id] || data[id]?.completed_at,
   );
-  const maxEntryTimestamp = Math.max(
-    ...entriesWithoutInputUnfiltered.map(({ entry }) =>
-      entry?.end
-        ? new Date(entry.end).getTime()
-        : entry?.start
-          ? new Date(entry.start).getTime()
-          : -1,
-    ),
+  const maxEntryTimestamp = useMemo(
+    () =>
+      entriesWithoutInputUnfiltered.reduce(
+        (max, { entry }) =>
+          Math.max(
+            max,
+            entry?.end
+              ? new Date(entry.end).getTime()
+              : entry?.start
+                ? new Date(entry.start).getTime()
+                : -1,
+          ),
+        -Infinity,
+      ),
+    [entriesWithoutInputUnfiltered],
   );
   const completedTimelineEnd =
     maxEntryTimestamp > start
@@ -349,12 +412,8 @@ export function JournalV2({
     Boolean(journalAndInvocationData) &&
     (journalAndInvocationData?.journal?.entries?.length ?? 0) === 0;
 
-  const virtualizer = useWindowVirtualizer({
-    count: entriesWithoutInput.length,
-    estimateSize: () => 36,
-    overscan: 24,
-    scrollMargin: 0,
-    getItemKey: (index) => {
+  const getItemKey = useCallback(
+    (index: number) => {
       const entry = entriesWithoutInput[index];
       return entry
         ? `${entry.invocationId}-${getJournalEntryKey(
@@ -363,9 +422,76 @@ export function JournalV2({
           )}-${entry.entry?.type}-${index}`
         : index;
     },
+    [entriesWithoutInput],
+  );
+  const virtualizer = useWindowVirtualizer({
+    count: entriesWithoutInput.length,
+    estimateSize: () => 36,
+    overscan: 24,
+    scrollMargin: 0,
+    getItemKey,
+  });
+  useLayoutEffect(() => {
+    isScrollingRef.current = virtualizer.isScrolling;
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
+  const entriesListRef = useRef<HTMLDivElement>(null);
+
+  const { data: pausedErrorData } = useGetPausedError(invocationId, {
+    enabled: withTimeline && journalAndInvocationData?.status === 'paused',
+  });
+  const failureCommandIndex =
+    journalAndInvocationData?.last_failure_related_command_index ??
+    pausedErrorData?.relatedCommandIndex;
+  const failureRowIndex = useMemo(
+    () =>
+      findCommandRow(entriesWithoutInput, invocationId, failureCommandIndex),
+    [entriesWithoutInput, invocationId, failureCommandIndex],
+  );
+  const failureRow =
+    failureRowIndex >= 0
+      ? virtualizer.measurementsCache[failureRowIndex]
+      : undefined;
+
+  const { hash, key: locationKey } = useLocation();
+  const scrolledLocationKey = useRef<string>(undefined);
+  useEffect(() => {
+    if (!withTimeline || scrolledLocationKey.current === locationKey) {
+      return;
+    }
+    const row =
+      virtualizer.measurementsCache[
+        findCommandRow(
+          entriesWithoutInput,
+          invocationId,
+          getCommandIndexFromHash(hash),
+        )
+      ];
+    const list = entriesListRef.current;
+    if (!list) {
+      return;
+    }
+    if (!row) {
+      if (journalAndInvocationData) {
+        scrolledLocationKey.current = locationKey;
+      }
+      return;
+    }
+    scrolledLocationKey.current = locationKey;
+    const listTop = list.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: listTop + row.start + row.size / 2 - window.innerHeight / 2,
+    });
+  }, [
+    withTimeline,
+    hash,
+    locationKey,
+    entriesWithoutInput,
+    invocationId,
+    virtualizer,
+    journalAndInvocationData,
+  ]);
 
   const focusRowIndex = focusInvocationId
     ? entriesWithoutInput.findIndex(
@@ -405,19 +531,19 @@ export function JournalV2({
   const hasScrolledToFocus = useRef(false);
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
-    const panel = document.getElementById(entriesPanelId);
-    if (!withTimeline || hasScrolledToFocus.current || !row || !panel) {
+    const list = entriesListRef.current;
+    if (!withTimeline || hasScrolledToFocus.current || !row || !list) {
       return;
     }
     hasScrolledToFocus.current = true;
     window.scrollTo({
       top:
-        panel.getBoundingClientRect().top +
+        list.getBoundingClientRect().top +
         window.scrollY +
         row.start -
         window.innerHeight / 3,
     });
-  }, [withTimeline, focusRowIndex, entriesPanelId, virtualizer]);
+  }, [withTimeline, focusRowIndex, virtualizer]);
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
 
@@ -620,10 +746,12 @@ export function JournalV2({
                             style={{ minHeight: totalSize }}
                           >
                             <VirtualizedEntries
+                              ref={entriesListRef}
                               virtualItems={virtualItems}
                               totalSize={totalSize}
                               entriesWithoutInput={entriesWithoutInput}
                               data={data}
+                              failureRow={failureRow}
                               focusInvocationId={focusInvocationId}
                             />
                             {journalAndInvocationData && (
@@ -675,6 +803,12 @@ export function JournalV2({
                                 data={data}
                                 relatedEntriesByInvocation={
                                   relatedEntriesByInvocation
+                                }
+                                referencedInvocations={
+                                  referencedInvocationStatuses?.invocations
+                                }
+                                isReferencedInvocationsError={
+                                  isReferencedInvocationStatusesError
                                 }
                                 focusInvocationId={focusInvocationId}
                               />
@@ -885,26 +1019,39 @@ function ReturnToLiveButton({
 }
 
 function VirtualizedEntries({
+  ref,
   virtualItems,
   totalSize,
   entriesWithoutInput,
   data,
+  failureRow,
   focusInvocationId,
 }: {
+  ref: RefObject<HTMLDivElement | null>;
   virtualItems: VirtualItem[];
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
+  failureRow?: VirtualItem;
   focusInvocationId?: string;
 }) {
   return (
     <div
+      ref={ref}
       className="overflow-clip"
       style={{
         height: totalSize,
         position: 'relative',
       }}
     >
+      {failureRow && (
+        <div
+          data-last-failure-position
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0"
+          style={{ top: failureRow.start, height: failureRow.size }}
+        />
+      )}
       {virtualItems.map((virtualItem) => {
         const combinedEntry = entriesWithoutInput[virtualItem.index];
         if (!combinedEntry) return null;
@@ -956,6 +1103,8 @@ function VirtualizedTimeline({
   entriesWithoutInput,
   data,
   relatedEntriesByInvocation,
+  referencedInvocations,
+  isReferencedInvocationsError,
   focusInvocationId,
 }: {
   virtualItems: VirtualItem[];
@@ -963,6 +1112,11 @@ function VirtualizedTimeline({
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
+  referencedInvocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >;
+  isReferencedInvocationsError?: boolean;
   focusInvocationId?: string;
 }) {
   return (
@@ -982,6 +1136,19 @@ function VirtualizedTimeline({
                 .get(entryInvocationId)
                 ?.get(entry.index)
             : undefined;
+        const targetInvocationId =
+          entry?.isPending &&
+          isReferencedInvocationEntry(entry) &&
+          entry.type !== 'OneWayCall'
+            ? entry.invocationId
+            : undefined;
+        const targetInvocation = targetInvocationId
+          ? referencedInvocations?.[targetInvocationId]
+          : undefined;
+        const isTargetInvocationStatusPending =
+          Boolean(targetInvocationId) &&
+          !targetInvocation &&
+          !isReferencedInvocationsError;
 
         return (
           <div
@@ -1003,6 +1170,8 @@ function VirtualizedTimeline({
               entry={entry}
               invocation={data?.[entryInvocationId]}
               precomputedRelatedEntries={relatedEntries}
+              targetInvocationStatus={targetInvocation?.status}
+              isTargetInvocationStatusPending={isTargetInvocationStatusPending}
             />
           </div>
         );
@@ -1015,6 +1184,8 @@ const TimelineContainer = memo(function TimelineContainer({
   entry,
   invocation,
   precomputedRelatedEntries,
+  targetInvocationStatus,
+  isTargetInvocationStatusPending,
 }: {
   invocationId: string;
   entry?: JournalEntryV2;
@@ -1022,6 +1193,8 @@ const TimelineContainer = memo(function TimelineContainer({
     typeof useGetInvocationsJournalWithInvocationsV2
   >['data'][string];
   precomputedRelatedEntries?: JournalEntryV2[];
+  targetInvocationStatus?: InvocationStatus;
+  isTargetInvocationStatusPending?: boolean;
 }) {
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
@@ -1030,6 +1203,8 @@ const TimelineContainer = memo(function TimelineContainer({
         entry={entry}
         invocation={invocation}
         precomputedRelatedEntries={precomputedRelatedEntries}
+        targetInvocationStatus={targetInvocationStatus}
+        isTargetInvocationStatusPending={isTargetInvocationStatusPending}
       />
     </div>
   );
