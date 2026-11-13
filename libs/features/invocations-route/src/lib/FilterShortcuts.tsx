@@ -28,13 +28,13 @@ import {
 import { tv } from '@restate/util-styles';
 import { Icon, IconName } from '@restate/ui-icons';
 import { useInvocationSearchParams } from './useInvocationSearchParams';
-import { SORT_QUERY_PREFIX, SORT_NONE } from './useInvocationsQueryFilters';
+import { SORT_QUERY_PREFIX } from './useInvocationsQueryFilters';
 import { useInvocationsLastQuery } from '@restate/util-sidebar-nav';
 import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-api-hooks';
 
 interface FilterShortcut {
   columns: ColumnKey[];
-  sort?: components['schemas']['InvocationV2Sort'] | typeof SORT_NONE;
+  sort?: components['schemas']['InvocationV2Sort'];
   filters: QueryClause<QueryClauseType>[];
   label: string;
   id: string;
@@ -63,7 +63,7 @@ const makeShortcuts: (
       id: 'processing',
       label: 'Running',
       columns: defaultColumns,
-      sort: SORT_NONE,
+      sort: { field: 'created_at', order: 'DESC' },
       filters: [
         toClause(schema, 'status', {
           operation: 'IN',
@@ -193,10 +193,7 @@ export function FilterShortcuts({
       newSearchParams.append(COLUMN_QUERY_PREFIX, col);
     });
 
-    if (item.sort === SORT_NONE) {
-      newSearchParams.set(SORT_QUERY_PREFIX + 'field', SORT_NONE);
-      newSearchParams.delete(SORT_QUERY_PREFIX + 'order');
-    } else if (item.sort) {
+    if (item.sort) {
       const sort =
         item.sort.field === 'created_at' && canSortByTransition
           ? { field: 'transitioned_at', order: 'DESC' }
