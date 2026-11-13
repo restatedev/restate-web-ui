@@ -114,6 +114,14 @@ function useRunView(
       tracking.tracking.phase === 'unavailable'
         ? tracking.tracking.reply
         : undefined;
+    const output =
+      tracking.tracking.phase === 'completed'
+        ? tracking.tracking.output
+        : undefined;
+    const failedMessage =
+      tracking.state === 'failed' && output?.kind === 'response'
+        ? errorMessage(output.text)
+        : undefined;
     return {
       phase: 'invocation',
       invocationId: sentId,
@@ -122,8 +130,9 @@ function useRunView(
       isLive: phase === 'tracking' && tracking.state !== 'scheduled',
       isUnknown: phase === 'unavailable',
       isFailed: tracking.state === 'failed',
-      output: phase === 'completed' ? tracking.tracking.output : undefined,
-      failure: tracking.failure ?? (reply && replyMessage(reply)),
+      output: failedMessage ? undefined : output,
+      failure:
+        tracking.failure ?? failedMessage ?? (reply && replyMessage(reply)),
       note:
         phase === 'paused'
           ? tracking.startsAt || 'Stopped checking after 5 minutes.'
@@ -227,7 +236,7 @@ function viewTitle(view: RunView) {
 
 function viewValue(view: RunView) {
   if (view.phase === 'answered') {
-    return view.result;
+    return view.isFailed && view.message ? undefined : view.result;
   }
   if (view.phase === 'invocation') {
     return view.output;

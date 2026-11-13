@@ -25,6 +25,7 @@ export function BodyEditor({
   ariaLabel,
   className,
   maxHeight,
+  autoFocus,
 }: {
   modelUri: string;
   value: string;
@@ -35,6 +36,7 @@ export function BodyEditor({
   ariaLabel: string;
   className?: string;
   maxHeight?: number;
+  autoFocus?: boolean;
 }) {
   const hydrated = useHydrated();
   const loading = (
@@ -64,6 +66,7 @@ export function BodyEditor({
               onSubmit={onSubmit}
               ariaLabel={ariaLabel}
               maxHeight={maxHeight}
+              autoFocus={autoFocus}
             />
           </Suspense>
         </ErrorBoundary>

@@ -307,6 +307,7 @@ export function InputField({
     () =>
       !run.isInputOptional || draft.rawBody !== '' || draft.bodyMode === 'file',
   );
+  const [shouldFocus, setShouldFocus] = useState(false);
   if (!run.hasInput) {
     return null;
   }
@@ -322,7 +323,10 @@ export function InputField({
         <Button
           variant="secondary"
           className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true);
+            setShouldFocus(true);
+          }}
         >
           <Icon name={IconName.Plus} className="h-3.5 w-3.5 text-subtle" />
           Add input
@@ -330,7 +334,14 @@ export function InputField({
       </div>
     );
   }
-  return <JsonInput run={run} maxHeight={maxHeight} label={label} />;
+  return (
+    <JsonInput
+      run={run}
+      maxHeight={maxHeight}
+      label={label}
+      autoFocus={shouldFocus}
+    />
+  );
 }
 
 function JsonInput({
@@ -338,11 +349,13 @@ function JsonInput({
   className,
   label = 'Input',
   maxHeight,
+  autoFocus,
 }: {
   run: OperationRun;
   className?: string;
   label?: string | false;
   maxHeight?: number;
+  autoFocus?: boolean;
 }) {
   const { runner, operation, service, draftName } = run;
   const body = operation.body;
@@ -392,6 +405,7 @@ function JsonInput({
           onChange={(rawBody) =>
             runner.setDraft((previous) => ({ ...previous, rawBody }))
           }
+          autoFocus={autoFocus}
           onSubmit={() =>
             containerRef.current?.closest('form')?.requestSubmit()
           }
@@ -450,6 +464,14 @@ const MODE_COPY: Record<BaseMode, { label: string; description: string }> = {
     label: 'Call',
     description: 'Wait here for the result',
   },
+  attach: {
+    label: 'Attach',
+    description: 'Wait for the result of an earlier run',
+  },
+  output: {
+    label: 'Get output',
+    description: 'Get the result if it has finished',
+  },
 };
 
 const sendStyles = tv({
@@ -492,7 +514,7 @@ export function submitRun(
 ) {
   const issues = run.submit();
   if (issues.length === 0) {
-    return;
+    return true;
   }
   const hidden = new Set(
     [...run.advancedParameters, ...run.scopeParameters].map(parameterField),
@@ -503,6 +525,7 @@ export function submitRun(
   setTimeout(() =>
     form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
   );
+  return false;
 }
 
 export function runLabel(run: HandlerRun) {

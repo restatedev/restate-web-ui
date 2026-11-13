@@ -94,7 +94,7 @@ export function useOperationRun({
 
 export type OperationRun = ReturnType<typeof useOperationRun>;
 
-export type BaseMode = 'send' | 'call';
+export type BaseMode = 'send' | 'call' | 'attach' | 'output';
 
 export function useHandlerRun({
   service,
@@ -109,14 +109,16 @@ export function useHandlerRun({
   ingressUrl: string;
   serviceType?: RestateServiceType;
 }) {
-  const availableModes = (['send', 'call'] as const).filter(
+  const availableModes = (['send', 'call', 'attach', 'output'] as const).filter(
     (mode) => handler.modes[mode],
   );
   const [base, setBase] = useState<BaseMode>(availableModes[0] ?? 'call');
   const [isScoped, setIsScoped] = useState(false);
-  const scopedMode: HandlerMode = base === 'send' ? 'scopedSend' : 'scopedCall';
-  const canScope = Boolean(handler.modes[scopedMode]);
-  const mode: HandlerMode = isScoped && canScope ? scopedMode : base;
+  const scopedMode: HandlerMode | undefined =
+    base === 'send' ? 'scopedSend' : base === 'call' ? 'scopedCall' : undefined;
+  const canScope = Boolean(scopedMode && handler.modes[scopedMode]);
+  const mode: HandlerMode =
+    isScoped && canScope && scopedMode ? scopedMode : base;
   const operation =
     handler.modes[mode] ??
     handler.modes[base] ??

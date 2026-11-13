@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
@@ -88,12 +88,18 @@ function QuickRunBody({
   });
   const [dismissedRun, setDismissedRun] = useState<number>();
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const focusSoon = (selector: string) =>
+    setTimeout(() =>
+      rootRef.current?.querySelector<HTMLElement>(selector)?.focus(),
+    );
   const latest = run.runner.latestRun;
   const showResult = Boolean(latest) && latest?.id !== dismissedRun;
   const description = handler.description ?? contract.description;
 
   return (
     <div
+      ref={rootRef}
       className="flex w-[32rem] max-w-[calc(100vw-2rem)] flex-col gap-3 p-3"
       data-ignore-shortcut="true"
     >
@@ -128,14 +134,24 @@ function QuickRunBody({
         </p>
       )}
       {showResult && latest ? (
-        <ResultPanel run={run} onEdit={() => setDismissedRun(latest.id)} />
+        <ResultPanel
+          run={run}
+          onEdit={() => {
+            setDismissedRun(latest.id);
+            focusSoon(FORM_FOCUS);
+          }}
+        />
       ) : (
         <form
           aria-label="Run"
           className="flex flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault();
-            submitRun(run, event.currentTarget, () => setIsAdvancedOpen(true));
+            if (
+              submitRun(run, event.currentTarget, () => setIsAdvancedOpen(true))
+            ) {
+              focusSoon(RESULT_FOCUS);
+            }
           }}
         >
           <KeyFields run={run} />
@@ -157,7 +173,10 @@ function QuickRunBody({
               <Button
                 variant="icon"
                 className="rounded-md px-1.5 py-1 text-xs text-muted hover:text-secondary"
-                onClick={() => setDismissedRun(undefined)}
+                onClick={() => {
+                  setDismissedRun(undefined);
+                  focusSoon(RESULT_FOCUS);
+                }}
               >
                 Last result
               </Button>
@@ -180,6 +199,9 @@ function QuickRunBody({
   );
 }
 
+const FORM_FOCUS = 'form input, form textarea, form button[type="submit"]';
+const RESULT_FOCUS = 'section[aria-label="Result"] button';
+
 function ResultPanel({ run, onEdit }: { run: HandlerRun; onEdit: () => void }) {
   const record = run.runner.latestRun;
   if (!record) {
@@ -192,24 +214,23 @@ function ResultPanel({ run, onEdit }: { run: HandlerRun; onEdit: () => void }) {
       runner={run.runner}
       variant="compact"
       actions={
-        record.isRunning ? (
-          <Button
-            variant="secondary"
-            className="rounded-lg px-3 py-1.5 text-sm"
-            onClick={run.runner.cancel}
-          >
-            Cancel
-          </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
-            onClick={onEdit}
-          >
-            <Icon name={IconName.Pencil} className="h-3.5 w-3.5 text-subtle" />
-            Edit and run again
-          </Button>
-        )
+        <Button
+          variant="secondary"
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
+          onClick={record.isRunning ? run.runner.cancel : onEdit}
+        >
+          {record.isRunning ? (
+            'Cancel'
+          ) : (
+            <>
+              <Icon
+                name={IconName.Pencil}
+                className="h-3.5 w-3.5 text-subtle"
+              />
+              Edit and run again
+            </>
+          )}
+        </Button>
       }
     />
   );
