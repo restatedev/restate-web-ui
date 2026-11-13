@@ -27,6 +27,7 @@ export * from './lib/journal/entries/Input';
 export * from './lib/journal/entries/isEntryCompletionAmbiguous';
 export * from './lib/journal/entries/types';
 export * from './lib/journal/entries/AwaitingOn';
+export { isTargetInvocationEntry } from './lib/journal/entries/EntryCodecProvider';
 export * from './lib/journal/entries/RelativeTime';
 // Shared with tenant view so both invocation lists render duration identically.
 export { InvocationDuration } from './lib/InvocationDuration';

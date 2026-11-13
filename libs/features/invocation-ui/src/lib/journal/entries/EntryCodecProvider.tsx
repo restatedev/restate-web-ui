@@ -24,7 +24,7 @@ type TargetInvocationEntry = Extract<
   }
 >;
 
-function isTargetInvocationEntry(
+export function isTargetInvocationEntry(
   entry?: JournalEntryV2,
 ): entry is TargetInvocationEntry {
   return (

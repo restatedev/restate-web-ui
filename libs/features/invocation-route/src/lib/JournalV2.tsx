@@ -30,6 +30,7 @@ import { Indicator, Spinner } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
 import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
+import { isTargetInvocationEntry } from '@restate/features-invocation-ui';
 import { EntryProgress } from './EntryProgress';
 import {
   PortalProvider,
@@ -63,6 +64,10 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
+import {
+  getEventRelatedInvocationIds,
+  getReferencedInvocationIds,
+} from './referencedInvocations';
 import { Retention } from '@restate/features-invocation-ui';
 import {
   COMPACT_DETAIL,
@@ -97,39 +102,6 @@ const JOURNAL_BOTTOM_PADDING_PX = 50;
 // and stays consistent between the overview selector and the main timeline. Not
 // applied while live — there the now-edge/follow window governs the right side.
 const TIMELINE_COMPLETED_END_HEADROOM_RATIO = 0.05;
-
-type ReferencedInvocationEntry = Extract<
-  JournalEntryV2,
-  {
-    category?: 'command';
-    type?: 'Call' | 'OneWayCall' | 'AttachInvocation';
-  }
->;
-
-function isReferencedInvocationEntry(
-  entry?: JournalEntryV2,
-): entry is ReferencedInvocationEntry {
-  return (
-    entry?.category === 'command' &&
-    (entry.type === 'Call' ||
-      entry.type === 'OneWayCall' ||
-      entry.type === 'AttachInvocation')
-  );
-}
-
-function getReferencedInvocationIds(
-  rows: (CombinedJournalEntry | undefined)[],
-) {
-  return [
-    ...new Set(
-      rows.flatMap((row) =>
-        isReferencedInvocationEntry(row?.entry) && row.entry.invocationId
-          ? [row.entry.invocationId]
-          : [],
-      ),
-    ),
-  ];
-}
 
 function hasNonCompletedReferencedInvocations(
   invocationIds: string[],
@@ -435,13 +407,23 @@ export function JournalV2({
     journalAndInvocationData,
   ]);
 
+  const eventRelatedInvocationIds = useMemo(
+    () =>
+      getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
+    [journalAndInvocationData],
+  );
   const referencedInvocationIds = virtualizer.isScrolling
     ? []
-    : getReferencedInvocationIds(
-        withTimeline
-          ? virtualItems.map(({ index }) => entriesWithoutInput[index])
-          : entriesWithoutInput,
-      );
+    : [
+        ...new Set([
+          ...getReferencedInvocationIds(
+            withTimeline
+              ? virtualItems.map(({ index }) => entriesWithoutInput[index])
+              : entriesWithoutInput,
+          ),
+          ...eventRelatedInvocationIds,
+        ]),
+      ];
   const {
     data: referencedInvocationStatuses,
     isError: isReferencedInvocationStatusesError,
@@ -1005,7 +987,7 @@ function VirtualizedTimeline({
             : undefined;
         const targetInvocationId =
           entry?.isPending &&
-          isReferencedInvocationEntry(entry) &&
+          isTargetInvocationEntry(entry) &&
           entry.type !== 'OneWayCall'
             ? entry.invocationId
             : undefined;

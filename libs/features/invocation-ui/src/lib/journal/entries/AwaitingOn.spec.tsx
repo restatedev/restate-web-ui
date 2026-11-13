@@ -1,6 +1,9 @@
-import type { InvocationFuture } from '@restate/data-access-admin-api-spec';
+import type {
+  InvocationFuture,
+  JournalEntryV2,
+} from '@restate/data-access-admin-api-spec';
 import { render, screen } from '@testing-library/react';
-import { AwaitingOn } from './AwaitingOn';
+import { AwaitingOn, getAwaitedInvocationIds } from './AwaitingOn';
 
 const cancel = { Single: { SignalIndex: 1 } };
 const completion = (id: number) => ({ Single: { CompletionId: id } });
@@ -33,5 +36,37 @@ describe('AwaitingOn', () => {
     renderAwaitingOn({ Unknown: [completion(1), completion(2)] });
 
     expect(screen.getByRole('button').textContent).toBe('awaiting 2 entries');
+  });
+});
+
+describe('getAwaitedInvocationIds', () => {
+  const call = (invocationId: string, completionId: number) =>
+    ({
+      category: 'command',
+      type: 'Call',
+      invocationId,
+      completionId,
+    }) as JournalEntryV2;
+
+  it('finds the called invocations behind nested awaited completions', () => {
+    expect(
+      getAwaitedInvocationIds(
+        {
+          AllCompleted: [
+            completion(8),
+            { FirstCompleted: [completion(9), cancel] },
+          ],
+        } as InvocationFuture,
+        [call('inv_skipped', 7), call('inv_first', 8), call('inv_second', 9)],
+      ),
+    ).toEqual(['inv_first', 'inv_second']);
+  });
+
+  it('ignores awaited entries that call nothing', () => {
+    expect(
+      getAwaitedInvocationIds(completion(2) as InvocationFuture, [
+        { category: 'command', type: 'Run', completionId: 2 } as JournalEntryV2,
+      ]),
+    ).toEqual([]);
   });
 });
