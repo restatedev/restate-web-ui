@@ -122,3 +122,56 @@ it('ignores a cached paused index once the invocation is resumed', () => {
   expect(result.current.commandIndex).toBeUndefined();
   expect(result.current.pausedError).toBeUndefined();
 });
+
+it('keeps the invocation index when the caller disables the paused query', () => {
+  const { result } = renderHook(() =>
+    useFailureRelatedCommandIndex(
+      invocation({
+        status: 'backing-off',
+        last_failure_related_command_index: 5,
+      }),
+      { enabled: false },
+    ),
+  );
+
+  expect(apiHooks.useGetPausedError).toHaveBeenLastCalledWith(
+    'inv-1',
+    expect.objectContaining({ enabled: false }),
+  );
+  expect(result.current.commandIndex).toBe(5);
+});
+
+it('passes the query options it is given through', () => {
+  renderHook(() =>
+    useFailureRelatedCommandIndex(invocation({ status: 'paused' }), {
+      refetchOnMount: true,
+      staleTime: 0,
+    }),
+  );
+
+  expect(apiHooks.useGetPausedError).toHaveBeenLastCalledWith('inv-1', {
+    refetchOnMount: true,
+    staleTime: 0,
+    enabled: true,
+  });
+});
+
+it('keeps a paused index of 0', () => {
+  pausedRelatedCommandIndex = 0;
+
+  const { result } = renderHook(() =>
+    useFailureRelatedCommandIndex(invocation({ status: 'paused' })),
+  );
+
+  expect(result.current.commandIndex).toBe(0);
+});
+
+it('asks for nothing before the invocation has loaded', () => {
+  const { result } = renderHook(() => useFailureRelatedCommandIndex());
+
+  expect(apiHooks.useGetPausedError).toHaveBeenLastCalledWith(
+    'undefined',
+    expect.objectContaining({ enabled: false }),
+  );
+  expect(result.current.commandIndex).toBeUndefined();
+});
