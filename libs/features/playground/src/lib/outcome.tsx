@@ -57,6 +57,15 @@ function errorMessage(text?: string) {
   }
 }
 
+function errorSource(text?: string) {
+  try {
+    const parsed = JSON.parse(text ?? '') as Record<string, unknown>;
+    return typeof parsed['source'] === 'string' ? parsed['source'] : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function replyMessage(reply: PlaygroundResult) {
   if (reply.kind === 'error') {
     return reply.message;
@@ -135,7 +144,11 @@ function useRunView(
       invocationId: result.invocationId,
     };
   }
-  if (result.status >= 400 && !result.invocationId) {
+  if (
+    result.status >= 400 &&
+    !result.invocationId &&
+    errorSource(result.text) !== 'invocation'
+  ) {
     return {
       phase: 'rejected',
       result,

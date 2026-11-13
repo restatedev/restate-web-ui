@@ -558,12 +558,14 @@ export function SendButton({
 
 const advancedStyles = tv({
   base: 'grid gap-x-4 gap-y-3 border-t border-muted pt-4',
-  variants: { isWide: { true: 'grid-cols-2', false: 'grid-cols-1' } },
+  variants: {
+    isWide: { true: 'grid-cols-1 @xl/full:grid-cols-2', false: 'grid-cols-1' },
+  },
 });
 
 const flowControlStyles = tv({
   base: 'flex items-center',
-  variants: { isWide: { true: 'col-span-2', false: '' } },
+  variants: { isWide: { true: '@xl/full:col-span-2', false: '' } },
 });
 
 function hasAdvancedOptions(run: HandlerRun) {
@@ -572,7 +574,13 @@ function hasAdvancedOptions(run: HandlerRun) {
   );
 }
 
-function ApiKeyField({ run, isWide }: { run: OperationRun; isWide: boolean }) {
+export function ApiKeyField({
+  run,
+  isWide,
+}: {
+  run: OperationRun;
+  isWide: boolean;
+}) {
   const { apiKeyState, setApiKeyState } = run;
   return (
     <div

@@ -26,6 +26,7 @@ import {
 import {
   AdvancedFields,
   AdvancedToggle,
+  ApiKeyField,
   InputField,
   KeyFields,
   ParameterFields,
@@ -570,6 +571,7 @@ function ToolRunner({
           parameters={[...run.mainParameters, ...run.advancedParameters]}
         />
         <InputField run={run} label="Target" maxHeight={240} />
+        {run.requiresApiKey && <ApiKeyField run={run} isWide={false} />}
         <div className="flex items-center gap-3">
           <RunButton runner={run.runner} label="Run" />
           <span className="hidden text-2xs text-subtle @md/full:inline">
