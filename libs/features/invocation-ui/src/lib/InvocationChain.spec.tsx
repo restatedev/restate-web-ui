@@ -68,14 +68,21 @@ describe('InvocationChain', () => {
     expect(screen.queryByRole('navigation')).toBeNull();
   });
 
-  it('shows the parent from the invocation while the chain loads', () => {
+  it('links the parent from the invocation while the rest of the chain loads', () => {
     useGetInvocationAncestorsMock.mockReturnValue({ data: undefined });
     renderChain(push);
 
-    const chain = screen.getByRole('navigation', { name: 'Call chain' });
-    expect(chain.textContent).toContain('Packing.pack()');
-    expect(chain.textContent).toContain('Notify.push()');
-    expect(screen.queryAllByRole('link')).toHaveLength(0);
+    const links = screen.getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual(['Packing.pack()']);
+    const url = new URL(
+      String(links[0]?.getAttribute('href')),
+      'http://localhost',
+    );
+    expect(url.pathname).toBe('/invocations/inv_pack');
+    expect(url.searchParams.get('expand')).toBe('inv_push');
+    expect(
+      screen.getByRole('navigation', { name: 'Call chain' }).textContent,
+    ).toContain('Notify.push()');
   });
 
   it('links each ancestor to its journal with this invocation expanded', () => {
