@@ -5,6 +5,9 @@ const DEFAULT_INTERVAL_BUFFER_RATIO = 0.35;
 const DEFAULT_INTERVAL_MIN_BUFFER_MS = 1_000;
 const DEFAULT_MERGE_PREPARE_DURATION_MS = 120;
 const DEFAULT_MERGE_REMOVE_DELAY_MS = 120;
+const MAX_VISIBLE_INTERVAL_SLOTS = 200;
+const MAX_BUFFER_INTERVALS = 20;
+const MAX_ANIMATED_INTERVAL_GROWTH = 4;
 
 export interface IntervalSlotAnchors {
   anchorStartMs: number;
@@ -84,7 +87,7 @@ export function resolveIntervalSlotAnchors({
   const visibleDuration = visibleRight - visibleLeft;
   const sideBufferMs = Math.max(
     unitMs,
-    minBufferMs,
+    Math.min(minBufferMs, unitMs * MAX_BUFFER_INTERVALS),
     visibleDuration * bufferRatio,
   );
   const anchorStartMs = Math.max(0, visibleLeft - sideBufferMs);
@@ -119,6 +122,7 @@ function buildIntervalSlotSegments({
   segments: TimelineIntervalSegment[];
   leadingSpacerPercent: number;
   firstRenderedSlotIndex: number | null;
+  slotIntervalMs: number;
 } {
   const safeDurationMs = Math.max(1, durationMs);
   if (durationMs <= 0 || intervalMs <= 0) {
@@ -126,14 +130,23 @@ function buildIntervalSlotSegments({
       segments: [],
       leadingSpacerPercent: 0,
       firstRenderedSlotIndex: null,
+      slotIntervalMs: intervalMs,
     };
+  }
+
+  const visibleDurationMs =
+    clamp(viewportEndOffsetMs, 0, durationMs) -
+    clamp(viewportStartOffsetMs, 0, durationMs);
+  let slotIntervalMs = intervalMs;
+  while (visibleDurationMs / slotIntervalMs > MAX_VISIBLE_INTERVAL_SLOTS) {
+    slotIntervalMs *= 2;
   }
 
   const fallbackAnchors = resolveIntervalSlotAnchors({
     durationMs,
     viewportStartOffsetMs,
     viewportEndOffsetMs,
-    unitMs: intervalMs,
+    unitMs: slotIntervalMs,
     bufferRatio,
     minBufferMs,
   });
@@ -147,13 +160,14 @@ function buildIntervalSlotSegments({
       segments: [],
       leadingSpacerPercent: 0,
       firstRenderedSlotIndex: null,
+      slotIntervalMs,
     };
   }
 
-  const firstRenderedSlotIndex = Math.floor(anchorStartMs / intervalMs);
+  const firstRenderedSlotIndex = Math.floor(anchorStartMs / slotIntervalMs);
   const lastRenderedSlotIndex = Math.max(
     firstRenderedSlotIndex,
-    Math.ceil(anchorEndMs / intervalMs) - 1,
+    Math.ceil(anchorEndMs / slotIntervalMs) - 1,
   );
   const leadingSpacerPercent = (anchorStartMs / safeDurationMs) * 100;
 
@@ -163,8 +177,8 @@ function buildIntervalSlotSegments({
     slotIndex <= lastRenderedSlotIndex;
     slotIndex++
   ) {
-    const slotStartMs = slotIndex * intervalMs;
-    const slotEndMs = slotStartMs + intervalMs;
+    const slotStartMs = slotIndex * slotIntervalMs;
+    const slotEndMs = slotStartMs + slotIntervalMs;
     const segmentStartMs = Math.max(anchorStartMs, slotStartMs);
     const segmentEndMs = Math.min(anchorEndMs, slotEndMs);
     const segmentDurationMs = segmentEndMs - segmentStartMs;
@@ -179,7 +193,7 @@ function buildIntervalSlotSegments({
     segments.push({
       startMs: segmentStartMs,
       endMs: segmentEndMs,
-      key: `${intervalMs}-${slotIndex}`,
+      key: `${slotIntervalMs}-${slotIndex}`,
       gridIndex: slotIndex,
       widthPercent: (segmentDurationMs / safeDurationMs) * 100,
       isEven: slotIndex % 2 === 0,
@@ -192,6 +206,7 @@ function buildIntervalSlotSegments({
     segments,
     leadingSpacerPercent,
     firstRenderedSlotIndex,
+    slotIntervalMs,
   };
 }
 
@@ -249,7 +264,9 @@ export function useTimelineIntervalSlots({
   useEffect(() => {
     const normalizedTargetIntervalMs = normalizeInterval(targetIntervalMs);
     const nextAppliedTargetIntervalMs =
-      mode === 'live-follow' && normalizedTargetIntervalMs > intervalMs
+      mode === 'live-follow' &&
+      normalizedTargetIntervalMs > intervalMs &&
+      normalizedTargetIntervalMs <= intervalMs * MAX_ANIMATED_INTERVAL_GROWTH
         ? Math.min(normalizedTargetIntervalMs, intervalMs * 2)
         : normalizedTargetIntervalMs;
 
@@ -382,13 +399,13 @@ export function useTimelineIntervalSlots({
   const previousLayout = previousLayoutRef.current;
   const hasStableLayout =
     previousLayout !== null &&
-    previousLayout.intervalMs === intervalMs &&
+    previousLayout.intervalMs === slotModel.slotIntervalMs &&
     previousLayout.firstRenderedSlotIndex ===
       slotModel.firstRenderedSlotIndex &&
     previousLayout.segmentCount === slotModel.segments.length;
   const isSingleSlotShiftLayout =
     previousLayout !== null &&
-    previousLayout.intervalMs === intervalMs &&
+    previousLayout.intervalMs === slotModel.slotIntervalMs &&
     previousLayout.segmentCount === slotModel.segments.length &&
     previousLayout.firstRenderedSlotIndex !== null &&
     slotModel.firstRenderedSlotIndex !== null &&
@@ -401,7 +418,7 @@ export function useTimelineIntervalSlots({
     (mode === 'live-follow' && (hasStableLayout || isSingleSlotShiftLayout));
 
   previousLayoutRef.current = {
-    intervalMs,
+    intervalMs: slotModel.slotIntervalMs,
     firstRenderedSlotIndex: slotModel.firstRenderedSlotIndex,
     segmentCount: slotModel.segments.length,
   };
