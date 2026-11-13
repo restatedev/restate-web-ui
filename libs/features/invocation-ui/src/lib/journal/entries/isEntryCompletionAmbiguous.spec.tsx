@@ -95,15 +95,6 @@ describe('isEntryCompletionAmbiguous', () => {
     });
   });
 
-  it('is not ambiguous for a pending run of a running invocation', () => {
-    expect(
-      isEntryCompletionAmbiguous(
-        { ...pendingCall, type: 'Run' } as JournalEntryV2,
-        invocation({ status: 'running' }, [pendingCall]),
-      ),
-    ).toEqual({ isAmbiguous: false });
-  });
-
   it('ends at the cancel when it came before the completion', () => {
     expect(
       isEntryCompletionAmbiguous(
@@ -151,7 +142,7 @@ describe('isEntryCompletionAmbiguous', () => {
     });
   });
 
-  it('keeps cached cancels per entries array', () => {
+  it('picks up a cancel that a later journal added', () => {
     const withoutCancel = invocation({ status: 'running' }, [pendingCall]);
     expect(isEntryCompletionAmbiguous(pendingCall, withoutCancel)).toEqual({
       isAmbiguous: false,

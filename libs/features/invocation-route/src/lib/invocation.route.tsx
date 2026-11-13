@@ -5,7 +5,6 @@ import {
 import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
-  DETAIL_QUERY_PARAM,
   getRestateError,
   InvocationStatusHeader,
   Status,
@@ -38,6 +37,8 @@ import {
 import { useInvocationsRecent } from '@restate/util-sidebar-nav';
 import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { CardGrid } from '@restate/ui-card';
+
+const INPUT_COMMAND_INDEX = 0;
 
 const lastFailureContainer = tv({
   base: 'z-20 min-w-0 origin-bottom-right rounded-2xl p-0',
@@ -108,9 +109,16 @@ function Component() {
         )
       : undefined;
 
+  const currentQueryParams = useMemo(
+    () => Array.from(new Set(searchParams.keys())),
+    [searchParams],
+  );
   const relatedCommandIndex =
     journalAndInvocationData?.last_failure_related_command_index ??
     pausedErrorData?.relatedCommandIndex;
+  const hasRelatedCommandRow =
+    typeof relatedCommandIndex === 'number' &&
+    relatedCommandIndex > INPUT_COMMAND_INDEX;
 
   const lastError = getRestateError(journalAndInvocationData) ?? pausedError;
   const shouldShowFailure =
@@ -270,7 +278,7 @@ function Component() {
                   }}
                 />
               </div>
-              {typeof relatedCommandIndex === 'number' && (
+              {hasRelatedCommandRow && (
                 <div
                   className="-translate-y-2 px-2"
                   style={{ marginLeft: 'var(--failure-anchor-x, 0px)' }}
@@ -278,7 +286,7 @@ function Component() {
                   <Link
                     variant="icon"
                     className="inline-flex rounded-md px-2 text-xs"
-                    preserveQueryParams={[DETAIL_QUERY_PARAM]}
+                    preserveQueryParams={currentQueryParams}
                     href={`#command-${relatedCommandIndex}`}
                   >
                     Go to the related line (#{relatedCommandIndex})

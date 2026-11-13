@@ -39,12 +39,17 @@ function relatedCommand(
 function capActivityDetails(
   items: JourneyActivityDetail[],
   options: Omit<JourneyActivityDetailGroup, 'items' | 'totalItems'>,
-  decorate?: (item: JourneyActivityDetail) => JourneyActivityDetail,
+  journalEntries?: JournalEntryV2[],
 ): JourneyActivityDetailGroup {
   const shown = items.slice(-MAX_ACTIVITY_DETAIL_ITEMS);
   return {
     ...options,
-    items: decorate ? shown.map(decorate) : shown,
+    items: journalEntries
+      ? shown.map((item) => ({
+          ...item,
+          parentCommand: relatedCommand(item.entry, journalEntries),
+        }))
+      : shown,
     totalItems: items.length,
   };
 }
@@ -70,10 +75,7 @@ function errorBackoffActivityDetails(
       summary: 'Deduplicated transient errors from the invocation journal.',
       emptyMessage: 'No retained transient-error journal events are available.',
     },
-    (item) => ({
-      ...item,
-      parentCommand: relatedCommand(item.entry, journalEntries),
-    }),
+    journalEntries,
   );
 }
 
@@ -97,10 +99,7 @@ function pauseActivityDetails(
       itemNoun: 'pauses',
       emptyMessage: 'No retained pause journal events are available.',
     },
-    (item) => ({
-      ...item,
-      parentCommand: relatedCommand(item.entry, journalEntries),
-    }),
+    journalEntries,
   );
 }
 

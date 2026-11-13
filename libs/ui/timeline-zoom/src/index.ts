@@ -1,5 +1,6 @@
 export { FOLLOW_LATEST_THRESHOLD } from './lib/engine';
 export { LIVE_TRANSITION_DURATION_MS } from './lib/constants';
+export { MAX_PRESENTATION_HEADROOM_MS } from './lib/usePresentedRangeEnd';
 export {
   TimelineEngineProvider,
   useTimelineEngineContext,

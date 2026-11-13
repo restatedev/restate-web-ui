@@ -50,6 +50,7 @@ import {
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { formatDurations, formatPlurals } from '@restate/util-intl';
 import {
+  MAX_PRESENTATION_HEADROOM_MS,
   TimelineEngineProvider,
   useTimelineEngineContext,
 } from '@restate/ui-timeline-zoom';
@@ -164,14 +165,26 @@ function findCommandRow(
 }
 
 const LIVE_REFETCH_MIN_MS = 1_000;
-const LIVE_REFETCH_MAX_MS = 10_000;
 const ENTRIES_PER_REFETCH_MS = 10;
 const MAX_ENTRIES_WITHOUT_TIMELINE = 50;
 
+type JournalInvocation = ReturnType<
+  typeof useGetInvocationsJournalWithInvocationsV2
+>['data'][string];
+
 function getLiveRefetchInterval(entryCount = 0) {
   return Math.min(
-    LIVE_REFETCH_MAX_MS,
+    MAX_PRESENTATION_HEADROOM_MS,
     Math.max(LIVE_REFETCH_MIN_MS, entryCount / ENTRIES_PER_REFETCH_MS),
+  );
+}
+
+function hasPendingJournalUpdates(invocation?: JournalInvocation) {
+  return (
+    !invocation?.completed_at ||
+    invocation.journal_commands_size !==
+      invocation.journal?.entries?.filter((e) => e.category === 'command')
+        .length
   );
 }
 
@@ -228,11 +241,7 @@ export function JournalV2({
         isLive &&
         !isScrollingRef.current &&
         query.state.status === 'success' &&
-        (!query.state.data?.completed_at ||
-          query.state.data?.journal_commands_size !==
-            query.state.data?.journal?.entries?.filter(
-              (e) => e.category === 'command',
-            ).length)
+        hasPendingJournalUpdates(query.state.data)
       ) {
         return getLiveRefetchInterval(
           query.state.data?.journal?.entries?.length,
@@ -265,7 +274,9 @@ export function JournalV2({
             query.state.data?.invocations,
           ))
       ) {
-        return 1000;
+        return getLiveRefetchInterval(
+          data?.[invocationId]?.journal?.entries?.length,
+        );
       }
 
       return false;
@@ -321,13 +332,9 @@ export function JournalV2({
   const hasMoreEntries =
     !withTimeline &&
     allEntriesWithoutInput.length > MAX_ENTRIES_WITHOUT_TIMELINE;
-  const entriesWithoutInputUnfiltered = useMemo(
-    () =>
-      withTimeline
-        ? allEntriesWithoutInput
-        : allEntriesWithoutInput.slice(0, MAX_ENTRIES_WITHOUT_TIMELINE),
-    [withTimeline, allEntriesWithoutInput],
-  );
+  const entriesWithoutInputUnfiltered = withTimeline
+    ? allEntriesWithoutInput
+    : allEntriesWithoutInput.slice(0, MAX_ENTRIES_WITHOUT_TIMELINE);
 
   const invocationApiError = apiError?.[invocationId];
   const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;
@@ -403,20 +410,7 @@ export function JournalV2({
     getItemKey,
   });
   useLayoutEffect(() => {
-    const wasScrolling = isScrollingRef.current;
     isScrollingRef.current = virtualizer.isScrolling;
-    if (
-      wasScrolling &&
-      !virtualizer.isScrolling &&
-      isLive &&
-      !areAllInvocationsCompleted &&
-      Date.now() - dataUpdatedAt >=
-        getLiveRefetchInterval(
-          journalAndInvocationData?.journal?.entries?.length,
-        )
-    ) {
-      refetch();
-    }
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
@@ -454,6 +448,9 @@ export function JournalV2({
       ];
     const list = entriesListRef.current;
     if (!row || !list) {
+      if (journalAndInvocationData) {
+        scrolledLocationKey.current = locationKey;
+      }
       return;
     }
     scrolledLocationKey.current = locationKey;
@@ -468,6 +465,7 @@ export function JournalV2({
     entriesWithoutInput,
     invocationId,
     virtualizer,
+    journalAndInvocationData,
   ]);
 
   const [containerWidthRef, containerWidthPx] = useContainerWidth();
