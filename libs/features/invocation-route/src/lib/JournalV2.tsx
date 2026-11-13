@@ -28,6 +28,7 @@ import { ErrorBanner } from '@restate/ui-error';
 import { JournalContextProvider } from '@restate/features-invocation-ui';
 import { Indicator, Spinner } from '@restate/ui-loading';
 import { Entry } from '@restate/features-invocation-ui';
+import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
 import { EntryProgress } from './EntryProgress';
 import {
@@ -43,7 +44,6 @@ import { ErrorBoundary } from './ErrorBoundry';
 import { tv } from '@restate/util-styles';
 import {
   isCompletedInvocationStatus,
-  useGetPausedError,
   useWarmInvocationStatusDetails,
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
@@ -414,12 +414,10 @@ export function JournalV2({
   const virtualItems = virtualizer.getVirtualItems();
   const entriesListRef = useRef<HTMLDivElement>(null);
 
-  const { data: pausedErrorData } = useGetPausedError(invocationId, {
-    enabled: withTimeline && journalAndInvocationData?.status === 'paused',
-  });
-  const failureCommandIndex =
-    journalAndInvocationData?.last_failure_related_command_index ??
-    pausedErrorData?.relatedCommandIndex;
+  const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
+    journalAndInvocationData,
+    { enabled: withTimeline },
+  );
   const failureRowIndex = useMemo(
     () =>
       findCommandRow(entriesWithoutInput, invocationId, failureCommandIndex),

@@ -1,13 +1,11 @@
-import {
-  useGetInvocationJournalWithInvocationV2,
-  useGetPausedError,
-} from '@restate/data-access-admin-api-hooks';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import { ErrorBanner } from '@restate/ui-error';
 import { useParams, useSearchParams } from 'react-router';
 import {
   getRestateError,
   InvocationStatusHeader,
   Status,
+  useFailureRelatedCommandIndex,
 } from '@restate/features-invocation-ui';
 import { InvocationDeploymentCard } from './InvocationDeploymentCard';
 import { InvocationDetailsCard } from './InvocationDetailsCard';
@@ -92,11 +90,11 @@ function Component() {
   const showFlowControl = Boolean(journalAndInvocationData?.vqueue);
 
   const isPaused = journalAndInvocationData?.status === 'paused';
-  const { data: pausedErrorData } = useGetPausedError(String(id), {
-    enabled: isPaused,
-    refetchOnMount: true,
-    staleTime: 0,
-  });
+  const { commandIndex: relatedCommandIndex, pausedError: pausedErrorData } =
+    useFailureRelatedCommandIndex(journalAndInvocationData, {
+      refetchOnMount: true,
+      staleTime: 0,
+    });
   const pausedError =
     isPaused && pausedErrorData?.message
       ? new RestateError(
@@ -111,9 +109,6 @@ function Component() {
     () => Array.from(searchParams.keys()),
     [searchParams],
   );
-  const relatedCommandIndex =
-    journalAndInvocationData?.last_failure_related_command_index ??
-    pausedErrorData?.relatedCommandIndex;
   const relatedCommand = useMemo(
     () =>
       typeof relatedCommandIndex === 'number'

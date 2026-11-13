@@ -1,7 +1,4 @@
-import {
-  useGetInvocationJournalWithInvocationV2,
-  useGetPausedError,
-} from '@restate/data-access-admin-api-hooks';
+import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { ComponentType, memo } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
@@ -40,6 +37,7 @@ import { Cancel } from './entries/Cancel';
 import { LifeCycle } from './entries/LifeCycle';
 import { NoCommandTransientError } from './entries/TransientError';
 import { useJournalEntriesContext } from './JournalContext';
+import { useFailureRelatedCommandIndex } from './useFailureRelatedCommandIndex';
 import { tv } from '@restate/util-styles';
 import { EntryCodecProvider } from './entries/EntryCodecProvider';
 import { RelativeTime } from './entries/RelativeTime';
@@ -185,10 +183,8 @@ export const Entry = memo(function Entry({
   const numOfDigits = digitCount(length);
 
   const isPaused = invocation?.status === 'paused';
-  const { data: pausedErrorData } = useGetPausedError(String(invocation?.id), {
-    enabled: isPaused,
-  });
-  const pausedRelatedCommandIndex = pausedErrorData?.relatedCommandIndex;
+  const { commandIndex: failureCommandIndex } =
+    useFailureRelatedCommandIndex(invocation);
   const { detail, disableAwaitingHighlight } = useJournalEntriesContext();
   const EntrySpecificComponent = (
     entry?.type
@@ -215,18 +211,10 @@ export const Entry = memo(function Entry({
         data-depth={Boolean(depth)}
         data-last-failure={
           (depth === 0 &&
-            typeof invocation.last_failure_related_command_index === 'number' &&
-            invocation.last_failure_related_command_index ===
-              entry.commandIndex) ||
+            typeof failureCommandIndex === 'number' &&
+            failureCommandIndex === entry.commandIndex) ||
           (depth === 0 &&
-            isPaused &&
-            typeof pausedRelatedCommandIndex === 'number' &&
-            typeof invocation.last_failure_related_command_index !== 'number' &&
-            pausedRelatedCommandIndex === entry.commandIndex) ||
-          (depth === 0 &&
-            typeof invocation.last_failure_related_command_index ===
-              'undefined' &&
-            (isPaused ? typeof pausedRelatedCommandIndex !== 'number' : true) &&
+            typeof failureCommandIndex !== 'number' &&
             isEntriesEqual(
               entry,
               invocation.journal?.entries?.findLast(
@@ -253,19 +241,12 @@ export const Entry = memo(function Entry({
               : 'none',
           hasError:
             Boolean(
-              typeof invocation.last_failure_related_command_index ===
-                'number' &&
-              invocation.last_failure_related_command_index ===
-                entry.commandIndex,
+              typeof failureCommandIndex === 'number' &&
+              failureCommandIndex === entry.commandIndex,
             ) ||
             Boolean(
               isPaused &&
-              typeof pausedRelatedCommandIndex === 'number' &&
-              pausedRelatedCommandIndex === entry.commandIndex,
-            ) ||
-            Boolean(
-              isPaused &&
-              typeof pausedRelatedCommandIndex !== 'number' &&
+              typeof failureCommandIndex !== 'number' &&
               isEntriesEqual(
                 entry,
                 invocation.journal?.entries?.findLast(

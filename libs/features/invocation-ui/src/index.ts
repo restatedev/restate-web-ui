@@ -16,6 +16,7 @@ export { InvocationPopoverContent } from './lib/InvocationPopoverContent';
 export * from './lib/journal/Entry';
 export * from './lib/journal/JournalContext';
 export * from './lib/journal/useJournalDetail';
+export * from './lib/journal/useFailureRelatedCommandIndex';
 export * from './lib/journal/Value';
 export * from './lib/journal/EntryTooltip';
 export * from './lib/journal/EntryChain';
