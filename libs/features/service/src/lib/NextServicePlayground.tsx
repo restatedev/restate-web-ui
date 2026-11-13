@@ -160,14 +160,10 @@ export function NextServicePlaygroundPanel({ service }: { service: string }) {
         </ComplementaryClose>
       </ComplementaryHeader>
       <div className="-mx-2 flex min-h-full flex-col">
-        <h2 className="px-4 pt-1 text-lg font-semibold text-primary">
-          {service}
-        </h2>
         <Playground
           service={service}
           handler={handler}
           onSelect={onSelect}
-          showServiceName={false}
           showNavigation={false}
         />
       </div>
@@ -185,7 +181,10 @@ export function NextServicePlaygroundSheet({ service }: { service: string }) {
       query={SERVICE_PLAYGROUND_QUERY_PARAM}
       onCloseQueryParam={clearPlaygroundHandler}
     >
-      <DialogContent variant="sheet" className="p-0">
+      <DialogContent
+        variant="sheet"
+        className="h-[76vh] p-0 lg:w-[min(60rem,88vw)]"
+      >
         <Playground
           service={service}
           handler={handler}
@@ -233,12 +232,11 @@ export function NextServicePlaygroundEmbed({
 
   return (
     <div className={className}>
-      <div className="mx-4 mt-px mb-4 min-h-[32rem] overflow-clip rounded-xl border border-default bg-surface shadow-xs">
+      <div className="mx-4 mt-px mb-4 flex overflow-clip rounded-xl border border-default bg-surface shadow-xs">
         <Playground
           service={service}
           handler={handler}
           onSelect={onSelect}
-          showServiceName={false}
           scroll="page"
         />
       </div>

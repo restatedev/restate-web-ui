@@ -27,10 +27,4 @@ export function statusText(status: number | string, serverText?: string) {
   );
 }
 
-export function responseLabel(status: string) {
-  return status === 'default'
-    ? 'Error'
-    : [status, statusText(status)].filter(Boolean).join(' ');
-}
-
 export const NOT_READY_STATUS = 470;
