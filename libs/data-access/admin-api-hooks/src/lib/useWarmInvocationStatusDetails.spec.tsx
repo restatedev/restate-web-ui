@@ -1,15 +1,25 @@
-import { cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 import { useWarmInvocationStatusDetails } from './hooks';
 
-const { fetchStatuses } = vi.hoisted(() => ({
-  fetchStatuses: vi.fn((invocationIds: string[]) => ({
+type Statuses = { invocations: Record<string, { status: string }> };
+
+const { fetchStatuses, onAbort, suspended } = vi.hoisted(() => {
+  const suspended = (invocationIds: string[]): Statuses => ({
     invocations: Object.fromEntries(
       invocationIds.map((id) => [id, { status: 'suspended' }]),
     ),
-  })),
-}));
+  });
+  return {
+    suspended,
+    onAbort: vi.fn(),
+    fetchStatuses: vi.fn(
+      (invocationIds: string[]): Statuses | Promise<Statuses> =>
+        suspended(invocationIds),
+    ),
+  };
+});
 
 vi.mock('@restate/features-restate-context', () => ({
   useRestateContext: () => ({}),
@@ -25,7 +35,10 @@ vi.mock('@restate/data-access-admin-api', () => ({
     { body }: { body: { invocationIds: string[] } },
   ) => ({
     queryKey: [path, body],
-    queryFn: () => fetchStatuses(body.invocationIds),
+    queryFn: ({ signal }: { signal?: AbortSignal }) => {
+      signal?.addEventListener('abort', onAbort);
+      return fetchStatuses(body.invocationIds);
+    },
   }),
 }));
 
@@ -34,7 +47,8 @@ describe('useWarmInvocationStatusDetails', () => {
 
   beforeEach(() => {
     client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    fetchStatuses.mockClear();
+    fetchStatuses.mockReset();
+    onAbort.mockClear();
   });
 
   afterEach(() => {
@@ -97,5 +111,72 @@ describe('useWarmInvocationStatusDetails', () => {
       'inv_child',
       'inv_grandchild',
     ]);
+  });
+
+  it('lets a slow poll finish, then asks for invocations referenced meanwhile', async () => {
+    const { result, rerender } = render(['inv_child']);
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_child']).toBeDefined(),
+    );
+
+    let finishSlowPoll = () => undefined as void;
+    fetchStatuses.mockImplementationOnce(
+      (invocationIds) =>
+        new Promise((resolve) => {
+          finishSlowPoll = () => resolve(suspended(invocationIds));
+        }),
+    );
+    void result.current.refetch();
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(2));
+
+    rerender({ invocationIds: ['inv_child', 'inv_sibling'] });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(onAbort).not.toHaveBeenCalled();
+    expect(fetchStatuses).toHaveBeenCalledTimes(2);
+
+    finishSlowPoll();
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_sibling']?.status).toBe(
+        'suspended',
+      ),
+    );
+    expect(fetchStatuses).toHaveBeenCalledTimes(3);
+    expect(onAbort).not.toHaveBeenCalled();
+  });
+
+  it('asks again when the cached statuses are cleared', async () => {
+    const { result, rerender } = render([]);
+    rerender({ invocationIds: ['inv_child'] });
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_child']).toBeDefined(),
+    );
+    expect(fetchStatuses).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      client.setQueryData(result.current.queryKey, { invocations: {} });
+    });
+
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_child']?.status).toBe(
+        'suspended',
+      ),
+    );
+    expect(fetchStatuses).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops asking for an invocation the server leaves out', async () => {
+    fetchStatuses.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ invocations: {} }), 10),
+        ),
+    );
+    const { result } = render(['not_an_invocation']);
+    await waitFor(() => expect(result.current.isFetched).toBe(true));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const calls = fetchStatuses.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(fetchStatuses).toHaveBeenCalledTimes(calls);
+    expect(calls).toBeLessThanOrEqual(2);
   });
 });

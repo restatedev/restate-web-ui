@@ -37,7 +37,7 @@ import type {
   HookQueryOptions,
   HookMutationOptions,
 } from '@restate/data-access-admin-api';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { RestateError } from '@restate/util-errors';
 import { useAPIStatus } from '@restate/data-access-admin-api';
 import { useRestateContext } from '@restate/features-restate-context';
@@ -1137,12 +1137,20 @@ export function useWarmInvocationStatusDetails(
   const uncachedInvocationIds = queryInvocationIds
     .filter((invocationId) => !results.data?.invocations?.[invocationId])
     .join(',');
-  const { refetch } = results;
+  const { refetch, isFetching } = results;
+  const requestedInvocationIds = useRef<string>(undefined);
   useEffect(() => {
-    if (isEnabled && uncachedInvocationIds) {
-      void refetch();
+    if (!uncachedInvocationIds) {
+      requestedInvocationIds.current = undefined;
+    } else if (
+      isEnabled &&
+      !isFetching &&
+      uncachedInvocationIds !== requestedInvocationIds.current
+    ) {
+      requestedInvocationIds.current = uncachedInvocationIds;
+      void refetch({ cancelRefetch: false });
     }
-  }, [isEnabled, refetch, uncachedInvocationIds]);
+  }, [isEnabled, isFetching, refetch, uncachedInvocationIds]);
 
   return {
     ...results,

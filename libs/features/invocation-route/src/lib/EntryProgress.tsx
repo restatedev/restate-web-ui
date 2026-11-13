@@ -288,6 +288,8 @@ function getLineVariant(
     case 'backing-off':
       return 'backingOff';
     case 'pending':
+    case 'ready':
+    case 'yielded':
       return 'idlePending';
     case 'scheduled':
       return 'default';

@@ -34,6 +34,8 @@ const TARGET_INVOCATION_NOTES: Partial<Record<InvocationStatus, string>> = {
   paused: 'Waiting on a paused invocation',
   'backing-off': 'Waiting on an invocation that is backing off after a failure',
   pending: 'Waiting on an invocation that is queued',
+  ready: 'Waiting on an invocation that is queued',
+  yielded: 'Waiting on an invocation that is queued',
   scheduled: 'Waiting on a scheduled invocation',
 };
 
