@@ -104,7 +104,8 @@ export function useRunner({
       abortRef.current?.abort();
       abortRef.current = null;
       setIsSending(false);
-      setLatestRun((current) => (current?.isRunning ? undefined : current));
+      setLatestRun(undefined);
+      setIssues([]);
     },
     [operation.id],
   );

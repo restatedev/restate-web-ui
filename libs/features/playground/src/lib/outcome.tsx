@@ -21,6 +21,7 @@ type RunView =
   | { phase: 'sending' }
   | { phase: 'unreachable'; message: string }
   | { phase: 'rejected'; message: string; result: PlaygroundResult }
+  | { phase: 'accepted'; invocationId: string }
   | {
       phase: 'invocation';
       invocationId: string;
@@ -83,6 +84,9 @@ function useRunView(
   }
   if (result.kind === 'error') {
     return { phase: 'unreachable', message: result.message };
+  }
+  if (sentId && !runner.canTrack) {
+    return { phase: 'accepted', invocationId: sentId };
   }
   if (sentId) {
     const phase = tracking.tracking.phase;
@@ -152,6 +156,8 @@ function viewTone(view: RunView): Tone {
     case 'unreachable':
     case 'rejected':
       return 'danger';
+    case 'accepted':
+      return 'neutral';
     case 'answered':
       if (isNotReady(view.result)) {
         return 'neutral';
@@ -178,6 +184,8 @@ function viewTitle(view: RunView) {
       return 'Couldn’t reach Restate';
     case 'rejected':
       return 'Not accepted';
+    case 'accepted':
+      return 'Accepted';
     case 'answered':
       if (isNotReady(view.result)) {
         return 'Not finished yet';
@@ -214,7 +222,7 @@ function viewMessage(view: RunView) {
 }
 
 function viewInvocationId(view?: RunView) {
-  if (view?.phase === 'invocation') {
+  if (view?.phase === 'invocation' || view?.phase === 'accepted') {
     return view.invocationId;
   }
   if (view?.phase === 'answered') {
@@ -411,6 +419,11 @@ export function RunResult({
           {message}
         </p>
       )}
+      {view.phase === 'accepted' && (
+        <p className="text-xs text-muted">
+          It runs in the background. Open it to follow its progress.
+        </p>
+      )}
       {view.phase === 'invocation' &&
         (isCompact ? (
           !view.isDone &&
@@ -464,7 +477,9 @@ export function RunResult({
             <OpenInvocation
               invocationId={invocationId}
               variant={
-                view.phase === 'invocation' || isCompact
+                view.phase === 'invocation' ||
+                view.phase === 'accepted' ||
+                isCompact
                   ? 'button'
                   : 'secondary-button'
               }

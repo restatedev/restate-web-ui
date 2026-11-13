@@ -116,7 +116,7 @@ function useHintLayout(
   return layout;
 }
 
-function useTopLayer(anchorRef: RefObject<HTMLElement | null>) {
+function useTopLayer() {
   const [container] = useState(() => {
     if (typeof document === 'undefined') {
       return null;
@@ -129,10 +129,9 @@ function useTopLayer(anchorRef: RefObject<HTMLElement | null>) {
     if (!container) {
       return;
     }
-    const host = anchorRef.current?.closest('[role=dialog]') ?? document.body;
-    host.appendChild(container);
+    document.body.appendChild(container);
     return () => container.remove();
-  }, [anchorRef, container]);
+  }, [container]);
   return container;
 }
 
@@ -160,7 +159,7 @@ function FloatingLayer({
   children: ReactNode;
 }) {
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const container = useTopLayer(anchorRef);
+  const container = useTopLayer();
   const layout = useHintLayout(anchorRef, bubbleRef, placement);
   const isMeasured = Boolean(layout?.isMeasured);
   useEffect(() => {
@@ -210,11 +209,13 @@ function AnchoredHint({
   children,
   content,
   placement,
+  isOpen,
   onDismiss,
 }: {
   children: ReactNode;
   content: ReactNode;
   placement: HintPlacement;
+  isOpen: boolean;
   onDismiss: () => void;
 }) {
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -224,25 +225,27 @@ function AnchoredHint({
       <div ref={anchorRef} className="inline-flex">
         {children}
       </div>
-      <FloatingLayer
-        anchorRef={anchorRef}
-        placement={placement}
-        className={styles.bubble()}
-        arrowClassName="fill-inverse"
-      >
-        {content}
-        <Button
-          variant="icon"
-          aria-label="Dismiss"
-          className="absolute top-1 right-1 hover:bg-inverse-emphasis"
-          onClick={onDismiss}
+      {isOpen && (
+        <FloatingLayer
+          anchorRef={anchorRef}
+          placement={placement}
+          className={styles.bubble()}
+          arrowClassName="fill-inverse"
         >
-          <Icon
-            name={IconName.X}
-            className="h-3.5 w-3.5 text-inverse-secondary"
-          />
-        </Button>
-      </FloatingLayer>
+          {content}
+          <Button
+            variant="icon"
+            aria-label="Dismiss"
+            className="absolute top-1 right-1 hover:bg-inverse-emphasis"
+            onClick={onDismiss}
+          >
+            <Icon
+              name={IconName.X}
+              className="h-3.5 w-3.5 text-inverse-secondary"
+            />
+          </Button>
+        </FloatingLayer>
+      )}
     </>
   );
 }
@@ -271,23 +274,20 @@ export function Hint({
   const [isDismissed, setIsDismissed] = useState(() =>
     dismissedStages.has(stage),
   );
-  if (!isShown) {
-    return children;
-  }
   if (OnboardingGuide) {
-    return (
+    return isShown ? (
       <OnboardingGuide stage={stage} service={service}>
         {children}
       </OnboardingGuide>
+    ) : (
+      children
     );
-  }
-  if (!isOnboarding || isDismissed) {
-    return children;
   }
   return (
     <AnchoredHint
       content={content}
       placement={placement}
+      isOpen={isShown && isOnboarding && !isDismissed}
       onDismiss={() => {
         dismissedStages.add(stage);
         setIsDismissed(true);
@@ -355,13 +355,32 @@ export function Peek({
     }
     const close = (event: Event) => {
       if (event instanceof KeyboardEvent) {
-        if (event.key !== 'Escape') {
-          return;
-        }
-        event.stopPropagation();
-        event.preventDefault();
-        if (layerRef.current?.contains(document.activeElement)) {
+        const layer = layerRef.current;
+        const isInside = Boolean(layer?.contains(document.activeElement));
+        if (event.key === 'Tab') {
+          if (!layer || !isInside) {
+            return;
+          }
+          const items = Array.from(
+            layer.querySelectorAll<HTMLElement>('a[href], button, input'),
+          );
+          const index = items.indexOf(document.activeElement as HTMLElement);
+          if (event.shiftKey ? index > 0 : index < items.length - 1) {
+            return;
+          }
           triggerRef.current?.focus();
+          if (event.shiftKey) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        } else if (event.key === 'Escape') {
+          event.stopPropagation();
+          event.preventDefault();
+          if (isInside) {
+            triggerRef.current?.focus();
+          }
+        } else {
+          return;
         }
       } else {
         const target = event.target as Node | null;

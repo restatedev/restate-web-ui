@@ -469,7 +469,6 @@ export function RunButton({
     <Button
       type="submit"
       variant="primary"
-      disabled={runner.isSending}
       aria-keyshortcuts="Meta+Enter Control+Enter"
       className={sendStyles({ className })}
     >
