@@ -417,7 +417,7 @@ export function JournalV2({
   const entriesListRef = useRef<HTMLDivElement>(null);
 
   const { data: pausedErrorData } = useGetPausedError(invocationId, {
-    enabled: journalAndInvocationData?.status === 'paused',
+    enabled: withTimeline && journalAndInvocationData?.status === 'paused',
   });
   const failureCommandIndex =
     journalAndInvocationData?.last_failure_related_command_index ??
