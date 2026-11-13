@@ -1,5 +1,6 @@
 import type {
   components,
+  InvocationStatus,
   JournalEntryV2,
 } from '@restate/data-access-admin-api-spec';
 import { Dispatch, memo, Suspense, useCallback, useId, useState } from 'react';
@@ -194,7 +195,10 @@ export function JournalV2({
   });
 
   const referencedInvocationIds = getReferencedInvocationIds(data);
-  useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
+  const {
+    data: referencedInvocationStatuses,
+    isError: isReferencedInvocationStatusesError,
+  } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
     refetchOnMount: true,
     staleTime: 0,
     refetchInterval(query) {
@@ -581,6 +585,12 @@ export function JournalV2({
                                 relatedEntriesByInvocation={
                                   relatedEntriesByInvocation
                                 }
+                                referencedInvocations={
+                                  referencedInvocationStatuses?.invocations
+                                }
+                                isReferencedInvocationsError={
+                                  isReferencedInvocationStatusesError
+                                }
                               />
                             </ScrollableTimeline>
                           </ContentPanelSection>
@@ -817,12 +827,19 @@ function VirtualizedTimeline({
   entriesWithoutInput,
   data,
   relatedEntriesByInvocation,
+  referencedInvocations,
+  isReferencedInvocationsError,
 }: {
   virtualItems: VirtualItem[];
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   relatedEntriesByInvocation: Map<string, Map<number, JournalEntryV2[]>>;
+  referencedInvocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >;
+  isReferencedInvocationsError?: boolean;
 }) {
   return (
     <div
@@ -841,6 +858,19 @@ function VirtualizedTimeline({
                 .get(entryInvocationId)
                 ?.get(entry.index)
             : undefined;
+        const targetInvocationId =
+          entry?.isPending &&
+          isReferencedInvocationEntry(entry) &&
+          entry.type !== 'OneWayCall'
+            ? entry.invocationId
+            : undefined;
+        const targetInvocation = targetInvocationId
+          ? referencedInvocations?.[targetInvocationId]
+          : undefined;
+        const isTargetInvocationStatusPending =
+          Boolean(targetInvocationId) &&
+          !targetInvocation &&
+          !isReferencedInvocationsError;
 
         return (
           <div
@@ -859,6 +889,8 @@ function VirtualizedTimeline({
               entry={entry}
               invocation={data?.[entryInvocationId]}
               precomputedRelatedEntries={relatedEntries}
+              targetInvocationStatus={targetInvocation?.status}
+              isTargetInvocationStatusPending={isTargetInvocationStatusPending}
             />
           </div>
         );
@@ -871,6 +903,8 @@ const TimelineContainer = memo(function TimelineContainer({
   entry,
   invocation,
   precomputedRelatedEntries,
+  targetInvocationStatus,
+  isTargetInvocationStatusPending,
 }: {
   invocationId: string;
   entry?: JournalEntryV2;
@@ -878,6 +912,8 @@ const TimelineContainer = memo(function TimelineContainer({
     typeof useGetInvocationsJournalWithInvocationsV2
   >['data'][string];
   precomputedRelatedEntries?: JournalEntryV2[];
+  targetInvocationStatus?: InvocationStatus;
+  isTargetInvocationStatusPending?: boolean;
 }) {
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
@@ -886,6 +922,8 @@ const TimelineContainer = memo(function TimelineContainer({
         entry={entry}
         invocation={invocation}
         precomputedRelatedEntries={precomputedRelatedEntries}
+        targetInvocationStatus={targetInvocationStatus}
+        isTargetInvocationStatusPending={isTargetInvocationStatusPending}
       />
     </div>
   );
