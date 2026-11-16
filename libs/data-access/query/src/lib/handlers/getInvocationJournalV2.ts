@@ -251,7 +251,7 @@ export async function getInvocationJournalV2(
       ? this.query(
           `SELECT count(*) AS count FROM sys_journal_events WHERE id = ${invocationIdSql}`,
           'invocations/journal-events-count',
-        )
+        ).catch(() => undefined)
       : undefined,
   ]);
 

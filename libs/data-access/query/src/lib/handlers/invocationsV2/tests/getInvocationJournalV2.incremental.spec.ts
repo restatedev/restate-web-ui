@@ -504,6 +504,24 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
       ).toHaveLength(2);
     });
 
+    it('when the event count cannot be read', async () => {
+      const state: ServerState = {
+        invocation: invocationRow({ status: 'backing-off' }),
+        rows: [input(), runCommand(1, 1)],
+        events: [transientError(5, 1)],
+      };
+      const respond = serve(state);
+      await expectFullRefetch(state, () => {
+        state.events.push(transientError(6, 1));
+        setResponder((statement) => {
+          if (statement.includes('count(*)')) {
+            throw new Error('count failed');
+          }
+          return respond(statement);
+        });
+      });
+    });
+
     it('when a known event is gone', async () => {
       const state: ServerState = {
         invocation: invocationRow(),
