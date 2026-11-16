@@ -3,12 +3,7 @@ import { EntryProps } from './types';
 import { InvocationId } from '../../InvocationId';
 import { EntryExpression } from './EntryExpression';
 import { tv } from '@restate/util-styles';
-import { useIsCircularRef, useJournalEntriesContext } from '../JournalContext';
-import { CallInvokedLoadingError } from './CallInvokedLoadingError';
-import { CircularRefWarning } from './CircularRefWarning';
-import { Button } from '@restate/ui-button';
-import { Spinner } from '@restate/ui-loading';
-import { Icon, IconName } from '@restate/ui-icons';
+import { ExpandInvocationButton } from './ExpandInvocationButton';
 import { LazyJournalEntryPayload } from './LazyJournalEntryPayload';
 
 const styles = tv({
@@ -22,24 +17,6 @@ export function AttachInvocation({
 }: EntryProps<
   Extract<JournalEntryV2, { type?: 'AttachInvocation'; category?: 'command' }>
 >) {
-  const {
-    addInvocationId,
-    removeInvocationId,
-    isPending,
-    invocationIds,
-    error: invocationsError,
-    disableExpand,
-  } = useJournalEntriesContext();
-  const isCircularRef = useIsCircularRef(entry.invocationId, invocation?.id);
-  const isExpanded =
-    !isCircularRef &&
-    entry.invocationId &&
-    invocationIds.includes(entry.invocationId) &&
-    !isPending;
-
-  const invokedIsPending = isPending?.[String(entry.invocationId)];
-  const invokedError = invocationsError?.[String(entry.invocationId)];
-
   return (
     <>
       <div className={styles({ className })}>
@@ -64,38 +41,10 @@ export function AttachInvocation({
           }
         />
       </div>
-      {!disableExpand && (
-        <div className="absolute top-0 right-1 bottom-0 flex items-center">
-          {isCircularRef ? (
-            <CircularRefWarning />
-          ) : invokedError ? (
-            <CallInvokedLoadingError error={invokedError} className="" />
-          ) : (
-            <Button
-              onClick={() => {
-                if (entry.invocationId) {
-                  if (invocationIds.includes(entry.invocationId)) {
-                    removeInvocationId?.(entry.invocationId);
-                  } else {
-                    addInvocationId?.(entry.invocationId);
-                  }
-                }
-              }}
-              variant="icon"
-              className="z-10 bg-tint-subtle"
-            >
-              {invokedIsPending ? (
-                <Spinner />
-              ) : (
-                <Icon
-                  name={isExpanded ? IconName.X : IconName.Plus}
-                  className="h-3.5 w-3.5"
-                />
-              )}
-            </Button>
-          )}
-        </div>
-      )}
+      <ExpandInvocationButton
+        invocationId={entry.invocationId}
+        parentInvocationId={invocation?.id}
+      />
     </>
   );
 }

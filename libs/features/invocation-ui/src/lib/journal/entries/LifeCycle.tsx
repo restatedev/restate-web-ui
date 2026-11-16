@@ -242,6 +242,7 @@ function CreatedSource({ invocation }: { invocation?: Invocation }) {
       <RelativeTime
         date={invocation.created_at}
         tooltipTitle={ENTRY_EVENTS_TITLES['Created']}
+        className="shrink-0"
       />
     </div>
   );
