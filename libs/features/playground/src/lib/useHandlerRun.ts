@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type {
   ContractHandler,
   ContractOperation,
@@ -7,7 +7,7 @@ import type {
   RestateServiceType,
   ServiceContract,
 } from '@restate/util-openapi';
-import { useApiKey } from './sessionState';
+import { useApiKey, useRemembered } from './sessionState';
 import { editorSchemas } from './request';
 import { usePlaygroundFetcher } from './usePlaygroundFetcher';
 import { useRunner } from './useRunner';
@@ -112,8 +112,18 @@ export function useHandlerRun({
   const availableModes = (['send', 'call', 'attach', 'output'] as const).filter(
     (mode) => handler.modes[mode],
   );
-  const [base, setBase] = useState<BaseMode>(availableModes[0] ?? 'call');
-  const [isScoped, setIsScoped] = useState(false);
+  const settingsKey = ['run', ingressUrl, service, handler.name].join('\n');
+  const [rememberedBase, setBase] = useRemembered<BaseMode>(
+    `${settingsKey}\nbase`,
+    () => availableModes[0] ?? 'call',
+  );
+  const [isScoped, setIsScoped] = useRemembered(
+    `${settingsKey}\nscoped`,
+    () => false,
+  );
+  const base = availableModes.includes(rememberedBase)
+    ? rememberedBase
+    : (availableModes[0] ?? 'call');
   const scopedMode: HandlerMode | undefined =
     base === 'send' ? 'scopedSend' : base === 'call' ? 'scopedCall' : undefined;
   const canScope = Boolean(scopedMode && handler.modes[scopedMode]);

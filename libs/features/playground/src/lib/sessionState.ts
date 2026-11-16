@@ -27,18 +27,25 @@ export interface ApiKeyState {
   value: string;
 }
 
-const apiKeys = new Map<string, ApiKeyState>();
+const remembered = new Map<string, unknown>();
 
-export function useApiKey(scope: string) {
-  const [state, setState] = useState<ApiKeyState>(
-    () => apiKeys.get(scope) ?? { isVisible: false, value: '' },
+export function useRemembered<T>(key: string, initial: () => T) {
+  const [state, setState] = useState<T>(() =>
+    remembered.has(key) ? (remembered.get(key) as T) : initial(),
   );
   const update = useCallback(
-    (next: ApiKeyState) => {
-      apiKeys.set(scope, next);
+    (next: T) => {
+      remembered.set(key, next);
       setState(next);
     },
-    [scope],
+    [key],
   );
   return [state, update] as const;
+}
+
+export function useApiKey(scope: string) {
+  return useRemembered<ApiKeyState>(`apiKey\n${scope}`, () => ({
+    isVisible: false,
+    value: '',
+  }));
 }
