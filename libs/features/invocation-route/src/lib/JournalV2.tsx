@@ -512,9 +512,10 @@ export function JournalV2({
         list.getBoundingClientRect().top +
         window.scrollY +
         row.start -
+        scrollMargin -
         window.innerHeight / 3,
     });
-  }, [withTimeline, focusRowIndex, virtualizer, hash]);
+  }, [withTimeline, focusRowIndex, virtualizer, scrollMargin, hash]);
   const eventRelatedInvocationIds = useMemo(
     () =>
       getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
