@@ -15,12 +15,14 @@ import { toolDraftName, toolId, type InvocationLookup } from './names';
 import { SegmentedControl } from './SegmentedControl';
 import {
   CodeView,
+  handlerClient,
   HandlerRail,
   HandlerSwitcher,
   LoadingState,
   SchemaView,
   targetStyles,
   TOOL_LABEL,
+  ToolSchemaView,
   useServiceHandler,
 } from './Frame';
 import {
@@ -28,7 +30,9 @@ import {
   AdvancedToggle,
   ApiKeyField,
   InputField,
+  isRunMode,
   KeyFields,
+  OutputField,
   ParameterFields,
   RunButton,
   runLabel,
@@ -147,8 +151,16 @@ const layoutStyles = tv({
   },
 });
 
-const VIEWS: { value: View; label: string; icon: IconName }[] = [
+type ViewOption = { value: View; label: string; icon: IconName };
+
+const VIEWS: ViewOption[] = [
   { value: 'invoke', label: 'Invoke', icon: IconName.CirclePlay },
+  { value: 'code', label: 'Code', icon: IconName.Code },
+  { value: 'schema', label: 'Schema', icon: IconName.Braces },
+];
+
+const TOOL_VIEWS: ViewOption[] = [
+  { value: 'invoke', label: 'Run', icon: IconName.CirclePlay },
   { value: 'code', label: 'Code', icon: IconName.Code },
   { value: 'schema', label: 'Schema', icon: IconName.Braces },
 ];
@@ -180,14 +192,16 @@ function ViewTabs({
   baseId,
   value,
   onChange,
+  views = VIEWS,
 }: {
   baseId: string;
   value: View;
   onChange: (value: View) => void;
+  views?: ViewOption[];
 }) {
   const listRef = useRef<HTMLDivElement>(null);
   const select = (index: number) => {
-    const next = VIEWS[(index + VIEWS.length) % VIEWS.length];
+    const next = views[(index + views.length) % views.length];
     if (next) {
       onChange(next.value);
       listRef.current
@@ -204,7 +218,7 @@ function ViewTabs({
       aria-label="View"
       className="mt-1 inline-flex gap-0.5 self-start rounded-xl bg-tint-subtle p-1"
     >
-      {VIEWS.map((option) => {
+      {views.map((option) => {
         const isSelected = option.value === value;
         const styles = viewTabStyles({ isSelected });
         const ids = viewIds(baseId, option.value);
@@ -220,7 +234,7 @@ function ViewTabs({
             className={styles.tab()}
             onClick={() => onChange(option.value)}
             onKeyDown={(event) => {
-              const index = VIEWS.findIndex((option) => option.value === value);
+              const index = views.findIndex((option) => option.value === value);
               const target =
                 event.key === 'ArrowRight'
                   ? index + 1
@@ -229,7 +243,7 @@ function ViewTabs({
                     : event.key === 'Home'
                       ? 0
                       : event.key === 'End'
-                        ? VIEWS.length - 1
+                        ? views.length - 1
                         : undefined;
               if (target !== undefined) {
                 event.preventDefault();
@@ -375,10 +389,13 @@ function Workspace({
               {run.hasInput ? (
                 <InputField run={run} maxHeight={isEmbedded ? Infinity : 320} />
               ) : (
-                <p className="text-sm text-muted">
-                  This handler takes no input
-                </p>
+                isRunMode(run) && (
+                  <p className="text-sm text-muted">
+                    This handler takes no input
+                  </p>
+                )
               )}
+              <OutputField run={run} />
               {isAdvancedOpen && <AdvancedFields run={run} isWide />}
               <div className="flex items-center gap-3">
                 <Hint
@@ -424,8 +441,11 @@ function Workspace({
           <div className={styles.body()}>
             <CodeView
               run={run}
-              ingressUrl={ingressUrl}
-              handlerKind={handlerKinds.get(handler.name)}
+              client={handlerClient(
+                run,
+                ingressUrl,
+                handlerKinds.get(handler.name),
+              )}
             />
           </div>
         )}
@@ -469,6 +489,8 @@ function ToolWorkspace({
     (lookup) => tool[lookup],
   );
   const [lookup, setLookup] = useState<InvocationLookup>(lookups[0] ?? 'byId');
+  const [view, setView] = useState<View>('invoke');
+  const tabsId = useId();
   const operation = tool[lookup];
   const styles = layoutStyles({ layout });
   return (
@@ -501,31 +523,46 @@ function ToolWorkspace({
             {operation.description}
           </p>
         )}
-        {lookups.length > 1 && (
-          <SegmentedControl
-            label="Find the invocation"
-            className="mt-1 self-start"
-            value={lookup}
-            onChange={setLookup}
-            options={[
-              { value: 'byId', label: 'By invocation ID' },
-              { value: 'byTarget', label: 'By target' },
-            ]}
+        <div className="flex flex-wrap items-center gap-2">
+          <ViewTabs
+            baseId={tabsId}
+            value={view}
+            onChange={setView}
+            views={TOOL_VIEWS}
+          />
+          {lookups.length > 1 && (
+            <SegmentedControl
+              label="Find the invocation"
+              className="mt-1 ml-auto"
+              value={lookup}
+              onChange={setLookup}
+              options={[
+                { value: 'byId', label: 'By invocation ID' },
+                { value: 'byTarget', label: 'By target' },
+              ]}
+            />
+          )}
+        </div>
+      </header>
+      <div
+        role="tabpanel"
+        id={viewIds(tabsId, view).panel}
+        aria-labelledby={viewIds(tabsId, view).tab}
+      >
+        {operation && (
+          <ToolRunner
+            key={lookup}
+            contract={contract}
+            tool={tool}
+            lookup={lookup}
+            operation={operation}
+            ingressUrl={ingressUrl}
+            serviceType={serviceType}
+            view={view}
+            className={styles.body()}
           />
         )}
-      </header>
-      {operation && (
-        <ToolRunner
-          key={lookup}
-          contract={contract}
-          tool={tool}
-          lookup={lookup}
-          operation={operation}
-          ingressUrl={ingressUrl}
-          serviceType={serviceType}
-          className={styles.body()}
-        />
-      )}
+      </div>
     </div>
   );
 }
@@ -537,6 +574,7 @@ function ToolRunner({
   operation,
   ingressUrl,
   serviceType,
+  view,
   className,
 }: {
   contract: ServiceContract;
@@ -545,6 +583,7 @@ function ToolRunner({
   operation: ContractOperation;
   ingressUrl: string;
   serviceType?: RestateServiceType;
+  view: View;
   className?: string;
 }) {
   const run = useOperationRun({
@@ -555,6 +594,20 @@ function ToolRunner({
     serviceType,
     draftName: toolDraftName(tool.kind, lookup),
   });
+  if (view === 'code') {
+    return (
+      <div className={className}>
+        <CodeView run={run} />
+      </div>
+    );
+  }
+  if (view === 'schema') {
+    return (
+      <div className={className}>
+        <ToolSchemaView run={run} />
+      </div>
+    );
+  }
   return (
     <div className={className}>
       <form

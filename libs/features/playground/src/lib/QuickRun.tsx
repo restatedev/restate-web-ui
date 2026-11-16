@@ -13,7 +13,9 @@ import {
   AdvancedFields,
   AdvancedToggle,
   InputField,
+  isRunMode,
   KeyFields,
+  OutputField,
   runLabel,
   SendButton,
   submitRun,
@@ -140,6 +142,10 @@ function QuickRunBody({
             setDismissedRun(latest.id);
             focusSoon(FORM_FOCUS);
           }}
+          onCancel={() => {
+            run.runner.cancel();
+            focusSoon(FORM_FOCUS);
+          }}
         />
       ) : (
         <form
@@ -158,10 +164,13 @@ function QuickRunBody({
           {run.hasInput ? (
             <InputField run={run} maxHeight={260} />
           ) : (
-            <p className="rounded-lg border border-dashed border-strong px-3 py-2 text-xs text-muted">
-              This handler takes no input
-            </p>
+            isRunMode(run) && (
+              <p className="rounded-lg border border-dashed border-strong px-3 py-2 text-xs text-muted">
+                This handler takes no input
+              </p>
+            )
           )}
+          <OutputField run={run} />
           {isAdvancedOpen && <AdvancedFields run={run} />}
           <div className="flex items-center gap-2">
             <AdvancedToggle
@@ -202,7 +211,15 @@ function QuickRunBody({
 const FORM_FOCUS = 'form input, form textarea, form button[type="submit"]';
 const RESULT_FOCUS = 'section[aria-label="Result"] button';
 
-function ResultPanel({ run, onEdit }: { run: HandlerRun; onEdit: () => void }) {
+function ResultPanel({
+  run,
+  onEdit,
+  onCancel,
+}: {
+  run: HandlerRun;
+  onEdit: () => void;
+  onCancel: () => void;
+}) {
   const record = run.runner.latestRun;
   if (!record) {
     return null;
@@ -217,7 +234,7 @@ function ResultPanel({ run, onEdit }: { run: HandlerRun; onEdit: () => void }) {
         <Button
           variant="secondary"
           className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm"
-          onClick={record.isRunning ? run.runner.cancel : onEdit}
+          onClick={record.isRunning ? onCancel : onEdit}
         >
           {record.isRunning ? (
             'Cancel'

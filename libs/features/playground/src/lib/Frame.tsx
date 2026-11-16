@@ -16,8 +16,10 @@ import { ServiceTarget } from '@restate/features-service-target';
 import { isJsonContentType } from '@restate/util-openapi';
 import type {
   ContractHandler,
+  ContractOperation,
   HandlerMode,
   InvocationToolKind,
+  RestateClientSnippetInput,
   RestateHandlerKind,
   RestateServiceType,
   ServiceContract,
@@ -26,8 +28,10 @@ import { CodeSamples } from './CodeSamples';
 import { toolId } from './names';
 import { API_KEY_PLACEHOLDER } from './useRunner';
 import { JsonSchemaTree } from '@restate/ui-json-schema';
+import { statusText } from './status';
+import { handlerOutput } from './typeText';
 import { useServiceContract } from './useServiceContract';
-import type { HandlerRun } from './useHandlerRun';
+import type { HandlerRun, OperationRun } from './useHandlerRun';
 
 export function useServiceHandler(
   service: string,
@@ -240,16 +244,52 @@ function downloadSpec(contract: ServiceContract) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
+export function handlerClient(
+  run: HandlerRun,
+  ingressUrl: string,
+  handlerKind?: RestateHandlerKind,
+): RestateClientSnippetInput | undefined {
+  const { runner, serviceType, contract, handler, operation, base } = run;
+  if (!serviceType || run.availableModes.length === 0) {
+    return undefined;
+  }
+  return {
+    ingressUrl: ingressUrl.replace(/\/+$/, ''),
+    serviceName: contract.name,
+    serviceType,
+    handlerName: handler.name,
+    handlerKind,
+    mode: (run.isScoped
+      ? base === 'send'
+        ? 'scopedSend'
+        : 'scopedCall'
+      : base) as HandlerMode,
+    key: runner.roleValue('key'),
+    scope: runner.roleValue('scope'),
+    idempotencyKey: runner.roleValue('idempotencyKey') || undefined,
+    limitKey: runner.roleValue('limitKey') || undefined,
+    delayMs: runner.delayMs,
+    body:
+      runner.draft.bodyMode === 'text'
+        ? runner.bodyText || undefined
+        : undefined,
+    hasFileBody: runner.draft.bodyMode === 'file',
+    bodyContentType: operation.body?.contentType,
+    authorization:
+      run.requiresApiKey || run.apiKeyState.isVisible
+        ? `Bearer ${API_KEY_PLACEHOLDER}`
+        : undefined,
+  };
+}
+
 export function CodeView({
   run,
-  ingressUrl,
-  handlerKind,
+  client,
 }: {
-  run: HandlerRun;
-  ingressUrl: string;
-  handlerKind?: RestateHandlerKind;
+  run: OperationRun;
+  client?: RestateClientSnippetInput;
 }) {
-  const { runner, serviceType, contract, handler, operation, base } = run;
+  const { runner, contract } = run;
   return (
     <div className="flex flex-col gap-2 [&_code]:text-xs [&_code]:leading-normal">
       <button
@@ -260,42 +300,7 @@ export function CodeView({
         <Icon name={IconName.Download} className="h-3.5 w-3.5" />
         Download OpenAPI
       </button>
-      <CodeSamples
-        samples={{
-          request: runner.sampleRequest,
-          client:
-            serviceType && run.availableModes.length > 0
-              ? {
-                  ingressUrl: ingressUrl.replace(/\/+$/, ''),
-                  serviceName: contract.name,
-                  serviceType,
-                  handlerName: handler.name,
-                  handlerKind,
-                  mode: (run.isScoped
-                    ? base === 'send'
-                      ? 'scopedSend'
-                      : 'scopedCall'
-                    : base) as HandlerMode,
-                  key: runner.roleValue('key'),
-                  scope: runner.roleValue('scope'),
-                  idempotencyKey:
-                    runner.roleValue('idempotencyKey') || undefined,
-                  limitKey: runner.roleValue('limitKey') || undefined,
-                  delayMs: runner.delayMs,
-                  body:
-                    runner.draft.bodyMode === 'text'
-                      ? runner.bodyText || undefined
-                      : undefined,
-                  hasFileBody: runner.draft.bodyMode === 'file',
-                  bodyContentType: operation.body?.contentType,
-                  authorization:
-                    run.requiresApiKey || run.apiKeyState.isVisible
-                      ? `Bearer ${API_KEY_PLACEHOLDER}`
-                      : undefined,
-                }
-              : undefined,
-        }}
-      />
+      <CodeSamples samples={{ request: runner.sampleRequest, client }} />
     </div>
   );
 }
@@ -306,8 +311,60 @@ const schemaSectionStyles = tv({
       'flex min-w-0 flex-col gap-2 rounded-xl border bg-surface p-4 shadow-xs',
     title: 'text-0.5xs font-medium text-secondary',
     empty: 'text-sm text-muted',
+    note: 'text-0.5xs text-muted',
   },
 });
+
+function errorStatusLabel(status: string, isOnly: boolean) {
+  if (status === 'default') {
+    return isOnly ? 'Any status' : 'Other';
+  }
+  return [status, statusText(status)].filter(Boolean).join(' ');
+}
+
+function ErrorsSection({
+  operation,
+  root,
+  defaultNote,
+}: {
+  operation?: ContractOperation;
+  root: unknown;
+  defaultNote?: string;
+}) {
+  const errors = (operation?.responses ?? []).filter(
+    ({ status }) => !status.startsWith('2'),
+  );
+  if (errors.length === 0) {
+    return null;
+  }
+  const shape = errors.find(({ schema }) => schema !== undefined)?.schema;
+  const styles = schemaSectionStyles();
+  return (
+    <section aria-label="Errors" className={styles.section()}>
+      <h3 className={styles.title()}>Errors</h3>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+        {errors.map(({ status, description }) => (
+          <div key={status} className="contents">
+            <dt className="font-mono text-2xs leading-5 text-secondary">
+              {errorStatusLabel(status, errors.length === 1)}
+            </dt>
+            <dd className={styles.note({ className: 'leading-5' })}>
+              {(status === 'default' && defaultNote) ||
+                description ||
+                'Error response'}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {shape !== undefined && (
+        <div className="flex flex-col gap-1.5 border-t border-muted pt-3">
+          <p className={styles.note()}>Every error has this shape</p>
+          <JsonSchemaTree schema={shape} root={root} mode="read" />
+        </div>
+      )}
+    </section>
+  );
+}
 
 export function SchemaView({ run }: { run: HandlerRun }) {
   const { handler, contract } = run;
@@ -316,9 +373,7 @@ export function SchemaView({ run }: { run: HandlerRun }) {
     handler.modes.send ??
     Object.values(handler.modes).find(Boolean);
   const body = operation?.body;
-  const output = handler.modes.call?.responses.find(({ status }) =>
-    status.startsWith('2'),
-  );
+  const output = handlerOutput(handler);
   const styles = schemaSectionStyles();
   return (
     <div className="flex flex-col gap-4">
@@ -356,6 +411,51 @@ export function SchemaView({ run }: { run: HandlerRun }) {
           <p className={styles.empty()}>This handler returns nothing</p>
         )}
       </section>
+      <ErrorsSection
+        operation={operation}
+        root={contract.document}
+        defaultNote="The handler failed with a terminal error, or Restate rejected the request"
+      />
+    </div>
+  );
+}
+
+export function ToolSchemaView({ run }: { run: OperationRun }) {
+  const { operation, contract } = run;
+  const body = operation.body;
+  const reply = operation.responses.find(({ status }) =>
+    status.startsWith('2'),
+  );
+  const styles = schemaSectionStyles();
+  return (
+    <div className="flex flex-col gap-4">
+      {body && (
+        <section aria-label="Target" className={styles.section()}>
+          <h3 className={styles.title()}>Target</h3>
+          <JsonSchemaTree
+            schema={body.schema}
+            root={contract.document}
+            mode="write"
+            emptyText="Any JSON value"
+          />
+        </section>
+      )}
+      <section aria-label="Reply" className={styles.section()}>
+        <h3 className={styles.title()}>Reply</h3>
+        {reply?.schema !== undefined ? (
+          <JsonSchemaTree
+            schema={reply.schema}
+            root={contract.document}
+            mode="read"
+            emptyText="Any JSON value"
+          />
+        ) : (
+          <p className={styles.note()}>
+            {reply?.description ?? 'No reply body'}
+          </p>
+        )}
+      </section>
+      <ErrorsSection operation={operation} root={contract.document} />
     </div>
   );
 }
