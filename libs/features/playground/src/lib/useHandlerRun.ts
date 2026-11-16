@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { isOptionalUntypedBody } from '@restate/util-openapi';
 import type {
   ContractHandler,
   ContractOperation,
@@ -72,9 +73,7 @@ export function useOperationRun({
     draftName,
     schemas,
     hasInput: Boolean(body),
-    isInputOptional: Boolean(
-      body && body.schema === undefined && !body.required,
-    ),
+    isInputOptional: isOptionalUntypedBody(operation),
     mainParameters: runner.parameters.filter(
       (parameter) =>
         !isAdvancedParameter(parameter) && !isScopeParameter(parameter),

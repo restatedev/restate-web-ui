@@ -66,6 +66,14 @@ export function joinUrl(baseUrl: string, path: string) {
   return `${baseUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`;
 }
 
+export function isOptionalUntypedBody(operation: ContractOperation) {
+  return Boolean(
+    operation.body &&
+    operation.body.schema === undefined &&
+    !operation.body.required,
+  );
+}
+
 export function hasRequestBody(
   operation: ContractOperation,
   body: RequestBodyValue | undefined,

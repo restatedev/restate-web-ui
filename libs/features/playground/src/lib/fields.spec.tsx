@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { InputField } from './fields';
 import type { OperationRun } from './useHandlerRun';
 
@@ -9,11 +9,11 @@ vi.mock('./BodyEditor', () => ({
 }));
 
 function run({
-  required,
+  required = false,
   schema,
   hasInput = true,
 }: {
-  required: boolean;
+  required?: boolean;
   schema?: unknown;
   hasInput?: boolean;
 }) {
@@ -22,9 +22,11 @@ function run({
     draftName: 'greet',
     schemas: [],
     hasInput,
-    isInputOptional: schema === undefined && !required,
+    isInputOptional: hasInput && schema === undefined && !required,
     operation: {
-      body: { contentType: 'application/json', required, schema },
+      body: hasInput
+        ? { contentType: 'application/json', required, schema }
+        : undefined,
     },
     runner: {
       draft: { rawBody: '', bodyMode: 'text' },
@@ -36,25 +38,29 @@ function run({
 }
 
 describe('InputField', () => {
-  it('shows an empty editor for an optional input without a schema', () => {
-    render(<InputField run={run({ required: false })} />);
+  it('shows an empty editor and a note for an optional input without a schema', () => {
+    render(<InputField run={run({})} />);
 
-    expect(screen.getByRole('textbox', { name: 'Input' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'About Input' })).toBeTruthy();
+    const editor = screen.getByRole<HTMLTextAreaElement>('textbox', {
+      name: 'Input',
+    });
+    expect(editor.value).toBe('');
     expect(screen.queryByRole('button', { name: /Add input/ })).toBeNull();
+
+    const note = screen.getByRole('button', { name: 'About Input' });
+    fireEvent.click(note);
+    expect(note.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('shows the editor without the note when the input is required', () => {
-    render(<InputField run={run({ required: true })} />);
+  it('names the editor after its label', () => {
+    render(<InputField run={run({ required: true })} label="Target" />);
 
-    expect(screen.getByRole('textbox', { name: 'Input' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'About Input' })).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'Target' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'About Target' })).toBeNull();
   });
 
   it('renders nothing for a handler without input', () => {
-    const { container } = render(
-      <InputField run={run({ required: false, hasInput: false })} />,
-    );
+    const { container } = render(<InputField run={run({ hasInput: false })} />);
 
     expect(container.innerHTML).toBe('');
   });
