@@ -10,6 +10,8 @@ import {
   type FilterItem,
   type Service,
   getEndpoint,
+  isPublicHandler,
+  isPublicService,
 } from '@restate/data-access-admin-api-spec';
 import { useBatchOperations } from '@restate/features-batch-operations';
 import { resolveDeploymentEndpoint } from '@restate/features-deployment';
@@ -425,7 +427,10 @@ export function useCommandSections(
       },
     ];
 
-    const playgroundServices = serviceList
+    const publicServices = serviceList.filter((service) =>
+      isPublicService(service),
+    );
+    const playgroundServices = publicServices
       .map<Command>((service) => ({
         id: `playground:${service.name}`,
         label: service.name,
@@ -435,16 +440,18 @@ export function useCommandSections(
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
 
-    const playgroundHandlers = serviceList.flatMap((service) =>
-      service.handlers.map<Command>((handler) => ({
-        id: `playground:${service.name}/${handler.name}`,
-        label: `${service.name}/${handler.name}`,
-        icon: IconName.Function,
-        keywords: [handler.name],
-        href: toHere(
-          panelHref({ playground: service.name, handler: handler.name }),
-        ),
-      })),
+    const playgroundHandlers = publicServices.flatMap((service) =>
+      service.handlers
+        .filter((handler) => isPublicHandler(service, handler))
+        .map<Command>((handler) => ({
+          id: `playground:${service.name}/${handler.name}`,
+          label: `${service.name}/${handler.name}`,
+          icon: IconName.Function,
+          keywords: [handler.name],
+          href: toHere(
+            panelHref({ playground: service.name, handler: handler.name }),
+          ),
+        })),
     );
 
     const recentQueries = queryHistory.map<Command>((sql, index) => ({
@@ -695,29 +702,29 @@ export function useCommandSections(
         (candidate) => candidate.name.toLowerCase() === rest.toLowerCase(),
       );
       if (service && handler) {
-        matches.push(
-          {
-            id: `match:handler:${service.name}/${handler.name}`,
-            label: `${service.name}/${handler.name}`,
-            description: 'Handler',
-            hint: 'Go to',
-            icon: IconName.Function,
-            href: toPage(
-              serviceHref(baseUrl, {
-                service: service.name,
-                handler: handler.name,
-              }),
-            ),
-          },
-          {
+        matches.push({
+          id: `match:handler:${service.name}/${handler.name}`,
+          label: `${service.name}/${handler.name}`,
+          description: 'Handler',
+          hint: 'Go to',
+          icon: IconName.Function,
+          href: toPage(
+            serviceHref(baseUrl, {
+              service: service.name,
+              handler: handler.name,
+            }),
+          ),
+        });
+        if (isPublicHandler(service, handler)) {
+          matches.push({
             id: `match:playground:${service.name}/${handler.name}`,
             label: `Open ${service.name}/${handler.name} in playground`,
             icon: IconName.Play,
             href: toHere(
               panelHref({ playground: service.name, handler: handler.name }),
             ),
-          },
-        );
+          });
+        }
       }
       if (service?.ty === 'VirtualObject') {
         matches.push({

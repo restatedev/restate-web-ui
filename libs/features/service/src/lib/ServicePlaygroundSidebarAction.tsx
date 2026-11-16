@@ -10,7 +10,11 @@ import {
 } from '@restate/ui-dropdown';
 import { Icon, IconName } from '@restate/ui-icons';
 import { HoverTooltip } from '@restate/ui-tooltip';
-import { useListDeployments } from '@restate/data-access-admin-api-hooks';
+import {
+  useListDeployments,
+  useServiceCatalog,
+} from '@restate/data-access-admin-api-hooks';
+import { isPublicService } from '@restate/data-access-admin-api-spec';
 import { panelHref } from '@restate/util-panel';
 import { tv } from '@restate/util-styles';
 
@@ -29,7 +33,10 @@ export function ServicePlaygroundSidebarAction({
   className?: string;
 }) {
   const { data } = useListDeployments();
-  const serviceNames = data?.sortedServiceNames ?? [];
+  const { data: catalog } = useServiceCatalog();
+  const serviceNames = (data?.sortedServiceNames ?? []).filter((name) =>
+    isPublicService(catalog.get(name)),
+  );
   const disabled = serviceNames.length === 0;
   const [isOpen, setIsOpen] = useState(false);
 

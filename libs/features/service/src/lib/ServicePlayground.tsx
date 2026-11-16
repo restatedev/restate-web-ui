@@ -40,6 +40,11 @@ import {
   NextServicePlaygroundPanel,
   NextServicePlaygroundSheet,
 } from './NextServicePlayground';
+import {
+  PrivatePlaygroundPanel,
+  PrivatePlaygroundSheet,
+  useIsPrivateService,
+} from './PrivatePlaygroundNote';
 
 const DEFAULT_CATEGORY = 'DEFAULT';
 export function ServicePlayground() {
@@ -48,6 +53,7 @@ export function ServicePlayground() {
   const isDocked =
     searchParams.get(PANEL_QUERY_PARAM) === SERVICE_PLAYGROUND_QUERY_PARAM;
   const isNewPlayground = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
+  const isPrivate = useIsPrivateService(service);
 
   return (
     <>
@@ -55,20 +61,34 @@ export function ServicePlayground() {
         paramName={SERVICE_PLAYGROUND_QUERY_PARAM}
         onCloseQueryParam={clearPlaygroundHandler}
       >
-        {isNewPlayground ? (
-          <NextServicePlaygroundComplementaryContent />
-        ) : (
-          <ServicePlaygroundComplementaryContent />
-        )}
+        <ServicePlaygroundPanelContent isNewPlayground={isNewPlayground} />
       </ComplementaryWithSearchParam>
       {service &&
         !isDocked &&
-        (isNewPlayground ? (
+        (isPrivate ? (
+          <PrivatePlaygroundSheet service={service} />
+        ) : isNewPlayground ? (
           <NextServicePlaygroundSheet service={service} />
         ) : (
           <ServicePlaygroundSheetContent service={service} />
         ))}
     </>
+  );
+}
+
+function ServicePlaygroundPanelContent({
+  isNewPlayground,
+}: {
+  isNewPlayground: boolean;
+}) {
+  const isPrivate = useIsPrivateService(useParamValue());
+  if (isPrivate) {
+    return <PrivatePlaygroundPanel />;
+  }
+  return isNewPlayground ? (
+    <NextServicePlaygroundComplementaryContent />
+  ) : (
+    <ServicePlaygroundComplementaryContent />
   );
 }
 

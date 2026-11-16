@@ -1,5 +1,7 @@
 import {
   getEndpoint,
+  isPublicHandler,
+  isPublicService,
   type Deployment,
   type Handler,
 } from '@restate/data-access-admin-api-spec';
@@ -11,6 +13,7 @@ import { useRestateContext } from '@restate/features-restate-context';
 import {
   Handler as ServiceHandler,
   PlaygroundIconLink,
+  PrivatePlayButton,
   QuickRunPlayButton,
   ServiceType,
 } from '@restate/features-service';
@@ -275,6 +278,9 @@ function ServiceIdentity({
 }) {
   const styles = tableStyles();
   const { baseUrl } = useRestateContext();
+  const publicHandlers = row.handlers?.filter((handler) =>
+    isPublicHandler(row, handler),
+  );
   return (
     <div className={styles.serviceIdentity()}>
       {!row.handlers ? (
@@ -304,15 +310,19 @@ function ServiceIdentity({
         density="default"
         className={styles.serviceTarget()}
       />
-      <PlaygroundLink
-        serviceName={row.name}
-        // Open a single-handler service on its handler, not the overview.
-        handlerName={
-          row.handlers?.length === 1 ? row.handlers[0]?.name : undefined
-        }
-        isOnboarding={isOnboarding}
-        OnboardingGuide={OnboardingGuide}
-      />
+      {isPublicService(row) ? (
+        <PlaygroundLink
+          serviceName={row.name}
+          // Open a single-handler service on its handler, not the overview.
+          handlerName={
+            publicHandlers?.length === 1 ? publicHandlers[0]?.name : undefined
+          }
+          isOnboarding={isOnboarding}
+          OnboardingGuide={OnboardingGuide}
+        />
+      ) : (
+        <PrivatePlayButton />
+      )}
       {row.ty && (
         <ServiceType
           type={row.ty}
@@ -343,7 +353,11 @@ function HandlerIdentity({
         compact
         className={styles.handler()}
       />
-      <PlaygroundLink serviceName={service.name} handlerName={handler.name} />
+      {isPublicHandler(service, handler) ? (
+        <PlaygroundLink serviceName={service.name} handlerName={handler.name} />
+      ) : (
+        <PrivatePlayButton />
+      )}
     </div>
   );
 }

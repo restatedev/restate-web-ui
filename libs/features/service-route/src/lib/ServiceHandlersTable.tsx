@@ -1,6 +1,11 @@
-import type { Handler, ServiceType } from '@restate/data-access-admin-api-spec';
+import {
+  isPublicHandler,
+  type Handler,
+  type ServiceType,
+} from '@restate/data-access-admin-api-spec';
 import {
   PlaygroundIconLink,
+  PrivatePlayButton,
   Handler as ServiceHandler,
 } from '@restate/features-service';
 import { EmptyState } from '@restate/ui-empty-state';
@@ -43,6 +48,7 @@ export function ServiceHandlersTable({
   serviceType,
   handlers,
   selectedHandler,
+  isServicePublic,
   isPending,
   error,
 }: {
@@ -50,6 +56,7 @@ export function ServiceHandlersTable({
   serviceType?: ServiceType;
   handlers: Handler[];
   selectedHandler?: string;
+  isServicePublic: boolean;
   isPending: boolean;
   error: Error | null;
 }) {
@@ -75,7 +82,13 @@ export function ServiceHandlersTable({
       isLoading={isPending}
       error={error}
       numOfRows={4}
-      bodyDependencies={[rows, selectedHandler, serviceType, searchParams]}
+      bodyDependencies={[
+        rows,
+        selectedHandler,
+        serviceType,
+        searchParams,
+        isServicePublic,
+      ]}
       onRowAction={(rowId) =>
         setSearchParams(
           (old) => {
@@ -108,11 +121,15 @@ export function ServiceHandlersTable({
                   showType
                   className="max-w-fit min-w-0 pr-0"
                 />
-                <PlaygroundIconLink
-                  aria-label={`Open ${service}/${row.handler.name} in Playground`}
-                  href={handlerTabHref(row.handler.name, 'playground')}
-                  preserveQueryParams={false}
-                />
+                {isPublicHandler({ public: isServicePublic }, row.handler) ? (
+                  <PlaygroundIconLink
+                    aria-label={`Open ${service}/${row.handler.name} in Playground`}
+                    href={handlerTabHref(row.handler.name, 'playground')}
+                    preserveQueryParams={false}
+                  />
+                ) : (
+                  <PrivatePlayButton />
+                )}
               </div>
             </Cell>
           );

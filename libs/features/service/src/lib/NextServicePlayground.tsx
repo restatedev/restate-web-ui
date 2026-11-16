@@ -97,7 +97,7 @@ function usePlaygroundSelection(
   };
 }
 
-function HeaderButton({
+export function HeaderButton({
   label,
   icon,
   onClick,
