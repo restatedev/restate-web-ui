@@ -398,6 +398,12 @@ export function JournalV2({
     if (!withTimeline || scrolledLocationKey.current === locationKey) {
       return;
     }
+    if (
+      getCommandIndexFromHash(hash) !== undefined &&
+      invocationIds.some((id) => isPending[id])
+    ) {
+      return;
+    }
     const row =
       virtualizer.measurementsCache[
         findCommandRow(
@@ -427,6 +433,8 @@ export function JournalV2({
     locationKey,
     entriesWithoutInput,
     invocationId,
+    invocationIds,
+    isPending,
     virtualizer,
     journalAndInvocationData,
   ]);
