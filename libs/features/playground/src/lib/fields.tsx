@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ReactNode } from 'react';
+import { useId, useRef, type ReactNode } from 'react';
 import { Button } from '@restate/ui-button';
 import { DropdownItem } from '@restate/ui-dropdown';
 import { Switch } from '@restate/ui-form-field';
@@ -248,7 +248,7 @@ function Mono({ children }: { children: ReactNode }) {
 function NoSchemaPeek() {
   return (
     <InfoPeek label="Input">
-      This handler has no input schema, so it may take no input at all
+      No input schema: leave it empty to send no input
     </InfoPeek>
   );
 }
@@ -310,44 +310,7 @@ export function InputField({
   maxHeight?: number;
   label?: string;
 }) {
-  const { draft } = run.runner;
-  const [isOpen, setIsOpen] = useState(
-    () =>
-      !run.isInputOptional || draft.rawBody !== '' || draft.bodyMode === 'file',
-  );
-  const [shouldFocus, setShouldFocus] = useState(false);
-  if (!run.hasInput) {
-    return null;
-  }
-  if (!isOpen) {
-    return (
-      <div className="flex min-h-7 items-center gap-2">
-        <span className="text-0.5xs font-medium text-secondary">
-          {label ?? 'Input'}
-        </span>
-        <NoSchemaPeek />
-        <Button
-          variant="secondary"
-          className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
-          onClick={() => {
-            setIsOpen(true);
-            setShouldFocus(true);
-          }}
-        >
-          <Icon name={IconName.Plus} className="h-3.5 w-3.5 text-subtle" />
-          Add input
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <JsonInput
-      run={run}
-      maxHeight={maxHeight}
-      label={label}
-      autoFocus={shouldFocus}
-    />
-  );
+  return <JsonInput run={run} maxHeight={maxHeight} label={label} />;
 }
 
 function JsonInput({
@@ -355,13 +318,11 @@ function JsonInput({
   className,
   label = 'Input',
   maxHeight,
-  autoFocus,
 }: {
   run: OperationRun;
   className?: string;
   label?: string | false;
   maxHeight?: number;
-  autoFocus?: boolean;
 }) {
   const { runner, operation, service, draftName } = run;
   const body = operation.body;
@@ -411,7 +372,6 @@ function JsonInput({
           onChange={(rawBody) =>
             runner.setDraft((previous) => ({ ...previous, rawBody }))
           }
-          autoFocus={autoFocus}
           onSubmit={() =>
             containerRef.current?.closest('form')?.requestSubmit()
           }
