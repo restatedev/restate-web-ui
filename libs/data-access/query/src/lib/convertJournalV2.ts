@@ -52,7 +52,7 @@ export function convertJournalV2(
       nextEntries,
       invocation,
       context,
-    ) ?? (entry as JournalEntryV2);
+    ) ?? ({ ...entry } as JournalEntryV2);
   if (typeof entry.raw_length === 'number') {
     newEntry.size = entry.raw_length;
   }
