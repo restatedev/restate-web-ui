@@ -1137,11 +1137,16 @@ export function useWarmInvocationStatusDetails(
   const uncachedInvocationIds = queryInvocationIds
     .filter((invocationId) => !results.data?.invocations?.[invocationId])
     .join(',');
-  const { refetch, isFetching, isError } = results;
+  const { refetch, isFetching, isSuccess } = results;
   const queryClient = useQueryClient();
   const requestedInvocationIds = useRef<string>(undefined);
+  const wasSuccess = useRef(false);
   useEffect(() => {
-    if (!uncachedInvocationIds || isError) {
+    if (!wasSuccess.current && isSuccess) {
+      requestedInvocationIds.current = undefined;
+    }
+    wasSuccess.current = isSuccess;
+    if (!uncachedInvocationIds) {
       requestedInvocationIds.current = undefined;
     } else if (
       isEnabled &&
@@ -1160,8 +1165,8 @@ export function useWarmInvocationStatusDetails(
   }, [
     baseUrl,
     isEnabled,
-    isError,
     isFetching,
+    isSuccess,
     queryClient,
     referenceInvocationId,
     refetch,

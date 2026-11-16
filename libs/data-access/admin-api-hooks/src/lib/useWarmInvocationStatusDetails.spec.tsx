@@ -217,15 +217,17 @@ describe('useWarmInvocationStatusDetails', () => {
     );
   });
 
-  it('asks again for invocations a failed request left out, once another poll succeeds', async () => {
-    fetchStatuses.mockImplementationOnce(() =>
+  it('retries a failed request once, then waits for another poll to succeed', async () => {
+    fetchStatuses.mockImplementation(() =>
       Promise.reject(new Error('statuses failed')),
     );
     const { result } = render(['inv_b']);
-    await waitFor(() => expect(result.current.isError).toBe(true));
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(2));
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(fetchStatuses).toHaveBeenCalledTimes(1);
+    expect(result.current.isError).toBe(true);
+    expect(fetchStatuses).toHaveBeenCalledTimes(2);
 
+    fetchStatuses.mockImplementation(suspended);
     await act(() =>
       client.fetchQuery({
         queryKey: result.current.queryKey,
@@ -238,8 +240,24 @@ describe('useWarmInvocationStatusDetails', () => {
         'suspended',
       ),
     );
-    expect(fetchStatuses).toHaveBeenCalledTimes(2);
+    expect(fetchStatuses).toHaveBeenCalledTimes(3);
     expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_b']);
+  });
+
+  it('still asks for newly referenced invocations while requests keep failing', async () => {
+    fetchStatuses.mockImplementation(() =>
+      Promise.reject(new Error('statuses failed')),
+    );
+    const { result, rerender } = render(['inv_a']);
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(result.current.isError).toBe(true);
+
+    rerender({ invocationIds: ['inv_a', 'inv_b'] });
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(3));
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_a', 'inv_b']);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(fetchStatuses).toHaveBeenCalledTimes(3);
   });
 
   describe('read through useGetInvocationStatusDetails', () => {
