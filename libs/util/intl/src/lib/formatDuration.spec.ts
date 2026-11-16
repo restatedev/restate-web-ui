@@ -1,3 +1,4 @@
+import { DurationFormat } from '@formatjs/intl-durationformat';
 import {
   formatCompactISODuration,
   formatDurations,
@@ -15,10 +16,13 @@ describe('formatDurations', () => {
     expect(formatDurations(duration)).toBe(expected);
   });
 
-  it('returns the same text when formatting a duration again', () => {
-    const duration = { minutes: 2, seconds: 5, milliseconds: 0 };
-    expect(formatDurations(duration)).toBe('2m 5s');
-    expect(formatDurations(duration)).toBe('2m 5s');
+  it('formats a duration only once', () => {
+    const formatToParts = vi.spyOn(DurationFormat.prototype, 'formatToParts');
+    const duration = { minutes: 41, seconds: 3, milliseconds: 0 };
+    expect(formatDurations(duration)).toBe('41m 3s');
+    expect(formatDurations({ ...duration })).toBe('41m 3s');
+    expect(formatToParts).toHaveBeenCalledTimes(1);
+    formatToParts.mockRestore();
   });
 
   it('keeps durations with the same numbers apart by style', () => {

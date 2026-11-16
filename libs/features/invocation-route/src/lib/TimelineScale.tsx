@@ -7,16 +7,14 @@ const TIMELINE_SCALE_VAR = '--timeline-scale';
 export function getTimelineScale({
   start,
   end,
-  presentedStart,
   presentedEnd,
 }: {
   start: number;
   end: number;
-  presentedStart: number;
   presentedEnd: number;
 }) {
   const duration = end - start;
-  const presentedDuration = presentedEnd - presentedStart;
+  const presentedDuration = presentedEnd - start;
   return duration > 0 && presentedDuration > 0
     ? duration / presentedDuration
     : 1;
@@ -35,13 +33,8 @@ export function TimelineScale({
   children,
 }: PropsWithChildren<{ className?: string }>) {
   const { start, end } = useJournalTimelineContext();
-  const { coordinateStart, coordinateEnd } = useTimelineEngineContext();
-  const scale = getTimelineScale({
-    start,
-    end,
-    presentedStart: coordinateStart,
-    presentedEnd: coordinateEnd,
-  });
+  const { coordinateEnd } = useTimelineEngineContext();
+  const scale = getTimelineScale({ start, end, presentedEnd: coordinateEnd });
 
   return (
     <div

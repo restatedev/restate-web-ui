@@ -457,7 +457,9 @@ function InnerEntryProgress({
     : 0;
   const { isPast, ...parts } = getDuration(executionTime);
   const duration = formatDurations(parts);
-  const pendingDuration = formatDurations(getDuration(pendingTime));
+  const pendingDuration = entry.isPending
+    ? formatDurations(getDuration(pendingTime))
+    : undefined;
 
   if (isCopiedFromRestart) {
     return (

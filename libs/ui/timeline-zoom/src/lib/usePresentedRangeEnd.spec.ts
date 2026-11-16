@@ -1,6 +1,8 @@
+import { act, renderHook } from '@testing-library/react';
 import {
   getHeadroomStepMs,
   getPresentationHeadroomMs,
+  usePresentedRangeEnd,
 } from './usePresentedRangeEnd';
 
 describe('getHeadroomStepMs', () => {
@@ -43,5 +45,66 @@ describe('getPresentationHeadroomMs', () => {
     expect(getPresentationHeadroomMs(299, 300)).toBe(81);
     expect(getPresentationHeadroomMs(1_999, 4_000)).toBe(81);
     expect(getPresentationHeadroomMs(9_000, 4_000)).toBe(81);
+  });
+});
+
+describe('usePresentedRangeEnd', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({
+      toFake: ['Date', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      now: 0,
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function renderRangeEnd(stepMs: number) {
+    let renders = 0;
+    const view = renderHook(
+      ({ nowMs }: { nowMs: number }) => {
+        renders++;
+        return usePresentedRangeEnd({
+          actualEndMs: nowMs,
+          authoritativeNowMs: nowMs,
+          shouldAdvance: true,
+          headroomStepMsRef: { current: stepMs },
+        });
+      },
+      { initialProps: { nowMs: 10_000 } },
+    );
+    return { ...view, renders: () => renders };
+  }
+
+  it('moves the end in steps and renders only when a step is reached', () => {
+    const { result, renders } = renderRangeEnd(500);
+    expect(result.current.rangeEndMs).toBe(10_000);
+
+    act(() => vi.advanceTimersByTime(600));
+    expect(result.current.rangeEndMs).toBe(10_500);
+
+    const rendersAtFirstStep = renders();
+    act(() => vi.advanceTimersByTime(300));
+    expect(result.current.rangeEndMs).toBe(10_500);
+    expect(renders()).toBe(rendersAtFirstStep);
+
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(result.current.rangeEndMs).toBe(12_000);
+  });
+
+  it('restarts the headroom at each poll without moving the end back', () => {
+    const { result, rerender } = renderRangeEnd(500);
+    act(() => vi.advanceTimersByTime(1_200));
+    expect(result.current.rangeEndMs).toBe(11_000);
+
+    rerender({ nowMs: 14_000 });
+    expect(result.current).toEqual({ rangeEndMs: 15_000, nowMs: 14_000 });
+
+    act(() => vi.advanceTimersByTime(600));
+    expect(result.current.rangeEndMs).toBe(15_000);
+
+    act(() => vi.advanceTimersByTime(1_000));
+    expect(result.current.rangeEndMs).toBe(15_500);
   });
 });
