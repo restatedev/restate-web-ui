@@ -245,9 +245,17 @@ function Mono({ children }: { children: ReactNode }) {
   return <code className="font-mono text-[0.95em]">{children}</code>;
 }
 
+function NoSchemaPeek() {
+  return (
+    <InfoPeek label="Input">
+      This handler has no input schema, so it may take no input at all
+    </InfoPeek>
+  );
+}
+
 function SchemaPeek({ run }: { run: OperationRun }) {
   if (!hasInputSchema(run)) {
-    return null;
+    return run.isInputOptional ? <NoSchemaPeek /> : null;
   }
   return (
     <Peek
@@ -317,9 +325,7 @@ export function InputField({
         <span className="text-0.5xs font-medium text-secondary">
           {label ?? 'Input'}
         </span>
-        <InfoPeek label="Input">
-          This handler has no input schema, so it may take no input at all
-        </InfoPeek>
+        <NoSchemaPeek />
         <Button
           variant="secondary"
           className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
