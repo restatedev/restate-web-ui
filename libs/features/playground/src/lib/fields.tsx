@@ -303,18 +303,6 @@ function ResetInput({ run }: { run: OperationRun }) {
 
 export function InputField({
   run,
-  maxHeight,
-  label,
-}: {
-  run: OperationRun;
-  maxHeight?: number;
-  label?: string;
-}) {
-  return <JsonInput run={run} maxHeight={maxHeight} label={label} />;
-}
-
-function JsonInput({
-  run,
   className,
   label = 'Input',
   maxHeight,
