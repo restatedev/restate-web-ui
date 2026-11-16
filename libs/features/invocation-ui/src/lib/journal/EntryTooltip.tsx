@@ -10,7 +10,7 @@ import {
   formatRange,
 } from '@restate/util-intl';
 import { getDuration } from '@restate/util-snapshot-time';
-import { DOMAttributes, ReactElement } from 'react';
+import { DOMAttributes, ReactElement, ReactNode } from 'react';
 import { useJournalTimelineContext } from './JournalContext';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import {
@@ -46,6 +46,7 @@ export function EntryTooltip({
   invocation,
   isCopiedFromRestart,
   targetInvocationStatus,
+  note,
 }: {
   entry?: JournalEntryV2;
   invocation?: Invocation;
@@ -53,6 +54,7 @@ export function EntryTooltip({
   children: ReactElement<DOMAttributes<HTMLElement>, string>;
   isCopiedFromRestart?: boolean;
   targetInvocationStatus?: InvocationStatus;
+  note?: ReactNode;
 }) {
   if (!entry) {
     return children;
@@ -66,6 +68,7 @@ export function EntryTooltip({
           invocation={invocation}
           isCopiedFromRestart={isCopiedFromRestart}
           targetInvocationStatus={targetInvocationStatus}
+          note={note}
         />
       }
       className={entryTooltipStyles({ className })}
@@ -83,6 +86,7 @@ function EntryContent({
   invocation,
   isCopiedFromRestart,
   targetInvocationStatus,
+  note,
 }: {
   entry: JournalEntryV2;
   invocation?: ReturnType<
@@ -90,6 +94,7 @@ function EntryContent({
   >['data'];
   isCopiedFromRestart?: boolean;
   targetInvocationStatus?: InvocationStatus;
+  note?: ReactNode;
 }) {
   const isPoint = !entry.end && !entry.isPending;
   const { isAmbiguous: entryCompletionIsAmbiguous, mode } =
@@ -202,6 +207,7 @@ function EntryContent({
       {targetInvocationNote && (
         <div className="font-medium">{targetInvocationNote}</div>
       )}
+      {note && <div className="font-medium">{note}</div>}
       {entry.type === 'Event: TransientError' && entry.error && (
         <ErrorBanner
           error={

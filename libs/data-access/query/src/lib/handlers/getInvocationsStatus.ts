@@ -24,7 +24,7 @@ export async function getInvocationsStatus(
     Promise.all(
       chunkIds(uniqueInvocationIds).map((ids) =>
         this.query(
-          `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id FROM sys_invocation WHERE id IN (${ids.map(quoteSqlString).join(', ')})`,
+          `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id, created_at, scheduled_at, scheduled_start_at, running_at, completed_at FROM sys_invocation WHERE id IN (${ids.map(quoteSqlString).join(', ')})`,
           'invocations/statuses',
         ),
       ),
@@ -41,6 +41,10 @@ export async function getInvocationsStatus(
       targetServiceName?: string;
       targetServiceKey?: string;
       targetHandlerName?: string;
+      createdAt?: string;
+      scheduledStartAt?: string;
+      runningAt?: string;
+      completedAt?: string;
     }
   >();
   for (const row of invocationRows) {
@@ -57,6 +61,14 @@ export async function getInvocationsStatus(
       targetServiceName: row.target_service_name as string | undefined,
       targetServiceKey: row.target_service_key as string | undefined,
       targetHandlerName: row.target_handler_name as string | undefined,
+      createdAt: invocation.created_at,
+      scheduledStartAt:
+        invocation.scheduled_start_at ??
+        (invocation.status === 'scheduled'
+          ? invocation.first_runnable_at
+          : undefined),
+      runningAt: invocation.running_at,
+      completedAt: invocation.completed_at,
     });
   }
 

@@ -3677,6 +3677,14 @@ export interface components {
       targetServiceName?: string;
       targetServiceKey?: string;
       targetHandlerName?: string;
+      /** Format: date-time */
+      createdAt?: string;
+      /** Format: date-time */
+      scheduledStartAt?: string;
+      /** Format: date-time */
+      runningAt?: string;
+      /** Format: date-time */
+      completedAt?: string;
     };
     GetInvocationsStatusResponse: {
       invocations: {

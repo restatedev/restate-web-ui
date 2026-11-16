@@ -41,3 +41,14 @@ export function getEventRelatedInvocationIds(entries: JournalEntryV2[] = []) {
     ),
   ];
 }
+
+export function getShownInvocationIds(
+  rootInvocationId: string,
+  rows: CombinedJournalEntry[],
+) {
+  const ids = new Set([rootInvocationId]);
+  for (const { invocationId } of rows) {
+    ids.add(invocationId);
+  }
+  return ids;
+}

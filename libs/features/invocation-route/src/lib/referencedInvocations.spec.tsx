@@ -2,6 +2,7 @@ import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   getEventRelatedInvocationIds,
   getReferencedInvocationIds,
+  getShownInvocationIds,
 } from './referencedInvocations';
 
 function call(
@@ -108,5 +109,17 @@ describe('getEventRelatedInvocationIds', () => {
         } as JournalEntryV2,
       ]),
     ).toEqual([]);
+  });
+});
+
+describe('getShownInvocationIds', () => {
+  it('keeps the root and the invocations that have rows, not hidden expanded ones', () => {
+    expect(
+      getShownInvocationIds('root', [
+        { invocationId: 'root', depth: 0, entry: run },
+        { invocationId: 'child', depth: 1, entry: run },
+      ]),
+    ).toEqual(new Set(['root', 'child']));
+    expect(getShownInvocationIds('root', [])).toEqual(new Set(['root']));
   });
 });

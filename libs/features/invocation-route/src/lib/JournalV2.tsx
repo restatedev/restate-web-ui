@@ -31,7 +31,12 @@ import { Entry } from '@restate/features-invocation-ui';
 import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
 import { isTargetInvocationEntry } from '@restate/features-invocation-ui';
-import { EntryProgress } from './EntryProgress';
+import { EntryProgress, timelineBaselineStyles } from './EntryProgress';
+import {
+  drawsSendTrail,
+  getSendInvocationId,
+  type SendChild,
+} from './sendChild';
 import {
   PortalProvider,
   UnitsPortalTarget,
@@ -74,6 +79,7 @@ import {
 import {
   getEventRelatedInvocationIds,
   getReferencedInvocationIds,
+  getShownInvocationIds,
 } from './referencedInvocations';
 import { Retention } from '@restate/features-invocation-ui';
 import {
@@ -301,9 +307,13 @@ export function JournalV2({
 
   const invocationApiError = apiError?.[invocationId];
   const dataUpdatedAt = allQueriesDataUpdatedAt[invocationId]!;
+  const shownInvocationIds = useMemo(
+    () => getShownInvocationIds(invocationId, allEntriesWithoutInput),
+    [invocationId, allEntriesWithoutInput],
+  );
   const latestDataUpdatedAt = Math.max(
     dataUpdatedAt,
-    ...Object.values(allQueriesDataUpdatedAt).map(Number),
+    ...[...shownInvocationIds].map((id) => allQueriesDataUpdatedAt[id] ?? 0),
   );
 
   const start = journalAndInvocationData
@@ -312,7 +322,7 @@ export function JournalV2({
           new Date(dataUpdatedAt).toISOString(),
       ).getTime()
     : 0;
-  const areAllInvocationsCompleted = invocationIds.every(
+  const areAllInvocationsCompleted = [...shownInvocationIds].every(
     (id) => !data[id] || data[id]?.completed_at,
   );
   const maxEntryTimestamp = useMemo(
@@ -469,9 +479,7 @@ export function JournalV2({
       rootId: invocationId,
       isLoaded: (id) => Boolean(data[id]),
       isPending: (id) => Boolean(isPending[id]),
-      shownIds: new Set(
-        allEntriesWithoutInput.map((entry) => entry.invocationId),
-      ),
+      shownIds: shownInvocationIds,
     });
     if (!unreachableIds) {
       return;
@@ -482,7 +490,7 @@ export function JournalV2({
         ids.filter((id) => !unreachableIds.includes(id)),
       );
     }
-  }, [invocationId, invocationIds, isPending, data, allEntriesWithoutInput]);
+  }, [invocationId, invocationIds, isPending, data, shownInvocationIds]);
   const hasScrolledToFocus = useRef(false);
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
@@ -526,6 +534,7 @@ export function JournalV2({
   const {
     data: referencedInvocationStatuses,
     isError: isReferencedInvocationStatusesError,
+    dataUpdatedAt: referencedInvocationStatusesUpdatedAt,
   } = useWarmInvocationStatusDetails(referencedInvocationIds, invocationId, {
     refetchOnMount: true,
     staleTime: 0,
@@ -815,6 +824,8 @@ export function JournalV2({
                                   isReferencedInvocationStatusesError
                                 }
                                 focusInvocationId={focusInvocationId}
+                                childNow={referencedInvocationStatusesUpdatedAt}
+                                shownInvocationIds={shownInvocationIds}
                               />
                             </ScrollableTimeline>
                           </ContentPanelSection>
@@ -1116,6 +1127,8 @@ function VirtualizedTimeline({
   referencedInvocations,
   isReferencedInvocationsError,
   focusInvocationId,
+  childNow,
+  shownInvocationIds,
 }: {
   virtualItems: VirtualItem[];
   scrollMargin: number;
@@ -1129,6 +1142,8 @@ function VirtualizedTimeline({
   >;
   isReferencedInvocationsError?: boolean;
   focusInvocationId?: string;
+  childNow?: number;
+  shownInvocationIds: Set<string>;
 }) {
   return (
     <div
@@ -1160,6 +1175,10 @@ function VirtualizedTimeline({
           Boolean(targetInvocationId) &&
           !targetInvocation &&
           !isReferencedInvocationsError;
+        const sendInvocationId = getSendInvocationId(entry);
+        const sendChild = sendInvocationId
+          ? referencedInvocations?.[sendInvocationId]
+          : undefined;
 
         return (
           <div
@@ -1183,6 +1202,13 @@ function VirtualizedTimeline({
               precomputedRelatedEntries={relatedEntries}
               targetInvocationStatus={targetInvocation?.status}
               isTargetInvocationStatusPending={isTargetInvocationStatusPending}
+              sendChild={sendChild}
+              childNow={sendChild ? childNow : undefined}
+              isSendChildShown={
+                sendInvocationId
+                  ? shownInvocationIds.has(sendInvocationId)
+                  : false
+              }
             />
           </div>
         );
@@ -1197,6 +1223,9 @@ const TimelineContainer = memo(function TimelineContainer({
   precomputedRelatedEntries,
   targetInvocationStatus,
   isTargetInvocationStatusPending,
+  sendChild,
+  childNow,
+  isSendChildShown,
 }: {
   invocationId: string;
   entry?: JournalEntryV2;
@@ -1206,16 +1235,33 @@ const TimelineContainer = memo(function TimelineContainer({
   precomputedRelatedEntries?: JournalEntryV2[];
   targetInvocationStatus?: InvocationStatus;
   isTargetInvocationStatusPending?: boolean;
+  sendChild?: SendChild;
+  childNow?: number;
+  isSendChildShown: boolean;
 }) {
+  const hasSendTrail = drawsSendTrail(
+    entry,
+    invocation,
+    precomputedRelatedEntries,
+  );
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
-      <div className="absolute top-1/2 right-0 left-0 h-px border-spacing-10 -translate-y-px border-b border-dashed border-strong/70" />
+      <div
+        className={timelineBaselineStyles({
+          isHidden: hasSendTrail,
+          className: 'right-0 left-0',
+        })}
+      />
       <EntryProgress
         entry={entry}
         invocation={invocation}
         precomputedRelatedEntries={precomputedRelatedEntries}
         targetInvocationStatus={targetInvocationStatus}
         isTargetInvocationStatusPending={isTargetInvocationStatusPending}
+        drawSendTrail={hasSendTrail}
+        isSendChildShown={isSendChildShown}
+        sendChild={sendChild}
+        childNow={childNow}
       />
     </div>
   );

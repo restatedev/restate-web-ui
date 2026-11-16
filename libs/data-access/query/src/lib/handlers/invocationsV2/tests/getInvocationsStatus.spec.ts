@@ -29,7 +29,7 @@ describe('POST /query/invocations/statuses', () => {
 
       expect(sql).toMatchInlineSnapshot(`
         [
-          "SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id FROM sys_invocation WHERE id IN ('inv_a')",
+          "SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id, created_at, scheduled_at, scheduled_start_at, running_at, completed_at FROM sys_invocation WHERE id IN ('inv_a')",
           "SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN ('inv_a')",
         ]
       `);
@@ -46,7 +46,7 @@ describe('POST /query/invocations/statuses', () => {
 
       const sqlIds = invocationIds.map((id) => `'${id}'`).join(', ');
       expect(sql).toEqual([
-        `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id FROM sys_invocation WHERE id IN (${sqlIds})`,
+        `SELECT id, status, completion_result, completion_failure, pinned_deployment_id, last_attempt_deployment_id, target_service_name, target_service_key, target_handler_name, vqueue_id, created_at, scheduled_at, scheduled_start_at, running_at, completed_at FROM sys_invocation WHERE id IN (${sqlIds})`,
         `SELECT entry_id, vqueue_id, stage, status, next_at, created_at, transitioned_at, first_attempt_at, latest_attempt_at, first_runnable_at, retry_attempts, retry_count_since_last_stored_command, num_attempts, num_errors, deployment FROM sys_vqueue_entry_status WHERE entry_id IN (${sqlIds})`,
       ]);
     });
@@ -107,6 +107,59 @@ describe('POST /query/invocations/statuses', () => {
 
       expect(await response.json()).toMatchObject({
         invocations: { inv_a: { status: 'ready' } },
+      });
+    });
+
+    it('returns when each invocation was created, started and finished', async () => {
+      setResponder((statement) =>
+        statement.includes('FROM sys_vqueue_entry_status')
+          ? [
+              {
+                entry_id: 'inv_done',
+                stage: 'finished',
+                status: 'succeeded',
+                first_attempt_at: '2026-01-01T00:00:01.000Z',
+              },
+              {
+                entry_id: 'inv_later',
+                stage: 'inbox',
+                status: 'scheduled',
+                first_runnable_at: '2026-01-01T01:00:00.000Z',
+              },
+            ]
+          : [
+              rawInvocation('inv_done', {
+                status: 'completed',
+                completion_result: 'success',
+                created_at: '2026-01-01T00:00:00.000Z',
+                running_at: '2026-01-01T00:00:02.000Z',
+                completed_at: '2026-01-01T00:00:03.000Z',
+              }),
+              rawInvocation('inv_later', {
+                status: 'scheduled',
+                created_at: '2026-01-01T00:00:00.000Z',
+              }),
+            ],
+      );
+
+      const response = await post('/invocations/statuses', {
+        invocationIds: ['inv_done', 'inv_later'],
+      });
+
+      expect(await response.json()).toMatchObject({
+        invocations: {
+          inv_done: {
+            status: 'succeeded',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            runningAt: '2026-01-01T00:00:01.000Z',
+            completedAt: '2026-01-01T00:00:03.000Z',
+          },
+          inv_later: {
+            status: 'scheduled',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            scheduledStartAt: '2026-01-01T01:00:00.000Z',
+          },
+        },
       });
     });
   });
