@@ -17,13 +17,14 @@ const LIFECYCLE_EVENT_TYPES = new Set([
 ]);
 
 // `depth` increases when nesting under a parent invocation
-// (Call/AttachInvocation). `parentCommand` lets non-command entries link
-// back to the command they belong to.
+// (Call/OneWayCall/AttachInvocation). `parentCommand` lets non-command entries
+// link back to the command they belong to.
 export type CombinedJournalEntry = {
   invocationId: string;
   entry?: JournalEntryV2;
   depth: number;
   parentCommand?: JournalEntryV2;
+  parentInvocationId?: string;
 };
 
 type LifecycleData = {
@@ -39,22 +40,24 @@ type PreprocessedInvocationData = {
   commandByRelatedIndex: Map<number, JournalEntryV2>;
   commandByCommandIndex: Map<number, JournalEntryV2>;
   relatedEntriesMap: Map<number, JournalEntryV2[]>;
+  lastReferenceByInvocationId: Map<string, JournalEntryV2>;
   lifecycleData: LifecycleData;
 };
 
-// Call/AttachInvocation commands point at another invocation whose journal
-// is also loaded; getCombinedJournal recurses into them.
+// Call/OneWayCall/AttachInvocation commands point at another invocation whose
+// journal is also loaded; getCombinedJournal recurses into them.
 function isExpandable(
   entry: JournalEntryV2,
 ): entry is
   | Extract<JournalEntryV2, { type?: 'Call'; category?: 'command' }>
+  | Extract<JournalEntryV2, { type?: 'OneWayCall'; category?: 'command' }>
   | Extract<
       JournalEntryV2,
       { type?: 'AttachInvocation'; category?: 'command' }
     > {
   return Boolean(
     entry.type &&
-    ['Call', 'AttachInvocation'].includes(entry.type) &&
+    ['Call', 'OneWayCall', 'AttachInvocation'].includes(entry.type) &&
     entry.category === 'command',
   );
 }
@@ -66,6 +69,7 @@ function preprocessInvocationData(
   const commandByRelatedIndex = new Map<number, JournalEntryV2>();
   const commandByCommandIndex = new Map<number, JournalEntryV2>();
   const relatedEntriesMap = new Map<number, JournalEntryV2[]>();
+  const lastReferenceByInvocationId = new Map<string, JournalEntryV2>();
 
   let createdEvent: JournalEntryV2 | undefined;
   let cancelEvent: JournalEntryV2 | undefined;
@@ -85,6 +89,9 @@ function preprocessInvocationData(
       }
       if (typeof entry.commandIndex === 'number') {
         commandByCommandIndex.set(entry.commandIndex, entry);
+      }
+      if (isExpandable(entry) && entry.invocationId) {
+        lastReferenceByInvocationId.set(entry.invocationId, entry);
       }
     }
 
@@ -139,6 +146,7 @@ function preprocessInvocationData(
     commandByRelatedIndex,
     commandByCommandIndex,
     relatedEntriesMap,
+    lastReferenceByInvocationId,
     lifecycleData: {
       createdEvent,
       lifeCycleEntries,
@@ -147,7 +155,7 @@ function preprocessInvocationData(
   };
 }
 
-// Walks one invocation's entries, recursing into Call/AttachInvocation
+// Walks one invocation's entries, recursing into Call/OneWayCall/AttachInvocation
 // targets depth-first so the result is a flat list spanning every loaded
 // invocation. `visited` is a cycle guard for the invocation graph: if a
 // back-edge exists (A → B → A) we'd loop forever, so revisiting bails out.
@@ -159,6 +167,7 @@ function getCombinedJournal(
   preprocessedData: Map<string, PreprocessedInvocationData>,
   depth = 0,
   visited: Set<string> = new Set(),
+  parentInvocationId?: string,
 ): CombinedJournalEntry[] {
   if (visited.has(invocationId)) {
     return [];
@@ -176,7 +185,11 @@ function getCombinedJournal(
     return [{ invocationId, depth }];
   }
 
-  const { commandByRelatedIndex, commandByCommandIndex } = processed;
+  const {
+    commandByRelatedIndex,
+    commandByCommandIndex,
+    lastReferenceByInvocationId,
+  } = processed;
 
   const combinedEntries: CombinedJournalEntry[] = [];
 
@@ -199,22 +212,39 @@ function getCombinedJournal(
       entry,
       depth,
       parentCommand,
+      parentInvocationId,
     });
 
-    if (isExpandable(entry)) {
-      const callInvocationId = String(entry.invocationId);
+    if (
+      isExpandable(entry) &&
+      entry.invocationId &&
+      lastReferenceByInvocationId.get(entry.invocationId) === entry
+    ) {
       const nestedEntries = getCombinedJournal(
-        callInvocationId,
+        entry.invocationId,
         data,
         preprocessedData,
         depth + 1,
         visited,
+        invocationId,
       );
       combinedEntries.push(...nestedEntries);
     }
   }
 
   return combinedEntries;
+}
+
+function isRepeatedNestedCreatedEntry(
+  { entry, depth, invocationId, parentInvocationId }: CombinedJournalEntry,
+  data: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'],
+) {
+  return (
+    depth > 0 &&
+    entry?.category === 'event' &&
+    entry.type === 'Created' &&
+    data?.[invocationId]?.invoked_by_id === parentInvocationId
+  );
 }
 
 function shouldIncludeEntry(
@@ -324,6 +354,8 @@ export function useProcessedJournal(
     // from the list in compact mode (and shown when `detail.hidden` is on); the
     // count drives the "N entries hidden" footer either way.
     let hiddenEntriesCount = 0;
+    const repeatedCreatedEntries = new Set<CombinedJournalEntry>();
+    const shownRowCounts = new Map<string, number>();
 
     for (const combinedEntry of allCombinedEntries) {
       if (
@@ -356,12 +388,26 @@ export function useProcessedJournal(
         }
       }
 
+      if (isRepeatedNestedCreatedEntry(combinedEntry, data)) {
+        repeatedCreatedEntries.add(combinedEntry);
+      }
+      shownRowCounts.set(
+        combinedEntry.invocationId,
+        (shownRowCounts.get(combinedEntry.invocationId) ?? 0) + 1,
+      );
       entriesWithoutInput.push(combinedEntry);
     }
 
     return {
       hiddenEntriesCount,
-      entriesWithoutInput,
+      entriesWithoutInput:
+        repeatedCreatedEntries.size === 0
+          ? entriesWithoutInput
+          : entriesWithoutInput.filter(
+              (combinedEntry) =>
+                !repeatedCreatedEntries.has(combinedEntry) ||
+                (shownRowCounts.get(combinedEntry.invocationId) ?? 0) <= 1,
+            ),
       inputEntry,
       relatedEntriesByInvocation,
       lifecycleDataByInvocation,
