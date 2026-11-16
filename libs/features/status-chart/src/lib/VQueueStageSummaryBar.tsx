@@ -1,5 +1,4 @@
 import { Link } from '@restate/ui-link';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@restate/ui-tabs';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   formatApproxPercentage,
@@ -7,6 +6,11 @@ import {
   formatPercentage,
 } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
+import {
+  SelectionIndicator,
+  ToggleButton,
+  ToggleButtonGroup,
+} from 'react-aria-components';
 import {
   DEFAULT_STYLE,
   INBOX_STAGE_GRADIENT,
@@ -37,18 +41,19 @@ const styles = tv({
   slots: {
     container:
       'grid w-full grid-cols-1 items-center gap-y-2.5 md:grid-cols-[auto_minmax(0,1fr)]',
-    tabs: 'contents',
     focusRow:
       'col-start-1 row-start-2 mx-auto flex items-center text-2xs text-muted md:row-start-1 md:mx-0 md:justify-self-start',
     breakdownControl:
       'col-start-1 row-start-1 justify-self-center md:col-start-2 md:self-center md:justify-self-end md:pr-1',
     focusTabList:
-      'gap-0 rounded-xl border-[0.5px] border-tint-subtle bg-tint-subtle shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-default/3%)]',
-    focusTab: 'items-baseline gap-1.5 px-3 py-1.5 font-sans text-xs',
+      'relative flex max-w-full gap-0 rounded-xl border-[0.5px] border-tint-subtle bg-tint-subtle shadow-[inset_0_1px_0_0_--theme(--box-shadow-color-default/3%)]',
+    focusTab:
+      'relative isolate flex min-h-0 cursor-default items-baseline justify-center gap-1.5 rounded-xl px-3 py-1.5 font-sans text-xs whitespace-nowrap text-tertiary outline-offset-2 outline-focus transition forced-color-adjust-none [-webkit-tap-highlight-color:transparent] hover:text-primary focus-visible:outline-2 pressed:text-primary selected:text-primary',
+    focusIndicator:
+      'absolute inset-0 -z-10 rounded-xl border border-tint bg-raised shadow-xs motion-safe:transition-[translate,width,height] motion-safe:duration-300 motion-safe:ease-out',
     focusCount: 'font-medium text-muted tabular-nums',
     panels:
       'col-start-1 row-start-3 w-full overflow-visible md:col-span-2 md:row-start-2',
-    panel: 'outline-none',
     rail: 'relative flex h-7 w-full items-stretch gap-1',
   },
   variants: {
@@ -251,14 +256,13 @@ export function VQueueStageSummaryBar({
   const hasCompletedBreakdown = visibleCompletedStatuses.length > 0;
   const {
     container,
-    tabs,
     focusRow,
     breakdownControl,
     focusTabList,
     focusTab,
+    focusIndicator,
     focusCount,
     panels,
-    panel,
     rail,
   } = styles({
     pulse: Boolean(isFetching),
@@ -546,74 +550,64 @@ export function VQueueStageSummaryBar({
           />
         </div>
       )}
-      <Tabs
-        selectedTab={selectedFocus}
-        onTabChange={(tab) => {
-          const nextFocus = tab as VQueueSummaryFocus;
-          onFocusChange(nextFocus);
-        }}
-        className={tabs()}
-      >
-        <div className={focusRow()}>
-          <TabList aria-label="Invocation breakdown" className={focusTabList()}>
-            <Tab id="all" className={focusTab()}>
-              <span>All statuses</span>
-              {renderFocusCount(
-                'All-status',
-                populationTotal,
-                countsUnavailable || completedStageIsUnavailable
-                  ? 'unavailable'
-                  : completedStageIsLoading
-                    ? 'loading'
-                    : areStageCountsPartial && populationTotal === 0
-                      ? 'unknown'
-                      : 'known',
-              )}
-            </Tab>
-            <Tab id="not-completed" className={focusTab()}>
-              <span>Not completed</span>
-              {renderFocusCount(
-                'Not-completed',
-                populationNotCompletedCount,
-                countsUnavailable
-                  ? 'unavailable'
-                  : areStageCountsPartial && populationNotCompletedCount === 0
+      <div className={focusRow()}>
+        <ToggleButtonGroup
+          aria-label="Invocation breakdown"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={selectedFocus ? [selectedFocus] : []}
+          onSelectionChange={(keys) => {
+            const [nextFocus] = keys;
+            if (nextFocus) onFocusChange(nextFocus as VQueueSummaryFocus);
+          }}
+          className={focusTabList()}
+        >
+          <ToggleButton id="all" className={focusTab()}>
+            <span>All statuses</span>
+            {renderFocusCount(
+              'All-status',
+              populationTotal,
+              countsUnavailable || completedStageIsUnavailable
+                ? 'unavailable'
+                : completedStageIsLoading
+                  ? 'loading'
+                  : areStageCountsPartial && populationTotal === 0
                     ? 'unknown'
                     : 'known',
-              )}
-            </Tab>
-            <Tab id="completed" className={focusTab()}>
-              <span>Completed</span>
-              {renderFocusCount(
-                'Completed',
-                populationCompletedCount,
-                countsUnavailable || completedStageIsUnavailable
-                  ? 'unavailable'
-                  : completedStageIsLoading
-                    ? 'loading'
-                    : areStageCountsPartial && populationCompletedCount === 0
-                      ? 'unknown'
-                      : 'known',
-              )}
-            </Tab>
-          </TabList>
-        </div>
-        {selectedFocus === focus ? (
-          <TabPanels className={panels()}>
-            <TabPanel id="all" className={panel()}>
-              {focus === 'all' ? summaryRail : null}
-            </TabPanel>
-            <TabPanel id="not-completed" className={panel()}>
-              {focus === 'not-completed' ? summaryRail : null}
-            </TabPanel>
-            <TabPanel id="completed" className={panel()}>
-              {focus === 'completed' ? summaryRail : null}
-            </TabPanel>
-          </TabPanels>
-        ) : (
-          <div className={panels()}>{summaryRail}</div>
-        )}
-      </Tabs>
+            )}
+            <SelectionIndicator className={focusIndicator()} />
+          </ToggleButton>
+          <ToggleButton id="not-completed" className={focusTab()}>
+            <span>Not completed</span>
+            {renderFocusCount(
+              'Not-completed',
+              populationNotCompletedCount,
+              countsUnavailable
+                ? 'unavailable'
+                : areStageCountsPartial && populationNotCompletedCount === 0
+                  ? 'unknown'
+                  : 'known',
+            )}
+            <SelectionIndicator className={focusIndicator()} />
+          </ToggleButton>
+          <ToggleButton id="completed" className={focusTab()}>
+            <span>Completed</span>
+            {renderFocusCount(
+              'Completed',
+              populationCompletedCount,
+              countsUnavailable || completedStageIsUnavailable
+                ? 'unavailable'
+                : completedStageIsLoading
+                  ? 'loading'
+                  : areStageCountsPartial && populationCompletedCount === 0
+                    ? 'unknown'
+                    : 'known',
+            )}
+            <SelectionIndicator className={focusIndicator()} />
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      <div className={panels()}>{summaryRail}</div>
     </div>
   );
 }
