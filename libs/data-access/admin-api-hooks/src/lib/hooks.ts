@@ -1140,14 +1140,21 @@ export function useWarmInvocationStatusDetails(
   const { refetch, isFetching, isSuccess } = results;
   const queryClient = useQueryClient();
   const requestedInvocationIds = useRef<string>(undefined);
+  const retriedInvocationIds = useRef<string>(undefined);
   const wasSuccess = useRef(false);
   useEffect(() => {
-    if (!wasSuccess.current && isSuccess) {
+    if (
+      !wasSuccess.current &&
+      isSuccess &&
+      requestedInvocationIds.current !== retriedInvocationIds.current
+    ) {
+      retriedInvocationIds.current = requestedInvocationIds.current;
       requestedInvocationIds.current = undefined;
     }
     wasSuccess.current = isSuccess;
     if (!uncachedInvocationIds) {
       requestedInvocationIds.current = undefined;
+      retriedInvocationIds.current = undefined;
     } else if (
       isEnabled &&
       !isFetching &&
