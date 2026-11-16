@@ -27,7 +27,7 @@ import { tv } from '@restate/util-styles';
 import { HeaderButton } from './NextServicePlayground';
 
 const markStyles = tv({
-  base: 'relative inline-flex shrink-0 items-center rounded-md px-1 py-1 align-middle text-subtle hover:bg-transparent',
+  base: 'relative inline-flex shrink-0 items-center rounded-md px-1 py-1 align-middle text-subtle hover:bg-transparent pressed:bg-transparent',
 });
 
 const PRIVATE_PLAY_NOTE = 'Private: only other services can call it';
