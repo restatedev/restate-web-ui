@@ -26,6 +26,9 @@ export function viewportControllerReducer(
       action.renderDomainStartMs,
       Math.min(maxStart, action.currentVisibleWindow.startMs + action.deltaMs),
     );
+    if (Math.abs(nextStart - action.currentVisibleWindow.startMs) < 1e-3) {
+      return state;
+    }
     const nextEnd = nextStart + currentDuration;
 
     return {

@@ -9,11 +9,23 @@ import { getDuration } from '@restate/util-snapshot-time';
 import { CSSProperties, PropsWithChildren } from 'react';
 import { tv } from '@restate/util-styles';
 import { useJournalTimelineContext } from '@restate/features-invocation-ui';
+import { useTimelineEngineContext } from '@restate/ui-timeline-zoom';
 import { Ellipsis } from '@restate/ui-loading';
 import { EntryTooltip } from '@restate/features-invocation-ui';
 import { Icon, IconName } from '@restate/ui-icons';
 import { isEntryCompletionAmbiguous } from '@restate/features-invocation-ui';
 import { ErrorBoundary } from './ErrorBoundry';
+import {
+  getChildTooltipEntry,
+  getSendChildSummary,
+  getSendLabel,
+  getSendStatusLabel,
+  getSendTone,
+  getSendTrailLayout,
+  toTime,
+  type SendChild,
+  type SendTone,
+} from './sendChild';
 
 const pointStyles = tv({
   base: 'relative h-full w-[2px] rounded-full',
@@ -334,6 +346,10 @@ export function EntryProgress(
     precomputedRelatedEntries?: JournalEntryV2[];
     targetInvocationStatus?: InvocationStatus;
     isTargetInvocationStatusPending?: boolean;
+    drawSendTrail?: boolean;
+    isSendChildShown?: boolean;
+    sendChild?: SendChild;
+    childNow?: number;
   }>,
 ) {
   return (
@@ -367,6 +383,10 @@ function InnerEntryProgress({
   precomputedRelatedEntries,
   targetInvocationStatus,
   isTargetInvocationStatusPending,
+  drawSendTrail,
+  isSendChildShown,
+  sendChild,
+  childNow,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -378,11 +398,26 @@ function InnerEntryProgress({
   precomputedRelatedEntries?: JournalEntryV2[];
   targetInvocationStatus?: InvocationStatus;
   isTargetInvocationStatusPending?: boolean;
+  drawSendTrail?: boolean;
+  isSendChildShown?: boolean;
+  sendChild?: SendChild;
+  childNow?: number;
 }>) {
   const { dataUpdatedAt, isLive, start, end } = useJournalTimelineContext();
 
   if (!entry?.start) {
     return null;
+  }
+
+  if (drawSendTrail) {
+    return (
+      <SendTrail
+        entry={entry}
+        child={sendChild}
+        isChildShown={Boolean(isSendChildShown)}
+        now={childNow ?? dataUpdatedAt}
+      />
+    );
   }
 
   const entryEnd = entry?.end
@@ -647,5 +682,281 @@ export function EntryProgressContainer({
     >
       {children}
     </div>
+  );
+}
+
+export const timelineBaselineStyles = tv({
+  base: 'pointer-events-none absolute top-1/2 h-px -translate-y-px border-b border-dashed border-strong/70',
+  variants: {
+    isHidden: { true: 'invisible', false: '' },
+  },
+});
+
+function useTimelinePosition() {
+  const { start, end, isLive } = useJournalTimelineContext();
+  const { viewportStart, viewportEnd, nowMs } = useTimelineEngineContext();
+  const margin = (viewportEnd - viewportStart) * 0.05;
+  const toPercent = (time: number) =>
+    Math.min(1, Math.max(0, (time - start) / Math.max(1, end - start))) * 100;
+  return {
+    left: (time: number) => `${toPercent(time)}%`,
+    right: (time: number) => `${100 - toPercent(time)}%`,
+    clamp: (time: number) =>
+      Math.min(viewportEnd + margin, Math.max(viewportStart - margin, time)),
+    start,
+    end,
+    nowMs,
+    isLive,
+    viewportStart,
+    viewportEnd,
+  };
+}
+
+const FADE_OUT =
+  'mask-[linear-gradient(to_right,black_calc(100%-72px),transparent)]';
+
+const sendTrailStyles = tv({
+  slots: {
+    root: 'pointer-events-none absolute inset-y-0 right-2 left-2',
+    hoverLayer: 'absolute inset-y-0 right-2 left-2',
+    wait: 'absolute top-1/2 h-0 -translate-y-1/2 border-t-[1.5px] border-dashed border-neutral-strong/50',
+    trail:
+      'absolute top-1/2 h-0 -translate-y-1/2 border-t-[1.5px] border-dashed',
+    anchor: 'absolute inset-y-0 w-0',
+    arrow:
+      'absolute top-1/2 right-0 h-2.5 w-1.5 -translate-y-1/2 overflow-visible fill-none',
+    label: 'absolute font-sans text-xs leading-3 whitespace-nowrap text-muted',
+    target: 'absolute inset-y-0',
+  },
+  variants: {
+    tone: {
+      success: {
+        trail: 'border-success-strong/60',
+        arrow: 'stroke-(--border-color-success-strong)/60',
+      },
+      danger: {
+        trail: 'border-danger-strong/60',
+        arrow: 'stroke-(--border-color-danger-strong)/60',
+      },
+      info: {
+        trail: 'border-info-strong/60',
+        arrow: 'stroke-(--border-color-info-strong)/60',
+      },
+      warning: {
+        trail: 'border-warning-strong/70',
+        arrow: 'stroke-(--border-color-warning-strong)/70',
+      },
+      pending: {
+        trail: 'border-pending-strong/60',
+        arrow: 'stroke-(--border-color-pending-strong)/60',
+      },
+      neutral: {
+        trail: 'border-neutral-strong/50',
+        arrow: 'stroke-(--border-color-neutral-strong)/50',
+      },
+    },
+    labelSide: {
+      after: { label: 'top-1/2 left-0 ml-2 -translate-y-1/2' },
+      below: { label: 'top-[calc(50%+5px)] right-1.5' },
+    },
+    withStatus: {
+      true: { label: 'text-2xs' },
+      false: {},
+    },
+    fadeWait: {
+      true: { wait: FADE_OUT },
+      false: {},
+    },
+    fadeTrail: {
+      true: { trail: FADE_OUT },
+      false: {},
+    },
+  },
+});
+
+const sendNoteStyles = tv({
+  base: '',
+  variants: {
+    tone: {
+      success: 'text-success-subtle',
+      danger: 'text-danger-subtle',
+      info: 'text-info-subtle',
+      warning: 'text-warning-subtle',
+      pending: 'text-pending-subtle',
+      neutral: 'text-inverse',
+    },
+  },
+});
+
+const SEND_POINT_VARIANT: Record<
+  SendTone,
+  'success' | 'danger' | 'info' | 'warning' | 'default'
+> = {
+  success: 'success',
+  danger: 'danger',
+  info: 'info',
+  warning: 'warning',
+  pending: 'default',
+  neutral: 'default',
+};
+
+const SEND_LINE_GAP = '10px';
+const SEND_POINT_MIN_OFFSET = '4px';
+
+function capitalize(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function SendPoint({ left }: { left: string }) {
+  return (
+    <span
+      className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 text-muted"
+      style={{ left }}
+    >
+      <Icon name={IconName.Invocation} className="h-full w-full" />
+    </span>
+  );
+}
+
+function SendTrail({
+  entry,
+  child,
+  isChildShown,
+  now: statusesNow,
+}: {
+  entry: JournalEntryV2;
+  child?: SendChild;
+  isChildShown: boolean;
+  now: number;
+}) {
+  const position = useTimelinePosition();
+  const now = position.isLive ? position.nowMs : statusesNow;
+  const sendAt = toTime(entry.start) ?? position.start;
+  const summary = getSendChildSummary(
+    child,
+    now,
+    'invokeTime' in entry ? entry.invokeTime : undefined,
+  );
+  const tone = getSendTone(child?.status);
+  const sendLeft = position.left(sendAt);
+  const visibleStart = position.clamp(position.start);
+  const layout =
+    summary && !isChildShown
+      ? getSendTrailLayout({
+          sendAt,
+          summary,
+          rangeEnd: position.end,
+          nowMs: now,
+          viewportStart: position.viewportStart,
+          viewportEnd: position.viewportEnd,
+        })
+      : undefined;
+  const pointLeft = `calc(${sendLeft} + ${SEND_LINE_GAP} + ${SEND_POINT_MIN_OFFSET})`;
+  const styles = sendTrailStyles({
+    tone,
+    labelSide: layout?.labelSide,
+    withStatus: layout?.withStatus,
+    fadeWait: layout?.fadeWait,
+    fadeTrail: layout?.continuesPastEnd,
+  });
+  const segmentLeft = (time: number) =>
+    `max(${position.left(position.clamp(time))}, calc(${sendLeft} + ${SEND_LINE_GAP}))`;
+
+  return (
+    <>
+      <div className={styles.root()}>
+        <div
+          className={timelineBaselineStyles()}
+          style={{
+            left:
+              visibleStart <= position.start
+                ? '-0.5rem'
+                : position.left(visibleStart),
+            right: `calc(${position.right(position.clamp(sendAt))} + ${SEND_LINE_GAP})`,
+          }}
+        />
+        {layout && summary && (
+          <>
+            {layout.runAt > sendAt && (
+              <div
+                className={styles.wait()}
+                style={{
+                  left: segmentLeft(sendAt),
+                  right: position.right(position.clamp(layout.runAt)),
+                }}
+              />
+            )}
+            <div
+              className={styles.trail()}
+              style={{
+                left: segmentLeft(layout.runAt),
+                right: position.right(position.clamp(layout.lineEnd)),
+              }}
+            />
+            <div
+              className={styles.anchor()}
+              style={{
+                left: `max(${position.left(layout.lineEnd)}, ${pointLeft})`,
+              }}
+            >
+              {layout.continuesPastEnd ? (
+                <svg viewBox="0 0 6 10" className={styles.arrow()}>
+                  <path
+                    d="M0.75 0.75 L5.25 5 L0.75 9.25"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <Point
+                  variant={SEND_POINT_VARIANT[tone]}
+                  className="absolute inset-y-0 left-0"
+                />
+              )}
+              <div className={styles.label()}>
+                {getSendLabel(summary, layout)}
+              </div>
+            </div>
+          </>
+        )}
+        <SendPoint left={sendLeft} />
+      </div>
+      <div className={styles.hoverLayer()}>
+        <div
+          className={styles.target()}
+          style={{
+            left: `calc(${sendLeft} - 0.5rem)`,
+            right: layout
+              ? `min(${position.right(position.clamp(layout.lineEnd))}, calc(100% - ${pointLeft} - 0.5rem))`
+              : `calc(${position.right(sendAt)} - 0.5rem)`,
+          }}
+        >
+          <EntryTooltip
+            entry={getChildTooltipEntry(
+              entry,
+              layout || isChildShown ? summary : undefined,
+              now,
+            )}
+            className="absolute inset-0"
+            note={
+              <>
+                Separate invocation
+                {child?.status && (
+                  <>
+                    {' · '}
+                    <span className={sendNoteStyles({ tone })}>
+                      {capitalize(getSendStatusLabel(child.status))}
+                    </span>
+                  </>
+                )}
+              </>
+            }
+          >
+            <div className="h-full w-full" />
+          </EntryTooltip>
+        </div>
+      </div>
+    </>
   );
 }
