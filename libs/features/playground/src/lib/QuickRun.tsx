@@ -106,6 +106,7 @@ function QuickRunBody({
     >
       <div className="flex min-w-0 items-center gap-2">
         <HandlerSwitcher
+          showMore
           contract={contract}
           handler={handler}
           handlerKinds={handlerKinds}

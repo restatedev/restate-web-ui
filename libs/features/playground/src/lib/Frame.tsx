@@ -1,4 +1,4 @@
-import { startTransition, useState, type ReactNode } from 'react';
+import { startTransition, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@restate/ui-button';
 import {
   Dropdown,
@@ -110,6 +110,7 @@ export function HandlerSwitcher({
   serviceType,
   serviceKey,
   withTools = false,
+  showMore = false,
   onSelect,
 }: {
   contract: ServiceContract;
@@ -119,8 +120,10 @@ export function HandlerSwitcher({
   serviceType?: RestateServiceType;
   serviceKey?: string;
   withTools?: boolean;
+  showMore?: boolean;
   onSelect: (id: string) => void;
 }) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const tools = withTools ? contract.invocationTools : [];
   if (handler && contract.handlers.length + tools.length < 2) {
     return (
@@ -138,7 +141,8 @@ export function HandlerSwitcher({
   }
   const label = handler ? `${handler.name}()` : tool ? TOOL_LABEL[tool] : '';
   const selected = handler ? handler.name : tool ? toolId(tool) : '';
-  return (
+  const others = contract.handlers.length - (handler ? 1 : 0);
+  const switcher = (
     <ServiceTarget
       service={contract.name}
       serviceKey={serviceKey || undefined}
@@ -151,6 +155,7 @@ export function HandlerSwitcher({
       <Dropdown>
         <DropdownTrigger>
           <Button
+            ref={triggerRef}
             variant="icon"
             aria-label={`${label}, choose another handler`}
             className="-mx-1.5 flex h-full min-w-0 items-center gap-1 rounded-sm py-0 pr-1 pl-0.5 [font-size:inherit] [line-height:inherit] text-inherit shadow-none hover:bg-tint-subtle pressed:bg-tint-strong"
@@ -224,6 +229,23 @@ export function HandlerSwitcher({
         </DropdownPopover>
       </Dropdown>
     </ServiceTarget>
+  );
+  if (!showMore || others < 1) {
+    return switcher;
+  }
+  return (
+    <>
+      {switcher}
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden
+        className="shrink-0 rounded-md px-1.5 py-0.5 text-xs text-muted hover:bg-tint-subtle hover:text-secondary"
+        onClick={() => triggerRef.current?.click()}
+      >
+        {others} more {others === 1 ? 'handler' : 'handlers'}
+      </button>
+    </>
   );
 }
 

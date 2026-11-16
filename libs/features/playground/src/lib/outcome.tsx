@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { Link } from '@restate/ui-link';
+import { Spinner } from '@restate/ui-loading';
 import { useRestateContext } from '@restate/features-restate-context';
 import { formatMilliseconds } from '@restate/util-intl';
 import { formatJson } from '@restate/util-openapi';
@@ -475,9 +476,10 @@ export function RunResult({
         (isCompact ? (
           !view.isDone &&
           !message && (
-            <p className="text-xs text-muted">
+            <p className="flex items-center gap-1.5 text-xs text-muted">
+              {view.isLive && <Spinner className="h-3 w-3 shrink-0" />}
               {view.note ??
-                'Restate is running it. You can close this; it keeps going.'}
+                'Waiting for the result. You can close this, Restate keeps it running.'}
             </p>
           )
         ) : (
