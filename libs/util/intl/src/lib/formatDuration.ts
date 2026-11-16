@@ -7,13 +7,35 @@ import { formatNumber } from './formatNumber';
 
 type DurationStyle = 'long' | 'short' | 'narrow' | 'digital';
 
-const getFormatter = (style: DurationStyle = 'narrow') =>
-  new DurationFormat('en', {
+const DURATION_UNITS = [
+  'years',
+  'months',
+  'weeks',
+  'days',
+  'hours',
+  'minutes',
+  'seconds',
+  'milliseconds',
+  'microseconds',
+  'nanoseconds',
+] as const;
+const MAX_FORMATTED_DURATIONS = 2_000;
+
+const formatters = new Map<DurationStyle, DurationFormat>();
+const formattedDurations = new Map<string, string>();
+
+const getFormatter = (style: DurationStyle) => {
+  const cached = formatters.get(style);
+  if (cached) {
+    return cached;
+  }
+  const formatter = new DurationFormat('en', {
     style,
     milliseconds: 'numeric',
   });
-
-const formatter = getFormatter();
+  formatters.set(style, formatter);
+  return formatter;
+};
 
 type FormatDurationOptions = {
   style?: DurationStyle;
@@ -23,9 +45,6 @@ export function formatDurations(
   { isPast, ...duration }: DurationInput & { isPast?: boolean },
   options?: FormatDurationOptions,
 ) {
-  const activeFormatter = options?.style
-    ? getFormatter(options.style)
-    : formatter;
   const allEntries = Object.values(duration);
   const isDurationZero = allEntries.reduce((p, c) => p + c, 0) === 0;
   if (isDurationZero) {
@@ -55,7 +74,14 @@ export function formatDurations(
     return `${formatNumber(subSecondMilliseconds)}ms`;
   }
 
-  const parts = activeFormatter.formatToParts(duration);
+  const style = options?.style ?? 'narrow';
+  const key = `${style}|${DURATION_UNITS.map((unit) => duration[unit] ?? '').join('|')}`;
+  const cached = formattedDurations.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const parts = getFormatter(style).formatToParts(duration);
   const shouldShowFraction =
     !duration.minutes && !duration.hours && !duration.days;
   const formatted = parts.reduce((result, { type, value, unit }) => {
@@ -68,6 +94,10 @@ export function formatDurations(
     }
     return result + value;
   }, '');
+  if (formattedDurations.size >= MAX_FORMATTED_DURATIONS) {
+    formattedDurations.clear();
+  }
+  formattedDurations.set(key, formatted);
   return formatted;
 }
 

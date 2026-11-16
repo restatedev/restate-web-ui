@@ -85,18 +85,21 @@ export function JournalContextProvider({
     ],
   );
 
+  const timelineValue = useMemo(
+    () => ({
+      start,
+      end,
+      dataUpdatedAt,
+      cancelTime,
+      containerRef,
+      isLive,
+    }),
+    [start, end, dataUpdatedAt, cancelTime, containerRef, isLive],
+  );
+
   return (
     <JournalEntriesContext.Provider value={entriesValue}>
-      <JournalTimelineContext.Provider
-        value={{
-          start,
-          end,
-          dataUpdatedAt,
-          cancelTime,
-          containerRef,
-          isLive,
-        }}
-      >
+      <JournalTimelineContext.Provider value={timelineValue}>
         {children}
       </JournalTimelineContext.Provider>
     </JournalEntriesContext.Provider>

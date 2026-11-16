@@ -1,7 +1,17 @@
-import { createContext, PropsWithChildren, use, useMemo } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import { useTimelineZoom } from './useTimelineZoom';
 import type { TimelineZoomMode } from './types';
-import { usePresentedRangeEnd } from './usePresentedRangeEnd';
+import {
+  getHeadroomStepMs,
+  usePresentedRangeEnd,
+} from './usePresentedRangeEnd';
 
 export type TimelineMode = 'live-follow' | 'inspect' | 'static';
 
@@ -59,11 +69,13 @@ export function TimelineEngineProvider({
   containerWidthPx: number;
 }>) {
   const shouldAdvanceNow = isLiveEnabled && !areAllCompleted;
+  const headroomStepMsRef = useRef(0);
   const { rangeEndMs: effectiveRangeEndMs, nowMs: effectiveNowMs } =
     usePresentedRangeEnd({
       actualEndMs: actualEnd,
       authoritativeNowMs,
       shouldAdvance: shouldAdvanceNow,
+      headroomStepMsRef,
     });
 
   const zoom = useTimelineZoom({
@@ -74,6 +86,13 @@ export function TimelineEngineProvider({
     isStreaming: isLiveEnabled,
     containerWidthPx,
   });
+
+  useEffect(() => {
+    headroomStepMsRef.current = getHeadroomStepMs(
+      zoom.visibleWindowDurationMs,
+      containerWidthPx,
+    );
+  }, [zoom.visibleWindowDurationMs, containerWidthPx]);
 
   const engine = useMemo<TimelineEngineOutput>(
     () => ({

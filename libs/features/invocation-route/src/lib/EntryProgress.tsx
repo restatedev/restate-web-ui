@@ -26,6 +26,10 @@ import {
   type SendChild,
   type SendTone,
 } from './sendChild';
+import {
+  scaleTimelinePercent,
+  scaleTimelinePercentFromEnd,
+} from './TimelineScale';
 
 const pointStyles = tv({
   base: 'relative h-full w-[2px] rounded-full',
@@ -604,8 +608,8 @@ function InnerEntryProgress({
                 <div
                   className="absolute top-px bottom-px max-w-full rounded-full bg-[linear-gradient(to_right,--theme(--background-color-warning-strong/0)_0px,--theme(--background-color-warning-strong/1)_20px,--theme(--background-color-warning-strong/1)_calc(100%-20px),--theme(--background-color-warning-strong/0)_100%)] transition-all duration-300"
                   style={{
-                    left: `max(calc(${((startTransientError - start) / (end - start)) * 100}% - 20px), 0px)`,
-                    right: `max(calc(${((end - endTransientError) / (end - start)) * 100}% - 20px), ${entryEnd || unambiguousEnd ? ((end - new Date((entryEnd || unambiguousEnd)!).getTime()) / (end - start)) * 100 : 0}%, 0px)`,
+                    left: `max(calc(${scaleTimelinePercent((startTransientError - start) / (end - start))} - 20px), 0px)`,
+                    right: `max(calc(${scaleTimelinePercentFromEnd((endTransientError - start) / (end - start))} - 20px), ${entryEnd || unambiguousEnd ? scaleTimelinePercentFromEnd((new Date((entryEnd || unambiguousEnd)!).getTime() - start) / (end - start)) : '0%'}, 0px)`,
                   }}
                 />
               )}
@@ -670,11 +674,11 @@ export function EntryProgressContainer({
     <div
       style={{
         ...(relativeStart !== undefined && {
-          left: `${relativeStart * 100}%`,
+          left: scaleTimelinePercent(relativeStart),
         }),
         width: isPoint
           ? '2px'
-          : `${((relativeEnd || 0) - (relativeStart || 0)) * 100}%`,
+          : scaleTimelinePercent((relativeEnd || 0) - (relativeStart || 0)),
         zIndex: isPoint ? 2 : 0,
         ...style,
       }}
@@ -693,8 +697,14 @@ export const timelineBaselineStyles = tv({
 });
 
 function useTimelinePosition() {
-  const { start, end, isLive } = useJournalTimelineContext();
-  const { viewportStart, viewportEnd, nowMs } = useTimelineEngineContext();
+  const { isLive } = useJournalTimelineContext();
+  const {
+    coordinateStart: start,
+    coordinateEnd: end,
+    viewportStart,
+    viewportEnd,
+    nowMs,
+  } = useTimelineEngineContext();
   const margin = (viewportEnd - viewportStart) * 0.05;
   const toPercent = (time: number) =>
     Math.min(1, Math.max(0, (time - start) / Math.max(1, end - start))) * 100;

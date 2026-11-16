@@ -616,6 +616,7 @@ export function JournalV2({
           invocationIds={invocationIds}
           addInvocationId={addInvocationId}
           removeInvocationId={removeInvocationId}
+          end={end}
           dataUpdatedAt={dataUpdatedAt}
           isPending={isPending}
           error={apiError}
@@ -937,6 +938,7 @@ function TimelineEngineJournalBridge({
   invocationIds,
   addInvocationId,
   removeInvocationId,
+  end,
   dataUpdatedAt,
   isPending,
   error,
@@ -948,6 +950,7 @@ function TimelineEngineJournalBridge({
   invocationIds: string[];
   addInvocationId: (id: string) => void;
   removeInvocationId: (id: string) => void;
+  end: number;
   dataUpdatedAt: number;
   isPending: Record<string, boolean | undefined>;
   error?: Record<string, Error | null | undefined>;
@@ -956,14 +959,14 @@ function TimelineEngineJournalBridge({
   detail: JournalDetail;
   children: React.ReactNode;
 }) {
-  const engine = useTimelineEngineContext();
+  const { coordinateStart } = useTimelineEngineContext();
   return (
     <JournalContextProvider
       invocationIds={invocationIds}
       addInvocationId={addInvocationId}
       removeInvocationId={removeInvocationId}
-      start={engine.coordinateStart}
-      end={engine.coordinateEnd}
+      start={coordinateStart}
+      end={Math.max(end, coordinateStart + 1)}
       dataUpdatedAt={dataUpdatedAt}
       isPending={isPending}
       error={error}

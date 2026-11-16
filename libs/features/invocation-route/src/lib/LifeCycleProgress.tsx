@@ -2,6 +2,7 @@ import { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import { tv } from '@restate/util-styles';
 import { EntryProgress, EntryProgressContainer } from './EntryProgress';
+import { TimelineScale } from './TimelineScale';
 
 const styles = tv({
   base: 'relative flex flex-col items-center',
@@ -22,7 +23,7 @@ export function LifeCycleProgress({
 }) {
   return (
     <div className={styles({ className })}>
-      <div className="relative mt-0.5 h-6 w-full">
+      <TimelineScale className="relative mt-0.5 h-6 w-full">
         {createdEvent && (
           <EntryProgressContainer
             className="absolute top-1"
@@ -47,7 +48,7 @@ export function LifeCycleProgress({
             />
           </div>
         ))}
-      </div>
+      </TimelineScale>
     </div>
   );
 }
