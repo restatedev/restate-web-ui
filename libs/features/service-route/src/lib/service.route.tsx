@@ -1,8 +1,13 @@
 import {
   useListDeployments,
+  useServiceCatalog,
   useServiceDetails,
 } from '@restate/data-access-admin-api-hooks';
-import { ServiceType } from '@restate/features-service';
+import {
+  isPublicHandler,
+  isPublicService,
+} from '@restate/data-access-admin-api-spec';
+import { privateTargetNote, ServiceType } from '@restate/features-service';
 import { ServiceTarget } from '@restate/features-service-target';
 import { Badge } from '@restate/ui-badge';
 import { Breadcrumbs } from '@restate/ui-breadcrumbs';
@@ -11,6 +16,7 @@ import { EmptyState } from '@restate/ui-empty-state';
 import { ErrorBanner } from '@restate/ui-error';
 import { Header } from '@restate/ui-header';
 import { Icon, IconName } from '@restate/ui-icons';
+import { HoverTooltip } from '@restate/ui-tooltip';
 import { HANDLER_QUERY_PARAM } from '@restate/util-panel';
 import { SnapshotTimeProvider } from '@restate/util-snapshot-time';
 import { useMemo } from 'react';
@@ -34,6 +40,7 @@ function Component() {
     staleTime: 0,
   });
   const { dataUpdatedAt: deploymentsUpdatedAt } = useListDeployments();
+  const { data: catalog } = useServiceCatalog();
   const handlers = data?.handlers ?? [];
   const handler = useMemo(
     () => handlers.find(({ name }) => name === requestedHandler),
@@ -42,6 +49,9 @@ function Component() {
   const config = resolveServiceConfig(data, handler);
   const isHandlerMode = Boolean(handler);
   const isPrivate = !isPending && config.public.value === false;
+  const hasPlayground = handler
+    ? isPublicHandler(data, handler)
+    : isPublicService(data ?? catalog.get(service));
   const isKeyed = data?.ty === 'VirtualObject' || data?.ty === 'Workflow';
   const schemaWarnings = data?.info ?? [];
 
@@ -68,10 +78,16 @@ function Component() {
           </ServiceTarget>
           {data?.ty && <ServiceType type={data.ty} className="shrink-0" />}
           {isPrivate && (
-            <Badge variant="warning" size="sm" className="shrink-0 gap-1">
-              <Icon name={IconName.EyeOff} className="h-3 w-3" />
-              Private
-            </Badge>
+            <HoverTooltip
+              content={privateTargetNote(isHandlerMode ? 'handler' : 'service')}
+              className="shrink-0"
+              contentClassName="max-w-64 break-normal"
+            >
+              <Badge variant="warning" size="sm" className="gap-1">
+                <Icon name={IconName.EyeOff} className="h-3 w-3" />
+                Private
+              </Badge>
+            </HoverTooltip>
           )}
           {schemaWarnings.length > 0 && (
             <WarningChip
@@ -124,6 +140,8 @@ function Component() {
               serviceType={data?.ty}
               handlers={handlers}
               selectedHandler={handler?.name}
+              isServicePublic={data?.public !== false}
+              hasPlayground={hasPlayground}
               tab={tab}
               isPending={isPending}
               error={error}

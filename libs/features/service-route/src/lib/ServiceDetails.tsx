@@ -75,6 +75,8 @@ export function ServiceDetails({
   serviceType,
   handlers,
   selectedHandler,
+  isServicePublic,
+  hasPlayground,
   tab,
   isPending,
   error,
@@ -83,6 +85,8 @@ export function ServiceDetails({
   serviceType?: ServiceType;
   handlers: Handler[];
   selectedHandler?: string;
+  isServicePublic: boolean;
+  hasPlayground: boolean;
   tab: ServiceTab;
   isPending: boolean;
   error: Error | null;
@@ -106,7 +110,8 @@ export function ServiceDetails({
     keyedServiceTab(serviceType) ??
     (!serviceType && (tab === 'runs' || tab === 'instances') ? tab : undefined);
   const activeTab =
-    (tab === 'runs' || tab === 'instances') && tab !== keyedTab
+    ((tab === 'runs' || tab === 'instances') && tab !== keyedTab) ||
+    (tab === 'playground' && !hasPlayground)
       ? 'invocations'
       : tab;
   const invocationsTab = useServiceInvocationsTab(
@@ -152,7 +157,7 @@ export function ServiceDetails({
             </TabLabel>
           ),
         },
-        { id: 'playground', label: 'Playground' },
+        ...(hasPlayground ? [{ id: 'playground', label: 'Playground' }] : []),
       ],
       defaultId: 'invocations',
       queryParam: TAB_QUERY_PARAM,
@@ -161,6 +166,7 @@ export function ServiceDetails({
     [
       deploymentsCount,
       handlers.length,
+      hasPlayground,
       isPending,
       keyedTab,
       tabBadge,
@@ -199,6 +205,7 @@ export function ServiceDetails({
                 serviceType={serviceType}
                 handlers={handlers}
                 selectedHandler={selectedHandler}
+                isServicePublic={isServicePublic}
                 isPending={isPending}
                 error={error}
               />
