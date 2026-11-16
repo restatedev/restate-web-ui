@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import { Icon, IconName } from '@restate/ui-icons';
@@ -8,7 +8,6 @@ import { tv } from '@restate/util-styles';
 
 const HIDDEN_TYPES = new Set(['Input', 'Output']);
 const POLL_INTERVAL_MS = 1000;
-const POLL_LIMIT_MS = 5 * 60 * 1000;
 const FINISHED = new Set(['succeeded', 'failed', 'cancelled', 'killed']);
 
 function stepLabel(entry: JournalEntryV2) {
@@ -87,15 +86,11 @@ export function Steps({
   isLive: boolean;
   note?: string;
 }) {
-  const [startedAt] = useState(() => Date.now());
   const { data, refetch } = useGetInvocationJournalWithInvocationV2(
     invocationId,
     {
       refetchInterval: (query) =>
-        isLive &&
-        !isDone &&
-        !FINISHED.has(query.state.data?.status ?? '') &&
-        Date.now() - startedAt < POLL_LIMIT_MS
+        isLive && !isDone && !FINISHED.has(query.state.data?.status ?? '')
           ? POLL_INTERVAL_MS
           : false,
     },

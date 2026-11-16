@@ -123,6 +123,14 @@ function useRunView(
       tracking.state === 'failed' && output?.kind === 'response'
         ? errorMessage(output.text)
         : undefined;
+    const outputError =
+      output?.kind === 'error'
+        ? output.message
+        : tracking.state !== 'failed' &&
+            output?.kind === 'response' &&
+            output.status >= 400
+          ? replyMessage(output)
+          : undefined;
     return {
       phase: 'invocation',
       invocationId: sentId,
@@ -131,9 +139,12 @@ function useRunView(
       isLive: phase === 'tracking' && tracking.state !== 'scheduled',
       isUnknown: phase === 'unavailable',
       isFailed: tracking.state === 'failed',
-      output: failedMessage ? undefined : output,
+      output: failedMessage || outputError ? undefined : output,
       failure:
-        tracking.failure ?? failedMessage ?? (reply && replyMessage(reply)),
+        tracking.failure ??
+        failedMessage ??
+        (outputError && `Couldn’t get the result: ${outputError}`) ??
+        (reply && replyMessage(reply)),
       note:
         phase === 'paused'
           ? tracking.startsAt || 'Stopped checking after 5 minutes.'
