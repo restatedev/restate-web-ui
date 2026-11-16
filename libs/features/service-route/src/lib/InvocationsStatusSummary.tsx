@@ -100,6 +100,7 @@ export function InvocationsStatusSummary({
           byStatus={matching.byStatus}
           showFocusCounts={false}
           focus={summary.focus}
+          selectedFocus={summary.selectedFocus}
           onFocusChange={changeFocus}
           breakdownMode={countMode}
           canSampleBreakdown={summary.canSampleBreakdown}

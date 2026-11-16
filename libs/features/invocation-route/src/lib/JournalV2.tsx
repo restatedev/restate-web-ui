@@ -7,6 +7,7 @@ import {
   Dispatch,
   memo,
   RefCallback,
+  RefObject,
   Suspense,
   useCallback,
   useEffect,

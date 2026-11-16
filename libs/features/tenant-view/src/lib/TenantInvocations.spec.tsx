@@ -220,7 +220,7 @@ describe('TenantInvocations', () => {
     renderInvocations(
       '/tenants/acme/invocations?service=Checkout&status=running',
     );
-    await user.click(screen.getByRole('tab', { name: /^Completed/ }));
+    await user.click(screen.getByRole('radio', { name: /^Completed/ }));
     await waitFor(() =>
       expect(hooks.list.mock.lastCall?.[0].filters).toContainEqual({
         field: 'status',
@@ -229,7 +229,7 @@ describe('TenantInvocations', () => {
         value: ['succeeded', 'failed', 'cancelled', 'killed'],
       }),
     );
-    await user.click(screen.getByRole('tab', { name: /^All statuses/ }));
+    await user.click(screen.getByRole('radio', { name: /^All statuses/ }));
     await waitFor(() =>
       expect(hooks.list.mock.lastCall?.[0].filters).not.toContainEqual(
         expect.objectContaining({ field: 'status' }),

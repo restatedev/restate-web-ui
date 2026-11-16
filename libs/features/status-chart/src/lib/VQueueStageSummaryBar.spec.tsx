@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -63,12 +63,12 @@ describe('VQueueStageSummaryBar', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('tab', { name: 'All statuses' }).textContent,
+        screen.getByRole('radio', { name: 'All statuses' }).textContent,
       ).toBe('All statuses');
       expect(
-        screen.getByRole('tab', { name: 'Not completed' }).textContent,
+        screen.getByRole('radio', { name: 'Not completed' }).textContent,
       ).toBe('Not completed');
-      expect(screen.getByRole('tab', { name: 'Completed' }).textContent).toBe(
+      expect(screen.getByRole('radio', { name: 'Completed' }).textContent).toBe(
         'Completed',
       );
     });
@@ -95,10 +95,10 @@ describe('VQueueStageSummaryBar', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('tab', { name: /All statuses/ }).textContent,
+        screen.getByRole('radio', { name: /All statuses/ }).textContent,
       ).toBe('All statuses145');
       expect(
-        screen.getByRole('tab', { name: /Not completed/ }).textContent,
+        screen.getByRole('radio', { name: /Not completed/ }).textContent,
       ).toBe('Not completed105');
       expect(screen.getByRole('link', { name: /Running: 5/ })).toBeTruthy();
       expect(
@@ -160,7 +160,7 @@ describe('VQueueStageSummaryBar', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('tab', { name: /Not completed/ }).textContent,
+        screen.getByRole('radio', { name: /Not completed/ }).textContent,
       ).toBe('Not completed~63');
       expect(
         screen.getByRole('link', {
@@ -225,7 +225,7 @@ describe('VQueueStageSummaryBar', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('tab', { name: /Not completed/ }).textContent,
+        screen.getByRole('radio', { name: /Not completed/ }).textContent,
       ).toBe('Not completed~60');
       expect(
         screen.getByRole('link', {
@@ -341,11 +341,11 @@ describe('VQueueStageSummaryBar', () => {
       expect((rail.children[2] as HTMLElement).style.flexGrow).toBe('1');
       expect(completedLoadingSegment).toBeTruthy();
       expect(
-        screen.getByRole('tab', { name: /Completed count loading/ })
+        screen.getByRole('radio', { name: /Completed count loading/ })
           .textContent,
       ).toBe('Completed');
       expect(
-        screen.getByRole('tab', { name: /All-status count loading/ })
+        screen.getByRole('radio', { name: /All-status count loading/ })
           .textContent,
       ).toBe('All statuses');
     });
@@ -375,7 +375,7 @@ describe('VQueueStageSummaryBar', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('tab', { name: 'Not completed' }).textContent,
+        screen.getByRole('radio', { name: 'Not completed' }).textContent,
       ).toBe('Not completed');
     });
     expect(screen.queryByText('—')).toBeNull();
@@ -403,9 +403,9 @@ describe('VQueueStageSummaryBar', () => {
         <VQueueStageSummaryBar {...props} focus="not-completed" />
       </MemoryRouter>,
     );
-    await userEvent.click(screen.getByRole('tab', { name: /All statuses/ }));
+    await userEvent.click(screen.getByRole('radio', { name: /All statuses/ }));
     expect(onFocusChange).toHaveBeenCalledWith('all');
-    expect(screen.getByRole('tab', { selected: true }).textContent).toBe(
+    expect(screen.getByRole('radio', { checked: true }).textContent).toBe(
       'Not completed106',
     );
     expect(
@@ -419,7 +419,7 @@ describe('VQueueStageSummaryBar', () => {
       </MemoryRouter>,
     );
     await waitFor(() =>
-      expect(screen.getByRole('tab', { selected: true }).textContent).toBe(
+      expect(screen.getByRole('radio', { checked: true }).textContent).toBe(
         'All statuses146',
       ),
     );
@@ -428,6 +428,96 @@ describe('VQueueStageSummaryBar', () => {
         'All-status invocation distribution with current status highlighted',
       ),
     ).toBeTruthy();
+  });
+
+  it('keeps keyboard focus on a rail segment when its filter selects no lifecycle', async () => {
+    vi.stubGlobal('CSS', { escape: (value: string) => value });
+    const props = {
+      byStage: totalsByStage,
+      byStatus: [],
+      focus: 'not-completed' as const,
+      onFocusChange: vi.fn(),
+      breakdownMode: 'exact' as const,
+      canSampleBreakdown: false,
+      onBreakdownModeChange: vi.fn(),
+      isBreakdownSampled: false,
+      getHref: () => '/invocations',
+    };
+    const { rerender } = render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar {...props} />
+      </MemoryRouter>,
+    );
+    const running = screen.getByRole('link', { name: /^Running:/ });
+    act(() => running.focus());
+    rerender(
+      <MemoryRouter>
+        <VQueueStageSummaryBar {...props} selectedFocus={null} />
+      </MemoryRouter>,
+    );
+    expect(document.activeElement).toBe(running);
+    expect(screen.queryByRole('radio', { checked: true })).toBeNull();
+  });
+
+  it('moves between lifecycle options with arrows and applies one with Enter', async () => {
+    vi.stubGlobal('CSS', { escape: (value: string) => value });
+    const onFocusChange = vi.fn();
+    render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar
+          byStage={totalsByStage}
+          byStatus={[]}
+          focus="not-completed"
+          selectedFocus={null}
+          onFocusChange={onFocusChange}
+          breakdownMode="exact"
+          canSampleBreakdown={false}
+          onBreakdownModeChange={vi.fn()}
+          isBreakdownSampled={false}
+          showFocusCounts={false}
+        />
+      </MemoryRouter>,
+    );
+    await userEvent.tab();
+    expect(document.activeElement).toBe(
+      screen.getByRole('radio', { name: 'All statuses' }),
+    );
+    await userEvent.keyboard('{ArrowRight}');
+    expect(document.activeElement).toBe(
+      screen.getByRole('radio', { name: 'Not completed' }),
+    );
+    expect(onFocusChange).not.toHaveBeenCalled();
+    await userEvent.keyboard('{Enter}');
+    expect(onFocusChange).toHaveBeenCalledWith('not-completed');
+  });
+
+  it('selects no tab but keeps the focused rail when the filter is narrower than a lifecycle', async () => {
+    vi.stubGlobal('CSS', { escape: (value: string) => value });
+    const onFocusChange = vi.fn();
+    render(
+      <MemoryRouter>
+        <VQueueStageSummaryBar
+          byStage={totalsByStage}
+          byStatus={[]}
+          focus="not-completed"
+          selectedFocus={null}
+          onFocusChange={onFocusChange}
+          breakdownMode="exact"
+          canSampleBreakdown={false}
+          onBreakdownModeChange={vi.fn()}
+          isBreakdownSampled={false}
+          showFocusCounts={false}
+        />
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByLabelText(
+        'Not-completed invocation distribution with current status highlighted',
+      ).children,
+    ).toHaveLength(2);
+    expect(screen.queryByRole('radio', { checked: true })).toBeNull();
+    await userEvent.click(screen.getByRole('radio', { name: 'Not completed' }));
+    expect(onFocusChange).toHaveBeenCalledWith('not-completed');
   });
 
   it.each(['all', 'completed'] as const)(
@@ -458,7 +548,7 @@ describe('VQueueStageSummaryBar', () => {
         screen.getByText('Could not load invocation counts.'),
       ).toBeTruthy();
       expect(
-        screen.getByRole('tab', { name: /Not completed/ }).textContent,
+        screen.getByRole('radio', { name: /Not completed/ }).textContent,
       ).toBe('Not completed106');
     },
   );
