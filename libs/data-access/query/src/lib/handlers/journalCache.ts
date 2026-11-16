@@ -15,12 +15,49 @@ export type CachedJournal = {
   entriesJson: string;
 };
 
-export const MAX_CACHED_JOURNAL_ROWS = 150_000;
+type StoredJournal = {
+  journal: CachedJournal;
+  bytes: number;
+  usedAt: number;
+};
 
-const journals = new Map<string, CachedJournal>();
+export const MAX_CACHED_JOURNAL_BYTES = 80 * 1024 * 1024;
+export const CACHED_JOURNAL_IDLE_MS = 60_000;
+const ROW_BYTES = 256;
+const EVENT_BYTES = 128;
 
-function cachedSize(journal: CachedJournal) {
-  return journal.rows.length + journal.events.length;
+const journals = new Map<string, StoredJournal>();
+let sweepTimer: ReturnType<typeof setTimeout> | undefined;
+
+export function estimateJournalBytes(journal: CachedJournal) {
+  let bytes = journal.entriesJson.length;
+  for (const row of journal.rows) {
+    bytes += ROW_BYTES + (row.entry_lite_json?.length ?? 0);
+  }
+  for (const event of journal.events) {
+    bytes += EVENT_BYTES + (event.event_json?.length ?? 0);
+  }
+  return bytes;
+}
+
+function dropIdleJournals(now: number) {
+  for (const [key, stored] of journals) {
+    if (now - stored.usedAt >= CACHED_JOURNAL_IDLE_MS) {
+      journals.delete(key);
+    }
+  }
+}
+
+function scheduleSweep() {
+  if (sweepTimer !== undefined || journals.size === 0) {
+    return;
+  }
+  sweepTimer = setTimeout(() => {
+    sweepTimer = undefined;
+    dropIdleJournals(Date.now());
+    scheduleSweep();
+  }, CACHED_JOURNAL_IDLE_MS);
+  (sweepTimer as { unref?: () => void }).unref?.();
 }
 
 export function journalCacheKey(baseUrl: string, invocationId: string) {
@@ -28,23 +65,34 @@ export function journalCacheKey(baseUrl: string, invocationId: string) {
 }
 
 export function getCachedJournal(key: string) {
-  return journals.get(key);
+  const now = Date.now();
+  dropIdleJournals(now);
+  const stored = journals.get(key);
+  if (stored) {
+    stored.usedAt = now;
+  }
+  return stored?.journal;
 }
 
 export function setCachedJournal(key: string, journal: CachedJournal) {
   journals.delete(key);
-  journals.set(key, journal);
-  let total = 0;
-  for (const cached of journals.values()) {
-    total += cachedSize(cached);
+  const bytes = estimateJournalBytes(journal);
+  if (bytes > MAX_CACHED_JOURNAL_BYTES) {
+    return;
   }
-  for (const [cachedKey, cached] of journals) {
-    if (total <= MAX_CACHED_JOURNAL_ROWS || cachedKey === key) {
+  journals.set(key, { journal, bytes, usedAt: Date.now() });
+  let total = 0;
+  for (const stored of journals.values()) {
+    total += stored.bytes;
+  }
+  for (const [storedKey, stored] of journals) {
+    if (total <= MAX_CACHED_JOURNAL_BYTES) {
       break;
     }
-    journals.delete(cachedKey);
-    total -= cachedSize(cached);
+    journals.delete(storedKey);
+    total -= stored.bytes;
   }
+  scheduleSweep();
 }
 
 export function deleteCachedJournal(key: string) {
@@ -53,6 +101,8 @@ export function deleteCachedJournal(key: string) {
 
 export function clearJournalCache() {
   journals.clear();
+  clearTimeout(sweepTimer);
+  sweepTimer = undefined;
 }
 
 export function isCacheableJournal(rows: JournalRawEntry[]) {
@@ -97,6 +147,7 @@ export function appendJournalRows(
 
 function eventKey(event: JournalEventRow) {
   return JSON.stringify([
+    event.appended_at,
     event.after_journal_entry_index,
     event.event_type,
     event.event_json,
@@ -106,37 +157,46 @@ function eventKey(event: JournalEventRow) {
 export function appendJournalEvents(
   cachedEvents: JournalEventRow[],
   tailEvents: JournalEventRow[],
+  totalEvents: number,
 ) {
   const lastAppendedAt = cachedEvents.at(-1)?.appended_at;
-  if (!lastAppendedAt) {
-    return tailEvents.length > 0 ? tailEvents : cachedEvents;
-  }
-
-  const unmatched = new Map<string, number>();
-  for (let i = cachedEvents.length - 1; i >= 0; i--) {
-    const event = cachedEvents[i];
-    if (event?.appended_at !== lastAppendedAt) {
-      break;
+  let keptEvents = cachedEvents.length;
+  if (lastAppendedAt) {
+    while (cachedEvents[keptEvents - 1]?.appended_at === lastAppendedAt) {
+      keptEvents--;
     }
-    const key = eventKey(event);
-    unmatched.set(key, (unmatched.get(key) ?? 0) + 1);
+  } else {
+    keptEvents = 0;
   }
 
-  const newEvents: JournalEventRow[] = [];
+  const tailCounts = new Map<string, number>();
   for (const event of tailEvents) {
     const key = eventKey(event);
-    const count = unmatched.get(key) ?? 0;
-    if (event.appended_at === lastAppendedAt && count > 0) {
-      unmatched.set(key, count - 1);
-    } else {
-      newEvents.push(event);
-    }
+    tailCounts.set(key, (tailCounts.get(key) ?? 0) + 1);
   }
-
-  for (const count of unmatched.values()) {
-    if (count > 0) {
+  for (let i = keptEvents; i < cachedEvents.length; i++) {
+    const cachedEvent = cachedEvents[i];
+    const key = cachedEvent ? eventKey(cachedEvent) : '';
+    const count = tailCounts.get(key) ?? 0;
+    if (count === 0) {
       return undefined;
     }
+    tailCounts.set(key, count - 1);
   }
-  return newEvents.length > 0 ? cachedEvents.concat(newEvents) : cachedEvents;
+  if (keptEvents + tailEvents.length !== totalEvents) {
+    return undefined;
+  }
+
+  const isUnchanged =
+    tailEvents.length === cachedEvents.length - keptEvents &&
+    tailEvents.every(
+      (event, i) =>
+        eventKey(event) === eventKey(cachedEvents[keptEvents + i] ?? {}),
+    );
+  if (isUnchanged) {
+    return cachedEvents;
+  }
+  return keptEvents > 0
+    ? cachedEvents.slice(0, keptEvents).concat(tailEvents)
+    : tailEvents;
 }

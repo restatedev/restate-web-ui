@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import * as convertJournalModule from '../../../convertJournalV2.js';
-import { clearJournalCache } from '../../journalCache.js';
+import {
+  clearJournalCache,
+  getCachedJournal,
+  journalCacheKey,
+} from '../../journalCache.js';
 import {
   createInvocationV2QueryTestHarness,
   rawInvocation,
@@ -94,6 +98,7 @@ type ServerState = {
   invocation?: Record<string, unknown>;
   rows: Row[];
   events: EventRow[];
+  vqueueStatus?: Record<string, unknown>;
 };
 
 function serve(state: ServerState) {
@@ -104,6 +109,12 @@ function serve(state: ServerState) {
     if (statement.includes('FROM sys_journal WHERE')) {
       const from = Number(/AND index >= (\d+)/.exec(statement)?.[1] ?? 0);
       return state.rows.filter((row) => row.index >= from);
+    }
+    if (/count\(\*\) AS count from sys_journal_events/i.test(statement)) {
+      return [{ count: state.events.length }];
+    }
+    if (statement.includes('FROM sys_vqueue_entry_status WHERE')) {
+      return state.vqueueStatus ? [state.vqueueStatus] : [];
     }
     if (/from sys_journal_events where/i.test(statement)) {
       const after = /AND appended_at >= '([^']+)'/.exec(statement)?.[1];
@@ -128,7 +139,28 @@ function journalQueries(sql: string[]) {
 }
 
 function eventQueries(sql: string[]) {
-  return sql.filter((statement) => /from sys_journal_events /i.test(statement));
+  return sql.filter(
+    (statement) =>
+      /from sys_journal_events /i.test(statement) &&
+      !statement.includes('count(*)'),
+  );
+}
+
+function signalNotification(index: number, signalIndex: number): Row {
+  return {
+    id: 'inv-a',
+    index,
+    appended_at: at(index),
+    entry_type: 'Notification: Signal',
+    version: 2,
+    entry_lite_json: JSON.stringify({
+      Notification: { id: { SignalIndex: signalIndex }, result: 'Void' },
+    }),
+  };
+}
+
+function withoutDuration(text: string) {
+  return text.replace(/"duration":"[^"]*",?/, '');
 }
 
 describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
@@ -137,9 +169,11 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
 
   async function poll() {
     const response = await get('/v2/invocations/inv-a');
+    const text = await response.text();
     return {
       status: response.status,
-      body: (await response.json()) as {
+      text,
+      body: JSON.parse(text) as {
         journal: { entries: JournalEntryV2[] };
       },
     };
@@ -185,11 +219,162 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
         `WHERE id = 'inv-a' AND appended_at >= '${at(5)}' ORDER BY appended_at`,
       ),
     ]);
+    expect(sql.filter((statement) => statement.includes('count(*)'))).toEqual([
+      "SELECT count(*) AS count FROM sys_journal_events WHERE id = 'inv-a'",
+    ]);
     expect(entryAt(second.body, 1)).toMatchObject({
       isPending: false,
       completionIndex: 2,
     });
-    expect(second.body.journal).toEqual((await fullFetch()).body.journal);
+    expect(withoutDuration(second.text)).toBe(
+      withoutDuration((await fullFetch()).text),
+    );
+  });
+
+  it('converts again when only events changed', async () => {
+    const state: ServerState = {
+      invocation: invocationRow({ status: 'backing-off' }),
+      rows: [input(), runCommand(1, 1)],
+      events: [transientError(5, 1)],
+    };
+    setResponder(serve(state));
+
+    await poll();
+    state.events.push(transientError(6, 1));
+    convertJournalV2.mockClear();
+    const second = await poll();
+
+    expect(convertJournalV2).toHaveBeenCalled();
+    expect(
+      second.body.journal.entries.filter(
+        (entry) => entry.type === 'Event: TransientError',
+      ),
+    ).toHaveLength(2);
+    expect(withoutDuration(second.text)).toBe(
+      withoutDuration((await fullFetch()).text),
+    );
+  });
+
+  it('converts again when only the queue status changed', async () => {
+    const vqueueStatus = {
+      entry_id: 'inv-a',
+      vqueue_id: 'vq-a',
+      stage: 'running',
+      status: 'started',
+      created_at: at(0),
+      transitioned_at: at(1),
+    };
+    const state: ServerState = {
+      invocation: invocationRow(),
+      rows: [input(), runCommand(1, 1)],
+      events: [],
+      vqueueStatus,
+    };
+    setResponder(serve(state));
+
+    await poll();
+    state.vqueueStatus = {
+      ...vqueueStatus,
+      stage: 'suspended',
+      status: 'suspended',
+      transitioned_at: at(2),
+    };
+    convertJournalV2.mockClear();
+    const second = await poll();
+
+    expect(convertJournalV2).toHaveBeenCalled();
+    expect(withoutDuration(second.text)).toBe(
+      withoutDuration((await fullFetch()).text),
+    );
+  });
+
+  it('keeps the server order of events that share a timestamp', async () => {
+    const state: ServerState = {
+      invocation: invocationRow({ status: 'backing-off' }),
+      rows: [input(), runCommand(1, 1)],
+      events: [transientError(5, 1)],
+    };
+    setResponder(serve(state));
+
+    await poll();
+    state.events = [
+      { ...transientError(5, 1), event_type: 'Paused', event_json: '{}' },
+      ...state.events,
+    ];
+    const second = await poll();
+
+    expect(withoutDuration(second.text)).toBe(
+      withoutDuration((await fullFetch()).text),
+    );
+  });
+
+  it('leaves the cached rows untouched while converting', async () => {
+    const state: ServerState = {
+      invocation: invocationRow(),
+      rows: [
+        input(),
+        runCommand(1, 1),
+        { ...signalNotification(2, 5), raw_length: 7 } as Row,
+      ],
+      events: [transientError(5, 1)],
+    };
+    setResponder(serve(state));
+
+    await poll();
+    const cached = getCachedJournal(
+      journalCacheKey('http://query.test', 'inv-a'),
+    );
+    expect(cached).toBeDefined();
+    for (const row of [...(cached?.rows ?? []), ...(cached?.events ?? [])]) {
+      Object.freeze(row);
+    }
+    state.rows.push(runNotification(3, 1));
+    const second = await poll();
+
+    expect(withoutDuration(second.text)).toBe(
+      withoutDuration((await fullFetch()).text),
+    );
+  });
+
+  it('serves overlapping polls from the same cached journal', async () => {
+    const state: ServerState = {
+      invocation: invocationRow(),
+      rows: [input(), runCommand(1, 1)],
+      events: [],
+    };
+    setResponder(serve(state));
+
+    await poll();
+    state.rows.push(runNotification(2, 1));
+    const [a, b] = await Promise.all([poll(), poll()]);
+    sql.length = 0;
+    const c = await poll();
+    const full = withoutDuration((await fullFetch()).text);
+
+    expect(withoutDuration(a.text)).toBe(full);
+    expect(withoutDuration(b.text)).toBe(full);
+    expect(withoutDuration(c.text)).toBe(full);
+    expect(journalQueries(sql)[0]).toContain('AND index >= 2');
+  });
+
+  it('fetches in full again after a minute without polls', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    setResponder(
+      serve({
+        invocation: invocationRow(),
+        rows: [input(), runCommand(1, 1)],
+        events: [],
+      }),
+    );
+
+    await poll();
+    vi.setSystemTime(Date.now() + 61_000);
+    sql.length = 0;
+    await poll();
+
+    expect(journalQueries(sql)).toEqual([
+      expect.stringContaining("WHERE id = 'inv-a' ORDER BY index"),
+    ]);
   });
 
   it('reuses the converted entries when nothing changed', async () => {
@@ -234,7 +419,9 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
       isRetrying: true,
       error: expect.objectContaining({ message: 'boom' }),
     });
-    expect(second.body.journal).toEqual((await fullFetch()).body.journal);
+    expect(withoutDuration(second.text)).toBe(
+      withoutDuration((await fullFetch()).text),
+    );
   });
 
   describe('falls back to a full fetch', () => {
@@ -249,7 +436,9 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
         expect.stringContaining('AND index >='),
         expect.stringContaining("WHERE id = 'inv-a' ORDER BY index"),
       ]);
-      expect(response.body.journal).toEqual((await fullFetch()).body.journal);
+      expect(withoutDuration(response.text)).toBe(
+        withoutDuration((await fullFetch()).text),
+      );
       return response;
     }
 
@@ -296,6 +485,23 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
       await expectFullRefetch(state, () => {
         state.invocation = invocationRow({ created_at: at(40) });
       });
+    });
+
+    it('when an event arrived with an earlier timestamp', async () => {
+      const state: ServerState = {
+        invocation: invocationRow({ status: 'backing-off' }),
+        rows: [input(), runCommand(1, 1)],
+        events: [transientError(10, 1)],
+      };
+      const { body } = await expectFullRefetch(state, () => {
+        state.events = [transientError(9, 1), ...state.events];
+      });
+
+      expect(
+        body.journal.entries.filter(
+          (entry) => entry.type === 'Event: TransientError',
+        ),
+      ).toHaveLength(2);
     });
 
     it('when a known event is gone', async () => {

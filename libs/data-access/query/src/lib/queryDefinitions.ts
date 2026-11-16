@@ -110,9 +110,9 @@ export const QUERY_DEFINITIONS = {
   },
   'invocations/journal-entries': {
     description:
-      'Load all journal entries of an invocation for the journal timeline.',
+      'Load the journal entries of an invocation for the journal timeline: all of them, or from the last known index while polling a V2 journal.',
     shape:
-      'SELECT <entry columns [+ raw]> FROM sys_journal WHERE id = ? ORDER BY index',
+      'SELECT <entry columns [+ raw]> FROM sys_journal WHERE id = ? [AND index >= ?] ORDER BY index',
     tables: ['sys_journal'],
   },
   'invocations/journal-entry-metadata': {
@@ -131,9 +131,15 @@ export const QUERY_DEFINITIONS = {
   },
   'invocations/journal-events': {
     description:
-      'Load an invocation’s journal events (errors, pauses, lifecycle) for the journal timeline.',
+      'Load an invocation’s journal events (errors, pauses, lifecycle) for the journal timeline: all of them, or from the last known time while polling a V2 journal.',
     shape:
-      'SELECT <event columns> FROM sys_journal_events WHERE id = ? ORDER BY appended_at',
+      'SELECT <event columns> FROM sys_journal_events WHERE id = ? [AND appended_at >= ?] ORDER BY appended_at',
+    tables: ['sys_journal_events'],
+  },
+  'invocations/journal-events-count': {
+    description:
+      'Count an invocation’s journal events while polling a V2 journal, to catch events the time cursor missed.',
+    shape: 'SELECT count(*) FROM sys_journal_events WHERE id = ?',
     tables: ['sys_journal_events'],
   },
   'invocations/paused-error': {

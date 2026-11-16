@@ -1,14 +1,16 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { JournalRawEntry } from '@restate/data-access-admin-api-spec';
 import {
   appendJournalEvents,
   appendJournalRows,
+  CACHED_JOURNAL_IDLE_MS,
   type CachedJournal,
   clearJournalCache,
+  estimateJournalBytes,
   getCachedJournal,
   isCacheableJournal,
   isJournalReplaced,
-  MAX_CACHED_JOURNAL_ROWS,
+  MAX_CACHED_JOURNAL_BYTES,
   setCachedJournal,
 } from './journalCache.js';
 
@@ -100,36 +102,38 @@ describe('appendJournalEvents', () => {
   it('takes the whole tail when nothing was cached', () => {
     const tail = [event('2026-01-01T00:00:01.000Z', 'a')];
 
-    expect(appendJournalEvents([], tail)).toBe(tail);
+    expect(appendJournalEvents([], tail, 1)).toBe(tail);
   });
 
-  it('skips the cached events that share the last timestamp', () => {
+  it('keeps the cached array when nothing new arrived', () => {
+    const cached = [
+      event('2026-01-01T00:00:01.000Z', 'a'),
+      event('2026-01-01T00:00:02.000Z', 'b'),
+    ];
+
+    expect(
+      appendJournalEvents(cached, [event('2026-01-01T00:00:02.000Z', 'b')], 2),
+    ).toBe(cached);
+    expect(appendJournalEvents([], [], 0)).toEqual([]);
+  });
+
+  it('takes the server order for events at the last cached timestamp', () => {
     const cached = [
       event('2026-01-01T00:00:01.000Z', 'a'),
       event('2026-01-01T00:00:02.000Z', 'b'),
       event('2026-01-01T00:00:02.000Z', 'c'),
     ];
-
-    expect(
-      appendJournalEvents(cached, [
-        event('2026-01-01T00:00:02.000Z', 'c'),
-        event('2026-01-01T00:00:02.000Z', 'd'),
-        event('2026-01-01T00:00:02.000Z', 'b'),
-        event('2026-01-01T00:00:03.000Z', 'e'),
-      ]),
-    ).toEqual([
-      ...cached,
+    const tail = [
       event('2026-01-01T00:00:02.000Z', 'd'),
+      event('2026-01-01T00:00:02.000Z', 'c'),
+      event('2026-01-01T00:00:02.000Z', 'b'),
       event('2026-01-01T00:00:03.000Z', 'e'),
+    ];
+
+    expect(appendJournalEvents(cached, tail, 5)).toEqual([
+      event('2026-01-01T00:00:01.000Z', 'a'),
+      ...tail,
     ]);
-  });
-
-  it('keeps the cached array when nothing new arrived', () => {
-    const cached = [event('2026-01-01T00:00:01.000Z', 'a')];
-
-    expect(
-      appendJournalEvents(cached, [event('2026-01-01T00:00:01.000Z', 'a')]),
-    ).toBe(cached);
   });
 
   it('counts identical events at the same timestamp separately', () => {
@@ -137,14 +141,14 @@ describe('appendJournalEvents', () => {
       event('2026-01-01T00:00:01.000Z', 'a'),
       event('2026-01-01T00:00:01.000Z', 'a'),
     ];
+    const tail = [
+      event('2026-01-01T00:00:01.000Z', 'a'),
+      event('2026-01-01T00:00:01.000Z', 'a'),
+      event('2026-01-01T00:00:01.000Z', 'a'),
+    ];
 
-    expect(
-      appendJournalEvents(cached, [
-        event('2026-01-01T00:00:01.000Z', 'a'),
-        event('2026-01-01T00:00:01.000Z', 'a'),
-        event('2026-01-01T00:00:01.000Z', 'a'),
-      ]),
-    ).toEqual([...cached, event('2026-01-01T00:00:01.000Z', 'a')]);
+    expect(appendJournalEvents(cached, tail, 3)).toEqual(tail);
+    expect(appendJournalEvents(cached, tail.slice(0, 1), 1)).toBeUndefined();
   });
 
   it('rejects a tail that lost a cached event', () => {
@@ -154,9 +158,24 @@ describe('appendJournalEvents', () => {
     ];
 
     expect(
-      appendJournalEvents(cached, [event('2026-01-01T00:00:01.000Z', 'a')]),
+      appendJournalEvents(cached, [event('2026-01-01T00:00:01.000Z', 'a')], 1),
     ).toBeUndefined();
-    expect(appendJournalEvents(cached, [])).toBeUndefined();
+    expect(appendJournalEvents(cached, [], 0)).toBeUndefined();
+  });
+
+  it('rejects a tail when the server counts events the cursor missed', () => {
+    const cached = [event('2026-01-01T00:00:10.000Z', 'a')];
+
+    expect(
+      appendJournalEvents(cached, [event('2026-01-01T00:00:10.000Z', 'a')], 2),
+    ).toBeUndefined();
+    expect(
+      appendJournalEvents(
+        [event('2026-01-01T00:00:01.000Z', 'x'), ...cached],
+        [event('2026-01-01T00:00:10.000Z', 'a')],
+        1,
+      ),
+    ).toBeUndefined();
   });
 });
 
@@ -200,37 +219,65 @@ describe('isCacheableJournal', () => {
   });
 });
 
-describe('setCachedJournal', () => {
+describe('cache budget', () => {
   afterEach(() => {
     clearJournalCache();
+    vi.useRealTimers();
   });
 
-  it('evicts the least recently stored journals over the row budget', () => {
-    const half = Math.ceil(MAX_CACHED_JOURNAL_ROWS / 2);
-    const rows = Array.from({ length: half }, (_, index) => row(index));
+  function journalOfBytes(bytes: number) {
+    return cachedJournal({ rows: [], entriesJson: 'x'.repeat(bytes) });
+  }
 
-    setCachedJournal('a', cachedJournal({ rows }));
-    setCachedJournal('b', cachedJournal({ rows }));
+  it('estimates rows, events and the entries JSON', () => {
+    expect(
+      estimateJournalBytes(
+        cachedJournal({
+          rows: [row(0, { entry_lite_json: '{}' }), row(1)],
+          events: [event('2026-01-01T00:00:01.000Z', 'a')],
+          entriesJson: '[1]',
+        }),
+      ),
+    ).toBe(
+      3 + 256 * 2 + 2 + 128 + JSON.stringify({ error_message: 'a' }).length,
+    );
+  });
+
+  it('evicts the least recently stored journals over the byte budget', () => {
+    const half = Math.floor(MAX_CACHED_JOURNAL_BYTES / 2);
+
+    setCachedJournal('a', journalOfBytes(half));
+    setCachedJournal('b', journalOfBytes(half));
     expect(getCachedJournal('a')).toBeDefined();
 
-    setCachedJournal('a', cachedJournal({ rows }));
-    setCachedJournal('c', cachedJournal({ rows }));
+    setCachedJournal('a', journalOfBytes(half));
+    setCachedJournal('c', journalOfBytes(half));
 
     expect(getCachedJournal('b')).toBeUndefined();
     expect(getCachedJournal('a')).toBeDefined();
     expect(getCachedJournal('c')).toBeDefined();
   });
 
-  it('keeps a journal that alone exceeds the budget', () => {
-    const rows = Array.from(
-      { length: MAX_CACHED_JOURNAL_ROWS + 1 },
-      (_, index) => row(index),
-    );
+  it('does not keep a journal that alone exceeds the budget', () => {
+    setCachedJournal('a', journalOfBytes(10));
+    setCachedJournal('big', journalOfBytes(MAX_CACHED_JOURNAL_BYTES + 1));
 
-    setCachedJournal('a', cachedJournal());
-    setCachedJournal('big', cachedJournal({ rows }));
+    expect(getCachedJournal('big')).toBeUndefined();
+    expect(getCachedJournal('a')).toBeDefined();
+  });
 
+  it('drops journals nobody polled for a while', () => {
+    vi.useFakeTimers();
+    setCachedJournal('a', journalOfBytes(10));
+    setCachedJournal('b', journalOfBytes(10));
+
+    vi.advanceTimersByTime(CACHED_JOURNAL_IDLE_MS / 2);
+    expect(getCachedJournal('a')).toBeDefined();
+    vi.advanceTimersByTime(CACHED_JOURNAL_IDLE_MS / 2);
+    expect(getCachedJournal('a')).toBeDefined();
+    expect(getCachedJournal('b')).toBeUndefined();
+
+    vi.advanceTimersByTime(CACHED_JOURNAL_IDLE_MS * 2);
     expect(getCachedJournal('a')).toBeUndefined();
-    expect(getCachedJournal('big')).toBeDefined();
   });
 });

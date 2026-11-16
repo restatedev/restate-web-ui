@@ -160,14 +160,15 @@ function convertJournalEntries(
     | JournalEntryV2
   )[] = [];
   for (const rawEntry of journalAndEventEntries) {
-    if ('entry_type' in rawEntry) {
-      if (rawEntry.entry_type?.startsWith('Command:')) {
-        (rawEntry as JournalRawEntryWithCommandIndex).command_index =
-          commandCount;
-        commandCount++;
-      }
+    if (rawEntry.entry_type?.startsWith('Command:')) {
+      entriesWithCommandIndex.push({
+        ...rawEntry,
+        command_index: commandCount,
+      });
+      commandCount++;
+    } else {
+      entriesWithCommandIndex.push(rawEntry);
     }
-    entriesWithCommandIndex.push(rawEntry);
   }
 
   const entries: JournalEntryV2[] = [];
@@ -226,22 +227,33 @@ export async function getInvocationJournalV2(
   const cached = includeRaw ? undefined : getCachedJournal(cacheKey);
   const lastCachedIndex = cached?.rows.at(-1)?.index;
   const lastCachedEventAt = cached?.events.at(-1)?.appended_at;
-  const [invocationQuery, journalQuery, eventsQuery, vqueueStatuses] =
-    await Promise.all([
-      this.query(
-        `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
-        'invocations/get',
-      ),
-      this.query(
-        `SELECT id, index, appended_at, entry_type, name, raw_length, entry_lite_json, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql}${typeof lastCachedIndex === 'number' ? ` AND index >= ${lastCachedIndex}` : ''} ORDER BY index`,
-        'invocations/journal-entries',
-      ),
-      this.query(
-        `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = ${invocationIdSql}${lastCachedEventAt ? ` AND appended_at >= ${quoteSqlString(lastCachedEventAt)}` : ''} ORDER BY appended_at`,
-        'invocations/journal-events',
-      ),
-      fetchVqueueStatuses(this, [invocationId]),
-    ]);
+  const [
+    invocationQuery,
+    journalQuery,
+    eventsQuery,
+    vqueueStatuses,
+    eventsCountQuery,
+  ] = await Promise.all([
+    this.query(
+      `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
+      'invocations/get',
+    ),
+    this.query(
+      `SELECT id, index, appended_at, entry_type, name, raw_length, entry_lite_json, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql}${typeof lastCachedIndex === 'number' ? ` AND index >= ${lastCachedIndex}` : ''} ORDER BY index`,
+      'invocations/journal-entries',
+    ),
+    this.query(
+      `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = ${invocationIdSql}${lastCachedEventAt ? ` AND appended_at >= ${quoteSqlString(lastCachedEventAt)}` : ''} ORDER BY appended_at`,
+      'invocations/journal-events',
+    ),
+    fetchVqueueStatuses(this, [invocationId]),
+    cached
+      ? this.query(
+          `SELECT count(*) AS count FROM sys_journal_events WHERE id = ${invocationIdSql}`,
+          'invocations/journal-events-count',
+        )
+      : undefined,
+  ]);
 
   const rawInvocation = invocationQuery.rows.at(0);
   let journalRows = journalQuery.rows as JournalRawEntry[];
@@ -252,7 +264,12 @@ export async function getInvocationJournalV2(
         ? appendJournalRows(cached.rows, journalRows)
         : undefined;
     const mergedEvents =
-      mergedRows && appendJournalEvents(cached.events, eventRows);
+      mergedRows &&
+      appendJournalEvents(
+        cached.events,
+        eventRows,
+        Number(eventsCountQuery?.rows.at(0)?.count),
+      );
     if (!mergedRows || !mergedEvents) {
       deleteCachedJournal(cacheKey);
       return getInvocationJournalV2.call(this, invocationId, includeRaw);
