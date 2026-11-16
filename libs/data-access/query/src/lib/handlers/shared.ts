@@ -17,9 +17,18 @@ import {
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_MS = 10 * 60_000;
 export const QUERY_HANDLER_DOWNSTREAM_TIMEOUT_LABEL = '10m';
 export const BEST_EFFORT_INVOCATION_CANDIDATE_LIMIT = 500;
+export const MAX_IDS_PER_QUERY = 10_000;
 
 export function quoteSqlString(value: string): string {
   return `'${value.replaceAll("'", "''")}'`;
+}
+
+export function chunkIds(ids: string[]): string[][] {
+  const chunks: string[][] = [];
+  for (let start = 0; start < ids.length; start += MAX_IDS_PER_QUERY) {
+    chunks.push(ids.slice(start, start + MAX_IDS_PER_QUERY));
+  }
+  return chunks;
 }
 
 export function targetServiceKeyClause(

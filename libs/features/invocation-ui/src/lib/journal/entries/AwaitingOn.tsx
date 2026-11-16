@@ -8,7 +8,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
 import { DropdownSection } from '@restate/ui-dropdown';
 import { Spinner } from '@restate/ui-loading';
 import { Entry } from '../Entry';
-import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
+import {
+  useGetInvocationJournalWithInvocationV2,
+  useWarmInvocationStatusDetails,
+} from '@restate/data-access-admin-api-hooks';
+import { isTargetInvocationEntry } from './EntryCodecProvider';
 import { tv } from '@restate/util-styles';
 import {
   JournalEntriesContext,
@@ -66,6 +70,37 @@ function getSingleRef(future: InvocationFuture): SingleRef | undefined {
     return undefined;
   }
   return single as SingleRef;
+}
+
+function getFutureCompletionIds(future?: InvocationFuture): number[] {
+  if (!future) {
+    return [];
+  }
+  const group = getFutureGroup(future);
+  if (group) {
+    return group.children.flatMap((child) => getFutureCompletionIds(child));
+  }
+  const completionId = getSingleRef(future)?.CompletionId;
+  return typeof completionId === 'number' ? [completionId] : [];
+}
+
+export function getAwaitedInvocationIds(
+  future: InvocationFuture,
+  entries: JournalEntryV2[] = [],
+) {
+  const completionIds = new Set(getFutureCompletionIds(future));
+  return [
+    ...new Set(
+      entries.flatMap((entry) =>
+        isTargetInvocationEntry(entry) &&
+        entry.invocationId &&
+        typeof entry.completionId === 'number' &&
+        completionIds.has(entry.completionId)
+          ? [entry.invocationId]
+          : [],
+      ),
+    ),
+  ];
 }
 
 function countFutureLeaves(future: InvocationFuture): number {
@@ -265,6 +300,15 @@ export function AwaitingOnEntries({
   isPending: boolean;
 }) {
   const roots = unwrapCancelWrapper(future);
+  const awaitedInvocationIds = useMemo(
+    () => getAwaitedInvocationIds(future, invocation.journal?.entries),
+    [future, invocation],
+  );
+  useWarmInvocationStatusDetails(awaitedInvocationIds, String(invocation.id), {
+    enabled: awaitedInvocationIds.length > 0,
+    refetchOnMount: false,
+    refetchInterval: false,
+  });
   const parentContext = useJournalEntriesContext();
   const readOnlyContext = useMemo(
     () => ({

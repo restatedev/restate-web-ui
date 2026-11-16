@@ -1,7 +1,16 @@
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  render as renderComponent,
+  renderHook,
+  waitFor,
+} from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { PropsWithChildren } from 'react';
-import { useWarmInvocationStatusDetails } from './hooks';
+import { useEffect, type PropsWithChildren } from 'react';
+import {
+  useGetInvocationStatusDetails,
+  useWarmInvocationStatusDetails,
+} from './hooks';
 
 type Statuses = { invocations: Record<string, { status: string }> };
 
@@ -144,6 +153,64 @@ describe('useWarmInvocationStatusDetails', () => {
     expect(onAbort).not.toHaveBeenCalled();
   });
 
+  it('asks for its invocations when another poll starts just before it', async () => {
+    fetchStatuses.mockImplementation((invocationIds) => ({
+      invocations: Object.fromEntries(
+        invocationIds.map((id) => [
+          id,
+          { status: id === 'inv_done' ? 'succeeded' : 'suspended' },
+        ]),
+      ),
+    }));
+    let refetchJournal = () => undefined as void;
+    function Journal() {
+      const { refetch } = useWarmInvocationStatusDetails(
+        ['inv_done'],
+        'inv_parent',
+        { refetchOnMount: false, refetchInterval: false },
+      );
+      useEffect(() => {
+        refetchJournal = () => void refetch({ cancelRefetch: false });
+      });
+      return null;
+    }
+    function StartPoll() {
+      useEffect(() => refetchJournal(), []);
+      return null;
+    }
+    function Popover() {
+      const { data } = useWarmInvocationStatusDetails(
+        ['inv_child'],
+        'inv_parent',
+        { refetchOnMount: false, refetchInterval: false },
+      );
+      return <output>{data?.invocations?.['inv_child']?.status}</output>;
+    }
+    function Page({ open }: { open: boolean }) {
+      return (
+        <>
+          <Journal />
+          {open && (
+            <>
+              <StartPoll />
+              <Popover />
+            </>
+          )}
+        </>
+      );
+    }
+
+    const { container, rerender } = renderComponent(<Page open={false} />, {
+      wrapper,
+    });
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(1));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    rerender(<Page open />);
+    await waitFor(() => expect(container.textContent).toBe('suspended'));
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_child']);
+  });
+
   it('asks again when the cached statuses are cleared', async () => {
     const { result, rerender } = render([]);
     rerender({ invocationIds: ['inv_child'] });
@@ -162,6 +229,138 @@ describe('useWarmInvocationStatusDetails', () => {
       ),
     );
     expect(fetchStatuses).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps statuses of invocations no longer shown and never asks again for finished ones', async () => {
+    fetchStatuses.mockImplementation((invocationIds) => ({
+      invocations: Object.fromEntries(
+        invocationIds.map((id) => [id, { status: 'succeeded' }]),
+      ),
+    }));
+    const { result, rerender } = render(['inv_a']);
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_a']).toBeDefined(),
+    );
+
+    rerender({ invocationIds: [] });
+    rerender({ invocationIds: ['inv_b'] });
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_b']).toBeDefined(),
+    );
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_b']);
+
+    rerender({ invocationIds: ['inv_a'] });
+    expect(result.current.data?.invocations?.['inv_a']?.status).toBe(
+      'succeeded',
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(fetchStatuses).toHaveBeenCalledTimes(2);
+  });
+
+  it('asks only for the unfinished invocations it is given', async () => {
+    fetchStatuses.mockImplementation((invocationIds) => ({
+      invocations: Object.fromEntries(
+        invocationIds.map((id) => [
+          id,
+          { status: id === 'inv_done' ? 'succeeded' : 'suspended' },
+        ]),
+      ),
+    }));
+    const { result, rerender } = render(['inv_done', 'inv_a']);
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_a']).toBeDefined(),
+    );
+
+    rerender({ invocationIds: ['inv_done', 'inv_b'] });
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_b']).toBeDefined(),
+    );
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_b']);
+    expect(result.current.data?.invocations?.['inv_a']?.status).toBe(
+      'suspended',
+    );
+  });
+
+  it('retries a failed request once, then waits for another poll to succeed', async () => {
+    fetchStatuses.mockImplementation(() =>
+      Promise.reject(new Error('statuses failed')),
+    );
+    const { result } = render(['inv_b']);
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(result.current.isError).toBe(true);
+    expect(fetchStatuses).toHaveBeenCalledTimes(2);
+
+    fetchStatuses.mockImplementation(suspended);
+    await act(() =>
+      client.fetchQuery({
+        queryKey: result.current.queryKey,
+        queryFn: () => ({ invocations: { inv_a: { status: 'suspended' } } }),
+      }),
+    );
+
+    await waitFor(() =>
+      expect(result.current.data?.invocations?.['inv_b']?.status).toBe(
+        'suspended',
+      ),
+    );
+    expect(fetchStatuses).toHaveBeenCalledTimes(3);
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_b']);
+  });
+
+  it('still asks for newly referenced invocations while requests keep failing', async () => {
+    fetchStatuses.mockImplementation(() =>
+      Promise.reject(new Error('statuses failed')),
+    );
+    const { result, rerender } = render(['inv_a']);
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(result.current.isError).toBe(true);
+
+    rerender({ invocationIds: ['inv_a', 'inv_b'] });
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(3));
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_a', 'inv_b']);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(fetchStatuses).toHaveBeenCalledTimes(3);
+  });
+
+  describe('read through useGetInvocationStatusDetails', () => {
+    function renderWithReader(initialInvocationIds: string[]) {
+      return renderHook(
+        ({ invocationIds }) => ({
+          warm: useWarmInvocationStatusDetails(invocationIds, 'inv_parent', {
+            refetchInterval: false,
+            refetchOnWindowFocus: false,
+          }),
+          target: useGetInvocationStatusDetails('inv_b', 'inv_parent'),
+        }),
+        { wrapper, initialProps: { invocationIds: initialInvocationIds } },
+      );
+    }
+
+    it('waits for the invocation’s own status, not just any status', async () => {
+      const { result, rerender } = renderWithReader(['inv_a']);
+      await waitFor(() =>
+        expect(result.current.warm.data?.invocations?.['inv_a']).toBeDefined(),
+      );
+      expect(result.current.target.isPending).toBe(true);
+      expect(result.current.target.data).toBeUndefined();
+
+      rerender({ invocationIds: ['inv_a', 'inv_b'] });
+      await waitFor(() =>
+        expect(result.current.target.data?.status).toBe('suspended'),
+      );
+      expect(result.current.target.isPending).toBe(false);
+    });
+
+    it('stops waiting when the statuses request fails', async () => {
+      fetchStatuses.mockImplementation(() =>
+        Promise.reject(new Error('statuses failed')),
+      );
+      const { result } = renderWithReader(['inv_b']);
+      await waitFor(() => expect(result.current.target.error).toBeTruthy());
+      expect(result.current.target.isPending).toBe(false);
+    });
   });
 
   it('stops asking for an invocation the server leaves out', async () => {
