@@ -130,7 +130,9 @@ function useTopLayer() {
       return;
     }
     document.body.appendChild(container);
-    return () => container.remove();
+    return () => {
+      container.remove();
+    };
   }, [container]);
   return container;
 }
