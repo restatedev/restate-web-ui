@@ -1,4 +1,4 @@
-import { toPlaygroundResult } from './ResponseView';
+import { toPlaygroundResult } from './result';
 
 function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), {

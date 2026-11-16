@@ -39,6 +39,8 @@ type OnboardingComponent = ComponentType<{
     | 'register-deployment-endpoint'
     | 'register-deployment-confirm'
     | 'open-playground'
+    | 'playground-run'
+    | 'playground-result'
     | 'view-invocations'
     | 'view-invocation'
     | 'delete-deployment'

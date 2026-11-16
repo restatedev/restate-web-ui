@@ -101,13 +101,17 @@ async function sendWithPlayground(page: Page, handler: string, mode: string) {
     `/ui/overview?servicePlayground=Orders&playgroundHandler=${handler}`,
     { waitUntil: 'domcontentloaded' },
   );
-  if (mode === 'send') {
+  const dialog = page.getByRole('dialog');
+  const submit = dialog.locator('form button[type=submit]');
+  await expect(submit).toBeVisible({ timeout: 30_000 });
+  const label = (await submit.textContent())?.trim();
+  if (label !== (mode === 'send' ? 'Send' : 'Call')) {
+    await dialog.getByRole('button', { name: 'Actions' }).click();
     await page
-      .getByRole('group', { name: 'How to invoke' })
-      .getByRole('button', { name: 'Send', exact: true })
+      .getByRole('menuitem', { name: mode === 'send' ? /^Send/ : /^Call/ })
       .click();
   }
-  await page.locator('form button[type=submit]').click();
+  await submit.click();
   await expect.poll(() => captured.length).toBe(1);
   return captured[0] as CapturedRequest;
 }

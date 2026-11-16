@@ -1,6 +1,7 @@
 export * from './lib/Handler';
 export * from './lib/MiniService';
 export * from './lib/PlaygroundIconLink';
+export * from './lib/QuickRunPlayButton';
 export * from './lib/ServicePlayground';
 export * from './lib/ServicePlaygroundEmbed';
 export * from './lib/ServicePlaygroundSidebarAction';

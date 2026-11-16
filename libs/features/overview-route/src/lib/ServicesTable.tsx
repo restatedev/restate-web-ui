@@ -11,6 +11,7 @@ import { useRestateContext } from '@restate/features-restate-context';
 import {
   Handler as ServiceHandler,
   PlaygroundIconLink,
+  QuickRunPlayButton,
   ServiceType,
 } from '@restate/features-service';
 import { ServiceTarget } from '@restate/features-service-target';
@@ -33,7 +34,10 @@ import {
 } from '@restate/ui-table';
 import { HoverTooltip, RelativeDate } from '@restate/ui-tooltip';
 import { toServiceAndHandlerInvocationsHref } from '@restate/util-invocation-links';
-import { useOnboarding } from '@restate/util-feature-flag';
+import {
+  useIsFeatureFlagEnabled,
+  useOnboarding,
+} from '@restate/util-feature-flag';
 import { panelHref, serviceHref } from '@restate/util-panel';
 import { tv } from '@restate/util-styles';
 import { NotCompletedInvocationsCell } from './NotCompletedInvocationsCell';
@@ -232,9 +236,18 @@ function PlaygroundLink({
   isOnboarding?: boolean;
   OnboardingGuide?: ReturnType<typeof useRestateContext>['OnboardingGuide'];
 }) {
-  const link = (
+  const isQuickRun = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
+  const target = handlerName ? `${serviceName}/${handlerName}` : serviceName;
+  const link = isQuickRun ? (
+    <QuickRunPlayButton
+      aria-label={`Quick run ${target}`}
+      service={serviceName}
+      handler={handlerName}
+      isHighlighted={isOnboarding}
+    />
+  ) : (
     <PlaygroundIconLink
-      aria-label={`Open ${handlerName ? `${serviceName}/${handlerName}` : serviceName} in Playground`}
+      aria-label={`Open ${target} in Playground`}
       href={panelHref({ playground: serviceName, handler: handlerName })}
       isHighlighted={isOnboarding}
     />

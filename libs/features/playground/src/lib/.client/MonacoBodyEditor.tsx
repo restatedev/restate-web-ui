@@ -33,6 +33,8 @@ export function MonacoBodyEditor({
   onChange,
   onSubmit,
   ariaLabel,
+  maxHeight = 420,
+  autoFocus = false,
 }: {
   modelUri: string;
   value: string;
@@ -41,12 +43,16 @@ export function MonacoBodyEditor({
   onChange: (value: string) => void;
   onSubmit?: () => void;
   ariaLabel: string;
+  maxHeight?: number;
+  autoFocus?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const onChangeRef = useRef(onChange);
   const onSubmitRef = useRef(onSubmit);
+  const maxHeightRef = useRef(maxHeight);
   const valueRef = useRef(value);
+  const autoFocusRef = useRef(autoFocus);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -103,6 +109,9 @@ export function MonacoBodyEditor({
       quickSuggestions: { strings: true, other: true, comments: false },
     });
     editorRef.current = editor;
+    if (autoFocusRef.current) {
+      editor.focus();
+    }
     const submitAction = editor.addAction({
       id: 'restate.playground.submit',
       label: 'Send the request',
@@ -111,7 +120,7 @@ export function MonacoBodyEditor({
     });
 
     const resize = () => {
-      const height = `${Math.min(Math.max(editor.getContentHeight(), 96), 420)}px`;
+      const height = `${Math.min(Math.max(editor.getContentHeight(), 96), maxHeightRef.current)}px`;
       if (element.style.height !== height) {
         element.style.height = height;
       }
