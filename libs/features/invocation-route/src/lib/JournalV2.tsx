@@ -434,11 +434,10 @@ export function JournalV2({
       if (
         isLive &&
         !isScrollingRef.current &&
-        (query.state.status !== 'success' ||
-          hasNonCompletedReferencedInvocations(
-            referencedInvocationIds,
-            query.state.data?.invocations,
-          ))
+        hasNonCompletedReferencedInvocations(
+          referencedInvocationIds,
+          query.state.data?.invocations,
+        )
       ) {
         return 1000;
       }

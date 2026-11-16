@@ -1,6 +1,12 @@
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  render as renderComponent,
+  renderHook,
+  waitFor,
+} from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { PropsWithChildren } from 'react';
+import { useEffect, type PropsWithChildren } from 'react';
 import {
   useGetInvocationStatusDetails,
   useWarmInvocationStatusDetails,
@@ -145,6 +151,64 @@ describe('useWarmInvocationStatusDetails', () => {
     );
     expect(fetchStatuses).toHaveBeenCalledTimes(3);
     expect(onAbort).not.toHaveBeenCalled();
+  });
+
+  it('asks for its invocations when another poll starts just before it', async () => {
+    fetchStatuses.mockImplementation((invocationIds) => ({
+      invocations: Object.fromEntries(
+        invocationIds.map((id) => [
+          id,
+          { status: id === 'inv_done' ? 'succeeded' : 'suspended' },
+        ]),
+      ),
+    }));
+    let refetchJournal = () => undefined as void;
+    function Journal() {
+      const { refetch } = useWarmInvocationStatusDetails(
+        ['inv_done'],
+        'inv_parent',
+        { refetchOnMount: false, refetchInterval: false },
+      );
+      useEffect(() => {
+        refetchJournal = () => void refetch({ cancelRefetch: false });
+      });
+      return null;
+    }
+    function StartPoll() {
+      useEffect(() => refetchJournal(), []);
+      return null;
+    }
+    function Popover() {
+      const { data } = useWarmInvocationStatusDetails(
+        ['inv_child'],
+        'inv_parent',
+        { refetchOnMount: false, refetchInterval: false },
+      );
+      return <output>{data?.invocations?.['inv_child']?.status}</output>;
+    }
+    function Page({ open }: { open: boolean }) {
+      return (
+        <>
+          <Journal />
+          {open && (
+            <>
+              <StartPoll />
+              <Popover />
+            </>
+          )}
+        </>
+      );
+    }
+
+    const { container, rerender } = renderComponent(<Page open={false} />, {
+      wrapper,
+    });
+    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(1));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    rerender(<Page open />);
+    await waitFor(() => expect(container.textContent).toBe('suspended'));
+    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_child']);
   });
 
   it('asks again when the cached statuses are cleared', async () => {
