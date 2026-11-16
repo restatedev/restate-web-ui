@@ -470,6 +470,13 @@ export function JournalV2({
   useEffect(() => {
     const row = virtualizer.measurementsCache[focusRowIndex];
     const list = entriesListRef.current;
+    if (
+      getCommandIndexFromHash(hash) !== undefined &&
+      !hasScrolledToFocus.current
+    ) {
+      hasScrolledToFocus.current = true;
+      return;
+    }
     if (!withTimeline || hasScrolledToFocus.current || !row || !list) {
       return;
     }
@@ -481,7 +488,7 @@ export function JournalV2({
         row.start -
         window.innerHeight / 3,
     });
-  }, [withTimeline, focusRowIndex, virtualizer]);
+  }, [withTimeline, focusRowIndex, virtualizer, hash]);
   const eventRelatedInvocationIds = useMemo(
     () =>
       getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
