@@ -46,7 +46,10 @@ function Component() {
   );
   const config = resolveServiceConfig(data, handler);
   const isHandlerMode = Boolean(handler);
-  const isPrivate = !isPending && config.public.value === false;
+  const isPrivate =
+    !isPending &&
+    (config.public.value === false ||
+      (!isHandlerMode && !isPublicService(data)));
   const hasPlayground = handler
     ? isPublicHandler(data, handler)
     : isPublicService(data);

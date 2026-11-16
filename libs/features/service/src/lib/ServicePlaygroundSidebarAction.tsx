@@ -12,6 +12,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import {
   useListDeployments,
+  useListServices,
   useServiceCatalog,
 } from '@restate/data-access-admin-api-hooks';
 import { isPublicService } from '@restate/data-access-admin-api-spec';
@@ -32,13 +33,14 @@ export function ServicePlaygroundSidebarAction({
 }: {
   className?: string;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const { data } = useListDeployments();
   const { data: catalog } = useServiceCatalog();
+  const { data: services } = useListServices({ enabled: isOpen });
   const serviceNames = (data?.sortedServiceNames ?? []).filter((name) =>
-    isPublicService(catalog.get(name)),
+    isPublicService(services.get(name) ?? catalog.get(name)),
   );
   const disabled = serviceNames.length === 0;
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>

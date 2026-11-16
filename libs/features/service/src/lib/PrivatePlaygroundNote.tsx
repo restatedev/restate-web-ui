@@ -33,7 +33,7 @@ export function privateTargetNote(target: 'service' | 'handler') {
 }
 
 function privateServiceMessage(service: string) {
-  return `${service} is private: only other services can call it.`;
+  return `Only other services can call ${service}.`;
 }
 
 export function PrivatePlayButton({ className }: { className?: string }) {
