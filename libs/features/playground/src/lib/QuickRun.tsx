@@ -239,10 +239,10 @@ function ResultPanel({
           ) : (
             <>
               <Icon
-                name={IconName.Pencil}
+                name={IconName.ArrowLeft}
                 className="h-3.5 w-3.5 text-subtle"
               />
-              Edit and run again
+              Back
             </>
           )}
         </Button>

@@ -318,6 +318,15 @@ const schemaSectionStyles = tv({
 
 const HANDLER_RESPONSE_MODES = ['call', 'send', 'attach', 'output'] as const;
 
+const MODE_NAME: Record<(typeof HANDLER_RESPONSE_MODES)[number], string> = {
+  call: 'Call',
+  send: 'Send',
+  attach: 'Attach',
+  output: 'Get output',
+};
+
+type OutputOption = { response: ContractResponse; label: string };
+
 function statusOrder(status: string) {
   if (status === 'default') {
     return 1000;
@@ -344,18 +353,40 @@ function responseLabel(status: string) {
     : [status, statusText(status)].filter(Boolean).join(' ');
 }
 
+function handlerOutputs(handler: ContractHandler): OutputOption[] {
+  const modes = HANDLER_RESPONSE_MODES.filter((mode) => handler.modes[mode]);
+  const sources = new Map<string, string[]>();
+  for (const mode of modes) {
+    for (const { status } of handler.modes[mode]?.responses ?? []) {
+      sources.set(status, [...(sources.get(status) ?? []), MODE_NAME[mode]]);
+    }
+  }
+  return uniqueResponses(
+    modes.flatMap((mode) => handler.modes[mode]?.responses ?? []),
+  ).map((response) => {
+    const from = sources.get(response.status) ?? [];
+    const label = responseLabel(response.status);
+    return {
+      response,
+      label:
+        from.length < modes.length ? `${from.join(', ')} · ${label}` : label,
+    };
+  });
+}
+
 function OutputSection({
-  responses,
+  options,
   root,
   nothingText,
 }: {
-  responses: ContractResponse[];
+  options: OutputOption[];
   root: unknown;
   nothingText: string;
 }) {
-  const [selected, setSelected] = useState(responses[0]?.status ?? '');
-  const response =
-    responses.find(({ status }) => status === selected) ?? responses[0];
+  const [selected, setSelected] = useState(options[0]?.response.status ?? '');
+  const response = (
+    options.find((option) => option.response.status === selected) ?? options[0]
+  )?.response;
   const styles = schemaSectionStyles();
   const hasBody =
     response !== undefined &&
@@ -364,15 +395,15 @@ function OutputSection({
     <section aria-label="Output" className={styles.section()}>
       <div className={styles.header()}>
         <h3 className={styles.title()}>Output</h3>
-        {responses.length > 1 && response && (
+        {options.length > 1 && response && (
           <SegmentedControl
             label="Response status"
             className="ml-auto"
             value={response.status}
             onChange={setSelected}
-            options={responses.map(({ status }) => ({
-              value: status,
-              label: responseLabel(status),
+            options={options.map((option) => ({
+              value: option.response.status,
+              label: option.label,
             }))}
           />
         )}
@@ -413,11 +444,6 @@ export function SchemaView({ run }: { run: HandlerRun }) {
     handler.modes.send ??
     Object.values(handler.modes).find(Boolean);
   const body = operation?.body;
-  const responses = uniqueResponses(
-    HANDLER_RESPONSE_MODES.flatMap(
-      (mode) => handler.modes[mode]?.responses ?? [],
-    ),
-  );
   const styles = schemaSectionStyles();
   return (
     <div className="flex flex-col gap-4">
@@ -440,7 +466,7 @@ export function SchemaView({ run }: { run: HandlerRun }) {
       </section>
       <OutputSection
         key={handler.name}
-        responses={responses}
+        options={handlerOutputs(handler)}
         root={contract.document}
         nothingText="This handler returns nothing"
       />
@@ -467,7 +493,10 @@ export function ToolSchemaView({ run }: { run: OperationRun }) {
       )}
       <OutputSection
         key={operation.id}
-        responses={uniqueResponses(operation.responses)}
+        options={uniqueResponses(operation.responses).map((response) => ({
+          response,
+          label: responseLabel(response.status),
+        }))}
         root={contract.document}
         nothingText="No body"
       />
