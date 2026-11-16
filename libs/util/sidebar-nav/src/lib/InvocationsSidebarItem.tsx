@@ -17,11 +17,6 @@ import { useCanSortInvocationsByTransition } from '@restate/data-access-admin-ap
 // Preset definitions
 // ─────────────────────────────────────────────────────────────
 
-// Sort sentinel mirroring SORT_NONE in @restate/features-invocations-route
-// (this util lib can't depend on the feature lib). A preset with `sort: 'none'`
-// emits `sort_field=none`, which the route reads as "don't sort".
-const SORT_NONE = 'none';
-
 interface InvocationShortcut {
   id: string;
   label: string;
@@ -30,7 +25,7 @@ interface InvocationShortcut {
     operation: string;
     value?: unknown;
   }[];
-  sort?: { field: string; order: 'ASC' | 'DESC' } | typeof SORT_NONE;
+  sort?: { field: string; order: 'ASC' | 'DESC' };
   columns?: string[];
 }
 
@@ -52,7 +47,7 @@ const INVOCATION_SHORTCUTS: InvocationShortcut[] = [
   {
     id: 'processing',
     label: 'Running',
-    sort: SORT_NONE,
+    sort: { field: 'created_at', order: 'DESC' },
     filters: [
       {
         id: 'status',
@@ -148,9 +143,7 @@ function shortcutSort(
   s: InvocationShortcut,
   canSortByTransition: boolean,
 ): InvocationShortcut['sort'] {
-  return s.sort !== SORT_NONE &&
-    s.sort?.field === 'created_at' &&
-    canSortByTransition
+  return s.sort?.field === 'created_at' && canSortByTransition
     ? { field: 'transitioned_at', order: 'DESC' }
     : s.sort;
 }
@@ -171,9 +164,7 @@ function shortcutSearch(
       ),
     );
   }
-  if (sort === SORT_NONE) {
-    params.set('sort_field', SORT_NONE);
-  } else if (sort) {
+  if (sort) {
     params.set('sort_field', sort.field);
     params.set('sort_order', sort.order);
   }

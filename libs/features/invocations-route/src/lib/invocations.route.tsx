@@ -1208,8 +1208,8 @@ export const clientLoader = ({ request }: ClientLoaderFunctionArgs) => {
           // Only restore keys the caller hasn't already set — explicit
           // filter_*/sort_*/column on the URL always wins over the saved
           // state. Restoring sort_* (incl. the `sort_field=none` no-sort
-          // marker) keeps a no-sort preset like Running from picking up the
-          // default sort on back-navigation; restoring column keeps
+          // marker) keeps a chosen No sorting from picking up the default
+          // sort on back-navigation; restoring column keeps
           // preset-specific columns (idempotency_key, scheduled_start_at, …).
           // The `column` key repeats per value, but the guard makes the first
           // occurrence append all of them and the rest no-op.
