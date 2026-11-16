@@ -1,3 +1,4 @@
+import { DurationFormat } from '@formatjs/intl-durationformat';
 import {
   formatCompactISODuration,
   formatDurations,
@@ -13,6 +14,37 @@ describe('formatDurations', () => {
     [{ seconds: 1, milliseconds: 31 }, '1.031s'],
   ])('formats %o as %s', (duration, expected) => {
     expect(formatDurations(duration)).toBe(expected);
+  });
+
+  it('formats a duration only once', () => {
+    const formatToParts = vi.spyOn(DurationFormat.prototype, 'formatToParts');
+    const duration = { minutes: 41, seconds: 3, milliseconds: 0 };
+    expect(formatDurations(duration)).toBe('41m 3s');
+    expect(formatDurations({ ...duration })).toBe('41m 3s');
+    expect(formatToParts).toHaveBeenCalledTimes(1);
+    formatToParts.mockRestore();
+  });
+
+  it('keeps durations with the same numbers apart by style', () => {
+    const duration = { minutes: 1, seconds: 30 };
+    expect(formatDurations(duration)).toBe('1m 30s');
+    expect(formatDurations(duration, { style: 'long' })).toBe(
+      '1 minute, 30 seconds',
+    );
+    expect(formatDurations(duration)).toBe('1m 30s');
+  });
+
+  it('keeps durations apart when the same numbers sit in other units', () => {
+    expect(formatDurations({ hours: 3, minutes: 0 })).toBe('3h');
+    expect(formatDurations({ minutes: 3, seconds: 0 })).toBe('3m');
+  });
+
+  it('formats correctly after more durations than it keeps', () => {
+    for (let seconds = 1; seconds <= 2_100; seconds++) {
+      formatDurations({ hours: 1, seconds });
+    }
+    expect(formatDurations({ hours: 1, seconds: 7 })).toBe('1h 7s');
+    expect(formatDurations({ hours: 1, seconds: 2_050 })).toBe('1h 2,050s');
   });
 });
 

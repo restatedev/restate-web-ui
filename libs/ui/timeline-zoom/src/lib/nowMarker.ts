@@ -1,7 +1,7 @@
 import type { TimelineMode } from './TimelineEngineContext';
 
 const DEFAULT_NOW_PIN_EDGE_THRESHOLD_MS = 500;
-const DEFAULT_NOW_PIN_PROXIMITY_THRESHOLD_MS = 80;
+export const DEFAULT_NOW_PIN_PROXIMITY_THRESHOLD_MS = 80;
 
 export interface ResolveTimelineNowMarkerStateInput {
   mode: TimelineMode;

@@ -16,6 +16,7 @@ import {
   useTimelineViewportInteractions,
 } from '@restate/ui-timeline-zoom';
 import { HoverTooltip } from '@restate/ui-tooltip';
+import { TimelineScale } from './TimelineScale';
 
 const scrollableTimelineStyles = tv({
   base: 'h-full overflow-x-clip',
@@ -215,7 +216,7 @@ export function ScrollableTimeline({
           cancelEvent={cancelEvent}
           renderNowOverlay={nowMarker.renderInTimeline}
         />
-        <div className="relative z-10">{children}</div>
+        <TimelineScale className="relative z-10">{children}</TimelineScale>
       </div>
     </div>
   );
