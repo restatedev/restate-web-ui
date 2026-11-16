@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ReactNode } from 'react';
+import { useId, useRef, type ReactNode } from 'react';
 import { Button } from '@restate/ui-button';
 import { DropdownItem } from '@restate/ui-dropdown';
 import { Switch } from '@restate/ui-form-field';
@@ -245,17 +245,24 @@ function Mono({ children }: { children: ReactNode }) {
   return <code className="font-mono text-[0.95em]">{children}</code>;
 }
 
-function NoSchemaPeek() {
+function NoSchemaPeek({ label, isJson }: { label: string; isJson: boolean }) {
   return (
-    <InfoPeek label="Input">
-      This handler has no input schema, so it may take no input at all
+    <InfoPeek label={label}>
+      {isJson
+        ? 'No input schema: enter any JSON value, or leave it empty to send no input'
+        : 'No input schema: leave it empty to send no input'}
     </InfoPeek>
   );
 }
 
-function SchemaPeek({ run }: { run: OperationRun }) {
+function SchemaPeek({ run, label }: { run: OperationRun; label: string }) {
   if (!hasInputSchema(run)) {
-    return run.isInputOptional ? <NoSchemaPeek /> : null;
+    return run.isInputOptional ? (
+      <NoSchemaPeek
+        label={label}
+        isJson={isJsonContentType(run.operation.body?.contentType)}
+      />
+    ) : null;
   }
   return (
     <Peek
@@ -303,65 +310,12 @@ function ResetInput({ run }: { run: OperationRun }) {
 
 export function InputField({
   run,
-  maxHeight,
-  label,
-}: {
-  run: OperationRun;
-  maxHeight?: number;
-  label?: string;
-}) {
-  const { draft } = run.runner;
-  const [isOpen, setIsOpen] = useState(
-    () =>
-      !run.isInputOptional || draft.rawBody !== '' || draft.bodyMode === 'file',
-  );
-  const [shouldFocus, setShouldFocus] = useState(false);
-  if (!run.hasInput) {
-    return null;
-  }
-  if (!isOpen) {
-    return (
-      <div className="flex min-h-7 items-center gap-2">
-        <span className="text-0.5xs font-medium text-secondary">
-          {label ?? 'Input'}
-        </span>
-        <NoSchemaPeek />
-        <Button
-          variant="secondary"
-          className="ml-auto flex items-center gap-1 rounded-lg px-2 py-1 text-xs"
-          onClick={() => {
-            setIsOpen(true);
-            setShouldFocus(true);
-          }}
-        >
-          <Icon name={IconName.Plus} className="h-3.5 w-3.5 text-subtle" />
-          Add input
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <JsonInput
-      run={run}
-      maxHeight={maxHeight}
-      label={label}
-      autoFocus={shouldFocus}
-    />
-  );
-}
-
-function JsonInput({
-  run,
-  className,
   label = 'Input',
   maxHeight,
-  autoFocus,
 }: {
   run: OperationRun;
-  className?: string;
-  label?: string | false;
+  label?: string;
   maxHeight?: number;
-  autoFocus?: boolean;
 }) {
   const { runner, operation, service, draftName } = run;
   const body = operation.body;
@@ -375,43 +329,40 @@ function JsonInput({
   const issue = runner.issueFor('body');
   return (
     <div ref={containerRef} className="flex min-w-0 flex-col gap-1.5">
-      {label && (
-        <div className="flex min-h-5 items-center gap-2">
-          <span className="text-0.5xs font-medium text-secondary">{label}</span>
-          <SchemaPeek run={run} />
-          <div className="ml-auto flex items-center gap-1.5">
-            {!isFileMode && <ResetInput run={run} />}
-            {!isText && (
-              <SegmentedControl
-                label="Input source"
-                value={runner.draft.bodyMode}
-                onChange={(bodyMode) =>
-                  runner.setDraft((previous) => ({ ...previous, bodyMode }))
-                }
-                options={[
-                  { value: 'text', label: 'Text' },
-                  { value: 'file', label: 'File' },
-                ]}
-              />
-            )}
-          </div>
+      <div className="flex min-h-5 items-center gap-2">
+        <span className="text-0.5xs font-medium text-secondary">{label}</span>
+        <SchemaPeek run={run} label={label} />
+        <div className="ml-auto flex items-center gap-1.5">
+          {!isFileMode && <ResetInput run={run} />}
+          {!isText && (
+            <SegmentedControl
+              label="Input source"
+              value={runner.draft.bodyMode}
+              onChange={(bodyMode) =>
+                runner.setDraft((previous) => ({ ...previous, bodyMode }))
+              }
+              options={[
+                { value: 'text', label: 'Text' },
+                { value: 'file', label: 'File' },
+              ]}
+            />
+          )}
         </div>
-      )}
+      </div>
       {isFileMode ? (
         <FileInput run={run} />
       ) : (
         <BodyEditor
-          className={editorStyles({ className })}
+          className={editorStyles()}
           modelUri={bodyModelUri(service, draftName, body.contentType)}
           value={runner.draft.rawBody}
           language={isJson ? 'json' : 'plaintext'}
           schemas={run.schemas}
-          ariaLabel="Input"
+          ariaLabel={label}
           maxHeight={maxHeight}
           onChange={(rawBody) =>
             runner.setDraft((previous) => ({ ...previous, rawBody }))
           }
-          autoFocus={autoFocus}
           onSubmit={() =>
             containerRef.current?.closest('form')?.requestSubmit()
           }

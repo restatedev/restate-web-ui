@@ -2,6 +2,7 @@ import { parseServiceContract } from './contract.js';
 import {
   buildRequest,
   concreteContentType,
+  isOptionalUntypedBody,
   validateRequest,
 } from './request.js';
 import { loadFixture } from './test-fixtures.js';
@@ -160,6 +161,32 @@ describe('buildRequest', () => {
         { baseUrl },
       ).url,
     ).toBe('http://localhost:8080/Cart/k/add/send');
+  });
+});
+
+describe('isOptionalUntypedBody', () => {
+  it('is true for an optional input without a schema', () => {
+    expect(
+      isOptionalUntypedBody(
+        operation('1.8.1-ts-noschema-Greeter.json', 'greet', 'call'),
+      ),
+    ).toBe(true);
+    expect(
+      isOptionalUntypedBody(
+        operation('1.8.1-ts-Orders.json', 'upload', 'call'),
+      ),
+    ).toBe(true);
+  });
+
+  it('is false for an input with a schema or without any input', () => {
+    expect(
+      isOptionalUntypedBody(
+        operation('1.8.1-ts-Orders.json', 'create', 'call'),
+      ),
+    ).toBe(false);
+    expect(
+      isOptionalUntypedBody(operation('1.8.1-ts-Orders.json', 'ping', 'call')),
+    ).toBe(false);
   });
 });
 
