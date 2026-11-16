@@ -10,7 +10,9 @@ import {
   getCachedJournal,
   isCacheableJournal,
   isJournalReplaced,
+  JOURNAL_FALLBACK_COOLDOWN_MS,
   MAX_CACHED_JOURNAL_BYTES,
+  noteJournalFallback,
   setCachedJournal,
 } from './journalCache.js';
 
@@ -163,6 +165,16 @@ describe('appendJournalEvents', () => {
     expect(appendJournalEvents(cached, [], 0)).toBeUndefined();
   });
 
+  it('skips the count check when there is no count', () => {
+    const cached = [event('2026-01-01T00:00:10.000Z', 'a')];
+    const tail = [
+      event('2026-01-01T00:00:10.000Z', 'a'),
+      event('2026-01-01T00:00:11.000Z', 'b'),
+    ];
+
+    expect(appendJournalEvents(cached, tail)).toEqual(tail);
+  });
+
   it('rejects a tail when the server counts events the cursor missed', () => {
     const cached = [event('2026-01-01T00:00:10.000Z', 'a')];
 
@@ -263,6 +275,19 @@ describe('cache budget', () => {
     setCachedJournal('big', journalOfBytes(MAX_CACHED_JOURNAL_BYTES + 1));
 
     expect(getCachedJournal('big')).toBeUndefined();
+    expect(getCachedJournal('a')).toBeDefined();
+  });
+
+  it('hides a journal for a minute after a fallback', () => {
+    vi.useFakeTimers();
+    noteJournalFallback('a');
+    setCachedJournal('a', journalOfBytes(10));
+
+    expect(getCachedJournal('a')).toBeUndefined();
+    vi.advanceTimersByTime(JOURNAL_FALLBACK_COOLDOWN_MS - 1);
+    expect(getCachedJournal('a')).toBeUndefined();
+    setCachedJournal('a', journalOfBytes(10));
+    vi.advanceTimersByTime(1);
     expect(getCachedJournal('a')).toBeDefined();
   });
 

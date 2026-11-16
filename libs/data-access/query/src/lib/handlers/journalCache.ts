@@ -23,10 +23,12 @@ type StoredJournal = {
 
 export const MAX_CACHED_JOURNAL_BYTES = 80 * 1024 * 1024;
 export const CACHED_JOURNAL_IDLE_MS = 60_000;
+export const JOURNAL_FALLBACK_COOLDOWN_MS = 60_000;
 const ROW_BYTES = 256;
 const EVENT_BYTES = 128;
 
 const journals = new Map<string, StoredJournal>();
+const fallbacks = new Map<string, number>();
 let sweepTimer: ReturnType<typeof setTimeout> | undefined;
 
 export function estimateJournalBytes(journal: CachedJournal) {
@@ -46,10 +48,18 @@ function dropIdleJournals(now: number) {
       journals.delete(key);
     }
   }
+  for (const [key, fellBackAt] of fallbacks) {
+    if (now - fellBackAt >= JOURNAL_FALLBACK_COOLDOWN_MS) {
+      fallbacks.delete(key);
+    }
+  }
 }
 
 function scheduleSweep() {
-  if (sweepTimer !== undefined || journals.size === 0) {
+  if (
+    sweepTimer !== undefined ||
+    (journals.size === 0 && fallbacks.size === 0)
+  ) {
     return;
   }
   sweepTimer = setTimeout(() => {
@@ -67,6 +77,9 @@ export function journalCacheKey(baseUrl: string, invocationId: string) {
 export function getCachedJournal(key: string) {
   const now = Date.now();
   dropIdleJournals(now);
+  if (fallbacks.has(key)) {
+    return undefined;
+  }
   const stored = journals.get(key);
   if (stored) {
     stored.usedAt = now;
@@ -99,8 +112,14 @@ export function deleteCachedJournal(key: string) {
   journals.delete(key);
 }
 
+export function noteJournalFallback(key: string) {
+  fallbacks.set(key, Date.now());
+  scheduleSweep();
+}
+
 export function clearJournalCache() {
   journals.clear();
+  fallbacks.clear();
   clearTimeout(sweepTimer);
   sweepTimer = undefined;
 }
@@ -157,7 +176,7 @@ function eventKey(event: JournalEventRow) {
 export function appendJournalEvents(
   cachedEvents: JournalEventRow[],
   tailEvents: JournalEventRow[],
-  totalEvents: number,
+  totalEvents?: number,
 ) {
   const lastAppendedAt = cachedEvents.at(-1)?.appended_at;
   let keptEvents = cachedEvents.length;
@@ -183,7 +202,10 @@ export function appendJournalEvents(
     }
     tailCounts.set(key, count - 1);
   }
-  if (keptEvents + tailEvents.length !== totalEvents) {
+  if (
+    totalEvents !== undefined &&
+    keptEvents + tailEvents.length !== totalEvents
+  ) {
     return undefined;
   }
 
