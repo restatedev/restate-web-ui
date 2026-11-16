@@ -6,7 +6,7 @@ import type {
 import {
   Dispatch,
   memo,
-  RefObject,
+  RefCallback,
   Suspense,
   useCallback,
   useEffect,
@@ -64,6 +64,7 @@ import {
   useProcessedJournal,
 } from './useProcessedJournal';
 import { useContainerWidth } from './useContainerWidth';
+import { useWindowScrollMargin } from './useWindowScrollMargin';
 import {
   getEventRelatedInvocationIds,
   getReferencedInvocationIds,
@@ -340,11 +341,14 @@ export function JournalV2({
     },
     [entriesWithoutInput],
   );
+  const entriesListRef = useRef<HTMLDivElement>(null);
+  const [entriesListCallbackRef, scrollMargin] =
+    useWindowScrollMargin(entriesListRef);
   const virtualizer = useWindowVirtualizer({
     count: entriesWithoutInput.length,
     estimateSize: () => 36,
     overscan: 24,
-    scrollMargin: 0,
+    scrollMargin,
     getItemKey,
   });
   useLayoutEffect(() => {
@@ -352,7 +356,6 @@ export function JournalV2({
   });
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
-  const entriesListRef = useRef<HTMLDivElement>(null);
 
   const { commandIndex: failureCommandIndex } = useFailureRelatedCommandIndex(
     journalAndInvocationData,
@@ -395,7 +398,12 @@ export function JournalV2({
     scrolledLocationKey.current = locationKey;
     const listTop = list.getBoundingClientRect().top + window.scrollY;
     window.scrollTo({
-      top: listTop + row.start + row.size / 2 - window.innerHeight / 2,
+      top:
+        listTop +
+        row.start -
+        scrollMargin +
+        row.size / 2 -
+        window.innerHeight / 2,
     });
   }, [
     withTimeline,
@@ -404,6 +412,7 @@ export function JournalV2({
     entriesWithoutInput,
     invocationId,
     virtualizer,
+    scrollMargin,
     journalAndInvocationData,
   ]);
 
@@ -642,8 +651,9 @@ export function JournalV2({
                             style={{ minHeight: totalSize }}
                           >
                             <VirtualizedEntries
-                              ref={entriesListRef}
+                              ref={entriesListCallbackRef}
                               virtualItems={virtualItems}
+                              scrollMargin={scrollMargin}
                               totalSize={totalSize}
                               entriesWithoutInput={entriesWithoutInput}
                               data={data}
@@ -693,6 +703,7 @@ export function JournalV2({
                             >
                               <VirtualizedTimeline
                                 virtualItems={virtualItems}
+                                scrollMargin={scrollMargin}
                                 totalSize={totalSize}
                                 entriesWithoutInput={entriesWithoutInput}
                                 data={data}
@@ -878,13 +889,15 @@ function ReturnToLiveButton({
 function VirtualizedEntries({
   ref,
   virtualItems,
+  scrollMargin,
   totalSize,
   entriesWithoutInput,
   data,
   failureRow,
 }: {
-  ref: RefObject<HTMLDivElement | null>;
+  ref: RefCallback<HTMLDivElement>;
   virtualItems: VirtualItem[];
+  scrollMargin: number;
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
@@ -904,7 +917,10 @@ function VirtualizedEntries({
           data-last-failure-position
           aria-hidden
           className="pointer-events-none absolute inset-x-0"
-          style={{ top: failureRow.start, height: failureRow.size }}
+          style={{
+            top: failureRow.start - scrollMargin,
+            height: failureRow.size,
+          }}
         />
       )}
       {virtualItems.map((virtualItem) => {
@@ -927,7 +943,7 @@ function VirtualizedEntries({
               left: 0,
               width: '100%',
               height: virtualItem.size,
-              transform: `translateY(${virtualItem.start}px)`,
+              transform: `translateY(${virtualItem.start - scrollMargin}px)`,
             }}
           >
             <ErrorBoundary
@@ -950,6 +966,7 @@ function VirtualizedEntries({
 
 function VirtualizedTimeline({
   virtualItems,
+  scrollMargin,
   totalSize,
   entriesWithoutInput,
   data,
@@ -958,6 +975,7 @@ function VirtualizedTimeline({
   isReferencedInvocationsError,
 }: {
   virtualItems: VirtualItem[];
+  scrollMargin: number;
   totalSize: number;
   entriesWithoutInput: CombinedJournalEntry[];
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
@@ -1008,7 +1026,7 @@ function VirtualizedTimeline({
               left: 0,
               width: '100%',
               height: virtualItem.size,
-              transform: `translateY(${virtualItem.start}px)`,
+              transform: `translateY(${virtualItem.start - scrollMargin}px)`,
             }}
           >
             <TimelineContainer
