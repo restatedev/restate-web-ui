@@ -1,5 +1,6 @@
 import {
   useListDeployments,
+  useServiceCatalog,
   useServiceDetails,
 } from '@restate/data-access-admin-api-hooks';
 import {
@@ -39,6 +40,7 @@ function Component() {
     staleTime: 0,
   });
   const { dataUpdatedAt: deploymentsUpdatedAt } = useListDeployments();
+  const { data: catalog } = useServiceCatalog();
   const handlers = data?.handlers ?? [];
   const handler = useMemo(
     () => handlers.find(({ name }) => name === requestedHandler),
@@ -46,13 +48,10 @@ function Component() {
   );
   const config = resolveServiceConfig(data, handler);
   const isHandlerMode = Boolean(handler);
-  const isPrivate =
-    !isPending &&
-    (config.public.value === false ||
-      (!isHandlerMode && !isPublicService(data)));
+  const isPrivate = !isPending && config.public.value === false;
   const hasPlayground = handler
     ? isPublicHandler(data, handler)
-    : isPublicService(data);
+    : isPublicService(data ?? catalog.get(service));
   const isKeyed = data?.ty === 'VirtualObject' || data?.ty === 'Workflow';
   const schemaWarnings = data?.info ?? [];
 
