@@ -15,7 +15,6 @@ import {
   InputField,
   isRunMode,
   KeyFields,
-  OutputField,
   runLabel,
   SendButton,
   submitRun,
@@ -170,7 +169,6 @@ function QuickRunBody({
               </p>
             )
           )}
-          <OutputField run={run} />
           {isAdvancedOpen && <AdvancedFields run={run} />}
           <div className="flex items-center gap-2">
             <AdvancedToggle

@@ -17,7 +17,6 @@ import { BodyEditor } from './BodyEditor';
 import { SegmentedControl } from './SegmentedControl';
 import { bodyModelUri, isTextContentType, randomId } from './request';
 import { InfoPeek, Peek } from './floating';
-import { bodyTypeText, handlerOutput } from './typeText';
 import type { BaseMode, HandlerRun, OperationRun } from './useHandlerRun';
 
 const FIELD_LABEL: Partial<Record<string, string>> = {
@@ -246,45 +245,6 @@ function Mono({ children }: { children: ReactNode }) {
   return <code className="font-mono text-[0.95em]">{children}</code>;
 }
 
-const typeStyles = tv({
-  base: 'min-w-0 truncate font-mono text-2xs text-subtle',
-});
-
-export function OutputField({ run }: { run: HandlerRun }) {
-  if (!run.handler.modes.call) {
-    return null;
-  }
-  const output = handlerOutput(run.handler);
-  const root = run.contract.document;
-  const hasOutput =
-    output !== undefined &&
-    (output.schema !== undefined || output.contentType !== undefined);
-  const text = hasOutput ? bodyTypeText(output, root) : 'nothing';
-  return (
-    <div className="flex min-h-5 min-w-0 items-center gap-2">
-      <span className="shrink-0 text-0.5xs font-medium text-secondary">
-        Returns
-      </span>
-      {output?.schema !== undefined && (
-        <Peek
-          label="Show the output schema"
-          panelClassName="max-h-80 w-80 overflow-auto"
-        >
-          <JsonSchemaTree
-            schema={output.schema}
-            root={root}
-            mode="read"
-            emptyText="Any JSON value"
-          />
-        </Peek>
-      )}
-      <span className={typeStyles()} title={text}>
-        {text}
-      </span>
-    </div>
-  );
-}
-
 function SchemaPeek({ run }: { run: OperationRun }) {
   if (!hasInputSchema(run)) {
     return null;
@@ -407,20 +367,12 @@ function JsonInput({
   const isText = isTextContentType(body.contentType);
   const isFileMode = runner.draft.bodyMode === 'file';
   const issue = runner.issueFor('body');
-  const inputType = bodyTypeText(body, run.contract.document);
   return (
     <div ref={containerRef} className="flex min-w-0 flex-col gap-1.5">
       {label && (
         <div className="flex min-h-5 items-center gap-2">
-          <span className="shrink-0 text-0.5xs font-medium text-secondary">
-            {label}
-          </span>
+          <span className="text-0.5xs font-medium text-secondary">{label}</span>
           <SchemaPeek run={run} />
-          {inputType && (
-            <span className={typeStyles()} title={inputType}>
-              {inputType}
-            </span>
-          )}
           <div className="ml-auto flex items-center gap-1.5">
             {!isFileMode && <ResetInput run={run} />}
             {!isText && (

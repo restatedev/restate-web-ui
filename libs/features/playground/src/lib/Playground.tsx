@@ -32,7 +32,6 @@ import {
   InputField,
   isRunMode,
   KeyFields,
-  OutputField,
   ParameterFields,
   RunButton,
   runLabel,
@@ -395,7 +394,6 @@ function Workspace({
                   </p>
                 )
               )}
-              <OutputField run={run} />
               {isAdvancedOpen && <AdvancedFields run={run} isWide />}
               <div className="flex items-center gap-3">
                 <Hint

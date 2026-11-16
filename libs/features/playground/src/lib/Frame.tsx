@@ -16,7 +16,7 @@ import { ServiceTarget } from '@restate/features-service-target';
 import { isJsonContentType } from '@restate/util-openapi';
 import type {
   ContractHandler,
-  ContractOperation,
+  ContractResponse,
   HandlerMode,
   InvocationToolKind,
   RestateClientSnippetInput,
@@ -27,9 +27,9 @@ import type {
 import { CodeSamples } from './CodeSamples';
 import { toolId } from './names';
 import { API_KEY_PLACEHOLDER } from './useRunner';
-import { JsonSchemaTree } from '@restate/ui-json-schema';
+import { JsonSchemaTree, MarkdownDescription } from '@restate/ui-json-schema';
 import { statusText } from './status';
-import { handlerOutput } from './typeText';
+import { SegmentedControl } from './SegmentedControl';
 import { useServiceContract } from './useServiceContract';
 import type { HandlerRun, OperationRun } from './useHandlerRun';
 
@@ -309,58 +309,98 @@ const schemaSectionStyles = tv({
   slots: {
     section:
       'flex min-w-0 flex-col gap-2 rounded-xl border bg-surface p-4 shadow-xs',
+    header: 'flex min-h-6 flex-wrap items-center gap-2',
     title: 'text-0.5xs font-medium text-secondary',
     empty: 'text-sm text-muted',
     note: 'text-0.5xs text-muted',
   },
 });
 
-function errorStatusLabel(status: string, isOnly: boolean) {
+const HANDLER_RESPONSE_MODES = ['call', 'send', 'attach', 'output'] as const;
+
+function statusOrder(status: string) {
   if (status === 'default') {
-    return isOnly ? 'Any status' : 'Other';
+    return 1000;
   }
-  return [status, statusText(status)].filter(Boolean).join(' ');
+  const code = Number(status);
+  return Number.isNaN(code) ? 999 : code;
 }
 
-function ErrorsSection({
-  operation,
-  root,
-  defaultNote,
-}: {
-  operation?: ContractOperation;
-  root: unknown;
-  defaultNote?: string;
-}) {
-  const errors = (operation?.responses ?? []).filter(
-    ({ status }) => !status.startsWith('2'),
-  );
-  if (errors.length === 0) {
-    return null;
+function uniqueResponses(responses: ContractResponse[]) {
+  const byStatus = new Map<string, ContractResponse>();
+  for (const response of responses) {
+    if (!byStatus.has(response.status)) {
+      byStatus.set(response.status, response);
+    }
   }
-  const shape = errors.find(({ schema }) => schema !== undefined)?.schema;
+  return Array.from(byStatus.values()).sort(
+    (a, b) => statusOrder(a.status) - statusOrder(b.status),
+  );
+}
+
+function responseLabel(status: string) {
+  return status === 'default'
+    ? 'Error'
+    : [status, statusText(status)].filter(Boolean).join(' ');
+}
+
+function OutputSection({
+  responses,
+  root,
+  nothingText,
+}: {
+  responses: ContractResponse[];
+  root: unknown;
+  nothingText: string;
+}) {
+  const [selected, setSelected] = useState(responses[0]?.status ?? '');
+  const response =
+    responses.find(({ status }) => status === selected) ?? responses[0];
   const styles = schemaSectionStyles();
+  const hasBody =
+    response !== undefined &&
+    (response.schema !== undefined || response.contentType !== undefined);
   return (
-    <section aria-label="Errors" className={styles.section()}>
-      <h3 className={styles.title()}>Errors</h3>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-        {errors.map(({ status, description }) => (
-          <div key={status} className="contents">
-            <dt className="font-mono text-2xs leading-5 text-secondary">
-              {errorStatusLabel(status, errors.length === 1)}
-            </dt>
-            <dd className={styles.note({ className: 'leading-5' })}>
-              {(status === 'default' && defaultNote) ||
-                description ||
-                'Error response'}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      {shape !== undefined && (
-        <div className="flex flex-col gap-1.5 border-t border-muted pt-3">
-          <p className={styles.note()}>Every error has this shape</p>
-          <JsonSchemaTree schema={shape} root={root} mode="read" />
-        </div>
+    <section aria-label="Output" className={styles.section()}>
+      <div className={styles.header()}>
+        <h3 className={styles.title()}>Output</h3>
+        {responses.length > 1 && response && (
+          <SegmentedControl
+            label="Response status"
+            className="ml-auto"
+            value={response.status}
+            onChange={setSelected}
+            options={responses.map(({ status }) => ({
+              value: status,
+              label: responseLabel(status),
+            }))}
+          />
+        )}
+      </div>
+      {response?.description && (
+        <MarkdownDescription className={styles.note()}>
+          {response.description}
+        </MarkdownDescription>
+      )}
+      {hasBody ? (
+        <JsonSchemaTree
+          schema={response.schema}
+          root={root}
+          mode="read"
+          emptyText={
+            response.contentType && !isJsonContentType(response.contentType)
+              ? `Raw ${response.contentType} content`
+              : 'Any JSON value'
+          }
+        />
+      ) : (
+        !response?.description && (
+          <p className={styles.empty()}>
+            {response?.status.startsWith('2') || !response
+              ? nothingText
+              : 'No body'}
+          </p>
+        )
       )}
     </section>
   );
@@ -373,7 +413,11 @@ export function SchemaView({ run }: { run: HandlerRun }) {
     handler.modes.send ??
     Object.values(handler.modes).find(Boolean);
   const body = operation?.body;
-  const output = handlerOutput(handler);
+  const responses = uniqueResponses(
+    HANDLER_RESPONSE_MODES.flatMap(
+      (mode) => handler.modes[mode]?.responses ?? [],
+    ),
+  );
   const styles = schemaSectionStyles();
   return (
     <div className="flex flex-col gap-4">
@@ -394,27 +438,11 @@ export function SchemaView({ run }: { run: HandlerRun }) {
           <p className={styles.empty()}>This handler takes no input</p>
         )}
       </section>
-      <section aria-label="Output" className={styles.section()}>
-        <h3 className={styles.title()}>Output</h3>
-        {output && (output.schema !== undefined || output.contentType) ? (
-          <JsonSchemaTree
-            schema={output.schema}
-            root={contract.document}
-            mode="read"
-            emptyText={
-              output.contentType && !isJsonContentType(output.contentType)
-                ? `Raw ${output.contentType} content`
-                : 'Any JSON value'
-            }
-          />
-        ) : (
-          <p className={styles.empty()}>This handler returns nothing</p>
-        )}
-      </section>
-      <ErrorsSection
-        operation={operation}
+      <OutputSection
+        key={handler.name}
+        responses={responses}
         root={contract.document}
-        defaultNote="The handler failed with a terminal error, or Restate rejected the request"
+        nothingText="This handler returns nothing"
       />
     </div>
   );
@@ -423,9 +451,6 @@ export function SchemaView({ run }: { run: HandlerRun }) {
 export function ToolSchemaView({ run }: { run: OperationRun }) {
   const { operation, contract } = run;
   const body = operation.body;
-  const reply = operation.responses.find(({ status }) =>
-    status.startsWith('2'),
-  );
   const styles = schemaSectionStyles();
   return (
     <div className="flex flex-col gap-4">
@@ -440,22 +465,12 @@ export function ToolSchemaView({ run }: { run: OperationRun }) {
           />
         </section>
       )}
-      <section aria-label="Reply" className={styles.section()}>
-        <h3 className={styles.title()}>Reply</h3>
-        {reply?.schema !== undefined ? (
-          <JsonSchemaTree
-            schema={reply.schema}
-            root={contract.document}
-            mode="read"
-            emptyText="Any JSON value"
-          />
-        ) : (
-          <p className={styles.note()}>
-            {reply?.description ?? 'No reply body'}
-          </p>
-        )}
-      </section>
-      <ErrorsSection operation={operation} root={contract.document} />
+      <OutputSection
+        key={operation.id}
+        responses={uniqueResponses(operation.responses)}
+        root={contract.document}
+        nothingText="No body"
+      />
     </div>
   );
 }
