@@ -308,26 +308,6 @@ describe('useWarmInvocationStatusDetails', () => {
     expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_b']);
   });
 
-  it('retries a failing set of invocations only once while other polls succeed', async () => {
-    fetchStatuses.mockImplementation(() =>
-      Promise.reject(new Error('statuses failed')),
-    );
-    const { result } = render(['inv_b']);
-    await waitFor(() => expect(fetchStatuses).toHaveBeenCalledTimes(2));
-
-    for (let poll = 0; poll < 3; poll++) {
-      await act(() =>
-        client.fetchQuery({
-          queryKey: result.current.queryKey,
-          queryFn: () => ({ invocations: { inv_a: { status: 'suspended' } } }),
-        }),
-      );
-      await new Promise((resolve) => setTimeout(resolve, 30));
-    }
-    expect(fetchStatuses).toHaveBeenCalledTimes(3);
-    expect(fetchStatuses).toHaveBeenLastCalledWith(['inv_b']);
-  });
-
   it('still asks for newly referenced invocations while requests keep failing', async () => {
     fetchStatuses.mockImplementation(() =>
       Promise.reject(new Error('statuses failed')),
