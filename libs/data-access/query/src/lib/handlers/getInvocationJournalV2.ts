@@ -24,12 +24,12 @@ import {
   quoteSqlString,
 } from './shared.js';
 import {
-  appendJournalEvents,
   appendJournalRows,
   deleteCachedJournal,
   getCachedJournal,
   isCacheableJournal,
   isJournalReplaced,
+  isSameJournalEvents,
   journalCacheKey,
   type JournalEventRow,
   noteJournalFallback,
@@ -211,10 +211,6 @@ function journalEntriesSql(
   return `SELECT id, index, appended_at, entry_type, name, raw_length, entry_lite_json, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql}${typeof fromIndex === 'number' ? ` AND index >= ${fromIndex}` : ''} ORDER BY index`;
 }
 
-function journalEventsSql(invocationIdSql: string, fromAppendedAt?: string) {
-  return `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = ${invocationIdSql}${fromAppendedAt ? ` AND appended_at >= ${quoteSqlString(fromAppendedAt)}` : ''} ORDER BY appended_at`;
-}
-
 function journalResponseBody(
   invocation: Omit<InvocationJournalV2Response, 'journal'>,
   entriesJson: string,
@@ -238,71 +234,47 @@ export async function getInvocationJournalV2(
   const invocationIdSql = quoteSqlString(invocationId);
   const cacheKey = journalCacheKey(this.baseUrl, invocationId);
   const cached = includeRaw ? undefined : getCachedJournal(cacheKey);
-  const [
-    invocationQuery,
-    journalQuery,
-    eventsQuery,
-    vqueueStatuses,
-    eventsCountQuery,
-  ] = await Promise.all([
-    this.query(
-      `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
-      'invocations/get',
-    ),
-    this.query(
-      journalEntriesSql(
-        invocationIdSql,
-        includeRaw,
-        cached?.rows.at(-1)?.index,
+  const [invocationQuery, journalQuery, eventsQuery, vqueueStatuses] =
+    await Promise.all([
+      this.query(
+        `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
+        'invocations/get',
       ),
-      'invocations/journal-entries',
-    ),
-    this.query(
-      journalEventsSql(invocationIdSql, cached?.events.at(-1)?.appended_at),
-      'invocations/journal-events',
-    ),
-    fetchVqueueStatuses(this, [invocationId]),
-    cached
-      ? this.query(
-          `SELECT count(*) AS count FROM sys_journal_events WHERE id = ${invocationIdSql}`,
-          'invocations/journal-events-count',
-        ).catch(() => undefined)
-      : undefined,
-  ]);
+      this.query(
+        journalEntriesSql(
+          invocationIdSql,
+          includeRaw,
+          cached?.rows.at(-1)?.index,
+        ),
+        'invocations/journal-entries',
+      ),
+      this.query(
+        `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = ${invocationIdSql} ORDER BY appended_at`,
+        'invocations/journal-events',
+      ),
+      fetchVqueueStatuses(this, [invocationId]),
+    ]);
 
   const rawInvocation = invocationQuery.rows.at(0);
   let journalRows = journalQuery.rows as JournalRawEntry[];
   let eventRows = eventsQuery.rows as JournalEventRow[];
   if (cached && rawInvocation) {
-    const eventsCount = Number(eventsCountQuery?.rows.at(0)?.count);
+    if (isSameJournalEvents(cached.events, eventRows)) {
+      eventRows = cached.events;
+    }
     const mergedRows = isJournalReplaced(cached, rawInvocation)
       ? undefined
       : appendJournalRows(cached.rows, journalRows);
-    const mergedEvents =
-      mergedRows &&
-      appendJournalEvents(
-        cached.events,
-        eventRows,
-        Number.isFinite(eventsCount) ? eventsCount : undefined,
-      );
-    if (mergedRows && mergedEvents) {
+    if (mergedRows) {
       journalRows = mergedRows;
-      eventRows = mergedEvents;
     } else {
       deleteCachedJournal(cacheKey);
       noteJournalFallback(cacheKey);
-      const [fullJournalQuery, fullEventsQuery] = await Promise.all([
-        this.query(
-          journalEntriesSql(invocationIdSql, includeRaw),
-          'invocations/journal-entries',
-        ),
-        this.query(
-          journalEventsSql(invocationIdSql),
-          'invocations/journal-events',
-        ),
-      ]);
+      const fullJournalQuery = await this.query(
+        journalEntriesSql(invocationIdSql, includeRaw),
+        'invocations/journal-entries',
+      );
       journalRows = fullJournalQuery.rows as JournalRawEntry[];
-      eventRows = fullEventsQuery.rows as JournalEventRow[];
     }
   }
 

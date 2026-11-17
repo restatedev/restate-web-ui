@@ -110,17 +110,11 @@ function serve(state: ServerState) {
       const from = Number(/AND index >= (\d+)/.exec(statement)?.[1] ?? 0);
       return state.rows.filter((row) => row.index >= from);
     }
-    if (/count\(\*\) AS count from sys_journal_events/i.test(statement)) {
-      return [{ count: state.events.length }];
-    }
     if (statement.includes('FROM sys_vqueue_entry_status WHERE')) {
       return state.vqueueStatus ? [state.vqueueStatus] : [];
     }
     if (/from sys_journal_events where/i.test(statement)) {
-      const after = /AND appended_at >= '([^']+)'/.exec(statement)?.[1];
-      return state.events.filter(
-        (event) => !after || event.appended_at >= after,
-      );
+      return state.events;
     }
     return [];
   };
@@ -185,7 +179,7 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
     );
   }
 
-  it('fetches only the rows and events after the last known ones', async () => {
+  it('fetches only the rows after the last known one and all events', async () => {
     const state: ServerState = {
       invocation: invocationRow(),
       rows: [input(), runCommand(1, 1)],
@@ -205,8 +199,7 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
       .toMatchInlineSnapshot(`
       [
         "SELECT id, index, appended_at, entry_type, name, raw_length, entry_lite_json,  version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = 'inv-a' AND index >= 1 ORDER BY index",
-        "SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = 'inv-a' AND appended_at >= '2026-01-01T00:00:05.000Z' ORDER BY appended_at",
-        "SELECT count(*) AS count FROM sys_journal_events WHERE id = 'inv-a'",
+        "SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = 'inv-a' ORDER BY appended_at",
       ]
     `);
     expect(entryAt(second.body, 1)).toMatchObject({
@@ -270,6 +263,32 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
     const second = await poll();
 
     expect(convertJournalV2).toHaveBeenCalled();
+    expect(withoutDuration(second.text)).toBe(
+      withoutDuration((await fullFetch()).text),
+    );
+  });
+
+  it('shows events as the server returns them, without a fallback', async () => {
+    const state: ServerState = {
+      invocation: invocationRow({ status: 'backing-off' }),
+      rows: [input(), runCommand(1, 1)],
+      events: [transientError(10, 1), transientError(11, 1)],
+    };
+    setResponder(serve(state));
+
+    await poll();
+    state.events = [transientError(9, 1), transientError(10, 1)];
+    sql.length = 0;
+    const second = await poll();
+
+    expect(journalQueries(sql)).toEqual([
+      expect.stringContaining('AND index >= 1'),
+    ]);
+    expect(
+      second.body.journal.entries
+        .filter((entry) => entry.type === 'Event: TransientError')
+        .map((entry) => entry.start),
+    ).toEqual([at(9), at(10)]);
     expect(withoutDuration(second.text)).toBe(
       withoutDuration((await fullFetch()).text),
     );
@@ -431,6 +450,9 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
           statement.includes('FROM sys_vqueue_entry_status'),
         ),
       ).toHaveLength(1);
+      expect(
+        sql.filter((statement) => /from sys_journal_events/i.test(statement)),
+      ).toHaveLength(1);
       expect(withoutDuration(response.text)).toBe(
         withoutDuration((await fullFetch()).text),
       );
@@ -482,34 +504,6 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
       });
     });
 
-    it('when an event arrived with an earlier timestamp', async () => {
-      const state: ServerState = {
-        invocation: invocationRow({ status: 'backing-off' }),
-        rows: [input(), runCommand(1, 1)],
-        events: [transientError(10, 1)],
-      };
-      const { body } = await expectFullRefetch(state, () => {
-        state.events = [transientError(9, 1), ...state.events];
-      });
-
-      expect(
-        body.journal.entries.filter(
-          (entry) => entry.type === 'Event: TransientError',
-        ),
-      ).toHaveLength(2);
-    });
-
-    it('when a known event is gone', async () => {
-      const state: ServerState = {
-        invocation: invocationRow(),
-        rows: [input(), runCommand(1, 1)],
-        events: [transientError(5, 1)],
-      };
-      await expectFullRefetch(state, () => {
-        state.events = [];
-      });
-    });
-
     it('when new rows leave a gap', async () => {
       const state: ServerState = {
         invocation: invocationRow(),
@@ -520,35 +514,6 @@ describe('GET /query/v2/invocations/:invocationId incremental polling', () => {
         state.rows = [input(), runCommand(1, 1), runNotification(3, 1)];
       });
     });
-  });
-
-  it('keeps the tail when the event count cannot be read', async () => {
-    const state: ServerState = {
-      invocation: invocationRow({ status: 'backing-off' }),
-      rows: [input(), runCommand(1, 1)],
-      events: [transientError(5, 1)],
-    };
-    const respond = serve(state);
-    setResponder(respond);
-
-    await poll();
-    state.events.push(transientError(6, 1));
-    setResponder((statement) => {
-      if (statement.includes('count(*)')) {
-        throw new Error('count failed');
-      }
-      return respond(statement);
-    });
-    sql.length = 0;
-    const second = await poll();
-
-    expect(second.status).toBe(200);
-    expect(journalQueries(sql)).toEqual([
-      expect.stringContaining('AND index >= 1'),
-    ]);
-    expect(withoutDuration(second.text)).toBe(
-      withoutDuration((await fullFetch()).text),
-    );
   });
 
   it('skips the tail for a minute after a fallback', async () => {

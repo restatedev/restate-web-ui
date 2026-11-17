@@ -164,61 +164,22 @@ export function appendJournalRows(
   return newRows.length > 0 ? cachedRows.concat(newRows) : cachedRows;
 }
 
-function eventKey(event: JournalEventRow) {
-  return JSON.stringify([
-    event.appended_at,
-    event.after_journal_entry_index,
-    event.event_type,
-    event.event_json,
-  ]);
-}
-
-export function appendJournalEvents(
+export function isSameJournalEvents(
   cachedEvents: JournalEventRow[],
-  tailEvents: JournalEventRow[],
-  totalEvents?: number,
+  events: JournalEventRow[],
 ) {
-  const lastAppendedAt = cachedEvents.at(-1)?.appended_at;
-  let keptEvents = cachedEvents.length;
-  if (lastAppendedAt) {
-    while (cachedEvents[keptEvents - 1]?.appended_at === lastAppendedAt) {
-      keptEvents--;
-    }
-  } else {
-    keptEvents = 0;
-  }
-
-  const tailCounts = new Map<string, number>();
-  for (const event of tailEvents) {
-    const key = eventKey(event);
-    tailCounts.set(key, (tailCounts.get(key) ?? 0) + 1);
-  }
-  for (let i = keptEvents; i < cachedEvents.length; i++) {
-    const cachedEvent = cachedEvents[i];
-    const key = cachedEvent ? eventKey(cachedEvent) : '';
-    const count = tailCounts.get(key) ?? 0;
-    if (count === 0) {
-      return undefined;
-    }
-    tailCounts.set(key, count - 1);
-  }
-  if (
-    totalEvents !== undefined &&
-    keptEvents + tailEvents.length !== totalEvents
-  ) {
-    return undefined;
-  }
-
-  const isUnchanged =
-    tailEvents.length === cachedEvents.length - keptEvents &&
-    tailEvents.every(
-      (event, i) =>
-        eventKey(event) === eventKey(cachedEvents[keptEvents + i] ?? {}),
-    );
-  if (isUnchanged) {
-    return cachedEvents;
-  }
-  return keptEvents > 0
-    ? cachedEvents.slice(0, keptEvents).concat(tailEvents)
-    : tailEvents;
+  return (
+    cachedEvents.length === events.length &&
+    cachedEvents.every((cachedEvent, i) => {
+      const event = events[i];
+      return (
+        event !== undefined &&
+        event.appended_at === cachedEvent.appended_at &&
+        event.after_journal_entry_index ===
+          cachedEvent.after_journal_entry_index &&
+        event.event_type === cachedEvent.event_type &&
+        event.event_json === cachedEvent.event_json
+      );
+    })
+  );
 }

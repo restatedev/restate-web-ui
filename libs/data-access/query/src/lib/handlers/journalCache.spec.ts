@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { JournalRawEntry } from '@restate/data-access-admin-api-spec';
 import {
-  appendJournalEvents,
   appendJournalRows,
   CACHED_JOURNAL_IDLE_MS,
   type CachedJournal,
@@ -10,6 +9,7 @@ import {
   getCachedJournal,
   isCacheableJournal,
   isJournalReplaced,
+  isSameJournalEvents,
   JOURNAL_FALLBACK_COOLDOWN_MS,
   MAX_CACHED_JOURNAL_BYTES,
   noteJournalFallback,
@@ -100,94 +100,39 @@ describe('appendJournalRows', () => {
   });
 });
 
-describe('appendJournalEvents', () => {
-  it('takes the whole tail when nothing was cached', () => {
-    const tail = [event('2026-01-01T00:00:01.000Z', 'a')];
-
-    expect(appendJournalEvents([], tail, 1)).toBe(tail);
-  });
-
-  it('keeps the cached array when nothing new arrived', () => {
-    const cached = [
+describe('isSameJournalEvents', () => {
+  it('matches events with the same fields in the same order', () => {
+    const events = [
       event('2026-01-01T00:00:01.000Z', 'a'),
       event('2026-01-01T00:00:02.000Z', 'b'),
     ];
 
     expect(
-      appendJournalEvents(cached, [event('2026-01-01T00:00:02.000Z', 'b')], 2),
-    ).toBe(cached);
-    expect(appendJournalEvents([], [], 0)).toEqual([]);
-  });
-
-  it('takes the server order for events at the last cached timestamp', () => {
-    const cached = [
-      event('2026-01-01T00:00:01.000Z', 'a'),
-      event('2026-01-01T00:00:02.000Z', 'b'),
-      event('2026-01-01T00:00:02.000Z', 'c'),
-    ];
-    const tail = [
-      event('2026-01-01T00:00:02.000Z', 'd'),
-      event('2026-01-01T00:00:02.000Z', 'c'),
-      event('2026-01-01T00:00:02.000Z', 'b'),
-      event('2026-01-01T00:00:03.000Z', 'e'),
-    ];
-
-    expect(appendJournalEvents(cached, tail, 5)).toEqual([
-      event('2026-01-01T00:00:01.000Z', 'a'),
-      ...tail,
-    ]);
-  });
-
-  it('counts identical events at the same timestamp separately', () => {
-    const cached = [
-      event('2026-01-01T00:00:01.000Z', 'a'),
-      event('2026-01-01T00:00:01.000Z', 'a'),
-    ];
-    const tail = [
-      event('2026-01-01T00:00:01.000Z', 'a'),
-      event('2026-01-01T00:00:01.000Z', 'a'),
-      event('2026-01-01T00:00:01.000Z', 'a'),
-    ];
-
-    expect(appendJournalEvents(cached, tail, 3)).toEqual(tail);
-    expect(appendJournalEvents(cached, tail.slice(0, 1), 1)).toBeUndefined();
-  });
-
-  it('rejects a tail that lost a cached event', () => {
-    const cached = [
-      event('2026-01-01T00:00:01.000Z', 'a'),
-      event('2026-01-01T00:00:01.000Z', 'b'),
-    ];
-
-    expect(
-      appendJournalEvents(cached, [event('2026-01-01T00:00:01.000Z', 'a')], 1),
-    ).toBeUndefined();
-    expect(appendJournalEvents(cached, [], 0)).toBeUndefined();
-  });
-
-  it('skips the count check when there is no count', () => {
-    const cached = [event('2026-01-01T00:00:10.000Z', 'a')];
-    const tail = [
-      event('2026-01-01T00:00:10.000Z', 'a'),
-      event('2026-01-01T00:00:11.000Z', 'b'),
-    ];
-
-    expect(appendJournalEvents(cached, tail)).toEqual(tail);
-  });
-
-  it('rejects a tail when the server counts events the cursor missed', () => {
-    const cached = [event('2026-01-01T00:00:10.000Z', 'a')];
-
-    expect(
-      appendJournalEvents(cached, [event('2026-01-01T00:00:10.000Z', 'a')], 2),
-    ).toBeUndefined();
-    expect(
-      appendJournalEvents(
-        [event('2026-01-01T00:00:01.000Z', 'x'), ...cached],
-        [event('2026-01-01T00:00:10.000Z', 'a')],
-        1,
+      isSameJournalEvents(
+        events,
+        events.map((e) => ({ ...e })),
       ),
-    ).toBeUndefined();
+    ).toBe(true);
+    expect(isSameJournalEvents([], [])).toBe(true);
+  });
+
+  it('tells added, removed, reordered and changed events apart', () => {
+    const a = event('2026-01-01T00:00:01.000Z', 'a');
+    const b = event('2026-01-01T00:00:02.000Z', 'b');
+
+    expect(isSameJournalEvents([a], [a, b])).toBe(false);
+    expect(isSameJournalEvents([a, b], [a])).toBe(false);
+    expect(isSameJournalEvents([a, b], [b, a])).toBe(false);
+    expect(isSameJournalEvents([a], [{ ...a, event_json: '{}' }])).toBe(false);
+    expect(isSameJournalEvents([a], [{ ...a, event_type: 'Paused' }])).toBe(
+      false,
+    );
+    expect(
+      isSameJournalEvents([a], [{ ...a, after_journal_entry_index: 2 }]),
+    ).toBe(false);
+    expect(
+      isSameJournalEvents([a], [{ ...a, appended_at: b.appended_at }]),
+    ).toBe(false);
   });
 });
 

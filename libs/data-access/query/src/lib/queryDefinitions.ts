@@ -131,15 +131,9 @@ export const QUERY_DEFINITIONS = {
   },
   'invocations/journal-events': {
     description:
-      'Load an invocation’s journal events (errors, pauses, lifecycle) for the journal timeline: all of them, or from the last known time while polling a V2 journal.',
+      'Load an invocation’s journal events (errors, pauses, lifecycle) for the journal timeline.',
     shape:
-      'SELECT <event columns> FROM sys_journal_events WHERE id = ? [AND appended_at >= ?] ORDER BY appended_at',
-    tables: ['sys_journal_events'],
-  },
-  'invocations/journal-events-count': {
-    description:
-      'Count an invocation’s journal events while polling a V2 journal, to catch events the time cursor missed.',
-    shape: 'SELECT count(*) FROM sys_journal_events WHERE id = ?',
+      'SELECT <event columns> FROM sys_journal_events WHERE id = ? ORDER BY appended_at',
     tables: ['sys_journal_events'],
   },
   'invocations/paused-error': {
