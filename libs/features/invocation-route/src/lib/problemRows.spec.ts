@@ -283,6 +283,43 @@ describe('findProblems', () => {
     expect(failed.failedChildRows.has(0)).toBe(true);
   });
 
+  it('gives retries that match no row to the invocation that owns them', () => {
+    const retried = getRetriedCommands({
+      [ROOT]: [
+        {
+          index: 1,
+          category: 'event',
+          type: 'Event: TransientError',
+          message: 'deployment unreachable',
+        } as JournalEntryV2,
+      ],
+      inv_child: [
+        {
+          index: 2,
+          category: 'event',
+          type: 'Event: TransientError',
+          message: 'deployment unreachable',
+        } as JournalEntryV2,
+      ],
+    });
+    const rows = [
+      row(command(1, { type: 'OneWayCall', invocationId: 'inv_child' })),
+      row(command(1, { index: 21 }), { invocationId: 'inv_child', depth: 1 }),
+    ];
+    const journal = findJournalProblems(rows, retried, nothingCompleted);
+    const problems = addChildProblems(
+      journal,
+      rows,
+      retried,
+      { inv_child: { status: 'succeeded' } } as never,
+      nothingCompleted,
+    );
+
+    expect(journal.unmatchedRetryInvocations.has(ROOT)).toBe(true);
+    expect(problems.kindByRow.get(0)).toBe('retried');
+    expect(problems.rowIndexes).toEqual([0]);
+  });
+
   it('keeps waiting rows out of the count', () => {
     const rows = [row(command(1, { type: 'Sleep', isPending: true }))];
     const { kindByRow, rowIndexes } = findProblems(

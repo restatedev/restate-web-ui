@@ -129,9 +129,19 @@ export function findJournalProblems(
 ) {
   const kindByRow = new Map<number, ProblemKind>();
   const childRowIndexes: number[] = [];
+  const matchedRetryKeys = new Set<string>();
+  const rowByChildId = new Map<string, number>();
   rows.forEach((row, index) => {
-    if (isTargetInvocationEntry(row.entry) && row.entry.invocationId) {
+    const { entry } = row;
+    if (isTargetInvocationEntry(entry) && entry.invocationId) {
       childRowIndexes.push(index);
+      rowByChildId.set(entry.invocationId, index);
+    }
+    if (retried.size > 0) {
+      const key = getRetryKey(row);
+      if (key && retried.has(key)) {
+        matchedRetryKeys.add(key);
+      }
     }
     const kind = getRowProblem(
       row,
@@ -143,7 +153,26 @@ export function findJournalProblems(
       kindByRow.set(index, kind);
     }
   });
-  return { kindByRow, childRowIndexes };
+  const inheritedRetryRows = new Set<number>();
+  const unmatchedRetryInvocations = new Set<string>();
+  for (const key of retried.keys()) {
+    if (matchedRetryKeys.has(key)) {
+      continue;
+    }
+    const invocationId = key.slice(0, key.lastIndexOf(':'));
+    unmatchedRetryInvocations.add(invocationId);
+    const index = rowByChildId.get(invocationId);
+    if (index !== undefined && !kindByRow.has(index)) {
+      inheritedRetryRows.add(index);
+      kindByRow.set(index, 'retried');
+    }
+  }
+  return {
+    kindByRow,
+    childRowIndexes,
+    inheritedRetryRows,
+    unmatchedRetryInvocations,
+  };
 }
 
 interface ChildProblems {
@@ -188,9 +217,11 @@ export function addChildProblems(
   let failedChildRows: Set<number> | undefined;
   for (const index of indexes) {
     const row = rows[index];
-    const kind = row
-      ? getRowProblem(row, retried, childStatuses, completedInvocationIds)
-      : undefined;
+    const kind =
+      (row
+        ? getRowProblem(row, retried, childStatuses, completedInvocationIds)
+        : undefined) ??
+      (journalProblems.inheritedRetryRows.has(index) ? 'retried' : undefined);
     if (base.get(index) !== kind) {
       kindByRow ??= new Map(base);
       if (kind) {

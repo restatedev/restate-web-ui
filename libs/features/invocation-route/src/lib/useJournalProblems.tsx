@@ -21,7 +21,6 @@ import {
   filterJournalRows,
   findJournalProblems,
   getChildIdsToCheck,
-  getInvocationRetryKey,
   getProblemRowKey,
   getProblemTone,
   getRetriedCommands,
@@ -274,8 +273,7 @@ export function useJournalProblems({
     enabled &&
     Boolean(
       inputEntry?.isRetrying ||
-      retriedCommands.has(`${invocationId}:0`) ||
-      retriedCommands.has(getInvocationRetryKey(invocationId)),
+      journalProblems?.unmatchedRetryInvocations.has(invocationId),
     );
   const navigableRows = useMemo(() => {
     const keys = new Set(
@@ -363,21 +361,24 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
   referenceInvocationId: string;
   onStatuses: (statuses: CheckedStatuses) => void;
 }) {
-  const { data, isFetchedAfterMount } = useWarmInvocationStatusDetails(
-    invocationIds,
-    referenceInvocationId,
-    {
+  const { data, dataUpdatedAt, isFetchedAfterMount } =
+    useWarmInvocationStatusDetails(invocationIds, referenceInvocationId, {
       enabled: invocationIds.length > 0,
       refetchOnMount: true,
       staleTime: CHILD_CHECK_INTERVAL_MS,
       refetchOnWindowFocus: false,
       refetchInterval: false,
-    },
-  );
+    });
+  const mergedUpdatedAt = useRef(0);
   useEffect(() => {
-    if (!isFetchedAfterMount || !data?.invocations) {
+    if (
+      !isFetchedAfterMount ||
+      !data?.invocations ||
+      dataUpdatedAt <= mergedUpdatedAt.current
+    ) {
       return;
     }
+    mergedUpdatedAt.current = dataUpdatedAt;
     const checked: CheckedStatuses = {};
     for (const id of invocationIds) {
       const status = data.invocations[id];
@@ -386,6 +387,6 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
       }
     }
     onStatuses(checked);
-  }, [data, isFetchedAfterMount, invocationIds, onStatuses]);
+  }, [data, dataUpdatedAt, isFetchedAfterMount, invocationIds, onStatuses]);
   return null;
 });
