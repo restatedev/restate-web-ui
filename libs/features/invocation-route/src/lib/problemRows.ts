@@ -37,8 +37,7 @@ export function getRetriedCommands(
   for (const [invocationId, entries] of Object.entries(entriesByInvocation)) {
     for (const entry of entries ?? []) {
       if (
-        (entry.type === 'TransientError' ||
-          entry.type === 'Event: TransientError') &&
+        entry.type === 'Event: TransientError' &&
         'relatedCommandIndex' in entry &&
         typeof entry.relatedCommandIndex === 'number'
       ) {
@@ -48,11 +47,13 @@ export function getRetriedCommands(
             ? entry.message
             : entry.error?.message;
         const previous = retried.get(key);
-        retried.set(key, {
-          count: (previous?.count ?? 0) + 1,
-          lastMessage: message ?? previous?.lastMessage,
-          events: [...(previous?.events ?? []), entry],
-        });
+        if (previous) {
+          previous.count += 1;
+          previous.lastMessage = message ?? previous.lastMessage;
+          previous.events.push(entry);
+        } else {
+          retried.set(key, { count: 1, lastMessage: message, events: [entry] });
+        }
       }
     }
   }
@@ -66,6 +67,7 @@ export function getPastRetries(
   const { entry } = row;
   return entry?.category === 'command' &&
     !entry.isRetrying &&
+    !entry.isPending &&
     typeof entry.commandIndex === 'number'
     ? retried.get(`${row.invocationId}:${entry.commandIndex}`)
     : undefined;
@@ -89,13 +91,15 @@ export function getRowProblem(
   row: CombinedJournalEntry,
   retried: ReadonlyMap<string, PastRetries>,
   childStatuses: ChildStatuses,
+  completedInvocationIds: ReadonlySet<string>,
 ): ProblemKind | undefined {
   const { entry } = row;
   if (!entry || entry.type === 'Input') {
     return undefined;
   }
+  const canWait = !completedInvocationIds.has(row.invocationId);
   if (entry.category !== 'command') {
-    return entry.isAwaitingOn ? 'waiting' : undefined;
+    return canWait && entry.isAwaitingOn ? 'waiting' : undefined;
   }
   if (entry.isRetrying) {
     return 'retried';
@@ -116,7 +120,7 @@ export function getRowProblem(
   ) {
     return 'retried';
   }
-  if (entry.isPending || entry.isAwaitingOn) {
+  if (canWait && (entry.isPending || entry.isAwaitingOn)) {
     return 'waiting';
   }
   return undefined;
@@ -126,11 +130,17 @@ export function findProblems(
   rows: CombinedJournalEntry[],
   retried: ReadonlyMap<string, PastRetries>,
   childStatuses: ChildStatuses,
+  completedInvocationIds: ReadonlySet<string>,
 ) {
   const kindByRow = new Map<number, ProblemKind>();
   const rowIndexes: number[] = [];
   rows.forEach((row, index) => {
-    const kind = getRowProblem(row, retried, childStatuses);
+    const kind = getRowProblem(
+      row,
+      retried,
+      childStatuses,
+      completedInvocationIds,
+    );
     if (!kind) {
       return;
     }
@@ -144,14 +154,16 @@ export function findProblems(
 
 export function getProblemChildIds(
   rows: CombinedJournalEntry[],
-  kindByRow: Map<number, ProblemKind>,
   rowIndexes: number[],
+  childStatuses: ChildStatuses,
 ) {
   return rowIndexes.flatMap((index) => {
     const entry = rows[index]?.entry;
-    return kindByRow.get(index) === 'children' &&
-      isTargetInvocationEntry(entry) &&
-      entry.invocationId
+    return isTargetInvocationEntry(entry) &&
+      entry.invocationId &&
+      CHILD_PROBLEM_STATUSES.has(
+        String(childStatuses[entry.invocationId]?.status),
+      )
       ? [entry.invocationId]
       : [];
   });
@@ -262,7 +274,21 @@ function getEntryKind(entry?: JournalEntryV2): EntryKind {
   return KIND_BY_TYPE[String(entry.type)] ?? 'other';
 }
 
+const searchTextByEntry = new WeakMap<JournalEntryV2, string>();
+
 function getRowSearchText(row: CombinedJournalEntry) {
+  if (!row.entry) {
+    return '';
+  }
+  let text = searchTextByEntry.get(row.entry);
+  if (text === undefined) {
+    text = buildSearchText(row);
+    searchTextByEntry.set(row.entry, text);
+  }
+  return text;
+}
+
+function buildSearchText(row: CombinedJournalEntry) {
   const entry = row.entry as
     | (JournalEntryV2 & {
         serviceName?: string;

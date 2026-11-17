@@ -148,7 +148,9 @@ const liveStyles = tv({
 });
 
 const LIVE_EDGE_THRESHOLD_MS = 500;
-const PROBLEM_STATUS_REFETCH_MS = 5_000;
+const PROBLEM_STATUS_REFETCH_MIN_MS = 5_000;
+const PROBLEM_STATUS_REFETCH_MAX_MS = 60_000;
+const PROBLEM_STATUS_REFETCH_MS_PER_ID = 10;
 const MAX_AUTO_EXPANDED_PROBLEM_CHILDREN = 10;
 const NO_PROBLEMS = {
   kindByRow: new Map<number, ProblemKind>(),
@@ -175,6 +177,19 @@ function hasNonCompletedReferencedInvocations(
     const invocation = invocations?.[invocationId];
     return !isCompletedInvocationStatus(invocation?.status);
   });
+}
+
+function countNonCompletedInvocations(
+  invocationIds: string[],
+  invocations?: Record<
+    string,
+    components['schemas']['InvocationStatusResult'] | undefined
+  >,
+) {
+  return invocationIds.filter(
+    (invocationId) =>
+      !isCompletedInvocationStatus(invocations?.[invocationId]?.status),
+  ).length;
 }
 
 function findCommandRow(
@@ -406,15 +421,30 @@ export function JournalV2({
       refetchOnWindowFocus: false,
       refetchIntervalInBackground: false,
       refetchInterval(query) {
-        return isLive &&
-          hasNonCompletedReferencedInvocations(
-            childInvocationIds,
-            query.state.data?.invocations,
-          )
-          ? PROBLEM_STATUS_REFETCH_MS
+        const pendingCount = countNonCompletedInvocations(
+          childInvocationIds,
+          query.state.data?.invocations,
+        );
+        return isLive && !isScrollingRef.current && pendingCount > 0
+          ? Math.min(
+              PROBLEM_STATUS_REFETCH_MAX_MS,
+              Math.max(
+                PROBLEM_STATUS_REFETCH_MIN_MS,
+                pendingCount * PROBLEM_STATUS_REFETCH_MS_PER_ID,
+              ),
+            )
           : false;
       },
     },
+  );
+  const completedInvocationIds = useMemo(
+    () =>
+      new Set(
+        Object.entries(data).flatMap(([id, value]) =>
+          value?.completed_at ? [id] : [],
+        ),
+      ),
+    [data],
   );
   const retriedCommands = useMemo(
     () =>
@@ -437,6 +467,7 @@ export function JournalV2({
             entriesWithoutInputUnfiltered,
             retriedCommands,
             childStatusData?.invocations ?? {},
+            completedInvocationIds,
           )
         : NO_PROBLEMS,
     [
@@ -444,6 +475,7 @@ export function JournalV2({
       entriesWithoutInputUnfiltered,
       retriedCommands,
       childStatusData,
+      completedInvocationIds,
     ],
   );
   const [activeProblemKey, setActiveProblemKey] = useState<string>();
@@ -487,12 +519,13 @@ export function JournalV2({
   }, []);
   const entriesWithoutInput = useMemo(
     () =>
-      withTimeline && !detail.errors
+      withTimeline && !detail.errors && expandedRetries.size > 0
         ? insertRetryRows(filteredEntries, retriedCommands, isRetryRowExpanded)
         : filteredEntries,
     [
       withTimeline,
       detail.errors,
+      expandedRetries.size,
       filteredEntries,
       retriedCommands,
       isRetryRowExpanded,
@@ -551,35 +584,52 @@ export function JournalV2({
       isProblemsOnly
         ? getProblemChildIds(
             entriesWithoutInputUnfiltered,
-            problems.kindByRow,
             problems.rowIndexes,
+            childStatusData?.invocations ?? {},
           ).slice(0, MAX_AUTO_EXPANDED_PROBLEM_CHILDREN)
         : [],
-    [isProblemsOnly, entriesWithoutInputUnfiltered, problems],
+    [isProblemsOnly, entriesWithoutInputUnfiltered, problems, childStatusData],
   );
   const autoExpandedIds = useRef<string[]>([]);
+  const consideredChildIds = useRef(new Set<string>());
   useEffect(() => {
-    const missing = problemChildIdsToExpand.filter(
-      (id) => !invocationIds.includes(id),
+    const unseen = problemChildIdsToExpand.filter(
+      (id) => !consideredChildIds.current.has(id),
     );
+    if (unseen.length === 0) {
+      return;
+    }
+    unseen.forEach((id) => consideredChildIds.current.add(id));
+    const missing = unseen.filter((id) => !invocationIds.includes(id));
     if (missing.length > 0) {
       autoExpandedIds.current = [...autoExpandedIds.current, ...missing];
-      setInvocationIds((ids) => [...ids, ...missing]);
+      setInvocationIds((ids) => [
+        ...ids,
+        ...missing.filter((id) => !ids.includes(id)),
+      ]);
     }
   }, [problemChildIdsToExpand, invocationIds]);
   useEffect(() => {
-    if (isProblemsOnly || autoExpandedIds.current.length === 0) {
+    if (isProblemsOnly) {
+      return;
+    }
+    consideredChildIds.current.clear();
+    if (autoExpandedIds.current.length === 0) {
       return;
     }
     const collapsed = new Set(autoExpandedIds.current);
     autoExpandedIds.current = [];
     setInvocationIds((ids) => ids.filter((id) => !collapsed.has(id)));
   }, [isProblemsOnly]);
-  const activeProblemIndex = activeProblemKey
-    ? entriesWithoutInput.findIndex(
-        (row) => getProblemRowKey(row) === activeProblemKey,
-      )
-    : -1;
+  const activeProblemIndex = useMemo(
+    () =>
+      activeProblemKey
+        ? entriesWithoutInput.findIndex(
+            (row) => getProblemRowKey(row) === activeProblemKey,
+          )
+        : -1,
+    [activeProblemKey, entriesWithoutInput],
+  );
   const activeProblemPosition =
     activeProblemIndex >= 0 ? shownProblemRows.indexOf(activeProblemIndex) : -1;
   // The server returns an empty `entries` array when the journal has been
@@ -1070,7 +1120,9 @@ export function JournalV2({
                               activeRowIndex={activeProblemIndex}
                               problemTones={problemToneByKey}
                               pastRetries={
-                                withTimeline ? retriedCommands : undefined
+                                withTimeline && !detail.errors
+                                  ? retriedCommands
+                                  : undefined
                               }
                               onToggleRetries={toggleRetryRow}
                               isRetryRowExpanded={isRetryRowExpanded}
@@ -1133,6 +1185,7 @@ export function JournalV2({
                                   isReferencedInvocationStatusesError
                                 }
                                 focusInvocationId={focusInvocationId}
+                                activeRowIndex={activeProblemIndex}
                                 childNow={referencedInvocationStatusesUpdatedAt}
                                 shownInvocationIds={shownInvocationIds}
                               />
@@ -1404,6 +1457,9 @@ function VirtualizedEntries({
           parentCommand,
         } = combinedEntry;
         const invocation = data?.[entryInvocationId];
+        const retries = pastRetries
+          ? getPastRetries(combinedEntry, pastRetries)
+          : undefined;
 
         return (
           <div
@@ -1441,10 +1497,10 @@ function VirtualizedEntries({
                 nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
                 parentCommand={parentCommand}
                 trailing={
-                  pastRetries && (
-                    <PastRetriesTrailing
-                      row={combinedEntry}
-                      pastRetries={pastRetries}
+                  retries && (
+                    <PastRetriesBadge
+                      retries={retries}
+                      hasFailed={entry?.resultType === 'failure'}
                       isExpanded={isRetryRowExpanded(
                         getRetryKey(combinedEntry) ?? '',
                       )}
@@ -1461,28 +1517,6 @@ function VirtualizedEntries({
   );
 }
 
-function PastRetriesTrailing({
-  row,
-  pastRetries,
-  isExpanded,
-  onToggle,
-}: {
-  row: CombinedJournalEntry;
-  pastRetries: ReadonlyMap<string, PastRetries>;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const retries = getPastRetries(row, pastRetries);
-  return retries ? (
-    <PastRetriesBadge
-      retries={retries}
-      hasFailed={row.entry?.resultType === 'failure'}
-      isExpanded={isExpanded}
-      onToggle={onToggle}
-    />
-  ) : null;
-}
-
 function VirtualizedTimeline({
   virtualItems,
   scrollMargin,
@@ -1493,6 +1527,7 @@ function VirtualizedTimeline({
   referencedInvocations,
   isReferencedInvocationsError,
   focusInvocationId,
+  activeRowIndex,
   childNow,
   shownInvocationIds,
 }: {
@@ -1508,6 +1543,7 @@ function VirtualizedTimeline({
   >;
   isReferencedInvocationsError?: boolean;
   focusInvocationId?: string;
+  activeRowIndex?: number;
   childNow?: number;
   shownInvocationIds: Set<string>;
 }) {
@@ -1550,7 +1586,9 @@ function VirtualizedTimeline({
           <div
             key={virtualItem.key}
             className={virtualRowStyles({
-              isFocused: entryInvocationId === focusInvocationId,
+              isFocused:
+                entryInvocationId === focusInvocationId ||
+                virtualItem.index === activeRowIndex,
             })}
             style={{
               position: 'absolute',

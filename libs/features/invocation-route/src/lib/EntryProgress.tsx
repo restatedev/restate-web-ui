@@ -217,6 +217,10 @@ const progressStyles = tv({
       'flex w-full items-center transition-all duration-300 *:w-full',
   },
   variants: {
+    hasPastRetries: {
+      true: { segmentContainer: 'relative' },
+      false: {},
+    },
     isPending: {
       true: {
         base: '',
@@ -544,11 +548,7 @@ function InnerEntryProgress({
         className={base({ className })}
         invocation={invocation}
       >
-        <div
-          className={segmentContainer({
-            className: hasPastRetries ? 'relative' : undefined,
-          })}
-        >
+        <div className={segmentContainer({ hasPastRetries })}>
           {isPoint ? (
             <Point variant={getPointVariant(entry)} />
           ) : (
