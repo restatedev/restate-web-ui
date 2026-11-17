@@ -1073,7 +1073,23 @@ type CheckedStatus =
 interface StatusCheckState {
   known: Map<string, CheckedStatus>;
   misses: Map<string, number>;
+  finishedProblems: Map<
+    string,
+    InvocationStatusDetailsData['invocations'][string]
+  >;
   cursor: number;
+  run: number;
+  untriedOnly: boolean;
+}
+
+function getRemainingInterval(
+  period: number | false,
+  lastRunAt: number,
+): number | false {
+  if (period === false) {
+    return false;
+  }
+  return Math.max(250, period - (Date.now() - lastRunAt));
 }
 
 function isOpenForCheck(state: StatusCheckState, invocationId: string) {
@@ -1110,9 +1126,14 @@ async function runInvocationStatusCheck({
   shouldShare: (status?: string) => boolean;
   onProgress?: (checked: number, total: number) => void;
 }): Promise<InvocationStatusCheckData> {
+  const run = ++state.run;
+  const untriedOnly = state.untriedOnly;
+  state.untriedOnly = false;
   const open = invocationIds.filter((id) => isOpenForCheck(state, id));
   const untried = open.filter((id) => isUntriedForCheck(state, id));
-  const tried = open.filter((id) => !isUntriedForCheck(state, id));
+  const tried = untriedOnly
+    ? []
+    : open.filter((id) => !isUntriedForCheck(state, id));
   const room = Math.max(0, maxPerRefresh - untried.length);
   let rotated = tried;
   if (tried.length > room) {
@@ -1129,7 +1150,7 @@ async function runInvocationStatusCheck({
       context.client.getQueryData<InvocationStatusDetailsData>(sharedKey)
         ?.invocations ?? {};
     const updates = Object.fromEntries(
-      Object.entries(pending).filter(
+      [...state.finishedProblems, ...Object.entries(pending)].filter(
         ([invocationId, status]) =>
           (shouldShare(status.status) || invocationId in shared) &&
           shared[invocationId]?.status !== status.status,
@@ -1169,23 +1190,30 @@ async function runInvocationStatusCheck({
           state.misses.delete(invocationId);
           state.known.set(invocationId, status.status);
           pending[invocationId] = status;
+          if (
+            shouldShare(status.status) &&
+            isCompletedInvocationStatus(status.status)
+          ) {
+            state.finishedProblems.set(invocationId, status);
+          }
         } else {
           state.misses.set(
             invocationId,
             (state.misses.get(invocationId) ?? 0) + 1,
           );
+          pending[invocationId] = {};
         }
       }
       if (Date.now() - flushedAt >= STATUS_CHECK_FLUSH_MS) {
         flush();
-        if (showsProgress) {
+        if (showsProgress && run === state.run) {
           onProgress?.(Math.min(start + batchSize, ids.length), ids.length);
         }
       }
     }
   } finally {
     flush();
-    if (showsProgress) {
+    if (showsProgress && run === state.run) {
       onProgress?.(ids.length, ids.length);
     }
   }
@@ -1216,7 +1244,10 @@ export function useInvocationStatusCheck(
   const stateRef = useRef<StatusCheckState>({
     known: new Map(),
     misses: new Map(),
+    finishedProblems: new Map(),
     cursor: 0,
+    run: 0,
+    untriedOnly: false,
   });
   const sharedKey = getInvocationStatusDetailsQueryKey(
     baseUrl,
@@ -1234,10 +1265,13 @@ export function useInvocationStatusCheck(
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
-    refetchInterval: () =>
-      refetchInterval(
-        invocationIds.filter((id) => isOpenForCheck(stateRef.current, id))
-          .length,
+    refetchInterval: (query) =>
+      getRemainingInterval(
+        refetchInterval(
+          invocationIds.filter((id) => isOpenForCheck(stateRef.current, id))
+            .length,
+        ),
+        Math.max(query.state.dataUpdatedAt, query.state.errorUpdatedAt),
       ),
     queryFn: (context) =>
       runInvocationStatusCheck({
@@ -1261,6 +1295,7 @@ export function useInvocationStatusCheck(
       !isError &&
       invocationIds.some((id) => isUntriedForCheck(stateRef.current, id))
     ) {
+      stateRef.current.untriedOnly = true;
       void refetch({ cancelRefetch: false });
     }
   }, [isEnabled, isFetching, isError, refetch, invocationIds]);
