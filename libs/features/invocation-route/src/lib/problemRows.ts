@@ -99,7 +99,9 @@ export function getRowProblem(
   }
   const canWait = !completedInvocationIds.has(row.invocationId);
   if (entry.category !== 'command') {
-    return canWait && entry.isAwaitingOn ? 'waiting' : undefined;
+    return canWait && entry.isAwaitingOn && entry.isPending
+      ? 'waiting'
+      : undefined;
   }
   if (entry.isRetrying) {
     return 'retried';
@@ -157,16 +159,20 @@ export function getProblemChildIds(
   rowIndexes: number[],
   childStatuses: ChildStatuses,
 ) {
-  return rowIndexes.flatMap((index) => {
+  const ids = new Set<string>();
+  for (const index of rowIndexes) {
     const entry = rows[index]?.entry;
-    return isTargetInvocationEntry(entry) &&
+    if (
+      isTargetInvocationEntry(entry) &&
       entry.invocationId &&
       CHILD_PROBLEM_STATUSES.has(
         String(childStatuses[entry.invocationId]?.status),
       )
-      ? [entry.invocationId]
-      : [];
-  });
+    ) {
+      ids.add(entry.invocationId);
+    }
+  }
+  return [...ids];
 }
 
 export type ProblemTone = 'danger' | 'warning' | 'info';
@@ -401,22 +407,31 @@ export function insertRetryRows(
     return rows;
   }
   const out: CombinedJournalEntry[] = [];
+  const pending: { depth: number; rows: CombinedJournalEntry[] }[] = [];
+  const flushUntil = (depth: number) => {
+    while ((pending.at(-1)?.depth ?? -1) >= depth) {
+      out.push(...(pending.pop()?.rows ?? []));
+    }
+  };
   for (const row of rows) {
+    flushUntil(row.depth);
     out.push(row);
     const key = getRetryKey(row);
     const retries = key ? retried.get(key) : undefined;
     if (!key || !retries || !shouldExpand(key)) {
       continue;
     }
-    for (const event of retries.events) {
-      out.push({
+    pending.push({
+      depth: row.depth,
+      rows: retries.events.map((event) => ({
         invocationId: row.invocationId,
         entry: event,
         depth: row.depth,
         parentCommand: row.entry,
         parentInvocationId: row.parentInvocationId,
-      });
-    }
+      })),
+    });
   }
+  flushUntil(0);
   return out;
 }

@@ -649,7 +649,7 @@ export function JournalV2({
       return;
     }
     unseen.forEach((id) => consideredChildIds.current.add(id));
-    const missing = unseen
+    const missing = [...new Set(unseen)]
       .filter((id) => !invocationIds.includes(id))
       .slice(
         0,

@@ -171,6 +171,50 @@ describe('getProblemChildIds', () => {
   });
 });
 
+describe('getProblemChildIds without duplicates', () => {
+  it('lists a child once when several rows point at it', () => {
+    const rows = [
+      row(command(1, { type: 'OneWayCall', invocationId: 'inv_x' })),
+      row(
+        command(2, {
+          type: 'AttachInvocation',
+          invocationId: 'inv_x',
+          resultType: 'failure',
+        }),
+      ),
+    ];
+    const statuses = { inv_x: { status: 'failed' } } as never;
+    const { rowIndexes } = findProblems(
+      rows,
+      new Map(),
+      statuses,
+      nothingCompleted,
+    );
+
+    expect(getProblemChildIds(rows, rowIndexes, statuses)).toEqual(['inv_x']);
+  });
+});
+
+describe('waiting notifications', () => {
+  it('flags only notifications that are still pending', () => {
+    const awaited = (isPending: boolean) =>
+      row({
+        index: 5,
+        category: 'notification',
+        type: 'Signal',
+        isAwaitingOn: true,
+        isPending,
+      } as never);
+
+    expect(
+      getRowProblem(awaited(true), new Map(), noChildren, nothingCompleted),
+    ).toBe('waiting');
+    expect(
+      getRowProblem(awaited(false), new Map(), noChildren, nothingCompleted),
+    ).toBeUndefined();
+  });
+});
+
 describe('filterJournalRows', () => {
   const failed = command(2, { resultType: 'failure' });
   const rows = [
@@ -242,5 +286,20 @@ describe('insertRetryRows', () => {
     );
 
     expect(expanded.map(({ entry }) => entry?.index)).toEqual([1, 2, 9]);
+  });
+
+  it('adds the errors of a call after its expanded child journal', () => {
+    const retried = getRetriedCommands({
+      [ROOT]: [transientError(8, 1, 'a')],
+    });
+    const rows = [
+      row(command(1, { type: 'Call', invocationId: 'inv_child' })),
+      row(command(1, { index: 21 }), { invocationId: 'inv_child', depth: 1 }),
+      row(command(2)),
+    ];
+
+    const expanded = insertRetryRows(rows, retried, () => true);
+
+    expect(expanded.map(({ entry }) => entry?.index)).toEqual([1, 21, 8, 2]);
   });
 });
