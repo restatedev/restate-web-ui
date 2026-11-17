@@ -46,13 +46,16 @@ export function convertJournalV2(
   invocation?: Invocation,
   context?: JournalEntryConversionContext,
 ): JournalEntryV2 {
+  const convertedEntry = JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type]?.(
+    entry,
+    nextEntries,
+    invocation,
+    context,
+  );
   const newEntry =
-    JOURNAL_ENTRY_CONVERT_MAP[entry.entry_type]?.(
-      entry,
-      nextEntries,
-      invocation,
-      context,
-    ) ?? (entry as JournalEntryV2);
+    convertedEntry && convertedEntry !== entry
+      ? convertedEntry
+      : ({ ...entry } as JournalEntryV2);
   if (typeof entry.raw_length === 'number') {
     newEntry.size = entry.raw_length;
   }

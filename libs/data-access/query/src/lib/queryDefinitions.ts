@@ -110,9 +110,9 @@ export const QUERY_DEFINITIONS = {
   },
   'invocations/journal-entries': {
     description:
-      'Load all journal entries of an invocation for the journal timeline.',
+      'Load the journal entries of an invocation for the journal timeline: all of them, or from the last known index while polling a V2 journal.',
     shape:
-      'SELECT <entry columns [+ raw]> FROM sys_journal WHERE id = ? ORDER BY index',
+      'SELECT <entry columns [+ raw]> FROM sys_journal WHERE id = ? [AND index >= ?] ORDER BY index',
     tables: ['sys_journal'],
   },
   'invocations/journal-entry-metadata': {

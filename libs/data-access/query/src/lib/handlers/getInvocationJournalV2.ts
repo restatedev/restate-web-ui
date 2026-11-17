@@ -23,11 +23,24 @@ import {
   SYS_INVOCATION_SELECT_COLUMNS,
   quoteSqlString,
 } from './shared.js';
+import {
+  appendJournalRows,
+  deleteCachedJournal,
+  getCachedJournal,
+  isCacheableJournal,
+  isJournalReplaced,
+  isSameJournalEvents,
+  journalCacheKey,
+  type JournalEventRow,
+  noteJournalFallback,
+  setCachedJournal,
+} from './journalCache.js';
 import { fetchVqueueStatuses } from './vqueue.js';
 import { getVqueueSnapshot } from './getVqueue.js';
 
 type InvocationJournalV2Response =
   operations['get_invocation_journal_v2']['responses']['200']['content']['application/json'];
+type InvocationV2 = ReturnType<typeof convertInvocationV2>;
 
 function sortJournalEntries(entries: JournalEntryV2[]) {
   const timestampCache = new Map<JournalEntryV2, number>();
@@ -109,73 +122,11 @@ function getLastTransientError(
   }
 }
 
-export async function getInvocationJournalV2(
-  this: QueryContext,
-  invocationId: string,
-  includeRaw = false,
-): Promise<Response> {
-  const requestTime = new Date().toISOString();
-  const invocationIdSql = quoteSqlString(invocationId);
-  const [invocationQuery, journalQuery, eventsQuery, vqueueStatuses] =
-    await Promise.all([
-      this.query(
-        `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
-        'invocations/get',
-      ),
-      this.query(
-        `SELECT id, index, appended_at, entry_type, name, raw_length, entry_lite_json, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql} ORDER BY index`,
-        'invocations/journal-entries',
-      ),
-      this.query(
-        `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = ${invocationIdSql} ORDER BY appended_at`,
-        'invocations/journal-events',
-      ),
-      fetchVqueueStatuses(this, [invocationId]),
-    ]);
-  const shouldFetchWithRaw =
-    !includeRaw &&
-    journalQuery.rows.some(
-      (entry) =>
-        (!entry.version || entry.version === 1) && entry.entry_type !== 'Input',
-    );
-
-  if (shouldFetchWithRaw) {
-    return getInvocationJournalV2.call(this, invocationId, true);
-  }
-
-  const rawInvocation = invocationQuery.rows.at(0);
-  const invocation = rawInvocation
-    ? convertInvocationV2(
-        rawInvocation,
-        vqueueStatuses.get(invocationId),
-        requestTime,
-        getLastTransientError(eventsQuery.rows),
-      )
-    : undefined;
-  if (!invocation) {
-    return new Response(
-      JSON.stringify({
-        message: ERROR_CODES[UI_ERROR_CODES.invocationNotFound]?.help,
-        restate_code: UI_ERROR_CODES.invocationNotFound,
-      }),
-      {
-        status: 404,
-        statusText: 'Not found',
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
-  }
-
-  const vqueueId = invocation.vqueue?.vqueue_id ?? invocation.vqueue_id;
-  const vqueueSnapshot = vqueueId
-    ? await getVqueueSnapshot.call(this, vqueueId, invocation.id, {
-        focusedInvocation: invocation,
-        requestTime,
-      })
-    : undefined;
-
-  const version = journalQuery.rows.at(0)?.version;
-  const journalRows = journalQuery.rows as JournalRawEntry[];
+function convertJournalEntries(
+  journalRows: JournalRawEntry[],
+  eventRows: JournalEventRow[],
+  invocation: InvocationV2,
+) {
   const futureEntriesRegistry = createFutureEntriesRegistry(invocation);
   const conversionContext: JournalEntryConversionContext = {
     future: futureEntriesRegistry,
@@ -185,12 +136,12 @@ export async function getInvocationJournalV2(
   };
 
   let commandCount = 0;
-  const eventsEntries = eventsQuery.rows.map(
+  const eventsEntries = eventRows.map(
     (entry, i) =>
       ({
         ...entry,
         entry_type: `Event: ${entry.event_type}`,
-        index: journalQuery.rows.length + i,
+        index: journalRows.length + i,
       }) as JournalRawEntry,
   );
   const allocateSyntheticIndex = createSyntheticIndexAllocator(
@@ -210,14 +161,15 @@ export async function getInvocationJournalV2(
     | JournalEntryV2
   )[] = [];
   for (const rawEntry of journalAndEventEntries) {
-    if ('entry_type' in rawEntry) {
-      if (rawEntry.entry_type?.startsWith('Command:')) {
-        (rawEntry as JournalRawEntryWithCommandIndex).command_index =
-          commandCount;
-        commandCount++;
-      }
+    if (rawEntry.entry_type?.startsWith('Command:')) {
+      entriesWithCommandIndex.push({
+        ...rawEntry,
+        command_index: commandCount,
+      });
+      commandCount++;
+    } else {
+      entriesWithCommandIndex.push(rawEntry);
     }
-    entriesWithCommandIndex.push(rawEntry);
   }
 
   const entries: JournalEntryV2[] = [];
@@ -244,21 +196,167 @@ export async function getInvocationJournalV2(
     conversionContext,
     allocateSyntheticIndex,
   );
-  const entriesWithLifeCycleEvents = sortJournalEntries([
+  return sortJournalEntries([
     ...entries,
     ...futureEntries,
     ...lifeCycleEntries,
   ]);
+}
+
+function journalEntriesSql(
+  invocationIdSql: string,
+  includeRaw: boolean,
+  fromIndex?: number,
+) {
+  return `SELECT id, index, appended_at, entry_type, name, raw_length, entry_lite_json, ${includeRaw ? 'raw,' : ''} version, completed, sleep_wakeup_at, invoked_id, invoked_target, promise_name FROM sys_journal WHERE id = ${invocationIdSql}${typeof fromIndex === 'number' ? ` AND index >= ${fromIndex}` : ''} ORDER BY index`;
+}
+
+function journalResponseBody(
+  invocation: Omit<InvocationJournalV2Response, 'journal'>,
+  entriesJson: string,
+  version: number | undefined,
+) {
+  const invocationJson = JSON.stringify(invocation);
+  const journalJson = `{"entries":${entriesJson}${
+    version === undefined ? '' : `,"version":${JSON.stringify(version)}`
+  }}`;
+  return invocationJson === '{}'
+    ? `{"journal":${journalJson}}`
+    : `${invocationJson.slice(0, -1)},"journal":${journalJson}}`;
+}
+
+export async function getInvocationJournalV2(
+  this: QueryContext,
+  invocationId: string,
+  includeRaw = false,
+): Promise<Response> {
+  const requestTime = new Date().toISOString();
+  const invocationIdSql = quoteSqlString(invocationId);
+  const cacheKey = journalCacheKey(this.baseUrl, invocationId);
+  const cached = includeRaw ? undefined : getCachedJournal(cacheKey);
+  const [invocationQuery, journalQuery, eventsQuery, vqueueStatuses] =
+    await Promise.all([
+      this.query(
+        `SELECT ${SYS_INVOCATION_SELECT_COLUMNS.join(', ')} FROM sys_invocation WHERE id = ${invocationIdSql}`,
+        'invocations/get',
+      ),
+      this.query(
+        journalEntriesSql(
+          invocationIdSql,
+          includeRaw,
+          cached?.rows.at(-1)?.index,
+        ),
+        'invocations/journal-entries',
+      ),
+      this.query(
+        `SELECT after_journal_entry_index, appended_at, event_type, event_json from sys_journal_events WHERE id = ${invocationIdSql} ORDER BY appended_at`,
+        'invocations/journal-events',
+      ),
+      fetchVqueueStatuses(this, [invocationId]),
+    ]);
+
+  const rawInvocation = invocationQuery.rows.at(0);
+  let journalRows = journalQuery.rows as JournalRawEntry[];
+  let eventRows = eventsQuery.rows as JournalEventRow[];
+  if (cached && rawInvocation) {
+    if (isSameJournalEvents(cached.events, eventRows)) {
+      eventRows = cached.events;
+    }
+    const mergedRows = isJournalReplaced(cached, rawInvocation)
+      ? undefined
+      : appendJournalRows(cached.rows, journalRows);
+    if (mergedRows) {
+      journalRows = mergedRows;
+    } else {
+      deleteCachedJournal(cacheKey);
+      noteJournalFallback(cacheKey);
+      const fullJournalQuery = await this.query(
+        journalEntriesSql(invocationIdSql, includeRaw),
+        'invocations/journal-entries',
+      );
+      journalRows = fullJournalQuery.rows as JournalRawEntry[];
+    }
+  }
+
+  const shouldFetchWithRaw =
+    !includeRaw &&
+    journalRows.some(
+      (entry) =>
+        (!entry.version || entry.version === 1) && entry.entry_type !== 'Input',
+    );
+
+  if (shouldFetchWithRaw) {
+    return getInvocationJournalV2.call(this, invocationId, true);
+  }
+
+  const vqueueStatus = vqueueStatuses.get(invocationId);
+  const invocation = rawInvocation
+    ? convertInvocationV2(
+        rawInvocation,
+        vqueueStatus,
+        requestTime,
+        getLastTransientError(eventRows),
+      )
+    : undefined;
+  if (!invocation) {
+    deleteCachedJournal(cacheKey);
+    return new Response(
+      JSON.stringify({
+        message: ERROR_CODES[UI_ERROR_CODES.invocationNotFound]?.help,
+        restate_code: UI_ERROR_CODES.invocationNotFound,
+      }),
+      {
+        status: 404,
+        statusText: 'Not found',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
+
+  const vqueueId = invocation.vqueue?.vqueue_id ?? invocation.vqueue_id;
+  const vqueueSnapshot = vqueueId
+    ? await getVqueueSnapshot.call(this, vqueueId, invocation.id, {
+        focusedInvocation: invocation,
+        requestTime,
+      })
+    : undefined;
+
+  const entriesKey = JSON.stringify([rawInvocation, vqueueStatus ?? null]);
+  const entriesJson =
+    cached &&
+    cached.rows === journalRows &&
+    cached.events === eventRows &&
+    cached.entriesKey === entriesKey
+      ? cached.entriesJson
+      : JSON.stringify(
+          convertJournalEntries(journalRows, eventRows, invocation),
+        );
+
+  if (
+    !includeRaw &&
+    !rawInvocation?.completed_at &&
+    isCacheableJournal(journalRows)
+  ) {
+    setCachedJournal(cacheKey, {
+      createdAt: rawInvocation?.created_at,
+      rows: journalRows,
+      events: eventRows,
+      entriesKey,
+      entriesJson,
+    });
+  } else {
+    deleteCachedJournal(cacheKey);
+  }
 
   return new Response(
-    JSON.stringify({
-      ...invocation,
-      ...(vqueueSnapshot && { vqueueSnapshot }),
-      journal: {
-        entries: entriesWithLifeCycleEvents,
-        version,
-      },
-    } satisfies InvocationJournalV2Response),
+    journalResponseBody(
+      {
+        ...invocation,
+        ...(vqueueSnapshot && { vqueueSnapshot }),
+      } satisfies Omit<InvocationJournalV2Response, 'journal'>,
+      entriesJson,
+      journalRows.at(0)?.version,
+    ),
     {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, vi } from 'vitest';
 import { query as queryRouter } from '../../../query.js';
+import { clearJournalCache } from '../../journalCache.js';
 
 export type SqlResponder = (
   sql: string,
@@ -38,6 +39,7 @@ export function createInvocationV2QueryTestHarness() {
   beforeEach(() => {
     sql.length = 0;
     responder = () => [];
+    clearJournalCache();
     vi.stubGlobal(
       'fetch',
       vi.fn(async (input: string | URL | Request) => {
