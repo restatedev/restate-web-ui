@@ -130,6 +130,17 @@ describe('getRowProblem', () => {
     ).toBe('children');
   });
 
+  it('does not count a finished command the invocation last awaited', () => {
+    expect(
+      getRowProblem(
+        row(command(5, { isAwaitingOn: true })),
+        retried,
+        noChildren,
+        nothingCompleted,
+      ),
+    ).toBeUndefined();
+  });
+
   it('does not count leftover pending entries of a finished invocation', () => {
     expect(
       getRowProblem(
@@ -258,6 +269,26 @@ describe('filterJournalRows', () => {
         new Map(),
       ).rows,
     ).toHaveLength(2);
+  });
+
+  it('searches the rows of an invocation without commands', () => {
+    const lifecycleOnly = [
+      row({ index: 0, category: 'event', type: 'Event: Created' } as never),
+      row({
+        index: 1,
+        category: 'event',
+        type: 'Event: TransientError',
+        message: 'upstream timeout',
+      } as never),
+    ];
+
+    expect(
+      filterJournalRows(
+        lifecycleOnly,
+        { problemsOnly: false, query: 'created' },
+        new Map(),
+      ).rows.map(({ entry }) => entry?.index),
+    ).toEqual([0]);
   });
 
   it('finds entries by type label', () => {

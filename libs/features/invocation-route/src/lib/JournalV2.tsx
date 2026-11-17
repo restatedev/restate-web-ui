@@ -458,26 +458,27 @@ export function JournalV2({
     const timer = setTimeout(update, wait);
     return () => clearTimeout(timer);
   }, [allChildInvocationIds, childInvocationIds]);
-  const { data: childStatusData } = useWarmInvocationStatusDetails(
-    childInvocationIds,
-    `${invocationId}#problems`,
-    {
-      enabled: childInvocationIds.length > 0,
-      refetchOnMount: true,
-      staleTime: 0,
-      refetchOnWindowFocus: false,
-      refetchIntervalInBackground: false,
-      refetchInterval(query) {
-        const { unfinished, requested } = countChildStatuses(
-          childInvocationIds,
-          query.state.data?.invocations,
-        );
-        return isLive && !isScrollingRef.current && unfinished > 0
-          ? getProblemStatusInterval(requested)
-          : false;
+  const { data: childStatusData, isFetchedAfterMount: hasFreshChildStatuses } =
+    useWarmInvocationStatusDetails(
+      childInvocationIds,
+      `${invocationId}#problems`,
+      {
+        enabled: childInvocationIds.length > 0,
+        refetchOnMount: true,
+        staleTime: 0,
+        refetchOnWindowFocus: false,
+        refetchIntervalInBackground: false,
+        refetchInterval(query) {
+          const { unfinished, requested } = countChildStatuses(
+            childInvocationIds,
+            query.state.data?.invocations,
+          );
+          return isLive && !isScrollingRef.current && unfinished > 0
+            ? getProblemStatusInterval(requested)
+            : false;
+        },
       },
-    },
-  );
+    );
   const completedInvocationIds = useMemo(
     () =>
       new Set(
@@ -626,14 +627,20 @@ export function JournalV2({
   }, [problems, entriesWithoutInput, entriesWithoutInputUnfiltered]);
   const problemChildIdsToExpand = useMemo(
     () =>
-      isProblemsOnly
+      isProblemsOnly && hasFreshChildStatuses
         ? getProblemChildIds(
             entriesWithoutInputUnfiltered,
             problems.rowIndexes,
             childStatusData?.invocations ?? {},
           )
         : [],
-    [isProblemsOnly, entriesWithoutInputUnfiltered, problems, childStatusData],
+    [
+      isProblemsOnly,
+      hasFreshChildStatuses,
+      entriesWithoutInputUnfiltered,
+      problems,
+      childStatusData,
+    ],
   );
   const autoExpandedIds = useRef<string[]>([]);
   const consideredChildIds = useRef(new Set<string>());

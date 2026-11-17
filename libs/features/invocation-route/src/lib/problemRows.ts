@@ -122,7 +122,7 @@ export function getRowProblem(
   ) {
     return 'retried';
   }
-  if (canWait && (entry.isPending || entry.isAwaitingOn)) {
+  if (canWait && entry.isPending) {
     return 'waiting';
   }
   return undefined;
@@ -348,7 +348,7 @@ export function filterJournalRows(
     (row) => row.depth === 0 && row.entry?.category === 'command',
   );
   const leadingRows =
-    firstCommandIndex === -1 ? rows.length : firstCommandIndex;
+    firstCommandIndex !== -1 ? firstCommandIndex : query ? 0 : rows.length;
   const keep = new Set<number>();
   for (let index = 0; index < leadingRows; index++) {
     keep.add(index);
