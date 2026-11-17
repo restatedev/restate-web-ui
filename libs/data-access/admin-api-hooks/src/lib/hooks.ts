@@ -1161,9 +1161,14 @@ export function useWarmInvocationStatusDetails(
           },
         },
       ).queryFn(context)) ?? { invocations: {} };
+      const currentInvocations =
+        context.client.getQueryData<InvocationStatusDetailsData>(
+          latestQueryKey,
+        )?.invocations;
       return {
         invocations: {
           ...mergedInvocations,
+          ...currentInvocations,
           ...fetchedData.invocations,
         },
       };

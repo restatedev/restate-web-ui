@@ -149,7 +149,10 @@ export function findJournalProblems(
 interface ChildProblems {
   kindByRow: Map<number, ProblemKind>;
   rowIndexes: number[];
+  failedChildRows: Set<number>;
 }
+
+const NO_ROWS = new Set<number>();
 
 const childProblemsByJournal = new WeakMap<
   ReturnType<typeof findJournalProblems>,
@@ -180,7 +183,9 @@ export function addChildProblems(
       })
     : journalProblems.childRowIndexes;
   const base = previous?.problems.kindByRow ?? journalProblems.kindByRow;
+  const baseFailed = previous?.problems.failedChildRows ?? NO_ROWS;
   let kindByRow: Map<number, ProblemKind> | undefined;
+  let failedChildRows: Set<number> | undefined;
   for (const index of indexes) {
     const row = rows[index];
     const kind = row
@@ -194,13 +199,28 @@ export function addChildProblems(
         kindByRow.delete(index);
       }
     }
+    const isFailed =
+      kind === 'children' &&
+      getProblemTone(kind, row, childStatuses) === 'danger';
+    if (baseFailed.has(index) !== isFailed) {
+      failedChildRows ??= new Set(baseFailed);
+      if (isFailed) {
+        failedChildRows.add(index);
+      } else {
+        failedChildRows.delete(index);
+      }
+    }
   }
   const problems =
-    previous && !kindByRow
+    previous && !kindByRow && !failedChildRows
       ? previous.problems
       : {
           kindByRow: kindByRow ?? base,
-          rowIndexes: getCountedRowIndexes(kindByRow ?? base),
+          rowIndexes:
+            kindByRow || !previous
+              ? getCountedRowIndexes(kindByRow ?? base)
+              : previous.problems.rowIndexes,
+          failedChildRows: failedChildRows ?? baseFailed,
         };
   childProblemsByJournal.set(journalProblems, {
     problems,

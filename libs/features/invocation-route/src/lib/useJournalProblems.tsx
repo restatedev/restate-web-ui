@@ -44,6 +44,7 @@ const NO_RETRIES = new Map<string, PastRetries>();
 const NO_PROBLEMS = {
   kindByRow: new Map<number, ProblemKind>(),
   rowIndexes: [] as number[],
+  failedChildRows: new Set<number>(),
 };
 
 type CheckedStatuses = NonNullable<
@@ -156,7 +157,7 @@ export function useJournalProblems({
     };
     const wait =
       checkIdsUpdatedAt.current + CHILD_CHECK_INTERVAL_MS - Date.now();
-    if (checkIdsUpdatedAt.current === 0 || wait <= 0) {
+    if (wait <= 0) {
       update();
       return;
     }
@@ -229,7 +230,6 @@ export function useJournalProblems({
       }
       setActiveProblemKey(undefined);
       if (!problemsOnly) {
-        checkIdsUpdatedAt.current = 0;
         setCheckIds([]);
       }
       setSearchParams(
@@ -254,14 +254,20 @@ export function useJournalProblems({
     }
     const tones = new Map<string, ProblemTone>();
     problems.kindByRow.forEach((kind, index) => {
-      const row = rows[index];
-      const key = getProblemRowKey(row);
+      const key = getProblemRowKey(rows[index]);
       if (key) {
-        tones.set(key, getProblemTone(kind, row, childStatuses));
+        tones.set(
+          key,
+          kind === 'children'
+            ? problems.failedChildRows.has(index)
+              ? 'danger'
+              : 'warning'
+            : getProblemTone(kind, undefined, NO_STATUSES),
+        );
       }
     });
     return tones;
-  }, [enabled, problems, rows, childStatuses]);
+  }, [enabled, problems, rows]);
 
   const inputKey = `${invocationId}:input`;
   const hasInputProblem =
@@ -357,21 +363,29 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
   referenceInvocationId: string;
   onStatuses: (statuses: CheckedStatuses) => void;
 }) {
-  const { data } = useWarmInvocationStatusDetails(
+  const { data, isFetchedAfterMount } = useWarmInvocationStatusDetails(
     invocationIds,
     referenceInvocationId,
     {
       enabled: invocationIds.length > 0,
       refetchOnMount: true,
-      staleTime: 0,
+      staleTime: CHILD_CHECK_INTERVAL_MS,
       refetchOnWindowFocus: false,
       refetchInterval: false,
     },
   );
   useEffect(() => {
-    if (data?.invocations) {
-      onStatuses(data.invocations);
+    if (!isFetchedAfterMount || !data?.invocations) {
+      return;
     }
-  }, [data, onStatuses]);
+    const checked: CheckedStatuses = {};
+    for (const id of invocationIds) {
+      const status = data.invocations[id];
+      if (status) {
+        checked[id] = status;
+      }
+    }
+    onStatuses(checked);
+  }, [data, isFetchedAfterMount, invocationIds, onStatuses]);
   return null;
 });

@@ -258,6 +258,31 @@ describe('findProblems', () => {
     expect(failed.rowIndexes).toEqual([1]);
   });
 
+  it('notices a child that goes from backing off to failed', () => {
+    const rows = [
+      row(command(1, { type: 'OneWayCall', invocationId: 'inv_a' })),
+    ];
+    const journal = findJournalProblems(rows, new Map(), nothingCompleted);
+    const backingOff = addChildProblems(
+      journal,
+      rows,
+      new Map(),
+      { inv_a: { status: 'backing-off' } } as never,
+      nothingCompleted,
+    );
+    const failed = addChildProblems(
+      journal,
+      rows,
+      new Map(),
+      { inv_a: { status: 'failed' } } as never,
+      nothingCompleted,
+    );
+
+    expect(backingOff.failedChildRows.has(0)).toBe(false);
+    expect(failed).not.toBe(backingOff);
+    expect(failed.failedChildRows.has(0)).toBe(true);
+  });
+
   it('keeps waiting rows out of the count', () => {
     const rows = [row(command(1, { type: 'Sleep', isPending: true }))];
     const { kindByRow, rowIndexes } = findProblems(
