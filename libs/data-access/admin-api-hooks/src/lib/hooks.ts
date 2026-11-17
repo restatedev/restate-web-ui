@@ -1060,6 +1060,25 @@ export function useCachedInvocationStatusDetails(
   });
 }
 
+export function useMergeInvocationStatusDetails(
+  referenceInvocationId?: string,
+) {
+  const baseUrl = useAdminBaseUrl();
+  const queryClient = useQueryClient();
+  return useCallback(
+    (invocations: InvocationStatusDetailsData['invocations']) => {
+      queryClient.setQueryData<InvocationStatusDetailsData>(
+        getInvocationStatusDetailsQueryKey(baseUrl, referenceInvocationId),
+        (previous) => ({
+          ...previous,
+          invocations: { ...previous?.invocations, ...invocations },
+        }),
+      );
+    },
+    [baseUrl, queryClient, referenceInvocationId],
+  );
+}
+
 export function useWarmInvocationStatusDetails(
   invocationIds: string[],
   referenceInvocationId?: string,

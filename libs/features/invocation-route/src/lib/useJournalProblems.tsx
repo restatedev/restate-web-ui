@@ -8,8 +8,10 @@ import {
   useState,
 } from 'react';
 import { useSearchParams } from 'react-router';
+import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   useCachedInvocationStatusDetails,
+  useMergeInvocationStatusDetails,
   useWarmInvocationStatusDetails,
   type useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
@@ -19,6 +21,7 @@ import {
   filterJournalRows,
   findJournalProblems,
   getChildIdsToCheck,
+  getInvocationRetryKey,
   getProblemRowKey,
   getProblemTone,
   getRetriedCommands,
@@ -33,6 +36,7 @@ import {
 } from './problemRows';
 import type { CombinedJournalEntry } from './useProcessedJournal';
 
+export const INPUT_ROW = -1;
 const CHILD_CHECK_LIMIT = 1_000;
 const CHILD_CHECK_INTERVAL_MS = 60_000;
 const NO_STATUSES: ChildStatuses = {};
@@ -41,6 +45,10 @@ const NO_PROBLEMS = {
   kindByRow: new Map<number, ProblemKind>(),
   rowIndexes: [] as number[],
 };
+
+type CheckedStatuses = NonNullable<
+  ReturnType<typeof useWarmInvocationStatusDetails>['data']
+>['invocations'];
 
 type JournalData = ReturnType<
   typeof useGetInvocationsJournalWithInvocationsV2
@@ -55,28 +63,24 @@ export function useJournalProblems({
   invocationId,
   data,
   rows,
+  inputEntry,
   showErrors,
 }: {
   enabled: boolean;
   invocationId: string;
   data: JournalData;
   rows: CombinedJournalEntry[];
+  inputEntry?: JournalEntryV2;
   showErrors: boolean;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const isProblemsOnly =
     enabled && searchParams.get(SHOW_PARAM) === SHOW_PROBLEMS;
 
-  const { data: visibleStatuses } =
+  const { data: cachedStatuses } =
     useCachedInvocationStatusDetails(invocationId);
-  const [checkedStatuses, setCheckedStatuses] = useState<ChildStatuses>();
-  const childStatuses = useMemo(
-    () =>
-      checkedStatuses || visibleStatuses?.invocations
-        ? { ...checkedStatuses, ...visibleStatuses?.invocations }
-        : NO_STATUSES,
-    [checkedStatuses, visibleStatuses],
-  );
+  const childStatuses = cachedStatuses?.invocations ?? NO_STATUSES;
+  const mergeCheckedStatuses = useMergeInvocationStatusDetails(invocationId);
 
   const completedInvocationIds = useMemo(
     () =>
@@ -152,7 +156,7 @@ export function useJournalProblems({
     };
     const wait =
       checkIdsUpdatedAt.current + CHILD_CHECK_INTERVAL_MS - Date.now();
-    if (checkIds.length === 0 || wait <= 0) {
+    if (checkIdsUpdatedAt.current === 0 || wait <= 0) {
       update();
       return;
     }
@@ -224,6 +228,10 @@ export function useJournalProblems({
         return;
       }
       setActiveProblemKey(undefined);
+      if (!problemsOnly) {
+        checkIdsUpdatedAt.current = 0;
+        setCheckIds([]);
+      }
       setSearchParams(
         (previous) => {
           const next = new URLSearchParams(previous);
@@ -255,39 +263,73 @@ export function useJournalProblems({
     return tones;
   }, [enabled, problems, rows, childStatuses]);
 
+  const inputKey = `${invocationId}:input`;
+  const hasInputProblem =
+    enabled &&
+    Boolean(
+      inputEntry?.isRetrying ||
+      retriedCommands.has(`${invocationId}:0`) ||
+      retriedCommands.has(getInvocationRetryKey(invocationId)),
+    );
   const navigableRows = useMemo(() => {
-    if (entries === rows) {
-      return problems.rowIndexes;
-    }
     const keys = new Set(
       problems.rowIndexes.map((index) => getProblemRowKey(rows[index])),
     );
-    return entries.flatMap((row, index) =>
-      keys.has(getProblemRowKey(row)) ? [index] : [],
-    );
-  }, [problems, entries, rows]);
+    const shown =
+      entries === rows
+        ? problems.rowIndexes
+        : entries.flatMap((row, index) =>
+            keys.has(getProblemRowKey(row)) ? [index] : [],
+          );
+    return hasInputProblem ? [INPUT_ROW, ...shown] : shown;
+  }, [problems, entries, rows, hasInputProblem]);
+  const isInputActive = hasInputProblem && activeProblemKey === inputKey;
   const activeProblemIndex = useMemo(
     () =>
-      activeProblemKey
+      activeProblemKey && activeProblemKey !== inputKey
         ? entries.findIndex((row) => getProblemRowKey(row) === activeProblemKey)
         : -1,
-    [activeProblemKey, entries],
+    [activeProblemKey, inputKey, entries],
   );
-  const activeProblemPosition =
-    activeProblemIndex >= 0 ? navigableRows.indexOf(activeProblemIndex) : -1;
+  const activeProblemPosition = isInputActive
+    ? navigableRows.indexOf(INPUT_ROW)
+    : activeProblemIndex >= 0
+      ? navigableRows.indexOf(activeProblemIndex)
+      : -1;
   const selectProblem = useCallback(
     (index: number) => {
-      setActiveProblemKey(getProblemRowKey(entries[index]));
+      setActiveProblemKey(
+        index === INPUT_ROW ? inputKey : getProblemRowKey(entries[index]),
+      );
       setAnnouncement(
         `Problem ${formatNumber(navigableRows.indexOf(index) + 1)} of ${formatNumber(navigableRows.length)}`,
       );
     },
-    [entries, navigableRows],
+    [entries, navigableRows, inputKey],
+  );
+  const childCheck = useMemo(
+    () => ({
+      invocationIds: isProblemsOnly ? checkIds : [],
+      onStatuses: mergeCheckedStatuses,
+      checked: wantedCheckIds.length,
+      total: childIdsToCheck.length,
+      checkAll: checkAllChildren,
+    }),
+    [
+      isProblemsOnly,
+      checkIds,
+      mergeCheckedStatuses,
+      wantedCheckIds,
+      childIdsToCheck,
+      checkAllChildren,
+    ],
   );
 
   return {
     entries,
-    problemTotal: problems.rowIndexes.length,
+    problemTotal: problems.rowIndexes.length + (hasInputProblem ? 1 : 0),
+    inputTone: hasInputProblem ? ('warning' as const) : undefined,
+    isInputActive,
     problemTones,
     pastRetries: enabled && !showErrors ? retriedCommands : undefined,
     isRetryRowExpanded,
@@ -302,13 +344,7 @@ export function useJournalProblems({
     activeProblemPosition,
     selectProblem,
     announcement,
-    childCheck: {
-      invocationIds: isProblemsOnly ? checkIds : [],
-      onStatuses: setCheckedStatuses,
-      checked: wantedCheckIds.length,
-      total: childIdsToCheck.length,
-      checkAll: checkAllChildren,
-    },
+    childCheck,
   };
 }
 
@@ -319,7 +355,7 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
 }: {
   invocationIds: string[];
   referenceInvocationId: string;
-  onStatuses: (statuses: ChildStatuses) => void;
+  onStatuses: (statuses: CheckedStatuses) => void;
 }) {
   const { data } = useWarmInvocationStatusDetails(
     invocationIds,

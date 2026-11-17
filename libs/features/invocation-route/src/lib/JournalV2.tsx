@@ -102,7 +102,11 @@ import {
   type PastRetries,
   type ProblemTone,
 } from './problemRows';
-import { ProblemChildCheck, useJournalProblems } from './useJournalProblems';
+import {
+  INPUT_ROW,
+  ProblemChildCheck,
+  useJournalProblems,
+} from './useJournalProblems';
 import { JournalProblemsBar } from './JournalProblemsBar';
 import { PastRetriesBadge } from './PastRetriesBadge';
 
@@ -110,6 +114,16 @@ const virtualRowStyles = tv({
   base: '',
   variants: {
     isFocused: {
+      true: 'bg-accent-subtle/50',
+      false: '',
+    },
+  },
+});
+
+const inputHeaderStyles = tv({
+  base: 'relative flex h-full min-w-0 items-center',
+  variants: {
+    isActive: {
       true: 'bg-accent-subtle/50',
       false: '',
     },
@@ -380,6 +394,7 @@ export function JournalV2({
     invocationId,
     data,
     rows: entriesWithoutInputUnfiltered,
+    inputEntry,
     showErrors: Boolean(detail.errors),
   });
   const entriesWithoutInput = journalProblems.entries;
@@ -552,6 +567,10 @@ export function JournalV2({
     return row ? row.start - scrollMargin + row.size / 2 : index * 36;
   };
   const scrollToProblemRow = (target: number) => {
+    if (target === INPUT_ROW) {
+      journalProblems.selectProblem(INPUT_ROW);
+      return;
+    }
     const list = entriesListRef.current;
     if (!list) {
       return;
@@ -814,7 +833,19 @@ export function JournalV2({
                         className: 'h-full w-full md:grid',
                       })}
                     >
-                      <div className="flex h-full min-w-0 items-center">
+                      <div
+                        className={inputHeaderStyles({
+                          isActive: journalProblems.isInputActive,
+                        })}
+                      >
+                        {journalProblems.inputTone && (
+                          <span
+                            aria-hidden
+                            className={problemMarkStyles({
+                              tone: journalProblems.inputTone,
+                            })}
+                          />
+                        )}
                         <Input
                           entry={typedInputEntry}
                           invocation={data?.[invocationId]}

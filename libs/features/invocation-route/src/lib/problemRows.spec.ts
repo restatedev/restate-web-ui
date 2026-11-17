@@ -1,9 +1,11 @@
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
+  addChildProblems,
   filterJournalRows,
   findProblems,
   findJournalProblems,
   getChildIdsToCheck,
+  getInvocationRetryKey,
   getPastRetries,
   getRetriedCommands,
   getRowProblem,
@@ -69,6 +71,21 @@ describe('getRetriedCommands', () => {
     expect(retried.get(`${ROOT}:1`)?.events).toHaveLength(2);
     expect(retried.get(`${ROOT}:7`)?.count).toBe(1);
   });
+
+  it('keeps errors from before the first step on the invocation', () => {
+    const retried = getRetriedCommands({
+      [ROOT]: [
+        {
+          index: 1,
+          category: 'event',
+          type: 'Event: TransientError',
+          message: 'config is missing',
+        } as JournalEntryV2,
+      ],
+    });
+
+    expect(retried.get(getInvocationRetryKey(ROOT))?.count).toBe(1);
+  });
 });
 
 describe('getPastRetries', () => {
@@ -129,6 +146,17 @@ describe('getRowProblem', () => {
         nothingCompleted,
       ),
     ).toBe('children');
+  });
+
+  it('trusts the journal for a call that already finished', () => {
+    expect(
+      getRowProblem(
+        row(command(1, { type: 'Call', invocationId: 'inv_child' })),
+        retried,
+        { inv_child: { status: 'backing-off' } as never },
+        nothingCompleted,
+      ),
+    ).toBeUndefined();
   });
 
   it('does not count a finished command the invocation last awaited', () => {
@@ -195,6 +223,39 @@ describe('findProblems', () => {
         nothingCompleted,
       ).rowIndexes,
     ).toEqual([0]);
+  });
+
+  it('reuses the result when no child status changed', () => {
+    const rows = [
+      row(command(1, { type: 'OneWayCall', invocationId: 'inv_a' })),
+      row(command(2, { type: 'OneWayCall', invocationId: 'inv_b' })),
+    ];
+    const journal = findJournalProblems(rows, new Map(), nothingCompleted);
+    const running = { status: 'running' };
+    const first = addChildProblems(
+      journal,
+      rows,
+      new Map(),
+      { inv_a: running, inv_b: running } as never,
+      nothingCompleted,
+    );
+    const same = addChildProblems(
+      journal,
+      rows,
+      new Map(),
+      { inv_a: running, inv_b: { status: 'suspended' } } as never,
+      nothingCompleted,
+    );
+    const failed = addChildProblems(
+      journal,
+      rows,
+      new Map(),
+      { inv_a: running, inv_b: { status: 'failed' } } as never,
+      nothingCompleted,
+    );
+
+    expect(same).toBe(first);
+    expect(failed.rowIndexes).toEqual([1]);
   });
 
   it('keeps waiting rows out of the count', () => {

@@ -36,12 +36,12 @@ export function getRetriedCommands(
   const retried = new Map<string, PastRetries>();
   for (const [invocationId, entries] of Object.entries(entriesByInvocation)) {
     for (const entry of entries ?? []) {
-      if (
-        entry.type === 'Event: TransientError' &&
-        'relatedCommandIndex' in entry &&
-        typeof entry.relatedCommandIndex === 'number'
-      ) {
-        const key = `${invocationId}:${entry.relatedCommandIndex}`;
+      if (entry.type === 'Event: TransientError') {
+        const key =
+          'relatedCommandIndex' in entry &&
+          typeof entry.relatedCommandIndex === 'number'
+            ? `${invocationId}:${entry.relatedCommandIndex}`
+            : getInvocationRetryKey(invocationId);
         const message =
           'message' in entry && typeof entry.message === 'string'
             ? entry.message
@@ -58,6 +58,10 @@ export function getRetriedCommands(
     }
   }
   return retried;
+}
+
+export function getInvocationRetryKey(invocationId: string) {
+  return `${invocationId}:invocation`;
 }
 
 export function getPastRetries(
@@ -96,7 +100,9 @@ export function getRowProblem(
     return 'failed';
   }
   const childStatus =
-    isTargetInvocationEntry(entry) && entry.invocationId
+    isTargetInvocationEntry(entry) &&
+    entry.invocationId &&
+    (entry.type === 'OneWayCall' || entry.isPending)
       ? childStatuses[entry.invocationId]?.status
       : undefined;
   if (childStatus && CHILD_PROBLEM_STATUSES.has(childStatus)) {
@@ -140,29 +146,67 @@ export function findJournalProblems(
   return { kindByRow, childRowIndexes };
 }
 
+interface ChildProblems {
+  kindByRow: Map<number, ProblemKind>;
+  rowIndexes: number[];
+}
+
+const childProblemsByJournal = new WeakMap<
+  ReturnType<typeof findJournalProblems>,
+  { problems: ChildProblems; statuses: ChildStatuses }
+>();
+
+function getCountedRowIndexes(kindByRow: Map<number, ProblemKind>) {
+  return [...kindByRow]
+    .flatMap(([index, kind]) => (kind === 'waiting' ? [] : [index]))
+    .sort((a, b) => a - b);
+}
+
 export function addChildProblems(
   journalProblems: ReturnType<typeof findJournalProblems>,
   rows: CombinedJournalEntry[],
   retried: ReadonlyMap<string, PastRetries>,
   childStatuses: ChildStatuses,
   completedInvocationIds: ReadonlySet<string>,
-) {
-  const kindByRow = new Map(journalProblems.kindByRow);
-  for (const index of journalProblems.childRowIndexes) {
+): ChildProblems {
+  const previous = childProblemsByJournal.get(journalProblems);
+  const indexes = previous
+    ? journalProblems.childRowIndexes.filter((index) => {
+        const entry = rows[index]?.entry;
+        const id = isTargetInvocationEntry(entry)
+          ? entry.invocationId
+          : undefined;
+        return id !== undefined && previous.statuses[id] !== childStatuses[id];
+      })
+    : journalProblems.childRowIndexes;
+  const base = previous?.problems.kindByRow ?? journalProblems.kindByRow;
+  let kindByRow: Map<number, ProblemKind> | undefined;
+  for (const index of indexes) {
     const row = rows[index];
     const kind = row
       ? getRowProblem(row, retried, childStatuses, completedInvocationIds)
       : undefined;
-    if (kind) {
-      kindByRow.set(index, kind);
-    } else {
-      kindByRow.delete(index);
+    if (base.get(index) !== kind) {
+      kindByRow ??= new Map(base);
+      if (kind) {
+        kindByRow.set(index, kind);
+      } else {
+        kindByRow.delete(index);
+      }
     }
   }
-  const rowIndexes = [...kindByRow]
-    .flatMap(([index, kind]) => (kind === 'waiting' ? [] : [index]))
-    .sort((a, b) => a - b);
-  return { kindByRow, rowIndexes };
+  const problems =
+    previous && !kindByRow
+      ? previous.problems
+      : {
+          kindByRow: kindByRow ?? base,
+          rowIndexes: getCountedRowIndexes(kindByRow ?? base),
+        };
+  childProblemsByJournal.set(journalProblems, {
+    problems,
+    statuses: childStatuses,
+  });
+  return problems;
 }
 
 export function findProblems(
