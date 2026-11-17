@@ -1064,7 +1064,132 @@ const MAX_STATUS_CHECK_MISSES = 3;
 const STATUS_CHECK_FLUSH_MS = 1_000;
 
 export interface InvocationStatusCheckData {
-  unfinished: number;
+  checkedAt: number;
+}
+
+type CheckedStatus =
+  InvocationStatusDetailsData['invocations'][string]['status'];
+
+interface StatusCheckState {
+  known: Map<string, CheckedStatus>;
+  misses: Map<string, number>;
+  cursor: number;
+}
+
+function isOpenForCheck(state: StatusCheckState, invocationId: string) {
+  return (
+    !isCompletedInvocationStatus(state.known.get(invocationId)) &&
+    (state.misses.get(invocationId) ?? 0) < MAX_STATUS_CHECK_MISSES
+  );
+}
+
+function isUntriedForCheck(state: StatusCheckState, invocationId: string) {
+  return !state.known.has(invocationId) && !state.misses.has(invocationId);
+}
+
+async function runInvocationStatusCheck({
+  context,
+  state,
+  invocationIds,
+  baseUrl,
+  referenceInvocationId,
+  sharedKey,
+  batchSize,
+  maxPerRefresh,
+  shouldShare,
+  onProgress,
+}: {
+  context: { client: QueryClient };
+  state: StatusCheckState;
+  invocationIds: string[];
+  baseUrl: string;
+  referenceInvocationId: string;
+  sharedKey: ReturnType<typeof getInvocationStatusDetailsQueryKey>;
+  batchSize: number;
+  maxPerRefresh: number;
+  shouldShare: (status?: string) => boolean;
+  onProgress?: (checked: number, total: number) => void;
+}): Promise<InvocationStatusCheckData> {
+  const open = invocationIds.filter((id) => isOpenForCheck(state, id));
+  const untried = open.filter((id) => isUntriedForCheck(state, id));
+  const tried = open.filter((id) => !isUntriedForCheck(state, id));
+  const room = Math.max(0, maxPerRefresh - untried.length);
+  let rotated = tried;
+  if (tried.length > room) {
+    const from = state.cursor % tried.length;
+    rotated = [...tried.slice(from), ...tried.slice(0, from)].slice(0, room);
+    state.cursor = from + room;
+  }
+  const ids = [...untried, ...rotated];
+  const showsProgress = untried.length > batchSize;
+  let pending: InvocationStatusDetailsData['invocations'] = {};
+  let flushedAt = Date.now();
+  const flush = () => {
+    const shared =
+      context.client.getQueryData<InvocationStatusDetailsData>(sharedKey)
+        ?.invocations ?? {};
+    const updates = Object.fromEntries(
+      Object.entries(pending).filter(
+        ([invocationId, status]) =>
+          (shouldShare(status.status) || invocationId in shared) &&
+          shared[invocationId]?.status !== status.status,
+      ),
+    );
+    pending = {};
+    flushedAt = Date.now();
+    if (Object.keys(updates).length > 0) {
+      context.client.setQueryData<InvocationStatusDetailsData>(
+        sharedKey,
+        (current) => ({
+          ...current,
+          invocations: { ...current?.invocations, ...updates },
+        }),
+      );
+    }
+  };
+  if (showsProgress) {
+    onProgress?.(0, ids.length);
+  }
+  try {
+    for (let start = 0; start < ids.length; start += batchSize) {
+      const batch = ids.slice(start, start + batchSize);
+      const data = (await adminApi(
+        'query',
+        '/query/invocations/statuses',
+        'post',
+        {
+          baseUrl,
+          parameters: { query: { referenceInvocationId } },
+          body: { invocationIds: batch },
+        },
+      ).queryFn(context as never)) ?? { invocations: {} };
+      for (const invocationId of batch) {
+        const status = data.invocations[invocationId];
+        if (status?.status) {
+          state.misses.delete(invocationId);
+          state.known.set(invocationId, status.status);
+          pending[invocationId] = status;
+        } else {
+          state.misses.set(
+            invocationId,
+            (state.misses.get(invocationId) ?? 0) + 1,
+          );
+        }
+      }
+      if (Date.now() - flushedAt >= STATUS_CHECK_FLUSH_MS) {
+        flush();
+        if (showsProgress) {
+          onProgress?.(Math.min(start + batchSize, ids.length), ids.length);
+        }
+      }
+    }
+  } finally {
+    flush();
+    if (showsProgress) {
+      onProgress?.(ids.length, ids.length);
+    }
+  }
+  return { checkedAt: Date.now() };
 }
 
 export function useInvocationStatusCheck(
@@ -1088,116 +1213,58 @@ export function useInvocationStatusCheck(
 ) {
   const isApiEnabled = useAPIStatus();
   const baseUrl = useAdminBaseUrl();
-  const known = useRef(
-    new Map<
-      string,
-      InvocationStatusDetailsData['invocations'][string]['status']
-    >(),
-  );
-  const misses = useRef(new Map<string, number>());
-  const cursor = useRef(0);
+  const stateRef = useRef<StatusCheckState>({
+    known: new Map(),
+    misses: new Map(),
+    cursor: 0,
+  });
   const sharedKey = getInvocationStatusDetailsQueryKey(
     baseUrl,
     referenceInvocationId,
   );
-  return useQuery<InvocationStatusCheckData>({
+  const isEnabled = enabled && isApiEnabled && invocationIds.length > 0;
+  const results = useQuery<InvocationStatusCheckData>({
     queryKey: [
       '/query/invocations/statuses/check',
       { baseUrl, referenceInvocationId },
     ],
-    enabled: enabled && isApiEnabled && invocationIds.length > 0,
+    enabled: isEnabled,
     staleTime: 0,
     structuralSharing: false,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
-    refetchInterval: (query) =>
-      query.state.data ? refetchInterval(query.state.data.unfinished) : false,
-    queryFn: async (context) => {
-      const isOpen = (invocationId: string) =>
-        !isCompletedInvocationStatus(known.current.get(invocationId)) &&
-        (misses.current.get(invocationId) ?? 0) < MAX_STATUS_CHECK_MISSES;
-      const open = invocationIds.filter(isOpen);
-      const unchecked = open.filter((id) => !known.current.has(id));
-      const checked = open.filter((id) => known.current.has(id));
-      const room = Math.max(0, maxPerRefresh - unchecked.length);
-      let rotated = checked;
-      if (checked.length > room) {
-        const from = cursor.current % checked.length;
-        rotated = [...checked.slice(from), ...checked.slice(0, from)].slice(
-          0,
-          room,
-        );
-        cursor.current = from + room;
-      }
-      const ids = [...unchecked, ...rotated];
-      let pending: InvocationStatusDetailsData['invocations'] = {};
-      let flushedAt = Date.now();
-      const flush = () => {
-        const shared =
-          context.client.getQueryData<InvocationStatusDetailsData>(sharedKey)
-            ?.invocations ?? {};
-        const updates = Object.fromEntries(
-          Object.entries(pending).filter(
-            ([invocationId, status]) =>
-              shouldShare(status.status) || invocationId in shared,
-          ),
-        );
-        pending = {};
-        flushedAt = Date.now();
-        if (Object.keys(updates).length > 0) {
-          context.client.setQueryData<InvocationStatusDetailsData>(
-            sharedKey,
-            (current) => ({
-              ...current,
-              invocations: { ...current?.invocations, ...updates },
-            }),
-          );
-        }
-      };
-      if (ids.length > batchSize) {
-        onProgress?.(0, ids.length);
-      }
-      for (let start = 0; start < ids.length; start += batchSize) {
-        const batch = ids.slice(start, start + batchSize);
-        const data = (await adminApi(
-          'query',
-          '/query/invocations/statuses',
-          'post',
-          {
-            baseUrl,
-            parameters: { query: { referenceInvocationId } },
-            body: { invocationIds: batch },
-          },
-        ).queryFn(context as never)) ?? { invocations: {} };
-        for (const invocationId of batch) {
-          const status = data.invocations[invocationId];
-          if (status?.status) {
-            misses.current.delete(invocationId);
-          } else {
-            misses.current.set(
-              invocationId,
-              (misses.current.get(invocationId) ?? 0) + 1,
-            );
-          }
-          if (status) {
-            if (known.current.get(invocationId) !== status.status) {
-              pending[invocationId] = status;
-            }
-            known.current.set(invocationId, status.status);
-          }
-        }
-        const done = Math.min(start + batchSize, ids.length);
-        if (
-          done === ids.length ||
-          Date.now() - flushedAt >= STATUS_CHECK_FLUSH_MS
-        ) {
-          flush();
-          onProgress?.(done, ids.length);
-        }
-      }
-      return { unfinished: invocationIds.filter(isOpen).length };
-    },
+    refetchInterval: () =>
+      refetchInterval(
+        invocationIds.filter((id) => isOpenForCheck(stateRef.current, id))
+          .length,
+      ),
+    queryFn: (context) =>
+      runInvocationStatusCheck({
+        context,
+        state: stateRef.current,
+        invocationIds,
+        baseUrl,
+        referenceInvocationId,
+        sharedKey,
+        batchSize,
+        maxPerRefresh,
+        shouldShare,
+        onProgress,
+      }),
   });
+  const { isFetching, isError, refetch } = results;
+  useEffect(() => {
+    if (
+      isEnabled &&
+      !isFetching &&
+      !isError &&
+      invocationIds.some((id) => isUntriedForCheck(stateRef.current, id))
+    ) {
+      void refetch({ cancelRefetch: false });
+    }
+  }, [isEnabled, isFetching, isError, refetch, invocationIds]);
+  return results;
 }
 
 export function useWarmInvocationStatusDetails(
@@ -1288,8 +1355,7 @@ export function useWarmInvocationStatusDetails(
         )?.invocations;
       return {
         invocations: {
-          ...mergedInvocations,
-          ...currentInvocations,
+          ...(currentInvocations ?? mergedInvocations),
           ...fetchedData.invocations,
         },
       };

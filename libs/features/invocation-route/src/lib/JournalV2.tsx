@@ -716,7 +716,7 @@ export function JournalV2({
           invocationIds={journalProblems.childCheck.invocationIds}
           referenceInvocationId={invocationId}
           isLive={isLive}
-          isScrollingRef={isScrollingRef}
+          isScrolling={virtualizer.isScrolling}
           onProgress={journalProblems.childCheck.onProgress}
         />
       )}

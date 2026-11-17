@@ -1,7 +1,7 @@
 import {
   memo,
-  type RefObject,
   useCallback,
+  useEffect,
   useDeferredValue,
   useMemo,
   useState,
@@ -325,13 +325,13 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
   invocationIds,
   referenceInvocationId,
   isLive,
-  isScrollingRef,
+  isScrolling,
   onProgress,
 }: {
   invocationIds: string[];
   referenceInvocationId: string;
   isLive: boolean;
-  isScrollingRef: RefObject<boolean>;
+  isScrolling: boolean;
   onProgress: (checked: number, total: number) => void;
 }) {
   useInvocationStatusCheck(invocationIds, referenceInvocationId, {
@@ -340,10 +340,11 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
     maxPerRefresh: CHILD_CHECK_MAX_PER_REFRESH,
     shouldShare: isChildProblemStatus,
     refetchInterval: (unfinished) =>
-      isLive && !isScrollingRef.current && unfinished > 0
+      isLive && !isScrolling && unfinished > 0
         ? getChildCheckInterval(unfinished)
         : false,
     onProgress,
   });
+  useEffect(() => () => onProgress(0, 0), [onProgress]);
   return null;
 });

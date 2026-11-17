@@ -3,6 +3,7 @@ import { Input as AriaInput, Label, SearchField } from 'react-aria-components';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
 import { FocusShortcutKey, useFocusShortcut } from '@restate/ui-keyboard';
+import { Spinner } from '@restate/ui-loading';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import { formatNumber } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
@@ -41,7 +42,6 @@ const modeStyles = tv({
     matches: 'mr-1 shrink-0 text-2xs text-muted tabular-nums',
     clear:
       'mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis',
-    checkingChildren: 'min-w-0 truncate text-xs text-muted tabular-nums',
   },
 });
 
@@ -91,7 +91,6 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
     shortcut,
     matches,
     clear,
-    checkingChildren,
   } = modeStyles();
   const search = (
     <SearchField
@@ -145,7 +144,9 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
         <HoverTooltip
           content={
             <span className="break-normal">
-              Failed steps, retries, children in trouble and what it waits on
+              {checkProgress
+                ? `Checking ${formatNumber(checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations`
+                : 'Failed steps, retries, children in trouble and what it waits on'}
             </span>
           }
           placement="top"
@@ -160,6 +161,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
             <span className={modeCountStyles({ isSelected: isProblemsOnly })}>
               {formatNumber(problemTotal)}
             </span>
+            {checkProgress && <Spinner className="h-3 w-3 text-muted" />}
           </Button>
         </HoverTooltip>
         {problemTotal > 0 && (
@@ -175,12 +177,6 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
         )}
       </div>
       {search}
-      {checkProgress && (
-        <span className={checkingChildren()}>
-          Checking children {formatNumber(checkProgress.checked)} of{' '}
-          {formatNumber(checkProgress.total)}
-        </span>
-      )}
     </div>
   );
 });
