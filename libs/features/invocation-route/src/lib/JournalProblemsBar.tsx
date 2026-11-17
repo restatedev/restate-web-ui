@@ -15,7 +15,7 @@ export interface JournalProblemsBarProps {
   onFindChange: (value: string) => void;
   matchCount?: number;
   navigableTotal: number;
-  activePosition?: number;
+  announcement: string;
   onPrevious: () => void;
   onNext: () => void;
 }
@@ -68,7 +68,7 @@ export function JournalProblemsBar({
   onFindChange,
   matchCount,
   navigableTotal,
-  activePosition,
+  announcement,
   onPrevious,
   onNext,
 }: JournalProblemsBarProps) {
@@ -124,9 +124,7 @@ export function JournalProblemsBar({
   return (
     <div className={base()} ref={ref} style={{ maxWidth }}>
       <span className="sr-only" aria-live="polite">
-        {activePosition === undefined
-          ? ''
-          : `Problem ${formatNumber(activePosition + 1)} of ${formatNumber(navigableTotal)}`}
+        {announcement}
       </span>
       <div className={group()}>
         <Button

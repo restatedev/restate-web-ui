@@ -56,7 +56,11 @@ import {
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { formatDurations, formatPlurals } from '@restate/util-intl';
+import {
+  formatDurations,
+  formatNumber,
+  formatPlurals,
+} from '@restate/util-intl';
 import {
   TimelineEngineProvider,
   useTimelineEngineContext,
@@ -179,17 +183,25 @@ function hasNonCompletedReferencedInvocations(
   });
 }
 
-function countNonCompletedInvocations(
+function countChildStatuses(
   invocationIds: string[],
   invocations?: Record<
     string,
     components['schemas']['InvocationStatusResult'] | undefined
   >,
 ) {
-  return invocationIds.filter((invocationId) => {
+  let unfinished = 0;
+  let requested = 0;
+  for (const invocationId of invocationIds) {
     const status = invocations?.[invocationId]?.status;
-    return status !== undefined && !isCompletedInvocationStatus(status);
-  }).length;
+    if (!isCompletedInvocationStatus(status)) {
+      requested += 1;
+      if (status !== undefined) {
+        unfinished += 1;
+      }
+    }
+  }
+  return { unfinished, requested };
 }
 
 function getProblemStatusInterval(invocationCount: number) {
@@ -456,12 +468,12 @@ export function JournalV2({
       refetchOnWindowFocus: false,
       refetchIntervalInBackground: false,
       refetchInterval(query) {
-        const pendingCount = countNonCompletedInvocations(
+        const { unfinished, requested } = countChildStatuses(
           childInvocationIds,
           query.state.data?.invocations,
         );
-        return isLive && !isScrollingRef.current && pendingCount > 0
-          ? getProblemStatusInterval(pendingCount)
+        return isLive && !isScrollingRef.current && unfinished > 0
+          ? getProblemStatusInterval(requested)
           : false;
       },
     },
@@ -508,6 +520,7 @@ export function JournalV2({
     ],
   );
   const [activeProblemKey, setActiveProblemKey] = useState<string>();
+  const [problemAnnouncement, setProblemAnnouncement] = useState('');
   const [findText, setFindText] = useState('');
   const query = useDeferredValue(findText.trim().toLowerCase());
   const isProblemsOnly =
@@ -618,13 +631,17 @@ export function JournalV2({
             entriesWithoutInputUnfiltered,
             problems.rowIndexes,
             childStatusData?.invocations ?? {},
-          ).slice(0, MAX_AUTO_EXPANDED_PROBLEM_CHILDREN)
+          )
         : [],
     [isProblemsOnly, entriesWithoutInputUnfiltered, problems, childStatusData],
   );
   const autoExpandedIds = useRef<string[]>([]);
   const consideredChildIds = useRef(new Set<string>());
+  const autoExpandedCount = useRef(0);
   useEffect(() => {
+    autoExpandedIds.current = autoExpandedIds.current.filter((id) =>
+      invocationIds.includes(id),
+    );
     const unseen = problemChildIdsToExpand.filter(
       (id) => !consideredChildIds.current.has(id),
     );
@@ -632,8 +649,17 @@ export function JournalV2({
       return;
     }
     unseen.forEach((id) => consideredChildIds.current.add(id));
-    const missing = unseen.filter((id) => !invocationIds.includes(id));
+    const missing = unseen
+      .filter((id) => !invocationIds.includes(id))
+      .slice(
+        0,
+        Math.max(
+          0,
+          MAX_AUTO_EXPANDED_PROBLEM_CHILDREN - autoExpandedCount.current,
+        ),
+      );
     if (missing.length > 0) {
+      autoExpandedCount.current += missing.length;
       autoExpandedIds.current = [...autoExpandedIds.current, ...missing];
       setInvocationIds((ids) => [
         ...ids,
@@ -646,6 +672,7 @@ export function JournalV2({
       return;
     }
     consideredChildIds.current.clear();
+    autoExpandedCount.current = 0;
     if (autoExpandedIds.current.length === 0) {
       return;
     }
@@ -835,6 +862,9 @@ export function JournalV2({
       return;
     }
     setActiveProblemKey(getProblemRowKey(entriesWithoutInput[target]));
+    setProblemAnnouncement(
+      `Problem ${formatNumber(shownProblemRows.indexOf(target) + 1)} of ${formatNumber(shownProblemRows.length)}`,
+    );
     const listRect = list.getBoundingClientRect();
     const row = virtualizer.measurementsCache[target];
     const rowTop =
@@ -1013,11 +1043,7 @@ export function JournalV2({
                     onFindChange={setFindText}
                     matchCount={filtered?.matches}
                     navigableTotal={shownProblemRows.length}
-                    activePosition={
-                      activeProblemPosition >= 0
-                        ? activeProblemPosition
-                        : undefined
-                    }
+                    announcement={problemAnnouncement}
                     onPrevious={() => goToProblem(-1)}
                     onNext={() => goToProblem(1)}
                   />

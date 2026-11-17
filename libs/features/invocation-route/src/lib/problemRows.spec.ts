@@ -201,6 +201,21 @@ describe('filterJournalRows', () => {
     expect(matches).toBe(1);
   });
 
+  it('keeps the lifecycle rows of an invocation without commands', () => {
+    const lifecycleOnly = [
+      row({ index: 0, category: 'event', type: 'Event: Created' } as never),
+      row({ index: 1, category: 'event', type: 'Event: Pending' } as never),
+    ];
+
+    expect(
+      filterJournalRows(
+        lifecycleOnly,
+        { problemsOnly: true, query: '' },
+        new Map(),
+      ).rows,
+    ).toHaveLength(2);
+  });
+
   it('finds entries by type label', () => {
     const { rows: shown, matches } = filterJournalRows(
       rows,

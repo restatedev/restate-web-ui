@@ -341,8 +341,10 @@ export function filterJournalRows(
   const firstCommandIndex = rows.findIndex(
     (row) => row.depth === 0 && row.entry?.category === 'command',
   );
+  const leadingRows =
+    firstCommandIndex === -1 ? rows.length : firstCommandIndex;
   const keep = new Set<number>();
-  for (let index = 0; index < firstCommandIndex; index++) {
+  for (let index = 0; index < leadingRows; index++) {
     keep.add(index);
   }
   const lastRowAtDepth: number[] = [];
