@@ -10,7 +10,7 @@ export const SHOW_PROBLEMS = 'problems';
 
 export type ProblemKind = 'failed' | 'retried' | 'children' | 'waiting';
 
-type ChildStatuses = Record<
+export type ChildStatuses = Record<
   string,
   components['schemas']['InvocationStatusResult'] | undefined
 >;
@@ -73,20 +73,6 @@ export function getPastRetries(
     : undefined;
 }
 
-export function getChildInvocationIds(rows: CombinedJournalEntry[]) {
-  const ids = new Set<string>();
-  for (const { entry } of rows) {
-    if (
-      entry?.category === 'command' &&
-      isTargetInvocationEntry(entry) &&
-      entry.invocationId
-    ) {
-      ids.add(entry.invocationId);
-    }
-  }
-  return [...ids];
-}
-
 export function getRowProblem(
   row: CombinedJournalEntry,
   retried: ReadonlyMap<string, PastRetries>,
@@ -128,46 +114,83 @@ export function getRowProblem(
   return undefined;
 }
 
+const NO_CHILD_STATUSES: ChildStatuses = {};
+
+export function findJournalProblems(
+  rows: CombinedJournalEntry[],
+  retried: ReadonlyMap<string, PastRetries>,
+  completedInvocationIds: ReadonlySet<string>,
+) {
+  const kindByRow = new Map<number, ProblemKind>();
+  const childRowIndexes: number[] = [];
+  rows.forEach((row, index) => {
+    if (isTargetInvocationEntry(row.entry) && row.entry.invocationId) {
+      childRowIndexes.push(index);
+    }
+    const kind = getRowProblem(
+      row,
+      retried,
+      NO_CHILD_STATUSES,
+      completedInvocationIds,
+    );
+    if (kind) {
+      kindByRow.set(index, kind);
+    }
+  });
+  return { kindByRow, childRowIndexes };
+}
+
+export function addChildProblems(
+  journalProblems: ReturnType<typeof findJournalProblems>,
+  rows: CombinedJournalEntry[],
+  retried: ReadonlyMap<string, PastRetries>,
+  childStatuses: ChildStatuses,
+  completedInvocationIds: ReadonlySet<string>,
+) {
+  const kindByRow = new Map(journalProblems.kindByRow);
+  for (const index of journalProblems.childRowIndexes) {
+    const row = rows[index];
+    const kind = row
+      ? getRowProblem(row, retried, childStatuses, completedInvocationIds)
+      : undefined;
+    if (kind) {
+      kindByRow.set(index, kind);
+    } else {
+      kindByRow.delete(index);
+    }
+  }
+  const rowIndexes = [...kindByRow]
+    .flatMap(([index, kind]) => (kind === 'waiting' ? [] : [index]))
+    .sort((a, b) => a - b);
+  return { kindByRow, rowIndexes };
+}
+
 export function findProblems(
   rows: CombinedJournalEntry[],
   retried: ReadonlyMap<string, PastRetries>,
   childStatuses: ChildStatuses,
   completedInvocationIds: ReadonlySet<string>,
 ) {
-  const kindByRow = new Map<number, ProblemKind>();
-  const rowIndexes: number[] = [];
-  rows.forEach((row, index) => {
-    const kind = getRowProblem(
-      row,
-      retried,
-      childStatuses,
-      completedInvocationIds,
-    );
-    if (!kind) {
-      return;
-    }
-    kindByRow.set(index, kind);
-    if (row.depth === 0) {
-      rowIndexes.push(index);
-    }
-  });
-  return { kindByRow, rowIndexes };
+  return addChildProblems(
+    findJournalProblems(rows, retried, completedInvocationIds),
+    rows,
+    retried,
+    childStatuses,
+    completedInvocationIds,
+  );
 }
 
-export function getProblemChildIds(
+export function getChildIdsToCheck(
   rows: CombinedJournalEntry[],
-  rowIndexes: number[],
-  childStatuses: ChildStatuses,
+  childRowIndexes: number[],
 ) {
   const ids = new Set<string>();
-  for (const index of rowIndexes) {
+  for (const index of childRowIndexes) {
     const entry = rows[index]?.entry;
     if (
       isTargetInvocationEntry(entry) &&
       entry.invocationId &&
-      CHILD_PROBLEM_STATUSES.has(
-        String(childStatuses[entry.invocationId]?.status),
-      )
+      (entry.type === 'OneWayCall' || entry.isPending)
     ) {
       ids.add(entry.invocationId);
     }
@@ -301,6 +324,9 @@ function buildSearchText(row: CombinedJournalEntry) {
         handlerName?: string;
         serviceKey?: string;
         invocationId?: string;
+        key?: string;
+        promiseName?: string;
+        signalName?: string;
       })
     | undefined;
   if (!entry) {
@@ -308,6 +334,9 @@ function buildSearchText(row: CombinedJournalEntry) {
   }
   return [
     entry.type,
+    entry.key,
+    entry.promiseName,
+    entry.signalName,
     ROW_TYPE_LABELS[String(entry.type)],
     ENTRY_KIND_LABELS[getEntryKind(entry)],
     entry.name,
@@ -361,7 +390,10 @@ export function filterJournalRows(
   rows.forEach((row, index) => {
     if (row.depth === 0) {
       group += 1;
-      isTopShown = !problemsOnly || kindByRow.has(index);
+      isTopShown =
+        !problemsOnly ||
+        kindByRow.has(index) ||
+        Boolean(groupHasProblems[group]);
     }
     lastRowAtDepth[row.depth] = index;
     lastRowAtDepth.length = row.depth + 1;

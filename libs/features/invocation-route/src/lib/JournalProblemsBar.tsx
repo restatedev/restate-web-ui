@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Input as AriaInput, Label, SearchField } from 'react-aria-components';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
@@ -16,6 +16,11 @@ export interface JournalProblemsBarProps {
   matchCount?: number;
   navigableTotal: number;
   announcement: string;
+  childCheck: {
+    checked: number;
+    total: number;
+    checkAll: () => void;
+  };
   onPrevious: () => void;
   onNext: () => void;
 }
@@ -37,6 +42,8 @@ const modeStyles = tv({
     matches: 'mr-1 shrink-0 text-2xs text-muted tabular-nums',
     clear:
       'mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis',
+    checkMore:
+      'shrink-0 rounded-lg px-1.5 py-0.5 text-xs whitespace-nowrap text-muted shadow-none hover:text-primary',
   },
 });
 
@@ -60,7 +67,7 @@ const modeCountStyles = tv({
   },
 });
 
-export function JournalProblemsBar({
+export const JournalProblemsBar = memo(function JournalProblemsBar({
   isProblemsOnly,
   onModeChange,
   problemTotal,
@@ -69,6 +76,7 @@ export function JournalProblemsBar({
   matchCount,
   navigableTotal,
   announcement,
+  childCheck,
   onPrevious,
   onNext,
 }: JournalProblemsBarProps) {
@@ -85,6 +93,7 @@ export function JournalProblemsBar({
     shortcut,
     matches,
     clear,
+    checkMore,
   } = modeStyles();
   const search = (
     <SearchField
@@ -168,9 +177,23 @@ export function JournalProblemsBar({
         )}
       </div>
       {search}
+      {childCheck.total > childCheck.checked && (
+        <HoverTooltip
+          content={`Check all ${formatNumber(childCheck.total)} child invocations`}
+          placement="top"
+        >
+          <Button
+            variant="icon"
+            className={checkMore()}
+            onClick={childCheck.checkAll}
+          >
+            {formatNumber(childCheck.total - childCheck.checked)} unchecked
+          </Button>
+        </HoverTooltip>
+      )}
     </div>
   );
-}
+});
 
 const TIMELINE_GAP_PX = 12;
 

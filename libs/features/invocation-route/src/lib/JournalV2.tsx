@@ -10,7 +10,6 @@ import {
   RefObject,
   Suspense,
   useCallback,
-  useDeferredValue,
   useEffect,
   useId,
   useLayoutEffect,
@@ -56,11 +55,7 @@ import {
   useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import {
-  formatDurations,
-  formatNumber,
-  formatPlurals,
-} from '@restate/util-intl';
+import { formatDurations, formatPlurals } from '@restate/util-intl';
 import {
   TimelineEngineProvider,
   useTimelineEngineContext,
@@ -101,22 +96,13 @@ import {
   useJournalSplit,
 } from './JournalSplit';
 import {
-  filterJournalRows,
-  findProblems,
-  getChildInvocationIds,
   getPastRetries,
-  getProblemChildIds,
   getProblemRowKey,
-  getProblemTone,
-  getRetriedCommands,
   getRetryKey,
-  insertRetryRows,
-  SHOW_PARAM,
-  SHOW_PROBLEMS,
   type PastRetries,
-  type ProblemKind,
   type ProblemTone,
 } from './problemRows';
+import { ProblemChildCheck, useJournalProblems } from './useJournalProblems';
 import { JournalProblemsBar } from './JournalProblemsBar';
 import { PastRetriesBadge } from './PastRetriesBadge';
 
@@ -152,14 +138,6 @@ const liveStyles = tv({
 });
 
 const LIVE_EDGE_THRESHOLD_MS = 500;
-const PROBLEM_STATUS_REFETCH_MIN_MS = 5_000;
-const PROBLEM_STATUS_REFETCH_MAX_MS = 60_000;
-const PROBLEM_STATUS_REFETCH_MS_PER_ID = 10;
-const MAX_AUTO_EXPANDED_PROBLEM_CHILDREN = 10;
-const NO_PROBLEMS = {
-  kindByRow: new Map<number, ProblemKind>(),
-  rowIndexes: [] as number[],
-};
 const JOURNAL_BOTTOM_PADDING_PX = 50;
 
 // Trailing headroom appended to a completed trace's timeline so the final
@@ -181,41 +159,6 @@ function hasNonCompletedReferencedInvocations(
     const invocation = invocations?.[invocationId];
     return !isCompletedInvocationStatus(invocation?.status);
   });
-}
-
-function countChildStatuses(
-  invocationIds: string[],
-  invocations?: Record<
-    string,
-    components['schemas']['InvocationStatusResult'] | undefined
-  >,
-) {
-  let unfinished = 0;
-  let requested = 0;
-  for (const invocationId of invocationIds) {
-    const status = invocations?.[invocationId]?.status;
-    if (!isCompletedInvocationStatus(status)) {
-      requested += 1;
-      if (status !== undefined) {
-        unfinished += 1;
-      }
-    }
-  }
-  return { unfinished, requested };
-}
-
-function getProblemStatusInterval(invocationCount: number) {
-  return Math.min(
-    PROBLEM_STATUS_REFETCH_MAX_MS,
-    Math.max(
-      PROBLEM_STATUS_REFETCH_MIN_MS,
-      invocationCount * PROBLEM_STATUS_REFETCH_MS_PER_ID,
-    ),
-  );
-}
-
-function haveSameIds(a: string[], b: string[]) {
-  return a.length === b.length && a.every((id, index) => id === b[index]);
 }
 
 function findCommandRow(
@@ -296,7 +239,7 @@ export function JournalV2({
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
   const isScrollingRef = useRef(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [invocationIds, setInvocationIds] = useState(() =>
     withTimeline
       ? getInitialInvocationIds(String(invocationId), searchParams)
@@ -432,272 +375,17 @@ export function JournalV2({
       )
     : 0;
 
-  const allChildInvocationIds = useMemo(
-    () =>
-      withTimeline ? getChildInvocationIds(entriesWithoutInputUnfiltered) : [],
-    [withTimeline, entriesWithoutInputUnfiltered],
-  );
-  const [childInvocationIds, setChildInvocationIds] = useState<string[]>([]);
-  const childIdsUpdatedAt = useRef(0);
-  useEffect(() => {
-    if (haveSameIds(childInvocationIds, allChildInvocationIds)) {
-      return;
-    }
-    const update = () => {
-      childIdsUpdatedAt.current = Date.now();
-      setChildInvocationIds(allChildInvocationIds);
-    };
-    const wait =
-      childIdsUpdatedAt.current +
-      getProblemStatusInterval(allChildInvocationIds.length) -
-      Date.now();
-    if (wait <= 0) {
-      update();
-      return;
-    }
-    const timer = setTimeout(update, wait);
-    return () => clearTimeout(timer);
-  }, [allChildInvocationIds, childInvocationIds]);
-  const { data: childStatusData, isFetchedAfterMount: hasFreshChildStatuses } =
-    useWarmInvocationStatusDetails(
-      childInvocationIds,
-      `${invocationId}#problems`,
-      {
-        enabled: childInvocationIds.length > 0,
-        refetchOnMount: true,
-        staleTime: 0,
-        refetchOnWindowFocus: false,
-        refetchIntervalInBackground: false,
-        refetchInterval(query) {
-          const { unfinished, requested } = countChildStatuses(
-            childInvocationIds,
-            query.state.data?.invocations,
-          );
-          return isLive && !isScrollingRef.current && unfinished > 0
-            ? getProblemStatusInterval(requested)
-            : false;
-        },
-      },
-    );
-  const completedInvocationIds = useMemo(
-    () =>
-      new Set(
-        Object.entries(data).flatMap(([id, value]) =>
-          value?.completed_at ? [id] : [],
-        ),
-      ),
-    [data],
-  );
-  const retriedCommands = useMemo(
-    () =>
-      withTimeline
-        ? getRetriedCommands(
-            Object.fromEntries(
-              Object.entries(data).map(([id, value]) => [
-                id,
-                value?.journal?.entries,
-              ]),
-            ),
-          )
-        : new Map<string, PastRetries>(),
-    [withTimeline, data],
-  );
-  const problems = useMemo(
-    () =>
-      withTimeline
-        ? findProblems(
-            entriesWithoutInputUnfiltered,
-            retriedCommands,
-            childStatusData?.invocations ?? {},
-            completedInvocationIds,
-          )
-        : NO_PROBLEMS,
-    [
-      withTimeline,
-      entriesWithoutInputUnfiltered,
-      retriedCommands,
-      childStatusData,
-      completedInvocationIds,
-    ],
-  );
-  const [activeProblemKey, setActiveProblemKey] = useState<string>();
-  const [problemAnnouncement, setProblemAnnouncement] = useState('');
-  const [findText, setFindText] = useState('');
-  const query = useDeferredValue(findText.trim().toLowerCase());
-  const isProblemsOnly =
-    Boolean(withTimeline) && searchParams.get(SHOW_PARAM) === SHOW_PROBLEMS;
-  const filtered = useMemo(
-    () =>
-      isProblemsOnly || query
-        ? filterJournalRows(
-            entriesWithoutInputUnfiltered,
-            { problemsOnly: isProblemsOnly, query },
-            problems.kindByRow,
-          )
-        : undefined,
-    [isProblemsOnly, query, entriesWithoutInputUnfiltered, problems],
-  );
-  const filteredEntries = filtered?.rows ?? entriesWithoutInputUnfiltered;
-  const [expandedRetries, setExpandedRetries] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  const isRetryRowExpanded = useCallback(
-    (key: string) => expandedRetries.has(key),
-    [expandedRetries],
-  );
-  const toggleRetryRow = useCallback((row: CombinedJournalEntry) => {
-    const key = getRetryKey(row);
-    if (!key) {
-      return;
-    }
-    setExpandedRetries((previous) => {
-      const next = new Set(previous);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }, []);
-  const entriesWithoutInput = useMemo(
-    () =>
-      withTimeline && !detail.errors && expandedRetries.size > 0
-        ? insertRetryRows(filteredEntries, retriedCommands, isRetryRowExpanded)
-        : filteredEntries,
-    [
-      withTimeline,
-      detail.errors,
-      expandedRetries.size,
-      filteredEntries,
-      retriedCommands,
-      isRetryRowExpanded,
-    ],
-  );
-  const setProblemsOnly = useCallback(
-    (problemsOnly: boolean) => {
-      if (problemsOnly === isProblemsOnly) {
-        return;
-      }
-      setActiveProblemKey(undefined);
-      setSearchParams(
-        (previous) => {
-          const next = new URLSearchParams(previous);
-          if (problemsOnly) {
-            next.set(SHOW_PARAM, SHOW_PROBLEMS);
-          } else {
-            next.delete(SHOW_PARAM);
-          }
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [isProblemsOnly, setSearchParams],
-  );
-  const problemToneByKey = useMemo(() => {
-    if (!withTimeline) {
-      return undefined;
-    }
-    const tones = new Map<string, ProblemTone>();
-    problems.kindByRow.forEach((kind, index) => {
-      const row = entriesWithoutInputUnfiltered[index];
-      const key = getProblemRowKey(row);
-      if (key) {
-        tones.set(
-          key,
-          getProblemTone(kind, row, childStatusData?.invocations ?? {}),
-        );
-      }
-    });
-    return tones;
-  }, [withTimeline, problems, entriesWithoutInputUnfiltered, childStatusData]);
-  const shownProblemRows = useMemo(() => {
-    if (entriesWithoutInput === entriesWithoutInputUnfiltered) {
-      return problems.rowIndexes;
-    }
-    const keys = new Set(
-      problems.rowIndexes.map((index) =>
-        getProblemRowKey(entriesWithoutInputUnfiltered[index]),
-      ),
-    );
-    return entriesWithoutInput.flatMap((row, index) =>
-      row.depth === 0 && keys.has(getProblemRowKey(row)) ? [index] : [],
-    );
-  }, [problems, entriesWithoutInput, entriesWithoutInputUnfiltered]);
-  const problemChildIdsToExpand = useMemo(
-    () =>
-      isProblemsOnly && hasFreshChildStatuses
-        ? getProblemChildIds(
-            entriesWithoutInputUnfiltered,
-            problems.rowIndexes,
-            childStatusData?.invocations ?? {},
-          )
-        : [],
-    [
-      isProblemsOnly,
-      hasFreshChildStatuses,
-      entriesWithoutInputUnfiltered,
-      problems,
-      childStatusData,
-    ],
-  );
-  const autoExpandedIds = useRef<string[]>([]);
-  const consideredChildIds = useRef(new Set<string>());
-  const autoExpandedCount = useRef(0);
-  useEffect(() => {
-    autoExpandedIds.current = autoExpandedIds.current.filter((id) =>
-      invocationIds.includes(id),
-    );
-    const unseen = problemChildIdsToExpand.filter(
-      (id) => !consideredChildIds.current.has(id),
-    );
-    if (unseen.length === 0) {
-      return;
-    }
-    unseen.forEach((id) => consideredChildIds.current.add(id));
-    const missing = [...new Set(unseen)]
-      .filter((id) => !invocationIds.includes(id))
-      .slice(
-        0,
-        Math.max(
-          0,
-          MAX_AUTO_EXPANDED_PROBLEM_CHILDREN - autoExpandedCount.current,
-        ),
-      );
-    if (missing.length > 0) {
-      autoExpandedCount.current += missing.length;
-      autoExpandedIds.current = [...autoExpandedIds.current, ...missing];
-      setInvocationIds((ids) => [
-        ...ids,
-        ...missing.filter((id) => !ids.includes(id)),
-      ]);
-    }
-  }, [problemChildIdsToExpand, invocationIds]);
-  useEffect(() => {
-    if (isProblemsOnly) {
-      return;
-    }
-    consideredChildIds.current.clear();
-    autoExpandedCount.current = 0;
-    if (autoExpandedIds.current.length === 0) {
-      return;
-    }
-    const collapsed = new Set(autoExpandedIds.current);
-    autoExpandedIds.current = [];
-    setInvocationIds((ids) => ids.filter((id) => !collapsed.has(id)));
-  }, [isProblemsOnly]);
-  const activeProblemIndex = useMemo(
-    () =>
-      activeProblemKey
-        ? entriesWithoutInput.findIndex(
-            (row) => getProblemRowKey(row) === activeProblemKey,
-          )
-        : -1,
-    [activeProblemKey, entriesWithoutInput],
-  );
-  const activeProblemPosition =
-    activeProblemIndex >= 0 ? shownProblemRows.indexOf(activeProblemIndex) : -1;
+  const journalProblems = useJournalProblems({
+    enabled: Boolean(withTimeline),
+    invocationId,
+    data,
+    rows: entriesWithoutInputUnfiltered,
+    showErrors: Boolean(detail.errors),
+  });
+  const entriesWithoutInput = journalProblems.entries;
+  const shownProblemRows = journalProblems.navigableRows;
+  const activeProblemIndex = journalProblems.activeProblemIndex;
+  const activeProblemPosition = journalProblems.activeProblemPosition;
   // The server returns an empty `entries` array when the journal has been
   // purged (or was never written). Detect this once everything has loaded so
   // we can surface a "Journal was purged" message instead of an empty pane.
@@ -868,10 +556,7 @@ export function JournalV2({
     if (!list) {
       return;
     }
-    setActiveProblemKey(getProblemRowKey(entriesWithoutInput[target]));
-    setProblemAnnouncement(
-      `Problem ${formatNumber(shownProblemRows.indexOf(target) + 1)} of ${formatNumber(shownProblemRows.length)}`,
-    );
+    journalProblems.selectProblem(target);
     const listRect = list.getBoundingClientRect();
     const row = virtualizer.measurementsCache[target];
     const rowTop =
@@ -920,6 +605,12 @@ export function JournalV2({
     }
     scrollToProblemRow(target);
   };
+  const goToProblemRef = useRef(goToProblem);
+  useLayoutEffect(() => {
+    goToProblemRef.current = goToProblem;
+  });
+  const goToPreviousProblem = useCallback(() => goToProblemRef.current(-1), []);
+  const goToNextProblem = useCallback(() => goToProblemRef.current(1), []);
   const eventRelatedInvocationIds = useMemo(
     () =>
       getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
@@ -1001,6 +692,13 @@ export function JournalV2({
 
   return (
     <PortalProvider>
+      {journalProblems.childCheck.invocationIds.length > 0 && (
+        <ProblemChildCheck
+          invocationIds={journalProblems.childCheck.invocationIds}
+          referenceInvocationId={`${invocationId}#problems`}
+          onStatuses={journalProblems.childCheck.onStatuses}
+        />
+      )}
       <TimelineEngineProvider
         actualStart={start}
         actualEnd={end}
@@ -1043,16 +741,17 @@ export function JournalV2({
               {withTimeline && (
                 <ContentPanelToolbar className="relative">
                   <JournalProblemsBar
-                    isProblemsOnly={isProblemsOnly}
-                    onModeChange={setProblemsOnly}
-                    problemTotal={problems.rowIndexes.length}
-                    find={findText}
-                    onFindChange={setFindText}
-                    matchCount={filtered?.matches}
+                    isProblemsOnly={journalProblems.isProblemsOnly}
+                    onModeChange={journalProblems.setProblemsOnly}
+                    problemTotal={journalProblems.problemTotal}
+                    find={journalProblems.findText}
+                    onFindChange={journalProblems.setFindText}
+                    matchCount={journalProblems.matchCount}
                     navigableTotal={shownProblemRows.length}
-                    announcement={problemAnnouncement}
-                    onPrevious={() => goToProblem(-1)}
-                    onNext={() => goToProblem(1)}
+                    announcement={journalProblems.announcement}
+                    childCheck={journalProblems.childCheck}
+                    onPrevious={goToPreviousProblem}
+                    onNext={goToNextProblem}
                   />
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-canvas via-canvas to-canvas/5 pl-10">
                     <JournalDetailToggle
@@ -1191,14 +890,12 @@ export function JournalV2({
                               failureRow={failureRow}
                               focusInvocationId={focusInvocationId}
                               activeRowIndex={activeProblemIndex}
-                              problemTones={problemToneByKey}
-                              pastRetries={
-                                withTimeline && !detail.errors
-                                  ? retriedCommands
-                                  : undefined
+                              problemTones={journalProblems.problemTones}
+                              pastRetries={journalProblems.pastRetries}
+                              onToggleRetries={journalProblems.toggleRetryRow}
+                              isRetryRowExpanded={
+                                journalProblems.isRetryRowExpanded
                               }
-                              onToggleRetries={toggleRetryRow}
-                              isRetryRowExpanded={isRetryRowExpanded}
                             />
                             {journalAndInvocationData && (
                               <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">

@@ -31,7 +31,7 @@ export function PastRetriesBadge({
     count === 1
       ? '1 transient error'
       : `${formatNumber(count)} transient errors`
-  } before this step ${hasFailed ? 'failed' : 'completed'}`;
+  } recorded before this step ${hasFailed ? 'failed' : 'completed'}`;
   return (
     <HoverTooltip
       content={

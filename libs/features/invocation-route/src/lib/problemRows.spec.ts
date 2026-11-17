@@ -2,8 +2,9 @@ import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   filterJournalRows,
   findProblems,
+  findJournalProblems,
+  getChildIdsToCheck,
   getPastRetries,
-  getProblemChildIds,
   getRetriedCommands,
   getRowProblem,
   insertRetryRows,
@@ -153,56 +154,74 @@ describe('getRowProblem', () => {
   });
 });
 
-describe('getProblemChildIds', () => {
-  it('includes failed calls whose child failed', () => {
+describe('getChildIdsToCheck', () => {
+  it('checks sends and pending calls, once each', () => {
     const rows = [
+      row(command(1, { type: 'OneWayCall', invocationId: 'inv_sent' })),
+      row(command(2, { type: 'Call', invocationId: 'inv_done' })),
       row(
-        command(1, {
-          type: 'Call',
-          invocationId: 'inv_failed',
-          resultType: 'failure',
-        }),
+        command(3, { type: 'Call', invocationId: 'inv_open', isPending: true }),
       ),
-      row(command(2, { type: 'Call', invocationId: 'inv_ok' })),
+      row(command(4, { type: 'AttachInvocation', invocationId: 'inv_sent' })),
+      row(command(5)),
     ];
-    const statuses = {
-      inv_failed: { status: 'failed' },
-      inv_ok: { status: 'succeeded' },
-    } as never;
-    const { rowIndexes } = findProblems(
+    const { childRowIndexes } = findJournalProblems(
       rows,
       new Map(),
-      statuses,
       nothingCompleted,
     );
 
-    expect(getProblemChildIds(rows, rowIndexes, statuses)).toEqual([
-      'inv_failed',
+    expect(getChildIdsToCheck(rows, childRowIndexes)).toEqual([
+      'inv_sent',
+      'inv_open',
     ]);
   });
 });
 
-describe('getProblemChildIds without duplicates', () => {
-  it('lists a child once when several rows point at it', () => {
+describe('findProblems', () => {
+  it('marks a send whose child failed once its status is known', () => {
     const rows = [
       row(command(1, { type: 'OneWayCall', invocationId: 'inv_x' })),
-      row(
-        command(2, {
-          type: 'AttachInvocation',
-          invocationId: 'inv_x',
-          resultType: 'failure',
-        }),
-      ),
     ];
-    const statuses = { inv_x: { status: 'failed' } } as never;
-    const { rowIndexes } = findProblems(
+
+    expect(
+      findProblems(rows, new Map(), noChildren, nothingCompleted).rowIndexes,
+    ).toEqual([]);
+    expect(
+      findProblems(
+        rows,
+        new Map(),
+        { inv_x: { status: 'failed' } } as never,
+        nothingCompleted,
+      ).rowIndexes,
+    ).toEqual([0]);
+  });
+
+  it('keeps waiting rows out of the count', () => {
+    const rows = [row(command(1, { type: 'Sleep', isPending: true }))];
+    const { kindByRow, rowIndexes } = findProblems(
       rows,
       new Map(),
-      statuses,
+      noChildren,
       nothingCompleted,
     );
 
-    expect(getProblemChildIds(rows, rowIndexes, statuses)).toEqual(['inv_x']);
+    expect(kindByRow.get(0)).toBe('waiting');
+    expect(rowIndexes).toEqual([]);
+  });
+
+  it('counts problems inside an expanded child', () => {
+    const retried = getRetriedCommands({
+      inv_child: [transientError(9, 1, 'timed out')],
+    });
+    const rows = [
+      row(command(1, { type: 'Call', invocationId: 'inv_child' })),
+      row(command(1, { index: 21 }), { invocationId: 'inv_child', depth: 1 }),
+    ];
+
+    expect(
+      findProblems(rows, retried, noChildren, nothingCompleted).rowIndexes,
+    ).toEqual([1]);
   });
 });
 
@@ -289,6 +308,47 @@ describe('filterJournalRows', () => {
         new Map(),
       ).rows.map(({ entry }) => entry?.index),
     ).toEqual([0]);
+  });
+
+  it('shows a successful call whose expanded child has problems', () => {
+    const retried = getRetriedCommands({
+      inv_child: [transientError(9, 1, 'timed out')],
+    });
+    const nested = [
+      row(command(1, { type: 'Call', invocationId: 'inv_child' })),
+      row(command(1, { index: 21 }), { invocationId: 'inv_child', depth: 1 }),
+      row(command(2, { index: 22 }), { invocationId: 'inv_child', depth: 1 }),
+      row(command(2)),
+    ];
+    const problems = findProblems(
+      nested,
+      retried,
+      noChildren,
+      nothingCompleted,
+    );
+
+    expect(
+      filterJournalRows(
+        nested,
+        { problemsOnly: true, query: '' },
+        problems.kindByRow,
+      ).rows.map(({ entry }) => entry?.index),
+    ).toEqual([1, 21]);
+  });
+
+  it('finds state keys', () => {
+    const withState = [
+      row(command(1)),
+      row(command(2, { type: 'SetState', key: 'order-status' })),
+    ];
+
+    expect(
+      filterJournalRows(
+        withState,
+        { problemsOnly: false, query: 'order-status' },
+        new Map(),
+      ).rows.map(({ entry }) => entry?.index),
+    ).toEqual([2]);
   });
 
   it('finds entries by type label', () => {

@@ -10,6 +10,7 @@ import {
   MutationOptions,
   Query,
   QueryClient,
+  skipToken,
   useInfiniteQuery,
   useMutation,
   useQueries,
@@ -1044,6 +1045,19 @@ function getInvocationStatusDetailsQueryKey(
       referenceInvocationId,
     },
   ] as const;
+}
+
+export function useCachedInvocationStatusDetails(
+  referenceInvocationId?: string,
+) {
+  const baseUrl = useAdminBaseUrl();
+  return useQuery<InvocationStatusDetailsData>({
+    queryKey: getInvocationStatusDetailsQueryKey(
+      baseUrl,
+      referenceInvocationId,
+    ),
+    queryFn: skipToken,
+  });
 }
 
 export function useWarmInvocationStatusDetails(
