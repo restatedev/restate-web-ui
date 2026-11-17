@@ -186,10 +186,24 @@ function countNonCompletedInvocations(
     components['schemas']['InvocationStatusResult'] | undefined
   >,
 ) {
-  return invocationIds.filter(
-    (invocationId) =>
-      !isCompletedInvocationStatus(invocations?.[invocationId]?.status),
-  ).length;
+  return invocationIds.filter((invocationId) => {
+    const status = invocations?.[invocationId]?.status;
+    return status !== undefined && !isCompletedInvocationStatus(status);
+  }).length;
+}
+
+function getProblemStatusInterval(invocationCount: number) {
+  return Math.min(
+    PROBLEM_STATUS_REFETCH_MAX_MS,
+    Math.max(
+      PROBLEM_STATUS_REFETCH_MIN_MS,
+      invocationCount * PROBLEM_STATUS_REFETCH_MS_PER_ID,
+    ),
+  );
+}
+
+function haveSameIds(a: string[], b: string[]) {
+  return a.length === b.length && a.every((id, index) => id === b[index]);
 }
 
 function findCommandRow(
@@ -406,11 +420,32 @@ export function JournalV2({
       )
     : 0;
 
-  const childInvocationIds = useMemo(
+  const allChildInvocationIds = useMemo(
     () =>
       withTimeline ? getChildInvocationIds(entriesWithoutInputUnfiltered) : [],
     [withTimeline, entriesWithoutInputUnfiltered],
   );
+  const [childInvocationIds, setChildInvocationIds] = useState<string[]>([]);
+  const childIdsUpdatedAt = useRef(0);
+  useEffect(() => {
+    if (haveSameIds(childInvocationIds, allChildInvocationIds)) {
+      return;
+    }
+    const update = () => {
+      childIdsUpdatedAt.current = Date.now();
+      setChildInvocationIds(allChildInvocationIds);
+    };
+    const wait =
+      childIdsUpdatedAt.current +
+      getProblemStatusInterval(allChildInvocationIds.length) -
+      Date.now();
+    if (wait <= 0) {
+      update();
+      return;
+    }
+    const timer = setTimeout(update, wait);
+    return () => clearTimeout(timer);
+  }, [allChildInvocationIds, childInvocationIds]);
   const { data: childStatusData } = useWarmInvocationStatusDetails(
     childInvocationIds,
     `${invocationId}#problems`,
@@ -426,13 +461,7 @@ export function JournalV2({
           query.state.data?.invocations,
         );
         return isLive && !isScrollingRef.current && pendingCount > 0
-          ? Math.min(
-              PROBLEM_STATUS_REFETCH_MAX_MS,
-              Math.max(
-                PROBLEM_STATUS_REFETCH_MIN_MS,
-                pendingCount * PROBLEM_STATUS_REFETCH_MS_PER_ID,
-              ),
-            )
+          ? getProblemStatusInterval(pendingCount)
           : false;
       },
     },
@@ -533,6 +562,9 @@ export function JournalV2({
   );
   const setProblemsOnly = useCallback(
     (problemsOnly: boolean) => {
+      if (problemsOnly === isProblemsOnly) {
+        return;
+      }
       setActiveProblemKey(undefined);
       setSearchParams(
         (previous) => {
@@ -547,7 +579,7 @@ export function JournalV2({
         { replace: true },
       );
     },
-    [setSearchParams],
+    [isProblemsOnly, setSearchParams],
   );
   const problemToneByKey = useMemo(() => {
     if (!withTimeline) {
@@ -809,9 +841,8 @@ export function JournalV2({
       listRect.top + (row ? row.start - scrollMargin : target * 36);
     const rowBottom = rowTop + (row?.size ?? 36);
     const visibleTop =
-      (document
-        .querySelector('[data-journal-timeline-start]')
-        ?.getBoundingClientRect().bottom ?? 0) + 8;
+      (document.querySelector('[data-journal-header]')?.getBoundingClientRect()
+        .bottom ?? 0) + 8;
     const visibleBottom = window.innerHeight - 96;
     if (rowTop >= visibleTop && rowBottom <= visibleBottom) {
       return;
@@ -982,6 +1013,11 @@ export function JournalV2({
                     onFindChange={setFindText}
                     matchCount={filtered?.matches}
                     navigableTotal={shownProblemRows.length}
+                    activePosition={
+                      activeProblemPosition >= 0
+                        ? activeProblemPosition
+                        : undefined
+                    }
                     onPrevious={() => goToProblem(-1)}
                     onNext={() => goToProblem(1)}
                   />
@@ -1026,7 +1062,11 @@ export function JournalV2({
               )}
               {withTimeline && (
                 <ContentPanelHeader className="font-mono text-0.5xs">
-                  <div ref={split.headerRef} className="relative h-9 w-full">
+                  <div
+                    ref={split.headerRef}
+                    className="relative h-9 w-full"
+                    data-journal-header
+                  >
                     <div className="pointer-events-none absolute inset-0 z-30 hidden md:block">
                       <div
                         className={splitTimelineOverlay({
