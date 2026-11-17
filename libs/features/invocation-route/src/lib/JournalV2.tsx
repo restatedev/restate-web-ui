@@ -714,8 +714,10 @@ export function JournalV2({
       {journalProblems.childCheck.invocationIds.length > 0 && (
         <ProblemChildCheck
           invocationIds={journalProblems.childCheck.invocationIds}
-          referenceInvocationId={`${invocationId}#problems`}
-          onStatuses={journalProblems.childCheck.onStatuses}
+          referenceInvocationId={invocationId}
+          isLive={isLive}
+          isScrollingRef={isScrollingRef}
+          onProgress={journalProblems.childCheck.onProgress}
         />
       )}
       <TimelineEngineProvider
@@ -768,7 +770,7 @@ export function JournalV2({
                     matchCount={journalProblems.matchCount}
                     navigableTotal={shownProblemRows.length}
                     announcement={journalProblems.announcement}
-                    childCheck={journalProblems.childCheck}
+                    checkProgress={journalProblems.childCheck.progress}
                     onPrevious={goToPreviousProblem}
                     onNext={goToNextProblem}
                   />

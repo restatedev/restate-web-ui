@@ -12,6 +12,7 @@ import {
   insertRetryRows,
 } from './problemRows';
 import type { CombinedJournalEntry } from './useProcessedJournal';
+import { getChildCheckInterval } from './useJournalProblems';
 
 const ROOT = 'inv_root';
 
@@ -515,5 +516,13 @@ describe('insertRetryRows', () => {
     const expanded = insertRetryRows(rows, retried, () => true);
 
     expect(expanded.map(({ entry }) => entry?.index)).toEqual([1, 21, 8, 2]);
+  });
+});
+
+describe('getChildCheckInterval', () => {
+  it('refreshes small fan-outs every 10 s and big ones every 20 s', () => {
+    expect(getChildCheckInterval(5)).toBeCloseTo(10_002.5);
+    expect(getChildCheckInterval(10_000)).toBe(15_000);
+    expect(getChildCheckInterval(500_000)).toBe(20_000);
   });
 });

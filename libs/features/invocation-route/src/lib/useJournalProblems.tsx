@@ -1,18 +1,16 @@
 import {
   memo,
+  type RefObject,
   useCallback,
   useDeferredValue,
-  useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import { useSearchParams } from 'react-router';
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   useCachedInvocationStatusDetails,
-  useMergeInvocationStatusDetails,
-  useWarmInvocationStatusDetails,
+  useInvocationStatusCheck,
   type useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
 import { formatNumber } from '@restate/util-intl';
@@ -28,6 +26,7 @@ import {
   insertRetryRows,
   SHOW_PARAM,
   SHOW_PROBLEMS,
+  isChildProblemStatus,
   type ChildStatuses,
   type PastRetries,
   type ProblemKind,
@@ -36,8 +35,11 @@ import {
 import type { CombinedJournalEntry } from './useProcessedJournal';
 
 export const INPUT_ROW = -1;
-const CHILD_CHECK_LIMIT = 1_000;
-const CHILD_CHECK_INTERVAL_MS = 60_000;
+const CHILD_CHECK_BATCH = 1_000;
+const CHILD_CHECK_MAX_PER_REFRESH = 2_000;
+const CHILD_CHECK_MIN_INTERVAL_MS = 10_000;
+const CHILD_CHECK_MAX_INTERVAL_MS = 20_000;
+const CHILD_CHECK_MS_PER_UNFINISHED = 0.5;
 const NO_STATUSES: ChildStatuses = {};
 const NO_RETRIES = new Map<string, PastRetries>();
 const NO_PROBLEMS = {
@@ -46,16 +48,15 @@ const NO_PROBLEMS = {
   failedChildRows: new Set<number>(),
 };
 
-type CheckedStatuses = NonNullable<
-  ReturnType<typeof useWarmInvocationStatusDetails>['data']
->['invocations'];
-
 type JournalData = ReturnType<
   typeof useGetInvocationsJournalWithInvocationsV2
 >['data'];
 
-function haveSameIds(a: string[], b: string[]) {
-  return a.length === b.length && a.every((id, index) => id === b[index]);
+export function getChildCheckInterval(unfinished: number) {
+  return Math.min(
+    CHILD_CHECK_MAX_INTERVAL_MS,
+    CHILD_CHECK_MIN_INTERVAL_MS + unfinished * CHILD_CHECK_MS_PER_UNFINISHED,
+  );
 }
 
 export function useJournalProblems({
@@ -80,7 +81,6 @@ export function useJournalProblems({
   const { data: cachedStatuses } =
     useCachedInvocationStatusDetails(invocationId);
   const childStatuses = cachedStatuses?.invocations ?? NO_STATUSES;
-  const mergeCheckedStatuses = useMergeInvocationStatusDetails(invocationId);
 
   const completedInvocationIds = useMemo(
     () =>
@@ -132,41 +132,22 @@ export function useJournalProblems({
     ],
   );
 
-  const [checkLimit, setCheckLimit] = useState(CHILD_CHECK_LIMIT);
   const childIdsToCheck = useMemo(
     () =>
-      isProblemsOnly && journalProblems
+      journalProblems
         ? getChildIdsToCheck(rows, journalProblems.childRowIndexes)
         : [],
-    [isProblemsOnly, rows, journalProblems],
+    [rows, journalProblems],
   );
-  const wantedCheckIds = useMemo(
-    () => childIdsToCheck.slice(0, checkLimit),
-    [childIdsToCheck, checkLimit],
+  const [checkProgress, setCheckProgress] = useState<{
+    checked: number;
+    total: number;
+  }>();
+  const updateCheckProgress = useCallback(
+    (checked: number, total: number) =>
+      setCheckProgress(checked < total ? { checked, total } : undefined),
+    [],
   );
-  const [checkIds, setCheckIds] = useState<string[]>([]);
-  const checkIdsUpdatedAt = useRef(0);
-  useEffect(() => {
-    if (!isProblemsOnly || haveSameIds(checkIds, wantedCheckIds)) {
-      return;
-    }
-    const update = () => {
-      checkIdsUpdatedAt.current = Date.now();
-      setCheckIds(wantedCheckIds);
-    };
-    const wait =
-      checkIdsUpdatedAt.current + CHILD_CHECK_INTERVAL_MS - Date.now();
-    if (wait <= 0) {
-      update();
-      return;
-    }
-    const timer = setTimeout(update, wait);
-    return () => clearTimeout(timer);
-  }, [isProblemsOnly, wantedCheckIds, checkIds]);
-  const checkAllChildren = useCallback(() => {
-    checkIdsUpdatedAt.current = 0;
-    setCheckLimit(Infinity);
-  }, []);
 
   const [findText, setFindText] = useState('');
   const query = useDeferredValue(findText.trim().toLowerCase());
@@ -228,9 +209,6 @@ export function useJournalProblems({
         return;
       }
       setActiveProblemKey(undefined);
-      if (!problemsOnly) {
-        setCheckIds([]);
-      }
       setSearchParams(
         (previous) => {
           const next = new URLSearchParams(previous);
@@ -313,20 +291,11 @@ export function useJournalProblems({
   );
   const childCheck = useMemo(
     () => ({
-      invocationIds: isProblemsOnly ? checkIds : [],
-      onStatuses: mergeCheckedStatuses,
-      checked: wantedCheckIds.length,
-      total: childIdsToCheck.length,
-      checkAll: checkAllChildren,
+      invocationIds: childIdsToCheck,
+      onProgress: updateCheckProgress,
+      progress: checkProgress,
     }),
-    [
-      isProblemsOnly,
-      checkIds,
-      mergeCheckedStatuses,
-      wantedCheckIds,
-      childIdsToCheck,
-      checkAllChildren,
-    ],
+    [childIdsToCheck, updateCheckProgress, checkProgress],
   );
 
   return {
@@ -355,38 +324,26 @@ export function useJournalProblems({
 export const ProblemChildCheck = memo(function ProblemChildCheck({
   invocationIds,
   referenceInvocationId,
-  onStatuses,
+  isLive,
+  isScrollingRef,
+  onProgress,
 }: {
   invocationIds: string[];
   referenceInvocationId: string;
-  onStatuses: (statuses: CheckedStatuses) => void;
+  isLive: boolean;
+  isScrollingRef: RefObject<boolean>;
+  onProgress: (checked: number, total: number) => void;
 }) {
-  const { data, dataUpdatedAt, isFetchedAfterMount } =
-    useWarmInvocationStatusDetails(invocationIds, referenceInvocationId, {
-      enabled: invocationIds.length > 0,
-      refetchOnMount: true,
-      staleTime: CHILD_CHECK_INTERVAL_MS,
-      refetchOnWindowFocus: false,
-      refetchInterval: false,
-    });
-  const mergedUpdatedAt = useRef(0);
-  useEffect(() => {
-    if (
-      !isFetchedAfterMount ||
-      !data?.invocations ||
-      dataUpdatedAt <= mergedUpdatedAt.current
-    ) {
-      return;
-    }
-    mergedUpdatedAt.current = dataUpdatedAt;
-    const checked: CheckedStatuses = {};
-    for (const id of invocationIds) {
-      const status = data.invocations[id];
-      if (status) {
-        checked[id] = status;
-      }
-    }
-    onStatuses(checked);
-  }, [data, dataUpdatedAt, isFetchedAfterMount, invocationIds, onStatuses]);
+  useInvocationStatusCheck(invocationIds, referenceInvocationId, {
+    enabled: true,
+    batchSize: CHILD_CHECK_BATCH,
+    maxPerRefresh: CHILD_CHECK_MAX_PER_REFRESH,
+    shouldShare: isChildProblemStatus,
+    refetchInterval: (unfinished) =>
+      isLive && !isScrollingRef.current && unfinished > 0
+        ? getChildCheckInterval(unfinished)
+        : false,
+    onProgress,
+  });
   return null;
 });

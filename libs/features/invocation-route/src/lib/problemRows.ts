@@ -24,6 +24,10 @@ const CHILD_PROBLEM_STATUSES = new Set([
   'paused',
 ]);
 
+export function isChildProblemStatus(status?: string) {
+  return status !== undefined && CHILD_PROBLEM_STATUSES.has(status);
+}
+
 export interface PastRetries {
   count: number;
   lastMessage?: string;

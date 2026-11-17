@@ -16,10 +16,9 @@ export interface JournalProblemsBarProps {
   matchCount?: number;
   navigableTotal: number;
   announcement: string;
-  childCheck: {
+  checkProgress?: {
     checked: number;
     total: number;
-    checkAll: () => void;
   };
   onPrevious: () => void;
   onNext: () => void;
@@ -42,8 +41,7 @@ const modeStyles = tv({
     matches: 'mr-1 shrink-0 text-2xs text-muted tabular-nums',
     clear:
       'mr-0.5 flex h-5 w-5 shrink-0 rounded-md p-0 text-subtle shadow-none hover:bg-muted hover:text-tertiary pressed:bg-emphasis',
-    checkMore:
-      'shrink-0 rounded-lg px-1.5 py-0.5 text-xs whitespace-nowrap text-muted shadow-none hover:text-primary',
+    checkingChildren: 'min-w-0 truncate text-xs text-muted tabular-nums',
   },
 });
 
@@ -76,7 +74,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
   matchCount,
   navigableTotal,
   announcement,
-  childCheck,
+  checkProgress,
   onPrevious,
   onNext,
 }: JournalProblemsBarProps) {
@@ -93,7 +91,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
     shortcut,
     matches,
     clear,
-    checkMore,
+    checkingChildren,
   } = modeStyles();
   const search = (
     <SearchField
@@ -177,19 +175,11 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
         )}
       </div>
       {search}
-      {childCheck.total > childCheck.checked && (
-        <HoverTooltip
-          content={`Check all ${formatNumber(childCheck.total)} child invocations`}
-          placement="top"
-        >
-          <Button
-            variant="icon"
-            className={checkMore()}
-            onClick={childCheck.checkAll}
-          >
-            {formatNumber(childCheck.total - childCheck.checked)} unchecked
-          </Button>
-        </HoverTooltip>
+      {checkProgress && (
+        <span className={checkingChildren()}>
+          Checking children {formatNumber(checkProgress.checked)} of{' '}
+          {formatNumber(checkProgress.total)}
+        </span>
       )}
     </div>
   );
