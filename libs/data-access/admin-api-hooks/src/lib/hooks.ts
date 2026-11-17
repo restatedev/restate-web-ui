@@ -1080,6 +1080,7 @@ interface StatusCheckState {
   cursor: number;
   run: number;
   untriedOnly: boolean;
+  lastTimedRunAt: number;
 }
 
 function getRemainingInterval(
@@ -1213,7 +1214,10 @@ async function runInvocationStatusCheck({
     }
   } finally {
     flush();
-    if (showsProgress && run === state.run) {
+    if (!untriedOnly) {
+      state.lastTimedRunAt = Date.now();
+    }
+    if (run === state.run) {
       onProgress?.(ids.length, ids.length);
     }
   }
@@ -1248,30 +1252,36 @@ export function useInvocationStatusCheck(
     cursor: 0,
     run: 0,
     untriedOnly: false,
+    lastTimedRunAt: 0,
   });
   const sharedKey = getInvocationStatusDetailsQueryKey(
     baseUrl,
     referenceInvocationId,
   );
   const isEnabled = enabled && isApiEnabled && invocationIds.length > 0;
+  const checkKey = useMemo(
+    () =>
+      [
+        '/query/invocations/statuses/check',
+        { baseUrl, referenceInvocationId },
+      ] as const,
+    [baseUrl, referenceInvocationId],
+  );
   const results = useQuery<InvocationStatusCheckData>({
-    queryKey: [
-      '/query/invocations/statuses/check',
-      { baseUrl, referenceInvocationId },
-    ],
+    queryKey: checkKey,
     enabled: isEnabled,
     staleTime: 0,
     structuralSharing: false,
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
-    refetchInterval: (query) =>
+    refetchInterval: () =>
       getRemainingInterval(
         refetchInterval(
           invocationIds.filter((id) => isOpenForCheck(stateRef.current, id))
             .length,
         ),
-        Math.max(query.state.dataUpdatedAt, query.state.errorUpdatedAt),
+        stateRef.current.lastTimedRunAt,
       ),
     queryFn: (context) =>
       runInvocationStatusCheck({
@@ -1288,17 +1298,27 @@ export function useInvocationStatusCheck(
       }),
   });
   const { isFetching, isError, refetch } = results;
+  const queryClient = useQueryClient();
   useEffect(() => {
     if (
       isEnabled &&
       !isFetching &&
       !isError &&
+      queryClient.getQueryState(checkKey)?.fetchStatus === 'idle' &&
       invocationIds.some((id) => isUntriedForCheck(stateRef.current, id))
     ) {
       stateRef.current.untriedOnly = true;
       void refetch({ cancelRefetch: false });
     }
-  }, [isEnabled, isFetching, isError, refetch, invocationIds]);
+  }, [
+    isEnabled,
+    isFetching,
+    isError,
+    refetch,
+    invocationIds,
+    queryClient,
+    checkKey,
+  ]);
   return results;
 }
 
