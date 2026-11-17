@@ -1,6 +1,6 @@
 import { useGetInvocationJournalWithInvocationV2 } from '@restate/data-access-admin-api-hooks';
 import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
-import { ComponentType, memo } from 'react';
+import { ComponentType, memo, type ReactNode } from 'react';
 import { AttachInvocation } from './entries/AttachInvocation';
 import { Awakeable } from './entries/Awakeable';
 import { Call } from './entries/Call';
@@ -199,6 +199,7 @@ export const Entry = memo(function Entry({
   parentCommand,
   compact = false,
   showEventTime = false,
+  trailing,
 }: {
   invocation?: ReturnType<
     typeof useGetInvocationJournalWithInvocationV2
@@ -209,6 +210,7 @@ export const Entry = memo(function Entry({
   parentCommand?: JournalEntryV2;
   compact?: boolean;
   showEventTime?: boolean;
+  trailing?: ReactNode;
 }) {
   const length =
     invocation?.journal_commands_size ?? invocation?.journal_size ?? 1;
@@ -334,6 +336,7 @@ export const Entry = memo(function Entry({
             />
           )}
         </div>
+        {trailing}
         <div className="relative min-w-20 flex-auto">
           <div className="absolute top-1/2 right-0 left-0 -translate-y-px border-b border-dashed border-strong/70" />
         </div>

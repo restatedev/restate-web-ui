@@ -10,6 +10,7 @@ import {
   RefObject,
   Suspense,
   useCallback,
+  useDeferredValue,
   useEffect,
   useId,
   useLayoutEffect,
@@ -95,6 +96,25 @@ import {
   journalSplitStyles,
   useJournalSplit,
 } from './JournalSplit';
+import {
+  filterJournalRows,
+  findProblems,
+  getChildInvocationIds,
+  getPastRetries,
+  getProblemChildIds,
+  getProblemRowKey,
+  getProblemTone,
+  getRetriedCommands,
+  getRetryKey,
+  insertRetryRows,
+  SHOW_PARAM,
+  SHOW_PROBLEMS,
+  type PastRetries,
+  type ProblemKind,
+  type ProblemTone,
+} from './problemRows';
+import { JournalProblemsBar } from './JournalProblemsBar';
+import { PastRetriesBadge } from './PastRetriesBadge';
 
 const virtualRowStyles = tv({
   base: '',
@@ -102,6 +122,17 @@ const virtualRowStyles = tv({
     isFocused: {
       true: 'bg-accent-subtle/50',
       false: '',
+    },
+  },
+});
+
+const problemMarkStyles = tv({
+  base: 'pointer-events-none absolute top-1.5 bottom-1.5 left-0 z-[1] w-[3px] rounded-r-full',
+  variants: {
+    tone: {
+      danger: 'bg-danger',
+      warning: 'bg-warning',
+      info: 'bg-info',
     },
   },
 });
@@ -117,6 +148,12 @@ const liveStyles = tv({
 });
 
 const LIVE_EDGE_THRESHOLD_MS = 500;
+const PROBLEM_STATUS_REFETCH_MS = 5_000;
+const MAX_AUTO_EXPANDED_PROBLEM_CHILDREN = 10;
+const NO_PROBLEMS = {
+  kindByRow: new Map<number, ProblemKind>(),
+  rowIndexes: [] as number[],
+};
 const JOURNAL_BOTTOM_PADDING_PX = 50;
 
 // Trailing headroom appended to a completed trace's timeline so the final
@@ -218,7 +255,7 @@ export function JournalV2({
 }: JournalV2Props) {
   const [isLive, setIsLive] = useState(true);
   const isScrollingRef = useRef(false);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [invocationIds, setInvocationIds] = useState(() =>
     withTimeline
       ? getInitialInvocationIds(String(invocationId), searchParams)
@@ -354,7 +391,197 @@ export function JournalV2({
       )
     : 0;
 
-  const entriesWithoutInput = entriesWithoutInputUnfiltered;
+  const childInvocationIds = useMemo(
+    () =>
+      withTimeline ? getChildInvocationIds(entriesWithoutInputUnfiltered) : [],
+    [withTimeline, entriesWithoutInputUnfiltered],
+  );
+  const { data: childStatusData } = useWarmInvocationStatusDetails(
+    childInvocationIds,
+    `${invocationId}#problems`,
+    {
+      enabled: childInvocationIds.length > 0,
+      refetchOnMount: true,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+      refetchIntervalInBackground: false,
+      refetchInterval(query) {
+        return isLive &&
+          hasNonCompletedReferencedInvocations(
+            childInvocationIds,
+            query.state.data?.invocations,
+          )
+          ? PROBLEM_STATUS_REFETCH_MS
+          : false;
+      },
+    },
+  );
+  const retriedCommands = useMemo(
+    () =>
+      withTimeline
+        ? getRetriedCommands(
+            Object.fromEntries(
+              Object.entries(data).map(([id, value]) => [
+                id,
+                value?.journal?.entries,
+              ]),
+            ),
+          )
+        : new Map<string, PastRetries>(),
+    [withTimeline, data],
+  );
+  const problems = useMemo(
+    () =>
+      withTimeline
+        ? findProblems(
+            entriesWithoutInputUnfiltered,
+            retriedCommands,
+            childStatusData?.invocations ?? {},
+          )
+        : NO_PROBLEMS,
+    [
+      withTimeline,
+      entriesWithoutInputUnfiltered,
+      retriedCommands,
+      childStatusData,
+    ],
+  );
+  const [activeProblemKey, setActiveProblemKey] = useState<string>();
+  const [findText, setFindText] = useState('');
+  const query = useDeferredValue(findText.trim().toLowerCase());
+  const isProblemsOnly =
+    Boolean(withTimeline) && searchParams.get(SHOW_PARAM) === SHOW_PROBLEMS;
+  const filtered = useMemo(
+    () =>
+      isProblemsOnly || query
+        ? filterJournalRows(
+            entriesWithoutInputUnfiltered,
+            { problemsOnly: isProblemsOnly, query },
+            problems.kindByRow,
+          )
+        : undefined,
+    [isProblemsOnly, query, entriesWithoutInputUnfiltered, problems],
+  );
+  const filteredEntries = filtered?.rows ?? entriesWithoutInputUnfiltered;
+  const [expandedRetries, setExpandedRetries] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const isRetryRowExpanded = useCallback(
+    (key: string) => expandedRetries.has(key),
+    [expandedRetries],
+  );
+  const toggleRetryRow = useCallback((row: CombinedJournalEntry) => {
+    const key = getRetryKey(row);
+    if (!key) {
+      return;
+    }
+    setExpandedRetries((previous) => {
+      const next = new Set(previous);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+  const entriesWithoutInput = useMemo(
+    () =>
+      withTimeline && !detail.errors
+        ? insertRetryRows(filteredEntries, retriedCommands, isRetryRowExpanded)
+        : filteredEntries,
+    [
+      withTimeline,
+      detail.errors,
+      filteredEntries,
+      retriedCommands,
+      isRetryRowExpanded,
+    ],
+  );
+  const setProblemsOnly = useCallback(
+    (problemsOnly: boolean) => {
+      setActiveProblemKey(undefined);
+      setSearchParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          if (problemsOnly) {
+            next.set(SHOW_PARAM, SHOW_PROBLEMS);
+          } else {
+            next.delete(SHOW_PARAM);
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+  const problemToneByKey = useMemo(() => {
+    if (!withTimeline) {
+      return undefined;
+    }
+    const tones = new Map<string, ProblemTone>();
+    problems.kindByRow.forEach((kind, index) => {
+      const row = entriesWithoutInputUnfiltered[index];
+      const key = getProblemRowKey(row);
+      if (key) {
+        tones.set(
+          key,
+          getProblemTone(kind, row, childStatusData?.invocations ?? {}),
+        );
+      }
+    });
+    return tones;
+  }, [withTimeline, problems, entriesWithoutInputUnfiltered, childStatusData]);
+  const shownProblemRows = useMemo(() => {
+    if (entriesWithoutInput === entriesWithoutInputUnfiltered) {
+      return problems.rowIndexes;
+    }
+    const keys = new Set(
+      problems.rowIndexes.map((index) =>
+        getProblemRowKey(entriesWithoutInputUnfiltered[index]),
+      ),
+    );
+    return entriesWithoutInput.flatMap((row, index) =>
+      row.depth === 0 && keys.has(getProblemRowKey(row)) ? [index] : [],
+    );
+  }, [problems, entriesWithoutInput, entriesWithoutInputUnfiltered]);
+  const problemChildIdsToExpand = useMemo(
+    () =>
+      isProblemsOnly
+        ? getProblemChildIds(
+            entriesWithoutInputUnfiltered,
+            problems.kindByRow,
+            problems.rowIndexes,
+          ).slice(0, MAX_AUTO_EXPANDED_PROBLEM_CHILDREN)
+        : [],
+    [isProblemsOnly, entriesWithoutInputUnfiltered, problems],
+  );
+  const autoExpandedIds = useRef<string[]>([]);
+  useEffect(() => {
+    const missing = problemChildIdsToExpand.filter(
+      (id) => !invocationIds.includes(id),
+    );
+    if (missing.length > 0) {
+      autoExpandedIds.current = [...autoExpandedIds.current, ...missing];
+      setInvocationIds((ids) => [...ids, ...missing]);
+    }
+  }, [problemChildIdsToExpand, invocationIds]);
+  useEffect(() => {
+    if (isProblemsOnly || autoExpandedIds.current.length === 0) {
+      return;
+    }
+    const collapsed = new Set(autoExpandedIds.current);
+    autoExpandedIds.current = [];
+    setInvocationIds((ids) => ids.filter((id) => !collapsed.has(id)));
+  }, [isProblemsOnly]);
+  const activeProblemIndex = activeProblemKey
+    ? entriesWithoutInput.findIndex(
+        (row) => getProblemRowKey(row) === activeProblemKey,
+      )
+    : -1;
+  const activeProblemPosition =
+    activeProblemIndex >= 0 ? shownProblemRows.indexOf(activeProblemIndex) : -1;
   // The server returns an empty `entries` array when the journal has been
   // purged (or was never written). Detect this once everything has loaded so
   // we can surface a "Journal was purged" message instead of an empty pane.
@@ -516,6 +743,65 @@ export function JournalV2({
         window.innerHeight / 3,
     });
   }, [withTimeline, focusRowIndex, virtualizer, scrollMargin, hash]);
+  const rowCenter = (index: number) => {
+    const row = virtualizer.measurementsCache[index];
+    return row ? row.start - scrollMargin + row.size / 2 : index * 36;
+  };
+  const scrollToProblemRow = (target: number) => {
+    const list = entriesListRef.current;
+    if (!list) {
+      return;
+    }
+    setActiveProblemKey(getProblemRowKey(entriesWithoutInput[target]));
+    const listRect = list.getBoundingClientRect();
+    const row = virtualizer.measurementsCache[target];
+    const rowTop =
+      listRect.top + (row ? row.start - scrollMargin : target * 36);
+    const rowBottom = rowTop + (row?.size ?? 36);
+    const visibleTop =
+      (document
+        .querySelector('[data-journal-timeline-start]')
+        ?.getBoundingClientRect().bottom ?? 0) + 8;
+    const visibleBottom = window.innerHeight - 96;
+    if (rowTop >= visibleTop && rowBottom <= visibleBottom) {
+      return;
+    }
+    window.scrollTo({
+      top:
+        listRect.top +
+        window.scrollY +
+        rowCenter(target) -
+        window.innerHeight / 2,
+    });
+  };
+  const goToProblem = (direction: 1 | -1) => {
+    const list = entriesListRef.current;
+    if (!list || shownProblemRows.length === 0) {
+      return;
+    }
+    const listTop = list.getBoundingClientRect().top + window.scrollY;
+    let target: number | undefined;
+    if (activeProblemPosition >= 0) {
+      target =
+        shownProblemRows[
+          (activeProblemPosition + direction + shownProblemRows.length) %
+            shownProblemRows.length
+        ];
+    } else {
+      const center = window.scrollY + window.innerHeight / 2 - listTop;
+      target =
+        direction === 1
+          ? (shownProblemRows.find((index) => rowCenter(index) > center + 1) ??
+            shownProblemRows[0])
+          : (shownProblemRows.findLast(
+              (index) => rowCenter(index) < center - 1,
+            ) ?? shownProblemRows.at(-1));
+    }
+    if (target === undefined) {
+      return;
+    }
+    scrollToProblemRow(target);
+  };
   const eventRelatedInvocationIds = useMemo(
     () =>
       getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
@@ -638,6 +924,17 @@ export function JournalV2({
             >
               {withTimeline && (
                 <ContentPanelToolbar className="relative">
+                  <JournalProblemsBar
+                    isProblemsOnly={isProblemsOnly}
+                    onModeChange={setProblemsOnly}
+                    problemTotal={problems.rowIndexes.length}
+                    find={findText}
+                    onFindChange={setFindText}
+                    matchCount={filtered?.matches}
+                    navigableTotal={shownProblemRows.length}
+                    onPrevious={() => goToProblem(-1)}
+                    onNext={() => goToProblem(1)}
+                  />
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-canvas via-canvas to-canvas/5 pl-10">
                     <JournalDetailToggle
                       availableCategories={journalDetail.availableCategories}
@@ -685,6 +982,7 @@ export function JournalV2({
                         className={splitTimelineOverlay({
                           className: 'h-full',
                         })}
+                        data-journal-timeline-start
                       >
                         <StartDateTimeUnit start={start} />
                       </div>
@@ -769,6 +1067,13 @@ export function JournalV2({
                               data={data}
                               failureRow={failureRow}
                               focusInvocationId={focusInvocationId}
+                              activeRowIndex={activeProblemIndex}
+                              problemTones={problemToneByKey}
+                              pastRetries={
+                                withTimeline ? retriedCommands : undefined
+                              }
+                              onToggleRetries={toggleRetryRow}
+                              isRetryRowExpanded={isRetryRowExpanded}
                             />
                             {journalAndInvocationData && (
                               <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">
@@ -1049,6 +1354,11 @@ function VirtualizedEntries({
   data,
   failureRow,
   focusInvocationId,
+  activeRowIndex,
+  problemTones,
+  pastRetries,
+  onToggleRetries,
+  isRetryRowExpanded,
 }: {
   ref: RefCallback<HTMLDivElement>;
   virtualItems: VirtualItem[];
@@ -1058,6 +1368,11 @@ function VirtualizedEntries({
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   failureRow?: VirtualItem;
   focusInvocationId?: string;
+  activeRowIndex?: number;
+  problemTones?: ReadonlyMap<string, ProblemTone>;
+  pastRetries?: ReadonlyMap<string, PastRetries>;
+  onToggleRetries: (row: CombinedJournalEntry) => void;
+  isRetryRowExpanded: (key: string) => boolean;
 }) {
   return (
     <div
@@ -1094,7 +1409,9 @@ function VirtualizedEntries({
           <div
             key={virtualItem.key}
             className={virtualRowStyles({
-              isFocused: entryInvocationId === focusInvocationId,
+              isFocused:
+                entryInvocationId === focusInvocationId ||
+                virtualItem.index === activeRowIndex,
             })}
             style={{
               position: 'absolute',
@@ -1105,6 +1422,14 @@ function VirtualizedEntries({
               transform: `translateY(${virtualItem.start - scrollMargin}px)`,
             }}
           >
+            {problemTones?.has(getProblemRowKey(combinedEntry) ?? '') && (
+              <span
+                aria-hidden
+                className={problemMarkStyles({
+                  tone: problemTones.get(getProblemRowKey(combinedEntry) ?? ''),
+                })}
+              />
+            )}
             <ErrorBoundary
               entry={entry}
               className="sticky top-[var(--cp-content-top,0px)] h-9"
@@ -1115,6 +1440,18 @@ function VirtualizedEntries({
                 depth={depth}
                 nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
                 parentCommand={parentCommand}
+                trailing={
+                  pastRetries && (
+                    <PastRetriesTrailing
+                      row={combinedEntry}
+                      pastRetries={pastRetries}
+                      isExpanded={isRetryRowExpanded(
+                        getRetryKey(combinedEntry) ?? '',
+                      )}
+                      onToggle={() => onToggleRetries(combinedEntry)}
+                    />
+                  )
+                }
               />
             </ErrorBoundary>
           </div>
@@ -1122,6 +1459,28 @@ function VirtualizedEntries({
       })}
     </div>
   );
+}
+
+function PastRetriesTrailing({
+  row,
+  pastRetries,
+  isExpanded,
+  onToggle,
+}: {
+  row: CombinedJournalEntry;
+  pastRetries: ReadonlyMap<string, PastRetries>;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const retries = getPastRetries(row, pastRetries);
+  return retries ? (
+    <PastRetriesBadge
+      retries={retries}
+      hasFailed={row.entry?.resultType === 'failure'}
+      isExpanded={isExpanded}
+      onToggle={onToggle}
+    />
+  ) : null;
 }
 
 function VirtualizedTimeline({
