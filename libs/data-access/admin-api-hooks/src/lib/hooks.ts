@@ -1062,6 +1062,8 @@ export function useCachedInvocationStatusDetails(
 
 const MAX_STATUS_CHECK_MISSES = 3;
 const STATUS_CHECK_FLUSH_MS = 1_000;
+const STATUS_CHECK_MIN_INTERVAL_MS = 250;
+const STATUS_CHECK_RETRY_MS = 10_000;
 
 export interface InvocationStatusCheckData {
   checkedAt: number;
@@ -1090,7 +1092,14 @@ function getRemainingInterval(
   if (period === false) {
     return false;
   }
-  return Math.max(250, period - (Date.now() - lastRunAt));
+  return Math.max(
+    STATUS_CHECK_MIN_INTERVAL_MS,
+    period - (Date.now() - lastRunAt),
+  );
+}
+
+function isPastRetryDelay(errorUpdatedAt: number) {
+  return Date.now() - errorUpdatedAt >= STATUS_CHECK_RETRY_MS;
 }
 
 function isOpenForCheck(state: StatusCheckState, invocationId: string) {
@@ -1200,7 +1209,7 @@ async function runInvocationStatusCheck({
         } else {
           state.misses.set(
             invocationId,
-            (state.misses.get(invocationId) ?? 0) + 1,
+            (state.misses.get(invocationId) ?? 0) + (untriedOnly ? 0 : 1),
           );
           pending[invocationId] = {};
         }
@@ -1297,24 +1306,32 @@ export function useInvocationStatusCheck(
         onProgress,
       }),
   });
-  const { isFetching, isError, refetch } = results;
+  const { isFetching, isError, errorUpdatedAt, refetch } = results;
   const queryClient = useQueryClient();
   useEffect(() => {
     if (
       isEnabled &&
       !isFetching &&
-      !isError &&
+      (!isError || isPastRetryDelay(errorUpdatedAt)) &&
       queryClient.getQueryState(checkKey)?.fetchStatus === 'idle' &&
       invocationIds.some((id) => isUntriedForCheck(stateRef.current, id))
     ) {
-      stateRef.current.untriedOnly = true;
+      const period = refetchInterval(
+        invocationIds.filter((id) => isOpenForCheck(stateRef.current, id))
+          .length,
+      );
+      stateRef.current.untriedOnly =
+        getRemainingInterval(period, stateRef.current.lastTimedRunAt) !==
+        STATUS_CHECK_MIN_INTERVAL_MS;
       void refetch({ cancelRefetch: false });
     }
   }, [
     isEnabled,
     isFetching,
     isError,
+    errorUpdatedAt,
     refetch,
+    refetchInterval,
     invocationIds,
     queryClient,
     checkKey,
