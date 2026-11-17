@@ -593,7 +593,7 @@ export function useInvocationJourneyModel({
               : effectiveInvocation.isRetrying,
           retry_count:
             currentStatus === 'running'
-              ? retryCountSinceLastStoredCommand
+              ? retryCountSinceLastStoredCommand + 1
               : effectiveInvocation.retry_count,
         }
       : undefined,

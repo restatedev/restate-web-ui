@@ -114,7 +114,7 @@ describe('convertInvocation VQueue overlay', () => {
     expect(invocation.retry_count).toBe(5);
   });
 
-  it('marks a running VQueue invocation as retrying from its current-command retry count', () => {
+  it('marks a running VQueue invocation as retrying and numbers the attempt in progress', () => {
     const invocation = convertInvocation(rawInvocation(), {
       stage: 'running',
       status: 'started',
@@ -123,7 +123,7 @@ describe('convertInvocation VQueue overlay', () => {
 
     expect(invocation).toMatchObject({
       status: 'running',
-      retry_count: 1,
+      retry_count: 2,
       isRetrying: true,
     });
   });
@@ -140,7 +140,7 @@ describe('convertInvocation VQueue overlay', () => {
 
     expect(invocation).toMatchObject({
       status: 'running',
-      retry_count: 0,
+      retry_count: 1,
       isRetrying: false,
     });
   });
