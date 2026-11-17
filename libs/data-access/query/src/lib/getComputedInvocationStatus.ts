@@ -2,6 +2,7 @@ import type {
   InvocationComputedStatus2,
   RawInvocation,
 } from '@restate/data-access-admin-api-spec';
+import { getCompletedInvocationStatus } from './invocationStatuses.js';
 
 export type InvocationStatusSource = {
   status: RawInvocation['status'] | InvocationComputedStatus2;
@@ -22,20 +23,6 @@ export function getComputedInvocationStatus(
   isRetrying: boolean;
   status: InvocationComputedStatus2;
 } {
-  const isSuccessful = invocation.completion_result === 'success';
-  const isCancelled = Boolean(
-    invocation.completion_result === 'failure' &&
-    invocation.completion_failure &&
-    ['[409] canceled', '[409] cancelled'].includes(
-      invocation.completion_failure?.toLowerCase(),
-    ),
-  );
-  const isKilled = Boolean(
-    invocation.completion_result === 'failure' &&
-    ['[409] killed'].includes(
-      invocation.completion_failure?.toLowerCase() ?? '',
-    ),
-  );
   const isRunning = invocation.status === 'running';
   const isCompleted = invocation.status === 'completed';
 
@@ -51,19 +38,14 @@ export function getComputedInvocationStatus(
             hasLastFailure,
           )));
 
-  if (isCompleted) {
-    if (isSuccessful) {
-      return { status: 'succeeded', isRetrying: false };
-    }
-    if (isKilled) {
-      return { status: 'killed', isRetrying: false };
-    }
-    if (isCancelled) {
-      return { status: 'cancelled', isRetrying: false };
-    }
-    if (invocation.completion_result === 'failure') {
-      return { status: 'failed', isRetrying: false };
-    }
+  const completedStatus = isCompleted
+    ? getCompletedInvocationStatus(
+        invocation.completion_result,
+        invocation.completion_failure,
+      )
+    : undefined;
+  if (completedStatus) {
+    return { status: completedStatus, isRetrying: false };
   }
 
   if (isRetrying) {

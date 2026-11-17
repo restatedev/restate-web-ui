@@ -3998,6 +3998,7 @@ export interface components {
         | 'Paused'
         | 'Command: Input'
         | 'Command: Output'
+        | 'Command: EndMarker'
         | 'Command: GetState'
         | 'Command: GetEagerState'
         | 'Command: SetState'
@@ -4991,7 +4992,7 @@ export interface components {
       vqueue_id?: string;
       limit_key?: string;
       /** @enum {string} */
-      completion_result?: 'success' | 'failure';
+      completion_result?: 'success' | 'failure' | 'killed';
       completion_failure?: string;
       invoked_by_service_name?: string;
       invoked_by_subscription_id?: string;
@@ -5083,7 +5084,7 @@ export interface components {
       vqueue_id?: string;
       limit_key?: string;
       /** @enum {string} */
-      completion_result?: 'success' | 'failure';
+      completion_result?: 'success' | 'failure' | 'killed';
       completion_failure?: string;
       invoked_by_service_name?: string;
       invoked_by_subscription_id?: string;

@@ -6,6 +6,7 @@ import {
   quoteSqlString,
 } from './shared.js';
 import { fetchVqueueStatuses } from './vqueue.js';
+import { withCompletionFailureMessage } from './completionOutput.js';
 
 export async function getInvocation(this: QueryContext, invocationId: string) {
   const [invocationRows, vqueueStatuses] = await Promise.all([
@@ -16,9 +17,12 @@ export async function getInvocation(this: QueryContext, invocationId: string) {
     fetchVqueueStatuses(this, [invocationId]),
   ]);
   const rawInvocation = invocationRows.rows.at(0);
-  const invocation = rawInvocation
-    ? convertInvocation(rawInvocation, vqueueStatuses.get(invocationId))
-    : undefined;
+  const invocation = await withCompletionFailureMessage(
+    this,
+    rawInvocation
+      ? convertInvocation(rawInvocation, vqueueStatuses.get(invocationId))
+      : undefined,
+  );
   if (invocation) {
     return new Response(JSON.stringify(invocation), {
       status: 200,

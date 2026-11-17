@@ -102,6 +102,12 @@ export const QUERY_DEFINITIONS = {
       "SELECT <list columns> FROM sys_invocation WHERE id IN (…) [AND status <> 'completed']",
     tables: ['sys_invocation'],
   },
+  'invocations/completion-blob-id': {
+    description:
+      'Find the blob holding a completed invocation’s output, for invocations whose result moved to the blob table.',
+    shape: 'SELECT completion_blob_id FROM sys_invocation_status WHERE id = ?',
+    tables: ['sys_invocation_status'],
+  },
   'invocations/get': {
     description:
       'Load a single invocation’s full row for detail surfaces (invocation page, journal, VQueue snapshot focus).',
@@ -135,6 +141,13 @@ export const QUERY_DEFINITIONS = {
     shape:
       'SELECT <event columns> FROM sys_journal_events WHERE id = ? ORDER BY appended_at',
     tables: ['sys_journal_events'],
+  },
+  'invocations/output-blob': {
+    description:
+      'Fetch a completed invocation’s output or failure from the blob table when the user opens the result or the status needs the error message.',
+    shape:
+      'SELECT result, output, failure_json FROM sys_blob_output WHERE id = ?',
+    tables: ['sys_blob_output'],
   },
   'invocations/paused-error': {
     description:

@@ -49,7 +49,7 @@ describe('POST /query/v2/invocations', () => {
           "SELECT
                 ss.id AS id
               FROM sys_invocation_status ss
-              WHERE (ss.status = 'paused' OR (ss.status = 'completed' AND ss.completion_result = 'failure' AND COALESCE(LOWER(ss.completion_failure), '') NOT IN ('[409] killed', '[409] canceled', '[409] cancelled')))
+              WHERE (ss.status = 'paused' OR (ss.status = 'completed' AND ss.completion_result = 'failure' AND COALESCE(LOWER(ss.completion_failure), '') NOT IN ('[409] killed', '[409] canceled', '[409] cancelled', '[409]')))
                 AND ss.target_service_name IN ('myService')
                 AND ss.scope = 'global'
                 AND ss.target_service_ty = 'workflow'
@@ -1610,7 +1610,7 @@ describe('POST /query/v2/invocations', () => {
                   FROM sys_invocation_status
                   LIMIT 50000
                 ) ss
-              WHERE (ss.status = 'completed' AND ss.completion_result = 'failure' AND COALESCE(LOWER(ss.completion_failure), '') NOT IN ('[409] killed', '[409] canceled', '[409] cancelled'))
+              WHERE (ss.status = 'completed' AND ss.completion_result = 'failure' AND COALESCE(LOWER(ss.completion_failure), '') NOT IN ('[409] killed', '[409] canceled', '[409] cancelled', '[409]'))
                 AND ss.scope = 'global'
               ORDER BY ss.modified_at DESC NULLS LAST
               LIMIT 250",

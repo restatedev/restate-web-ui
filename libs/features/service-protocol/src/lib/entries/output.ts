@@ -71,6 +71,18 @@ function outputV1(
   }
 }
 
+function getCompletionResult(invocation?: Invocation) {
+  switch (invocation?.completion_result) {
+    case 'success':
+      return 'Success';
+    case 'failure':
+    case 'killed':
+      return 'Failure';
+    default:
+      return undefined;
+  }
+}
+
 function outputV2(
   entry: JournalRawEntryWithCommandIndex,
   nextEntries: JournalEntryV2[],
@@ -78,13 +90,16 @@ function outputV2(
 ): Extract<JournalEntryV2, { type?: 'Output'; category?: 'command' }> {
   const entryJSON = parseEntryJson(entry.entry_json ?? entry.entry_lite_json);
   const commandIndex = entry.command_index;
+  const isEndMarker = entry.entry_type === 'Command: EndMarker';
 
   const { isRetrying, error, resultType, value, relatedIndexes } =
     getEntryResultV2(
       entry,
       invocation,
       nextEntries,
-      entryJSON?.Command?.Output?.result,
+      isEndMarker
+        ? getCompletionResult(invocation)
+        : entryJSON?.Command?.Output?.result,
     );
 
   return {
@@ -101,7 +116,7 @@ function outputV2(
     isRetrying,
     error: error,
     resultType: resultType,
-    isLoaded: typeof entry.entry_json !== 'undefined',
+    isLoaded: !isEndMarker && typeof entry.entry_json !== 'undefined',
     value: value,
   };
 }
