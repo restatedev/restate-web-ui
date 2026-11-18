@@ -535,6 +535,32 @@ describe('filterJournalRows', () => {
     ).toEqual([1, 21]);
   });
 
+  it('finds a step by the errors recorded before it completed', () => {
+    const retried = getRetriedCommands({
+      [ROOT]: [
+        transientError(5, 1, 'connection reset'),
+        transientError(6, 1, 'connection reset by peer'),
+      ],
+    });
+    const rows = [row(command(1)), row(command(2))];
+
+    const found = filterJournalRows(
+      rows,
+      { problemsOnly: false, query: 'connection reset', pastRetries: retried },
+      new Map(),
+    );
+
+    expect(found.rows).toEqual([rows[0]]);
+    expect(found.matches).toBe(2);
+    expect(
+      filterJournalRows(
+        rows,
+        { problemsOnly: false, query: 'connection reset' },
+        new Map(),
+      ).matches,
+    ).toBe(0);
+  });
+
   it('finds state keys', () => {
     const withState = [
       row(command(1)),

@@ -459,6 +459,7 @@ function buildSearchText(row: CombinedJournalEntry) {
         key?: string;
         promiseName?: string;
         signalName?: string;
+        message?: string;
       })
     | undefined;
   if (!entry) {
@@ -476,6 +477,7 @@ function buildSearchText(row: CombinedJournalEntry) {
     entry.serviceKey,
     entry.handlerName,
     entry.invocationId,
+    entry.message,
     entry.error?.message,
     typeof entry.commandIndex === 'number'
       ? `#${entry.commandIndex}`
@@ -489,11 +491,26 @@ function buildSearchText(row: CombinedJournalEntry) {
 export interface JournalRowFilter {
   problemsOnly: boolean;
   query: string;
+  pastRetries?: ReadonlyMap<string, PastRetries>;
+}
+
+function countRetryMatches(
+  row: CombinedJournalEntry,
+  pastRetries: ReadonlyMap<string, PastRetries> | undefined,
+  query: string,
+) {
+  const retries =
+    query && pastRetries ? getPastRetries(row, pastRetries) : undefined;
+  return (
+    retries?.events.filter((event) =>
+      getRowSearchText({ ...row, entry: event }).includes(query),
+    ).length ?? 0
+  );
 }
 
 export function filterJournalRows(
   rows: CombinedJournalEntry[],
-  { problemsOnly, query }: JournalRowFilter,
+  { problemsOnly, query, pastRetries }: JournalRowFilter,
   kindByRow: Map<number, ProblemKind>,
 ) {
   const groupHasProblems: boolean[] = [];
@@ -543,8 +560,10 @@ export function filterJournalRows(
       lastRowAtDepth.forEach((ancestor) => keep.add(ancestor));
       return;
     }
-    if (isShown && (!query || getRowSearchText(row).includes(query))) {
-      matches += 1;
+    const isMatch = !query || getRowSearchText(row).includes(query);
+    const retryMatches = countRetryMatches(row, pastRetries, query);
+    if (isShown && (isMatch || retryMatches > 0)) {
+      matches += (isMatch ? 1 : 0) + retryMatches;
       lastRowAtDepth.forEach((ancestor) => keep.add(ancestor));
       const key = getRetryKey(row);
       if (key) {

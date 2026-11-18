@@ -170,11 +170,15 @@ export function useJournalProblems({
       isProblemsOnly || query
         ? filterJournalRows(
             rows,
-            { problemsOnly: isProblemsOnly, query },
+            {
+              problemsOnly: isProblemsOnly,
+              query,
+              pastRetries: showErrors ? undefined : retriedCommands,
+            },
             problems.kindByRow,
           )
         : undefined,
-    [isProblemsOnly, query, rows, problems],
+    [isProblemsOnly, query, rows, problems, showErrors, retriedCommands],
   );
   const filteredRows = filtered?.rows ?? rows;
 
