@@ -91,26 +91,37 @@ export function useJournalProblems({
       ),
     [data],
   );
-  const retriedCommands = useMemo(
+  const entriesByInvocation = useMemo(
     () =>
-      enabled
-        ? getRetriedCommands(
-            Object.fromEntries(
-              Object.entries(data).map(([id, value]) => [
-                id,
-                value?.journal?.entries,
-              ]),
-            ),
-          )
-        : NO_RETRIES,
-    [enabled, data],
+      Object.fromEntries(
+        Object.entries(data).map(([id, value]) => [
+          id,
+          value?.journal?.entries,
+        ]),
+      ),
+    [data],
+  );
+  const retriedCommands = useMemo(
+    () => (enabled ? getRetriedCommands(entriesByInvocation) : NO_RETRIES),
+    [enabled, entriesByInvocation],
   );
   const journalProblems = useMemo(
     () =>
       enabled
-        ? findJournalProblems(rows, retriedCommands, completedInvocationIds)
+        ? findJournalProblems(
+            rows,
+            retriedCommands,
+            completedInvocationIds,
+            entriesByInvocation,
+          )
         : undefined,
-    [enabled, rows, retriedCommands, completedInvocationIds],
+    [
+      enabled,
+      rows,
+      retriedCommands,
+      completedInvocationIds,
+      entriesByInvocation,
+    ],
   );
   const problems = useMemo(
     () =>

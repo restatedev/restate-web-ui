@@ -321,6 +321,49 @@ describe('findProblems', () => {
     expect(problems.rowIndexes).toEqual([0]);
   });
 
+  it('leaves retries of hidden steps on those steps', () => {
+    const entriesByInvocation = {
+      [ROOT]: [
+        command(0, { type: 'Input' }),
+        command(1, { type: 'OneWayCall', invocationId: 'inv_child' }),
+        command(2, { name: 'internal' }),
+        transientError(3, 2, 'flaky'),
+      ],
+      inv_child: [
+        command(0, { type: 'Input' }),
+        command(1, { name: 'internal' }),
+        transientError(2, 1, 'flaky'),
+      ],
+    };
+    const retried = getRetriedCommands(entriesByInvocation);
+    const rows = [
+      row(command(1, { type: 'OneWayCall', invocationId: 'inv_child' })),
+    ];
+    const journal = findJournalProblems(
+      rows,
+      retried,
+      nothingCompleted,
+      entriesByInvocation,
+    );
+
+    expect(journal.unmatchedRetryInvocations.size).toBe(0);
+    expect(journal.kindByRow.size).toBe(0);
+  });
+
+  it('gives retries of the input to the invocation', () => {
+    const entriesByInvocation = {
+      [ROOT]: [command(0, { type: 'Input' }), transientError(1, 0, 'bad')],
+    };
+    const journal = findJournalProblems(
+      [],
+      getRetriedCommands(entriesByInvocation),
+      nothingCompleted,
+      entriesByInvocation,
+    );
+
+    expect(journal.unmatchedRetryInvocations.has(ROOT)).toBe(true);
+  });
+
   it('keeps waiting rows out of the count', () => {
     const rows = [row(command(1, { type: 'Sleep', isPending: true }))];
     const { kindByRow, rowIndexes } = findProblems(

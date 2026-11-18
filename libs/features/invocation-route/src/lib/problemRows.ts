@@ -126,10 +126,25 @@ export function getRowProblem(
 
 const NO_CHILD_STATUSES: ChildStatuses = {};
 
+function getCommandIndexes(entries: JournalEntryV2[] = []) {
+  const indexes = new Set<number>();
+  for (const entry of entries) {
+    if (
+      entry.category === 'command' &&
+      entry.type !== 'Input' &&
+      typeof entry.commandIndex === 'number'
+    ) {
+      indexes.add(entry.commandIndex);
+    }
+  }
+  return indexes;
+}
+
 export function findJournalProblems(
   rows: CombinedJournalEntry[],
   retried: ReadonlyMap<string, PastRetries>,
   completedInvocationIds: ReadonlySet<string>,
+  entriesByInvocation?: Record<string, JournalEntryV2[] | undefined>,
 ) {
   const kindByRow = new Map<number, ProblemKind>();
   const childRowIndexes: number[] = [];
@@ -159,11 +174,24 @@ export function findJournalProblems(
   });
   const inheritedRetryRows = new Set<number>();
   const unmatchedRetryInvocations = new Set<string>();
+  const commandIndexesByInvocation = new Map<string, Set<number>>();
   for (const key of retried.keys()) {
     if (matchedRetryKeys.has(key)) {
       continue;
     }
-    const invocationId = key.slice(0, key.lastIndexOf(':'));
+    const separator = key.lastIndexOf(':');
+    const invocationId = key.slice(0, separator);
+    const commandIndex = Number(key.slice(separator + 1));
+    if (entriesByInvocation && Number.isInteger(commandIndex)) {
+      let commandIndexes = commandIndexesByInvocation.get(invocationId);
+      if (!commandIndexes) {
+        commandIndexes = getCommandIndexes(entriesByInvocation[invocationId]);
+        commandIndexesByInvocation.set(invocationId, commandIndexes);
+      }
+      if (commandIndexes.has(commandIndex)) {
+        continue;
+      }
+    }
     unmatchedRetryInvocations.add(invocationId);
     const index = rowByChildId.get(invocationId);
     if (index !== undefined && !kindByRow.has(index)) {
