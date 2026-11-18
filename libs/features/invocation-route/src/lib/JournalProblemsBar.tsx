@@ -276,7 +276,7 @@ function ProblemsSummary({
   const shown = lines.filter(({ count }) => count > 0);
   const note =
     checkProgress?.failure === 'stale'
-      ? "Couldn't refresh some child invocations, trying again"
+      ? "Couldn't refresh some child invocations"
       : checkProgress?.failure
         ? "Some child invocations aren't checked yet, trying again"
         : checkProgress
