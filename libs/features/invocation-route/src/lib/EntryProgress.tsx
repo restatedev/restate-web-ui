@@ -29,6 +29,8 @@ import {
 import {
   scaleTimelinePercent,
   scaleTimelinePercentFromEnd,
+  TIMELINE_ENTRY_DRAW_WINDOW_MARGINS,
+  timelineEntrySpanStyle,
 } from './TimelineScale';
 
 const pointStyles = tv({
@@ -180,6 +182,13 @@ const lineStyles = tv({
   ],
   defaultVariants: { variant: 'info', isAmbiguous: false },
 });
+
+const DASHED_LINE_VARIANTS = new Set<string | undefined>([
+  'default',
+  'idleNeutral',
+  'idleWarning',
+  'idlePending',
+]);
 
 function Line({
   className,
@@ -541,25 +550,31 @@ function InnerEntryProgress({
       entry.category === 'command' &&
       !['running'].includes(String(invocation?.status))
     );
+  const lineVariant = getLineVariant(
+    entry,
+    invocation,
+    targetInvocationStatus,
+    isTargetInvocationStatusPending,
+  );
+  const isLineDashed = !isPoint && DASHED_LINE_VARIANTS.has(lineVariant);
   return (
     <>
       <EntryProgressContainer
         entry={entry}
         className={base({ className })}
         invocation={invocation}
+        hasDashedLine={isLineDashed}
       >
         <div className={segmentContainer({ hasPastRetries })}>
           {isPoint ? (
             <Point variant={getPointVariant(entry)} />
           ) : (
             <Line
-              variant={getLineVariant(
-                entry,
-                invocation,
-                targetInvocationStatus,
-                isTargetInvocationStatusPending,
-              )}
+              variant={lineVariant}
               isAmbiguous={entryCompletionIsAmbiguous}
+              style={
+                isLineDashed ? TIMELINE_ENTRY_DRAW_WINDOW_MARGINS : undefined
+              }
             >
               {isPending && (
                 <div className="absolute inset-0 overflow-hidden rounded-md">
@@ -638,6 +653,7 @@ export function EntryProgressContainer({
   entry,
   invocation,
   isCopiedFromRestart,
+  hasDashedLine,
 }: PropsWithChildren<{
   entry?: JournalEntryV2;
   className?: string;
@@ -646,6 +662,7 @@ export function EntryProgressContainer({
     typeof useGetInvocationJournalWithInvocationV2
   >['data'];
   isCopiedFromRestart?: boolean;
+  hasDashedLine?: boolean;
 }>) {
   const { start, end, dataUpdatedAt } = useJournalTimelineContext();
 
@@ -691,6 +708,12 @@ export function EntryProgressContainer({
           ? '2px'
           : scaleTimelinePercent((relativeEnd || 0) - (relativeStart || 0)),
         zIndex: isPoint ? 2 : 0,
+        ...(hasDashedLine &&
+          !isPoint &&
+          timelineEntrySpanStyle(
+            relativeStart || 0,
+            (relativeEnd || 0) - (relativeStart || 0),
+          )),
         ...style,
       }}
       className={className}
