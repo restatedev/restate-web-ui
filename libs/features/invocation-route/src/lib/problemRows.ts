@@ -126,6 +126,10 @@ export function getRowProblem(
 
 const NO_CHILD_STATUSES: ChildStatuses = {};
 
+function inheritRetry(kind?: ProblemKind): ProblemKind {
+  return kind === undefined || kind === 'waiting' ? 'retried' : kind;
+}
+
 function getCommandIndexes(entries: JournalEntryV2[] = []) {
   const indexes = new Set<number>();
   for (const entry of entries) {
@@ -194,9 +198,9 @@ export function findJournalProblems(
     }
     unmatchedRetryInvocations.add(invocationId);
     const index = rowByChildId.get(invocationId);
-    if (index !== undefined && !kindByRow.has(index)) {
+    if (index !== undefined) {
       inheritedRetryRows.add(index);
-      kindByRow.set(index, 'retried');
+      kindByRow.set(index, inheritRetry(kindByRow.get(index)));
     }
   }
   return {
@@ -249,11 +253,12 @@ export function addChildProblems(
   let failedChildRows: Set<number> | undefined;
   for (const index of indexes) {
     const row = rows[index];
-    const kind =
-      (row
-        ? getRowProblem(row, retried, childStatuses, completedInvocationIds)
-        : undefined) ??
-      (journalProblems.inheritedRetryRows.has(index) ? 'retried' : undefined);
+    const ownKind = row
+      ? getRowProblem(row, retried, childStatuses, completedInvocationIds)
+      : undefined;
+    const kind = journalProblems.inheritedRetryRows.has(index)
+      ? inheritRetry(ownKind)
+      : ownKind;
     if (base.get(index) !== kind) {
       kindByRow ??= new Map(base);
       if (kind) {

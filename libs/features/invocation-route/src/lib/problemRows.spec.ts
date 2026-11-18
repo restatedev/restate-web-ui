@@ -321,6 +321,38 @@ describe('findProblems', () => {
     expect(problems.rowIndexes).toEqual([0]);
   });
 
+  it('flags a waiting call whose child recovered from errors', () => {
+    const retried = getRetriedCommands({
+      inv_child: [
+        {
+          index: 1,
+          category: 'event',
+          type: 'Event: TransientError',
+          message: 'connection reset',
+        } as JournalEntryV2,
+      ],
+    });
+    const rows = [
+      row(
+        command(1, {
+          type: 'Call',
+          invocationId: 'inv_child',
+          isPending: true,
+        }),
+      ),
+      row(command(1, { index: 21 }), { invocationId: 'inv_child', depth: 1 }),
+    ];
+    const problems = findProblems(
+      rows,
+      retried,
+      { inv_child: { status: 'running' } } as never,
+      nothingCompleted,
+    );
+
+    expect(problems.kindByRow.get(0)).toBe('retried');
+    expect(problems.rowIndexes).toEqual([0]);
+  });
+
   it('leaves retries of hidden steps on those steps', () => {
     const entriesByInvocation = {
       [ROOT]: [
