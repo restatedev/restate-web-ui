@@ -146,7 +146,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
           content={
             <span className="break-normal">
               {checkProgress?.isIncomplete
-                ? `Couldn't check ${formatNumber(checkProgress.total - checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations, retrying`
+                ? `Checked ${formatNumber(checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations, retrying the rest`
                 : checkProgress
                   ? `Checking ${formatNumber(checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations`
                   : 'Failed steps, retries, children in trouble and what it waits on'}
@@ -168,7 +168,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
               <>
                 <Icon
                   name={IconName.TriangleAlert}
-                  className="h-3 w-3 text-warning"
+                  className="h-2.5 w-2.5 shrink-0 text-warning-subtle"
                 />
                 <span className="sr-only">Child check incomplete</span>
               </>
