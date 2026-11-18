@@ -33,6 +33,7 @@ import { useFailureRelatedCommandIndex } from '@restate/features-invocation-ui';
 import { Input } from '@restate/features-invocation-ui';
 import { isTargetInvocationEntry } from '@restate/features-invocation-ui';
 import { EntryProgress, timelineBaselineStyles } from './EntryProgress';
+import { TIMELINE_DRAW_WINDOW_INSET } from './TimelineScale';
 import {
   drawsSendTrail,
   getSendInvocationId,
@@ -1457,10 +1458,8 @@ const TimelineContainer = memo(function TimelineContainer({
   return (
     <div className="relative h-9 w-full border-b border-transparent pr-2 pl-2 [&:not(:has(>*+*))]:hidden">
       <div
-        className={timelineBaselineStyles({
-          isHidden: hasSendTrail,
-          className: 'right-0 left-0',
-        })}
+        className={timelineBaselineStyles({ isHidden: hasSendTrail })}
+        style={TIMELINE_DRAW_WINDOW_INSET}
       />
       <EntryProgress
         entry={entry}

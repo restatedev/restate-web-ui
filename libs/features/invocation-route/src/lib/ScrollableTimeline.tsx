@@ -16,7 +16,11 @@ import {
   useTimelineViewportInteractions,
 } from '@restate/ui-timeline-zoom';
 import { HoverTooltip } from '@restate/ui-tooltip';
-import { TimelineScale } from './TimelineScale';
+import {
+  getTimelineDrawWindow,
+  TimelineScale,
+  timelineDrawWindowStyle,
+} from './TimelineScale';
 
 const scrollableTimelineStyles = tv({
   base: 'h-full overflow-x-clip',
@@ -206,6 +210,7 @@ export function ScrollableTimeline({
             ? `${transitionDurationMs}ms`
             : undefined,
           transitionTimingFunction: animateTimeline ? 'linear' : undefined,
+          ...timelineDrawWindowStyle(getTimelineDrawWindow(renderFrame)),
         }}
       >
         <TimelineShading
