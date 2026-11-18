@@ -278,7 +278,7 @@ function ProblemsSummary({
     : checkProgress
       ? 'Still looking for problems in child invocations'
       : checkLimit
-        ? `Checked the newest ${formatNumber(checkLimit.checked)} of ${formatNumber(checkLimit.total)} children, open Problems for the rest`
+        ? `Open Problems to check all ${formatNumber(checkLimit.total)} children`
         : undefined;
   return (
     <span className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-1 break-normal">
@@ -306,7 +306,7 @@ function ProblemsSummary({
         </>
       )}
       {note && (
-        <span className="col-span-3 max-w-[32ch] text-inverse-muted">
+        <span className="col-span-3 whitespace-nowrap text-inverse-muted">
           {note}
         </span>
       )}
