@@ -26,6 +26,7 @@ import { Button } from '@restate/ui-button';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import { useRestateContext } from '@restate/features-restate-context';
 import { ErrorBanner } from '@restate/ui-error';
+import { ServiceCatalogProvider } from '@restate/features-service-target';
 import {
   JournalContextProvider,
   useJournalTimelineContext,
@@ -1170,7 +1171,7 @@ function TimelineEngineJournalBridge({
       isLive={!areAllInvocationsCompleted && isLive}
       detail={detail}
     >
-      {children}
+      <ServiceCatalogProvider>{children}</ServiceCatalogProvider>
     </JournalContextProvider>
   );
 }

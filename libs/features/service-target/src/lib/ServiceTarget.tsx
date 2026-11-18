@@ -455,6 +455,19 @@ export function ServiceTargetContent({
   );
 }
 
+const ServiceCatalogContext = createContext<
+  ReturnType<typeof useServiceCatalog>['data'] | null
+>(null);
+
+export function ServiceCatalogProvider({ children }: PropsWithChildren) {
+  const { data } = useServiceCatalog();
+  return (
+    <ServiceCatalogContext.Provider value={data}>
+      {children}
+    </ServiceCatalogContext.Provider>
+  );
+}
+
 function CatalogServiceTarget(
   props: PropsWithChildren<Omit<ServiceTargetProps, 'serviceType'>>,
 ) {
@@ -471,11 +484,16 @@ function DefaultServiceTarget({
   serviceType,
   ...props
 }: PropsWithChildren<ServiceTargetProps>) {
-  return serviceType ? (
-    <ServiceTargetContent {...props} serviceType={serviceType} />
-  ) : (
-    <CatalogServiceTarget {...props} />
-  );
+  const catalog = useContext(ServiceCatalogContext);
+  if (serviceType || catalog) {
+    return (
+      <ServiceTargetContent
+        {...props}
+        serviceType={serviceType ?? catalog?.get(props.service)?.ty}
+      />
+    );
+  }
+  return <CatalogServiceTarget {...props} />;
 }
 
 // Tenant view overrides the renderer here, avoiding changes to tables, journals, and popovers.
