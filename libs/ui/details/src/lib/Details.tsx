@@ -40,7 +40,7 @@ export function Details({
         open={open}
       >
         {summary}
-        <div className="-m-1 rounded-b-xl border-t bg-subtle px-4 py-6 group-has-[+details]:rounded-b-none">
+        <div className="-m-1 rounded-b-xl border-t bg-subtle px-4 py-6 [:where(.group):has(+details)_&]:rounded-b-none">
           {detailChildren}
         </div>
       </details>
