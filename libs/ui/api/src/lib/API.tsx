@@ -12,9 +12,11 @@ type ElementsApiElement = HTMLElement & {
 };
 
 let elementsLoading: Promise<void> | undefined;
+let stylesheetLoading: Promise<void> | undefined;
+let scriptLoading: Promise<void> | undefined;
 
-function injectStylesheet() {
-  return new Promise<void>((resolve, reject) => {
+function loadStylesheet() {
+  stylesheetLoading ??= new Promise<void>((resolve, reject) => {
     if (document.querySelector(`link[href="${elementsCssUrl}"]`)) {
       resolve();
       return;
@@ -25,14 +27,16 @@ function injectStylesheet() {
     stylesheet.onload = () => resolve();
     stylesheet.onerror = () => {
       stylesheet.remove();
+      stylesheetLoading = undefined;
       reject(new Error('Failed to load Stoplight Elements styles'));
     };
     document.head.append(stylesheet);
   });
+  return stylesheetLoading;
 }
 
-function injectScript() {
-  return new Promise<void>((resolve, reject) => {
+function loadScript() {
+  scriptLoading ??= new Promise<void>((resolve, reject) => {
     if (
       customElements.get(API_TAG) ||
       document.querySelector(`script[src="${elementsJsUrl}"]`)
@@ -43,27 +47,29 @@ function injectScript() {
     const script = document.createElement('script');
     script.src = elementsJsUrl;
     script.async = true;
+    const fail = (message: string) => {
+      script.remove();
+      scriptLoading = undefined;
+      reject(new Error(message));
+    };
     script.onload = () => {
       if (customElements.get(API_TAG)) {
         resolve();
         return;
       }
-      script.remove();
-      reject(new Error('Stoplight Elements did not define its elements'));
+      fail('Stoplight Elements did not define its elements');
     };
-    script.onerror = () => {
-      script.remove();
-      reject(new Error('Failed to load Stoplight Elements'));
-    };
+    script.onerror = () => fail('Failed to load Stoplight Elements');
     document.head.append(script);
   });
+  return scriptLoading;
 }
 
 let elementsReady = false;
 const readyListeners = new Set<() => void>();
 
 function loadElements() {
-  elementsLoading ??= Promise.all([injectStylesheet(), injectScript()]).then(
+  elementsLoading ??= Promise.all([loadStylesheet(), loadScript()]).then(
     async () => {
       await Promise.all([
         customElements.whenDefined(API_TAG),
