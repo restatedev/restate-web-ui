@@ -23,6 +23,7 @@ import {
   getProblemTone,
   getRetriedCommands,
   getRetryKey,
+  getPausedCommands,
   getProblemStats,
   getRecoveredRows,
   insertRetryRows,
@@ -107,6 +108,16 @@ export function useJournalProblems({
     () => (enabled ? getRetriedCommands(entriesByInvocation) : NO_RETRIES),
     [enabled, entriesByInvocation],
   );
+  const pausedCommands = useMemo(
+    () =>
+      enabled
+        ? getPausedCommands(
+            entriesByInvocation,
+            (id) => data[id]?.status === 'paused',
+          )
+        : undefined,
+    [enabled, entriesByInvocation, data],
+  );
   const journalProblems = useMemo(
     () =>
       enabled
@@ -115,6 +126,7 @@ export function useJournalProblems({
             retriedCommands,
             completedInvocationIds,
             entriesByInvocation,
+            pausedCommands,
           )
         : undefined,
     [
@@ -123,6 +135,7 @@ export function useJournalProblems({
       retriedCommands,
       completedInvocationIds,
       entriesByInvocation,
+      pausedCommands,
     ],
   );
   const problems = useMemo(

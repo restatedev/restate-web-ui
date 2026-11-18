@@ -245,6 +245,12 @@ function ProblemsSummary({
       tone: 'warning',
     },
     {
+      count: stats.paused,
+      one: 'paused step',
+      many: 'paused steps',
+      tone: 'warning',
+    },
+    {
       count: stats.recovered,
       one: 'recovered step',
       many: 'recovered steps',
@@ -284,7 +290,7 @@ function ProblemsSummary({
             className={summaryMarkStyles({ tone: 'warning' })}
           />
           <span className="col-span-2 whitespace-nowrap">
-            Input errors, invocation {stats.stuckInputStatus.replace('-', ' ')}
+            Invocation {stats.stuckInputStatus.replace('-', ' ')} after errors
           </span>
         </>
       )}

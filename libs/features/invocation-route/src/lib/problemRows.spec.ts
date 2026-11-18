@@ -7,6 +7,7 @@ import {
   getChildIdsToCheck,
   getInvocationRetryKey,
   getPastRetries,
+  getPausedCommands,
   getProblemStats,
   getRecoveredRows,
   getRetriedCommands,
@@ -43,6 +44,19 @@ function transientError(
     type: 'Event: TransientError',
     relatedCommandIndex,
     message,
+  } as JournalEntryV2;
+}
+
+function pausedEvent(
+  index: number,
+  relatedCommandIndex?: number,
+): JournalEntryV2 {
+  return {
+    index,
+    category: 'event',
+    type: 'Event: Paused',
+    message: 'config is missing',
+    ...(relatedCommandIndex === undefined ? {} : { relatedCommandIndex }),
   } as JournalEntryV2;
 }
 
@@ -464,6 +478,7 @@ describe('getProblemStats', () => {
       backingOffChildren: 0,
       pausedChildren: 1,
       retrying: 1,
+      paused: 0,
       recovered: 1,
       waiting: 1,
     });
@@ -494,6 +509,65 @@ describe('getProblemStats', () => {
     expect([
       ...getRecoveredRows(journal.kindByRow, rows, journal.inheritedRetryRows),
     ]).toEqual([0]);
+  });
+});
+
+describe('paused invocations', () => {
+  function classify(entries: JournalEntryV2[], isPausedNow: boolean) {
+    const entriesByInvocation = { [ROOT]: entries };
+    const retried = getRetriedCommands(entriesByInvocation);
+    const rows = entries
+      .filter((entry) => entry.category === 'command' && entry.type !== 'Input')
+      .map((entry) => row(entry));
+    const journal = findJournalProblems(
+      rows,
+      retried,
+      nothingCompleted,
+      entriesByInvocation,
+      getPausedCommands(entriesByInvocation, () => isPausedNow),
+    );
+    return {
+      journal,
+      problems: addChildProblems(
+        journal,
+        rows,
+        retried,
+        noChildren,
+        nothingCompleted,
+      ),
+      rows,
+    };
+  }
+
+  it('flags the step it paused on, even without recorded retries', () => {
+    const { problems } = classify(
+      [command(1), command(2, { isPending: true }), pausedEvent(3, 2)],
+      true,
+    );
+
+    expect(problems.kindByRow.get(1)).toBe('paused');
+    expect(problems.rowIndexes).toEqual([1]);
+  });
+
+  it('gives a pause before the first step to the invocation', () => {
+    const { journal } = classify(
+      [command(0, { type: 'Input' }), pausedEvent(1)],
+      true,
+    );
+
+    expect(journal.unmatchedRetryInvocations.has(ROOT)).toBe(true);
+  });
+
+  it('keeps an earlier pause as history once the invocation resumed', () => {
+    const { journal, problems, rows } = classify(
+      [command(1), command(2), pausedEvent(3, 2)],
+      false,
+    );
+
+    expect(problems.kindByRow.get(1)).toBe('retried');
+    expect([
+      ...getRecoveredRows(problems.kindByRow, rows, journal.inheritedRetryRows),
+    ]).toEqual([1]);
   });
 });
 

@@ -8,7 +8,12 @@ import type { CombinedJournalEntry } from './useProcessedJournal';
 export const SHOW_PARAM = 'show';
 export const SHOW_PROBLEMS = 'problems';
 
-export type ProblemKind = 'failed' | 'retried' | 'children' | 'waiting';
+export type ProblemKind =
+  | 'failed'
+  | 'retried'
+  | 'paused'
+  | 'children'
+  | 'waiting';
 
 export type ChildStatuses = Record<
   string,
@@ -62,6 +67,30 @@ export function getRetriedCommands(
     }
   }
   return retried;
+}
+
+export function getPausedCommands(
+  entriesByInvocation: Record<string, JournalEntryV2[] | undefined>,
+  isPausedNow: (invocationId: string) => boolean,
+) {
+  const paused = new Map<string, boolean>();
+  for (const [invocationId, entries] of Object.entries(entriesByInvocation)) {
+    let lastKey: string | undefined;
+    for (const entry of entries ?? []) {
+      if (entry.type === 'Event: Paused') {
+        lastKey =
+          'relatedCommandIndex' in entry &&
+          typeof entry.relatedCommandIndex === 'number'
+            ? `${invocationId}:${entry.relatedCommandIndex}`
+            : getInvocationRetryKey(invocationId);
+        paused.set(lastKey, false);
+      }
+    }
+    if (lastKey && isPausedNow(invocationId)) {
+      paused.set(lastKey, true);
+    }
+  }
+  return paused;
 }
 
 export function getInvocationRetryKey(invocationId: string) {
@@ -149,21 +178,26 @@ export function findJournalProblems(
   retried: ReadonlyMap<string, PastRetries>,
   completedInvocationIds: ReadonlySet<string>,
   entriesByInvocation?: Record<string, JournalEntryV2[] | undefined>,
+  pausedCommands?: ReadonlyMap<string, boolean>,
 ) {
   const kindByRow = new Map<number, ProblemKind>();
   const childRowIndexes: number[] = [];
   const matchedRetryKeys = new Set<string>();
   const rowByChildId = new Map<string, number>();
+  const rowByPausedKey = new Map<string, number>();
   rows.forEach((row, index) => {
     const { entry } = row;
     if (isTargetInvocationEntry(entry) && entry.invocationId) {
       childRowIndexes.push(index);
       rowByChildId.set(entry.invocationId, index);
     }
-    if (retried.size > 0) {
+    if (retried.size > 0 || pausedCommands?.size) {
       const key = getRetryKey(row);
       if (key && retried.has(key)) {
         matchedRetryKeys.add(key);
+      }
+      if (key && pausedCommands?.has(key)) {
+        rowByPausedKey.set(key, index);
       }
     }
     const kind = getRowProblem(
@@ -178,36 +212,64 @@ export function findJournalProblems(
   });
   const inheritedRetryRows = new Set<number>();
   const unmatchedRetryInvocations = new Set<string>();
+  const pausedRows = new Set<number>();
   const commandIndexesByInvocation = new Map<string, Set<number>>();
-  for (const key of retried.keys()) {
-    if (matchedRetryKeys.has(key)) {
-      continue;
+  const isJournalCommand = (invocationId: string, commandIndex: number) => {
+    if (!entriesByInvocation || !Number.isInteger(commandIndex)) {
+      return false;
     }
-    const separator = key.lastIndexOf(':');
-    const invocationId = key.slice(0, separator);
-    const commandIndex = Number(key.slice(separator + 1));
-    if (entriesByInvocation && Number.isInteger(commandIndex)) {
-      let commandIndexes = commandIndexesByInvocation.get(invocationId);
-      if (!commandIndexes) {
-        commandIndexes = getCommandIndexes(entriesByInvocation[invocationId]);
-        commandIndexesByInvocation.set(invocationId, commandIndexes);
-      }
-      if (commandIndexes.has(commandIndex)) {
-        continue;
-      }
+    let commandIndexes = commandIndexesByInvocation.get(invocationId);
+    if (!commandIndexes) {
+      commandIndexes = getCommandIndexes(entriesByInvocation[invocationId]);
+      commandIndexesByInvocation.set(invocationId, commandIndexes);
     }
+    return commandIndexes.has(commandIndex);
+  };
+  const giveToInvocation = (invocationId: string) => {
     unmatchedRetryInvocations.add(invocationId);
     const index = rowByChildId.get(invocationId);
     if (index !== undefined) {
       inheritedRetryRows.add(index);
       kindByRow.set(index, inheritRetry(kindByRow.get(index)));
     }
+  };
+  for (const key of retried.keys()) {
+    if (matchedRetryKeys.has(key)) {
+      continue;
+    }
+    const separator = key.lastIndexOf(':');
+    const invocationId = key.slice(0, separator);
+    if (!isJournalCommand(invocationId, Number(key.slice(separator + 1)))) {
+      giveToInvocation(invocationId);
+    }
   }
+  pausedCommands?.forEach((isPausedNow, key) => {
+    const index = rowByPausedKey.get(key);
+    if (index !== undefined) {
+      if (!isPausedNow) {
+        inheritedRetryRows.add(index);
+        kindByRow.set(index, inheritRetry(kindByRow.get(index)));
+      } else if (kindByRow.get(index) !== 'failed') {
+        pausedRows.add(index);
+        kindByRow.set(index, 'paused');
+      }
+      return;
+    }
+    const separator = key.lastIndexOf(':');
+    const invocationId = key.slice(0, separator);
+    if (
+      isPausedNow ||
+      !isJournalCommand(invocationId, Number(key.slice(separator + 1)))
+    ) {
+      giveToInvocation(invocationId);
+    }
+  });
   return {
     kindByRow,
     childRowIndexes,
     inheritedRetryRows,
     unmatchedRetryInvocations,
+    pausedRows,
   };
 }
 
@@ -256,9 +318,12 @@ export function addChildProblems(
     const ownKind = row
       ? getRowProblem(row, retried, childStatuses, completedInvocationIds)
       : undefined;
-    const kind = journalProblems.inheritedRetryRows.has(index)
-      ? inheritRetry(ownKind)
-      : ownKind;
+    const kind =
+      journalProblems.pausedRows.has(index) && ownKind !== 'failed'
+        ? 'paused'
+        : journalProblems.inheritedRetryRows.has(index)
+          ? inheritRetry(ownKind)
+          : ownKind;
     if (base.get(index) !== kind) {
       kindByRow ??= new Map(base);
       if (kind) {
@@ -338,6 +403,7 @@ export interface ProblemStats {
   backingOffChildren: number;
   pausedChildren: number;
   retrying: number;
+  paused: number;
   recovered: number;
   waiting: number;
   stuckInputStatus?: string;
@@ -375,6 +441,7 @@ export function getProblemStats(
     backingOffChildren: 0,
     pausedChildren: 0,
     retrying: 0,
+    paused: 0,
     recovered: 0,
     waiting: 0,
   };
@@ -383,6 +450,8 @@ export function getProblemStats(
       stats.failed += 1;
     } else if (kind === 'waiting') {
       stats.waiting += 1;
+    } else if (kind === 'paused') {
+      stats.paused += 1;
     } else if (kind === 'retried') {
       if (recoveredRows.has(index)) {
         stats.recovered += 1;
@@ -416,6 +485,7 @@ export function getProblemTone(
     case 'failed':
       return 'danger';
     case 'retried':
+    case 'paused':
       return 'warning';
     case 'waiting':
       return 'info';
