@@ -10,7 +10,10 @@ import {
 const MIN_OVERSCAN = 24;
 const SCROLL_AHEAD = 100;
 const IDLE_BUFFER = 600;
-const STEP = 25;
+const MOUNTS_ACROSS_FRAMES =
+  typeof CSS !== 'undefined' && CSS.supports('-moz-appearance', 'none');
+const STEP = MOUNTS_ACROSS_FRAMES ? 5 : 25;
+const MAX_GROWTH = MOUNTS_ACROSS_FRAMES ? 20 : Infinity;
 const IDLE_STEP = 50;
 const MAX_ROWS = 2 * IDLE_BUFFER + 100;
 const IDLE_STEP_DELAY_MS = 30;
@@ -82,11 +85,19 @@ export function useRenderWindow(): RenderWindowHandle {
         end = Math.min(last, range.endIndex + MIN_OVERSCAN);
       } else {
         if (neededStart < start) {
-          start = Math.max(0, neededStart - STEP);
+          start = Math.max(
+            0,
+            neededStart - STEP,
+            Math.min(range.startIndex - MIN_OVERSCAN, start - MAX_GROWTH),
+          );
           end = Math.min(end, start + MAX_ROWS - 1);
         }
         if (neededEnd > end) {
-          end = Math.min(last, neededEnd + STEP);
+          end = Math.min(
+            last,
+            neededEnd + STEP,
+            Math.max(range.endIndex + MIN_OVERSCAN, end + MAX_GROWTH),
+          );
           start = Math.max(start, end - MAX_ROWS + 1);
         }
       }
