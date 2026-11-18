@@ -21,15 +21,15 @@ function stateVersionInternal(
     value: string;
   }[],
 ) {
-  const kvs = [...state]
-    .sort((a, b) => a.name.localeCompare(b.name))
+  const kvs = state
     .map(
       ({ name, value }) =>
         [new TextEncoder().encode(name), base64ToUint8Array(value)] as [
           Uint8Array,
           Uint8Array,
         ],
-    );
+    )
+    .sort(([a], [b]) => compareBytes(a, b));
 
   const chunks: Uint8Array[] = [];
 
@@ -51,6 +51,19 @@ function stateVersionInternal(
   // TODO: remove third party lib
   const hash = sha256.arrayBuffer(mergeUint8Arrays(chunks));
   return bufferToUrlSafe(hash);
+}
+
+// Mirrors the server's StateMutationVersion::from_user_state, which sorts keys by their raw bytes:
+// https://github.com/restatedev/restate/blob/c4f3d335e6443e18dee847bb3e3b26bf42c2d280/crates/types/src/state_mut.rs#L128-L144
+function compareBytes(a: Uint8Array, b: Uint8Array) {
+  const length = Math.min(a.length, b.length);
+  for (let i = 0; i < length; i++) {
+    const difference = (a[i] ?? 0) - (b[i] ?? 0);
+    if (difference !== 0) {
+      return difference;
+    }
+  }
+  return a.length - b.length;
 }
 
 function bufferToUrlSafe(buffer: ArrayBuffer) {

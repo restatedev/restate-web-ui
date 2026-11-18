@@ -25,6 +25,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { waitForStateUpdate } from './waitForStateUpdate';
 
 function isValidJSON(value: unknown) {
   try {
@@ -185,7 +186,9 @@ export function useEditState(
         },
         { client: queryClient, meta },
       ).then(async () => {
-        const { data } = await query.refetch();
+        const data = variables.partial
+          ? await waitForStateUpdate(query.refetch, version, encodedVariables)
+          : (await query.refetch()).data;
 
         return data?.state;
       });
