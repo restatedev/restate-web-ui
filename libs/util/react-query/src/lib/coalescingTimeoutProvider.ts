@@ -7,12 +7,13 @@ import type {
 export const TIMEOUT_BUCKET_MS = 1000;
 
 type Bucket = {
+  at: number;
   timer: ReturnType<typeof setTimeout>;
   callbacks: Map<number, TimeoutCallback>;
 };
 
 const buckets = new Map<number, Bucket>();
-const bucketByTimeoutId = new Map<number, number>();
+const bucketByTimeoutId = new Map<number, Bucket>();
 let lastTimeoutId = 0;
 
 function runBucket(at: number) {
@@ -49,6 +50,7 @@ export const coalescingTimeoutProvider: TimeoutProvider = {
     let bucket = buckets.get(at);
     if (!bucket) {
       bucket = {
+        at,
         timer: setTimeout(() => runBucket(at), at - now),
         callbacks: new Map(),
       };
@@ -56,7 +58,7 @@ export const coalescingTimeoutProvider: TimeoutProvider = {
     }
     const timeoutId = --lastTimeoutId;
     bucket.callbacks.set(timeoutId, callback);
-    bucketByTimeoutId.set(timeoutId, at);
+    bucketByTimeoutId.set(timeoutId, bucket);
     return timeoutId;
   },
   clearTimeout: (timeoutId) => {
@@ -64,19 +66,15 @@ export const coalescingTimeoutProvider: TimeoutProvider = {
       clearTimeout(timeoutId as Parameters<typeof clearTimeout>[0]);
       return;
     }
-    const at = bucketByTimeoutId.get(timeoutId);
-    if (at === undefined) {
-      return;
-    }
-    bucketByTimeoutId.delete(timeoutId);
-    const bucket = buckets.get(at);
+    const bucket = bucketByTimeoutId.get(timeoutId);
     if (!bucket) {
       return;
     }
+    bucketByTimeoutId.delete(timeoutId);
     bucket.callbacks.delete(timeoutId);
-    if (bucket.callbacks.size === 0) {
+    if (bucket.callbacks.size === 0 && buckets.get(bucket.at) === bucket) {
       clearTimeout(bucket.timer);
-      buckets.delete(at);
+      buckets.delete(bucket.at);
     }
   },
   setInterval: (callback, delay) =>

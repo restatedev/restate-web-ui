@@ -48,6 +48,20 @@ describe('coalescingTimeoutProvider', () => {
     expect(cleared).not.toHaveBeenCalled();
   });
 
+  it('skips a timeout that an earlier callback of its bucket clears', () => {
+    const cleared = vi.fn();
+    const clearing = vi.fn();
+    coalescingTimeoutProvider.setTimeout(clearing, 1_500);
+    const id = coalescingTimeoutProvider.setTimeout(cleared, 1_500);
+    clearing.mockImplementation(() =>
+      coalescingTimeoutProvider.clearTimeout(id),
+    );
+
+    vi.advanceTimersByTime(TIMEOUT_BUCKET_MS * 2);
+
+    expect(cleared).not.toHaveBeenCalled();
+  });
+
   it('cancels the bucket timer once its last timeout is cleared', () => {
     const id = coalescingTimeoutProvider.setTimeout(vi.fn(), 3_000);
 
