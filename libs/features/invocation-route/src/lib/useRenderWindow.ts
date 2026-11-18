@@ -116,10 +116,11 @@ export function useRenderWindow(): RenderWindowHandle {
 function getNextIdleBounds(
   visible: Bounds & { count: number },
   current: Bounds,
+  buffer: number,
 ): Bounds | undefined {
   const last = visible.count - 1;
-  const targetStart = Math.max(0, visible.start - IDLE_BUFFER);
-  const targetEnd = Math.min(last, visible.end + IDLE_BUFFER);
+  const targetStart = Math.max(0, visible.start - buffer);
+  const targetEnd = Math.min(last, visible.end + buffer);
   const before = visible.start - current.start;
   const after = current.end - visible.end;
 
@@ -151,10 +152,16 @@ export function useGrowRenderWindowWhenIdle(
   { visibleRef, windowRef, setTarget }: RenderWindowHandle,
   isScrolling: boolean,
   count: number,
+  isLive: boolean,
 ) {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
+    if (count === 0) {
+      visibleRef.current = null;
+      windowRef.current = null;
+      return;
+    }
     if (isScrolling) {
       return;
     }
@@ -166,7 +173,11 @@ export function useGrowRenderWindowWhenIdle(
         timeout = setTimeout(grow, NOT_READY_RETRY_MS);
         return;
       }
-      const next = getNextIdleBounds(visible, current);
+      const next = getNextIdleBounds(
+        visible,
+        current,
+        isLive ? 0 : IDLE_BUFFER,
+      );
       if (next) {
         startTransition(() => {
           setTarget({ ...next, fromVersion: current.version });
@@ -176,5 +187,5 @@ export function useGrowRenderWindowWhenIdle(
     };
     timeout = setTimeout(grow, IDLE_STEP_DELAY_MS);
     return () => clearTimeout(timeout);
-  }, [isScrolling, step, count, visibleRef, windowRef, setTarget]);
+  }, [isScrolling, isLive, step, count, visibleRef, windowRef, setTarget]);
 }

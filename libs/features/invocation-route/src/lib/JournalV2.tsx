@@ -461,6 +461,7 @@ export function JournalV2({
     renderWindow,
     virtualizer.isScrolling,
     entriesWithoutInput.length,
+    isLive && !areAllInvocationsCompleted,
   );
   const totalSize = virtualizer.getTotalSize();
   const virtualItems = virtualizer.getVirtualItems();
