@@ -80,8 +80,6 @@ import {
   CommandPaletteProvider,
   CommandPaletteTrigger,
 } from '@restate/features-command-palette';
-import { MonacoWarmup } from '@restate/ui-editor';
-import { elementsCssUrl, elementsJsUrl } from '@restate/ui-api/assets';
 import { PRESERVED_QUERY_PARAMS } from '@restate/util-panel';
 import {
   useWorktreeFavicon,
@@ -99,10 +97,6 @@ if (import.meta.env.DEV) {
 }
 
 export const links: LinksFunction = () => [
-  {
-    rel: 'stylesheet',
-    href: elementsCssUrl,
-  },
   {
     rel: 'stylesheet',
     href: '/ui/font/inter.css',
@@ -237,7 +231,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </RouterProvider>
         <ScrollRestoration />
         <Scripts />
-        <script src={elementsJsUrl} async defer></script>
       </body>
     </html>
   );
@@ -514,7 +507,6 @@ function AppContent() {
                     <RegisterDeploymentDialog />
                     <UpdateDeploymentDialog />
                     <CreateRuleDialog />
-                    <MonacoWarmup />
                   </CommandPaletteProvider>
                 </EditState>
               </BatchOperationsProvider>

@@ -1,4 +1,4 @@
-import { JsonSchemaViewer } from '@restate/ui-api';
+import { JsonSchemaViewer, preloadElements } from '@restate/ui-api';
 import type { JsonSchema } from '@restate/util-openapi';
 import { useIsFeatureFlagEnabled } from '@restate/util-feature-flag';
 import { Badge } from '@restate/ui-badge';
@@ -59,12 +59,14 @@ function HandlerInputOutputPopoverShell({
   triggerLabel,
   title,
   renderHeaderAction,
+  onIntent,
   children,
 }: {
   className?: string;
   triggerLabel: string;
   title: string;
   renderHeaderAction?: (close: () => void) => ReactNode;
+  onIntent?: () => void;
   children: ReactNode;
 }) {
   const { base, value } = inputOutputStyles({
@@ -73,7 +75,7 @@ function HandlerInputOutputPopoverShell({
 
   return (
     <div className={base({ className })}>
-      <span className={value()}>
+      <span className={value()} onPointerEnter={onIntent} onFocus={onIntent}>
         <Popover>
           <PopoverTrigger>
             <Button
@@ -177,6 +179,7 @@ export function HandlerInputOutput({
   label: HandlerInputOutputLabel;
   renderHeaderAction?: (close: () => void) => ReactNode;
 }) {
+  const isNewPlayground = useIsFeatureFlagEnabled('FEATURE_NEW_PLAYGROUND');
   const view: HandlerInputOutputView = getHandlerInputOutputView({
     jsonSchema,
     contentType,
@@ -195,6 +198,7 @@ export function HandlerInputOutput({
           triggerLabel={view.triggerLabel}
           title={view.title}
           renderHeaderAction={renderHeaderAction}
+          onIntent={isNewPlayground ? undefined : preloadElements}
         >
           <HandlerInputOutputJsonSchemaPopoverContent
             schema={view.jsonSchema}
