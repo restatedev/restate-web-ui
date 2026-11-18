@@ -18,7 +18,7 @@ const MonacoEditor = lazy(() =>
 );
 
 export function preloadEditor() {
-  void loadMonacoEditor();
+  loadMonacoEditor().catch(() => undefined);
 }
 
 export function Editor({

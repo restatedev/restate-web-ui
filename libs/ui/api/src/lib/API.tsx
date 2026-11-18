@@ -1,4 +1,5 @@
-import { createElement, useEffect, useId, useRef, useState } from 'react';
+import { createElement, useCallback, useEffect, useId, useState } from 'react';
+import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { tv } from '@restate/util-styles';
 import { elementsCssUrl, elementsJsUrl } from '../assets';
@@ -12,39 +13,68 @@ type ElementsApiElement = HTMLElement & {
 
 let elementsLoading: Promise<void> | undefined;
 
-function loadElements() {
-  if (customElements.get(API_TAG)) {
-    return Promise.resolve();
-  }
-  elementsLoading ??= new Promise<void>((resolve, reject) => {
-    const styled = new Promise<void>((resolveStyle) => {
-      if (document.querySelector(`link[href="${elementsCssUrl}"]`)) {
-        resolveStyle();
+function injectStylesheet() {
+  return new Promise<void>((resolve, reject) => {
+    if (document.querySelector(`link[href="${elementsCssUrl}"]`)) {
+      resolve();
+      return;
+    }
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = elementsCssUrl;
+    stylesheet.onload = () => resolve();
+    stylesheet.onerror = () => {
+      stylesheet.remove();
+      reject(new Error('Failed to load Stoplight Elements styles'));
+    };
+    document.head.append(stylesheet);
+  });
+}
+
+function injectScript() {
+  return new Promise<void>((resolve, reject) => {
+    if (
+      customElements.get(API_TAG) ||
+      document.querySelector(`script[src="${elementsJsUrl}"]`)
+    ) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = elementsJsUrl;
+    script.async = true;
+    script.onload = () => {
+      if (customElements.get(API_TAG)) {
+        resolve();
         return;
       }
-      const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet';
-      stylesheet.href = elementsCssUrl;
-      stylesheet.onload = () => resolveStyle();
-      stylesheet.onerror = () => resolveStyle();
-      document.head.append(stylesheet);
-    });
-    if (!document.querySelector(`script[src="${elementsJsUrl}"]`)) {
-      const script = document.createElement('script');
-      script.src = elementsJsUrl;
-      script.async = true;
-      script.onerror = () => {
-        script.remove();
-        elementsLoading = undefined;
-        reject(new Error('Failed to load Stoplight Elements'));
-      };
-      document.head.append(script);
-    }
-    Promise.all([styled, customElements.whenDefined(API_TAG)]).then(() =>
-      resolve(),
-    );
+      script.remove();
+      reject(new Error('Stoplight Elements did not define its elements'));
+    };
+    script.onerror = () => {
+      script.remove();
+      reject(new Error('Failed to load Stoplight Elements'));
+    };
+    document.head.append(script);
   });
+}
+
+function loadElements() {
+  elementsLoading ??= Promise.all([injectStylesheet(), injectScript()]).then(
+    () => customElements.whenDefined(API_TAG).then(() => undefined),
+    (error: unknown) => {
+      elementsLoading = undefined;
+      throw error;
+    },
+  );
   return elementsLoading;
+}
+
+export function preloadElements() {
+  if (typeof document === 'undefined') {
+    return;
+  }
+  loadElements().catch(() => undefined);
 }
 
 function useElements(tagName: string) {
@@ -80,14 +110,45 @@ function useElements(tagName: string) {
   return { isDefined, hasFailed };
 }
 
-function ElementsLoading({ hasFailed }: { hasFailed: boolean }) {
+const loadingStyles = tv({
+  slots: {
+    base: 'flex items-center gap-1.5 py-2 text-sm text-muted',
+    icon: 'h-4 w-4',
+  },
+  variants: {
+    fill: {
+      true: {
+        base: 'h-full w-full justify-center gap-2.5 py-12',
+        icon: 'h-5 w-5',
+      },
+    },
+    hasFailed: {
+      true: {
+        base: 'text-danger',
+        icon: 'h-3.5 w-3.5',
+      },
+    },
+  },
+});
+
+function ElementsLoading({
+  hasFailed,
+  fill = false,
+}: {
+  hasFailed: boolean;
+  fill?: boolean;
+}) {
+  const { base, icon } = loadingStyles({ fill, hasFailed });
   return (
-    <div className="flex items-center gap-1.5 py-2 text-sm text-muted">
+    <div className={base()}>
       {hasFailed ? (
-        'Failed to load'
+        <>
+          <Icon name={IconName.TriangleAlert} className={icon()} />
+          Failed to load
+        </>
       ) : (
         <>
-          <Spinner className="h-4 w-4" />
+          <Spinner className={icon()} />
           Loading…
         </>
       )}
@@ -105,25 +166,24 @@ export const API = ({
   tryItFetcher?: typeof globalThis.fetch;
 }) => {
   const id = useId();
-  const apiRef = useRef<ElementsApiElement>(null);
   const { isDefined, hasFailed } = useElements(API_TAG);
-
-  useEffect(() => {
-    const element = apiRef.current;
-    if (!element) {
-      return;
-    }
-    element.tryItFetcher = tryItFetcher;
-
-    return () => {
-      if (element.tryItFetcher === tryItFetcher) {
-        element.tryItFetcher = undefined;
+  const apiRef = useCallback(
+    (element: ElementsApiElement | null) => {
+      if (!element) {
+        return;
       }
-    };
-  }, [tryItFetcher, isDefined]);
+      element.tryItFetcher = tryItFetcher;
+      return () => {
+        if (element.tryItFetcher === tryItFetcher) {
+          element.tryItFetcher = undefined;
+        }
+      };
+    },
+    [tryItFetcher],
+  );
 
   if (!isDefined) {
-    return <ElementsLoading hasFailed={hasFailed} />;
+    return <ElementsLoading hasFailed={hasFailed} fill />;
   }
 
   return createElement(API_TAG, {
