@@ -56,8 +56,13 @@ function pausedEvent(
     category: 'event',
     type: 'Event: Paused',
     message: 'config is missing',
+    error: { message: 'config is missing' },
     ...(relatedCommandIndex === undefined ? {} : { relatedCommandIndex }),
   } as JournalEntryV2;
+}
+
+function manualPause(index: number): JournalEntryV2 {
+  return { index, category: 'event', type: 'Event: Paused' } as JournalEntryV2;
 }
 
 function row(
@@ -556,6 +561,25 @@ describe('paused invocations', () => {
     );
 
     expect(journal.unmatchedRetryInvocations.has(ROOT)).toBe(true);
+  });
+
+  it('ignores a manual pause', () => {
+    const { journal, problems } = classify(
+      [command(1), command(2), manualPause(3)],
+      true,
+    );
+
+    expect(problems.rowIndexes).toEqual([]);
+    expect(journal.unmatchedRetryInvocations.size).toBe(0);
+  });
+
+  it('keeps an error pause as history when a manual pause came later', () => {
+    const { problems } = classify(
+      [command(1), command(2), pausedEvent(3, 2), manualPause(4)],
+      true,
+    );
+
+    expect(problems.kindByRow.get(1)).toBe('retried');
   });
 
   it('keeps an earlier pause as history once the invocation resumed', () => {

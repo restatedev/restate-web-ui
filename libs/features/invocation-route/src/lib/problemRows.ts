@@ -78,6 +78,10 @@ export function getPausedCommands(
     let lastKey: string | undefined;
     for (const entry of entries ?? []) {
       if (entry.type === 'Event: Paused') {
+        if (!entry.error) {
+          lastKey = undefined;
+          continue;
+        }
         lastKey =
           'relatedCommandIndex' in entry &&
           typeof entry.relatedCommandIndex === 'number'
