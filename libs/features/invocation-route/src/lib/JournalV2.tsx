@@ -95,6 +95,20 @@ import {
   journalSplitStyles,
   useJournalSplit,
 } from './JournalSplit';
+import {
+  getPastRetries,
+  getProblemRowKey,
+  getRetryKey,
+  type PastRetries,
+  type ProblemTone,
+} from './problemRows';
+import {
+  INPUT_ROW,
+  ProblemChildCheck,
+  useJournalProblems,
+} from './useJournalProblems';
+import { JournalProblemsBar } from './JournalProblemsBar';
+import { PastRetriesBadge } from './PastRetriesBadge';
 
 const virtualRowStyles = tv({
   base: '',
@@ -102,6 +116,28 @@ const virtualRowStyles = tv({
     isFocused: {
       true: 'bg-accent-subtle/50',
       false: '',
+    },
+  },
+});
+
+const inputHeaderStyles = tv({
+  base: 'relative flex h-full min-w-0 items-center',
+  variants: {
+    isActive: {
+      true: 'bg-accent-subtle/50',
+      false: '',
+    },
+  },
+});
+
+const problemMarkStyles = tv({
+  base: 'pointer-events-none absolute top-2 bottom-2 left-0 z-[1] w-0.5 rounded-r-full',
+  variants: {
+    tone: {
+      danger: 'bg-danger-strong',
+      warning: 'bg-warning-strong',
+      info: 'bg-info-strong',
+      neutral: 'bg-neutral',
     },
   },
 });
@@ -354,7 +390,18 @@ export function JournalV2({
       )
     : 0;
 
-  const entriesWithoutInput = entriesWithoutInputUnfiltered;
+  const journalProblems = useJournalProblems({
+    enabled: Boolean(withTimeline),
+    invocationId,
+    data,
+    rows: entriesWithoutInputUnfiltered,
+    inputEntry,
+    showErrors: Boolean(detail.errors),
+  });
+  const entriesWithoutInput = journalProblems.entries;
+  const shownProblemRows = journalProblems.navigableRows;
+  const activeProblemIndex = journalProblems.activeProblemIndex;
+  const activeProblemPosition = journalProblems.activeProblemPosition;
   // The server returns an empty `entries` array when the journal has been
   // purged (or was never written). Detect this once everything has loaded so
   // we can surface a "Journal was purged" message instead of an empty pane.
@@ -516,6 +563,74 @@ export function JournalV2({
         window.innerHeight / 3,
     });
   }, [withTimeline, focusRowIndex, virtualizer, scrollMargin, hash]);
+  const rowCenter = (index: number) => {
+    const row = virtualizer.measurementsCache[index];
+    return row ? row.start - scrollMargin + row.size / 2 : index * 36;
+  };
+  const scrollToProblemRow = (target: number) => {
+    if (target === INPUT_ROW) {
+      journalProblems.selectProblem(INPUT_ROW);
+      return;
+    }
+    const list = entriesListRef.current;
+    if (!list) {
+      return;
+    }
+    journalProblems.selectProblem(target);
+    const listRect = list.getBoundingClientRect();
+    const row = virtualizer.measurementsCache[target];
+    const rowTop =
+      listRect.top + (row ? row.start - scrollMargin : target * 36);
+    const rowBottom = rowTop + (row?.size ?? 36);
+    const visibleTop =
+      (document.querySelector('[data-journal-header]')?.getBoundingClientRect()
+        .bottom ?? 0) + 8;
+    const visibleBottom = window.innerHeight - 96;
+    if (rowTop >= visibleTop && rowBottom <= visibleBottom) {
+      return;
+    }
+    window.scrollTo({
+      top:
+        listRect.top +
+        window.scrollY +
+        rowCenter(target) -
+        window.innerHeight / 2,
+    });
+  };
+  const goToProblem = (direction: 1 | -1) => {
+    const list = entriesListRef.current;
+    if (!list || shownProblemRows.length === 0) {
+      return;
+    }
+    const listTop = list.getBoundingClientRect().top + window.scrollY;
+    let target: number | undefined;
+    if (activeProblemPosition >= 0) {
+      target =
+        shownProblemRows[
+          (activeProblemPosition + direction + shownProblemRows.length) %
+            shownProblemRows.length
+        ];
+    } else {
+      const center = window.scrollY + window.innerHeight / 2 - listTop;
+      target =
+        direction === 1
+          ? (shownProblemRows.find((index) => rowCenter(index) > center + 1) ??
+            shownProblemRows[0])
+          : (shownProblemRows.findLast(
+              (index) => rowCenter(index) < center - 1,
+            ) ?? shownProblemRows.at(-1));
+    }
+    if (target === undefined) {
+      return;
+    }
+    scrollToProblemRow(target);
+  };
+  const goToProblemRef = useRef(goToProblem);
+  useLayoutEffect(() => {
+    goToProblemRef.current = goToProblem;
+  });
+  const goToPreviousProblem = useCallback(() => goToProblemRef.current(-1), []);
+  const goToNextProblem = useCallback(() => goToProblemRef.current(1), []);
   const eventRelatedInvocationIds = useMemo(
     () =>
       getEventRelatedInvocationIds(journalAndInvocationData?.journal?.entries),
@@ -597,6 +712,15 @@ export function JournalV2({
 
   return (
     <PortalProvider>
+      {journalProblems.childCheck.invocationIds.length > 0 && (
+        <ProblemChildCheck
+          invocationIds={journalProblems.childCheck.invocationIds}
+          referenceInvocationId={invocationId}
+          isLive={isLive}
+          isScrolling={virtualizer.isScrolling}
+          onProgress={journalProblems.childCheck.onProgress}
+        />
+      )}
       <TimelineEngineProvider
         actualStart={start}
         actualEnd={end}
@@ -638,6 +762,21 @@ export function JournalV2({
             >
               {withTimeline && (
                 <ContentPanelToolbar className="relative">
+                  <JournalProblemsBar
+                    isProblemsOnly={journalProblems.isProblemsOnly}
+                    onModeChange={journalProblems.setProblemsOnly}
+                    problemTotal={journalProblems.problemTotal}
+                    problemStats={journalProblems.problemStats}
+                    find={journalProblems.findText}
+                    onFindChange={journalProblems.setFindText}
+                    matchCount={journalProblems.matchCount}
+                    navigableTotal={shownProblemRows.length}
+                    announcement={journalProblems.announcement}
+                    checkProgress={journalProblems.childCheck.progress}
+                    checkLimit={journalProblems.childCheck.limit}
+                    onPrevious={goToPreviousProblem}
+                    onNext={goToNextProblem}
+                  />
                   <div className="z-10 ml-auto flex flex-row items-center justify-end gap-1 self-end rounded-lg bg-linear-to-l from-canvas via-canvas to-canvas/5 pl-10">
                     <JournalDetailToggle
                       availableCategories={journalDetail.availableCategories}
@@ -679,12 +818,17 @@ export function JournalV2({
               )}
               {withTimeline && (
                 <ContentPanelHeader className="font-mono text-0.5xs">
-                  <div ref={split.headerRef} className="relative h-9 w-full">
+                  <div
+                    ref={split.headerRef}
+                    className="relative h-9 w-full"
+                    data-journal-header
+                  >
                     <div className="pointer-events-none absolute inset-0 z-30 hidden md:block">
                       <div
                         className={splitTimelineOverlay({
                           className: 'h-full',
                         })}
+                        data-journal-timeline-start
                       >
                         <StartDateTimeUnit start={start} />
                       </div>
@@ -694,7 +838,19 @@ export function JournalV2({
                         className: 'h-full w-full md:grid',
                       })}
                     >
-                      <div className="flex h-full min-w-0 items-center">
+                      <div
+                        className={inputHeaderStyles({
+                          isActive: journalProblems.isInputActive,
+                        })}
+                      >
+                        {journalProblems.inputTone && (
+                          <span
+                            aria-hidden
+                            className={problemMarkStyles({
+                              tone: journalProblems.inputTone,
+                            })}
+                          />
+                        )}
                         <Input
                           entry={typedInputEntry}
                           invocation={data?.[invocationId]}
@@ -769,6 +925,13 @@ export function JournalV2({
                               data={data}
                               failureRow={failureRow}
                               focusInvocationId={focusInvocationId}
+                              activeRowIndex={activeProblemIndex}
+                              problemTones={journalProblems.problemTones}
+                              pastRetries={journalProblems.pastRetries}
+                              onToggleRetries={journalProblems.toggleRetryRow}
+                              isRetryRowExpanded={
+                                journalProblems.isRetryRowExpanded
+                              }
                             />
                             {journalAndInvocationData && (
                               <div className="flex items-center gap-1.5 px-6 py-2 font-sans text-xs text-muted">
@@ -828,6 +991,7 @@ export function JournalV2({
                                   isReferencedInvocationStatusesError
                                 }
                                 focusInvocationId={focusInvocationId}
+                                activeRowIndex={activeProblemIndex}
                                 childNow={referencedInvocationStatusesUpdatedAt}
                                 shownInvocationIds={shownInvocationIds}
                               />
@@ -1049,6 +1213,11 @@ function VirtualizedEntries({
   data,
   failureRow,
   focusInvocationId,
+  activeRowIndex,
+  problemTones,
+  pastRetries,
+  onToggleRetries,
+  isRetryRowExpanded,
 }: {
   ref: RefCallback<HTMLDivElement>;
   virtualItems: VirtualItem[];
@@ -1058,6 +1227,11 @@ function VirtualizedEntries({
   data?: ReturnType<typeof useGetInvocationsJournalWithInvocationsV2>['data'];
   failureRow?: VirtualItem;
   focusInvocationId?: string;
+  activeRowIndex?: number;
+  problemTones?: ReadonlyMap<string, ProblemTone>;
+  pastRetries?: ReadonlyMap<string, PastRetries>;
+  onToggleRetries: (row: CombinedJournalEntry) => void;
+  isRetryRowExpanded: (key: string) => boolean;
 }) {
   return (
     <div
@@ -1089,12 +1263,17 @@ function VirtualizedEntries({
           parentCommand,
         } = combinedEntry;
         const invocation = data?.[entryInvocationId];
+        const retries = pastRetries
+          ? getPastRetries(combinedEntry, pastRetries)
+          : undefined;
 
         return (
           <div
             key={virtualItem.key}
             className={virtualRowStyles({
-              isFocused: entryInvocationId === focusInvocationId,
+              isFocused:
+                entryInvocationId === focusInvocationId ||
+                virtualItem.index === activeRowIndex,
             })}
             style={{
               position: 'absolute',
@@ -1105,6 +1284,14 @@ function VirtualizedEntries({
               transform: `translateY(${virtualItem.start - scrollMargin}px)`,
             }}
           >
+            {problemTones?.has(getProblemRowKey(combinedEntry) ?? '') && (
+              <span
+                aria-hidden
+                className={problemMarkStyles({
+                  tone: problemTones.get(getProblemRowKey(combinedEntry) ?? ''),
+                })}
+              />
+            )}
             <ErrorBoundary
               entry={entry}
               className="sticky top-[var(--cp-content-top,0px)] h-9"
@@ -1115,6 +1302,18 @@ function VirtualizedEntries({
                 depth={depth}
                 nextDepth={entriesWithoutInput[virtualItem.index + 1]?.depth}
                 parentCommand={parentCommand}
+                trailing={
+                  retries && (
+                    <PastRetriesBadge
+                      retries={retries}
+                      hasFailed={entry?.resultType === 'failure'}
+                      isExpanded={isRetryRowExpanded(
+                        getRetryKey(combinedEntry) ?? '',
+                      )}
+                      onToggle={() => onToggleRetries(combinedEntry)}
+                    />
+                  )
+                }
               />
             </ErrorBoundary>
           </div>
@@ -1134,6 +1333,7 @@ function VirtualizedTimeline({
   referencedInvocations,
   isReferencedInvocationsError,
   focusInvocationId,
+  activeRowIndex,
   childNow,
   shownInvocationIds,
 }: {
@@ -1149,6 +1349,7 @@ function VirtualizedTimeline({
   >;
   isReferencedInvocationsError?: boolean;
   focusInvocationId?: string;
+  activeRowIndex?: number;
   childNow?: number;
   shownInvocationIds: Set<string>;
 }) {
@@ -1191,7 +1392,9 @@ function VirtualizedTimeline({
           <div
             key={virtualItem.key}
             className={virtualRowStyles({
-              isFocused: entryInvocationId === focusInvocationId,
+              isFocused:
+                entryInvocationId === focusInvocationId ||
+                virtualItem.index === activeRowIndex,
             })}
             style={{
               position: 'absolute',

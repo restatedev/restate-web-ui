@@ -10,6 +10,7 @@ import {
   MutationOptions,
   Query,
   QueryClient,
+  skipToken,
   useInfiniteQuery,
   useMutation,
   useQueries,
@@ -1029,10 +1030,10 @@ export function isCompletedInvocationStatus(
 
 type InvocationStatusDetails = components['schemas']['InvocationStatusResult'];
 
-type InvocationStatusDetailsData =
+export type InvocationStatusDetailsData =
   operations['get_invocations_statuses']['responses']['200']['content']['application/json'];
 
-function getInvocationStatusDetailsQueryKey(
+export function getInvocationStatusDetailsQueryKey(
   baseUrl: string,
   referenceInvocationId?: string,
 ) {
@@ -1044,6 +1045,19 @@ function getInvocationStatusDetailsQueryKey(
       referenceInvocationId,
     },
   ] as const;
+}
+
+export function useCachedInvocationStatusDetails(
+  referenceInvocationId?: string,
+) {
+  const baseUrl = useAdminBaseUrl();
+  return useQuery<InvocationStatusDetailsData>({
+    queryKey: getInvocationStatusDetailsQueryKey(
+      baseUrl,
+      referenceInvocationId,
+    ),
+    queryFn: skipToken,
+  });
 }
 
 export function useWarmInvocationStatusDetails(
@@ -1128,9 +1142,13 @@ export function useWarmInvocationStatusDetails(
           },
         },
       ).queryFn(context)) ?? { invocations: {} };
+      const currentInvocations =
+        context.client.getQueryData<InvocationStatusDetailsData>(
+          latestQueryKey,
+        )?.invocations;
       return {
         invocations: {
-          ...mergedInvocations,
+          ...(currentInvocations ?? mergedInvocations),
           ...fetchedData.invocations,
         },
       };

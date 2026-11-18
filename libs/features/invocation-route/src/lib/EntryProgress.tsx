@@ -217,6 +217,10 @@ const progressStyles = tv({
       'flex w-full items-center transition-all duration-300 *:w-full',
   },
   variants: {
+    hasPastRetries: {
+      true: { segmentContainer: 'relative' },
+      false: {},
+    },
     isPending: {
       true: {
         base: '',
@@ -523,6 +527,8 @@ function InnerEntryProgress({
       ?.filter((entry) => entry.type === 'Event: TransientError')
       .map((entry) => (entry.start ? new Date(entry.start).getTime() : 0))
       .filter(Boolean) || [];
+  const hasPastRetries =
+    transientErrorTimes.length > 0 && !entry.isRetrying && !entry.isPending;
   const startTransientError = Math.min(...transientErrorTimes);
   const endTransientError = Math.max(...transientErrorTimes);
 
@@ -542,7 +548,7 @@ function InnerEntryProgress({
         className={base({ className })}
         invocation={invocation}
       >
-        <div className={segmentContainer({})}>
+        <div className={segmentContainer({ hasPastRetries })}>
           {isPoint ? (
             <Point variant={getPointVariant(entry)} />
           ) : (
@@ -561,6 +567,9 @@ function InnerEntryProgress({
                 </div>
               )}
             </Line>
+          )}
+          {hasPastRetries && (
+            <span className="absolute top-1/2 -right-2 h-1.5 w-1.5! -translate-y-1/2 rounded-full bg-warning shadow-xs" />
           )}
         </div>
         {showDuration && !isPoint && (

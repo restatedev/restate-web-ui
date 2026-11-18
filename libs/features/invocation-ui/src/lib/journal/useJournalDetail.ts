@@ -55,16 +55,17 @@ export const COMPACT_DETAIL: JournalDetail = Object.freeze({
 // params (e.g. `?detail=errors&detail=completions`) so it survives reloads and
 // is shareable, matching the invocations column picker. No params == compact;
 // unknown values are ignored. Categories are written in canonical order so
-// links are stable regardless of click order. Memoized on `searchParams`
-// (stable until `location.search` changes) so the live-poll re-renders don't
-// churn `useProcessedJournal`.
+// links are stable regardless of click order. Memoized on the `?detail=`
+// values only, so live-poll re-renders and other query params (such as
+// `?show=`) don't churn `useProcessedJournal`.
 export function useJournalDetail({
   hasHiddenEntries = false,
 }: { hasHiddenEntries?: boolean } = {}) {
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const detailKey = searchParams.getAll(DETAIL_QUERY_PARAM).join('&');
   const detail = useMemo<JournalDetail>(() => {
-    const selected = new Set(searchParams.getAll(DETAIL_QUERY_PARAM));
+    const selected = new Set(detailKey.split('&'));
     return {
       errors: selected.has('errors'),
       completions: selected.has('completions'),
@@ -72,7 +73,7 @@ export function useJournalDetail({
       hidden: selected.has('hidden'),
       size: selected.has('size'),
     };
-  }, [searchParams]);
+  }, [detailKey]);
 
   // `hidden` is only meaningful when a loaded handler actually defines
   // hidden-by-default entries; otherwise it's dropped so the toggle never

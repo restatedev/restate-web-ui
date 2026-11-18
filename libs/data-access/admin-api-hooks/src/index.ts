@@ -1,4 +1,9 @@
 export * from './lib/hooks';
+export {
+  useInvocationStatusCheck,
+  type InvocationStatusCheckData,
+  type InvocationStatusCheckFailure,
+} from './lib/invocationStatusCheck';
 export * from './lib/invocationV2Hooks';
 export * from './lib/invocationSummaryBreakdowns';
 export * from './lib/invocationV2Status';
