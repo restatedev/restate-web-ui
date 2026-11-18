@@ -7,6 +7,7 @@ import { Spinner } from '@restate/ui-loading';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import { formatNumber } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
+import type { InvocationStatusCheckFailure } from '@restate/data-access-admin-api-hooks';
 import type { ProblemStats } from './problemRows';
 
 export interface JournalProblemsBarProps {
@@ -22,7 +23,7 @@ export interface JournalProblemsBarProps {
   checkProgress?: {
     checked: number;
     total: number;
-    isIncomplete: boolean;
+    failure?: InvocationStatusCheckFailure;
   };
   checkLimit?: {
     checked: number;
@@ -169,9 +170,9 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
             Problems
             <span className={modeCountStyles({ isSelected: isProblemsOnly })}>
               {formatNumber(problemTotal)}
-              {checkLimit && !checkProgress ? '+' : ''}
+              {checkLimit ? '+' : ''}
             </span>
-            {checkProgress?.isIncomplete ? (
+            {checkProgress?.failure ? (
               <>
                 <Icon
                   name={IconName.TriangleAlert}
@@ -273,13 +274,16 @@ function ProblemsSummary({
     },
   ] as const;
   const shown = lines.filter(({ count }) => count > 0);
-  const note = checkProgress?.isIncomplete
-    ? "Some child invocations aren't checked yet, trying again"
-    : checkProgress
-      ? 'Still looking for problems in child invocations'
-      : checkLimit
-        ? `Click to check all ${formatNumber(checkLimit.total)} children`
-        : undefined;
+  const note =
+    checkProgress?.failure === 'stale'
+      ? "Couldn't refresh some child invocations, trying again"
+      : checkProgress?.failure
+        ? "Some child invocations aren't checked yet, trying again"
+        : checkProgress
+          ? 'Still looking for problems in child invocations'
+          : checkLimit
+            ? `Click to check all ${formatNumber(checkLimit.total)} children`
+            : undefined;
   return (
     <span className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-1 break-normal">
       {shown.length === 0 && !stats.stuckInputStatus && (

@@ -11,6 +11,7 @@ import type { JournalEntryV2 } from '@restate/data-access-admin-api-spec';
 import {
   useCachedInvocationStatusDetails,
   useInvocationStatusCheck,
+  type InvocationStatusCheckFailure,
   type useGetInvocationsJournalWithInvocationsV2,
 } from '@restate/data-access-admin-api-hooks';
 import { formatNumber } from '@restate/util-intl';
@@ -178,12 +179,12 @@ export function useJournalProblems({
   const [checkProgress, setCheckProgress] = useState<{
     checked: number;
     total: number;
-    isIncomplete: boolean;
+    failure?: InvocationStatusCheckFailure;
   }>();
   const updateCheckProgress = useCallback(
-    (checked: number, total: number, isIncomplete = false) =>
+    (checked: number, total: number, failure?: InvocationStatusCheckFailure) =>
       setCheckProgress(
-        checked < total ? { checked, total, isIncomplete } : undefined,
+        checked < total ? { checked, total, failure } : undefined,
       ),
     [],
   );
@@ -429,7 +430,11 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
   referenceInvocationId: string;
   isLive: boolean;
   isScrolling: boolean;
-  onProgress: (checked: number, total: number, isIncomplete?: boolean) => void;
+  onProgress: (
+    checked: number,
+    total: number,
+    failure?: InvocationStatusCheckFailure,
+  ) => void;
 }) {
   useInvocationStatusCheck(invocationIds, referenceInvocationId, {
     enabled: true,
