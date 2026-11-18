@@ -57,7 +57,7 @@ import { InvocationActions } from '@restate/features-invocation-route';
 import { Support } from '@restate/features-support';
 import { EditState } from '@restate/features-edit-state';
 import { FeatureFlags } from '@restate/util-feature-flag';
-import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient, timeoutManager } from '@tanstack/react-query';
 import { DeleteDeployment } from '@restate/features-deployment';
 import { ServicePlayground } from '@restate/features-service';
 import { EditService } from '@restate/features-service-details';
@@ -71,7 +71,10 @@ import {
   setMetaFallback,
   setMetaPersister,
 } from '@restate/data-access-admin-api';
-import { setQueryClient } from '@restate/util-react-query';
+import {
+  coalescingTimeoutProvider,
+  setQueryClient,
+} from '@restate/util-react-query';
 import { experimental_createQueryPersister } from '@tanstack/react-query-persist-client';
 import { PortalProvider } from '@restate/ui-portal';
 import { BatchOperationsProvider } from '@restate/features-batch-operations';
@@ -139,6 +142,8 @@ function useRefWithSupportForAbsolutePath(path: To) {
 
   return url;
 }
+
+timeoutManager.setTimeoutProvider(coalescingTimeoutProvider);
 
 const queryClient = new QueryClient({
   defaultOptions: {
