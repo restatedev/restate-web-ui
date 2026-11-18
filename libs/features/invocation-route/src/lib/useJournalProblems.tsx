@@ -153,10 +153,13 @@ export function useJournalProblems({
   const [checkProgress, setCheckProgress] = useState<{
     checked: number;
     total: number;
+    isIncomplete: boolean;
   }>();
   const updateCheckProgress = useCallback(
-    (checked: number, total: number) =>
-      setCheckProgress(checked < total ? { checked, total } : undefined),
+    (checked: number, total: number, isIncomplete = false) =>
+      setCheckProgress(
+        checked < total ? { checked, total, isIncomplete } : undefined,
+      ),
     [],
   );
 
@@ -343,7 +346,7 @@ export const ProblemChildCheck = memo(function ProblemChildCheck({
   referenceInvocationId: string;
   isLive: boolean;
   isScrolling: boolean;
-  onProgress: (checked: number, total: number) => void;
+  onProgress: (checked: number, total: number, isIncomplete?: boolean) => void;
 }) {
   useInvocationStatusCheck(invocationIds, referenceInvocationId, {
     enabled: true,

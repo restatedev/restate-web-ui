@@ -1134,7 +1134,7 @@ async function runInvocationStatusCheck({
   batchSize: number;
   maxPerRefresh: number;
   shouldShare: (status?: string) => boolean;
-  onProgress?: (checked: number, total: number) => void;
+  onProgress?: (checked: number, total: number, isIncomplete?: boolean) => void;
 }): Promise<InvocationStatusCheckData> {
   const run = ++state.run;
   const untriedOnly = state.untriedOnly;
@@ -1181,6 +1181,7 @@ async function runInvocationStatusCheck({
   if (showsProgress) {
     onProgress?.(0, ids.length);
   }
+  let checked = 0;
   try {
     for (let start = 0; start < ids.length; start += batchSize) {
       const batch = ids.slice(start, start + batchSize);
@@ -1214,10 +1215,11 @@ async function runInvocationStatusCheck({
           pending[invocationId] = {};
         }
       }
+      checked += batch.length;
       if (Date.now() - flushedAt >= STATUS_CHECK_FLUSH_MS) {
         flush();
         if (showsProgress && run === state.run) {
-          onProgress?.(Math.min(start + batchSize, ids.length), ids.length);
+          onProgress?.(checked, ids.length);
         }
       }
     }
@@ -1227,7 +1229,11 @@ async function runInvocationStatusCheck({
       state.lastTimedRunAt = Date.now();
     }
     if (run === state.run) {
-      onProgress?.(ids.length, ids.length);
+      if (checked < untried.length) {
+        onProgress?.(checked, untried.length, true);
+      } else {
+        onProgress?.(ids.length, ids.length);
+      }
     }
   }
   return { checkedAt: Date.now() };
@@ -1249,7 +1255,11 @@ export function useInvocationStatusCheck(
     maxPerRefresh: number;
     shouldShare: (status?: string) => boolean;
     refetchInterval: (unfinished: number) => number | false;
-    onProgress?: (checked: number, total: number) => void;
+    onProgress?: (
+      checked: number,
+      total: number,
+      isIncomplete?: boolean,
+    ) => void;
   },
 ) {
   const isApiEnabled = useAPIStatus();
@@ -1284,14 +1294,20 @@ export function useInvocationStatusCheck(
     refetchOnMount: 'always',
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
-    refetchInterval: () =>
-      getRemainingInterval(
-        refetchInterval(
-          invocationIds.filter((id) => isOpenForCheck(stateRef.current, id))
-            .length,
-        ),
-        stateRef.current.lastTimedRunAt,
-      ),
+    refetchInterval: (query) =>
+      query.state.status === 'error' &&
+      invocationIds.some((id) => isUntriedForCheck(stateRef.current, id))
+        ? getRemainingInterval(
+            STATUS_CHECK_RETRY_MS,
+            query.state.errorUpdatedAt,
+          )
+        : getRemainingInterval(
+            refetchInterval(
+              invocationIds.filter((id) => isOpenForCheck(stateRef.current, id))
+                .length,
+            ),
+            stateRef.current.lastTimedRunAt,
+          ),
     queryFn: (context) =>
       runInvocationStatusCheck({
         context,

@@ -20,6 +20,7 @@ export interface JournalProblemsBarProps {
   checkProgress?: {
     checked: number;
     total: number;
+    isIncomplete: boolean;
   };
   onPrevious: () => void;
   onNext: () => void;
@@ -144,9 +145,11 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
         <HoverTooltip
           content={
             <span className="break-normal">
-              {checkProgress
-                ? `Checking ${formatNumber(checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations`
-                : 'Failed steps, retries, children in trouble and what it waits on'}
+              {checkProgress?.isIncomplete
+                ? `Couldn't check ${formatNumber(checkProgress.total - checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations, retrying`
+                : checkProgress
+                  ? `Checking ${formatNumber(checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations`
+                  : 'Failed steps, retries, children in trouble and what it waits on'}
             </span>
           }
           placement="top"
@@ -161,7 +164,17 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
             <span className={modeCountStyles({ isSelected: isProblemsOnly })}>
               {formatNumber(problemTotal)}
             </span>
-            {checkProgress && <Spinner className="h-3 w-3 text-muted" />}
+            {checkProgress?.isIncomplete ? (
+              <>
+                <Icon
+                  name={IconName.TriangleAlert}
+                  className="h-3 w-3 text-warning"
+                />
+                <span className="sr-only">Child check incomplete</span>
+              </>
+            ) : (
+              checkProgress && <Spinner className="h-3 w-3 text-muted" />
+            )}
           </Button>
         </HoverTooltip>
         {problemTotal > 0 && (
