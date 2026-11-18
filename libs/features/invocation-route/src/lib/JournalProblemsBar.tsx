@@ -146,9 +146,9 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
           content={
             <span className="break-normal">
               {checkProgress?.isIncomplete
-                ? `Checked ${formatNumber(checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations, retrying the rest`
+                ? "Some child invocations aren't checked yet, trying again"
                 : checkProgress
-                  ? `Checking ${formatNumber(checkProgress.checked)} of ${formatNumber(checkProgress.total)} child invocations`
+                  ? 'Still looking for problems in child invocations'
                   : 'Failed steps, retries, children in trouble and what it waits on'}
             </span>
           }
