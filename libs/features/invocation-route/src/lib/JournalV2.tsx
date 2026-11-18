@@ -131,12 +131,12 @@ const inputHeaderStyles = tv({
 });
 
 const problemMarkStyles = tv({
-  base: 'pointer-events-none absolute top-1.5 bottom-1.5 left-0 z-[1] w-[3px] rounded-r-full',
+  base: 'pointer-events-none absolute top-2 bottom-2 left-0 z-[1] w-0.5 rounded-r-full',
   variants: {
     tone: {
-      danger: 'bg-danger',
-      warning: 'bg-warning',
-      info: 'bg-info',
+      danger: 'bg-danger-strong',
+      warning: 'bg-warning-strong',
+      info: 'bg-info-strong',
     },
   },
 });
