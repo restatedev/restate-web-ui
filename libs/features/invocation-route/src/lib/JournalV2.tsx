@@ -137,6 +137,7 @@ const problemMarkStyles = tv({
       danger: 'bg-danger-strong',
       warning: 'bg-warning-strong',
       info: 'bg-info-strong',
+      neutral: 'bg-neutral',
     },
   },
 });
@@ -765,6 +766,7 @@ export function JournalV2({
                     isProblemsOnly={journalProblems.isProblemsOnly}
                     onModeChange={journalProblems.setProblemsOnly}
                     problemTotal={journalProblems.problemTotal}
+                    problemStats={journalProblems.problemStats}
                     find={journalProblems.findText}
                     onFindChange={journalProblems.setFindText}
                     matchCount={journalProblems.matchCount}

@@ -23,6 +23,8 @@ import {
   getProblemTone,
   getRetriedCommands,
   getRetryKey,
+  getProblemStats,
+  getRecoveredRows,
   insertRetryRows,
   SHOW_PARAM,
   SHOW_PROBLEMS,
@@ -243,6 +245,16 @@ export function useJournalProblems({
     [isProblemsOnly, setSearchParams],
   );
 
+  const recoveredRows = useMemo(
+    () =>
+      getRecoveredRows(
+        problems.kindByRow,
+        rows,
+        journalProblems?.inheritedRetryRows,
+      ),
+    [problems, rows, journalProblems],
+  );
+
   const problemTones = useMemo(() => {
     if (!enabled) {
       return undefined;
@@ -257,12 +269,14 @@ export function useJournalProblems({
             ? problems.failedChildRows.has(index)
               ? 'danger'
               : 'warning'
-            : getProblemTone(kind, undefined, NO_STATUSES),
+            : recoveredRows.has(index)
+              ? 'neutral'
+              : getProblemTone(kind, undefined, NO_STATUSES),
         );
       }
     });
     return tones;
-  }, [enabled, problems, rows]);
+  }, [enabled, problems, rows, recoveredRows]);
 
   const inputKey = `${invocationId}:input`;
   const hasInputProblem =
@@ -283,6 +297,36 @@ export function useJournalProblems({
           );
     return hasInputProblem ? [INPUT_ROW, ...shown] : shown;
   }, [problems, entries, rows, hasInputProblem]);
+  const isInputRecovered =
+    hasInputProblem &&
+    !inputEntry?.isRetrying &&
+    !isChildProblemStatus(data[invocationId]?.status);
+  const problemStats = useMemo(() => {
+    const stats = getProblemStats(
+      problems.kindByRow,
+      rows,
+      childStatuses,
+      recoveredRows,
+    );
+    if (isInputRecovered) {
+      stats.recovered += 1;
+    } else if (inputEntry?.isRetrying) {
+      stats.retrying += 1;
+    } else if (hasInputProblem) {
+      stats.stuckInputStatus = data[invocationId]?.status;
+    }
+    return stats;
+  }, [
+    problems,
+    rows,
+    childStatuses,
+    recoveredRows,
+    hasInputProblem,
+    isInputRecovered,
+    inputEntry,
+    data,
+    invocationId,
+  ]);
   const isInputActive = hasInputProblem && activeProblemKey === inputKey;
   const activeProblemIndex = useMemo(
     () =>
@@ -319,7 +363,12 @@ export function useJournalProblems({
   return {
     entries,
     problemTotal: problems.rowIndexes.length + (hasInputProblem ? 1 : 0),
-    inputTone: hasInputProblem ? ('warning' as const) : undefined,
+    problemStats,
+    inputTone: hasInputProblem
+      ? isInputRecovered
+        ? ('neutral' as const)
+        : ('warning' as const)
+      : undefined,
     isInputActive,
     problemTones,
     pastRetries: enabled && !showErrors ? retriedCommands : undefined,

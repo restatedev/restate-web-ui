@@ -7,6 +7,8 @@ import {
   getChildIdsToCheck,
   getInvocationRetryKey,
   getPastRetries,
+  getProblemStats,
+  getRecoveredRows,
   getRetriedCommands,
   getRowProblem,
   insertRetryRows,
@@ -421,6 +423,77 @@ describe('findProblems', () => {
     expect(
       findProblems(rows, retried, noChildren, nothingCompleted).rowIndexes,
     ).toEqual([1]);
+  });
+});
+
+describe('getProblemStats', () => {
+  it('counts each kind of problem and keeps recovered steps apart', () => {
+    const retried = getRetriedCommands({
+      [ROOT]: [transientError(10, 2, 'flaky'), transientError(11, 3, 'flaky')],
+    });
+    const rows = [
+      row(command(1, { resultType: 'failure' })),
+      row(command(2)),
+      row(command(3, { isRetrying: true })),
+      row(command(4, { type: 'OneWayCall', invocationId: 'inv_failed' })),
+      row(command(5, { type: 'OneWayCall', invocationId: 'inv_paused' })),
+      row(command(6, { type: 'Sleep', isPending: true })),
+    ];
+    const statuses = {
+      inv_failed: { status: 'failed' },
+      inv_paused: { status: 'paused' },
+    } as never;
+    const journal = findJournalProblems(rows, retried, nothingCompleted);
+    const { kindByRow } = addChildProblems(
+      journal,
+      rows,
+      retried,
+      statuses,
+      nothingCompleted,
+    );
+    const recovered = getRecoveredRows(
+      kindByRow,
+      rows,
+      journal.inheritedRetryRows,
+    );
+
+    expect([...recovered]).toEqual([1]);
+    expect(getProblemStats(kindByRow, rows, statuses, recovered)).toEqual({
+      failed: 1,
+      failedChildren: 1,
+      backingOffChildren: 0,
+      pausedChildren: 1,
+      retrying: 1,
+      recovered: 1,
+      waiting: 1,
+    });
+  });
+
+  it('counts a waiting call as recovered once its child recovered', () => {
+    const retried = getRetriedCommands({
+      inv_child: [
+        {
+          index: 1,
+          category: 'event',
+          type: 'Event: TransientError',
+          message: 'connection reset',
+        } as JournalEntryV2,
+      ],
+    });
+    const rows = [
+      row(
+        command(1, {
+          type: 'Call',
+          invocationId: 'inv_child',
+          isPending: true,
+        }),
+      ),
+    ];
+    const journal = findJournalProblems(rows, retried, nothingCompleted);
+
+    expect([
+      ...getRecoveredRows(journal.kindByRow, rows, journal.inheritedRetryRows),
+    ]).toEqual([0]);
   });
 });
 

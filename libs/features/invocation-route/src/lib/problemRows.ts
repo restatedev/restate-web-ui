@@ -330,7 +330,82 @@ export function getChildIdsToCheck(
   return [...ids];
 }
 
-export type ProblemTone = 'danger' | 'warning' | 'info';
+export type ProblemTone = 'danger' | 'warning' | 'info' | 'neutral';
+
+export interface ProblemStats {
+  failed: number;
+  failedChildren: number;
+  backingOffChildren: number;
+  pausedChildren: number;
+  retrying: number;
+  recovered: number;
+  waiting: number;
+  stuckInputStatus?: string;
+}
+
+export function getRecoveredRows(
+  kindByRow: ReadonlyMap<number, ProblemKind>,
+  rows: CombinedJournalEntry[],
+  inheritedRetryRows?: ReadonlySet<number>,
+) {
+  const recovered = new Set<number>();
+  kindByRow.forEach((kind, index) => {
+    const entry = rows[index]?.entry;
+    if (
+      kind === 'retried' &&
+      entry &&
+      !entry.isRetrying &&
+      (!entry.isPending || inheritedRetryRows?.has(index))
+    ) {
+      recovered.add(index);
+    }
+  });
+  return recovered;
+}
+
+export function getProblemStats(
+  kindByRow: ReadonlyMap<number, ProblemKind>,
+  rows: CombinedJournalEntry[],
+  childStatuses: ChildStatuses,
+  recoveredRows: ReadonlySet<number>,
+): ProblemStats {
+  const stats: ProblemStats = {
+    failed: 0,
+    failedChildren: 0,
+    backingOffChildren: 0,
+    pausedChildren: 0,
+    retrying: 0,
+    recovered: 0,
+    waiting: 0,
+  };
+  kindByRow.forEach((kind, index) => {
+    if (kind === 'failed') {
+      stats.failed += 1;
+    } else if (kind === 'waiting') {
+      stats.waiting += 1;
+    } else if (kind === 'retried') {
+      if (recoveredRows.has(index)) {
+        stats.recovered += 1;
+      } else {
+        stats.retrying += 1;
+      }
+    } else {
+      const entry = rows[index]?.entry;
+      const status =
+        isTargetInvocationEntry(entry) && entry.invocationId
+          ? childStatuses[entry.invocationId]?.status
+          : undefined;
+      if (status === 'paused') {
+        stats.pausedChildren += 1;
+      } else if (status === 'backing-off') {
+        stats.backingOffChildren += 1;
+      } else {
+        stats.failedChildren += 1;
+      }
+    }
+  });
+  return stats;
+}
 
 export function getProblemTone(
   kind: ProblemKind,

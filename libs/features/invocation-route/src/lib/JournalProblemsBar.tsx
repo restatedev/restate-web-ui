@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react';
+import { Fragment, memo, useEffect, useRef, useState } from 'react';
 import { Input as AriaInput, Label, SearchField } from 'react-aria-components';
 import { Button } from '@restate/ui-button';
 import { Icon, IconName } from '@restate/ui-icons';
@@ -7,11 +7,13 @@ import { Spinner } from '@restate/ui-loading';
 import { HoverTooltip } from '@restate/ui-tooltip';
 import { formatNumber } from '@restate/util-intl';
 import { tv } from '@restate/util-styles';
+import type { ProblemStats } from './problemRows';
 
 export interface JournalProblemsBarProps {
   isProblemsOnly: boolean;
   onModeChange: (problemsOnly: boolean) => void;
   problemTotal: number;
+  problemStats: ProblemStats;
   find: string;
   onFindChange: (value: string) => void;
   matchCount?: number;
@@ -70,6 +72,7 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
   isProblemsOnly,
   onModeChange,
   problemTotal,
+  problemStats,
   find,
   onFindChange,
   matchCount,
@@ -144,13 +147,10 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
         </Button>
         <HoverTooltip
           content={
-            <span className="break-normal">
-              {checkProgress?.isIncomplete
-                ? "Some child invocations aren't checked yet, trying again"
-                : checkProgress
-                  ? 'Still looking for problems in child invocations'
-                  : 'Failed steps, retries, children in trouble and what it waits on'}
-            </span>
+            <ProblemsSummary
+              stats={problemStats}
+              checkProgress={checkProgress}
+            />
           }
           placement="top"
         >
@@ -193,6 +193,105 @@ export const JournalProblemsBar = memo(function JournalProblemsBar({
     </div>
   );
 });
+
+const summaryMarkStyles = tv({
+  base: 'h-1.5 w-1.5 shrink-0 rounded-full',
+  variants: {
+    tone: {
+      danger: 'bg-danger-strong',
+      warning: 'bg-warning-strong',
+      neutral: 'bg-neutral',
+      info: 'bg-info-strong',
+    },
+  },
+});
+
+function ProblemsSummary({
+  stats,
+  checkProgress,
+}: {
+  stats: ProblemStats;
+  checkProgress?: JournalProblemsBarProps['checkProgress'];
+}) {
+  const lines = [
+    {
+      count: stats.failed,
+      one: 'failed step',
+      many: 'failed steps',
+      tone: 'danger',
+    },
+    {
+      count: stats.failedChildren,
+      one: 'failed child',
+      many: 'failed children',
+      tone: 'danger',
+    },
+    {
+      count: stats.backingOffChildren,
+      one: 'child backing off',
+      many: 'children backing off',
+      tone: 'warning',
+    },
+    {
+      count: stats.pausedChildren,
+      one: 'paused child',
+      many: 'paused children',
+      tone: 'warning',
+    },
+    {
+      count: stats.retrying,
+      one: 'step retrying',
+      many: 'steps retrying',
+      tone: 'warning',
+    },
+    {
+      count: stats.recovered,
+      one: 'recovered step',
+      many: 'recovered steps',
+      tone: 'neutral',
+    },
+    {
+      count: stats.waiting,
+      one: 'waiting, not counted',
+      many: 'waiting, not counted',
+      tone: 'info',
+    },
+  ] as const;
+  const shown = lines.filter(({ count }) => count > 0);
+  const note = checkProgress?.isIncomplete
+    ? "Some child invocations aren't checked yet, trying again"
+    : checkProgress
+      ? 'Still looking for problems in child invocations'
+      : undefined;
+  return (
+    <span className="grid grid-cols-[auto_auto_auto] items-center gap-x-2 gap-y-1 break-normal">
+      {shown.length === 0 && !stats.stuckInputStatus && (
+        <span className="col-span-3">
+          No failed steps, retries or children in trouble
+        </span>
+      )}
+      {shown.map(({ count, one, many, tone }) => (
+        <Fragment key={one}>
+          <span aria-hidden className={summaryMarkStyles({ tone })} />
+          <span className="text-right tabular-nums">{formatNumber(count)}</span>
+          <span className="whitespace-nowrap">{count === 1 ? one : many}</span>
+        </Fragment>
+      ))}
+      {stats.stuckInputStatus && (
+        <>
+          <span
+            aria-hidden
+            className={summaryMarkStyles({ tone: 'warning' })}
+          />
+          <span className="col-span-2 whitespace-nowrap">
+            Input errors, invocation {stats.stuckInputStatus.replace('-', ' ')}
+          </span>
+        </>
+      )}
+      {note && <span className="col-span-3 text-inverse-muted">{note}</span>}
+    </span>
+  );
+}
 
 const TIMELINE_GAP_PX = 12;
 
