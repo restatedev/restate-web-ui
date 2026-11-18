@@ -67,7 +67,7 @@ Example: `pnpm nx g @nx/react:lib libs/ui/badge --importPath=@restate/ui-badge` 
 - **Vendored build**: The app uses a prebuilt bundle from our Elements fork, committed in `libs/ui/api/vendor/elements/`. There is no `@stoplight/*` npm dependency and no pnpm patch.
 - **Source checkout**: The fork lives at `../elements-restate` (`restate` branch, rebased on upstream `stoplightio/elements`).
 - **What is vendored**: `elements-web-components.min.js`, `elements-web-components.min.js.LICENSE.txt`, `elements-web-components.min.scoped.css`, `LICENSE`, `NOTICE`, and a `package.json` that only carries the name, version and license for `vendor.LICENSE.txt` attribution.
-- **Web components**: `<elements-api>` (playground) and `<elements-json-schema-viewer>` (handler schemas). `@restate/ui-api` renders both; `@restate/ui-api/assets` exports the asset URLs that `apps/web-ui/app/root.tsx` loads.
+- **Web components**: `<elements-api>` (playground) and `<elements-json-schema-viewer>` (handler schemas). `@restate/ui-api` renders both and injects the vendored script and stylesheet the first time one of them mounts, so other pages never download the bundle; `@restate/ui-api/assets` exports the asset URLs.
 - **Reference doc**: Follow `libs/ui/api/ELEMENTS.md` to rebuild and refresh the vendored files.
 
 ## Releasing

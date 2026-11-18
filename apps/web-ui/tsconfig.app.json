@@ -75,12 +75,6 @@
       "path": "../../libs/util/panel/tsconfig.lib.json"
     },
     {
-      "path": "../../libs/ui/api/tsconfig.lib.json"
-    },
-    {
-      "path": "../../libs/ui/editor/tsconfig.lib.json"
-    },
-    {
       "path": "../../libs/features/command-palette/tsconfig.lib.json"
     },
     {

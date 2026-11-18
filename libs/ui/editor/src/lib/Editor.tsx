@@ -11,9 +11,15 @@ import {
 } from 'react';
 import type { editor } from 'monaco-editor';
 
+const loadMonacoEditor = () => import('./.client/MonacoEditor');
+
 const MonacoEditor = lazy(() =>
-  import('./.client/MonacoEditor').then((m) => ({ default: m.MonacoEditor })),
+  loadMonacoEditor().then((m) => ({ default: m.MonacoEditor })),
 );
+
+export function preloadEditor() {
+  void loadMonacoEditor();
+}
 
 export function Editor({
   value,

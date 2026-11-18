@@ -8,6 +8,7 @@ import { Icon, IconName } from '@restate/ui-icons';
 import { Spinner } from '@restate/ui-loading';
 import { DropdownSection } from '@restate/ui-dropdown';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { preloadEditor } from '@restate/ui-editor';
 import { Portal } from '@restate/ui-portal';
 import { tv, cx } from '@restate/util-styles';
 import { formatBytes } from '@restate/util-intl';
@@ -304,7 +305,11 @@ function PayloadPopover({
 
   return (
     <div className={base()}>
-      <span className={value()}>
+      <span
+        className={value()}
+        onPointerEnter={preloadEditor}
+        onFocus={preloadEditor}
+      >
         <Popover onOpenChange={onOpenChange}>
           <PopoverTrigger>
             <Button className={trigger()} variant="secondary">

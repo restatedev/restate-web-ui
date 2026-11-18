@@ -2,6 +2,7 @@ import { Button } from '@restate/ui-button';
 import { DropdownSection } from '@restate/ui-dropdown';
 import { tv } from '@restate/util-styles';
 import { Popover, PopoverContent, PopoverTrigger } from '@restate/ui-popover';
+import { preloadEditor } from '@restate/ui-editor';
 import { ReactNode } from 'react';
 
 import { TruncateWithTooltip } from '@restate/ui-tooltip';
@@ -139,7 +140,11 @@ export function InputOutput({
 
   return (
     <div className={base()}>
-      <span className={value()}>
+      <span
+        className={value()}
+        onPointerEnter={preloadEditor}
+        onFocus={preloadEditor}
+      >
         <Popover>
           {isValueHidden ? (
             <PopoverTrigger>
