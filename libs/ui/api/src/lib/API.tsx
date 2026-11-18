@@ -59,9 +59,19 @@ function injectScript() {
   });
 }
 
+let elementsReady = false;
+const readyListeners = new Set<() => void>();
+
 function loadElements() {
   elementsLoading ??= Promise.all([injectStylesheet(), injectScript()]).then(
-    () => customElements.whenDefined(API_TAG).then(() => undefined),
+    async () => {
+      await Promise.all([
+        customElements.whenDefined(API_TAG),
+        customElements.whenDefined(JSON_SCHEMA_VIEWER_TAG),
+      ]);
+      elementsReady = true;
+      readyListeners.forEach((listener) => listener());
+    },
     (error: unknown) => {
       elementsLoading = undefined;
       throw error;
@@ -77,37 +87,33 @@ export function preloadElements() {
   loadElements().catch(() => undefined);
 }
 
-function useElements(tagName: string) {
-  const [isDefined, setIsDefined] = useState(
-    () =>
-      typeof customElements !== 'undefined' &&
-      customElements.get(tagName) !== undefined,
-  );
+function useElements() {
+  const [isReady, setIsReady] = useState(() => elementsReady);
   const [hasFailed, setHasFailed] = useState(false);
 
   useEffect(() => {
-    if (isDefined) {
+    if (isReady) {
       return;
     }
     let isCancelled = false;
-    loadElements()
-      .then(() => customElements.whenDefined(tagName))
-      .then(() => {
-        if (!isCancelled) {
-          setIsDefined(true);
-        }
-      })
-      .catch(() => {
-        if (!isCancelled) {
-          setHasFailed(true);
-        }
-      });
+    const onReady = () => {
+      if (!isCancelled) {
+        setIsReady(true);
+      }
+    };
+    readyListeners.add(onReady);
+    loadElements().then(onReady, () => {
+      if (!isCancelled) {
+        setHasFailed(true);
+      }
+    });
     return () => {
       isCancelled = true;
+      readyListeners.delete(onReady);
     };
-  }, [isDefined, tagName]);
+  }, [isReady]);
 
-  return { isDefined, hasFailed };
+  return { isReady, hasFailed: hasFailed && !isReady };
 }
 
 const loadingStyles = tv({
@@ -166,7 +172,7 @@ export const API = ({
   tryItFetcher?: typeof globalThis.fetch;
 }) => {
   const id = useId();
-  const { isDefined, hasFailed } = useElements(API_TAG);
+  const { isReady, hasFailed } = useElements();
   const apiRef = useCallback(
     (element: ElementsApiElement | null) => {
       if (!element) {
@@ -182,7 +188,7 @@ export const API = ({
     [tryItFetcher],
   );
 
-  if (!isDefined) {
+  if (!isReady) {
     return <ElementsLoading hasFailed={hasFailed} fill />;
   }
 
@@ -205,9 +211,9 @@ export const JsonSchemaViewer = ({
   schema?: unknown;
   className?: string;
 }) => {
-  const { isDefined, hasFailed } = useElements(JSON_SCHEMA_VIEWER_TAG);
+  const { isReady, hasFailed } = useElements();
 
-  if (!isDefined) {
+  if (!isReady) {
     return <ElementsLoading hasFailed={hasFailed} />;
   }
 
