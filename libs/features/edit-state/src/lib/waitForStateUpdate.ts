@@ -42,7 +42,7 @@ export async function waitForStateUpdate<
     }
     if (data.version !== version) {
       throw new RestateError(
-        'The state of this key changed before this mutation was processed, so the mutation was discarded. Review the current value and try again.',
+        'The state of this object changed before this mutation was processed, so the mutation was discarded. Review the current value and try again.',
       );
     }
   }

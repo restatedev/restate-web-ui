@@ -53,6 +53,8 @@ function stateVersionInternal(
   return bufferToUrlSafe(hash);
 }
 
+// Mirrors the server's StateMutationVersion::from_user_state, which sorts keys by their raw bytes:
+// https://github.com/restatedev/restate/blob/c4f3d335e6443e18dee847bb3e3b26bf42c2d280/crates/types/src/state_mut.rs#L128-L144
 function compareBytes(a: Uint8Array, b: Uint8Array) {
   const length = Math.min(a.length, b.length);
   for (let i = 0; i < length; i++) {
