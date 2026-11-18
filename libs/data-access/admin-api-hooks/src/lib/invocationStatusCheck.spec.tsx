@@ -138,6 +138,20 @@ describe('runInvocationStatusCheck', () => {
     ]);
   });
 
+  it('keeps refreshing known children while many new ones arrive', async () => {
+    const state = createStatusCheckState();
+    await run(state, ['a', 'b'], { batchSize: 10 });
+    fetchStatuses.mockClear();
+    const arrivals = Array.from({ length: 10 }, (_, index) => `new-${index}`);
+
+    await run(state, ['a', 'b', ...arrivals], {
+      batchSize: 100,
+      maxPerRefresh: 8,
+    });
+
+    expect(fetchStatuses).toHaveBeenCalledWith([...arrivals, 'a', 'b']);
+  });
+
   it('skips finished children', async () => {
     fetchStatuses.mockImplementation(() =>
       statuses({ a: 'succeeded', b: 'running' }),

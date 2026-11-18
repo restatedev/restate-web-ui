@@ -15,6 +15,7 @@ const MAX_STATUS_CHECK_MISSES = 3;
 const STATUS_CHECK_FLUSH_MS = 1_000;
 const STATUS_CHECK_MIN_INTERVAL_MS = 250;
 const STATUS_CHECK_RETRY_MS = 10_000;
+const STATUS_CHECK_KNOWN_SHARE = 4;
 
 export interface InvocationStatusCheckData {
   checkedAt: number;
@@ -107,7 +108,10 @@ export async function runInvocationStatusCheck({
   const tried = untriedOnly
     ? []
     : open.filter((id) => !isUntriedForCheck(state, id));
-  const room = Math.max(0, maxPerRefresh - untried.length);
+  const room = Math.max(
+    Math.floor(maxPerRefresh / STATUS_CHECK_KNOWN_SHARE),
+    maxPerRefresh - untried.length,
+  );
   let rotated = tried;
   if (tried.length > room) {
     const from = state.cursor % tried.length;
