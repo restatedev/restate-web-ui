@@ -11,7 +11,10 @@ import { flushSync } from 'react-dom';
 
 type WindowVirtualizerOptions = PartialKeys<
   VirtualizerOptions<Window, Element>,
-  'getScrollElement' | 'observeElementRect' | 'observeElementOffset' | 'scrollToFn'
+  | 'getScrollElement'
+  | 'observeElementRect'
+  | 'observeElementOffset'
+  | 'scrollToFn'
 >;
 
 export function useQuietWindowVirtualizer(options: WindowVirtualizerOptions) {
