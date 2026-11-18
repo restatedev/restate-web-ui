@@ -21,6 +21,8 @@ export interface InvocationStatusCheckData {
   checkedAt: number;
 }
 
+export type InvocationStatusCheckFailure = 'unchecked' | 'stale';
+
 type CheckedStatus =
   InvocationStatusDetailsData['invocations'][string]['status'];
 
@@ -31,7 +33,8 @@ export interface StatusCheckState {
     string,
     InvocationStatusDetailsData['invocations'][string]
   >;
-  cursor: number;
+  checkedAt: Map<string, number>;
+  sequence: number;
   run: number;
   untriedOnly: boolean;
   lastTimedRunAt: number;
@@ -42,7 +45,8 @@ export function createStatusCheckState(): StatusCheckState {
     known: new Map(),
     misses: new Map(),
     finishedProblems: new Map(),
-    cursor: 0,
+    checkedAt: new Map(),
+    sequence: 0,
     run: 0,
     untriedOnly: false,
     lastTimedRunAt: 0,
@@ -100,7 +104,11 @@ export async function runInvocationStatusCheck({
   maxPerRefresh: number;
   batchPauseMs?: number;
   shouldShare: (status?: string) => boolean;
-  onProgress?: (checked: number, total: number, isIncomplete?: boolean) => void;
+  onProgress?: (
+    checked: number,
+    total: number,
+    failure?: InvocationStatusCheckFailure,
+  ) => void;
 }): Promise<InvocationStatusCheckData> {
   const run = ++state.run;
   const untriedOnly = state.untriedOnly;
@@ -114,12 +122,15 @@ export async function runInvocationStatusCheck({
     Math.floor(maxPerRefresh / STATUS_CHECK_KNOWN_SHARE),
     maxPerRefresh - untried.length,
   );
-  let rotated = tried;
-  if (tried.length > room) {
-    const from = state.cursor % tried.length;
-    rotated = [...tried.slice(from), ...tried.slice(0, from)].slice(0, room);
-    state.cursor = from + room;
-  }
+  const rotated =
+    tried.length > room
+      ? [...tried]
+          .sort(
+            (a, b) =>
+              (state.checkedAt.get(a) ?? 0) - (state.checkedAt.get(b) ?? 0),
+          )
+          .slice(0, room)
+      : tried;
   const ids = [...untried, ...rotated];
   const showsProgress = untried.length > batchSize;
   let pending: InvocationStatusDetailsData['invocations'] = {};
@@ -151,6 +162,7 @@ export async function runInvocationStatusCheck({
     onProgress?.(0, ids.length);
   }
   let checked = 0;
+  let isComplete = false;
   try {
     for (let start = 0; start < ids.length; start += batchSize) {
       if (start > 0 && batchPauseMs > 0) {
@@ -168,6 +180,7 @@ export async function runInvocationStatusCheck({
         },
       ).queryFn(context as never)) ?? { invocations: {} };
       for (const invocationId of batch) {
+        state.checkedAt.set(invocationId, ++state.sequence);
         const status = data.invocations[invocationId];
         if (status?.status) {
           state.misses.delete(invocationId);
@@ -195,6 +208,7 @@ export async function runInvocationStatusCheck({
         }
       }
     }
+    isComplete = true;
   } finally {
     flush();
     if (!untriedOnly) {
@@ -202,7 +216,9 @@ export async function runInvocationStatusCheck({
     }
     if (run === state.run) {
       if (checked < untried.length) {
-        onProgress?.(checked, untried.length, true);
+        onProgress?.(checked, untried.length, 'unchecked');
+      } else if (!isComplete) {
+        onProgress?.(checked, ids.length, 'stale');
       } else {
         onProgress?.(ids.length, ids.length);
       }
@@ -232,7 +248,7 @@ export function useInvocationStatusCheck(
     onProgress?: (
       checked: number,
       total: number,
-      isIncomplete?: boolean,
+      failure?: InvocationStatusCheckFailure,
     ) => void;
   },
 ) {

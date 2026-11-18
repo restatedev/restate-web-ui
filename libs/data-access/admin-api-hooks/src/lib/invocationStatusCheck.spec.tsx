@@ -79,11 +79,7 @@ describe('runInvocationStatusCheck', () => {
       batchSize?: number;
       maxPerRefresh?: number;
       batchPauseMs?: number;
-      onProgress?: (
-        checked: number,
-        total: number,
-        isIncomplete?: boolean,
-      ) => void;
+      onProgress?: (checked: number, total: number, failure?: string) => void;
     } = {},
   ) {
     return runInvocationStatusCheck({
@@ -170,6 +166,43 @@ describe('runInvocationStatusCheck', () => {
     expect(fetchStatuses).toHaveBeenCalledWith([...arrivals, 'a', 'b']);
   });
 
+  it('refreshes the longest unchecked children first while new ones arrive', async () => {
+    const state = createStatusCheckState();
+    const original = Array.from({ length: 8 }, (_, index) => `old-${index}`);
+    await run(state, original, { batchSize: 100 });
+    let ids = original;
+    const refreshed = new Set<string>();
+    for (let cycle = 0; cycle < 4; cycle++) {
+      ids = [
+        ...Array.from({ length: 9 }, (_, index) => `new-${cycle}-${index}`),
+        ...ids,
+      ];
+      fetchStatuses.mockClear();
+      await run(state, ids, { batchSize: 100, maxPerRefresh: 8 });
+      fetchStatuses.mock.calls
+        .flatMap(([batch]) => batch)
+        .filter((id) => id.startsWith('old-'))
+        .forEach((id) => refreshed.add(id));
+    }
+
+    expect([...refreshed].sort()).toEqual([...original].sort());
+  });
+
+  it('warns when a refresh of known children fails', async () => {
+    const state = createStatusCheckState();
+    await run(state, ['a', 'b']);
+    fetchStatuses.mockImplementationOnce(() => {
+      throw new Error('unavailable');
+    });
+    const onProgress = vi.fn();
+
+    await expect(run(state, ['a', 'b'], { onProgress })).rejects.toThrow(
+      'unavailable',
+    );
+
+    expect(onProgress).toHaveBeenLastCalledWith(0, 2, 'stale');
+  });
+
   it('skips finished children', async () => {
     fetchStatuses.mockImplementation(() =>
       statuses({ a: 'succeeded', b: 'running' }),
@@ -226,7 +259,7 @@ describe('runInvocationStatusCheck', () => {
       run(state, ['a', 'b', 'c', 'd', 'e'], { onProgress }),
     ).rejects.toThrow('unavailable');
 
-    expect(onProgress).toHaveBeenLastCalledWith(2, 5, true);
+    expect(onProgress).toHaveBeenLastCalledWith(2, 5, 'unchecked');
     expect(client.getQueryData<Statuses>(sharedKey)?.invocations['a']).toEqual({
       status: 'failed',
     });
@@ -315,11 +348,7 @@ describe('useInvocationStatusCheck', () => {
     initialInvocationIds: string[],
     options: {
       refetchInterval?: (unfinished: number) => number | false;
-      onProgress?: (
-        checked: number,
-        total: number,
-        isIncomplete?: boolean,
-      ) => void;
+      onProgress?: (checked: number, total: number, failure?: string) => void;
     } = {},
   ) {
     return renderHook(
@@ -363,7 +392,7 @@ describe('useInvocationStatusCheck', () => {
     render(['a', 'b'], { onProgress });
 
     await waitFor(() =>
-      expect(onProgress).toHaveBeenLastCalledWith(0, 2, true),
+      expect(onProgress).toHaveBeenLastCalledWith(0, 2, 'unchecked'),
     );
     expect(fetchStatuses).toHaveBeenCalledTimes(1);
 
