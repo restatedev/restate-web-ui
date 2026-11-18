@@ -48,7 +48,7 @@ const styles = tv({
         nav: 'ml-2 gap-x-0 [--chip-shadow:0_1px_2px_--theme(--box-shadow-color-default/5%)]',
       },
       flat: {
-        nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px] [&>*+*]:-ml-px',
+        nav: 'flex-nowrap gap-x-0 text-2xs leading-none [&_[data-crumb-label]+button]:h-3.5 [&_[data-crumb-label]+button]:w-3.5 [&_[data-crumb-label]+button]:p-[3px] [&>*:not(:first-child)]:-ml-px',
       },
     },
     seg: {

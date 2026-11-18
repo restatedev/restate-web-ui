@@ -462,7 +462,7 @@ function Component() {
               placeholder={`Filter state…`}
               prefix={<ServiceSelector />}
               title="Filters"
-              className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-focus [&_input]:min-w-[25ch] [&_input]:placeholder:text-subtle [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
+              className="w-full rounded-xl border-transparent pr-24 has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-focus [&_input]:min-w-[25ch] [&_input]:placeholder:text-subtle [&_input+button]:right-24 [&_input::-webkit-search-cancel-button]:invert"
             >
               {(props) =>
                 props.item.schema.metadata?.persistent ? (

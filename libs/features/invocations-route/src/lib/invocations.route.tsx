@@ -1022,7 +1022,7 @@ function InvocationsForm({
             />
           }
           title="Filters"
-          className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-focus [&_input]:min-w-[25ch] [&_input]:placeholder:text-subtle [&_input+*]:right-24 [&_input::-webkit-search-cancel-button]:invert"
+          className="w-full rounded-xl border-transparent pb-8 has-[input[data-focused=true]]:border-accent-strong has-[input[data-focused=true]]:ring-focus [&_input]:min-w-[25ch] [&_input]:placeholder:text-subtle [&_input+button]:right-24 [&_input::-webkit-search-cancel-button]:invert"
         >
           {FilterChip}
         </AddFilterTrigger>

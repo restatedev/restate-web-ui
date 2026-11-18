@@ -85,7 +85,7 @@ const serverIconStyles = tv({
 });
 
 const innerGlassStyles = tv({
-  base: 'background backdrop-blur-xl backdrop-saturate-200 transition-[fill] duration-300',
+  base: 'background backdrop-blur-xl backdrop-saturate-200 transition-[fill] duration-300 supports-[-moz-appearance:none]:backdrop-filter-none',
   variants: {
     appearance: {
       ghost: 'fill-surface/20 group-hover/server:fill-surface/30',
