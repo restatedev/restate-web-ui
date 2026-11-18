@@ -235,8 +235,13 @@ export function ContentPanel({
     return () => observer.disconnect();
   }, [slots.toolbar, hasTabs]);
 
+  const contextValue = useMemo(
+    () => ({ getSlot, setSlot }),
+    [getSlot, setSlot],
+  );
+
   return (
-    <ContentPanelContext.Provider value={{ getSlot, setSlot }}>
+    <ContentPanelContext.Provider value={contextValue}>
       <div
         {...props}
         ref={rootRef}

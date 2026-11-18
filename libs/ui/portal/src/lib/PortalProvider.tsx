@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useId,
+  useMemo,
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -20,10 +21,9 @@ export function PortalProvider({ children }: PropsWithChildren) {
   const [elements, setElements] = useState<Record<string, HTMLElement | null>>(
     {},
   );
+  const value = useMemo(() => ({ elements, setElements }), [elements]);
   return (
-    <PortalContext.Provider value={{ elements, setElements }}>
-      {children}
-    </PortalContext.Provider>
+    <PortalContext.Provider value={value}>{children}</PortalContext.Provider>
   );
 }
 
