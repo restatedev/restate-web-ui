@@ -19,9 +19,11 @@ type WindowVirtualizerOptions = PartialKeys<
 
 export function useQuietWindowVirtualizer(options: WindowVirtualizerOptions) {
   const rerender = useReducer((count: number) => count + 1, 0)[1];
-  const renderedRef = useRef<{ items: unknown; isScrolling: boolean } | null>(
-    null,
-  );
+  const renderedRef = useRef<{
+    items: unknown;
+    isScrolling: boolean;
+    range: Virtualizer<Window, Element>['range'];
+  } | null>(null);
   const resolvedOptions: VirtualizerOptions<Window, Element> = {
     getScrollElement: () => (typeof document !== 'undefined' ? window : null),
     observeElementRect: observeWindowRect,
@@ -34,7 +36,10 @@ export function useQuietWindowVirtualizer(options: WindowVirtualizerOptions) {
       if (
         rendered &&
         rendered.items === instance.getVirtualItems() &&
-        rendered.isScrolling === instance.isScrolling
+        rendered.isScrolling === instance.isScrolling &&
+        (instance.isScrolling ||
+          (rendered.range?.startIndex === instance.range?.startIndex &&
+            rendered.range?.endIndex === instance.range?.endIndex))
       ) {
         return;
       }
@@ -51,8 +56,9 @@ export function useQuietWindowVirtualizer(options: WindowVirtualizerOptions) {
   instance.setOptions(resolvedOptions);
   const items = instance.getVirtualItems();
   const isScrolling = instance.isScrolling;
+  const range = instance.range;
   useLayoutEffect(() => {
-    renderedRef.current = { items, isScrolling };
+    renderedRef.current = { items, isScrolling, range };
   });
   useLayoutEffect(() => instance._didMount(), [instance]);
   useLayoutEffect(() => instance._willUpdate());
