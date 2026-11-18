@@ -278,7 +278,7 @@ function ProblemsSummary({
     : checkProgress
       ? 'Still looking for problems in child invocations'
       : checkLimit
-        ? `Open Problems to check all ${formatNumber(checkLimit.total)} children`
+        ? `Click to check all ${formatNumber(checkLimit.total)} children`
         : undefined;
   return (
     <span className="grid grid-cols-[auto_auto_1fr] items-center gap-x-2 gap-y-1 break-normal">
