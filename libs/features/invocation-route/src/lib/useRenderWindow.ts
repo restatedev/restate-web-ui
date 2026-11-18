@@ -9,13 +9,14 @@ import {
 
 const MIN_OVERSCAN = 24;
 const SCROLL_AHEAD = 100;
-const IDLE_BUFFER = 600;
+const IDLE_ROWS_ABOVE = 100;
+const IDLE_ROWS_BELOW = 300;
 const MOUNTS_ACROSS_FRAMES =
   typeof CSS !== 'undefined' && CSS.supports('-moz-appearance', 'none');
 const STEP = MOUNTS_ACROSS_FRAMES ? 5 : 25;
 const MAX_GROWTH = MOUNTS_ACROSS_FRAMES ? 20 : Infinity;
 const IDLE_STEP = 50;
-const MAX_ROWS = 2 * IDLE_BUFFER + 100;
+const MAX_ROWS = IDLE_ROWS_ABOVE + IDLE_ROWS_BELOW + 100;
 const IDLE_STEP_DELAY_MS = 30;
 const NOT_READY_RETRY_MS = 300;
 
@@ -116,11 +117,12 @@ export function useRenderWindow(): RenderWindowHandle {
 function getNextIdleBounds(
   visible: Bounds & { count: number },
   current: Bounds,
-  buffer: number,
+  rowsAbove: number,
+  rowsBelow: number,
 ): Bounds | undefined {
   const last = visible.count - 1;
-  const targetStart = Math.max(0, visible.start - buffer);
-  const targetEnd = Math.min(last, visible.end + buffer);
+  const targetStart = Math.max(0, visible.start - rowsAbove);
+  const targetEnd = Math.min(last, visible.end + rowsBelow);
   const before = visible.start - current.start;
   const after = current.end - visible.end;
 
@@ -176,7 +178,8 @@ export function useGrowRenderWindowWhenIdle(
       const next = getNextIdleBounds(
         visible,
         current,
-        isLive ? 0 : IDLE_BUFFER,
+        isLive ? 0 : IDLE_ROWS_ABOVE,
+        isLive ? 0 : IDLE_ROWS_BELOW,
       );
       if (next) {
         startTransition(() => {
